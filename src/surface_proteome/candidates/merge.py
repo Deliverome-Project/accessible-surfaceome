@@ -105,6 +105,11 @@ by source X?" booleans):
 Output columns:
 
 - identifiers: ``uniprot_accession``, ``gene_symbol``, ``uniprot_entry_name``
+- gene-symbol resolution: ``gene_symbol_input`` (pre-resolver consolidated
+  value), ``gene_symbol``/``gene_symbol_resolved`` (MyGene-resolved canonical
+  symbol when available), ``gene_symbol_mapping_status`` (exact /
+  normalized_alias / normalized_previous / ambiguous / not_found), and
+  ``gene_symbol_mygene_score``
 - per-source flags (5 above)
 - per-source evidence columns for downstream filtering:
   ``go_has_experimental``, ``go_n_go_ids``, ``surfy_label``,
@@ -140,6 +145,7 @@ import sys
 import time
 from pathlib import Path
 
+import mygene
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -675,6 +681,162 @@ def _consolidate_gene_symbol(row: pd.Series) -> str:
     return ""
 
 
+def _as_upper_list(value: object) -> list[str]:
+    """Normalize a scalar/list value into uppercase string tokens."""
+    if value is None:
+        return []
+    if isinstance(value, list):
+        raw_values = value
+    else:
+        raw_values = [value]
+    return [
+        str(item).strip().upper()
+        for item in raw_values
+        if str(item).strip()
+    ]
+
+
+def _resolve_gene_symbols_with_mygene(
+    symbols: list[str],
+) -> tuple[pd.DataFrame, dict[str, int]]:
+    """Resolve gene symbols with a single MyGene batch query (no fallback).
+
+    Resolver statuses intentionally mirror the nomenclature statuses used in
+    the tess/coral resolver stack:
+    - ``exact``
+    - ``normalized_alias``
+    - ``normalized_previous``
+    - ``ambiguous``
+    - ``not_found``
+    """
+    if not symbols:
+        empty = pd.DataFrame(
+            columns=[
+                "gene_symbol_query",
+                "gene_symbol_resolved",
+                "gene_symbol_mapping_status",
+                "gene_symbol_mygene_score",
+            ]
+        )
+        return empty, {
+            "n_query_symbols": 0,
+            "n_exact": 0,
+            "n_normalized_alias": 0,
+            "n_normalized_previous": 0,
+            "n_ambiguous": 0,
+            "n_not_found": 0,
+        }
+
+    mg = mygene.MyGeneInfo()
+    try:
+        raw_hits = mg.querymany(
+            symbols,
+            scopes="symbol,alias,prev_symbol",
+            fields="symbol,alias,prev_symbol",
+            species="human",
+            as_dataframe=False,
+            returnall=False,
+            verbose=False,
+        )
+    except Exception as exc:  # pragma: no cover - network/runtime dependent
+        raise RuntimeError(
+            "MyGene symbol resolution failed for candidate-universe merge "
+            "(no fallback configured)."
+        ) from exc
+
+    hits_by_query: dict[str, list[dict[str, object]]] = {}
+    for raw in raw_hits:
+        if not isinstance(raw, dict):
+            continue
+        query = str(raw.get("query", "")).strip().upper()
+        if not query:
+            continue
+        hits_by_query.setdefault(query, []).append(raw)
+
+    def _candidate(hit: dict[str, object], query: str) -> tuple[int, float, str, str] | None:
+        symbol = str(hit.get("symbol", "")).strip().upper()
+        if not symbol:
+            return None
+        score = float(hit.get("_score", 0.0) or 0.0)
+        aliases = set(_as_upper_list(hit.get("alias")))
+        prev_symbols = set(_as_upper_list(hit.get("prev_symbol")))
+        if symbol == query:
+            return (0, score, symbol, "exact")
+        if query in prev_symbols:
+            return (1, score, symbol, "normalized_previous")
+        if query in aliases:
+            return (2, score, symbol, "normalized_alias")
+        return None
+
+    records: list[dict[str, object]] = []
+    for query in symbols:
+        candidates: list[tuple[int, float, str, str]] = []
+        for hit in hits_by_query.get(query, []):
+            if hit.get("notfound"):
+                continue
+            parsed = _candidate(hit, query)
+            if parsed is not None:
+                candidates.append(parsed)
+
+        if not candidates:
+            records.append(
+                {
+                    "gene_symbol_query": query,
+                    "gene_symbol_resolved": "",
+                    "gene_symbol_mapping_status": "not_found",
+                    "gene_symbol_mygene_score": 0.0,
+                }
+            )
+            continue
+
+        best_rank = min(rank for rank, _score, _symbol, _status in candidates)
+        best_rank_rows = [row for row in candidates if row[0] == best_rank]
+        best_score = max(score for _rank, score, _symbol, _status in best_rank_rows)
+        best_rows = [
+            row for row in best_rank_rows if abs(row[1] - best_score) < 1e-12
+        ]
+        best_symbols = sorted({symbol for _rank, _score, symbol, _status in best_rows})
+
+        if len(best_symbols) > 1:
+            records.append(
+                {
+                    "gene_symbol_query": query,
+                    "gene_symbol_resolved": "",
+                    "gene_symbol_mapping_status": "ambiguous",
+                    "gene_symbol_mygene_score": float(best_score),
+                }
+            )
+            continue
+
+        chosen = sorted(
+            best_rows,
+            key=lambda row: (row[0], -row[1], row[2]),
+        )[0]
+        _rank, score, symbol, status = chosen
+        records.append(
+            {
+                "gene_symbol_query": query,
+                "gene_symbol_resolved": symbol,
+                "gene_symbol_mapping_status": status,
+                "gene_symbol_mygene_score": float(score),
+            }
+        )
+
+    result = pd.DataFrame.from_records(records).sort_values("gene_symbol_query")
+    mapping_counts = (
+        result["gene_symbol_mapping_status"].value_counts(dropna=False).to_dict()
+    )
+    stats = {
+        "n_query_symbols": len(symbols),
+        "n_exact": int(mapping_counts.get("exact", 0)),
+        "n_normalized_alias": int(mapping_counts.get("normalized_alias", 0)),
+        "n_normalized_previous": int(mapping_counts.get("normalized_previous", 0)),
+        "n_ambiguous": int(mapping_counts.get("ambiguous", 0)),
+        "n_not_found": int(mapping_counts.get("not_found", 0)),
+    }
+    return result, stats
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -869,7 +1031,35 @@ def main() -> None:
     merged["compartments_corroborated"] = other_source_flagged.astype(int)
     merged.loc[~other_source_flagged, "compartments_surface_flag"] = 0
 
-    merged["gene_symbol"] = merged.apply(_consolidate_gene_symbol, axis=1)
+    merged["gene_symbol_input"] = merged.apply(_consolidate_gene_symbol, axis=1)
+    merged["gene_symbol_query"] = (
+        merged["gene_symbol_input"].astype(str).str.strip().str.upper()
+    )
+    gene_symbol_universe = sorted(
+        {
+            symbol
+            for symbol in merged["gene_symbol_query"]
+            if isinstance(symbol, str) and symbol
+        }
+    )
+    gene_resolution, gene_resolution_stats = _resolve_gene_symbols_with_mygene(
+        gene_symbol_universe
+    )
+    merged = merged.merge(gene_resolution, on="gene_symbol_query", how="left")
+    merged["gene_symbol_mapping_status"] = (
+        merged["gene_symbol_mapping_status"].fillna("not_found").astype(str)
+    )
+    merged["gene_symbol_resolved"] = (
+        merged["gene_symbol_resolved"].fillna("").astype(str).str.strip()
+    )
+    merged["gene_symbol"] = merged["gene_symbol_resolved"].where(
+        merged["gene_symbol_resolved"] != "",
+        merged["gene_symbol_input"].astype(str).str.strip(),
+    )
+    merged["gene_symbol_mygene_score"] = pd.to_numeric(
+        merged["gene_symbol_mygene_score"], errors="coerce"
+    ).fillna(0.0)
+    merged = merged.drop(columns=["gene_symbol_query"])
 
     merged["n_sources_surface"] = merged[FLAG_COLUMNS].sum(axis=1).astype(int)
     merged["in_db_union"] = (merged[DB_FLAG_COLUMNS].sum(axis=1) > 0).astype(int)
@@ -894,7 +1084,11 @@ def main() -> None:
 
     out_cols = [
         "uniprot_accession",
+        "gene_symbol_input",
         "gene_symbol",
+        "gene_symbol_mapping_status",
+        "gene_symbol_resolved",
+        "gene_symbol_mygene_score",
         "uniprot_entry_name",
         *FLAG_COLUMNS,
         "n_sources_surface",
@@ -1108,6 +1302,7 @@ def main() -> None:
         "n_zero_support_rows_excluded": int(len(zero_support)),
         "n_in_db_union": int(merged["in_db_union"].sum()),
         "n_ml_only_edge_cases": int(merged["ml_only_edge_case"].sum()),
+        "gene_symbol_resolution": gene_resolution_stats,
         "n_sources": n_sources_total,
         "n_db_sources": n_db_sources_total,
         "per_source_counts": per_source_counts,
@@ -1165,6 +1360,14 @@ def main() -> None:
                 "primary_key": "uniprot_accession",
                 "filter": "n_sources_surface == 0 (accession present in a raw source but filtered out of every positive-flag rule — retained for traceability only)",
             },
+        },
+        "gene_symbol_resolution": {
+            "method": "MyGene querymany over merged-symbol universe",
+            "scopes": "symbol,alias,prev_symbol",
+            "fields": "symbol,alias,prev_symbol",
+            "species": "human",
+            "fallback": "none",
+            "stats": gene_resolution_stats,
         },
         "flag_rules": {
             "uniprot_surface_flag": "1 iff accession present in UniProt surface-candidate snapshot AND uniprot_split_mapping_ambiguous == 0",
