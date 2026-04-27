@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 600" role="img" aria-labelledby="title desc">
+  <title id="title">Source dependency graph for the M1 candidate surface-protein universe</title>
+  <desc id="desc">Seven primary sources (UniProt, Gene Ontology, CSPA, HPA, SURFY, COMPARTMENTS, DeepTMHMM) and their external upstream dependencies, rendered as a layered flow. Based on Deliverable 2 dependency matrix.</desc>
+
+  <defs>
+    <marker id="arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6f0835"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7a7e83"/>
+    </marker>
+    <style>
+      .col-label  { font: 600 9px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; letter-spacing: 0.14em; fill: #5a5f64; text-transform: uppercase; }
+      .card-label { font: 700 7.5px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; letter-spacing: 0.1em; text-transform: uppercase; }
+      .card-title { font: 500 13px/1 'Newsreader','Iowan Old Style',Georgia,serif; fill: #141414; }
+      .card-sub   { font: 400 9.5px/1 'Newsreader','Iowan Old Style',Georgia,serif; font-style: italic; fill: #5a5f64; }
+      .edge-label { font: 500 8px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; fill: #5a5f64; }
+      .legend-text{ font: 400 8.5px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; fill: #5a5f64; }
+      .doc-title  { font: 600 11px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; fill: #141414; }
+      .doc-sub    { font: 400 9px/1.35 'Newsreader','Iowan Old Style',Georgia,serif; font-style: italic; fill: #5a5f64; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1080" height="600" fill="#fefefc"/>
+
+  <!-- Header strip -->
+  <text x="24" y="22" class="doc-title">Source dependency graph · seven primaries and their external upstreams</text>
+  <text x="24" y="36" class="doc-sub">Direct ingestion relationships as stated in primary-source methods documents (see Deliverable 2).</text>
+  <line x1="24" y1="44" x2="1056" y2="44" stroke="rgba(20,20,20,0.12)" stroke-width="0.5"/>
+
+  <!-- Column labels -->
+  <text x="30"  y="64" class="col-label">External upstream</text>
+  <text x="280" y="64" class="col-label">Primary · hubs</text>
+  <text x="540" y="64" class="col-label">Primary · consumers</text>
+  <text x="800" y="64" class="col-label">Aggregator &amp; its channels</text>
+
+  <!-- ==================== COL 1: External (InterPro only, upstream of GO) ==================== -->
+  <g transform="translate(30, 165)">
+    <rect width="160" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="44" fill="#7a7e83"/>
+    <text x="14" y="17" class="card-label" fill="#5a5f64">Domain families</text>
+    <text x="14" y="34" class="card-title">InterPro</text>
+  </g>
+
+  <!-- ==================== COL 2: Primary hubs ==================== -->
+  <!-- UniProt -->
+  <g transform="translate(280, 85)">
+    <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="44" fill="#6f0835"/>
+    <text x="14" y="17" class="card-label" fill="#6f0835">Curated DB</text>
+    <text x="14" y="34" class="card-title">UniProt</text>
+  </g>
+  <!-- Gene Ontology -->
+  <g transform="translate(280, 165)">
+    <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="44" fill="#6f0835"/>
+    <text x="14" y="17" class="card-label" fill="#6f0835">Curated DB</text>
+    <text x="14" y="34" class="card-title">Gene Ontology</text>
+  </g>
+  <!-- CSPA -->
+  <g transform="translate(280, 330)">
+    <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="44" fill="#e2655e"/>
+    <text x="14" y="17" class="card-label" fill="#e2655e">Mass spec</text>
+    <text x="14" y="34" class="card-title">CSPA</text>
+  </g>
+
+  <!-- ==================== COL 3: Primary consumers ==================== -->
+  <!-- HPA -->
+  <g transform="translate(540, 125)">
+    <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="44" fill="#b14849"/>
+    <text x="14" y="17" class="card-label" fill="#b14849">Antibody IF</text>
+    <text x="14" y="34" class="card-title">Human Protein Atlas</text>
+  </g>
+  <!-- SURFY -->
+  <g transform="translate(540, 330)">
+    <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="44" fill="#b14849"/>
+    <text x="14" y="17" class="card-label" fill="#b14849">ML classifier</text>
+    <text x="14" y="34" class="card-title">SURFY</text>
+  </g>
+  <!-- DeepTMHMM (standalone) -->
+  <g transform="translate(540, 460)">
+    <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.18)" stroke-dasharray="3,2"/>
+    <rect width="4" height="44" fill="#b14849"/>
+    <text x="14" y="17" class="card-label" fill="#b14849">TM predictor</text>
+    <text x="14" y="34" class="card-title">DeepTMHMM</text>
+  </g>
+  <text x="540" y="518" class="card-sub">Standalone — no upstream ingestion in retrieved primary docs</text>
+
+  <!-- ==================== COL 4: Aggregator + its channel externals ==================== -->
+  <!-- COMPARTMENTS -->
+  <g transform="translate(800, 205)">
+    <rect width="160" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.14)"/>
+    <rect width="4" height="44" fill="#5a5f64"/>
+    <text x="14" y="17" class="card-label" fill="#5a5f64">Meta-DB</text>
+    <text x="14" y="34" class="card-title">COMPARTMENTS</text>
+  </g>
+  <!-- STRING -->
+  <g transform="translate(800, 290)">
+    <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="40" fill="#7a7e83"/>
+    <text x="14" y="16" class="card-label" fill="#5a5f64">Protein dictionary</text>
+    <text x="14" y="32" class="card-title" font-size="12">STRING 9.1</text>
+  </g>
+  <!-- WoLF PSORT -->
+  <g transform="translate(800, 340)">
+    <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="40" fill="#7a7e83"/>
+    <text x="14" y="16" class="card-label" fill="#5a5f64">Localization predictor</text>
+    <text x="14" y="32" class="card-title" font-size="12">WoLF PSORT</text>
+  </g>
+  <!-- YLoc -->
+  <g transform="translate(800, 390)">
+    <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="40" fill="#7a7e83"/>
+    <text x="14" y="16" class="card-label" fill="#5a5f64">Localization predictor</text>
+    <text x="14" y="32" class="card-title" font-size="12">YLoc</text>
+  </g>
+  <!-- Medline -->
+  <g transform="translate(800, 440)">
+    <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+    <rect width="4" height="40" fill="#7a7e83"/>
+    <text x="14" y="16" class="card-label" fill="#5a5f64">Text corpus</text>
+    <text x="14" y="32" class="card-title" font-size="12">Medline / PubMed</text>
+  </g>
+
+  <!-- ==================== EDGES ==================== -->
+
+  <!-- E1: InterPro → Gene Ontology (external→primary) -->
+  <path d="M 190,187 L 280,187" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#arrow-muted)"/>
+  <text x="198" y="181" class="edge-label">InterPro2GO</text>
+
+  <!-- E2: UniProt ↔ Gene Ontology (GOA pipeline both directions — two parallel unidirectional arrows) -->
+  <!-- Centered on the UniProt / GO column: boxes span x=280-450, center at x=365. -->
+  <!-- Down: UniProt → GO (Keyword2GO / SubcellularLocation2GO) -->
+  <path d="M 359,132 L 359,159" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)"/>
+  <!-- Up: GO → UniProt (GO annotations displayed in UniProtKB) -->
+  <path d="M 371,159 L 371,132" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)"/>
+  <text x="379" y="149" class="edge-label" font-size="8" font-weight="600" fill="#6f0835">GOA</text>
+
+  <!-- E3: UniProt → HPA (knowledge-based annotation) -->
+  <path d="M 450,107 C 495,107 495,147 540,147" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)"/>
+
+  <!-- E4: Gene Ontology → HPA (GO id output column) -->
+  <path d="M 450,187 C 495,187 495,147 540,147" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)"/>
+
+  <!-- E5: CSPA → SURFY (positive training set) -->
+  <path d="M 450,352 L 540,352" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)"/>
+  <text x="462" y="346" class="edge-label">positive training set</text>
+
+  <!-- E6: UniProt → COMPARTMENTS (knowledge channel) — routed under HPA -->
+  <path d="M 450,107 C 520,260 710,260 800,222" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)" opacity="0.9"/>
+
+  <!-- E7: Gene Ontology → COMPARTMENTS (term mapping + propagation) — routed under HPA -->
+  <path d="M 450,187 C 520,278 710,278 800,232" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)" opacity="0.9"/>
+
+  <!-- E8: HPA → COMPARTMENTS (experiments channel) -->
+  <path d="M 710,147 C 755,147 765,210 800,215" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)"/>
+
+  <!-- E9: STRING → COMPARTMENTS (routed via right side) -->
+  <path d="M 960,310 C 1000,310 1000,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#arrow-muted)"/>
+
+  <!-- E10: WoLF PSORT → COMPARTMENTS -->
+  <path d="M 960,360 C 1020,360 1020,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#arrow-muted)"/>
+
+  <!-- E11: YLoc → COMPARTMENTS -->
+  <path d="M 960,410 C 1040,410 1040,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#arrow-muted)"/>
+
+  <!-- E12: Medline → COMPARTMENTS -->
+  <path d="M 960,460 C 1060,460 1060,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#arrow-muted)"/>
+
+  <!-- ==================== LEGEND ==================== -->
+  <g transform="translate(24, 556)">
+    <text x="0" y="0" class="col-label" fill="#141414">Legend</text>
+    <g transform="translate(0, 14)">
+      <rect width="14" height="12" rx="2" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+      <rect width="3" height="12" fill="#6f0835"/>
+      <text x="22" y="10" class="legend-text">Primary source · curated DB</text>
+    </g>
+    <g transform="translate(200, 14)">
+      <rect width="14" height="12" rx="2" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+      <rect width="3" height="12" fill="#b14849"/>
+      <text x="22" y="10" class="legend-text">Primary source · experimental / predictor</text>
+    </g>
+    <g transform="translate(470, 14)">
+      <rect width="14" height="12" rx="2" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+      <rect width="3" height="12" fill="#7a7e83"/>
+      <text x="22" y="10" class="legend-text">External upstream</text>
+    </g>
+    <g transform="translate(640, 14)">
+      <path d="M 0,6 L 22,6" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#arrow-accent)"/>
+      <text x="30" y="10" class="legend-text">Primary → primary</text>
+    </g>
+    <g transform="translate(830, 14)">
+      <path d="M 0,6 L 22,6" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#arrow-muted)"/>
+      <text x="30" y="10" class="legend-text">External → primary</text>
+    </g>
+  </g>
+</svg>

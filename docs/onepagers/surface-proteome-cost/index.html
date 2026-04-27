@@ -1,0 +1,878 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Surface Proteome Annotation — API Credit Estimate</title>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700&display=swap"
+    />
+    <style>
+      :root {
+        --red-900: #6f0835;
+        --red-700: #b14849;
+        --red-500: #e2655e;
+        --red-100: rgba(111, 8, 53, 0.08);
+        --ink: #141414;
+        --ink-soft: #1f1718;
+        --muted: #5a5f64;
+        --line: rgba(20, 20, 20, 0.1);
+        --bg: #fefefc;
+        --bg-soft: #ffffff;
+        --accent: var(--red-900);
+        --accent-soft: var(--red-100);
+        --highlight: var(--red-500);
+        --font-sans: "DM Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+        --font-display: "Newsreader", Georgia, serif;
+        --radius-sm: 0.5rem;
+        --radius-md: 1rem;
+        --radius-lg: 1.25rem;
+        --shadow-sm: 0 4px 12px rgba(20, 20, 20, 0.05);
+      }
+
+      @page {
+        size: Letter;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 10pt;
+        line-height: 1.45;
+        -webkit-font-smoothing: antialiased;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        width: 8.5in;
+        min-height: 11in;
+        padding: 0.35in 0.55in 0.3in;
+        position: relative;
+      }
+
+      @media print {
+        .page {
+          min-height: auto;
+          height: 11in;
+          overflow: hidden;
+        }
+      }
+
+      .accent-rule {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: var(--accent);
+      }
+
+      header.brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.18in;
+      }
+
+      .brand-mark {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .brand-mark svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      .brand-mark .name {
+        font-family: var(--font-sans);
+        font-weight: 700;
+        font-size: 11.5pt;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+
+      .meta {
+        text-align: right;
+        color: var(--muted);
+        font-size: 8.5pt;
+        line-height: 1.35;
+      }
+
+      .meta .label {
+        color: var(--accent);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 7.5pt;
+      }
+
+      h1 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 21pt;
+        line-height: 1.02;
+        letter-spacing: -0.01em;
+        margin: 0 0 0.05in;
+        color: var(--ink);
+      }
+
+      h1 .em {
+        color: var(--accent);
+      }
+
+      .sub {
+        font-size: 9.5pt;
+        color: var(--muted);
+        max-width: 6.2in;
+        margin: 0 0 0.14in;
+      }
+
+      .ask {
+        display: flex;
+        gap: 0.22in;
+        padding: 0.14in 0.2in;
+        background: var(--accent);
+        color: #fff;
+        border-radius: var(--radius-lg);
+        margin: 0.18in 0 0.14in;
+        align-items: center;
+      }
+
+      .ask .primary {
+        flex: 1;
+      }
+
+      .ask .eyebrow {
+        font-size: 7pt;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        opacity: 0.75;
+        margin-bottom: 0.05in;
+        white-space: nowrap;
+      }
+
+      .ask .headline {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 18pt;
+        line-height: 1.05;
+        letter-spacing: -0.01em;
+        white-space: nowrap;
+      }
+
+      .ask .headline .num {
+        color: #fff;
+      }
+
+      .ask .divider {
+        width: 1px;
+        align-self: stretch;
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .ask .detail {
+        flex: 1;
+        font-size: 9pt;
+        line-height: 1.4;
+        opacity: 0.92;
+      }
+
+      .ask .detail strong {
+        font-weight: 600;
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.25in;
+      }
+
+      section.card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 0.12in 0.16in;
+        background: var(--bg-soft);
+      }
+
+      section h2 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 12pt;
+        margin: 0 0 0.05in;
+        color: var(--ink);
+        letter-spacing: -0.005em;
+      }
+
+      /* --- Pipeline figure --- */
+      .pipeline-wrap {
+        padding: 0.12in 0.14in 0.1in;
+      }
+
+      .prow {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+      }
+
+      .pchip {
+        flex: 1 1 0;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 4px 9px;
+        background: var(--bg-soft);
+        border: 1.5px solid var(--line);
+        border-radius: var(--radius-sm);
+        min-height: 0.46in;
+        text-align: left;
+      }
+
+      .pchip.sonnet {
+        border-color: var(--accent);
+        border-left-width: 4px;
+      }
+
+      .pchip.python {
+        border-color: rgba(90, 95, 100, 0.4);
+        border-left-width: 4px;
+      }
+
+      .pchip .plabel {
+        font-size: 6.5pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+
+      .pchip.sonnet .plabel {
+        color: var(--accent);
+      }
+
+      .pchip .ptitle {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 11pt;
+        color: var(--ink);
+        line-height: 1.05;
+        letter-spacing: -0.005em;
+      }
+
+      .pchip .pmeta {
+        font-size: 7pt;
+        color: var(--muted);
+        margin-top: 2px;
+        line-height: 1.25;
+      }
+
+      .parrow {
+        flex: 0 0 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .parrow svg {
+        width: 18px;
+        height: 10px;
+        color: var(--red-700);
+      }
+
+      .proute {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 6px 0 4px;
+        padding: 4px 10px;
+        border-radius: var(--radius-sm);
+        background: var(--accent-soft);
+        font-size: 8pt;
+        line-height: 1.3;
+      }
+
+      .proute .plabel {
+        font-size: 6.5pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .proute .pitems {
+        color: var(--ink);
+      }
+
+      .proute .pitems strong {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .pfork-label {
+        font-size: 6.5pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        margin: 4px 0 3px;
+      }
+
+      .pfork-strip {
+        display: flex;
+        gap: 10px;
+        margin-top: 2px;
+      }
+
+      .pbranch .btrigger {
+        font-size: 6.5pt;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--muted);
+        margin-bottom: 2px;
+        line-height: 1.2;
+      }
+
+      .pbranch.done .btrigger {
+        color: var(--muted);
+      }
+
+      .pbranch.light .btrigger {
+        color: var(--accent);
+      }
+
+      .pbranch.heavy .btrigger {
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .pbranch .bhead {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 2px;
+      }
+
+      .pbranch {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 5px 9px;
+        border-radius: var(--radius-sm);
+        border: 1.5px solid var(--line);
+        background: var(--bg-soft);
+        min-height: 0.36in;
+        justify-content: center;
+      }
+
+      .pbranch .bnum {
+        font-family: var(--font-display);
+        font-weight: 600;
+        font-size: 13pt;
+        color: var(--accent);
+        line-height: 1;
+        letter-spacing: -0.01em;
+      }
+
+      .pbranch .btxt {
+        font-size: 8.5pt;
+        line-height: 1.3;
+        color: var(--ink);
+      }
+
+      .pbranch.done {
+        background: var(--bg-soft);
+        border-color: var(--line);
+      }
+
+      .pbranch.done .btxt {
+        color: var(--muted);
+      }
+
+      .pbranch.light {
+        background: var(--accent-soft);
+        border-color: var(--accent);
+      }
+
+      .pbranch.light .btxt {
+        color: var(--ink);
+      }
+
+      .pbranch.heavy {
+        background: var(--accent);
+        border-color: var(--accent);
+      }
+
+      .pbranch.heavy .bnum,
+      .pbranch.heavy .btxt {
+        color: #fff;
+      }
+
+      .pipeline-caption {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.2in;
+        margin-top: 0.14in;
+        padding-top: 0.1in;
+        border-top: 1px dashed var(--line);
+        font-size: 8pt;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+
+      .pipeline-caption .cap-item strong {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      section h2 .pill {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 7.5pt;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: var(--accent-soft);
+        padding: 2px 8px;
+        border-radius: 999px;
+        margin-left: 6px;
+        vertical-align: middle;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 9pt;
+      }
+
+      table th,
+      table td {
+        text-align: left;
+        padding: 3px 8px 3px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      table th {
+        font-weight: 600;
+        font-size: 7.5pt;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border-bottom: 1px solid var(--line);
+      }
+
+      table td.num,
+      table th.num {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      table td .tsub {
+        font-size: 7.5pt;
+        color: var(--muted);
+        font-weight: 400;
+        margin-left: 2px;
+      }
+
+      table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .scenario-base td {
+        background: var(--accent-soft);
+        font-weight: 600;
+      }
+
+      .scenario-base td:first-child {
+        border-top-left-radius: var(--radius-sm);
+        border-bottom-left-radius: var(--radius-sm);
+      }
+
+      .scenario-base td:last-child {
+        border-top-right-radius: var(--radius-sm);
+        border-bottom-right-radius: var(--radius-sm);
+      }
+
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.12in;
+        margin-top: 0.08in;
+      }
+
+      .kpi {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+      }
+
+      .kpi .k {
+        font-size: 7pt;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 2px;
+      }
+
+      .kpi .v {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 13pt;
+        color: var(--accent);
+        line-height: 1.05;
+      }
+
+      .kpi .s {
+        font-size: 8pt;
+        color: var(--muted);
+        margin-top: 1px;
+      }
+
+      ul.notes {
+        margin: 0.04in 0 0;
+        padding: 0 0 0 1em;
+        font-size: 8.5pt;
+      }
+
+      ul.notes li {
+        margin-bottom: 2px;
+        color: var(--ink-soft);
+        line-height: 1.35;
+      }
+
+      ul.notes li strong {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .section-row {
+        margin-top: 0.08in;
+      }
+
+      footer.foot {
+        margin-top: 0.08in;
+        padding-top: 0.12in;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        font-size: 8pt;
+        color: var(--muted);
+      }
+
+      footer.foot .right {
+        text-align: right;
+      }
+
+      .hl {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .mono {
+        font-family: "SF Mono", Menlo, Consolas, monospace;
+        font-size: 8.5pt;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z"
+              fill="#640E30"
+            />
+            <path
+              d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z"
+              fill="#AE4242"
+            />
+            <path
+              d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z"
+              fill="#C86357"
+            />
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">API Credit Estimate</div>
+          <div>Anthropic AI for Science Program</div>
+          <div>Prepared April 2026 · becca@deliverome.org</div>
+        </div>
+      </header>
+
+      <h1>
+        Surface proteome annotation<br />
+        <span class="em">with per-claim citation integrity.</span>
+      </h1>
+      <p class="sub">
+        A Claude-driven re-annotation of the ~9,000-gene human surface
+        proteome — correcting known errors in SURFY / CSPA / UniProt / GO,
+        adding graded evidence confidence and topology, and shipping every
+        claim with a verbatim literature span. Public blog post, code, and
+        results table.
+      </p>
+
+      <section class="card pipeline-wrap" style="margin-bottom: 0.14in">
+        <h2>Per-gene pipeline<span class="pill">Sonnet-first · Opus on uncertainty</span></h2>
+        <div class="prow">
+          <div class="pchip python">
+            <div class="plabel">Retrieval</div>
+            <div class="ptitle">Retrieve</div>
+            <div class="pmeta">9 sources · ~22 + PDB</div>
+          </div>
+          <div class="parrow">
+            <svg viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              <path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+          </div>
+          <div class="pchip sonnet">
+            <div class="plabel">Sonnet 4.6</div>
+            <div class="ptitle">Extract</div>
+            <div class="pmeta">3 batches × 8 abstracts</div>
+          </div>
+          <div class="parrow">
+            <svg viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              <path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+          </div>
+          <div class="pchip python">
+            <div class="plabel">Python</div>
+            <div class="ptitle">Validate</div>
+            <div class="pmeta">source · quote · hash</div>
+          </div>
+          <div class="parrow">
+            <svg viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              <path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+          </div>
+          <div class="pchip sonnet">
+            <div class="plabel">Sonnet 4.6</div>
+            <div class="ptitle">Verify</div>
+            <div class="pmeta">quote supports claim</div>
+          </div>
+          <div class="parrow">
+            <svg viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+              <path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            </svg>
+          </div>
+          <div class="pchip sonnet">
+            <div class="plabel">Sonnet 4.6</div>
+            <div class="ptitle">Synthesize</div>
+            <div class="pmeta">topology + status</div>
+          </div>
+        </div>
+        <div class="proute">
+          <div class="plabel">Route by</div>
+          <div class="pitems">
+            <strong>Sonnet confidence</strong> ·
+            <strong>DB agreement</strong> (SURFY / CSPA / UniProt / GO) ·
+            <strong>verification result</strong> ·
+            <strong>primary-evidence count</strong>
+          </div>
+        </div>
+        <div class="pfork-label">Estimated routing distribution across 9k genes</div>
+        <div class="pfork-strip">
+          <div class="pbranch done">
+            <div class="btrigger">Confident · DBs agree</div>
+            <div class="bhead">
+              <div class="bnum">~60%</div>
+            </div>
+            <div class="btxt">Persist · Sonnet resolved</div>
+          </div>
+          <div class="pbranch light">
+            <div class="btrigger">DB disagree · med/low confidence</div>
+            <div class="bhead">
+              <div class="bnum">~30%</div>
+            </div>
+            <div class="btxt">Opus light · re-synthesize same evidence → persist</div>
+          </div>
+          <div class="pbranch heavy">
+            <div class="btrigger">Contradictory · dark gene · failed verification</div>
+            <div class="bhead">
+              <div class="bnum">~10%</div>
+            </div>
+            <div class="btxt">Opus heavy · +2–3 OA full papers · re-extract → persist</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="grid-2">
+        <section class="card">
+          <h2>Per-gene token budget<span class="pill">Sonnet 4.6</span></h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Phase</th>
+                <th class="num">Input</th>
+                <th class="num">Output</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Evidence extraction <span class="tsub">(3 × 8 abstracts)</span></td>
+                <td class="num">20.1k</td>
+                <td class="num">6.3k</td>
+              </tr>
+              <tr>
+                <td>Full-text methods <span class="tsub">(~1.5 papers)</span></td>
+                <td class="num">16.5k</td>
+                <td class="num">3.0k</td>
+              </tr>
+              <tr>
+                <td>Claim verification</td>
+                <td class="num">18.5k</td>
+                <td class="num">1.5k</td>
+              </tr>
+              <tr>
+                <td>Gene synthesis</td>
+                <td class="num">10.5k</td>
+                <td class="num">1.5k</td>
+              </tr>
+              <tr class="scenario-base">
+                <td>Sonnet per-gene total</td>
+                <td class="num">~66k</td>
+                <td class="num">~12k</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="card">
+          <h2>Opus cascade<span class="pill">Opus 4.7</span></h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Path</th>
+                <th class="num">Share</th>
+                <th class="num">Input</th>
+                <th class="num">Output</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Light — re-synthesize same evidence</td>
+                <td class="num">30%</td>
+                <td class="num">~15k</td>
+                <td class="num">~4k</td>
+              </tr>
+              <tr>
+                <td>Heavy — + 2–3 OA full papers</td>
+                <td class="num">10%</td>
+                <td class="num">~35k</td>
+                <td class="num">~7k</td>
+              </tr>
+              <tr class="scenario-base">
+                <td>Averaged across all 9k genes</td>
+                <td class="num">40%</td>
+                <td class="num">~8k</td>
+                <td class="num">~2k</td>
+              </tr>
+            </tbody>
+          </table>
+          <ul class="notes">
+            <li>
+              Cascade triggered by DB disagreement, contradictory
+              evidence, or failed claim verification — 60% of genes
+              resolve on Sonnet alone.
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <div class="ask">
+        <div class="primary">
+          <div class="eyebrow">Estimated Credit Envelope (Base Scenario, 9k genes)</div>
+          <div class="headline">
+            <span class="num">~670M</span> input · <span class="num">~125M</span> output
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="detail">
+          At current list rates: ≈ <strong>$6,400 end-to-end</strong>.
+          Tokens are our primary planning unit; we'll use the Batch API
+          where possible to reduce cost further.
+        </div>
+      </div>
+
+      <section class="card section-row">
+        <h2>Scenario envelope<span class="pill">9,000 genes</span></h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Opus mix (light / heavy)</th>
+              <th class="num">Total input tokens</th>
+              <th class="num">Total output tokens</th>
+              <th class="num">≈ Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Tight</td>
+              <td>20% / 5%</td>
+              <td class="num">~620M</td>
+              <td class="num">~120M</td>
+              <td class="num">$5,900</td>
+            </tr>
+            <tr class="scenario-base">
+              <td>Base <span class="hl">◂</span></td>
+              <td>30% / 10%</td>
+              <td class="num">~670M</td>
+              <td class="num">~125M</td>
+              <td class="num">$6,400</td>
+            </tr>
+            <tr>
+              <td>Loose</td>
+              <td>40% / 15%</td>
+              <td class="num">~740M</td>
+              <td class="num">~135M</td>
+              <td class="num">$6,900</td>
+            </tr>
+          </tbody>
+        </table>
+        <ul class="notes">
+          <li>
+            <strong>100-gene pilot</strong>: ~7M in · ~1.3M out · ~$55.
+          </li>
+        </ul>
+      </section>
+
+      <footer class="foot">
+        <div>
+          Deliverome Bio · nonprofit focused research organization ·
+          501(c)(3) pending.
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

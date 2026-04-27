@@ -1,0 +1,2298 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>A candidate human surface-protein universe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&display=swap"
+    />
+    <style>
+      :root {
+        --red-900: #6f0835;
+        --red-700: #b14849;
+        --red-500: #e2655e;
+        --red-100: rgba(111, 8, 53, 0.08);
+        --red-50: rgba(111, 8, 53, 0.04);
+        --ink: #141414;
+        --ink-soft: #1f1718;
+        --ink-body: #1a1618;
+        --muted: #5a5f64;
+        --muted-soft: #7a7e83;
+        --line: rgba(20, 20, 20, 0.1);
+        --line-strong: rgba(20, 20, 20, 0.45);
+        --bg: #fefefc;
+        --bg-soft: #ffffff;
+        --accent: var(--red-900);
+        --accent-soft: var(--red-100);
+        --accent-faint: var(--red-50);
+        --highlight: var(--red-500);
+        --font-sans: "DM Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+        --font-serif: "Newsreader", Georgia, "Iowan Old Style", serif;
+        --font-display: "Newsreader", Georgia, serif;
+        --radius-sm: 0.5rem;
+        --radius-md: 1rem;
+        --radius-lg: 1.25rem;
+        --page-width: 8.5in;
+        --page-height: 10.85in;
+        --page-pad-top: 0.12in;
+        --page-pad-x: 0.6in;
+        --page-pad-bottom: 0.08in;
+
+        /* Tufte-style grid: main column + gutter + margin column */
+        --main-col: 4.9in;
+        --gutter: 0.2in;
+        --margin-col: 2.3in;
+      }
+
+      @page {
+        size: Letter;
+        margin: 0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink-body);
+        font-family: var(--font-serif);
+        font-size: 9.75pt;
+        line-height: 1.4;
+        font-variant-numeric: oldstyle-nums proportional-nums;
+        -webkit-font-smoothing: antialiased;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page {
+        width: var(--page-width);
+        height: var(--page-height);
+        padding: var(--page-pad-top) var(--page-pad-x) calc(var(--page-pad-bottom) + 0.34in);
+        position: relative;
+        background: var(--bg);
+        overflow: hidden;
+      }
+
+      .page + .page {
+        margin-top: 0.25in;
+      }
+
+      @media print {
+        .page {
+          margin: 0;
+        }
+        .page + .page {
+          page-break-before: always;
+          break-before: page;
+          margin-top: 0;
+        }
+      }
+
+      .accent-rule {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 5px;
+        background: var(--accent);
+      }
+
+      /* --- Brand header (DM Sans for UI chrome) --- */
+      header.brand {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.14in;
+        font-family: var(--font-sans);
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+
+      .brand-mark {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .brand-mark svg {
+        width: 30px;
+        height: 30px;
+      }
+
+      .brand-mark .name {
+        font-weight: 700;
+        font-size: 11.5pt;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+      }
+
+      .meta {
+        text-align: right;
+        color: var(--muted);
+        font-size: 8.5pt;
+        line-height: 1.35;
+      }
+
+      .meta .label {
+        color: var(--accent);
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 7.5pt;
+      }
+
+      /* --- Display heading + subtitle (page 1 only) --- */
+      h1 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 22pt;
+        line-height: 1.04;
+        letter-spacing: -0.012em;
+        margin: 0.02in 0 0.05in;
+        color: var(--ink);
+      }
+
+      h1 .em {
+        color: var(--accent);
+        font-style: italic;
+      }
+
+      .sub {
+        font-family: var(--font-serif);
+        font-size: 10.5pt;
+        color: var(--muted);
+        font-style: italic;
+        max-width: 6.4in;
+        margin: 0 0 0.12in;
+        line-height: 1.42;
+      }
+
+      .byline {
+        font-family: var(--font-sans);
+        font-size: 8.5pt;
+        color: var(--muted);
+        letter-spacing: 0.02em;
+        margin: 0 0 0.1in;
+        padding-bottom: 0.05in;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .byline .dot {
+        margin: 0 0.4em;
+        color: var(--line-strong);
+      }
+
+      /* --- Abstract block (tufte-ish: set-off italic with small-caps label) --- */
+      .abstract {
+        margin: 0.06in 0 0.1in;
+        padding: 0.08in 0.14in 0.08in 0.16in;
+        border-left: 2px solid var(--accent);
+        background: var(--accent-faint);
+        font-size: 9.5pt;
+        line-height: 1.42;
+        color: var(--ink-soft);
+      }
+
+      .abstract .ab-label {
+        display: block;
+        font-family: var(--font-sans);
+        font-size: 7.5pt;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+
+      /* --- Section headings with § numbering --- */
+      h2 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 15pt;
+        line-height: 1.18;
+        letter-spacing: -0.005em;
+        margin: 0.14in 0 0.06in;
+        color: var(--ink);
+      }
+
+      h2 .snum {
+        font-family: var(--font-sans);
+        font-size: 9pt;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-right: 0.08in;
+        vertical-align: 0.02em;
+      }
+
+      h3 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 12pt;
+        line-height: 1.22;
+        letter-spacing: -0.003em;
+        margin: 0.1in 0 0.04in;
+        color: var(--ink);
+      }
+
+      h3 .snum {
+        font-family: var(--font-sans);
+        font-size: 8pt;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        color: var(--accent);
+        margin-right: 0.06in;
+      }
+
+      h3 .count {
+        font-family: var(--font-sans);
+        font-size: 7.5pt;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-left: 0.08in;
+        vertical-align: 0.08em;
+      }
+
+      p {
+        margin: 0 0 0.06in;
+        text-align: justify;
+        hyphens: auto;
+      }
+
+      p + p {
+        text-indent: 1.1em;
+      }
+
+      .no-indent + p {
+        text-indent: 0;
+      }
+
+      p.lead {
+        text-indent: 0;
+      }
+
+      /* Rule tag (what / inclusion / why) for source methods */
+      .rule-tag {
+        font-family: var(--font-sans);
+        font-size: 7pt;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-right: 0.06in;
+      }
+
+      /* --- Two-column Tufte layout: main + margin (block + float for reliable pagination) --- */
+      .layout {
+        display: block;
+      }
+
+      .main {
+        width: var(--main-col);
+        clear: left;
+        float: left;
+      }
+
+      .marg {
+        width: var(--margin-col);
+        float: right;
+        padding-top: 0.02in;
+        clear: right;
+      }
+
+      .layout::after {
+        content: "";
+        display: block;
+        clear: both;
+      }
+
+      .fullwidth {
+        clear: both;
+        width: 100%;
+      }
+
+      /* Sidenote block — sits in margin column, aligned to a paragraph */
+      .sidenote {
+        font-family: var(--font-serif);
+        font-size: 8.5pt;
+        line-height: 1.38;
+        color: var(--muted);
+        margin-bottom: 0.1in;
+        padding-left: 6px;
+        border-left: 1.5px solid var(--accent);
+      }
+
+      .sidenote .sn-label {
+        display: block;
+        font-family: var(--font-sans);
+        font-size: 7pt;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-bottom: 3px;
+      }
+
+      .sidenote strong {
+        color: var(--ink-soft);
+        font-weight: 600;
+      }
+
+      .sidenote em {
+        font-style: italic;
+      }
+
+      /* Small marginal fact / stat */
+      .margfact {
+        font-family: var(--font-sans);
+        font-size: 8pt;
+        color: var(--muted);
+        margin-bottom: 0.1in;
+        padding-left: 6px;
+      }
+
+      .margfact .v {
+        font-family: var(--font-display);
+        font-weight: 500;
+        color: var(--accent);
+        font-size: 13pt;
+        display: block;
+        line-height: 1;
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+
+      .margfact .k {
+        display: block;
+        margin-top: 2px;
+        font-size: 7pt;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+
+      /* --- Inline typography niceties --- */
+      strong {
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      em {
+        font-style: italic;
+      }
+
+      .hl {
+        color: var(--accent);
+        font-weight: 600;
+      }
+
+      .sc {
+        font-variant: small-caps;
+        letter-spacing: 0.04em;
+      }
+
+      /* --- Tables, booktabs style --- */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-sans);
+        font-size: 8.75pt;
+        line-height: 1.35;
+        font-variant-numeric: lining-nums tabular-nums;
+        margin: 0.06in 0 0.04in;
+      }
+
+      .booktable {
+        border-top: 1.2px solid var(--line-strong);
+        border-bottom: 1.2px solid var(--line-strong);
+      }
+
+      .booktable thead tr {
+        border-bottom: 0.6px solid var(--line-strong);
+      }
+
+      .booktable th {
+        text-align: left;
+        padding: 5px 8px 5px 0;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 7.5pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border-bottom: none;
+      }
+
+      .booktable td {
+        padding: 3.5px 8px 3.5px 0;
+        border: none;
+        color: var(--ink-body);
+      }
+
+      .booktable tbody tr + tr td {
+        border-top: none;
+      }
+
+      table td.num,
+      table th.num {
+        text-align: right;
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+
+      table td .tsub {
+        font-size: 7.5pt;
+        color: var(--muted);
+        font-weight: 400;
+        margin-left: 2px;
+      }
+
+      .row-base td {
+        background: var(--accent-soft);
+        font-weight: 600;
+        color: var(--ink);
+      }
+
+      /* --- Figure with academic caption --- */
+      figure {
+        margin: 0.1in 0 0.12in;
+        page-break-inside: avoid;
+        break-inside: avoid;
+      }
+
+      figure img {
+        width: 100%;
+        height: auto;
+        display: block;
+        border: 1px solid var(--line);
+        border-radius: 2px;
+      }
+
+      figcaption {
+        font-family: var(--font-serif);
+        font-size: 8.5pt;
+        line-height: 1.4;
+        color: var(--muted);
+        margin-top: 5px;
+        padding-left: 2px;
+        text-align: left;
+        hyphens: auto;
+      }
+
+      figcaption .figlabel {
+        font-family: var(--font-sans);
+        font-size: 7.25pt;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--accent);
+        margin-right: 0.06in;
+      }
+
+      figcaption strong {
+        color: var(--ink-soft);
+        font-weight: 600;
+      }
+
+      /* --- Boxed cards kept for the hero pipeline figure --- */
+      section.card {
+        border: 1px solid var(--line);
+        border-radius: var(--radius-md);
+        padding: 0.12in 0.16in;
+        background: var(--bg-soft);
+      }
+
+      section.card.hero {
+        padding: 0.14in 0.18in;
+      }
+
+      section.card h2 {
+        margin: 0 0 0.05in;
+        font-size: 12pt;
+      }
+
+      section.card h2 .pill {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 7.25pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+        background: var(--accent-soft);
+        padding: 2px 8px;
+        border-radius: 999px;
+        margin-left: 6px;
+        vertical-align: 2pt;
+      }
+
+      /* --- "Headline figures" accent band (was the cost-doc "ask" block) --- */
+      .ask {
+        display: flex;
+        gap: 0.2in;
+        padding: 0.1in 0.2in;
+        background: var(--accent);
+        color: #fff;
+        border-radius: var(--radius-lg);
+        margin: 0.06in 0 0.08in;
+        align-items: center;
+        font-family: var(--font-sans);
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+
+      .ask .primary {
+        flex: 1.25;
+      }
+
+      .ask .eyebrow {
+        font-size: 7pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.78;
+        margin-bottom: 0.05in;
+        font-weight: 600;
+      }
+
+      .ask .headline {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 17pt;
+        line-height: 1.05;
+        letter-spacing: -0.01em;
+      }
+
+      .ask .divider {
+        width: 1px;
+        align-self: stretch;
+        background: rgba(255, 255, 255, 0.25);
+      }
+
+      .ask .detail {
+        flex: 1;
+        font-family: var(--font-serif);
+        font-size: 9.5pt;
+        line-height: 1.45;
+        opacity: 0.92;
+        font-style: italic;
+      }
+
+      .ask strong,
+      .ask .detail strong {
+        font-weight: 600;
+        font-style: normal;
+        color: #fff;
+      }
+
+      /* --- Seven-source merge diagram (hero figure) --- */
+      .pipeline-wrap {
+        padding: 0.08in 0.14in 0.08in;
+      }
+
+      .source-strip {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 6px;
+        margin-bottom: 0.08in;
+      }
+
+      .src {
+        padding: 4px 6px;
+        border: 1.5px solid var(--line);
+        border-left-width: 4px;
+        border-radius: var(--radius-sm);
+        background: var(--bg-soft);
+        min-height: 0.46in;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 2px;
+        overflow: hidden;
+      }
+
+      .src.db   { border-left-color: var(--accent); }
+      .src.ml   { border-left-color: var(--red-700); }
+      .src.ms   { border-left-color: var(--red-500); }
+      .src.if   { border-left-color: var(--red-700); }
+      .src.meta { border-left-color: rgba(90, 95, 100, 0.55); }
+
+      .src .slabel {
+        font-family: var(--font-sans);
+        font-size: 6pt;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .src.db   .slabel { color: var(--accent); }
+      .src.ml   .slabel { color: var(--red-700); }
+      .src.ms   .slabel { color: var(--red-500); }
+      .src.if   .slabel { color: var(--red-700); }
+
+      .src .stitle {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 10pt;
+        line-height: 1.1;
+        color: var(--ink);
+        letter-spacing: -0.01em;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .src .scount {
+        font-family: var(--font-sans);
+        font-size: 7pt;
+        color: var(--muted);
+        margin-top: auto;
+        font-variant-numeric: lining-nums tabular-nums;
+        white-space: nowrap;
+      }
+
+      .merge-row {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+      }
+
+      .merge-col {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 5px 8px;
+        background: var(--accent-soft);
+        border-radius: var(--radius-sm);
+        border: 1px solid rgba(111, 8, 53, 0.18);
+      }
+
+      .merge-col.final {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+
+      .merge-col .mlabel {
+        font-family: var(--font-sans);
+        font-size: 6.5pt;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 2px;
+      }
+
+      .merge-col.final .mlabel {
+        color: rgba(255, 255, 255, 0.85);
+      }
+
+      .merge-col .mtitle {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 11pt;
+        line-height: 1.1;
+        letter-spacing: -0.005em;
+      }
+
+      .merge-col .mmeta {
+        font-family: var(--font-sans);
+        font-size: 7.5pt;
+        color: var(--muted);
+        margin-top: 2px;
+        line-height: 1.3;
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+
+      .merge-col.final .mmeta {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .merge-arrow {
+        flex: 0 0 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .merge-arrow svg {
+        width: 18px;
+        height: 10px;
+        color: var(--red-700);
+      }
+
+      /* --- Agreement distribution bars (inline mini-chart) --- */
+      .agree-bars {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 5px 10px;
+        align-items: center;
+        font-family: var(--font-sans);
+        font-size: 8pt;
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+
+      .agree-bars .ak {
+        color: var(--muted);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      .agree-bars .abar {
+        height: 12px;
+        background: var(--accent);
+        border-radius: 2px;
+        min-width: 3px;
+      }
+
+      .agree-bars .abar.soft { background: var(--red-500); }
+      .agree-bars .abar.mid  { background: var(--red-700); }
+
+      .agree-bars .av {
+        color: var(--ink-soft);
+        font-weight: 600;
+        text-align: right;
+        white-space: nowrap;
+      }
+
+      /* --- Pairwise Jaccard list --- */
+      .jac-list {
+        font-family: var(--font-sans);
+        font-variant-numeric: lining-nums tabular-nums;
+      }
+
+      .jac-pair {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding: 3px 0;
+        font-size: 8.5pt;
+        border-bottom: 0.4px dotted var(--line-strong);
+      }
+
+      .jac-pair:last-child { border-bottom: none; }
+
+      .jac-pair .pair { color: var(--ink-body); }
+
+      .jac-pair .val {
+        font-family: var(--font-display);
+        font-weight: 500;
+        color: var(--accent);
+        font-size: 10pt;
+      }
+
+      /* --- Numbered notes (limitations, findings) --- */
+      ol.notes {
+        font-family: var(--font-serif);
+        font-size: 9.75pt;
+        line-height: 1.5;
+        margin: 0.08in 0 0;
+        padding: 0 0 0 1.4em;
+        counter-reset: notec;
+      }
+
+      ol.notes li {
+        margin-bottom: 0.06in;
+        color: var(--ink-soft);
+      }
+
+      ol.notes li strong { color: var(--accent); font-weight: 600; }
+
+      /* --- Running footer --- */
+      footer.foot {
+        position: absolute;
+        left: var(--page-pad-x);
+        right: var(--page-pad-x);
+        bottom: var(--page-pad-bottom);
+        padding-top: 0.04in;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        font-family: var(--font-sans);
+        font-size: 7.5pt;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+      }
+
+      footer.foot .running {
+        font-variant: small-caps;
+        letter-spacing: 0.1em;
+        color: var(--muted-soft);
+      }
+
+      footer.foot .right {
+        text-align: right;
+        font-variant-numeric: lining-nums;
+      }
+
+      /* --- Page 2/3 compact brand header (tighter than page 1) --- */
+      .page.interior h1 {
+        font-size: 17pt;
+        margin-top: 0.04in;
+        margin-bottom: 0.06in;
+      }
+
+      .page.interior .sub {
+        margin-bottom: 0.1in;
+      }
+
+      /* --- Figure gallery (page 4) --- */
+      .fig-gallery {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.14in 0.2in;
+      }
+
+      .fig-gallery figure img {
+        max-height: 2.1in;
+        object-fit: contain;
+      }
+
+      .fig-gallery figure.wide img {
+        max-height: 2.5in;
+        object-fit: contain;
+      }
+
+      .fig-gallery figure.wide {
+        grid-column: span 2;
+      }
+
+      /* --- Inline superscript citation --- */
+      sup.cite {
+        font-family: var(--font-sans);
+        font-size: 7pt;
+        font-weight: 600;
+        vertical-align: super;
+        line-height: 0;
+        letter-spacing: 0.01em;
+        font-variant-numeric: lining-nums;
+        margin-left: 0.08em;
+      }
+      sup.cite a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      sup.cite a + a::before { content: ","; color: var(--muted); font-weight: 400; margin: 0 0.08em 0 0; }
+
+      /* --- References section (page 7) --- */
+      .refsection {
+        font-family: var(--font-sans);
+        font-size: 8.25pt;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--ink-soft);
+        font-weight: 700;
+        margin: 0.14in 0 0.05in;
+        padding-bottom: 0.02in;
+        border-bottom: 0.5pt solid var(--line);
+      }
+      .refsection:first-of-type { margin-top: 0.06in; }
+
+      .reflist {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .ref {
+        position: relative;
+        padding: 0 0 0 0.36in;
+        margin-bottom: 0.08in;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        font-size: 9pt;
+        line-height: 1.34;
+      }
+      .ref:last-child { margin-bottom: 0; }
+      .refnum {
+        position: absolute;
+        left: 0;
+        top: 0.015in;
+        font-family: var(--font-sans);
+        font-weight: 700;
+        color: var(--accent);
+        font-size: 8pt;
+        font-variant-numeric: lining-nums tabular-nums;
+        letter-spacing: 0.02em;
+      }
+      .refcite {
+        color: var(--ink-body);
+      }
+      .refcite em { font-style: italic; color: var(--ink-soft); }
+      .refcite .authors { color: var(--ink-soft); }
+
+      .reflinks {
+        font-family: var(--font-sans);
+        font-size: 7.75pt;
+        margin-top: 1px;
+        letter-spacing: 0.02em;
+      }
+      .reflinks a {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 0.4pt solid var(--accent-soft);
+        padding-bottom: 0.4pt;
+      }
+      .reflinks a:hover { border-bottom-color: var(--accent); }
+      .reflinks .sep {
+        color: var(--muted-soft);
+        margin: 0 0.36em;
+        border: none;
+      }
+
+      .refblurb {
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 8.5pt;
+        color: var(--muted);
+        line-height: 1.36;
+        margin-top: 1px;
+      }
+      .refblurb .cited {
+        font-style: normal;
+        font-family: var(--font-sans);
+        font-size: 7pt;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted-soft);
+        font-weight: 600;
+        margin-left: 0.06in;
+      }
+
+      @media print {
+        a { color: inherit; text-decoration: none; }
+        sup.cite a { color: var(--accent); }
+        .reflinks a {
+          color: var(--accent);
+          border-bottom: 0.4pt solid var(--accent-soft);
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- ===================================================================
+         PAGE 1 — Abstract, seven-source merge, data sources, headline
+         =================================================================== -->
+    <div class="page">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">Candidate universe · M1 milestone</div>
+          <div>6,518 human surface-protein candidates</div>
+          <div>2026-04-17 (revised 2026-04-18)</div>
+        </div>
+      </header>
+
+      <h1>
+        A candidate human surface-protein universe,<br />
+        <span class="em">merged from seven independent sources.</span>
+      </h1>
+
+      <p class="byline">
+        The Deliverome Project
+        <span class="dot">·</span>
+        A reference universe for transparent cross-source comparison
+        <span class="dot">·</span>
+        2026-04-17 (revised 2026-04-18)
+      </p>
+
+      <div class="abstract">
+        <span class="ab-label">Abstract</span>
+        Selecting therapeutic-delivery targets on the human cell surface requires
+        an unbiased starting list — one that captures every credible claim of
+        surface expression without prejudging which evidence type is most
+        trustworthy. We merge seven independent sources: UniProt, Gene Ontology,
+        CSPA (mass spec), Human Protein Atlas&nbsp;v25 (immunofluorescence), SURFY
+        and DeepTMHMM (sequence-based predictors), and JensenLab COMPARTMENTS
+        (literature-driven meta-database). All entries are reconciled against
+        current UniProt primary accessions; each source contributes one
+        independent surface-evidence call. The resulting universe contains
+        <strong>6,518 proteins</strong> with at least one source flagging surface
+        evidence under its own rule — <strong>45</strong> supported by all
+        seven, <strong>49</strong> by every source except DeepTMHMM (partial
+        cohort in this milestone). Most proteins are supported by only one or
+        two sources — an expected pattern we preserve deliberately for
+        downstream prioritization.
+      </div>
+
+      <figure class="fullwidth">
+        <section class="card hero pipeline-wrap" style="margin:0">
+          <div class="source-strip">
+            <div class="src db"><div class="slabel">Curated DB</div><div class="stitle">UniProt</div><div class="scount">4,817 supported</div></div>
+            <div class="src db"><div class="slabel">Curated DB</div><div class="stitle">Gene Ontology</div><div class="scount">2,022 supported</div></div>
+            <div class="src ml"><div class="slabel">ML classifier</div><div class="stitle">SURFY</div><div class="scount">2,800 supported</div></div>
+            <div class="src ms"><div class="slabel">Mass spec</div><div class="stitle">CSPA</div><div class="scount">1,241 supported</div></div>
+            <div class="src ml"><div class="slabel">TM predictor</div><div class="stitle">DeepTMHMM</div><div class="scount">2,218 supported</div></div>
+            <div class="src if"><div class="slabel">Antibody IF</div><div class="stitle">HPA v25</div><div class="scount">2,077 supported</div></div>
+            <div class="src meta"><div class="slabel">Meta-DB</div><div class="stitle">COMPARTMENTS</div><div class="scount">244 supported</div></div>
+          </div>
+          <div class="merge-row">
+            <div class="merge-col">
+              <div class="mlabel">Harmonize</div>
+              <div class="mtitle">Accession history</div>
+              <div class="mmeta">Reconcile to current UniProt primary accession</div>
+            </div>
+            <div class="merge-arrow">
+              <svg viewBox="0 0 18 10" fill="none"><path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="merge-col">
+              <div class="mlabel">Evidence call</div>
+              <div class="mtitle">One vote per source</div>
+              <div class="mmeta">Each source's rule for surface-accessible on intact cells</div>
+            </div>
+            <div class="merge-arrow">
+              <svg viewBox="0 0 18 10" fill="none"><path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="merge-col">
+              <div class="mlabel">Aggregate</div>
+              <div class="mtitle">k-of-7 agreement</div>
+              <div class="mmeta">Per-source calls preserved alongside agreement count</div>
+            </div>
+            <div class="merge-arrow">
+              <svg viewBox="0 0 18 10" fill="none"><path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+            </div>
+            <div class="merge-col final">
+              <div class="mlabel">Candidate universe</div>
+              <div class="mtitle">6,518 proteins</div>
+              <div class="mmeta">With per-source provenance and agreement score</div>
+            </div>
+          </div>
+        </section>
+        <figcaption><span class="figlabel">Figure 1</span> The seven-source merge. Per-source calls aggregate into a <em>k</em>-of-7 agreement count carried downstream. Colors distinguish evidence modalities.</figcaption>
+      </figure>
+
+      <div class="ask">
+        <div class="primary">
+          <div class="eyebrow">Headline · 6,518 candidate proteins</div>
+          <div class="headline">
+            45 supported by all 7 sources · 240 by at least 6
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="detail">
+          The tightest pairwise agreement is <strong>SURFY with DeepTMHMM</strong> (Jaccard 0.78) — both sequence-and-topology-driven. COMPARTMENTS contributes corroborating evidence only, never stand-alone admissions.
+        </div>
+      </div>
+
+      <h2><span class="snum">§ 1</span> Data sources</h2>
+      <table class="booktable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Source</th>
+            <th>Snapshot</th>
+            <th>Evidence modality</th>
+            <th class="num">Rows</th>
+            <th class="num">Supported</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>UniProt human surface-candidate query <span class="tsub">(subcellular location + topology)</span></td><td>Release 2026_01</td><td>Curated database</td><td class="num">4,817</td><td class="num">4,817</td></tr>
+          <tr><td>2</td><td>Gene Ontology annotations <span class="tsub">(three cellular-component roots — see § 2.2)</span></td><td>2026-01</td><td>Curated database</td><td class="num">2,557</td><td class="num">2,022</td></tr>
+          <tr><td>3</td><td>SURFY <span class="tsub">(Bausch-Fluck et al., 2018)</span></td><td>2018</td><td>ML classifier</td><td class="num">2,886</td><td class="num">2,800</td></tr>
+          <tr><td>4</td><td>CSPA <span class="tsub">(Bausch-Fluck et al., 2015)</span></td><td>2015</td><td>Mass-spec surfaceome</td><td class="num">1,500</td><td class="num">1,241</td></tr>
+          <tr><td>5</td><td>DeepTMHMM <span class="tsub">(canonical + isoforms)</span></td><td>Pre-existing cohort</td><td>TM topology predictor</td><td class="num">2,360</td><td class="num">2,218</td></tr>
+          <tr><td>6</td><td>Human Protein Atlas <span class="tsub">(subcellular localization)</span></td><td>v25 / 2026-01</td><td>Antibody immunofluorescence</td><td class="num">3,004</td><td class="num">2,077</td></tr>
+          <tr><td>7</td><td>JensenLab COMPARTMENTS <span class="tsub">(four-channel integrated)</span></td><td>2026-01</td><td>Literature-driven meta-DB</td><td class="num">3,385</td><td class="num">244</td></tr>
+        </tbody>
+      </table>
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Overview</div>
+        <div class="right">1 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 2 — Methods intro + §2.1–§2.5 (UniProt, GO, SURFY, CSPA)
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 2 Methods</div>
+          <div>How each source contributes evidence</div>
+          <div>One independent call per source</div>
+        </div>
+      </header>
+
+      <h1><span class="em" style="color:var(--accent)">§ 2</span> Methods</h1>
+      <p class="sub">
+        All seven sources are harmonized against UniProt release 2026_01<sup class="cite"><a href="#ref-3">3</a></sup>
+        before the merge. For each source we describe what it measures, the
+        rule under which a protein is counted, and the main reason that
+        source disagrees with the others.
+      </p>
+
+      <div class="layout">
+
+        <!-- §2.2 UniProt -->
+        <div class="main">
+          <h3 style="margin-top:0.08in"><span class="snum">§ 2.1</span>UniProt<span class="count">4,817 supported</span></h3>
+          <p class="lead">
+            <span class="rule-tag">What it measures</span>
+            The Swiss-Prot reviewed human proteome<sup class="cite"><a href="#ref-1">1</a></sup>, filtered to entries whose
+            curator-assigned subcellular-location comments and topology features<sup class="cite"><a href="#ref-2">2</a></sup>
+            place the protein on the plasma membrane.
+          </p>
+          <p>
+            <span class="rule-tag">Included</span>
+            Counted as UniProt-supported if any of six query clauses matches —
+            subcellular-location comment contains <code>"Cell membrane"</code>,
+            <code>"Cell surface"</code>, <code>"Apical cell membrane"</code>,
+            <code>"Basolateral cell membrane"</code>, or <code>"GPI-anchor"</code>
+            — or the entry carries a topological-domain feature annotated
+            <code>Extracellular</code>. The disjunction captures single- and
+            multi-pass TM proteins with an extracellular topology as well as
+            GPI-/lipid-anchored proteins that lack a conventional TM helix.
+          </p>
+          <p>
+            <span class="rule-tag">Excluded</span>
+            Unreviewed (TrEMBL) entries are excluded by design. Reviewed
+            entries matching none of the six clauses above, and entries whose
+            subcellular location is exclusively internal-organelle (ER, Golgi,
+            lysosome, mitochondrion, nucleus) without a cell-surface comment
+            or extracellular topology, do not enter the pool.
+          </p>
+          <p>
+            <span class="rule-tag">Why it disagrees</span>
+            Evidence depth varies by gene: well-studied proteins carry direct
+            experimental annotations; less-studied ones rely on orthologue
+            transfer. The <code>Extracellular</code> clause also admits some
+            multi-location proteins; we retain them deliberately.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Query disjunction</span>
+            Six clauses OR-ed: five subcellular-location keywords
+            (<code>cc_scl_term</code>) plus the topology feature
+            (<code>ft_topo_dom:Extracellular</code>).
+          </div>
+          <div class="margfact">
+            <span class="v">2026_01</span>
+            <span class="k">UniProt release</span>
+          </div>
+        </div>
+
+        <!-- §2.3 GO -->
+        <div class="main">
+          <h3><span class="snum">§ 2.2</span>Gene Ontology<span class="count">2,022 supported</span></h3>
+          <p class="lead">
+            <span class="rule-tag">What it measures</span>
+            Curated gene–term associations for subcellular location<sup class="cite"><a href="#ref-4">4</a></sup>.
+            Each association carries an evidence code — experimental, curated,
+            sequence-inferred, or purely electronic.<sup class="cite"><a href="#ref-5">5</a><a href="#ref-6">6</a></sup>
+          </p>
+          <p>
+            <span class="rule-tag">Included</span>
+            Three cellular-component roots plus their <code>is_a</code> +
+            <code>part_of</code> descendants: <strong>cell surface</strong>
+            (<code>GO:0009986</code>), <strong>external side of plasma
+            membrane</strong> (<code>GO:0009897</code>), and <strong>integral
+            component of plasma membrane</strong> (<code>GO:0005887</code>).
+            Counted as GO-supported if the protein has at least one association
+            to an included root (or descendant) backed by an experimental,
+            curated, or non-electronic sequence-inference code.
+          </p>
+          <p>
+            <span class="rule-tag">Excluded</span>
+            The parent <strong>plasma membrane</strong> (<code>GO:0005886</code>)
+            is excluded as too broad — it admits cytosolic-facing PM-associated
+            proteins, and its PM-specific members are already covered by the
+            children. The molecular-function terms <strong>signaling receptor
+            activity</strong> (<code>GO:0038023</code>) and <strong>TM signaling
+            receptor activity</strong> (<code>GO:0004888</code>) are excluded
+            because they capture <em>activity</em> regardless of location, and
+            admit endosomal pattern-recognition receptors (TLR3/7/8). The
+            anchored-component terms (<code>GO:0031225</code>,
+            <code>GO:0046658</code>) are obsolete in current GO; GPI/lipid-
+            anchor evidence is captured via UniProt <code>ft_lipid</code>.
+            Purely electronic (IEA-only) annotations are retained as provenance
+            but do not count.
+          </p>
+          <p>
+            <span class="rule-tag">Why it disagrees</span>
+            GO coverage is deep for well-studied receptors but thinner for
+            less-curated surface proteins; IEA-only support is excluded.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Why drop MF terms</span>
+            Admitting <code>GO:0038023</code> / <code>GO:0004888</code>
+            pulls in endosomal TLR3/7/8 and other intracellular-membrane
+            signaling receptors on activity annotation alone — incompatible
+            with "accessible on intact cells."
+          </div>
+          <div class="sidenote">
+            <span class="sn-label">IEA-only</span>
+            Retained as provenance (<code>go_low_confidence_only = 1</code>);
+            never counted.
+          </div>
+        </div>
+
+      </div> <!-- /.layout (page 2 — UniProt + GO) -->
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Methods</div>
+        <div class="right">2 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 3 — § 2.3 SURFY + § 2.4 CSPA
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 2 Methods <span class="em">continued</span></div>
+          <div>Predictors &amp; experimental evidence</div>
+          <div>SURFY · CSPA</div>
+        </div>
+      </header>
+
+      <h2 style="margin-top:0.04in"><span class="snum">§ 2</span> Methods <span style="color:var(--muted); font-weight: 400; font-style: italic; font-size: 11pt;">continued — SURFY &amp; CSPA</span></h2>
+
+      <div class="layout">
+
+        <!-- §2.3 SURFY -->
+        <div class="main">
+          <h3 style="margin-top:0.08in"><span class="snum">§ 2.3</span>SURFY<span class="count">2,800 supported</span></h3>
+          <p class="lead">
+            <span class="rule-tag">What it measures</span>
+            A random-forest classifier trained by Bausch-Fluck et al.<sup class="cite"><a href="#ref-7">7</a></sup> on a
+            curated gold-standard surfaceome using sequence, topology, and
+            annotation features. Assigns every human protein a
+            surface / not-surface label and a confidence score.
+          </p>
+          <p>
+            <span class="rule-tag">Included</span>
+            Counted as SURFY-supported if the protein's published SURFY label
+            is <code>"surface"</code>. We use the label as provided by the
+            authors; no additional score cutoff is re-applied.
+          </p>
+          <p>
+            <span class="rule-tag">Excluded</span>
+            Proteins labeled <code>"nonsurface"</code> and entries left
+            unclassified in the SurfaceomeMasterTable are excluded and dropped
+            from the merge input (rather than carried as provenance) because
+            SURFY covers the full reviewed proteome — keeping them would only
+            inflate the zero-support bucket without adding information.
+          </p>
+          <p>
+            <span class="rule-tag">Why it disagrees</span>
+            SURFY tends to over-call. A protein with a transmembrane domain
+            and sequence hallmarks of membrane insertion tends to score
+            positive whether or not it actually reaches the plasma membrane.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Known failure</span>
+            <em>ABCB9</em>, a lysosomal ABC transporter, is flagged by SURFY
+            despite residing on an internal membrane. Strong disagreement
+            between SURFY and the experimental sources (CSPA, HPA) is itself
+            an informative signal.
+          </div>
+        </div>
+
+        <!-- §3.5 CSPA -->
+        <div class="main">
+          <h3><span class="snum">§ 2.4</span>CSPA<span class="count">1,241 supported</span></h3>
+          <p class="lead">
+            <span class="rule-tag">What it measures</span>
+            The Cell Surface Protein Atlas (Bausch-Fluck et al., 2015)<sup class="cite"><a href="#ref-8">8</a></sup>: a
+            mass-spectrometry surfaceome built by chemically labeling
+            N-linked glycopeptides on the surface of intact, living cells
+            across many human cell lines. Each detection is categorized in
+            CSPA Table_B as <strong>1 — high confidence</strong>,
+            <strong>2 — putative</strong>, <strong>3 — unspecific</strong>,
+            or blank (detected in Table_A but not assigned a Table_B class).
+          </p>
+          <p>
+            <span class="rule-tag">Included</span>
+            Counted as CSPA-supported if any pre-accession-history-collapse
+            row has category <strong>"1 — high confidence"</strong> or
+            <strong>"2 — putative"</strong>. The flag is a boolean OR across
+            pre-collapse rows, so a primary that inherited evidence from
+            multiple merged historical accessions (e.g. HLA alleles) gains
+            the flag if any contributing row was high-confidence or putative.
+          </p>
+          <p>
+            <span class="rule-tag">Excluded</span>
+            <strong>"3 — unspecific"</strong> detections (non-specific
+            captures / contaminants) and <strong>blank-category</strong> rows
+            (detected but not classified) are retained in the merge as
+            provenance (<code>cspa_surface_flag = 0</code>) so downstream can
+            distinguish "absent from CSPA" from "seen only as unspecific"
+            from "detected but not classified." They do not contribute to
+            the positive flag.
+          </p>
+          <p>
+            <span class="rule-tag">Why it disagrees</span>
+            CSPA only observes proteins expressed on the specific cell lines
+            sampled. Absence is not evidence of non-surface status — only
+            absence from the sampled contexts.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Scope caveat</span>
+            Low pairwise agreement between CSPA and the database-driven
+            sources (0.08–0.32) reflects this sampling scope, not data
+            quality.
+          </div>
+        </div>
+
+      </div> <!-- /.layout (page 3 — SURFY + CSPA) -->
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Methods</div>
+        <div class="right">3 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 4 — § 2.5 DeepTMHMM + § 2.6 HPA
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 2 Methods <span class="em">continued</span></div>
+          <div>Topology prediction &amp; immunofluorescence</div>
+          <div>DeepTMHMM · HPA v25</div>
+        </div>
+      </header>
+
+      <h2 style="margin-top:0.04in"><span class="snum">§ 2</span> Methods <span style="color:var(--muted); font-weight: 400; font-style: italic; font-size: 11pt;">continued — DeepTMHMM &amp; Human Protein Atlas</span></h2>
+
+      <div class="layout">
+
+        <!-- §2.6 DeepTMHMM -->
+        <div class="main">
+          <h3 style="margin-top:0"><span class="snum">§ 2.5</span>DeepTMHMM<span class="count">2,218 supported</span></h3>
+          <p class="lead">
+            <span class="rule-tag">What it measures</span>
+            A deep-learning transmembrane-topology predictor<sup class="cite"><a href="#ref-9">9</a></sup>. Assigns one of
+            five labels per sequence: <code>TM</code> (alpha-helical
+            transmembrane), <code>SP+TM</code> (signal peptide + TM helices),
+            <code>BETA</code> (transmembrane beta-barrel), <code>SP</code>
+            (signal peptide only — predicted secreted), or <code>GLOB</code>
+            (globular, no TM or SP).
+          </p>
+          <p>
+            <span class="rule-tag">Included</span>
+            Counted as DeepTMHMM-supported if any run on the canonical
+            sequence or isoforms returns <code>TM</code> or
+            <code>SP+TM</code> — the labels consistent with an alpha-helical
+            plasma-membrane protein.
+          </p>
+          <p>
+            <span class="rule-tag">Excluded</span>
+            <code>BETA</code> is excluded because in humans, beta-barrel
+            membrane proteins are essentially mitochondrial outer membrane
+            (VDAC1/2/3, TOMM40, SAMM50, MTX1/2) — topology is informative
+            about fold but misleading about compartment.
+            <code>SP</code> is excluded because it identifies secreted
+            proteins, which are not surface-accessible on intact cells by
+            definition. <code>GLOB</code> is excluded because it indicates no
+            membrane segment. The raw label is preserved in the emitted
+            table so downstream can re-inspect the exclusion reason.
+          </p>
+          <p>
+            <span class="rule-tag">Why it disagrees</span>
+            DeepTMHMM is run on a partial cohort of 2,360 proteins in this
+            milestone — a scope limit, not a correctness issue.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Why drop BETA</span>
+            In humans, beta-barrel predictions overwhelmingly identify
+            mitochondrial outer membrane proteins (VDAC1/2/3, TOMM40,
+            SAMM50) — not plasma-membrane / cell-surface proteins.
+          </div>
+          <div class="sidenote">
+            <span class="sn-label">Scope</span>
+            Extending DeepTMHMM to the full reviewed proteome is a planned
+            next step; until then, its pairwise overlaps with the other
+            sources are mechanically capped.
+          </div>
+        </div>
+
+        <!-- §3.7 HPA -->
+        <div class="main">
+          <h3><span class="snum">§ 2.6</span>Human Protein Atlas v25<span class="count">2,077 supported</span></h3>
+          <p class="lead">
+            <span class="rule-tag">What it measures</span>
+            An antibody-based immunofluorescence atlas of subcellular
+            localization.<sup class="cite"><a href="#ref-10">10</a><a href="#ref-11">11</a></sup> Each gene is scored into named localizations
+            (plasma membrane, cell junctions, vesicles, endosomes, lysosomes,
+            Golgi, ER, nucleus, cytosol, mitochondrion, …) with a
+            per-localization reliability tier: <strong>Enhanced</strong>,
+            <strong>Supported</strong>, <strong>Approved</strong>, or
+            <strong>Uncertain</strong>.<sup class="cite"><a href="#ref-12">12</a></sup>
+          </p>
+          <p>
+            <span class="rule-tag">Included</span>
+            Counted as HPA-supported if either <strong>Plasma membrane</strong>
+            or <strong>Cell Junctions</strong> appears at <strong>Enhanced</strong>,
+            <strong>Supported</strong>, or <strong>Approved</strong> in the
+            per-localization tier column (not gene-wide Reliability). Cell
+            junctions count: E-cadherin, claudins, JAM-family, occludin, and
+            desmosomal cadherins carry genuine extracellular-accessible
+            domains on intact epithelia.
+          </p>
+          <p>
+            <span class="rule-tag">Excluded</span>
+            PM or Cell Junctions at <strong>Uncertain</strong> reliability are
+            excluded. HPA's <strong>Extracellular-location</strong> column is
+            excluded entirely: in v25 it is populated by
+            "Predicted to be secreted" — a SignalP-based sequence prediction,
+            not an imaging observation — so counting it would double-count a
+            predictor signal and conflate secreted with surface-accessible.
+            <strong>Vesicle, endosome, and lysosome</strong> staining is
+            excluded from the flag because cycling between internal
+            compartments and the surface is not evidence of steady-state
+            surface residence; it is carried as provenance
+            (<code>hpa_trafficking_associated</code>). Nuclear, cytosolic,
+            Golgi, ER, and mitochondrial localizations are excluded as not
+            surface-relevant.
+          </p>
+          <p>
+            <span class="rule-tag">Why it disagrees</span>
+            HPA coverage is antibody-dependent. Proteins without a validated
+            antibody at the v25 release, or whose surface localization is
+            limited to cell types not sampled, will be absent.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Why per-tier</span>
+            Using the <em>per-localization</em> tier (not the gene-wide
+            Reliability) avoids overcalls where a gene's strongest signal is
+            nuclear/cytosolic while its PM call lands in Uncertain.
+          </div>
+          <div class="sidenote">
+            <span class="sn-label">Trafficking ≠ surface</span>
+            Vesicle/endosome/lysosome staining carried as provenance only.
+            Admitting it on its own would reintroduce ABCB9-class
+            internal-membrane false positives.
+          </div>
+        </div>
+
+      </div> <!-- /.layout (page 4 — DeepTMHMM + HPA) -->
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Methods</div>
+        <div class="right">4 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 5 — § 2.7 COMPARTMENTS
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 2 Methods <span class="em">continued</span></div>
+          <div>Literature-driven meta-DB</div>
+          <div>JensenLab COMPARTMENTS</div>
+        </div>
+      </header>
+
+      <h2 style="margin-top:0.04in"><span class="snum">§ 2</span> Methods <span style="color:var(--muted); font-weight: 400; font-style: italic; font-size: 11pt;">continued — JensenLab COMPARTMENTS</span></h2>
+
+      <div class="layout">
+
+        <!-- §2.7 COMPARTMENTS -->
+        <div class="main">
+          <h3 style="margin-top:0.08in"><span class="snum">§ 2.7</span>JensenLab COMPARTMENTS<span class="count">244 supported · corroboration-gated</span></h3>
+          <p class="lead">
+            <span class="rule-tag">What it measures</span>
+            A meta-database (Binder et al., 2014)<sup class="cite"><a href="#ref-13">13</a></sup> integrating four evidence
+            streams per (protein, location): a <strong>knowledge</strong>
+            channel from curator-assigned annotations, an
+            <strong>experiments</strong> channel primarily ingesting
+            immunofluorescence, a <strong>text-mining</strong> channel from
+            automated co-mention in biomedical literature, and a
+            <strong>predictions</strong> channel from sequence-based
+            localization predictors (WoLF PSORT + YLoc-HighRes). Scores are
+            reported on a 0–5 star scale per channel per term.
+          </p>
+          <p>
+            <span class="rule-tag">Included</span>
+            The <strong>text-mining</strong> channel and the non-HPA portion
+            of the <strong>experiments</strong> channel are used as
+            independent evidence<sup class="cite"><a href="#ref-14">14</a></sup>. Counted as COMPARTMENTS-supported
+            when both hold: (a) <code>max(experiments, textmining) ≥ 3</code>
+            stars across the surface GO-term set
+            <code>{GO:0005886, GO:0009986, GO:0031225, GO:0005887}</code>,
+            and (b) at least one of the other six sources independently
+            flags the protein as surface under its own rule
+            (<code>compartments_corroborated == 1</code>).
+          </p>
+          <p>
+            <span class="rule-tag">Excluded</span>
+            The <strong>knowledge</strong> channel is excluded because it
+            re-ingests GO and UniProt-SubCell — both already first-class
+            sources here; counting it would triple-count curator evidence.
+            The <strong>predictions</strong> channel is excluded because it
+            wraps WoLF PSORT + YLoc-HighRes — sequence-based predictors in
+            the same family as SURFY and DeepTMHMM; empirically it drives
+            ~73% of pre-filter hits and is ~100% PSORT-on-<code>GO:0005886</code>.
+            Within the experiments channel, rows whose upstream source is
+            "HPA" are dropped before scoring to avoid double-counting the
+            first-class HPA IF evidence. All four channels' per-term stars
+            are retained as provenance columns.
+          </p>
+          <p>
+            <span class="rule-tag">Why it disagrees</span>
+            By construction, COMPARTMENTS provides supporting evidence only;
+            it cannot admit a protein on its own. Pairwise overlap with every
+            other source is therefore low, and its own count (244) is small.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Why corroboration</span>
+            Text-mining alone picks up legitimate co-occurrences with
+            "plasma membrane" for transcription factors (TP53, MYC),
+            cytokines (IL1B, IFNG, IL4), and secreted serum proteins
+            (ALB, APOE, CRP) that are not surface-accessible on intact
+            cells.
+          </div>
+        </div>
+
+      </div> <!-- /.layout (methods continued) -->
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Methods</div>
+        <div class="right">5 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 4 — § 2.8 Source dependencies · Figure 2 dependency graph
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 2.8 Source dependencies</div>
+          <div>How the seven sources ingest each other</div>
+          <div>Figure 2 · upstream relationships</div>
+        </div>
+      </header>
+
+      <h1 style="margin-top:0.04in"><span class="em" style="color:var(--accent)">§ 2.8</span> Source dependencies</h1>
+      <p class="sub">
+        The seven primary sources do not sit side by side — several ingest each
+        other, and a handful of external upstream tools feed specific primaries.
+        These edges matter when reading the k-of-7 agreement on the next page:
+        apparently independent sources often share upstream inputs, and some
+        sources (notably COMPARTMENTS) integrate evidence from several others.
+      </p>
+
+      <figure class="fullwidth">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 600" role="img" aria-labelledby="depgraph-title depgraph-desc" style="width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:2px; background:var(--bg);">
+          <title id="depgraph-title">Source dependency graph for the M1 candidate surface-protein universe</title>
+          <desc id="depgraph-desc">Seven primary sources (UniProt, Gene Ontology, CSPA, HPA, SURFY, COMPARTMENTS, DeepTMHMM) and their external upstream dependencies (InterPro, STRING 9.1, WoLF PSORT, YLoc, Medline), rendered as a layered left-to-right flow.</desc>
+
+          <defs>
+            <marker id="depgraph-arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#6f0835"/>
+            </marker>
+            <marker id="depgraph-arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="#7a7e83"/>
+            </marker>
+            <style>
+              .dg-col-label  { font: 600 9px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; letter-spacing: 0.14em; fill: #5a5f64; text-transform: uppercase; }
+              .dg-card-label { font: 700 7.5px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; letter-spacing: 0.1em; text-transform: uppercase; }
+              .dg-card-title { font: 500 13px/1 'Newsreader','Iowan Old Style',Georgia,serif; fill: #141414; }
+              .dg-card-sub   { font: 400 9.5px/1 'Newsreader','Iowan Old Style',Georgia,serif; font-style: italic; fill: #5a5f64; }
+              .dg-edge-label { font: 500 8px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; fill: #5a5f64; }
+              .dg-legend-text{ font: 400 8.5px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; fill: #5a5f64; }
+              .dg-doc-title  { font: 600 11px/1 'DM Sans','Helvetica Neue',Arial,sans-serif; fill: #141414; }
+              .dg-doc-sub    { font: 400 9px/1.35 'Newsreader','Iowan Old Style',Georgia,serif; font-style: italic; fill: #5a5f64; }
+            </style>
+          </defs>
+
+          <rect width="1080" height="600" fill="#fefefc"/>
+
+          <text x="24" y="22" class="dg-doc-title">Source dependency graph · seven primaries and their external upstreams</text>
+          <text x="24" y="36" class="dg-doc-sub">Direct ingestion relationships as stated in primary-source methods documents.</text>
+          <line x1="24" y1="44" x2="1056" y2="44" stroke="rgba(20,20,20,0.12)" stroke-width="0.5"/>
+
+          <text x="30"  y="64" class="dg-col-label">External upstream</text>
+          <text x="280" y="64" class="dg-col-label">Primary · hubs</text>
+          <text x="540" y="64" class="dg-col-label">Primary · consumers</text>
+          <text x="800" y="64" class="dg-col-label">Aggregator &amp; its channels</text>
+
+          <!-- COL 1: External (InterPro) -->
+          <g transform="translate(30, 165)">
+            <rect width="160" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="44" fill="#7a7e83"/>
+            <text x="14" y="17" class="dg-card-label" fill="#5a5f64">Domain families</text>
+            <text x="14" y="34" class="dg-card-title">InterPro</text>
+          </g>
+
+          <!-- COL 2: Hubs -->
+          <g transform="translate(280, 85)">
+            <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="44" fill="#6f0835"/>
+            <text x="14" y="17" class="dg-card-label" fill="#6f0835">Curated DB</text>
+            <text x="14" y="34" class="dg-card-title">UniProt</text>
+          </g>
+          <g transform="translate(280, 165)">
+            <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="44" fill="#6f0835"/>
+            <text x="14" y="17" class="dg-card-label" fill="#6f0835">Curated DB</text>
+            <text x="14" y="34" class="dg-card-title">Gene Ontology</text>
+          </g>
+          <g transform="translate(280, 330)">
+            <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="44" fill="#e2655e"/>
+            <text x="14" y="17" class="dg-card-label" fill="#e2655e">Mass spec</text>
+            <text x="14" y="34" class="dg-card-title">CSPA</text>
+          </g>
+
+          <!-- COL 3: Consumers -->
+          <g transform="translate(540, 125)">
+            <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="44" fill="#b14849"/>
+            <text x="14" y="17" class="dg-card-label" fill="#b14849">Antibody IF</text>
+            <text x="14" y="34" class="dg-card-title">Human Protein Atlas</text>
+          </g>
+          <g transform="translate(540, 330)">
+            <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="44" fill="#b14849"/>
+            <text x="14" y="17" class="dg-card-label" fill="#b14849">ML classifier</text>
+            <text x="14" y="34" class="dg-card-title">SURFY</text>
+          </g>
+          <g transform="translate(540, 460)">
+            <rect width="170" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.18)" stroke-dasharray="3,2"/>
+            <rect width="4" height="44" fill="#b14849"/>
+            <text x="14" y="17" class="dg-card-label" fill="#b14849">TM predictor</text>
+            <text x="14" y="34" class="dg-card-title">DeepTMHMM</text>
+          </g>
+          <text x="540" y="518" class="dg-card-sub">Standalone — no upstream ingestion in retrieved primary docs</text>
+
+          <!-- COL 4: Aggregator + channels -->
+          <g transform="translate(800, 205)">
+            <rect width="160" height="44" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.14)"/>
+            <rect width="4" height="44" fill="#5a5f64"/>
+            <text x="14" y="17" class="dg-card-label" fill="#5a5f64">Meta-DB</text>
+            <text x="14" y="34" class="dg-card-title">COMPARTMENTS</text>
+          </g>
+          <g transform="translate(800, 290)">
+            <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="40" fill="#7a7e83"/>
+            <text x="14" y="16" class="dg-card-label" fill="#5a5f64">Protein dictionary</text>
+            <text x="14" y="32" class="dg-card-title" font-size="12">STRING 9.1</text>
+          </g>
+          <g transform="translate(800, 340)">
+            <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="40" fill="#7a7e83"/>
+            <text x="14" y="16" class="dg-card-label" fill="#5a5f64">Localization predictor</text>
+            <text x="14" y="32" class="dg-card-title" font-size="12">WoLF PSORT</text>
+          </g>
+          <g transform="translate(800, 390)">
+            <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="40" fill="#7a7e83"/>
+            <text x="14" y="16" class="dg-card-label" fill="#5a5f64">Localization predictor</text>
+            <text x="14" y="32" class="dg-card-title" font-size="12">YLoc</text>
+          </g>
+          <g transform="translate(800, 440)">
+            <rect width="160" height="40" rx="4" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+            <rect width="4" height="40" fill="#7a7e83"/>
+            <text x="14" y="16" class="dg-card-label" fill="#5a5f64">Text corpus</text>
+            <text x="14" y="32" class="dg-card-title" font-size="12">Medline / PubMed</text>
+          </g>
+
+          <!-- Edges -->
+          <path d="M 190,187 L 280,187" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#depgraph-arrow-muted)"/>
+          <text x="198" y="181" class="dg-edge-label">InterPro2GO</text>
+
+          <path d="M 359,132 L 359,159" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)"/>
+          <path d="M 371,159 L 371,132" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)"/>
+          <text x="379" y="149" class="dg-edge-label" font-size="8" font-weight="600" fill="#6f0835">GOA</text>
+
+          <path d="M 450,107 C 495,107 495,147 540,147" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)"/>
+          <path d="M 450,187 C 495,187 495,147 540,147" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)"/>
+
+          <path d="M 450,352 L 540,352" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)"/>
+          <text x="462" y="346" class="dg-edge-label">positive training set</text>
+
+          <path d="M 450,107 C 520,260 710,260 800,222" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)" opacity="0.9"/>
+          <path d="M 450,187 C 520,278 710,278 800,232" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)" opacity="0.9"/>
+          <path d="M 710,147 C 755,147 765,210 800,215" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)"/>
+
+          <path d="M 960,310 C 1000,310 1000,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#depgraph-arrow-muted)"/>
+          <path d="M 960,360 C 1020,360 1020,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#depgraph-arrow-muted)"/>
+          <path d="M 960,410 C 1040,410 1040,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#depgraph-arrow-muted)"/>
+          <path d="M 960,460 C 1060,460 1060,227 960,227" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#depgraph-arrow-muted)"/>
+
+          <!-- Legend -->
+          <g transform="translate(24, 556)">
+            <text x="0" y="0" class="dg-col-label" fill="#141414">Legend</text>
+            <g transform="translate(0, 14)">
+              <rect width="14" height="12" rx="2" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+              <rect width="3" height="12" fill="#6f0835"/>
+              <text x="22" y="10" class="dg-legend-text">Primary source · curated DB</text>
+            </g>
+            <g transform="translate(200, 14)">
+              <rect width="14" height="12" rx="2" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+              <rect width="3" height="12" fill="#b14849"/>
+              <text x="22" y="10" class="dg-legend-text">Primary source · experimental / predictor</text>
+            </g>
+            <g transform="translate(470, 14)">
+              <rect width="14" height="12" rx="2" fill="#ffffff" stroke="rgba(20,20,20,0.12)"/>
+              <rect width="3" height="12" fill="#7a7e83"/>
+              <text x="22" y="10" class="dg-legend-text">External upstream</text>
+            </g>
+            <g transform="translate(640, 14)">
+              <path d="M 0,6 L 22,6" stroke="#6f0835" stroke-width="1.3" fill="none" marker-end="url(#depgraph-arrow-accent)"/>
+              <text x="30" y="10" class="dg-legend-text">Primary → primary</text>
+            </g>
+            <g transform="translate(830, 14)">
+              <path d="M 0,6 L 22,6" stroke="#7a7e83" stroke-width="1.2" fill="none" marker-end="url(#depgraph-arrow-muted)"/>
+              <text x="30" y="10" class="dg-legend-text">External → primary</text>
+            </g>
+          </g>
+        </svg>
+        <figcaption>
+          <span class="figlabel">Figure 2</span>
+          <strong>Source dependency graph.</strong>
+          Direct ingestion relationships as stated in the primary-source methods documents linked in §§ 2.1–2.7.
+          UniProt ↔ Gene Ontology form a bidirectional hub via the GOA pipeline (<em>Keyword2GO</em>, <em>SubcellularLocation2GO</em>, <em>InterPro2GO</em>).
+          CSPA feeds SURFY's positive training set.
+          HPA consults UniProt for knowledge-based annotation and emits GO cellular-component identifiers.
+          COMPARTMENTS is the main aggregation sink — integrating UniProt comments, GO term mapping with ontology propagation, HPA imaging data, STRING&nbsp;9.1's protein dictionary, WoLF&nbsp;PSORT and YLoc predictions, and Medline abstracts.
+          DeepTMHMM is standalone in the retrieved primary-source documentation.
+        </figcaption>
+      </figure>
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Source dependencies</div>
+        <div class="right">6 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 5 — § 3 Results: k-of-7 agreement, pairwise Jaccard
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 3 Results</div>
+          <div>Cross-source agreement and pairwise overlap</div>
+          <div>Where the seven sources converge</div>
+        </div>
+      </header>
+
+      <h1><span class="em" style="color:var(--accent)">§ 3</span> Results</h1>
+      <p class="sub">
+        The agreement distribution and pairwise Jaccard overlaps quantify where
+        the seven sources converge, and — more usefully — where they don't.
+        Differences across sources are expected and help define where the
+        evidence is strongest or still uncertain.
+      </p>
+
+      <div class="layout">
+        <div class="main">
+          <h3 style="margin-top:0"><span class="snum">§ 3.1</span>k-of-7 agreement distribution</h3>
+          <div class="agree-bars" style="margin: 0.08in 0 0;">
+            <div class="ak">1 of 7</div><div class="abar soft" style="width:100%"></div><div class="av">2,600</div>
+            <div class="ak">2 of 7</div><div class="abar mid" style="width:55.5%"></div><div class="av">1,443</div>
+            <div class="ak">3 of 7</div><div class="abar mid" style="width:36.0%"></div><div class="av">935</div>
+            <div class="ak">4 of 7</div><div class="abar" style="width:33.0%"></div><div class="av">857</div>
+            <div class="ak">5 of 7</div><div class="abar" style="width:17.0%"></div><div class="av">443</div>
+            <div class="ak">6 of 7</div><div class="abar" style="width:7.5%"></div><div class="av">195</div>
+            <div class="ak">7 of 7</div><div class="abar" style="width:1.7%"></div><div class="av">45</div>
+          </div>
+          <p style="margin-top: 0.1in; text-indent: 0;">
+            Forty-five proteins are supported by all seven sources; another
+            <strong>49</strong> by every source except DeepTMHMM (partial
+            cohort). The 1-of-7 tail is dominated by proteins that only the
+            UniProt curator-assigned query catches. A further 2,252
+            accessions appear in a raw source but fail every positive-flag
+            rule (GO-IEA-only, CSPA unspecific/blank, HPA secreted-only,
+            split-ambiguous remaps, COMPARTMENTS below corroboration); those
+            are emitted to <code>candidate_universe_zero_support.tsv</code>
+            and are not part of the main universe.
+          </p>
+          <p>
+            The 7-of-7 and 6-of-7 classes define a high-confidence core.
+            The middle classes (2-of-7 through 5-of-7) are often the most
+            biologically interesting — disagreement frequently carries real
+            meaning (predictor over-calls, cell-line sampling gaps, missing
+            HPA antibodies).
+          </p>
+        </div>
+        <div class="marg">
+          <div class="margfact">
+            <span class="v">45</span>
+            <span class="k">Supported by all 7</span>
+          </div>
+          <div class="margfact">
+            <span class="v">240</span>
+            <span class="k">Supported by ≥ 6</span>
+          </div>
+          <div class="margfact">
+            <span class="v">100 %</span>
+            <span class="k">In database-source union</span>
+          </div>
+          <div class="sidenote">
+            <span class="sn-label">Invariant</span>
+            By construction, every COMPARTMENTS-supported protein in the
+            universe is also independently supported by another source. No
+            proteins enter on literature-mined evidence alone.
+          </div>
+        </div>
+
+        <div class="main">
+          <h3><span class="snum">§ 3.2</span>Pairwise agreement</h3>
+          <div class="jac-list" style="margin-top: 0.06in;">
+            <div class="jac-pair"><div class="pair">SURFY &cap; DeepTMHMM <span class="tsub">sequence / topology pair</span></div><div class="val">0.779</div></div>
+            <div class="jac-pair"><div class="pair">UniProt &cap; SURFY</div><div class="val">0.520</div></div>
+            <div class="jac-pair"><div class="pair">UniProt &cap; DeepTMHMM</div><div class="val">0.402</div></div>
+            <div class="jac-pair"><div class="pair">CSPA &cap; DeepTMHMM</div><div class="val">0.324</div></div>
+            <div class="jac-pair"><div class="pair">UniProt &cap; Gene Ontology</div><div class="val">0.310</div></div>
+            <div class="jac-pair"><div class="pair">SURFY &cap; CSPA</div><div class="val">0.287</div></div>
+            <div class="jac-pair"><div class="pair">Gene Ontology &cap; DeepTMHMM</div><div class="val">0.271</div></div>
+            <div class="jac-pair"><div class="pair">Gene Ontology &cap; SURFY</div><div class="val">0.261</div></div>
+            <div class="jac-pair"><div class="pair">UniProt &cap; HPA</div><div class="val">0.196</div></div>
+            <div class="jac-pair"><div class="pair">HPA &cap; DeepTMHMM</div><div class="val">0.169</div></div>
+            <div class="jac-pair"><div class="pair">CSPA &cap; HPA</div><div class="val">0.118</div></div>
+            <div class="jac-pair"><div class="pair">UniProt &cap; COMPARTMENTS</div><div class="val">0.041</div></div>
+          </div>
+          <p style="margin-top:0.08in; text-indent:0;">
+            SURFY ∩ DeepTMHMM is expected: both derive calls from sequence
+            and topology. UniProt pairs tightest with SURFY (0.52). GO's
+            overlaps (0.26–0.31) reflect its cellular-component-only scope
+            after MF receptor-activity terms were excluded. Low overlaps
+            involving CSPA / COMPARTMENTS reflect sampling scope and the
+            corroboration requirement, not data quality.
+          </p>
+        </div>
+        <div class="marg">
+          <div class="sidenote">
+            <span class="sn-label">Well-known examples</span>
+            EGFR is supported by all seven sources. CD20 (MS4A1) and HLA-A
+            by six of seven. HLA-B (5/7), HLA-C (5/7), HLA-DQA1 (4/7),
+            HLA-DRB1 (4/7), and IGHM (4/7) fall to four or five of seven —
+            driven by both HPA's coverage gaps on individual HLA alleles and
+            immunoglobulin class-switch variants <em>and</em> DeepTMHMM's
+            partial-cohort scope in this milestone.
+          </div>
+        </div>
+      </div>
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Results</div>
+        <div class="right">7 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 5 — §3.3 Source-agreement figures + §4 Limitations
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§§ 3.3–4 Figures &amp; limitations</div>
+          <div>Source-agreement figures</div>
+          <div>Scope limits and next steps</div>
+        </div>
+      </header>
+
+      <h2 style="margin-top:0.04in"><span class="snum">§ 3.3</span> Source-agreement figures</h2>
+      <div class="fig-gallery">
+        <figure>
+          <img src="../../../data/analysis/candidate_universe_agreement/candidate_source_agreement_bar.jpeg" alt="Agreement distribution bar chart (k-of-7)" />
+          <figcaption>
+            <span class="figlabel">Figure 3</span>
+            <strong>k-of-7 agreement.</strong> How many of the seven sources
+            support each of the 6,518 proteins in the universe
+            (<code>n_sources_surface ≥ 1</code>). 45 are supported by all
+            seven; 240 by at least six. Most proteins sit in the lower
+            agreement classes, reflecting genuine differences in what each
+            source can see.
+          </figcaption>
+        </figure>
+        <figure>
+          <img src="../../../data/analysis/candidate_universe_agreement/candidate_source_agreement_upset.jpeg" alt="UpSet plot of source co-occurrence" />
+          <figcaption>
+            <span class="figlabel">Figure 4</span>
+            <strong>Co-occurrence across sources.</strong> The seven-way
+            intersection (45 proteins) and the database-only intersection
+            without DeepTMHMM (49 proteins) dominate the high-confidence end;
+            intersections that require DeepTMHMM are capped by its partial
+            coverage in this milestone.
+          </figcaption>
+        </figure>
+        <figure class="wide">
+          <img src="../../../data/analysis/candidate_universe_agreement/candidate_source_pairwise_jaccard.jpeg" alt="Pairwise Jaccard heatmap" />
+          <figcaption>
+            <span class="figlabel">Figure 5</span>
+            <strong>Pairwise agreement across all seven sources.</strong>
+            High values along the SURFY–DeepTMHMM axis reflect their shared
+            sequence-and-topology basis. Low values involving CSPA and
+            COMPARTMENTS reflect sampling scope and the corroboration
+            requirement, respectively, rather than data quality.
+          </figcaption>
+        </figure>
+      </div>
+
+      <h2><span class="snum">§ 4</span> Limitations and next steps</h2>
+      <p class="lead no-indent">
+        This milestone produces a broad, traceable candidate list for
+        downstream filtering, not a validated surfaceome. Four limitations
+        matter for interpretation.
+      </p>
+      <ol class="notes">
+        <li><strong>DeepTMHMM coverage.</strong> Predictions come from a pre-existing cohort of 2,360 proteins. Extending DeepTMHMM — alongside SignalP 6.0 and GPI-anchor predictors — to the full reviewed proteome is planned.</li>
+        <li><strong>Organelle-lumen exclusion.</strong> A small number of proteins enter on UniProt evidence whose only subcellular-location support is an organelle lumen; these will be filtered out in a refinement pass.</li>
+        <li><strong>Tissue and cell-type filtering.</strong> The full HPA data product — tissue specificity, single-cell, cancer atlas, Secretome and Predicted-membrane class — is not yet incorporated; a prerequisite for modality ranking.</li>
+        <li><strong>Ambiguous historical accessions.</strong> 5 proteins whose historical accessions split into multiple current primaries are excluded from positive calls until manually reviewed.</li>
+      </ol>
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · Figures &amp; limitations</div>
+        <div class="right">8 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 7 — § 5 References (14 first-party sources, grouped by provider)
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 5 References</div>
+          <div>First-party methods and data, by source</div>
+          <div>14 citations</div>
+        </div>
+      </header>
+
+      <h1 style="margin-top:0.04in"><span class="em" style="color:var(--accent)">§ 5</span> References</h1>
+      <p class="sub">
+        First-party citations for each source's methodology and data, grouped by
+        provider. Each entry includes direct view / PDF / download links and a
+        one-line description of what the reference is cited for in §§ 2.1–2.7.
+      </p>
+
+      <div class="refsection">§ 5.1 UniProt</div>
+      <ol class="reflist">
+        <li class="ref" id="ref-1">
+          <span class="refnum">[1]</span>
+          <div class="refcite"><span class="authors">UniProt Consortium.</span> <em>UniProt: the Universal Protein Knowledgebase in 2025.</em> Nucleic Acids Research 53(D1):D609–D617, 2025.</div>
+          <div class="reflinks">
+            <a href="https://academic.oup.com/nar/article/53/D1/D609/7902999">view</a>
+            <span class="sep">·</span>
+            <a href="https://academic.oup.com/nar/advance-article-pdf/doi/10.1093/nar/gkae1010/60719276/gkae1010.pdf">pdf</a>
+            <span class="sep">·</span>
+            <a href="https://www.uniprot.org/proteomes/UP000005640">UP000005640</a>
+          </div>
+          <div class="refblurb">Canonical description of UniProtKB architecture, the Swiss-Prot/TrEMBL review split, and the 2025 content update.<span class="cited">Cited § 2.1</span></div>
+        </li>
+        <li class="ref" id="ref-2">
+          <span class="refnum">[2]</span>
+          <div class="refcite"><span class="authors">UniProt.</span> <em>Subcellular location</em> (help page).</div>
+          <div class="reflinks">
+            <a href="https://www.uniprot.org/help/subcellular_location">view</a>
+            <span class="sep">·</span>
+            <a href="https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/subcell.txt">subcell.txt</a>
+          </div>
+          <div class="refblurb">Controlled vocabulary used in SUBCELLULAR LOCATION comment lines; the basis for the surface-topology filter (cell surface, integral, GPI-anchored, transmembrane).<span class="cited">Cited § 2.1</span></div>
+        </li>
+        <li class="ref" id="ref-3">
+          <span class="refnum">[3]</span>
+          <div class="refcite"><span class="authors">UniProt.</span> <em>Release 2026_01.</em> Release notes, 2026-01-28.</div>
+          <div class="reflinks">
+            <a href="https://www.uniprot.org/release-notes/2026-01-28-release">release notes</a>
+            <span class="sep">·</span>
+            <a href="https://www.uniprot.org/help/downloads">downloads</a>
+          </div>
+          <div class="refblurb">The exact snapshot used for accession-history reconciliation across all seven sources. Release cadence is ~8 weeks.<span class="cited">Cited § 2 intro</span></div>
+        </li>
+      </ol>
+
+      <div class="refsection">§ 5.2 Gene Ontology</div>
+      <ol class="reflist">
+        <li class="ref" id="ref-4">
+          <span class="refnum">[4]</span>
+          <div class="refcite"><span class="authors">Gene Ontology Consortium.</span> <em>Download Annotations.</em> Current release landing page; human GAF release 2026-03-25.</div>
+          <div class="reflinks">
+            <a href="https://current.geneontology.org/products/pages/downloads.html">downloads</a>
+            <span class="sep">·</span>
+            <a href="https://current.geneontology.org/annotations/goa_human.gaf.gz">goa_human.gaf.gz</a>
+          </div>
+          <div class="refblurb">The human GO annotation snapshot and its release cadence; source of the gene–term associations filtered to surface-relevant terms.<span class="cited">Cited § 2.2</span></div>
+        </li>
+        <li class="ref" id="ref-5">
+          <span class="refnum">[5]</span>
+          <div class="refcite"><span class="authors">Gene Ontology Consortium.</span> <em>GO Annotation File (GAF) format 2.2.</em></div>
+          <div class="reflinks">
+            <a href="https://geneontology.org/docs/go-annotation-file-gaf-format-2.2/">spec</a>
+          </div>
+          <div class="refblurb">Defines the single-(gene, term) association record carrying an evidence code, which we filter on to drop purely electronic annotations.<span class="cited">Cited § 2.2</span></div>
+        </li>
+        <li class="ref" id="ref-6">
+          <span class="refnum">[6]</span>
+          <div class="refcite"><span class="authors">Gene Ontology Consortium.</span> <em>Guide to GO evidence codes.</em></div>
+          <div class="reflinks">
+            <a href="https://geneontology.org/docs/guide-go-evidence-codes/">view</a>
+            <span class="sep">·</span>
+            <a href="https://www.ebi.ac.uk/GOA/ElectronicAnnotationMethods">GOA IEA pipeline</a>
+          </div>
+          <div class="refblurb">Evidence-code taxonomy (Experimental, Phylogenetic, Computational Analysis, Author Statement, Curator Statement, Automatically-assigned); the basis for excluding IEA-only annotations from the positive call.<span class="cited">Cited § 2.2</span></div>
+        </li>
+      </ol>
+
+      <div class="refsection">§ 5.3 SURFY</div>
+      <ol class="reflist">
+        <li class="ref" id="ref-7">
+          <span class="refnum">[7]</span>
+          <div class="refcite"><span class="authors">Bausch-Fluck, D., Goldmann, U., Müller, S., <em>et al.</em></span> <em>The in silico human surfaceome.</em> PNAS 115(46):E10988–E10997, 2018.</div>
+          <div class="reflinks">
+            <a href="https://www.pnas.org/doi/10.1073/pnas.1808790115">view</a>
+            <span class="sep">·</span>
+            <a href="https://www.pnas.org/doi/pdf/10.1073/pnas.1808790115">pdf</a>
+            <span class="sep">·</span>
+            <a href="https://wlab.ethz.ch/surfaceome/">resource</a>
+          </div>
+          <div class="refblurb">Random-forest classifier trained on CSPA-positive proteins; source of the 2,886-protein prediction set with 1% / 5% / 15% FPR tiers.<span class="cited">Cited § 2.3</span></div>
+        </li>
+      </ol>
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · References (1/2)</div>
+        <div class="right">9 / 10</div>
+      </footer>
+    </div>
+
+    <!-- ===================================================================
+         PAGE 8 — § 5 References continued (CSPA → COMPARTMENTS)
+         =================================================================== -->
+    <div class="page interior">
+      <div class="accent-rule"></div>
+
+      <header class="brand">
+        <div class="brand-mark">
+          <svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+            <path d="M126.2 2.67C58.83 2.67 3.2 56.91 3.2 122.67C14.03 117.47 28.87 116.9 49.8 116.83C68.55 116.76 81.34 119.18 89.85 123.45C99.74 128.45 99.78 136.61 94.78 143.17C87.97 152.29 86.9 162.79 87.58 170.92C89.55 188.66 104.47 206.93 127.27 206.93C149.94 206.93 166.54 188.06 169.03 172.34C170.37 161.95 166.77 151.94 161.24 143.97C157.29 138.39 156.98 128.73 167.12 123.72C176.02 119.27 186.75 117.11 204.97 117.11C224.52 117.11 240 119.11 254.34 122.92C254.34 57.78 197.83 2.72 126.24 2.72L126.2 2.67Z" fill="#640E30"/>
+            <path d="M254 134.1C239.76 129.61 226.14 126.23 206.29 126.23C190.82 126.23 179.95 128.15 171.24 132.09C166.51 134.33 167.24 136.49 169.64 140.25C176.22 149.84 178.74 160.43 177.92 172.05C176.18 192.11 157.1 216.44 126.29 216.44C99.1 216.44 80.35 194.03 76.95 175.58C75.04 163.37 78.14 148.67 87.17 137.68C88.94 135.59 89.25 134.14 87.59 133.21C78.21 128.08 67.81 125.84 50.04 125.84C31.15 125.84 17.32 127.1 3.08 133.17C3.03 133.87 3.03 134.6 3.03 135.33C3.03 198.64 56.8 252.63 124.63 252.63C193.79 252.63 253.63 200.39 254.03 134.13L254 134.1Z" fill="#AE4242"/>
+            <path d="M94.8179 212.628C96.3601 172.695 116.105 156.8 124.183 123.723C127.441 110.864 126.859 102.73 116.946 86.109C110.047 74.7339 107.5 69.1869 107.465 52.3012C107.516 44.7057 109.549 40.2987 115.946 40.188C122.663 40.0702 125.724 45.1228 124.632 52.6664C122.842 66.2261 125.838 82.0791 137.129 89.636C143.582 93.4987 151.967 93.6875 160.699 89.1324C168.704 84.8503 175.123 77.1777 180.892 68.2892C185.415 61.8099 192.023 67.003 192.764 72.4426C193.89 80.7271 182.605 93.704 159.605 105.373C147.517 111.165 140.006 117.681 130.85 135.389C128.683 139.581 126.978 152.773 124.445 157.671C117.106 181.233 111.971 198.53 98.6168 220.317C98.0818 222.644 94.278 214.245 94.8179 212.628Z" fill="#C86357"/>
+          </svg>
+          <div class="name">The Deliverome Project</div>
+        </div>
+        <div class="meta">
+          <div class="label">§ 5 References (continued)</div>
+          <div>CSPA, DeepTMHMM, HPA, COMPARTMENTS</div>
+          <div>References 8–14 of 14</div>
+        </div>
+      </header>
+
+      <h2 style="margin-top:0.04in"><span class="snum">§ 5</span> References <span style="color:var(--muted); font-weight: 400; font-style: italic; font-size: 11pt;">continued — CSPA, DeepTMHMM, HPA, COMPARTMENTS</span></h2>
+
+      <div class="refsection">§ 5.4 CSPA</div>
+      <ol class="reflist">
+        <li class="ref" id="ref-8">
+          <span class="refnum">[8]</span>
+          <div class="refcite"><span class="authors">Bausch-Fluck, D., Hofmann, A., Bock, T., <em>et al.</em></span> <em>A Mass Spectrometric-Derived Cell Surface Protein Atlas.</em> PLOS ONE 10(4):e0121314, 2015.</div>
+          <div class="reflinks">
+            <a href="https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0121314">view</a>
+            <span class="sep">·</span>
+            <a href="https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0121314&amp;type=printable">pdf</a>
+            <span class="sep">·</span>
+            <a href="https://wlab.ethz.ch/CSPA/data/S2_File.xlsx">S2 (data)</a>
+          </div>
+          <div class="refblurb">Cell Surface Capture glycoproteomics across 41 human and 31 mouse cell types; the validated-surfaceome table used for the CSPA-positive input and its high-confidence / putative / unspecific / blank categories.<span class="cited">Cited § 2.4</span></div>
+        </li>
+      </ol>
+
+      <div class="refsection">§ 5.5 DeepTMHMM</div>
+      <ol class="reflist">
+        <li class="ref" id="ref-9">
+          <span class="refnum">[9]</span>
+          <div class="refcite"><span class="authors">Hallgren, J., Tsirigos, K. D., Pedersen, M. D., <em>et al.</em></span> <em>DeepTMHMM predicts alpha and beta transmembrane proteins using deep neural networks.</em> bioRxiv 2022.04.08.487609, 2022.</div>
+          <div class="reflinks">
+            <a href="https://www.biorxiv.org/content/10.1101/2022.04.08.487609.full">view</a>
+            <span class="sep">·</span>
+            <a href="https://www.biorxiv.org/content/10.1101/2022.04.08.487609v1.full.pdf">pdf</a>
+            <span class="sep">·</span>
+            <a href="https://services.healthtech.dtu.dk/services/DeepTMHMM-1.0/">service</a>
+          </div>
+          <div class="refblurb">ESM-1b encoder plus CRF decoder producing the Alpha TM / SP+TM / Beta / SP-only / Globular class labels used as the topology-based surface call.<span class="cited">Cited § 2.5</span></div>
+        </li>
+      </ol>
+
+      <div class="refsection">§ 5.6 Human Protein Atlas</div>
+      <ol class="reflist">
+        <li class="ref" id="ref-10">
+          <span class="refnum">[10]</span>
+          <div class="refcite"><span class="authors">Thul, P. J., Åkesson, L., Wiking, M., <em>et al.</em></span> <em>A subcellular map of the human proteome.</em> Science 356:eaal3321, 2017.</div>
+          <div class="reflinks">
+            <a href="https://www.science.org/doi/10.1126/science.aal3321">view</a>
+          </div>
+          <div class="refblurb">The original immunofluorescence-based subcellular atlas underlying the HPA subcellular data product.<span class="cited">Cited § 2.6</span></div>
+        </li>
+        <li class="ref" id="ref-11">
+          <span class="refnum">[11]</span>
+          <div class="refcite"><span class="authors">Human Protein Atlas.</span> <em>Subcellular localization method — imaging.</em> Method page.</div>
+          <div class="reflinks">
+            <a href="https://www.proteinatlas.org/humanproteome/subcellular/method/imaging">view</a>
+            <span class="sep">·</span>
+            <a href="https://www.proteinatlas.org/about/licence">license</a>
+          </div>
+          <div class="refblurb">Current description of antibody validation, reliability scoring, and the knowledge-based comparison against UniProtKB/Swiss-Prot.<span class="cited">Cited § 2.6</span></div>
+        </li>
+        <li class="ref" id="ref-12">
+          <span class="refnum">[12]</span>
+          <div class="refcite"><span class="authors">Human Protein Atlas.</span> <em>Subcellular location data (v25.0, Ensembl 109).</em> Released 2025-11-11.</div>
+          <div class="reflinks">
+            <a href="https://www.proteinatlas.org/humanproteome/subcellular/data">view</a>
+            <span class="sep">·</span>
+            <a href="https://www.proteinatlas.org/download/tsv/subcellular_location.tsv.zip">subcellular_location.tsv.zip</a>
+            <span class="sep">·</span>
+            <a href="https://www.proteinatlas.org/about/releases">releases</a>
+          </div>
+          <div class="refblurb">Reliability classes (Enhanced / Supported / Approved / Uncertain), named localizations, and the GO cellular-component identifier column used for the v25 HPA call.<span class="cited">Cited § 2.6</span></div>
+        </li>
+      </ol>
+
+      <div class="refsection">§ 5.7 JensenLab COMPARTMENTS</div>
+      <ol class="reflist">
+        <li class="ref" id="ref-13">
+          <span class="refnum">[13]</span>
+          <div class="refcite"><span class="authors">Binder, J. X., Pletscher-Frankild, S., Tsafou, K., <em>et al.</em></span> <em>COMPARTMENTS: unification and visualization of protein subcellular localization evidence.</em> Database (Oxford) 2014:bau012, 2014.</div>
+          <div class="reflinks">
+            <a href="https://academic.oup.com/database/article/doi/10.1093/database/bau012/2633793">view</a>
+            <span class="sep">·</span>
+            <a href="https://academic.oup.com/database/article-pdf/doi/10.1093/database/bau012/8244417/bau012.pdf">pdf</a>
+          </div>
+          <div class="refblurb">Defines the knowledge / experiments / text-mining / predictions four-channel integration and the five-star scoring used for the ≥ 3-star gate.<span class="cited">Cited § 2.7</span></div>
+        </li>
+        <li class="ref" id="ref-14">
+          <span class="refnum">[14]</span>
+          <div class="refcite"><span class="authors">JensenLab.</span> <em>COMPARTMENTS — Downloads.</em> Per-channel TSVs, weekly updated.</div>
+          <div class="reflinks">
+            <a href="https://compartments.jensenlab.org/Downloads">downloads</a>
+            <span class="sep">·</span>
+            <a href="https://download.jensenlab.org/human_compartment_textmining_full.tsv">textmining.tsv</a>
+            <span class="sep">·</span>
+            <a href="https://download.jensenlab.org/human_compartment_experiments_full.tsv">experiments.tsv</a>
+          </div>
+          <div class="refblurb">Per-channel files used to reconstruct the corroboration-gated call (text-mining + non-HPA portion of experiments), holding UniProt / GO / HPA duplicates out of the COMPARTMENTS evidence.<span class="cited">Cited § 2.7</span></div>
+        </li>
+      </ol>
+
+      <footer class="foot">
+        <div class="running">Candidate surface-protein universe · References (2/2)</div>
+        <div class="right">10 / 10</div>
+      </footer>
+    </div>
+
+  </body>
+</html>

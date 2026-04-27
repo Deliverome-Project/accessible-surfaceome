@@ -1,0 +1,1 @@
+"""Single-gene annotation workflow."""
