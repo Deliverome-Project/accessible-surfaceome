@@ -1,0 +1,8 @@
+{
+  "source_surfaceome_csv": "/Users/rebeccacarlson/Git/internalizers/data/analysis/deliverome/expression_filtering/surfaceome_expressed.csv",
+  "existing_controls_excluded": 26,
+  "n_candidates_total": 889,
+  "n_internal_compartment_hint": 125,
+  "output_tsv": "/Users/rebeccacarlson/Git/accessible-surfaceome/data/processed/controls/additional_single_dataset_negative_review_candidates.tsv",
+  "note": "Proxy single-dataset list from SURFY machine-learning-only surface calls lacking UniProt PM/GPI support (used because candidate_universe LFS snapshots are unavailable locally)."
+}

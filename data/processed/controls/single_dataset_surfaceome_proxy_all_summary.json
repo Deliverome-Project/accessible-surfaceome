@@ -1,0 +1,8 @@
+{
+  "source_surfaceome_csv": "/Users/rebeccacarlson/Git/internalizers/data/analysis/deliverome/expression_filtering/surfaceome_expressed.csv",
+  "proxy_definition": "surfaceome_label == 'surface' AND label_source == 'machine learning'",
+  "n_rows_total": 1405,
+  "n_not_in_existing_control_panel": 1398,
+  "n_internal_compartment_hint": 222,
+  "output_tsv": "/Users/rebeccacarlson/Git/accessible-surfaceome/data/processed/controls/single_dataset_surfaceome_proxy_all.tsv"
+}
