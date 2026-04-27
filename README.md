@@ -31,8 +31,14 @@ uv run python -m surface_proteome.candidates.merge
 uv run python -m surface_proteome.candidates.build_surfy
 uv run python -m surface_proteome.candidates.build_cspa
 uv run python -m surface_proteome.candidates.build_ml_predictions
+uv run python -m surface_proteome.candidates.build_controls \
+  --controls-json /path/to/canonical_delivery_positive_controls/controls.json \
+  --surfaceome-csv /path/to/surfaceome_expressed.csv
 ```
 
 The candidate-universe merge currently writes TSV outputs under
 `data/processed/candidate_universe/`; a parquet export can be added when the
 downstream annotation pipeline starts consuming `data/candidates.parquet`.
+
+The control builder writes a consolidated panel under
+`data/processed/controls/surfaceome_control_panel.tsv`.

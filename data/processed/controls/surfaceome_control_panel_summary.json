@@ -1,0 +1,7 @@
+{
+  "output": "/Users/rebeccacarlson/Git/accessible-surfaceome/data/processed/controls/surfaceome_control_panel.tsv",
+  "n_rows": 26,
+  "n_positive_surfaceome": 17,
+  "n_negative_non_surfaceome": 9,
+  "n_missing_from_parent_surfaceome_2379": 2
+}
