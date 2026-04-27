@@ -3,5 +3,14 @@
   "n_rows": 28,
   "n_positive_surfaceome": 17,
   "n_negative_non_surfaceome": 11,
-  "n_missing_from_parent_surfaceome_2379": 1
+  "n_missing_from_parent_surfaceome_2379": 1,
+  "mygene_symbol_universe_tsv": "/Users/rebeccacarlson/Git/internalizers/data/analysis/deliverome/expression_filtering/surfaceome_expressed.csv",
+  "mygene_stats": {
+    "n_query_symbols": 2365,
+    "n_hits_resolved": 2466,
+    "n_hits_notfound": 0,
+    "n_aliases_unique": 10386,
+    "n_aliases_ambiguous": 407
+  },
+  "n_mygene_alias_matches": 1
 }

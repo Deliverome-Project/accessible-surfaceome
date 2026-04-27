@@ -33,7 +33,8 @@ uv run python -m surface_proteome.candidates.build_cspa
 uv run python -m surface_proteome.candidates.build_ml_predictions
 uv run python -m surface_proteome.candidates.build_controls \
   --controls-json /path/to/canonical_delivery_positive_controls/controls.json \
-  --surfaceome-csv /path/to/surfaceome_expressed.csv
+  --surfaceome-csv /path/to/surfaceome_expressed.csv \
+  --mygene-symbol-universe-tsv /path/to/candidate_universe.tsv
 ```
 
 The candidate-universe merge currently writes TSV outputs under
