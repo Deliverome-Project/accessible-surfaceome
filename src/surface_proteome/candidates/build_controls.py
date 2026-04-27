@@ -110,6 +110,20 @@ def _extract_lytac_rows(positive_controls: dict[str, Any]) -> list[dict[str, Any
     return lycia_rows + igf2r_rows
 
 
+def _row_aliases(row: dict[str, Any]) -> list[str]:
+    """Return normalized alias symbols from a control row."""
+    raw_aliases = row.get("aliases", [])
+    if isinstance(raw_aliases, str):
+        return _csv_symbols(raw_aliases)
+    if isinstance(raw_aliases, list):
+        return [
+            str(alias).strip().upper()
+            for alias in raw_aliases
+            if str(alias).strip()
+        ]
+    return []
+
+
 def _build_record(
     *,
     gene_symbol: str,
@@ -118,10 +132,20 @@ def _build_record(
     control_group: str,
     provenance: str,
     source_note: str,
+    aliases: list[str] | None = None,
 ) -> dict[str, str]:
     """Create one control row."""
+    alias_values = aliases or []
+    alias_symbols = sorted(
+        {
+            alias.strip().upper()
+            for alias in alias_values
+            if alias and alias.strip()
+        }
+    )
     return {
         "gene_symbol": gene_symbol.upper(),
+        "gene_symbol_aliases": ";".join(alias_symbols),
         "target_name": target_name,
         "control_class": control_class,
         "control_group": control_group,
@@ -155,6 +179,7 @@ def build_control_panel(
                     "positive_controls.tumor_adc_targets"
                 ),
                 source_note=str(row.get("notes", "")),
+                aliases=_row_aliases(row),
             )
         )
 
@@ -170,6 +195,7 @@ def build_control_panel(
                     "(Lycia WO2024155750A1 handles + IGF2R/CI-M6PR handle)"
                 ),
                 source_note=str(row.get("notes", "")),
+                aliases=_row_aliases(row),
             )
         )
 
@@ -188,6 +214,7 @@ def build_control_panel(
                     "Added as likely non-surface negative control from "
                     "2,379-list request"
                 ),
+                aliases=[],
             )
         )
 
@@ -200,6 +227,7 @@ def build_control_panel(
                 control_group="specified_negative",
                 provenance="User-specified negatives",
                 source_note="Explicitly requested as non-surface control",
+                aliases=[],
             )
         )
 
@@ -208,6 +236,16 @@ def build_control_panel(
     # Aggregate in case any gene appears in multiple groups.
     agg = raw.groupby("gene_symbol", as_index=False).agg(
         {
+            "gene_symbol_aliases": lambda x: ";".join(
+                sorted(
+                    {
+                        token
+                        for value in x
+                        for token in str(value).split(";")
+                        if token
+                    }
+                )
+            ),
             "target_name": lambda x: "; ".join(sorted(set(v for v in x if v))),
             "control_class": lambda x: ";".join(sorted(set(x))),
             "control_group": lambda x: ";".join(sorted(set(x))),
@@ -234,7 +272,28 @@ def build_control_panel(
         .drop_duplicates("gene_symbol", keep="first")
     )
 
-    final = agg.merge(lookup, on="gene_symbol", how="left")
+    lookup_gene_set = set(lookup["gene_symbol"])
+
+    def resolve_lookup_symbol(row: pd.Series) -> str | None:
+        candidates = [str(row["gene_symbol"]).upper()]
+        aliases = [
+            token
+            for token in str(row.get("gene_symbol_aliases", "")).split(";")
+            if token
+        ]
+        candidates.extend(aliases)
+        for symbol in candidates:
+            if symbol in lookup_gene_set:
+                return symbol
+        return None
+
+    agg["matched_surfaceome_gene_symbol"] = agg.apply(resolve_lookup_symbol, axis=1)
+
+    final = agg.merge(
+        lookup.rename(columns={"gene_symbol": "matched_surfaceome_gene_symbol"}),
+        on="matched_surfaceome_gene_symbol",
+        how="left",
+    )
     final["in_parent_surfaceome_2379"] = final["surfaceome_label"].notna().map(
         {True: "yes", False: "no"}
     )
@@ -251,6 +310,8 @@ def build_control_panel(
 
     ordered_cols = [
         "gene_symbol",
+        "gene_symbol_aliases",
+        "matched_surfaceome_gene_symbol",
         "target_name",
         "control_class",
         "control_group",
