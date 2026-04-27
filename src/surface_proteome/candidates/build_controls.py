@@ -3,7 +3,8 @@
 This script builds a single deduplicated control panel with:
 1) Positive controls from ADC benchmark targets.
 2) Positive controls from Lycia/LYTAC handle targets.
-3) Negative controls from user-specified genes plus an additional non-surface
+3) Positive controls from the broader patent delivery-handle list.
+4) Negative controls from user-specified genes plus an additional non-surface
    set selected from a parent 2,379-gene surfaceome list.
 
 Alias resolution is done via one MyGene pass over a provided symbol universe
@@ -126,6 +127,11 @@ def _extract_lytac_rows(positive_controls: dict[str, Any]) -> list[dict[str, Any
         if str(row.get("gene_symbol", "")).upper() == "IGF2R"
     ]
     return lycia_rows + igf2r_rows
+
+
+def _extract_patent_handle_rows(positive_controls: dict[str, Any]) -> list[dict[str, Any]]:
+    """Return the full broader patent delivery-handle list."""
+    return list(positive_controls["patent_delivery_handles"])
 
 
 def _load_gene_symbols(table_path: Path) -> list[str]:
@@ -258,6 +264,7 @@ def build_control_panel(
     surfaceome_csv: Path,
     additional_negative_genes: list[str],
     specified_negative_genes: list[str],
+    mygene_symbol_universe: list[str],
     mygene_alias_to_symbol: dict[str, str],
 ) -> pd.DataFrame:
     """Build the consolidated panel and annotate against the parent list."""
@@ -298,6 +305,22 @@ def build_control_panel(
             )
         )
 
+    for row in _extract_patent_handle_rows(positive_controls):
+        records.append(
+            _build_record(
+                gene_symbol=str(row.get("gene_symbol", "")),
+                target_name=str(row.get("target_name", "")),
+                control_class="positive_surfaceome",
+                control_group="patent_delivery_handles",
+                provenance=(
+                    "canonical_delivery_positive_controls.controls.json:"
+                    "positive_controls.patent_delivery_handles"
+                ),
+                source_note=str(row.get("notes", "")),
+                aliases=_row_aliases(row),
+            )
+        )
+
     for gene in additional_negative_genes:
         records.append(
             _build_record(
@@ -325,7 +348,10 @@ def build_control_panel(
                 control_class="negative_non_surfaceome",
                 control_group="specified_negative",
                 provenance="User-specified negatives",
-                source_note="Explicitly requested as non-surface control",
+                source_note=(
+                    "Explicitly requested as pinned non-surface control "
+                    "(kept even if present in candidate universe)"
+                ),
                 aliases=[],
             )
         )
@@ -352,6 +378,7 @@ def build_control_panel(
             "source_note": lambda x: " | ".join(sorted(set(v for v in x if v))),
         }
     )
+    mygene_symbol_set = set(mygene_symbol_universe)
 
     surfaceome = pd.read_csv(surfaceome_csv)
     surfaceome["gene_symbol"] = surfaceome["gene_symbol"].astype(str).str.upper()
@@ -410,6 +437,40 @@ def build_control_panel(
     match_cols = agg.apply(resolve_lookup_match, axis=1)
     agg = pd.concat([agg, match_cols], axis=1)
 
+    def resolve_m1_membership(row: pd.Series) -> pd.Series:
+        candidates = [str(row["gene_symbol"]).upper()]
+        aliases = [
+            token
+            for token in str(row.get("gene_symbol_aliases", "")).split(";")
+            if token
+        ]
+        for symbol in candidates:
+            if symbol in mygene_symbol_set:
+                return pd.Series(
+                    {
+                        "matched_m1_gene_symbol": symbol,
+                        "m1_match_source": "direct_symbol",
+                    }
+                )
+        for symbol in candidates + aliases:
+            mapped_symbol = mygene_alias_to_symbol.get(symbol)
+            if mapped_symbol and mapped_symbol in mygene_symbol_set:
+                return pd.Series(
+                    {
+                        "matched_m1_gene_symbol": mapped_symbol,
+                        "m1_match_source": "mygene_alias",
+                    }
+                )
+        return pd.Series(
+            {
+                "matched_m1_gene_symbol": pd.NA,
+                "m1_match_source": "unmatched",
+            }
+        )
+
+    m1_match_cols = agg.apply(resolve_m1_membership, axis=1)
+    agg = pd.concat([agg, m1_match_cols], axis=1)
+
     final = agg.merge(
         lookup.rename(columns={"gene_symbol": "matched_surfaceome_gene_symbol"}),
         on="matched_surfaceome_gene_symbol",
@@ -418,6 +479,13 @@ def build_control_panel(
     final["in_parent_surfaceome_2379"] = final["surfaceome_label"].notna().map(
         {True: "yes", False: "no"}
     )
+    final["in_m1_candidate_universe"] = final["matched_m1_gene_symbol"].notna().map(
+        {True: "yes", False: "no"}
+    )
+    final["is_pinned_specified_negative"] = final["control_group"].str.contains(
+        "specified_negative",
+        regex=False,
+    ).map({True: "yes", False: "no"})
 
     final["sort_order"] = final["control_class"].map(
         {
@@ -438,6 +506,10 @@ def build_control_panel(
         "target_name",
         "control_class",
         "control_group",
+        "is_pinned_specified_negative",
+        "in_m1_candidate_universe",
+        "matched_m1_gene_symbol",
+        "m1_match_source",
         "in_parent_surfaceome_2379",
         "surfaceome_label",
         "label_source",
@@ -469,6 +541,7 @@ def main() -> None:
         surfaceome_csv=surfaceome_csv,
         additional_negative_genes=additional_negative_genes,
         specified_negative_genes=specified_negative_genes,
+        mygene_symbol_universe=mygene_symbols,
         mygene_alias_to_symbol=mygene_alias_to_symbol,
     )
 
@@ -486,6 +559,12 @@ def main() -> None:
         ),
         "n_missing_from_parent_surfaceome_2379": int(
             (panel["in_parent_surfaceome_2379"] == "no").sum()
+        ),
+        "n_present_in_m1_candidate_universe": int(
+            (panel["in_m1_candidate_universe"] == "yes").sum()
+        ),
+        "n_pinned_specified_negative_controls": int(
+            (panel["is_pinned_specified_negative"] == "yes").sum()
         ),
         "mygene_symbol_universe_tsv": str(mygene_symbol_universe_tsv),
         "mygene_stats": mygene_stats,

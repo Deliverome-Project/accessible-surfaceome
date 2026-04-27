@@ -43,3 +43,8 @@ downstream annotation pipeline starts consuming `data/candidates.parquet`.
 
 The control builder writes a consolidated panel under
 `data/processed/controls/surfaceome_control_panel.tsv`.
+It consolidates ADC benchmark positives, strict Lycia/LYTAC benchmark positives,
+the broader patent delivery-handle positives, and negative controls.
+The panel includes both parent-2,379 and M1-candidate-universe membership
+annotations (`in_parent_surfaceome_2379`, `in_m1_candidate_universe`) and marks
+explicitly pinned user negatives (`is_pinned_specified_negative`).
