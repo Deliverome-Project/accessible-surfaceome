@@ -3,16 +3,16 @@
   "n_rows": 75,
   "n_positive_surfaceome": 64,
   "n_negative_non_surfaceome": 11,
-  "n_missing_from_parent_surfaceome_2379": 5,
-  "n_present_in_m1_candidate_universe": 71,
+  "n_missing_from_parent_surfaceome_2379": 8,
+  "n_present_in_m1_candidate_universe": 74,
   "n_pinned_specified_negative_controls": 2,
-  "mygene_symbol_universe_tsv": "/Users/rebeccacarlson/Git/internalizers/data/analysis/deliverome/expression_filtering/surfaceome_expressed.csv",
+  "mygene_symbol_universe_tsv": "/Users/rebeccacarlson/Git/accessible-surfaceome/data/processed/candidate_universe/candidate_universe.tsv",
   "mygene_stats": {
-    "n_query_symbols": 2365,
-    "n_hits_resolved": 2466,
-    "n_hits_notfound": 0,
-    "n_aliases_unique": 10386,
-    "n_aliases_ambiguous": 407
+    "n_query_symbols": 6488,
+    "n_hits_resolved": 6949,
+    "n_hits_notfound": 2,
+    "n_aliases_unique": 25339,
+    "n_aliases_ambiguous": 1262
   },
-  "n_mygene_alias_matches": 3
+  "n_mygene_alias_matches": 0
 }
