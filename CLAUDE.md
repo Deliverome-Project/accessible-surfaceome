@@ -40,6 +40,13 @@ uv run pytest -q
 
 - Agents may run `uv run python ...` commands for repository modules/scripts.
 
+## Worktrees, Env, and Data Hydration
+
+- Claude Code and Codex App may create their own worktrees; after entering one, run `scripts/bootstrap-worktree.sh none` unless the task needs data.
+- Use `scripts/bootstrap-worktree.sh candidate` for candidate-universe data, or `scripts/bootstrap-worktree.sh all` only when all data artifacts are needed.
+- `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`.
+- Run `git lfs fsck` only after full data hydration.
+
 ## Git Hooks
 
 - Enable hooks with `./scripts/setup-git-hooks.sh`.
