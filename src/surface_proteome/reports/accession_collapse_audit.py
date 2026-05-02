@@ -24,8 +24,6 @@ Rerun after any change to loader filters or the collapse reducer.
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 
 from surface_proteome.candidates.merge import (
@@ -43,7 +41,7 @@ from surface_proteome.candidates.uniprot_accession_history import (
     load_accession_history,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import REPO_ROOT as ROOT
 
 SOURCES = {
     "uniprot": _load_uniprot,

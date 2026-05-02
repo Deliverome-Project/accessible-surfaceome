@@ -16,22 +16,26 @@ A machine-readable install traceability manifest is written to:
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import shutil
 import subprocess
 import zipfile
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.candidates.traceability import sha256_file, utc_now_iso
+from surface_proteome.paths import (
+    DATA_EXTERNAL_DIR,
+    REPO_ROOT,
+    relative_to_repo as _relative_to_repo,
+)
+
 DATASET = "DeepTMHMM_Academic_License_v1.0"
 DEFAULT_SOURCE_URL = "https://dtu.biolib.com/DeepTMHMM/"
-DEFAULT_INSTALL_ROOT = ROOT / "data" / "external" / "deeptmhmm"
+DEFAULT_INSTALL_ROOT = DATA_EXTERNAL_DIR / "deeptmhmm"
 DEFAULT_PACKAGE_DIR = DEFAULT_INSTALL_ROOT / "DeepTMHMM-Academic-License-v1.0"
 DEFAULT_MANIFEST = DEFAULT_INSTALL_ROOT / "install_traceability.json"
-DEFAULT_VENV = ROOT / ".venv-deeptmhmm"
+DEFAULT_VENV = REPO_ROOT / ".venv-deeptmhmm"
 REQUIREMENTS_FILE = Path(__file__).with_name("deeptmhmm_uv_requirements.txt")
 
 STYLE_LINE = "    plt.style.use('seaborn-whitegrid')\n"
@@ -46,29 +50,7 @@ STYLE_PATCH = (
 )
 
 
-def utc_now_iso() -> str:
-    """Return current UTC timestamp in ISO-8601 format."""
-    return datetime.now(UTC).isoformat()
-
-
-def sha256_file(path: Path, chunk_size: int = 1024 * 1024) -> str:
-    """Compute SHA256 hex digest for a file."""
-    digest = hashlib.sha256()
-    with path.open("rb") as handle:
-        while True:
-            chunk = handle.read(chunk_size)
-            if not chunk:
-                break
-            digest.update(chunk)
-    return digest.hexdigest()
-
-
-def relative_to_repo(path: Path) -> str:
-    """Return path relative to repo root when possible."""
-    try:
-        return path.resolve().relative_to(ROOT.resolve()).as_posix()
-    except Exception:
-        return path.resolve().as_posix()
+relative_to_repo = _relative_to_repo
 
 
 def run_cmd(cmd: list[str], *, cwd: Path | None = None) -> None:
@@ -181,7 +163,7 @@ def patch_predict_style(predict_py: Path) -> bool:
 
 def install_uv_env(uv_bin: str, venv_path: Path) -> Path:
     """Create/update uv environment and install pinned dependencies."""
-    run_cmd([uv_bin, "venv", str(venv_path), "--python", "3.11"], cwd=ROOT)
+    run_cmd([uv_bin, "venv", str(venv_path), "--python", "3.11"], cwd=REPO_ROOT)
     python_bin = venv_path / "bin" / "python"
     if not python_bin.exists():
         raise RuntimeError(f"Expected python executable not found: {python_bin}")
@@ -197,7 +179,7 @@ def install_uv_env(uv_bin: str, venv_path: Path) -> Path:
             "Cython==0.29.37",
             "pkgconfig==1.5.5",
         ],
-        cwd=ROOT,
+        cwd=REPO_ROOT,
     )
     run_cmd(
         [
@@ -209,7 +191,7 @@ def install_uv_env(uv_bin: str, venv_path: Path) -> Path:
             "-r",
             str(REQUIREMENTS_FILE),
         ],
-        cwd=ROOT,
+        cwd=REPO_ROOT,
     )
     return python_bin
 

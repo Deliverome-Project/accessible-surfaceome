@@ -50,7 +50,7 @@ from surface_proteome.plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import REPO_ROOT as ROOT
 
 DEFAULT_INPUT = (
     ROOT / "data" / "processed" / "candidate_universe" / "candidate_universe.tsv"

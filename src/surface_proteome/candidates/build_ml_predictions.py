@@ -57,7 +57,7 @@ from surface_proteome.candidates.traceability import (
     utc_now_iso,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import REPO_ROOT as ROOT
 
 DATASET = "deeptmhmm"
 DEFAULT_INPUT_DIR = ROOT / "data" / "external" / "deeptmhmm_surfaceome_predictions"

@@ -43,7 +43,7 @@ from surface_proteome.candidates.traceability import (
     write_manifest,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import REPO_ROOT as ROOT
 
 DATASET = "uniprot_ensembl_xrefs"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET

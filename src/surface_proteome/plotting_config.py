@@ -1,7 +1,8 @@
-"""
-Modern plotting configuration for the internalizers project.
+"""Plotting configuration for accessible-surfaceome figures.
 
-Uses seaborn styling with custom colors and fonts for publication-quality figures.
+Uses seaborn styling with a small custom palette for publication-quality
+figures. Callers must invoke :func:`setup_plotting_style` explicitly —
+importing this module no longer has side effects.
 """
 from pathlib import Path
 
@@ -117,8 +118,6 @@ def setup_plotting_style(style='default', context='notebook', font_scale=2.2):
         'patch.edgecolor': 'none',
         'patch.linewidth': 0.0,
     })
-
-    print("OK Plotting style configured")
 
     # Default despine to top/right for a clean look.
     sns.despine(top=True, right=True)
@@ -332,6 +331,3 @@ def get_categorical_colors(n=None):
 def get_diverging_palette(n=11):
     """Get diverging color palette"""
     return sns.color_palette("RdBu_r", n_colors=n)
-
-# Initialize on import
-setup_plotting_style()

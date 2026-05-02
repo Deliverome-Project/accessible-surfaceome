@@ -63,7 +63,7 @@ from surface_proteome.candidates.uniprot_accession_history import (
     parse_sec_ac,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import REPO_ROOT as ROOT
 
 _ALL_SOURCES_CACHE: set[str] | None = None
 

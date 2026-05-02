@@ -85,7 +85,7 @@ from surface_proteome.candidates.uniprot_ensembl_mapping import (
     load_ensembl_mapping,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import REPO_ROOT as ROOT
 
 DATASET = "hpa"
 HPA_INPUT_TSV = (

@@ -44,7 +44,7 @@ from surface_proteome.candidates.traceability import (
     utc_now_iso,
 )
 
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import REPO_ROOT as ROOT
 
 DATASET = "cspa"
 DEFAULT_INPUT = ROOT / "data" / "raw" / "S1_File.xlsx"

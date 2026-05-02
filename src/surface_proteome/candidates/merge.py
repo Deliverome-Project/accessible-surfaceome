@@ -1,147 +1,40 @@
 """Merge the seven M1 sources into one candidate-universe table.
 
-Joins on base ``uniprot_accession`` (canonical, with UniProt isoform suffix
-stripped). Every input is the canonical normalized snapshot written by an
-upstream ``build_*`` or ``download_*`` step.
+Sources (each loaded by its own ``_load_*`` function below):
 
-Before the join this script reconciles every source's UniProt accessions
-against the current UniProt accession history
-(``data/external/uniprot_accession_history/sec_ac.txt`` and
-``delac_sp.txt``): secondary accessions are rewritten to the current
-primary (split entries are duplicated once per primary so both derived
-entries inherit the old annotation), and deleted Swiss-Prot accessions
-are dropped. This eliminates the duplicate-row failure mode seen for HLA
-alleles where SURFY (2018) / CSPA (2015) use per-allele accessions that
-UniProt has since merged into a single canonical entry (for example
-``P01891/P01892/P05534/...`` → ``P04439`` = HLA-A).
+1. **UniProt** — pre-filtered surface-candidate query
+2. **GO** — annotations under the surface GO roots
+3. **SURFY** — Bausch-Fluck 2018 SurfaceomeMasterTable
+4. **CSPA** — Cell Surface Protein Atlas (Bausch-Fluck 2015)
+5. **DeepTMHMM** — predicted membrane topology
+6. **HPA** — Human Protein Atlas subcellular_location IF
+7. **JensenLab COMPARTMENTS** — text-mining + experiments stars
 
-Sources:
+The join key is the base ``uniprot_accession``. Before joining, each
+source's accessions are reconciled against the current UniProt accession
+history (``sec_ac.txt`` + ``delac_sp.txt``) so that, e.g., per-allele HLA
+accessions that UniProt has since merged collapse onto the right
+canonical primary.
 
-1. **UniProt** — ``data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.tsv``
-   (keyword/topology/subcellular-location query over human reviewed entries)
-2. **GO** — ``data/external/go_human_surface_annotations/go_human_surface_annotations_by_gene_product.tsv``
-   (one row per gene product with ≥1 surface-GO annotation under the
-   configured roots, all evidence tiers)
-3. **SURFY** — ``data/processed/surfy/surfy_human_snapshot.tsv``
-   (Bausch-Fluck 2018 SurfaceomeMasterTable; row-level label
-   ``surface``/``nonsurface``/empty)
-4. **CSPA** — ``data/processed/cspa/cspa_human_snapshot.tsv``
-   (Bausch-Fluck 2015 PLOS ONE; any UniProt appearing in Table_A human rows,
-   with Table_B category where available)
-5. **DeepTMHMM** — ``data/processed/deeptmhmm/deeptmhmm_human_canonical.tsv`` +
-   ``deeptmhmm_human_isoforms.tsv`` (collapsed to base accession; surface
-   flag = any isoform predicted TM / SP+TM; BETA excluded — human
-   beta-barrels are mitochondrial outer membrane, not plasma-membrane)
-6. **HPA** — ``data/processed/hpa/hpa_human_snapshot.tsv`` (Human Protein
-   Atlas subcellular_location v25.0; keyed on UniProt primary via
-   ``ensg_to_uniprot``; surface flag requires PM accessible OR junctional
-   at per-tier Enhanced/Supported/Approved reliability. Pool filter
-   admits PM / Cell Junctions / Extracellular rows; secreted-only
-   rows stay as provenance but do not flag. See
-   ``docs/reports/2026-04-17-hpa-therapeutic-delivery-refinement.md``.)
-7. **JensenLab COMPARTMENTS** — ``data/processed/jensenlab_compartments/jensenlab_compartments_human_snapshot.tsv``
-   (keyed on UniProt primary via ``ensp_to_uniprot``; surface flag
-   requires max(experiments [HPA dropped], textmining) ≥ 3 across the
-   surface GO terms GO:0005886, GO:0009986, GO:0031225, GO:0005887 AND
-   corroboration from another source's pool. Knowledge and predictions
-   channels carried as provenance only (knowledge re-ingests GO;
-   predictions wraps WoLF PSORT + YLoc, redundant with SURFY + DeepTMHMM).
-   See ``docs/reports/2026-04-17-jensenlab-compartments-integration.md``.)
+Each source produces a boolean ``<source>_surface_flag`` derived from
+its own evidence rule. The exact predicates are documented once in the
+manifest's ``flag_rules`` block (assembled in ``main`` below) and in
+``docs/reports/2026-04-17-m1-candidate-universe-onepager.md``.
 
-Per-source surface flags (the v0 "is this protein flagged as surface-exposed
-by source X?" booleans):
+Outputs (all under ``data/processed/candidate_universe/``):
 
-- ``uniprot_surface_flag``   = 1 iff accession present in UniProt source file
-  (UniProt snapshot is already pre-filtered to surface candidates, so mere
-  presence is the flag)
-- ``go_surface_flag``        = 1 iff the accession has at least one
-  non-electronic evidence tier (experimental / curated / sequence-based).
-  Pure-IEA (electronic-only) rows stay in the merge with
-  ``go_low_confidence_only = 1`` and do not count as surface support.
-- ``surfy_surface_flag``     = 1 iff ``surfy_is_surface == 1``
-- ``cspa_surface_flag``      = 1 iff any pre-collapse row for this
-  primary had ``cspa_is_high_confidence == 1`` OR
-  ``cspa_is_putative == 1`` (boolean-OR across accession-history
-  collapse). Unspecific detections and blank-category rows stay in the
-  merge with ``cspa_surface_flag = 0`` for provenance. The
-  ``cspa_is_*`` booleans reflect the single priority-ranked
-  ``cspa_category`` (headline label); the ``cspa_any_*_precollapse``
-  columns preserve full pre-collapse evidence, and
-  ``cspa_mixed_category_conflict = 1`` marks rows where the headline
-  category disagrees with the pre-collapse union.
-- ``deeptmhmm_surface_flag`` = 1 iff any DeepTMHMM row (canonical or
-  isoform) for this base accession has ``predicted_surface_membrane == 1``
-  (i.e., label ∈ {TM, SP+TM}). ``SP``-only (predicted secreted), ``BETA``
-  (beta-barrel, which in humans is essentially mitochondrial outer
-  membrane — VDAC1/2/3, TOMM40, SAMM50), and
-  ``GLOB`` do **not** count.
-- ``hpa_surface_flag`` = 1 iff ``hpa_pm_accessible`` OR
-  ``hpa_junctional``. Per-tier-specific: PM must appear in the
-  Enhanced / Supported / Approved per-tier column (not just gene-wide
-  Reliability), and Cell Junctions must similarly appear at a non-
-  Uncertain tier. Secreted-only rows (HPA "Extracellular location"
-  column is entirely "Predicted to be secreted" — a SignalP-based
-  sequence prediction, not IF evidence) stay in the pool with
-  ``hpa_secreted_only = 1`` and ``hpa_surface_flag = 0``. Vesicles /
-  Endosomes / Lysosomes are surfaced via
-  ``hpa_trafficking_associated`` for downstream LLM adjudication but
-  never admit a row to the pool on their own. See
-  ``docs/reports/2026-04-17-hpa-therapeutic-delivery-refinement.md``.
-- ``compartments_surface_flag`` = 1 iff ``max(compartments_experiments_stars_max,
-  compartments_textmining_stars_max) >= 3`` across the four surface GO
-  terms AND ``compartments_corroborated == 1`` (protein appears in at
-  least one other source's surface-candidate pool). Three COMPARTMENTS
-  channels are carried as provenance only: knowledge re-ingests GO +
-  UniProt-SubCell (would triple-count existing first-class GO
-  evidence); predictions wraps WoLF PSORT + YLoc, which are
-  sequence-based predictors in the same family as SURFY + DeepTMHMM
-  (would triple-count ML-predictor evidence); experiments rows with
-  source == "HPA" are dropped upstream to avoid double-counting HPA IF.
-  The corroboration gate prevents text-mining-only calls on non-surface
-  proteins that literature co-mentions with "plasma membrane" (TP53,
-  MYC, ALB, IFNG etc.) from entering the universe. See
-  ``docs/reports/2026-04-17-jensenlab-compartments-integration.md``.
-
-Output columns:
-
-- identifiers: ``uniprot_accession``, ``gene_symbol``, ``uniprot_entry_name``
-- gene-symbol resolution: ``gene_symbol_input`` (pre-resolver consolidated
-  value), ``gene_symbol``/``gene_symbol_resolved`` (MyGene-resolved canonical
-  symbol when available), ``gene_symbol_mapping_status`` (exact /
-  normalized_alias / normalized_previous / ambiguous / not_found), and
-  ``gene_symbol_mygene_score``
-- per-source flags (5 above)
-- per-source evidence columns for downstream filtering:
-  ``go_has_experimental``, ``go_n_go_ids``, ``surfy_label``,
-  ``surfy_ml_score``, ``cspa_category``, ``cspa_is_high_confidence``,
-  ``deeptmhmm_label``, ``deeptmhmm_label_source``
-- aggregates: ``n_sources_surface`` (sum of 5 flags), ``sources_present``
-  (comma-joined list), ``in_db_union`` (any of the 4 DB flags),
-  ``ml_only_edge_case`` (deeptmhmm_surface_flag=1 AND in_db_union=0)
-
-Row set: accessions observed in any of the seven sources that have
-``n_sources_surface >= 1`` (at least one source's own positive-flag rule
-fires). Accessions present in a raw source but filtered out of every
-positive-flag rule (GO-IEA-only, CSPA unspecific/blank, HPA secreted-
-only, accession-history-split-ambiguous, COMPARTMENTS below the
-corroboration gate) are written to a sidecar
-``candidate_universe_zero_support.tsv`` for traceability — they carry no
-positive evidence, so the downstream per-gene LLM reconciliation runs
-only on the main file.
-
-Also writes a summary JSON with counts by source, pairwise overlap, and
-agreement-level (1/5..5/5) bucketing, plus a traceability manifest with
-SHA256 of every input and output.
+- ``candidate_universe.tsv``               — rows with ``n_sources_surface >= 1``
+- ``candidate_universe_zero_support.tsv``  — present in some source but
+  filtered out of every positive-flag rule (kept for traceability)
+- ``candidate_universe_summary.json``      — per-source counts, agreement
+  histogram, pairwise Jaccard
+- ``candidate_universe_traceability.json`` — input SHA256s + flag_rules prose
 """
 
 from __future__ import annotations
 
 import argparse
 import json
-import os
-import secrets
-import shutil
-import time
 from pathlib import Path
 from typing import TypedDict
 
@@ -155,8 +48,11 @@ from surface_proteome.candidates.traceability import (
 from surface_proteome.candidates.uniprot_accession_history import (
     load_accession_history,
 )
-
-ROOT = Path(__file__).resolve().parents[3]
+from surface_proteome.paths import (
+    DATA_EXTERNAL_DIR,
+    DATA_PROCESSED_DIR,
+    REPO_ROOT,
+)
 
 
 class NormalizeStats(TypedDict):
@@ -168,36 +64,30 @@ class NormalizeStats(TypedDict):
     output_rows: int
 
 DATASET = "candidate_universe"
-DEFAULT_OUTPUT_DIR = ROOT / "data" / "processed" / "candidate_universe"
+DEFAULT_OUTPUT_DIR = DATA_PROCESSED_DIR / "candidate_universe"
 OUTPUT_TSV = "candidate_universe.tsv"
 ZERO_SUPPORT_TSV = "candidate_universe_zero_support.tsv"
 SUMMARY_JSON = "candidate_universe_summary.json"
 MANIFEST_JSON = "candidate_universe_traceability.json"
 
 UNIPROT_TSV = (
-    ROOT / "data" / "external" / "uniprot_human_surface_candidates"
+    DATA_EXTERNAL_DIR / "uniprot_human_surface_candidates"
     / "uniprot_human_surface_candidates.tsv"
 )
 GO_TSV = (
-    ROOT / "data" / "external" / "go_human_surface_annotations"
+    DATA_EXTERNAL_DIR / "go_human_surface_annotations"
     / "go_human_surface_annotations_by_gene_product.tsv"
 )
-SURFY_TSV = ROOT / "data" / "processed" / "surfy" / "surfy_human_snapshot.tsv"
-CSPA_TSV = ROOT / "data" / "processed" / "cspa" / "cspa_human_snapshot.tsv"
-DEEPTMHMM_CAN_TSV = (
-    ROOT / "data" / "processed" / "deeptmhmm" / "deeptmhmm_human_canonical.tsv"
-)
-DEEPTMHMM_ISO_TSV = (
-    ROOT / "data" / "processed" / "deeptmhmm" / "deeptmhmm_human_isoforms.tsv"
-)
-HPA_TSV = ROOT / "data" / "processed" / "hpa" / "hpa_human_snapshot.tsv"
+SURFY_TSV = DATA_PROCESSED_DIR / "surfy" / "surfy_human_snapshot.tsv"
+CSPA_TSV = DATA_PROCESSED_DIR / "cspa" / "cspa_human_snapshot.tsv"
+DEEPTMHMM_CAN_TSV = DATA_PROCESSED_DIR / "deeptmhmm" / "deeptmhmm_human_canonical.tsv"
+DEEPTMHMM_ISO_TSV = DATA_PROCESSED_DIR / "deeptmhmm" / "deeptmhmm_human_isoforms.tsv"
+HPA_TSV = DATA_PROCESSED_DIR / "hpa" / "hpa_human_snapshot.tsv"
 COMPARTMENTS_TSV = (
-    ROOT / "data" / "processed" / "jensenlab_compartments"
+    DATA_PROCESSED_DIR / "jensenlab_compartments"
     / "jensenlab_compartments_human_snapshot.tsv"
 )
-ACCESSION_HISTORY_DIR = (
-    ROOT / "data" / "external" / "uniprot_accession_history"
-)
+ACCESSION_HISTORY_DIR = DATA_EXTERNAL_DIR / "uniprot_accession_history"
 SEC_AC_TXT = ACCESSION_HISTORY_DIR / "sec_ac.txt"
 DELAC_SP_TXT = ACCESSION_HISTORY_DIR / "delac_sp.txt"
 
@@ -220,11 +110,15 @@ DB_FLAG_COLUMNS = [
 ]
 
 
-CSPA_CATEGORY_PRIORITY = {
-    "1 - high confidence": 3,
-    "2 - putative": 2,
-    "3 - unspecific": 1,
-}
+# CSPA Table_B category labels, in descending confidence order.
+# The strings are repeated by design — they're the literal values UniProt
+# parsed from the CSPA spreadsheet, and live here so a typo becomes a
+# NameError at the call site rather than a silent miss.
+CSPA_HIGH_CONFIDENCE = "1 - high confidence"
+CSPA_PUTATIVE = "2 - putative"
+CSPA_UNSPECIFIC = "3 - unspecific"
+CSPA_KNOWN_CATEGORIES = (CSPA_HIGH_CONFIDENCE, CSPA_PUTATIVE, CSPA_UNSPECIFIC)
+CSPA_CATEGORY_PRIORITY = {label: rank for rank, label in enumerate(reversed(CSPA_KNOWN_CATEGORIES), start=1)}
 
 
 def _best_cspa_category(values: pd.Series) -> str:
@@ -874,21 +768,15 @@ def main(argv: list[str] | None = None) -> None:
         "compartments": _load_compartments(),
     }
 
-    # Reconcile accessions against current UniProt (sec_ac -> primary, drop
-    # delac_sp). Collapse duplicates that arise when multiple secondaries
-    # map onto the same primary within a source (common for HLA alleles).
-    # Per-source overrides make the collapse semantics-preserving where
-    # the default max/first reducers would drop meaningful detail.
-    # Two parallel sets of CSPA category flags survive normalization:
-    #   - ``cspa_is_*``             = derived from the priority-ranked
-    #     ``cspa_category`` so the single category label and its booleans
-    #     stay mutually exclusive (analytical headline).
-    #   - ``cspa_any_*_precollapse`` = boolean-OR (max) of the raw
-    #     per-row evidence before collapse — preserves pre-merge
-    #     provenance for primaries that inherited mixed categories from
-    #     multiple historical accessions.
-    # ``cspa_mixed_category_conflict`` is set when the two views
-    # disagree, so downstream can explicitly filter on real conflicts.
+    # Reconcile accessions against current UniProt (sec_ac -> primary,
+    # drop delac_sp), then collapse duplicates that arise when multiple
+    # secondaries reconcile onto the same primary (common for HLA
+    # alleles). Per-source overrides preserve semantics where the
+    # default max/first reducers would drop meaningful detail. CSPA
+    # also carries ``cspa_any_*_precollapse`` columns (boolean-OR of
+    # raw per-row evidence) so ``cspa_mixed_category_conflict`` can
+    # flag primaries that inherited disagreeing categories from
+    # multiple historical accessions.
     source_agg_overrides: dict[str, dict[str, object]] = {
         "cspa": {
             "cspa_category": _best_cspa_category,
@@ -924,12 +812,10 @@ def main(argv: list[str] | None = None) -> None:
         )
         if name == "cspa":
             cat = norm_df["cspa_category"].astype(str)
-            norm_df["cspa_is_high_confidence"] = (cat == "1 - high confidence").astype(int)
-            norm_df["cspa_is_putative"] = (cat == "2 - putative").astype(int)
-            norm_df["cspa_is_unspecific"] = (cat == "3 - unspecific").astype(int)
-            norm_df["cspa_category_missing"] = (
-                ~cat.isin({"1 - high confidence", "2 - putative", "3 - unspecific"})
-            ).astype(int)
+            norm_df["cspa_is_high_confidence"] = (cat == CSPA_HIGH_CONFIDENCE).astype(int)
+            norm_df["cspa_is_putative"] = (cat == CSPA_PUTATIVE).astype(int)
+            norm_df["cspa_is_unspecific"] = (cat == CSPA_UNSPECIFIC).astype(int)
+            norm_df["cspa_category_missing"] = (~cat.isin(CSPA_KNOWN_CATEGORIES)).astype(int)
             # Flag cases where the headline category differs from the
             # union of pre-collapse evidence — i.e. at least two distinct
             # categories were observed before normalization. For unmerged
@@ -985,47 +871,13 @@ def main(argv: list[str] | None = None) -> None:
         merged[split_ambig_cols].sum(axis=1) > 0
     ).astype(int) if split_ambig_cols else 0
 
-    # COMPARTMENTS corroboration gate. JensenLab text-mining at stars
-    # >= 3 identifies genuine literature co-occurrence between the
-    # protein and a surface GO term, but the tagger's dictionary-based
-    # NER over Medline picks up contextual mentions that do NOT imply
-    # extracellular accessibility on intact cells: nuclear
-    # transcription factors (TP53, MYC, FOS, JUN, NFE2L2), secreted
-    # cytokines (IFNG, IL1B, IL3-5, IL13, IL17A, NGF, FGF4, FGF8,
-    # INS), serum proteins (ALB, AGT, REN), apoptosis regulators
-    # (BCL2), and so on — all legitimately discussed near "plasma
-    # membrane" in biomedical abstracts but not therapeutic-delivery
-    # targets.
-    #
-    # Gate: ``compartments_surface_flag`` only fires when at least one
-    # of the other six sources has independently **flagged the protein
-    # as surface** — ``<source>_surface_flag == 1`` for uniprot, go,
-    # surfy, cspa, deeptmhmm, or hpa. This is the strongest available
-    # corroboration signal: each source's own flag rule already
-    # encodes that source's "this protein is membrane-accessible"
-    # predicate (go_surface_flag requires non-IEA evidence,
-    # hpa_surface_flag requires PM/junctional at Enhanced/Supported/
-    # Approved, cspa_surface_flag requires high-confidence/putative,
-    # etc.). Requiring another source to have independently passed its
-    # own surface-flag bar is the right bar for COMPARTMENTS text-
-    # mining corroboration on a therapeutic-delivery candidate
-    # universe.
-    #
-    # Looser predicates were considered and rejected:
-    #   - "presence in the other source's pool" admits HPA secreted-
-    #     only rows and CSPA non-specific detections (both tried;
-    #     both leaked FPs).
-    #   - "go_n_go_ids > 0" admits pure-IEA GO annotations, which
-    #     have the same electronic-evidence problem GO's own surface
-    #     flag rejects (caught 6 lone-COMPARTMENTS FPs in the
-    #     2026-04-17 final Codex review).
-    #
-    # Consequence: COMPARTMENTS becomes a confidence booster that
-    # confirms existing surface calls, not an independent source that
-    # can add new proteins to the universe. That is the correct
-    # posture given the tagger's false-positive profile on the
-    # therapeutic-delivery question. See
-    # ``docs/reports/2026-04-17-jensenlab-compartments-integration.md``.
+    # COMPARTMENTS corroboration gate: only fire compartments_surface_flag
+    # when another source has independently flagged the protein as
+    # surface. Without this gate, dictionary-based NER over Medline
+    # picks up contextual literature co-mentions for non-surface
+    # proteins (TP53, MYC, ALB, IL1B, ...) and admits them. See
+    # ``docs/reports/2026-04-17-jensenlab-compartments-integration.md``
+    # for the rationale and rejected looser predicates.
     def _num(col: str) -> pd.Series:
         if col not in merged.columns:
             return pd.Series(0, index=merged.index)
@@ -1259,22 +1111,15 @@ def main(argv: list[str] | None = None) -> None:
                 f"manifest or the loader logic so they match."
             )
 
-    # --- stage the full bundle into a unique per-run staging directory
-    # under ``<out_dir>/.staging/<run_id>``. After the summary + manifest
-    # are assembled, a single ``Path.replace`` renames that directory
-    # into place, which is atomic at the directory-entry level on POSIX
-    # filesystems. This prevents (a) interrupts leaving fresh rows next
-    # to stale metadata and (b) concurrent runs racing on fixed .tmp
-    # paths. Any failure in summary/manifest generation leaves the old
-    # published bundle intact; the staging tree is cleaned up on error.
-    run_id = f"{int(time.time())}-{secrets.token_hex(4)}"
-    staging_dir = out_dir / ".staging" / run_id
-    staging_dir.mkdir(parents=True, exist_ok=True)
+    # Write each output to a sibling ``*.tmp`` file, then ``replace`` it
+    # over the published name once everything (summary + manifest) is
+    # assembled. Plain rename — no per-run staging directory needed for
+    # a single-user research script.
     out_tsv = out_dir / OUTPUT_TSV
-    tmp_tsv = staging_dir / OUTPUT_TSV
+    tmp_tsv = out_tsv.with_suffix(out_tsv.suffix + ".tmp")
     merged.to_csv(tmp_tsv, sep="\t", index=False)
     out_zero_tsv = out_dir / ZERO_SUPPORT_TSV
-    tmp_zero_tsv = staging_dir / ZERO_SUPPORT_TSV
+    tmp_zero_tsv = out_zero_tsv.with_suffix(out_zero_tsv.suffix + ".tmp")
     zero_support.to_csv(tmp_zero_tsv, sep="\t", index=False)
 
     # --- summary ---
@@ -1324,7 +1169,7 @@ def main(argv: list[str] | None = None) -> None:
         "accession_normalization": norm_stats,
     }
     summary_path = out_dir / SUMMARY_JSON
-    tmp_summary = staging_dir / SUMMARY_JSON
+    tmp_summary = summary_path.with_suffix(summary_path.suffix + ".tmp")
     tmp_summary.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -1333,7 +1178,7 @@ def main(argv: list[str] | None = None) -> None:
     def _src_record(path: Path, label: str) -> dict:
         return {
             "label": label,
-            "local_path": str(path.relative_to(ROOT)),
+            "local_path": str(path.relative_to(REPO_ROOT)),
             "sha256": sha256_file(path),
             "size_bytes": path.stat().st_size,
         }
@@ -1341,7 +1186,7 @@ def main(argv: list[str] | None = None) -> None:
     manifest = {
         "dataset": DATASET,
         "generated_at_utc": utc_now_iso(),
-        "script": Path(__file__).relative_to(ROOT).as_posix(),
+        "script": Path(__file__).relative_to(REPO_ROOT).as_posix(),
         "sources": [
             _src_record(UNIPROT_TSV, "uniprot"),
             _src_record(GO_TSV, "go"),
@@ -1356,7 +1201,7 @@ def main(argv: list[str] | None = None) -> None:
         ],
         "outputs": {
             OUTPUT_TSV: {
-                "local_path": str(out_tsv.relative_to(ROOT)),
+                "local_path": str(out_tsv.relative_to(REPO_ROOT)),
                 "sha256": sha256_file(tmp_tsv),
                 "size_bytes": tmp_tsv.stat().st_size,
                 "n_rows": int(len(merged)),
@@ -1364,7 +1209,7 @@ def main(argv: list[str] | None = None) -> None:
                 "filter": "n_sources_surface >= 1",
             },
             ZERO_SUPPORT_TSV: {
-                "local_path": str(out_zero_tsv.relative_to(ROOT)),
+                "local_path": str(out_zero_tsv.relative_to(REPO_ROOT)),
                 "sha256": sha256_file(tmp_zero_tsv),
                 "size_bytes": tmp_zero_tsv.stat().st_size,
                 "n_rows": int(len(zero_support)),
@@ -1395,41 +1240,24 @@ def main(argv: list[str] | None = None) -> None:
         },
     }
     manifest_path = out_dir / MANIFEST_JSON
-    tmp_manifest = staging_dir / MANIFEST_JSON
+    tmp_manifest = manifest_path.with_suffix(manifest_path.suffix + ".tmp")
     tmp_manifest.write_text(
         json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
 
-    # --- atomic publish. The staged bundle lives entirely inside
-    # ``staging_dir``; swap all three files into their final locations
-    # via hardlink + atomic rename so an interrupt between renames still
-    # leaves the previously-published bundle intact (the prior inodes
-    # aren't replaced until the corresponding rename happens, and since
-    # every staged file is already fully written the only risk is
-    # partial application — for which hardlink + rename is the standard
-    # POSIX atomic-publish pattern). After success the staging tree is
-    # removed. ---
-    try:
-        for src, dst in (
-            (tmp_tsv, out_tsv),
-            (tmp_zero_tsv, out_zero_tsv),
-            (tmp_summary, summary_path),
-            (tmp_manifest, manifest_path),
-        ):
-            # Hardlink first so an interrupt still leaves *both* the
-            # staging file and the target in a consistent state, then
-            # atomic-rename over the existing file.
-            link_path = dst.with_suffix(dst.suffix + f".publish-{run_id}")
-            if link_path.exists():
-                link_path.unlink()
-            os.link(src, link_path)
-            link_path.replace(dst)
-        shutil.rmtree(staging_dir, ignore_errors=True)
-    except Exception:
-        shutil.rmtree(staging_dir, ignore_errors=True)
-        raise
+    # Publish: rename each ``*.tmp`` over its final name. ``Path.replace``
+    # is atomic per file on POSIX; the four files don't update as a
+    # bundle, but a partially-applied set is still self-describing
+    # (the manifest records the exact SHA256 of every output it ships with).
+    for src, dst in (
+        (tmp_tsv, out_tsv),
+        (tmp_zero_tsv, out_zero_tsv),
+        (tmp_summary, summary_path),
+        (tmp_manifest, manifest_path),
+    ):
+        src.replace(dst)
 
-    print(f"wrote {out_tsv.relative_to(ROOT)}  n_rows={len(merged):,}")
+    print(f"wrote {out_tsv.relative_to(REPO_ROOT)}  n_rows={len(merged):,}")
     print(f"  per-source surface counts: {per_source_counts}")
     print(f"  agreement (k/{n_sources_total} sources): {agreement_counts}")
     print(f"  all {n_sources_total} sources agree:       {all_sources:,}")
