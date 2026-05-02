@@ -24,6 +24,36 @@ Internalization, tissue/cell-type-specific surface expression, and model-species
 
 ---
 
+## Prior art & design analogue — Lambert et al. 2018 ("The Human Transcription Factors")
+
+The closest methodological precedent for what we're building is the Lambert et al. 2018 human TF census. They faced a structurally identical problem — multiple prior DBs (TFCat, TF Census, TFClass, CisBP, GO, PDB) disagreeing on what counts as a human transcription factor — and produced what is now *the* canonical list (1,639 TFs from 2,765 candidates) by being explicit about adjudication, grading, and provenance. We deliberately mirror their methodology where it transfers, and document where we diverge.
+
+**Reference:** Lambert SA, Jolma A, Campitelli LF, Das PK, Yin Y, Albu M, Chen X, Taipale J, Hughes TR, Weirauch MT. *The Human Transcription Factors.* **Cell** 172(4):650–665 (2018-02-08). DOI: [10.1016/j.cell.2018.01.029](https://doi.org/10.1016/j.cell.2018.01.029). Public resource: [http://humantfs.ccbr.utoronto.ca/](http://humantfs.ccbr.utoronto.ca/).
+
+### Mapping their choices onto ours
+
+| Their move | Why it worked | Our analogue |
+|---|---|---|
+| **Union of 6 prior DBs → 2,765 candidates** | Recall-first; precision is for the adjudication step, not the universe | Union of SURFY + CSPA + UniProt + GO + HPA + ML → ~9k candidates (M1, recall-first by design) |
+| **Two expert judges vote per candidate, disagreements resolved** | Single-judge calls are not credible at this scale; explicit disagreement resolution is the provenance | Sonnet extraction + claim-entailment audit + Opus cascade as "two-judge + arbiter"; Becca adjudicates the n=100 DB-disagreement spotlight (M6) |
+| **Graded categories, not binary** (`known motif` / `homologous motif` / `likely` / `ssDNA-RNA-binding` / `unlikely`) | Binary calls hide real biology and force false positives | `surface_status ∈ {strong / moderate / weak / rare / absent / contradictory}` is intentionally the same shape |
+| **Per-protein web page with full evidence trail** (NCBI summary, InterPro/Pfam, PDB, motif availability, "has this been tried on PBM / HT-SELEX") | The site, not the table, is what made the resource sticky and citable for 8+ years | v1 web explorer must mirror this: NCBI summary, UniProt/HGNC, PDB chains with TM/EC mapping, "has this been profiled by surface biotinylation / flow / MS surfaceome / IHC," DB-disagreement panel, per-claim citations |
+| **Methods-comparison table** (Lambert et al. Fig 1B — PBM, B1H, SELEX-family, ChIP-seq, DamID-seq, EMSA, …) explaining what each assay can/can't resolve | Tells a reader *why* certain evidence is weighted more; doubles as the rubric for adjudication | Ship the equivalent for surface assays: flow cytometry, surface biotinylation, MS surfaceome, IHC, IF, cryo-EM/X-ray, computational. Columns: distinguishes surface from intracellular, permeabilization-dependent, isoform-resolving, quantitative for copy number, topology-resolving. Used both as a figure in the blog and as the weighting rubric the LLM applies. |
+| **The "unlikely" category is load-bearing** (982/1,639) | Telling people what to *stop* chasing is as valuable as telling them what to chase | `surface_status=absent` and `contradictory` calls on genes that SURFY/CSPA flag positively (ABCB9, KRAS, mis-flagged solute carriers) are the headline, not a footnote |
+| **Stable URL + persistent resource** | humantfs.ccbr.utoronto.ca is still live 8 years on; that's why it's still cited | Plan a permanent URL and DOI-citable per-release snapshots from day one — not a v1 concern |
+
+### Where we deliberately diverge
+
+- **Adjudication mechanism.** Lambert et al. used two human experts. We use Sonnet 4.6 extraction + a Sonnet entailment audit + an Opus 4.7 arbiter on the cascade, with human (Becca) adjudication confined to the n=100 DB-disagreement spotlight and the n=300 stratified citation audit. This swap is the single biggest methodological difference and must be argued for explicitly in the blog: the audit gates (≥95% citation fidelity with Wilson 95% LCB ≥92%, ≥97% claim-entailment on primary evidence) are what earn us the right to make the analogy.
+- **Two orthogonal output fields, not one.** Lambert et al. shipped a single graded TF call. We ship `surface_status` *and* `topology` separately, because conflating them is exactly the SURFY failure mode (`KRAS` is membrane-anchored but not surface-accessible). The per-gene record carries both, and the disagreement analysis reports both.
+- **Per-claim citations are first-class, not a supplementary table.** Lambert et al. cited the source DBs and key papers; we attach a verbatim quote + char offset + content hash to every claim, which is the layer SURFY/CSPA/UniProt don't have.
+
+### What this gets us
+
+If we ship v0 with the same methodological rigor — graded calls, two-judge + arbiter structure, published methods rubric, per-gene evidence pages, open code, stable URL, audited fidelity — we're positioned to become the cited canonical human surface proteome the way Lambert et al. became the cited canonical human TF list. The blog post should make this analogy explicit.
+
+---
+
 ## M0 — Pre-work before M1 (~1 week)
 
 Codex review flagged several issues that must be resolved **before** gene-universe assembly begins. None are optional.
@@ -657,3 +687,35 @@ Per-source policy (finalized at M6, started at M0):
 - **Anthropic engagement**: schedule first sync at end of M3; share this v2 plan in advance.
 - **HPA ingest cadence decision**: pull-at-runtime vs one-time bulk ingest. Recommendation: bulk ingest at M2 into SQLite (20k proteins fits easily, refresh quarterly).
 - **Open question for Becca**: confirm the 30-gene negative-control panel composition — is `KRAS` the right flagship, or should we also include `HRAS`/`NRAS`/`RRAS` and solute-carrier false positives from SURFY?
+
+---
+
+## References
+
+### Methodological precedent
+- Lambert SA, Jolma A, Campitelli LF, Das PK, Yin Y, Albu M, Chen X, Taipale J, Hughes TR, Weirauch MT. *The Human Transcription Factors.* **Cell** 172(4):650–665 (2018-02-08). DOI: [10.1016/j.cell.2018.01.029](https://doi.org/10.1016/j.cell.2018.01.029). Resource: [http://humantfs.ccbr.utoronto.ca/](http://humantfs.ccbr.utoronto.ca/).
+
+### Source databases (M1 candidate universe)
+- Bausch-Fluck D, Goldmann U, Müller S, van Oostrum M, Müller M, Schubert OT, Wollscheid B. *The in silico human surfaceome.* **PNAS** 115(46):E10988–E10997 (2018). DOI: [10.1073/pnas.1808790115](https://doi.org/10.1073/pnas.1808790115). [SURFY]
+- Bausch-Fluck D, Hofmann A, Bock T, Frei AP, Cerciello F, Jacobs A, Moest H, Omasits U, Gundry RL, Yoon C, Schiess R, Schmidt A, Mirkowska P, Härtlová A, Van Eyk JE, Bourquin J-P, Aebersold R, Boheler KR, Zandstra P, Wollscheid B. *A mass spectrometric-derived cell surface protein atlas.* **PLoS ONE** 10(4):e0121314 (2015). DOI: [10.1371/journal.pone.0121314](https://doi.org/10.1371/journal.pone.0121314). [CSPA]
+- The UniProt Consortium. *UniProt: the Universal Protein Knowledgebase in 2023.* **Nucleic Acids Res** 51(D1):D523–D531 (2023). DOI: [10.1093/nar/gkac1052](https://doi.org/10.1093/nar/gkac1052).
+- The Gene Ontology Consortium. *The Gene Ontology knowledgebase in 2023.* **Genetics** 224(1):iyad031 (2023). DOI: [10.1093/genetics/iyad031](https://doi.org/10.1093/genetics/iyad031).
+- Uhlén M, Fagerberg L, Hallström BM, et al. *Tissue-based map of the human proteome.* **Science** 347(6220):1260419 (2015). DOI: [10.1126/science.1260419](https://doi.org/10.1126/science.1260419). [HPA]
+- Berman HM, Westbrook J, Feng Z, Gilliland G, Bhat TN, Weissig H, Shindyalov IN, Bourne PE. *The Protein Data Bank.* **Nucleic Acids Res** 28(1):235–242 (2000). DOI: [10.1093/nar/28.1.235](https://doi.org/10.1093/nar/28.1.235). [PDB]
+- Binder JX, Pletscher-Frankild S, Tsafou K, Stolte C, O'Donoghue SI, Schneider R, Jensen LJ. *COMPARTMENTS: unification and visualization of protein subcellular localization evidence.* **Database** 2014:bau012 (2014). DOI: [10.1093/database/bau012](https://doi.org/10.1093/database/bau012).
+- Tweedie S, Braschi B, Gray K, Jones TEM, Seal RL, Yates B, Bruford EA. *Genenames.org: the HGNC and VGNC resources in 2021.* **Nucleic Acids Res** 49(D1):D939–D946 (2021). DOI: [10.1093/nar/gkaa980](https://doi.org/10.1093/nar/gkaa980). [HGNC]
+
+### ML topology / signal-peptide / GPI predictors
+- Hallgren J, Tsirigos KD, Pedersen MD, Almagro Armenteros JJ, Marcatili P, Nielsen H, Krogh A, Winther O. *DeepTMHMM predicts alpha and beta transmembrane proteins using deep neural networks.* bioRxiv (2022). DOI: [10.1101/2022.04.08.487609](https://doi.org/10.1101/2022.04.08.487609).
+- Teufel F, Almagro Armenteros JJ, Johansen AR, Gíslason MH, Pihl SI, Tsirigos KD, Winther O, Brunak S, von Heijne G, Nielsen H. *SignalP 6.0 predicts all five types of signal peptides using protein language models.* **Nat Biotechnol** 40:1023–1025 (2022). DOI: [10.1038/s41587-021-01156-3](https://doi.org/10.1038/s41587-021-01156-3).
+- Pierleoni A, Martelli PL, Casadio R. *PredGPI: a GPI-anchor predictor.* **BMC Bioinformatics** 9:392 (2008). DOI: [10.1186/1471-2105-9-392](https://doi.org/10.1186/1471-2105-9-392).
+
+### Retrieval infrastructure
+- Levchenko M, Gou Y, Graef F, Hamelers A, Huang Z, Ide-Smith M, et al. *Europe PMC in 2017.* **Nucleic Acids Res** 46(D1):D1254–D1260 (2018). DOI: [10.1093/nar/gkx1005](https://doi.org/10.1093/nar/gkx1005).
+- Priem J, Piwowar H, Orr R. *OpenAlex: A fully-open index of scholarly works, authors, venues, institutions, and concepts.* arXiv:2205.01833 (2022). [https://arxiv.org/abs/2205.01833](https://arxiv.org/abs/2205.01833).
+- Piwowar H, Priem J, Larivière V, Alperin JP, Matthias L, Norlander B, Farley A, West J, Haustein S. *The state of OA: a large-scale analysis of the prevalence and impact of Open Access articles.* **PeerJ** 6:e4375 (2018). DOI: [10.7717/peerj.4375](https://doi.org/10.7717/peerj.4375). [Unpaywall]
+- Retraction Watch Database. The Center for Scientific Integrity. [http://retractiondatabase.org/](http://retractiondatabase.org/).
+
+### Therapeutic-modality framing
+- Leung D, Wurst JM, Liu T, Martinez RM, Datta-Mannan A, Feng Y. *Antibody Conjugates — Recent Advances and Future Innovations.* **Antibodies** 9(1):2 (2020). DOI: [10.3390/antib9010002](https://doi.org/10.3390/antib9010002).
+- MacKay M, Afshinnekoo E, Rub J, Hassan C, Khunte M, Baskaran N, Owens B, Liu L, Roboz GJ, Guzman ML, Melnick AM, Wu S, Mason CE. *The therapeutic landscape for cells engineered with chimeric antigen receptors.* **Nat Biotechnol** 38:233–244 (2020). DOI: [10.1038/s41587-019-0329-2](https://doi.org/10.1038/s41587-019-0329-2). [CAR-T]
