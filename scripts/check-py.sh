@@ -10,5 +10,6 @@ if ! command -v uv >/dev/null 2>&1; then
 fi
 
 uv run --frozen ruff check src tests main.py
+uv run --frozen ty check
 uv run --frozen python -m compileall -q src main.py
 uv run --frozen pytest -q

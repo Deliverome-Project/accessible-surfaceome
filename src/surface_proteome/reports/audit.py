@@ -69,6 +69,8 @@ from surface_proteome.candidates.uniprot_accession_history import (  # noqa: E40
     parse_sec_ac,
 )
 
+_ALL_SOURCES_CACHE: set[str] | None = None
+
 DEFAULT_HIST_DIR = ROOT / "data" / "external" / "uniprot_accession_history"
 DEFAULT_OUT_DIR = ROOT / "data" / "analysis" / "cross_source_uniprot_audit"
 
@@ -312,9 +314,10 @@ def main() -> None:
 
 def _union_all_sources(sources: dict[str, set[str]]) -> set[str]:
     """Union of accession sets across all loaded sources (memoized once)."""
-    if not hasattr(_union_all_sources, "_cache"):
-        _union_all_sources._cache = set().union(*sources.values())  # type: ignore[attr-defined]
-    return _union_all_sources._cache  # type: ignore[attr-defined, return-value]
+    global _ALL_SOURCES_CACHE
+    if _ALL_SOURCES_CACHE is None:
+        _ALL_SOURCES_CACHE = set().union(*sources.values())
+    return _ALL_SOURCES_CACHE
 
 
 if __name__ == "__main__":

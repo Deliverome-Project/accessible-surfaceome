@@ -144,6 +144,7 @@ import shutil
 import sys
 import time
 from pathlib import Path
+from typing import TypedDict
 
 import mygene
 import pandas as pd
@@ -160,6 +161,15 @@ from surface_proteome.candidates.traceability import (  # noqa: E402
 from surface_proteome.candidates.uniprot_accession_history import (  # noqa: E402
     load_accession_history,
 )
+
+
+class NormalizeStats(TypedDict):
+    source: str
+    input_rows: int
+    deleted_rows_dropped: int
+    secondary_rows_rewritten: int
+    split_duplications: int
+    output_rows: int
 
 DATASET = "candidate_universe"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "processed" / "candidate_universe"
@@ -261,7 +271,7 @@ def _normalize_accessions(
     delac_sp: set[str],
     source_name: str,
     agg_override: dict[str, object] | None = None,
-) -> tuple[pd.DataFrame, dict[str, int]]:
+) -> tuple[pd.DataFrame, NormalizeStats]:
     """Rewrite secondary UniProt accessions to their current primaries.
 
     - Deleted Swiss-Prot accessions are dropped.
@@ -320,7 +330,7 @@ def _normalize_accessions(
         agg.update(agg_override)
     collapsed = df.groupby(key, as_index=False).agg(agg)
 
-    stats = {
+    stats: NormalizeStats = {
         "source": source_name,
         "input_rows": int(n_in),
         "deleted_rows_dropped": int(n_deleted),
@@ -757,7 +767,8 @@ def _resolve_gene_symbols_with_mygene(
         symbol = str(hit.get("symbol", "")).strip().upper()
         if not symbol:
             return None
-        score = float(hit.get("_score", 0.0) or 0.0)
+        score_value = hit.get("_score", 0.0)
+        score = float(score_value) if isinstance(score_value, str | int | float) else 0.0
         aliases = set(_as_upper_list(hit.get("alias")))
         prev_symbols = set(_as_upper_list(hit.get("prev_symbol")))
         if symbol == query:
@@ -837,14 +848,18 @@ def _resolve_gene_symbols_with_mygene(
     return result, stats
 
 
-def parse_args() -> argparse.Namespace:
+def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    return p.parse_args()
+    return p
 
 
-def main() -> None:
-    args = parse_args()
+def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
+    return build_arg_parser().parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = parse_args(argv)
     out_dir: Path = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -899,7 +914,7 @@ def main() -> None:
         cspa_any_missing_category_precollapse=raw_sources["cspa"]["cspa_category_missing"],
     )
     normalized: dict[str, pd.DataFrame] = {}
-    norm_stats: list[dict[str, int]] = []
+    norm_stats: list[NormalizeStats] = []
     for name, df in raw_sources.items():
         norm_df, stats = _normalize_accessions(
             df, sec_ac=sec_ac, delac_sp=delac_sp, source_name=name,

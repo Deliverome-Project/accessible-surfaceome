@@ -1,0 +1,15 @@
+{
+  "languages": {
+    "Python": {
+      "language_servers": ["ty", "ruff"]
+    }
+  },
+  "lsp": {
+    "ty": {
+      "binary": {
+        "path": ".venv/bin/ty",
+        "arguments": ["server"]
+      }
+    }
+  }
+}
