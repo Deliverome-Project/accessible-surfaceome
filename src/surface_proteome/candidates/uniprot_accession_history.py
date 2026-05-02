@@ -18,7 +18,6 @@ import re
 from collections import defaultdict
 from pathlib import Path
 
-
 # UniProt accession regex (Swiss-Prot + TrEMBL long-form).
 # https://www.uniprot.org/help/accession_numbers
 UNIPROT_ACCESSION_RE = re.compile(

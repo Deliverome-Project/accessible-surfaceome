@@ -1,1 +1,0 @@
-"""Structured evidence extraction agent."""

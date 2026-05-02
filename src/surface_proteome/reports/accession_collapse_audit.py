@@ -24,17 +24,11 @@ Rerun after any change to loader filters or the collapse reducer.
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.merge import (  # noqa: E402
+from surface_proteome.candidates.merge import (
     _best_cspa_category,
     _first_nonempty_symbol,
     _load_compartments,
@@ -45,9 +39,11 @@ from surface_proteome.candidates.merge import (  # noqa: E402
     _load_surfy,
     _load_uniprot,
 )
-from surface_proteome.candidates.uniprot_accession_history import (  # noqa: E402
+from surface_proteome.candidates.uniprot_accession_history import (
     load_accession_history,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 SOURCES = {
     "uniprot": _load_uniprot,

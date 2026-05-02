@@ -27,21 +27,17 @@ the filter predicate for the textmining output.
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.traceability import (  # noqa: E402
+from surface_proteome.candidates.traceability import (
     USER_AGENT,
     build_file_record,
     download_binary,
     write_manifest,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 DATASET = "jensenlab_compartments"
 BASE_URL = "https://download.jensenlab.org/"

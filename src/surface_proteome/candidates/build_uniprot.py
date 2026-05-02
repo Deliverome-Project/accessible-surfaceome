@@ -18,7 +18,6 @@ import argparse
 import gzip
 import json
 import re
-import sys
 import time
 from pathlib import Path
 from typing import Any
@@ -26,16 +25,13 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.traceability import (  # noqa: E402
+from surface_proteome.candidates.traceability import (
     build_file_record,
     utc_now_iso,
     write_manifest,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 DATASET = "uniprot_human_surface_candidates"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET

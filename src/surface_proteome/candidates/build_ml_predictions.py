@@ -50,18 +50,14 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.traceability import (  # noqa: E402
+from surface_proteome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 DATASET = "deeptmhmm"
 DEFAULT_INPUT_DIR = ROOT / "data" / "external" / "deeptmhmm_surfaceome_predictions"

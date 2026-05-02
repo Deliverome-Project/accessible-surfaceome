@@ -9,7 +9,6 @@ from pathlib import Path
 from typing import Any
 from urllib.request import Request, urlopen
 
-
 USER_AGENT = "internalizers-data-fetch/1.0"
 
 

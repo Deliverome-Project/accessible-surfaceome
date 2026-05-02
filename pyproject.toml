@@ -23,7 +23,6 @@ dependencies = [
 
 [project.scripts]
 accessible-surfaceome = "surface_proteome.cli:main"
-surface-proteome = "surface_proteome.cli:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -45,4 +44,4 @@ python-version = "3.11"
 root = ["./src"]
 
 [tool.ty.src]
-include = ["src", "tests", "main.py"]
+include = ["src", "tests"]

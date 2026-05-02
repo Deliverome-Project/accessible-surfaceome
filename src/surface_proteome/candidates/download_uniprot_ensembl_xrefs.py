@@ -27,25 +27,23 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlencode
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.traceability import (  # noqa: E402
+from surface_proteome.candidates.build_uniprot import (
+    fetch_with_retries,
+)
+from surface_proteome.candidates.build_uniprot import (
+    iter_pages as _surface_iter_pages,  # noqa: F401 (kept for symmetry; unused)
+)
+from surface_proteome.candidates.traceability import (
     build_file_record,
     utc_now_iso,
     write_manifest,
 )
-from surface_proteome.candidates.build_uniprot import (  # noqa: E402
-    fetch_with_retries,
-    iter_pages as _surface_iter_pages,  # noqa: F401 (kept for symmetry; unused)
-)
+
+ROOT = Path(__file__).resolve().parents[3]
 
 DATASET = "uniprot_ensembl_xrefs"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET

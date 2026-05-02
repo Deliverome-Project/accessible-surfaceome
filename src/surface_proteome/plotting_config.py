@@ -3,9 +3,10 @@ Modern plotting configuration for the internalizers project.
 
 Uses seaborn styling with custom colors and fonts for publication-quality figures.
 """
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import seaborn as sns
-from pathlib import Path
 
 # Modern color palette - professional and accessible
 COLORS = {

@@ -15,7 +15,6 @@ from __future__ import annotations
 import argparse
 import csv
 import re
-import sys
 import time
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -26,18 +25,14 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.traceability import (  # noqa: E402
+from surface_proteome.candidates.traceability import (
     USER_AGENT,
     build_file_record,
     relative_to_repo,
     write_manifest,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 DATASET = "DeepTMHMM_surfaceome_sequence_sets"

@@ -20,17 +20,12 @@ import hashlib
 import json
 import shutil
 import subprocess
-import sys
 import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
 DATASET = "DeepTMHMM_Academic_License_v1.0"
 DEFAULT_SOURCE_URL = "https://dtu.biolib.com/DeepTMHMM/"
 DEFAULT_INSTALL_ROOT = ROOT / "data" / "external" / "deeptmhmm"

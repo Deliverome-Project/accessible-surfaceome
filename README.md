@@ -11,14 +11,11 @@ seven-source candidate-universe merge.
 ## Layout
 
 - `src/surface_proteome/candidates/` - M1 candidate-universe builders.
-- `src/surface_proteome/retrieval/` - planned literature/source retrieval code.
-- `src/surface_proteome/agents/` - planned extraction/synthesis agents and prompts.
-- `src/surface_proteome/pipeline/` - planned per-gene and batch orchestration.
-- `src/surface_proteome/reports/` - planned analysis/report generation code.
+- `src/surface_proteome/reports/` - audit + figure scripts that read the merged universe.
 - `data/raw/` - raw source workbooks used by the M1 builders.
 - `data/external/` - downloaded external snapshots and traceability manifests.
 - `data/processed/` - normalized M1 source tables and candidate-universe outputs.
-- `docs/` - project plans, reports, and onepagers moved from the repo-level docs tree.
+- `docs/` - project plans, reports, and onepagers.
 
 ## Commands
 

@@ -36,7 +36,6 @@ Sources in the figure legend:
 from __future__ import annotations
 
 import argparse
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -44,17 +43,14 @@ import numpy as np
 import pandas as pd
 from upsetplot import UpSet, from_indicators
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.plotting_config import (  # noqa: E402
+from surface_proteome.plotting_config import (
     COLORS,
     create_figure,
     save_figure,
     setup_plotting_style,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 DEFAULT_INPUT = (
     ROOT / "data" / "processed" / "candidate_universe" / "candidate_universe.tsv"

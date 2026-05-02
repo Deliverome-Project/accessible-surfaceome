@@ -53,23 +53,19 @@ from __future__ import annotations
 import argparse
 import gzip
 import json
-import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.traceability import (  # noqa: E402
+from surface_proteome.candidates.traceability import (
     build_file_record,
     download_binary,
     sha256_file,
     utc_now_iso,
     write_manifest,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 DATASET = "go_human_surface_annotations"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET

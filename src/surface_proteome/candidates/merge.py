@@ -141,7 +141,6 @@ import json
 import os
 import secrets
 import shutil
-import sys
 import time
 from pathlib import Path
 from typing import TypedDict
@@ -149,18 +148,15 @@ from typing import TypedDict
 import mygene
 import pandas as pd
 
-ROOT = Path(__file__).resolve().parents[3]
-SRC_DIR = ROOT / "src"
-if str(SRC_DIR) not in sys.path:
-    sys.path.insert(0, str(SRC_DIR))
-
-from surface_proteome.candidates.traceability import (  # noqa: E402
+from surface_proteome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
-from surface_proteome.candidates.uniprot_accession_history import (  # noqa: E402
+from surface_proteome.candidates.uniprot_accession_history import (
     load_accession_history,
 )
+
+ROOT = Path(__file__).resolve().parents[3]
 
 
 class NormalizeStats(TypedDict):
