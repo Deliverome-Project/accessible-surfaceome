@@ -1,8 +1,3 @@
-{
-  "source_surfaceome_csv": "/Users/rebeccacarlson/Git/internalizers/data/analysis/deliverome/expression_filtering/surfaceome_expressed.csv",
-  "proxy_definition": "surfaceome_label == 'surface' AND label_source == 'machine learning'",
-  "n_rows_total": 1405,
-  "n_not_in_existing_control_panel": 1398,
-  "n_internal_compartment_hint": 222,
-  "output_tsv": "/Users/rebeccacarlson/Git/accessible-surfaceome/data/processed/controls/single_dataset_surfaceome_proxy_all.tsv"
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:1ba5d6f152762543defcad0d36b8885ad1c38595e2c8d153c7683a40d080cc4b
+size 474
