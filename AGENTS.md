@@ -17,6 +17,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run CLI: `uv run accessible-surfaceome build`
 - Run module directly: `uv run python -m surface_proteome.candidates.merge`
 - Run checks: `bash scripts/check-py.sh`
+- Run type checking: `uv run ty check`
 - Run tests: `uv run pytest -q`
 - Run hooks: `uv run pre-commit run --all-files --config .pre-commit-config.yaml`
 
@@ -46,7 +47,7 @@ Concise contributor guide for `accessible-surfaceome`.
 
 ## CI & Checks
 - CI runs on PRs and pushes to `main` via `.github/workflows/ci.yml`.
-- CI validates lockfile consistency and runs Python checks/tests.
+- CI validates lockfile consistency and runs Ruff, ty, compile, and pytest checks.
 
 ## Doc Sync Rule
 - Keep `AGENTS.md` and `CLAUDE.md` aligned when workflow guidance changes.

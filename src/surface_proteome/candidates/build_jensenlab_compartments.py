@@ -232,10 +232,10 @@ def main() -> None:
     eligible_ensps: set[str] = set()
     for ensp, stars in experiments_max.items():
         if float(stars or 0.0) >= POOL_STARS_THRESHOLD:
-            eligible_ensps.add(ensp)
+            eligible_ensps.add(str(ensp).strip())
     for ensp, stars in textmining_max.items():
         if float(stars or 0.0) >= POOL_STARS_THRESHOLD:
-            eligible_ensps.add(ensp)
+            eligible_ensps.add(str(ensp).strip())
     eligible_ensps.discard("")
     ensps = eligible_ensps
 

@@ -27,12 +27,13 @@ uv sync
 uv run accessible-surfaceome build
 uv run python -m surface_proteome.candidates.merge
 bash scripts/check-py.sh
+uv run ty check
 uv run pytest -q
 ```
 
 ## Quality Checks
 
-- `bash scripts/check-py.sh` runs ruff + compile + pytest.
+- `bash scripts/check-py.sh` runs ruff + ty + compile + pytest.
 - Use `uv run pre-commit run --all-files --config .pre-commit-config.yaml` before PR.
 
 ## Agent Command Allowlist

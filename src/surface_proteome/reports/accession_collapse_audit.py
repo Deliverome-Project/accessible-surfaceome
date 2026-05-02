@@ -110,9 +110,7 @@ def main() -> None:
                 is_numeric = bool(pd.api.types.is_numeric_dtype(g[col]))
                 if col in overrides:
                     reducer_val = overrides[col]
-                    reducer = (
-                        reducer_val.__name__ if callable(reducer_val) else str(reducer_val)
-                    )
+                    reducer = getattr(reducer_val, "__name__", str(reducer_val))
                 else:
                     reducer = "max" if is_numeric else "first"
                 rows.append(
