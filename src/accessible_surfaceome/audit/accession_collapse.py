@@ -26,31 +26,31 @@ from __future__ import annotations
 
 import pandas as pd
 
-from accessible_surfaceome.candidates.merge import (
-    _best_cspa_category,
-    _first_nonempty_symbol,
-    _load_compartments,
-    _load_cspa,
-    _load_deeptmhmm,
-    _load_go,
-    _load_hpa,
-    _load_surfy,
-    _load_uniprot,
+from accessible_surfaceome.merge.loaders import (
+    best_cspa_category,
+    first_nonempty_symbol,
+    load_compartments,
+    load_cspa,
+    load_deeptmhmm,
+    load_go,
+    load_hpa,
+    load_surfy,
+    load_uniprot,
 )
-from accessible_surfaceome.candidates.uniprot_accession_history import (
+from accessible_surfaceome.sources._support.accession_history import (
     load_accession_history,
 )
 
 from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 SOURCES = {
-    "uniprot": _load_uniprot,
-    "go": _load_go,
-    "surfy": _load_surfy,
-    "cspa": _load_cspa,
-    "deeptmhmm": _load_deeptmhmm,
-    "hpa": _load_hpa,
-    "compartments": _load_compartments,
+    "uniprot": load_uniprot,
+    "go": load_go,
+    "surfy": load_surfy,
+    "cspa": load_cspa,
+    "deeptmhmm": load_deeptmhmm,
+    "hpa": load_hpa,
+    "compartments": load_compartments,
 }
 
 # Mirror of the per-source overrides in build_candidate_universe.main().
@@ -58,11 +58,11 @@ SOURCES = {
 # collapse_conflicts.tsv correctly reflects how a conflict was resolved.
 SOURCE_AGG_OVERRIDES: dict[str, dict[str, object]] = {
     "cspa": {
-        "cspa_category": _best_cspa_category,
-        "cspa_gene_symbol": _first_nonempty_symbol,
+        "cspa_category": best_cspa_category,
+        "cspa_gene_symbol": first_nonempty_symbol,
     },
     "surfy": {
-        "surfy_gene_symbol": _first_nonempty_symbol,
+        "surfy_gene_symbol": first_nonempty_symbol,
     },
 }
 OUTPUT_DIR = ROOT / "data" / "analysis" / "cross_source_uniprot_audit"

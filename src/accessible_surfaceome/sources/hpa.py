@@ -1,4 +1,16 @@
-"""Normalize the HPA subcellular_location.tsv snapshot for the M1 merge.
+"""HPA: download the bulk subcellular-location TSV and normalize it.
+
+Two subcommands::
+
+    python -m accessible_surfaceome.sources.hpa download
+    python -m accessible_surfaceome.sources.hpa build
+
+``download`` fetches https://www.proteinatlas.org/download/tsv/subcellular_location.tsv.zip
+(v25.0, ~250 KB zipped, 13,604 rows) into
+``data/external/hpa_subcellular_location/`` (raw zip + extracted TSV +
+download_traceability.json). License: CC-BY-SA-3.0.
+
+``build`` normalizes that snapshot for the M1 candidate-universe merge.
 
 Scoped to **therapeutic-delivery-relevant surface annotations** (ADC /
 CAR-T / mRNA-LNP targeting). See the companion report
@@ -73,25 +85,34 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import zipfile
 from pathlib import Path
 
 import pandas as pd
 
-from accessible_surfaceome.candidates.traceability import (
+from accessible_surfaceome.sources._support.traceability import (
+    build_file_record,
+    download_binary,
     sha256_file,
     utc_now_iso,
+    write_manifest,
 )
-from accessible_surfaceome.candidates.uniprot_ensembl_mapping import (
+from accessible_surfaceome.sources._support.ensembl_mapping import (
     load_ensembl_mapping,
 )
 
 from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "hpa"
-HPA_INPUT_TSV = (
-    ROOT / "data" / "external" / "hpa_subcellular_location"
-    / "subcellular_location.tsv"
+DOWNLOAD_DATASET = "hpa_subcellular_location"
+DOWNLOAD_URL = (
+    "https://www.proteinatlas.org/download/tsv/subcellular_location.tsv.zip"
 )
+DOWNLOAD_DEFAULT_DIR = ROOT / "data" / "external" / "hpa_subcellular_location"
+DOWNLOAD_ZIP_NAME = "subcellular_location.tsv.zip"
+DOWNLOAD_TSV_NAME = "subcellular_location.tsv"
+
+HPA_INPUT_TSV = DOWNLOAD_DEFAULT_DIR / DOWNLOAD_TSV_NAME
 ENSEMBL_XREF_DIR = ROOT / "data" / "external" / "uniprot_ensembl_xrefs"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "processed" / "hpa"
 OUTPUT_TSV = "hpa_human_snapshot.tsv"
@@ -163,16 +184,16 @@ def _best_tier(row: pd.Series, prefix: str) -> str:
     return ""
 
 
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description=__doc__)
+def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Build HPA snapshot for the M1 merge.")
     p.add_argument("--input-tsv", type=Path, default=HPA_INPUT_TSV)
     p.add_argument("--xref-dir", type=Path, default=ENSEMBL_XREF_DIR)
     p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
-def main() -> None:
-    args = parse_args()
+def build_main(argv: list[str] | None = None) -> None:
+    args = _build_parse_args(argv)
     input_path: Path = args.input_tsv
     out_dir: Path = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -180,7 +201,7 @@ def main() -> None:
     if not input_path.exists():
         raise FileNotFoundError(
             f"HPA input missing: {input_path}. Run "
-            "`uv run python -m accessible_surfaceome.candidates.download_hpa_subcellular_location` first."
+            "`uv run python -m accessible_surfaceome.sources.hpa download` first."
         )
 
     print(f"reading {input_path.relative_to(ROOT)} ...")
@@ -432,6 +453,100 @@ def main() -> None:
           f"n_junctional={summary['n_junctional']:,}  "
           f"n_secreted_only={summary['n_secreted_only']:,}  "
           f"n_trafficking_associated={summary['n_trafficking_associated']:,}")
+
+
+def _download_fetch(url: str, out_path: Path, force: bool) -> tuple[str, dict[str, str]]:
+    if out_path.exists() and not force:
+        return "reused", {}
+    data, headers = download_binary(url, timeout=300)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_bytes(data)
+    return "downloaded", headers
+
+
+def _download_extract_zip(zip_path: Path, out_dir: Path) -> Path:
+    """Extract the single TSV member of the zip to ``out_dir``."""
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        members = [n for n in zf.namelist() if n.endswith(".tsv")]
+        if len(members) != 1:
+            raise RuntimeError(
+                f"Expected exactly one .tsv member in {zip_path}; got {members}"
+            )
+        member = members[0]
+        target = out_dir / DOWNLOAD_TSV_NAME
+        with zf.open(member) as src, target.open("wb") as dst:
+            dst.write(src.read())
+        return target
+
+
+def _download_parse_args(argv: list[str] | None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Download HPA subcellular-location bulk file."
+    )
+    p.add_argument("--output-dir", type=Path, default=DOWNLOAD_DEFAULT_DIR)
+    p.add_argument("--force", action="store_true")
+    return p.parse_args(argv)
+
+
+def download_main(argv: list[str] | None = None) -> None:
+    args = _download_parse_args(argv)
+    out_dir: Path = args.output_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    zip_path = out_dir / DOWNLOAD_ZIP_NAME
+    status, headers = _download_fetch(DOWNLOAD_URL, zip_path, args.force)
+    print(f"{DOWNLOAD_ZIP_NAME}: {status}  ({zip_path.stat().st_size:,} bytes)")
+
+    tsv_path = _download_extract_zip(zip_path, out_dir)
+    print(f"extracted {DOWNLOAD_TSV_NAME}  ({tsv_path.stat().st_size:,} bytes)")
+
+    records = [
+        build_file_record(
+            repo_root=ROOT,
+            file_path=zip_path,
+            source_url=DOWNLOAD_URL,
+            dataset=DOWNLOAD_DATASET,
+            taxid="9606",
+            species="Homo sapiens",
+            status=status,
+            response_headers=headers or None,
+            note="Raw HPA subcellular-location bulk file (CC-BY-SA-3.0).",
+        ),
+        build_file_record(
+            repo_root=ROOT,
+            file_path=tsv_path,
+            source_url=DOWNLOAD_URL,
+            dataset=DOWNLOAD_DATASET,
+            taxid="9606",
+            species="Homo sapiens",
+            status="derived",
+            note=f"Extracted from {DOWNLOAD_ZIP_NAME} for direct downstream reads.",
+        ),
+    ]
+    manifest_path = out_dir / "download_traceability.json"
+    write_manifest(
+        manifest_path,
+        dataset=DOWNLOAD_DATASET,
+        script=Path(__file__).relative_to(ROOT).as_posix(),
+        records=records,
+        extras={
+            "source_url": DOWNLOAD_URL,
+            "license": "CC-BY-SA-3.0",
+        },
+    )
+    print(f"wrote {manifest_path.relative_to(ROOT)}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("download", help="Fetch HPA subcellular-location bulk file.", add_help=False)
+    sub.add_parser("build", help="Normalize the HPA snapshot for the M1 merge.", add_help=False)
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "download":
+        download_main(remainder)
+    elif args.command == "build":
+        build_main(remainder)
 
 
 if __name__ == "__main__":

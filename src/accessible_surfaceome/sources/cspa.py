@@ -39,7 +39,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from accessible_surfaceome.candidates.traceability import (
+from accessible_surfaceome.sources._support.traceability import (
     sha256_file,
     utc_now_iso,
 )
@@ -87,15 +87,15 @@ def _categorize(cat_str: str) -> dict[str, int]:
     }
 
 
-def parse_args() -> argparse.Namespace:
+def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--input", type=Path, default=DEFAULT_INPUT)
     p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
-def main() -> None:
-    args = parse_args()
+def build_main(argv: list[str] | None = None) -> None:
+    args = _build_parse_args(argv)
     input_path: Path = args.input
     out_dir: Path = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -264,6 +264,15 @@ def main() -> None:
     print(f"  high_confidence={summary['human']['n_high_confidence']:,}  "
           f"putative={summary['human']['n_putative']:,}  "
           f"unspecific={summary['human']['n_unspecific']:,}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("build", help="Build the snapshot for the M1 merge.", add_help=False)
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "build":
+        build_main(remainder)
 
 
 if __name__ == "__main__":

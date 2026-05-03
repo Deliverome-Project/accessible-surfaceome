@@ -43,7 +43,7 @@ import numpy as np
 import pandas as pd
 from upsetplot import UpSet, from_indicators
 
-from accessible_surfaceome.plotting_config import (
+from accessible_surfaceome.audit._plotting_config import (
     COLORS,
     create_figure,
     save_figure,

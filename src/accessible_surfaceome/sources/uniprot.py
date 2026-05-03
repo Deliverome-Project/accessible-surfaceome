@@ -25,7 +25,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
-from accessible_surfaceome.candidates.traceability import (
+from accessible_surfaceome.sources._support.traceability import (
     USER_AGENT,
     build_file_record,
     utc_now_iso,
@@ -339,7 +339,7 @@ def write_tsv_summary(entries: list[dict[str, Any]], path: Path) -> None:
             fh.write("\t".join(v.replace("\t", " ").replace("\n", " ") for v in values) + "\n")
 
 
-def parse_args() -> argparse.Namespace:
+def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
@@ -363,11 +363,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print query + total-results header and exit without writing.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
-def main() -> None:
-    args = parse_args()
+def build_main(argv: list[str] | None = None) -> None:
+    args = _build_parse_args(argv)
     query = build_query(args.query_mode)
     print(f"query_mode={args.query_mode}")
     print(f"query={query}")
@@ -458,6 +458,15 @@ def main() -> None:
     print(jsonl_path)
     print(tsv_path)
     print(manifest_path)
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("build", help="Build the snapshot for the M1 merge.", add_help=False)
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "build":
+        build_main(remainder)
 
 
 if __name__ == "__main__":

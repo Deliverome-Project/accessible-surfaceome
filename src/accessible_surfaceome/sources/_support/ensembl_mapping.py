@@ -1,52 +1,95 @@
-"""Fetch Ensembl xrefs for the full reviewed human UniProt proteome.
+"""ENSG / ENSP → UniProt primary accession mapping: download + load.
 
-Unlike ``download_uniprot_human_surface_candidates.py`` (which is pre-filtered
-to the surface candidate pool), this downloader covers every reviewed human
-entry (``organism_id:9606 AND reviewed:true``, ~20,400 rows) and emits two
-long tables:
+Two surfaces:
 
-- ``ensg_to_uniprot.tsv``  — one row per (ENSG, UniProt primary) pair
-- ``ensp_to_uniprot.tsv``  — one row per (ENSP, UniProt primary) pair
+- ``load_ensembl_mapping`` / ``map_to_uniprot``: lookup helpers used by
+  ``accessible_surfaceome.sources.hpa`` (ENSG keys) and
+  ``accessible_surfaceome.sources.compartments`` (ENSP keys). Lists (rather
+  than scalars) handle the rare case where one Ensembl ID legitimately
+  maps to multiple UniProt primaries (alternative-isoform UniProt entries
+  pointing at the same Ensembl gene).
+- ``download_main`` / CLI: fetch the cross-reference tables from UniProt
+  for every reviewed human entry (~20,400 rows). Two output TSVs are
+  emitted: ``ensg_to_uniprot.tsv`` and ``ensp_to_uniprot.tsv``.
 
-Both files carry a trailing ``uniprot_entry_name`` column for sanity
-checks. The same ENSG / ENSP can legitimately map to multiple UniProt
-primaries (rare but real — alternative-isoform UniProt entries pointing at
-the same Ensembl gene); downstream code must handle the list.
-
-Needed for the HPA (ENSG-keyed) and JensenLab COMPARTMENTS (ENSP-keyed)
-sources added to the M1 candidate-universe merge. The full-proteome
-coverage is essential: COMPARTMENTS annotates ENSPs that aren't in our
-surface-candidate query output, so we must be able to map *any* reviewed
-human ENSP to a UniProt primary to avoid silently dropping evidence.
-
-Emits ``uniprot_ensembl_xrefs_download_traceability.json`` with SHA256
-and size for every downloaded file.
+The full-proteome coverage (rather than the surface-only query used by
+``sources.uniprot``) matters: COMPARTMENTS annotates ENSPs that aren't in
+the surface-candidate query output, so we must be able to map *any*
+reviewed human ENSP to a UniProt primary to avoid silently dropping
+evidence.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlencode
 
-from accessible_surfaceome.candidates.build_uniprot import (
-    fetch_with_retries,
-)
-from accessible_surfaceome.candidates.build_uniprot import (
-    iter_pages as _surface_iter_pages,  # noqa: F401 (kept for symmetry; unused)
-)
-from accessible_surfaceome.candidates.traceability import (
+import pandas as pd
+
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.sources._support.traceability import (
     build_file_record,
     utc_now_iso,
     write_manifest,
 )
 
-from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
-DATASET = "uniprot_ensembl_xrefs"
-DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET
+def _load_pair_tsv(path: Path, id_col: str) -> dict[str, list[str]]:
+    """Read a two-column mapping TSV into ``{ensembl_id: [uniprot_primary, ...]}``."""
+    mapping: dict[str, list[str]] = defaultdict(list)
+    if not path.exists():
+        raise FileNotFoundError(
+            f"Missing Ensembl xref mapping at {path}. Run "
+            "`uv run python -m accessible_surfaceome.sources._support.ensembl_mapping download` first."
+        )
+    df = pd.read_csv(path, sep="\t", dtype=str, usecols=[id_col, "uniprot_accession"])
+    for eid, acc in zip(df[id_col].fillna(""), df["uniprot_accession"].fillna("")):
+        if not eid or not acc:
+            continue
+        lst = mapping[eid]
+        if acc not in lst:
+            lst.append(acc)
+    return dict(mapping)
+
+
+def load_ensembl_mapping(
+    xref_dir: Path,
+) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
+    """Load both mappings from ``xref_dir`` and return ``(ensg, ensp)``.
+
+    Raises ``FileNotFoundError`` if either file is missing.
+    """
+    ensg_path = xref_dir / "ensg_to_uniprot.tsv"
+    ensp_path = xref_dir / "ensp_to_uniprot.tsv"
+    ensg_map = _load_pair_tsv(ensg_path, "ensembl_gene_id")
+    ensp_map = _load_pair_tsv(ensp_path, "ensembl_protein_id")
+    return ensg_map, ensp_map
+
+
+def map_to_uniprot(
+    ensembl_ids: pd.Series,
+    mapping: dict[str, list[str]],
+) -> tuple[pd.Series, pd.Series]:
+    """Attach a list-of-primaries column to each Ensembl ID.
+
+    Returns ``(primaries_list, n_primaries)`` — the first a Series of lists
+    (empty when the ID is unmapped), the second a Series of ints for quick
+    filtering on mapped/ambiguous rows. Caller is responsible for
+    exploding and flagging ``split_mapping_ambiguous`` rows.
+    """
+    primaries = ensembl_ids.map(lambda e: list(mapping.get(str(e).strip(), [])))
+    n_primaries = primaries.map(len)
+    return primaries, n_primaries
+
+
+# ---- download ----
+
+DOWNLOAD_DATASET = "uniprot_ensembl_xrefs"
+DOWNLOAD_DEFAULT_DIR = ROOT / "data" / "external" / DOWNLOAD_DATASET
 UNIPROT_SEARCH_URL = "https://rest.uniprot.org/uniprotkb/search"
 RETURN_FIELDS = ["accession", "id", "xref_ensembl"]
 QUERY = "organism_id:9606 AND reviewed:true"
@@ -102,6 +145,10 @@ def _iter_pages_full(
 ) -> tuple[list[dict[str, Any]], dict[str, str]]:
     """Walk cursor pagination over the full reviewed human proteome."""
     import re
+
+    # Imported lazily to avoid import cycles: sources.uniprot imports from
+    # this module via the ensembl-xref helpers in some tests.
+    from accessible_surfaceome.sources.uniprot import fetch_with_retries
 
     params = [
         ("query", QUERY),
@@ -174,9 +221,11 @@ def _write_pair_tsv(
     return len(deduped)
 
 
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+def _download_parse_args(argv: list[str] | None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Download UniProt ENSG/ENSP cross-references for reviewed human entries."
+    )
+    p.add_argument("--output-dir", type=Path, default=DOWNLOAD_DEFAULT_DIR)
     p.add_argument("--page-size", type=int, default=500)
     p.add_argument("--timeout", type=int, default=180)
     p.add_argument("--retry-max-attempts", type=int, default=5)
@@ -187,11 +236,11 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="Stop after this many entries (0 = no cap). Useful for smoke tests.",
     )
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
-def main() -> None:
-    args = parse_args()
+def download_main(argv: list[str] | None = None) -> None:
+    args = _download_parse_args(argv)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     print(f"query={QUERY}")
@@ -236,7 +285,7 @@ def main() -> None:
             repo_root=ROOT,
             file_path=ensg_path,
             source_url=UNIPROT_SEARCH_URL,
-            dataset=DATASET,
+            dataset=DOWNLOAD_DATASET,
             taxid="9606",
             species="Homo sapiens",
             status="derived",
@@ -246,7 +295,7 @@ def main() -> None:
             repo_root=ROOT,
             file_path=ensp_path,
             source_url=UNIPROT_SEARCH_URL,
-            dataset=DATASET,
+            dataset=DOWNLOAD_DATASET,
             taxid="9606",
             species="Homo sapiens",
             status="derived",
@@ -256,7 +305,7 @@ def main() -> None:
     manifest_path = args.output_dir / "download_traceability.json"
     write_manifest(
         manifest_path,
-        dataset=DATASET,
+        dataset=DOWNLOAD_DATASET,
         script=Path(__file__).relative_to(ROOT).as_posix(),
         records=records,
         extras={
@@ -274,6 +323,19 @@ def main() -> None:
         },
     )
     print(f"wrote {manifest_path.relative_to(ROOT)}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser(
+        "download",
+        help="Fetch UniProt ENSG/ENSP cross-references for reviewed human entries.",
+        add_help=False,
+    )
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "download":
+        download_main(remainder)
 
 
 if __name__ == "__main__":

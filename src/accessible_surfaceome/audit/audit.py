@@ -53,11 +53,11 @@ from pathlib import Path
 
 import pandas as pd
 
-from accessible_surfaceome.candidates.traceability import (
+from accessible_surfaceome.sources._support.traceability import (
     sha256_file,
     utc_now_iso,
 )
-from accessible_surfaceome.candidates.uniprot_accession_history import (
+from accessible_surfaceome.sources._support.accession_history import (
     UNIPROT_ACCESSION_RE,
     parse_delac_sp,
     parse_sec_ac,

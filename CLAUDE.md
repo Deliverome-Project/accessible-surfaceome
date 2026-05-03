@@ -12,7 +12,10 @@ Current implementation focus: candidate-universe builders (M1).
 ## Repository Structure
 
 - `src/accessible_surfaceome/` core package
-- `src/accessible_surfaceome/candidates/` source download/build/merge modules
+- `src/accessible_surfaceome/sources/` per-source download/build modules (one file per data source); shared infra in `sources/_support/`
+- `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution)
+- `src/accessible_surfaceome/audit/` audits + blog figures
+- `src/accessible_surfaceome/tools/` per-machine install plumbing
 - `data/raw/`, `data/external/`, `data/processed/`, `data/analysis/`
 - `docs/` plans/reports
 
@@ -26,7 +29,7 @@ uv sync
 
 ```bash
 uv run accessible-surfaceome build
-uv run python -m accessible_surfaceome.candidates.merge
+uv run python -m accessible_surfaceome.merge
 bash scripts/check-py.sh
 uv run ty check
 uv run pytest -q

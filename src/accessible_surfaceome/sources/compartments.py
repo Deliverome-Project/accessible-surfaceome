@@ -1,4 +1,18 @@
-"""Normalize JensenLab COMPARTMENTS human TSVs for the M1 merge.
+"""JensenLab COMPARTMENTS: download channel TSVs and normalize them.
+
+Two subcommands::
+
+    python -m accessible_surfaceome.sources.compartments download
+    python -m accessible_surfaceome.sources.compartments build
+
+``download`` fetches the five channel TSVs (integrated, knowledge,
+experiments, textmining, predictions) for taxon 9606 from
+https://download.jensenlab.org/. The ``textmining`` channel is filtered
+at download time to surface-relevant GO terms (the raw upstream is
+~850 MB and dominated by non-surface terms). License: CC-BY-4.0.
+Reference: Binder et al., Database (Oxford), 2014, 10.1093/database/bau012.
+
+``build`` normalizes those TSVs for the M1 candidate-universe merge.
 
 Input (all under ``data/external/jensenlab_compartments/``):
 
@@ -91,14 +105,19 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from urllib.request import Request, urlopen
 
 import pandas as pd
 
-from accessible_surfaceome.candidates.traceability import (
+from accessible_surfaceome.sources._support.traceability import (
+    USER_AGENT,
+    build_file_record,
+    download_binary,
     sha256_file,
     utc_now_iso,
+    write_manifest,
 )
-from accessible_surfaceome.candidates.uniprot_ensembl_mapping import (
+from accessible_surfaceome.sources._support.ensembl_mapping import (
     load_ensembl_mapping,
 )
 
@@ -171,16 +190,16 @@ def _per_ensp_surface_terms(df: pd.DataFrame) -> pd.Series:
     )
 
 
-def parse_args() -> argparse.Namespace:
-    p = argparse.ArgumentParser(description=__doc__)
+def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Build COMPARTMENTS snapshot for the M1 merge.")
     p.add_argument("--input-dir", type=Path, default=INPUT_DIR)
     p.add_argument("--xref-dir", type=Path, default=ENSEMBL_XREF_DIR)
     p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
-    return p.parse_args()
+    return p.parse_args(argv)
 
 
-def main() -> None:
-    args = parse_args()
+def build_main(argv: list[str] | None = None) -> None:
+    args = _build_parse_args(argv)
     in_dir: Path = args.input_dir
     out_dir: Path = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -442,6 +461,170 @@ def main() -> None:
           f"HPA experiments rows dropped: {n_experiments_hpa_dropped:,}")
     print(f"  n_surface_flag={summary['n_surface_flag']:,}  "
           f"n_low_confidence_only={summary['n_low_confidence_only']:,}")
+
+
+# ---- download ----
+
+DOWNLOAD_BASE_URL = "https://download.jensenlab.org/"
+DOWNLOAD_DEFAULT_DIR = INPUT_DIR
+
+# (filename, filter-mode, note). filter-mode "none" saves the raw bytes;
+# "surface_terms" streams line-by-line and keeps rows whose go_id
+# (TSV column 3, 0-indexed 2) is in SURFACE_TERMS.
+DOWNLOAD_FILES: list[tuple[str, str, str]] = [
+    ("human_compartment_integrated_full.tsv", "none",
+     "Integrated score (0-5 stars) across all four channels per GO term."),
+    ("human_compartment_knowledge_full.tsv", "none",
+     "Knowledge channel: curated-literature + DB annotations (re-ingests GO / UniProt-SubCell)."),
+    ("human_compartment_experiments_full.tsv", "none",
+     "Experiments channel (human-only); includes HPA IF rows with source=='HPA'."),
+    ("human_compartment_textmining_full.tsv", "surface_terms",
+     "Textmining channel: filter-at-download to SURFACE_TERMS GO IDs."),
+    ("human_compartment_predictions_full.tsv", "none",
+     "Predictions channel: WoLF PSORT + YLoc-HighRes. Carried as "
+     "provenance only — sequence-based predictors are redundant with "
+     "SURFY + DeepTMHMM in the M1 merge."),
+]
+
+
+def _download_fetch_raw(url: str, out_path: Path, force: bool) -> tuple[str, dict[str, str]]:
+    if out_path.exists() and not force:
+        return "reused", {}
+    data, headers = download_binary(url, timeout=600)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_bytes(data)
+    return "downloaded", headers
+
+
+def _download_fetch_filtered(
+    url: str,
+    out_path: Path,
+    *,
+    surface_terms: set[str],
+    force: bool,
+) -> tuple[str, dict[str, str], int, int]:
+    """Stream ``url``, write only rows whose go_id is in ``surface_terms``.
+
+    Returns (status, response_headers, n_upstream_rows, n_kept_rows).
+    """
+    if out_path.exists() and not force:
+        return "reused", {}, 0, 0
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    req = Request(url, headers={"User-Agent": USER_AGENT})
+    kept = 0
+    total = 0
+    with urlopen(req, timeout=1800) as response:  # noqa: S310
+        headers = {
+            "content_type": response.headers.get("Content-Type", ""),
+            "content_length_header": response.headers.get("Content-Length", ""),
+            "etag": response.headers.get("ETag", ""),
+            "last_modified": response.headers.get("Last-Modified", ""),
+        }
+        with out_path.open("wb") as dst:
+            while True:
+                line_bytes = response.readline()
+                if not line_bytes:
+                    break
+                total += 1
+                try:
+                    line = line_bytes.decode("utf-8")
+                except UnicodeDecodeError:
+                    line = line_bytes.decode("utf-8", errors="replace")
+                parts = line.rstrip("\n").split("\t")
+                if len(parts) < 4:
+                    continue
+                go_id = parts[2]
+                if go_id in surface_terms:
+                    dst.write(line_bytes)
+                    kept += 1
+    return "downloaded", headers, total, kept
+
+
+def _download_parse_args(argv: list[str] | None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(description="Download JensenLab COMPARTMENTS human TSVs.")
+    p.add_argument("--output-dir", type=Path, default=DOWNLOAD_DEFAULT_DIR)
+    p.add_argument("--force", action="store_true")
+    return p.parse_args(argv)
+
+
+def download_main(argv: list[str] | None = None) -> None:
+    args = _download_parse_args(argv)
+    out_dir: Path = args.output_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    records = []
+    filter_stats: dict[str, dict[str, int]] = {}
+    for filename, mode, note in DOWNLOAD_FILES:
+        url = DOWNLOAD_BASE_URL + filename
+        out_path = out_dir / filename
+        if mode == "surface_terms":
+            status, headers, n_upstream, n_kept = _download_fetch_filtered(
+                url, out_path,
+                surface_terms=SURFACE_TERMS,
+                force=args.force,
+            )
+            if status == "downloaded":
+                print(
+                    f"{filename}: {status}  kept {n_kept:,} / {n_upstream:,} rows "
+                    f"(surface GO terms only)"
+                )
+                filter_stats[filename] = {
+                    "n_upstream_rows": n_upstream,
+                    "n_kept_rows": n_kept,
+                }
+            else:
+                print(f"{filename}: {status}  ({out_path.stat().st_size:,} bytes)")
+        else:
+            status, headers = _download_fetch_raw(url, out_path, args.force)
+            print(f"{filename}: {status}  ({out_path.stat().st_size:,} bytes)")
+        record = build_file_record(
+            repo_root=ROOT,
+            file_path=out_path,
+            source_url=url,
+            dataset=DATASET,
+            taxid="9606",
+            species="Homo sapiens",
+            status=status,
+            response_headers=headers or None,
+            note=note,
+        )
+        if filename in filter_stats:
+            record["filter"] = {
+                "mode": "surface_terms",
+                "surface_terms": sorted(SURFACE_TERMS),
+                "n_upstream_rows": filter_stats[filename]["n_upstream_rows"],
+                "n_kept_rows": filter_stats[filename]["n_kept_rows"],
+                "rule": "keep line iff TSV column 3 (go_id) is in surface_terms",
+            }
+        records.append(record)
+
+    manifest_path = out_dir / "download_traceability.json"
+    write_manifest(
+        manifest_path,
+        dataset=DATASET,
+        script=Path(__file__).relative_to(ROOT).as_posix(),
+        records=records,
+        extras={
+            "base_url": DOWNLOAD_BASE_URL,
+            "license": "CC-BY-4.0",
+            "citation": "Binder et al., Database (Oxford), 2014, DOI: 10.1093/database/bau012",
+            "star_scale": "integer 1-5; higher = more confident",
+            "surface_terms": sorted(SURFACE_TERMS),
+        },
+    )
+    print(f"wrote {manifest_path.relative_to(ROOT)}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("download", help="Fetch JensenLab COMPARTMENTS channel TSVs.", add_help=False)
+    sub.add_parser("build", help="Normalize the COMPARTMENTS snapshot for the M1 merge.", add_help=False)
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "download":
+        download_main(remainder)
+    elif args.command == "build":
+        build_main(remainder)
 
 
 if __name__ == "__main__":

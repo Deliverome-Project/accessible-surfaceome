@@ -50,7 +50,7 @@ DEFAULT_ADDITIONAL_NEGATIVE = (
 DEFAULT_SPECIFIED_NEGATIVE = "ABCB9,KRAS"
 
 
-def parse_args() -> argparse.Namespace:
+def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -99,7 +99,7 @@ def parse_args() -> argparse.Namespace:
         default=DEFAULT_SPECIFIED_NEGATIVE,
         help="Comma-separated explicitly requested non-surface negatives.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def _csv_symbols(raw: str) -> list[str]:
@@ -523,9 +523,9 @@ def build_control_panel(
     return final[ordered_cols]
 
 
-def main() -> None:
-    """CLI entrypoint."""
-    args = parse_args()
+def build_main(argv: list[str] | None = None) -> None:
+    """CLI entrypoint for the controls panel builder."""
+    args = _build_parse_args(argv)
     controls_json = args.controls_json.expanduser().resolve()
     surfaceome_csv = args.surfaceome_csv.expanduser().resolve()
     mygene_symbol_universe_tsv = args.mygene_symbol_universe_tsv.expanduser().resolve()
@@ -575,6 +575,15 @@ def main() -> None:
     print(json.dumps(summary, indent=2))
     print(f"Wrote {output_tsv}")
     print(f"Wrote {output_summary}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("build", help="Build the snapshot for the M1 merge.", add_help=False)
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "build":
+        build_main(remainder)
 
 
 if __name__ == "__main__":

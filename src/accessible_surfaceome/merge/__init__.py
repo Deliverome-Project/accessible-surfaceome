@@ -1,6 +1,6 @@
 """Merge the seven M1 sources into one candidate-universe table.
 
-Sources (each loaded by its own ``_load_*`` function below):
+Sources (each loaded by a ``load_*`` function in ``loaders.py``):
 
 1. **UniProt** — pre-filtered surface-candidate query
 2. **GO** — annotations under the surface GO roots
@@ -14,7 +14,7 @@ The join key is the base ``uniprot_accession``. Before joining, each
 source's accessions are reconciled against the current UniProt accession
 history (``sec_ac.txt`` + ``delac_sp.txt``) so that, e.g., per-allele HLA
 accessions that UniProt has since merged collapse onto the right
-canonical primary.
+canonical primary. That step lives in ``normalize.py``.
 
 Each source produces a boolean ``<source>_surface_flag`` derived from
 its own evidence rule. The exact predicates are documented once in the
@@ -36,32 +36,52 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import TypedDict
 
-import mygene
 import pandas as pd
 
-from accessible_surfaceome.candidates.traceability import (
-    sha256_file,
-    utc_now_iso,
+from accessible_surfaceome.merge.gene_symbols import (
+    consolidate_gene_symbol,
+    resolve_gene_symbols_with_mygene,
 )
-from accessible_surfaceome.candidates.uniprot_accession_history import (
-    load_accession_history,
+from accessible_surfaceome.merge.loaders import (
+    COMPARTMENTS_TSV,
+    CSPA_HIGH_CONFIDENCE,
+    CSPA_KNOWN_CATEGORIES,
+    CSPA_PUTATIVE,
+    CSPA_TSV,
+    CSPA_UNSPECIFIC,
+    DEEPTMHMM_CAN_TSV,
+    DEEPTMHMM_ISO_TSV,
+    GO_TSV,
+    HPA_TSV,
+    SURFY_TSV,
+    UNIPROT_TSV,
+    best_cspa_category,
+    first_nonempty_symbol,
+    load_compartments,
+    load_cspa,
+    load_deeptmhmm,
+    load_go,
+    load_hpa,
+    load_surfy,
+    load_uniprot,
+)
+from accessible_surfaceome.merge.normalize import (
+    NormalizeStats,
+    normalize_accessions,
 )
 from accessible_surfaceome.paths import (
     DATA_EXTERNAL_DIR,
     DATA_PROCESSED_DIR,
     REPO_ROOT,
 )
-
-
-class NormalizeStats(TypedDict):
-    source: str
-    input_rows: int
-    deleted_rows_dropped: int
-    secondary_rows_rewritten: int
-    split_duplications: int
-    output_rows: int
+from accessible_surfaceome.sources._support.accession_history import (
+    load_accession_history,
+)
+from accessible_surfaceome.sources._support.traceability import (
+    sha256_file,
+    utc_now_iso,
+)
 
 DATASET = "candidate_universe"
 DEFAULT_OUTPUT_DIR = DATA_PROCESSED_DIR / "candidate_universe"
@@ -70,23 +90,6 @@ ZERO_SUPPORT_TSV = "candidate_universe_zero_support.tsv"
 SUMMARY_JSON = "candidate_universe_summary.json"
 MANIFEST_JSON = "candidate_universe_traceability.json"
 
-UNIPROT_TSV = (
-    DATA_EXTERNAL_DIR / "uniprot_human_surface_candidates"
-    / "uniprot_human_surface_candidates.tsv"
-)
-GO_TSV = (
-    DATA_EXTERNAL_DIR / "go_human_surface_annotations"
-    / "go_human_surface_annotations_by_gene_product.tsv"
-)
-SURFY_TSV = DATA_PROCESSED_DIR / "surfy" / "surfy_human_snapshot.tsv"
-CSPA_TSV = DATA_PROCESSED_DIR / "cspa" / "cspa_human_snapshot.tsv"
-DEEPTMHMM_CAN_TSV = DATA_PROCESSED_DIR / "deeptmhmm" / "deeptmhmm_human_canonical.tsv"
-DEEPTMHMM_ISO_TSV = DATA_PROCESSED_DIR / "deeptmhmm" / "deeptmhmm_human_isoforms.tsv"
-HPA_TSV = DATA_PROCESSED_DIR / "hpa" / "hpa_human_snapshot.tsv"
-COMPARTMENTS_TSV = (
-    DATA_PROCESSED_DIR / "jensenlab_compartments"
-    / "jensenlab_compartments_human_snapshot.tsv"
-)
 ACCESSION_HISTORY_DIR = DATA_EXTERNAL_DIR / "uniprot_accession_history"
 SEC_AC_TXT = ACCESSION_HISTORY_DIR / "sec_ac.txt"
 DELAC_SP_TXT = ACCESSION_HISTORY_DIR / "delac_sp.txt"
@@ -110,634 +113,6 @@ DB_FLAG_COLUMNS = [
 ]
 
 
-# CSPA Table_B category labels, in descending confidence order.
-# The strings are repeated by design — they're the literal values UniProt
-# parsed from the CSPA spreadsheet, and live here so a typo becomes a
-# NameError at the call site rather than a silent miss.
-CSPA_HIGH_CONFIDENCE = "1 - high confidence"
-CSPA_PUTATIVE = "2 - putative"
-CSPA_UNSPECIFIC = "3 - unspecific"
-CSPA_KNOWN_CATEGORIES = (CSPA_HIGH_CONFIDENCE, CSPA_PUTATIVE, CSPA_UNSPECIFIC)
-CSPA_CATEGORY_PRIORITY = {label: rank for rank, label in enumerate(reversed(CSPA_KNOWN_CATEGORIES), start=1)}
-
-
-def _best_cspa_category(values: pd.Series) -> str:
-    """Pick the highest-priority CSPA category across pre-collapse rows.
-
-    Priority: high confidence > putative > unspecific > blank. This makes
-    the collapsed ``cspa_category`` string consistent with the boolean
-    flags (``cspa_is_high_confidence`` max and ``cspa_is_unspecific``
-    min), avoiding the case where an allele's "high confidence" boolean
-    wins while the category string is left as "2 - putative".
-    """
-    scored = [
-        (CSPA_CATEGORY_PRIORITY.get(str(v), 0), str(v))
-        for v in values
-        if isinstance(v, str) and v.strip()
-    ]
-    if not scored:
-        return ""
-    scored.sort(key=lambda t: t[0], reverse=True)
-    return scored[0][1]
-
-
-def _first_nonempty_symbol(values: pd.Series) -> str:
-    """Pick the first non-empty, non-``"0"`` string — protects gene-symbol
-    collapses from CSPA's occasional ``"0"`` placeholder overriding a real
-    symbol when ``first`` happens to hit the placeholder row.
-    """
-    for v in values:
-        if isinstance(v, str):
-            s = v.strip()
-            if s and s != "0":
-                return s
-    return ""
-
-
-def _normalize_accessions(
-    df: pd.DataFrame,
-    *,
-    sec_ac: dict[str, list[str]],
-    delac_sp: set[str],
-    source_name: str,
-    agg_override: dict[str, object] | None = None,
-) -> tuple[pd.DataFrame, NormalizeStats]:
-    """Rewrite secondary UniProt accessions to their current primaries.
-
-    - Deleted Swiss-Prot accessions are dropped.
-    - Secondary accessions are replaced by the current primary. If UniProt
-      has split an old entry into multiple primaries, the row is duplicated
-      once per primary and each derived row carries
-      ``split_mapping_ambiguous = 1`` so downstream can distinguish
-      "confident remap" from "one-of-N possible descendants" (the old
-      annotation applies to at most one of the derived entries, not all).
-    - Rows that collapse onto the same primary are aggregated. Default
-      reducers are ``max`` for numeric columns and ``first`` for strings;
-      pass ``agg_override`` to replace the reducer for specific columns
-      (used for CSPA to preserve categorical semantics).
-    - ``split_mapping_ambiguous`` uses ``min`` so a primary gains the
-      ambiguous flag only if *every* pre-collapse row reaching it came
-      from a split remap (any confident pre-collapse row clears the
-      flag).
-
-    Returns the normalized DataFrame plus a stats dict for traceability.
-    """
-    key = "uniprot_accession"
-    df = df.copy()
-    df[key] = df[key].astype(str).str.strip()
-
-    n_in = len(df)
-    n_deleted = int(df[key].isin(delac_sp).sum())
-    df = df[~df[key].isin(delac_sp)].copy()
-
-    is_secondary = df[key].isin(sec_ac)
-    n_secondary_rows = int(is_secondary.sum())
-
-    df["_primaries"] = df[key].map(lambda a: sec_ac.get(a, [a]))
-    df["_primary_count"] = df["_primaries"].map(len)
-    n_split_rewrites = int(
-        df.loc[is_secondary, "_primaries"].map(len).sum() - n_secondary_rows
-    )
-    # Mark every explosion of a split accession (one secondary → 2+ primaries)
-    # as ambiguous BEFORE the explode + groupby collapse.
-    df["split_mapping_ambiguous"] = (df["_primary_count"] >= 2).astype(int)
-    df = df.explode("_primaries").reset_index(drop=True)
-    df[key] = df["_primaries"].astype(str)
-    df = df.drop(columns=["_primaries", "_primary_count"])
-
-    agg: dict[str, object] = {}
-    for col in df.columns:
-        if col == key:
-            continue
-        if pd.api.types.is_numeric_dtype(df[col]):
-            agg[col] = "max"
-        else:
-            agg[col] = "first"
-    # ``min`` so only primaries whose every contributing row was itself
-    # ambiguous keep the flag; a confident (non-split) remap clears it.
-    agg["split_mapping_ambiguous"] = "min"
-    if agg_override:
-        agg.update(agg_override)
-    collapsed = df.groupby(key, as_index=False).agg(agg)
-
-    stats: NormalizeStats = {
-        "source": source_name,
-        "input_rows": int(n_in),
-        "deleted_rows_dropped": int(n_deleted),
-        "secondary_rows_rewritten": int(n_secondary_rows),
-        "split_duplications": int(n_split_rewrites),
-        "output_rows": int(len(collapsed)),
-    }
-    return collapsed, stats
-
-
-def _load_uniprot() -> pd.DataFrame:
-    df = pd.read_csv(UNIPROT_TSV, sep="\t", dtype=str)
-    df = df.rename(columns={"accession": "uniprot_accession", "entry_name": "uniprot_entry_name"})
-    df = df[["uniprot_accession", "uniprot_entry_name", "gene_primary"]].copy()
-    df["uniprot_surface_flag"] = 1
-    return df
-
-
-def _load_go() -> pd.DataFrame:
-    """Load GO per-gene-product annotations and derive evidence-tier flags.
-
-    Per plan step 4, experimental/curated/sequence-based annotations are
-    treated as surface-positive; pure-electronic (IEA-only) rows are kept
-    for transparency but do not set ``go_surface_flag`` (they count toward
-    ``go_low_confidence_only`` instead). Downstream agreement counts
-    therefore exclude electronic-only support.
-    """
-    df = pd.read_csv(GO_TSV, sep="\t", dtype=str)
-    df = df.rename(
-        columns={
-            "DB_Object_ID": "uniprot_accession",
-            "DB_Object_Symbol": "go_gene_symbol",
-            "n_go_ids": "go_n_go_ids",
-            "has_experimental": "go_has_experimental",
-            "has_curated": "go_has_curated",
-            "has_sequence": "go_has_sequence",
-            "has_electronic": "go_has_electronic",
-        }
-    )
-    keep = [
-        "uniprot_accession",
-        "go_gene_symbol",
-        "go_n_go_ids",
-        "go_has_experimental",
-        "go_has_curated",
-        "go_has_sequence",
-        "go_has_electronic",
-    ]
-    df = df[keep].copy()
-    df["go_n_go_ids"] = pd.to_numeric(df["go_n_go_ids"], errors="coerce").astype("Int64")
-    for tier_col in ("go_has_experimental", "go_has_curated",
-                      "go_has_sequence", "go_has_electronic"):
-        df[tier_col] = pd.to_numeric(df[tier_col], errors="coerce").fillna(0).astype(int)
-    df["go_low_confidence_only"] = (
-        (df["go_has_electronic"] >= 1)
-        & (df["go_has_experimental"] == 0)
-        & (df["go_has_curated"] == 0)
-        & (df["go_has_sequence"] == 0)
-    ).astype(int)
-    df["go_surface_flag"] = (df["go_low_confidence_only"] == 0).astype(int)
-    return df
-
-
-def _load_surfy() -> pd.DataFrame:
-    """Load SURFY restricted to entries labeled as surface.
-
-    The SURFY snapshot includes 20,193 rows covering SURFY ``surface``,
-    ``nonsurface``, and unclassified proteins. For the M1 candidate-universe
-    merge we only want the surface-positive subset (``surfy_is_surface == 1``);
-    otherwise 17k explicit non-surface SURFY rows outer-merge in and inflate
-    the ``n_sources_surface = 0`` bucket with non-candidates.
-    """
-    df = pd.read_csv(
-        SURFY_TSV,
-        sep="\t",
-        dtype={"uniprot_accession": str, "gene_symbol": str, "surfy_label": str},
-    )
-    df = df.rename(columns={"gene_symbol": "surfy_gene_symbol"})
-    df["surfy_is_surface"] = df["surfy_is_surface"].fillna(0).astype(int)
-    df = df[df["surfy_is_surface"] == 1].copy()
-    df["surfy_surface_flag"] = 1
-    keep = ["uniprot_accession", "surfy_gene_symbol", "surfy_label",
-            "surfy_ml_score", "surfy_surface_flag"]
-    return df[keep]
-
-
-def _load_cspa() -> pd.DataFrame:
-    """Load CSPA detections with a provenance-preserving surface flag.
-
-    CSPA Table_B labels each protein as ``high confidence`` / ``putative``
-    / ``unspecific``, with a small residue (8 rows in the 2015 snapshot)
-    detected via Table_A but never classified in Table_B (blank category).
-    Only the explicitly positive categories count as surface support:
-
-        cspa_surface_flag = cspa_is_high_confidence OR cspa_is_putative
-
-    ``unspecific`` rows (non-specific detections / contaminants) and
-    blank-category rows stay in the merge with ``cspa_surface_flag = 0``
-    and their provenance columns set, so downstream can distinguish
-    "absent from CSPA" from "seen only as unspecific" from "detected but
-    not classified". ``cspa_category_missing`` is derived here rather
-    than upstream so the merge-input semantics are self-contained.
-    """
-    df = pd.read_csv(
-        CSPA_TSV,
-        sep="\t",
-        dtype={"uniprot_accession": str, "gene_symbol": str, "cspa_category": str},
-    )
-    df = df.rename(columns={"gene_symbol": "cspa_gene_symbol"})
-    for col in ("cspa_is_high_confidence", "cspa_is_putative", "cspa_is_unspecific"):
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
-    df["cspa_category_missing"] = (
-        (df["cspa_is_high_confidence"] == 0)
-        & (df["cspa_is_putative"] == 0)
-        & (df["cspa_is_unspecific"] == 0)
-    ).astype(int)
-    df["cspa_surface_flag"] = (
-        (df["cspa_is_high_confidence"] == 1) | (df["cspa_is_putative"] == 1)
-    ).astype(int)
-    keep = [
-        "uniprot_accession",
-        "cspa_gene_symbol",
-        "cspa_category",
-        "cspa_is_high_confidence",
-        "cspa_is_putative",
-        "cspa_is_unspecific",
-        "cspa_category_missing",
-        "cspa_surface_flag",
-    ]
-    return df[keep].copy()
-
-
-def _load_deeptmhmm() -> pd.DataFrame:
-    can = pd.read_csv(DEEPTMHMM_CAN_TSV, sep="\t", dtype=str)
-    iso = pd.read_csv(DEEPTMHMM_ISO_TSV, sep="\t", dtype=str)
-    can["_source_cohort"] = "human_canonical"
-    iso["_source_cohort"] = "human_isoforms"
-    df = pd.concat([can, iso], ignore_index=True)
-    df["predicted_surface_membrane"] = pd.to_numeric(
-        df["predicted_surface_membrane"], errors="coerce"
-    ).fillna(0).astype(int)
-
-    # Collapse to base accession: surface_flag = any isoform is surface-membrane.
-    # When picking a representative label, prefer rows whose label is consistent
-    # with the surface flag (is_surface=1), then prefer the canonical cohort as
-    # tiebreaker. This avoids the pathological case where the surface flag is
-    # driven by an isoform but the canonical row (labeled SP or GLOB) wins the
-    # representative-row selection and produces a label inconsistent with the
-    # flag (observed for Q11206, Q8IYS5, Q9BT76 under the previous ordering).
-    df["_is_surface"] = df["predicted_surface_membrane"]
-    df["_rank"] = (
-        df["_is_surface"] * 2
-        + (df["_source_cohort"] == "human_canonical").astype(int)
-    )
-    df = df.sort_values(["uniprot_accession", "_rank"], ascending=[True, False])
-
-    surface_flag = (
-        df.groupby("uniprot_accession")["predicted_surface_membrane"].max().rename(
-            "deeptmhmm_surface_flag"
-        )
-    )
-    rep = df.drop_duplicates(subset=["uniprot_accession"], keep="first")[
-        ["uniprot_accession", "deeptmhmm_label", "_source_cohort"]
-    ].rename(columns={"_source_cohort": "deeptmhmm_label_source"})
-    out = rep.merge(surface_flag, on="uniprot_accession", how="left")
-    return out
-
-
-def _load_hpa() -> pd.DataFrame:
-    """Load HPA subcellular_location snapshot keyed on UniProt primary.
-
-    The build_hpa.py output is already mapped ENSG → UniProt primary,
-    with per-ENSG evidence duplicated onto each primary and
-    ``hpa_split_mapping_ambiguous`` set for split cases. Here we
-    collapse any remaining per-primary duplicates (one primary hit by
-    multiple ENSGs) with boolean-OR semantics on the evidence flags.
-
-    Columns carried through with domain-specific reducers:
-
-    - per-tier PM / junction booleans: max (boolean OR across ENSGs)
-    - state columns (pm_accessible, junctional, trafficking, secreted_only,
-      surface_flag): max; except secreted_only uses min because it's a
-      "this is ALL we have" label — any non-secreted evidence on a
-      co-mapping ENSG clears it
-    - reliability enums (pm_reliability / junction_reliability): recomputed
-      post-groupby from the collapsed per-tier booleans so they stay
-      consistent with those columns
-    - low_confidence_only: recomputed post-groupby from the collapsed
-      surface_flag
-    """
-    df = pd.read_csv(
-        HPA_TSV,
-        sep="\t",
-        dtype={"uniprot_accession": str, "hpa_gene_symbol": str,
-               "hpa_reliability": str, "hpa_pm_reliability": str,
-               "hpa_junction_reliability": str,
-               "hpa_locations": str, "hpa_go_ids": str,
-               "ensembl_gene_id": str},
-    ).fillna("")
-
-    bool_cols = [
-        "hpa_surface_flag",
-        "hpa_low_confidence_only",
-        "hpa_pm_accessible",
-        "hpa_junctional",
-        "hpa_secreted_only",
-        "hpa_trafficking_associated",
-        "hpa_pm_in_enhanced", "hpa_pm_in_supported",
-        "hpa_pm_in_approved", "hpa_pm_in_uncertain",
-        "hpa_cj_in_enhanced", "hpa_cj_in_supported",
-        "hpa_cj_in_approved", "hpa_cj_in_uncertain",
-        "hpa_has_extracellular",
-        "hpa_split_mapping_ambiguous",
-    ]
-    for col in bool_cols:
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
-
-    def _join_nonempty(values: pd.Series) -> str:
-        seen: set[str] = set()
-        parts: list[str] = []
-        for v in values:
-            if not isinstance(v, str) or not v:
-                continue
-            for p in v.split(";" if ";" in v else "|"):
-                p = p.strip()
-                if p and p not in seen:
-                    seen.add(p)
-                    parts.append(p)
-        return ";".join(parts)
-
-    grouped = df.groupby("uniprot_accession", as_index=False).agg(
-        hpa_gene_symbol=("hpa_gene_symbol", "first"),
-        hpa_ensembl_gene_id=("ensembl_gene_id", lambda s: "|".join(sorted(set(
-            str(v) for v in s if isinstance(v, str) and v
-        )))),
-        hpa_reliability=("hpa_reliability", "first"),
-        hpa_locations=("hpa_locations", _join_nonempty),
-        hpa_go_ids=("hpa_go_ids", _join_nonempty),
-        hpa_surface_flag=("hpa_surface_flag", "max"),
-        hpa_pm_accessible=("hpa_pm_accessible", "max"),
-        hpa_junctional=("hpa_junctional", "max"),
-        # secreted_only uses min: a primary retains the "secreted only"
-        # label only if EVERY contributing ENSG was secreted-only. Any
-        # ENSG with PM or junction evidence clears it.
-        hpa_secreted_only=("hpa_secreted_only", "min"),
-        hpa_trafficking_associated=("hpa_trafficking_associated", "max"),
-        hpa_has_extracellular=("hpa_has_extracellular", "max"),
-        hpa_pm_in_enhanced=("hpa_pm_in_enhanced", "max"),
-        hpa_pm_in_supported=("hpa_pm_in_supported", "max"),
-        hpa_pm_in_approved=("hpa_pm_in_approved", "max"),
-        hpa_pm_in_uncertain=("hpa_pm_in_uncertain", "max"),
-        hpa_cj_in_enhanced=("hpa_cj_in_enhanced", "max"),
-        hpa_cj_in_supported=("hpa_cj_in_supported", "max"),
-        hpa_cj_in_approved=("hpa_cj_in_approved", "max"),
-        hpa_cj_in_uncertain=("hpa_cj_in_uncertain", "max"),
-        # Pass the upstream ENSG-level split-ambiguity flag into
-        # _normalize_accessions' ``split_mapping_ambiguous`` column so
-        # the default ``min`` reducer combines it with any accession-
-        # history-level ambiguity (HPA's UP primaries are already
-        # current, so this always arrives as 0 from the history side,
-        # but the upstream ENSG-level flag is preserved).
-        split_mapping_ambiguous=("hpa_split_mapping_ambiguous", "min"),
-    )
-
-    # Re-derive per-collapse-level tier enums from the post-groupby
-    # booleans so they stay consistent with those columns.
-    def _best_tier_row(row: pd.Series, prefix: str) -> str:
-        for tier in ("enhanced", "supported", "approved", "uncertain"):
-            if row[f"hpa_{prefix}_in_{tier}"] == 1:
-                return tier
-        return ""
-
-    grouped["hpa_pm_reliability"] = grouped.apply(
-        lambda r: _best_tier_row(r, "pm"), axis=1
-    )
-    grouped["hpa_junction_reliability"] = grouped.apply(
-        lambda r: _best_tier_row(r, "cj"), axis=1
-    )
-    grouped["hpa_low_confidence_only"] = (grouped["hpa_surface_flag"] == 0).astype(int)
-
-    return grouped
-
-
-def _load_compartments() -> pd.DataFrame:
-    """Load JensenLab COMPARTMENTS snapshot keyed on UniProt primary.
-
-    Same collapse semantics as HPA: one row per UniProt primary, max on
-    per-channel stars and on the surface flag, min on the split-
-    ambiguity flag.
-    """
-    df = pd.read_csv(
-        COMPARTMENTS_TSV,
-        sep="\t",
-        dtype={"uniprot_accession": str, "ensembl_protein_id": str,
-               "compartments_gene_symbol": str, "compartments_surface_terms": str},
-    ).fillna("")
-    for col in (
-        "compartments_integrated_stars_max",
-        "compartments_knowledge_stars_max",
-        "compartments_experiments_stars_max",
-        "compartments_textmining_stars_max",
-        "compartments_predictions_stars_max",
-    ):
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0).astype(float)
-    for col in (
-        "compartments_low_confidence_only",
-        "compartments_surface_flag",
-        "compartments_split_mapping_ambiguous",
-    ):
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
-
-    def _join_terms(values: pd.Series) -> str:
-        seen: set[str] = set()
-        parts: list[str] = []
-        for v in values:
-            if not isinstance(v, str) or not v:
-                continue
-            for p in v.split(","):
-                p = p.strip()
-                if p and p not in seen:
-                    seen.add(p)
-                    parts.append(p)
-        return ",".join(parts)
-
-    grouped = df.groupby("uniprot_accession", as_index=False).agg(
-        compartments_gene_symbol=("compartments_gene_symbol", "first"),
-        compartments_ensembl_protein_id=("ensembl_protein_id", lambda s: "|".join(sorted(set(
-            str(v) for v in s if isinstance(v, str) and v
-        )))),
-        compartments_integrated_stars_max=("compartments_integrated_stars_max", "max"),
-        compartments_knowledge_stars_max=("compartments_knowledge_stars_max", "max"),
-        compartments_experiments_stars_max=("compartments_experiments_stars_max", "max"),
-        compartments_textmining_stars_max=("compartments_textmining_stars_max", "max"),
-        compartments_predictions_stars_max=("compartments_predictions_stars_max", "max"),
-        compartments_surface_terms=("compartments_surface_terms", _join_terms),
-        compartments_low_confidence_only=("compartments_low_confidence_only", "min"),
-        compartments_surface_flag=("compartments_surface_flag", "max"),
-        # Upstream ENSP-level split-ambiguity flag carried through the
-        # normalizer's generic ``split_mapping_ambiguous`` column; see
-        # comment in _load_hpa.
-        split_mapping_ambiguous=("compartments_split_mapping_ambiguous", "min"),
-    )
-    return grouped
-
-
-def _consolidate_gene_symbol(row: pd.Series) -> str:
-    for col in (
-        "gene_primary",
-        "surfy_gene_symbol",
-        "cspa_gene_symbol",
-        "go_gene_symbol",
-        "hpa_gene_symbol",
-        "compartments_gene_symbol",
-    ):
-        val = row.get(col)
-        if isinstance(val, str) and val.strip():
-            return val.strip()
-    return ""
-
-
-def _as_upper_list(value: object) -> list[str]:
-    """Normalize a scalar/list value into uppercase string tokens."""
-    if value is None:
-        return []
-    if isinstance(value, list):
-        raw_values = value
-    else:
-        raw_values = [value]
-    return [
-        str(item).strip().upper()
-        for item in raw_values
-        if str(item).strip()
-    ]
-
-
-def _resolve_gene_symbols_with_mygene(
-    symbols: list[str],
-) -> tuple[pd.DataFrame, dict[str, int]]:
-    """Resolve gene symbols with a single MyGene batch query (no fallback).
-
-    Resolver statuses intentionally mirror the nomenclature statuses used in
-    the tess/coral resolver stack:
-    - ``exact``
-    - ``normalized_alias``
-    - ``normalized_previous``
-    - ``ambiguous``
-    - ``not_found``
-    """
-    if not symbols:
-        empty = pd.DataFrame(
-            columns=[
-                "gene_symbol_query",
-                "gene_symbol_resolved",
-                "gene_symbol_mapping_status",
-                "gene_symbol_mygene_score",
-            ]
-        )
-        return empty, {
-            "n_query_symbols": 0,
-            "n_exact": 0,
-            "n_normalized_alias": 0,
-            "n_normalized_previous": 0,
-            "n_ambiguous": 0,
-            "n_not_found": 0,
-        }
-
-    mg = mygene.MyGeneInfo()
-    try:
-        raw_hits = mg.querymany(
-            symbols,
-            scopes="symbol,alias,prev_symbol",
-            fields="symbol,alias,prev_symbol",
-            species="human",
-            as_dataframe=False,
-            returnall=False,
-            verbose=False,
-        )
-    except Exception as exc:  # pragma: no cover - network/runtime dependent
-        raise RuntimeError(
-            "MyGene symbol resolution failed for candidate-universe merge "
-            "(no fallback configured)."
-        ) from exc
-
-    hits_by_query: dict[str, list[dict[str, object]]] = {}
-    for raw in raw_hits:
-        if not isinstance(raw, dict):
-            continue
-        query = str(raw.get("query", "")).strip().upper()
-        if not query:
-            continue
-        hits_by_query.setdefault(query, []).append(raw)
-
-    def _candidate(hit: dict[str, object], query: str) -> tuple[int, float, str, str] | None:
-        symbol = str(hit.get("symbol", "")).strip().upper()
-        if not symbol:
-            return None
-        score_value = hit.get("_score", 0.0)
-        score = float(score_value) if isinstance(score_value, str | int | float) else 0.0
-        aliases = set(_as_upper_list(hit.get("alias")))
-        prev_symbols = set(_as_upper_list(hit.get("prev_symbol")))
-        if symbol == query:
-            return (0, score, symbol, "exact")
-        if query in prev_symbols:
-            return (1, score, symbol, "normalized_previous")
-        if query in aliases:
-            return (2, score, symbol, "normalized_alias")
-        return None
-
-    records: list[dict[str, object]] = []
-    for query in symbols:
-        candidates: list[tuple[int, float, str, str]] = []
-        for hit in hits_by_query.get(query, []):
-            if hit.get("notfound"):
-                continue
-            parsed = _candidate(hit, query)
-            if parsed is not None:
-                candidates.append(parsed)
-
-        if not candidates:
-            records.append(
-                {
-                    "gene_symbol_query": query,
-                    "gene_symbol_resolved": "",
-                    "gene_symbol_mapping_status": "not_found",
-                    "gene_symbol_mygene_score": 0.0,
-                }
-            )
-            continue
-
-        best_rank = min(rank for rank, _score, _symbol, _status in candidates)
-        best_rank_rows = [row for row in candidates if row[0] == best_rank]
-        best_score = max(score for _rank, score, _symbol, _status in best_rank_rows)
-        best_rows = [
-            row for row in best_rank_rows if abs(row[1] - best_score) < 1e-12
-        ]
-        best_symbols = sorted({symbol for _rank, _score, symbol, _status in best_rows})
-
-        if len(best_symbols) > 1:
-            records.append(
-                {
-                    "gene_symbol_query": query,
-                    "gene_symbol_resolved": "",
-                    "gene_symbol_mapping_status": "ambiguous",
-                    "gene_symbol_mygene_score": float(best_score),
-                }
-            )
-            continue
-
-        chosen = sorted(
-            best_rows,
-            key=lambda row: (row[0], -row[1], row[2]),
-        )[0]
-        _rank, score, symbol, status = chosen
-        records.append(
-            {
-                "gene_symbol_query": query,
-                "gene_symbol_resolved": symbol,
-                "gene_symbol_mapping_status": status,
-                "gene_symbol_mygene_score": float(score),
-            }
-        )
-
-    result = pd.DataFrame.from_records(records).sort_values("gene_symbol_query")
-    mapping_counts = (
-        result["gene_symbol_mapping_status"].value_counts(dropna=False).to_dict()
-    )
-    stats = {
-        "n_query_symbols": len(symbols),
-        "n_exact": int(mapping_counts.get("exact", 0)),
-        "n_normalized_alias": int(mapping_counts.get("normalized_alias", 0)),
-        "n_normalized_previous": int(mapping_counts.get("normalized_previous", 0)),
-        "n_ambiguous": int(mapping_counts.get("ambiguous", 0)),
-        "n_not_found": int(mapping_counts.get("not_found", 0)),
-    }
-    return result, stats
-
-
 def build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
@@ -759,13 +134,13 @@ def main(argv: list[str] | None = None) -> None:
 
     print("loading sources ...")
     raw_sources = {
-        "uniprot": _load_uniprot(),
-        "go": _load_go(),
-        "surfy": _load_surfy(),
-        "cspa": _load_cspa(),
-        "deeptmhmm": _load_deeptmhmm(),
-        "hpa": _load_hpa(),
-        "compartments": _load_compartments(),
+        "uniprot": load_uniprot(),
+        "go": load_go(),
+        "surfy": load_surfy(),
+        "cspa": load_cspa(),
+        "deeptmhmm": load_deeptmhmm(),
+        "hpa": load_hpa(),
+        "compartments": load_compartments(),
     }
 
     # Reconcile accessions against current UniProt (sec_ac -> primary,
@@ -779,13 +154,13 @@ def main(argv: list[str] | None = None) -> None:
     # multiple historical accessions.
     source_agg_overrides: dict[str, dict[str, object]] = {
         "cspa": {
-            "cspa_category": _best_cspa_category,
-            "cspa_gene_symbol": _first_nonempty_symbol,
+            "cspa_category": best_cspa_category,
+            "cspa_gene_symbol": first_nonempty_symbol,
             # Default max reducer captures boolean-OR pre-collapse evidence
             # for the *_precollapse provenance columns added below.
         },
         "surfy": {
-            "surfy_gene_symbol": _first_nonempty_symbol,
+            "surfy_gene_symbol": first_nonempty_symbol,
         },
     }
     # Clone CSPA's raw category booleans into *_precollapse columns before
@@ -800,7 +175,7 @@ def main(argv: list[str] | None = None) -> None:
     normalized: dict[str, pd.DataFrame] = {}
     norm_stats: list[NormalizeStats] = []
     for name, df in raw_sources.items():
-        norm_df, stats = _normalize_accessions(
+        norm_df, stats = normalize_accessions(
             df, sec_ac=sec_ac, delac_sp=delac_sp, source_name=name,
             agg_override=source_agg_overrides.get(name),
         )
@@ -894,7 +269,7 @@ def main(argv: list[str] | None = None) -> None:
     merged["compartments_corroborated"] = other_source_flagged.astype(int)
     merged.loc[~other_source_flagged, "compartments_surface_flag"] = 0
 
-    merged["gene_symbol_input"] = merged.apply(_consolidate_gene_symbol, axis=1)
+    merged["gene_symbol_input"] = merged.apply(consolidate_gene_symbol, axis=1)
     merged["gene_symbol_query"] = (
         merged["gene_symbol_input"].astype(str).str.strip().str.upper()
     )
@@ -905,7 +280,7 @@ def main(argv: list[str] | None = None) -> None:
             if isinstance(symbol, str) and symbol
         }
     )
-    gene_resolution, gene_resolution_stats = _resolve_gene_symbols_with_mygene(
+    gene_resolution, gene_resolution_stats = resolve_gene_symbols_with_mygene(
         gene_symbol_universe
     )
     merged = merged.merge(gene_resolution, on="gene_symbol_query", how="left")
@@ -1058,10 +433,9 @@ def main(argv: list[str] | None = None) -> None:
         return pd.to_numeric(merged[col], errors="coerce").fillna(0.0).astype(float)
 
     # COMPARTMENTS stars threshold — mirror of the rule in
-    # build_jensenlab_compartments.py. Any change here must also update
-    # the loader, the ``flag_rules`` block, and the threshold referenced
-    # in src/accessible_surfaceome/candidates/download_jensenlab_compartments.py
-    # SURFACE_TERMS (GO set) / anywhere else it surfaces.
+    # accessible_surfaceome.sources.compartments. Any change here must also
+    # update the loader, the ``flag_rules`` block, and the threshold
+    # referenced in the SURFACE_TERMS GO set anywhere else it surfaces.
     compartments_flag_threshold = 3.0
 
     expected = {

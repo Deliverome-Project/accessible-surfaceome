@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from accessible_surfaceome.candidates import merge
+from accessible_surfaceome import merge
 
 
 def main(argv: list[str] | None = None) -> None:

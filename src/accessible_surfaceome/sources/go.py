@@ -57,7 +57,7 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from accessible_surfaceome.candidates.traceability import (
+from accessible_surfaceome.sources._support.traceability import (
     build_file_record,
     download_binary,
     sha256_file,
@@ -389,7 +389,7 @@ def write_summary_tsv(rows: list[dict[str, Any]], path: Path) -> int:
     return len(agg)
 
 
-def parse_args() -> argparse.Namespace:
+def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
@@ -397,11 +397,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Re-fetch the OBO and GAF even if present in the output dir.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
-def main() -> None:
-    args = parse_args()
+def build_main(argv: list[str] | None = None) -> None:
+    args = _build_parse_args(argv)
     out_dir: Path = args.output_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -543,6 +543,15 @@ def main() -> None:
     print(f"summary:     {summary_path}  ({n_products:,} gene products)")
     print(f"terms:       {terms_path}")
     print(f"manifest:    {manifest_path}")
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("build", help="Build the snapshot for the M1 merge.", add_help=False)
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "build":
+        build_main(remainder)
 
 
 if __name__ == "__main__":

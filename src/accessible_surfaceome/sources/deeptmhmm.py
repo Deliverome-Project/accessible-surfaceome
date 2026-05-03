@@ -1,19 +1,73 @@
-"""Build DeepTMHMM FASTA cohorts for human surfaceome genes and orthologs.
+"""DeepTMHMM: build input FASTAs and parse output `.3line` predictions.
 
-Cohorts generated:
-1. Human canonical proteins (non-HLA) from surfaceome_expressed.csv UniProt IDs.
-2. Human isoforms (non-HLA) from AFDB-resolved UniProt isoform accessions.
-3. Mouse ortholog proteins from one2one + high-confidence Ensembl ortholog rows.
-4. Cynomolgus ortholog proteins from one2one + high-confidence Ensembl ortholog rows.
+Two subcommands::
 
-Ortholog cohort membership is defined by Ensembl Compara outputs already generated in
-this repository. Protein sequence retrieval is done from UniProt REST APIs.
+    python -m accessible_surfaceome.sources.deeptmhmm download
+    python -m accessible_surfaceome.sources.deeptmhmm build
+
+``download`` builds the per-cohort FASTA input sets that get fed into
+the third-party DeepTMHMM 1.0.24 pipeline (see
+``src/accessible_surfaceome/tools/install_deeptmhmm_academic.py``). The
+actual prediction step is run out-of-band by that tool; its
+``predicted_topologies.3line`` outputs land under
+``data/external/deeptmhmm_surfaceome_predictions/<cohort>/``.
+
+``build`` parses those .3line files into per-cohort TSVs for the M1
+candidate-universe merge. (See the ``build_main`` docstring below for
+the row schema.)
+
+Build phase details (parsed by ``build_main``):
+
+Inputs: per-cohort `predicted_topologies.3line` files under
+``data/external/deeptmhmm_surfaceome_predictions/<cohort>/`` produced by the
+DeepTMHMM 1.0.24 pipeline. The 3-line format is::
+
+    >sp|ACCESSION|ENTRY_NAME | LABEL
+    <amino acid sequence>
+    <per-residue topology string over alphabet {S, O, M, I, B}>
+
+DeepTMHMM emits one of five class labels per protein:
+``TM`` (alpha-helical transmembrane), ``SP`` (signal peptide only, predicted
+secreted), ``SP+TM`` (signal peptide + TM helices), ``BETA`` (beta-barrel
+transmembrane), ``GLOB`` (globular / soluble, no TM or SP).
+
+Outputs: per-cohort TSVs under ``data/processed/deeptmhmm/`` with one row per
+UniProt accession as it appears in the 3-line header (isoform suffix
+preserved in ``uniprot_accession_full``; the base accession is written to
+``uniprot_accession`` for join convenience). Columns:
+
+- identifiers: ``uniprot_accession``, ``uniprot_accession_full``,
+  ``uniprot_entry_name``
+- classification: ``deeptmhmm_label`` (one of TM/SP/SP+TM/BETA/GLOB)
+- topology summaries: ``protein_length``, ``tm_helix_count``,
+  ``beta_strand_count``, ``has_signal_peptide``, ``signal_peptide_length``
+- terminal orientation (ignoring SP residues):
+  ``n_term_side``, ``c_term_side`` (each ``I``/``O``/``M``/``B`` or empty),
+  ``n_term_extracellular``, ``c_term_extracellular``,
+  ``n_term_intracellular``, ``c_term_intracellular``
+- derived flags: ``predicted_surface_membrane`` (1 iff label in
+  {TM, SP+TM}), ``predicted_secreted`` (1 iff label == SP).
+  BETA is deliberately excluded: human beta-barrel membrane proteins
+  are essentially mitochondrial outer membrane (VDAC1/2/3, TOMM40,
+  SAMM50, MTX1/2), not plasma-membrane / cell-surface proteins.
+
+Also writes:
+- ``deeptmhmm_build_summary.json`` — per-cohort row counts, label
+  distributions, union accession coverage
+- ``deeptmhmm_build_traceability.json`` — source file SHA256s and
+  capture time
+
+The terminal-orientation logic matches
+``annotate_afdb_with_deeptmhmm_orientation.py``: the first/last topology
+character *after skipping leading/trailing ``S`` residues* defines the
+mature-chain termini side.
 """
 
 from __future__ import annotations
 
 import argparse
 import csv
+import json
 import re
 import time
 from collections import defaultdict
@@ -25,17 +79,282 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-from accessible_surfaceome.candidates.traceability import (
+from accessible_surfaceome.sources._support.traceability import (
     USER_AGENT,
     build_file_record,
     relative_to_repo,
+    sha256_file,
+    utc_now_iso,
     write_manifest,
 )
 
 from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
+DATASET = "deeptmhmm"
+DEFAULT_INPUT_DIR = ROOT / "data" / "external" / "deeptmhmm_surfaceome_predictions"
+DEFAULT_OUTPUT_DIR = ROOT / "data" / "processed" / "deeptmhmm"
+SUMMARY_JSON = "deeptmhmm_build_summary.json"
+MANIFEST_JSON = "deeptmhmm_build_traceability.json"
 
-DATASET = "DeepTMHMM_surfaceome_sequence_sets"
+COHORTS: list[tuple[str, str, str]] = [
+    # (cohort_key, source_subdir, output_tsv_basename)
+    ("human_canonical", "human_canonical_non_hla", "deeptmhmm_human_canonical.tsv"),
+    ("human_isoforms", "human_isoforms_from_afdb_non_hla", "deeptmhmm_human_isoforms.tsv"),
+    ("mouse_ortholog", "mouse_ortholog_one2one_highconf_non_hla", "deeptmhmm_mouse_ortholog.tsv"),
+    ("cyno_ortholog", "cyno_ortholog_one2one_highconf_non_hla", "deeptmhmm_cyno_ortholog.tsv"),
+]
+
+VALID_LABELS = {"TM", "SP", "SP+TM", "BETA", "GLOB"}
+SURFACE_MEMBRANE_LABELS = {"TM", "SP+TM"}
+
+OUTPUT_COLUMNS = [
+    "uniprot_accession",
+    "uniprot_accession_full",
+    "uniprot_entry_name",
+    "deeptmhmm_label",
+    "protein_length",
+    "tm_helix_count",
+    "beta_strand_count",
+    "has_signal_peptide",
+    "signal_peptide_length",
+    "n_term_side",
+    "c_term_side",
+    "n_term_extracellular",
+    "c_term_extracellular",
+    "n_term_intracellular",
+    "c_term_intracellular",
+    "predicted_surface_membrane",
+    "predicted_secreted",
+]
+
+
+def _split_base_accession(acc: str) -> str:
+    """Strip UniProt isoform suffix (e.g. ``Q9Y6K8-2`` -> ``Q9Y6K8``)."""
+    return acc.split("-", 1)[0] if "-" in acc else acc
+
+
+def _terminal_state(topology: str, *, from_n_term: bool) -> str:
+    """First/last topology char after skipping SP residues."""
+    if not topology:
+        return ""
+    chars = topology if from_n_term else reversed(topology)
+    for ch in chars:
+        if ch != "S":
+            return ch
+    return ""
+
+
+def _count_runs(topology: str, state: str) -> int:
+    """Count contiguous runs of `state` in the topology string."""
+    if not topology or state not in topology:
+        return 0
+    return len(re.findall(f"{re.escape(state)}+", topology))
+
+
+def parse_3line(path: Path) -> list[dict]:
+    """Parse one predicted_topologies.3line file into records."""
+    lines = [ln.rstrip() for ln in path.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    if len(lines) % 3 != 0:
+        raise ValueError(f"3line file malformed (not 3-line groups): {path}")
+
+    records: list[dict] = []
+    for i in range(0, len(lines), 3):
+        header = lines[i]
+        sequence = lines[i + 1]
+        topology = lines[i + 2].upper()
+
+        if not header.startswith(">"):
+            raise ValueError(f"Bad header at offset {i} in {path}: {header!r}")
+        payload = header[1:].strip()
+        # "sp|ACC|ENTRY_NAME | LABEL"
+        if " | " not in payload:
+            raise ValueError(f"Header missing ' | LABEL' in {path}: {header!r}")
+        seq_id, label = payload.rsplit(" | ", 1)
+        label = label.strip()
+        if label not in VALID_LABELS:
+            raise ValueError(f"Unknown DeepTMHMM label {label!r} in {path}")
+
+        parts = seq_id.split("|")
+        if len(parts) < 3:
+            raise ValueError(f"Unexpected seq_id format in {path}: {seq_id!r}")
+        acc_full = parts[1].strip()
+        entry_name = parts[2].strip()
+        if not acc_full:
+            raise ValueError(f"Empty accession in {path}: {header!r}")
+
+        if len(sequence) != len(topology):
+            raise ValueError(
+                f"Length mismatch for {acc_full} in {path}: "
+                f"seq={len(sequence)} topo={len(topology)}"
+            )
+
+        n_side = _terminal_state(topology, from_n_term=True)
+        c_side = _terminal_state(topology, from_n_term=False)
+
+        sp_len = 0
+        for ch in topology:
+            if ch == "S":
+                sp_len += 1
+            else:
+                break
+
+        records.append(
+            {
+                "uniprot_accession": _split_base_accession(acc_full),
+                "uniprot_accession_full": acc_full,
+                "uniprot_entry_name": entry_name,
+                "deeptmhmm_label": label,
+                "protein_length": len(sequence),
+                "tm_helix_count": _count_runs(topology, "M"),
+                "beta_strand_count": _count_runs(topology, "B"),
+                "has_signal_peptide": int("S" in topology),
+                "signal_peptide_length": sp_len,
+                "n_term_side": n_side,
+                "c_term_side": c_side,
+                "n_term_extracellular": int(n_side == "O"),
+                "c_term_extracellular": int(c_side == "O"),
+                "n_term_intracellular": int(n_side == "I"),
+                "c_term_intracellular": int(c_side == "I"),
+                "predicted_surface_membrane": int(label in SURFACE_MEMBRANE_LABELS),
+                "predicted_secreted": int(label == "SP"),
+            }
+        )
+    return records
+
+
+def write_tsv(records: list[dict], path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    records_sorted = sorted(records, key=lambda r: r["uniprot_accession_full"])
+    with path.open("w", encoding="utf-8", newline="") as f:
+        f.write("\t".join(OUTPUT_COLUMNS) + "\n")
+        for r in records_sorted:
+            f.write("\t".join(str(r[c]) for c in OUTPUT_COLUMNS) + "\n")
+
+
+def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
+    p = argparse.ArgumentParser(
+        description="Parse DeepTMHMM .3line predictions for the M1 merge."
+    )
+    p.add_argument("--input-dir", type=Path, default=DEFAULT_INPUT_DIR)
+    p.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
+    return p.parse_args(argv)
+
+
+def build_main(argv: list[str] | None = None) -> None:
+    args = _build_parse_args(argv)
+    in_dir: Path = args.input_dir
+    out_dir: Path = args.output_dir
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    cohort_summaries: dict[str, dict] = {}
+    cohort_outputs: dict[str, dict] = {}
+    source_files: dict[str, dict] = {}
+
+    union_full = set()
+    union_base = set()
+
+    for key, subdir, out_name in COHORTS:
+        src_path = in_dir / subdir / "predicted_topologies.3line"
+        if not src_path.exists():
+            raise FileNotFoundError(f"Missing DeepTMHMM input: {src_path}")
+
+        print(f"parsing cohort={key}  {src_path}")
+        records = parse_3line(src_path)
+
+        dup_full = len(records) - len({r["uniprot_accession_full"] for r in records})
+        if dup_full:
+            print(f"  WARNING: {dup_full} duplicate uniprot_accession_full rows in {key}")
+
+        out_path = out_dir / out_name
+        write_tsv(records, out_path)
+
+        labels = sorted({r["deeptmhmm_label"] for r in records})
+        label_counts = {
+            lab: sum(1 for r in records if r["deeptmhmm_label"] == lab) for lab in labels
+        }
+        n_surface = sum(1 for r in records if r["predicted_surface_membrane"])
+        n_secreted = sum(1 for r in records if r["predicted_secreted"])
+
+        cohort_summaries[key] = {
+            "n_proteins": len(records),
+            "n_unique_accession_full": len({r["uniprot_accession_full"] for r in records}),
+            "n_unique_accession_base": len({r["uniprot_accession"] for r in records}),
+            "label_counts": label_counts,
+            "n_predicted_surface_membrane": n_surface,
+            "n_predicted_secreted": n_secreted,
+        }
+        cohort_outputs[out_name] = {
+            "local_path": str(out_path.relative_to(ROOT)),
+            "sha256": sha256_file(out_path),
+            "size_bytes": out_path.stat().st_size,
+            "n_rows": len(records),
+            "primary_key": "uniprot_accession_full",
+        }
+        source_files[key] = {
+            "local_path": str(src_path.relative_to(ROOT)),
+            "sha256": sha256_file(src_path),
+            "size_bytes": src_path.stat().st_size,
+            "n_sequences": len(records),
+        }
+
+        if key in {"human_canonical", "human_isoforms"}:
+            union_full.update(r["uniprot_accession_full"] for r in records)
+            union_base.update(r["uniprot_accession"] for r in records)
+
+        print(
+            f"  wrote {out_path.relative_to(ROOT)}  "
+            f"n={len(records):,}  surface={n_surface:,}  "
+            f"secreted={n_secreted:,}  labels={label_counts}"
+        )
+
+    summary = {
+        "generated_at_utc": utc_now_iso(),
+        "cohorts": cohort_summaries,
+        "human_union": {
+            "n_unique_accession_full": len(union_full),
+            "n_unique_accession_base": len(union_base),
+            "description": (
+                "union of uniprot accessions across human_canonical + human_isoforms cohorts"
+            ),
+        },
+    }
+    (out_dir / SUMMARY_JSON).write_text(
+        json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    manifest = {
+        "dataset": DATASET,
+        "generated_at_utc": utc_now_iso(),
+        "script": Path(__file__).relative_to(ROOT).as_posix(),
+        "source_files": source_files,
+        "outputs": cohort_outputs,
+        "label_vocabulary": sorted(VALID_LABELS),
+        "derived_columns": [
+            {"name": "n_term_side", "rule": "first topology char after skipping leading 'S'"},
+            {"name": "c_term_side", "rule": "last topology char after skipping trailing 'S'"},
+            {
+                "name": "predicted_surface_membrane",
+                "rule": "1 iff deeptmhmm_label in {TM, SP+TM} (BETA excluded — human beta-barrels are mitochondrial outer membrane, not plasma-membrane)",
+            },
+            {"name": "predicted_secreted", "rule": "1 iff deeptmhmm_label == 'SP'"},
+            {
+                "name": "signal_peptide_length",
+                "rule": "count of leading 'S' residues in topology",
+            },
+        ],
+    }
+    (out_dir / MANIFEST_JSON).write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+
+    print(
+        f"human union (canonical + isoforms): "
+        f"n_full={len(union_full):,}  n_base={len(union_base):,}"
+    )
+
+
+# ---- download ----
+DOWNLOAD_DATASET = "DeepTMHMM_surfaceome_sequence_sets"
 UNIPROT_FASTA_TEMPLATE = "https://rest.uniprot.org/uniprotkb/{accession}.fasta"
 UNIPROT_SEARCH_URL = "https://rest.uniprot.org/uniprotkb/search"
 RETRYABLE_HTTP_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
@@ -93,9 +412,11 @@ class OrthologTarget:
     query_input_gene_symbols: str
 
 
-def parse_args() -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description=__doc__)
+def _download_parse_args(argv: list[str] | None) -> argparse.Namespace:
+    """Parse command-line arguments for the DeepTMHMM cohort builder."""
+    parser = argparse.ArgumentParser(
+        description="Build DeepTMHMM input FASTA cohorts (human + ortholog)."
+    )
     parser.add_argument("--surfaceome-csv", type=Path, default=DEFAULT_SURFACEOME_CSV)
     parser.add_argument("--afdb-by-gene-csv", type=Path, default=DEFAULT_AFDB_BY_GENE_CSV)
     parser.add_argument("--ortholog-query-csv", type=Path, default=DEFAULT_ORTHOLOG_QUERY_CSV)
@@ -105,7 +426,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-workers", type=int, default=16)
     parser.add_argument("--retry-max-attempts", type=int, default=4)
     parser.add_argument("--min-request-interval-ms", type=int, default=200)
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def normalize_symbol(symbol: str) -> str:
@@ -626,9 +947,9 @@ def summarize_status(rows: list[dict[str, Any]]) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
-def main() -> None:
+def download_main(argv: list[str] | None = None) -> None:
     """Build cohort FASTA files and metadata with traceability manifest."""
-    args = parse_args()
+    args = _download_parse_args(argv)
     output_dir = args.output_dir.expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -704,7 +1025,7 @@ def main() -> None:
                 repo_root=ROOT,
                 file_path=fasta_path,
                 source_url="https://rest.uniprot.org/uniprotkb/{accession}.fasta",
-                dataset=DATASET,
+                dataset=DOWNLOAD_DATASET,
                 status="downloaded",
                 note=f"{cohort_name} FASTA",
             )
@@ -714,7 +1035,7 @@ def main() -> None:
                 repo_root=ROOT,
                 file_path=metadata_path,
                 source_url="https://rest.uniprot.org/uniprotkb/search + /uniprotkb/{accession}.fasta",
-                dataset=DATASET,
+                dataset=DOWNLOAD_DATASET,
                 status="downloaded",
                 note=f"{cohort_name} metadata",
             )
@@ -730,7 +1051,7 @@ def main() -> None:
 
     write_manifest(
         args.manifest.expanduser().resolve(),
-        dataset=DATASET,
+        dataset=DOWNLOAD_DATASET,
         script=relative_to_repo(Path(__file__), ROOT),
         records=manifest_records,
         extras=extras,
@@ -741,6 +1062,18 @@ def main() -> None:
         counts = summarize_status(metadata_rows)
         print(f"  {cohort_name}: {counts}")
 
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    sub = parser.add_subparsers(dest="command", required=True)
+    sub.add_parser("download", help="Build DeepTMHMM input FASTA cohorts.", add_help=False)
+    sub.add_parser("build", help="Parse DeepTMHMM .3line predictions for the M1 merge.", add_help=False)
+    args, remainder = parser.parse_known_args(argv)
+    if args.command == "download":
+        download_main(remainder)
+    elif args.command == "build":
+        build_main(remainder)
+
 
 if __name__ == "__main__":
     main()
+

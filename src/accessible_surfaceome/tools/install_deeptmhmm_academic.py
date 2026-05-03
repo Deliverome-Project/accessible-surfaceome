@@ -23,7 +23,7 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from accessible_surfaceome.candidates.traceability import sha256_file, utc_now_iso
+from accessible_surfaceome.sources._support.traceability import sha256_file, utc_now_iso
 from accessible_surfaceome.paths import (
     DATA_EXTERNAL_DIR,
     REPO_ROOT,
