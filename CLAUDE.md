@@ -60,6 +60,11 @@ uv run pytest -q
 - CI workflow: `.github/workflows/ci.yml`
 - Runs `uv sync --frozen`, `uv lock --check`, `bash scripts/check-py.sh`.
 
+## Coding Style
+
+See [docs/coding-style.md](docs/coding-style.md) for the conventions we
+hold code to and the short rubric for assessing diffs.
+
 ## Doc Sync Rule
 
 Keep `CLAUDE.md` and `AGENTS.md` aligned when guidance changes.

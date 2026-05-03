@@ -36,10 +36,11 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run `git lfs fsck` only after full data hydration.
 
 ## Coding Style & Naming Conventions
-- Python 3.11+.
-- Use docstrings and clear function boundaries.
-- Prefer explicit error messages for missing files/columns in data workflows.
-- Keep outputs reproducible from scripts.
+See [docs/coding-style.md](docs/coding-style.md) for the full conventions
+and the rubric we use to assess diffs. Quick summary: Python 3.11+,
+ruff-formatted, names that describe what's there, one way to do common
+things (paths, traceability), validate at boundaries only, no plumbing
+masquerading as algorithm.
 
 ## Data Rules & Formats
 - Keep raw inputs unchanged in `data/raw/`.
