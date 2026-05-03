@@ -77,15 +77,15 @@ from pathlib import Path
 
 import pandas as pd
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
-from surface_proteome.candidates.uniprot_ensembl_mapping import (
+from accessible_surfaceome.candidates.uniprot_ensembl_mapping import (
     load_ensembl_mapping,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "hpa"
 HPA_INPUT_TSV = (
@@ -180,7 +180,7 @@ def main() -> None:
     if not input_path.exists():
         raise FileNotFoundError(
             f"HPA input missing: {input_path}. Run "
-            "`uv run python -m surface_proteome.candidates.download_hpa_subcellular_location` first."
+            "`uv run python -m accessible_surfaceome.candidates.download_hpa_subcellular_location` first."
         )
 
     print(f"reading {input_path.relative_to(ROOT)} ...")

@@ -3,8 +3,8 @@
 Concise contributor guide for `accessible-surfaceome`.
 
 ## Project Structure & Organization
-- `src/surface_proteome/` core package.
-- `src/surface_proteome/candidates/` candidate-universe builders and data-source integration.
+- `src/accessible_surfaceome/` core package.
+- `src/accessible_surfaceome/candidates/` candidate-universe builders and data-source integration.
 - `data/raw/` source workbooks.
 - `data/external/` downloaded datasets + traceability manifests.
 - `data/processed/` normalized outputs and candidate universe tables.
@@ -15,7 +15,7 @@ Concise contributor guide for `accessible-surfaceome`.
 ## Build, Test, and Development Commands
 - Install deps: `uv sync`
 - Run CLI: `uv run accessible-surfaceome build`
-- Run module directly: `uv run python -m surface_proteome.candidates.merge`
+- Run module directly: `uv run python -m accessible_surfaceome.candidates.merge`
 - Run checks: `bash scripts/check-py.sh`
 - Run type checking: `uv run ty check`
 - Run tests: `uv run pytest -q`

@@ -25,18 +25,18 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
+    USER_AGENT,
     build_file_record,
     utc_now_iso,
     write_manifest,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "uniprot_human_surface_candidates"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET
 UNIPROT_SEARCH_URL = "https://rest.uniprot.org/uniprotkb/search"
-USER_AGENT = "deliverome/0.1 (michael.smallegan@gmail.com)"
 RETRYABLE_HTTP_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
 
 SURFACE_TERMS = [

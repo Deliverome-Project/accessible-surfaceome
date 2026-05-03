@@ -1,7 +1,7 @@
 """Shared helper for ENSG / ENSP → UniProt primary accession mapping.
 
 Loads the two long tables emitted by
-``src/surface_proteome/candidates/download_uniprot_ensembl_xrefs.py`` (one row per
+``src/accessible_surfaceome/candidates/download_uniprot_ensembl_xrefs.py`` (one row per
 Ensembl-ID / UniProt-primary pair across the full reviewed human proteome)
 and returns plain ``dict[str, list[str]]`` lookup tables. Lists (rather
 than scalars) handle the rare one-to-many case where a single Ensembl ID
@@ -9,8 +9,8 @@ legitimately maps to multiple UniProt primaries.
 
 Used by:
 
-- ``src/surface_proteome/candidates/build_hpa.py`` (ENSG → UP)
-- ``src/surface_proteome/candidates/build_jensenlab_compartments.py`` (ENSP → UP)
+- ``src/accessible_surfaceome/candidates/build_hpa.py`` (ENSG → UP)
+- ``src/accessible_surfaceome/candidates/build_jensenlab_compartments.py`` (ENSP → UP)
 """
 
 from __future__ import annotations
@@ -27,7 +27,7 @@ def _load_pair_tsv(path: Path, id_col: str) -> dict[str, list[str]]:
     if not path.exists():
         raise FileNotFoundError(
             f"Missing Ensembl xref mapping at {path}. Run "
-            "`uv run python -m surface_proteome.candidates.download_uniprot_ensembl_xrefs` first."
+            "`uv run python -m accessible_surfaceome.candidates.download_uniprot_ensembl_xrefs` first."
         )
     df = pd.read_csv(path, sep="\t", dtype=str, usecols=[id_col, "uniprot_accession"])
     for eid, acc in zip(df[id_col].fillna(""), df["uniprot_accession"].fillna("")):

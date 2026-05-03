@@ -23,8 +23,8 @@ import zipfile
 from pathlib import Path
 from typing import Any
 
-from surface_proteome.candidates.traceability import sha256_file, utc_now_iso
-from surface_proteome.paths import (
+from accessible_surfaceome.candidates.traceability import sha256_file, utc_now_iso
+from accessible_surfaceome.paths import (
     DATA_EXTERNAL_DIR,
     REPO_ROOT,
     relative_to_repo as _relative_to_repo,

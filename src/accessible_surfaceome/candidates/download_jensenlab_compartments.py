@@ -30,14 +30,14 @@ import argparse
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     USER_AGENT,
     build_file_record,
     download_binary,
     write_manifest,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "jensenlab_compartments"
 BASE_URL = "https://download.jensenlab.org/"
@@ -45,7 +45,7 @@ DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET
 
 # Surface-relevant GO cellular-component terms used to filter the
 # 850 MB textmining TSV at download time. Mirror of the set in
-# ``src/surface_proteome/candidates/build_jensenlab_compartments.py`` — keep in sync.
+# ``src/accessible_surfaceome/candidates/build_jensenlab_compartments.py`` — keep in sync.
 SURFACE_TERMS: set[str] = {
     "GO:0005886",  # plasma membrane
     "GO:0009986",  # cell surface

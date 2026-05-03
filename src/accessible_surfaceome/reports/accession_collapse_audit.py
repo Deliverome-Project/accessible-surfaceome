@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import pandas as pd
 
-from surface_proteome.candidates.merge import (
+from accessible_surfaceome.candidates.merge import (
     _best_cspa_category,
     _first_nonempty_symbol,
     _load_compartments,
@@ -37,11 +37,11 @@ from surface_proteome.candidates.merge import (
     _load_surfy,
     _load_uniprot,
 )
-from surface_proteome.candidates.uniprot_accession_history import (
+from accessible_surfaceome.candidates.uniprot_accession_history import (
     load_accession_history,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 SOURCES = {
     "uniprot": _load_uniprot,

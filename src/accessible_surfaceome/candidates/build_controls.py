@@ -25,7 +25,7 @@ from typing import Any
 import mygene
 import pandas as pd
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DEFAULT_OUTPUT_TSV = (
     ROOT

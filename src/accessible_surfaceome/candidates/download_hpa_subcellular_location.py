@@ -19,13 +19,13 @@ import argparse
 import zipfile
 from pathlib import Path
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     build_file_record,
     download_binary,
     write_manifest,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "hpa_subcellular_location"
 SOURCE_URL = (

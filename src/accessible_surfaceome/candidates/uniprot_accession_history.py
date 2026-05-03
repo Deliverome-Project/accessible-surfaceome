@@ -1,15 +1,15 @@
 """Shared helpers for applying UniProt accession-history reconciliation.
 
 Parses the canonical reference files fetched by
-``src/surface_proteome/candidates/download_uniprot_accession_history.py``:
+``src/accessible_surfaceome/candidates/download_uniprot_accession_history.py``:
 
 - ``sec_ac.txt``    — secondary → primary accession map
 - ``delac_sp.txt``  — deleted Swiss-Prot accessions
 
 Used by:
 
-- ``surface_proteome.reports.audit`` (audit)
-- ``src/surface_proteome/candidates/merge.py`` (merge normalization)
+- ``accessible_surfaceome.reports.audit`` (audit)
+- ``src/accessible_surfaceome/candidates/merge.py`` (merge normalization)
 """
 
 from __future__ import annotations
@@ -87,6 +87,6 @@ def load_accession_history(history_dir: Path) -> tuple[dict[str, list[str]], set
     if not sec_ac_path.exists() or not delac_sp_path.exists():
         raise FileNotFoundError(
             f"Missing accession-history files under {history_dir}. Run "
-            "`uv run python -m surface_proteome.candidates.download_uniprot_accession_history` first."
+            "`uv run python -m accessible_surfaceome.candidates.download_uniprot_accession_history` first."
         )
     return parse_sec_ac(sec_ac_path), parse_delac_sp(delac_sp_path)

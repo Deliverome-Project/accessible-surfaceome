@@ -52,12 +52,12 @@ import json
 import re
 from pathlib import Path
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "deeptmhmm"
 DEFAULT_INPUT_DIR = ROOT / "data" / "external" / "deeptmhmm_surfaceome_predictions"

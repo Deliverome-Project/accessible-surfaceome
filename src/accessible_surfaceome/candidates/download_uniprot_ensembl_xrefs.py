@@ -31,19 +31,19 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import quote, urlencode
 
-from surface_proteome.candidates.build_uniprot import (
+from accessible_surfaceome.candidates.build_uniprot import (
     fetch_with_retries,
 )
-from surface_proteome.candidates.build_uniprot import (
+from accessible_surfaceome.candidates.build_uniprot import (
     iter_pages as _surface_iter_pages,  # noqa: F401 (kept for symmetry; unused)
 )
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     build_file_record,
     utc_now_iso,
     write_manifest,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "uniprot_ensembl_xrefs"
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "external" / DATASET

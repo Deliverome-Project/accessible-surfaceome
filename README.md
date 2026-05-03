@@ -1,8 +1,8 @@
 # accessible-surfaceome
 
-Standalone `uv` project for the surface-proteome annotation pipeline (sourced from
-`Deliverome-Project/deliverome-internal/analyses/surface-proteome`) described in
-`docs/plans/2026-04-16-surface-proteome-annotation.md`.
+A `uv` project that builds an annotated catalogue of human cell-surface proteins
+from seven public data sources. Full design notes:
+[docs/plans/2026-04-16-surface-proteome-annotation.md](docs/plans/2026-04-16-surface-proteome-annotation.md).
 
 The current checked-in implementation covers the M1 candidate-universe work:
 source downloads, source normalization, accession reconciliation, and the
@@ -10,8 +10,8 @@ seven-source candidate-universe merge.
 
 ## Layout
 
-- `src/surface_proteome/candidates/` - M1 candidate-universe builders.
-- `src/surface_proteome/reports/` - audit + figure scripts that read the merged universe.
+- `src/accessible_surfaceome/candidates/` - M1 candidate-universe builders.
+- `src/accessible_surfaceome/reports/` - audit + figure scripts that read the merged universe.
 - `data/raw/` - raw source workbooks used by the M1 builders.
 - `data/external/` - downloaded external snapshots and traceability manifests.
 - `data/processed/` - normalized M1 source tables and candidate-universe outputs.
@@ -24,11 +24,11 @@ From this directory:
 ```bash
 uv sync
 uv run accessible-surfaceome build
-uv run python -m surface_proteome.candidates.merge
-uv run python -m surface_proteome.candidates.build_surfy
-uv run python -m surface_proteome.candidates.build_cspa
-uv run python -m surface_proteome.candidates.build_ml_predictions
-uv run python -m surface_proteome.candidates.build_controls \
+uv run python -m accessible_surfaceome.candidates.merge
+uv run python -m accessible_surfaceome.candidates.build_surfy
+uv run python -m accessible_surfaceome.candidates.build_cspa
+uv run python -m accessible_surfaceome.candidates.build_ml_predictions
+uv run python -m accessible_surfaceome.candidates.build_controls \
   --controls-json /path/to/canonical_delivery_positive_controls/controls.json \
   --surfaceome-csv /path/to/surfaceome_expressed.csv \
   --mygene-symbol-universe-tsv /path/to/candidate_universe.tsv

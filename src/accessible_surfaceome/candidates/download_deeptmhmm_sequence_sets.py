@@ -25,14 +25,14 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     USER_AGENT,
     build_file_record,
     relative_to_repo,
     write_manifest,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 
 DATASET = "DeepTMHMM_surfaceome_sequence_sets"
@@ -42,7 +42,7 @@ RETRYABLE_HTTP_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
 _FASTA_SEQ_LINE_RE = re.compile(r"^[A-Z*.-]+$")
 
 DEFAULT_SURFACEOME_CSV = (
-    ROOT / "data" / "analysis" / "deliverome" / "expression_filtering" / "surfaceome_expressed.csv"
+    ROOT / "data" / "analysis" / "expression_filtering" / "surfaceome_expressed.csv"
 )
 DEFAULT_AFDB_BY_GENE_CSV = (
     ROOT / "data" / "external" / "afdb_surfaceome_expressed" / "afdb_surfaceome_tpm_expressed_by_gene.csv"

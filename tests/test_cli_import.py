@@ -1,4 +1,4 @@
-from surface_proteome.cli import main
+from accessible_surfaceome.cli import main
 
 
 def test_cli_entrypoint_importable() -> None:

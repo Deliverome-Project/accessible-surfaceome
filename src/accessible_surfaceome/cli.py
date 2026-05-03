@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 
-from surface_proteome.candidates import merge
+from accessible_surfaceome.candidates import merge
 
 
 def main(argv: list[str] | None = None) -> None:

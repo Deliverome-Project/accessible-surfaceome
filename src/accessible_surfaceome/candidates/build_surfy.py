@@ -39,12 +39,12 @@ from pathlib import Path
 
 import pandas as pd
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "surfy"
 DEFAULT_INPUT = ROOT / "data" / "raw" / "table_S3_surfaceome.xlsx"

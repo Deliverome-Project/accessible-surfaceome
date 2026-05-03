@@ -53,17 +53,17 @@ from pathlib import Path
 
 import pandas as pd
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
-from surface_proteome.candidates.uniprot_accession_history import (
+from accessible_surfaceome.candidates.uniprot_accession_history import (
     UNIPROT_ACCESSION_RE,
     parse_delac_sp,
     parse_sec_ac,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 _ALL_SOURCES_CACHE: set[str] | None = None
 
@@ -181,7 +181,7 @@ def main() -> None:
     if not sec_ac_path.exists() or not delac_sp_path.exists():
         raise FileNotFoundError(
             "UniProt accession-history files missing. Run "
-            "`uv run python src/surface_proteome/candidates/download_uniprot_accession_history.py` first."
+            "`uv run python src/accessible_surfaceome/candidates/download_uniprot_accession_history.py` first."
         )
 
     print("parsing accession-history reference ...")

@@ -1,7 +1,7 @@
 """Plot agreement across the seven M1 sources for surface-exposed proteins.
 
 Reads ``data/processed/candidate_universe/candidate_universe.tsv`` (written
-by ``src/surface_proteome/candidates/merge.py``) and produces:
+by ``src/accessible_surfaceome/candidates/merge.py``) and produces:
 
 1. **Agreement bar**: number of proteins supported by k/N sources (k = 1..N,
    N = len(SOURCE_FLAGS) = 7) — restricted to ``n_sources_surface >= 1``.
@@ -43,14 +43,14 @@ import numpy as np
 import pandas as pd
 from upsetplot import UpSet, from_indicators
 
-from surface_proteome.plotting_config import (
+from accessible_surfaceome.plotting_config import (
     COLORS,
     create_figure,
     save_figure,
     setup_plotting_style,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DEFAULT_INPUT = (
     ROOT / "data" / "processed" / "candidate_universe" / "candidate_universe.tsv"

@@ -94,15 +94,15 @@ from pathlib import Path
 
 import pandas as pd
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
-from surface_proteome.candidates.uniprot_ensembl_mapping import (
+from accessible_surfaceome.candidates.uniprot_ensembl_mapping import (
     load_ensembl_mapping,
 )
 
-from surface_proteome.paths import REPO_ROOT as ROOT
+from accessible_surfaceome.paths import REPO_ROOT as ROOT
 
 DATASET = "jensenlab_compartments"
 INPUT_DIR = ROOT / "data" / "external" / "jensenlab_compartments"
@@ -113,7 +113,7 @@ SUMMARY_JSON = "jensenlab_compartments_build_summary.json"
 MANIFEST_JSON = "jensenlab_compartments_build_traceability.json"
 
 # Surface GO terms (mirror of SURFACE_TERMS in
-# src/surface_proteome/candidates/download_jensenlab_compartments.py).
+# src/accessible_surfaceome/candidates/download_jensenlab_compartments.py).
 SURFACE_TERMS: set[str] = {
     "GO:0005886",  # plasma membrane
     "GO:0009986",  # cell surface
@@ -143,7 +143,7 @@ def _read_channel(path: Path, columns: list[str]) -> pd.DataFrame:
     if not path.exists():
         raise FileNotFoundError(
             f"Missing {path.relative_to(ROOT)}. Run "
-            "`uv run python src/surface_proteome/candidates/download_jensenlab_compartments.py` first."
+            "`uv run python src/accessible_surfaceome/candidates/download_jensenlab_compartments.py` first."
         )
     df = pd.read_csv(path, sep="\t", dtype=str, header=None, names=columns).fillna("")
     return df

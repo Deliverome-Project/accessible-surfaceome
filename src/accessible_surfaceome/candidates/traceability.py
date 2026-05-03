@@ -9,7 +9,9 @@ from pathlib import Path
 from typing import Any
 from urllib.request import Request, urlopen
 
-USER_AGENT = "internalizers-data-fetch/1.0"
+# TODO: before open-sourcing, source the contact email from a MAINTAINER_EMAIL
+# env var so contributors don't ship the maintainer's address with their requests.
+USER_AGENT = "accessible-surfaceome/0.1 (michael.smallegan@gmail.com)"
 
 
 def utc_now_iso() -> str:

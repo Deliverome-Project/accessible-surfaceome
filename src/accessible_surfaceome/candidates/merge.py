@@ -41,14 +41,14 @@ from typing import TypedDict
 import mygene
 import pandas as pd
 
-from surface_proteome.candidates.traceability import (
+from accessible_surfaceome.candidates.traceability import (
     sha256_file,
     utc_now_iso,
 )
-from surface_proteome.candidates.uniprot_accession_history import (
+from accessible_surfaceome.candidates.uniprot_accession_history import (
     load_accession_history,
 )
-from surface_proteome.paths import (
+from accessible_surfaceome.paths import (
     DATA_EXTERNAL_DIR,
     DATA_PROCESSED_DIR,
     REPO_ROOT,
@@ -1060,7 +1060,7 @@ def main(argv: list[str] | None = None) -> None:
     # COMPARTMENTS stars threshold — mirror of the rule in
     # build_jensenlab_compartments.py. Any change here must also update
     # the loader, the ``flag_rules`` block, and the threshold referenced
-    # in src/surface_proteome/candidates/download_jensenlab_compartments.py
+    # in src/accessible_surfaceome/candidates/download_jensenlab_compartments.py
     # SURFACE_TERMS (GO set) / anywhere else it surfaces.
     compartments_flag_threshold = 3.0
 
