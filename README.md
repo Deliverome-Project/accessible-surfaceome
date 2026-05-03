@@ -1,8 +1,8 @@
 # accessible-surfaceome
 
-Standalone `uv` project for the surface-proteome annotation pipeline (sourced from
-`Deliverome-Project/deliverome-internal/analyses/surface-proteome`) described in
-`docs/plans/2026-04-16-surface-proteome-annotation.md`.
+A `uv` project that builds an annotated catalogue of human cell-surface proteins
+from seven public data sources. Full design notes:
+[docs/plans/2026-04-16-surface-proteome-annotation.md](docs/plans/2026-04-16-surface-proteome-annotation.md).
 
 The current checked-in implementation covers the M1 candidate-universe work:
 source downloads, source normalization, accession reconciliation, and the
@@ -10,15 +10,15 @@ seven-source candidate-universe merge.
 
 ## Layout
 
-- `src/surface_proteome/candidates/` - M1 candidate-universe builders.
-- `src/surface_proteome/retrieval/` - planned literature/source retrieval code.
-- `src/surface_proteome/agents/` - planned extraction/synthesis agents and prompts.
-- `src/surface_proteome/pipeline/` - planned per-gene and batch orchestration.
-- `src/surface_proteome/reports/` - planned analysis/report generation code.
+- `src/accessible_surfaceome/sources/` - one module per data source (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `compartments.py`); each exposes `download` / `build` subcommands. Shared helpers (UniProt accession history, ENSG/ENSP mapping, traceability) live under `sources/_support/`.
+- `src/accessible_surfaceome/merge/` - candidate-universe orchestration; loaders, normalization, and gene-symbol resolution split into named neighbors.
+- `src/accessible_surfaceome/audit/` - audit scripts (accession-collapse audit, cross-source UniProt audit) and blog figures.
+- `src/accessible_surfaceome/controls.py` - control-panel builder (ADC/Lycia/LYTAC positives + negatives).
+- `src/accessible_surfaceome/tools/` - per-machine install plumbing (DeepTMHMM academic install).
 - `data/raw/` - raw source workbooks used by the M1 builders.
 - `data/external/` - downloaded external snapshots and traceability manifests.
 - `data/processed/` - normalized M1 source tables and candidate-universe outputs.
-- `docs/` - project plans, reports, and onepagers moved from the repo-level docs tree.
+- `docs/` - project plans, reports, and onepagers.
 
 ## Commands
 
@@ -27,11 +27,11 @@ From this directory:
 ```bash
 uv sync
 uv run accessible-surfaceome build
-uv run python -m surface_proteome.candidates.merge
-uv run python -m surface_proteome.candidates.build_surfy
-uv run python -m surface_proteome.candidates.build_cspa
-uv run python -m surface_proteome.candidates.build_ml_predictions
-uv run python -m surface_proteome.candidates.build_controls \
+uv run python -m accessible_surfaceome.merge
+uv run python -m accessible_surfaceome.sources.surfy build
+uv run python -m accessible_surfaceome.sources.cspa build
+uv run python -m accessible_surfaceome.sources.deeptmhmm build
+uv run python -m accessible_surfaceome.controls build \
   --controls-json /path/to/canonical_delivery_positive_controls/controls.json \
   --surfaceome-csv /path/to/surfaceome_expressed.csv \
   --mygene-symbol-universe-tsv /path/to/candidate_universe.tsv

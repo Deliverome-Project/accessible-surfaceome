@@ -27,10 +27,10 @@ jobs:
             chore
           scopes: |
             surface-proteome
-            candidates
-            retrieval
-            pipeline
-            reports
+            sources
+            merge
+            audit
+            tools
             data
             docs
             ci

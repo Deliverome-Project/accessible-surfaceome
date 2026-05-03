@@ -4,14 +4,18 @@ This file provides guidance to Claude Code for this repository.
 
 ## Project Overview
 
-`accessible-surfaceome` is a standalone surface-proteome annotation workspace sourced from `deliverome-internal/analyses/surface-proteome`.
+`accessible-surfaceome` is a workspace for building an annotated catalogue of
+human cell-surface proteins from seven public data sources.
 
 Current implementation focus: candidate-universe builders (M1).
 
 ## Repository Structure
 
-- `src/surface_proteome/` core package
-- `src/surface_proteome/candidates/` source download/build/merge modules
+- `src/accessible_surfaceome/` core package
+- `src/accessible_surfaceome/sources/` per-source download/build modules (one file per data source); shared infra in `sources/_support/`
+- `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution)
+- `src/accessible_surfaceome/audit/` audits + blog figures
+- `src/accessible_surfaceome/tools/` per-machine install plumbing
 - `data/raw/`, `data/external/`, `data/processed/`, `data/analysis/`
 - `docs/` plans/reports
 
@@ -25,7 +29,7 @@ uv sync
 
 ```bash
 uv run accessible-surfaceome build
-uv run python -m surface_proteome.candidates.merge
+uv run python -m accessible_surfaceome.merge
 bash scripts/check-py.sh
 uv run ty check
 uv run pytest -q

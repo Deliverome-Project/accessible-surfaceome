@@ -1,1 +1,0 @@
-"""PDB structural evidence retrieval."""
