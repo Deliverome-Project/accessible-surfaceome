@@ -67,6 +67,20 @@ in a haystack of correctly-rejected negatives.
   For M1 proteins it's "already-validated, thoroughly characterized; deep
   dive would just rehash public literature".
 
+### Heuristics
+
+- **Clinical-stage antibody-family programs are strong evidence of
+  accessibility.** If the agent surfaces an approved or clinical-stage
+  antibody, ADC, bispecific, CAR-T, TCR-mimic, or antibody-conjugated
+  binder targeting this protein, that's empirical proof of an
+  extracellular epitope — bias `accessibility_signal` toward
+  `likely_accessible` and cite the program. (Small-molecule clinical
+  programs do *not* carry this signal — small molecules often engage
+  intracellular pockets.) This signal does not automatically promote
+  `verdict=yes`: an already-validated target with an approved antibody
+  is typically `verdict=no` (the deep dive would just rehash known
+  literature) but `accessibility_signal=likely_accessible`.
+
 ### `accessibility_signal` semantics
 
 Independent axis from `verdict`. Captures the agent's call on whether the

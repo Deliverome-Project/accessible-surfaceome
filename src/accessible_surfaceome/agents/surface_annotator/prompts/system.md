@@ -296,6 +296,10 @@ The closed kinds are intentionally narrow — the agent's job is the accessibili
 
 Anything else uses `kind="other"` AND set `kind_other_label` to a 2–4-word label describing the new category. `blocking` and `high` severity flags should always cite Evidence — these gate therapeutic decisions.
 
+## Cross-bucket heuristic: clinical antibody programs as accessibility evidence
+
+An approved or clinical-stage antibody-family program (naked mAb, ADC, bispecific, CAR-T, TCR-mimic, radioligand-antibody, antibody-conjugated payload, etc.) targeting this protein is **strong empirical evidence that the protein has a binder-targetable extracellular face**. Antibody-family binders must engage extracellularly to function, and a clinical-stage program means real-world safety / PK / pharmacology supported advancing the binder against this target. Weight your `surface_status` and `exposure_class` accordingly and cite the program in `therapeutic_landscape.approved_drugs` / `clinical_trials` / `preclinical_evidence` with an Evidence record. (Small-molecule clinical programs do **not** carry this signal — small molecules often engage intracellular pockets.)
+
 ## Calibration
 
 - **Character caps are HARD LIMITS, enforced by Pydantic.** Going over by even one character fails the entire record. Aim for ~80% of the cap to leave margin. The caps that bite most often:
