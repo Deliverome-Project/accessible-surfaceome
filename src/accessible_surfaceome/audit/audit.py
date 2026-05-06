@@ -109,31 +109,31 @@ def load_source_accessions() -> dict[str, set[str]]:
     """
     sources: dict[str, set[str]] = {}
 
-    up = pd.read_csv(UNIPROT_TSV, sep="\t", dtype=str, usecols=["accession"])
+    up = pd.read_csv(UNIPROT_TSV, sep="\t", dtype=str, usecols=["accession"])  # ty:ignore[no-matching-overload]
     sources["uniprot"] = {_strip_isoform(a.strip()) for a in up["accession"].dropna()}
 
-    go = pd.read_csv(GO_TSV, sep="\t", dtype=str, usecols=["DB_Object_ID"])
+    go = pd.read_csv(GO_TSV, sep="\t", dtype=str, usecols=["DB_Object_ID"])  # ty:ignore[no-matching-overload]
     sources["go"] = {_strip_isoform(a.strip()) for a in go["DB_Object_ID"].dropna()}
 
-    surfy = pd.read_csv(SURFY_TSV, sep="\t", dtype=str, usecols=["uniprot_accession", "surfy_is_surface"])
+    surfy = pd.read_csv(SURFY_TSV, sep="\t", dtype=str, usecols=["uniprot_accession", "surfy_is_surface"])  # ty:ignore[no-matching-overload]
     surfy = surfy[surfy["surfy_is_surface"].fillna("0") == "1"]
     sources["surfy"] = {_strip_isoform(a.strip()) for a in surfy["uniprot_accession"].dropna()}
 
-    cspa = pd.read_csv(CSPA_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])
+    cspa = pd.read_csv(CSPA_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])  # ty:ignore[no-matching-overload]
     sources["cspa"] = {_strip_isoform(a.strip()) for a in cspa["uniprot_accession"].dropna()}
 
     dt_accessions: set[str] = set()
     for path in (DEEPTMHMM_CAN_TSV, DEEPTMHMM_ISO_TSV):
-        df = pd.read_csv(path, sep="\t", dtype=str, usecols=["uniprot_accession"])
+        df = pd.read_csv(path, sep="\t", dtype=str, usecols=["uniprot_accession"])  # ty:ignore[no-matching-overload]
         dt_accessions.update(_strip_isoform(a.strip()) for a in df["uniprot_accession"].dropna())
     sources["deeptmhmm"] = dt_accessions
 
     if HPA_TSV.exists():
-        hpa = pd.read_csv(HPA_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])
+        hpa = pd.read_csv(HPA_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])  # ty:ignore[no-matching-overload]
         sources["hpa"] = {_strip_isoform(a.strip()) for a in hpa["uniprot_accession"].dropna()}
 
     if COMPARTMENTS_TSV.exists():
-        cmp_df = pd.read_csv(COMPARTMENTS_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])
+        cmp_df = pd.read_csv(COMPARTMENTS_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])  # ty:ignore[no-matching-overload]
         sources["compartments"] = {
             _strip_isoform(a.strip()) for a in cmp_df["uniprot_accession"].dropna()
         }
@@ -238,7 +238,7 @@ def main() -> None:
     print("checking merge-level collisions ...")
     cu = pd.read_csv(args.candidate_universe_tsv, sep="\t", dtype=str,
                      usecols=["uniprot_accession", "sources_present",
-                              "n_sources_surface", "gene_symbol"])
+                              "n_sources_surface", "gene_symbol"])  # ty:ignore[no-matching-overload]
     cu_set = set(cu["uniprot_accession"].dropna().astype(str))
     collisions: list[dict[str, object]] = []
     for acc in cu_set:
@@ -262,7 +262,7 @@ def main() -> None:
             "secondary_accession", "primary_accession",
             "secondary_sources_present", "primary_sources_present",
             "secondary_gene_symbol", "primary_gene_symbol",
-        ]
+        ]  # ty:ignore[invalid-argument-type]
     )
     collisions_tsv = out_dir / "merge_level_collisions.tsv"
     coll_df.to_csv(collisions_tsv, sep="\t", index=False)

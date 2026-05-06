@@ -124,7 +124,7 @@ def main() -> None:
         "source", "primary_accession", "n_pre_collapse_rows",
         "column", "is_numeric", "reducer",
         "n_distinct_values", "distinct_values",
-    ])
+    ])  # ty:ignore[invalid-argument-type]
     out.to_csv(OUTPUT_TSV, sep="\t", index=False)
     print(f"wrote {OUTPUT_TSV.relative_to(ROOT)} ({len(out):,} conflict rows)")
     if len(out):

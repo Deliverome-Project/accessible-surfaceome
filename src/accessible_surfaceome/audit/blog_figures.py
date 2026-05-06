@@ -49,20 +49,49 @@ from accessible_surfaceome.audit._plotting_config import (
     save_figure,
     setup_plotting_style,
 )
-
 from accessible_surfaceome.paths import REPO_ROOT as ROOT
+
+
+def _patch_upsetplot_label_sizes() -> None:
+    """upsetplot 0.9.0 passes 1-element ndarrays to ax.text(); newer matplotlib
+    rejects them. Coerce the offending margin to a float."""
+    original = UpSet._label_sizes
+
+    def patched(self, ax, rects, where):
+        original_diff = np.diff
+
+        def diff_scalar(*args, **kwargs):
+            result = original_diff(*args, **kwargs)
+            if hasattr(result, "ndim") and result.ndim == 1 and len(result) == 1:
+                return result.item()
+            return result
+
+        np.diff = diff_scalar  # ty:ignore[invalid-assignment]
+        try:
+            return original(self, ax, rects, where)
+        finally:
+            np.diff = original_diff
+
+    UpSet._label_sizes = patched  # ty:ignore[invalid-assignment]
+
+
+_patch_upsetplot_label_sizes()
 
 DEFAULT_INPUT = (
     ROOT / "data" / "processed" / "candidate_universe" / "candidate_universe.tsv"
 )
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "analysis" / "candidate_universe_agreement"
 
+# DeepTMHMM is intentionally omitted from these figures. It was run on a
+# partial cohort in the M1 milestone, so its inclusion would skew agreement
+# and Jaccard plots with coverage gaps that are scope-related, not
+# biological. Its per-row call is still emitted in the candidate-universe
+# TSV as auxiliary evidence for downstream agent assessment.
 SOURCE_FLAGS = [
     "uniprot_surface_flag",
     "go_surface_flag",
     "surfy_surface_flag",
     "cspa_surface_flag",
-    "deeptmhmm_surface_flag",
     "hpa_surface_flag",
     "compartments_surface_flag",
 ]
@@ -71,7 +100,6 @@ SOURCE_NAMES = {
     "go_surface_flag": "go",
     "surfy_surface_flag": "surfy",
     "cspa_surface_flag": "cspa",
-    "deeptmhmm_surface_flag": "deeptmhmm",
     "hpa_surface_flag": "hpa",
     "compartments_surface_flag": "compartments",
 }
@@ -102,8 +130,12 @@ def _bar_palette(n: int) -> list[str]:
 
 
 def _plot_agreement_bar(df: pd.DataFrame, out_dir: Path) -> None:
+    # Recompute the per-row source count over the figure-scoped SOURCE_FLAGS
+    # (DeepTMHMM excluded — see module-level note) rather than reading the
+    # 7-source ``n_sources_surface`` column from the TSV.
+    n_in_scope = df[SOURCE_FLAGS].sum(axis=1).astype(int)
     counts = (
-        df[df["n_sources_surface"] >= 1]["n_sources_surface"]
+        n_in_scope[n_in_scope >= 1]
         .value_counts()
         .reindex(range(1, N_SOURCES + 1), fill_value=0)
         .sort_index()
@@ -159,7 +191,8 @@ def _plot_agreement_bar(df: pd.DataFrame, out_dir: Path) -> None:
 
 
 def _plot_upset(df: pd.DataFrame, out_dir: Path) -> None:
-    sub = df[df["n_sources_surface"] >= 1].copy()
+    n_in_scope = df[SOURCE_FLAGS].sum(axis=1).astype(int)
+    sub = df[n_in_scope >= 1].copy()
     ind = sub[SOURCE_FLAGS].astype(bool)
     ind.columns = [SOURCE_NAMES[c] for c in ind.columns]
     data = from_indicators(list(ind.columns), data=ind)

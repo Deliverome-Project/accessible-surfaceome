@@ -46,7 +46,7 @@ def _load_pair_tsv(path: Path, id_col: str) -> dict[str, list[str]]:
             f"Missing Ensembl xref mapping at {path}. Run "
             "`uv run python -m accessible_surfaceome.sources._support.ensembl_mapping download` first."
         )
-    df = pd.read_csv(path, sep="\t", dtype=str, usecols=[id_col, "uniprot_accession"])
+    df = pd.read_csv(path, sep="\t", dtype=str, usecols=[id_col, "uniprot_accession"])  # ty:ignore[no-matching-overload]
     for eid, acc in zip(df[id_col].fillna(""), df["uniprot_accession"].fillna("")):
         if not eid or not acc:
             continue

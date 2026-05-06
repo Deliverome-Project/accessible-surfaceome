@@ -84,11 +84,41 @@ def first_nonempty_symbol(values: pd.Series) -> str:
     return ""
 
 
+UNIPROT_STRICT_SURFACE_TERMS = (
+    "Cell surface",
+    "Apical cell membrane",
+    "Basolateral cell membrane",
+    "GPI-anchor",
+)
+
+
 def load_uniprot() -> pd.DataFrame:
+    """Load UniProt candidates and flag only strictly surface-localized rows.
+
+    The upstream fetch query is broad (``Cell membrane`` plus the strict terms
+    plus ``Extracellular`` topology) so the cached TSV serves both the M1
+    candidate list and any future broader sweep. For M1 we tighten the
+    surface flag to require either an explicit cell-surface / apical /
+    basolateral / GPI subcellular location or at least one extracellular
+    topology feature. Plain ``Cell membrane`` annotations are excluded — they
+    include cytoplasmic-side and lateral-membrane proteins that aren't
+    apples-to-apples with the other sources' surface labels.
+    """
     df = pd.read_csv(UNIPROT_TSV, sep="\t", dtype=str)
     df = df.rename(columns={"accession": "uniprot_accession", "entry_name": "uniprot_entry_name"})
+
+    locations = df["subcellular_locations"].fillna("")
+    has_strict_term = locations.apply(
+        lambda s: any(term in s.split("|") for term in UNIPROT_STRICT_SURFACE_TERMS)
+    )
+    extracellular = pd.to_numeric(
+        df["feature_topo_extracellular_count"], errors="coerce"
+    ).fillna(0).astype(int) > 0
+    surface = (has_strict_term | extracellular).astype(int)
+
     df = df[["uniprot_accession", "uniprot_entry_name", "gene_primary"]].copy()
-    df["uniprot_surface_flag"] = 1
+    df["uniprot_surface_flag"] = surface.values
+    df = df[df["uniprot_surface_flag"] == 1].reset_index(drop=True)
     return df
 
 

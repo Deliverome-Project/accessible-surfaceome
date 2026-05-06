@@ -23,7 +23,10 @@ manifest's ``flag_rules`` block (assembled in ``main`` below) and in
 
 Outputs (all under ``data/processed/candidate_universe/``):
 
-- ``candidate_universe.tsv``               — rows with ``n_sources_surface >= 1``
+- ``candidate_universe.tsv``               — rows with ``in_db_union == 1``
+  (at least one of uniprot/go/surfy/cspa/hpa/compartments flags surface;
+  DeepTMHMM does not contribute to universe membership but its columns
+  are emitted as evidence for downstream agent assessment)
 - ``candidate_universe_zero_support.tsv``  — present in some source but
   filtered out of every positive-flag rule (kept for traceability)
 - ``candidate_universe_summary.json``      — per-source counts, agreement
@@ -301,6 +304,13 @@ def main(argv: list[str] | None = None) -> None:
 
     merged["n_sources_surface"] = merged[FLAG_COLUMNS].sum(axis=1).astype(int)
     merged["in_db_union"] = (merged[DB_FLAG_COLUMNS].sum(axis=1) > 0).astype(int)
+    # ml_only_edge_case rows have deeptmhmm topology support but no
+    # DB-source surface annotation. They are excluded from the candidate
+    # universe (DeepTMHMM is a membrane-topology predictor that does not
+    # distinguish plasma membrane from intracellular membranes, so it
+    # cannot stand alone as surface evidence). The deeptmhmm_* columns
+    # remain on every universe row as auxiliary evidence for the
+    # downstream agent assessment steps.
     merged["ml_only_edge_case"] = (
         (merged["deeptmhmm_surface_flag"] == 1) & (merged["in_db_union"] == 0)
     ).astype(int)
@@ -405,18 +415,25 @@ def main(argv: list[str] | None = None) -> None:
     merged = merged[merged["uniprot_accession"] != ""].copy()
 
     # Split the merged frame into:
-    #   - the candidate universe (n_sources_surface >= 1): at least one
-    #     source has set its own surface flag under its own rule. These
-    #     are the rows the downstream per-gene LLM reconciliation runs on.
-    #   - the zero-support pool (n_sources_surface == 0): present in some
-    #     raw source but filtered out of every positive-flag rule (GO-IEA-
-    #     only, CSPA unspecific / blank, HPA secreted-only, accession-history-
-    #     split-ambiguous, COMPARTMENTS below corroboration). Retained as a
-    #     separate file for traceability; they carry no positive evidence so
-    #     have nothing for the LLM to reconcile.
+    #   - the candidate universe (in_db_union == 1): at least one of the
+    #     six annotation-database sources (uniprot/go/surfy/cspa/hpa/
+    #     compartments) has set its own surface flag under its own rule.
+    #     DeepTMHMM is intentionally excluded from this gate — it is a
+    #     membrane-topology predictor that does not distinguish plasma
+    #     membrane from intracellular membranes, so it cannot stand
+    #     alone as surface evidence. Its columns are still emitted on
+    #     every universe row as auxiliary evidence for the downstream
+    #     agent assessment steps.
+    #   - the zero-support pool (in_db_union == 0): present in some
+    #     raw source but filtered out of every DB-source positive-flag
+    #     rule (GO-IEA-only, CSPA unspecific / blank, HPA secreted-only,
+    #     accession-history-split-ambiguous, COMPARTMENTS below
+    #     corroboration, or ml_only_edge_case = DeepTMHMM-only). Retained
+    #     as a separate file for traceability; they carry no DB-source
+    #     positive evidence so have nothing for the LLM to reconcile.
     merged_all = merged
-    merged = merged_all[merged_all["n_sources_surface"] >= 1].copy().reset_index(drop=True)
-    zero_support = merged_all[merged_all["n_sources_surface"] == 0].copy().reset_index(drop=True)
+    merged = merged_all[merged_all["in_db_union"] == 1].copy().reset_index(drop=True)
+    zero_support = merged_all[merged_all["in_db_union"] == 0].copy().reset_index(drop=True)
 
     # --- pre-publication assertion: documented flag_rules reconcile with output ---
     # Re-derive each surface flag from the raw evidence columns in the merged
@@ -580,7 +597,7 @@ def main(argv: list[str] | None = None) -> None:
                 "size_bytes": tmp_tsv.stat().st_size,
                 "n_rows": int(len(merged)),
                 "primary_key": "uniprot_accession",
-                "filter": "n_sources_surface >= 1",
+                "filter": "in_db_union == 1 (at least one of uniprot/go/surfy/cspa/hpa/compartments flags surface; DeepTMHMM evidence is emitted on each row but does not contribute to universe membership)",
             },
             ZERO_SUPPORT_TSV: {
                 "local_path": str(out_zero_tsv.relative_to(REPO_ROOT)),
@@ -588,7 +605,7 @@ def main(argv: list[str] | None = None) -> None:
                 "size_bytes": tmp_zero_tsv.stat().st_size,
                 "n_rows": int(len(zero_support)),
                 "primary_key": "uniprot_accession",
-                "filter": "n_sources_surface == 0 (accession present in a raw source but filtered out of every positive-flag rule — retained for traceability only)",
+                "filter": "in_db_union == 0 (accession present in a raw source but filtered out of every DB-source positive-flag rule, including ml_only_edge_case = DeepTMHMM-only rows — retained for traceability only)",
             },
         },
         "gene_symbol_resolution": {
