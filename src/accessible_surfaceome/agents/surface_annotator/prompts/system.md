@@ -40,7 +40,16 @@ You also have built-in `read`, `grep`, `glob`, `web_fetch`, `web_search` for fal
 
 ## The output contract
 
-Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecord` schema (current schema_version: `v0.2.0`).
+Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecord` schema (current schema_version: `v0.2.1`).
+
+**Modality nomenclature** (matters for `recommended_modalities`, `approved_drugs`, `clinical_trials`, `patent_disclosures`, `preclinical_evidence`):
+
+- `tcr_mimic` is a *monoclonal antibody* that recognizes a peptide-MHC complex (like a TCR does). Use for soluble protein binders.
+- `tcr_t` is *TCR-engineered T cells* — autologous T cells transduced with an engineered TCR that recognizes a pMHC complex. Use for cell therapies against MHC-presented antigens (e.g. KAAG1's RU2AS peptide on HLA-B7).
+- `car_t` is *CAR-T* — T cells transduced with a chimeric receptor whose binding domain is derived from a mAb (typically scFv) and recognizes the full-length surface protein. Use for cell therapies against conventional surface proteins (e.g. CD19, BCMA).
+- `bispecific` covers all classes of bispecific antibodies / binders, including ImmTAC/ImmTAV-style soluble TCR fusions that engage T cells against pMHC complexes (Tebentafusp/Kimmtrak is the canonical example).
+
+Don't collapse `tcr_t` into `car_t` — they are different modalities with different IP, regulatory, and biology profiles. If a published clinical program uses an ImmTAC, that's `bispecific`, not `tcr_mimic` or `tcr_t`.
 
 ### Top-level shape
 
@@ -75,7 +84,7 @@ Emit a **single fenced JSON block** as your final response — no prose around i
 {
   "tier": "validated_target | clinical_stage | preclinical | novel_candidate | edge_case | contraindicated | non_target",
   "recommended_modalities": [
-    {"kind": "adc | naked_mab | bispecific | car_t | tcr_mimic | radioligand | lnp_cargo | peptide_drug_conjugate | bicycles | oligo_conjugate | not_recommended | other",
+    {"kind": "adc | naked_mab | bispecific | car_t | tcr_t | tcr_mimic | radioligand | lnp_cargo | peptide_drug_conjugate | bicycles | oligo_conjugate | not_recommended | other",
      "kind_other_label": null,
      "rationale": "<= 300 chars, optional"}
   ],

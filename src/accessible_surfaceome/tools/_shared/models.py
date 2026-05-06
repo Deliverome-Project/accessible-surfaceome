@@ -530,7 +530,7 @@ class Evidence(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.2.0"
+SCHEMA_VERSION = "v0.2.1"
 
 
 # ---- shared enums (closed) ------------------------------------------------
@@ -586,8 +586,9 @@ ModalityKind = Literal[
     "adc",
     "naked_mab",
     "bispecific",
-    "car_t",
-    "tcr_mimic",
+    "car_t",  # CAR-T: antibody-derived ECD-binding receptor; targets full-length surface protein.
+    "tcr_t",  # TCR-T: TCR-engineered T cells recognizing pMHC; for MHC-presented peptide antigens.
+    "tcr_mimic",  # mAb that recognizes a peptide-MHC complex like a TCR.
     "radioligand",
     "lnp_cargo",
     "peptide_drug_conjugate",

@@ -20,12 +20,15 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from anthropic import Anthropic
 
+from pydantic import ValidationError
+
 from accessible_surfaceome.paths import DATA_DIR, REPO_ROOT
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
+from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
 
 from .._support import client as _client_module
 from .._support import registry as _registry
@@ -108,10 +111,13 @@ def sync_agent_and_environment(client: Anthropic | None = None) -> SyncResult:
 class AnnotateResult:
     session_id: str
     annotation_path: Path | None
+    invalid_path: Path | None
     run_dir: Path
     final_text: str
     annotation_json: dict[str, Any] | None
     n_tool_calls: int
+    validation_status: Literal["valid", "invalid", "missing"]
+    validation_errors: list[dict[str, Any]] | None
 
 
 def annotate_gene(
@@ -176,12 +182,15 @@ def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateRes
     (run_dir / "final.md").write_text(final_text)
     annotation_json = _extract_annotation_json(final_text)
 
-    annotation_path: Path | None = None
-    if annotation_json is not None:
-        annotation_dir = DATA_DIR / "annotations"
-        annotation_dir.mkdir(parents=True, exist_ok=True)
-        annotation_path = annotation_dir / f"{gene}.json"
-        annotation_path.write_text(json.dumps(annotation_json, indent=2, sort_keys=True) + "\n")
+    annotation_path, invalid_path, validation_status, validation_errors = _persist_annotation(
+        gene=gene, annotation_json=annotation_json, run_dir=run_dir
+    )
+    if validation_status == "invalid":
+        logger.warning(
+            "annotation for %s failed Pydantic validation; persisted to %s for review",
+            gene,
+            invalid_path,
+        )
 
     summary = {
         "gene": gene,
@@ -191,6 +200,9 @@ def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateRes
         "environment_id": env_entry.id,
         "n_custom_tool_calls": n_tool_calls,
         "annotation_path": str(annotation_path) if annotation_path else None,
+        "invalid_path": str(invalid_path) if invalid_path else None,
+        "validation_status": validation_status,
+        "validation_errors": validation_errors,
         "annotation_json": annotation_json,
         "final_text_chars": len(final_text),
     }
@@ -199,10 +211,13 @@ def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateRes
     return AnnotateResult(
         session_id=session.id,
         annotation_path=annotation_path,
+        invalid_path=invalid_path,
         run_dir=run_dir,
         final_text=final_text,
         annotation_json=annotation_json,
         n_tool_calls=n_tool_calls,
+        validation_status=validation_status,
+        validation_errors=validation_errors,
     )
 
 
@@ -217,6 +232,55 @@ def _render_task(gene: str) -> str:
 
 
 _FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
+
+
+def _persist_annotation(
+    *,
+    gene: str,
+    annotation_json: dict[str, Any] | None,
+    run_dir: Path,
+) -> tuple[Path | None, Path | None, Literal["valid", "invalid", "missing"], list[dict[str, Any]] | None]:
+    """Validate the agent-emitted JSON against ``SurfaceomeRecord`` and write it.
+
+    Returns ``(annotation_path, invalid_path, validation_status, validation_errors)``:
+
+    - ``valid`` — JSON validates. Persisted via Pydantic's canonical dump to
+      ``data/annotations/{gene}.json``. ``invalid_path`` is ``None``.
+    - ``invalid`` — JSON parsed but failed Pydantic validation. The agent's
+      raw payload is persisted to ``run_dir/{gene}.invalid.json`` (NOT the
+      canonical annotations dir, which we keep clean as the gold-standard
+      list). ``validation_errors`` carries the Pydantic error list so the
+      run summary documents what went wrong. ``annotation_path`` is ``None``.
+    - ``missing`` — agent didn't emit a JSON block at all.
+
+    Why we don't crash the run on validation failure: the agent's other work
+    (tool calls, final text, run log) is still useful for debugging. Surface
+    the failure in the summary; let a human or the ontology-review agent
+    decide what to do with the invalid record.
+    """
+
+    if annotation_json is None:
+        return None, None, "missing", None
+
+    try:
+        record = SurfaceomeRecord.model_validate(annotation_json)
+    except ValidationError as exc:
+        invalid_path = run_dir / f"{gene}.invalid.json"
+        invalid_path.write_text(
+            json.dumps(annotation_json, indent=2, sort_keys=True) + "\n"
+        )
+        # Pydantic returns ErrorDetails (a TypedDict); coerce to plain dicts
+        # so the summary.json round-trips cleanly.
+        errors: list[dict[str, Any]] = [{**e} for e in exc.errors()]
+        return None, invalid_path, "invalid", errors
+
+    annotation_dir = DATA_DIR / "annotations"
+    annotation_dir.mkdir(parents=True, exist_ok=True)
+    annotation_path = annotation_dir / f"{gene}.json"
+    # Canonical Pydantic dump — guarantees the persisted file matches the
+    # current schema_version's shape (drops unknown fields, applies defaults).
+    annotation_path.write_text(record.model_dump_json(indent=2) + "\n")
+    return annotation_path, None, "valid", None
 
 
 def _extract_annotation_json(text: str) -> dict[str, Any] | None:
