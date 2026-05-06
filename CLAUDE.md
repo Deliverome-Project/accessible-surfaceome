@@ -60,6 +60,21 @@ uv run pytest -q
 - CI workflow: `.github/workflows/ci.yml`
 - Runs `uv sync --frozen`, `uv lock --check`, `bash scripts/check-py.sh`.
 
+## Pull Request Conventions
+
+PR titles are validated by `.github/workflows/lint-pr-title.yml` (Conventional
+Commits). A title that doesn't match fails the check and blocks merge.
+
+- **Format**: `<type>(<scope>): <subject>` — scope is optional.
+- **Allowed types**: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`.
+- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `tools`, `data`, `docs`, `ci`, `deps`.
+- **Pick a scope by what the PR mostly touches**: `sources/` → `sources`,
+  `merge/` → `merge`, `audit/` → `audit`, `tools/` (custom-tool handlers, including the
+  surface-annotator agent that calls them) → `tools`, dependency bumps → `deps`,
+  CI workflows → `ci`, project-wide / cross-cutting → `surface-proteome`. If you
+  need a scope that isn't listed, update the workflow's `scopes:` block in the
+  same PR — don't invent a new one.
+
 ## Coding Style
 
 See [docs/coding-style.md](docs/coding-style.md) for the conventions we
