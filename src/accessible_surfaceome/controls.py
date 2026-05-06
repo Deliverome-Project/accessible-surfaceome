@@ -44,6 +44,13 @@ DEFAULT_OUTPUT_SUMMARY = (
 DEFAULT_CANDIDATE_UNIVERSE_TSV = (
     ROOT / "data" / "processed" / "candidate_universe" / "candidate_universe.tsv"
 )
+DEFAULT_OPENCELL_NEGATIVE_TSV = (
+    ROOT
+    / "data"
+    / "processed"
+    / "controls"
+    / "opencell_grade3_vesicles_non_membrane_in_m1.tsv"
+)
 DEFAULT_ADDITIONAL_NEGATIVE = (
     "RPN2,GALNT1,ST3GAL1,ST3GAL4,TMED4,EXTL2,DMXL2,GPR137B,LMAN2"
 )
@@ -72,6 +79,16 @@ def _build_parse_args(argv: list[str] | None) -> argparse.Namespace:
         help=(
             "TSV/CSV with `gene_symbol` column used to build one-pass MyGene "
             "alias index (default: candidate_universe.tsv)."
+        ),
+    )
+    parser.add_argument(
+        "--opencell-negative-tsv",
+        type=Path,
+        default=DEFAULT_OPENCELL_NEGATIVE_TSV,
+        help=(
+            "TSV with OpenCell-derived negative-control candidates. Expected "
+            "columns: gene_symbol, proposed_negative_addition. Rows with "
+            "proposed_negative_addition == yes are appended as negatives."
         ),
     )
     parser.add_argument(
@@ -150,6 +167,33 @@ def _load_gene_symbols(table_path: Path) -> list[str]:
         }
     )
     return symbols
+
+
+def _load_opencell_negative_genes(table_path: Path) -> list[str]:
+    """Load OpenCell-derived negative genes with proposed_negative_addition=yes."""
+    if not table_path.exists():
+        return []
+    table = pd.read_csv(table_path, sep="\t")
+    required = {"gene_symbol", "proposed_negative_addition"}
+    missing = required.difference(table.columns)
+    if missing:
+        raise ValueError(
+            f"{table_path} missing required columns: {', '.join(sorted(missing))}"
+        )
+    flagged = table[
+        table["proposed_negative_addition"]
+        .astype(str)
+        .str.strip()
+        .str.lower()
+        .eq("yes")
+    ]
+    return sorted(
+        {
+            str(symbol).strip().upper()
+            for symbol in flagged["gene_symbol"].astype(str)
+            if str(symbol).strip()
+        }
+    )
 
 
 def _build_mygene_alias_index(symbols: list[str]) -> tuple[dict[str, str], dict[str, int]]:
@@ -263,6 +307,7 @@ def build_control_panel(
     controls_json: Path,
     surfaceome_csv: Path,
     additional_negative_genes: list[str],
+    opencell_negative_genes: list[str],
     specified_negative_genes: list[str],
     mygene_symbol_universe: list[str],
     mygene_alias_to_symbol: dict[str, str],
@@ -335,6 +380,25 @@ def build_control_panel(
                 source_note=(
                     "Added as likely non-surface negative control from "
                     "2,379-list request"
+                ),
+                aliases=[],
+            )
+        )
+
+    for gene in opencell_negative_genes:
+        records.append(
+            _build_record(
+                gene_symbol=gene,
+                target_name=gene,
+                control_class="negative_non_surfaceome",
+                control_group="opencell_grade3_vesicles_non_membrane_in_m1",
+                provenance=(
+                    "OpenCell localization annotations: "
+                    "data/processed/controls/opencell_grade3_vesicles_non_membrane_in_m1.tsv"
+                ),
+                source_note=(
+                    "OpenCell annotations_grade_3 contains 'vesicles' and does not "
+                    "contain 'membrane'; gene is in M1 candidate universe."
                 ),
                 aliases=[],
             )
@@ -531,7 +595,9 @@ def build_main(argv: list[str] | None = None) -> None:
     mygene_symbol_universe_tsv = args.mygene_symbol_universe_tsv.expanduser().resolve()
     output_tsv = args.output_tsv.expanduser().resolve()
     output_summary = args.output_summary.expanduser().resolve()
+    opencell_negative_tsv = args.opencell_negative_tsv.expanduser().resolve()
     additional_negative_genes = _csv_symbols(args.additional_negative_genes)
+    opencell_negative_genes = _load_opencell_negative_genes(opencell_negative_tsv)
     specified_negative_genes = _csv_symbols(args.specified_negative_genes)
     mygene_symbols = _load_gene_symbols(mygene_symbol_universe_tsv)
     mygene_alias_to_symbol, mygene_stats = _build_mygene_alias_index(mygene_symbols)
@@ -540,6 +606,7 @@ def build_main(argv: list[str] | None = None) -> None:
         controls_json=controls_json,
         surfaceome_csv=surfaceome_csv,
         additional_negative_genes=additional_negative_genes,
+        opencell_negative_genes=opencell_negative_genes,
         specified_negative_genes=specified_negative_genes,
         mygene_symbol_universe=mygene_symbols,
         mygene_alias_to_symbol=mygene_alias_to_symbol,
@@ -566,6 +633,12 @@ def build_main(argv: list[str] | None = None) -> None:
         "n_pinned_specified_negative_controls": int(
             (panel["is_pinned_specified_negative"] == "yes").sum()
         ),
+        "n_opencell_vesicles_grade3_negative_controls": int(
+            panel["control_group"]
+            .str.contains("opencell_grade3_vesicles_non_membrane_in_m1", regex=False)
+            .sum()
+        ),
+        "opencell_negative_tsv": str(opencell_negative_tsv),
         "mygene_symbol_universe_tsv": str(mygene_symbol_universe_tsv),
         "mygene_stats": mygene_stats,
         "n_mygene_alias_matches": int((panel["lookup_match_source"] == "mygene_alias").sum()),
