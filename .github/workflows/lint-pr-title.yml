@@ -30,6 +30,7 @@ jobs:
             sources
             merge
             audit
+            agents
             tools
             data
             docs
