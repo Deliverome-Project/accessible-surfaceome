@@ -11,8 +11,47 @@ ambiguity flagging).
 
 from __future__ import annotations
 
+import hashlib
+import json
+from datetime import UTC, datetime
+
 import mygene
 import pandas as pd
+
+from accessible_surfaceome.paths import DATA_EXTERNAL_DIR
+
+MYGENE_CACHE_DIR = DATA_EXTERNAL_DIR / "mygene_symbol_resolution"
+MYGENE_CACHE_PATH = MYGENE_CACHE_DIR / "mygene_response.json"
+
+
+def _mygene_input_hash(symbols: list[str]) -> str:
+    payload = json.dumps(sorted(symbols), separators=(",", ":")).encode()
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _load_mygene_cache(input_hash: str) -> list[dict] | None:
+    if not MYGENE_CACHE_PATH.exists():
+        return None
+    try:
+        cached = json.loads(MYGENE_CACHE_PATH.read_text())
+    except (json.JSONDecodeError, OSError):
+        return None
+    if cached.get("input_sha256") != input_hash:
+        return None
+    hits = cached.get("raw_hits")
+    return hits if isinstance(hits, list) else None
+
+
+def _write_mygene_cache(input_hash: str, raw_hits: list[dict]) -> None:
+    MYGENE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "input_sha256": input_hash,
+        "fetched_at_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "raw_hits": raw_hits,
+    }
+    tmp = MYGENE_CACHE_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(payload, indent=2, sort_keys=True))
+    tmp.replace(MYGENE_CACHE_PATH)
 
 
 def consolidate_gene_symbol(row: pd.Series) -> str:
@@ -65,7 +104,7 @@ def resolve_gene_symbols_with_mygene(
                 "gene_symbol_resolved",
                 "gene_symbol_mapping_status",
                 "gene_symbol_mygene_score",
-            ]
+            ]  # ty:ignore[invalid-argument-type]
         )
         return empty, {
             "n_query_symbols": 0,
@@ -76,22 +115,28 @@ def resolve_gene_symbols_with_mygene(
             "n_not_found": 0,
         }
 
-    mg = mygene.MyGeneInfo()
-    try:
-        raw_hits = mg.querymany(
-            symbols,
-            scopes="symbol,alias,prev_symbol",
-            fields="symbol,alias,prev_symbol",
-            species="human",
-            as_dataframe=False,
-            returnall=False,
-            verbose=False,
-        )
-    except Exception as exc:  # pragma: no cover - network/runtime dependent
-        raise RuntimeError(
-            "MyGene symbol resolution failed for candidate-universe merge "
-            "(no fallback configured)."
-        ) from exc
+    input_hash = _mygene_input_hash(symbols)
+    cached = _load_mygene_cache(input_hash)
+    if cached is not None:
+        raw_hits = cached
+    else:
+        mg = mygene.MyGeneInfo()
+        try:
+            raw_hits = mg.querymany(
+                symbols,
+                scopes="symbol,alias,prev_symbol",
+                fields="symbol,alias,prev_symbol",
+                species="human",
+                as_dataframe=False,
+                returnall=False,
+                verbose=False,
+            )
+        except Exception as exc:  # pragma: no cover - network/runtime dependent
+            raise RuntimeError(
+                "MyGene symbol resolution failed for candidate-universe merge "
+                "(no fallback configured)."
+            ) from exc
+        _write_mygene_cache(input_hash, raw_hits)
 
     hits_by_query: dict[str, list[dict[str, object]]] = {}
     for raw in raw_hits:

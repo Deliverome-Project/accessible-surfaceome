@@ -131,12 +131,15 @@ OUTPUT_TSV = "jensenlab_compartments_human_snapshot.tsv"
 SUMMARY_JSON = "jensenlab_compartments_build_summary.json"
 MANIFEST_JSON = "jensenlab_compartments_build_traceability.json"
 
-# Surface GO terms (mirror of SURFACE_TERMS in
-# src/accessible_surfaceome/candidates/download_jensenlab_compartments.py).
+# Surface GO terms — strict subset, kept in lockstep with the GO source's
+# pruned set in ``src/accessible_surfaceome/sources/go.py``. Dropped from an
+# earlier version: ``GO:0005886`` (plasma membrane — too broad, includes
+# cytoplasmic-face and lateral-PM proteins) and ``GO:0031225`` (anchored
+# component of membrane — any membrane, not PM-specific). Each remaining
+# term is unambiguously surface-exposed.
 SURFACE_TERMS: set[str] = {
-    "GO:0005886",  # plasma membrane
     "GO:0009986",  # cell surface
-    "GO:0031225",  # anchored component of membrane
+    "GO:0009897",  # external side of plasma membrane
     "GO:0005887",  # integral component of plasma membrane
 }
 
