@@ -682,6 +682,7 @@ TargetabilityTier = Literal[
 # ---- hybrid enums (closed list + "other") ---------------------------------
 
 ModalityKind = Literal[
+    "small_molecule",  # any small-molecule agent engaging the protein at an extracellularly-accessed pocket
     "adc",
     "naked_mab",
     "bispecific",

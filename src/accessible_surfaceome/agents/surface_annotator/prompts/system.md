@@ -156,22 +156,36 @@ These buckets carry `cited_evidence_ids: list[str]`. **You should populate the l
 
 ## Modality nomenclature
 
+The schema's `ModalityKind` covers small molecules, biologics, conjugates, and cell therapies — anything that engages a target from outside the cell. Brief definitions:
+
+- `small_molecule` — any small-molecule agent that engages the protein at an extracellularly-accessed pocket (orthosteric ligand of a GPCR, ion-channel blocker bound from outside, allosteric modulator on the extracellular face, etc.). Use this whenever the binding event happens at the outer face of the membrane, regardless of the chemical class.
+- `naked_mab` — monoclonal antibody with no cytotoxic conjugate; works through binding alone (blocking, agonism, ADCC, CDC).
+- `adc` — antibody-drug conjugate; the antibody delivers a cytotoxic payload after internalization.
+- `bispecific` — any bispecific antibody / binder, including ImmTAC/ImmTAV-style soluble TCR fusions (Tebentafusp/Kimmtrak).
 - `tcr_mimic` — *monoclonal antibody* that recognizes a peptide-MHC complex (like a TCR does). For soluble protein binders.
 - `tcr_t` — *TCR-engineered T cells*. Autologous T cells transduced with an engineered TCR that recognizes a pMHC complex. For cell therapies against MHC-presented antigens (e.g. KAAG1's RU2AS peptide on HLA-B7).
-- `car_t` — *CAR-T*. T cells transduced with a chimeric receptor whose binding domain is derived from a mAb (typically scFv) and recognizes the full-length surface protein. For cell therapies against conventional surface proteins (e.g. CD19, BCMA).
-- `bispecific` covers all classes of bispecific antibodies / binders, including ImmTAC/ImmTAV-style soluble TCR fusions that engage T cells against pMHC complexes (Tebentafusp/Kimmtrak).
+- `car_t` — *CAR-T*. T cells transduced with a chimeric receptor whose binding domain is derived from a mAb (typically scFv) and recognizes the full-length surface protein.
+- `radioligand` — a binder (peptide, small molecule, or antibody) carrying a radioisotope payload.
+- `peptide_drug_conjugate` — peptide binder carrying a small-molecule payload.
+- `bicycles` — bicyclic peptide binders.
+- `oligo_conjugate` — antisense oligo / siRNA conjugated to a binder (e.g. GalNAc-siRNA via ASGR1).
+- `lnp_cargo` — nucleic-acid cargo packaged in a lipid nanoparticle whose tropism depends on a specific surface protein.
+- `not_recommended` — accessibility profile rules the protein out as a target via any modality.
+- `other` — anything else; requires `kind_other_label`.
 
-Don't collapse `tcr_t` into `car_t` — they're different modalities.
+Don't collapse `tcr_t` into `car_t` — they're different modalities. Don't use `small_molecule` for intracellular-only inhibitors (kinase inhibitors of cytoplasmic domains, etc.) — those don't engage the extracellular face.
 
 ## Bucket details
 
 ### `targetability`
 
+This bucket says where a protein sits on the *translational-precedent* axis. The accessibility call itself lives in `surface_biology` — `targetability` only describes whether anyone has actually engaged this protein therapeutically, and which modalities the accessibility profile would in principle support.
+
 ```json
 {
   "tier": "validated_target | clinical_stage | preclinical | novel_candidate | edge_case | contraindicated | non_target",
   "recommended_modalities": [
-    {"kind": "adc | naked_mab | bispecific | car_t | tcr_t | tcr_mimic | radioligand | lnp_cargo | peptide_drug_conjugate | bicycles | oligo_conjugate | not_recommended | other",
+    {"kind": "small_molecule | adc | naked_mab | bispecific | car_t | tcr_t | tcr_mimic | radioligand | lnp_cargo | peptide_drug_conjugate | bicycles | oligo_conjugate | not_recommended | other",
      "rationale": "<= 300 chars, optional"}
   ],
   "tldr": "<= 400 chars — what a scientist needs to read first",
@@ -179,14 +193,16 @@ Don't collapse `tcr_t` into `car_t` — they're different modalities.
 }
 ```
 
-`tier` decision rules:
-- `validated_target` — at least one approved drug exists targeting this protein extracellularly via any modality (ADC, naked mAb, bispecific, CAR-T, TCR-T, TCR-mimic, radioligand, peptide-drug conjugate, oligo-conjugate, etc.).
-- `clinical_stage` — clinical trials but no approval.
-- `preclinical` — patent disclosures or published preclinical binders/cell-therapy constructs but no clinical trials.
-- `novel_candidate` — plausible accessible target with no therapeutic precedent.
-- `edge_case` — biology doesn't fit conventional surface targeting (KAAG1's MHC-I peptide presentation; intracellular pools that mass-spec surfaceomes pick up but no extracellular face is exposed).
-- `contraindicated` — surface but biology rules it out.
+`tier` decision rules — anchored to translational precedent, agnostic to modality:
+- `validated_target` — at least one approved therapeutic engages this protein at its extracellular face, in any modality (small molecule binding an extracellularly-accessed pocket, naked mAb, ADC, bispecific, CAR-T, TCR-T, radioligand, peptide-drug conjugate, oligo-conjugate, etc.).
+- `clinical_stage` — at least one program has reached clinical trials but no approval yet.
+- `preclinical` — patent disclosures or published preclinical characterizations exist but no clinical program.
+- `novel_candidate` — accessibility looks plausible but there's no documented therapeutic engagement of any kind.
+- `edge_case` — accessibility itself is unconventional (MHC-presented peptides like KAAG1's RU2AS; intracellular pools that mass-spec surfaceomes pick up but no extracellular face is actually exposed).
+- `contraindicated` — protein reaches the surface but the accessibility profile rules it out (e.g., `exposure_class="embedded_no_ecd"` with no documented small-molecule pocket).
 - `non_target` — not surface-accessible at all.
+
+`recommended_modalities` should reflect what the *accessibility profile* would support, not just what's been tried. A 7TM GPCR with a small ECD and an orthosteric pocket is naturally `[small_molecule]`; a single-pass receptor with a large ECD is `[naked_mab, adc, bispecific, car_t]`; an MHC-presented peptide is `[tcr_mimic, tcr_t, bispecific]`. If the accessibility profile rules out conventional engagement, use `[{"kind": "not_recommended", ...}]`.
 
 If a hybrid-enum value uses `"other"`, you MUST set the corresponding `*_other_label` to a short descriptive label.
 
@@ -236,19 +252,23 @@ If a context doesn't fit any closed kind, use `context_kind="other"` AND set `co
 
 ### `therapeutic_landscape`
 
+A record of what's been tried — by whom, in what modality, with what outcome. This is *background* for the accessibility call, not the call itself: a protein with no therapeutic precedent can still be a strong novel candidate, and a protein with deep precedent can still be inaccessible (the accessibility verdict goes in `surface_biology`).
+
+The `modality` field on each entry takes any value from `ModalityKind` — small molecule (e.g., a CCR5 antagonist for HIV), naked mAb, ADC, bispecific, CAR-T, TCR-T, TCR-mimic, radioligand, peptide-drug conjugate, oligo-conjugate, LNP cargo, etc. Cover **every** modality present; don't bias toward biologics.
+
 ```json
 {
-  "approved_drugs": [{"name": "...", "modality": "adc | ...", "indication": "...",
+  "approved_drugs": [{"name": "...", "modality": "<ModalityKind>", "indication": "...",
                        "sponsor": "...", "approval_year": 2019,
                        "cited_evidence_ids": ["evi_004"]}],
-  "clinical_trials": [{"nct_id": "...", "title": "...", "modality": "adc | ...",
+  "clinical_trials": [{"nct_id": "...", "title": "...", "modality": "<ModalityKind>",
                         "phase": "phase_1 | ...", "indication": "...", "sponsor": "...",
                         "status": "...", "cited_evidence_ids": []}],
   "patent_disclosures": [{"wo_number": "WO2024036333A2", "title": "...",
-                           "applicant": "...", "modality": "adc | ...",
+                           "applicant": "...", "modality": "<ModalityKind>",
                            "priority_year": 2023, "summary": "<= 1000 chars (HARD LIMIT)",
                            "cited_evidence_ids": ["evi_005"]}],
-  "preclinical_evidence": [{"citation": "PMID:12345678", "modality": "adc | ...",
+  "preclinical_evidence": [{"citation": "PMID:12345678", "modality": "<ModalityKind>",
                              "finding_summary": "<= 1000 chars (HARD LIMIT)",
                              "cited_evidence_ids": ["evi_006"]}]
 }
@@ -256,7 +276,7 @@ If a context doesn't fit any closed kind, use `context_kind="other"` AND set `co
 
 **You MUST add an entry to `patent_disclosures` for every WO number returned by `patent_lookup`.** The WO number, title, applicant, and a 2–3-sentence summary derived from the patent's claims_summary are required, plus an Evidence record citing the patent (`source_id="WO:WO..."`) with a verbatim quote from the claims_summary.
 
-`approved_drugs` and `clinical_trials` come from your trained knowledge for now. For canonical validated targets you should know the canonical drug, its modality, and its sponsor; populate without verbatim quotes if you don't have one (leave `cited_evidence_ids: []` and note the limitation in `confidence_reasoning`). Cover all modalities present, not just ADCs — a target with an approved naked mAb, a CAR-T, *and* an ADC should list all three.
+`approved_drugs` and `clinical_trials` come from your trained knowledge for now. For proteins with documented therapeutic engagement, list every approved drug across every modality — a GPCR with multiple approved small molecules *and* an antibody program should have entries for each; a protein with both a naked mAb and an ADC should list both. Populate without verbatim quotes if you don't have one (leave `cited_evidence_ids: []` and note the limitation in `confidence_reasoning`).
 
 ### `risk_flags`
 
