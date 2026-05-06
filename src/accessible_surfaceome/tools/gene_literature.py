@@ -372,6 +372,7 @@ def _paper_from_europepmc(record: dict[str, Any]) -> Paper:
     is_review = any("review" in p.lower() for p in pub_type_list) or publication_type == "review"
     is_retracted, retraction_checked_at = _check_retraction(pub_type_list)
     is_pmc_oa = (record.get("isOpenAccess") or "N") == "Y" and bool(pmcid)
+    authors = _extract_authors(record)
 
     topic_tags = _detect_topic_tags(abstract or "", title)
 
@@ -383,6 +384,7 @@ def _paper_from_europepmc(record: dict[str, Any]) -> Paper:
         journal=journal,
         title=title,
         abstract=abstract,
+        authors=authors,
         publication_type=publication_type,
         is_review=is_review,
         is_retracted=is_retracted,
@@ -390,6 +392,25 @@ def _paper_from_europepmc(record: dict[str, Any]) -> Paper:
         is_pmc_oa=is_pmc_oa,
         topic_tags=topic_tags,
     )
+
+
+def _extract_authors(record: dict[str, Any]) -> list[str]:
+    """Pull authors from Europe PMC's ``authorList.author[].fullName`` (preferred,
+    structured) with a fallback to splitting ``authorString`` (comma-separated)
+    when the structured list is missing.
+    """
+
+    structured = ((record.get("authorList") or {}).get("author") or [])
+    if structured:
+        out: list[str] = []
+        for a in structured:
+            name = (a.get("fullName") or "").strip()
+            if name:
+                out.append(name)
+        if out:
+            return out
+    raw = record.get("authorString") or ""
+    return [a.strip().rstrip(".") for a in raw.split(",") if a.strip()]
 
 
 # ---------------------------------------------------------------------------

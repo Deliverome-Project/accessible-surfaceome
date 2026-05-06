@@ -205,6 +205,9 @@ def _register_paper(paper: Paper, store: SourceTextStore) -> None:
             publication_type=paper.publication_type,
             is_retracted=paper.is_retracted,
             retraction_checked_at=paper.retraction_checked_at,
+            authors=tuple(paper.authors),
+            year=paper.year,
+            journal=paper.journal,
         ))
 
     if paper.pmc_id and paper.sections:
@@ -220,6 +223,9 @@ def _register_paper(paper: Paper, store: SourceTextStore) -> None:
                 publication_type=paper.publication_type,
                 is_retracted=paper.is_retracted,
                 retraction_checked_at=paper.retraction_checked_at,
+                authors=tuple(paper.authors),
+                year=paper.year,
+                journal=paper.journal,
             ))
 
 
@@ -265,6 +271,9 @@ def _make_source_text(
     publication_type: PublicationType,
     is_retracted: bool,
     retraction_checked_at: datetime | None = None,
+    authors: tuple[str, ...] = (),
+    year: int | None = None,
+    journal: str | None = None,
 ) -> SourceText:
     now = datetime.now(UTC)
     normalized = normalize_for_quote_matching(raw_text)
@@ -282,6 +291,9 @@ def _make_source_text(
         is_retracted=is_retracted,
         retraction_checked_at=retraction_checked_at or now,
         license="unknown",
+        authors=authors,
+        year=year,
+        journal=journal,
     )
 
 

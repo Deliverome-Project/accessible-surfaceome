@@ -37,8 +37,12 @@ the canonical identifier the upstream service uses.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import json
+import os
+import tempfile
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -53,6 +57,10 @@ class SourceText:
     The pair (``normalized_text``, ``normalized_source_sha256``) anchors the
     string the substring check ran against. Both pairs are persisted into the
     eventual ``Evidence`` record so the chain is reproducible.
+
+    Optional ``authors``, ``year``, ``journal`` carry citation metadata not on
+    the ``SourceRef`` itself — the persisted corpus needs them for citation
+    formatting in any downstream display.
     """
 
     source_id: str
@@ -68,6 +76,9 @@ class SourceText:
     is_retracted: bool
     retraction_checked_at: datetime
     license: License = "unknown"
+    authors: tuple[str, ...] = ()  # frozen — tuple instead of list
+    year: int | None = None
+    journal: str | None = None
 
 
 @dataclass
@@ -93,6 +104,52 @@ class SourceTextStore:
 
     def all_source_ids(self) -> list[str]:
         return list(self._records)
+
+    def persist_to_disk(self, out_dir: Path) -> dict[str, Path]:
+        """Write every registered ``SourceText`` to ``out_dir`` as one JSON
+        file per source. Returns ``{source_id: written_path}``.
+
+        Filenames replace ``:`` with ``_`` so they're filesystem-safe across
+        platforms (``PMID:10601354`` → ``PMID_10601354.json``). Atomic writes
+        via tempfile + rename so a crash mid-write doesn't leave a half-baked
+        record. Existing files are overwritten — content-addressable cache,
+        so a divergent ``content_sha256`` means the upstream changed and the
+        new fetch is canonical.
+        """
+
+        out_dir.mkdir(parents=True, exist_ok=True)
+        written: dict[str, Path] = {}
+        for source_id, source in self._records.items():
+            target = out_dir / f"{_safe_filename(source_id)}.json"
+            payload = asdict(source)
+            # ``authors`` is a tuple in the dataclass; serialize as list.
+            payload["authors"] = list(payload.get("authors") or ())
+            # datetimes → ISO strings for round-trippable JSON.
+            for key in ("retrieved_at", "retraction_checked_at"):
+                value = payload.get(key)
+                if isinstance(value, datetime):
+                    payload[key] = value.isoformat()
+            _atomic_write_json(target, payload)
+            written[source_id] = target
+        return written
+
+
+def _safe_filename(source_id: str) -> str:
+    return source_id.replace(":", "_").replace("/", "_")
+
+
+def _atomic_write_json(path: Path, payload: dict) -> None:
+    fd, tmp = tempfile.mkstemp(prefix=path.stem + ".", suffix=".json.tmp", dir=str(path.parent))
+    try:
+        with os.fdopen(fd, "w") as f:
+            json.dump(payload, f, indent=2, sort_keys=True, default=str)
+            f.write("\n")
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        finally:
+            raise
 
 
 __all__ = ["SourceText", "SourceTextStore"]

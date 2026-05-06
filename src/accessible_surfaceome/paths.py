@@ -18,6 +18,11 @@ DATA_RAW_DIR = DATA_DIR / "raw"
 DATA_EXTERNAL_DIR = DATA_DIR / "external"
 DATA_PROCESSED_DIR = DATA_DIR / "processed"
 DATA_ANALYSIS_DIR = DATA_DIR / "analysis"
+# Per-source canonical text corpus written by the agent orchestrator after
+# each annotation run. One JSON file per ``source_id`` (e.g. PMID, PMC, WO,
+# UniProt). Carries the raw + normalized body, hashes, and citation metadata
+# so any UI can render quote-in-context without re-fetching upstream.
+DATA_SOURCES_DIR = DATA_DIR / "sources"
 
 
 def relative_to_repo(path: Path) -> str:

@@ -26,7 +26,7 @@ from anthropic import Anthropic
 
 from pydantic import ValidationError
 
-from accessible_surfaceome.paths import DATA_DIR, REPO_ROOT
+from accessible_surfaceome.paths import DATA_DIR, DATA_SOURCES_DIR, REPO_ROOT
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
     Evidence,
@@ -202,6 +202,17 @@ def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateRes
             invalid_path,
         )
 
+    # Persist the source corpus so any future UI / re-validation can render
+    # quote-in-context and verify hashes without re-fetching upstream. Run
+    # regardless of annotation validation status — the sources are still
+    # canonical even when the agent's record didn't validate.
+    sources_written = source_store.persist_to_disk(DATA_SOURCES_DIR)
+    logger.info(
+        "persisted %d source bodies to %s",
+        len(sources_written),
+        DATA_SOURCES_DIR,
+    )
+
     summary = {
         "gene": gene,
         "session_id": session.id,
@@ -215,6 +226,7 @@ def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateRes
         "validation_errors": validation_errors,
         "annotation_json": annotation_json,
         "final_text_chars": len(final_text),
+        "sources_persisted": {sid: str(p) for sid, p in sources_written.items()},
     }
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
 
