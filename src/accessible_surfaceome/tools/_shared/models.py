@@ -501,9 +501,54 @@ EvidenceTier = Literal["primary", "secondary"]
 EvidenceConfidence = Literal["strong", "moderate", "weak"]
 
 
-class Evidence(BaseModel):
+class EvidenceClaim(BaseModel):
+    """What the AGENT emits for a load-bearing claim.
+
+    Small, human-shaped: an `evidence_id` (agent-assigned, used for
+    cross-references via per-bucket `cited_evidence_ids`), a `claim`, the
+    classification fields, the assay context, the source identifier, and a
+    verbatim quote (≤200 chars) with the section it came from. **No hashes,
+    char offsets, URLs, or retrieval timestamps** — those are deterministic
+    bookkeeping the orchestrator computes from cached source data after the
+    agent emits.
+
+    The orchestrator promotes `EvidenceClaim` → :class:`Evidence` by
+    normalizing the source + quote, running a substring check, and (on
+    success) computing the hashes + char offset + filling in
+    :class:`SourceRef` metadata from the cached HTTP response.
+    """
+
     model_config = ConfigDict(extra="forbid")
 
+    evidence_id: str  # agent-assigned, e.g. "evi_001"; stable cross-reference handle
+    claim: str
+    claim_type: ClaimType
+    direction: Direction
+    evidence_type: EvidenceType
+    evidence_tier: EvidenceTier
+    confidence: EvidenceConfidence
+    assay_context: AssayContext
+    source_id: str  # "PMID:10601354" | "WO2024036333A2" | "UniProt:Q9UBP8" | "PDB:2ABC"
+    quote: str = Field(..., max_length=200)  # verbatim, ≤200 chars
+    section: PaperSection_
+    figure_or_table_id: str | None = None  # "Figure 3A", "Table S1"
+
+
+class Evidence(BaseModel):
+    """Orchestrator-constructed full Evidence record persisted in the corpus.
+
+    Carries the same classification fields as :class:`EvidenceClaim` plus the
+    full provenance chain (:class:`EvidenceSpan` with :class:`SourceRef`
+    inside) and validation outcome. ``entailment_verified`` is set ``True``
+    only when the substring check passes cleanly; ``validation_warnings``
+    surfaces normalization quirks ("matched after Greek-letter
+    transliteration") or substring failures so the run summary documents
+    what happened without dropping the agent's attempt.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: str  # carried from EvidenceClaim; per-bucket cited_evidence_ids resolve here
     claim: str
     claim_type: ClaimType
     direction: Direction
@@ -512,7 +557,34 @@ class Evidence(BaseModel):
     confidence: EvidenceConfidence
     assay_context: AssayContext
     spans: list[EvidenceSpan] = Field(..., min_length=1)
-    entailment_verified: bool = False  # set by claim_entailment.py audit
+    entailment_verified: bool = False  # True iff substring check passed cleanly
+    validation_warnings: list[str] = Field(default_factory=list)
+
+
+class SearchEntry(BaseModel):
+    """One source consultation. The orchestrator builds the search log from
+    ``events.jsonl`` after the run; the agent never sees this during the
+    session.
+
+    Two purposes:
+
+    1. **Comprehensiveness audit.** Was the shedding literature checked for
+       this gene? Grep `search_log` for `topic_search` with the `shedding`
+       anchor. If absent, this record is audit-incomplete.
+    2. **Re-run efficiency.** When re-annotating under a newer schema, the
+       orchestrator can summarize prior searches in the kickoff message so
+       the agent doesn't redundantly re-fetch.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    tool: str  # "gene_lookup" | "gene_literature" | "patent_lookup"
+    mode: str | None = None  # tool-specific mode, e.g. "gene2pubmed"
+    query: dict[str, Any] = Field(default_factory=dict)
+    n_results: int = 0
+    sources_seen: list[str] = Field(default_factory=list)  # source_ids that were touched
+    retrieved_at: datetime
+    contributed_evidence_ids: list[str] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -530,7 +602,7 @@ class Evidence(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.2.0"
+SCHEMA_VERSION = "v0.3.0"
 
 
 # ---- shared enums (closed) ------------------------------------------------
@@ -586,8 +658,9 @@ ModalityKind = Literal[
     "adc",
     "naked_mab",
     "bispecific",
-    "car_t",
-    "tcr_mimic",
+    "car_t",  # CAR-T: antibody-derived ECD-binding receptor; targets full-length surface protein.
+    "tcr_t",  # TCR-T: TCR-engineered T cells recognizing pMHC; for MHC-presented peptide antigens.
+    "tcr_mimic",  # mAb that recognizes a peptide-MHC complex like a TCR.
     "radioligand",
     "lnp_cargo",
     "peptide_drug_conjugate",
@@ -652,6 +725,7 @@ class RiskFlag(BaseModel):
     kind_other_label: str | None = None
     severity: RiskSeverity
     description: str = Field(..., max_length=500)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _check_other_label(self) -> RiskFlag:
@@ -673,6 +747,7 @@ class TargetabilityVerdict(BaseModel):
     tier: TargetabilityTier
     recommended_modalities: list[ModalityRecommendation] = Field(default_factory=list)
     tldr: str = Field(..., max_length=400)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
 # ---- bucket: surface biology ----------------------------------------------
@@ -731,6 +806,7 @@ class SurfaceBiology(BaseModel):
     glycosylation: bool | None = None  # any reported N- or O-linked glycosylation
     shedding_documented: bool | None = None  # critical for ADC: soluble decoys
     db_comparison: DBComparison
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
 # ---- bucket: expression ---------------------------------------------------
@@ -756,6 +832,7 @@ class ExpressionProfile(BaseModel):
     normal_tissue_top: list[str] = Field(default_factory=list)
     normal_tissue_concerns: list[str] = Field(default_factory=list)  # CNS, gut, heart…
     summary: str | None = Field(default=None, max_length=600)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
 # ---- bucket: ADC properties -----------------------------------------------
@@ -792,6 +869,7 @@ class ApprovedDrug(BaseModel):
     indication: str
     sponsor: str | None = None
     approval_year: int | None = None
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _check_other_label(self) -> ApprovedDrug:
@@ -816,6 +894,7 @@ class ClinicalTrial(BaseModel):
     indication: str | None = None
     sponsor: str | None = None
     status: str | None = None  # free text — recruiting / completed / terminated
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _check_other_label(self) -> ClinicalTrial:
@@ -838,6 +917,7 @@ class PatentDisclosure(BaseModel):
     modality_other_label: str | None = None
     priority_year: int | None = None
     summary: str = Field(..., max_length=400)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _check_other_label(self) -> PatentDisclosure:
@@ -859,6 +939,7 @@ class PreclinicalEvidence(BaseModel):
     modality: ModalityKind
     modality_other_label: str | None = None
     finding_summary: str = Field(..., max_length=400)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def _check_other_label(self) -> PreclinicalEvidence:
@@ -916,11 +997,69 @@ class SurfaceomeRecord(BaseModel):
     therapeutic_landscape: TherapeuticLandscape
     risk_flags: list[RiskFlag] = Field(default_factory=list)
 
-    # Provenance
+    # Provenance — centralized Evidence array referenced by per-bucket
+    # ``cited_evidence_ids``. Built by the orchestrator from agent-emitted
+    # ``EvidenceClaim`` records in :class:`SurfaceomeRecordDraft` after
+    # substring validation against cached source bodies.
+    evidence: list[Evidence] = Field(default_factory=list)
     primary_evidence_count: int = 0
     secondary_evidence_count: int = 0
     evidence_count: int = 0
-    cited_evidence_ids: list[str] = Field(default_factory=list)  # quote_sha256 refs
+
+    # Search log — orchestrator-built from ``events.jsonl`` post-hoc. Records
+    # every source consultation whether it yielded a citation or not, so we
+    # can audit comprehensiveness ("did we check shedding lit?") and skip
+    # redundant queries on re-annotation.
+    search_log: list[SearchEntry] = Field(default_factory=list)
+
+    # Synthesis metadata
+    confidence: SynthesisConfidence
+    confidence_reasoning: str
+    contradiction_flag: bool
+    rationale: str = Field(..., max_length=600)
+    model_path: ModelPath
+
+
+class SurfaceomeRecordDraft(BaseModel):
+    """What the AGENT emits as its final JSON.
+
+    Mirrors :class:`SurfaceomeRecord` exactly except it carries
+    ``evidence_claims: list[EvidenceClaim]`` (small, agent-shaped) instead of
+    ``evidence: list[Evidence]`` (full provenance chain), and omits
+    ``search_log`` (orchestrator-built from ``events.jsonl``).
+
+    The orchestrator parses the agent's JSON as ``SurfaceomeRecordDraft``,
+    promotes each ``EvidenceClaim`` to ``Evidence`` via the substring +
+    normalization pipeline, attaches the ``search_log``, and emits a
+    canonical ``SurfaceomeRecord`` for persistence.
+
+    Per-bucket ``cited_evidence_ids`` use the agent-assigned
+    ``EvidenceClaim.evidence_id`` strings; those handles carry over to
+    the persisted ``Evidence`` records so cross-references remain stable.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = SCHEMA_VERSION
+
+    # Identity
+    gene: GeneIdentifier
+    canonical_isoform: str
+    isoform_flattened: bool
+
+    # Headline + supporting buckets — same shapes as SurfaceomeRecord
+    targetability: TargetabilityVerdict
+    surface_biology: SurfaceBiology
+    expression: ExpressionProfile
+    adc_properties: ADCProperties
+    therapeutic_landscape: TherapeuticLandscape
+    risk_flags: list[RiskFlag] = Field(default_factory=list)
+
+    # Agent-emitted EvidenceClaim records — orchestrator promotes to Evidence
+    evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
+    primary_evidence_count: int = 0
+    secondary_evidence_count: int = 0
+    evidence_count: int = 0
 
     # Synthesis metadata
     confidence: SynthesisConfidence
@@ -978,9 +1117,12 @@ __all__ = [
     "EvidenceType",
     "EvidenceTier",
     "EvidenceConfidence",
+    "SearchEntry",
+    "EvidenceClaim",
     # SurfaceomeRecord + buckets
     "SCHEMA_VERSION",
     "SurfaceomeRecord",
+    "SurfaceomeRecordDraft",
     "TargetabilityVerdict",
     "TargetabilityTier",
     "ModalityKind",

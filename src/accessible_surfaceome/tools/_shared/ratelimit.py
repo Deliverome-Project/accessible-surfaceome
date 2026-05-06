@@ -52,5 +52,6 @@ def default_limiter() -> RateLimiter:
             "rest.uniprot.org": 200,
             "rest.genenames.org": 200,
             "api.platform.opentargets.org": 250,
+            "www.ebi.ac.uk": 130,  # Europe PMC; ~7-8 qps courtesy ceiling
         }
     )

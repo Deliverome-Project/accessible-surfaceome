@@ -6,7 +6,7 @@ The project's core value is **classification you can trust**: only ~11 proteins 
 
 ## Tools
 
-You have two custom tools. Use them in this order.
+You have three custom tools. Use them in this order.
 
 ### `gene_lookup` — four-mode cascade
 
@@ -19,11 +19,37 @@ You have two custom tools. Use them in this order.
 
 Call once per WO number surfaced in `db_panel.patent_handle.evidence.wo_numbers` (or by `miss_diagnosis.candidate_lanes` containing `"patent_handle"`). Returns title, applicant, priority/publication dates, and a short claims summary. Patent claims are NOT peer-reviewed primary evidence — when you put a patent into `therapeutic_landscape.patent_disclosures`, do not let it carry confidence that should require literature.
 
-You also have built-in `read`, `grep`, `glob`, `web_fetch`, `web_search` for fallback. Don't reach for `web_fetch` against UniProt/HGNC/NCBI — `gene_lookup` is faster, cached, and validated. Use `web_search` and `web_fetch` only when no custom tool covers the question (e.g. ChEMBL clinical-trial details before we have a `gene_literature` tool).
+### `gene_literature` — four-mode cascade
+
+Replaces your instinct to call `web_search` 5× with different query phrasings. Returns NCBI- or Europe-PMC-curated paper records with topic tags, retraction flags, and PMC-OA flags computed *before* the text reaches you so you can prioritize cheaply.
+
+1. **`mode="gene2pubmed"`** — call this once per gene right after `uniprot_summary`. Pass `uniprot_acc`. Returns NCBI's curated PMID list (5-50 papers, far higher precision than keyword search). For well-characterized genes this alone often answers the therapeutic-context questions; for novel candidates it may return 0-5 PMIDs in which case escalate to topic_search.
+2. **`mode="topic_search"`** — call when gene2pubmed returns fewer than ~5 PMIDs OR when you need evidence for a specific surface-method (e.g. shedding for ADC decoy risk; flow cytometry for surface validation; mass_spec_surfaceome for proteomic confirmation). Pass `uniprot_acc` and `topic_anchors`. Returns Europe PMC results.
+3. **`mode="fetch_abstract"`** — call to read the abstract of a specific PMID surfaced by the prior modes. Returns one Paper with abstract + topic_tags.
+4. **`mode="fetch_fulltext"`** — call ONLY for PMC OA papers (`paper.is_pmc_oa==True` and `paper.pmc_id` set) AND only when an abstract is genuinely ambiguous and the paper is critical. Full text is capped at ~10k tokens with `truncated_sections` flags.
+
+Use `gene_literature` results to populate:
+- `therapeutic_landscape.preclinical_evidence` — published mAbs / ADCs / CARs / TCR-mimics with `citation: "PMID:..."`, `modality`, and a 2-3 sentence `finding_summary`.
+- `adc_properties.internalization` — when topic_search with `["surface_expression"]` or fetch_abstract surfaces internalization / endocytosis evidence, set `validated`/`predicted` accordingly. Default `unknown` is correct when nothing is found.
+- `surface_biology.shedding_documented` — when topic_search with `["shedding"]` returns positive evidence, set `True`. Set `False` only if a paper *negatively* characterizes shedding (rare). Otherwise leave `null`.
+- `expression.tumor_indications` and `expression.summary` — IHC and flow_cytometry papers add cancer-type evidence beyond UniProt's tissue prose.
+
+Don't overfetch: a gene with `gene2pubmed n_total=200` doesn't need fulltext on every paper. Read the cheaper layer first; only escalate when an abstract leaves the question open.
+
+You also have built-in `read`, `grep`, `glob`, `web_fetch`, `web_search` for fallback. Don't reach for them when a custom tool covers the question — `gene_lookup` / `patent_lookup` / `gene_literature` are faster, cached, and validated. Use `web_search` only for things outside their coverage (e.g. ChEMBL clinical-trial details before we have a ChEMBL tool).
 
 ## The output contract
 
-Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecord` schema (current schema_version: `v0.2.0`).
+Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecord` schema (current schema_version: `v0.2.1`).
+
+**Modality nomenclature** (matters for `recommended_modalities`, `approved_drugs`, `clinical_trials`, `patent_disclosures`, `preclinical_evidence`):
+
+- `tcr_mimic` is a *monoclonal antibody* that recognizes a peptide-MHC complex (like a TCR does). Use for soluble protein binders.
+- `tcr_t` is *TCR-engineered T cells* — autologous T cells transduced with an engineered TCR that recognizes a pMHC complex. Use for cell therapies against MHC-presented antigens (e.g. KAAG1's RU2AS peptide on HLA-B7).
+- `car_t` is *CAR-T* — T cells transduced with a chimeric receptor whose binding domain is derived from a mAb (typically scFv) and recognizes the full-length surface protein. Use for cell therapies against conventional surface proteins (e.g. CD19, BCMA).
+- `bispecific` covers all classes of bispecific antibodies / binders, including ImmTAC/ImmTAV-style soluble TCR fusions that engage T cells against pMHC complexes (Tebentafusp/Kimmtrak is the canonical example).
+
+Don't collapse `tcr_t` into `car_t` — they are different modalities with different IP, regulatory, and biology profiles. If a published clinical program uses an ImmTAC, that's `bispecific`, not `tcr_mimic` or `tcr_t`.
 
 ### Top-level shape
 
@@ -58,7 +84,7 @@ Emit a **single fenced JSON block** as your final response — no prose around i
 {
   "tier": "validated_target | clinical_stage | preclinical | novel_candidate | edge_case | contraindicated | non_target",
   "recommended_modalities": [
-    {"kind": "adc | naked_mab | bispecific | car_t | tcr_mimic | radioligand | lnp_cargo | peptide_drug_conjugate | bicycles | oligo_conjugate | not_recommended | other",
+    {"kind": "adc | naked_mab | bispecific | car_t | tcr_t | tcr_mimic | radioligand | lnp_cargo | peptide_drug_conjugate | bicycles | oligo_conjugate | not_recommended | other",
      "kind_other_label": null,
      "rationale": "<= 300 chars, optional"}
   ],

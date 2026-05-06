@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from accessible_surfaceome.tools._shared.http import CachedHTTP
+from accessible_surfaceome.tools.gene_literature import gene_literature
 from accessible_surfaceome.tools.gene_lookup import gene_lookup
 from accessible_surfaceome.tools.patent_lookup import patent_lookup
 
@@ -121,6 +122,100 @@ def _make_patent_lookup_handler(http: CachedHTTP) -> Callable[[dict[str, Any]], 
     return _call
 
 
+GENE_LITERATURE_DESCRIPTION = (
+    "Retrieve literature for a gene from NCBI gene2pubmed and Europe PMC. "
+    "Always start with mode='gene2pubmed' (pass uniprot_acc) — returns "
+    "NCBI's curated PMID list, far higher precision than keyword search. "
+    "Use mode='topic_search' (pass uniprot_acc + topic_anchors) when "
+    "gene2pubmed has <5 PMIDs or you need surface-method-specific evidence "
+    "(flow cytometry, surface biotinylation, IHC, surfaceome MS, shedding). "
+    "Use mode='fetch_abstract' for a single PMID. Use mode='fetch_fulltext' "
+    "ONLY for PMC OA papers (is_pmc_oa==True) and only when an abstract is "
+    "ambiguous — full text is capped at ~10k tokens with truncation flags. "
+    "Every paper carries topic_tags, is_review, is_retracted, is_pmc_oa "
+    "computed before tokens reach you so you can prioritize cheaply."
+)
+
+GENE_LITERATURE_INPUT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "mode": {
+            "type": "string",
+            "enum": ["gene2pubmed", "topic_search", "fetch_abstract", "fetch_fulltext"],
+            "description": (
+                "Which literature mode to run. gene2pubmed first; topic_search for "
+                "recall fill; fetch_abstract / fetch_fulltext for individual PMIDs / "
+                "PMCIDs surfaced by the prior modes."
+            ),
+        },
+        "uniprot_acc": {
+            "type": "string",
+            "description": (
+                "Required for gene2pubmed and topic_search (used to resolve symbol + "
+                "aliases internally). Take this from the prior gene_lookup resolve."
+            ),
+        },
+        "topic_anchors": {
+            "type": "array",
+            "items": {
+                "type": "string",
+                "enum": [
+                    "surface_expression",
+                    "topology",
+                    "ihc",
+                    "flow_cytometry",
+                    "surface_biotinylation",
+                    "mass_spec_surfaceome",
+                    "structure",
+                    "ptm",
+                    "shedding",
+                ],
+            },
+            "description": (
+                "Required for topic_search. Pick the anchors that match the evidence "
+                "kind you need (e.g. ['surface_expression', 'flow_cytometry'] for ADC "
+                "target validation, ['shedding'] to check decoy risk)."
+            ),
+        },
+        "pmid": {
+            "type": "integer",
+            "description": "Required for fetch_abstract.",
+        },
+        "pmcid": {
+            "type": "string",
+            "description": (
+                "Required for fetch_fulltext (e.g. 'PMC2195717'). Take this from the "
+                "Paper.pmc_id of a prior gene2pubmed / topic_search / fetch_abstract "
+                "result; only PMC OA papers can be fetched in full."
+            ),
+        },
+        "max_results": {
+            "type": "integer",
+            "description": "Cap the number of papers returned. Defaults to 25.",
+        },
+    },
+    "required": ["mode"],
+}
+
+
+def _make_gene_literature_handler(http: CachedHTTP) -> Callable[[dict[str, Any]], Any]:
+    def _call(payload: dict[str, Any]) -> Any:
+        return gene_literature(
+            mode=payload["mode"],
+            uniprot_acc=payload.get("uniprot_acc"),
+            ncbi_gene_id=payload.get("ncbi_gene_id"),
+            hgnc_symbol=payload.get("hgnc_symbol"),
+            aliases=payload.get("aliases"),
+            pmid=payload.get("pmid"),
+            pmcid=payload.get("pmcid"),
+            topic_anchors=payload.get("topic_anchors"),
+            max_results=payload.get("max_results", 25),
+            http=http,
+        )
+
+    return _call
+
+
 SPECS: list[ToolSpec] = [
     ToolSpec(
         name="gene_lookup",
@@ -133,6 +228,12 @@ SPECS: list[ToolSpec] = [
         description=PATENT_LOOKUP_DESCRIPTION,
         input_schema=PATENT_LOOKUP_INPUT_SCHEMA,
         handler_factory=_make_patent_lookup_handler,
+    ),
+    ToolSpec(
+        name="gene_literature",
+        description=GENE_LITERATURE_DESCRIPTION,
+        input_schema=GENE_LITERATURE_INPUT_SCHEMA,
+        handler_factory=_make_gene_literature_handler,
     ),
 ]
 
