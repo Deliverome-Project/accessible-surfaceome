@@ -16,9 +16,12 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from accessible_surfaceome.tools._shared.http import CachedHTTP
+from accessible_surfaceome.tools._shared.source_text import SourceTextStore
 from accessible_surfaceome.tools.gene_literature import gene_literature
 from accessible_surfaceome.tools.gene_lookup import gene_lookup
 from accessible_surfaceome.tools.patent_lookup import patent_lookup
+
+from .source_registration import register_from_tool_return
 
 
 @dataclass(frozen=True)
@@ -26,7 +29,9 @@ class ToolSpec:
     name: str
     description: str
     input_schema: dict[str, Any]
-    handler_factory: Callable[[CachedHTTP], Callable[[dict[str, Any]], Any]]
+    handler_factory: Callable[
+        [CachedHTTP, SourceTextStore | None], Callable[[dict[str, Any]], Any]
+    ]
 
 
 # Tool descriptions follow the published guidance: 3–4 sentences (~150 words),
@@ -75,13 +80,18 @@ GENE_LOOKUP_INPUT_SCHEMA: dict[str, Any] = {
 }
 
 
-def _make_gene_lookup_handler(http: CachedHTTP) -> Callable[[dict[str, Any]], Any]:
+def _make_gene_lookup_handler(
+    http: CachedHTTP, store: SourceTextStore | None
+) -> Callable[[dict[str, Any]], Any]:
     def _call(payload: dict[str, Any]) -> Any:
-        return gene_lookup(
+        result = gene_lookup(
             mode=payload["mode"],
             symbol_or_acc=payload["symbol_or_acc"],
             http=http,
         )
+        if store is not None:
+            register_from_tool_return(tool="gene_lookup", result=result, store=store)
+        return result
 
     return _call
 
@@ -115,9 +125,14 @@ PATENT_LOOKUP_INPUT_SCHEMA: dict[str, Any] = {
 }
 
 
-def _make_patent_lookup_handler(http: CachedHTTP) -> Callable[[dict[str, Any]], Any]:
+def _make_patent_lookup_handler(
+    http: CachedHTTP, store: SourceTextStore | None
+) -> Callable[[dict[str, Any]], Any]:
     def _call(payload: dict[str, Any]) -> Any:
-        return patent_lookup(wo_number=payload["wo_number"], http=http)
+        result = patent_lookup(wo_number=payload["wo_number"], http=http)
+        if store is not None:
+            register_from_tool_return(tool="patent_lookup", result=result, store=store)
+        return result
 
     return _call
 
@@ -198,9 +213,11 @@ GENE_LITERATURE_INPUT_SCHEMA: dict[str, Any] = {
 }
 
 
-def _make_gene_literature_handler(http: CachedHTTP) -> Callable[[dict[str, Any]], Any]:
+def _make_gene_literature_handler(
+    http: CachedHTTP, store: SourceTextStore | None
+) -> Callable[[dict[str, Any]], Any]:
     def _call(payload: dict[str, Any]) -> Any:
-        return gene_literature(
+        result = gene_literature(
             mode=payload["mode"],
             uniprot_acc=payload.get("uniprot_acc"),
             ncbi_gene_id=payload.get("ncbi_gene_id"),
@@ -212,6 +229,9 @@ def _make_gene_literature_handler(http: CachedHTTP) -> Callable[[dict[str, Any]]
             max_results=payload.get("max_results", 25),
             http=http,
         )
+        if store is not None:
+            register_from_tool_return(tool="gene_literature", result=result, store=store)
+        return result
 
     return _call
 
@@ -252,7 +272,14 @@ def custom_tool_definitions() -> list[dict[str, Any]]:
     ]
 
 
-def build_handlers(http: CachedHTTP) -> dict[str, Callable[[dict[str, Any]], Any]]:
-    """Live tool name → handler dispatch table for the orchestrator."""
+def build_handlers(
+    http: CachedHTTP, *, source_store: SourceTextStore | None = None
+) -> dict[str, Callable[[dict[str, Any]], Any]]:
+    """Live tool name → handler dispatch table for the orchestrator.
 
-    return {spec.name: spec.handler_factory(http) for spec in SPECS}
+    Pass ``source_store`` when running under the orchestrator so tool returns
+    register the bodies the substring check will need. One-off scripts that
+    don't care about evidence promotion can omit it.
+    """
+
+    return {spec.name: spec.handler_factory(http, source_store) for spec in SPECS}

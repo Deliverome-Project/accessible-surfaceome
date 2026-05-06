@@ -556,9 +556,23 @@ class Evidence(BaseModel):
     evidence_tier: EvidenceTier  # primary = experimental; secondary = review/db
     confidence: EvidenceConfidence
     assay_context: AssayContext
-    spans: list[EvidenceSpan] = Field(..., min_length=1)
+    # ``spans`` may be empty when ``entailment_verified=False`` — the agent
+    # cited a source we couldn't anchor the quote in (or a source we never
+    # fetched). Persisting unanchored evidence with the warning preserves the
+    # claim for review without lying about the provenance chain. Verified
+    # evidence (``entailment_verified=True``) is required to carry ≥1 span,
+    # enforced by the model validator below.
+    spans: list[EvidenceSpan] = Field(default_factory=list)
     entailment_verified: bool = False  # True iff substring check passed cleanly
     validation_warnings: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _check_verified_has_spans(self) -> Evidence:
+        if self.entailment_verified and not self.spans:
+            raise ValueError(
+                "Evidence with entailment_verified=True must carry at least one EvidenceSpan"
+            )
+        return self
 
 
 class SearchEntry(BaseModel):
@@ -602,7 +616,7 @@ class SearchEntry(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.3.0"
+SCHEMA_VERSION = "v0.3.1"
 
 
 # ---- shared enums (closed) ------------------------------------------------
