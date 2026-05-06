@@ -986,7 +986,12 @@ class PatentDisclosure(BaseModel):
 
 
 class PreclinicalEvidence(BaseModel):
-    """A published preclinical mAb / ADC / CAR / TCR-mimic characterization."""
+    """A published preclinical characterization of a binder/agent against this protein.
+
+    Modality-agnostic: small-molecule, naked mAb, ADC, bispecific, CAR-T,
+    TCR-T, TCR-mimic, radioligand, peptide-drug conjugate, oligo-conjugate,
+    or anything else captured by ``ModalityKind``.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -1010,8 +1015,9 @@ class PreclinicalEvidence(BaseModel):
 class TherapeuticLandscape(BaseModel):
     """What's been tried — by whom, in what modality, with what outcome.
 
-    Sparse for novel candidates; rich for the validated 11 ADC targets we
-    benchmark against.
+    Sparse for novel candidates; rich for proteins with validated targeting
+    precedent (approved drugs, active clinical programs, or dense patent
+    activity) across any modality.
     """
 
     model_config = ConfigDict(extra="forbid")
