@@ -28,3 +28,8 @@ data/external/tool_cache.sqlite*
 # Per-gene annotations are agent-generated; commit a curated snapshot once
 # we have a stable set, not every smoke-test output.
 data/annotations/
+
+# Per-source corpus written by the orchestrator (raw + normalized text +
+# citation metadata for every PMID/PMC/UniProt/WO the agent has fetched).
+# Reproducible from the upstream sources; commit a curated baseline later.
+data/sources/

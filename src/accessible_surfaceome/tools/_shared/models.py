@@ -313,6 +313,7 @@ class Paper(BaseModel):
     journal: str | None = None
     title: str
     abstract: str | None = None
+    authors: list[str] = Field(default_factory=list)  # ordered, full-name strings (e.g. "Van Den Eynde BJ")
     publication_type: PublicationType = "other"
     is_review: bool = False
     is_retracted: bool = False
