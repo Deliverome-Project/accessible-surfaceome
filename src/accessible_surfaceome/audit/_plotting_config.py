@@ -1,42 +1,64 @@
 """Plotting configuration for accessible-surfaceome figures.
 
-Uses seaborn styling with a small custom palette for publication-quality
+Uses seaborn styling with a Deliverome-aligned palette for publication-quality
 figures. Callers must invoke :func:`setup_plotting_style` explicitly —
-importing this module no longer has side effects.
+importing this module has no side effects.
 """
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# Modern color palette - professional and accessible
+# Core Deliverome palette tokens (from Deliverome Design System)
 COLORS = {
-    'primary': '#DD5955',      # Warm coral
-    'secondary': '#3469CD',    # Strong blue
-    'accent': '#FFD579',       # Warm gold
-    'success': '#749C75',      # Sage green
-    'warning': '#DD5955',      # Coral (match primary for alerts)
-    'accent_blue': '#3469CD',  # Accent blue
-    'accent_gold': '#FFD579',  # Warm gold
-    'accent_green': '#749C75', # Sage green
-    'neutral': '#6C757D',      # Gray
-    'light': '#E9ECEF',        # Light gray
-    'dark': '#5E5E5E',         # Dark gray
+    # Brand anchors
+    "primary": "#BC3C4C",       # maroon-light / accent
+    "secondary": "#3D6B60",     # teal-mid
+    "accent": "#F4AA28",        # amber-bright
+    "quaternary": "#8878C8",    # lavender-bright
+    # Semantic / utility
+    "success": "#2E7A55",
+    "warning": "#8C4210",       # amber-dark
+    "danger": "#6E1428",        # maroon-dark
+    "info": "#5848A8",          # lavender-mid
+    "neutral": "#6F5D5A",       # muted
+    "light": "#F3ECE5",         # bg-warm
+    "dark": "#1F1718",          # ink
+    "line": "#E6DAD4",
+    # Legacy aliases for downstream code compatibility
+    "accent_blue": "#3D6B60",
+    "accent_gold": "#F4AA28",
+    "accent_green": "#2E7A55",
 }
 
-# Extended palette for categorical data
+# Categorical plotting palette (recommended figure anchors)
 CATEGORICAL_PALETTE = [
-    '#DD5955',  # Primary
-    '#3469CD',  # Secondary
+    "#BC3C4C",  # maroon-light
+    "#3D6B60",  # teal-mid
+    "#F4AA28",  # amber-bright
+    "#8878C8",  # lavender-bright
+    "#6E1428",  # maroon-dark
+    "#7AAB9F",  # teal-light
 ]
 
-# Diverging palette (for showing differences)
-DIVERGING_PALETTE = sns.color_palette("RdBu_r", n_colors=11)
+# Sequential palettes by hue family (deep -> light)
+SEQUENTIAL_PALETTES = {
+    "maroon": ["#3E0A18", "#6E1428", "#922038", "#BC3C4C", "#F0A098", "#FDE8E6"],
+    "teal": ["#152E28", "#244840", "#3D6B60", "#4D8A80", "#7AAB9F", "#CCE8E4"],
+    "amber": ["#5A2608", "#8C4210", "#C07830", "#F4AA28", "#F4C070", "#FAECD4"],
+    "lavender": ["#1E1450", "#3A2888", "#5848A8", "#8878C8", "#A090D4", "#E4E0F8"],
+}
+
+# Diverging palette (lavender <-> neutral <-> maroon)
+DIVERGING_PALETTE = sns.blend_palette(
+    ["#8878C8", "#FFFFFF", "#BC3C4C"],
+    n_colors=11,
+)
 
 # Default bar styling configuration
 ROUND_BARS_DEFAULT = False
 
-def setup_plotting_style(style='default', context='notebook', font_scale=2.2):
+def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
     """
     Set up modern plotting style for all figures.
 
@@ -51,7 +73,7 @@ def setup_plotting_style(style='default', context='notebook', font_scale=2.2):
     """
 
     # Set seaborn style
-    if style == 'default':
+    if style == "default":
         sns.set_style("whitegrid")
     else:
         sns.set_style(style)
@@ -76,27 +98,29 @@ def setup_plotting_style(style='default', context='notebook', font_scale=2.2):
 
         # Font
         'font.family': 'sans-serif',
-        'font.sans-serif': ['Space Grotesk', 'DM Sans', 'DejaVu Sans', 'Liberation Sans', 'Arial'],
+        'font.sans-serif': ['Manrope', 'Outfit', 'DejaVu Sans', 'Liberation Sans', 'Arial'],
+        'font.serif': ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
         'font.size': 11,
 
         # Axes
         'axes.labelsize': 12,
         'axes.titlesize': 14,
-        'axes.titleweight': 'bold',
+        'axes.titleweight': 'medium',
         'axes.labelweight': 'normal',
         'axes.spines.top': False,
         'axes.spines.right': False,
         'axes.grid': True,
         'axes.axisbelow': True,
-        'axes.edgecolor': COLORS['neutral'],
+        'axes.edgecolor': COLORS['line'],
         'axes.labelcolor': COLORS['dark'],
         'axes.facecolor': 'none',
         'text.color': COLORS['dark'],
 
         # Grid
-        'grid.alpha': 0.3,
-        'grid.linestyle': '--',
-        'grid.linewidth': 0.8,
+        'grid.alpha': 0.35,
+        'grid.linestyle': '-',
+        'grid.linewidth': 0.7,
+        'grid.color': COLORS['line'],
 
         # Ticks
         'xtick.labelsize': 10,
@@ -330,4 +354,22 @@ def get_categorical_colors(n=None):
 
 def get_diverging_palette(n=11):
     """Get diverging color palette"""
-    return sns.color_palette("RdBu_r", n_colors=n)
+    return sns.blend_palette(["#8878C8", "#FFFFFF", "#BC3C4C"], n_colors=n)
+
+
+def get_sequential_palette(family="maroon", n=6):
+    """Get a sequential palette by family.
+
+    Parameters
+    ----------
+    family : str
+        One of ``maroon``, ``teal``, ``amber``, ``lavender``.
+    n : int
+        Number of colors to return.
+    """
+    if family not in SEQUENTIAL_PALETTES:
+        family = "maroon"
+    palette = SEQUENTIAL_PALETTES[family]
+    if n <= len(palette):
+        return palette[:n]
+    return sns.blend_palette(palette, n_colors=n)
