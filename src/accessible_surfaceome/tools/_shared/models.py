@@ -616,7 +616,7 @@ class SearchEntry(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.3.1"
+SCHEMA_VERSION = "v0.3.2"
 
 
 # ---- shared enums (closed) ------------------------------------------------
@@ -930,7 +930,7 @@ class PatentDisclosure(BaseModel):
     modality: ModalityKind
     modality_other_label: str | None = None
     priority_year: int | None = None
-    summary: str = Field(..., max_length=400)
+    summary: str = Field(..., max_length=1000)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -952,7 +952,7 @@ class PreclinicalEvidence(BaseModel):
     citation: str  # PMID:..., DOI:..., or PMC:...
     modality: ModalityKind
     modality_other_label: str | None = None
-    finding_summary: str = Field(..., max_length=400)
+    finding_summary: str = Field(..., max_length=1000)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -1030,7 +1030,7 @@ class SurfaceomeRecord(BaseModel):
     confidence: SynthesisConfidence
     confidence_reasoning: str
     contradiction_flag: bool
-    rationale: str = Field(..., max_length=600)
+    rationale: str = Field(..., max_length=1500)
     model_path: ModelPath
 
 
@@ -1079,7 +1079,7 @@ class SurfaceomeRecordDraft(BaseModel):
     confidence: SynthesisConfidence
     confidence_reasoning: str
     contradiction_flag: bool
-    rationale: str = Field(..., max_length=600)
+    rationale: str = Field(..., max_length=1500)
     model_path: ModelPath
 
 
