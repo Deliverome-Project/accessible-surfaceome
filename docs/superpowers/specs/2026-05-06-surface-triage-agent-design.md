@@ -4,13 +4,20 @@
 
 The deep-dive `surface_annotator` agent produces fully reconciled, evidence-anchored
 `SurfaceomeRecord`s using Opus 4.7. It's thorough but expensive (~minutes of
-wall-clock + several dollars per protein on Opus). Running it across the
-5,680-protein M1 candidate universe is impractical.
+wall-clock + several dollars per protein on Opus). Running it genome-wide is
+impractical.
 
 We need a **lightweight triage layer** that decides, per protein, whether a
-deep-dive annotation is warranted. The triage agent runs across the full
-candidate universe at ~$200 / corpus run, leaving the deep dive to focus on
-proteins that genuinely benefit from full reconciliation.
+deep-dive annotation is warranted. The primary intended use is to triage
+**proteins outside the M1 candidate universe** — i.e., the rest of the human
+protein-coding genome (~14K proteins where M1 sources voted ≤0–1 times for
+surface localization). The M1 panel has implicitly said "no" for these by
+exclusion; the triage agent's job is to surface the rare cases where that
+implicit "no" misses something (induced surfacing, edge mechanisms, evidence
+post-dating the M1 rules). Triage is also runnable on the M1 set itself to
+filter already-validated targets out of the deep-dive queue.
+
+Cost target: ~$400 for a full ~20K human-protein-coding-gene run on Sonnet 4.6.
 
 ## Output schema
 
@@ -42,16 +49,23 @@ Persisted at `data/triage/{gene}.json`.
 
 ### Verdict semantics
 
-- `yes` — accessibility looks plausible AND there's signal worth the deep dive's
-  cost. Examples: novel candidates with surface evidence, conditional/induced
-  presentation hints, edge cases (MHC-presented peptides, polytopic proteins
-  with ambiguous exposure), proteins where M1 sources disagree.
+For proteins **outside the M1 candidate universe** (the primary use case),
+the triage agent is essentially asking "is the M1 panel missing something
+about this protein?" The expected base rate of `verdict=yes` is low —
+maybe 1–5% of the non-M1 set. The job is finding the rare missed positives
+in a haystack of correctly-rejected negatives.
+
+- `yes` — accessibility looks plausible AND there's signal worth the deep
+  dive's cost. Examples: induced/conditional surfacing not captured by M1
+  rules; edge mechanisms (MHC-presented peptides, polytopic proteins with
+  ambiguous exposure); novel surface evidence post-dating the M1 source
+  cuts; proteins where multiple sources disagree.
 - `maybe` — borderline. The deep dive could go either way; flag for human
   triage before committing the spend.
-- `no` — confidently not worth a deep dive. Examples: clearly intracellular
-  with no induced-surfacing signal, clearly already-validated targets with
-  thorough public characterization (deep dive would just rehash known
-  literature), or clearly non-accessible by structural inspection.
+- `no` — confidently not worth a deep dive. For non-M1 proteins this is
+  the dominant case: M1 was right, the protein is not surface-accessible.
+  For M1 proteins it's "already-validated, thoroughly characterized; deep
+  dive would just rehash public literature".
 
 ### `accessibility_signal` semantics
 
@@ -83,20 +97,32 @@ A `verdict=no` with `accessibility_signal=likely_accessible` is valid — that's
 Target ≤3 tool calls per protein on the median path:
 
 1. `gene_lookup(mode="resolve")` — always.
-2. `gene_lookup(mode="db_panel")` — always.
+2. `gene_lookup(mode="db_panel")` — always. For non-M1 proteins this will
+   typically show all-false votes; the absence is itself a signal.
 3. `gene_lookup(mode="uniprot_summary")` — almost always (cheap, cached).
+   For non-M1 proteins this is the primary anchor — subcellular locations,
+   topology features, function/tissue prose, top publications.
 
 Escalate selectively:
 
 - `patent_lookup` — only when `patent_handle` vote is `true` AND the verdict
-  hinges on whether there's real translational precedent.
-- `gene_literature(mode="gene2pubmed")` — only when M1 votes are
-  contradictory or sparse and the verdict needs another anchor.
+  hinges on whether there's real translational precedent. Rare for non-M1
+  proteins (most won't have patent_handle hits).
+- `gene_literature(mode="gene2pubmed")` — when UniProt's tissue-specificity
+  prose, function text, or subcellular locations hint at induced/conditional
+  surfacing or edge biology that the M1 panel can't see (e.g. "translocates
+  to the cell surface upon stress"). One literature anchor often turns a
+  `maybe` into a confident `yes`.
 - `gene_literature(mode="topic_search" / "fetch_abstract" / "fetch_fulltext")` —
-  *avoid*. Save those for the deep dive.
+  *avoid by default*. Save those for the deep dive. Allowed only when the
+  verdict cannot be made without reading a specific abstract that
+  `gene2pubmed` surfaced.
+- `gene_lookup(mode="miss_diagnosis")` — only available for genes in the
+  controls panel. Not part of the genome-wide triage path.
 
 The prompt makes this explicit and provides example flows for the common
-cases (clear-yes, clear-no, edge case).
+cases (clear-no for an obviously-intracellular protein, edge-yes for a
+stress-induced surfacer, maybe-with-literature for ambiguous signal).
 
 ## Evidence rigor
 
@@ -154,7 +180,13 @@ uv run accessible-surfaceome triage --batch --input X.tsv  # custom input
 
 Batch mode:
 
-- Default input: `data/processed/candidate_universe/candidate_universe.tsv`.
+- `--input <path>` is required: TSV with one row per gene, at minimum a
+  `hgnc_symbol` or `uniprot_acc` column. Common inputs:
+  - Full human protein-coding gene set (~20K) — primary use case.
+  - Non-M1 subset (the ~14K proteins not in the M1 candidate universe).
+  - The M1 candidate universe (5,680) for filtering already-validated
+    targets out of the deep-dive queue.
+  - A custom shortlist.
 - Skips proteins already triaged (idempotent re-runs unless `--force`).
 - Emits a per-run summary `data/triage/_runs/{run_id}.json` with verdict
   counts, error counts, total cost estimate.
@@ -188,13 +220,19 @@ After implementation:
 2. New test suite for triage: at minimum `tests/test_triage_orchestrator.py`
    covering the verdict + signal + Evidence persistence path. Mirrors
    `test_evidence_promotion.py`'s structure.
-3. End-to-end smoke: triage a known validated target (HER2; expect
-   `verdict=no, accessibility_signal=likely_accessible`), a clear novel
-   candidate from the M1 panel, and an edge case (KAAG1; expect
-   `verdict=yes, accessibility_signal=possibly_accessible` with the
-   mechanism paper cited).
-4. Batch dry-run on a 50-protein subset; confirm tool-budget compliance
-   (median ≤3 tool calls per protein).
+3. End-to-end smoke covering both regimes:
+   - **In M1**: a known validated target (HER2; expect `verdict=no,
+     accessibility_signal=likely_accessible`).
+   - **In M1, edge case**: KAAG1 (expect `verdict=yes,
+     accessibility_signal=possibly_accessible` with the mechanism paper cited).
+   - **Outside M1, true negative**: an obviously-cytoplasmic protein
+     (e.g. GAPDH, LDHA, or a ribosomal subunit; expect `verdict=no,
+     accessibility_signal=unlikely`).
+   - **Outside M1, induced-surfacing positive**: calreticulin (CALR) or
+     HSPA1A; expect `verdict=yes, accessibility_signal=possibly_accessible`
+     with `gene_literature` evidence on stress / ICD induction.
+4. Batch dry-run on a 50-protein subset spanning both regimes; confirm
+   tool-budget compliance (median ≤3 tool calls per protein).
 
 ## Critical files (new + touched)
 
