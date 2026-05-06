@@ -259,6 +259,39 @@ deterministic.
 | **6. Validated-target baselines** | Run the 11 with full provenance. First batch where every load-bearing claim is substring-anchored. | ~$1–3 |
 | **7. Phase 2 (later)** | Retraction-Watch cross-ref, opt-in `--audit` for claim-entailment, `data/sources/` corpus persistence. | follow-up |
 
+## Phase 2 schema refinements (2026-05-06)
+
+The Phase 2 promotion pipeline forced one schema refinement, captured here so
+future readers can audit why we bumped `SCHEMA_VERSION` to `v0.3.1`.
+
+**Change:** `Evidence.spans` was `Field(..., min_length=1)`; it is now
+`Field(default_factory=list)` (i.e. an empty list is legal). A new model
+validator enforces that `entailment_verified=True` records still carry ≥1
+span.
+
+**Rationale.** When an `EvidenceClaim` cites a source we never fetched (or a
+source where the verbatim quote can't be substring-anchored after
+normalization), the orchestrator persists the claim with
+`entailment_verified=False` and a `validation_warnings` entry. The original
+schema required ≥1 `EvidenceSpan`, but a span requires a `SourceRef`
+(`HttpUrl` URL, `content_sha256`, `retrieved_at`, etc.) — fields we don't have
+when the source isn't in the session store. The cleanest options were:
+
+1. Synthesize a placeholder `SourceRef` with sentinel values (dishonest:
+   readers can't tell sentinel from real).
+2. Use `char_offset=-1` as a sentinel (the rest of the chain still requires
+   real `content_sha256` / `retrieved_at` we'd have to invent).
+3. **Allow `spans=[]` for unverified evidence (chosen).** Verified evidence
+   keeps the same shape as before; unverified evidence persists the claim
+   text, classification, and warning without lying about the provenance
+   chain. The validator pins the invariant so we can't accidentally ship a
+   verified record without a span.
+
+**Consequence for downstream readers.** `Evidence` consumers must check
+`entailment_verified` before assuming `spans` is populated. The persisted
+record's `evidence_count` still counts unverified records; downstream gates
+that need anchored evidence should filter by `entailment_verified`.
+
 ## Things explicitly not in scope here
 
 - **Static site / render layer** — the user is designing this separately.
