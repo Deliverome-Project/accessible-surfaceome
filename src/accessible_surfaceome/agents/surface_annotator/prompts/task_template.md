@@ -1,0 +1,1 @@
+Annotate the gene `{gene}`. Walk the `gene_lookup` cascade as described in the system prompt: resolve → db_panel → (uniprot_summary if needed) → (miss_diagnosis if a control gene was missed). Emit one `GeneAnnotation` JSON block as your final response.

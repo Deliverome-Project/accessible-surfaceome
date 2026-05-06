@@ -32,7 +32,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - Claude Code and Codex App may create their own worktrees; do not assume repo scripts control worktree creation.
 - After entering an agent-created worktree, run `scripts/bootstrap-worktree.sh none` unless the task needs data.
 - Use `scripts/bootstrap-worktree.sh candidate` for candidate-universe data, or `scripts/bootstrap-worktree.sh all` only when all data artifacts are needed.
-- `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`.
+- `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`. The CLI loads it from the repo root at startup with shell-env precedence; see `.env.example` for documented keys (`ANTHROPIC_API_KEY`, `NCBI_API_KEY`).
 - Run `git lfs fsck` only after full data hydration.
 
 ## Coding Style & Naming Conventions
