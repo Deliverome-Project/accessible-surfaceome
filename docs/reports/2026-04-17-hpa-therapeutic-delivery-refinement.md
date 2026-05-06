@@ -1,7 +1,7 @@
 # HPA integration — therapeutic-delivery refinement
 
 **Date:** 2026-04-17 · **Status:** Implemented.
-**Files touched:** [`build_hpa.py`](../../src/surface_proteome/candidates/build_hpa.py), [`build_candidate_universe.py`](../../src/surface_proteome/candidates/merge.py).
+**Files touched:** [`build_hpa.py`](../../src/accessible_surfaceome/sources/hpa.py), [`build_candidate_universe.py`](../../src/accessible_surfaceome/merge/__init__.py).
 **Related:** [`2026-04-17-jensenlab-compartments-integration.md`](2026-04-17-jensenlab-compartments-integration.md) (companion source), [`2026-04-16-surface-proteome-annotation.md`](../plans/2026-04-16-surface-proteome-annotation.md) (M0 plan).
 
 ## Why this refinement exists
@@ -65,7 +65,7 @@ The merge architecture mandates a single `<source>_surface_flag` per source (req
 
 ## Pre-publish drift assertion
 
-The pre-publish assertion in [`build_candidate_universe.py:963-1033`](../../src/surface_proteome/candidates/merge.py:963) re-derives `hpa_surface_flag` from the raw per-tier columns:
+The pre-publish assertion in [`build_candidate_universe.py:963-1033`](../../src/accessible_surfaceome/merge/__init__.py:963) re-derives `hpa_surface_flag` from the raw per-tier columns:
 
 ```
 hpa_surface_flag = (hpa_pm_accessible == 1 OR hpa_junctional == 1)
@@ -120,7 +120,7 @@ EGFR correctly lights up both `pm_accessible` and `junctional` — EGFR does loc
 
 ## Implementation references
 
-- Pool/flag logic: [`build_hpa.py`](../../src/surface_proteome/candidates/build_hpa.py) — specifically [`_derive_per_tier`](../../src/surface_proteome/candidates/build_hpa.py) for per-tier booleans, the state-column block after it, and the pool filter.
-- Merge-side consumption: [`_load_hpa`](../../src/surface_proteome/candidates/merge.py) — group-by collapse with per-tier `max` (OR) reducer plus post-collapse re-derivation of the tier enums so they stay consistent with the booleans.
-- Pre-publish assertion: [`build_candidate_universe.py:963-1033`](../../src/surface_proteome/candidates/merge.py:963).
+- Pool/flag logic: [`build_hpa.py`](../../src/accessible_surfaceome/sources/hpa.py) — specifically [`_derive_per_tier`](../../src/accessible_surfaceome/sources/hpa.py) for per-tier booleans, the state-column block after it, and the pool filter.
+- Merge-side consumption: [`_load_hpa`](../../src/accessible_surfaceome/merge/__init__.py) — group-by collapse with per-tier `max` (OR) reducer plus post-collapse re-derivation of the tier enums so they stay consistent with the booleans.
+- Pre-publish assertion: [`build_candidate_universe.py:963-1033`](../../src/accessible_surfaceome/merge/__init__.py:963).
 - Manifest `flag_rules` text: [`candidate_universe_traceability.json`](../../data/processed/candidate_universe/candidate_universe_traceability.json).

@@ -1,7 +1,7 @@
 # JensenLab COMPARTMENTS (and HPA) integration — channel methods, pool filters, and the rule we chose
 
 **Date:** 2026-04-17 · **Status:** Implemented.
-**Files touched:** [`build_jensenlab_compartments.py`](../../src/surface_proteome/candidates/build_jensenlab_compartments.py), [`build_hpa.py`](../../src/surface_proteome/candidates/build_hpa.py), [`build_candidate_universe.py`](../../src/surface_proteome/candidates/merge.py), [`download_jensenlab_compartments.py`](../../src/surface_proteome/candidates/download_jensenlab_compartments.py).
+**Files touched:** [`build_jensenlab_compartments.py`](../../src/accessible_surfaceome/sources/compartments.py), [`build_hpa.py`](../../src/accessible_surfaceome/sources/hpa.py), [`build_candidate_universe.py`](../../src/accessible_surfaceome/merge/__init__.py), [`download_jensenlab_compartments.py`](../../src/accessible_surfaceome/sources/compartments.py).
 
 ## Why this write-up exists
 
@@ -101,7 +101,7 @@ Three of the four channels are carried as provenance columns but do **not** set 
 
 1. `compartments_knowledge_stars_max` — knowledge re-ingests GO + UniProt-SubCell; already first-class in the merge.
 2. `compartments_predictions_stars_max` — PSORT + YLoc are sequence-based ML predictors; SURFY + DeepTMHMM already cover that family.
-3. Experiments rows with `source == "HPA"` are dropped in [`build_jensenlab_compartments.py`](../../src/surface_proteome/candidates/build_jensenlab_compartments.py) before the per-ENSP aggregation; HPA IF is already first-class.
+3. Experiments rows with `source == "HPA"` are dropped in [`build_jensenlab_compartments.py`](../../src/accessible_surfaceome/sources/compartments.py) before the per-ENSP aggregation; HPA IF is already first-class.
 
 **Effect.** `compartments_surface_flag` becomes **textmining-driven** — the one channel that brings genuinely orthogonal evidence.
 
@@ -131,9 +131,9 @@ CD20 (MS4A1), HLA-DQA1, and HLA-DRB1 lose their COMPARTMENTS flag under the new 
 
 ## How this reads in the pipeline
 
-- [`build_jensenlab_compartments.py`](../../src/surface_proteome/candidates/build_jensenlab_compartments.py) emits the per-UniProt-primary snapshot, computes the flag at stars ≥ 3 over `max(experiments, textmining)`, carries `compartments_predictions_stars_max` and `compartments_knowledge_stars_max` as provenance, and documents the exclusion under `excluded_evidence` in [`jensenlab_compartments_build_traceability.json`](../../data/processed/jensenlab_compartments/jensenlab_compartments_build_traceability.json).
-- [`build_candidate_universe.py`](../../src/surface_proteome/candidates/merge.py) re-derives `compartments_surface_flag` from the raw evidence columns in its pre-publish drift assertion, so a future loader change cannot silently desync from the `flag_rules` block in the manifest.
-- [`download_jensenlab_compartments.py`](../../src/surface_proteome/candidates/download_jensenlab_compartments.py) filters the 850 MB textmining TSV at download time to rows whose `go_id` is in the configured surface-term set (reduces to ~5 MB).
+- [`build_jensenlab_compartments.py`](../../src/accessible_surfaceome/sources/compartments.py) emits the per-UniProt-primary snapshot, computes the flag at stars ≥ 3 over `max(experiments, textmining)`, carries `compartments_predictions_stars_max` and `compartments_knowledge_stars_max` as provenance, and documents the exclusion under `excluded_evidence` in [`jensenlab_compartments_build_traceability.json`](../../data/processed/jensenlab_compartments/jensenlab_compartments_build_traceability.json).
+- [`build_candidate_universe.py`](../../src/accessible_surfaceome/merge/__init__.py) re-derives `compartments_surface_flag` from the raw evidence columns in its pre-publish drift assertion, so a future loader change cannot silently desync from the `flag_rules` block in the manifest.
+- [`download_jensenlab_compartments.py`](../../src/accessible_surfaceome/sources/compartments.py) filters the 850 MB textmining TSV at download time to rows whose `go_id` is in the configured surface-term set (reduces to ~5 MB).
 
 ## Correctness iteration — pool filter + corroboration gate
 
