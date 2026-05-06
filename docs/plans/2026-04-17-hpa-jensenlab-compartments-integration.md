@@ -78,7 +78,7 @@ Two viable strategies; recommend **(a)**:
 
 - **(b) UniProt idmapping file** (`HUMAN_9606_idmapping_selected.tab.gz`, ~1 GB). Authoritative but heavy; duplicates work (a) already does cleanly.
 
-Add to `src/surface_proteome/candidates/uniprot_accession_history.py` (or a new `uniprot_ensembl_mapping.py`) a `load_ensembl_mapping()` helper that returns `dict[str, list[str]]` for ENSG→UP and ENSP→UP. Mapping ambiguity (one Ensembl ID → multiple reviewed UniProt primaries) reuses the `split_mapping_ambiguous` pattern exactly: duplicate the row onto each primary, set `<source>_split_mapping_ambiguous = 1`, gate the surface flag.
+Add to `src/accessible_surfaceome/sources/_support/accession_history.py` (or a new `ensembl_mapping.py`) a `load_ensembl_mapping()` helper that returns `dict[str, list[str]]` for ENSG→UP and ENSP→UP. Mapping ambiguity (one Ensembl ID → multiple reviewed UniProt primaries) reuses the `split_mapping_ambiguous` pattern exactly: duplicate the row onto each primary, set `<source>_split_mapping_ambiguous = 1`, gate the surface flag.
 
 ## Per-source surface-flag rules (proposed)
 
@@ -130,7 +130,7 @@ Provenance columns:
 - `compartments_surface_terms` (comma-joined GO IDs that contributed)
 - `compartments_low_confidence_only` = 1 iff only stars ≤ 2 from textmining/predictions support it
 
-Threshold `≥ 3` mirrors JensenLab's own default display filter and is their published "moderate-confidence" cutoff. Document the threshold in `flag_rules` and wire it into the pre-publish drift assertion (same pattern as the existing GO/CSPA assertion in [`build_candidate_universe.py:645-661`](../../src/surface_proteome/candidates/merge.py:645)).
+Threshold `≥ 3` mirrors JensenLab's own default display filter and is their published "moderate-confidence" cutoff. Document the threshold in `flag_rules` and wire it into the pre-publish drift assertion (same pattern as the existing GO/CSPA assertion in [`build_candidate_universe.py:645-661`](../../src/accessible_surfaceome/merge/__init__.py:645)).
 
 ## Pipeline changes
 

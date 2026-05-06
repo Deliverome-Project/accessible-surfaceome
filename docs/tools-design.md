@@ -19,7 +19,7 @@ Custom tools are dispatched **outside** the Anthropic-hosted runtime. The protoc
 
 Practical implications for our design:
 
-- **Tool execution lives in our client.** The dispatcher is a Python table in `src/surface_proteome/agents/orchestrator.py` mapping tool name → handler function. We own all upstream API calls, retries, caching, and rate-limiting.
+- **Tool execution lives in our client.** The dispatcher is a Python table in `src/accessible_surfaceome/agents/surface_annotator/orchestrator.py` mapping tool name → handler function. We own all upstream API calls, retries, caching, and rate-limiting.
 - **Results are text blocks, not native JSON.** The `content` field is `[{type: "text", text: "..."}]`. Until SDK auto-serialization is documented, we JSON-stringify Pydantic models inside the dispatcher (`model.model_dump_json(indent=2)`) and tell the agent in its system prompt that tool returns are JSON-shaped text.
 - **No per-tool timeout/retry is documented.** We wrap every handler in `httpx` timeouts + retry logic ourselves; we do not rely on Anthropic-side semantics.
 - **Tool result content size limits are not documented.** Treat ~10k tokens as a soft ceiling per tool return; chunk or paginate above that.
@@ -151,11 +151,21 @@ These run in our Python pipeline before/after agent calls, *not* as agent tools:
 ## File layout
 
 ```
-src/surface_proteome/
+src/accessible_surfaceome/
   agents/
-    managed_agent.py          # creates the agent (tool registry + system prompt)
-    orchestrator.py           # event-stream subscriber + custom-tool dispatcher
-    tool_registry.py          # name → (handler, input_schema, description) table
+    surface_annotator/
+      agent.py                # builds the agent definition (model, system prompt,
+                              # built-in toolset config, custom-tool registrations)
+      environment.py          # builds the environment definition
+      orchestrator.py         # event-stream subscriber + custom-tool dispatcher
+      tool_registry.py        # name → (handler, input_schema, description) table
+      prompts/
+        system.md
+        task_template.md
+    _support/
+      client.py               # Anthropic() factory, beta headers
+      events.py               # generic stream + tool-confirmation handler
+      registry.py             # .runs/agents-registry.json reader/writer
   tools/
     gene_lookup.py            # 4 modes, returns Pydantic models
     gene_literature.py        # 4 modes
@@ -163,9 +173,14 @@ src/surface_proteome/
     _shared/
       cache.py                # SQLite-backed, per-source TTLs
       ratelimit.py            # asyncio.Semaphore per upstream API
-      models.py               # Pydantic return shapes (IdentifierBundle, DBVotePanel, etc.)
-  schemas.py                  # Evidence, GeneAnnotation (per the plan)
+      models.py               # Pydantic return shapes (IdentifierBundle, DBVotePanel,
+                              # UniProtSummary, MissDiagnosis, LiteraturePack, Paper,
+                              # PatentSummary, Evidence, GeneAnnotation)
+  installs/                   # per-machine install plumbing (renamed from tools/
+                              # to free up tools/ for the agent's custom-tool handlers)
 ```
+
+> The surfaceome custom-tool handlers live at `src/accessible_surfaceome/tools/`; the per-machine install plumbing that previously lived there moves to `src/accessible_surfaceome/installs/` so the `tools/` name reads as "agent custom tools" everywhere in the codebase.
 
 ## Build order
 

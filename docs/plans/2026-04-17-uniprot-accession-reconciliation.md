@@ -70,7 +70,7 @@ deeptmhmm  2,360 -> 2,360   (no-op)
 
 ## Verification
 
-- Re-ran `src/surface_proteome/reports/audit.py` against the
+- Re-ran `src/accessible_surfaceome/audit/audit.py` against the
   new merge output. Result: **merge_level_collisions.tsv → 0 pairs**.
 - Spot-checks: HLA-A, HLA-B, HLA-C, HLA-DRB1 now each resolve to a
   single row under their current canonical primary with
@@ -83,17 +83,17 @@ deeptmhmm  2,360 -> 2,360   (no-op)
 ## Files to review
 
 **Collection (new)**
-- [`download_uniprot_accession_history.py`](../../src/surface_proteome/candidates/download_uniprot_accession_history.py)
+- [`download_uniprot_accession_history.py`](../../src/accessible_surfaceome/sources/_support/accession_history.py)
   — fetches `sec_ac.txt` and `delac_sp.txt` (and optionally
   `delac_tr.txt.gz`) with SHA256 traceability. Outputs to
   `data/external/uniprot_accession_history/`.
 
 **Processing (new shared util + edits)**
-- [`uniprot_accession_history.py`](../../src/surface_proteome/candidates/uniprot_accession_history.py)
+- [`uniprot_accession_history.py`](../../src/accessible_surfaceome/sources/_support/accession_history.py)
   — parsers for `sec_ac.txt` and `delac_sp.txt`, plus
   `load_accession_history()` convenience loader. Used by both the
   audit script and the merge script.
-- [`merge.py`](../../src/surface_proteome/candidates/merge.py)
+- [`merge.py`](../../src/accessible_surfaceome/merge/__init__.py)
   — adds `_normalize_accessions()` helper; `main()` now loads the
   accession history, normalizes each source before the merge, and
   records the normalization stats in `candidate_universe_summary.json`
@@ -101,7 +101,7 @@ deeptmhmm  2,360 -> 2,360   (no-op)
   Docstring updated to describe the new behavior.
 
 **Analysis (new)**
-- [`audit.py`](../../src/surface_proteome/reports/audit.py)
+- [`audit.py`](../../src/accessible_surfaceome/audit/audit.py)
   — classifies every source accession (`primary_current` /
   `primary_not_queried` / `secondary` / `deleted_swissprot` /
   `unknown`) and computes merge-level collision pairs from
@@ -124,16 +124,16 @@ deeptmhmm  2,360 -> 2,360   (no-op)
 
 ```bash
 # 1. Fetch UniProt accession-history reference (first-time only; ~60 MB)
-uv run python -m surface_proteome.candidates.download_uniprot_accession_history
+uv run python -m accessible_surfaceome.sources._support.accession_history
 
 # 2. Rebuild the candidate universe with normalization applied
-uv run python -m surface_proteome.candidates.merge
+uv run python -m accessible_surfaceome.merge
 
 # 3. Regenerate agreement figures
-uv run python -m surface_proteome.reports.blog_figures
+uv run python -m accessible_surfaceome.audit.blog_figures
 
 # 4. Re-audit (should show 0 merge-level collisions)
-uv run python -m surface_proteome.reports.audit
+uv run python -m accessible_surfaceome.audit.audit
 ```
 
 ## Post-review fixes (Codex adversarial review, 2026-04-17)
@@ -174,7 +174,7 @@ regenerates:
 
 ### Collapse-conflict audit + semantics-preserving reducers (Codex finding #3)
 
-`src/surface_proteome/reports/accession_collapse_audit.py` replays the
+`src/accessible_surfaceome/audit/accession_collapse.py` replays the
 `_normalize_accessions` explode step without the final `groupby().agg()`
 and records every column whose values differ across rows that collapse
 onto the same primary. `_normalize_accessions` now accepts an

@@ -144,7 +144,7 @@ All code under new `analyses/surface-proteome/` as a standalone `uv` project. Pi
 ```
 analyses/surface-proteome/
   pyproject.toml                    # uv project: pydantic-ai, httpx, polars, sqlite-utils
-  src/surface_proteome/
+  src/surface_proteome/ <!-- legacy path; not in current layout -->
     candidates/                     # M1 — gene universe
       build_surfy.py
       build_cspa.py
@@ -181,7 +181,7 @@ analyses/surface-proteome/
       batch_runner.py               # Anthropic Batch API driver (50% discount path)
       checkpoint.py                 # resume-from-failure via per-gene JSONL
       cascade.py                    # Opus-routing decision logic
-    cli.py                          # python -m surface_proteome {build,run,analyze,export,audit}
+    cli.py                          # accessible-surfaceome {build,run,analyze,export,audit}
     reports/
       disagreement.py               # DB vs ours discrepancy tables
       blog_figures.py               # Plotly/matplotlib figures
@@ -618,21 +618,21 @@ data/audit/{gene}.jsonl            # retrieval → extraction → synthesis trac
 ```bash
 cd analyses/surface-proteome
 uv sync
-uv run python -m surface_proteome m0-validate                             # alias disambiguation test
-uv run python -m surface_proteome build-candidates                        # → data/candidates.parquet
-uv run python -m surface_proteome run --genes CD19,CD20,EGFR,ABCB9,KRAS   # 5-gene smoke test
-uv run python -m surface_proteome run --limit 100 --seed 42               # 100-gene pilot
-uv run python -m surface_proteome audit --sample 50 --stratified          # citation + entailment audit
-uv run python -m surface_proteome analyze pilot                           # QC report
+uv run accessible-surfaceome m0-validate                             # alias disambiguation test
+uv run accessible-surfaceome build-candidates                        # → data/candidates.parquet
+uv run accessible-surfaceome run --genes CD19,CD20,EGFR,ABCB9,KRAS   # 5-gene smoke test
+uv run accessible-surfaceome run --limit 100 --seed 42               # 100-gene pilot
+uv run accessible-surfaceome audit --sample 50 --stratified          # citation + entailment audit
+uv run accessible-surfaceome analyze pilot                           # QC report
 ```
 
 **Full run (Batch API path):**
 ```bash
-uv run python -m surface_proteome run --all --batch-api --concurrency 32 --checkpoint
+uv run accessible-surfaceome run --all --batch-api --concurrency 32 --checkpoint
 # ... Batch API polls until complete (typically <24 h) ...
-uv run python -m surface_proteome audit --sample 300 --stratified          # final audit
-uv run python -m surface_proteome export --format csv,parquet --out data/exports/
-uv run python -m surface_proteome report blog                              # figures for post
+uv run accessible-surfaceome audit --sample 300 --stratified          # final audit
+uv run accessible-surfaceome export --format csv,parquet --out data/exports/
+uv run accessible-surfaceome report blog                              # figures for post
 ```
 
 **QC gates before declaring v0 done:**

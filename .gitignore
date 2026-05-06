@@ -19,3 +19,12 @@ __pycache__/
 # Local secrets/runtime
 .env
 *.log
+
+# Managed Agents run logs and tool cache (gitignored — contain timestamps,
+# session IDs, and possibly upstream API responses)
+.runs/
+data/external/tool_cache.sqlite*
+
+# Per-gene annotations are agent-generated; commit a curated snapshot once
+# we have a stable set, not every smoke-test output.
+data/annotations/

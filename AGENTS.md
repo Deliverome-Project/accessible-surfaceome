@@ -32,7 +32,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - Claude Code and Codex App may create their own worktrees; do not assume repo scripts control worktree creation.
 - After entering an agent-created worktree, run `scripts/bootstrap-worktree.sh none` unless the task needs data.
 - Use `scripts/bootstrap-worktree.sh candidate` for candidate-universe data, or `scripts/bootstrap-worktree.sh all` only when all data artifacts are needed.
-- `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`.
+- `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`. The CLI loads it from the repo root at startup with shell-env precedence; see `.env.example` for documented keys (`ANTHROPIC_API_KEY`, `NCBI_API_KEY`).
 - Run `git lfs fsck` only after full data hydration.
 
 ## Coding Style & Naming Conventions
@@ -59,6 +59,24 @@ masquerading as algorithm.
 ## CI & Checks
 - CI runs on PRs and pushes to `main` via `.github/workflows/ci.yml`.
 - CI validates lockfile consistency and runs Ruff, ty, compile, and pytest checks.
+
+## Pull Request Conventions
+PR titles are validated by `.github/workflows/lint-pr-title.yml` (Conventional
+Commits via `amannn/action-semantic-pull-request`). A title that doesn't match
+fails the check and blocks merge.
+
+- **Format**: `<type>(<scope>): <subject>` — scope is optional.
+- **Allowed types**: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`.
+- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`.
+- **Pick a scope by what the PR mostly touches**: `sources/` → `sources`,
+  `merge/` → `merge`, `audit/` → `audit`, `agents/` (Managed Agent
+  orchestrator, system prompt, agent definition) → `agents`, `tools/`
+  (custom-tool handlers like `gene_lookup`, `patent_lookup`) → `tools`,
+  dependency bumps → `deps`, CI workflows → `ci`, project-wide /
+  cross-cutting → `surface-proteome`. If you need a scope that isn't
+  listed, update the workflow's `scopes:` block in the same PR — don't
+  invent a new one.
+- Match the commit-message subject style: terse, imperative, no trailing period.
 
 ## Doc Sync Rule
 - Keep `AGENTS.md` and `CLAUDE.md` aligned when workflow guidance changes.

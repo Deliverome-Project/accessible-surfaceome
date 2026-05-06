@@ -1,0 +1,257 @@
+"""Session lifecycle for the surface annotator.
+
+Two entry points:
+
+* :func:`sync_agent_and_environment` — create-or-update the remote agent and
+  environment, persist IDs + drift-detection hashes to the registry. Idempotent.
+  Run after editing the system prompt or any other agent field.
+
+* :func:`annotate_gene` — open one session for one gene, run the agent through
+  the ``gene_lookup`` cascade, persist the resulting :class:`GeneAnnotation`
+  JSON to ``data/annotations/{symbol}.json``, and write a run log under
+  ``.runs/<timestamp>-<symbol>-<session_id>/``.
+"""
+
+from __future__ import annotations
+
+import json
+import logging
+import re
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from anthropic import Anthropic
+
+from accessible_surfaceome.paths import DATA_DIR, REPO_ROOT
+from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
+
+from .._support import client as _client_module
+from .._support import registry as _registry
+from .._support.events import (
+    collect_text,
+    send_user_message,
+    stream_until_done,
+)
+from . import agent as _agent
+from . import environment as _environment
+from . import tool_registry
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class SyncResult:
+    agent_id: str
+    agent_version: int | None
+    environment_id: str
+    agent_changed: bool
+    environment_changed: bool
+
+
+def sync_agent_and_environment(client: Anthropic | None = None) -> SyncResult:
+    client = client or _client_module.get_client()
+    reg = _registry.load()
+
+    env_entry = reg.environments.get(_environment.ENVIRONMENT_NAME)
+    env_blob_sha = _registry.sha256(_environment.environment_config_blob())
+    env_changed = env_entry is None or env_entry.config_sha256 != env_blob_sha
+    if env_changed:
+        env = _environment.upsert_environment(
+            client,
+            current_id=env_entry.id if env_entry else None,
+        )
+        env_id = env.id
+        reg.environments[_environment.ENVIRONMENT_NAME] = _registry.EnvironmentEntry(
+            id=env_id, config_sha256=env_blob_sha
+        )
+    else:
+        env_id = env_entry.id  # type: ignore[union-attr]
+
+    agent_entry = reg.agents.get(_agent.AGENT_NAME)
+    system_sha = _registry.sha256(_agent.read_system_prompt())
+    # Naive drift check: the system prompt sha is the dominant source of change.
+    # Tool list / model are version-controlled and changes there will also bump
+    # the agent's remote version, but we don't independently sha them — the
+    # registry entry just tracks "did we last sync this prompt".
+    agent_changed = agent_entry is None or agent_entry.system_prompt_sha256 != system_sha
+    if agent_changed:
+        agent = _agent.upsert_agent(
+            client,
+            current_id=agent_entry.id if agent_entry else None,
+            current_version=agent_entry.version if agent_entry else None,
+        )
+        reg.agents[_agent.AGENT_NAME] = _registry.AgentEntry(
+            id=agent.id,
+            version=getattr(agent, "version", None),
+            system_prompt_sha256=system_sha,
+        )
+
+    _registry.save(reg)
+    final = reg.agents[_agent.AGENT_NAME]
+    return SyncResult(
+        agent_id=final.id,
+        agent_version=final.version,
+        environment_id=env_id,
+        agent_changed=agent_changed,
+        environment_changed=env_changed,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Per-gene run
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class AnnotateResult:
+    session_id: str
+    annotation_path: Path | None
+    run_dir: Path
+    final_text: str
+    annotation_json: dict[str, Any] | None
+    n_tool_calls: int
+
+
+def annotate_gene(
+    gene: str,
+    *,
+    client: Anthropic | None = None,
+    http: CachedHTTP | None = None,
+) -> AnnotateResult:
+    client = client or _client_module.get_client()
+    own_http = http is None
+    http_client = http or open_default_client()
+    try:
+        return _annotate_one(client, http_client, gene)
+    finally:
+        if own_http:
+            http_client.close()
+
+
+def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateResult:
+    reg = _registry.load()
+    if _agent.AGENT_NAME not in reg.agents or _environment.ENVIRONMENT_NAME not in reg.environments:
+        raise RuntimeError(
+            "agent or environment missing from registry — run `accessible-surfaceome agents sync` first"
+        )
+    agent_entry = reg.agents[_agent.AGENT_NAME]
+    env_entry = reg.environments[_environment.ENVIRONMENT_NAME]
+
+    handlers = tool_registry.build_handlers(http)
+    task_text = _render_task(gene)
+
+    session = client.beta.sessions.create(
+        agent={"type": "agent", "id": agent_entry.id, "version": agent_entry.version}
+        if agent_entry.version
+        else agent_entry.id,
+        environment_id=env_entry.id,
+        title=f"annotate {gene}",
+    )
+    logger.info("created session %s for %s", session.id, gene)
+
+    timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H-%M-%S")
+    run_dir = REPO_ROOT / ".runs" / f"{timestamp}-{gene}-{session.id}"
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "task.md").write_text(task_text)
+
+    events_path = run_dir / "events.jsonl"
+    n_tool_calls = 0
+
+    def _log_event(event: Any) -> None:
+        nonlocal n_tool_calls
+        if getattr(event, "type", None) == "agent.custom_tool_use":
+            n_tool_calls += 1
+        with events_path.open("a") as f:
+            f.write(_event_to_json_line(event))
+            f.write("\n")
+
+    # Stream-first: open the stream BEFORE sending the kickoff message,
+    # otherwise early events arrive buffered and we lose live ordering.
+    stream = stream_until_done(client, session_id=session.id, handlers=handlers, on_event=_log_event)
+    send_user_message(client, session_id=session.id, text=task_text)
+    final_text = collect_text(stream)
+
+    (run_dir / "final.md").write_text(final_text)
+    annotation_json = _extract_annotation_json(final_text)
+
+    annotation_path: Path | None = None
+    if annotation_json is not None:
+        annotation_dir = DATA_DIR / "annotations"
+        annotation_dir.mkdir(parents=True, exist_ok=True)
+        annotation_path = annotation_dir / f"{gene}.json"
+        annotation_path.write_text(json.dumps(annotation_json, indent=2, sort_keys=True) + "\n")
+
+    summary = {
+        "gene": gene,
+        "session_id": session.id,
+        "agent_id": agent_entry.id,
+        "agent_version": agent_entry.version,
+        "environment_id": env_entry.id,
+        "n_custom_tool_calls": n_tool_calls,
+        "annotation_path": str(annotation_path) if annotation_path else None,
+        "annotation_json": annotation_json,
+        "final_text_chars": len(final_text),
+    }
+    (run_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
+
+    return AnnotateResult(
+        session_id=session.id,
+        annotation_path=annotation_path,
+        run_dir=run_dir,
+        final_text=final_text,
+        annotation_json=annotation_json,
+        n_tool_calls=n_tool_calls,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _render_task(gene: str) -> str:
+    template = (Path(__file__).parent / "prompts" / "task_template.md").read_text()
+    return template.replace("{gene}", gene)
+
+
+_FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
+
+
+def _extract_annotation_json(text: str) -> dict[str, Any] | None:
+    """Find and parse the agent's final ``SurfaceomeRecord`` JSON block.
+
+    The system prompt asks the agent to emit a single fenced JSON block as its
+    final response. We pick the *last* ``json``-fenced block that parses and
+    looks record-shaped — has ``gene`` and either ``surface_biology`` (current
+    schema) or ``surface_status`` (legacy proof-of-concept shape).
+    """
+
+    candidates = _FENCED_JSON_RE.findall(text)
+    for raw in reversed(candidates):
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(data, dict) or "gene" not in data:
+            continue
+        if "surface_biology" in data or "surface_status" in data:
+            return data
+    return None
+
+
+def _event_to_json_line(event: Any) -> str:
+    """Best-effort serialization of an SDK event for the run log."""
+
+    if hasattr(event, "model_dump_json"):
+        try:
+            return event.model_dump_json()
+        except Exception:
+            pass
+    if hasattr(event, "model_dump"):
+        try:
+            return json.dumps(event.model_dump(), default=str)
+        except Exception:
+            pass
+    return json.dumps({"type": getattr(event, "type", "unknown"), "repr": repr(event)})
