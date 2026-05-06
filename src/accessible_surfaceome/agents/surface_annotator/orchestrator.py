@@ -348,8 +348,6 @@ def _persist_annotation(
             isoform_flattened=draft.isoform_flattened,
             targetability=draft.targetability,
             surface_biology=draft.surface_biology,
-            expression=draft.expression,
-            adc_properties=draft.adc_properties,
             therapeutic_landscape=draft.therapeutic_landscape,
             risk_flags=draft.risk_flags,
             evidence=evidence,

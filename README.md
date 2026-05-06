@@ -1,8 +1,15 @@
 # accessible-surfaceome
 
-A `uv` project that builds an annotated catalogue of human cell-surface proteins
-from seven public data sources. Full design notes:
+A `uv` project that builds an annotated catalogue of human cell-surface
+proteins **accessible to therapeutic targeting, agnostic to therapeutic
+modality.** Full design notes:
 [docs/plans/2026-04-16-surface-proteome-annotation.md](docs/plans/2026-04-16-surface-proteome-annotation.md).
+
+The headline call per protein is *accessibility* — physical surface
+localization, extracellular-face exposure, and any conditional/induced
+surface presentation (cell-state induced, tissue subset, trafficking
+cycling). Therapeutic context (approved drugs, clinical trials, patent
+disclosures, preclinical characterizations) accompanies each call.
 
 The current checked-in implementation covers the M1 candidate-universe work:
 source downloads, source normalization, accession reconciliation, and the

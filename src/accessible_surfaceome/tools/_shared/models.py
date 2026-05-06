@@ -611,10 +611,14 @@ class SearchEntry(BaseModel):
 
 # ---------------------------------------------------------------------------
 # SurfaceomeRecord — the per-protein reconciled annotation persisted to
-# data/annotations/{gene}.json. Replaces the proof-of-concept GeneAnnotation
-# schema with a structure that lets a biopharma scientist evaluating ADC /
-# antibody / delivery candidates see surface biology AND therapeutic context
-# in one place.
+# data/annotations/{gene}.json. The agent's job is the *accessibility call*:
+# physical surface localization, extracellular-face exposure, and any
+# conditional/induced surface presentation. Therapeutic context (approved
+# drugs, trials, patents, preclinical characterizations) accompanies the
+# call. Modality-agnostic by design — a target reachable by any extracellular
+# binder is in scope, regardless of whether the eventual therapeutic is an
+# ADC, naked mAb, bispecific, CAR-T, TCR-T, TCR-mimic, radioligand,
+# peptide-drug conjugate, oligo-conjugate, etc.
 #
 # Several enums are intentionally **hybrid** — closed list + ``"other"``
 # escape hatch with a required ``*_other_label`` for the agent to describe a
@@ -624,7 +628,7 @@ class SearchEntry(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.3.3"
+SCHEMA_VERSION = "v0.4.0"
 
 
 # ---- shared enums (closed) ------------------------------------------------
@@ -634,6 +638,7 @@ SurfaceStatus = Literal[
     "moderate_surface",
     "weak_surface",
     "rare_surface",
+    "conditional_surface",  # induced/state-dependent surface presentation
     "absent",
     "contradictory",
 ]
@@ -719,26 +724,25 @@ class ModalityRecommendation(BaseModel):
 
 
 RiskFlagKind = Literal[
-    "shedding_decoy",  # soluble pool of antigen acts as ADC decoy
-    "paralog_cross_reactivity",  # related family members the antibody could bind
-    "essential_normal_tissue",  # CNS, gut epithelium, cardiac, etc.
-    "mechanism_caveat",  # KAAG1's MHC presentation, polytopic short ECDs, …
-    "low_density",  # below ADC payload-delivery threshold
-    "tumor_heterogeneity",  # only a subset of tumor cells express it
-    "polymorphism_dependent",  # HLA restriction, isoform-specific expression
-    "patent_density",  # crowded IP space
-    "internalization_unknown",  # required for ADCs but not characterized
+    "soluble_shedding",  # cleavage/shedding releases a soluble pool of antigen
+    "secreted_form",  # alternative isoform/variant generates a secreted form (no shedding required)
     "other",
 ]
 RiskSeverity = Literal["blocking", "high", "medium", "low"]
 
 
 class RiskFlag(BaseModel):
-    """A specific risk that affects therapeutic targetability.
+    """A surface-biology risk flag that affects accessibility / targetability.
+
+    Scope is narrow on purpose: the agent's job is the accessibility call,
+    not systematic safety profiling. The two closed kinds capture the
+    accessibility-relevant risks that arise directly from surface biology
+    (a soluble pool of antigen produced by either shedding or an alternative
+    secreted form competes for binders). Anything else uses ``"other"`` with
+    a ``kind_other_label`` so the corpus can surface emerging categories.
 
     Hybrid enum: same pattern as ``ModalityRecommendation``. ``other`` requires
-    a ``kind_other_label`` so the future ontology-review agent can propose a
-    new category once a label appears repeatedly.
+    a ``kind_other_label``.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -778,8 +782,64 @@ class TargetabilityVerdict(BaseModel):
 ECDAccessibility = Literal["accessible", "membrane_proximal", "buried", "unknown"]
 
 
+# Single signal answering "is there a binder-targetable extracellular
+# protrusion?" — distinct from ``surface_status`` (which says whether the
+# protein reaches the outer leaflet at all). A 7TM GPCR with tiny extracellular
+# loops is ``minimal_ectoloops`` even though ``surface_status="strong_surface"``.
+ExposureClass = Literal[
+    "exposed_ecd",  # one or more meaningful extracellular protrusions
+    "minimal_ectoloops",  # only short loops between TM helices reach outside
+    "embedded_no_ecd",  # essentially no extracellular face protruding from the bilayer
+    "none",  # not at the plasma membrane at all
+    "unknown",
+]
+
+
+# Why a protein that is intracellular at baseline reaches the outer leaflet.
+# Backs ``SurfaceStatus="conditional_surface"`` calls.
+InducedContextKind = Literal[
+    "cell_state_stress",  # heat shock, ER stress, oxidative stress, etc.
+    "immunogenic_cell_death",  # ICD-induced exposure (e.g. calreticulin)
+    "infection_induced",  # viral or bacterial infection drives surfacing
+    "oncogenic_state",  # transformation-driven mislocalization
+    "tissue_subset",  # baseline-intracellular but surface-positive in a specific tissue/cell type
+    "trafficking_cycling",  # cycles between intracellular vesicles and PM (low steady-state surface)
+    "other",
+]
+
+
+class InducedPresentation(BaseModel):
+    """One context under which an otherwise-intracellular protein reaches the surface.
+
+    Used to back ``SurfaceStatus="conditional_surface"`` calls (e.g.
+    calreticulin during ICD; HSP70 stress exposure; GLUT4-style trafficking
+    cycling). Hybrid enum: ``context_kind="other"`` requires a
+    ``context_kind_other_label`` so the corpus can surface new categories.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    context_kind: InducedContextKind
+    context_kind_other_label: str | None = None
+    description: str = Field(..., max_length=400)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _check_other_label(self) -> InducedPresentation:
+        if self.context_kind == "other" and not self.context_kind_other_label:
+            raise ValueError(
+                "InducedPresentation.context_kind='other' requires context_kind_other_label"
+            )
+        if self.context_kind != "other" and self.context_kind_other_label is not None:
+            raise ValueError(
+                "InducedPresentation.context_kind_other_label must be None when "
+                f"context_kind={self.context_kind!r}"
+            )
+        return self
+
+
 class ExtracellularDomainSummary(BaseModel):
-    """Sketch of the extracellular face — what an antibody actually sees."""
+    """Sketch of the extracellular face — what a binder actually sees."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -811,12 +871,24 @@ class DBComparison(BaseModel):
 
 
 class SurfaceBiology(BaseModel):
-    """The reconciled surface call + supporting biology.
+    """The reconciled accessibility call + supporting biology.
 
-    ``surface_status`` and ``topology`` are intentionally orthogonal: KRAS is
-    ``topology=inner_leaflet_peripheral`` and ``surface_status=absent`` (membrane-
-    anchored but not extracellularly accessible). Conflating them reproduces the
-    SURFY false-positive pattern this project exists to correct.
+    Three orthogonal axes:
+
+    * ``surface_status`` — does the protein reach the outer leaflet at all,
+      and if so under what regime? ``conditional_surface`` is reserved for
+      proteins intracellular at baseline that reach the surface only under
+      defined conditions (see ``induced_presentation``).
+    * ``topology`` — physical localization in/around the bilayer. KRAS is
+      ``topology=inner_leaflet_peripheral`` and ``surface_status=absent``.
+      Conflating these reproduces the SURFY false-positive pattern.
+    * ``exposure_class`` — is there a binder-targetable extracellular
+      protrusion? A 7TM GPCR with tiny ECLs is ``minimal_ectoloops`` even
+      though it's ``surface_status=strong_surface``.
+
+    ``induced_presentation`` carries the context list backing a
+    ``conditional_surface`` call (or capturing tissue-subset / trafficking
+    nuance even when the headline is ``rare_surface`` or stronger).
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -824,7 +896,9 @@ class SurfaceBiology(BaseModel):
     surface_status: SurfaceStatus
     topology: Topology
     anchor_type: AnchorType
-    extracellular_domain: ExtracellularDomainSummary | None = None
+    exposure_class: ExposureClass = "unknown"
+    extracellular_domain: ExtracellularDomainSummary
+    induced_presentation: list[InducedPresentation] = Field(default_factory=list)
     # ``bool`` is the canonical "yes/no glycosylated" flag, but for densely-
     # glycosylated targets (HER2's seven N-linked sites, MUC1's tandem-repeat
     # O-glycans) the agent has informative prose to share — N-site positions,
@@ -833,57 +907,9 @@ class SurfaceBiology(BaseModel):
     # Downstream readers should treat any non-null value as "glycosylated";
     # the prose form just adds detail.
     glycosylation: bool | str | None = None
-    shedding_documented: bool | None = None  # critical for ADC: soluble decoys
+    shedding_documented: bool | None = None  # soluble pool present (relevant to any extracellular-binder modality)
     db_comparison: DBComparison
     cited_evidence_ids: list[str] = Field(default_factory=list)
-
-
-# ---- bucket: expression ---------------------------------------------------
-
-
-TumorSpecificity = Literal[
-    "pan_tumor",  # widely overexpressed across tumor types
-    "indication_restricted",  # one or a few cancer types
-    "subset_within_indication",  # subpopulation of an indication's tumors
-    "tumor_isoform_specific",  # only tumor-specific isoform/PTM
-    "broad_low_specificity",  # widely expressed in tumor and normal
-    "unknown",
-]
-
-
-class ExpressionProfile(BaseModel):
-    """Where this protein is expressed and how specific that is."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    tumor_indications: list[str] = Field(default_factory=list)
-    tumor_specificity: TumorSpecificity = "unknown"
-    normal_tissue_top: list[str] = Field(default_factory=list)
-    normal_tissue_concerns: list[str] = Field(default_factory=list)  # CNS, gut, heart…
-    summary: str | None = Field(default=None, max_length=600)
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-
-# ---- bucket: ADC properties -----------------------------------------------
-
-
-Internalization = Literal["validated", "predicted", "non_internalizing", "unknown"]
-ExpressionHomogeneity = Literal["homogeneous", "heterogeneous", "subpopulation", "unknown"]
-
-
-class ADCProperties(BaseModel):
-    """ADC-specific characteristics. Intentionally sparse — most fields will
-    be ``None`` until ``gene_literature`` lands and we can mine internalization
-    + copy-number reports. The fields exist now so the structure is stable as
-    we light them up over time.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    internalization: Internalization = "unknown"
-    estimated_copies_per_cell: str | None = None  # free text — wide ranges in lit
-    expression_homogeneity: ExpressionHomogeneity = "unknown"
-    payload_compatibility_notes: str | None = Field(default=None, max_length=500)
 
 
 # ---- bucket: therapeutic landscape ---------------------------------------
@@ -1002,11 +1028,12 @@ class TherapeuticLandscape(BaseModel):
 class SurfaceomeRecord(BaseModel):
     """The reconciled per-protein record persisted to data/annotations/{gene}.json.
 
-    Primary purpose: answer "is this a candidate for therapeutic surface
-    targeting, and what would you need to know to evaluate it?" The headline
-    is the surface-biology classification (which is the project's core
-    deliverable — the gold-standard surfaceome list); therapeutic context
-    fills in the metadata a biopharma scientist needs alongside the call.
+    Primary purpose: answer "is this protein accessible to extracellular
+    therapeutic targeting, and what would you need to know to evaluate it?"
+    The headline is the surface-biology / accessibility classification (which
+    is the project's core deliverable); therapeutic context fills in the
+    metadata a scientist needs alongside the call. Modality-agnostic — any
+    extracellular-binder modality is in scope.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -1021,8 +1048,6 @@ class SurfaceomeRecord(BaseModel):
     # Headline + supporting buckets
     targetability: TargetabilityVerdict
     surface_biology: SurfaceBiology
-    expression: ExpressionProfile
-    adc_properties: ADCProperties
     therapeutic_landscape: TherapeuticLandscape
     risk_flags: list[RiskFlag] = Field(default_factory=list)
 
@@ -1079,8 +1104,6 @@ class SurfaceomeRecordDraft(BaseModel):
     # Headline + supporting buckets — same shapes as SurfaceomeRecord
     targetability: TargetabilityVerdict
     surface_biology: SurfaceBiology
-    expression: ExpressionProfile
-    adc_properties: ADCProperties
     therapeutic_landscape: TherapeuticLandscape
     risk_flags: list[RiskFlag] = Field(default_factory=list)
 
@@ -1158,14 +1181,12 @@ __all__ = [
     "ModalityRecommendation",
     "SurfaceBiology",
     "AnchorType",
+    "ExposureClass",
+    "InducedContextKind",
+    "InducedPresentation",
     "ExtracellularDomainSummary",
     "ECDAccessibility",
     "DBComparison",
-    "ExpressionProfile",
-    "TumorSpecificity",
-    "ADCProperties",
-    "Internalization",
-    "ExpressionHomogeneity",
     "TherapeuticLandscape",
     "ApprovedDrug",
     "ClinicalTrial",
