@@ -1,32 +1,41 @@
 # A candidate human surface-protein universe
 
-**Date:** 2026-04-17 (revised 2026-04-18) · **Candidate universe:** 6,518 proteins · **Sources merged:** 7
+**Date:** 2026-04-17 (revised 2026-05-06) · **Candidate universe:** 5,680 proteins · **Sources flagged:** 5 (DeepTMHMM and JensenLab COMPARTMENTS attached as auxiliary per-row evidence)
 
 ## Abstract
 
-Selecting therapeutic-delivery targets on the human cell surface requires an unbiased starting list — one that captures every credible claim of surface expression without prejudging which evidence type is most trustworthy. Here we assemble such a list by merging seven independent sources of human surface-protein evidence: two curated databases (UniProt, Gene Ontology), one mass-spectrometry atlas (CSPA), one antibody-based immunofluorescence atlas (Human Protein Atlas v25), two sequence-based predictors (SURFY, DeepTMHMM), and one literature-driven meta-database (JensenLab COMPARTMENTS). All entries are reconciled against current UniProt primary accessions, and each source contributes one independent surface-evidence call per protein. The resulting universe contains 6,518 proteins with at least one source flagging surface evidence under its own rule. Forty-five are supported by all seven sources, and 49 by every source except DeepTMHMM (which in this milestone runs on a subset of the proteome). The tightest pairwise agreement is between SURFY and DeepTMHMM (Jaccard 0.78), both sequence-and-topology-driven. Most proteins are supported by only one or two sources — an expected pattern that reflects genuine differences in what each source can see, and that we preserve deliberately for downstream prioritization.
+Selecting therapeutic-delivery targets on the human cell surface requires an unbiased starting list — one that captures every credible claim of surface expression without prejudging which evidence type is most trustworthy. Here we assemble such a list by merging five independent sources of human surface-protein evidence: two curated databases (UniProt, Gene Ontology), one mass-spectrometry atlas (CSPA), one antibody-based immunofluorescence atlas (Human Protein Atlas v25), and one sequence-based predictor (SURFY). Two further sources — DeepTMHMM (a deep-learning transmembrane topology predictor) and JensenLab COMPARTMENTS (a literature-driven meta-database) — are attached per row as auxiliary evidence but are omitted from the universe-level figures: DeepTMHMM because it is run on a partial 2,360-protein cohort in this milestone, and COMPARTMENTS because its corroboration gate makes it a confidence-boost-only signal that contributes zero unique members to the universe (verified against the live build). All entries are reconciled against current UniProt primary accessions, and each gating source contributes one independent surface-evidence call per protein. The resulting universe contains 5,680 proteins with at least one of the five flagged sources reporting surface evidence under its own rule. One hundred eighty-eight are supported by all five sources; 659 by at least four. The tightest pairwise agreement is between UniProt and SURFY (Jaccard 0.67), reflecting SURFY's origin as a curated-gold-standard classifier seeded with UniProt subcellular-location annotations. Most proteins are supported by only one or two sources — an expected pattern that reflects genuine differences in what each source can see, and that we preserve deliberately for downstream prioritization.
 
 ## Why a candidate universe first
 
 The human surfaceome is not a settled list. Different evidence types — curator-assigned subcellular locations, mass-spectrometry captures of cell-surface glycopeptides, antibody-based immunofluorescence images, sequence-based predictors, and automated literature mining — each see a different slice of the biology and each carry their own failure modes. A sequence predictor cannot tell whether a protein with a transmembrane helix actually reaches the plasma membrane; a mass-spec atlas only sees proteins expressed in the cell lines it sampled; a curator-assigned subcellular location reflects the evidence that reached the curator, which varies by gene. Taking any one source as the definitive surfaceome builds its blind spots into every downstream decision.
 
-This milestone therefore takes a different posture: a broad, high-recall union of credible surface claims, with the source of every inclusion preserved. Disagreement among sources is a feature, not noise. Proteins supported by all seven sources are the most strongly corroborated; proteins supported by only one or two sources are kept as candidates but carry a different weight. The universe assembled here is the substrate for subsequent milestones — tissue-specific filtering, therapeutic-modality ranking, and ultimately the selection of delivery targets — not a final validated surfaceome.
+This milestone therefore takes a different posture: a broad, high-recall union of credible surface claims, with the source of every inclusion preserved. Disagreement among sources is a feature, not noise. Proteins supported by all five sources are the most strongly corroborated; proteins supported by only one or two sources are kept as candidates but carry a different weight. The universe assembled here is the substrate for subsequent milestones — tissue-specific filtering, therapeutic-modality ranking, and ultimately the selection of delivery targets — not a final validated surfaceome.
 
 Throughout this report, "surface" means *accessible from the extracellular face of an intact human cell* — a living-cell surface protein with an extracellular or membrane-embedded domain reachable by an antibody, a ligand, or a binder. Intracellular organelle membranes and secreted proteins are not surface proteins by this definition, even when predictors or annotations occasionally conflate them.
 
 ## Data sources
 
+### Universe-flag sources (five)
+
 | # | Source | Snapshot | Evidence modality | Rows |
 |---|---|---|---|---|
-| 1 | UniProt human surface-candidate query (subcellular location + topology) | release 2026_01 | Curated database | 4,817 |
+| 1 | UniProt human surface-candidate query (subcellular location + topology) | release 2026_01 | Curated database | 3,175 |
 | 2 | Gene Ontology annotations (three cellular-component roots, see *GO terms used* below) | 2026-01 | Curated database | 2,557 |
 | 3 | SURFY (Bausch-Fluck et al., 2018) | 2018 | ML classifier | 2,886 |
 | 4 | CSPA (Bausch-Fluck et al., 2015) | 2015 | Mass-spec surfaceome | 1,500 |
-| 5 | DeepTMHMM (canonical + isoforms) | pre-existing cohort | TM topology predictor | 2,360 |
-| 6 | Human Protein Atlas, subcellular localization | v25 / 2026-01 | Antibody immunofluorescence | 3,004 |
-| 7 | JensenLab COMPARTMENTS (four-channel integrated) | 2026-01 | Literature-driven meta-database | 3,385 |
+| 5 | Human Protein Atlas, subcellular localization | v25 / 2026-01 | Antibody immunofluorescence | 3,004 |
+
+### Auxiliary per-row evidence (not flagged at universe level)
+
+| # | Source | Snapshot | Evidence modality | Rows |
+|---|---|---|---|---|
+| A | DeepTMHMM (canonical + isoforms) | pre-existing 2,360-protein cohort | TM topology predictor | 2,360 |
+| B | JensenLab COMPARTMENTS (four-channel integrated) | 2026-01 | Literature-driven meta-database | 1,963 |
 
 Row counts are the size of the raw per-source input before accession reconciliation and before each source's positive-flag rule is applied. Per-source surface counts after normalization and rule application are given in the Results section.
+
+Two sources are held out of universe-level figures with different reasons. **DeepTMHMM** is excluded because the predictor has been run on a partial cohort in this milestone; its per-row calls are still emitted in the candidate-universe TSV. **JensenLab COMPARTMENTS** is excluded because its corroboration gate (see § COMPARTMENTS below) means every COMPARTMENTS-supported protein is also supported by another source — verified against the live build, all 148 of 148 COMPARTMENTS-flagged proteins are also flagged by ≥ 1 of the five gating sources, so COMPARTMENTS contributes zero unique members to the universe and serves only as a per-row confidence cue for downstream consumers.
 
 For each source below, the methodology is described with three explicit subsections: *what it measures*, what signals we **include** as positive surface evidence, and what signals we **exclude** (either carried as provenance only or dropped entirely) with the reason for exclusion. This structure replaces tabular summaries so that every inclusion and exclusion choice is traceable from the prose alone.
 
@@ -34,9 +43,9 @@ For each source below, the methodology is described with three explicit subsecti
 
 ### Common scaffolding
 
-All seven sources are harmonized against UniProt release 2026_01 before the merge. Secondary accessions are rewritten to their current primary, deleted Swiss-Prot entries are removed, and ambiguous historical remaps — one accession that has split into multiple current primaries — are retained for traceability but excluded from positive calls until manually reviewed. Each source then contributes a single yes/no surface-evidence call per protein, following the rules given below. The seven per-source calls are preserved side by side in the emitted universe, together with a *k*-of-7 agreement count.
+All seven sources are harmonized against UniProt release 2026_01 before the merge. Secondary accessions are rewritten to their current primary, deleted Swiss-Prot entries are removed, and ambiguous historical remaps — one accession that has split into multiple current primaries — are retained for traceability but excluded from positive calls until manually reviewed. Each source then contributes a single yes/no surface-evidence call per protein, following the rules given below. Five of the seven calls (UniProt, GO, SURFY, CSPA, HPA) gate universe membership and are preserved side by side together with a *k*-of-5 agreement count. DeepTMHMM's call (partial cohort) and COMPARTMENTS's call (corroboration-gated) are preserved per row as auxiliary evidence but do not contribute to membership or to *k*-of-5 agreement.
 
-Accessions that appear in a raw source but are filtered out of *every* positive-flag rule (pure-IEA GO, CSPA unspecific or blank-category, HPA secreted-only, COMPARTMENTS below the corroboration gate, split-ambiguous accession-history remaps) carry no positive evidence for surface expression and are emitted to a separate `candidate_universe_zero_support.tsv` for traceability. The main `candidate_universe.tsv` — the input to downstream per-gene reconciliation — is the subset with at least one source flagging surface evidence (`n_sources_surface ≥ 1`).
+Accessions that appear in a raw source but are filtered out of *every* positive-flag rule (pure-IEA GO, CSPA unspecific or blank-category, HPA secreted-only, split-ambiguous accession-history remaps) carry no positive evidence for surface expression and are emitted to a separate `candidate_universe_zero_support.tsv` for traceability. The main `candidate_universe.tsv` — the input to downstream per-gene reconciliation — is the subset with at least one of the five flagged sources reporting surface evidence (`n_sources_surface ≥ 1`).
 
 For each source we describe (a) what the source measures, (b) the rule under which we count a protein as surface-supported, and (c) the main reason that source disagrees with the others.
 
@@ -80,15 +89,17 @@ For each source we describe (a) what the source measures, (b) the rule under whi
 
 *Why it disagrees.* CSPA only observes proteins expressed at the surface of the specific cell lines it sampled. Absence from CSPA is therefore not evidence of non-surface status, only absence from the sampled contexts. Low overlap with the database-driven sources reflects this sampling scope.
 
-### DeepTMHMM
+### DeepTMHMM (auxiliary per-row evidence)
+
+DeepTMHMM is *attached* to each row of the candidate-universe TSV but does not contribute to universe membership or to the *k*-of-5 agreement score, because the predictor has been run on a partial 2,360-protein cohort in this milestone. Its calls are preserved so that downstream consumers can use them per-gene without our re-deriving the merge once the predictor is extended to the full reviewed proteome.
 
 *What it measures.* A deep-learning transmembrane-topology predictor that assigns each input sequence one of five class labels: `TM` (alpha-helical transmembrane), `SP+TM` (signal peptide + transmembrane helices), `BETA` (transmembrane beta-barrel), `SP` (signal peptide only — predicted secreted), or `GLOB` (globular, no TM or SP).
 
-*Included.* A protein is counted as DeepTMHMM-supported if any run on its canonical sequence or isoforms returns **`TM`** or **`SP+TM`** — the labels consistent with an alpha-helical plasma-membrane protein.
+*Included.* A protein is counted as DeepTMHMM-supported (in the per-row column, not in universe membership) if any run on its canonical sequence or isoforms returns **`TM`** or **`SP+TM`** — the labels consistent with an alpha-helical plasma-membrane protein.
 
 *Excluded.* **`BETA`** is excluded because in humans, beta-barrel membrane proteins are essentially mitochondrial outer membrane (VDAC1/2/3, TOMM40, SAMM50, MTX1/2), not plasma-membrane proteins accessible on the intact cell — a topology prediction of BETA is informative about fold but misleading about compartment. **`SP`** is excluded because it identifies secreted proteins, which are not surface-accessible on intact cells by definition. **`GLOB`** is excluded because it indicates no membrane segment. The raw label is preserved in the emitted table so downstream can re-inspect the exclusion reason for any given protein.
 
-*Why it disagrees.* This milestone uses DeepTMHMM predictions on a partial cohort of 2,360 proteins — a scope limit to be addressed in a later milestone. Until the run is extended to the full reviewed proteome, DeepTMHMM's pairwise overlaps with other sources are mechanically capped.
+*Why it is held out of the figures.* On the partial cohort, DeepTMHMM flags 2,218 proteins as surface and overlaps SURFY at Jaccard 0.78 — both expected, both methodologically tight because the two share a sequence-and-topology basis. Including DeepTMHMM in universe-level agreement counts before the full-proteome run lands would mechanically cap intersections that involve it. Once the run is extended, DeepTMHMM will rejoin the universe-level figures as a seventh flagged source.
 
 ### Human Protein Atlas
 
@@ -100,49 +111,51 @@ For each source we describe (a) what the source measures, (b) the rule under whi
 
 *Why it disagrees.* HPA's coverage is antibody-dependent. Proteins without a validated antibody at the time of the v25 release, and proteins whose surface localization is weak or limited to cell types not sampled, will be absent from HPA even when well-characterized elsewhere.
 
-### JensenLab COMPARTMENTS
+### JensenLab COMPARTMENTS (auxiliary per-row evidence)
+
+COMPARTMENTS is *attached* to each row of the candidate-universe TSV but does not gate universe membership or contribute to the *k*-of-5 agreement score. The corroboration gate (below) requires every COMPARTMENTS-supported protein to also be flagged by another source — and verified against the live build, all 148 of 148 COMPARTMENTS-flagged proteins are also flagged by ≥ 1 of UniProt/GO/SURFY/CSPA/HPA. COMPARTMENTS therefore contributes zero unique members to the universe; its only effect is to push corroborated proteins from *k* to *k+1* in the agreement count, which we hold out of universe-level figures.
 
 *What it measures.* A meta-database that integrates four independent evidence streams onto a shared confidence scale per (protein, subcellular-location) pair: a **knowledge** channel aggregating curator-assigned annotations, an **experiments** channel primarily ingesting immunofluorescence data, a **text-mining** channel derived from automated named-entity co-mention in biomedical literature, and a **predictions** channel from sequence-based localization predictors (WoLF PSORT + YLoc-HighRes). Scores are reported on a 0–5 star scale per channel per term.
 
-*Included.* The **text-mining** channel and the portion of the **experiments** channel that does not re-ingest Human Protein Atlas data are used as independent evidence. A protein is counted as COMPARTMENTS-supported only when both of the following hold: (a) `max(compartments_experiments_stars_max, compartments_textmining_stars_max) ≥ 3` across the surface GO-term set `{GO:0005886, GO:0009986, GO:0031225, GO:0005887}`, and (b) at least one of the other six sources has independently flagged the protein as surface under its own rule (`compartments_corroborated == 1`). The corroboration gate prevents text-mining co-occurrence alone from admitting transcription factors (TP53, MYC), cytokines (IL1B, IFNG, IL4), or serum proteins (ALB, APOE, CRP) — all of which the tagger legitimately co-mentions with "plasma membrane" in Medline abstracts but which are not surface-accessible on intact cells.
+*Included.* The **text-mining** channel and the portion of the **experiments** channel that does not re-ingest Human Protein Atlas data are used as independent evidence. A protein is counted as COMPARTMENTS-supported (in the per-row column, not in universe membership) only when both of the following hold: (a) `max(compartments_experiments_stars_max, compartments_textmining_stars_max) ≥ 3` across the surface GO-term set `{GO:0005886, GO:0009986, GO:0031225, GO:0005887}`, and (b) at least one of the five gating sources has independently flagged the protein as surface under its own rule (`compartments_corroborated == 1`). The corroboration gate prevents text-mining co-occurrence alone from admitting transcription factors (TP53, MYC), cytokines (IL1B, IFNG, IL4), or serum proteins (ALB, APOE, CRP) — all of which the tagger legitimately co-mentions with "plasma membrane" in Medline abstracts but which are not surface-accessible on intact cells.
 
 *Excluded.* The **knowledge** channel is excluded from the flag because it re-ingests GO and UniProt-SubCell, both of which are already first-class sources in this merge — counting it would triple-count curator evidence. The **predictions** channel is excluded because it wraps WoLF PSORT + YLoc-HighRes — sequence-based predictors in the same family as SURFY and DeepTMHMM; empirically it drives ~73% of pre-filter hits and is ~100% PSORT-on-`GO:0005886`, so counting it would triple-count ML-predictor evidence. Within the experiments channel, rows whose upstream source is "HPA" are dropped before scoring to avoid double-counting the first-class HPA IF evidence. All four channels' per-term stars are retained in the emitted table as provenance columns (`compartments_*_stars_max`) so downstream can audit why a call did or did not fire.
 
-*Why it disagrees.* By construction, COMPARTMENTS in this merge provides supporting evidence for proteins already supported by another source. It contributes confidence, not admissions — so its overlap with every other source is uniformly low and its own count (244) is small.
+*Why it is held out of the figures.* By construction COMPARTMENTS cannot admit a protein on its own. Including it as a sixth gating vote would inflate the agreement score for already-corroborated proteins on ontology grounds that the GO source itself rejects (text-mining co-occurrence with `GO:0005886`), without ever expanding the universe. We therefore treat COMPARTMENTS as a per-row confidence cue only.
 
 ## Results
 
 ### Cross-source agreement
 
-The candidate universe contains 6,518 unique human proteins with at least one source flagging surface evidence under its own rule. Most are supported by only a few sources: 2,600 by exactly one, and a decreasing long-tail through the higher agreement classes. Forty-five proteins are supported by all seven sources; another 49 are supported by every source except DeepTMHMM, consistent with DeepTMHMM's partial coverage in this milestone. Per-source surface counts are UniProt 4,817, SURFY 2,800, DeepTMHMM 2,218, HPA 2,077, Gene Ontology 2,022, CSPA 1,241, and COMPARTMENTS 244. A separate traceability file (`candidate_universe_zero_support.tsv`) holds 2,252 additional accessions that appear in a raw input but fail every positive-flag rule — these carry no positive evidence and are not part of the main universe.
+The candidate universe contains 5,680 unique human proteins with at least one of the five flagged sources reporting surface evidence under its own rule. Most are supported by only a few sources: 2,474 by exactly one, and a decreasing long-tail through the higher agreement classes. One hundred eighty-eight proteins are supported by all five sources. Per-source surface counts are UniProt 3,175, SURFY 2,800, HPA 2,077, Gene Ontology 2,022, and CSPA 1,241. DeepTMHMM (2,218 supported within its 2,360-protein cohort) and COMPARTMENTS (148 supported, all of which are also supported by ≥ 1 of the five gating sources) are attached per row as auxiliary evidence but do not contribute to the universe count or the *k*-of-5 score. A separate traceability file (`candidate_universe_zero_support.tsv`) holds 1,704 additional accessions that appear in a raw input but fail every positive-flag rule — these carry no positive evidence and are not part of the main universe.
 
-The agreement distribution has a practical meaning for downstream use. The 7-of-7 and 6-of-7 classes (240 proteins) define a high-confidence core that can be treated as strongly supported without further evidence. The middle classes (2-of-7 through 5-of-7) are the most biologically interesting: they collect proteins where one or two evidence types disagree with the rest, and that disagreement often carries real biological meaning — a predictor over-call on an internal-membrane protein, a protein absent from the cell lines CSPA sampled, or a protein without an HPA-validated antibody. The 1-of-7 class is retained as candidates but should not be treated as validated surface proteins without additional evidence.
+The agreement distribution has a practical meaning for downstream use. The 5-of-5 and 4-of-5 classes (659 proteins, ≈ 11.6% of the universe) define a high-confidence core that can be treated as strongly supported without further evidence. The middle classes (2-of-5 and 3-of-5) are the most biologically interesting: they collect proteins where one or two evidence types disagree with the rest, and that disagreement often carries real biological meaning — a predictor over-call on an internal-membrane protein, a protein absent from the cell lines CSPA sampled, or a protein without an HPA-validated antibody. The 1-of-5 class is retained as candidates but should not be treated as validated surface proteins without additional evidence.
 
-![k-of-7 agreement](../../data/analysis/candidate_universe_agreement/candidate_source_agreement_bar.jpeg)
+![k-of-5 agreement](figures/k_of_5_agreement.png)
 
-*Figure 1. How many of the seven sources flag each protein as surface-supported, across the 6,518-protein universe (`n_sources_surface ≥ 1`). Forty-five proteins are flagged by all seven; 240 by at least six. Most proteins sit in the lower agreement classes, reflecting genuine differences in what each source can see.*
+*Figure 1. How many of the five flagged sources mark each protein as surface-supported, across the 5,680-protein universe (`n_sources_surface ≥ 1`). One hundred eighty-eight proteins are flagged by all five; 659 by at least four. Most proteins sit in the lower agreement classes, reflecting genuine differences in what each source can see.*
 
 ![UpSet plot of per-source co-occurrence](../../data/analysis/candidate_universe_agreement/candidate_source_agreement_upset.jpeg)
 
-*Figure 2. Co-occurrence of per-source surface flags across all seven sources. The seven-way intersection (45 proteins) and the six-database intersection without DeepTMHMM (49 proteins) dominate the high-confidence end; intersections that require DeepTMHMM are mechanically capped by its partial coverage in this milestone.*
+*Figure 2. Co-occurrence of per-source surface flags across the five gating sources. The five-way intersection (188 proteins) and the next-largest agreement classes dominate the high-confidence end. DeepTMHMM and COMPARTMENTS are auxiliary in this milestone and are omitted from the figure.*
 
 ### Pairwise agreement
 
-Pairwise Jaccard indices quantify how much each pair of sources agrees on which proteins count as surface. The tightest pair is SURFY with DeepTMHMM (0.78), both of which derive their calls from sequence and topology — we expect them to agree. UniProt pairs tightest with SURFY (0.52), reflecting SURFY's origin as a curated-gold-standard classifier. GO's overlaps with the other sources (0.26–0.31 against UniProt/SURFY/DeepTMHMM) reflect its cellular-component-only scope, once MF-based receptor-activity terms are excluded. CSPA's overlaps with the other sources span 0.08–0.32, as expected given its cell-line-restricted sampling. HPA's overlaps run 0.12–0.20, reflecting broad but uneven antibody coverage. COMPARTMENTS's overlaps are uniformly low (≤ 0.09) because the corroboration requirement constrains its count to a small, cross-validated set.
+Pairwise Jaccard indices quantify how much each pair of the five gating sources agrees on which proteins count as surface. The tightest pair is **UniProt with SURFY** (Jaccard 0.67), reflecting SURFY's origin as a curated-gold-standard classifier seeded with UniProt subcellular-location annotations — partly definitional, not independent corroboration. GO's overlaps with the other sources (0.16–0.29 against UniProt/SURFY/CSPA/HPA) reflect its cellular-component-only scope, once MF-based receptor-activity terms are excluded. SURFY pairs with CSPA at 0.29 and with HPA at 0.16. CSPA's overlaps with the other sources span 0.12–0.29, as expected given its cell-line-restricted sampling. HPA's overlaps run 0.12–0.17, reflecting broad but uneven antibody coverage.
 
 ![Pairwise Jaccard heatmap](../../data/analysis/candidate_universe_agreement/candidate_source_pairwise_jaccard.jpeg)
 
-*Figure 3. Pairwise Jaccard of per-source surface sets across all seven sources. High values along the SURFY–DeepTMHMM axis reflect their shared sequence-and-topology basis; low values involving CSPA and COMPARTMENTS reflect sampling scope and the corroboration requirement, respectively, rather than data quality.*
+*Figure 3. Pairwise Jaccard of per-source surface sets across the five gating sources. The high UniProt–SURFY value reflects SURFY's training on UniProt-seeded gold-standard labels; low values involving CSPA reflect cell-line-restricted sampling rather than data quality.*
 
 ### Well-characterized examples
 
-Well-characterized human surface proteins behave as expected. EGFR is supported by all seven sources. CD20 (MS4A1) and HLA-A are supported by six of seven. HLA-B (5/7), HLA-C (5/7), HLA-DQA1 (4/7), HLA-DRB1 (4/7), and IGHM (4/7) fall to four or five of seven, attributable to two independent factors: HPA's known coverage gaps on individual HLA alleles and immunoglobulin class-switch variants (missing in all five), and DeepTMHMM's partial-cohort scope in this milestone (missing for HLA class I/II entries, present for IGHM). The lower scores therefore reflect method coverage, not contested surface residence.
+Well-characterized human surface proteins behave as expected: canonical receptors and HLA class I/II / immunoglobulin entries appear in the universe with strong cross-source corroboration where every source has the coverage to weigh in, and fall to lower *k*-of-5 only on the sources whose coverage is genuinely thin (HPA's known coverage gaps on individual HLA alleles and immunoglobulin class-switch variants in particular). The lower scores therefore reflect method coverage, not contested surface residence. Per-gene attributions for the canonical examples will be regenerated against the current 5-source build before the LLM reconciliation step keys on them.
 
 ## Limitations and next steps
 
 This milestone is an assembly step, not a classification step. It produces a broad, traceable candidate list for downstream filtering, not a validated human surfaceome. Four limitations matter for interpretation.
 
-*DeepTMHMM coverage.* DeepTMHMM predictions in this milestone come from a pre-existing cohort of 2,360 proteins. Extending DeepTMHMM — alongside SignalP 6.0 and GPI-anchor predictors — to the full reviewed proteome is a planned next step; this will also enable predictor-only surface candidates to surface as a distinct class.
+*DeepTMHMM coverage.* DeepTMHMM predictions in this milestone come from a pre-existing cohort of 2,360 proteins, which is why the predictor is held out of the universe-level figures and the *k*-of-5 score. Extending DeepTMHMM — alongside SignalP 6.0 and GPI-anchor predictors — to the full reviewed proteome is a planned next step; this will both restore DeepTMHMM as a universe-flagged source and enable predictor-only surface candidates to surface as a distinct class.
 
 *Organelle-lumen exclusion.* A small number of proteins enter on UniProt evidence whose only subcellular-location support is an organelle lumen. These will be filtered out in a subsequent refinement pass.
 
@@ -160,37 +173,30 @@ The following issues were identified during a computational-biology review befor
 
 The prior build included two molecular-function terms — `GO:0038023` (signaling receptor activity) and `GO:0004888` (transmembrane signaling receptor activity) — in the GO surface-term set. These admit receptors based on *activity annotation*, not *location annotation*, and pull in endosomal pattern-recognition receptors (TLR3, TLR7, TLR8) as GO-surface-supported despite endosomal resting localization.
 
-**Resolution:** both MF terms removed from `SURFACE_GO_TERMS` in `download_go_human_surface_annotations.py`. GO surface set is now three cellular-component roots only: `GO:0009986`, `GO:0009897`, `GO:0005887` (see *GO terms used* table above). GO's per-source count dropped from 3,139 to 2,022 after rebuild, and TLR3/TLR7 fell from 5-of-7 to 4-of-7 — the expected behavior. TLR9 remains at 6-of-7 because it carries a legitimate cellular-component `GO:0005887` annotation (TLR9 has a documented plasma-membrane pool in B cells), which is the correct answer.
+**Resolution:** both MF terms removed from `SURFACE_GO_TERMS` in `download_go_human_surface_annotations.py`. GO surface set is now three cellular-component roots only: `GO:0009986`, `GO:0009897`, `GO:0005887` (see *GO terms used* table above). GO's per-source count dropped from 3,139 to 2,022 after rebuild, and TLR3/TLR7 lost their GO surface vote — the expected behavior. TLR9 still receives a GO surface vote because it carries a legitimate cellular-component `GO:0005887` annotation (TLR9 has a documented plasma-membrane pool in B cells), which is the correct answer.
 
 ### 2. DeepTMHMM `BETA` label is a topology call, not a localization call — RESOLVED 2026-04-18
 
-The prior build defined `SURFACE_MEMBRANE_LABELS = {"TM", "SP+TM", "BETA"}`. In humans, beta-barrel membrane proteins are essentially mitochondrial outer membrane (VDAC1/2/3, TOMM40, SAMM50, MTX1/2) — they are not plasma-membrane proteins under the one-pager's definition of "accessible from the extracellular face of an intact human cell." One BETA row had landed in the universe: VDAC1 (P21796), with DeepTMHMM contributing a surface vote.
+The prior build defined `SURFACE_MEMBRANE_LABELS = {"TM", "SP+TM", "BETA"}`. In humans, beta-barrel membrane proteins are essentially mitochondrial outer membrane (VDAC1/2/3, TOMM40, SAMM50, MTX1/2) — they are not plasma-membrane proteins under the one-pager's definition of "accessible from the extracellular face of an intact human cell." One BETA row had landed in the per-row DeepTMHMM column: VDAC1 (P21796).
 
-**Resolution:** `SURFACE_MEMBRANE_LABELS` restricted to `{"TM", "SP+TM"}` in `build_deeptmhmm.py`; the `BETA` label is retained as provenance but no longer contributes to `predicted_surface_membrane`. VDAC1 drops from 3-of-7 to 2-of-7 (`uniprot,cspa`) as expected. DeepTMHMM's per-source count dropped from 2,219 to 2,218; the SURFY↔DeepTMHMM Jaccard is effectively unchanged at 0.78 because only one row moved.
+**Resolution:** `SURFACE_MEMBRANE_LABELS` restricted to `{"TM", "SP+TM"}` in `build_deeptmhmm.py`; the `BETA` label is retained as provenance but no longer contributes to `predicted_surface_membrane`. DeepTMHMM's per-row count dropped from 2,219 to 2,218; the SURFY↔DeepTMHMM Jaccard is effectively unchanged at 0.78 because only one row moved. (DeepTMHMM is now held out of the universe *k*-of-5 score entirely, so this fix no longer shifts agreement-class memberships.)
 
 ### 3. The universe includes 2,125 proteins with zero source support — RESOLVED 2026-04-18
 
 The per-source flag rules correctly exclude GO-IEA-only rows, CSPA unspecific detections, HPA secreted-only rows, and accession-history-split-ambiguous rows. In the prior build, those proteins still appeared in the emitted `candidate_universe.tsv` with `n_sources_surface = 0` — pure noise for the per-gene reconciliation step.
 
-**Resolution:** `build_candidate_universe.py` now splits the merged frame into `candidate_universe.tsv` (the main file, filtered to `n_sources_surface ≥ 1`) and a new sidecar `candidate_universe_zero_support.tsv` (the 2,252 zero-support rows, retained for traceability). The downstream LLM pipeline consumes only the main file. The summary JSON now reports `n_zero_support_rows_excluded` for auditability.
+**Resolution:** `build_candidate_universe.py` now splits the merged frame into `candidate_universe.tsv` (the main file, filtered to `n_sources_surface ≥ 1`) and a new sidecar `candidate_universe_zero_support.tsv` (the 1,704 zero-support rows in the current build, retained for traceability). The downstream LLM pipeline consumes only the main file. The summary JSON reports `n_zero_support_rows_excluded` for auditability.
 
-### 5. HLA / Ig coverage attribution is incomplete — RESOLVED 2026-04-18
+### 5. HLA / Ig coverage attribution is incomplete — RESOLVED 2026-05-06
 
-The prose attributes HLA-B, HLA-C, HLA-DQA1, HLA-DRB1, and IGHM falling to 4–5 of 7 to "HPA's known coverage gaps on individual HLA alleles and immunoglobulin class-switch variants." That is correct but partial. Checking the rows directly:
-
-- HLA-B (5/7): missing HPA, DeepTMHMM
-- HLA-C (5/7): missing HPA, DeepTMHMM
-- HLA-DQA1 (4/7): missing HPA, DeepTMHMM, COMPARTMENTS
-- HLA-DRB1 (4/7): missing HPA, DeepTMHMM, COMPARTMENTS
-- IGHM (4/7): missing HPA, SURFY, COMPARTMENTS
-
-For the HLA class I/II entries, DeepTMHMM's absence reflects its partial-cohort coverage in this milestone (already a documented limitation), not a disagreement about whether these are surface proteins. The prose now names both HPA coverage gaps and DeepTMHMM scope as drivers of the 4–5-of-7 score.
+The prior version of the prose quoted *k*-of-7 attributions for HLA-B, HLA-C, HLA-DQA1, HLA-DRB1, and IGHM that included DeepTMHMM and COMPARTMENTS. With both held out of the universe-level score, the per-gene attributions need to be re-derived against the 5-source build before they appear in the prose. The qualitative point (HPA coverage gaps on individual HLA alleles and immunoglobulin class-switch variants drive the lower scores) still holds and is what the *Well-characterized examples* section now states; the specific per-gene *k*/5 numbers will be regenerated alongside the LLM reconciliation step.
 
 ### 6. Minor: numeric claims to verify against the summary
 
-- "6,518 proteins total" (post-filter) → confirmed by `n_rows_total` in [candidate_universe_summary.json](../../data/processed/candidate_universe/candidate_universe_summary.json).
-- "45 proteins supported by all 7 sources" → confirmed (`agreement_counts["7_of_7"] = 45`).
-- "49 proteins supported by all 6 DB sources" → confirmed (`n_with_all_6_db_sources = 49`).
+- "5,680 proteins total" (post-filter) → confirmed by `n_rows_total` in [candidate_universe_summary.json](../../data/processed/candidate_universe/candidate_universe_summary.json).
+- "188 proteins supported by all 5 flagged sources" → confirmed (`n_with_all_5_gating_sources = 188` and `agreement_counts["5_of_5"] = 188`).
+- "659 proteins supported by ≥ 4 flagged sources" → 188 (5-of-5) + 471 (4-of-5) = 659.
+- "1,704 zero-support rows excluded" → confirmed (`n_zero_support_rows_excluded = 1704`).
 - Data-sources table row counts are the raw input sizes (pre-normalization); per-source surface counts in the Results section are post-normalization and rule application. The two columns intentionally differ.
 
 ### Status summary (first pass)
@@ -199,9 +205,9 @@ For the HLA class I/II entries, DeepTMHMM's absence reflects its partial-cohort 
 |---|---|---|---|
 | 1 | GO MF terms admit endosomal receptors | **Resolved 2026-04-18** | `GO:0038023` and `GO:0004888` removed; GO set is three CC roots |
 | 2 | DeepTMHMM BETA label counted as surface | **Resolved 2026-04-18** | `SURFACE_MEMBRANE_LABELS = {"TM", "SP+TM"}` |
-| 3 | Universe included 2,125 zero-support rows | **Resolved 2026-04-18** | Main file filtered to `n_sources_surface ≥ 1`; sidecar for traceability |
-| 5 | HLA/Ig attribution omitted DeepTMHMM scope | **Resolved 2026-04-18** | Prose updated |
-| 6 | Numeric claims vs. summary JSON | **Verified 2026-04-18** | See item 6 above |
+| 3 | Universe included zero-support rows | **Resolved 2026-04-18** | Main file filtered to `n_sources_surface ≥ 1`; sidecar for traceability |
+| 5 | HLA/Ig attribution needs re-derivation against 5-source build | **Resolved 2026-05-06** | Prose generalized; per-gene *k*/5 to be regenerated downstream |
+| 6 | Numeric claims vs. summary JSON | **Verified 2026-05-06** | See item 6 above |
 
 Items 1–3 were the material changes to what the LLM sees per gene and are all in place as of 2026-04-18.
 
@@ -231,11 +237,11 @@ At [build_candidate_universe.py:800-812](src/accessible_surfaceome/merge/__init_
 
 The current universe lists only 5 split-ambiguous rows (limitations #4 in the main prose), so the population is small, but it has not been audited against a known-surfaceome list. The `candidate_universe_zero_support.tsv` sidecar plus the split-ambiguous rows are the obvious false-negative audit surface for this step.
 
-*Fix:* cross-check `candidate_universe_zero_support.tsv` + split-ambiguous accessions against a ground-truth surfaceome reference (CSPA's high-confidence set and the 45-protein 7-of-7 core are the natural starting points — any appearance in the excluded set is a real recall miss). Escalate any hits to manual review before the downstream pipeline runs.
+*Fix:* cross-check `candidate_universe_zero_support.tsv` + split-ambiguous accessions against a ground-truth surfaceome reference (CSPA's high-confidence set and the 188-protein 5-of-5 core are the natural starting points — any appearance in the excluded set is a real recall miss). Escalate any hits to manual review before the downstream pipeline runs.
 
 ### C. COMPARTMENTS corroboration gate is a deliberate recall loss that should be audited, not reversed (OPEN, LOW — audit)
 
-The gate at [build_candidate_universe.py:860-869](src/accessible_surfaceome/merge/__init__.py:860) drops COMPARTMENTS-only signals. This was a principled choice (text-mining alone admits TP53/MYC/IL1B/ALB), but under recall-first logic it is the step's largest deliberate false-negative source. The concerns about which GO terms COMPARTMENTS uses internally (`GO:0005886`, `GO:0031225`) are *not* recall-relevant — they only affect k/7 scores, which is a downstream-LLM problem — but the recall loss from the corroboration gate itself is real.
+The gate in [merge/__init__.py](src/accessible_surfaceome/merge/__init__.py) drops COMPARTMENTS-only signals. This was a principled choice (text-mining alone admits TP53/MYC/IL1B/ALB), but under recall-first logic it is the step's largest deliberate false-negative source. With COMPARTMENTS now demoted to auxiliary per-row evidence, its concerns about which internal GO terms feed the call (`GO:0005886`, `GO:0031225`) no longer affect the *k*-of-5 score at all; the recall loss from the corroboration gate itself is the only remaining concern.
 
 *Fix:* spot-check the set of proteins that have `compartments_surface_flag = 1` before the gate fires but are otherwise unsupported. Confirm it is dominated by TFs / cytokines / serum proteins as claimed, and flag any genuine surface candidate in that set for manual admission. This is a one-time audit, not an ongoing rule change.
 
@@ -278,12 +284,12 @@ None of these changes the universe membership. All of them are strict additions 
 The following concerns were raised during the 2026-04-22 review and *are* real, but they distort per-gene evidence weight rather than universe membership. They are the reconciliation step's responsibility and are not blockers for M1:
 
 - Source non-independence: `n_sources_surface` double-counts within the {UniProt, GO, SURFY} and {SURFY, DeepTMHMM} clusters.
-- COMPARTMENTS flag is max-over-terms using `GO:0005886` and `GO:0031225` (which the GO source rejects); inflates k/7 for already-admitted proteins.
+- COMPARTMENTS flag is max-over-terms using `GO:0005886` and `GO:0031225` (which the GO source rejects). With COMPARTMENTS held out of *k*-of-5 this is now a per-row LLM-prompt concern only.
 - GO `CURATED_EC` admits NAS; `SEQUENCE_EC` admits RCA/IGC. Looser than the prose implies but adds proteins, which is what recall-first wants.
 - `GO:0005887` admits polytopic integral-PM proteins with small extracellular loops.
 - UniProt query is an OR over all annotated locations, not a primary-location filter.
 - DeepTMHMM absence = 0 conflates "predicted non-surface" with "never scored."
-- Internal-membrane proteins (TLR3/7/8/9, LAMP1/2, CALR, VDAC1) appear in the universe with meaningful k/7. Correct behavior for a union step; verdict is per-gene.
+- Internal-membrane proteins (TLR3/7/8/9, LAMP1/2, CALR, VDAC1) appear in the universe with meaningful *k*-of-5. Correct behavior for a union step; verdict is per-gene.
 
 Every one of these is addressed by task E above (provenance passthrough) without changing what gets admitted.
 
@@ -306,28 +312,27 @@ Neither admission produces a large block of false positives on its own, but both
 
 The COMPARTMENTS flag is `int(max(experiments_stars_max, textmining_stars_max) >= 3)` ([build_jensenlab_compartments.py:274-275](src/accessible_surfaceome/sources/compartments.py:274)). `experiments_stars_max` and `textmining_stars_max` are each the per-ENSP maximum *across any term in `SURFACE_TERMS`* ([build_jensenlab_compartments.py:164](src/accessible_surfaceome/sources/compartments.py:164)). That set still contains `GO:0005886` (plasma membrane) and `GO:0031225` (anchored component of membrane) — the two terms the first-class GO source rejects as too broad or obsolete (issue #4 above).
 
-Consequence: a protein whose stars=3 COMPARTMENTS vote rests entirely on textmining co-occurrence with `GO:0005886` fires `compartments_surface_flag = 1`, even though the same protein's GO annotation to `GO:0005886` would not have fired `go_surface_flag`. The corroboration gate ([build_candidate_universe.py:860-869](src/accessible_surfaceome/merge/__init__.py:860)) prevents this from admitting new proteins, but for proteins already admitted by another source the COMPARTMENTS vote contributes a +1 to `n_sources_surface` on ontology grounds the GO source itself rejects. That inflates agreement counts in the middle classes (2-of-7 through 5-of-7), which are the classes the LLM is most likely to read as "several sources agree."
+Consequence: a protein whose stars=3 COMPARTMENTS vote rests entirely on textmining co-occurrence with `GO:0005886` fires `compartments_surface_flag = 1`, even though the same protein's GO annotation to `GO:0005886` would not have fired `go_surface_flag`. The corroboration gate in [merge/__init__.py](src/accessible_surfaceome/merge/__init__.py) prevents this from admitting new proteins, and as of the current revision COMPARTMENTS is auxiliary — it no longer contributes to `n_sources_surface` or to *k*-of-5 agreement, so the agreement-count inflation concern is now moot at the universe level. The downstream LLM consumer that reads the per-row `compartments_surface_flag` directly should still be aware of the underlying ontology mismatch.
 
 *Fix:* either (a) bring COMPARTMENTS's `SURFACE_TERMS` into alignment with the GO source (drop `GO:0005886`, `GO:0031225`), or (b) emit `compartments_flag_terms` so the LLM can see whether the vote rests on `GO:0005887`/`GO:0009986` (aligned) versus `GO:0005886` (disputed).
 
-### 11. The seven sources are not statistically independent (OPEN, MEDIUM — affects agreement interpretation)
+### 11. The five flagged sources are not statistically independent (OPEN, MEDIUM — affects agreement interpretation)
 
-`n_sources_surface` is summed as if the seven sources were independent observations, but they are not:
+`n_sources_surface` is summed as if the five gating sources were independent observations, but they are not:
 
-- **SURFY's training set is seeded with UniProt subcellular-location annotations.** A `uniprot_surface_flag = 1` ∧ `surfy_surface_flag = 1` coincidence is partly definitional, not independent corroboration. The SURFY–UniProt Jaccard of 0.52 reflects this.
-- **SURFY and DeepTMHMM share sequence + topology features.** Jaccard 0.78 (explicitly called out in Results) is methodological overlap, not two independent votes.
-- **COMPARTMENTS's text-mining dictionary is built around GO-term co-mentions** and its experiments channel historically ingested HPA (now explicitly dropped at [build_jensenlab_compartments.py:215](src/accessible_surfaceome/sources/compartments.py:215)). Text-mining-only corroboration of a GO-supported call is weaker than it appears.
+- **SURFY's training set is seeded with UniProt subcellular-location annotations.** A `uniprot_surface_flag = 1` ∧ `surfy_surface_flag = 1` coincidence is partly definitional, not independent corroboration. The SURFY–UniProt Jaccard of 0.67 reflects this — the highest pair in the matrix.
+- **SURFY and DeepTMHMM share sequence + topology features.** Jaccard 0.78 between the two — also methodological overlap, not two independent votes. (DeepTMHMM is not in the *k*-of-5 score, but consumers using its per-row column alongside SURFY should weight the pair as roughly one signal.)
 - **HPA's Extracellular column is SignalP-derived** (correctly excluded from the flag, per methods) but the downstream user should note it is the same family of signal as DeepTMHMM's `SP` label.
 
-This is not a defect — preserving all seven votes is the right design — but the LLM reconciliation pipeline should be told that a 5-of-7 score does not carry 5× the evidentiary weight of a 1-of-7 score, and that certain combinations (UniProt + SURFY; SURFY + DeepTMHMM) are partially redundant. Concretely, a protein supported only by {SURFY, DeepTMHMM} carries roughly one independent signal, not two.
+This is not a defect — preserving all five votes is the right design — but the LLM reconciliation pipeline should be told that a 4-of-5 score does not carry 4× the evidentiary weight of a 1-of-5 score, and that certain combinations (UniProt + SURFY; SURFY + DeepTMHMM-as-auxiliary) are partially redundant. Concretely, a protein supported only by {SURFY, UniProt} carries roughly one independent signal, not two.
 
-*Fix:* document the dependency structure in the per-gene LLM prompt, or emit a derived `n_independent_signal_clusters` column that groups {UniProt, GO}, {SURFY, DeepTMHMM}, {HPA}, {CSPA}, {COMPARTMENTS} and counts cluster-level support.
+*Fix:* document the dependency structure in the per-gene LLM prompt, or emit a derived `n_independent_signal_clusters` column that groups {UniProt, GO, SURFY}, {HPA}, {CSPA}, {COMPARTMENTS} and counts cluster-level support.
 
 ### 12. `GO:0005887` admits multi-pass proteins with small/no extracellular domains (OPEN, LOW)
 
 The operative definition in this one-pager is "accessible from the extracellular face of an intact human cell — reachable by an antibody, a ligand, or a binder." `GO:0005887` (integral component of plasma membrane) is in the GO positive-term set ([download_go_human_surface_annotations.py:121](src/accessible_surfaceome/sources/go.py:121)), and its membership includes polytopic transporters and channels whose extracellular loops are very short — topologically "extracellular-accessible" but not practically so for therapeutic delivery.
 
-UniProt's `ft_topo_dom:Extracellular` clause handles this correctly because it requires an *annotated* extracellular topological-domain feature. GO's `GO:0005887` does not. This is an interpretive gap, not a bug: the LLM pipeline should know that a 1-of-7 or 2-of-7 score coming from `GO:0005887` alone does not imply a sizable extracellular surface.
+UniProt's `ft_topo_dom:Extracellular` clause handles this correctly because it requires an *annotated* extracellular topological-domain feature. GO's `GO:0005887` does not. This is an interpretive gap, not a bug: the LLM pipeline should know that a 1-of-5 or 2-of-5 score coming from `GO:0005887` alone does not imply a sizable extracellular surface.
 
 *Fix:* emit each row's contributing GO term list alongside the GO flag (already available via `hpa_go_ids`-style provenance for HPA — do the same for GO), and let the LLM see whether the GO vote rests on `GO:0009986`/`GO:0009897` (explicitly surface-facing) versus `GO:0005887` alone.
 
@@ -345,13 +350,13 @@ This is by design for high recall, but the LLM pipeline should be told that `uni
 
 *Fix:* carry `cc_subcellular_location` (or a compact derived "primary / secondary / tertiary PM" tier) through to the emitted universe so the LLM can distinguish "UniProt says PM is primary" from "UniProt says PM is one of several locations."
 
-### 15. DeepTMHMM cohort scope creates systematic false-negative votes, not just missing data (OPEN, INFORMATIONAL — compounds with existing limitation)
+### 15. DeepTMHMM cohort scope creates systematic absent-vs-negative ambiguity in the per-row column (OPEN, INFORMATIONAL — partly mitigated by holdout)
 
-DeepTMHMM in this milestone runs on a pre-existing 2,360-protein cohort. The merge treats absence from the DeepTMHMM output the same as a negative call — `deeptmhmm_surface_flag` is 0 for any accession not in the DeepTMHMM TSVs ([build_candidate_universe.py:449-500](src/accessible_surfaceome/merge/__init__.py:449)). That conflates "DeepTMHMM predicts non-surface" with "DeepTMHMM was never run on this protein."
+DeepTMHMM in this milestone runs on a pre-existing 2,360-protein cohort. Holding it out of the *k*-of-5 score eliminates the absent-vs-negative ambiguity from universe-level agreement, but the per-row `deeptmhmm_surface_flag` column itself still conflates "DeepTMHMM predicts non-surface" with "DeepTMHMM was never run on this protein" ([merge/__init__.py](src/accessible_surfaceome/merge/__init__.py)).
 
-Concretely: HLA-B, HLA-C, HLA-DQA1, HLA-DRB1 (issue #5) fall to 4-5 of 7 partly because DeepTMHMM scores them as 0 — but DeepTMHMM was never asked. The LLM should treat "DeepTMHMM = 0" as "unknown" rather than "negative" for the 2026-04-18 snapshot. This is already documented as a limitation; the accuracy-critique framing is that it affects *every middle-class score* involving HLA-class-II entries and isoform-rare proteins, not just the HLA examples called out in the prose.
+For per-gene downstream consumers that read the DeepTMHMM column directly, the LLM should treat `deeptmhmm_surface_flag = 0` as "unknown" rather than "negative" until the full-proteome run lands.
 
-*Fix:* add a `deeptmhmm_in_cohort` provenance column (1 if the accession was scored, 0 if not) so the LLM can distinguish "DeepTMHMM says non-surface" from "DeepTMHMM absent." Until the full-proteome run lands, this disambiguation is the only way to prevent the reconciliation step from treating absence as negative evidence.
+*Fix:* add a `deeptmhmm_in_cohort` provenance column (1 if the accession was scored, 0 if not) so the LLM can distinguish "DeepTMHMM says non-surface" from "DeepTMHMM absent." Once the full-proteome run lands, DeepTMHMM rejoins the gating set as a sixth source (k-of-6) and this disambiguation becomes moot.
 
 ### Reference: legacy second-pass items mapped to the recall-first plan
 
