@@ -35,6 +35,7 @@ from ._shared.models import (
     PublicationType,
     TopicAnchor,
 )
+from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
 from .gene_lookup import resolve as _resolve
 
 logger = logging.getLogger(__name__)
@@ -133,6 +134,7 @@ def gene_literature(
     pmcid: str | None = None,
     topic_anchors: list[TopicAnchor] | None = None,
     max_results: int = _DEFAULT_PAGE_SIZE,
+    retraction_index: RetractionIndex | None = None,
 ) -> LiteraturePack | Paper:
     """Single dispatcher mirroring the registered tool schema.
 
@@ -140,10 +142,17 @@ def gene_literature(
     internally to ``ncbi_gene_id`` + ``hgnc_symbol`` + ``aliases`` via the
     cached gene_lookup pipeline. Callers who already have those values can
     pass them directly to skip the resolve hop.
+
+    ``retraction_index`` is consulted alongside Europe PMC's pubTypeList
+    "Retracted Publication" marker; when ``None`` we use the empty index
+    (PMC's marker is the only signal). Pass an index built via
+    :func:`accessible_surfaceome.tools._shared.retraction_watch.from_http`
+    when you want Retraction Watch cross-referencing on every fetch.
     """
 
     own_client = http is None
     client = http or open_default_client()
+    index = retraction_index if retraction_index is not None else _empty_retraction_index()
     try:
         if mode == "gene2pubmed":
             return _gene2pubmed(
@@ -152,6 +161,7 @@ def gene_literature(
                 ncbi_gene_id=ncbi_gene_id,
                 hgnc_symbol=hgnc_symbol,
                 max_results=max_results,
+                retraction_index=index,
             )
         if mode == "topic_search":
             if not topic_anchors:
@@ -163,15 +173,16 @@ def gene_literature(
                 aliases=aliases,
                 topic_anchors=topic_anchors,
                 max_results=max_results,
+                retraction_index=index,
             )
         if mode == "fetch_abstract":
             if pmid is None:
                 raise ValueError("fetch_abstract requires a pmid")
-            return _fetch_abstract(http=client, pmid=pmid)
+            return _fetch_abstract(http=client, pmid=pmid, retraction_index=index)
         if mode == "fetch_fulltext":
             if not pmcid:
                 raise ValueError("fetch_fulltext requires a pmcid")
-            return _fetch_fulltext(http=client, pmcid=pmcid)
+            return _fetch_fulltext(http=client, pmcid=pmcid, retraction_index=index)
         raise ValueError(f"unknown mode: {mode!r}")
     finally:
         if own_client:
@@ -190,6 +201,7 @@ def _gene2pubmed(
     ncbi_gene_id: int | None,
     hgnc_symbol: str | None,
     max_results: int,
+    retraction_index: RetractionIndex,
 ) -> LiteraturePack:
     if ncbi_gene_id is None or not hgnc_symbol:
         if uniprot_acc is None:
@@ -216,7 +228,9 @@ def _gene2pubmed(
         )
 
     pmids_to_fetch = pmids[:max_results]
-    papers = _europepmc_bulk_by_pmid(http=http, pmids=pmids_to_fetch)
+    papers = _europepmc_bulk_by_pmid(
+        http=http, pmids=pmids_to_fetch, retraction_index=retraction_index
+    )
     # Preserve NCBI's ordering rather than Europe PMC's.
     by_pmid = {p.pmid: p for p in papers}
     ordered = [by_pmid[int(pmid)] for pmid in pmids_to_fetch if int(pmid) in by_pmid]
@@ -237,6 +251,7 @@ def _topic_search(
     aliases: list[str] | None,
     topic_anchors: list[TopicAnchor],
     max_results: int,
+    retraction_index: RetractionIndex,
 ) -> LiteraturePack:
     if not hgnc_symbol:
         if uniprot_acc is None:
@@ -259,7 +274,7 @@ def _topic_search(
 
     payload = _europepmc_search(http=http, query=query, page_size=max_results)
     hits = (payload.get("resultList") or {}).get("result") or []
-    papers = [_paper_from_europepmc(record) for record in hits]
+    papers = [_paper_from_europepmc(record, retraction_index=retraction_index) for record in hits]
     return LiteraturePack(
         hgnc_symbol=hgnc_symbol,
         mode="topic_search",
@@ -270,17 +285,21 @@ def _topic_search(
     )
 
 
-def _fetch_abstract(*, http: CachedHTTP, pmid: int) -> Paper:
+def _fetch_abstract(
+    *, http: CachedHTTP, pmid: int, retraction_index: RetractionIndex
+) -> Paper:
     payload = _europepmc_search(
         http=http, query=f"EXT_ID:{pmid} AND SRC:MED", page_size=1
     )
     hits = (payload.get("resultList") or {}).get("result") or []
     if not hits:
         raise LookupError(f"PMID:{pmid} not found in Europe PMC (MED source)")
-    return _paper_from_europepmc(hits[0])
+    return _paper_from_europepmc(hits[0], retraction_index=retraction_index)
 
 
-def _fetch_fulltext(*, http: CachedHTTP, pmcid: str) -> Paper:
+def _fetch_fulltext(
+    *, http: CachedHTTP, pmcid: str, retraction_index: RetractionIndex
+) -> Paper:
     cleaned = pmcid.strip().upper()
     if not cleaned.startswith("PMC"):
         cleaned = f"PMC{cleaned}"
@@ -299,7 +318,7 @@ def _fetch_fulltext(*, http: CachedHTTP, pmcid: str) -> Paper:
         raise LookupError(
             f"{cleaned} not found in Europe PMC search — may not be indexed yet"
         )
-    base = _paper_from_europepmc(hits[0])
+    base = _paper_from_europepmc(hits[0], retraction_index=retraction_index)
 
     xml_text = http.get_text(
         _EUROPEPMC_FULLTEXT.format(pmcid=cleaned),
@@ -335,7 +354,9 @@ def _europepmc_search(
     )
 
 
-def _europepmc_bulk_by_pmid(*, http: CachedHTTP, pmids: Sequence[int | str]) -> list[Paper]:
+def _europepmc_bulk_by_pmid(
+    *, http: CachedHTTP, pmids: Sequence[int | str], retraction_index: RetractionIndex
+) -> list[Paper]:
     if not pmids:
         return []
     # Europe PMC search supports OR'd EXT_ID queries up to a few hundred terms.
@@ -346,10 +367,12 @@ def _europepmc_bulk_by_pmid(*, http: CachedHTTP, pmids: Sequence[int | str]) -> 
         page_size=len(pmids),
     )
     hits = (payload.get("resultList") or {}).get("result") or []
-    return [_paper_from_europepmc(record) for record in hits]
+    return [_paper_from_europepmc(record, retraction_index=retraction_index) for record in hits]
 
 
-def _paper_from_europepmc(record: dict[str, Any]) -> Paper:
+def _paper_from_europepmc(
+    record: dict[str, Any], *, retraction_index: RetractionIndex
+) -> Paper:
     pmid_raw = record.get("pmid") or record.get("id")
     if pmid_raw is None:
         raise LookupError("Europe PMC record missing pmid/id")
@@ -370,7 +393,9 @@ def _paper_from_europepmc(record: dict[str, Any]) -> Paper:
 
     publication_type = _classify_publication_type(pub_type_list)
     is_review = any("review" in p.lower() for p in pub_type_list) or publication_type == "review"
-    is_retracted, retraction_checked_at = _check_retraction(pub_type_list)
+    is_retracted, retraction_checked_at = _check_retraction(
+        pub_type_list, pmid=pmid, doi=doi, index=retraction_index
+    )
     is_pmc_oa = (record.get("isOpenAccess") or "N") == "Y" and bool(pmcid)
     authors = _extract_authors(record)
 
@@ -611,12 +636,28 @@ def _classify_publication_type(pub_types: list[str]) -> PublicationType:
     return "other"
 
 
-def _check_retraction(pub_types: list[str]) -> tuple[bool, datetime]:
+def _check_retraction(
+    pub_types: list[str],
+    *,
+    pmid: int | None = None,
+    doi: str | None = None,
+    index: RetractionIndex | None = None,
+) -> tuple[bool, datetime]:
+    """Two-step retraction check: PMC's pubTypeList + Retraction Watch index.
+
+    Either signal flips ``is_retracted`` to ``True``. The timestamp is
+    *now* whenever we ran the check — the cached Retraction Watch CSV's
+    age is bounded by its TTL, so a fresh check timestamp accurately
+    reflects the latest indexed state.
+    """
+
     now = datetime.now(UTC)
     for p in pub_types:
         lower = p.lower()
         if "retracted publication" in lower or "retraction of publication" in lower:
             return True, now
+    if index is not None and index.is_retracted(pmid=pmid, doi=doi):
+        return True, now
     return False, now
 
 

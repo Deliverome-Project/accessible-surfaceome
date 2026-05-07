@@ -30,7 +30,7 @@ You also have built-in `read`, `grep`, `glob`, `web_fetch`, `web_search` for fal
 
 ## The output contract
 
-Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecordDraft` schema (current schema_version: `v0.3.2`).
+Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecordDraft` schema (current schema_version: `v0.3.3`).
 
 **Critical: don't emit fields that aren't in the schema.** All bucket models use `extra="forbid"` — even fields with `null` values will be rejected if the schema doesn't define them. Two specific traps:
 
@@ -45,7 +45,7 @@ The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Ev
 
 ```json
 {
-  "schema_version": "v0.3.1",
+  "schema_version": "v0.3.3",
   "gene": {"hgnc_symbol": "...", "hgnc_id": "...", "uniprot_acc": "...",
            "ncbi_gene_id": null, "ensembl_gene": null},
   "canonical_isoform": "<UniProt isoform ID>",
@@ -108,14 +108,28 @@ The orchestrator looks up `source_id` in the registry of sources you fetched **i
 
 ### Quote rules (the substring check)
 
-The orchestrator normalizes both your quote and the cached source body (NFKC + Greek-letter transliteration both ways + HTML entity decode + whitespace collapse + lowercase) and asserts that the normalized quote is a substring of the normalized source. Then it computes char_offset and hashes. To pass:
+The orchestrator normalizes both your quote and the cached source body (NFKC + Greek-letter transliteration both ways + HTML entity decode + whitespace collapse + lowercase) and asserts that the normalized quote is a substring of the normalized source. Then it computes char_offset and hashes.
 
-1. **Verbatim.** Copy the text from the abstract or section as-is. Paraphrases fail.
-2. **≤200 chars.** Trim to the load-bearing fragment. Don't quote a whole paragraph.
-3. **From a source you fetched.** Use a `source_id` whose body the orchestrator has — that means a paper returned by `gene_literature` (any mode), a patent returned by `patent_lookup`, or a UniProt entry from `gene_lookup`. The orchestrator's source registry knows what you fetched.
-4. **Pick the right `section`.** If you quote from `Paper.abstract` use `"abstract"`; if from `Paper.sections` (only available after `fetch_fulltext`), use the matching section name.
+**The single most common failure is paraphrasing.** Even small rewrites — substituting the gene symbol for the source's wording, adding a leading "X is...", reordering clauses, condensing two sentences to one — break the substring check. **Treat the quote field as a literal copy-paste, not a summary.** Your `claim` field is where you state the claim; your `quote` field is the source's exact words.
 
-If you can't produce a verbatim quote for a claim — don't emit Evidence. Leave the bucket's `cited_evidence_ids` empty for that claim. Better to have an unsupported claim flagged in `confidence_reasoning` than a fabricated quote that fails validation.
+Concrete anti-patterns (these all FAIL substring matching):
+
+- **Prepending the gene symbol.** Source says `"Expressed in a variety of tumor tissues including primary breast tumors and tumors from small bowel, esophagus, kidney and mouth"`. ✗ DON'T quote `"HER2 is expressed in primary breast, small bowel, esophagus, kidney, and mouth tumors."` ✓ DO quote a fragment as-is, e.g. `"primary breast tumors and tumors from small bowel, esophagus, kidney and mouth"`.
+- **Rewriting for readability.** Source says `"Protein tyrosine kinase that is part of several cell surface receptor complexes"`. ✗ DON'T quote `"HER2/ERBB2 localizes to the cell surface as part of receptor tyrosine kinase complexes."` ✓ DO quote `"part of several cell surface receptor complexes"` — let `source_id=UniProt:P04626` pin the subject.
+- **Stitching together separated phrases.** ✗ DON'T fuse two non-adjacent sentence fragments into one quote. ✓ DO emit two Evidence records, each anchoring its own contiguous fragment.
+- **Reordering or replacing punctuation/conjunctions.** Commas, "and"/"or", parenthetical placement — copy them as-is.
+
+To pass:
+
+1. **Literal copy.** Highlight a contiguous fragment of the source body and paste it. Don't add words; don't substitute words. The source's grammar/voice is what the substring check expects.
+2. **Pick a narrow fragment, not a self-contained sentence.** ≤200 chars enforced; aim for the load-bearing 8–25-word fragment. Your `claim` field carries the standalone restatement.
+3. **Subject identity comes from `source_id`, not the quote.** A UniProt-cited claim about HER2 doesn't need "HER2" in the quote — `source_id="UniProt:P04626"` already pins the protein.
+4. **From a source you fetched.** Use a `source_id` whose body the orchestrator has — a paper returned by `gene_literature` (any mode), a patent returned by `patent_lookup`, or the UniProt entry the most recent `gene_lookup mode="uniprot_summary"` registered. The registry knows what you fetched in this session.
+5. **Pick the right `section`.** Quotes from `Paper.abstract` → `"abstract"`. Quotes from `Paper.sections` (only after `fetch_fulltext`) → the matching section name. UniProt prose comes from comment blocks; use `"other"`.
+
+If you can't produce a verbatim fragment for a claim, **don't emit Evidence for it.** Leave the bucket's `cited_evidence_ids` empty and note the gap in `confidence_reasoning`. An unsupported claim flagged honestly beats a paraphrased "quote" that fails validation and persists with `entailment_verified=False`.
+
+When citing UniProt, the registered body for `UniProt:<ACC>` (after `gene_lookup mode="uniprot_summary"` runs) contains four blocks of prose verbatim from the canonical UniProt entry: `Function: <function_text>`, `Tissue specificity: <tissue_specificity_text>`, `Subcellular locations: <comma-separated list>`, and topology features rendered in two forms (structured `transmembrane:653-675 (Helical)` and prose `Transmembrane domain at residues 653-675 (Helical)`). Quote from any of these blocks; both topology renderings will match.
 
 ### Which claims need Evidence (load-bearing fields)
 

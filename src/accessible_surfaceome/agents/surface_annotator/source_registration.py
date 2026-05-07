@@ -109,6 +109,17 @@ def _register_uniprot_from_summary(summary: UniProtSummary, store: SourceTextSto
     The summary's prose fields (``function_text``, ``tissue_specificity_text``)
     are usually the load-bearing text an agent quotes from when citing a
     UniProt source — those are the bytes the substring check needs to match.
+
+    Body layout is prose-first (Function then Tissue specificity then
+    Subcellular locations) so the verbatim UniProt sentences appear contiguous
+    — substring matching is more likely to succeed when the agent quotes a
+    fragment of one of these comment blocks. Topology features render after
+    the prose and use multiple synonymous phrasings ("Transmembrane domain at
+    residues X-Y" + "transmembrane region: X-Y") so quotes against either
+    common phrasing find a hit.
+
+    Always replaces an existing UniProt body (from an earlier ``resolve``
+    call) — the summary is strictly richer.
     """
 
     parts: list[str] = []
@@ -122,18 +133,55 @@ def _register_uniprot_from_summary(summary: UniProtSummary, store: SourceTextSto
         loc_lines = "; ".join(loc.location for loc in summary.subcellular_locations)
         parts.append(f"Subcellular locations: {loc_lines}")
     if summary.topology_features:
-        topo = "; ".join(
+        # Render topology twice — once as a structured catalogue (the form
+        # downstream tooling expects) and once in prose ("transmembrane
+        # domain at residues X-Y") so quotes against either phrasing land.
+        topo_struct = "; ".join(
             f"{f.feature_type}:{f.start}-{f.end}" + (f" ({f.description})" if f.description else "")
             for f in summary.topology_features
+            if f.start is not None and f.end is not None
         )
-        parts.append(f"Topology: {topo}")
+        if topo_struct:
+            parts.append(f"Topology: {topo_struct}")
+        topo_prose_lines: list[str] = []
+        for f in summary.topology_features:
+            if f.start is None or f.end is None:
+                continue
+            label = _topology_prose_label(f.feature_type)
+            descr = f" ({f.description})" if f.description else ""
+            topo_prose_lines.append(
+                f"{label} at residues {f.start}-{f.end}{descr}"
+            )
+        if topo_prose_lines:
+            parts.append("Topology features: " + "; ".join(topo_prose_lines) + ".")
     raw_text = "\n".join(parts)
     _put_uniprot(
         acc=summary.uniprot_acc,
         title=summary.protein_name,
         raw_text=raw_text,
         store=store,
+        replace=True,
     )
+
+
+def _topology_prose_label(feature_type: str) -> str:
+    """Human-prose label for a UniProt topology feature type.
+
+    Maps ``"transmembrane"`` → ``"Transmembrane domain"`` etc. — the labels
+    the agent is most likely to use in a verbatim quote against the UniProt
+    body.
+    """
+
+    return {
+        "signal_peptide": "Signal peptide",
+        "transmembrane": "Transmembrane domain",
+        "topological_domain": "Topological domain",
+        "intramembrane": "Intramembrane region",
+        "lipidation": "Lipidation site",
+        "gpi_anchor": "GPI anchor",
+        "glycosylation": "Glycosylation site",
+        "disulfide_bond": "Disulfide bond",
+    }.get(feature_type, feature_type.replace("_", " ").title())
 
 
 def _register_uniprot_from_panel(
@@ -162,20 +210,36 @@ def _register_uniprot_from_panel(
 
 
 def _put_uniprot(
-    *, acc: str, title: str | None, raw_text: str, store: SourceTextStore
+    *, acc: str, title: str | None, raw_text: str, store: SourceTextStore, replace: bool = False
 ) -> None:
+    """Register a UniProt source body.
+
+    ``replace=False`` (default) is first-write-wins — used by the bundle
+    and panel registrations, which produce skeleton bodies that should not
+    overwrite anything richer that may have arrived from a parallel
+    summary call.
+
+    ``replace=True`` is used by the summary registration; the summary's
+    body (function_text + tissue_specificity_text + subcellular_locations
+    + topology features) is strictly richer than the bundle's, so the
+    summary always wins.
+    """
+
     source_id = f"UniProt:{acc}"
-    if store.has(source_id):
+    if not replace and store.has(source_id):
         return
-    store.put(_make_source_text(
-        source_id=source_id,
-        source_type="uniprot",
-        url=f"https://rest.uniprot.org/uniprotkb/{acc}.json",
-        title=title,
-        raw_text=raw_text,
-        publication_type="db_entry",
-        is_retracted=False,
-    ))
+    store.put(
+        _make_source_text(
+            source_id=source_id,
+            source_type="uniprot",
+            url=f"https://rest.uniprot.org/uniprotkb/{acc}.json",
+            title=title,
+            raw_text=raw_text,
+            publication_type="db_entry",
+            is_retracted=False,
+        ),
+        replace=replace,
+    )
 
 
 # ---------------------------------------------------------------------------
