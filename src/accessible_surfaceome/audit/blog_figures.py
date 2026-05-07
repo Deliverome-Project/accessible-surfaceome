@@ -1,10 +1,10 @@
-"""Plot agreement across the seven M1 sources for surface-exposed proteins.
+"""Plot agreement across the five M1 gating sources for surface-exposed proteins.
 
 Reads ``data/processed/candidate_universe/candidate_universe.tsv`` (written
-by ``src/accessible_surfaceome/candidates/merge.py``) and produces:
+by ``src/accessible_surfaceome/merge/__init__.py``) and produces:
 
 1. **Agreement bar**: number of proteins supported by k/N sources (k = 1..N,
-   N = len(SOURCE_FLAGS) = 7) — restricted to ``n_sources_surface >= 1``.
+   N = len(SOURCE_FLAGS) = 5) — restricted to ``n_sources_surface >= 1``.
 2. **UpSet plot**: all non-empty intersections across the source flags,
    showing which combinations of sources co-occur and how many proteins
    fall into each combination.
@@ -14,7 +14,7 @@ by ``src/accessible_surfaceome/candidates/merge.py``) and produces:
 Figures are written under ``data/analysis/candidate_universe_agreement/``
 in PDF + JPEG per the repo plotting contract.
 
-Sources in the figure legend:
+Sources in the figure legend (the five gating sources only):
 
 - ``uniprot``       — UniProt human surface-candidate query
 - ``go``            — GO gene products under configured surface roots
@@ -22,15 +22,17 @@ Sources in the figure legend:
 - ``surfy``         — SURFY label == "surface" (Bausch-Fluck 2018)
 - ``cspa``          — Cell Surface Protein Atlas human detections (BF 2015)
   (high-confidence OR putative only)
-- ``deeptmhmm``     — DeepTMHMM predicted membrane topology
-  (label ∈ {TM, SP+TM, BETA})
 - ``hpa``           — Human Protein Atlas subcellular_location v25 IF
   (PM accessible OR junctional at per-tier Enhanced/Supported/Approved;
   secreted-only rows excluded)
-- ``compartments``  — JensenLab COMPARTMENTS stars ≥ 3 on
-  max(experiments ∖ HPA, textmining) across surface GO terms AND
-  corroborated by at least one other source's surface flag
-  (knowledge + predictions channels are provenance-only)
+
+DeepTMHMM and JensenLab COMPARTMENTS are intentionally omitted from these
+figures. They are auxiliary per-row evidence in this milestone, not
+universe-gating sources, so including them would either skew the
+agreement count (DeepTMHMM is run on a partial cohort; COMPARTMENTS
+contributes 0 unique members by construction) or visually conflate
+auxiliary signals with gating votes. Their per-row calls are still
+emitted in the candidate-universe TSV for downstream agent assessment.
 """
 
 from __future__ import annotations
@@ -82,18 +84,15 @@ DEFAULT_INPUT = (
 )
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "analysis" / "candidate_universe_agreement"
 
-# DeepTMHMM is intentionally omitted from these figures. It was run on a
-# partial cohort in the M1 milestone, so its inclusion would skew agreement
-# and Jaccard plots with coverage gaps that are scope-related, not
-# biological. Its per-row call is still emitted in the candidate-universe
-# TSV as auxiliary evidence for downstream agent assessment.
+# Gating sources only — must mirror GATING_FLAG_COLUMNS in
+# ``accessible_surfaceome.merge.__init__``. Auxiliary sources (DeepTMHMM,
+# COMPARTMENTS) are omitted; see module docstring for rationale.
 SOURCE_FLAGS = [
     "uniprot_surface_flag",
     "go_surface_flag",
     "surfy_surface_flag",
     "cspa_surface_flag",
     "hpa_surface_flag",
-    "compartments_surface_flag",
 ]
 SOURCE_NAMES = {
     "uniprot_surface_flag": "uniprot",
@@ -101,7 +100,6 @@ SOURCE_NAMES = {
     "surfy_surface_flag": "surfy",
     "cspa_surface_flag": "cspa",
     "hpa_surface_flag": "hpa",
-    "compartments_surface_flag": "compartments",
 }
 N_SOURCES = len(SOURCE_FLAGS)
 
@@ -125,7 +123,7 @@ def _bar_palette(n: int) -> list[str]:
     ]
     if n <= len(palette):
         return palette[:n]
-    # Cycle if we ever grow past the palette length (not expected at N=7).
+    # Cycle if we ever grow past the palette length (not expected at N=5).
     return [palette[i % len(palette)] for i in range(n)]
 
 

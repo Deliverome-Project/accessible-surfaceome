@@ -588,145 +588,97 @@
         color: #fff;
       }
 
-      /* --- Seven-source merge diagram (hero figure) --- */
+      /* --- Six-source merge diagram (hero figure, TF-compilation idiom) --- */
       .pipeline-wrap {
-        padding: 0.08in 0.14in 0.08in;
+        padding: 0.10in 0.14in 0.10in;
       }
 
       .source-strip {
         display: grid;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
-        gap: 7px;
-        margin-bottom: 0.08in;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 0;
       }
 
       .src {
-        padding: 4px 6px;
-        border: 1.5px solid var(--line);
-        border-left-width: 4px;
+        padding: 10px 11px 11px;
+        border: 0.8px solid var(--line-strong);
         border-radius: var(--radius-sm);
         background: var(--bg-soft);
-        min-height: 0.46in;
+        min-height: 0.78in;
         min-width: 0;
         display: flex;
         flex-direction: column;
-        justify-content: flex-start;
-        gap: 2px;
+        justify-content: space-between;
+        gap: 0;
         overflow: hidden;
       }
-
-      .src.db   { border-left-color: var(--accent); }
-      .src.ml   { border-left-color: var(--red-700); }
-      .src.ms   { border-left-color: var(--red-500); }
-      .src.if   { border-left-color: var(--red-700); }
-      .src.meta { border-left-color: rgba(90, 95, 100, 0.55); }
-
-      .src .slabel {
-        font-family: var(--font-sans);
-        font-size: 6pt;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--muted);
-        font-weight: 600;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .src.db   .slabel { color: var(--accent); }
-      .src.ml   .slabel { color: var(--red-700); }
-      .src.ms   .slabel { color: var(--red-500); }
-      .src.if   .slabel { color: var(--red-700); }
 
       .src .stitle {
         font-family: var(--font-display);
-        font-weight: 500;
+        font-weight: 600;
         font-size: 10pt;
         line-height: 1.1;
         color: var(--ink);
-        letter-spacing: -0.01em;
+        letter-spacing: -0.005em;
+        text-wrap: balance;
         overflow-wrap: anywhere;
         word-break: break-word;
+        hyphens: manual;
+      }
+
+      .src .scite {
+        font-family: var(--font-serif);
+        font-style: italic;
+        font-size: 7.25pt;
+        line-height: 1.25;
+        color: var(--muted);
+        letter-spacing: 0;
+        min-height: 2.5em;
+        text-wrap: balance;
       }
 
       .src .scount {
         font-family: var(--font-sans);
-        font-size: 7pt;
-        color: var(--muted);
-        margin-top: auto;
+        font-size: 8pt;
+        color: var(--ink);
         font-variant-numeric: lining-nums tabular-nums;
         white-space: nowrap;
       }
 
-      .merge-row {
-        display: flex;
-        align-items: stretch;
-        gap: 0;
-      }
-
-      .merge-col {
-        flex: 1 1 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        padding: 5px 8px;
-        background: var(--accent-soft);
-        border-radius: var(--radius-sm);
-        border: 1px solid rgba(111, 8, 53, 0.18);
-      }
-
-      .merge-col.final {
-        background: var(--accent);
-        color: #fff;
-        border-color: var(--accent);
-      }
-
-      .merge-col .mlabel {
-        font-family: var(--font-sans);
-        font-size: 6.5pt;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
+      .src .scount strong {
         font-weight: 700;
         color: var(--accent);
-        margin-bottom: 2px;
-      }
-
-      .merge-col.final .mlabel {
-        color: rgba(255, 255, 255, 0.85);
-      }
-
-      .merge-col .mtitle {
         font-family: var(--font-display);
-        font-weight: 500;
-        font-size: 11pt;
-        line-height: 1.1;
+        font-size: 10.5pt;
         letter-spacing: -0.005em;
       }
 
-      .merge-col .mmeta {
-        font-family: var(--font-sans);
-        font-size: 7.5pt;
-        color: var(--muted);
-        margin-top: 2px;
-        line-height: 1.3;
+      .converge {
+        display: block;
+        width: 100%;
+        height: 0.42in;
+        margin: 0;
+      }
+
+      .compiled {
+        margin: 0 auto;
+        padding: 8px 14px;
+        border: 1.2px solid var(--accent);
+        border-radius: var(--radius-sm);
+        background: var(--bg-soft);
+        text-align: center;
+        font-family: var(--font-display);
+        font-size: 11.5pt;
+        line-height: 1.2;
+        color: var(--ink);
+        max-width: 5.0in;
+      }
+
+      .compiled strong {
+        color: var(--accent);
+        font-weight: 700;
         font-variant-numeric: lining-nums tabular-nums;
-      }
-
-      .merge-col.final .mmeta {
-        color: rgba(255, 255, 255, 0.82);
-      }
-
-      .merge-arrow {
-        flex: 0 0 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .merge-arrow svg {
-        width: 18px;
-        height: 10px;
-        color: var(--red-700);
       }
 
       /* --- Agreement distribution bars (inline mini-chart) --- */
@@ -982,7 +934,7 @@
   <body>
 
     <!-- ===================================================================
-         PAGE 1 — Abstract, six-source merge, data sources, headline
+         PAGE 1 — Abstract, five-source merge, data sources, headline
          =================================================================== -->
     <div class="page">
       <div class="accent-rule"></div>
@@ -1005,7 +957,7 @@
 
       <h1>
         A candidate human surface-protein universe,<br />
-        <span class="em">merged from six independent sources.</span>
+        <span class="em">merged from five independent sources.</span>
       </h1>
 
       <p class="byline">
@@ -1021,75 +973,76 @@
         Selecting therapeutic-delivery targets on the human cell surface
         requires an unbiased starting list — one that captures every credible
         claim of surface expression without prejudging which evidence type is
-        most trustworthy. We merge six independent annotation sources —
-        UniProt, Gene Ontology, SURFY (ML classifier), CSPA (mass spec),
-        Human Protein Atlas&nbsp;v25 (immunofluorescence), and JensenLab
-        COMPARTMENTS (literature-driven meta-DB). Each source contributes one
-        independent surface-call under its own rule, harmonized to current
-        UniProt primary accessions. DeepTMHMM topology predictions are
-        attached per row as auxiliary evidence but are omitted from
-        universe-level figures (partial cohort). The resulting universe
-        contains <strong>5,680 proteins</strong> — <strong>38</strong>
-        supported by all six, <strong>226</strong> by at least five. Most
-        sit in lower agreement classes — an expected pattern preserved
-        for downstream prioritization.
+        most trustworthy. We merge five independent annotation sources —
+        UniProt, Gene Ontology, SURFY (ML classifier), CSPA (mass spec), and
+        Human Protein Atlas&nbsp;v25 (immunofluorescence). Each source
+        contributes one independent surface-call under its own rule,
+        harmonized to current UniProt primary accessions. DeepTMHMM topology
+        predictions (partial cohort) and JensenLab COMPARTMENTS calls
+        (corroboration-gated, contributes no unique members) are attached
+        per row as auxiliary evidence but are omitted from universe-level
+        figures. The resulting universe contains <strong>5,680
+        proteins</strong> — <strong>188</strong> supported by all five,
+        <strong>659</strong> by at least four. Most sit in lower agreement
+        classes — an expected pattern preserved for downstream prioritization.
       </div>
 
       <figure class="fullwidth">
         <section class="card hero pipeline-wrap" style="margin:0">
           <div class="source-strip">
-            <div class="src db"><div class="slabel">Curated DB</div><div class="stitle">UniProt</div><div class="scount">3,175 supported</div></div>
-            <div class="src db"><div class="slabel">Curated DB</div><div class="stitle">Gene Ontology</div><div class="scount">2,022 supported</div></div>
-            <div class="src ml"><div class="slabel">ML classifier</div><div class="stitle">SURFY</div><div class="scount">2,800 supported</div></div>
-            <div class="src ms"><div class="slabel">Mass spec</div><div class="stitle">CSPA</div><div class="scount">1,241 supported</div></div>
-            <div class="src if"><div class="slabel">Antibody IF</div><div class="stitle">HPA v25</div><div class="scount">2,077 supported</div></div>
-            <div class="src meta"><div class="slabel">Meta-DB</div><div class="stitle">COMPART&shy;MENTS</div><div class="scount">148 supported</div></div>
+            <div class="src">
+              <div class="stitle">UniProt</div>
+              <div class="scite">UniProt Consortium, 2025</div>
+              <div class="scount"><strong>3,175</strong> proteins</div>
+            </div>
+            <div class="src">
+              <div class="stitle">Gene Ontology</div>
+              <div class="scite">GO Consortium, 2026-01</div>
+              <div class="scount"><strong>2,022</strong> proteins</div>
+            </div>
+            <div class="src">
+              <div class="stitle">SURFY</div>
+              <div class="scite">Bausch-Fluck et al., 2018</div>
+              <div class="scount"><strong>2,800</strong> proteins</div>
+            </div>
+            <div class="src">
+              <div class="stitle">CSPA</div>
+              <div class="scite">Bausch-Fluck et al., 2015</div>
+              <div class="scount"><strong>1,241</strong> proteins</div>
+            </div>
+            <div class="src">
+              <div class="stitle">HPA v25</div>
+              <div class="scite">Uhlén et al., 2015</div>
+              <div class="scount"><strong>2,077</strong> proteins</div>
+            </div>
           </div>
-          <div class="merge-row">
-            <div class="merge-col">
-              <div class="mlabel">Harmonize</div>
-              <div class="mtitle">Accession history</div>
-              <div class="mmeta">Reconcile to current UniProt primary accession</div>
-            </div>
-            <div class="merge-arrow">
-              <svg viewBox="0 0 18 10" fill="none"><path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-            </div>
-            <div class="merge-col">
-              <div class="mlabel">Evidence call</div>
-              <div class="mtitle">One vote per source</div>
-              <div class="mmeta">Each source's rule for surface-accessible on intact cells</div>
-            </div>
-            <div class="merge-arrow">
-              <svg viewBox="0 0 18 10" fill="none"><path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-            </div>
-            <div class="merge-col">
-              <div class="mlabel">Aggregate</div>
-              <div class="mtitle">k-of-6 agreement</div>
-              <div class="mmeta">Universe = ≥1 of 6 sources flags surface; per-source calls preserved alongside agreement count</div>
-            </div>
-            <div class="merge-arrow">
-              <svg viewBox="0 0 18 10" fill="none"><path d="M0 5 H 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 1 L 17 5 L 12 9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
-            </div>
-            <div class="merge-col final">
-              <div class="mlabel">Candidate universe</div>
-              <div class="mtitle">5,680 proteins</div>
-              <div class="mmeta">With per-source provenance and agreement score</div>
-            </div>
+          <svg class="converge" viewBox="0 0 600 60" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="#6f0835" stroke-width="0.9" stroke-dasharray="3 3" stroke-linecap="round">
+              <path d="M  60 0 L 300 56" />
+              <path d="M 180 0 L 300 56" />
+              <path d="M 300 0 L 300 56" />
+              <path d="M 420 0 L 300 56" />
+              <path d="M 540 0 L 300 56" />
+            </g>
+            <circle cx="300" cy="56" r="2.4" fill="#6f0835" />
+          </svg>
+          <div class="compiled">
+            Compiled list of <strong>5,680</strong> candidate human surface proteins
           </div>
         </section>
-        <figcaption><span class="figlabel">Figure 1</span> The six-source merge. Per-source calls aggregate into a <em>k</em>-of-6 agreement count carried downstream. Colors distinguish evidence modalities. DeepTMHMM topology calls are attached per row as auxiliary evidence (see § 2.5) but are omitted from the universe-level figures while the predictor is run on a partial cohort.</figcaption>
+        <figcaption><span class="figlabel">Figure 1</span> Five independent sources of human surface-protein evidence are reconciled against current UniProt primary accessions and merged into a single candidate universe. Per-source counts are after each source's surface-evidence rule is applied. A protein enters the universe if at least one source flags it as surface. DeepTMHMM topology calls (partial cohort, § 2.5) and JensenLab COMPARTMENTS calls (corroboration-gated, contributes no unique members; § 2.7) are attached per row as auxiliary evidence but are omitted from the universe-level figures.</figcaption>
       </figure>
 
       <div class="ask">
         <div class="primary">
           <div class="eyebrow">Headline · 5,680 candidate proteins</div>
           <div class="headline">
-            38 supported by all 6 sources · 226 by at least 5
+            188 supported by all 5 sources · 659 by at least 4
           </div>
         </div>
         <div class="divider"></div>
         <div class="detail">
-          The tightest pairwise agreement is <strong>UniProt with SURFY</strong> (Jaccard 0.67) — both deeply curated for plasma-membrane / surface localization. COMPARTMENTS admits only when corroborated by another source. DeepTMHMM is attached as per-row evidence for downstream agents but omitted from these figures (partial-cohort milestone).
+          The tightest pairwise agreement is <strong>UniProt with SURFY</strong> (Jaccard 0.67) — both deeply curated for plasma-membrane / surface localization. DeepTMHMM (partial cohort) and JensenLab COMPARTMENTS (corroboration-gated, contributes no unique members) are attached as per-row auxiliary evidence but are omitted from universe-level figures.
         </div>
       </div>
 
@@ -1106,14 +1059,16 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td>1</td><td>UniProt human surface-candidate query <span class="tsub">(subcellular location + topology)</span></td><td>Release 2026_01</td><td>Curated database</td><td class="num">4,817</td><td class="num">3,175</td></tr>
+          <tr><td>1</td><td>UniProt human surface-candidate query <span class="tsub">(subcellular location + topology)</span></td><td>Release 2026_01</td><td>Curated database</td><td class="num">3,175</td><td class="num">3,175</td></tr>
           <tr><td>2</td><td>Gene Ontology annotations <span class="tsub">(three cellular-component roots — see § 2.2)</span></td><td>2026-01</td><td>Curated database</td><td class="num">2,557</td><td class="num">2,022</td></tr>
           <tr><td>3</td><td>SURFY <span class="tsub">(Bausch-Fluck et al., 2018)</span></td><td>2018</td><td>ML classifier</td><td class="num">2,886</td><td class="num">2,800</td></tr>
           <tr><td>4</td><td>CSPA <span class="tsub">(Bausch-Fluck et al., 2015)</span></td><td>2015</td><td>Mass-spec surfaceome</td><td class="num">1,500</td><td class="num">1,241</td></tr>
           <tr><td>5</td><td>Human Protein Atlas <span class="tsub">(subcellular localization)</span></td><td>v25 / 2026-01</td><td>Antibody immunofluorescence</td><td class="num">3,004</td><td class="num">2,077</td></tr>
-          <tr><td>6</td><td>JensenLab COMPARTMENTS <span class="tsub">(four-channel integrated)</span></td><td>2026-01</td><td>Literature-driven meta-DB</td><td class="num">1,963</td><td class="num">148</td></tr>
         </tbody>
       </table>
+      <p class="sub" style="margin-top:0.06in; font-size:8.5pt; color:var(--muted);">
+        Two further sources are <em>attached per row</em> as auxiliary evidence but do not gate universe membership: <strong>DeepTMHMM</strong> (transmembrane topology predictor, run on a partial 2,360-protein cohort; § 2.5) and <strong>JensenLab COMPARTMENTS</strong> (literature-driven meta-DB, corroboration-gated; § 2.7). COMPARTMENTS, after the corroboration gate, contributes no proteins that are not already flagged by one of the five gating sources above.
+      </p>
       <footer class="foot">
         <div class="running">Candidate surface-protein universe · Overview</div>
         <div class="right">1 / 10</div>
@@ -1144,7 +1099,7 @@
 
       <h1><span class="em" style="color:var(--accent)">§ 2</span> Methods</h1>
       <p class="sub">
-        All six sources are harmonized against UniProt release 2026_01<sup class="cite"><a href="#ref-3">3</a></sup>
+        All seven sources (five gating, two auxiliary) are harmonized against UniProt release 2026_01<sup class="cite"><a href="#ref-3">3</a></sup>
         before the merge. For each source we describe what it measures, the
         rule under which a protein is counted, and the main reason that
         source disagrees with the others.
@@ -1585,8 +1540,11 @@
 
         <!-- §2.7 COMPARTMENTS -->
         <div class="main">
-          <h3 style="margin-top:0.08in"><span class="snum">§ 2.7</span>JensenLab COMPARTMENTS<span class="count">148 supported · corroboration-gated</span></h3>
-          <p class="lead">
+          <h3 style="margin-top:0.08in"><span class="snum">§ 2.7</span>JensenLab COMPARTMENTS<span class="count">auxiliary per-row evidence · corroboration-gated</span></h3>
+          <p class="lead" style="background:var(--accent-faint); border-left:2px solid var(--accent); padding:6px 10px; margin-bottom:0.08in;">
+            COMPARTMENTS is <em>attached</em> to each row of the candidate-universe TSV but does not gate universe membership or contribute to the <em>k</em>-of-5 agreement score. By design, the corroboration gate (below) requires a COMPARTMENTS-supported protein to also be flagged by another source — so COMPARTMENTS contributes <strong>zero unique members</strong> to the universe (verified: 148 of 148 COMPARTMENTS-flagged proteins are also flagged by ≥1 of UniProt/GO/SURFY/CSPA/HPA). Its value is purely as a confidence-boosting per-row vote for downstream consumers.
+          </p>
+          <p>
             <span class="rule-tag">What it measures</span>
             A meta-database (Binder et al., 2014)<sup class="cite"><a href="#ref-13">13</a></sup> integrating four evidence
             streams per (protein, location): a <strong>knowledge</strong>
@@ -1631,10 +1589,16 @@
             are retained as provenance columns.
           </p>
           <p>
-            <span class="rule-tag">Why it disagrees</span>
-            By construction, COMPARTMENTS provides supporting evidence only;
-            it cannot admit a protein on its own. Pairwise overlap with every
-            other source is therefore low, and its own count (148) is small.
+            <span class="rule-tag">Why it is held out of the figures</span>
+            By construction COMPARTMENTS cannot admit a protein on its own
+            — and against the live build, it admits <strong>zero</strong>
+            proteins that another source has not already admitted. Including
+            it as a sixth gating vote would therefore inflate the agreement
+            score for already-corroborated proteins on ontology grounds the
+            GO source itself rejects (text-mining co-occurrence with
+            <code>GO:0005886</code>), without ever expanding the universe.
+            We hold it out of the universe-level figures and treat it as a
+            per-row confidence cue.
           </p>
         </div>
         <div class="marg">
@@ -1673,24 +1637,25 @@
         </div>
         <div class="meta">
           <div class="label">§ 2.8 Source dependencies</div>
-          <div>How the six sources ingest each other</div>
+          <div>How the sources ingest each other</div>
           <div>Figure 2 · upstream relationships</div>
         </div>
       </header>
 
       <h1 style="margin-top:0.04in"><span class="em" style="color:var(--accent)">§ 2.8</span> Source dependencies</h1>
       <p class="sub">
-        The six primary sources do not sit side by side — several ingest each
+        The seven sources (five gating, two auxiliary) do not sit side by side — several ingest each
         other, and a handful of external upstream tools feed specific primaries.
-        These edges matter when reading the k-of-6 agreement on the next page:
-        apparently independent sources often share upstream inputs, and some
-        sources (notably COMPARTMENTS) integrate evidence from several others.
+        These edges matter when reading the k-of-5 agreement on the next page:
+        apparently independent sources often share upstream inputs, and the
+        auxiliary aggregator (COMPARTMENTS) explicitly integrates evidence from several others —
+        which is one reason it is held out of the gating set.
       </p>
 
       <figure class="fullwidth">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 600" role="img" aria-labelledby="depgraph-title depgraph-desc" style="width:100%; height:auto; display:block; border:1px solid var(--line); border-radius:2px; background:var(--bg);">
           <title id="depgraph-title">Source dependency graph for the M1 candidate surface-protein universe</title>
-          <desc id="depgraph-desc">Six primary sources (UniProt, Gene Ontology, CSPA, HPA, SURFY, COMPARTMENTS) and their external upstream dependencies (InterPro, STRING 9.1, WoLF PSORT, YLoc, Medline), rendered as a layered left-to-right flow. DeepTMHMM is omitted — it is currently a partial-cohort per-row evidence track (see § 2.5).</desc>
+          <desc id="depgraph-desc">Five gating sources (UniProt, Gene Ontology, CSPA, HPA, SURFY) plus the auxiliary COMPARTMENTS aggregator and their external upstream dependencies (InterPro, STRING 9.1, WoLF PSORT, YLoc, Medline), rendered as a layered left-to-right flow. DeepTMHMM is omitted — it is currently a partial-cohort per-row evidence track (see § 2.6). COMPARTMENTS is shown for ingestion-lineage transparency but does not gate universe membership (see § 2.7).</desc>
 
           <defs>
             <marker id="depgraph-arrow-accent" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
@@ -1866,7 +1831,7 @@
     </div>
 
     <!-- ===================================================================
-         PAGE 5 — § 3 Results: k-of-6 agreement, pairwise Jaccard
+         PAGE 5 — § 3 Results: k-of-5 agreement, pairwise Jaccard
          =================================================================== -->
     <div class="page interior">
       <div class="accent-rule"></div>
@@ -1883,45 +1848,43 @@
         <div class="meta">
           <div class="label">§ 3 Results</div>
           <div>Cross-source agreement and pairwise overlap</div>
-          <div>Where the six sources converge</div>
+          <div>Where the five sources converge</div>
         </div>
       </header>
 
       <h1><span class="em" style="color:var(--accent)">§ 3</span> Results</h1>
       <p class="sub">
         The agreement distribution and pairwise Jaccard overlaps quantify where
-        the six sources converge, and — more usefully — where they don't.
+        the five gating sources converge, and — more usefully — where they don't.
         Differences across sources are expected and help define where the
         evidence is strongest or still uncertain.
       </p>
 
       <div class="layout">
         <div class="main">
-          <h3 style="margin-top:0"><span class="snum">§ 3.1</span>k-of-6 agreement distribution</h3>
+          <h3 style="margin-top:0"><span class="snum">§ 3.1</span>k-of-5 agreement distribution</h3>
           <div class="agree-bars" style="margin: 0.08in 0 0;">
-            <div class="ak">1 of 6</div><div class="abar soft" style="width:100%"></div><div class="av">2,455</div>
-            <div class="ak">2 of 6</div><div class="abar mid" style="width:65.8%"></div><div class="av">1,616</div>
-            <div class="ak">3 of 6</div><div class="abar mid" style="width:37.6%"></div><div class="av">924</div>
-            <div class="ak">4 of 6</div><div class="abar" style="width:18.7%"></div><div class="av">459</div>
-            <div class="ak">5 of 6</div><div class="abar" style="width:7.7%"></div><div class="av">188</div>
-            <div class="ak">6 of 6</div><div class="abar" style="width:1.5%"></div><div class="av">38</div>
+            <div class="ak">1 of 5</div><div class="abar soft" style="width:100%"></div><div class="av">2,474</div>
+            <div class="ak">2 of 5</div><div class="abar mid" style="width:65.6%"></div><div class="av">1,624</div>
+            <div class="ak">3 of 5</div><div class="abar mid" style="width:37.3%"></div><div class="av">923</div>
+            <div class="ak">4 of 5</div><div class="abar" style="width:19.0%"></div><div class="av">471</div>
+            <div class="ak">5 of 5</div><div class="abar" style="width:7.6%"></div><div class="av">188</div>
           </div>
           <p style="margin-top: 0.1in; text-indent: 0;">
-            Thirty-eight proteins are supported by all six sources; another
-            <strong>188</strong> by five — together <strong>226</strong>
-            (≈ 4.0% of the universe) form the high-confidence core. The
-            1-of-6 tail is dominated by proteins that only the UniProt
+            One hundred eighty-eight proteins are supported by all five sources;
+            another <strong>471</strong> by four — together <strong>659</strong>
+            (≈ 11.6% of the universe) form the high-confidence core. The
+            1-of-5 tail is dominated by proteins that only the UniProt
             curator-assigned query catches. A further <strong>1,704</strong>
             accessions appear in a raw source but fail every positive-flag
             rule (GO-IEA-only, CSPA unspecific/blank, HPA secreted-only,
-            split-ambiguous remaps, or COMPARTMENTS below corroboration);
-            those are emitted to
+            split-ambiguous remaps); those are emitted to
             <code>candidate_universe_zero_support.tsv</code> and are not
             part of the main universe.
           </p>
           <p>
-            The 6-of-6 and 5-of-6 classes define the high-confidence core.
-            The middle classes (2-of-6 through 4-of-6) are often the most
+            The 5-of-5 and 4-of-5 classes define the high-confidence core.
+            The middle classes (2-of-5 and 3-of-5) are often the most
             biologically interesting — disagreement frequently carries real
             meaning (predictor over-calls, cell-line sampling gaps, missing
             HPA antibodies).
@@ -1929,12 +1892,12 @@
         </div>
         <div class="marg">
           <div class="margfact">
-            <span class="v">38</span>
-            <span class="k">Supported by all 6</span>
+            <span class="v">188</span>
+            <span class="k">Supported by all 5</span>
           </div>
           <div class="margfact">
-            <span class="v">226</span>
-            <span class="k">Supported by ≥ 5</span>
+            <span class="v">659</span>
+            <span class="k">Supported by ≥ 4</span>
           </div>
           <div class="margfact">
             <span class="v">100 %</span>
@@ -1943,10 +1906,10 @@
           <div class="sidenote">
             <span class="sn-label">Invariant</span>
             By construction, every protein in the universe is supported by
-            at least one of the six sources. COMPARTMENTS admits only with
-            corroboration. DeepTMHMM is omitted from this distribution
-            (partial cohort) but is attached per row as auxiliary evidence
-            for downstream agents.
+            at least one of the five gating sources. COMPARTMENTS (auxiliary,
+            corroboration-gated; § 2.7) and DeepTMHMM (auxiliary, partial
+            cohort; § 2.6) are attached per row but do not contribute to this
+            distribution.
           </div>
         </div>
 
@@ -1963,29 +1926,29 @@
             <div class="jac-pair"><div class="pair">Gene Ontology &cap; HPA</div><div class="val">0.161</div></div>
             <div class="jac-pair"><div class="pair">SURFY &cap; HPA</div><div class="val">0.157</div></div>
             <div class="jac-pair"><div class="pair">CSPA &cap; HPA</div><div class="val">0.118</div></div>
-            <div class="jac-pair"><div class="pair">CSPA &cap; COMPARTMENTS</div><div class="val">0.070</div></div>
-            <div class="jac-pair"><div class="pair">UniProt &cap; COMPARTMENTS</div><div class="val">0.036</div></div>
           </div>
           <p style="margin-top:0.08in; text-indent:0;">
             UniProt ∩ SURFY (0.67) leads — both are deeply curated for
             plasma-membrane / surface localization, and the strict-surface
             pruning of UniProt's inclusion rule (§ 2.1) tightened that
             overlap. GO overlaps (0.26–0.29) reflect its cellular-component-
-            only scope after MF receptor-activity terms were excluded.
-            COMPARTMENTS pairs all sit ≤ 0.07 (Figure 5), reflecting its
-            corroboration requirement and small per-source count (148),
-            not data quality.
+            only scope after MF receptor-activity terms were excluded. CSPA
+            and HPA pair lowest with each other (0.12), reflecting CSPA's
+            cell-line-restricted sampling and HPA's antibody-dependent
+            coverage rather than data quality.
           </p>
         </div>
         <div class="marg">
           <div class="sidenote">
             <span class="sn-label">Well-known examples</span>
-            EGFR and HLA-A are supported by all six sources. CD20 (MS4A1)
-            by five (HPA carries it; COMPARTMENTS does not corroborate at
-            ≥3 stars). HLA-B (5/6), HLA-C (5/6), HLA-DQA1 (4/6), HLA-DRB1
-            (4/6), and IGHM (3/6) fall to three to five of six — driven
-            largely by HPA's coverage gaps on individual HLA alleles and
-            immunoglobulin class-switch variants.
+            Canonical receptors and HLA class&nbsp;I/II entries appear in
+            the universe with strong cross-source corroboration where each
+            source has the coverage to weigh in, and fall to lower
+            <em>k</em>/5 only on the sources whose coverage is genuinely
+            thin (chiefly HPA's gaps on individual HLA alleles and
+            immunoglobulin class-switch variants). Per-gene <em>k</em>/5
+            attributions will be re-derived against the current build
+            before the LLM reconciliation step keys on them.
           </div>
         </div>
       </div>
@@ -2021,33 +1984,34 @@
       <h2 style="margin-top:0.04in"><span class="snum">§ 3.3</span> Source-agreement figures</h2>
       <div class="fig-gallery">
         <figure>
-          <img src="../../../data/analysis/candidate_universe_agreement/candidate_source_agreement_bar.jpeg" alt="Agreement distribution bar chart (k-of-6)" />
+          <img src="../../../docs/reports/figures/k_of_5_agreement.png" alt="Agreement distribution bar chart (k-of-5)" />
           <figcaption>
             <span class="figlabel">Figure 3</span>
-            <strong>k-of-6 agreement.</strong> 38 of the 5,680 universe
-            proteins are supported by all six sources; 226 by at least
-            five. DeepTMHMM is omitted (partial cohort).
+            <strong>k-of-5 agreement.</strong> 188 of the 5,680 universe
+            proteins are supported by all five gating sources; 659 by at
+            least four. DeepTMHMM (partial cohort) and COMPARTMENTS
+            (corroboration-gated, contributes no unique members) are
+            omitted from this distribution.
           </figcaption>
         </figure>
         <figure>
           <img src="../../../data/analysis/candidate_universe_agreement/candidate_source_agreement_upset.jpeg" alt="UpSet plot of source co-occurrence" />
           <figcaption>
             <span class="figlabel">Figure 4</span>
-            <strong>Co-occurrence across sources.</strong> Six-way
-            intersection (38) anchors the high-confidence end; the most
-            populated subsets are UniProt-only and UniProt&nbsp;∩&nbsp;SURFY.
-            DeepTMHMM omitted (partial cohort).
+            <strong>Co-occurrence across sources.</strong> The most populated
+            subsets are UniProt-only and UniProt&nbsp;∩&nbsp;SURFY. Rendered
+            from the five gating sources only; DeepTMHMM and COMPARTMENTS
+            are auxiliary in this milestone and are omitted from this view.
           </figcaption>
         </figure>
         <figure class="wide">
           <img src="../../../data/analysis/candidate_universe_agreement/candidate_source_pairwise_jaccard.jpeg" alt="Pairwise Jaccard heatmap" />
           <figcaption>
             <span class="figlabel">Figure 5</span>
-            <strong>Pairwise agreement across the six sources.</strong>
-            UniProt ∩ SURFY (0.67) leads. Low values involving CSPA and
-            COMPARTMENTS reflect sampling scope and the corroboration
-            requirement, not data quality. DeepTMHMM omitted (partial
-            cohort).
+            <strong>Pairwise agreement.</strong> UniProt ∩ SURFY (0.67)
+            leads. Low values involving CSPA reflect cell-line-restricted
+            sampling, not data quality. Rendered from the five gating
+            sources only.
           </figcaption>
         </figure>
       </div>
@@ -2059,7 +2023,8 @@
         matter for interpretation.
       </p>
       <ol class="notes">
-        <li><strong>DeepTMHMM coverage.</strong> Per-row auxiliary evidence only (2,360-protein cohort); omitted from figures (§§ 2.5, 3). Extending it — with SignalP 6.0 and GPI-anchor predictors — to the full proteome will let us re-include it as a first-class source.</li>
+        <li><strong>DeepTMHMM coverage.</strong> Per-row auxiliary evidence only (2,360-protein cohort); omitted from figures (§§ 2.5, 3). Extending it — with SignalP 6.0 and GPI-anchor predictors — to the full proteome will let us re-include it as a gating source.</li>
+        <li><strong>COMPARTMENTS contributes no unique members.</strong> The corroboration gate (§ 2.7) drops COMPARTMENTS-only signals to keep TFs / cytokines / serum proteins out. Verified against the live build: 148 of 148 COMPARTMENTS-flagged proteins are also flagged by ≥ 1 of the five gating sources, so COMPARTMENTS is held out of universe-level figures and treated as a per-row confidence cue.</li>
         <li><strong>Topology-driven UniProt admissions.</strong> ≈ 94% of UniProt entries (2,992 / 3,175) qualify via <code>Extracellular</code> topology rather than a strict keyword (§ 2.1).</li>
         <li><strong>Tissue / cell-type filtering.</strong> The full HPA product (tissue, single-cell, cancer atlas, Secretome, Predicted-membrane) is not yet incorporated.</li>
         <li><strong>Ambiguous gene symbols.</strong> 5 input symbols resolved ambiguously through MyGene; emitted with <code>gene_symbol_mapping_status = "ambiguous"</code>.</li>
@@ -2132,7 +2097,7 @@
             <span class="sep">·</span>
             <a href="https://www.uniprot.org/help/downloads">downloads</a>
           </div>
-          <div class="refblurb">The exact snapshot used for accession-history reconciliation across all six sources. Release cadence is ~8 weeks.<span class="cited">Cited § 2 intro</span></div>
+          <div class="refblurb">The exact snapshot used for accession-history reconciliation across all sources. Release cadence is ~8 weeks.<span class="cited">Cited § 2 intro</span></div>
         </li>
       </ol>
 
