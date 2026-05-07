@@ -1,0 +1,178 @@
+{
+  "schema_version": "v0.3.2",
+  "gene": {
+    "hgnc_symbol": "KAAG1",
+    "hgnc_id": "HGNC:21031",
+    "uniprot_acc": "Q9UBP8",
+    "ncbi_gene_id": 353219,
+    "ensembl_gene": "ENSG00000146049"
+  },
+  "canonical_isoform": "Q9UBP8-1",
+  "isoform_flattened": true,
+  "targetability": {
+    "tier": "edge_case",
+    "recommended_modalities": [
+      {
+        "kind": "tcr_t",
+        "kind_other_label": null,
+        "rationale": "Engineered TCRs against the LPRWPPPQL/HLA-B*07 complex are the most direct route — the antigen exists on the cell surface only as a peptide-MHC."
+      },
+      {
+        "kind": "tcr_mimic",
+        "kind_other_label": null,
+        "rationale": "TCR-mimetic mAbs against the LPRWPPPQL/HLA-B7 pMHC enable conventional IgG-format delivery (naked, ADC-format, or radioconjugate) but only against the pMHC, not full-length protein."
+      },
+      {
+        "kind": "bispecific",
+        "kind_other_label": null,
+        "rationale": "ImmTAC/ImmTAV-style soluble-TCR x CD3 bispecifics (Tebentafusp class) are biologically appropriate for pMHC engagement."
+      },
+      {
+        "kind": "not_recommended",
+        "kind_other_label": null,
+        "rationale": "ADC, naked mAb against the full-length protein, and CAR-T against full-length surface protein are mechanistically inappropriate — the 84 aa product is not membrane-anchored."
+      }
+    ],
+    "tldr": "KAAG1/RU2AS is the canonical MHC-I tumor antigen edge case: the protein itself is not membrane-anchored, but an HLA-B*07-restricted 9mer (LPRWPPPQL) is presented on tumors and normal renal proximal tubule. Pursue only via TCR-T, TCR-mimic mAbs, or ImmTAC-style bispecifics — conventional ADCs/CAR-T are mechanistically inappropriate.",
+    "cited_evidence_ids": [
+      "evi_001",
+      "evi_002"
+    ]
+  },
+  "surface_biology": {
+    "surface_status": "rare_surface",
+    "topology": "not_pm_associated",
+    "anchor_type": "mhc_presented_peptide",
+    "extracellular_domain": {
+      "size_aa": null,
+      "domains": [],
+      "accessibility": "unknown",
+      "notes": "KAAG1 is not a membrane protein; the 84 aa product has no signal peptide, transmembrane segment, or GPI anchor. Surface accessibility is solely via HLA class I presentation of the LPRWPPPQL 9mer."
+    },
+    "glycosylation": null,
+    "shedding_documented": null,
+    "db_comparison": {
+      "surfy": false,
+      "cspa": false,
+      "uniprot_query": false,
+      "go": false,
+      "hpa": false,
+      "deeptmhmm": false,
+      "compartments": false,
+      "patent_handle": true,
+      "n_sources_voting_surface": 0
+    },
+    "cited_evidence_ids": [
+      "evi_001",
+      "evi_006"
+    ]
+  },
+  "expression": {
+    "tumor_indications": [
+      "renal_cell_carcinoma",
+      "melanoma",
+      "sarcoma",
+      "colorectal_carcinoma"
+    ],
+    "tumor_specificity": "pan_tumor",
+    "normal_tissue_top": [
+      "testis",
+      "kidney",
+      "urinary_bladder",
+      "liver"
+    ],
+    "normal_tissue_concerns": [
+      "kidney_proximal_tubule"
+    ],
+    "summary": "RU2AS antisense transcript is expressed in testis, kidney, urinary bladder and liver among normals, and in a high proportion of tumors of diverse histology (RCC, melanoma, sarcoma, colorectal). Critically, normal renal proximal tubule cells express significant RU2AS and are lysed by HLA-B*07-restricted CTLs, classifying KAAG1 as a self-antigen with restricted tissue distribution rather than tumor-specific.",
+    "cited_evidence_ids": [
+      "evi_002",
+      "evi_003",
+      "evi_004"
+    ]
+  },
+  "adc_properties": {
+    "internalization": "non_internalizing",
+    "estimated_copies_per_cell": null,
+    "expression_homogeneity": "unknown",
+    "payload_compatibility_notes": "ADC framework is not applicable — full-length KAAG1 is not surface-resident. pMHC-directed payload delivery (e.g., TCR-mimetic mAb-drug conjugate) would require characterizing pMHC density and endocytosis kinetics, which have not been reported."
+  },
+  "therapeutic_landscape": {
+    "approved_drugs": [],
+    "clinical_trials": [],
+    "patent_disclosures": [
+      {
+        "wo_number": "WO2024036333A2",
+        "title": "Degradation of EGFR using a bispecific binding agent",
+        "applicant": "Epibiologics Inc",
+        "modality": "bispecific",
+        "modality_other_label": null,
+        "priority_year": 2023,
+        "summary": "WO2024036333A2 (Epibiologics, priority 2023-08-11) discloses bispecific binding agents that engage EGFR plus a membrane-associated internalizing protein for targeted EGFR degradation. KAAG1 appears in the broader handle list rather than as a primary claimed target; the patent is therefore weak therapeutic-precedent evidence for KAAG1 itself and does not validate KAAG1 as an internalizing handle empirically.",
+        "cited_evidence_ids": [
+          "evi_005"
+        ]
+      }
+    ],
+    "preclinical_evidence": [
+      {
+        "citation": "PMID:10601354",
+        "modality": "tcr_t",
+        "modality_other_label": null,
+        "finding_summary": "Van den Eynde et al. (1999) isolated CTL clones from a renal cell carcinoma patient that killed multiple HLA-B*07 RCC lines. The target antigen was identified as the 9mer LPRWPPPQL, encoded by an antisense transcript (RU2AS) of a new gene named RU2/KAAG1. RU2AS is expressed broadly across tumor histologies but also in testis, kidney, bladder and liver; normal renal proximal tubule epithelial cells expressed significant RU2AS and were lysed by the same CTL clones — establishing both the mechanistic basis for TCR-T/TCR-mimic targeting and the on-target nephrotoxicity risk.",
+        "cited_evidence_ids": [
+          "evi_001",
+          "evi_002",
+          "evi_004"
+        ]
+      }
+    ]
+  },
+  "risk_flags": [
+    {
+      "kind": "mechanism_caveat",
+      "kind_other_label": null,
+      "severity": "blocking",
+      "description": "KAAG1 is not a membrane-anchored protein. The 84 aa product has no signal peptide, transmembrane segment, or GPI anchor. Surface accessibility is solely via HLA class I presentation of the LPRWPPPQL peptide (HLA-B*07). Conventional ADCs, naked mAbs against the full-length protein, and CAR-T cells targeting the full-length surface protein are therefore mechanistically inappropriate.",
+      "cited_evidence_ids": [
+        "evi_001",
+        "evi_006"
+      ]
+    },
+    {
+      "kind": "essential_normal_tissue",
+      "kind_other_label": null,
+      "severity": "high",
+      "description": "Short-term cultures of normal renal proximal tubule cells express significant RU2AS message and are lysed by the same HLA-B*07-restricted CTL clones that kill RCC tumor lines. This raises a direct risk of on-target nephrotoxicity for any TCR-T, ImmTAC, or TCR-mimic engaging the LPRWPPPQL/HLA-B7 complex.",
+      "cited_evidence_ids": [
+        "evi_002",
+        "evi_004"
+      ]
+    },
+    {
+      "kind": "polymorphism_dependent",
+      "kind_other_label": null,
+      "severity": "high",
+      "description": "Therapeutic targeting via the LPRWPPPQL peptide is restricted to HLA-B*07-positive patients (~20% of European populations, lower in other ancestries). Patient stratification by HLA typing is mandatory for any pMHC-directed modality, and the addressable population is a fraction of the indication.",
+      "cited_evidence_ids": [
+        "evi_001"
+      ]
+    }
+  ],
+  "primary_evidence_count": 5,
+  "secondary_evidence_count": 1,
+  "evidence_count": 6,
+  "cited_evidence_ids": [
+    "evi_001",
+    "evi_002",
+    "evi_003",
+    "evi_004",
+    "evi_005",
+    "evi_006"
+  ],
+  "confidence": "medium",
+  "confidence_reasoning": "Surface mechanism is well-defined by a single primary paper (PMID:10601354) — verbatim quotes anchor MHC-I peptide identity, normal renal proximal tubule expression, and CTL lysis. The all-zero M1 panel is correctly explained by KAAG1's non-membrane biology and is itself diagnostic of the edge-case call. The patent (WO2024036333A2) is weak evidence: KAAG1 is in a broader internalizing-handle list, not the primary EGFR claim. Confidence is medium rather than high because the load-bearing biology rests on one 1999 paper and lacks modern biomarker confirmation.",
+  "contradiction_flag": false,
+  "rationale": "KAAG1 (Q9UBP8, 84 aa) is the canonical MHC-I peptide-antigen edge case. Zero of eight conventional surface sources vote surface. UniProt records no signal peptide, transmembrane segment, or GPI anchor. The single high-quality primary paper (PMID:10601354) shows that antigenicity arises from an antisense transcript (RU2AS) encoding the 9mer LPRWPPPQL presented on HLA-B*07. Tier: edge_case. Actionable modalities are TCR-T, TCR-mimic mAbs, or ImmTAC-style soluble-TCR bispecifics.",
+  "model_path": "opus_heavy"
+}
