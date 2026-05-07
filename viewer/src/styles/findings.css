@@ -1,0 +1,176 @@
+/* Key findings — claim-first foldable rows + typed identifier tokens. */
+
+.findings-card {
+  padding-top: 18px;
+  padding-bottom: 8px;
+  border-top: 2px solid var(--fg);
+  border-radius: 0;
+  background: var(--bg-card);
+  position: relative;
+}
+.findings-card > header {
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.findings-card > header h2 .num { color: var(--accent); }
+
+.finding-row {
+  border-top: 1px solid var(--line);
+  transition: background 180ms var(--ease-out);
+  margin: 0 -28px;
+  padding: 4px 28px;
+  position: relative;
+}
+.finding-row:first-of-type { border-top: none; }
+.finding-row[data-open="true"] { background: var(--bg-elev); }
+.finding-row[data-open="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--accent);
+}
+
+.finding-head {
+  appearance: none;
+  background: none;
+  border: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 72px 1fr 32px;
+  gap: 22px;
+  align-items: start;
+  text-align: left;
+  cursor: pointer;
+  padding: 26px 0 10px;
+}
+
+.finding-num {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 46px;
+  line-height: 0.85;
+  letter-spacing: -0.03em;
+  color: var(--fg-faint);
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  padding-top: 4px;
+  transition: color 180ms var(--ease-out);
+}
+.finding-row:hover .finding-num { color: var(--fg-mute); }
+.finding-row[data-open="true"] .finding-num { color: var(--accent); }
+
+.finding-claim {
+  font-family: var(--font-serif);
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 1.28;
+  letter-spacing: -0.014em;
+  color: var(--fg);
+  text-wrap: pretty;
+  max-width: 62ch;
+}
+[data-density="compact"] .finding-claim { font-size: 20px; }
+.finding-claim em { font-style: italic; color: var(--accent-deep); }
+
+/* Typed identifier tokens — specimen variant only in Phase 1. */
+.finding-claim .tok {
+  display: inline-flex;
+  align-items: stretch;
+  vertical-align: -2px;
+  margin: 0 2px;
+  border: 1px solid var(--line-strong);
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 0.78em;
+  line-height: 1;
+  background: var(--bg-card);
+  white-space: nowrap;
+}
+.finding-claim .tok .tok-tag {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  background: var(--bg-elev);
+  padding: 0 7px;
+  display: inline-flex;
+  align-items: center;
+  border-right: 1px solid var(--line);
+}
+.finding-claim .tok .tok-body {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  color: var(--fg);
+  letter-spacing: 0.01em;
+}
+.finding-claim .tok-allele .tok-locus { color: var(--accent-deep); font-weight: 600; }
+.finding-claim .tok-allele .tok-sep { color: var(--fg-faint); margin: 0 1px; }
+.finding-claim .tok-allele .tok-field { color: var(--fg); font-variant-numeric: tabular-nums; }
+.finding-claim .tok-peptide .tok-seq { letter-spacing: 0.08em; font-weight: 500; }
+
+.finding-toggle {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  display: grid;
+  place-items: center;
+  background: var(--bg-card);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  color: var(--fg-mute);
+  margin-top: 8px;
+  transition: all 180ms var(--ease-out);
+}
+.finding-row:hover .finding-toggle { border-color: var(--fg); color: var(--fg); }
+.finding-row[data-open="true"] .finding-toggle {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+  transform: rotate(45deg);
+}
+
+.finding-meta {
+  padding: 14px 32px 26px 94px;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fg-mute);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 22px;
+}
+.finding-pip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+.finding-pip .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fg-faint);
+  flex: 0 0 auto;
+}
+.finding-pip.info .dot { background: var(--info); }
+.finding-pip.warn .dot { background: var(--warn); }
+.finding-pip.danger .dot { background: var(--danger); }
+.finding-pip.muted .dot { background: var(--fg-faint); }
+
+.finding-drill {
+  margin-left: 94px;
+  padding: 14px 0 26px;
+  border-top: 1px dashed var(--line-strong);
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--fg-mute);
+}

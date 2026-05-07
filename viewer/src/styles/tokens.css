@@ -1,0 +1,96 @@
+/* Deliverome design tokens — fonts + palette + semantic vars. */
+
+@font-face {
+  font-family: "Manrope";
+  src: url("/fonts/Manrope-VariableFont_wght.woff2") format("woff2-variations"),
+       url("/fonts/Manrope-VariableFont_wght.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/PlayfairDisplay-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Playfair Display";
+  src: url("/fonts/PlayfairDisplay-Italic-VariableFont_wght.ttf") format("truetype-variations");
+  font-weight: 400 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  --maroon-deepest: #3e0a18;
+  --maroon-dark:    #6e1428;
+  --maroon-mid:     #922038;
+  --maroon-light:   #bc3c4c;
+  --maroon-pale:    #f0a098;
+  --maroon-blush:   #fde8e6;
+  --teal-dark:      #244840;
+  --teal-mid:       #3d6b60;
+  --teal-lt:        #7aab9f;
+  --teal-tint:      #cce8e4;
+  --amber-dark:     #8c4210;
+  --amber-mid:      #c07830;
+  --amber-bright:   #f4aa28;
+  --amber-tint:     #faecd4;
+  --lavender-mid:   #5848a8;
+  --lavender-bright:#8878c8;
+  --lavender-tint:  #e4e0f8;
+
+  --bg:           #ffffff;
+  --bg-elev:      #fbf8f5;
+  --bg-card:      #ffffff;
+  --bg-soft:      #f3ece5;
+  --line:         rgba(31, 23, 24, 0.10);
+  --line-soft:    rgba(31, 23, 24, 0.06);
+  --line-strong:  rgba(31, 23, 24, 0.18);
+
+  --fg:           #1f1718;
+  --fg-dim:       #4a3e3d;
+  --fg-mute:      #6f5d5a;
+  --fg-faint:     #9a8a87;
+
+  --accent:       #bc3c4c;
+  --accent-dim:   #922038;
+  --accent-deep:  #6e1428;
+  --warn:         #c07830;
+  --warn-bright:  #f4aa28;
+  --danger:       #6e1428;
+  --info:         #3d6b60;
+  --violet:       #5848a8;
+
+  --font-sans:  "Manrope", "Inter", system-ui, sans-serif;
+  --font-mono:  ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --font-serif: "Playfair Display", "Newsreader", Georgia, serif;
+
+  --row-py: 14px;
+  --gutter: 24px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-density="compact"] {
+  --row-py: 8px;
+  --gutter: 16px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  font-weight: 350;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+
+::selection { background: var(--maroon-blush); color: var(--maroon-dark); }

@@ -16,6 +16,7 @@ Current implementation focus: candidate-universe builders (M1).
 - `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution)
 - `src/accessible_surfaceome/audit/` audits + blog figures
 - `src/accessible_surfaceome/tools/` per-machine install plumbing
+- `viewer/` Vite + React + TypeScript SPA — per-gene record viewer (Cloudflare Pages)
 - `data/raw/`, `data/external/`, `data/processed/`, `data/analysis/`
 - `docs/` plans/reports
 
@@ -33,6 +34,7 @@ uv run python -m accessible_surfaceome.merge
 bash scripts/check-py.sh
 uv run ty check
 uv run pytest -q
+cd viewer && npm install && npm run dev   # web viewer at localhost:5173
 ```
 
 ## Quality Checks
@@ -67,7 +69,7 @@ Commits). A title that doesn't match fails the check and blocks merge.
 
 - **Format**: `<type>(<scope>): <subject>` — scope is optional.
 - **Allowed types**: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`.
-- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`.
+- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`, `viewer`.
 - **Pick a scope by what the PR mostly touches**: `sources/` → `sources`,
   `merge/` → `merge`, `audit/` → `audit`, `agents/` (Managed Agent
   orchestrator, system prompt, agent definition) → `agents`, `tools/`
@@ -81,6 +83,15 @@ Commits). A title that doesn't match fails the check and blocks merge.
 
 See [docs/coding-style.md](docs/coding-style.md) for the conventions we
 hold code to and the short rubric for assessing diffs.
+
+## Web Viewer
+
+The `viewer/` subproject is a static SPA. Per-gene records live under
+`viewer/public/data/genes/{SYMBOL}.json` and must validate against the
+`SurfaceomeRecord` Pydantic schema in
+`src/accessible_surfaceome/tools/_shared/models.py`. Detail page route is
+`/gene/:symbol`; agent/curl access is `?format=json|md` or the static
+`/data/genes/{SYMBOL}.json` URL. See `viewer/README.md` for build + deploy.
 
 ## Doc Sync Rule
 

@@ -8,6 +8,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution).
 - `src/accessible_surfaceome/audit/` audit + figure scripts.
 - `src/accessible_surfaceome/tools/` per-machine install plumbing (not part of the data pipeline).
+- `viewer/` Vite + React + TypeScript SPA — per-gene record viewer, deploys to Cloudflare Pages.
 - `data/raw/` source workbooks.
 - `data/external/` downloaded datasets + traceability manifests.
 - `data/processed/` normalized outputs and candidate universe tables.
@@ -23,6 +24,8 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run type checking: `uv run ty check`
 - Run tests: `uv run pytest -q`
 - Run hooks: `uv run pre-commit run --all-files --config .pre-commit-config.yaml`
+- Build viewer: `cd viewer && npm install && npm run build`
+- Run viewer dev server: `cd viewer && npm run dev` (http://localhost:5173)
 
 ## Agent Command Allowlist
 - Codex and Claude agents may run `uv run python <module-or-script> [args...]` for repo analyses and processing.
@@ -67,7 +70,7 @@ fails the check and blocks merge.
 
 - **Format**: `<type>(<scope>): <subject>` — scope is optional.
 - **Allowed types**: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`, `ci`, `chore`.
-- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`.
+- **Allowed scopes**: `surface-proteome`, `sources`, `merge`, `audit`, `agents`, `tools`, `data`, `docs`, `ci`, `deps`, `viewer`.
 - **Pick a scope by what the PR mostly touches**: `sources/` → `sources`,
   `merge/` → `merge`, `audit/` → `audit`, `agents/` (Managed Agent
   orchestrator, system prompt, agent definition) → `agents`, `tools/`

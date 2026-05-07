@@ -36,6 +36,7 @@ jobs:
             docs
             ci
             deps
+            viewer
           requireScope: false
           subjectPattern: ^.+$
           subjectPatternError: subject must not be empty
