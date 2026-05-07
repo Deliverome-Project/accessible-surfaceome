@@ -309,7 +309,7 @@ def _draft_dict(*, evidence_claims: list[dict]) -> dict:
     """
 
     return {
-        "schema_version": "v0.3.1",
+        "schema_version": "v0.3.3",
         "gene": {
             "hgnc_symbol": "KAAG1",
             "hgnc_id": "HGNC:18225",
@@ -362,8 +362,8 @@ def _draft_dict(*, evidence_claims: list[dict]) -> dict:
 
 def test_persist_annotation_end_to_end(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Synthesize a draft + populated SourceTextStore, run the persist pipeline,
-    assert the persisted JSON validates as a v0.3.1 SurfaceomeRecord with the
-    promoted evidence chain.
+    assert the persisted JSON validates as the current SurfaceomeRecord
+    schema with the promoted evidence chain.
     """
 
     annotations_dir = tmp_path / "data" / "annotations"
@@ -411,7 +411,7 @@ def test_persist_annotation_end_to_end(tmp_path: Path, monkeypatch: pytest.Monke
 
     persisted = json.loads(annotation_path.read_text())
     record = SurfaceomeRecord.model_validate(persisted)
-    assert record.schema_version == "v0.3.1"
+    assert record.schema_version == "v0.3.3"
     assert record.evidence_count == 1
     assert record.primary_evidence_count == 1
     assert record.secondary_evidence_count == 0
@@ -427,8 +427,9 @@ def test_persist_annotation_unverified_claim_persists(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """A claim citing a source the agent never fetched still persists, with
-    ``entailment_verified=False`` and a warning. The record validates as v0.3.1
-    because empty ``spans`` is now legal for unverified evidence."""
+    ``entailment_verified=False`` and a warning. The record validates under
+    the current schema because empty ``spans`` is now legal for unverified
+    evidence."""
 
     monkeypatch.setattr(
         "accessible_surfaceome.agents.surface_annotator.orchestrator.DATA_DIR",

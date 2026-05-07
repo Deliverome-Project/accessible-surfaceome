@@ -565,6 +565,13 @@ class Evidence(BaseModel):
     # enforced by the model validator below.
     spans: list[EvidenceSpan] = Field(default_factory=list)
     entailment_verified: bool = False  # True iff substring check passed cleanly
+    # Result of the opt-in Sonnet claim-entailment audit (set when annotate
+    # runs with --audit). ``None`` = not audited; ``True`` = audit passed
+    # ((quote, claim, direction) entailed); ``False`` = audit said the quote
+    # doesn't support the claim direction. We persist failed audits with the
+    # flag and a warning rather than dropping — same persist-with-flags policy
+    # as the substring check.
+    entailment_audit_passed: bool | None = None
     validation_warnings: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
@@ -617,7 +624,7 @@ class SearchEntry(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.3.2"
+SCHEMA_VERSION = "v0.3.3"
 
 
 # ---- shared enums (closed) ------------------------------------------------
@@ -818,7 +825,14 @@ class SurfaceBiology(BaseModel):
     topology: Topology
     anchor_type: AnchorType
     extracellular_domain: ExtracellularDomainSummary | None = None
-    glycosylation: bool | None = None  # any reported N- or O-linked glycosylation
+    # ``bool`` is the canonical "yes/no glycosylated" flag, but for densely-
+    # glycosylated targets (HER2's seven N-linked sites, MUC1's tandem-repeat
+    # O-glycans) the agent has informative prose to share — N-site positions,
+    # ECD-vs-cytoplasmic distribution, antibody-accessibility implications.
+    # Accepting ``str`` keeps that signal instead of forcing it into a binary.
+    # Downstream readers should treat any non-null value as "glycosylated";
+    # the prose form just adds detail.
+    glycosylation: bool | str | None = None
     shedding_documented: bool | None = None  # critical for ADC: soluble decoys
     db_comparison: DBComparison
     cited_evidence_ids: list[str] = Field(default_factory=list)

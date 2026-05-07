@@ -27,6 +27,7 @@ from anthropic import Anthropic
 from pydantic import ValidationError
 
 from accessible_surfaceome.paths import DATA_DIR, DATA_SOURCES_DIR, REPO_ROOT
+from accessible_surfaceome.tools._shared import retraction_watch as _retraction_watch
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
     Evidence,
@@ -45,6 +46,11 @@ from .._support.events import (
 from . import agent as _agent
 from . import environment as _environment
 from . import tool_registry
+from .audit import (
+    EntailmentAuditCallable,
+    apply_entailment_audit,
+    make_sonnet_entailment_audit,
+)
 from .evidence_promotion import build_search_log, promote_claim
 
 logger = logging.getLogger(__name__)
@@ -131,18 +137,21 @@ def annotate_gene(
     *,
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
+    audit: bool = False,
 ) -> AnnotateResult:
     client = client or _client_module.get_client()
     own_http = http is None
     http_client = http or open_default_client()
     try:
-        return _annotate_one(client, http_client, gene)
+        return _annotate_one(client, http_client, gene, audit=audit)
     finally:
         if own_http:
             http_client.close()
 
 
-def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateResult:
+def _annotate_one(
+    client: Anthropic, http: CachedHTTP, gene: str, *, audit: bool = False
+) -> AnnotateResult:
     reg = _registry.load()
     if _agent.AGENT_NAME not in reg.agents or _environment.ENVIRONMENT_NAME not in reg.environments:
         raise RuntimeError(
@@ -152,7 +161,16 @@ def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateRes
     env_entry = reg.environments[_environment.ENVIRONMENT_NAME]
 
     source_store = SourceTextStore()
-    handlers = tool_registry.build_handlers(http, source_store=source_store)
+    retraction_index = _retraction_watch.from_http(http)
+    logger.info(
+        "Retraction Watch index: %d PMIDs / %d DOIs (checked_at=%s)",
+        len(retraction_index.pmids),
+        len(retraction_index.dois),
+        retraction_index.checked_at.isoformat(),
+    )
+    handlers = tool_registry.build_handlers(
+        http, source_store=source_store, retraction_index=retraction_index
+    )
     task_text = _render_task(gene)
 
     session = client.beta.sessions.create(
@@ -189,11 +207,15 @@ def _annotate_one(client: Anthropic, http: CachedHTTP, gene: str) -> AnnotateRes
     (run_dir / "final.md").write_text(final_text)
     annotation_json = _extract_annotation_json(final_text)
 
+    audit_callable: EntailmentAuditCallable | None = (
+        make_sonnet_entailment_audit(client) if audit else None
+    )
     annotation_path, invalid_path, validation_status, validation_errors = _persist_annotation(
         gene=gene,
         annotation_json=annotation_json,
         run_dir=run_dir,
         source_store=source_store,
+        audit_callable=audit_callable,
     )
     if validation_status == "invalid":
         logger.warning(
@@ -262,6 +284,7 @@ def _persist_annotation(
     annotation_json: dict[str, Any] | None,
     run_dir: Path,
     source_store: SourceTextStore,
+    audit_callable: EntailmentAuditCallable | None = None,
 ) -> tuple[Path | None, Path | None, Literal["valid", "invalid", "missing"], list[dict[str, Any]] | None]:
     """Promote the agent's ``SurfaceomeRecordDraft`` and persist as ``SurfaceomeRecord``.
 
@@ -303,6 +326,9 @@ def _persist_annotation(
     evidence: list[Evidence] = [
         promote_claim(claim, store=source_store) for claim in draft.evidence_claims
     ]
+
+    if audit_callable is not None:
+        apply_entailment_audit(evidence, audit=audit_callable)
 
     contributed_by: dict[str, list[str]] = {}
     for evi in evidence:

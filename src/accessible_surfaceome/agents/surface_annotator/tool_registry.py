@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from typing import Any, Callable
 
 from accessible_surfaceome.tools._shared.http import CachedHTTP
+from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
 from accessible_surfaceome.tools._shared.source_text import SourceTextStore
 from accessible_surfaceome.tools.gene_literature import gene_literature
 from accessible_surfaceome.tools.gene_lookup import gene_lookup
@@ -25,13 +26,26 @@ from .source_registration import register_from_tool_return
 
 
 @dataclass(frozen=True)
+class HandlerContext:
+    """Per-session bundle threaded into every tool handler.
+
+    Captures the dependencies tool handlers need beyond the raw HTTP client:
+    the source-text store (so handlers register source bodies for the
+    promotion step) and the retraction index (so ``gene_literature`` can
+    flip ``is_retracted`` when Retraction Watch says so).
+    """
+
+    http: CachedHTTP
+    source_store: SourceTextStore | None
+    retraction_index: RetractionIndex
+
+
+@dataclass(frozen=True)
 class ToolSpec:
     name: str
     description: str
     input_schema: dict[str, Any]
-    handler_factory: Callable[
-        [CachedHTTP, SourceTextStore | None], Callable[[dict[str, Any]], Any]
-    ]
+    handler_factory: Callable[[HandlerContext], Callable[[dict[str, Any]], Any]]
 
 
 # Tool descriptions follow the published guidance: 3–4 sentences (~150 words),
@@ -80,17 +94,17 @@ GENE_LOOKUP_INPUT_SCHEMA: dict[str, Any] = {
 }
 
 
-def _make_gene_lookup_handler(
-    http: CachedHTTP, store: SourceTextStore | None
-) -> Callable[[dict[str, Any]], Any]:
+def _make_gene_lookup_handler(ctx: HandlerContext) -> Callable[[dict[str, Any]], Any]:
     def _call(payload: dict[str, Any]) -> Any:
         result = gene_lookup(
             mode=payload["mode"],
             symbol_or_acc=payload["symbol_or_acc"],
-            http=http,
+            http=ctx.http,
         )
-        if store is not None:
-            register_from_tool_return(tool="gene_lookup", result=result, store=store)
+        if ctx.source_store is not None:
+            register_from_tool_return(
+                tool="gene_lookup", result=result, store=ctx.source_store
+            )
         return result
 
     return _call
@@ -125,13 +139,13 @@ PATENT_LOOKUP_INPUT_SCHEMA: dict[str, Any] = {
 }
 
 
-def _make_patent_lookup_handler(
-    http: CachedHTTP, store: SourceTextStore | None
-) -> Callable[[dict[str, Any]], Any]:
+def _make_patent_lookup_handler(ctx: HandlerContext) -> Callable[[dict[str, Any]], Any]:
     def _call(payload: dict[str, Any]) -> Any:
-        result = patent_lookup(wo_number=payload["wo_number"], http=http)
-        if store is not None:
-            register_from_tool_return(tool="patent_lookup", result=result, store=store)
+        result = patent_lookup(wo_number=payload["wo_number"], http=ctx.http)
+        if ctx.source_store is not None:
+            register_from_tool_return(
+                tool="patent_lookup", result=result, store=ctx.source_store
+            )
         return result
 
     return _call
@@ -214,7 +228,7 @@ GENE_LITERATURE_INPUT_SCHEMA: dict[str, Any] = {
 
 
 def _make_gene_literature_handler(
-    http: CachedHTTP, store: SourceTextStore | None
+    ctx: HandlerContext,
 ) -> Callable[[dict[str, Any]], Any]:
     def _call(payload: dict[str, Any]) -> Any:
         result = gene_literature(
@@ -227,10 +241,13 @@ def _make_gene_literature_handler(
             pmcid=payload.get("pmcid"),
             topic_anchors=payload.get("topic_anchors"),
             max_results=payload.get("max_results", 25),
-            http=http,
+            http=ctx.http,
+            retraction_index=ctx.retraction_index,
         )
-        if store is not None:
-            register_from_tool_return(tool="gene_literature", result=result, store=store)
+        if ctx.source_store is not None:
+            register_from_tool_return(
+                tool="gene_literature", result=result, store=ctx.source_store
+            )
         return result
 
     return _call
@@ -273,13 +290,27 @@ def custom_tool_definitions() -> list[dict[str, Any]]:
 
 
 def build_handlers(
-    http: CachedHTTP, *, source_store: SourceTextStore | None = None
+    http: CachedHTTP,
+    *,
+    source_store: SourceTextStore | None = None,
+    retraction_index: RetractionIndex | None = None,
 ) -> dict[str, Callable[[dict[str, Any]], Any]]:
     """Live tool name → handler dispatch table for the orchestrator.
 
     Pass ``source_store`` when running under the orchestrator so tool returns
     register the bodies the substring check will need. One-off scripts that
     don't care about evidence promotion can omit it.
+
+    Pass ``retraction_index`` to enable Retraction Watch cross-referencing in
+    ``gene_literature`` results. ``None`` falls back to the empty index — PMC's
+    own ``"Retracted Publication"`` marker is the only signal in that case.
     """
 
-    return {spec.name: spec.handler_factory(http, source_store) for spec in SPECS}
+    from accessible_surfaceome.tools._shared import retraction_watch as _rw
+
+    ctx = HandlerContext(
+        http=http,
+        source_store=source_store,
+        retraction_index=retraction_index if retraction_index is not None else _rw.empty(),
+    )
+    return {spec.name: spec.handler_factory(ctx) for spec in SPECS}
