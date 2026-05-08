@@ -1129,6 +1129,70 @@ class SurfaceomeRecordDraft(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Triage record — lightweight per-protein decision: should we deep-dive?
+# Sonnet-driven, runs at corpus / genome scale. Reuses GeneIdentifier,
+# EvidenceClaim, Evidence, SearchEntry from the deep-dive schema layer.
+# See docs/superpowers/specs/2026-05-06-surface-triage-agent-design.md.
+# ---------------------------------------------------------------------------
+
+
+TRIAGE_SCHEMA_VERSION = "v0.1.0"
+
+
+TriageVerdict = Literal["yes", "maybe", "no"]
+AccessibilitySignal = Literal[
+    "likely_accessible",
+    "possibly_accessible",
+    "unlikely",
+    "unknown",
+]
+TriageModelPath = Literal["sonnet_only"]
+
+
+class TriageRecordDraft(BaseModel):
+    """What the AGENT emits for triage — small, self-contained.
+
+    Mirror of :class:`TriageRecord` minus the orchestrator-built
+    ``evidence`` / ``search_log``: agent emits ``evidence_claims`` (verbatim,
+    promoted to ``Evidence`` after substring-check) and we attach the
+    ``search_log`` post-run from ``events.jsonl``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = TRIAGE_SCHEMA_VERSION
+    gene: GeneIdentifier
+    verdict: TriageVerdict
+    verdict_reasoning: str = Field(..., max_length=600)
+    accessibility_signal: AccessibilitySignal
+    evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
+    model_path: TriageModelPath = "sonnet_only"
+
+
+class TriageRecord(BaseModel):
+    """The reconciled per-protein triage decision persisted to data/triage/{gene}.json.
+
+    Verdict + signal + a small set of cited Evidence records. Designed to be
+    cheap to produce (Sonnet, ≤3 tool calls median) so we can run it
+    genome-wide and prioritize the deep-dive queue.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: str = TRIAGE_SCHEMA_VERSION
+    gene: GeneIdentifier
+    verdict: TriageVerdict
+    verdict_reasoning: str = Field(..., max_length=600)
+    accessibility_signal: AccessibilitySignal
+    evidence: list[Evidence] = Field(default_factory=list)
+    primary_evidence_count: int = 0
+    secondary_evidence_count: int = 0
+    evidence_count: int = 0
+    search_log: list[SearchEntry] = Field(default_factory=list)
+    model_path: TriageModelPath = "sonnet_only"
+
+
+# ---------------------------------------------------------------------------
 # Public re-export list
 # ---------------------------------------------------------------------------
 
@@ -1207,4 +1271,11 @@ __all__ = [
     "Topology",
     "SynthesisConfidence",
     "ModelPath",
+    # TriageRecord
+    "TRIAGE_SCHEMA_VERSION",
+    "TriageRecord",
+    "TriageRecordDraft",
+    "TriageVerdict",
+    "AccessibilitySignal",
+    "TriageModelPath",
 ]
