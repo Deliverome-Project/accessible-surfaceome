@@ -4,7 +4,7 @@ CD19	P15391	validated_positive	yes	likely_accessible	Approved CAR-T + ADC; class
 FOLR1	P15328	validated_positive	yes	likely_accessible	Approved Mirvetuximab (ELAHERE); GPI-anchored on outer leaflet
 MUC1	P15941	disagreement_rich_positive	yes	likely_accessible	TROP-2-adjacent validated tumor antigen; large mucin ECD; multiple antibody programs
 CD74	P04233	disagreement_rich_positive	yes	likely_accessible	Invariant chain on B/dendritic cell surface; clinical-stage Milatuzumab ADC
-PMEL	P40967	disagreement_rich_positive	yes	possibly_accessible	Melanoma antigen on melanosome + cell-surface; Tebentafusp targets gp100 pMHC
+PMEL	P40967	mixed_mechanism_borderline	maybe	possibly_accessible	Primarily melanosomal (lysosome-related organelle); pMHC presentation is the dominant accessibility mechanism (Tebentafusp targets gp100 peptide-MHC, not PMEL on the surface). Borderline like other pMHC cases.
 SLC34A2	O95436	disagreement_rich_positive	yes	likely_accessible	Apical phosphate transporter; clinical Lifastuzumab vedotin ADC
 LRRC15	Q8TF66	disagreement_rich_positive	yes	likely_accessible	Mesenchymal/stromal surface receptor; clinical-stage ABBV-085 ADC
 KAAG1	Q9UBP8	pmhc_borderline	maybe	possibly_accessible	HLA-B7-restricted CTL peptide; protein not directly accessible but its peptide is pMHC-presented
@@ -14,7 +14,7 @@ CALR	P27797	induced_borderline	maybe	possibly_accessible	ER-resident at baseline
 HSPA1A	P0DMV8	induced_borderline	maybe	possibly_accessible	Cytoplasmic at baseline; tumor-stress-induced surface presentation
 HSPA5	P11021	induced_borderline	maybe	possibly_accessible	ER chaperone at baseline; ER-stress/oncogenic-state translocation to outer leaflet
 KRAS	P01116	wrong_side_negative	no	unlikely	Membrane-anchored on the cytoplasmic face; tests "membrane = surface" trap
-LAMP1	P11279	wrong_compartment_negative	no	unlikely	Classical lysosomal marker; transmembrane but not plasma membrane
+LAMP1	P11279	induced_borderline	maybe	possibly_accessible	Classical lysosomal membrane glycoprotein; reaches plasma membrane via lysosomal exocytosis (CD107a degranulation marker on NK / cytotoxic T cells, surface staining on metastatic tumor cells). Conditional surfacing puts it in the maybe class.
 ABCB9	Q9NP78	wrong_compartment_negative	no	unlikely	Polytopic TM but lysosomal; TM topology does not imply PM accessibility
 MUC5AC	P98088	secreted_negative	no	unlikely	Fully secreted gel-forming mucin; no membrane tether
 APPL1	Q9UKG1	opencell_vesicle_negative	no	unlikely	Imaged-confirmed signaling endosome; M1 false positive
