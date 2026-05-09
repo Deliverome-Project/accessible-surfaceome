@@ -84,8 +84,8 @@ C3	P01024	secreted_borderline	maybe	possibly_accessible	Complement C3 secreted p
 TF	P02787	secreted_negative	no	unlikely	Transferrin; secreted iron-transport plasma protein.
 IL6	P05231	secreted_negative	no	unlikely	Interleukin-6; secreted cytokine.
 IGF1	P05019	secreted_negative	no	unlikely	Insulin-like growth factor 1; secreted hormone.
-F2	P00734	secreted_borderline	maybe	possibly_accessible	Prothrombin secreted plasma protein; **recruits to activated-platelet surfaces via Gla-domain phosphatidylserine binding**, assembles into the prothrombinase complex (with Factor Xa, Factor Va) for coagulation. Bona-fide context-dependent surface presentation.
-FN1	P02751	secreted_borderline	maybe	possibly_accessible	Fibronectin secreted ECM glycoprotein; forms **cell-surface fibronectin matrix** via integrin α5β1; **EDB-fibronectin (extra domain B) is a clinical antibody target** in tumor vasculature (F16/F8 antibody, Bibinetumab class). Surface-presented matrix protein.
+F2	P00734	secreted_negative	no	unlikely	Prothrombin secreted coagulation zymogen. Recruits to activated-platelet surfaces during prothrombinase-complex assembly via Gla-domain binding to phosphatidylserine, but **the protein has no membrane anchor of its own** — surface association is via binding, not membrane insertion. Recruitment ≠ surface accessibility.
+FN1	P02751	secreted_negative	no	unlikely	Fibronectin secreted ECM glycoprotein. Forms cell-surface fibronectin matrix via integrin α5β1 binding (recruitment), and EDB-fibronectin antibodies target tumor-stromal fibronectin, but **the protein has no membrane anchor of its own** — it's a soluble protein that binds surface receptors. Recruitment ≠ surface accessibility.
 APOB	P04114	secreted_negative	no	unlikely	Apolipoprotein B-100; secreted on lipoprotein particles.
 VEGFA	P15692	secreted_negative	no	unlikely	Vascular endothelial growth factor A; secreted angiogenic factor.
 A2M	P01023	secreted_negative	no	unlikely	α2-macroglobulin; secreted plasma protease inhibitor.
@@ -99,7 +99,7 @@ TYK2	P29597	approved_drug_intracellular_negative	no	unlikely	TYK2 tyrosine kinas
 AKT2	P31751	approved_drug_intracellular_negative	no	unlikely	AKT2 serine/threonine kinase; cytoplasmic. Capivasertib clinical/approved.
 MAP2K1	Q02750	approved_drug_intracellular_negative	no	unlikely	MEK1 kinase; cytoplasmic. **Cobimetinib/trametinib approved**.
 MAP2K2	P36507	approved_drug_intracellular_negative	no	unlikely	MEK2 kinase; cytoplasmic.
-HDAC6	Q9UBN7	induced_borderline	maybe	possibly_accessible	Histone deacetylase 6; canonically cytoplasmic/perinuclear. **Extracellular and cell-surface HDAC6 has been reported in tumor microenvironment** contexts. Limited but documented surface presentation.
+HDAC6	Q9UBN7	approved_drug_intracellular_negative	no	unlikely	Histone deacetylase 6; cytoplasmic/perinuclear with no membrane anchor. 'Extracellular HDAC6' reports are mostly vesicular cargo (in EVs, not cell-surface accessible) or recruitment-style binding. **No own membrane anchor** — recruitment ≠ surface accessibility. Multiple clinical small-molecule inhibitors target the intracellular catalytic pocket.
 IKBKB	O14920	approved_drug_intracellular_negative	no	unlikely	IKK-β; cytoplasmic. Multiple clinical NF-κB-pathway programs.
 LRRK2	Q5S007	approved_drug_intracellular_negative	no	unlikely	LRRK2 kinase; cytoplasmic/peripheral. **Parkinson's clinical programs**.
 STIM1	Q13586	induced_borderline	maybe	possibly_accessible	ER calcium sensor; canonically ER-resident, but **clusters at ER-PM junctions during store-operated calcium entry (SOCE)**; some PM staining reports. Borderline due to ER-PM junction localization.

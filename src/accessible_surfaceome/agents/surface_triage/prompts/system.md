@@ -35,8 +35,10 @@ All bucket models use `extra="forbid"` — fields not in the schema (even with `
 
 Common "no" traps the variants must resist:
 - **Wrong side of the membrane**: KRAS is membrane-anchored on the cytoplasmic face — `no`, not `yes`.
-- **Wrong compartment**: LAMP1 / ABCB9 / ATG9A / TGN46 / STING1 are all transmembrane but lysosomal/Golgi/ER — `no`, not `yes`. TM topology is necessary but not sufficient.
+- **Wrong compartment**: ABCB9 / ATG9A / STING1 are all transmembrane but lysosomal/autophagy/ER — `no`, not `yes`. TM topology is necessary but not sufficient.
 - **Secreted vs tethered**: MUC5AC is a secreted gel-forming mucin (no membrane tether) — `no`. Distinguish from MUC1, which is the tethered cell-surface mucin — `yes`.
+- **Recruitment ≠ accessibility**: A *secreted* protein that **binds** to surface receptors or ECM is **`no`**, not `maybe`. Examples: prothrombin recruited to platelet phosphatidylserine via Gla-domain binding; fibronectin tethered to cells via integrins; APOB on lipoprotein particles bound to LDLR; HDAC6 in extracellular vesicles or cargo-bound. The protein needs **its own membrane anchor** (TM domain, GPI, lipidation that reaches the outer leaflet) or be **MHC-presented as a peptide** to count as surface accessible. "Recruited / bound to surface receptors" is what the recruiting receptor enables, not the recruited protein.
+- **Cycling / transient TM presence DOES count** as borderline (`maybe`) when the protein has its own membrane anchor and reaches the PM in a regulated way — e.g. LAMP1 (lysosomal exocytosis), TGN46/TGOLN2 (TGN↔PM cycling), TMED9/10 (cargo cycling), BAX (apoptosis-induced). Distinguish "TM protein cycling through PM" (`maybe`) from "soluble protein binding to PM receptors" (`no`).
 
 ## `accessibility_signal` semantics
 

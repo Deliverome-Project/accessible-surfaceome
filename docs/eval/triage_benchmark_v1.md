@@ -1,8 +1,12 @@
 # Triage benchmark v1 — controls
 
-Total: **104 proteins** (39 `yes`, 22 `maybe`, 43 `no`)
+Total: **104 proteins** (39 `yes`, 19 `maybe`, 46 `no`)
 
-**DBs/5** column: how many of the 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA) flagged the protein as surface-expressed. *DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack.* `—` means the protein is not in the M1 candidate universe (failed every M1 source rule).
+**DBs/5** column: how many of the 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA) flagged the protein as surface-expressed. *DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack.* `—` means the protein is not in the M1 candidate universe.
+
+## Labeling rule: recruitment ≠ surface accessibility
+
+A protein is **`yes` or `maybe`** only when **the protein itself anchors at the plasma membrane** (TM domain, GPI, outer-leaflet lipidation) or is **MHC-presented as a peptide**. Cycling / transient TM presence with the protein's own membrane anchor counts (LAMP1, TGN46, TMED9/10, BAX). A *secreted* protein that **binds** to surface receptors or ECM (prothrombin → platelet phosphatidylserine; fibronectin → integrins; APOB → LDLR; HDAC6 → cargo) is **`no`** — the recruiting partner is the surface protein, not the recruited one.
 
 ## Yes — surface accessible
 
@@ -52,14 +56,13 @@ Surface-accessible: a binder could in principle reach the protein from the extra
 
 ## Maybe — borderline / conditional / unusual mechanism
 
-Borderline accessibility: pMHC peptides, induced/conditional surfacers (cell-state-, stress-, ICD-, exocytosis-, coagulation-driven), mixed-mechanism cases, and proteins canonically in non-PM compartments that have documented (but not dominant) surface forms — e.g. GARP-tethered TGF-β1, plasma-membrane VDAC1, ecto-Src on tumor cells, surface B4GALT1 on sperm, prothrombin on activated platelets, EDB-fibronectin on tumor vasculature, TGN46 cycling through PM, surface BAX on apoptotic cells.
+Borderline accessibility: pMHC peptides; induced/conditional surfacers (cell-state-, stress-, ICD-, exocytosis-driven); cycling TM proteins with transient PM presence (LAMP1, TGN46, TMED9/10, BAX); proteins canonically in non-PM compartments with documented but minority surface forms (GARP-tethered TGF-β1, plasma-membrane VDAC1, ecto-Src/LYN, surface B4GALT1 on sperm). All require the protein to have **its own membrane anchor** in the surface state.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
 | **B4GALT1** | P15291 | `induced_borderline` | **2/5** (uniprot,go) | β-1,4-galactosyltransferase 1; primarily Golgi-resident, but **a cell-surface form on sperm mediates zona pellucida adhesion**; also reported on tumor cells. Conditional/cell-type-restricted surfacing. |
 | **BAX** | Q07812 | `induced_borderline` | **1/5** (hpa) | Pro-apoptotic Bcl-2 family; canonically translocates to mitochondrial outer membrane during apoptosis. **Surface BAX has been reported as an apoptotic-cell marker** (parallel to CALR's ICD-induced surface translocation). |
 | **CALR** | P27797 | `induced_borderline` | **3/5** (cspa,uniprot,go) | ER-resident at baseline; reaches outer leaflet during immunogenic cell death |
-| **HDAC6** | Q9UBN7 | `induced_borderline` | **1/5** (go) | Histone deacetylase 6; canonically cytoplasmic/perinuclear. **Extracellular and cell-surface HDAC6 has been reported in tumor microenvironment** contexts. Limited but documented surface presentation. |
 | **HSPA1A** | P0DMV8 | `induced_borderline` | — | Cytoplasmic at baseline; tumor-stress-induced surface presentation |
 | **HSPA5** | P11021 | `induced_borderline` | **1/5** (uniprot) | ER chaperone at baseline; ER-stress/oncogenic-state translocation to outer leaflet |
 | **LAMP1** | P11279 | `induced_borderline` | **2/5** (surfy,cspa) | Classical lysosomal membrane glycoprotein; reaches plasma membrane via lysosomal exocytosis (CD107a degranulation marker on NK / cytotoxic T cells, surface staining on metastatic tumor cells). Conditional surfacing puts it in the maybe class. |
@@ -73,21 +76,20 @@ Borderline accessibility: pMHC peptides, induced/conditional surfacers (cell-sta
 | **KAAG1** | Q9UBP8 | `pmhc_borderline` | — | HLA-B7-restricted CTL peptide; protein not directly accessible but its peptide is pMHC-presented |
 | **PRAME** | P78395 | `pmhc_borderline` | **1/5** (hpa) | HLA-A*02-restricted; clinical T-cell engagers (brenetafusp/IMC-F106C) |
 | **C3** | P01024 | `secreted_borderline` | **2/5** (cspa,uniprot) | Complement C3 secreted plasma protein; cleavage fragment **C3b is covalently deposited on cell surfaces during opsonization**. Borderline because C3 itself is soluble but its activation product is surface-anchored. |
-| **F2** | P00734 | `secreted_borderline` | **2/5** (cspa,go) | Prothrombin secreted plasma protein; **recruits to activated-platelet surfaces via Gla-domain phosphatidylserine binding**, assembles into the prothrombinase complex (with Factor Xa, Factor Va) for coagulation. Bona-fide context-dependent surface presentation. |
-| **FN1** | P02751 | `secreted_borderline` | **1/5** (cspa) | Fibronectin secreted ECM glycoprotein; forms **cell-surface fibronectin matrix** via integrin α5β1; **EDB-fibronectin (extra domain B) is a clinical antibody target** in tumor vasculature (F16/F8 antibody, Bibinetumab class). Surface-presented matrix protein. |
 | **TGFB1** | P01137 | `secreted_borderline` | **3/5** (cspa,go,hpa) | TGF-β1 secreted as latent complex; **GARP/LRRC32-tethered to Treg surface** as latent TGF-β; integrin αvβ6/αvβ8-mediated activation extracellularly. Clinical anti-GARP-TGF-β programs (Treg targeting). |
 | **LYN** | P07948 | `wrong_side_borderline` | **2/5** (go,hpa) | Src-family tyrosine kinase; canonically inner-leaflet myristoylated/palmitoylated. **Cell-surface LYN reported on B cells and in some cancer contexts**, parallel to ecto-SRC. Borderline pathological surfacing. |
 | **SRC** | P12931 | `wrong_side_borderline` | **2/5** (go,hpa) | Proto-oncogene tyrosine kinase; canonically myristoylated/palmitoylated to inner leaflet (cytoplasmic face). Ecto-SRC has been reported on cancer cell surfaces (melanoma, other tumors) — borderline conditional/pathological surfacing. M1 votes 3/6. |
 
 ## No — not surface accessible
 
-Not accessible from outside the cell. Adversarial negatives: wrong-side (cytoplasmic-face anchored), wrong-compartment (lysosomal/Golgi/ER/mitochondrial/nuclear-envelope membrane-resident), secreted-only proteins with no documented surface form, and approved-drug intracellular targets (kinases, nuclear receptors) that test the 'approved drug ⇒ surface' trap.
+Not accessible from outside the cell. Adversarial negatives: wrong-side (cytoplasmic-face anchored), wrong-compartment (lysosomal/Golgi/ER/mitochondrial/nuclear-envelope membrane-resident), secreted-only proteins (whether or not they're recruited to surfaces by binding partners), and approved-drug intracellular targets (kinases, nuclear receptors) that test the 'approved drug ⇒ surface' trap.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
 | **AKT2** | P31751 | `approved_drug_intracellular_negative` | **1/5** (go) | AKT2 serine/threonine kinase; cytoplasmic. Capivasertib clinical/approved. |
 | **BRAF** | P15056 | `approved_drug_intracellular_negative` | **1/5** (hpa) | B-Raf serine/threonine kinase; cytoplasmic. **Vemurafenib/dabrafenib approved**. Tests "approved drug ⇒ surface" trap. |
 | **BTK** | Q06187 | `approved_drug_intracellular_negative` | **1/5** (hpa) | Bruton's tyrosine kinase; cytoplasmic. **Ibrutinib approved**. |
+| **HDAC6** | Q9UBN7 | `approved_drug_intracellular_negative` | **1/5** (go) | Histone deacetylase 6; cytoplasmic/perinuclear with no membrane anchor. 'Extracellular HDAC6' reports are mostly vesicular cargo (in EVs, not cell-surface accessible) or recruitment-style binding. **No own membrane anchor** — recruitment ≠ surface accessibility. Multiple clinical small-molecule inhibitors target the intracellular catalytic pocket. |
 | **IKBKB** | O14920 | `approved_drug_intracellular_negative` | **1/5** (go) | IKK-β; cytoplasmic. Multiple clinical NF-κB-pathway programs. |
 | **JAK1** | P23458 | `approved_drug_intracellular_negative` | **1/5** (go) | JAK1 tyrosine kinase; cytoplasmic. Multiple approved JAK inhibitors. |
 | **JAK2** | O60674 | `approved_drug_intracellular_negative` | **1/5** (go) | JAK2 tyrosine kinase; cytoplasmic. **Ruxolitinib approved** (myelofibrosis). |
@@ -100,6 +102,8 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 | **APPL1** | Q9UKG1 | `opencell_vesicle_negative` | **1/5** (hpa) | Imaged-confirmed signaling endosome; M1 false positive |
 | **A2M** | P01023 | `secreted_negative` | **1/5** (cspa) | α2-macroglobulin; secreted plasma protease inhibitor. |
 | **APOB** | P04114 | `secreted_negative` | **1/5** (cspa) | Apolipoprotein B-100; secreted on lipoprotein particles. |
+| **F2** | P00734 | `secreted_negative` | **2/5** (cspa,go) | Prothrombin secreted coagulation zymogen. Recruits to activated-platelet surfaces during prothrombinase-complex assembly via Gla-domain binding to phosphatidylserine, but **the protein has no membrane anchor of its own** — surface association is via binding, not membrane insertion. Recruitment ≠ surface accessibility. |
+| **FN1** | P02751 | `secreted_negative` | **1/5** (cspa) | Fibronectin secreted ECM glycoprotein. Forms cell-surface fibronectin matrix via integrin α5β1 binding (recruitment), and EDB-fibronectin antibodies target tumor-stromal fibronectin, but **the protein has no membrane anchor of its own** — it's a soluble protein that binds surface receptors. Recruitment ≠ surface accessibility. |
 | **IGF1** | P05019 | `secreted_negative` | **1/5** (go) | Insulin-like growth factor 1; secreted hormone. |
 | **IL6** | P05231 | `secreted_negative` | **1/5** (go) | Interleukin-6; secreted cytokine. |
 | **MUC5AC** | P98088 | `secreted_negative` | — | Fully secreted gel-forming mucin; no membrane tether |
@@ -133,15 +137,15 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 
 | Class | Verdict | Count |
 |---|---|---:|
-| `approved_drug_intracellular_negative` | `no` | 12 |
+| `approved_drug_intracellular_negative` | `no` | 13 |
 | `disagreement_rich_positive` | `yes` | 25 |
 | `gpcr_extracellular_pocket` | `yes` | 11 |
-| `induced_borderline` | `maybe` | 12 |
+| `induced_borderline` | `maybe` | 11 |
 | `mixed_mechanism_borderline` | `maybe` | 1 |
 | `opencell_vesicle_negative` | `no` | 1 |
 | `pmhc_borderline` | `maybe` | 3 |
-| `secreted_borderline` | `maybe` | 4 |
-| `secreted_negative` | `no` | 7 |
+| `secreted_borderline` | `maybe` | 2 |
+| `secreted_negative` | `no` | 9 |
 | `validated_positive` | `yes` | 3 |
 | `wrong_compartment_negative` | `no` | 16 |
 | `wrong_side_borderline` | `maybe` | 2 |
@@ -149,10 +153,8 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 
 ## DB-vote distribution by verdict (n / 5)
 
-How well do the 5 retained M1 surface databases (UniProt, GO, HPA, SURFY, CSPA) collectively rank the benchmark? `—` = not in M1 (treated as 0).
-
 | Verdict | 0/5 (or not-in-M1) | 1/5 | 2/5 | 3/5 | 4/5 | 5/5 |
 |---|---:|---:|---:|---:|---:|---:|
 | `yes` | 2 | 1 | 20 | 9 | 5 | 2 |
-| `maybe` | 3 | 8 | 8 | 2 | 1 | 0 |
-| `no` | 3 | 28 | 12 | 0 | 0 | 0 |
+| `maybe` | 3 | 6 | 7 | 2 | 1 | 0 |
+| `no` | 3 | 30 | 13 | 0 | 0 | 0 |
