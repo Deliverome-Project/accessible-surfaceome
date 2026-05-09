@@ -1,0 +1,24 @@
+gene_symbol	uniprot_acc	class	ground_truth_verdict	ground_truth_signal	rationale
+ERBB2	P04626	validated_positive	yes	likely_accessible	Approved ADC; classical surface receptor with large ECD
+CD19	P15391	validated_positive	yes	likely_accessible	Approved CAR-T + ADC; classical B-cell surface marker
+FOLR1	P15328	validated_positive	yes	likely_accessible	Approved Mirvetuximab (ELAHERE); GPI-anchored on outer leaflet
+MUC1	P15941	disagreement_rich_positive	yes	likely_accessible	TROP-2-adjacent validated tumor antigen; large mucin ECD; multiple antibody programs
+CD74	P04233	disagreement_rich_positive	yes	likely_accessible	Invariant chain on B/dendritic cell surface; clinical-stage Milatuzumab ADC
+PMEL	P40967	disagreement_rich_positive	yes	possibly_accessible	Melanoma antigen on melanosome + cell-surface; Tebentafusp targets gp100 pMHC
+SLC34A2	O95436	disagreement_rich_positive	yes	likely_accessible	Apical phosphate transporter; clinical Lifastuzumab vedotin ADC
+LRRC15	Q8TF66	disagreement_rich_positive	yes	likely_accessible	Mesenchymal/stromal surface receptor; clinical-stage ABBV-085 ADC
+KAAG1	Q9UBP8	pmhc_borderline	maybe	possibly_accessible	HLA-B7-restricted CTL peptide; protein not directly accessible but its peptide is pMHC-presented
+CTAG1B	P78358	pmhc_borderline	maybe	possibly_accessible	HLA-A*02-restricted cancer-testis antigen (NY-ESO-1); clinical TCR-T programs
+PRAME	P78395	pmhc_borderline	maybe	possibly_accessible	HLA-A*02-restricted; clinical T-cell engagers (brenetafusp/IMC-F106C)
+CALR	P27797	induced_borderline	maybe	possibly_accessible	ER-resident at baseline; reaches outer leaflet during immunogenic cell death
+HSPA1A	P0DMV8	induced_borderline	maybe	possibly_accessible	Cytoplasmic at baseline; tumor-stress-induced surface presentation
+HSPA5	P11021	induced_borderline	maybe	possibly_accessible	ER chaperone at baseline; ER-stress/oncogenic-state translocation to outer leaflet
+KRAS	P01116	wrong_side_negative	no	unlikely	Membrane-anchored on the cytoplasmic face; tests "membrane = surface" trap
+LAMP1	P11279	wrong_compartment_negative	no	unlikely	Classical lysosomal marker; transmembrane but not plasma membrane
+ABCB9	Q9NP78	wrong_compartment_negative	no	unlikely	Polytopic TM but lysosomal; TM topology does not imply PM accessibility
+MUC5AC	P98088	secreted_negative	no	unlikely	Fully secreted gel-forming mucin; no membrane tether
+APPL1	Q9UKG1	opencell_vesicle_negative	no	unlikely	Imaged-confirmed signaling endosome; M1 false positive
+ATG9A	Q7Z3C6	wrong_compartment_negative	no	unlikely	Cycles between Golgi/endosomes/autophagosomal precursors; multi-pass TM but never PM in steady state
+TGOLN2	O43493	wrong_compartment_negative	no	unlikely	Trans-Golgi network resident; TM + small luminal domain
+STING1	Q86WV6	wrong_compartment_negative	no	unlikely	ER signaling adaptor (TMEM173); TM-rich but never on PM
+GORASP2	Q9H8Y8	wrong_compartment_negative	no	unlikely	Peripheral on Golgi cytosolic face; tests inner-leaflet/cytosolic-Golgi confusion
