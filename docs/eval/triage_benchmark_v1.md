@@ -1,6 +1,6 @@
 # Triage benchmark v1 — controls
 
-Total: **104 proteins** (39 `yes`, 14 `maybe`, 51 `no`)
+Total: **104 proteins** (39 `yes`, 22 `maybe`, 43 `no`)
 
 **DBs/5** column: how many of the 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA) flagged the protein as surface-expressed. *DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack.* `—` means the protein is not in the M1 candidate universe (failed every M1 source rule).
 
@@ -52,35 +52,42 @@ Surface-accessible: a binder could in principle reach the protein from the extra
 
 ## Maybe — borderline / conditional / unusual mechanism
 
-Borderline accessibility: pMHC peptides (the protein is intracellular but its peptide is MHC-presented), induced/conditional surfacers (cell-state-, stress-, or exocytosis-driven surfacing), mixed-mechanism cases, and proteins canonically in non-PM compartments that have documented (but not dominant) surface forms — e.g. GARP-tethered TGF-β1, plasma-membrane VDAC1, ecto-Src on tumor cells, surface B4GALT1 on sperm.
+Borderline accessibility: pMHC peptides, induced/conditional surfacers (cell-state-, stress-, ICD-, exocytosis-, coagulation-driven), mixed-mechanism cases, and proteins canonically in non-PM compartments that have documented (but not dominant) surface forms — e.g. GARP-tethered TGF-β1, plasma-membrane VDAC1, ecto-Src on tumor cells, surface B4GALT1 on sperm, prothrombin on activated platelets, EDB-fibronectin on tumor vasculature, TGN46 cycling through PM, surface BAX on apoptotic cells.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
 | **B4GALT1** | P15291 | `induced_borderline` | **2/5** (uniprot,go) | β-1,4-galactosyltransferase 1; primarily Golgi-resident, but **a cell-surface form on sperm mediates zona pellucida adhesion**; also reported on tumor cells. Conditional/cell-type-restricted surfacing. |
+| **BAX** | Q07812 | `induced_borderline` | **1/5** (hpa) | Pro-apoptotic Bcl-2 family; canonically translocates to mitochondrial outer membrane during apoptosis. **Surface BAX has been reported as an apoptotic-cell marker** (parallel to CALR's ICD-induced surface translocation). |
 | **CALR** | P27797 | `induced_borderline` | **3/5** (cspa,uniprot,go) | ER-resident at baseline; reaches outer leaflet during immunogenic cell death |
+| **HDAC6** | Q9UBN7 | `induced_borderline` | **1/5** (go) | Histone deacetylase 6; canonically cytoplasmic/perinuclear. **Extracellular and cell-surface HDAC6 has been reported in tumor microenvironment** contexts. Limited but documented surface presentation. |
 | **HSPA1A** | P0DMV8 | `induced_borderline` | — | Cytoplasmic at baseline; tumor-stress-induced surface presentation |
 | **HSPA5** | P11021 | `induced_borderline` | **1/5** (uniprot) | ER chaperone at baseline; ER-stress/oncogenic-state translocation to outer leaflet |
 | **LAMP1** | P11279 | `induced_borderline` | **2/5** (surfy,cspa) | Classical lysosomal membrane glycoprotein; reaches plasma membrane via lysosomal exocytosis (CD107a degranulation marker on NK / cytotoxic T cells, surface staining on metastatic tumor cells). Conditional surfacing puts it in the maybe class. |
 | **STIM1** | Q13586 | `induced_borderline` | **4/5** (surfy,cspa,uniprot,go) | ER calcium sensor; canonically ER-resident, but **clusters at ER-PM junctions during store-operated calcium entry (SOCE)**; some PM staining reports. Borderline due to ER-PM junction localization. |
+| **TGOLN2** | O43493 | `induced_borderline` | **2/5** (surfy,uniprot) | TGN46 — **cycles continuously between TGN and PM** via the secretory recycling pathway; canonical marker for the TGN-PM trafficking cycle. Transient but routine surface presence. |
+| **TMED10** | P49755 | `induced_borderline` | **1/5** (go) | TMED10 cargo receptor; same ER↔Golgi↔PM cycling pattern as TMED9. Transient PM presence in the secretory pathway. |
+| **TMED9** | Q9BVK6 | `induced_borderline` | **1/5** (cspa) | TMED9 cargo receptor; **cycles ER↔Golgi↔PM** in the secretory pathway with transient PM presence. Cargo-cycling proteins reach the outer face routinely. |
 | **VDAC1** | P21796 | `induced_borderline` | **1/5** (cspa) | Mitochondrial outer-membrane porin; **plasma-membrane VDAC1 (pl-VDAC) is well-documented** in B cells, neurons, sperm, cancer cells, erythrocytes. Anti-VDAC1 antibodies in development. Borderline due to dual-localization. |
 | **PMEL** | P40967 | `mixed_mechanism_borderline` | **2/5** (surfy,cspa) | Primarily melanosomal (lysosome-related organelle); pMHC presentation is the dominant accessibility mechanism (Tebentafusp targets gp100 peptide-MHC, not PMEL on the surface). Borderline like other pMHC cases. |
 | **CTAG1B** | P78358 | `pmhc_borderline` | — | HLA-A*02-restricted cancer-testis antigen (NY-ESO-1); clinical TCR-T programs |
 | **KAAG1** | Q9UBP8 | `pmhc_borderline` | — | HLA-B7-restricted CTL peptide; protein not directly accessible but its peptide is pMHC-presented |
 | **PRAME** | P78395 | `pmhc_borderline` | **1/5** (hpa) | HLA-A*02-restricted; clinical T-cell engagers (brenetafusp/IMC-F106C) |
 | **C3** | P01024 | `secreted_borderline` | **2/5** (cspa,uniprot) | Complement C3 secreted plasma protein; cleavage fragment **C3b is covalently deposited on cell surfaces during opsonization**. Borderline because C3 itself is soluble but its activation product is surface-anchored. |
+| **F2** | P00734 | `secreted_borderline` | **2/5** (cspa,go) | Prothrombin secreted plasma protein; **recruits to activated-platelet surfaces via Gla-domain phosphatidylserine binding**, assembles into the prothrombinase complex (with Factor Xa, Factor Va) for coagulation. Bona-fide context-dependent surface presentation. |
+| **FN1** | P02751 | `secreted_borderline` | **1/5** (cspa) | Fibronectin secreted ECM glycoprotein; forms **cell-surface fibronectin matrix** via integrin α5β1; **EDB-fibronectin (extra domain B) is a clinical antibody target** in tumor vasculature (F16/F8 antibody, Bibinetumab class). Surface-presented matrix protein. |
 | **TGFB1** | P01137 | `secreted_borderline` | **3/5** (cspa,go,hpa) | TGF-β1 secreted as latent complex; **GARP/LRRC32-tethered to Treg surface** as latent TGF-β; integrin αvβ6/αvβ8-mediated activation extracellularly. Clinical anti-GARP-TGF-β programs (Treg targeting). |
+| **LYN** | P07948 | `wrong_side_borderline` | **2/5** (go,hpa) | Src-family tyrosine kinase; canonically inner-leaflet myristoylated/palmitoylated. **Cell-surface LYN reported on B cells and in some cancer contexts**, parallel to ecto-SRC. Borderline pathological surfacing. |
 | **SRC** | P12931 | `wrong_side_borderline` | **2/5** (go,hpa) | Proto-oncogene tyrosine kinase; canonically myristoylated/palmitoylated to inner leaflet (cytoplasmic face). Ecto-SRC has been reported on cancer cell surfaces (melanoma, other tumors) — borderline conditional/pathological surfacing. M1 votes 3/6. |
 
 ## No — not surface accessible
 
-Not accessible from outside the cell. Adversarial negatives: wrong-side (cytoplasmic-face anchored), wrong-compartment (lysosomal/Golgi/ER/mitochondrial/nuclear-envelope membrane-resident), secreted-only proteins, and approved-drug intracellular targets (kinases, nuclear receptors) that test the 'approved drug ⇒ surface' trap.
+Not accessible from outside the cell. Adversarial negatives: wrong-side (cytoplasmic-face anchored), wrong-compartment (lysosomal/Golgi/ER/mitochondrial/nuclear-envelope membrane-resident), secreted-only proteins with no documented surface form, and approved-drug intracellular targets (kinases, nuclear receptors) that test the 'approved drug ⇒ surface' trap.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
 | **AKT2** | P31751 | `approved_drug_intracellular_negative` | **1/5** (go) | AKT2 serine/threonine kinase; cytoplasmic. Capivasertib clinical/approved. |
 | **BRAF** | P15056 | `approved_drug_intracellular_negative` | **1/5** (hpa) | B-Raf serine/threonine kinase; cytoplasmic. **Vemurafenib/dabrafenib approved**. Tests "approved drug ⇒ surface" trap. |
 | **BTK** | Q06187 | `approved_drug_intracellular_negative` | **1/5** (hpa) | Bruton's tyrosine kinase; cytoplasmic. **Ibrutinib approved**. |
-| **HDAC6** | Q9UBN7 | `approved_drug_intracellular_negative` | **1/5** (go) | Histone deacetylase 6; cytoplasmic/perinuclear. Multiple clinical inhibitors. |
 | **IKBKB** | O14920 | `approved_drug_intracellular_negative` | **1/5** (go) | IKK-β; cytoplasmic. Multiple clinical NF-κB-pathway programs. |
 | **JAK1** | P23458 | `approved_drug_intracellular_negative` | **1/5** (go) | JAK1 tyrosine kinase; cytoplasmic. Multiple approved JAK inhibitors. |
 | **JAK2** | O60674 | `approved_drug_intracellular_negative` | **1/5** (go) | JAK2 tyrosine kinase; cytoplasmic. **Ruxolitinib approved** (myelofibrosis). |
@@ -93,8 +100,6 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 | **APPL1** | Q9UKG1 | `opencell_vesicle_negative` | **1/5** (hpa) | Imaged-confirmed signaling endosome; M1 false positive |
 | **A2M** | P01023 | `secreted_negative` | **1/5** (cspa) | α2-macroglobulin; secreted plasma protease inhibitor. |
 | **APOB** | P04114 | `secreted_negative` | **1/5** (cspa) | Apolipoprotein B-100; secreted on lipoprotein particles. |
-| **F2** | P00734 | `secreted_negative` | **2/5** (cspa,go) | Prothrombin; secreted coagulation zymogen. |
-| **FN1** | P02751 | `secreted_negative` | **1/5** (cspa) | Fibronectin; secreted ECM glycoprotein. |
 | **IGF1** | P05019 | `secreted_negative` | **1/5** (go) | Insulin-like growth factor 1; secreted hormone. |
 | **IL6** | P05231 | `secreted_negative` | **1/5** (go) | Interleukin-6; secreted cytokine. |
 | **MUC5AC** | P98088 | `secreted_negative` | — | Fully secreted gel-forming mucin; no membrane tether |
@@ -102,7 +107,6 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 | **VEGFA** | P15692 | `secreted_negative` | **1/5** (go) | Vascular endothelial growth factor A; secreted angiogenic factor. |
 | **ABCB9** | Q9NP78 | `wrong_compartment_negative` | **1/5** (surfy) | Polytopic TM but lysosomal; TM topology does not imply PM accessibility |
 | **ATG9A** | Q7Z3C6 | `wrong_compartment_negative` | **2/5** (surfy,cspa) | Cycles between Golgi/endosomes/autophagosomal precursors; multi-pass TM but never PM in steady state |
-| **BAX** | Q07812 | `wrong_compartment_negative` | **1/5** (hpa) | Pro-apoptotic Bcl-2 family; translocates to mitochondrial outer membrane. |
 | **GALNT1** | Q10472 | `wrong_compartment_negative` | **1/5** (cspa) | N-acetylgalactosaminyltransferase 1; Golgi glycosyltransferase. |
 | **GORASP2** | Q9H8Y8 | `wrong_compartment_negative` | — | Peripheral on Golgi cytosolic face; tests inner-leaflet/cytosolic-Golgi confusion |
 | **ITPR1** | Q14643 | `wrong_compartment_negative` | **1/5** (cspa) | IP3 receptor type 1; ER membrane calcium channel. |
@@ -117,14 +121,10 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 | **SUN2** | Q9UH99 | `wrong_compartment_negative` | **1/5** (cspa) | SUN domain protein 2; inner nuclear membrane. |
 | **SYNE1** | Q8NF91 | `wrong_compartment_negative` | **1/5** (go) | Nesprin-1; outer nuclear membrane (LINC complex), cytoskeleton-coupled. |
 | **SYNE2** | Q8WXH0 | `wrong_compartment_negative` | **1/5** (go) | Nesprin-2; outer nuclear membrane. |
-| **TGOLN2** | O43493 | `wrong_compartment_negative` | **2/5** (surfy,uniprot) | Trans-Golgi network resident; TM + small luminal domain |
-| **TMED10** | P49755 | `wrong_compartment_negative` | **1/5** (go) | TMED10 cargo receptor; ER-Golgi cycling. |
-| **TMED9** | Q9BVK6 | `wrong_compartment_negative` | **1/5** (cspa) | TMED9 cargo receptor; cycles ER↔Golgi but Golgi-residence dominant. |
 | **GNAQ** | P50148 | `wrong_side_negative` | **2/5** (go,hpa) | Heterotrimeric G-alpha-q; lipidated cytoplasmic-side anchor. |
 | **GNB1** | P62873 | `wrong_side_negative` | **2/5** (go,hpa) | G-protein beta-1 subunit; peripheral on inner leaflet via Gγ prenylation. |
 | **HCK** | P08631 | `wrong_side_negative` | **2/5** (go,hpa) | Hematopoietic cell kinase (Src family); inner-leaflet lipid-anchored. |
 | **KRAS** | P01116 | `wrong_side_negative` | **1/5** (go) | Membrane-anchored on the cytoplasmic face; tests "membrane = surface" trap |
-| **LYN** | P07948 | `wrong_side_negative` | **2/5** (go,hpa) | Src-family kinase; myristoylated/palmitoylated inner-leaflet anchor. |
 | **NRAS** | P01111 | `wrong_side_negative` | **1/5** (hpa) | Ras GTPase; lipidated inner leaflet (same family as KRAS in benchmark). |
 | **RAC1** | P63000 | `wrong_side_negative` | **1/5** (go) | Rac1 GTPase; geranylgeranylated to inner leaflet. |
 | **RHOA** | P61586 | `wrong_side_negative` | **2/5** (go,hpa) | Rho GTPase; geranylgeranylated to inner leaflet. Cytoplasmic signaling. |
@@ -133,19 +133,19 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 
 | Class | Verdict | Count |
 |---|---|---:|
-| `approved_drug_intracellular_negative` | `no` | 13 |
+| `approved_drug_intracellular_negative` | `no` | 12 |
 | `disagreement_rich_positive` | `yes` | 25 |
 | `gpcr_extracellular_pocket` | `yes` | 11 |
-| `induced_borderline` | `maybe` | 7 |
+| `induced_borderline` | `maybe` | 12 |
 | `mixed_mechanism_borderline` | `maybe` | 1 |
 | `opencell_vesicle_negative` | `no` | 1 |
 | `pmhc_borderline` | `maybe` | 3 |
-| `secreted_borderline` | `maybe` | 2 |
-| `secreted_negative` | `no` | 9 |
+| `secreted_borderline` | `maybe` | 4 |
+| `secreted_negative` | `no` | 7 |
 | `validated_positive` | `yes` | 3 |
-| `wrong_compartment_negative` | `no` | 20 |
-| `wrong_side_borderline` | `maybe` | 1 |
-| `wrong_side_negative` | `no` | 8 |
+| `wrong_compartment_negative` | `no` | 16 |
+| `wrong_side_borderline` | `maybe` | 2 |
+| `wrong_side_negative` | `no` | 7 |
 
 ## DB-vote distribution by verdict (n / 5)
 
@@ -154,5 +154,5 @@ How well do the 5 retained M1 surface databases (UniProt, GO, HPA, SURFY, CSPA) 
 | Verdict | 0/5 (or not-in-M1) | 1/5 | 2/5 | 3/5 | 4/5 | 5/5 |
 |---|---:|---:|---:|---:|---:|---:|
 | `yes` | 2 | 1 | 20 | 9 | 5 | 2 |
-| `maybe` | 3 | 3 | 5 | 2 | 1 | 0 |
-| `no` | 3 | 33 | 15 | 0 | 0 | 0 |
+| `maybe` | 3 | 8 | 8 | 2 | 1 | 0 |
+| `no` | 3 | 28 | 12 | 0 | 0 | 0 |

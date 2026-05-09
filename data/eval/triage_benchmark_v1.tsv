@@ -19,7 +19,7 @@ ABCB9	Q9NP78	wrong_compartment_negative	no	unlikely	Polytopic TM but lysosomal; 
 MUC5AC	P98088	secreted_negative	no	unlikely	Fully secreted gel-forming mucin; no membrane tether
 APPL1	Q9UKG1	opencell_vesicle_negative	no	unlikely	Imaged-confirmed signaling endosome; M1 false positive
 ATG9A	Q7Z3C6	wrong_compartment_negative	no	unlikely	Cycles between Golgi/endosomes/autophagosomal precursors; multi-pass TM but never PM in steady state
-TGOLN2	O43493	wrong_compartment_negative	no	unlikely	Trans-Golgi network resident; TM + small luminal domain
+TGOLN2	O43493	induced_borderline	maybe	possibly_accessible	TGN46 — **cycles continuously between TGN and PM** via the secretory recycling pathway; canonical marker for the TGN-PM trafficking cycle. Transient but routine surface presence.
 STING1	Q86WV6	wrong_compartment_negative	no	unlikely	ER signaling adaptor (TMEM173); TM-rich but never on PM
 GORASP2	Q9H8Y8	wrong_compartment_negative	no	unlikely	Peripheral on Golgi cytosolic face; tests inner-leaflet/cytosolic-Golgi confusion
 STEAP1	Q9UHE8	disagreement_rich_positive	yes	possibly_accessible	TCR-T + bispecific: GSK4427296 TCR-T + AMG509 bispecific. 6-pass TM with small ECLs — also tests minimal_ectoloops case
@@ -58,7 +58,7 @@ SRC	P12931	wrong_side_borderline	maybe	possibly_accessible	Proto-oncogene tyrosi
 RHOA	P61586	wrong_side_negative	no	unlikely	Rho GTPase; geranylgeranylated to inner leaflet. Cytoplasmic signaling.
 GNAQ	P50148	wrong_side_negative	no	unlikely	Heterotrimeric G-alpha-q; lipidated cytoplasmic-side anchor.
 GNB1	P62873	wrong_side_negative	no	unlikely	G-protein beta-1 subunit; peripheral on inner leaflet via Gγ prenylation.
-LYN	P07948	wrong_side_negative	no	unlikely	Src-family kinase; myristoylated/palmitoylated inner-leaflet anchor.
+LYN	P07948	wrong_side_borderline	maybe	possibly_accessible	Src-family tyrosine kinase; canonically inner-leaflet myristoylated/palmitoylated. **Cell-surface LYN reported on B cells and in some cancer contexts**, parallel to ecto-SRC. Borderline pathological surfacing.
 HCK	P08631	wrong_side_negative	no	unlikely	Hematopoietic cell kinase (Src family); inner-leaflet lipid-anchored.
 NRAS	P01111	wrong_side_negative	no	unlikely	Ras GTPase; lipidated inner leaflet (same family as KRAS in benchmark).
 RAC1	P63000	wrong_side_negative	no	unlikely	Rac1 GTPase; geranylgeranylated to inner leaflet.
@@ -69,8 +69,8 @@ ITPR3	Q14573	wrong_compartment_negative	no	unlikely	IP3 receptor type 3; ER memb
 ITPR1	Q14643	wrong_compartment_negative	no	unlikely	IP3 receptor type 1; ER membrane calcium channel.
 SEC61G	P60059	wrong_compartment_negative	no	unlikely	Sec61 translocon γ subunit; ER protein-translocation channel.
 B4GALT1	P15291	induced_borderline	maybe	possibly_accessible	β-1,4-galactosyltransferase 1; primarily Golgi-resident, but **a cell-surface form on sperm mediates zona pellucida adhesion**; also reported on tumor cells. Conditional/cell-type-restricted surfacing.
-TMED9	Q9BVK6	wrong_compartment_negative	no	unlikely	TMED9 cargo receptor; cycles ER↔Golgi but Golgi-residence dominant.
-TMED10	P49755	wrong_compartment_negative	no	unlikely	TMED10 cargo receptor; ER-Golgi cycling.
+TMED9	Q9BVK6	induced_borderline	maybe	possibly_accessible	TMED9 cargo receptor; **cycles ER↔Golgi↔PM** in the secretory pathway with transient PM presence. Cargo-cycling proteins reach the outer face routinely.
+TMED10	P49755	induced_borderline	maybe	possibly_accessible	TMED10 cargo receptor; same ER↔Golgi↔PM cycling pattern as TMED9. Transient PM presence in the secretory pathway.
 GALNT1	Q10472	wrong_compartment_negative	no	unlikely	N-acetylgalactosaminyltransferase 1; Golgi glycosyltransferase.
 NUP210	Q8TEM1	wrong_compartment_negative	no	unlikely	Nuclear pore complex transmembrane component; nuclear envelope.
 SUN1	O94901	wrong_compartment_negative	no	unlikely	SUN domain protein 1; inner nuclear membrane (LINC complex).
@@ -78,14 +78,14 @@ SUN2	Q9UH99	wrong_compartment_negative	no	unlikely	SUN domain protein 2; inner n
 SYNE1	Q8NF91	wrong_compartment_negative	no	unlikely	Nesprin-1; outer nuclear membrane (LINC complex), cytoskeleton-coupled.
 SYNE2	Q8WXH0	wrong_compartment_negative	no	unlikely	Nesprin-2; outer nuclear membrane.
 VDAC1	P21796	induced_borderline	maybe	possibly_accessible	Mitochondrial outer-membrane porin; **plasma-membrane VDAC1 (pl-VDAC) is well-documented** in B cells, neurons, sperm, cancer cells, erythrocytes. Anti-VDAC1 antibodies in development. Borderline due to dual-localization.
-BAX	Q07812	wrong_compartment_negative	no	unlikely	Pro-apoptotic Bcl-2 family; translocates to mitochondrial outer membrane.
+BAX	Q07812	induced_borderline	maybe	possibly_accessible	Pro-apoptotic Bcl-2 family; canonically translocates to mitochondrial outer membrane during apoptosis. **Surface BAX has been reported as an apoptotic-cell marker** (parallel to CALR's ICD-induced surface translocation).
 TGFB1	P01137	secreted_borderline	maybe	possibly_accessible	TGF-β1 secreted as latent complex; **GARP/LRRC32-tethered to Treg surface** as latent TGF-β; integrin αvβ6/αvβ8-mediated activation extracellularly. Clinical anti-GARP-TGF-β programs (Treg targeting).
 C3	P01024	secreted_borderline	maybe	possibly_accessible	Complement C3 secreted plasma protein; cleavage fragment **C3b is covalently deposited on cell surfaces during opsonization**. Borderline because C3 itself is soluble but its activation product is surface-anchored.
 TF	P02787	secreted_negative	no	unlikely	Transferrin; secreted iron-transport plasma protein.
 IL6	P05231	secreted_negative	no	unlikely	Interleukin-6; secreted cytokine.
 IGF1	P05019	secreted_negative	no	unlikely	Insulin-like growth factor 1; secreted hormone.
-F2	P00734	secreted_negative	no	unlikely	Prothrombin; secreted coagulation zymogen.
-FN1	P02751	secreted_negative	no	unlikely	Fibronectin; secreted ECM glycoprotein.
+F2	P00734	secreted_borderline	maybe	possibly_accessible	Prothrombin secreted plasma protein; **recruits to activated-platelet surfaces via Gla-domain phosphatidylserine binding**, assembles into the prothrombinase complex (with Factor Xa, Factor Va) for coagulation. Bona-fide context-dependent surface presentation.
+FN1	P02751	secreted_borderline	maybe	possibly_accessible	Fibronectin secreted ECM glycoprotein; forms **cell-surface fibronectin matrix** via integrin α5β1; **EDB-fibronectin (extra domain B) is a clinical antibody target** in tumor vasculature (F16/F8 antibody, Bibinetumab class). Surface-presented matrix protein.
 APOB	P04114	secreted_negative	no	unlikely	Apolipoprotein B-100; secreted on lipoprotein particles.
 VEGFA	P15692	secreted_negative	no	unlikely	Vascular endothelial growth factor A; secreted angiogenic factor.
 A2M	P01023	secreted_negative	no	unlikely	α2-macroglobulin; secreted plasma protease inhibitor.
@@ -99,7 +99,7 @@ TYK2	P29597	approved_drug_intracellular_negative	no	unlikely	TYK2 tyrosine kinas
 AKT2	P31751	approved_drug_intracellular_negative	no	unlikely	AKT2 serine/threonine kinase; cytoplasmic. Capivasertib clinical/approved.
 MAP2K1	Q02750	approved_drug_intracellular_negative	no	unlikely	MEK1 kinase; cytoplasmic. **Cobimetinib/trametinib approved**.
 MAP2K2	P36507	approved_drug_intracellular_negative	no	unlikely	MEK2 kinase; cytoplasmic.
-HDAC6	Q9UBN7	approved_drug_intracellular_negative	no	unlikely	Histone deacetylase 6; cytoplasmic/perinuclear. Multiple clinical inhibitors.
+HDAC6	Q9UBN7	induced_borderline	maybe	possibly_accessible	Histone deacetylase 6; canonically cytoplasmic/perinuclear. **Extracellular and cell-surface HDAC6 has been reported in tumor microenvironment** contexts. Limited but documented surface presentation.
 IKBKB	O14920	approved_drug_intracellular_negative	no	unlikely	IKK-β; cytoplasmic. Multiple clinical NF-κB-pathway programs.
 LRRK2	Q5S007	approved_drug_intracellular_negative	no	unlikely	LRRK2 kinase; cytoplasmic/peripheral. **Parkinson's clinical programs**.
 STIM1	Q13586	induced_borderline	maybe	possibly_accessible	ER calcium sensor; canonically ER-resident, but **clusters at ER-PM junctions during store-operated calcium entry (SOCE)**; some PM staining reports. Borderline due to ER-PM junction localization.
