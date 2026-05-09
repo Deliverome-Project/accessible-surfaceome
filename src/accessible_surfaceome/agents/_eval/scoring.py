@@ -29,6 +29,14 @@ class CellSummary:
     n_correct_signal: int
     verdict_accuracy: float
     signal_accuracy: float
+    # Binary classification (accessible = yes|maybe; skip = no). For
+    # triage we weight recall higher than precision: a false negative
+    # silently drops a real candidate forever, while a false positive
+    # just adds one item to the deep-dive queue.
+    binary_accuracy: float
+    accessible_recall: float  # TP / (TP + FN)
+    inaccessible_specificity: float  # TN / (TN + FP)
+    f2_score: float  # F-beta with beta=2 — weights recall 2x precision
     total_cost_usd: float
     mean_latency_s: float
 
@@ -38,6 +46,8 @@ def write_report(eval_root: Path = EVAL_ROOT) -> dict[str, Path]:
 
     Returns a dict of artifact name → path written.
     """
+
+    from .database_baselines import compute_database_baselines
 
     eval_root.mkdir(parents=True, exist_ok=True)
     cells = _discover_cells(eval_root)
@@ -57,6 +67,10 @@ def write_report(eval_root: Path = EVAL_ROOT) -> dict[str, Path]:
             per_protein.setdefault(gene, {"gene_symbol": gene, "ground_truth_verdict": r["ground_truth_verdict"]})
             per_protein[gene][f"{summary.cell_label}_verdict"] = r.get("emitted_verdict") or "MISSING"
             per_protein[gene][f"{summary.cell_label}_correct"] = "Y" if r.get("correct_verdict") else "N"
+
+    # Append per-database baselines so the summary table shows the full
+    # cost/accuracy/recall frontier in one place.
+    summaries.extend(compute_database_baselines())
 
     summary_path = eval_root / "summary.tsv"
     _write_summary_tsv(summaries, summary_path)
@@ -93,6 +107,31 @@ def _summarize(cell_dir: Path, records: list[dict[str, Any]]) -> CellSummary:
     n_correct_signal = sum(1 for r in records if r.get("correct_signal"))
     total_cost = sum(float(r.get("cost_usd") or 0.0) for r in records)
     latencies = [float(r.get("latency_s") or 0.0) for r in records if r.get("latency_s") is not None]
+
+    # Binary classification: accessible = yes|maybe, skip = no.
+    tp = tn = fp = fn = 0
+    for r in records:
+        truth = 1 if r.get("ground_truth_verdict") in ("yes", "maybe") else 0
+        emit = r.get("emitted_verdict")
+        pred = 1 if emit in ("yes", "maybe") else 0
+        if pred == 1 and truth == 1:
+            tp += 1
+        elif pred == 0 and truth == 0:
+            tn += 1
+        elif pred == 1 and truth == 0:
+            fp += 1
+        else:
+            fn += 1
+    binary_acc = (tp + tn) / n if n else 0.0
+    recall = tp / (tp + fn) if (tp + fn) else 0.0
+    spec = tn / (tn + fp) if (tn + fp) else 0.0
+    prec = tp / (tp + fp) if (tp + fp) else 0.0
+    beta = 2
+    if prec + recall > 0:
+        f2 = (1 + beta**2) * prec * recall / ((beta**2 * prec) + recall)
+    else:
+        f2 = 0.0
+
     return CellSummary(
         cell_label=cell_dir.name,
         variant=records[0].get("variant") or "?",
@@ -102,6 +141,10 @@ def _summarize(cell_dir: Path, records: list[dict[str, Any]]) -> CellSummary:
         n_correct_signal=n_correct_signal,
         verdict_accuracy=n_correct_verdict / n if n else 0.0,
         signal_accuracy=n_correct_signal / n if n else 0.0,
+        binary_accuracy=binary_acc,
+        accessible_recall=recall,
+        inaccessible_specificity=spec,
+        f2_score=f2,
         total_cost_usd=total_cost,
         mean_latency_s=statistics.fmean(latencies) if latencies else 0.0,
     )
@@ -117,10 +160,12 @@ def _write_summary_tsv(summaries: list[CellSummary], path: Path) -> None:
                 "variant",
                 "model",
                 "n_runs",
-                "n_correct_verdict",
-                "verdict_accuracy",
-                "n_correct_signal",
-                "signal_accuracy",
+                "verdict_acc",
+                "signal_acc",
+                "binary_acc",
+                "accessible_recall",
+                "inaccessible_specificity",
+                "f2_score",
                 "total_cost_usd",
                 "mean_latency_s",
             ]
@@ -132,10 +177,12 @@ def _write_summary_tsv(summaries: list[CellSummary], path: Path) -> None:
                     s.variant,
                     s.model or "",
                     s.n_runs,
-                    s.n_correct_verdict,
                     f"{s.verdict_accuracy:.3f}",
-                    s.n_correct_signal,
                     f"{s.signal_accuracy:.3f}",
+                    f"{s.binary_accuracy:.3f}",
+                    f"{s.accessible_recall:.3f}",
+                    f"{s.inaccessible_specificity:.3f}",
+                    f"{s.f2_score:.3f}",
                     f"{s.total_cost_usd:.4f}",
                     f"{s.mean_latency_s:.2f}",
                 ]
