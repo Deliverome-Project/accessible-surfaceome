@@ -13,7 +13,7 @@ PRAME	P78395	pmhc_borderline	maybe	possibly_accessible	HLA-A*02-restricted; clin
 CALR	P27797	induced_borderline	maybe	possibly_accessible	ER-resident at baseline; reaches outer leaflet during immunogenic cell death
 HSPA1A	P0DMV8	induced_borderline	maybe	possibly_accessible	Cytoplasmic at baseline; tumor-stress-induced surface presentation
 HSPA5	P11021	induced_borderline	maybe	possibly_accessible	ER chaperone at baseline; ER-stress/oncogenic-state translocation to outer leaflet
-KRAS	P01116	wrong_side_negative	no	unlikely	Membrane-anchored on the cytoplasmic face; tests "membrane = surface" trap
+KRAS	P01116	wrong_side_negative	no	unlikely	"Membrane-anchored on the cytoplasmic face; tests ""membrane = surface"" trap"
 LAMP1	P11279	induced_borderline	maybe	possibly_accessible	Classical lysosomal membrane glycoprotein; reaches plasma membrane via lysosomal exocytosis (CD107a degranulation marker on NK / cytotoxic T cells, surface staining on metastatic tumor cells). Conditional surfacing puts it in the maybe class.
 ABCB9	Q9NP78	wrong_compartment_negative	no	unlikely	Polytopic TM but lysosomal; TM topology does not imply PM accessibility
 MUC5AC	P98088	secreted_negative	no	unlikely	Fully secreted gel-forming mucin; no membrane tether
@@ -22,3 +22,35 @@ ATG9A	Q7Z3C6	wrong_compartment_negative	no	unlikely	Cycles between Golgi/endosom
 TGOLN2	O43493	wrong_compartment_negative	no	unlikely	Trans-Golgi network resident; TM + small luminal domain
 STING1	Q86WV6	wrong_compartment_negative	no	unlikely	ER signaling adaptor (TMEM173); TM-rich but never on PM
 GORASP2	Q9H8Y8	wrong_compartment_negative	no	unlikely	Peripheral on Golgi cytosolic face; tests inner-leaflet/cytosolic-Golgi confusion
+STEAP1	Q9UHE8	disagreement_rich_positive	yes	possibly_accessible	TCR-T + bispecific: GSK4427296 TCR-T + AMG509 bispecific. 6-pass TM with small ECLs — also tests minimal_ectoloops case
+KLK2	P20151	disagreement_rich_positive	yes	likely_accessible	clinical ADC: Multiple programs; secreted+membrane prostate antigen
+CLDN6	P56747	disagreement_rich_positive	yes	likely_accessible	CAR-T + ADC + bispecific: BNT211 CAR-T (BioNTech), AMG794 bispecific, multiple ADCs. Tight-junction claudin
+GPRC5D	Q9NZD1	disagreement_rich_positive	yes	likely_accessible	approved bispecific + CAR-T: Talquetamab approved 2023 (multiple myeloma); orphan GPCR
+GUCY2C	P25092	disagreement_rich_positive	yes	likely_accessible	approved bispecific + ADC: M9140 ADC; multiple approved/clinical programs
+PSCA	O43653	disagreement_rich_positive	yes	likely_accessible	clinical CAR-T + ADC: Multiple PSCA programs; GPI-anchored
+SEZ6	Q53EL9	disagreement_rich_positive	yes	likely_accessible	clinical ADC: ABBV-011 ADC (AbbVie SCLC)
+FZD7	O75084	disagreement_rich_positive	yes	likely_accessible	clinical mAb: Vantictumab (OMP-18R5, Ipsen/OncoMed); 7TM Wnt receptor
+LGR5	O75473	disagreement_rich_positive	yes	likely_accessible	clinical ADC: Multiple Wnt-receptor ADC programs
+EFNA4	P52798	disagreement_rich_positive	yes	likely_accessible	clinical ADC: PF-06647263 ADC
+EREG	O14944	disagreement_rich_positive	yes	likely_accessible	clinical mAb: Anti-EREG programs (epiregulin)
+ROS1	P08922	disagreement_rich_positive	yes	likely_accessible	approved TKI + clinical ADC: Crizotinib/lorlatinib approved (small molecule); ADC programs in development
+DLL3	Q9NYJ7	disagreement_rich_positive	yes	likely_accessible	approved bispecific: Tarlatamab/Imdelltra approved 2024 SCLC
+ROR1	Q01973	disagreement_rich_positive	yes	likely_accessible	clinical CAR-T + ADC: Cirmtuzumab, Zilovertamab vedotin, Lyell CAR-T
+ROR2	Q01974	disagreement_rich_positive	yes	likely_accessible	clinical ADC: BA3021 conditionally-active ADC (BioAtla)
+CCR8	P51685	disagreement_rich_positive	yes	likely_accessible	clinical mAb: Multiple anti-CCR8 mAb programs (Treg depletion)
+EPHB4	P54760	disagreement_rich_positive	yes	likely_accessible	clinical mAb: Soluble EphB4 fusion programs
+FLT3	P36888	disagreement_rich_positive	yes	likely_accessible	clinical ADC + CAR-T: AMG553 CAR-T, FLT3xCD3 bispecifics
+GFRA1	P56159	disagreement_rich_positive	yes	likely_accessible	clinical ADC: Multiple GFRalpha-1 ADC programs
+GPNMB	Q14956	disagreement_rich_positive	yes	likely_accessible	clinical ADC: Glembatumumab vedotin (Celldex)
+FZD10	Q9ULW2	disagreement_rich_positive	yes	likely_accessible	clinical mAb: OTSA101-DTPA (radioimmunoconjugate)
+ADORA3	P0DMS8	gpcr_extracellular_pocket	yes	likely_accessible	clinical small molecule: Adenosine A3 receptor; multiple clinical programs
+GIPR	P48546	gpcr_extracellular_pocket	yes	likely_accessible	approved peptide drug: Tirzepatide (GIP/GLP-1 dual agonist) approved
+GCGR	P47871	gpcr_extracellular_pocket	yes	likely_accessible	clinical peptide drug: Multiple glucagon receptor programs
+HTR2C	P28335	gpcr_extracellular_pocket	yes	likely_accessible	approved small molecule: Lorcaserin (was approved); 7TM serotonin receptor
+MC1R	Q01726	gpcr_extracellular_pocket	yes	likely_accessible	approved peptide: Afamelanotide (Scenesse) approved; melanocortin
+GPBAR1	Q8TDU6	gpcr_extracellular_pocket	yes	likely_accessible	clinical small molecule: Bile acid receptor TGR5; multiple programs
+BDKRB1	P46663	gpcr_extracellular_pocket	yes	likely_accessible	clinical small molecule: Bradykinin B1 receptor; multiple programs
+HRH2	P25021	gpcr_extracellular_pocket	yes	likely_accessible	approved small molecule: H2 receptor (ranitidine/famotidine class)
+NPY5R	Q15761	gpcr_extracellular_pocket	yes	likely_accessible	clinical small molecule: Neuropeptide Y receptor 5; obesity programs
+GRM4	Q14833	gpcr_extracellular_pocket	yes	likely_accessible	clinical small molecule: Metabotropic glutamate receptor 4; CNS programs
+AVPR1A	P37288	gpcr_extracellular_pocket	yes	likely_accessible	clinical small molecule: Vasopressin V1A receptor; conivaptan family
