@@ -1,6 +1,6 @@
 # Triage benchmark v1 — controls
 
-Total: **104 proteins** (39 `yes`, 19 `maybe`, 46 `no`)
+Total: **105 proteins** (40 `yes`, 19 `maybe`, 46 `no`)
 
 **DBs/5** column: how many of the 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA) flagged the protein as surface-expressed. *DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack.* `—` means the protein is not in the M1 candidate universe.
 
@@ -39,6 +39,7 @@ Surface-accessible: a binder could in principle reach the protein from the extra
 | **SEZ6** | Q53EL9 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | clinical ADC: ABBV-011 ADC (AbbVie SCLC) |
 | **SLC34A2** | O95436 | `disagreement_rich_positive` | **4/5** (surfy,uniprot,go,hpa) | Apical phosphate transporter; clinical Lifastuzumab vedotin ADC |
 | **STEAP1** | Q9UHE8 | `disagreement_rich_positive` | — | TCR-T + bispecific: GSK4427296 TCR-T + AMG509 bispecific. 6-pass TM with small ECLs — also tests minimal_ectoloops case |
+| **TFRC** | P02786 | `disagreement_rich_positive` | **3/5** (cspa,uniprot,go) | Transferrin receptor 1 (CD71); classical iron-uptake receptor; **multiple clinical antibody programs** (CX-2029 EpCAM-conditional ADC, TROP-2/TFRC dual-targeting), plus the standard transferrin-conjugate brain-shuttle approaches. Type II single-pass TM with large ECD. Missed by SURFY and HPA despite being a canonical surface receptor. |
 | **ADORA3** | P0DMS8 | `gpcr_extracellular_pocket` | **1/5** (uniprot) | clinical small molecule: Adenosine A3 receptor; multiple clinical programs |
 | **AVPR1A** | P37288 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Vasopressin V1A receptor; conivaptan family |
 | **BDKRB1** | P46663 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Bradykinin B1 receptor; multiple programs |
@@ -138,7 +139,7 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 | Class | Verdict | Count |
 |---|---|---:|
 | `approved_drug_intracellular_negative` | `no` | 13 |
-| `disagreement_rich_positive` | `yes` | 25 |
+| `disagreement_rich_positive` | `yes` | 26 |
 | `gpcr_extracellular_pocket` | `yes` | 11 |
 | `induced_borderline` | `maybe` | 11 |
 | `mixed_mechanism_borderline` | `maybe` | 1 |
@@ -155,6 +156,6 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 
 | Verdict | 0/5 (or not-in-M1) | 1/5 | 2/5 | 3/5 | 4/5 | 5/5 |
 |---|---:|---:|---:|---:|---:|---:|
-| `yes` | 2 | 1 | 20 | 9 | 5 | 2 |
+| `yes` | 2 | 1 | 20 | 10 | 5 | 2 |
 | `maybe` | 3 | 6 | 7 | 2 | 1 | 0 |
 | `no` | 3 | 30 | 13 | 0 | 0 | 0 |
