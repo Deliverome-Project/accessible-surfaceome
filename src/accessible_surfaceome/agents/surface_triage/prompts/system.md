@@ -61,14 +61,23 @@ A clinical-stage *intracellular*-pocket small-molecule drug does **not** by itse
 
 ## Pre-`no` checklist
 
-Before emitting `verdict: "no"`, briefly verify:
+`no` is the highest-cost error in this triage: it removes a candidate from genome-wide consideration before any downstream review. False positives (`contextual` on a protein that turns out non-surface) get caught by the downstream annotator; false negatives do not. **Apply every probe below before emitting `no`. Any real doubt → `contextual`.**
 
 1. **Is the protein the target of a *cell-surface-directed* therapeutic?** Antibody / ADC / CAR-T / TCR-T / TCR-mimic / bispecific programs that engage the protein **on the cell surface** are strong evidence for at least `contextual`. *Don't conflate this with anti-soluble-ligand antibodies that bind a circulating pool* — anti-cytokine, anti-growth-factor, or anti-complement programs targeting the secreted form don't establish surface accessibility on cells. If a clinical program specifically engages the protein extracellularly on cells, reconsider whether pMHC, latent-complex tethering, cell-state-induced surfacing, or complex-partner co-trafficking applies before defaulting to `no`.
-2. **Do the aliases / previous symbols hint at non-canonical biology?** Antigen-style alias lineages point toward pMHC presentation. Names containing "latent" / "pro-protein" / "propeptide" / "pre-pro" hint at a covalent complex tethered to a TM partner. Activation- or stress-state names hint at cell-state induction. Pause on such hints before defaulting to `no`.
-3. **Could a secreted ligand be covalently tethered to a TM partner?** Many secreted growth factors, cytokines, and immune-regulatory ligands have surface-tethered latent forms via disulfide bonds to a TM scaffold. Don't reflexively classify all "secreted" proteins as `secreted_only`.
-4. **Does the NCBI summary or alias list suggest non-classical surface biology?** If the resolver context mentions latent complex, activation-induced expression, or any surface-relevant biology beyond the dominant subcellular call — pause and consider the relevant contextual reason.
 
-If any of these probes raises real doubt, lean toward `contextual` rather than defaulting to `no`.
+2. **Does the gene encode a membrane-anchored isoform alongside a soluble one, or is the "soluble" form actually a shed ectodomain?** Many surface genes are alternatively spliced into both TM and secreted forms (single-pass receptors with soluble-decoy isoforms, dual GPI / cleaved-GPI products), and many TM proteins are detected primarily as shed ectodomains in serum (ADAM / MMP / BACE / γ-secretase cleavage). If *any* annotated isoform retains a membrane anchor — or the soluble form in the summary is plausibly a shed ectodomain of a TM precursor — the gene is at least `contextual`. `secreted_only` applies only when no isoform is membrane-anchored at any point in its lifecycle.
+
+3. **Could the protein body remain anchored to a TM partner via a covalent post-translational link?** Many secreted growth factors, cytokines, and immune-regulatory ligands have surface-tethered latent forms via disulfide bonds to a TM scaffold. Naming hints like "latent" / "pro-protein" / "propeptide" / "pre-pro" point here. Don't reflexively classify all "secreted" proteins as `secreted_only`.
+
+4. **Could a peptide derived from this protein be MHC-presented as a clinically engaged antigen?** The criterion is broad: any intracellular protein with documented T-cell-recognized epitopes — tumor-restricted, cancer-testis, oncofetal, viral, lineage-restricted, or somatic-mutation-derived — that is engaged by a clinical TCR-T / TCR-mimic / bispecific / vaccine program counts as `contextual`, not `no`. Antigen-style alias lineages are one hint, but absence of such an alias does not rule out pMHC.
+
+5. **Do the aliases / previous symbols hint at non-canonical biology?** Activation- or stress-state naming hints at cell-state induction. Alias lineages historically used for tumor antigens point toward pMHC. Pause on such hints before defaulting to `no`.
+
+6. **Does the gene name match a canonical surface-protein family convention?** Names matching established surface-protein family conventions — receptor / channel / transporter / claudin / cadherin / integrin / selectin / ephrin / tetraspanin / GPCR / solute-carrier / ABC-transporter / adhesion-molecule / Toll-like / Frizzled / scavenger-receptor — strongly bias toward surface localization even when the NCBI summary is sparse or focused on a non-surface aspect of the protein.
+
+7. **Does the NCBI summary suggest non-classical surface biology?** If the resolver context mentions latent complex, activation-induced expression, ectodomain shedding, dual localization, or any surface-relevant biology beyond the dominant subcellular call — pause and consider the relevant contextual reason.
+
+When in doubt, **`contextual` is the safer call than `no`**. Genome-wide, expect a meaningful fraction of borderline / dual-localization / induced-surfacing biology; if you find yourself emitting `no` for any protein with documented membrane association at any stage of its lifecycle, you are likely over-rejecting.
 
 ---
 
