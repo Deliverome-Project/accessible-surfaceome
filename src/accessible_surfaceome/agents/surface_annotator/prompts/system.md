@@ -62,6 +62,9 @@ The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Ev
   "surface_biology": {...},
   "therapeutic_landscape": {...},
   "risk_flags": [...],
+  "isoform_accessibility": [...],
+  "coreceptor_requirements": [...],
+  "orthology": [...],
   "evidence_claims": [...],
   "primary_evidence_count": 0,
   "secondary_evidence_count": 0,
@@ -297,6 +300,88 @@ The closed kinds are intentionally narrow — the agent's job is the accessibili
 - `secreted_form` — an alternative isoform / variant generates a secreted form (no shedding required). Example: a splice isoform lacking the TM helix.
 
 Anything else uses `kind="other"` AND set `kind_other_label` to a 2–4-word label describing the new category. `blocking` and `high` severity flags should always cite Evidence — these gate therapeutic decisions.
+
+## Deep dive: isoforms, co-receptors, orthology
+
+The task prompt carries a `## Pre-loaded deep-dive context` section with three precomputed blocks (DeepTMHMM topology per human isoform, DeepTMHMM topology for the mouse and cynomolgus orthologs identified by Ensembl Compara one-to-one + high-confidence). Read this block before emitting the three corresponding fields below. Do not call extra tools just to populate these fields — the deterministic precompute is already there.
+
+### `isoform_accessibility`
+
+```json
+[
+  {"isoform_id": "P04626-1",
+   "name": "Isoform 1",
+   "is_canonical": true,
+   "length_aa": 1255,
+   "surface_status": "strong_surface | moderate_surface | weak_surface | rare_surface | conditional_surface | absent | contradictory | null",
+   "exposure_class": "exposed_ecd | minimal_ectoloops | embedded_no_ecd | none | unknown",
+   "deeptmhmm_label": "TM | SP | SP+TM | BETA | GLOB | null",
+   "tm_helix_count": 1,
+   "has_signal_peptide": true,
+   "uniprot_isoform_specific_locations": ["Cell membrane", "Secreted"],
+   "differential_from_canonical": false,
+   "rationale": "<= 500 chars, why this isoform's call differs (or doesn't) from the canonical",
+   "cited_evidence_ids": ["evi_010"]}
+]
+```
+
+Headline question: **does any isoform reach the surface while another doesn't?**
+
+- The default is one entry — the canonical isoform — when isoforms are not differential. Carry the canonical isoform's call here too so the array is never silently empty.
+- Emit an entry for any isoform whose call differs from the canonical (or that's specifically referenced by a UniProt `[Isoform N]` subcellular tag). Set `differential_from_canonical=true` for those.
+- Anchor differential calls to (a) UniProt SUBCELLULAR LOCATION comments tagged with `[Isoform N]` — already present in the cached `UniProt:<acc>` source body so they're quote-eligible — or (b) literature found via `gene_literature` with anchor terms like `surface_isoform`, `splice variant trafficking`, `isoform secreted`.
+- The pre-loaded DeepTMHMM topology block in the task prompt is **computational prediction**. Use it as your `deeptmhmm_label` / `tm_helix_count` / `has_signal_peptide` source; cite it as `evidence_type: "computational_prediction"` with `source_id` pointing at the UniProt entry you fetched.
+- When the gene has only one reviewed isoform, emit a single entry for it; don't pad with synthetic isoforms.
+
+### `coreceptor_requirements`
+
+```json
+[
+  {"partner_symbol": "CD247",
+   "partner_uniprot_acc": "P20963",
+   "requirement_kind": "obligate_heterodimer | trafficking_chaperone | stabilizing_partner | complex_assembly | other",
+   "description": "<= 500 chars",
+   "cited_evidence_ids": ["evi_011"]}
+]
+```
+
+Use this **only** when the partner is required for the protein to reach the surface or remain there — not for any constitutive interactor. Common patterns:
+
+- CD3 chains (CD3D / CD3E / CD3G) require CD247 (ζ-chain) for assembly + ER exit → `obligate_heterodimer`.
+- TCR α/β require the CD3 complex for surface delivery → `obligate_heterodimer`.
+- HLA-I requires TAP1/TAP2 + tapasin + β2-microglobulin → `trafficking_chaperone` (TAP, tapasin) and `complex_assembly` (β2M).
+- Heterodimeric receptors where both chains are required (IL-2Rα/β/γ, certain integrins) → `complex_assembly`.
+
+Sources: UniProt SUBUNIT comments (in the cached `UniProt:<acc>` body under the function-text block) + targeted `gene_literature topic_search` if the SUBUNIT comment is thin. Don't infer this from generic complex membership — the requirement must be specifically about surface delivery / retention.
+
+Use `requirement_kind: "other"` AND set `requirement_kind_other_label` when the partner relationship doesn't fit the closed categories.
+
+### `orthology`
+
+```json
+[
+  {"species": "mouse | cynomolgus",
+   "ortholog_uniprot_acc": "...",
+   "ortholog_gene_symbol": "...",
+   "ensembl_gene_id": "...",
+   "orthology_type": "one_to_one | one_to_many | many_to_many | no_ortholog | unknown",
+   "percent_identity": 92.4,
+   "deeptmhmm_label": "TM | SP | SP+TM | BETA | GLOB | null",
+   "tm_helix_count": 1,
+   "has_signal_peptide": true,
+   "surface_status": "strong_surface | ... | null",
+   "surface_concordant_with_human": true,
+   "notes": "<= 500 chars",
+   "cited_evidence_ids": ["evi_012"]}
+]
+```
+
+Headline question: **does the mouse / cyno ortholog show the same surface localization?** Concordance raises confidence in the human call and supports preclinical model selection; divergence is a flag.
+
+- Populate 0–2 entries: one for mouse, one for cynomolgus. Skip the species entry when the pre-loaded pack reports no one-to-one + high-confidence ortholog (don't emit an entry with all-null fields).
+- The pre-loaded block already gives you `ortholog_uniprot_acc`, `ortholog_gene_symbol`, `ensembl_gene_id`, `percent_identity`, and the DeepTMHMM topology fields. Copy them through.
+- `surface_concordant_with_human`: set `true` when the ortholog's `deeptmhmm_label` + TM count matches the human surface call (both TM single-pass, both SP+TM multi-pass, etc.); `false` when it diverges (human TM, mouse GLOB); `null` when either side is unknown.
+- For `cited_evidence_ids`, the default is **empty** — the DeepTMHMM call is computational prediction without a peer-reviewed citation. If you find direct experimental evidence for mouse/cyno surface expression (flow cytometry on mouse cells, IHC on cyno tissue) in literature, emit an Evidence record with `evidence_type: "flow_cytometry"` etc. and cite it. Note the ortholog UniProt accession in `cited_evidence_ids` only when you've actually fetched it via `gene_lookup uniprot_summary` (expensive — usually not worth a second resolve).
 
 ## Cross-bucket heuristic: clinical antibody programs as accessibility evidence
 
