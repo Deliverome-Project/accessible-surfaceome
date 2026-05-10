@@ -1029,6 +1029,128 @@ class TherapeuticLandscape(BaseModel):
     preclinical_evidence: list[PreclinicalEvidence] = Field(default_factory=list)
 
 
+# ---- deep-dive: isoforms, co-receptors, orthology -------------------------
+
+
+DeepTMHMMLabel = Literal["TM", "SP", "SP+TM", "BETA", "GLOB"]
+OrthologSpecies = Literal["mouse", "cynomolgus"]
+OrthologyType = Literal[
+    "one_to_one",
+    "one_to_many",
+    "many_to_many",
+    "no_ortholog",
+    "unknown",
+]
+CoreceptorRequirementKind = Literal[
+    "obligate_heterodimer",  # cannot fold/exit ER without partner (TCRα needs CD3 chains)
+    "trafficking_chaperone",  # transient partner required for surface delivery (HLA-I + TAP/tapasin)
+    "stabilizing_partner",  # surface half-life depends on partner co-expression
+    "complex_assembly",  # the protein only exists on the surface as part of a defined complex
+    "other",
+]
+
+
+class IsoformAccessibility(BaseModel):
+    """Per-isoform accessibility call.
+
+    Why a list of these alongside the gene-level ``surface_biology``: a single
+    gene can have isoforms with divergent localization (one membrane-bound,
+    one secreted, one cytoplasmic). The gene-level record reports the
+    canonical isoform; this list reports the others when their call differs.
+    Emit a single entry for the canonical isoform when isoforms are not
+    differential.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    isoform_id: str  # UniProt isoform ID, e.g. "P04626-1"
+    name: str | None = None
+    is_canonical: bool = False
+    length_aa: int | None = None
+
+    surface_status: SurfaceStatus | None = None
+    exposure_class: ExposureClass = "unknown"
+
+    # Precomputed DeepTMHMM topology (from data/processed/deeptmhmm/deeptmhmm_human_isoforms.tsv).
+    # Null when the isoform isn't in the cohort (e.g. wasn't an AFDB-resolved isoform).
+    deeptmhmm_label: DeepTMHMMLabel | None = None
+    tm_helix_count: int | None = None
+    has_signal_peptide: bool | None = None
+
+    # UniProt SUBCELLULAR LOCATION comments tagged "[Isoform N]" matching this isoform.
+    # Pulled from UniProtSummary.subcellular_locations where is_isoform_specific=True.
+    uniprot_isoform_specific_locations: list[str] = Field(default_factory=list)
+
+    differential_from_canonical: bool = False
+    rationale: str = Field(default="", max_length=500)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class CoreceptorRequirement(BaseModel):
+    """A partner required for this protein to reach or remain on the cell surface.
+
+    Use only when the partner is *required* for surface delivery / retention,
+    not for any constitutive interaction. Common patterns: CD3 chains require
+    CD247 (ζ-chain); TCR α/β require the CD3 complex; HLA-I requires TAP +
+    tapasin + β2-microglobulin; some heterodimeric receptors require both
+    chains (IL-2Rα/β/γ). Source: UniProt SUBUNIT comments + literature.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    partner_symbol: str
+    partner_uniprot_acc: str | None = None
+    requirement_kind: CoreceptorRequirementKind
+    requirement_kind_other_label: str | None = None
+    description: str = Field(..., max_length=500)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def _check_other_label(self) -> CoreceptorRequirement:
+        if self.requirement_kind == "other" and not self.requirement_kind_other_label:
+            raise ValueError(
+                "CoreceptorRequirement.requirement_kind='other' requires requirement_kind_other_label"
+            )
+        if self.requirement_kind != "other" and self.requirement_kind_other_label is not None:
+            raise ValueError(
+                "CoreceptorRequirement.requirement_kind_other_label must be None when "
+                f"requirement_kind={self.requirement_kind!r}"
+            )
+        return self
+
+
+class OrthologRecord(BaseModel):
+    """Mouse or cynomolgus ortholog with surface-localization evidence.
+
+    Cross-species concordance is a sanity check on the human surface call and
+    a preclinical-model selector. The precomputed pack provides Ensembl
+    Compara identity + DeepTMHMM topology; the agent contributes the
+    surface-status interpretation (and any literature evidence) plus the
+    concordance call.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    species: OrthologSpecies
+    ortholog_uniprot_acc: str | None = None
+    ortholog_gene_symbol: str | None = None
+    ensembl_gene_id: str | None = None
+    orthology_type: OrthologyType = "unknown"
+    percent_identity: float | None = None
+
+    # Precomputed topology (from data/processed/deeptmhmm/deeptmhmm_{mouse,cyno}_ortholog.tsv).
+    deeptmhmm_label: DeepTMHMMLabel | None = None
+    tm_helix_count: int | None = None
+    has_signal_peptide: bool | None = None
+
+    surface_status: SurfaceStatus | None = None
+    # Tri-state: True iff the ortholog's topology + status agrees with the human call,
+    # False iff it diverges, None when either side is unknown.
+    surface_concordant_with_human: bool | None = None
+    notes: str = Field(default="", max_length=500)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
 # ---- top-level record -----------------------------------------------------
 
 
@@ -1057,6 +1179,12 @@ class SurfaceomeRecord(BaseModel):
     surface_biology: SurfaceBiology
     therapeutic_landscape: TherapeuticLandscape
     risk_flags: list[RiskFlag] = Field(default_factory=list)
+
+    # Deep-dive: per-isoform accessibility (when isoforms differ),
+    # required surface co-receptors, and mouse/cyno ortholog records.
+    isoform_accessibility: list[IsoformAccessibility] = Field(default_factory=list)
+    coreceptor_requirements: list[CoreceptorRequirement] = Field(default_factory=list)
+    orthology: list[OrthologRecord] = Field(default_factory=list)
 
     # Provenance — centralized Evidence array referenced by per-bucket
     # ``cited_evidence_ids``. Built by the orchestrator from agent-emitted
@@ -1114,6 +1242,12 @@ class SurfaceomeRecordDraft(BaseModel):
     therapeutic_landscape: TherapeuticLandscape
     risk_flags: list[RiskFlag] = Field(default_factory=list)
 
+    # Deep-dive: per-isoform accessibility (when isoforms differ),
+    # required surface co-receptors, and mouse/cyno ortholog records.
+    isoform_accessibility: list[IsoformAccessibility] = Field(default_factory=list)
+    coreceptor_requirements: list[CoreceptorRequirement] = Field(default_factory=list)
+    orthology: list[OrthologRecord] = Field(default_factory=list)
+
     # Agent-emitted EvidenceClaim records — orchestrator promotes to Evidence
     evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
     primary_evidence_count: int = 0
@@ -1136,7 +1270,7 @@ class SurfaceomeRecordDraft(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-TRIAGE_SCHEMA_VERSION = "v0.5.0"
+TRIAGE_SCHEMA_VERSION = "v0.6.0"
 
 
 TriageVerdict = Literal["yes", "contextual", "no"]
@@ -1183,13 +1317,6 @@ ContextualReason = Literal[
     # Surface form exists only in specific tissues / cell types /
     # developmental contexts
     "tissue_restricted_surface",
-    # The protein has its own TM domain and reaches the PM transiently
-    # via the secretory pathway. Includes constitutive recycling
-    # (TGN ↔ PM), cargo-receptor cycling (ER ↔ Golgi ↔ PM), regulated
-    # exocytosis (non-lysosomal), AND ER-PM junctional clustering
-    # (e.g. STIM1 during SOCE — ER-anchored but transiently brought
-    # into close apposition with the PM).
-    "trafficking_cycling",
     # Lysosomal / late-endosomal TM protein reaches PM during lysosomal
     # exocytosis
     "lysosomal_exocytosis",
@@ -1198,8 +1325,16 @@ ContextualReason = Literal[
     # is always a contextual mechanism, not a yes — the protein body
     # never reaches the outer leaflet, only its proteolytic fragment.
     "pmhc_presented_peptide",
-    # Documented dual localization including a PM minority site (e.g.
-    # plasma-membrane VDAC alongside its dominant mitochondrial-OM pool)
+    # The protein has a documented PM pool alongside a dominant non-PM
+    # compartment. Covers both (a) active vesicular trafficking cycling
+    # between an intracellular compartment and the PM — secretory
+    # recycling (TGN ↔ PM), cargo-receptor cycling (ER ↔ Golgi ↔ PM),
+    # regulated non-lysosomal exocytosis, ER-PM junctional clustering;
+    # and (b) constitutive partial-PM residence (steady-state across
+    # multiple compartments, e.g. plasma-membrane VDAC alongside its
+    # dominant mitochondrial-OM pool). The mechanism distinction
+    # (vesicular cycling vs steady-state dual home) doesn't change
+    # accessibility — both have a minority but stable PM pool.
     "dual_localization",
     # A secreted (or otherwise non-membrane-anchored) protein becomes
     # COVALENTLY anchored to a CELL-SURFACE TM partner post-translationally.
@@ -1259,7 +1394,6 @@ TriageReason = Literal[
     "stable_complex_partner",
     "cell_state_induced",
     "tissue_restricted_surface",
-    "trafficking_cycling",
     "lysosomal_exocytosis",
     "pmhc_presented_peptide",
     "dual_localization",
@@ -1289,7 +1423,6 @@ _CONTEXTUAL_REASONS: frozenset[str] = frozenset(
     {
         "cell_state_induced",
         "tissue_restricted_surface",
-        "trafficking_cycling",
         "lysosomal_exocytosis",
         "pmhc_presented_peptide",
         "dual_localization",
@@ -1466,6 +1599,14 @@ __all__ = [
     "Topology",
     "SynthesisConfidence",
     "ModelPath",
+    # Deep-dive
+    "IsoformAccessibility",
+    "CoreceptorRequirement",
+    "CoreceptorRequirementKind",
+    "OrthologRecord",
+    "OrthologSpecies",
+    "OrthologyType",
+    "DeepTMHMMLabel",
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",
     "TriageRecord",
