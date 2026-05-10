@@ -1,16 +1,12 @@
 # Triage benchmark v1 — controls
 
-Total: **106 proteins** (41 `yes`, 19 `maybe`, 46 `no`)
+Total: **114 proteins** (45 `yes`, 23 `maybe`, 46 `no`)
 
-**DBs/5** column: how many of the 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA) flagged the protein as surface-expressed. *DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack.* `—` means the protein is not in the M1 candidate universe.
-
-## Labeling rule: stable mechanism on the surface = accessible
-
-A protein is **`yes` or `maybe`** when it has a stable mechanism of presence on the outer face of the plasma membrane. Acceptable: TM domain, GPI anchor, outer-leaflet lipidation, direct outer-leaflet lipid binding (annexin-PS), pore assembly, **stable non-covalent complex partner of an anchored protein co-trafficked from the ER (e.g., β2-microglobulin with MHC-I)**, **covalent post-translational attachment to surface molecules (e.g., C3b deposition, TG2 cross-linking)**, or MHC-peptide presentation. *Transient* non-covalent recruitment (fibronectin → integrin, APOB → LDLR, prothrombin → platelet PS via Ca²⁺) is **`no`** — the recruiting partner is the surface protein, not the recruited one.
+**DBs/5** column: count out of 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA). DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack. `—` means the protein is not in the M1 candidate universe.
 
 ## Yes — surface accessible
 
-Surface-accessible by a stable mechanism: classical TM/GPI receptors, multi-pass with exposed loops, GPCR small-molecule pockets, AND stable complex partners co-trafficked with anchored proteins (B2M-style).
+Stably surface by the protein's own mechanism: TM domain, GPI, outer-leaflet lipidation, direct outer-leaflet lipid binding, pore assembly, or stable complex-partner co-trafficking.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
@@ -18,6 +14,7 @@ Surface-accessible by a stable mechanism: classical TM/GPI receptors, multi-pass
 | **CD74** | P04233 | `disagreement_rich_positive` | **4/5** (surfy,cspa,uniprot,go) | Invariant chain on B/dendritic cell surface; clinical-stage Milatuzumab ADC |
 | **CLDN6** | P56747 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | CAR-T + ADC + bispecific: BNT211 CAR-T (BioNTech), AMG794 bispecific, multiple ADCs. Tight-junction claudin |
 | **DLL3** | Q9NYJ7 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,hpa) | approved bispecific: Tarlatamab/Imdelltra approved 2024 SCLC |
+| **DSG3** | P32926 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,go) | Desmoglein 3 — single-pass type I TM cadherin in desmosomes of basal keratinocytes and oral mucosa. **Pemphigus vulgaris autoantigen** — patient autoantibodies bind cell-surface DSG3 on keratinocytes (validation of surface accessibility). Tissue-restricted expression. |
 | **EFNA4** | P52798 | `disagreement_rich_positive` | **2/5** (surfy,cspa) | clinical ADC: PF-06647263 ADC |
 | **EPHB4** | P54760 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical mAb: Soluble EphB4 fusion programs |
 | **EREG** | O14944 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | clinical mAb: Anti-EREG programs (epiregulin) |
@@ -28,10 +25,13 @@ Surface-accessible by a stable mechanism: classical TM/GPI receptors, multi-pass
 | **GPNMB** | Q14956 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical ADC: Glembatumumab vedotin (Celldex) |
 | **GPRC5D** | Q9NZD1 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | approved bispecific + CAR-T: Talquetamab approved 2023 (multiple myeloma); orphan GPCR |
 | **GUCY2C** | P25092 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | approved bispecific + ADC: M9140 ADC; multiple approved/clinical programs |
+| **GYPA** | P02724 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,hpa) | Glycophorin A (MNS blood group antigen) — single-pass type I TM sialoglycoprotein on the erythrocyte surface. Classical surface architecture; RBC-restricted expression. Targeted by anti-GYPA in blood-group serology and as an RBC marker in clinical immunology. |
 | **KLK2** | P20151 | `disagreement_rich_positive` | — | clinical ADC: Multiple programs; secreted+membrane prostate antigen |
 | **LGR5** | O75473 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | clinical ADC: Multiple Wnt-receptor ADC programs |
 | **LRRC15** | Q8TF66 | `disagreement_rich_positive` | **5/5** (surfy,cspa,uniprot,go,hpa) | Mesenchymal/stromal surface receptor; clinical-stage ABBV-085 ADC |
+| **LRRC32** | Q14392 | `disagreement_rich_positive` | **4/5** (surfy,cspa,uniprot,go) | GARP — single-pass type I TM glycoprotein with a large LRR extracellular domain. Restricted expression on Tregs and platelets. Anchors latent TGF-β1 to the cell surface via covalent disulfide bonds. Clinical antibody program: **livmoniplimab (ABBV-151)** targets the GARP:latent-TGF-β1 complex in solid-tumor combination trials with anti-PD1. |
 | **MUC1** | P15941 | `disagreement_rich_positive` | **4/5** (surfy,uniprot,go,hpa) | TROP-2-adjacent validated tumor antigen; large mucin ECD; multiple antibody programs |
+| **OR1A1** | Q9P1Q5 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | Olfactory receptor 1A1 — classical 7TM rhodopsin-family GPCR. Stably surface on olfactory sensory neurons (and reported in some ectopic-expression contexts). Expression is tissue-restricted to a specialized cell type but the surface architecture is unambiguous when expressed. |
 | **PSCA** | O43653 | `disagreement_rich_positive` | **2/5** (surfy,hpa) | clinical CAR-T + ADC: Multiple PSCA programs; GPI-anchored |
 | **ROR1** | Q01973 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical CAR-T + ADC: Cirmtuzumab, Zilovertamab vedotin, Lyell CAR-T |
 | **ROR2** | Q01974 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical ADC: BA3021 conditionally-active ADC (BioAtla) |
@@ -56,18 +56,23 @@ Surface-accessible by a stable mechanism: classical TM/GPI receptors, multi-pass
 | **ERBB2** | P04626 | `validated_positive` | **5/5** (surfy,cspa,uniprot,go,hpa) | Approved ADC; classical surface receptor with large ECD |
 | **FOLR1** | P15328 | `validated_positive` | **4/5** (surfy,cspa,uniprot,go) | Approved Mirvetuximab (ELAHERE); GPI-anchored on outer leaflet |
 
-## Maybe — borderline / conditional / unusual mechanism
+## Maybe — contextual / borderline
 
-Borderline accessibility under defined contexts: pMHC peptides; cell-state-induced surfacing (stress, ICD, exocytosis, apoptosis, pathological ecto-forms); cycling TM proteins with transient PM presence; covalent post-translational attachment (C3b, TG2); dual localization minority sites.
+Conditional, induced, cycling, dual-localized, MHC-presented, or covalently-attached cases. Surface presence is real but state- or condition-dependent.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
+| **LRRC33** | Q86YC3 | `covalent_attachment_borderline` | **3/5** (surfy,uniprot,go) | NRROS / LRRC33 — TM partner that **disulfide-tethers latent TGF-β1 on myeloid cells** (microglia, monocytes), analogous to GARP on Tregs. The covalent-disulfide-tethered LRRC33:latent-TGF-β1 complex is a documented surface target in CNS / myeloid contexts. Same covalent_surface_attachment mechanism class as TGFB1 / GARP. |
+| **TGFB1** | P01137 | `covalent_attachment_borderline` | **3/5** (cspa,go,hpa) | TGF-β1 is secreted as a precursor cleaved into LAP + mature TGF-β1 (small latent complex). On Tregs / platelets the complex is **covalently disulfide-bonded to surface GARP (LRRC32)** via specific intermolecular cysteine pairs, co-trafficked from the ER as a single unit. Livmoniplimab (ABBV-151) is a clinical antibody specifically targeting the GARP:latent-TGF-β1 complex. Covalent surface attachment is the right mechanism category. |
+| **HSPD1** | P10809 | `dual_localization_borderline` | **1/5** (go) | HSP60 — canonically mitochondrial matrix chaperonin. **Reported on the cell surface** in tumor cells, stress contexts, and as a damage-associated molecular pattern (DAMP). Mechanism of surface translocation is debated (chaperone export, mitochondrial leakage, vesicular). Tests whether the model recognizes the minority-surface dual-localization pattern. |
+| **PRNP** | P04156 | `dual_localization_borderline` | **3/5** (surfy,cspa,go) | Cellular prion protein — GPI-anchored on the outer leaflet, abundant in neurons. Has documented intracellular pools (ER, endolysosomal) alongside the dominant surface form, and stress conditions modulate surface vs intracellular distribution. Anti-PRNP antibodies recognize the surface form clinically; conformational variant PrP^Sc is the disease antigen. |
 | **B4GALT1** | P15291 | `induced_borderline` | **2/5** (uniprot,go) | β-1,4-galactosyltransferase 1; primarily Golgi-resident, but **a cell-surface form on sperm mediates zona pellucida adhesion**; also reported on tumor cells. Conditional/cell-type-restricted surfacing. |
 | **BAX** | Q07812 | `induced_borderline` | **1/5** (hpa) | Pro-apoptotic Bcl-2 family; canonically translocates to mitochondrial outer membrane during apoptosis. **Surface BAX has been reported as an apoptotic-cell marker** (parallel to CALR's ICD-induced surface translocation). |
 | **CALR** | P27797 | `induced_borderline` | **3/5** (cspa,uniprot,go) | ER-resident at baseline; reaches outer leaflet during immunogenic cell death |
 | **HSPA1A** | P0DMV8 | `induced_borderline` | — | Cytoplasmic at baseline; tumor-stress-induced surface presentation |
 | **HSPA5** | P11021 | `induced_borderline` | **1/5** (uniprot) | ER chaperone at baseline; ER-stress/oncogenic-state translocation to outer leaflet |
 | **LAMP1** | P11279 | `induced_borderline` | **2/5** (surfy,cspa) | Classical lysosomal membrane glycoprotein; reaches plasma membrane via lysosomal exocytosis (CD107a degranulation marker on NK / cytotoxic T cells, surface staining on metastatic tumor cells). Conditional surfacing puts it in the maybe class. |
+| **LAMP2** | P13473 | `induced_borderline` | **3/5** (surfy,cspa,hpa) | Second canonical lysosomal membrane glycoprotein (CD107b). Reaches the PM via lysosomal exocytosis on activated cytotoxic lymphocytes / NK cells — same conditional-surfacing mechanism as LAMP1. Surface staining is a marker of degranulation. |
 | **STIM1** | Q13586 | `induced_borderline` | **4/5** (surfy,cspa,uniprot,go) | ER calcium sensor; canonically ER-resident, but **clusters at ER-PM junctions during store-operated calcium entry (SOCE)**; some PM staining reports. Borderline due to ER-PM junction localization. |
 | **TGOLN2** | O43493 | `induced_borderline` | **2/5** (surfy,uniprot) | TGN46 — **cycles continuously between TGN and PM** via the secretory recycling pathway; canonical marker for the TGN-PM trafficking cycle. Transient but routine surface presence. |
 | **TMED10** | P49755 | `induced_borderline` | **1/5** (go) | TMED10 cargo receptor; same ER↔Golgi↔PM cycling pattern as TMED9. Transient PM presence in the secretory pathway. |
@@ -78,13 +83,12 @@ Borderline accessibility under defined contexts: pMHC peptides; cell-state-induc
 | **KAAG1** | Q9UBP8 | `pmhc_borderline` | — | HLA-B7-restricted CTL peptide; protein not directly accessible but its peptide is pMHC-presented |
 | **PRAME** | P78395 | `pmhc_borderline` | **1/5** (hpa) | HLA-A*02-restricted; clinical T-cell engagers (brenetafusp/IMC-F106C) |
 | **C3** | P01024 | `secreted_borderline` | **2/5** (cspa,uniprot) | Complement C3 secreted plasma protein; cleavage fragment **C3b is covalently deposited on cell surfaces during opsonization**. Borderline because C3 itself is soluble but its activation product is surface-anchored. |
-| **TGFB1** | P01137 | `secreted_borderline` | **3/5** (cspa,go,hpa) | TGF-β1 secreted as latent complex; **GARP/LRRC32-tethered to Treg surface** as latent TGF-β; integrin αvβ6/αvβ8-mediated activation extracellularly. Clinical anti-GARP-TGF-β programs (Treg targeting). |
 | **LYN** | P07948 | `wrong_side_borderline` | **2/5** (go,hpa) | Src-family tyrosine kinase; canonically inner-leaflet myristoylated/palmitoylated. **Cell-surface LYN reported on B cells and in some cancer contexts**, parallel to ecto-SRC. Borderline pathological surfacing. |
 | **SRC** | P12931 | `wrong_side_borderline` | **2/5** (go,hpa) | Proto-oncogene tyrosine kinase; canonically myristoylated/palmitoylated to inner leaflet (cytoplasmic face). Ecto-SRC has been reported on cancer cell surfaces (melanoma, other tumors) — borderline conditional/pathological surfacing. M1 votes 3/6. |
 
 ## No — not surface accessible
 
-Not accessible from outside the cell. Wrong-side, wrong-compartment, secreted-only (with or without transient recruitment to surface receptors), and approved-drug intracellular pocket targets.
+Cytoplasmic, nuclear, mitochondrial-internal, endomembrane-resident, nuclear-envelope, inner-leaflet-anchored, or secreted-only (including transient recruitment + matrix deposition + EV cargo).
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
@@ -140,24 +144,18 @@ Not accessible from outside the cell. Wrong-side, wrong-compartment, secreted-on
 | Class | Verdict | Count |
 |---|---|---:|
 | `approved_drug_intracellular_negative` | `no` | 13 |
-| `disagreement_rich_positive` | `yes` | 26 |
+| `covalent_attachment_borderline` | `maybe` | 2 |
+| `disagreement_rich_positive` | `yes` | 30 |
+| `dual_localization_borderline` | `maybe` | 2 |
 | `gpcr_extracellular_pocket` | `yes` | 11 |
-| `induced_borderline` | `maybe` | 11 |
+| `induced_borderline` | `maybe` | 12 |
 | `mixed_mechanism_borderline` | `maybe` | 1 |
 | `opencell_vesicle_negative` | `no` | 1 |
 | `pmhc_borderline` | `maybe` | 3 |
-| `secreted_borderline` | `maybe` | 2 |
+| `secreted_borderline` | `maybe` | 1 |
 | `secreted_negative` | `no` | 9 |
 | `stable_complex_positive` | `yes` | 1 |
 | `validated_positive` | `yes` | 3 |
 | `wrong_compartment_negative` | `no` | 16 |
 | `wrong_side_borderline` | `maybe` | 2 |
 | `wrong_side_negative` | `no` | 7 |
-
-## DB-vote distribution by verdict (n / 5)
-
-| Verdict | 0/5 (or not-in-M1) | 1/5 | 2/5 | 3/5 | 4/5 | 5/5 |
-|---|---:|---:|---:|---:|---:|---:|
-| `yes` | 2 | 1 | 20 | 11 | 5 | 2 |
-| `maybe` | 3 | 6 | 7 | 2 | 1 | 0 |
-| `no` | 3 | 30 | 13 | 0 | 0 | 0 |
