@@ -45,9 +45,12 @@ DB_FLAGS_5 = [
     ("cspa_surface_flag", "CSPA"),
 ]
 VERDICT_ORDER = ["yes", "maybe", "no"]
+# Display labels. The underlying schema still uses "maybe" — we rename to
+# "contextual" only at the figure level (more descriptive: pMHC, induced,
+# cycling, etc. are all context-dependent surface forms).
 VERDICT_LABEL = {
     "yes": "yes",
-    "maybe": "maybe\n(yes-vote = correct)",
+    "maybe": "contextual\n(yes-vote = correct)",
     "no": "no",
 }
 
@@ -230,7 +233,8 @@ def make_plot(out_dir: Path) -> None:
 
     # Overall-n subtitle
     totals = {v: df[df.verdict == v].iloc[0].n_total for v in VERDICT_ORDER}
-    subtitle = "  ·  ".join(f"n({v}) = {totals[v]}" for v in VERDICT_ORDER)
+    _n_label = {"yes": "yes", "maybe": "contextual", "no": "no"}
+    subtitle = "  ·  ".join(f"n({_n_label[v]}) = {totals[v]}" for v in VERDICT_ORDER)
     ax.text(
         0.5, -0.16, subtitle,
         transform=ax.transAxes,
