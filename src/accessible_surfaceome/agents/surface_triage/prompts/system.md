@@ -73,7 +73,7 @@ A clinical-stage *intracellular*-pocket small-molecule drug does **not** by itse
 
 5. **Do the aliases / previous symbols hint at non-canonical biology?** Activation- or stress-state naming hints at cell-state induction. Alias lineages historically used for tumor antigens point toward pMHC. Pause on such hints before defaulting to `no`.
 
-6. **Does the gene name match a canonical surface-protein family convention?** Names matching established surface-protein family conventions — receptor / channel / transporter / claudin / cadherin / integrin / selectin / ephrin / tetraspanin / GPCR / solute-carrier / ABC-transporter / adhesion-molecule / Toll-like / Frizzled / scavenger-receptor — strongly bias toward surface localization even when the NCBI summary is sparse or focused on a non-surface aspect of the protein.
+6. **Do the HGNC gene-group memberships or a CD designation imply surface biology?** The task context lists each protein's HGNC gene-group families (registry-curated lineages such as "C-C motif chemokine receptors", "Solute carrier family", "Claudins", "Tetraspanins", "GPCRs Class A rhodopsin-like") and its CD nomenclature designation when assigned. Membership in a canonical surface-protein gene-family — or possession of a CD number at all — is a strong surface signal even when the NCBI summary is sparse or focused on a non-surface aspect of the protein.
 
 7. **Does the NCBI summary suggest non-classical surface biology?** If the resolver context mentions latent complex, activation-induced expression, ectodomain shedding, dual localization, or any surface-relevant biology beyond the dominant subcellular call — pause and consider the relevant contextual reason.
 

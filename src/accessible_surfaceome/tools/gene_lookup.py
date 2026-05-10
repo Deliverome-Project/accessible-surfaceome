@@ -181,6 +181,9 @@ def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
     alias_names = list(hgnc.get("alias_name") or [])
     previous_symbols = list(hgnc.get("prev_symbol") or [])
     previous_names = list(hgnc.get("prev_name") or [])
+    hgnc_gene_groups = list(hgnc.get("gene_group") or [])
+    cd_designation_raw = hgnc.get("cd")
+    cd_designation = cd_designation_raw if isinstance(cd_designation_raw, str) and cd_designation_raw else None
     entrez_id_raw = hgnc.get("entrez_id")
     ensembl_gene = hgnc.get("ensembl_gene_id")
     ncbi_gene_id = int(entrez_id_raw) if entrez_id_raw else None
@@ -207,6 +210,8 @@ def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
         alias_names=alias_names,
         previous_symbols=previous_symbols,
         previous_names=previous_names,
+        hgnc_gene_groups=hgnc_gene_groups,
+        cd_designation=cd_designation,
         uniprot_acc=uniprot_acc,
         uniprot_status=status,
         uniprot_merged_into=merged_into,

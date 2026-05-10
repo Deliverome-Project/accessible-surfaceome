@@ -75,6 +75,14 @@ class IdentifierBundle(BaseModel):
     alias_names: list[str] = Field(default_factory=list)  # current alternate full names (HGNC.alias_name)
     previous_symbols: list[str] = Field(default_factory=list)  # deprecated symbols (HGNC.prev_symbol)
     previous_names: list[str] = Field(default_factory=list)  # deprecated full names (HGNC.prev_name)
+    # HGNC gene-group memberships (e.g. ["CD molecules", "Erb-b2 receptor tyrosine kinases"]).
+    # Registry-curated family lineage; useful for the triage agent to recognize
+    # surface-protein family conventions without prompt-embedded enumerations.
+    hgnc_gene_groups: list[str] = Field(default_factory=list)
+    # CD nomenclature designation when assigned (e.g. "CD340" for ERBB2). CD numbers
+    # are awarded to differentiation-cluster antigens — almost always surface or
+    # pseudo-surface markers. Strong surface signal when present.
+    cd_designation: str | None = None
     uniprot_acc: str
     uniprot_status: UniProtStatus = "unknown"
     uniprot_merged_into: str | None = None  # set when uniprot_status == "merged"

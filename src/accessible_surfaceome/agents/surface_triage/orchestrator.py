@@ -286,6 +286,10 @@ def _render_task(bundle: IdentifierBundle) -> str:
     template = (Path(__file__).parent / "prompts" / "task_template.md").read_text()
     aliases = ", ".join(bundle.aliases) if bundle.aliases else "(none)"
     previous = ", ".join(bundle.previous_symbols) if bundle.previous_symbols else "(none)"
+    gene_groups = (
+        ", ".join(bundle.hgnc_gene_groups) if bundle.hgnc_gene_groups else "(none assigned)"
+    )
+    cd = bundle.cd_designation or "(none assigned)"
     summary = bundle.ncbi_summary.strip() if bundle.ncbi_summary else "(no NCBI summary available)"
     return (
         template
@@ -295,6 +299,8 @@ def _render_task(bundle: IdentifierBundle) -> str:
         .replace("{uniprot_acc}", bundle.uniprot_acc)
         .replace("{aliases}", aliases)
         .replace("{previous_symbols}", previous)
+        .replace("{hgnc_gene_groups}", gene_groups)
+        .replace("{cd_designation}", cd)
         .replace("{ncbi_summary}", summary)
     )
 
