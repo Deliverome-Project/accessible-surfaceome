@@ -1201,14 +1201,20 @@ ContextualReason = Literal[
     # Documented dual localization including a PM minority site (e.g.
     # plasma-membrane VDAC alongside its dominant mitochondrial-OM pool)
     "dual_localization",
-    # Secreted protein becomes COVALENTLY anchored to the cell surface
-    # post-translationally. Examples: C3b deposition via complement
-    # thioester reaction during opsonization; tissue transglutaminase
-    # (TG2) glutamine-lysine cross-linking of fibronectin, latent TGF-β,
-    # and other matrix proteins to cells / ECM. Distinct from
-    # recruitment (non-covalent binding) because the covalent bond
-    # makes the surface presence stable and washable-resistant —
-    # therapeutically targetable in principle.
+    # A secreted (or otherwise non-membrane-anchored) protein becomes
+    # COVALENTLY anchored to a cell-surface partner or to extracellular
+    # matrix post-translationally. Most relevant mechanism: disulfide
+    # tethering of a latent ligand to a transmembrane partner that is
+    # co-trafficked from the ER as a covalent complex (the latent
+    # ligand is anchored to the cell surface via specific intermolecular
+    # disulfide bonds, ready for regulated release by integrins or
+    # proteases). Other examples: thioester-mediated covalent deposition
+    # during complement activation; enzymatic isopeptide cross-linking
+    # (extracellular transamidases) that locks secreted proteins onto
+    # ECM or cell-surface partners. Distinct from transient non-covalent
+    # recruitment because the covalent bond makes the surface presence
+    # stable and washable-resistant — clinical antibody programs against
+    # such complexes exist.
     "covalent_surface_attachment",
     "other",
 ]
