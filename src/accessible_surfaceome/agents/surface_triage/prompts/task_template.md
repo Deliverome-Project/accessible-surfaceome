@@ -1,6 +1,6 @@
 Triage the human gene **{gene}**.
 
-Canonical identifiers and gene summary (machine-resolved; no further lookups available — judge from the context below plus your trained knowledge):
+Canonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available — judge from the context below plus your trained knowledge):
 
 - HGNC approved name: {approved_name}
 - HGNC symbol: {hgnc_symbol}

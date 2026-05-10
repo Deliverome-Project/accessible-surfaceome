@@ -168,7 +168,15 @@ def _triage_one(client: Anthropic, http: CachedHTTP, gene: str) -> TriageResult:
     agent_entry = reg.agents[_agent.AGENT_NAME]
     env_entry = reg.environments[_environment.ENVIRONMENT_NAME]
 
-    # Resolve gene identifiers locally — the agent has no tools.
+    # Resolve gene identifiers locally — the agent has no tools. Passing the
+    # resolved IdentifierBundle into the task prompt is intentionally the
+    # ONLY enrichment we do: the model gets canonical HGNC / UniProt / NCBI
+    # IDs + the NCBI gene summary, then reasons from its trained knowledge.
+    # We deliberately don't inject UniProt's subcellular_locations or
+    # function_text — those are biased toward a single dominant
+    # localization and would push the model to over-defer to UniProt's
+    # subcellular call (which has its own ~70% accuracy on the benchmark,
+    # not 100%).
     bundle = gene_lookup(mode="resolve", symbol_or_acc=gene, http=http)
     if not isinstance(bundle, IdentifierBundle):
         raise RuntimeError(
@@ -266,9 +274,13 @@ def _triage_one(client: Anthropic, http: CachedHTTP, gene: str) -> TriageResult:
 def _render_task(bundle: IdentifierBundle) -> str:
     """Populate the task template with canonical identifiers + NCBI summary.
 
-    Passes the orchestrator-resolved IdentifierBundle through to the agent
-    as context (so the model doesn't need a resolver tool of its own and
-    can't confabulate on obscure proteins by hallucinating an alias).
+    The agent has no tools, so the orchestrator pre-cooks the canonical-
+    identity context here. We deliberately do NOT inject UniProt's
+    subcellular_locations or function_text — that would prime the agent to
+    over-defer to UniProt's localization call (which has its own ~70%
+    accuracy on the benchmark). Identifiers + NCBI gene summary are
+    enough to prevent gross alias hallucinations without contaminating
+    the model's independent reasoning.
     """
 
     template = (Path(__file__).parent / "prompts" / "task_template.md").read_text()
