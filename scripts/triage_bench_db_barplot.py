@@ -1,22 +1,25 @@
-"""Per-database correctness barplot for the triage benchmark.
+"""Per-database + Haiku-agent correctness barplot for the triage benchmark.
 
-For each ground-truth class (`yes`, `maybe`, `no`), shows the fraction of
-benchmark proteins each of the 5 retained M1 surface databases correctly
-classifies. The user's convention: a database is *correct* when its vote
-aligns with the surface-side reading of the truth label, i.e.:
+For each ground-truth class (`yes`, `contextual`, `no`), shows the fraction of
+benchmark proteins each of the 5 retained M1 surface databases — plus the
+live Haiku surface_triage agent (with HGNC + NCBI gene-resolver context
+injected by the orchestrator) — correctly classifies.
 
-* truth = `yes`   → DB correct iff vote = True
-* truth = `maybe` → DB correct iff vote = True (the "yes is correct" convention;
-                    DBs that flag a borderline protein as surface are doing the
-                    right thing for triage)
-* truth = `no`    → DB correct iff vote = False
+Correctness convention (binary: surface vs not-surface):
 
-The chart shows one cluster per verdict class with 5 colored bars per
-cluster (one per database). The total n in each class is annotated above
-each bar.
+* truth = `yes`        → caller correct iff vote = True
+* truth = `contextual` → caller correct iff vote = True (the "yes is correct"
+                         convention; callers that flag a borderline protein as
+                         surface are doing the right thing for triage)
+* truth = `no`         → caller correct iff vote = False
 
-Outputs (PDF + JPEG):
-  data/analysis/triage_bench/db_correctness_by_class.{pdf,jpeg}
+For the surface DBs the vote is the boolean flag column from
+``candidate_universe.tsv``. For the Haiku agent the vote is True iff the
+emitted verdict is ``yes`` or ``contextual`` — matching the scoring.py
+convention that contextual = accessible.
+
+Outputs (PDF + PNG):
+  data/analysis/triage_bench/db_correctness_by_class.{pdf,png}
 """
 
 from __future__ import annotations
@@ -44,13 +47,13 @@ DB_FLAGS_5 = [
     ("surfy_surface_flag", "SURFY"),
     ("cspa_surface_flag", "CSPA"),
 ]
-VERDICT_ORDER = ["yes", "maybe", "no"]
-# Display labels. The underlying schema still uses "maybe" — we rename to
-# "contextual" only at the figure level (more descriptive: pMHC, induced,
-# cycling, etc. are all context-dependent surface forms).
+HAIKU_LABEL = "Haiku+NCBI gene"
+HAIKU_COLOR = "#d87851"  # Claude orange — distinct from the brand DB palette
+HAIKU_RUN_TSV = "data/eval/triage_haiku_live_run.tsv"
+VERDICT_ORDER = ["yes", "contextual", "no"]
 VERDICT_LABEL = {
     "yes": "yes",
-    "maybe": "contextual\n(yes-vote = correct)",
+    "contextual": "contextual\n(yes-vote = correct)",
     "no": "no",
 }
 
@@ -67,18 +70,40 @@ def load_benchmark_with_votes() -> list[dict[str, object]]:
             acc = r["uniprot_accession"]
             votes_by_acc[acc] = {flag: (r.get(flag, "0") == "1") for flag, _ in DB_FLAGS_5}
 
+    # Haiku-agent predictions from the live run TSV — vote = True iff the
+    # agent emitted yes or contextual (the surface-side reading; matches the
+    # scoring.py convention that contextual counts as accessible).
+    haiku_vote_by_gene: dict[str, bool] = {}
+    with open(HAIKU_RUN_TSV) as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            pred = (r.get("predicted_verdict") or "").strip()
+            haiku_vote_by_gene[r["gene_symbol"]] = pred in {"yes", "contextual"}
+
     out = []
     for r in bench:
         acc = r["uniprot_acc"]
-        votes = votes_by_acc.get(acc, {flag: False for flag, _ in DB_FLAGS_5})
+        votes = votes_by_acc.get(acc, {flag: False for flag, _ in DB_FLAGS_5}).copy()
+        # Per-DB vote columns are merged with the Haiku vote under a shared
+        # dict so the existing per-class correctness logic works unchanged.
+        votes["_haiku"] = haiku_vote_by_gene.get(r["gene_symbol"], False)
         out.append({
             "gene": r["gene_symbol"],
             "uniprot_acc": acc,
             "verdict": r["ground_truth_verdict"],
             "votes": votes,
             "in_m1": acc in votes_by_acc,
+            "haiku_predicted": r["gene_symbol"] in haiku_vote_by_gene,
         })
     return out
+
+
+def _all_callers() -> list[tuple[str, str]]:
+    """Return the (vote-key, display-label) list of every caller column.
+
+    Surface DBs come from DB_FLAGS_5; Haiku is appended last so it sits to
+    the right of the DBs visually (then re-sorted by overall accuracy).
+    """
+    return [*DB_FLAGS_5, ("_haiku", HAIKU_LABEL)]
 
 
 def compute_correctness() -> tuple[
@@ -95,12 +120,13 @@ def compute_correctness() -> tuple[
     fractions: dict[str, dict[str, float]] = {}
     counts_correct: dict[str, dict[str, int]] = {}
     counts_total: dict[str, int] = {}
+    callers = _all_callers()
     for verdict in VERDICT_ORDER:
         proteins = by_verdict.get(verdict, [])
         counts_total[verdict] = len(proteins)
         fractions[verdict] = {}
         counts_correct[verdict] = {}
-        for flag, label in DB_FLAGS_5:
+        for flag, label in callers:
             if not proteins:
                 fractions[verdict][label] = 0.0
                 counts_correct[verdict][label] = 0
@@ -108,10 +134,10 @@ def compute_correctness() -> tuple[
             n_correct = 0
             for p in proteins:
                 vote = p["votes"][flag]
-                if verdict in ("yes", "maybe"):
-                    is_correct = vote  # surface-positive DB call is "correct"
+                if verdict in ("yes", "contextual"):
+                    is_correct = vote  # surface-positive call is "correct"
                 else:
-                    is_correct = not vote  # surface-negative DB call is "correct"
+                    is_correct = not vote  # surface-negative call is "correct"
                 if is_correct:
                     n_correct += 1
             fractions[verdict][label] = n_correct / len(proteins)
@@ -128,31 +154,32 @@ def overall_accuracy() -> dict[str, float]:
 
     bench = load_benchmark_with_votes()
     by_db_correct: dict[str, int] = defaultdict(int)
+    callers = _all_callers()
     for p in bench:
-        for flag, label in DB_FLAGS_5:
+        for flag, label in callers:
             vote = p["votes"][flag]
-            if p["verdict"] in ("yes", "maybe"):
+            if p["verdict"] in ("yes", "contextual"):
                 if vote:
                     by_db_correct[label] += 1
             else:  # no
                 if not vote:
                     by_db_correct[label] += 1
     n = len(bench)
-    return {label: by_db_correct[label] / n for _, label in DB_FLAGS_5}
+    return {label: by_db_correct[label] / n for _, label in callers}
 
 
 def _long_dataframe() -> pd.DataFrame:
-    """Tidy long-format DataFrame: one row per (verdict, db) with fraction + n_correct + n_total."""
+    """Tidy long-format DataFrame: one row per (verdict, caller) with fraction + n_correct + n_total."""
     fractions, totals, correct_counts = compute_correctness()
     rows = []
     for verdict in VERDICT_ORDER:
-        for _, db_label in DB_FLAGS_5:
+        for _, caller_label in _all_callers():
             rows.append({
                 "verdict": verdict,
                 "verdict_label": VERDICT_LABEL[verdict],
-                "database": db_label,
-                "fraction": fractions[verdict][db_label],
-                "n_correct": correct_counts[verdict][db_label],
+                "database": caller_label,
+                "fraction": fractions[verdict][caller_label],
+                "n_correct": correct_counts[verdict][caller_label],
                 "n_total": totals[verdict],
             })
     return pd.DataFrame(rows)
@@ -164,23 +191,19 @@ def make_plot(out_dir: Path) -> None:
     overall = overall_accuracy()
     df = _long_dataframe()
 
-    # Sort DBs by overall accuracy (descending) so the most-accurate
-    # database appears leftmost in each cluster.
-    db_labels_sorted = sorted(
-        (label for _, label in DB_FLAGS_5),
-        key=lambda lbl: -overall[lbl],
-    )
-    # Map sorted labels back to brand-palette colors (preserve color identity
-    # per DB regardless of sort order).
-    palette_lookup = dict(
-        zip(
-            (label for _, label in DB_FLAGS_5),
-            CATEGORICAL_PALETTE[: len(DB_FLAGS_5)],
-        )
-    )
+    # Sort callers by overall accuracy (descending) so the most-accurate
+    # appears leftmost in each cluster.
+    all_labels = [label for _, label in _all_callers()]
+    db_labels_sorted = sorted(all_labels, key=lambda lbl: -overall[lbl])
+    # Color identity per caller: surface DBs use brand-palette colors;
+    # Haiku gets Claude orange. Lookup is by label so order doesn't matter.
+    palette_lookup = {
+        label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)
+    }
+    palette_lookup[HAIKU_LABEL] = HAIKU_COLOR
     palette_sorted = [palette_lookup[lbl] for lbl in db_labels_sorted]
 
-    fig, ax = plt.subplots(figsize=(10, 5.5))
+    fig, ax = plt.subplots(figsize=(11.5, 5.5))
 
     sns.barplot(
         data=df,
@@ -197,10 +220,10 @@ def make_plot(out_dir: Path) -> None:
 
     # Annotate each bar with n_correct / n_total. Walk the patches in
     # legend-order; seaborn lays them out hue-major then x-major.
-    for i, db_label in enumerate(db_labels_sorted):
+    for i, caller_label in enumerate(db_labels_sorted):
         for j, verdict in enumerate(VERDICT_ORDER):
             bar = ax.patches[i * len(VERDICT_ORDER) + j]
-            row = df[(df.database == db_label) & (df.verdict == verdict)].iloc[0]
+            row = df[(df.database == caller_label) & (df.verdict == verdict)].iloc[0]
             ax.text(
                 bar.get_x() + bar.get_width() / 2,
                 bar.get_height() + 0.02,
@@ -212,8 +235,8 @@ def make_plot(out_dir: Path) -> None:
             )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction of class correctly classified by DB")
-    ax.set_title("Surface-database performance per ground-truth class")
+    ax.set_ylabel("Fraction of class correctly classified")
+    ax.set_title("Surface caller performance per ground-truth class")
     ax.set_ylim(0, 1.12)
     ax.yaxis.set_major_locator(plt.MaxNLocator(6))
 
@@ -224,7 +247,7 @@ def make_plot(out_dir: Path) -> None:
     ax.legend(
         handles,
         legend_labels,
-        title="Database (overall acc.)",
+        title="Caller (overall acc.)",
         loc="upper left",
         bbox_to_anchor=(1.02, 1.0),
         frameon=False,
@@ -233,7 +256,7 @@ def make_plot(out_dir: Path) -> None:
 
     # Overall-n subtitle
     totals = {v: df[df.verdict == v].iloc[0].n_total for v in VERDICT_ORDER}
-    _n_label = {"yes": "yes", "maybe": "contextual", "no": "no"}
+    _n_label = {"yes": "yes", "contextual": "contextual", "no": "no"}
     subtitle = "  ·  ".join(f"n({_n_label[v]}) = {totals[v]}" for v in VERDICT_ORDER)
     ax.text(
         0.5, -0.16, subtitle,

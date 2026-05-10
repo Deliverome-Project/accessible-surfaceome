@@ -29,7 +29,7 @@ class BenchmarkRow:
     gene_symbol: str
     uniprot_acc: str
     class_: str
-    ground_truth_verdict: str  # "yes" | "maybe" | "no"
+    ground_truth_verdict: str  # "yes" | "contextual" | "no"
     ground_truth_signal: str  # "likely_accessible" | "possibly_accessible" | "unlikely" | "unknown"
     rationale: str
 

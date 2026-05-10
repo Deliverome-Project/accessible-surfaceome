@@ -8,7 +8,7 @@ and F2 — against the benchmark ground truth.
 Mapping:
 * DB vote = ``true``  → predicted accessible (1)
 * DB vote = ``false`` → predicted skip       (0)
-* Truth   = yes|maybe → 1
+* Truth   = yes|contextual → 1
 * Truth   = no        → 0
 * Proteins not in M1 are treated as DB-vote=0 across the board (failed
   every M1 rule).
@@ -148,7 +148,7 @@ def compute_database_baselines() -> list[CellSummary]:
     """Score every individual DB + a few combination rules against the benchmark."""
 
     rows = load_benchmark()
-    truths = {r.uniprot_acc: 1 if r.ground_truth_verdict in ("yes", "maybe") else 0 for r in rows}
+    truths = {r.uniprot_acc: 1 if r.ground_truth_verdict in ("yes", "contextual") else 0 for r in rows}
     votes = _load_votes(set(truths))
     summaries: list[CellSummary] = []
 
@@ -213,7 +213,7 @@ def consistently_missed_accessibles(*, max_db_votes: int = 1) -> list[dict[str, 
     votes = _load_votes({r.uniprot_acc for r in rows})
     out: list[dict[str, object]] = []
     for r in rows:
-        if r.ground_truth_verdict not in ("yes", "maybe"):
+        if r.ground_truth_verdict not in ("yes", "contextual"):
             continue
         n_votes = sum(votes[r.uniprot_acc].flags[s] for s in DB_FLAG_COLUMNS)
         if n_votes <= max_db_votes:

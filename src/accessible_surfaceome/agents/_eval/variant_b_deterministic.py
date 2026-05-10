@@ -13,9 +13,9 @@ Single-call PubMed/Europe PMC E-utilities query per gene:
 
 Verdict thresholds (calibrate after seeing benchmark behaviour):
 
-* ``yes``   — surface_hits ≥ 5 AND surface_fraction ≥ 0.10
-* ``maybe`` — surface_hits ≥ 1 AND surface_fraction ≥ 0.02
-* ``no``    — otherwise
+* ``yes``         — surface_hits ≥ 5 AND surface_fraction ≥ 0.10
+* ``contextual``  — surface_hits ≥ 1 AND surface_fraction ≥ 0.02
+* ``no``          — otherwise
 
 Signal:
 
@@ -110,7 +110,7 @@ def run_variant_b(
         f"total {gene_symbol}[Gene] hits: {total_hits}; "
         f"surface_fraction={surface_fraction:.3f}. "
         f"Threshold rule: yes if hits>=5 & fraction>=0.10; "
-        f"maybe if hits>=1 & fraction>=0.02; else no."
+        f"contextual if hits>=1 & fraction>=0.02; else no."
     )
 
     draft = {
@@ -175,17 +175,18 @@ def _verdict_from_counts(*, surface_hits: int, surface_fraction: float) -> str:
     passing). Absolute hit counts spread over four orders of magnitude
     based on gene-specific paper volume. We use a hybrid rule:
 
-    - ``yes``   when both: high absolute (≥ 100 surface hits) AND modest
-      fraction (≥ 4%). Catches well-studied surface receptors.
-    - ``maybe`` when at least one signal is present: ≥ 10 surface hits
-      OR fraction ≥ 4%. Catches less-studied targets with surface lit.
-    - ``no``    otherwise.
+    - ``yes``        when both: high absolute (≥ 100 surface hits) AND
+      modest fraction (≥ 4%). Catches well-studied surface receptors.
+    - ``contextual`` when at least one signal is present: ≥ 10 surface
+      hits OR fraction ≥ 4%. Catches less-studied targets with surface
+      lit.
+    - ``no``         otherwise.
     """
 
     if surface_hits >= 100 and surface_fraction >= 0.04:
         return "yes"
     if surface_hits >= 10 or surface_fraction >= 0.04:
-        return "maybe"
+        return "contextual"
     return "no"
 
 

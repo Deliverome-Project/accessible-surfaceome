@@ -29,7 +29,7 @@ class CellSummary:
     n_correct_signal: int
     verdict_accuracy: float
     signal_accuracy: float
-    # Binary classification (accessible = yes|maybe; skip = no). For
+    # Binary classification (accessible = yes|contextual; skip = no). For
     # triage we weight recall higher than precision: a false negative
     # silently drops a real candidate forever, while a false positive
     # just adds one item to the deep-dive queue.
@@ -108,12 +108,12 @@ def _summarize(cell_dir: Path, records: list[dict[str, Any]]) -> CellSummary:
     total_cost = sum(float(r.get("cost_usd") or 0.0) for r in records)
     latencies = [float(r.get("latency_s") or 0.0) for r in records if r.get("latency_s") is not None]
 
-    # Binary classification: accessible = yes|maybe, skip = no.
+    # Binary classification: accessible = yes|contextual, skip = no.
     tp = tn = fp = fn = 0
     for r in records:
-        truth = 1 if r.get("ground_truth_verdict") in ("yes", "maybe") else 0
+        truth = 1 if r.get("ground_truth_verdict") in ("yes", "contextual") else 0
         emit = r.get("emitted_verdict")
-        pred = 1 if emit in ("yes", "maybe") else 0
+        pred = 1 if emit in ("yes", "contextual") else 0
         if pred == 1 and truth == 1:
             tp += 1
         elif pred == 0 and truth == 0:
