@@ -1202,19 +1202,22 @@ ContextualReason = Literal[
     # plasma-membrane VDAC alongside its dominant mitochondrial-OM pool)
     "dual_localization",
     # A secreted (or otherwise non-membrane-anchored) protein becomes
-    # COVALENTLY anchored to a cell-surface partner or to extracellular
-    # matrix post-translationally. Most relevant mechanism: disulfide
-    # tethering of a latent ligand to a transmembrane partner that is
-    # co-trafficked from the ER as a covalent complex (the latent
-    # ligand is anchored to the cell surface via specific intermolecular
-    # disulfide bonds, ready for regulated release by integrins or
-    # proteases). Other examples: thioester-mediated covalent deposition
-    # during complement activation; enzymatic isopeptide cross-linking
-    # (extracellular transamidases) that locks secreted proteins onto
-    # ECM or cell-surface partners. Distinct from transient non-covalent
+    # COVALENTLY anchored to a CELL-SURFACE TM partner post-translationally.
+    # Most relevant mechanism: disulfide tethering of a latent ligand to a
+    # transmembrane partner that is co-trafficked from the ER as a covalent
+    # complex (the latent ligand is anchored to the cell surface via
+    # specific intermolecular disulfide bonds, ready for regulated release
+    # by integrins or proteases). Distinct from transient non-covalent
     # recruitment because the covalent bond makes the surface presence
     # stable and washable-resistant — clinical antibody programs against
-    # such complexes exist.
+    # such surface complexes exist.
+    #
+    # **ECM / matrix is NOT cell surface.** Covalent attachment to
+    # extracellular matrix (e.g., transamidase-cross-linked secreted
+    # proteins deposited into tumor stroma, latent TGF-β bound to LTBP-
+    # ECM, complement fragments deposited on connective tissue) does
+    # not count — those are matrix-anchored, not cell-surface anchored.
+    # Use `no` / `secreted_only` for matrix-deposited covalent products.
     "covalent_surface_attachment",
     "other",
 ]
