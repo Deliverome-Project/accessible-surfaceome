@@ -1136,7 +1136,7 @@ class SurfaceomeRecordDraft(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-TRIAGE_SCHEMA_VERSION = "v0.4.0"
+TRIAGE_SCHEMA_VERSION = "v0.5.0"
 
 
 TriageVerdict = Literal["yes", "contextual", "no"]
@@ -1229,17 +1229,13 @@ NoReason = Literal[
     # Lipidated or peripheral on the cytoplasmic face of the PM
     # (wrong-side; membrane-associated but not extracellular)
     "inner_leaflet_anchored",
-    # Secreted with no membrane tether, INCLUDING recruitment-to-surface
-    # cases where the protein binds another surface receptor or ECM
-    # component (prothrombin → platelet GPIIb/IIIa, fibronectin → integrin
-    # α5β1, APOB → LDLR). The recruiting partner is the surface target,
-    # not the recruited protein. Note: direct outer-leaflet *lipid*
-    # binding (e.g. annexin V → phosphatidylserine) is NOT recruitment
-    # and belongs in contextual / yes.
+    # Secreted with no stable surface anchoring. INCLUDES transient
+    # non-covalent recruitment to surface receptors or ECM
+    # (recruiting partner is the surface target, not the recruited
+    # protein). Direct outer-leaflet *lipid* binding and covalent
+    # post-translational attachment are NOT recruitment — use yes /
+    # contextual reasons instead.
     "secreted_only",
-    # Small-molecule drug target engaging an intracellular pocket
-    # (kinases, nuclear receptors, intracellular enzymes, etc.)
-    "approved_drug_intracellular_pocket",
     "other",
 ]
 
@@ -1266,7 +1262,6 @@ TriageReason = Literal[
     "nuclear_envelope",
     "inner_leaflet_anchored",
     "secreted_only",
-    "approved_drug_intracellular_pocket",
     "other",
 ]
 
@@ -1302,7 +1297,6 @@ _NO_REASONS: frozenset[str] = frozenset(
         "nuclear_envelope",
         "inner_leaflet_anchored",
         "secreted_only",
-        "approved_drug_intracellular_pocket",
         "other",
     }
 )
