@@ -27,7 +27,8 @@ from pathlib import Path
 
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
+import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
     CATEGORICAL_PALETTE,
@@ -157,95 +158,118 @@ def overall_accuracy() -> dict[str, float]:
     return {label: by_db_correct[label] / n for _, label in DB_FLAGS_5}
 
 
+def _long_dataframe() -> pd.DataFrame:
+    """Tidy long-format DataFrame: one row per (verdict, db) with fraction + n_correct + n_total."""
+    fractions, totals, correct_counts = compute_correctness()
+    rows = []
+    for verdict in VERDICT_ORDER:
+        for _, db_label in DB_FLAGS_5:
+            rows.append({
+                "verdict": verdict,
+                "verdict_label": VERDICT_LABEL[verdict],
+                "database": db_label,
+                "fraction": fractions[verdict][db_label],
+                "n_correct": correct_counts[verdict][db_label],
+                "n_total": totals[verdict],
+            })
+    return pd.DataFrame(rows)
+
+
 def make_plot(out_dir: Path) -> None:
     register_bundled_fonts()
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
-    fractions, totals, correct_counts = compute_correctness()
     overall = overall_accuracy()
+    df = _long_dataframe()
 
-    # Sort DB labels by overall accuracy (descending) so the most-accurate
+    # Sort DBs by overall accuracy (descending) so the most-accurate
     # database appears leftmost in each cluster.
     db_labels_sorted = sorted(
         (label for _, label in DB_FLAGS_5),
         key=lambda lbl: -overall[lbl],
     )
-
-    fig, ax = plt.subplots(figsize=(10, 5.5))
-
-    n_groups = len(VERDICT_ORDER)
-    n_bars = len(db_labels_sorted)
-    bar_width = 0.16
-    x_centers = np.arange(n_groups)
-
-    # Map sorted labels back to colors from the categorical palette
+    # Map sorted labels back to brand-palette colors (preserve color identity
+    # per DB regardless of sort order).
     palette_lookup = dict(
         zip(
             (label for _, label in DB_FLAGS_5),
             CATEGORICAL_PALETTE[: len(DB_FLAGS_5)],
         )
     )
+    palette_sorted = [palette_lookup[lbl] for lbl in db_labels_sorted]
 
+    fig, ax = plt.subplots(figsize=(10, 5.5))
+
+    sns.barplot(
+        data=df,
+        x="verdict_label",
+        y="fraction",
+        hue="database",
+        order=[VERDICT_LABEL[v] for v in VERDICT_ORDER],
+        hue_order=db_labels_sorted,
+        palette=palette_sorted,
+        edgecolor="none",
+        saturation=1.0,
+        ax=ax,
+    )
+
+    # Annotate each bar with n_correct / n_total. Walk the patches in
+    # legend-order; seaborn lays them out hue-major then x-major.
     for i, db_label in enumerate(db_labels_sorted):
-        offsets = bar_width * (i - (n_bars - 1) / 2)
-        heights = [fractions[v][db_label] for v in VERDICT_ORDER]
-        legend_label = f"{db_label} ({overall[db_label]:.0%})"
-        bars = ax.bar(
-            x_centers + offsets,
-            heights,
-            width=bar_width,
-            label=legend_label,
-            color=palette_lookup[db_label],
-            edgecolor="none",
-        )
-        for j, bar in enumerate(bars):
-            v = VERDICT_ORDER[j]
-            n_correct = correct_counts[v][db_label]
-            n_total = totals[v]
+        for j, verdict in enumerate(VERDICT_ORDER):
+            bar = ax.patches[i * len(VERDICT_ORDER) + j]
+            row = df[(df.database == db_label) & (df.verdict == verdict)].iloc[0]
             ax.text(
                 bar.get_x() + bar.get_width() / 2,
                 bar.get_height() + 0.02,
-                f"{n_correct}/{n_total}",
+                f"{row.n_correct}/{row.n_total}",
                 ha="center",
                 va="bottom",
                 fontsize=8.5,
                 color=COLORS["dark"],
             )
 
-    ax.set_xticks(x_centers)
-    ax.set_xticklabels([VERDICT_LABEL[v] for v in VERDICT_ORDER])
+    ax.set_xlabel("")
     ax.set_ylabel("Fraction of class correctly classified by DB")
     ax.set_title("Surface-database performance per ground-truth class")
     ax.set_ylim(0, 1.12)
     ax.yaxis.set_major_locator(plt.MaxNLocator(6))
 
-    # Legend outside the plotting area on the right; sorted-by-overall-accuracy.
+    # Replace seaborn's default legend with sorted-by-overall-accuracy version
+    # placed outside the plotting area on the right.
+    handles, _ = ax.get_legend_handles_labels()
+    legend_labels = [f"{lbl} ({overall[lbl]:.0%})" for lbl in db_labels_sorted]
     ax.legend(
+        handles,
+        legend_labels,
         title="Database (overall acc.)",
         loc="upper left",
         bbox_to_anchor=(1.02, 1.0),
-        frameon=True,
-        framealpha=0.95,
+        frameon=False,
         borderaxespad=0.0,
     )
 
-    # Add overall-n subtitle so the totals are immediately visible
-    subtitle = "  ·  ".join(
-        f"n({v}) = {totals[v]}" for v in VERDICT_ORDER
-    )
+    # Overall-n subtitle
+    totals = {v: df[df.verdict == v].iloc[0].n_total for v in VERDICT_ORDER}
+    subtitle = "  ·  ".join(f"n({v}) = {totals[v]}" for v in VERDICT_ORDER)
     ax.text(
-        0.5, -0.18, subtitle,
+        0.5, -0.16, subtitle,
         transform=ax.transAxes,
         ha="center", va="top",
         fontsize=10,
-        color=COLORS.get("muted", COLORS["neutral"]),
+        color=COLORS["neutral"],
     )
+
+    # Despine after axes creation (config calls it before, which is too early).
+    sns.despine(ax=ax, top=True, right=True)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(
         fig,
         filename="db_correctness_by_class",
         output_dir=str(out_dir),
-        formats=["pdf", "jpeg"],
+        # PNG preserves the transparent figure/axes background that the
+        # config sets; JPEG cannot carry alpha so it ends up white.
+        formats=["pdf", "png"],
     )
     plt.close(fig)
 
