@@ -25,7 +25,6 @@ import csv
 from collections import defaultdict
 from pathlib import Path
 
-import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -36,25 +35,6 @@ from accessible_surfaceome.audit._plotting_config import (
     save_figure,
     setup_plotting_style,
 )
-
-
-def register_bundled_fonts() -> None:
-    """Add `./assets/fonts/*.ttf` to matplotlib's font manager.
-
-    The project's plotting config asks for Manrope, but matplotlib only
-    finds it if it's been added to the font manager. This walks the
-    bundled assets/fonts dir and registers each TTF before any axes
-    are constructed.
-    """
-
-    fonts_dir = Path("assets/fonts")
-    if not fonts_dir.is_dir():
-        return
-    for ttf in sorted(fonts_dir.glob("*.ttf")):
-        try:
-            fm.fontManager.addfont(str(ttf))
-        except Exception:
-            continue
 
 
 DB_FLAGS_5 = [
@@ -176,7 +156,7 @@ def _long_dataframe() -> pd.DataFrame:
 
 
 def make_plot(out_dir: Path) -> None:
-    register_bundled_fonts()
+    # setup_plotting_style registers bundled fonts (Manrope) automatically.
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     overall = overall_accuracy()
     df = _long_dataframe()

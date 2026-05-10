@@ -6,8 +6,34 @@ importing this module has no side effects.
 """
 from pathlib import Path
 
+import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+# Bundled brand fonts (committed under ./assets/fonts/). Registered with
+# matplotlib's font manager on first call to setup_plotting_style so the
+# rcParams below actually resolve to Manrope instead of falling back to
+# DejaVu Sans.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_BUNDLED_FONTS_DIR = _REPO_ROOT / "assets" / "fonts"
+_fonts_registered = False
+
+
+def register_bundled_fonts() -> None:
+    """Add ``./assets/fonts/*.ttf`` to matplotlib's font manager (idempotent)."""
+
+    global _fonts_registered
+    if _fonts_registered:
+        return
+    if not _BUNDLED_FONTS_DIR.is_dir():
+        _fonts_registered = True
+        return
+    for ttf in sorted(_BUNDLED_FONTS_DIR.glob("*.ttf")):
+        try:
+            fm.fontManager.addfont(str(ttf))
+        except Exception:  # noqa: BLE001 — best-effort; fall back if a font can't load
+            continue
+    _fonts_registered = True
 
 # Core Deliverome palette tokens (from Deliverome Design System)
 COLORS = {
@@ -71,6 +97,9 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
     font_scale : float
         Scale factor for fonts (default: 2.2 for larger, more readable text)
     """
+
+    # Register bundled brand fonts before applying rcParams that reference them.
+    register_bundled_fonts()
 
     # Set seaborn style
     if style == "default":
@@ -146,9 +175,14 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
     # Default despine to top/right for a clean look.
     sns.despine(top=True, right=True)
 
-def save_figure(fig, filename, output_dir='figures', formats=['pdf', 'jpeg']):
+def save_figure(fig, filename, output_dir='figures', formats=('pdf', 'png')):
     """
     Save figure in multiple formats.
+
+    Defaults to PDF (vector) + PNG (raster). PNG preserves the transparent
+    figure / axes background that the config sets via
+    ``figure.facecolor='none'``; JPEG cannot carry alpha and forces a
+    white background, so we don't ship JPEG by default.
 
     Parameters:
     -----------
@@ -158,8 +192,8 @@ def save_figure(fig, filename, output_dir='figures', formats=['pdf', 'jpeg']):
         Base filename (without extension)
     output_dir : str or Path
         Output directory
-    formats : list
-        List of formats to save ('png', 'pdf', 'svg')
+    formats : iterable[str]
+        Output formats. PNG / PDF / SVG preserve transparency; JPEG does not.
     """
     output_path = Path(output_dir)
     output_path.mkdir(exist_ok=True, parents=True)

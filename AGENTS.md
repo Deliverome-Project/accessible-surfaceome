@@ -45,6 +45,17 @@ ruff-formatted, names that describe what's there, one way to do common
 things (paths, traceability), validate at boundaries only, no plumbing
 masquerading as algorithm.
 
+## Plotting Conventions
+
+Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.py`:
+
+- **Always start a plotting script with `setup_plotting_style(...)`.** It applies seaborn whitegrid + the Deliverome palette + the brand rcParams (Manrope, transparent figure/axes background, 300 DPI on save). It also registers bundled fonts from `assets/fonts/` so Manrope actually resolves — calling it before `plt.subplots()` is the contract.
+- **Use seaborn's plotting functions** (`sns.barplot`, `sns.scatterplot`, `sns.boxplot`, etc.) over raw matplotlib. Build a tidy long-format `pandas.DataFrame` first and pass it through `data=...`. Color via the `CATEGORICAL_PALETTE` / `SEQUENTIAL_PALETTES` exports, not ad-hoc hex codes.
+- **Call `sns.despine(ax=ax, top=True, right=True)` after creating each axes.** The despine inside `setup_plotting_style` runs *before* any axes exist and is a no-op for new figures.
+- **Save with `save_figure(fig, filename, output_dir, formats=('pdf', 'png'))`** — PDF for vector publication, PNG for raster with alpha. **Never JPEG** — it can't carry the transparent background that the config requests, so the saved image gets a forced-white fill.
+- **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
+- **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
+
 ## Data Rules & Formats
 - Keep raw inputs unchanged in `data/raw/`.
 - Keep downloaded datasets and traceability artifacts in `data/external/`.
