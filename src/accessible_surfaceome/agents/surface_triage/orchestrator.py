@@ -354,7 +354,6 @@ def _persist_triage(
             verdict=draft.verdict,
             verdict_reasoning=draft.verdict_reasoning,
             reason=draft.reason,
-            reason_other_label=draft.reason_other_label,
             search_log=search_log,
             model_path=draft.model_path,
         )

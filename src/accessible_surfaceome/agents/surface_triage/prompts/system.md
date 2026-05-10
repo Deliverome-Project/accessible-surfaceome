@@ -32,7 +32,7 @@ When in doubt, ask: *if you wash the cells, does the protein stay on the surface
 - `multipass_with_exposed_loops` — multi-pass TM (GPCR, transporter, channel) with extracellular loops.
 - `extracellular_face_protein` — any other architecture with an explicit extracellular face by topology.
 - `stable_complex_partner` — protein has no membrane anchor of its own but is a stable non-covalent partner of an anchored surface protein, assembled intracellularly and co-trafficked.
-- `other` — requires `reason_other_label`.
+- `other` — escape hatch when no closed enum fits; explain the mechanism in `verdict_reasoning`.
 
 ### Allowed when `verdict = "contextual"`:
 
@@ -42,7 +42,7 @@ When in doubt, ask: *if you wash the cells, does the protein stay on the surface
 - `pmhc_presented_peptide` — the protein body is intracellular but a peptide derived from it is MHC-presented and clinically engaged (TCR-T, TCR-mimic, bispecific). **pMHC is always contextual, never `yes`**.
 - `dual_localization` — the protein has a documented PM pool alongside a dominant non-PM compartment. Covers (a) active vesicular trafficking cycling between an intracellular compartment and the PM (secretory recycling, regulated non-lysosomal exocytosis, cargo-receptor cycling, ER-PM junctional clustering during signaling), and (b) constitutive partial-PM residence (steady-state distribution across multiple compartments including a minority surface pool). The mechanism — vesicular cycling vs steady-state dual home — is biologically distinct but irrelevant to accessibility: in both cases the protein has its own anchor at the PM during the surface state.
 - `covalent_surface_attachment` — a secreted protein covalently anchored to a cell-surface TM partner post-translationally (disulfide-tethered latent ligands, thioester-mediated deposition on cells). **Matrix/stroma deposition does NOT count.**
-- `other` — requires `reason_other_label`.
+- `other` — escape hatch when no closed enum fits; explain the mechanism in `verdict_reasoning`.
 
 ### Allowed when `verdict = "no"`:
 
@@ -53,7 +53,7 @@ When in doubt, ask: *if you wash the cells, does the protein stay on the surface
 - `nuclear_envelope` — inner / outer nuclear membrane only.
 - `inner_leaflet_anchored` — lipidated or peripheral on the cytoplasmic face of the PM.
 - `secreted_only` — secreted protein with no stable surface anchoring (includes transient non-covalent recruitment, matrix-deposited covalent products, EV cargo).
-- `other` — requires `reason_other_label`.
+- `other` — escape hatch when no closed enum fits; explain the mechanism in `verdict_reasoning`.
 
 A clinical-stage *intracellular*-pocket small-molecule drug does **not** by itself imply `no` — judge surface accessibility on localization biology, not on drug-target relationships.
 
@@ -89,14 +89,12 @@ Emit a **single JSON object** as your entire response. No prose around it, no ma
 {
   "verdict": "yes" | "contextual" | "no",
   "verdict_reasoning": "<= 600 chars explaining the call",
-  "reason": "<one of the literals above>",
-  "reason_other_label": "<set only when reason='other', otherwise omit>"
+  "reason": "<one of the literals above>"
 }
 ```
 
-- `verdict_reasoning` is short prose (≤600 chars) naming the relevant localization / topology / mechanism. Don't restate the verdict; argue for it.
+- `verdict_reasoning` is short prose (≤600 chars) naming the relevant localization / topology / mechanism. Don't restate the verdict; argue for it. If the case doesn't fit any closed-enum reason and you pick `"other"`, the prose here must name the mechanism explicitly.
 - Pick the **single best** reason; choose the dominant mechanism if multiple apply.
-- Only include `reason_other_label` when `reason` is exactly `"other"`. Otherwise omit; don't emit `null`.
 - The JSON must validate against the `TriageRecordDraft` schema.
 
 Reach your verdict cleanly and concisely.

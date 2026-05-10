@@ -1270,7 +1270,7 @@ class SurfaceomeRecordDraft(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-TRIAGE_SCHEMA_VERSION = "v0.6.0"
+TRIAGE_SCHEMA_VERSION = "v0.7.0"
 
 
 TriageVerdict = Literal["yes", "contextual", "no"]
@@ -1465,7 +1465,6 @@ class TriageRecordDraft(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(..., max_length=600)
     reason: TriageReason
-    reason_other_label: str | None = None
     model_path: TriageModelPath = "haiku_only"
 
     @model_validator(mode="after")
@@ -1475,12 +1474,6 @@ class TriageRecordDraft(BaseModel):
             raise ValueError(
                 f"reason={self.reason!r} is not valid for verdict={self.verdict!r}; "
                 f"allowed reasons are {sorted(allowed)}"
-            )
-        if self.reason == "other" and not self.reason_other_label:
-            raise ValueError("reason='other' requires reason_other_label")
-        if self.reason != "other" and self.reason_other_label is not None:
-            raise ValueError(
-                f"reason_other_label must be None when reason={self.reason!r}"
             )
         return self
 
@@ -1499,7 +1492,6 @@ class TriageRecord(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(..., max_length=600)
     reason: TriageReason
-    reason_other_label: str | None = None
     search_log: list[SearchEntry] = Field(default_factory=list)
     model_path: TriageModelPath = "haiku_only"
 
@@ -1510,12 +1502,6 @@ class TriageRecord(BaseModel):
             raise ValueError(
                 f"reason={self.reason!r} is not valid for verdict={self.verdict!r}; "
                 f"allowed reasons are {sorted(allowed)}"
-            )
-        if self.reason == "other" and not self.reason_other_label:
-            raise ValueError("reason='other' requires reason_other_label")
-        if self.reason != "other" and self.reason_other_label is not None:
-            raise ValueError(
-                f"reason_other_label must be None when reason={self.reason!r}"
             )
         return self
 
