@@ -9,10 +9,12 @@ Two entry points:
   the resulting :class:`TriageRecord` JSON to ``data/triage/{symbol}.json``,
   and write a run log under ``.runs/<timestamp>-<symbol>-<session_id>/``.
 
-Reuses the deep-dive's ``tool_registry``, ``source_registration``, and
-``evidence_promotion`` modules — those are agent-agnostic. The agent-specific
-bit is the schema (``TriageRecordDraft`` instead of ``SurfaceomeRecordDraft``)
-and the persistence path.
+The triage agent is pure-model: no custom tools, no built-in toolset, no
+web search, no evidence quotes. The orchestrator resolves the input gene
+symbol to a canonical :class:`GeneIdentifier` (via the same UniProt /
+HGNC resolution helpers the deep-dive uses) before opening the session,
+so the model only sees the symbol in its prompt and emits a minimal JSON
+payload.
 """
 
 from __future__ import annotations
@@ -28,24 +30,21 @@ from typing import Any, Literal
 from anthropic import Anthropic
 from pydantic import ValidationError
 
-from accessible_surfaceome.paths import DATA_DIR, DATA_SOURCES_DIR, REPO_ROOT
+from accessible_surfaceome.paths import DATA_DIR, REPO_ROOT
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
-    Evidence,
+    GeneIdentifier,
+    IdentifierBundle,
+    TRIAGE_SCHEMA_VERSION,
+    TriageModelPath,
     TriageRecord,
     TriageRecordDraft,
 )
-from accessible_surfaceome.tools._shared.source_text import SourceTextStore
+from accessible_surfaceome.tools.gene_lookup import gene_lookup
 
-# Reuse the deep-dive's agent-agnostic evidence-promotion helpers.
 from accessible_surfaceome.agents.surface_annotator.evidence_promotion import (
     build_search_log,
-    promote_claim,
 )
-
-# Triage-local tool registry: wraps the deep-dive's gene_lookup handler to
-# filter `patent_handle` and `deeptmhmm` out of the db_panel view.
-from . import tool_registry
 
 from .._support import client as _client_module
 from .._support import registry as _registry
@@ -58,6 +57,15 @@ from . import agent as _agent
 from . import environment as _environment
 
 logger = logging.getLogger(__name__)
+
+
+# Map the agent's configured Anthropic model id to the schema's
+# TriageModelPath literal. Adding new models is one-line.
+_MODEL_PATH_BY_ID: dict[str, TriageModelPath] = {
+    "claude-haiku-4-5": "haiku_only",
+    "claude-sonnet-4-6": "sonnet_only",
+    "claude-opus-4-7": "opus_only",
+}
 
 
 @dataclass
@@ -127,7 +135,6 @@ class TriageResult:
     run_dir: Path
     final_text: str
     triage_json: dict[str, Any] | None
-    n_tool_calls: int
     validation_status: Literal["valid", "invalid", "missing"]
     validation_errors: list[dict[str, Any]] | None
 
@@ -161,37 +168,47 @@ def _triage_one(client: Anthropic, http: CachedHTTP, gene: str) -> TriageResult:
     agent_entry = reg.agents[_agent.AGENT_NAME]
     env_entry = reg.environments[_environment.ENVIRONMENT_NAME]
 
-    source_store = SourceTextStore()
-    handlers = tool_registry.build_handlers(http, source_store=source_store)
-    task_text = _render_task(gene)
+    # Resolve gene identifiers locally — the agent has no tools.
+    bundle = gene_lookup(mode="resolve", symbol_or_acc=gene, http=http)
+    if not isinstance(bundle, IdentifierBundle):
+        raise RuntimeError(
+            f"gene_lookup(resolve) did not return IdentifierBundle for {gene!r}"
+        )
+    gene_id = GeneIdentifier(
+        hgnc_symbol=bundle.hgnc_symbol,
+        hgnc_id=bundle.hgnc_id,
+        uniprot_acc=bundle.uniprot_acc,
+        ncbi_gene_id=bundle.ncbi_gene_id,
+        ensembl_gene=bundle.ensembl_gene,
+    )
+
+    task_text = _render_task(bundle.hgnc_symbol)
 
     session = client.beta.sessions.create(
         agent={"type": "agent", "id": agent_entry.id, "version": agent_entry.version}
         if agent_entry.version
         else agent_entry.id,
         environment_id=env_entry.id,
-        title=f"triage {gene}",
+        title=f"triage {bundle.hgnc_symbol}",
     )
-    logger.info("created triage session %s for %s", session.id, gene)
+    logger.info("created triage session %s for %s", session.id, bundle.hgnc_symbol)
 
     timestamp = datetime.now(UTC).strftime("%Y-%m-%dT%H-%M-%S")
-    run_dir = REPO_ROOT / ".runs" / f"{timestamp}-triage-{gene}-{session.id}"
+    run_dir = REPO_ROOT / ".runs" / f"{timestamp}-triage-{bundle.hgnc_symbol}-{session.id}"
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "task.md").write_text(task_text)
 
     events_path = run_dir / "events.jsonl"
-    n_tool_calls = 0
 
     def _log_event(event: Any) -> None:
-        nonlocal n_tool_calls
-        if getattr(event, "type", None) == "agent.custom_tool_use":
-            n_tool_calls += 1
         with events_path.open("a") as f:
             f.write(_event_to_json_line(event))
             f.write("\n")
 
+    # No tools registered — the agent should never make custom_tool_use events,
+    # but we still pass an empty handler dict in case of any unexpected calls.
     stream = stream_until_done(
-        client, session_id=session.id, handlers=handlers, on_event=_log_event
+        client, session_id=session.id, handlers={}, on_event=_log_event
     )
     send_user_message(client, session_id=session.id, text=task_text)
     final_text = collect_text(stream)
@@ -200,39 +217,32 @@ def _triage_one(client: Anthropic, http: CachedHTTP, gene: str) -> TriageResult:
     triage_json = _extract_triage_json(final_text)
 
     triage_path, invalid_path, validation_status, validation_errors = _persist_triage(
-        gene=gene,
+        gene_id=gene_id,
         triage_json=triage_json,
         run_dir=run_dir,
-        source_store=source_store,
+        model_id=_agent.AGENT_MODEL,
     )
     if validation_status == "invalid":
         logger.warning(
             "triage record for %s failed Pydantic validation; persisted to %s for review",
-            gene,
+            bundle.hgnc_symbol,
             invalid_path,
         )
 
-    sources_written = source_store.persist_to_disk(DATA_SOURCES_DIR)
-    logger.info(
-        "persisted %d source bodies to %s",
-        len(sources_written),
-        DATA_SOURCES_DIR,
-    )
-
     summary = {
-        "gene": gene,
+        "gene": bundle.hgnc_symbol,
+        "uniprot_acc": bundle.uniprot_acc,
         "session_id": session.id,
         "agent_id": agent_entry.id,
         "agent_version": agent_entry.version,
         "environment_id": env_entry.id,
-        "n_custom_tool_calls": n_tool_calls,
+        "model_id": _agent.AGENT_MODEL,
         "triage_path": str(triage_path) if triage_path else None,
         "invalid_path": str(invalid_path) if invalid_path else None,
         "validation_status": validation_status,
         "validation_errors": validation_errors,
         "triage_json": triage_json,
         "final_text_chars": len(final_text),
-        "sources_persisted": {sid: str(p) for sid, p in sources_written.items()},
     }
     (run_dir / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n")
 
@@ -243,7 +253,6 @@ def _triage_one(client: Anthropic, http: CachedHTTP, gene: str) -> TriageResult:
         run_dir=run_dir,
         final_text=final_text,
         triage_json=triage_json,
-        n_tool_calls=n_tool_calls,
         validation_status=validation_status,
         validation_errors=validation_errors,
     )
@@ -259,47 +268,53 @@ def _render_task(gene: str) -> str:
     return template.replace("{gene}", gene)
 
 
+# Permissive JSON extraction: accept a bare JSON object response, OR
+# a fenced ```json``` block. The prompt asks for bare JSON, but real
+# model output sometimes wraps it in a fence anyway.
 _FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
+_BARE_JSON_RE = re.compile(r"\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}", re.DOTALL)
+
+
+def _model_path_for(model_id: str) -> TriageModelPath:
+    if model_id not in _MODEL_PATH_BY_ID:
+        raise ValueError(
+            f"no TriageModelPath mapping for model {model_id!r}; update _MODEL_PATH_BY_ID"
+        )
+    return _MODEL_PATH_BY_ID[model_id]
 
 
 def _persist_triage(
     *,
-    gene: str,
+    gene_id: GeneIdentifier,
     triage_json: dict[str, Any] | None,
     run_dir: Path,
-    source_store: SourceTextStore,
+    model_id: str,
 ) -> tuple[
     Path | None, Path | None, Literal["valid", "invalid", "missing"], list[dict[str, Any]] | None
 ]:
-    """Promote the agent's ``TriageRecordDraft`` and persist as ``TriageRecord``.
+    """Validate the agent's JSON against TriageRecordDraft and persist as TriageRecord.
 
-    Mirrors the deep-dive's persistence pipeline: parse draft → promote each
-    ``EvidenceClaim`` to ``Evidence`` via the substring-check pipeline →
-    build search log → construct + write ``TriageRecord``.
+    No evidence promotion: the triage agent is pure-model and emits no
+    Evidence quotes. Search log is still attached (typically empty since
+    no tools are configured).
     """
 
     if triage_json is None:
         return None, None, "missing", None
 
+    # Inject orchestrator-owned fields the agent does not emit.
+    payload = dict(triage_json)
+    payload.setdefault("schema_version", TRIAGE_SCHEMA_VERSION)
+    payload.setdefault("model_path", _model_path_for(model_id))
+    payload["gene"] = gene_id.model_dump()
+
     try:
-        draft = TriageRecordDraft.model_validate(triage_json)
+        draft = TriageRecordDraft.model_validate(payload)
     except ValidationError as exc:
-        invalid_path = _write_invalid(triage_json, gene=gene, run_dir=run_dir)
+        invalid_path = _write_invalid(triage_json, gene=gene_id.hgnc_symbol, run_dir=run_dir)
         return None, invalid_path, "invalid", [{**e} for e in exc.errors()]
 
-    evidence: list[Evidence] = [
-        promote_claim(claim, store=source_store) for claim in draft.evidence_claims
-    ]
-
-    contributed_by: dict[str, list[str]] = {}
-    for evi in evidence:
-        for span in evi.spans:
-            contributed_by.setdefault(span.source.source_id, []).append(evi.evidence_id)
-
-    search_log = build_search_log(run_dir / "events.jsonl", contributed_by=contributed_by)
-
-    primary = sum(1 for e in evidence if e.evidence_tier == "primary")
-    secondary = sum(1 for e in evidence if e.evidence_tier == "secondary")
+    search_log = build_search_log(run_dir / "events.jsonl", contributed_by={})
 
     try:
         record = TriageRecord(
@@ -307,21 +322,18 @@ def _persist_triage(
             gene=draft.gene,
             verdict=draft.verdict,
             verdict_reasoning=draft.verdict_reasoning,
-            accessibility_signal=draft.accessibility_signal,
-            evidence=evidence,
-            primary_evidence_count=primary,
-            secondary_evidence_count=secondary,
-            evidence_count=len(evidence),
+            reason=draft.reason,
+            reason_other_label=draft.reason_other_label,
             search_log=search_log,
             model_path=draft.model_path,
         )
     except ValidationError as exc:
-        invalid_path = _write_invalid(triage_json, gene=gene, run_dir=run_dir)
+        invalid_path = _write_invalid(triage_json, gene=gene_id.hgnc_symbol, run_dir=run_dir)
         return None, invalid_path, "invalid", [{**e} for e in exc.errors()]
 
     triage_dir = DATA_DIR / "triage"
     triage_dir.mkdir(parents=True, exist_ok=True)
-    triage_path = triage_dir / f"{gene}.json"
+    triage_path = triage_dir / f"{gene_id.hgnc_symbol}.json"
     triage_path.write_text(record.model_dump_json(indent=2) + "\n")
     return triage_path, None, "valid", None
 
@@ -333,21 +345,22 @@ def _write_invalid(triage_json: dict[str, Any], *, gene: str, run_dir: Path) -> 
 
 
 def _extract_triage_json(text: str) -> dict[str, Any] | None:
-    """Find and parse the agent's final ``TriageRecordDraft`` JSON block.
+    """Find and parse the agent's triage JSON.
 
-    Pick the *last* ``json``-fenced block that parses and looks
-    triage-shaped — has ``gene`` AND ``verdict``.
+    Prefers a fenced ```json``` block (back-compat with fenced output),
+    falls back to a bare JSON object. Accepts the first parseable
+    candidate that has a ``verdict`` field.
     """
 
-    candidates = _FENCED_JSON_RE.findall(text)
-    for raw in reversed(candidates):
+    candidates: list[str] = list(_FENCED_JSON_RE.findall(text))
+    if not candidates:
+        candidates = list(_BARE_JSON_RE.findall(text))
+    for raw in candidates:
         try:
             data = json.loads(raw)
         except json.JSONDecodeError:
             continue
-        if not isinstance(data, dict) or "gene" not in data:
-            continue
-        if "verdict" in data and "accessibility_signal" in data:
+        if isinstance(data, dict) and "verdict" in data:
             return data
     return None
 

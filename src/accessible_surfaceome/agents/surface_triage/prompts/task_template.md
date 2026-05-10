@@ -1,1 +1,3 @@
-Triage the gene `{gene}`. Walk the lightweight tool-use cascade described in the system prompt: `gene_lookup(resolve)` → `gene_lookup(db_panel)` → `gene_lookup(uniprot_summary)`. Escalate to `patent_lookup` or `gene_literature(gene2pubmed)` only if the verdict requires it. Emit one `TriageRecordDraft` JSON block as your final response.
+Triage the human gene **{gene}**.
+
+Emit one JSON object matching the `TriageRecordDraft` schema as your **entire** response — no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`. Include `reason_other_label` only when `reason: "other"`.

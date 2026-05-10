@@ -192,11 +192,11 @@ def _run_triage(args: argparse.Namespace) -> None:
                 {
                     "gene": args.gene,
                     "session_id": result.session_id,
-                    "n_custom_tool_calls": result.n_tool_calls,
                     "triage_path": str(result.triage_path) if result.triage_path else None,
                     "run_dir": str(result.run_dir),
                     "validation_status": result.validation_status,
                     "triage_emitted": result.triage_json is not None,
+                    "triage_json": result.triage_json,
                 },
                 indent=2,
             )

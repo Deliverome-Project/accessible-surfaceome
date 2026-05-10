@@ -1,12 +1,12 @@
 """Agent payload builder + create-or-update for the surface triage agent.
 
-Sonnet-driven, lightweight cousin of the surface_annotator. Same toolset
-(``gene_lookup``, ``patent_lookup``, ``gene_literature``); the *prompt*
-enforces the lightweight tool-use budget rather than restricting tools.
+Pure-model inference: no custom tools, no builtins, no web search. The
+agent emits a single ``TriageRecordDraft`` JSON object per gene from its
+trained knowledge of human protein localization and topology. Designed to
+be cheap and fast for genome-scale triage; the deep-dive agent picks up
+verbatim-evidence work on the proteins triage flags.
 
-Built-in toolset: keep ``read``, ``grep``, ``glob``, ``web_fetch``,
-``web_search``; disable ``bash``, ``write``, ``edit`` — the orchestrator
-owns persistence.
+Model: Claude Haiku 4.5 (smallest model that holds up on the benchmark).
 """
 
 from __future__ import annotations
@@ -16,16 +16,11 @@ from typing import Any
 
 from anthropic import Anthropic
 
-# Triage-local tool registry: same custom tools as the deep dive, but the
-# gene_lookup handler is wrapped to filter `patent_handle` and `deeptmhmm`
-# out of the db_panel view (see surface_triage/tool_registry.py).
-from .tool_registry import custom_tool_definitions
-
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "system.md"
 
 AGENT_NAME = "Surface Accessibility Triage"
-AGENT_MODEL = "claude-sonnet-4-6"
+AGENT_MODEL = "claude-haiku-4-5"
 
 
 def read_system_prompt() -> str:
@@ -36,26 +31,17 @@ def build_agent_payload() -> dict[str, Any]:
     return {
         "name": AGENT_NAME,
         "description": (
-            "Lightweight per-protein triage that decides whether a deep-dive "
-            "annotation is warranted. Emits one TriageRecordDraft JSON per "
-            "gene (verdict + accessibility_signal + evidence)."
+            "Pure-model per-protein triage of human surface accessibility. "
+            "Emits a single TriageRecordDraft JSON (verdict yes/contextual/no "
+            "+ structured reason). No tools, no web search."
         ),
         "model": AGENT_MODEL,
         "system": read_system_prompt(),
-        "tools": [
-            {
-                "type": "agent_toolset_20260401",
-                "default_config": {"enabled": False},
-                "configs": [
-                    {"name": "read", "enabled": True},
-                    {"name": "grep", "enabled": True},
-                    {"name": "glob", "enabled": True},
-                    {"name": "web_fetch", "enabled": True},
-                    {"name": "web_search", "enabled": True},
-                ],
-            },
-            *custom_tool_definitions(),
-        ],
+        # Tools-free: pure trained-knowledge inference. The orchestrator
+        # registers no custom tools and no built-in toolset; the agent
+        # cannot make tool calls. This keeps every triage run a single
+        # short model turn.
+        "tools": [],
         "metadata": {
             "owner": "accessible-surfaceome",
             "managed_by": "src/accessible_surfaceome/agents/surface_triage",

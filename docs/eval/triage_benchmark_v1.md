@@ -1,16 +1,16 @@
 # Triage benchmark v1 — controls
 
-Total: **105 proteins** (40 `yes`, 19 `maybe`, 46 `no`)
+Total: **106 proteins** (41 `yes`, 19 `maybe`, 46 `no`)
 
 **DBs/5** column: how many of the 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA) flagged the protein as surface-expressed. *DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack.* `—` means the protein is not in the M1 candidate universe.
 
-## Labeling rule: recruitment ≠ surface accessibility
+## Labeling rule: stable mechanism on the surface = accessible
 
-A protein is **`yes` or `maybe`** only when **the protein itself anchors at the plasma membrane** (TM domain, GPI, outer-leaflet lipidation) or is **MHC-presented as a peptide**. Cycling / transient TM presence with the protein's own membrane anchor counts (LAMP1, TGN46, TMED9/10, BAX). A *secreted* protein that **binds** to surface receptors or ECM (prothrombin → platelet phosphatidylserine; fibronectin → integrins; APOB → LDLR; HDAC6 → cargo) is **`no`** — the recruiting partner is the surface protein, not the recruited one.
+A protein is **`yes` or `maybe`** when it has a stable mechanism of presence on the outer face of the plasma membrane. Acceptable: TM domain, GPI anchor, outer-leaflet lipidation, direct outer-leaflet lipid binding (annexin-PS), pore assembly, **stable non-covalent complex partner of an anchored protein co-trafficked from the ER (e.g., β2-microglobulin with MHC-I)**, **covalent post-translational attachment to surface molecules (e.g., C3b deposition, TG2 cross-linking)**, or MHC-peptide presentation. *Transient* non-covalent recruitment (fibronectin → integrin, APOB → LDLR, prothrombin → platelet PS via Ca²⁺) is **`no`** — the recruiting partner is the surface protein, not the recruited one.
 
 ## Yes — surface accessible
 
-Surface-accessible: a binder could in principle reach the protein from the extracellular face. Includes validated targets, disagreement-rich positives (real targets that the M1 consensus stack misses), and GPCRs whose extracellular pocket is engaged by small molecules.
+Surface-accessible by a stable mechanism: classical TM/GPI receptors, multi-pass with exposed loops, GPCR small-molecule pockets, AND stable complex partners co-trafficked with anchored proteins (B2M-style).
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
@@ -51,13 +51,14 @@ Surface-accessible: a binder could in principle reach the protein from the extra
 | **HTR2C** | P28335 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | approved small molecule: Lorcaserin (was approved); 7TM serotonin receptor |
 | **MC1R** | Q01726 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | approved peptide: Afamelanotide (Scenesse) approved; melanocortin |
 | **NPY5R** | Q15761 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Neuropeptide Y receptor 5; obesity programs |
+| **B2M** | P61769 | `stable_complex_positive` | **3/5** (uniprot,go,hpa) | β2-microglobulin; structural light chain of MHC class I (and CD1 family). **No anchor of its own**, but is stably present on the surface of every nucleated cell as the non-covalent partner of TM-anchored MHC-I heavy chain — assembled in the ER and co-trafficked. Canonical example of accessibility via stable complex partnership. Clinical anti-B2M programs exist (historical mAb work, current B2M-directed CAR-T approaches in multiple myeloma). |
 | **CD19** | P15391 | `validated_positive` | **4/5** (surfy,cspa,uniprot,go) | Approved CAR-T + ADC; classical B-cell surface marker |
 | **ERBB2** | P04626 | `validated_positive` | **5/5** (surfy,cspa,uniprot,go,hpa) | Approved ADC; classical surface receptor with large ECD |
 | **FOLR1** | P15328 | `validated_positive` | **4/5** (surfy,cspa,uniprot,go) | Approved Mirvetuximab (ELAHERE); GPI-anchored on outer leaflet |
 
 ## Maybe — borderline / conditional / unusual mechanism
 
-Borderline accessibility: pMHC peptides; induced/conditional surfacers (cell-state-, stress-, ICD-, exocytosis-driven); cycling TM proteins with transient PM presence (LAMP1, TGN46, TMED9/10, BAX); proteins canonically in non-PM compartments with documented but minority surface forms (GARP-tethered TGF-β1, plasma-membrane VDAC1, ecto-Src/LYN, surface B4GALT1 on sperm). All require the protein to have **its own membrane anchor** in the surface state.
+Borderline accessibility under defined contexts: pMHC peptides; cell-state-induced surfacing (stress, ICD, exocytosis, apoptosis, pathological ecto-forms); cycling TM proteins with transient PM presence; covalent post-translational attachment (C3b, TG2); dual localization minority sites.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
@@ -83,7 +84,7 @@ Borderline accessibility: pMHC peptides; induced/conditional surfacers (cell-sta
 
 ## No — not surface accessible
 
-Not accessible from outside the cell. Adversarial negatives: wrong-side (cytoplasmic-face anchored), wrong-compartment (lysosomal/Golgi/ER/mitochondrial/nuclear-envelope membrane-resident), secreted-only proteins (whether or not they're recruited to surfaces by binding partners), and approved-drug intracellular targets (kinases, nuclear receptors) that test the 'approved drug ⇒ surface' trap.
+Not accessible from outside the cell. Wrong-side, wrong-compartment, secreted-only (with or without transient recruitment to surface receptors), and approved-drug intracellular pocket targets.
 
 | Gene | UniProt | Class | DBs/5 | Localization / rationale |
 |---|---|---|---|---|
@@ -147,6 +148,7 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 | `pmhc_borderline` | `maybe` | 3 |
 | `secreted_borderline` | `maybe` | 2 |
 | `secreted_negative` | `no` | 9 |
+| `stable_complex_positive` | `yes` | 1 |
 | `validated_positive` | `yes` | 3 |
 | `wrong_compartment_negative` | `no` | 16 |
 | `wrong_side_borderline` | `maybe` | 2 |
@@ -156,6 +158,6 @@ Not accessible from outside the cell. Adversarial negatives: wrong-side (cytopla
 
 | Verdict | 0/5 (or not-in-M1) | 1/5 | 2/5 | 3/5 | 4/5 | 5/5 |
 |---|---:|---:|---:|---:|---:|---:|
-| `yes` | 2 | 1 | 20 | 10 | 5 | 2 |
+| `yes` | 2 | 1 | 20 | 11 | 5 | 2 |
 | `maybe` | 3 | 6 | 7 | 2 | 1 | 0 |
 | `no` | 3 | 30 | 13 | 0 | 0 | 0 |

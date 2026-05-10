@@ -1129,33 +1129,197 @@ class SurfaceomeRecordDraft(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Triage record — lightweight per-protein decision: should we deep-dive?
-# Sonnet-driven, runs at corpus / genome scale. Reuses GeneIdentifier,
-# EvidenceClaim, Evidence, SearchEntry from the deep-dive schema layer.
-# See docs/superpowers/specs/2026-05-06-surface-triage-agent-design.md.
+# Triage record — lightweight per-protein decision: is this protein surface
+# accessible? Pure-model inference (no tools, no web search, no evidence
+# emission); the orchestrator records the verdict + a single structured
+# reason describing why.
 # ---------------------------------------------------------------------------
 
 
-TRIAGE_SCHEMA_VERSION = "v0.1.0"
+TRIAGE_SCHEMA_VERSION = "v0.4.0"
 
 
-TriageVerdict = Literal["yes", "maybe", "no"]
-AccessibilitySignal = Literal[
-    "likely_accessible",
-    "possibly_accessible",
-    "unlikely",
-    "unknown",
+TriageVerdict = Literal["yes", "contextual", "no"]
+TriageModelPath = Literal["haiku_only", "sonnet_only", "opus_only"]
+
+
+# Per-verdict reason taxonomies. Each is a closed enum + escape-hatch
+# "other" with a required free-text label. The union below is what the
+# agent emits in the single ``reason`` field; a model_validator on the
+# record enforces that the reason value is in the set allowed for the
+# emitted verdict.
+
+YesReason = Literal[
+    # Single-pass TM with a substantial extracellular domain
+    "classical_surface_receptor",
+    # GPI anchor on the outer leaflet. (Almost all bona-fide
+    # "outer-leaflet lipidation" cases are GPI; truly non-GPI outer-
+    # leaflet lipidations are rare and usually transient.)
+    "gpi_anchored",
+    # Multi-pass TM (GPCR / transporter / channel) with extracellular
+    # loops large enough for a binder to engage
+    "multipass_with_exposed_loops",
+    # Any other architecture with an explicit extracellular face
+    "extracellular_face_protein",
+    # Stable non-covalent partner of an anchored surface protein,
+    # assembled intracellularly and co-trafficked to the PM as a
+    # complex. Examples: β2-microglobulin co-trafficked with MHC-I /
+    # CD1 family. The partner protein itself has no TM / GPI /
+    # lipidation, but it is stably present on the surface under
+    # baseline conditions as part of the complex.
+    "stable_complex_partner",
+    "other",
 ]
-TriageModelPath = Literal["sonnet_only"]
+
+
+ContextualReason = Literal[
+    # Cell-state translocates an otherwise intracellular protein to the
+    # outer leaflet. Includes stress, immunogenic cell death, infection,
+    # oncogenic transformation, apoptosis, AND disease-state ecto-forms
+    # (e.g. cancer-cell-restricted ecto-Src / ecto-LYN). The unifying
+    # feature is "the protein reaches the surface because the cell is
+    # in a non-baseline state."
+    "cell_state_induced",
+    # Surface form exists only in specific tissues / cell types /
+    # developmental contexts
+    "tissue_restricted_surface",
+    # The protein has its own TM domain and reaches the PM transiently
+    # via the secretory pathway. Includes constitutive recycling
+    # (TGN ↔ PM), cargo-receptor cycling (ER ↔ Golgi ↔ PM), regulated
+    # exocytosis (non-lysosomal), AND ER-PM junctional clustering
+    # (e.g. STIM1 during SOCE — ER-anchored but transiently brought
+    # into close apposition with the PM).
+    "trafficking_cycling",
+    # Lysosomal / late-endosomal TM protein reaches PM during lysosomal
+    # exocytosis
+    "lysosomal_exocytosis",
+    # The protein itself is intracellular but a peptide derived from it
+    # is MHC-presented (TCR / TCR-mimic accessibility). pMHC presentation
+    # is always a contextual mechanism, not a yes — the protein body
+    # never reaches the outer leaflet, only its proteolytic fragment.
+    "pmhc_presented_peptide",
+    # Documented dual localization including a PM minority site (e.g.
+    # plasma-membrane VDAC alongside its dominant mitochondrial-OM pool)
+    "dual_localization",
+    # Secreted protein becomes COVALENTLY anchored to the cell surface
+    # post-translationally. Examples: C3b deposition via complement
+    # thioester reaction during opsonization; tissue transglutaminase
+    # (TG2) glutamine-lysine cross-linking of fibronectin, latent TGF-β,
+    # and other matrix proteins to cells / ECM. Distinct from
+    # recruitment (non-covalent binding) because the covalent bond
+    # makes the surface presence stable and washable-resistant —
+    # therapeutically targetable in principle.
+    "covalent_surface_attachment",
+    "other",
+]
+
+
+NoReason = Literal[
+    # Soluble cytoplasmic, no membrane association
+    "cytoplasmic",
+    # Nuclear-resident (chromatin-bound, nucleolar, nucleoplasmic)
+    "nuclear",
+    # Mitochondrial matrix or inner-membrane facing matrix
+    "mitochondrial_internal",
+    # ER, Golgi, lysosomal, peroxisomal, or autophagosomal membrane only;
+    # no documented PM access
+    "endomembrane_resident",
+    # Inner / outer nuclear membrane only
+    "nuclear_envelope",
+    # Lipidated or peripheral on the cytoplasmic face of the PM
+    # (wrong-side; membrane-associated but not extracellular)
+    "inner_leaflet_anchored",
+    # Secreted with no membrane tether, INCLUDING recruitment-to-surface
+    # cases where the protein binds another surface receptor or ECM
+    # component (prothrombin → platelet GPIIb/IIIa, fibronectin → integrin
+    # α5β1, APOB → LDLR). The recruiting partner is the surface target,
+    # not the recruited protein. Note: direct outer-leaflet *lipid*
+    # binding (e.g. annexin V → phosphatidylserine) is NOT recruitment
+    # and belongs in contextual / yes.
+    "secreted_only",
+    # Small-molecule drug target engaging an intracellular pocket
+    # (kinases, nuclear receptors, intracellular enzymes, etc.)
+    "approved_drug_intracellular_pocket",
+    "other",
+]
+
+
+# Union for the on-the-wire ``reason`` field. Pydantic will accept any
+# value here; the model_validator below cross-checks against verdict.
+TriageReason = Literal[
+    "classical_surface_receptor",
+    "gpi_anchored",
+    "multipass_with_exposed_loops",
+    "extracellular_face_protein",
+    "stable_complex_partner",
+    "cell_state_induced",
+    "tissue_restricted_surface",
+    "trafficking_cycling",
+    "lysosomal_exocytosis",
+    "pmhc_presented_peptide",
+    "dual_localization",
+    "covalent_surface_attachment",
+    "cytoplasmic",
+    "nuclear",
+    "mitochondrial_internal",
+    "endomembrane_resident",
+    "nuclear_envelope",
+    "inner_leaflet_anchored",
+    "secreted_only",
+    "approved_drug_intracellular_pocket",
+    "other",
+]
+
+
+_YES_REASONS: frozenset[str] = frozenset(
+    {
+        "classical_surface_receptor",
+        "gpi_anchored",
+        "multipass_with_exposed_loops",
+        "extracellular_face_protein",
+        "stable_complex_partner",
+        "other",
+    }
+)
+_CONTEXTUAL_REASONS: frozenset[str] = frozenset(
+    {
+        "cell_state_induced",
+        "tissue_restricted_surface",
+        "trafficking_cycling",
+        "lysosomal_exocytosis",
+        "pmhc_presented_peptide",
+        "dual_localization",
+        "covalent_surface_attachment",
+        "other",
+    }
+)
+_NO_REASONS: frozenset[str] = frozenset(
+    {
+        "cytoplasmic",
+        "nuclear",
+        "mitochondrial_internal",
+        "endomembrane_resident",
+        "nuclear_envelope",
+        "inner_leaflet_anchored",
+        "secreted_only",
+        "approved_drug_intracellular_pocket",
+        "other",
+    }
+)
+_REASONS_BY_VERDICT: dict[str, frozenset[str]] = {
+    "yes": _YES_REASONS,
+    "contextual": _CONTEXTUAL_REASONS,
+    "no": _NO_REASONS,
+}
 
 
 class TriageRecordDraft(BaseModel):
     """What the AGENT emits for triage — small, self-contained.
 
-    Mirror of :class:`TriageRecord` minus the orchestrator-built
-    ``evidence`` / ``search_log``: agent emits ``evidence_claims`` (verbatim,
-    promoted to ``Evidence`` after substring-check) and we attach the
-    ``search_log`` post-run from ``events.jsonl``.
+    Pure-model inference. The agent has no tools, no web search, and emits
+    no evidence quotes. Just a verdict (``yes`` / ``contextual`` / ``no``),
+    a short prose reasoning, and a single structured ``reason`` enum
+    explaining the verdict.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -1164,17 +1328,32 @@ class TriageRecordDraft(BaseModel):
     gene: GeneIdentifier
     verdict: TriageVerdict
     verdict_reasoning: str = Field(..., max_length=600)
-    accessibility_signal: AccessibilitySignal
-    evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
-    model_path: TriageModelPath = "sonnet_only"
+    reason: TriageReason
+    reason_other_label: str | None = None
+    model_path: TriageModelPath = "haiku_only"
+
+    @model_validator(mode="after")
+    def _check_reason_matches_verdict(self) -> TriageRecordDraft:
+        allowed = _REASONS_BY_VERDICT[self.verdict]
+        if self.reason not in allowed:
+            raise ValueError(
+                f"reason={self.reason!r} is not valid for verdict={self.verdict!r}; "
+                f"allowed reasons are {sorted(allowed)}"
+            )
+        if self.reason == "other" and not self.reason_other_label:
+            raise ValueError("reason='other' requires reason_other_label")
+        if self.reason != "other" and self.reason_other_label is not None:
+            raise ValueError(
+                f"reason_other_label must be None when reason={self.reason!r}"
+            )
+        return self
 
 
 class TriageRecord(BaseModel):
     """The reconciled per-protein triage decision persisted to data/triage/{gene}.json.
 
-    Verdict + signal + a small set of cited Evidence records. Designed to be
-    cheap to produce (Sonnet, ≤3 tool calls median) so we can run it
-    genome-wide and prioritize the deep-dive queue.
+    Same shape as :class:`TriageRecordDraft` plus the orchestrator-built
+    search_log (typically empty since the triage agent has no tools).
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -1183,13 +1362,26 @@ class TriageRecord(BaseModel):
     gene: GeneIdentifier
     verdict: TriageVerdict
     verdict_reasoning: str = Field(..., max_length=600)
-    accessibility_signal: AccessibilitySignal
-    evidence: list[Evidence] = Field(default_factory=list)
-    primary_evidence_count: int = 0
-    secondary_evidence_count: int = 0
-    evidence_count: int = 0
+    reason: TriageReason
+    reason_other_label: str | None = None
     search_log: list[SearchEntry] = Field(default_factory=list)
-    model_path: TriageModelPath = "sonnet_only"
+    model_path: TriageModelPath = "haiku_only"
+
+    @model_validator(mode="after")
+    def _check_reason_matches_verdict(self) -> TriageRecord:
+        allowed = _REASONS_BY_VERDICT[self.verdict]
+        if self.reason not in allowed:
+            raise ValueError(
+                f"reason={self.reason!r} is not valid for verdict={self.verdict!r}; "
+                f"allowed reasons are {sorted(allowed)}"
+            )
+        if self.reason == "other" and not self.reason_other_label:
+            raise ValueError("reason='other' requires reason_other_label")
+        if self.reason != "other" and self.reason_other_label is not None:
+            raise ValueError(
+                f"reason_other_label must be None when reason={self.reason!r}"
+            )
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -1276,6 +1468,9 @@ __all__ = [
     "TriageRecord",
     "TriageRecordDraft",
     "TriageVerdict",
-    "AccessibilitySignal",
     "TriageModelPath",
+    "TriageReason",
+    "YesReason",
+    "ContextualReason",
+    "NoReason",
 ]
