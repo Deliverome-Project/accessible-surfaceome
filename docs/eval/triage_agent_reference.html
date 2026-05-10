@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>surface_triage agent — prompt & schema reference</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<style>
+  :root {
+    --fg: #1f2328;
+    --muted: #57606a;
+    --bg: #ffffff;
+    --panel: #f6f8fa;
+    --border: #d0d7de;
+    --accent: #0969da;
+    --accent-soft: #ddf4ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 40px;
+  }
+  header h1 {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    font-weight: 600;
+  }
+  header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  nav {
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 40px;
+    display: flex;
+    gap: 16px;
+    z-index: 10;
+  }
+  nav a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  nav a:hover { background: var(--accent-soft); color: var(--accent); }
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 32px 40px 80px;
+  }
+  section {
+    margin-bottom: 56px;
+  }
+  section h2 {
+    font-size: 20px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-top: 0;
+  }
+  section .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  pre {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  code {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+  .prompt-rendered {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 24px 28px;
+    background: var(--bg);
+  }
+  .prompt-rendered h1, .prompt-rendered h2, .prompt-rendered h3 {
+    border-bottom: none;
+    margin-top: 24px;
+  }
+  .prompt-rendered h1 { font-size: 22px; }
+  .prompt-rendered h2 { font-size: 18px; }
+  .prompt-rendered h3 { font-size: 16px; }
+  .prompt-rendered ul, .prompt-rendered ol { padding-left: 28px; }
+  .prompt-rendered code {
+    background: var(--panel);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .prompt-rendered pre code {
+    background: transparent;
+    padding: 0;
+  }
+  details {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  details summary {
+    cursor: pointer;
+    padding: 10px 14px;
+    font-weight: 500;
+    background: var(--panel);
+    border-radius: 6px;
+  }
+  details[open] summary { border-bottom: 1px solid var(--border); border-radius: 6px 6px 0 0; }
+  details > div { padding: 0 16px 12px 16px; }
+  .pill {
+    display: inline-block;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 12px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-left: 8px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>surface_triage agent — prompt &amp; schema reference</h1>
+  <p>Model: <code>claude-sonnet-4-6</code> · Tools: <code>gene_lookup</code>, <code>patent_lookup</code>, <code>gene_literature</code> + builtins (<code>read</code>, <code>grep</code>, <code>glob</code>, <code>web_fetch</code>, <code>web_search</code>) · Output: <code>TriageRecordDraft</code> JSON</p>
+</header>
+
+<nav>
+  <a href="#prompt">System prompt</a>
+  <a href="#pydantic">Pydantic schema</a>
+  <a href="#jsonschema">JSON Schema</a>
+  <a href="#example">Example output</a>
+</nav>
+
+<main>
+
+<section id="prompt">
+  <h2>System prompt <span class="pill">129 lines</span></h2>
+  <p class="meta">Source: <code>src/accessible_surfaceome/agents/surface_triage/prompts/system.md</code></p>
+  <div class="prompt-rendered" id="prompt-rendered-content"></div>
+  <details>
+    <summary>Show raw markdown source</summary>
+    <div><pre><code class="language-markdown" id="prompt-raw"></code></pre></div>
+  </details>
+</section>
+
+<section id="pydantic">
+  <h2>Pydantic schema (output contract)</h2>
+  <p class="meta">From <code>src/accessible_surfaceome/tools/_shared/models.py</code>. The agent emits a <code>TriageRecordDraft</code> JSON; the orchestrator promotes each <code>EvidenceClaim</code> to a full <code>Evidence</code> record (substring-checked against cached source bodies) and persists the canonical <code>TriageRecord</code> to <code>data/triage/{gene}.json</code>.</p>
+  <pre><code class="language-python" id="pydantic-src"></code></pre>
+</section>
+
+<section id="jsonschema">
+  <h2>JSON Schema (Pydantic-generated)</h2>
+  <p class="meta">Auto-generated from <code>TriageRecordDraft.model_json_schema()</code>. This is the contract the agent's JSON output is validated against.</p>
+  <pre><code class="language-json" id="json-schema"></code></pre>
+</section>
+
+<section id="example">
+  <h2>Example output — MUC5AC</h2>
+  <p class="meta">Persisted at <code>data/triage/MUC5AC.json</code>. Verdict: <strong>no</strong> (secreted gel-forming mucin, no membrane tether). Three tool calls (resolve → db_panel → uniprot_summary); zero evidence claims (the call rests on UniProt's structured topology fields).</p>
+  <pre><code class="language-json" id="example-output"></code></pre>
+</section>
+
+</main>
+
+<script>
+  // Marked.js renders the prompt markdown
+  const promptSource = "# Surface accessibility triage agent\n\nYou produce **lightweight per-protein triage records** that decide whether a given protein is surface accessible. The deliverable is one `TriageRecordDraft` JSON object per gene.\n\nThe question is **theoretical accessibility** \u2014 is this protein on the outside of the cell, in a place where extracellular agents (small molecules, biologics, other binders) could in principle reach it? This is a basic-science classification with translational potential, not a deep-dive priority decision.\n\nThe primary input is the broader human protein-coding genome \u2014 many of the proteins you'll see are **outside the M1 candidate universe**, meaning the M1 source panel has implicitly said \"no\" by exclusion. Your job is to decide whether that implicit \"no\" is correct or whether something \u2014 induced surfacing, edge mechanism, post-M1 evidence \u2014 was missed. The expected base rate of `verdict=yes` for non-M1 proteins is low (~1\u20135%); most of your work is confirming \"no\" cheaply.\n\n## The output contract\n\nEmit a **single fenced JSON block** as your final response \u2014 no prose around it. The block must validate against the `TriageRecordDraft` schema (current schema_version: `v0.1.0`).\n\n```json\n{\n  \"schema_version\": \"v0.1.0\",\n  \"gene\": {\"hgnc_symbol\": \"...\", \"hgnc_id\": \"...\", \"uniprot_acc\": \"...\",\n           \"ncbi_gene_id\": null, \"ensembl_gene\": null},\n  \"verdict\": \"yes | maybe | no\",\n  \"verdict_reasoning\": \"<= 600 chars\",\n  \"accessibility_signal\": \"likely_accessible | possibly_accessible | unlikely | unknown\",\n  \"evidence_claims\": [...],\n  \"model_path\": \"sonnet_only\"\n}\n```\n\nAll bucket models use `extra=\"forbid\"` \u2014 fields not in the schema (even with `null` values) will be rejected. Don't invent fields. Don't emit extra metadata.\n\n## Verdict semantics\n\n`verdict` answers the high-level question: **is this protein surface accessible?**\n\n- **`yes`** \u2014 protein is surface accessible. A binder could in principle reach it from the extracellular face: classical single-pass receptor with a real ECD; multi-pass with documented surface protrusions; GPI-anchored on the outer leaflet; large-ECD mucin; etc. Validated targets (approved drugs against this protein) belong here regardless of how thoroughly characterized they are.\n- **`maybe`** \u2014 borderline / conditional / unusual mechanism. The protein is *sometimes* accessible or accessible only via a non-direct mechanism: pMHC-presented peptide (the protein is intracellular but its peptide reaches the surface); conditional/induced surfacing (ICD, stress, oncogenic-state translocation); mostly-intracellular with a low surface fraction; mixed-mechanism cases like melanosome-resident antigens that also surface.\n- **`no`** \u2014 not surface accessible. Cytoplasmic, nuclear, mitochondrial-matrix, secreted-only (no membrane tether), inner-leaflet/cytoplasmic-face, embedded with no extracellular protrusion, or membrane-resident in the wrong compartment (lysosomal, ER, Golgi, autophagosomal \u2014 TM topology does **not** imply plasma-membrane accessibility).\n\nCommon \"no\" traps the variants must resist:\n- **Wrong side of the membrane**: KRAS is membrane-anchored on the cytoplasmic face \u2014 `no`, not `yes`.\n- **Wrong compartment**: ABCB9 / ATG9A / STING1 are all transmembrane but lysosomal/autophagy/ER \u2014 `no`, not `yes`. TM topology is necessary but not sufficient.\n- **Secreted vs tethered**: MUC5AC is a secreted gel-forming mucin (no membrane tether) \u2014 `no`. Distinguish from MUC1, which is the tethered cell-surface mucin \u2014 `yes`.\n- **Recruitment \u2260 accessibility**: A *secreted* protein that **binds** to surface receptors or ECM is **`no`**, not `maybe`. Examples: prothrombin recruited to platelet phosphatidylserine via Gla-domain binding; fibronectin tethered to cells via integrins; APOB on lipoprotein particles bound to LDLR; HDAC6 in extracellular vesicles or cargo-bound. The protein needs **its own membrane anchor** (TM domain, GPI, lipidation that reaches the outer leaflet) or be **MHC-presented as a peptide** to count as surface accessible. \"Recruited / bound to surface receptors\" is what the recruiting receptor enables, not the recruited protein.\n- **Cycling / transient TM presence DOES count** as borderline (`maybe`) when the protein has its own membrane anchor and reaches the PM in a regulated way \u2014 e.g. LAMP1 (lysosomal exocytosis), TGN46/TGOLN2 (TGN\u2194PM cycling), TMED9/10 (cargo cycling), BAX (apoptosis-induced). Distinguish \"TM protein cycling through PM\" (`maybe`) from \"soluble protein binding to PM receptors\" (`no`).\n\n## `accessibility_signal` semantics\n\nIndependent axis from `verdict`. Captures the granular degree of accessibility.\n\n- `likely_accessible` \u2014 clear surface call from M1 + UniProt; topology + ECD size suggest a real extracellular face. **An approved or clinical-stage antibody-family program (mAb, ADC, bispecific, CAR-T, TCR-mimic, antibody-conjugated payload) targeting this protein is empirical proof of an accessible extracellular epitope \u2014 bias toward `likely_accessible` whenever you find one.** (Small-molecule clinical programs do *not* carry this signal \u2014 small molecules often engage intracellular pockets.) Pairs with `verdict=yes`.\n- `possibly_accessible` \u2014 some signal but not unambiguous (low-confidence surface vote, multi-pass with unclear ECDs, conditional presentation hint, pMHC mechanism). Pairs with `verdict=yes` or `verdict=maybe`.\n- `unlikely` \u2014 clear evidence the protein is not on the outer leaflet, or is embedded with no protrusion, or is in the wrong compartment. Pairs with `verdict=no`.\n- `unknown` \u2014 insufficient signal to call.\n\nThe signal axis is the granular version of verdict; in practice they correlate strongly. The two axes exist to let `verdict=maybe` cases distinguish \"borderline-but-leaning-accessible\" (`possibly_accessible`) from genuinely unknowable (`unknown`).\n\n## Tool-use budget \u2014 keep it tight\n\nTarget \u22643 tool calls per protein on the median path. The corpus is large; cost compounds.\n\n**Default flow (always):**\n1. `gene_lookup(mode=\"resolve\", symbol_or_acc=<input>)` \u2014 canonicalize identifiers.\n2. `gene_lookup(mode=\"db_panel\", symbol_or_acc=<uniprot_acc>)` \u2014 public surface-source vote panel. The triage view contains **6 public sources**: SURFY, CSPA, UniProt query, GO, HPA, and JensenLab COMPARTMENTS. (DeepTMHMM and the internal patent_handle lane are deliberately *not* shown to triage \u2014 TM topology is read off UniProt's authoritative annotations, and patent membership is reserved for the deep dive.) For non-M1 proteins this typically shows all-false votes; the absence is itself a signal.\n3. `gene_lookup(mode=\"uniprot_summary\", symbol_or_acc=<uniprot_acc>)` \u2014 subcellular locations, **topology features (signal_peptide / transmembrane / intramembrane / gpi_anchor / lipidation)**, function/tissue prose, top publications. For non-M1 proteins this is your **primary anchor**, and it carries the authoritative topology signal that replaces the missing DeepTMHMM vote.\n\n**Escalate selectively (each adds cost):**\n- **`web_search`** (built-in) \u2014 your **first-line escalation** when the verdict hinges on therapeutic precedent or recent biology. Use it to find clinical-stage antibody / ADC / bispecific / CAR-T programs targeting this protein, recent surface-biology papers, or news that postdates the M1 source cuts. A query like `<gene symbol> clinical trial antibody` or `<gene symbol> cell surface flow cytometry` usually nails it in one call. **Cite findings only via verbatim quotes that you also fetch through `web_fetch` (so the substring check has the source body).** Don't quote from search snippets alone.\n- `gene_literature(mode=\"gene2pubmed\", uniprot_acc=...)` \u2014 when UniProt's tissue-specificity prose, function text, or subcellular locations *hint at induced/conditional surfacing or edge biology* (e.g. UniProt mentions \"translocates to the cell surface upon stress\"). One literature anchor often turns a `maybe` into a confident `yes`. Prefer this over `web_search` when the question is biology-mechanism rather than translational-precedent.\n- `gene_literature(mode=\"fetch_abstract\")` \u2014 only when a specific PMID surfaced by `gene2pubmed` is critical and you need to quote it.\n- `gene_literature(mode=\"topic_search\" / \"fetch_fulltext\")` \u2014 *avoid in triage*. Save those for the deep dive.\n- `patent_lookup` \u2014 only if `web_search` surfaces a specific WO number worth fetching for an antibody-program quote. (The patent_handle lane is hidden from triage's db_panel, so you won't get WO numbers from there.)\n\n**Don't call these:**\n- `gene_lookup(mode=\"miss_diagnosis\")` \u2014 only valid for genes in the controls panel; not part of genome-wide triage.\n\n## Evidence \u2014 verbatim quotes, substring-checked\n\nYou emit `EvidenceClaim` objects in the top-level `evidence_claims` array. Triage typically cites 0\u20132 claims:\n\n- `verdict=no` for an obvious intracellular protein: 0 claims (cite UniProt's subcellular_locations in `verdict_reasoning` prose, but no formal evidence is required).\n- `verdict=no` for an already-validated target: 0 claims (the call rests on trained knowledge of the approved program).\n- `verdict=yes` for an edge case: 1\u20132 claims, including the mechanism paper if `gene_literature` was needed.\n- `verdict=maybe`: 0\u20131 claims; the reasoning explains what's ambiguous.\n\n### `EvidenceClaim` shape\n\n```json\n{\n  \"evidence_id\": \"evi_001\",\n  \"claim\": \"Short statement of what's being asserted\",\n  \"claim_type\": \"surface_expression | topology | tissue_expression | methodological | contradictory\",\n  \"direction\": \"supports | refutes | ambiguous\",\n  \"evidence_type\": \"flow_cytometry | surface_biotinylation | mass_spec_surfaceome | immunohistochemistry | immunofluorescence | crystal_structure | cryo_em | computational_prediction | orthology | review_assertion | db_annotation\",\n  \"evidence_tier\": \"primary | secondary\",\n  \"confidence\": \"strong | moderate | weak\",\n  \"assay_context\": {\n    \"species\": \"human | mouse | rat | macaque | dog | other | unspecified\",\n    \"cell_type_or_line\": \"free text or null\",\n    \"permeabilized\": null,\n    \"fixation\": \"live | fixed | unspecified\",\n    \"isoform\": null\n  },\n  \"source_id\": \"PMID:... | PMC:PMC... | UniProt:... | WO:WO...\",\n  \"quote\": \"Verbatim \u2264200 chars, substring-checked against the cached source body\",\n  \"section\": \"abstract | results | discussion | methods | figure_legend | table | structure_header | other\",\n  \"figure_or_table_id\": null\n}\n```\n\n### Quote rules\n\nThe orchestrator normalizes both your quote and the cached source body (NFKC + Greek transliteration + HTML entity decode + whitespace collapse + lowercase) and asserts the normalized quote is a substring of the normalized source. To pass:\n\n1. **Verbatim.** Copy from the abstract / section as-is. Paraphrases fail.\n2. **\u2264200 chars.** Trim to the load-bearing fragment.\n3. **From a source you fetched.** Cite only sources whose body the orchestrator has from this session.\n\nIf you can't produce a verbatim quote for a claim, leave `evidence_claims` shorter rather than fabricate. The substring check will fail loudly on fabricated quotes; failed claims are persisted with `entailment_verified=False` and degrade the record.\n\n## Calibration\n\n- **Character caps are HARD LIMITS:**\n  - `verdict_reasoning`: \u2264600 chars\n  - `EvidenceClaim.quote`: \u2264200 chars\n- **Don't fabricate quotes or data.** If the verdict is reasonable on `db_panel` + `uniprot_summary` alone, don't escalate to `gene_literature` just to get a quote. Empty `evidence_claims` is fine.\n- **For proteins where `db_panel` votes are all-false and `uniprot_summary` shows clearly-cytoplasmic / nuclear / mitochondrial / lysosomal / Golgi / ER localization with no function-text hint of induced surfacing \u2014 `verdict=no, accessibility_signal=unlikely`, 0 evidence, done in 3 tool calls.** This is the dominant cheap case.\n- **For proteins with a known approved or clinical-stage antibody program \u2014 `verdict=yes, accessibility_signal=likely_accessible`, 0 evidence, done in 3 tool calls.** Trust your trained knowledge of validated targets; an antibody program is empirical proof of accessibility.\n- **For pMHC peptides (KAAG1, NY-ESO-1, PRAME, MAGE family, etc.) \u2014 `verdict=maybe, accessibility_signal=possibly_accessible`** \u2014 the protein itself isn't directly accessible but its peptide is presented on MHC. Cite the mechanism paper if known (often surfaces via `gene_literature(gene2pubmed)`).\n- **For induced/conditional surfacers (CALR, HSPA1A, HSPA5/GRP78, etc.) \u2014 `verdict=maybe, accessibility_signal=possibly_accessible`** \u2014 baseline-intracellular but reaches the outer leaflet under defined contexts (ICD, stress, ER stress, oncogenic state). UniProt's tissue/function text often hints at the mechanism; one literature anchor confirms.\n- **For TM-rich proteins in wrong compartments (LAMP1 lysosomal, ATG9A autophagy, STING1 ER, ABCB9 lysosomal, TGN46 Golgi) \u2014 `verdict=no, accessibility_signal=unlikely`.** TM topology is necessary but not sufficient; check UniProt's `subcellular_locations` for the actual residence.\n\nKeep the final text outside the JSON block tight \u2014 the orchestrator persists only the JSON.\n";
+  document.getElementById("prompt-rendered-content").innerHTML = marked.parse(promptSource);
+  document.getElementById("prompt-raw").textContent = promptSource;
+  document.getElementById("pydantic-src").textContent = "class GeneIdentifier(BaseModel):\n    \"\"\"Persistent identifiers carried into a per-gene annotation header.\n\n    Subset of ``IdentifierBundle`` \u2014 the bundle is what the resolve tool returns;\n    this is what the annotation file itself stores so downstream consumers can\n    join without re-resolving.\n    \"\"\"\n\n    model_config = ConfigDict(extra=\"forbid\")\n\n    hgnc_symbol: str\n    hgnc_id: str\n    uniprot_acc: str  # primary identifier for this study; required everywhere\n    ncbi_gene_id: int | None = None\n    ensembl_gene: str | None = None\n\n\n# ---------------------------------------------------------------------------\n# gene_lookup return shapes\n# ---------------------------------------------------------------------------\n\n\nUniProtStatus = Literal[\"active\", \"obsolete\", \"merged\", \"demerged\", \"deleted\", \"unknown\"]\nAliasCollisionRisk = Literal[\"low\", \"medium\", \"high\"]\n\nclass EvidenceClaim(BaseModel):\n    \"\"\"What the AGENT emits for a load-bearing claim.\n\n    Small, human-shaped: an `evidence_id` (agent-assigned, used for\n    cross-references via per-bucket `cited_evidence_ids`), a `claim`, the\n    classification fields, the assay context, the source identifier, and a\n    verbatim quote (\u2264200 chars) with the section it came from. **No hashes,\n    char offsets, URLs, or retrieval timestamps** \u2014 those are deterministic\n    bookkeeping the orchestrator computes from cached source data after the\n    agent emits.\n\n    The orchestrator promotes `EvidenceClaim` \u2192 :class:`Evidence` by\n    normalizing the source + quote, running a substring check, and (on\n    success) computing the hashes + char offset + filling in\n    :class:`SourceRef` metadata from the cached HTTP response.\n    \"\"\"\n\n    model_config = ConfigDict(extra=\"forbid\")\n\n    evidence_id: str  # agent-assigned, e.g. \"evi_001\"; stable cross-reference handle\n    claim: str\n    claim_type: ClaimType\n    direction: Direction\n    evidence_type: EvidenceType\n    evidence_tier: EvidenceTier\n    confidence: EvidenceConfidence\n    assay_context: AssayContext\n    source_id: str  # \"PMID:10601354\" | \"WO2024036333A2\" | \"UniProt:Q9UBP8\" | \"PDB:2ABC\"\n    quote: str = Field(..., max_length=200)  # verbatim, \u2264200 chars\n    section: PaperSection_\n    figure_or_table_id: str | None = None  # \"Figure 3A\", \"Table S1\"\n\nclass AssayContext(BaseModel):\n    \"\"\"Why this exists: surface-vs-intracellular reads hinge on permeabilization\n    and species. Carrying the context lets the synthesis layer down-weight or\n    discard a quote that's positive but obtained under permeabilizing conditions\n    (where surface-vs-intracellular cannot be distinguished).\n    \"\"\"\n\n    model_config = ConfigDict(extra=\"forbid\")\n\n    species: Species\n    cell_type_or_line: str | None = None\n    permeabilized: bool | None = None\n    fixation: Literal[\"live\", \"fixed\", \"unspecified\"] | None = None\n    isoform: str | None = None  # UniProt isoform ID if specified\n\nTriageVerdict = Literal[\"yes\", \"maybe\", \"no\"]\nAccessibilitySignal = Literal[\n    \"likely_accessible\",\n    \"possibly_accessible\",\n    \"unlikely\",\n    \"unknown\",\n]\n\nAccessibilitySignal = Literal[\n    \"likely_accessible\",\n    \"possibly_accessible\",\n    \"unlikely\",\n    \"unknown\",\n]\n\nclass TriageRecordDraft(BaseModel):\n    \"\"\"What the AGENT emits for triage \u2014 small, self-contained.\n\n    Mirror of :class:`TriageRecord` minus the orchestrator-built\n    ``evidence`` / ``search_log``: agent emits ``evidence_claims`` (verbatim,\n    promoted to ``Evidence`` after substring-check) and we attach the\n    ``search_log`` post-run from ``events.jsonl``.\n    \"\"\"\n\n    model_config = ConfigDict(extra=\"forbid\")\n\n    schema_version: str = TRIAGE_SCHEMA_VERSION\n    gene: GeneIdentifier\n    verdict: TriageVerdict\n    verdict_reasoning: str = Field(..., max_length=600)\n    accessibility_signal: AccessibilitySignal\n    evidence_claims: list[EvidenceClaim] = Field(default_factory=list)\n    model_path: TriageModelPath = \"sonnet_only\"\n\nclass TriageRecord(BaseModel):\n    \"\"\"The reconciled per-protein triage decision persisted to data/triage/{gene}.json.\n\n    Verdict + signal + a small set of cited Evidence records. Designed to be\n    cheap to produce (Sonnet, \u22643 tool calls median) so we can run it\n    genome-wide and prioritize the deep-dive queue.\n    \"\"\"\n\n    model_config = ConfigDict(extra=\"forbid\")\n\n    schema_version: str = TRIAGE_SCHEMA_VERSION\n    gene: GeneIdentifier\n    verdict: TriageVerdict\n    verdict_reasoning: str = Field(..., max_length=600)\n    accessibility_signal: AccessibilitySignal\n    evidence: list[Evidence] = Field(default_factory=list)\n    primary_evidence_count: int = 0\n    secondary_evidence_count: int = 0\n    evidence_count: int = 0\n    search_log: list[SearchEntry] = Field(default_factory=list)\n    model_path: TriageModelPath = \"sonnet_only\"\n\n\n# ---------------------------------------------------------------------------\n# Public re-export list\n# ---------------------------------------------------------------------------\n\n\n__all__ = [\n    # Shared identifiers\n    \"GeneIdentifier\",\n    # gene_lookup\n    \"IdentifierBundle\",\n    \"UniProtStatus\",\n    \"AliasCollisionRisk\",\n    \"SourceName\",\n    \"SourceVote\",\n    \"DBVotePanel\",\n    \"SubcellularLocation\",\n    \"SubcellularReliability\",\n    \"TopologyFeature\",\n    \"PTMRecord\",\n    \"CrossReference\",\n    \"IsoformRecord\",\n    \"PublicationStub\",\n    \"UniProtSummary\",\n    \"SourceRuleResult\",\n    \"MissDiagnosis\",\n    # gene_literature\n    \"Paper\",\n    \"PaperSection\",\n    \"LiteraturePack\",\n    \"LiteratureMode\",\n    \"TopicAnchor\",\n    \"PublicationType\",\n    # patent_lookup\n    \"PatentSummary\",\n    \"PatentFigureEvidence\",\n    # Evidence chain\n    \"SourceRef\",\n    \"SourceType\",\n    \"License\",\n    \"EvidenceSpan\",\n    \"AssayContext\",\n    \"Species\",\n    \"Evidence\",\n    \"ClaimType\",\n    \"Direction\",\n    \"EvidenceType\",\n    \"EvidenceTier\",\n    \"EvidenceConfidence\",\n    \"SearchEntry\",\n    \"EvidenceClaim\",\n    # SurfaceomeRecord + buckets\n    \"SCHEMA_VERSION\",\n    \"SurfaceomeRecord\",\n    \"SurfaceomeRecordDraft\",\n    \"TargetabilityVerdict\",\n    \"TargetabilityTier\",\n    \"ModalityKind\",\n    \"ModalityRecommendation\",\n    \"SurfaceBiology\",\n    \"AnchorType\",\n    \"ExposureClass\",\n    \"InducedContextKind\",\n    \"InducedPresentation\",\n    \"ExtracellularDomainSummary\",\n    \"ECDAccessibility\",\n    \"DBComparison\",\n    \"TherapeuticLandscape\",\n    \"ApprovedDrug\",\n    \"ClinicalTrial\",\n    \"ClinicalPhase\",\n    \"PatentDisclosure\",\n    \"PreclinicalEvidence\",\n    \"RiskFlag\",\n    \"RiskFlagKind\",\n    \"RiskSeverity\",\n    \"SurfaceStatus\",\n    \"Topology\",\n    \"SynthesisConfidence\",\n    \"ModelPath\",\n    # TriageRecord\n    \"TRIAGE_SCHEMA_VERSION\",\n    \"TriageRecord\",\n    \"TriageRecordDraft\",\n    \"TriageVerdict\",\n    \"AccessibilitySignal\",\n    \"TriageModelPath\",\n]";
+  document.getElementById("json-schema").textContent = "{\n  \"$defs\": {\n    \"AssayContext\": {\n      \"additionalProperties\": false,\n      \"description\": \"Why this exists: surface-vs-intracellular reads hinge on permeabilization\\nand species. Carrying the context lets the synthesis layer down-weight or\\ndiscard a quote that's positive but obtained under permeabilizing conditions\\n(where surface-vs-intracellular cannot be distinguished).\",\n      \"properties\": {\n        \"species\": {\n          \"enum\": [\n            \"human\",\n            \"mouse\",\n            \"rat\",\n            \"macaque\",\n            \"dog\",\n            \"other\",\n            \"unspecified\"\n          ],\n          \"title\": \"Species\",\n          \"type\": \"string\"\n        },\n        \"cell_type_or_line\": {\n          \"anyOf\": [\n            {\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ],\n          \"default\": null,\n          \"title\": \"Cell Type Or Line\"\n        },\n        \"permeabilized\": {\n          \"anyOf\": [\n            {\n              \"type\": \"boolean\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ],\n          \"default\": null,\n          \"title\": \"Permeabilized\"\n        },\n        \"fixation\": {\n          \"anyOf\": [\n            {\n              \"enum\": [\n                \"live\",\n                \"fixed\",\n                \"unspecified\"\n              ],\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ],\n          \"default\": null,\n          \"title\": \"Fixation\"\n        },\n        \"isoform\": {\n          \"anyOf\": [\n            {\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ],\n          \"default\": null,\n          \"title\": \"Isoform\"\n        }\n      },\n      \"required\": [\n        \"species\"\n      ],\n      \"title\": \"AssayContext\",\n      \"type\": \"object\"\n    },\n    \"EvidenceClaim\": {\n      \"additionalProperties\": false,\n      \"description\": \"What the AGENT emits for a load-bearing claim.\\n\\nSmall, human-shaped: an `evidence_id` (agent-assigned, used for\\ncross-references via per-bucket `cited_evidence_ids`), a `claim`, the\\nclassification fields, the assay context, the source identifier, and a\\nverbatim quote (\\u2264200 chars) with the section it came from. **No hashes,\\nchar offsets, URLs, or retrieval timestamps** \\u2014 those are deterministic\\nbookkeeping the orchestrator computes from cached source data after the\\nagent emits.\\n\\nThe orchestrator promotes `EvidenceClaim` \\u2192 :class:`Evidence` by\\nnormalizing the source + quote, running a substring check, and (on\\nsuccess) computing the hashes + char offset + filling in\\n:class:`SourceRef` metadata from the cached HTTP response.\",\n      \"properties\": {\n        \"evidence_id\": {\n          \"title\": \"Evidence Id\",\n          \"type\": \"string\"\n        },\n        \"claim\": {\n          \"title\": \"Claim\",\n          \"type\": \"string\"\n        },\n        \"claim_type\": {\n          \"enum\": [\n            \"surface_expression\",\n            \"topology\",\n            \"tissue_expression\",\n            \"methodological\",\n            \"contradictory\"\n          ],\n          \"title\": \"Claim Type\",\n          \"type\": \"string\"\n        },\n        \"direction\": {\n          \"enum\": [\n            \"supports\",\n            \"refutes\",\n            \"ambiguous\"\n          ],\n          \"title\": \"Direction\",\n          \"type\": \"string\"\n        },\n        \"evidence_type\": {\n          \"enum\": [\n            \"flow_cytometry\",\n            \"surface_biotinylation\",\n            \"mass_spec_surfaceome\",\n            \"immunohistochemistry\",\n            \"immunofluorescence\",\n            \"crystal_structure\",\n            \"cryo_em\",\n            \"computational_prediction\",\n            \"orthology\",\n            \"review_assertion\",\n            \"db_annotation\"\n          ],\n          \"title\": \"Evidence Type\",\n          \"type\": \"string\"\n        },\n        \"evidence_tier\": {\n          \"enum\": [\n            \"primary\",\n            \"secondary\"\n          ],\n          \"title\": \"Evidence Tier\",\n          \"type\": \"string\"\n        },\n        \"confidence\": {\n          \"enum\": [\n            \"strong\",\n            \"moderate\",\n            \"weak\"\n          ],\n          \"title\": \"Confidence\",\n          \"type\": \"string\"\n        },\n        \"assay_context\": {\n          \"$ref\": \"#/$defs/AssayContext\"\n        },\n        \"source_id\": {\n          \"title\": \"Source Id\",\n          \"type\": \"string\"\n        },\n        \"quote\": {\n          \"maxLength\": 200,\n          \"title\": \"Quote\",\n          \"type\": \"string\"\n        },\n        \"section\": {\n          \"enum\": [\n            \"title\",\n            \"abstract\",\n            \"introduction\",\n            \"results\",\n            \"discussion\",\n            \"methods\",\n            \"figure_legend\",\n            \"table\",\n            \"structure_header\",\n            \"other\"\n          ],\n          \"title\": \"Section\",\n          \"type\": \"string\"\n        },\n        \"figure_or_table_id\": {\n          \"anyOf\": [\n            {\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ],\n          \"default\": null,\n          \"title\": \"Figure Or Table Id\"\n        }\n      },\n      \"required\": [\n        \"evidence_id\",\n        \"claim\",\n        \"claim_type\",\n        \"direction\",\n        \"evidence_type\",\n        \"evidence_tier\",\n        \"confidence\",\n        \"assay_context\",\n        \"source_id\",\n        \"quote\",\n        \"section\"\n      ],\n      \"title\": \"EvidenceClaim\",\n      \"type\": \"object\"\n    },\n    \"GeneIdentifier\": {\n      \"additionalProperties\": false,\n      \"description\": \"Persistent identifiers carried into a per-gene annotation header.\\n\\nSubset of ``IdentifierBundle`` \\u2014 the bundle is what the resolve tool returns;\\nthis is what the annotation file itself stores so downstream consumers can\\njoin without re-resolving.\",\n      \"properties\": {\n        \"hgnc_symbol\": {\n          \"title\": \"Hgnc Symbol\",\n          \"type\": \"string\"\n        },\n        \"hgnc_id\": {\n          \"title\": \"Hgnc Id\",\n          \"type\": \"string\"\n        },\n        \"uniprot_acc\": {\n          \"title\": \"Uniprot Acc\",\n          \"type\": \"string\"\n        },\n        \"ncbi_gene_id\": {\n          \"anyOf\": [\n            {\n              \"type\": \"integer\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ],\n          \"default\": null,\n          \"title\": \"Ncbi Gene Id\"\n        },\n        \"ensembl_gene\": {\n          \"anyOf\": [\n            {\n              \"type\": \"string\"\n            },\n            {\n              \"type\": \"null\"\n            }\n          ],\n          \"default\": null,\n          \"title\": \"Ensembl Gene\"\n        }\n      },\n      \"required\": [\n        \"hgnc_symbol\",\n        \"hgnc_id\",\n        \"uniprot_acc\"\n      ],\n      \"title\": \"GeneIdentifier\",\n      \"type\": \"object\"\n    }\n  },\n  \"additionalProperties\": false,\n  \"description\": \"What the AGENT emits for triage \\u2014 small, self-contained.\\n\\nMirror of :class:`TriageRecord` minus the orchestrator-built\\n``evidence`` / ``search_log``: agent emits ``evidence_claims`` (verbatim,\\npromoted to ``Evidence`` after substring-check) and we attach the\\n``search_log`` post-run from ``events.jsonl``.\",\n  \"properties\": {\n    \"schema_version\": {\n      \"default\": \"v0.1.0\",\n      \"title\": \"Schema Version\",\n      \"type\": \"string\"\n    },\n    \"gene\": {\n      \"$ref\": \"#/$defs/GeneIdentifier\"\n    },\n    \"verdict\": {\n      \"enum\": [\n        \"yes\",\n        \"maybe\",\n        \"no\"\n      ],\n      \"title\": \"Verdict\",\n      \"type\": \"string\"\n    },\n    \"verdict_reasoning\": {\n      \"maxLength\": 600,\n      \"title\": \"Verdict Reasoning\",\n      \"type\": \"string\"\n    },\n    \"accessibility_signal\": {\n      \"enum\": [\n        \"likely_accessible\",\n        \"possibly_accessible\",\n        \"unlikely\",\n        \"unknown\"\n      ],\n      \"title\": \"Accessibility Signal\",\n      \"type\": \"string\"\n    },\n    \"evidence_claims\": {\n      \"items\": {\n        \"$ref\": \"#/$defs/EvidenceClaim\"\n      },\n      \"title\": \"Evidence Claims\",\n      \"type\": \"array\"\n    },\n    \"model_path\": {\n      \"const\": \"sonnet_only\",\n      \"default\": \"sonnet_only\",\n      \"title\": \"Model Path\",\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"gene\",\n    \"verdict\",\n    \"verdict_reasoning\",\n    \"accessibility_signal\"\n  ],\n  \"title\": \"TriageRecordDraft\",\n  \"type\": \"object\"\n}";
+  document.getElementById("example-output").textContent = "{\n  \"schema_version\": \"v0.1.0\",\n  \"gene\": {\n    \"hgnc_symbol\": \"MUC5AC\",\n    \"hgnc_id\": \"HGNC:7515\",\n    \"uniprot_acc\": \"P98088\",\n    \"ncbi_gene_id\": 4586,\n    \"ensembl_gene\": \"ENSG00000215182\"\n  },\n  \"verdict\": \"no\",\n  \"verdict_reasoning\": \"MUC5AC is a 5654-aa secreted gel-forming glycoprotein (UniProt subcellular location: Secreted). Topology: signal peptide aa1-27 only; no transmembrane domains, no GPI anchor, no membrane-tethering mechanism. 0/6 db_panel sources vote surface. Found in extracellular mucus layer rather than anchored to the plasma membrane outer leaflet. Carcinoma overexpression confers biomarker value but not cell-surface targetability; soluble decoy burden precludes ADC/CAR-T utility. M1 exclusion is correct. Deep dive not warranted.\",\n  \"accessibility_signal\": \"unlikely\",\n  \"evidence\": [],\n  \"primary_evidence_count\": 0,\n  \"secondary_evidence_count\": 0,\n  \"evidence_count\": 0,\n  \"search_log\": [\n    {\n      \"tool\": \"gene_lookup\",\n      \"mode\": \"resolve\",\n      \"query\": {\n        \"symbol_or_acc\": \"MUC5AC\"\n      },\n      \"n_results\": 1,\n      \"sources_seen\": [\n        \"UniProt:P98088\"\n      ],\n      \"retrieved_at\": \"2026-05-08T03:12:47.557415Z\",\n      \"contributed_evidence_ids\": []\n    },\n    {\n      \"tool\": \"gene_lookup\",\n      \"mode\": \"db_panel\",\n      \"query\": {\n        \"symbol_or_acc\": \"P98088\"\n      },\n      \"n_results\": 1,\n      \"sources_seen\": [\n        \"UniProt:P98088\"\n      ],\n      \"retrieved_at\": \"2026-05-08T03:12:47.558448Z\",\n      \"contributed_evidence_ids\": []\n    },\n    {\n      \"tool\": \"gene_lookup\",\n      \"mode\": \"uniprot_summary\",\n      \"query\": {\n        \"symbol_or_acc\": \"P98088\"\n      },\n      \"n_results\": 1,\n      \"sources_seen\": [\n        \"UniProt:P98088\"\n      ],\n      \"retrieved_at\": \"2026-05-08T03:12:47.558528Z\",\n      \"contributed_evidence_ids\": []\n    }\n  ],\n  \"model_path\": \"sonnet_only\"\n}\n";
+
+  // Highlight.js
+  hljs.highlightAll();
+</script>
+</body>
+</html>
