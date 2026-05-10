@@ -25,6 +25,7 @@ import csv
 from collections import defaultdict
 from pathlib import Path
 
+import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -34,6 +35,25 @@ from accessible_surfaceome.audit._plotting_config import (
     save_figure,
     setup_plotting_style,
 )
+
+
+def register_bundled_fonts() -> None:
+    """Add `./assets/fonts/*.ttf` to matplotlib's font manager.
+
+    The project's plotting config asks for Manrope, but matplotlib only
+    finds it if it's been added to the font manager. This walks the
+    bundled assets/fonts dir and registers each TTF before any axes
+    are constructed.
+    """
+
+    fonts_dir = Path("assets/fonts")
+    if not fonts_dir.is_dir():
+        return
+    for ttf in sorted(fonts_dir.glob("*.ttf")):
+        try:
+            fm.fontManager.addfont(str(ttf))
+        except Exception:
+            continue
 
 
 DB_FLAGS_5 = [
@@ -115,32 +135,68 @@ def compute_correctness() -> tuple[
     return fractions, counts_total, counts_correct
 
 
+def overall_accuracy() -> dict[str, float]:
+    """Total fraction correct per DB across every benchmark protein (all classes pooled).
+
+    A DB is correct on a protein when its vote aligns with the surface-side
+    reading of the ground truth — same convention used per-class.
+    """
+
+    bench = load_benchmark_with_votes()
+    by_db_correct: dict[str, int] = defaultdict(int)
+    for p in bench:
+        for flag, label in DB_FLAGS_5:
+            vote = p["votes"][flag]
+            if p["verdict"] in ("yes", "maybe"):
+                if vote:
+                    by_db_correct[label] += 1
+            else:  # no
+                if not vote:
+                    by_db_correct[label] += 1
+    n = len(bench)
+    return {label: by_db_correct[label] / n for _, label in DB_FLAGS_5}
+
+
 def make_plot(out_dir: Path) -> None:
+    register_bundled_fonts()
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     fractions, totals, correct_counts = compute_correctness()
+    overall = overall_accuracy()
+
+    # Sort DB labels by overall accuracy (descending) so the most-accurate
+    # database appears leftmost in each cluster.
+    db_labels_sorted = sorted(
+        (label for _, label in DB_FLAGS_5),
+        key=lambda lbl: -overall[lbl],
+    )
 
     fig, ax = plt.subplots(figsize=(10, 5.5))
 
-    db_labels = [label for _, label in DB_FLAGS_5]
     n_groups = len(VERDICT_ORDER)
-    n_bars = len(db_labels)
+    n_bars = len(db_labels_sorted)
     bar_width = 0.16
     x_centers = np.arange(n_groups)
 
-    palette = CATEGORICAL_PALETTE[: len(db_labels)]
+    # Map sorted labels back to colors from the categorical palette
+    palette_lookup = dict(
+        zip(
+            (label for _, label in DB_FLAGS_5),
+            CATEGORICAL_PALETTE[: len(DB_FLAGS_5)],
+        )
+    )
 
-    for i, db_label in enumerate(db_labels):
+    for i, db_label in enumerate(db_labels_sorted):
         offsets = bar_width * (i - (n_bars - 1) / 2)
         heights = [fractions[v][db_label] for v in VERDICT_ORDER]
+        legend_label = f"{db_label} ({overall[db_label]:.0%})"
         bars = ax.bar(
             x_centers + offsets,
             heights,
             width=bar_width,
-            label=db_label,
-            color=palette[i],
+            label=legend_label,
+            color=palette_lookup[db_label],
             edgecolor="none",
         )
-        # Annotate each bar with the correct/total count
         for j, bar in enumerate(bars):
             v = VERDICT_ORDER[j]
             n_correct = correct_counts[v][db_label]
@@ -161,7 +217,16 @@ def make_plot(out_dir: Path) -> None:
     ax.set_title("Surface-database performance per ground-truth class")
     ax.set_ylim(0, 1.12)
     ax.yaxis.set_major_locator(plt.MaxNLocator(6))
-    ax.legend(title="Database", loc="upper right", ncols=1, frameon=True, framealpha=0.95)
+
+    # Legend outside the plotting area on the right; sorted-by-overall-accuracy.
+    ax.legend(
+        title="Database (overall acc.)",
+        loc="upper left",
+        bbox_to_anchor=(1.02, 1.0),
+        frameon=True,
+        framealpha=0.95,
+        borderaxespad=0.0,
+    )
 
     # Add overall-n subtitle so the totals are immediately visible
     subtitle = "  ·  ".join(
@@ -172,10 +237,9 @@ def make_plot(out_dir: Path) -> None:
         transform=ax.transAxes,
         ha="center", va="top",
         fontsize=10,
-        color=COLORS["muted"] if "muted" in COLORS else COLORS["neutral"],
+        color=COLORS.get("muted", COLORS["neutral"]),
     )
 
-    fig.tight_layout()
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(
         fig,
