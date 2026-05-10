@@ -51,6 +51,7 @@ from .audit import (
     apply_entailment_audit,
     make_sonnet_entailment_audit,
 )
+from .deep_dive_pack import DeepDivePackLoader, render_markdown as _render_deep_dive
 from .evidence_promotion import build_search_log, promote_claim
 
 logger = logging.getLogger(__name__)
@@ -171,7 +172,15 @@ def _annotate_one(
     handlers = tool_registry.build_handlers(
         http, source_store=source_store, retraction_index=retraction_index
     )
-    task_text = _render_task(gene)
+
+    try:
+        pack = DeepDivePackLoader().for_gene(hgnc_symbol=gene)
+        deep_dive_block = _render_deep_dive(pack)
+    except Exception as exc:  # noqa: BLE001
+        # Pack is best-effort context; never fail the run on a missing TSV.
+        logger.warning("deep_dive_pack render failed for %s: %s", gene, exc)
+        deep_dive_block = ""
+    task_text = _render_task(gene, deep_dive_block=deep_dive_block)
 
     session = client.beta.sessions.create(
         agent={"type": "agent", "id": agent_entry.id, "version": agent_entry.version}
@@ -270,9 +279,9 @@ def _annotate_one(
 # ---------------------------------------------------------------------------
 
 
-def _render_task(gene: str) -> str:
+def _render_task(gene: str, *, deep_dive_block: str = "") -> str:
     template = (Path(__file__).parent / "prompts" / "task_template.md").read_text()
-    return template.replace("{gene}", gene)
+    return template.replace("{gene}", gene).replace("{deep_dive_block}", deep_dive_block)
 
 
 _FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
