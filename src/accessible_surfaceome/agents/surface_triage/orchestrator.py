@@ -182,7 +182,7 @@ def _triage_one(client: Anthropic, http: CachedHTTP, gene: str) -> TriageResult:
         ensembl_gene=bundle.ensembl_gene,
     )
 
-    task_text = _render_task(bundle.hgnc_symbol)
+    task_text = _render_task(bundle)
 
     session = client.beta.sessions.create(
         agent={"type": "agent", "id": agent_entry.id, "version": agent_entry.version}
@@ -263,9 +263,28 @@ def _triage_one(client: Anthropic, http: CachedHTTP, gene: str) -> TriageResult:
 # ---------------------------------------------------------------------------
 
 
-def _render_task(gene: str) -> str:
+def _render_task(bundle: IdentifierBundle) -> str:
+    """Populate the task template with canonical identifiers + NCBI summary.
+
+    Passes the orchestrator-resolved IdentifierBundle through to the agent
+    as context (so the model doesn't need a resolver tool of its own and
+    can't confabulate on obscure proteins by hallucinating an alias).
+    """
+
     template = (Path(__file__).parent / "prompts" / "task_template.md").read_text()
-    return template.replace("{gene}", gene)
+    aliases = ", ".join(bundle.aliases) if bundle.aliases else "(none)"
+    previous = ", ".join(bundle.previous_symbols) if bundle.previous_symbols else "(none)"
+    summary = bundle.ncbi_summary.strip() if bundle.ncbi_summary else "(no NCBI summary available)"
+    return (
+        template
+        .replace("{gene}", bundle.hgnc_symbol)
+        .replace("{hgnc_symbol}", bundle.hgnc_symbol)
+        .replace("{approved_name}", bundle.approved_name or "(unknown)")
+        .replace("{uniprot_acc}", bundle.uniprot_acc)
+        .replace("{aliases}", aliases)
+        .replace("{previous_symbols}", previous)
+        .replace("{ncbi_summary}", summary)
+    )
 
 
 # Permissive JSON extraction: accept a bare JSON object response, OR
