@@ -14,17 +14,14 @@ Emit one of three verdicts:
 - **`contextual`** — the protein reaches the outer face of the plasma membrane **only under specific, documented conditions** (cell state, tissue or cell type, trafficking cycling, dual localization, covalent post-translational attachment), OR a peptide derived from it is MHC-presented as a clinically engaged antigen. The protein must reach the outer face via its **own mechanism** during the surface state (or be MHC-presented as a peptide, or be covalently anchored post-translationally) — *transient* recruitment to other surface receptors does NOT count.
 - **`no`** — the protein is not accessible from outside the cell. Includes cytoplasmic, nuclear, mitochondrial-internal, ER/Golgi/lysosomal/peroxisomal/autophagosomal-membrane-resident, inner-leaflet-anchored, and secreted-only proteins (including those with only transient non-covalent recruitment to other surface receptors).
 
-## Cardinal rule: transient non-covalent recruitment ≠ surface accessibility
+## Cardinal rule: the recruitment test
 
-A *secreted* protein whose only surface presence is **transient non-covalent binding** to another surface receptor or extracellular matrix component is **`no`**. The recruiting partner is the surface protein, not the recruited one. To count as `yes` or `contextual` the protein must reach the outer face by **its own mechanism** OR be **stably anchored to the surface** by a mechanism more robust than transient receptor-ligand binding. Acceptable mechanisms:
+The distinction that drives most borderline calls: **does this protein reach the outer leaflet by its own mechanism, or only because something else on the surface holds it there?**
 
-- Membrane integration (TM domain, GPI anchor, other outer-leaflet lipidation, pore assembly).
-- Direct outer-leaflet *lipid* binding (the protein recognizes a lipid head group on the outer leaflet directly, without binding another protein on the outside).
-- Intracellularly-assembled stable non-covalent complex with an anchored partner, co-trafficked to the surface together (the partnership is constitutive and baseline-stable, not state-dependent recruitment).
-- **Covalent post-translational attachment to a cell-surface partner** — e.g., disulfide-tethering of a latent ligand to a transmembrane partner that is co-trafficked from the ER, or thioester-mediated covalent deposition onto a cell-surface target. These are washable-resistant stable attachments to **cells** and therapeutically targetable in principle. Use `contextual` with reason `covalent_surface_attachment`. **Covalent deposition into extracellular matrix / stroma does NOT count** — matrix is not cell surface; matrix-deposited products are `no` / `secreted_only` (the matrix component is the target, not the deposited protein).
-- MHC-peptide presentation (the protein body stays intracellular; only its proteolytic fragment is at the surface).
+- "Its own mechanism" → `yes` or `contextual`. The protein is integrated into the membrane, partnered into a co-trafficked complex, covalently locked onto a transmembrane partner, or its peptide is MHC-presented. The mechanisms are enumerated in the per-verdict `reason` lists below.
+- "Something else holds it there" → `no` / `secreted_only`. A secreted protein binding a surface receptor or ECM component via reversible non-covalent interaction stays in equilibrium with the soluble pool; the **recruiter** is the surface target, not the recruited protein. The same exclusion applies to vesicle cargo (proteins inside EVs / exosomes are cargo, not cell-surface) and to covalent deposition into the extracellular matrix or stroma (matrix is not cell surface; the matrix scaffold is what's targeted, not the deposited protein).
 
-What does NOT count: a secreted protein binding to a surface receptor via reversible non-covalent interaction (it's in equilibrium with the soluble pool; the surface receptor is the target, not the recruited protein). Vesicle-cargo proteins (in extracellular vesicles, exosomes) also do not count — they're cargo, not cell-surface.
+When in doubt, ask: *if you wash the cells, does the protein stay on the surface via a stable physical link to the membrane or a TM partner?* If yes, it's at least `contextual`. If it leaves with the wash, it's `no`.
 
 ## `reason` — pick the single enum value that best fits
 
