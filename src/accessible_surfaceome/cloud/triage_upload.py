@@ -179,6 +179,7 @@ def upload_subbench_runs(
     runs_root: Path = SUBBENCH_RUNS,
     run_id: str | None = None,
     dry_run: bool = False,
+    since_mtime: float | None = None,
 ) -> dict[str, Any]:
     """Upload every per-cell JSON under ``runs_root`` to D1.
 
@@ -187,6 +188,9 @@ def upload_subbench_runs(
         runs_root: directory containing ``<model>/<variant>/<gene>_run<N>.json``.
         run_id: tag to group this upload. Defaults to a fresh uuid.
         dry_run: print what would be uploaded, but don't insert.
+        since_mtime: if set, skip per-cell record files modified before this
+            POSIX timestamp. Lets you scope an upload to "the latest sweep"
+            without manually pruning the records directory.
 
     Returns:
         Counters dict — int counts for ``prompts``, ``bench_rows``,
@@ -201,14 +205,25 @@ def upload_subbench_runs(
     # Pre-load prompts for every variant we'll see.
     prompts = {v: _load_prompt(v) for v in VARIANT_TO_PROMPT}
 
-    # Collect every run record.
+    # Collect every run record, filtered by mtime if --since was passed.
     records: list[tuple[Path, dict[str, Any]]] = []
+    n_skipped_by_since = 0
     for path in sorted(runs_root.rglob("*_run*.json")):
+        if since_mtime is not None and path.stat().st_mtime < since_mtime:
+            n_skipped_by_since += 1
+            continue
         try:
             records.append((path, json.loads(path.read_text())))
         except json.JSONDecodeError:
             logger.warning("skipping unreadable %s", path)
             continue
+
+    if since_mtime is not None:
+        logger.info(
+            "since filter: kept %d records, skipped %d older than %s",
+            len(records), n_skipped_by_since,
+            __import__("datetime").datetime.fromtimestamp(since_mtime).isoformat(),
+        )
 
     if not records:
         logger.warning("no run records under %s", runs_root)

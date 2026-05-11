@@ -27,6 +27,7 @@ from accessible_surfaceome.cloud.triage_upload import (
     SUBBENCH_TSV,
     upload_subbench_runs,
 )
+from accessible_surfaceome.env import load_env
 
 
 def main() -> None:
@@ -39,16 +40,32 @@ def main() -> None:
                     help="Directory containing <model>/<variant>/*_run*.json records.")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print what would be uploaded; make no API calls.")
+    ap.add_argument("--since", default=None,
+                    help="ISO-8601 date or datetime (local time); only per-cell "
+                         "records modified at or after this time are uploaded. "
+                         "Use e.g. '2026-05-11' to scope to today's sweep.")
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+    # Load .env at the repo root so CLOUDFLARE_* secrets are available to
+    # the D1Client. Honours the shell-precedence rules in env.py.
+    load_env()
 
+    from datetime import datetime
     from pathlib import Path
+    since_mtime: float | None = None
+    if args.since:
+        try:
+            since_mtime = datetime.fromisoformat(args.since).timestamp()
+        except ValueError as exc:
+            raise SystemExit(f"--since: {exc}") from exc
+
     counters = upload_subbench_runs(
         bench_tsv=Path(args.bench_tsv),
         runs_root=Path(args.runs_root),
         run_id=args.run_id,
         dry_run=args.dry_run,
+        since_mtime=since_mtime,
     )
 
     print()

@@ -19,24 +19,35 @@ this surfaces the missing keys; you'd recover by re-running:
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import sys
+from datetime import datetime
 
 from accessible_surfaceome.cloud.d1_client import D1Client
 from accessible_surfaceome.cloud.triage_upload import (
     SUBBENCH_RUNS,
     VARIANT_TO_PROMPT,
 )
+from accessible_surfaceome.env import load_env
 from accessible_surfaceome.paths import REPO_ROOT
+
+# Load .env so CLOUDFLARE_* secrets are available to the D1Client.
+load_env()
 
 
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _on_disk_keys() -> set[tuple[str, str, str, int, str]]:
-    """Build the (gene, model, variant, replicate, prompt_sha) set from JSON."""
+def _on_disk_keys(since_mtime: float | None = None) -> set[tuple[str, str, str, int, str]]:
+    """Build the (gene, model, variant, replicate, prompt_sha) set from JSON.
+
+    When since_mtime is provided, skip records older than that POSIX
+    timestamp — matches the --since filter the uploader supports so the
+    verify diff stays apples-to-apples.
+    """
     prompts_dir = REPO_ROOT / "src/accessible_surfaceome/agents/surface_triage/prompts"
     prompt_sha_by_variant = {
         variant: _sha256((prompts_dir / fname).read_text())
@@ -44,6 +55,8 @@ def _on_disk_keys() -> set[tuple[str, str, str, int, str]]:
     }
     out: set[tuple[str, str, str, int, str]] = set()
     for path in SUBBENCH_RUNS.rglob("*_run*.json"):
+        if since_mtime is not None and path.stat().st_mtime < since_mtime:
+            continue
         try:
             rec = json.loads(path.read_text())
         except json.JSONDecodeError:
@@ -60,10 +73,12 @@ def _on_disk_keys() -> set[tuple[str, str, str, int, str]]:
     return out
 
 
-def _on_disk_preds() -> dict[tuple[str, str, str, int], str | None]:
+def _on_disk_preds(since_mtime: float | None = None) -> dict[tuple[str, str, str, int], str | None]:
     """gene × model × variant × replicate → predicted_verdict (on disk)."""
     out: dict[tuple[str, str, str, int], str | None] = {}
     for path in SUBBENCH_RUNS.rglob("*_run*.json"):
+        if since_mtime is not None and path.stat().st_mtime < since_mtime:
+            continue
         try:
             rec = json.loads(path.read_text())
         except json.JSONDecodeError:
@@ -77,9 +92,23 @@ def _on_disk_preds() -> dict[tuple[str, str, str, int], str | None]:
 
 
 def main() -> int:
-    on_disk = _on_disk_keys()
-    on_disk_preds = _on_disk_preds()
-    print(f"On-disk records: {len(on_disk)}")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--since", default=None,
+                    help="ISO-8601 date or datetime (local time); only compare "
+                         "on-disk records modified at or after this time. Match "
+                         "this to whatever --since you passed the uploader.")
+    args = ap.parse_args()
+
+    since_mtime: float | None = None
+    if args.since:
+        try:
+            since_mtime = datetime.fromisoformat(args.since).timestamp()
+        except ValueError as exc:
+            raise SystemExit(f"--since: {exc}") from exc
+
+    on_disk = _on_disk_keys(since_mtime=since_mtime)
+    on_disk_preds = _on_disk_preds(since_mtime=since_mtime)
+    print(f"On-disk records ({'all-time' if since_mtime is None else f'since {args.since}'}): {len(on_disk)}")
     if not on_disk:
         print("  (no records on disk — nothing to verify against)")
         return 0
