@@ -107,6 +107,24 @@ FILTER_TO_FRESH = True
 PROMPT_FRESH_MODELS: frozenset[str] = frozenset()
 
 
+# Verdict scoring rule (user direction, reaffirmed):
+# `yes` and `contextual` collapse to a single positive class for accuracy
+# accounting — a tissue/state-restricted surface protein is operationally
+# the same kind of hit as a ubiquitous one for downstream targeting work.
+# `no` is only correct against `no`.
+POSITIVE_VERDICTS: frozenset[str] = frozenset({"yes", "contextual"})
+
+
+def _verdict_match(pred: str | None, truth: str | None) -> bool:
+    """Return True if prediction is acceptable under the
+    yes≡contextual equivalence rule."""
+    if pred is None or truth is None:
+        return False
+    if pred == truth:
+        return True
+    return pred in POSITIVE_VERDICTS and truth in POSITIVE_VERDICTS
+
+
 def _load_ground_truth() -> dict[str, dict[str, str]]:
     with SUBBENCH_TSV.open() as f:
         return {r["gene_symbol"]: r for r in csv.DictReader(f, delimiter="\t")}
@@ -164,7 +182,7 @@ def _build_dataframe() -> pd.DataFrame:
             "predicted_reason": r["predicted_reason"] or "",
             "predicted_confidence": r.get("predicted_confidence"),
             "predicted_key_uncertainty": r.get("predicted_key_uncertainty"),
-            "correct": (r["predicted_verdict"] or "") == current_truth,
+            "correct": _verdict_match(r["predicted_verdict"], current_truth),
             "cost_usd": r["cost_usd"],
             "latency_s": r["latency_s"],
             "n_web_searches": r["n_web_searches"],
@@ -224,7 +242,7 @@ def _lazy_ensemble(
                 top = counts.most_common(1)[0][1]
                 tied = [v for v, n_ in counts.items() if n_ == top]
                 chosen = tied[0] if len(tied) == 1 else pc
-        if chosen == truth[g]["ground_truth_verdict"]:
+        if _verdict_match(chosen, truth[g]["ground_truth_verdict"]):
             correct += 1
     n = len(genes)
     acc = correct / n
@@ -366,7 +384,7 @@ def _cascade(
                     top = counts.most_common(1)[0][1]
                     tied = [v for v, n_ in counts.items() if n_ == top]
                     chosen = tied[0] if len(tied) == 1 else rc.predicted_verdict
-        if chosen == truth[g]["ground_truth_verdict"]:
+        if _verdict_match(chosen, truth[g]["ground_truth_verdict"]):
             correct += 1
     n = len(genes)
     acc = correct / n

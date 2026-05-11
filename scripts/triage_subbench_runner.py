@@ -267,7 +267,14 @@ def _run_one(
     pred_c = parsed.get("confidence")
     pred_ku = parsed.get("key_uncertainty")
     reasoning = parsed.get("verdict_reasoning", "")
-    correct = pred_v == truth_verdict
+    # yes/contextual are equivalent for accuracy accounting (a
+    # tissue/state-restricted hit is operationally the same as a
+    # ubiquitous one); `no` is only correct against `no`.
+    _POSITIVE = {"yes", "contextual"}
+    correct = (
+        pred_v == truth_verdict
+        or (pred_v in _POSITIVE and truth_verdict in _POSITIVE)
+    )
     return RunRecord(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
