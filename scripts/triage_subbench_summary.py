@@ -42,12 +42,16 @@ RUNS_DIR = ROOT / "data/eval/triage_subbench_v1"
 OUT_DIR = ROOT / "data/analysis/triage_bench"
 
 # Extrapolate per-cell subbench costs to a whole-genome triage pass.
-# All cost annotations on the plots are reported as $/20k-gene-pass at 1
+# All cost annotations on the plots are reported as $/whole-genome at 1
 # replicate per gene — the apples-to-apples number for "would this fly
-# on the real surfaceome?"
+# on the real surfaceome?". WHOLE_GENOME_N is sourced from the canonical
+# NCBI protein-coding count (see scripts/fetch_ncbi_human_protein_coding.py
+# and data/external/ncbi_gene_info/Homo_sapiens.gene_info.summary.json);
+# refresh with that script and update the constant when NCBI revises the
+# count (drift is in the tens of genes per quarter).
 SUBBENCH_GENE_N = 17
-WHOLE_GENOME_N = 20000
-GENOME_SCALE = WHOLE_GENOME_N / SUBBENCH_GENE_N  # ~1176x
+WHOLE_GENOME_N = 20624  # NCBI Homo_sapiens protein-coding, fetched 2026-05-11
+GENOME_SCALE = WHOLE_GENOME_N / SUBBENCH_GENE_N  # ~1213x
 
 # Variant order = "amount of context" axis. Each variant gets a darker
 # shade of Claude orange as the context augmentation increases.
@@ -359,7 +363,8 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
     ax.set_title(
         "Triage sub-benchmark: variant × model accuracy  ·  "
-        f"costs extrapolated to a {WHOLE_GENOME_N // 1000}k-gene whole-genome pass at 1 rep/gene  ·  "
+        f"costs extrapolated to a {WHOLE_GENOME_N:,}-gene whole-genome pass "
+        "(NCBI protein-coding, 1 rep/gene)  ·  "
         "Combined = cheapest lazy 3-cell ensemble (A+B → C tiebreak)"
     )
     xtick_positions = list(range(len(models))) + (
@@ -640,7 +645,10 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
                                 lw=0.8, alpha=0.6),
             )
 
-    ax.set_xlabel(f"Cost per whole-genome triage pass ({WHOLE_GENOME_N // 1000}k genes × 1 rep, USD)")
+    ax.set_xlabel(
+        f"Cost per whole-genome triage pass ({WHOLE_GENOME_N:,} NCBI "
+        "protein-coding genes × 1 rep, USD)"
+    )
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
     n_cells = int(per_cell.shape[0])
     ax.set_title(
