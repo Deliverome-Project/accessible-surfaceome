@@ -583,6 +583,63 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
             color=COLORS["dark"], fontweight="bold",
         )
 
+    # --- Pareto frontier ----------------------------------------------
+    # Walk all points (per-cell + Combined) in cost-ascending order; keep
+    # a point only when its accuracy strictly exceeds the previous best.
+    # Draw a step curve through the survivors so the flattening / knee of
+    # the cost/accuracy curve is visible. Each horizontal segment shows
+    # the cost range where adding more spend doesn't buy accuracy.
+    frontier_points = [
+        (row.genome_cost, row.accuracy, f"{row.model}/{row.variant}")
+        for _, row in per_cell.iterrows()
+    ] + [
+        (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Combined {label}")
+        for label, rec, _ in combined_tiers
+    ]
+    frontier_points.sort(key=lambda p: p[0])
+    pareto = []
+    best_acc = -1.0
+    for cost, acc, label in frontier_points:
+        if acc > best_acc + 1e-9:
+            pareto.append((cost, acc, label))
+            best_acc = acc
+    if len(pareto) >= 2:
+        # Step curve: at each frontier point, jump up to new accuracy,
+        # then extend right to the next point's cost. This makes the
+        # plateau between successive frontier points explicit.
+        step_x = []
+        step_y = []
+        for i, (c, a, _) in enumerate(pareto):
+            if i == 0:
+                step_x.append(c)
+                step_y.append(a)
+            else:
+                # horizontal segment from previous (cost, prev_acc) up to
+                # (this cost, prev_acc), then vertical up to (this cost,
+                # this_acc).
+                prev_c, prev_a, _ = pareto[i - 1]
+                step_x.extend([c, c])
+                step_y.extend([prev_a, a])
+        ax.plot(
+            step_x, step_y,
+            color=COLORS["dark"], linewidth=1.6,
+            linestyle="--", alpha=0.55, zorder=2,
+        )
+        # Annotate the knee — first plateau point — so the reader sees
+        # where additional spend stops buying meaningful accuracy.
+        # The knee is the cheapest point at the second-to-last accuracy.
+        # For our data this should be the Combined ≥94% star.
+        knee = pareto[-2] if len(pareto) >= 2 else None
+        if knee and knee[1] >= 0.9:
+            ax.annotate(
+                "knee:\nlowest cost\nat 90 %+ acc",
+                xy=(knee[0], knee[1]),
+                xytext=(-90, -28), textcoords="offset points",
+                fontsize=8.5, color=COLORS["neutral"], style="italic",
+                arrowprops=dict(arrowstyle="->", color=COLORS["neutral"],
+                                lw=0.8, alpha=0.6),
+            )
+
     ax.set_xlabel(f"Cost per whole-genome triage pass ({WHOLE_GENOME_N // 1000}k genes × 1 rep, USD)")
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
     n_cells = int(per_cell.shape[0])
@@ -617,6 +674,10 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
                    label="Combined lazy ≥94%"),
         ]
         if combined_tiers else []
+    ) + (
+        [Line2D([], [], color=COLORS["dark"], linewidth=1.6,
+                linestyle="--", alpha=0.6, label="Pareto frontier")]
+        if len(pareto) >= 2 else []
     )
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.02, 1.0),
               frameon=False, borderaxespad=0.0)
