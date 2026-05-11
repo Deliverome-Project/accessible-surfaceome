@@ -131,9 +131,10 @@ def _insert_run(
         "INSERT INTO triage_run ("
         " run_id, gene_symbol, uniprot_acc, bench_version, model, prompt_variant,"
         " prompt_sha, schema_version, replicate, predicted_verdict, predicted_reason,"
-        " verdict_reasoning, truth_verdict, truth_class, correct, prompt_tokens,"
+        " verdict_reasoning, predicted_confidence, predicted_key_uncertainty,"
+        " truth_verdict, truth_class, correct, prompt_tokens,"
         " completion_tokens, n_web_searches, cost_usd, latency_s, error, raw_text"
-        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
         [
             run_id,
             record["gene_symbol"],
@@ -147,6 +148,8 @@ def _insert_run(
             record.get("predicted_verdict"),
             record.get("predicted_reason"),
             record.get("verdict_reasoning") or "",
+            record.get("predicted_confidence"),
+            record.get("predicted_key_uncertainty"),
             record["truth_verdict"],
             truth_class,
             1 if record.get("correct") else 0,
@@ -206,9 +209,17 @@ def upload_subbench_runs(
     prompts = {v: _load_prompt(v) for v in VARIANT_TO_PROMPT}
 
     # Collect every run record, filtered by mtime if --since was passed.
+    # Skip directories whose names start with '_' (convention: backup /
+    # archival snapshots of prior prompt versions, e.g.
+    # ``_prev_naive_pre_gene_specific``). Those shouldn't go to D1 — they
+    # were committed for diff-history not for re-ingestion.
     records: list[tuple[Path, dict[str, Any]]] = []
     n_skipped_by_since = 0
+    n_skipped_by_backup_dir = 0
     for path in sorted(runs_root.rglob("*_run*.json")):
+        if any(part.startswith("_") for part in path.relative_to(runs_root).parts):
+            n_skipped_by_backup_dir += 1
+            continue
         if since_mtime is not None and path.stat().st_mtime < since_mtime:
             n_skipped_by_since += 1
             continue
@@ -217,6 +228,10 @@ def upload_subbench_runs(
         except json.JSONDecodeError:
             logger.warning("skipping unreadable %s", path)
             continue
+
+    if n_skipped_by_backup_dir:
+        logger.info("backup-dir filter: skipped %d records under _*/ subdirs",
+                    n_skipped_by_backup_dir)
 
     if since_mtime is not None:
         logger.info(

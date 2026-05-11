@@ -80,9 +80,11 @@ CREATE TABLE IF NOT EXISTS triage_run (
     replicate           INTEGER NOT NULL,
 
     -- agent output
-    predicted_verdict   TEXT,                       -- nullable on parse-fail / API error
-    predicted_reason    TEXT,
-    verdict_reasoning   TEXT,
+    predicted_verdict          TEXT,                       -- nullable on parse-fail / API error
+    predicted_reason           TEXT,
+    verdict_reasoning          TEXT,
+    predicted_confidence       TEXT,                       -- 'low'|'medium'|'high' (schema v0.9.0+)
+    predicted_key_uncertainty  TEXT,                       -- ≤200 chars; the one thing the agent is least sure about
 
     -- evaluation (denormalized for query speed; same fields are in
     -- benchmark_version, but storing here avoids a join for hot dashboards)
