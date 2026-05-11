@@ -254,14 +254,51 @@ def _lazy_ensemble(
     return acc, exp_cost, n_dis
 
 
+# Cost tolerance for the NCBI-preference tiebreaker. Configs within
+# this band of the cheapest qualifying config get re-ranked to prefer
+# the most-NCBI composition. Sized so that the typical *-naive →
+# *-ncbi swap (a few cents per gene, $5–$50 per whole-genome pass)
+# always flips, while substantively cheaper configurations are kept.
+NCBI_PREF_TOLERANCE_REL: float = 0.05
+NCBI_PREF_TOLERANCE_ABS_PG: float = 50.0  # USD per whole-genome pass
+
+
+def _ncbi_score(rec: dict) -> int:
+    """How NCBI-anchored is this config? Counts cells with variant=='ncbi'
+    among (A, B, [C])."""
+    cells = [rec.get("a"), rec.get("b")]
+    if rec.get("c") is not None:
+        cells.append(rec["c"])
+    return sum(1 for cell in cells if cell and cell[1] == "ncbi")
+
+
+def _pick_preferring_ncbi(candidates: list[dict]) -> dict | None:
+    """Pick the cheapest candidate, then upgrade to a more-NCBI variant
+    if one exists within the cost-tolerance band. Tie-breaks: more NCBI
+    cells, then cheaper, then alphabetical for stability."""
+    if not candidates:
+        return None
+    cheapest = min(candidates, key=lambda c: c["cost"])
+    tol = max(
+        NCBI_PREF_TOLERANCE_REL * cheapest["cost"],
+        NCBI_PREF_TOLERANCE_ABS_PG / WHOLE_GENOME_N,
+    )
+    within = [c for c in candidates if c["cost"] <= cheapest["cost"] + tol + 1e-12]
+    return max(
+        within,
+        key=lambda c: (_ncbi_score(c), -c["cost"], str(c.get("a")), str(c.get("b"))),
+    )
+
+
 def _best_lazy_at_tier(
     df: pd.DataFrame, truth: dict, acc_threshold: float
 ) -> dict | None:
-    """Sweep every (A, B, C) triple and return the cheapest configuration
-    meeting ``acc_threshold``. Returns a dict with the trio + metrics."""
+    """Sweep every (A, B, C) triple and return the cheapest qualifying
+    config, then apply the NCBI-preference tiebreaker within tolerance.
+    Returns a dict with the trio + metrics."""
     from itertools import combinations
     cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
-    best = None
+    candidates: list[dict] = []
     for a, b in combinations(cells, 2):
         for c in cells:
             if c == a or c == b:
@@ -269,10 +306,11 @@ def _best_lazy_at_tier(
             acc, cost, n_dis = _lazy_ensemble(df, truth, a, b, c)
             if acc + 1e-9 < acc_threshold:
                 continue
-            if best is None or cost < best["cost"]:
-                best = {"a": a, "b": b, "c": c, "acc": acc, "cost": cost,
-                        "n_dis": n_dis}
-    return best
+            candidates.append({
+                "a": a, "b": b, "c": c, "acc": acc, "cost": cost,
+                "n_dis": n_dis,
+            })
+    return _pick_preferring_ncbi(candidates)
 
 
 # --- Escalation predicates -------------------------------------------------
@@ -404,10 +442,11 @@ def _best_cascade_at_tier(
     with_lazy: bool,
 ) -> dict | None:
     """Sweep (A, B[, C]) configurations for one cascade strategy; return
-    the cheapest configuration that meets ``acc_threshold``."""
+    the cheapest qualifying config, then apply the NCBI-preference
+    tiebreaker within cost tolerance."""
     pred = ESCALATE_PREDICATES[predicate_name]
     cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
-    best: dict | None = None
+    candidates: list[dict] = []
     for a in cells:
         for b in cells:
             if b == a:
@@ -419,27 +458,25 @@ def _best_cascade_at_tier(
                     acc, cost, nb, nc = _cascade(df, truth, a, b, c, pred)
                     if acc + 1e-9 < acc_threshold:
                         continue
-                    if best is None or cost < best["cost"]:
-                        best = {
-                            "a": a, "b": b, "c": c,
-                            "acc": acc, "cost": cost,
-                            "n_to_b": nb, "n_to_c": nc,
-                            "with_lazy": True,
-                            "predicate": predicate_name,
-                        }
+                    candidates.append({
+                        "a": a, "b": b, "c": c,
+                        "acc": acc, "cost": cost,
+                        "n_to_b": nb, "n_to_c": nc,
+                        "with_lazy": True,
+                        "predicate": predicate_name,
+                    })
             else:
                 acc, cost, nb, _ = _cascade(df, truth, a, b, None, pred)
                 if acc + 1e-9 < acc_threshold:
                     continue
-                if best is None or cost < best["cost"]:
-                    best = {
-                        "a": a, "b": b, "c": None,
-                        "acc": acc, "cost": cost,
-                        "n_to_b": nb, "n_to_c": 0,
-                        "with_lazy": False,
-                        "predicate": predicate_name,
-                    }
-    return best
+                candidates.append({
+                    "a": a, "b": b, "c": None,
+                    "acc": acc, "cost": cost,
+                    "n_to_b": nb, "n_to_c": 0,
+                    "with_lazy": False,
+                    "predicate": predicate_name,
+                })
+    return _pick_preferring_ncbi(candidates)
 
 
 # Strategy registry. ``predicate=None`` is the pure-lazy fallback: A and
@@ -712,40 +749,52 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
         return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
 
     summary = _summarize_strategies(df, truth_rows)
+    # "Best combo": cheapest across ALL 11 strategies at each tier.
     best_by_tier: dict[str, dict | None] = {}
+    # "Pure lazy": separately, the cheapest pure-lazy triple at each tier
+    # (lets the reader compare against the cascade winners side-by-side).
+    lazy_by_tier: dict[str, dict | None] = {}
     for tier_name in ("≥100%", "≥94%"):
         candidates = [s for s in summary if s["tier"] == tier_name and s["rec"]]
         candidates.sort(key=lambda s: s["rec"]["cost"])
         best_by_tier[tier_name] = candidates[0] if candidates else None
-    any_combos = any(best_by_tier.values())
+        lazy_only = [s for s in candidates if s["is_pure_lazy"]]
+        lazy_by_tier[tier_name] = lazy_only[0] if lazy_only else None
+    any_combos = any(best_by_tier.values()) or any(lazy_by_tier.values())
 
-    # Two-bar combo group: brand them as best-overall winners. Use the
-    # familiar teal/sage palette so the combo bars stay visually distinct
-    # from the orange per-cell bars.
-    COMBO_HI = COLORS["secondary"]   # teal — best @ ≥100%
-    COMBO_LO = "#7eafa4"             # sage — best @ ≥94%
-    if any_combos:
-        n_models = len(models)
+    # Color palette per sub-group. Best combo = teal/sage (existing);
+    # Pure lazy = purple/lavender so it's visually adjacent but distinct.
+    COMBO_HI = COLORS["secondary"]   # teal — best combo @ ≥100%
+    COMBO_LO = "#7eafa4"             # sage — best combo @ ≥94%
+    LAZY_HI = "#6c3e92"              # purple — pure lazy @ ≥100%
+    LAZY_LO = "#a07cc1"              # lavender — pure lazy @ ≥94%
+
+    def _draw_combo_subgroup(group_x_center: float, label: str,
+                             entries: list[tuple[str, dict | None]],
+                             colors: tuple[str, str]) -> None:
+        """Render one combo sub-group at ``group_x_center`` with one bar
+        per tier (filled = qualifying winner, hatched = ceiling-only
+        when no config meets the tier)."""
         bar_w = 0.34
-        group_center = n_models
-        tier_entries = [(t, best_by_tier[t]) for t in ("≥100%", "≥94%")]
-        tier_entries = [(t, r) for t, r in tier_entries if r]
-        n_t = len(tier_entries)
+        entries_present = [(t, e) for t, e in entries if e]
+        n_t = len(entries_present)
+        if n_t == 0:
+            return
         offsets = [(i - (n_t - 1) / 2) * (bar_w + 0.04) for i in range(n_t)]
-        bar_colors = [COMBO_HI, COMBO_LO][:n_t]
-        for (tier_name, entry), off, fc in zip(tier_entries, offsets, bar_colors):
+        for (tier_name, entry), off, fc in zip(entries_present, offsets, colors):
             rec = entry["rec"]
-            x_pos = group_center + off
+            x_pos = group_x_center + off
             ax.bar(x_pos, rec["acc"], width=bar_w, color=fc,
                    edgecolor="none", zorder=2)
             cost_per_genome = rec["cost"] * WHOLE_GENOME_N
             n_b = rec.get("n_to_b", rec.get("n_dis", 0))
             n_c = rec.get("n_to_c", 0)
-            esc = f"{n_b}→B"
-            if rec.get("c") is not None and not entry["is_pure_lazy"]:
-                esc += f", {n_c}→C"
-            elif entry["is_pure_lazy"]:
+            if entry["is_pure_lazy"]:
                 esc = f"{rec.get('n_dis', 0)}/17 tied"
+            else:
+                esc = f"{n_b}→B"
+                if rec.get("c") is not None:
+                    esc += f", {n_c}→C"
             ax.text(
                 x_pos, rec["acc"] + 0.018,
                 f"{tier_name}\n${cost_per_genome:,.0f}\n{esc}",
@@ -762,26 +811,49 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
             ax.text(
                 x_pos, rec["acc"] / 2, comp,
                 ha="center", va="center",
-                fontsize=7, color="white", linespacing=1.2,
+                fontsize=6.8, color="white", linespacing=1.2,
                 style="italic",
             )
 
+    # Lay out two sub-groups: "Best combo" then "Pure lazy".
+    n_models = len(models)
+    n_combo_groups = 0
+    if any_combos:
+        # Best combo (any strategy)
+        _draw_combo_subgroup(
+            n_models,
+            "Best combo",
+            [("≥100%", best_by_tier["≥100%"]), ("≥94%", best_by_tier["≥94%"])],
+            (COMBO_HI, COMBO_LO),
+        )
+        n_combo_groups += 1
+        # Pure lazy (separate)
+        if any(lazy_by_tier.values()):
+            _draw_combo_subgroup(
+                n_models + 1,
+                "Pure lazy",
+                [("≥100%", lazy_by_tier["≥100%"]), ("≥94%", lazy_by_tier["≥94%"])],
+                (LAZY_HI, LAZY_LO),
+            )
+            n_combo_groups += 1
+
     ax.set_xlabel("")
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
+    # Wrapped title — three lines for legibility on narrow renderings.
     ax.set_title(
-        "Triage sub-benchmark: variant × model accuracy  ·  "
+        "Triage sub-benchmark: variant × model accuracy\n"
         f"costs extrapolated to a {WHOLE_GENOME_N:,}-gene whole-genome pass "
-        "(NCBI protein-coding, 1 rep/gene)  ·  "
-        "Combo bars = cheapest config across 11 strategies "
-        "(pure lazy / conf=low / conf≤med / verdict=no / unions / +lazy)"
+        "(NCBI protein-coding, 1 rep/gene)\n"
+        "Best combo = cheapest across 11 strategies (cascade + lazy)  ·  "
+        "Pure lazy = cheapest A+B → C tiebreak  ·  "
+        "ties within ~5% prefer NCBI-anchored cells",
+        fontsize=11, linespacing=1.3,
     )
-    n_combo_groups = 1 if any_combos else 0
     xtick_positions = list(range(len(models))) + (
-        [len(models)] if any_combos else []
+        [n_models + i for i in range(n_combo_groups)] if any_combos else []
     )
-    xtick_labels = [MODEL_LABEL[m] for m in models] + (
-        ["Best\ncombination"] if any_combos else []
-    )
+    combo_xtick_labels = ["Best combo", "Pure lazy"][:n_combo_groups]
+    xtick_labels = [MODEL_LABEL[m] for m in models] + combo_xtick_labels
     ax.set_xticks(xtick_positions)
     ax.set_xticklabels(xtick_labels)
     if any_combos:
@@ -809,6 +881,14 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
                   label="Best combo ≥ 94%"),
         ]
         if any_combos else []
+    ) + (
+        [
+            Patch(facecolor=LAZY_HI, edgecolor="none",
+                  label="Pure lazy ≥ 100%"),
+            Patch(facecolor=LAZY_LO, edgecolor="none",
+                  label="Pure lazy ≥ 94%"),
+        ]
+        if any(lazy_by_tier.values()) else []
     )
     ax.legend(
         handles=legend_handles,
