@@ -511,65 +511,90 @@ def plot_per_protein(df: pd.DataFrame, out_dir: Path) -> None:
 
 def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
-    # One point per (model, variant, replicate) — so Haiku 4.5 / Sonnet 4.6
-    # contribute two points per variant and Opus 4.7 contributes one.
-    per_rep = (
-        df.groupby(["model", "variant", "replicate"], as_index=False)
+    # One point per (model, variant) — replicates averaged. Per-rep
+    # variance is already shown on the accuracy-by-variant figure; this
+    # plot is the Pareto-frontier view, so we want a single point per cell.
+    per_cell = (
+        df.groupby(["model", "variant"], as_index=False)
         .agg(
             n=("correct", "size"),
             n_correct=("correct", "sum"),
-            total_cost=("cost_usd", "sum"),
+            n_reps=("replicate", "nunique"),
+            cost_per_rep_mean=("cost_usd", "mean"),
         )
     )
-    per_rep["accuracy"] = per_rep.n_correct / per_rep.n
-    # Extrapolate per-replicate (17-gene) cost to a whole-genome pass
-    # (20k genes at 1 rep) so the x-axis is the apples-to-apples
-    # production-cost number, not the per-subbench-rep number.
-    per_rep["genome_cost"] = per_rep.total_cost * GENOME_SCALE
+    per_cell["accuracy"] = per_cell.n_correct / per_cell.n
+    # Mean per-cell cost × WHOLE_GENOME_N == cost of one production pass.
+    per_cell["genome_cost"] = per_cell.cost_per_rep_mean * WHOLE_GENOME_N
 
-    fig, ax = plt.subplots(figsize=(8.5, 5.8))
+    fig, ax = plt.subplots(figsize=(9.0, 5.8))
     mixed_prompts = (
-        bool(per_rep.model.isin(PROMPT_FRESH_MODELS).any())
-        and bool((~per_rep.model.isin(PROMPT_FRESH_MODELS)).any())
+        bool(per_cell.model.isin(PROMPT_FRESH_MODELS).any())
+        and bool((~per_cell.model.isin(PROMPT_FRESH_MODELS)).any())
     )
 
     for model in MODEL_ORDER:
-        sub = per_rep[per_rep.model == model]
+        sub = per_cell[per_cell.model == model]
         if sub.empty:
             continue
         marker = MODEL_MARKER.get(model, "o")
         is_fresh = model in PROMPT_FRESH_MODELS
-        # Label each variant once per model (on its lowest-replicate point) so
-        # the figure doesn't get cluttered when reps are stacked.
-        first_labeled: set[tuple[str, str]] = set()
         for _, row in sub.iterrows():
             ax.scatter(
                 row.genome_cost, row.accuracy,
-                s=200, color=CLAUDE_ORANGE_SHADES[row.variant],
+                s=220, color=CLAUDE_ORANGE_SHADES[row.variant],
                 marker=marker, edgecolor=COLORS["dark"], linewidth=1.0,
                 zorder=3,
             )
-            key = (row.model, row.variant)
-            if key not in first_labeled:
-                label = row.variant + ("*" if mixed_prompts and is_fresh else "")
-                ax.annotate(
-                    label, (row.genome_cost, row.accuracy),
-                    xytext=(8, 4), textcoords="offset points", fontsize=9,
-                    color=COLORS["neutral"],
-                )
-                first_labeled.add(key)
+            label = row.variant + ("*" if mixed_prompts and is_fresh else "")
+            ax.annotate(
+                label, (row.genome_cost, row.accuracy),
+                xytext=(8, 4), textcoords="offset points", fontsize=9,
+                color=COLORS["neutral"],
+            )
+
+    # Lazy-ensemble Combined points — same teal-on-teal colour scheme as
+    # the accuracy_by_variant plot, distinctive star markers to set them
+    # apart from the per-cell points.
+    truth_rows = _load_ground_truth()
+    combined_tiers = [
+        ("≥100%", _best_lazy_at_tier(df, truth_rows, 0.999), COLORS["secondary"]),
+        ("≥94%",  _best_lazy_at_tier(df, truth_rows, 0.94),  "#7eafa4"),
+    ]
+    combined_tiers = [(lbl, r, c) for lbl, r, c in combined_tiers if r]
+    for label, rec, fc in combined_tiers:
+        gc = rec["cost"] * WHOLE_GENOME_N
+        ax.scatter(
+            gc, rec["acc"],
+            s=380, color=fc, marker="*",
+            edgecolor=COLORS["dark"], linewidth=1.2, zorder=5,
+        )
+
+        def _short(cell):
+            m_, v_ = cell
+            return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
+        combo_label = (
+            f"Combined {label}\n"
+            f"{_short(rec['a'])} + {_short(rec['b'])} → {_short(rec['c'])}"
+        )
+        ax.annotate(
+            combo_label, (gc, rec["acc"]),
+            xytext=(10, -8), textcoords="offset points", fontsize=8.5,
+            color=COLORS["dark"], fontweight="bold",
+        )
 
     ax.set_xlabel(f"Cost per whole-genome triage pass ({WHOLE_GENOME_N // 1000}k genes × 1 rep, USD)")
-    ax.set_ylabel("Verdict accuracy per replicate")
-    n_points = int(per_rep.shape[0])
-    n_cells = int(per_rep.groupby(["model", "variant"]).ngroups)
+    ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
+    n_cells = int(per_cell.shape[0])
     ax.set_title(
-        f"Cost vs accuracy: {n_points} replicates across {n_cells} (model × variant) cells"
+        f"Cost vs accuracy frontier: {n_cells} per-cell points (replicates averaged) "
+        "+ 2 lazy-ensemble combined points"
     )
-    ax.set_ylim(0, 1.05)
-    # Legend: shade-by-variant, marker-by-model.
+    ax.set_ylim(0, 1.07)
+    ax.set_xscale("log")
+    # Legend: shade-by-variant, marker-by-model, star for Combined.
     from matplotlib.lines import Line2D
-    models_present = [m for m in MODEL_ORDER if m in per_rep.model.unique()]
+    models_present = [m for m in MODEL_ORDER if m in per_cell.model.unique()]
     handles = [
         Line2D([], [], marker="o", color="w", markerfacecolor=CLAUDE_ORANGE_SHADES[v],
                markersize=11, markeredgecolor=COLORS["dark"], label=VARIANT_LABEL[v].replace("\n", " "))
@@ -582,22 +607,20 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
             label=MODEL_LABEL[m] + ("*" if mixed_prompts and m in PROMPT_FRESH_MODELS else ""),
         )
         for m in models_present
-    ]
+    ] + (
+        [
+            Line2D([], [], marker="*", color="w", markerfacecolor=COLORS["secondary"],
+                   markersize=15, markeredgecolor=COLORS["dark"],
+                   label="Combined lazy ≥100%"),
+            Line2D([], [], marker="*", color="w", markerfacecolor="#7eafa4",
+                   markersize=15, markeredgecolor=COLORS["dark"],
+                   label="Combined lazy ≥94%"),
+        ]
+        if combined_tiers else []
+    )
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.02, 1.0),
               frameon=False, borderaxespad=0.0)
     sns.despine(ax=ax, top=True, right=True)
-
-    if mixed_prompts:
-        fresh_label = ", ".join(MODEL_LABEL[m] for m in models_present if m in PROMPT_FRESH_MODELS)
-        fig.text(
-            0.5, 0.01,
-            f"*{fresh_label} runs use the current triage system prompt; "
-            "Haiku 4.5 / Sonnet 4.6 cells were captured against an earlier revision. "
-            "Each marker is one replicate (17 genes); cells with multiple reps appear as multiple markers.",
-            ha="center", va="bottom", fontsize=8.5,
-            color=COLORS["neutral"], style="italic",
-        )
-        fig.subplots_adjust(bottom=0.16)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(
