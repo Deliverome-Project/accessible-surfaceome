@@ -1278,7 +1278,7 @@ class SurfaceomeRecordDraft(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-TRIAGE_SCHEMA_VERSION = "v0.7.0"
+TRIAGE_SCHEMA_VERSION = "v0.9.0"
 
 
 TriageVerdict = Literal["yes", "contextual", "no"]
@@ -1328,11 +1328,6 @@ ContextualReason = Literal[
     # Lysosomal / late-endosomal TM protein reaches PM during lysosomal
     # exocytosis
     "lysosomal_exocytosis",
-    # The protein itself is intracellular but a peptide derived from it
-    # is MHC-presented (TCR / TCR-mimic accessibility). pMHC presentation
-    # is always a contextual mechanism, not a yes — the protein body
-    # never reaches the outer leaflet, only its proteolytic fragment.
-    "pmhc_presented_peptide",
     # The protein has a documented PM pool alongside a dominant non-PM
     # compartment. Covers both (a) active vesicular trafficking cycling
     # between an intracellular compartment and the PM — secretory
@@ -1345,23 +1340,30 @@ ContextualReason = Literal[
     # accessibility — both have a minority but stable PM pool.
     "dual_localization",
     # A secreted (or otherwise non-membrane-anchored) protein becomes
-    # COVALENTLY anchored to a CELL-SURFACE TM partner post-translationally.
-    # Most relevant mechanism: disulfide tethering of a latent ligand to a
-    # transmembrane partner that is co-trafficked from the ER as a covalent
-    # complex (the latent ligand is anchored to the cell surface via
-    # specific intermolecular disulfide bonds, ready for regulated release
-    # by integrins or proteases). Distinct from transient non-covalent
-    # recruitment because the covalent bond makes the surface presence
-    # stable and washable-resistant — clinical antibody programs against
-    # such surface complexes exist.
+    # STABLY anchored to a cell-surface partner post-translationally —
+    # either COVALENTLY (disulfide tethering of a latent ligand to a TM
+    # partner co-trafficked from the ER as a covalent complex; thioester
+    # deposition on cells; transamidase cross-linking) or via
+    # WASH-RESISTANT, NON-REVERSIBLE non-covalent association (very
+    # strong, stable binding that does NOT stay in equilibrium with the
+    # soluble pool). The defining criterion is that the protein remains
+    # attached to the cell surface after washing — clinical antibody
+    # programs against such surface complexes exist (e.g. livmoniplimab
+    # against GARP:latent-TGF-β1).
     #
-    # **ECM / matrix is NOT cell surface.** Covalent attachment to
-    # extracellular matrix (e.g., transamidase-cross-linked secreted
-    # proteins deposited into tumor stroma, latent TGF-β bound to LTBP-
-    # ECM, complement fragments deposited on connective tissue) does
-    # not count — those are matrix-anchored, not cell-surface anchored.
+    # **Excluded — use `secreted_only` instead:** Ca²⁺-dependent
+    # reversible binding to membrane lipids (prothrombin/F2 Gla-PS
+    # interaction); integrin-mediated ECM tethering (fibronectin/FN1);
+    # transient cytokine-receptor binding equilibria; any non-covalent
+    # interaction that washes off.
+    #
+    # **ECM / matrix is also NOT cell surface.** Covalent attachment to
+    # extracellular matrix (transamidase-cross-linked secreted proteins
+    # deposited into tumor stroma, latent TGF-β bound to LTBP-ECM,
+    # complement fragments deposited on connective tissue) does not
+    # count — those are matrix-anchored, not cell-surface anchored.
     # Use `no` / `secreted_only` for matrix-deposited covalent products.
-    "covalent_surface_attachment",
+    "stable_surface_attachment",
     "other",
 ]
 
@@ -1388,6 +1390,14 @@ NoReason = Literal[
     # post-translational attachment are NOT recruitment — use yes /
     # contextual reasons instead.
     "secreted_only",
+    # The protein body is strictly intracellular; the only "surface"
+    # story is that proteolytic peptides derived from it are MHC-
+    # presented. pMHC presentation is NOT credited for surface
+    # accessibility in this triage — every intracellular protein has
+    # potentially MHC-presentable peptides, so pMHC is not a
+    # discriminating signal. Downstream TCR / TCR-mimic / bispecific
+    # programs are handled as a separate axis from surface accessibility.
+    "pmhc_only_intracellular",
     "other",
 ]
 
@@ -1403,9 +1413,8 @@ TriageReason = Literal[
     "cell_state_induced",
     "tissue_restricted_surface",
     "lysosomal_exocytosis",
-    "pmhc_presented_peptide",
     "dual_localization",
-    "covalent_surface_attachment",
+    "stable_surface_attachment",
     "cytoplasmic",
     "nuclear",
     "mitochondrial_internal",
@@ -1413,6 +1422,7 @@ TriageReason = Literal[
     "nuclear_envelope",
     "inner_leaflet_anchored",
     "secreted_only",
+    "pmhc_only_intracellular",
     "other",
 ]
 
@@ -1432,9 +1442,8 @@ _CONTEXTUAL_REASONS: frozenset[str] = frozenset(
         "cell_state_induced",
         "tissue_restricted_surface",
         "lysosomal_exocytosis",
-        "pmhc_presented_peptide",
         "dual_localization",
-        "covalent_surface_attachment",
+        "stable_surface_attachment",
         "other",
     }
 )
@@ -1447,6 +1456,7 @@ _NO_REASONS: frozenset[str] = frozenset(
         "nuclear_envelope",
         "inner_leaflet_anchored",
         "secreted_only",
+        "pmhc_only_intracellular",
         "other",
     }
 )
