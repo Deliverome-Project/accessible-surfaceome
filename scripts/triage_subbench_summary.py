@@ -312,7 +312,7 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
                 color=COLORS["neutral"],
             )
 
-    ax.set_xlabel("Total cost across 34-call cell (USD)")
+    ax.set_xlabel("Total cost on 17-protein sub-benchmark (2 replicates, USD)")
     ax.set_ylabel("Verdict accuracy")
     ax.set_title("Cost vs accuracy across the 8 (model × variant) cells")
     ax.set_ylim(0, 1.05)
