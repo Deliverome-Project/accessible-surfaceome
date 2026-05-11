@@ -99,6 +99,24 @@ SHARED_FINGERPRINTS: dict[str, str] = {
         "partner?* If yes, it's at least `contextual`. If it leaves with "
         "the wash, it's `no`."
     ),
+    "cardinal_apply_recruitment_test": (
+        "Apply the recruitment test before defaulting to `secreted_only`."
+    ),
+    "preamble_treat_no_as_highest_cost": (
+        "Treat `no` as the highest-cost error: false negatives are not "
+        "recoverable downstream while false positives are."
+    ),
+    "closing_do_not_emit_no_with_membrane_association": (
+        "Do not emit `no` for any protein with documented membrane "
+        "association at any stage of its lifecycle."
+    ),
+    "probe6_treat_naming_as_hint": (
+        "Treat activation- or stress-state naming as a hint toward "
+        "cell-state induction"
+    ),
+    "probe6_treat_latent_as_hint": (
+        "as hints toward "
+    ),  # both variants use "as hints toward TM-partner tethering" or "...covalent / wash-resistant TM-partner tethering"
     # --- Reason enum: contextual (the most-evolved bucket)
     "enum_cell_state_induced": (
         "translocates to the outer leaflet only under a defined non-baseline "
@@ -112,8 +130,9 @@ SHARED_FINGERPRINTS: dict[str, str] = {
         "**Germline / gamete-restricted display with its own anchor (TM, GPI, "
         "or outer-leaflet lipidation) still goes here**"
     ),
-    "enum_dual_localization_vesicular": (
-        "vesicular cycling vs steady-state dual home"
+    "enum_dual_localization_equivalent": (
+        "Treat vesicular cycling and steady-state dual home equivalently "
+        "for accessibility"
     ),
     "enum_dual_localization_tm_proligands": (
         "Also covers single-pass TM proligands whose ectodomain is released "
@@ -192,7 +211,17 @@ SHARED_FINGERPRINTS: dict[str, str] = {
         '"verdict": "yes" | "contextual" | "no"'
     ),
     "output_contract_reasoning": (
-        '"verdict_reasoning": "<= 600 chars explaining the call"'
+        '"verdict_reasoning": "<= 800 chars explaining the call"'
+    ),
+    "preamble_must_enumerate_contextual": (
+        "When you emit `no`, your `verdict_reasoning` must explicitly name "
+        "each of the 5 contextual reasons and state the specific evidence "
+        "that rules each one out"
+    ),
+    "preamble_do_not_skip": (
+        "Do not skip any of the 5 buckets; do not anchor on a single "
+        "dominant compartment from the NCBI summary, gene-group lineage, "
+        "or your trained knowledge."
     ),
 }
 
@@ -214,6 +243,15 @@ RESOLVER_ONLY_FINGERPRINTS: dict[str, str] = {
         "(registry-curated lineages — chemokine receptors, solute carriers, "
         "claudins, tetraspanins, GPCRs, etc.) and its CD nomenclature "
         "designation when assigned."
+    ),
+    "probe7_treat_family_as_signal": (
+        "Treat membership in a canonical surface-protein gene-family — or "
+        "possession of a CD number at all — as a strong surface signal"
+    ),
+    "ncbi_caveat_not_authoritative": (
+        "Do not treat the NCBI subcellular call as authoritative — those "
+        "notes are often terse, occasionally outdated, and sometimes refer "
+        "to a single experimental context."
     ),
     "probe7_weight_registry_heavier": (
         "When the HGNC gene-group family lineage and the NCBI summary "

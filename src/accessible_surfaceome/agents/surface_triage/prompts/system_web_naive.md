@@ -31,7 +31,7 @@ The distinction that drives most borderline calls: **does this protein reach the
 
 When in doubt, ask: *if you wash the cells, does the protein stay on the surface via a stable physical link to the membrane or a TM partner?* If yes, it's at least `contextual`. If it leaves with the wash, it's `no`.
 
-The recruitment test is the single most common borderline-call discriminator — apply it before defaulting to `secreted_only`.
+Apply the recruitment test before defaulting to `secreted_only`.
 
 ## `reason` — pick the single enum value that best fits
 
@@ -49,7 +49,7 @@ The recruitment test is the single most common borderline-call discriminator —
 - `cell_state_induced` — the protein body translocates to the outer leaflet only under a defined non-baseline cellular state. Covers (a) **stress** — heat shock, hypoxia, ER stress, oxidative stress, nutrient deprivation; chaperones / metabolic enzymes / inner-leaflet signaling proteins translocating to the surface qualify here; (b) **oncogenic transformation** — proteins canonically intracellular at baseline that are displayed on the outer leaflet of tumor cells (this includes cancer ecto-kinases, cancer ecto-chaperones, cancer ecto-glycolytic enzymes, and other "ecto-forms" of nominally intracellular proteins; the cancer-cell-restricted ecto-pool is the surface story even when the canonical literature is overwhelmingly intracellular); (c) **immunogenic / programmed cell death** — apoptosis, necroptosis, pyroptosis, and ICD-related PM translocation (cytosolic / ER-luminal / mitochondrial proteins externalized during cell death qualify); (d) **infection** — viral or bacterial induction of host-protein surfacing; (e) **activation-induced display** — immune or neuronal activation that rapidly moves a normally intracellular pool to the surface.
 - `tissue_restricted_surface` — the protein body is at the outer leaflet only in specific tissues / cell types / developmental stages, even when its own anchor (TM, GPI, outer-leaflet lipidation, stable complex partner) is unambiguous in that compartment. Use this — not `yes` — for surface display restricted to germline / reproductive lineages, early developmental stages, or a single narrow somatic compartment. **Germline / gamete-restricted display with its own anchor (TM, GPI, or outer-leaflet lipidation) still goes here**: a surface protein expressed only on a narrow germline / developmental lineage is `contextual` / `tissue_restricted_surface`, not `yes` — the gating signal is restriction to a narrow cell-type lineage, not the topology.
 - `lysosomal_exocytosis` — lysosomal / late-endosomal TM protein reaches PM during lysosomal exocytosis.
-- `dual_localization` — the protein has a documented PM pool alongside a dominant non-PM compartment. Covers (a) active vesicular trafficking cycling between an intracellular compartment and the PM (secretory recycling, regulated non-lysosomal exocytosis, cargo-receptor cycling, ER-PM junctional clustering during signaling), and (b) constitutive partial-PM residence (steady-state distribution across multiple compartments including a minority surface pool). The mechanism — vesicular cycling vs steady-state dual home — is biologically distinct but irrelevant to accessibility: in both cases the protein has its own anchor at the PM during the surface state. Also covers single-pass TM proligands whose ectodomain is released by regulated proteolysis, where the **TM precursor stage is transient** and the **soluble shed form is the dominant biological actor** — the TM stage is real but short-lived.
+- `dual_localization` — the protein has a documented PM pool alongside a dominant non-PM compartment. Covers (a) active vesicular trafficking cycling between an intracellular compartment and the PM (secretory recycling, regulated non-lysosomal exocytosis, cargo-receptor cycling, ER-PM junctional clustering during signaling), and (b) constitutive partial-PM residence (steady-state distribution across multiple compartments including a minority surface pool). Treat vesicular cycling and steady-state dual home equivalently for accessibility — both qualify when the protein has its own anchor at the PM during the surface state. Also covers single-pass TM proligands whose ectodomain is released by regulated proteolysis, where the **TM precursor stage is transient** and the **soluble shed form is the dominant biological actor** — the TM stage is real but short-lived.
 - `stable_surface_attachment` — a secreted (or otherwise non-membrane-anchored) protein becomes **stably anchored to a cell-surface TM partner post-translationally** — covalently (e.g. disulfide tethering to a TM scaffold, thioester-mediated covalent attachment to a cell-surface acceptor, transamidase / transglutaminase cross-linking, or similar wash-resistant covalent chemistry) **or via wash-resistant, non-reversible non-covalent association** acquired during transit through a specialised secretory compartment. The defining criterion is wash-resistance: the protein remains attached after washing and is *not* in equilibrium with the soluble pool. **Excluded — use `secreted_only` instead:** reversible lipid binding that washes off in normal buffer, reversible attachment to extracellular matrix components, transient cytokine-receptor equilibria, and any non-covalent interaction that stays in equilibrium with the soluble pool. **Matrix / stroma deposition also does NOT count** — matrix-anchored covalent products belong in `secreted_only`, not here.
 - `other` — escape hatch when no closed enum fits; explain the mechanism in `verdict_reasoning`.
 
@@ -71,9 +71,9 @@ A clinical-stage *intracellular*-pocket small-molecule drug does **not** by itse
 
 ## Pre-`no` checklist
 
-`no` is the highest-cost error in this triage: it removes a candidate from genome-wide consideration before any downstream review. False positives (`contextual` on a protein that turns out non-surface) get caught by the downstream annotator; false negatives do not. **Apply every probe below before emitting `no`. Any real doubt → `contextual`.** Use `web_search` to resolve any probe you can't answer from trained knowledge.
+Treat `no` as the highest-cost error: false negatives are not recoverable downstream while false positives are. **Apply every probe below before emitting `no`. Any real doubt → `contextual`.** Use `web_search` to resolve any probe you can't answer from trained knowledge.
 
-Walk through every contextual bucket (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`) and ask whether the protein could plausibly fit each one before committing to `no`.
+Before committing to `no`, walk through every contextual bucket (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`) and consider whether the protein could plausibly fit each one. **When you emit `no`, your `verdict_reasoning` must explicitly name each of the 5 contextual reasons and state the specific evidence that rules each one out** — a single short clause per reason is sufficient (e.g., "no documented cancer / cell-death / activation ecto-pool; no narrow germline / developmental / somatic-lineage display; not a lysosomal TM protein; no documented PM minority pool or cycling; no wash-resistant TM-partner tethering"). Do not skip any of the 5 buckets; do not anchor on a single dominant compartment from the NCBI summary, gene-group lineage, or your trained knowledge.
 
 1. **Is the protein the target of a *cell-surface-directed* therapeutic?** Antibody / ADC / CAR-T / bispecific programs that engage the protein **on the cell surface** are strong evidence for at least `contextual`. *Don't conflate this with anti-soluble-ligand antibodies that bind a circulating pool* — anti-cytokine, anti-growth-factor, or anti-complement programs targeting the secreted form don't establish surface accessibility on cells. *Don't conflate with pMHC-targeting programs either* — TCR-T / TCR-mimic / bispecifics that engage an MHC-presented peptide do not establish surface accessibility for the protein body (verdict stays `no` / `pmhc_only_intracellular` in that case).
 
@@ -99,9 +99,9 @@ Walk through every contextual bucket (`cell_state_induced`, `tissue_restricted_s
 
    If any of these four contexts has documented evidence for the protein (or its close family members of well-established convergent biology), `contextual` is the right call — **don't defer to the baseline compartment when a non-baseline ecto-pool is documented.**
 
-6. **Do the gene name, aliases, or previous symbols hint at non-canonical biology?** Activation- or stress-state naming hints at cell-state induction; "latent" / "pro-protein" / "propeptide" hints at TM-partner tethering. Gene-symbol prefixes for canonical surface-protein families (receptor / channel / transporter / claudin / cadherin / integrin / tetraspanin / GPCR / SLC / ABC / Toll-like / Frizzled) are strong surface signals.
+6. **Do the gene name, aliases, or previous symbols hint at non-canonical biology?** Treat activation- or stress-state naming as a hint toward cell-state induction; treat "latent" / "pro-protein" / "propeptide" as hints toward TM-partner tethering. Treat gene-symbol prefixes for canonical surface-protein families (receptor / channel / transporter / claudin / cadherin / integrin / tetraspanin / GPCR / SLC / ABC / Toll-like / Frizzled) as strong surface signals.
 
-When in doubt, **`contextual` is the safer call than `no`**.
+When in doubt, **`contextual` is the safer call than `no`**. Do not emit `no` for any protein with documented membrane association at any stage of its lifecycle.
 
 ---
 
@@ -112,7 +112,7 @@ Emit a **single JSON object** as your final response (after any web_search calls
 ```json
 {
   "verdict": "yes" | "contextual" | "no",
-  "verdict_reasoning": "<= 600 chars explaining the call",
+  "verdict_reasoning": "<= 800 chars explaining the call",
   "reason": "<one of the literals above>"
 }
 ```

@@ -1481,7 +1481,7 @@ class TriageRecordDraft(BaseModel):
     schema_version: str = TRIAGE_SCHEMA_VERSION
     gene: GeneIdentifier
     verdict: TriageVerdict
-    verdict_reasoning: str = Field(..., max_length=600)
+    verdict_reasoning: str = Field(..., max_length=800)
     reason: TriageReason
     model_path: TriageModelPath = "haiku_only"
 
@@ -1508,7 +1508,7 @@ class TriageRecord(BaseModel):
     schema_version: str = TRIAGE_SCHEMA_VERSION
     gene: GeneIdentifier
     verdict: TriageVerdict
-    verdict_reasoning: str = Field(..., max_length=600)
+    verdict_reasoning: str = Field(..., max_length=800)
     reason: TriageReason
     search_log: list[SearchEntry] = Field(default_factory=list)
     model_path: TriageModelPath = "haiku_only"
