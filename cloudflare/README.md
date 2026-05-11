@@ -134,3 +134,91 @@ JOIN triage_run b
 WHERE a.prompt_variant = 'web_naive' AND a.correct = 1
   AND b.prompt_variant = 'web_ncbi' AND b.correct = 0;
 ```
+
+---
+
+## Backups & disaster recovery
+
+Three layers of protection, in increasing manual effort:
+
+### Layer 1 — Cloudflare Time Travel (automatic)
+
+D1's built-in point-in-time recovery is on by default for every D1
+database, no configuration required. Workers Free retains **7 days**,
+Workers Paid retains **30 days** of bookmarks (one every ~5 minutes).
+This covers accidental DELETEs, table drops, schema mistakes, etc.
+
+To list available restore points and restore:
+
+```sh
+# What bookmarks are available?
+wrangler d1 time-travel info triage_results
+
+# Restore to a specific point in time (ISO 8601 timestamp).
+wrangler d1 time-travel restore triage_results \
+    --timestamp '2026-05-10T20:00:00Z'
+
+# Or by bookmark id (returned from the info call).
+wrangler d1 time-travel restore triage_results --bookmark <bookmark-id>
+```
+
+Restore is destructive — the database is rewound to the chosen point and
+everything after is lost. For most accidents this is what you want.
+
+### Layer 2 — Periodic SQL exports (belt-and-suspenders)
+
+Snapshot the database to a portable SQL file:
+
+```sh
+bash scripts/d1_triage_backup.sh
+```
+
+This runs `wrangler d1 export` and writes
+`data/processed/cloudflare/d1_backups/triage_results_<UTC-timestamp>.sql`
+plus a sha256 companion file. Re-import a dump with:
+
+```sh
+wrangler d1 execute triage_results --remote \
+    --file=data/processed/cloudflare/d1_backups/triage_results_20260510T200000Z.sql
+```
+
+Run the export weekly (or before any schema migration) to keep an
+offline-grep-able trail beyond the Time Travel window.
+
+### Layer 3 — The on-disk JSON records (canonical source of truth)
+
+D1 is a queryable mirror; the source of truth lives at
+`data/eval/triage_subbench_v1/<model>/<variant>/<gene>_run<N>.json` for
+every triage call we've ever made. These records are git-LFS-tracked
+and committed.
+
+If D1 is wiped catastrophically (lost auth, account closure, schema
+corruption), recovery is a single command:
+
+```sh
+uv run python scripts/upload_triage_runs_to_d1.py \
+    --run-id <whatever-tag-you-want-to-recover-under>
+```
+
+The uploader is idempotent on `(run_id, gene, model, variant, replicate,
+prompt_sha)` — re-uploads skip duplicates, fresh runs go in.
+
+To verify the on-disk records and D1 agree:
+
+```sh
+uv run python scripts/d1_triage_verify.py
+```
+
+This compares the union of all sweeps in D1 against every JSON record,
+flags missing keys and predicted-verdict disagreements, and exits
+non-zero if anything's out of sync.
+
+### Suggested cadence
+
+| event | action |
+|---|---|
+| After every triage sweep | run uploader — records auto-flow to D1 |
+| Weekly | run `d1_triage_backup.sh` for offline SQL snapshot |
+| Before schema migration | back up + verify, run migration, verify again |
+| After noticing weirdness | run `d1_triage_verify.py` first |
+| Catastrophic D1 loss | re-run the uploader; on-disk JSON is canonical |
