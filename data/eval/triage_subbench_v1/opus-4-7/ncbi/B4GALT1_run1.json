@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "B4GALT1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "B4GALT1 is a type II Golgi glycosyltransferase, but it has a well-documented dual-localization: a fraction reaches the plasma membrane where it functions as a cell-surface lectin/adhesion molecule, notably on sperm (binding ZP3) and in cell-cell/cell-matrix recognition. The longer isoform with extended cytoplasmic tail is preferentially trafficked to the PM. Surface pool is minor relative to Golgi but documented across multiple cell types.",
+  "correct": true,
+  "prompt_tokens": 5573,
+  "completion_tokens": 202,
+  "n_web_searches": 0,
+  "cost_usd": 0.098745,
+  "latency_s": 4.241056209022645,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase anchored to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation/palmitoylation. Its catalytic and SH2/SH3 domains face the cytosol, where it phosphorylates ITAM/ITIM substrates downstream of BCR, Fc\u03b5RI, and other immune receptors. No extracellular-facing pool exists.",
+  "correct": false,
+  "prompt_tokens": 5430,
+  "completion_tokens": 184,
+  "n_web_searches": 0,
+  "cost_usd": 0.09525,
+  "latency_s": 3.5741532079991885,
+  "error": null,
+  "raw_text": ""
+}

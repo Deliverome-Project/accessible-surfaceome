@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "BAX is predominantly cytosolic in healthy cells but undergoes conformational activation and membrane insertion upon apoptotic stimulation. It translocates to and inserts into the mitochondrial outer membrane (and, importantly, also the plasma membrane) as an integral pore-forming protein. Multiple studies document BAX surface exposure on apoptotic and stressed cells accessible to antibodies from the extracellular face, and anti-BAX antibodies/bispecifics have been explored in oncology. This constitutes a documented, cell-state-induced surface localization via the protein's own membrane-insertion mechanism.",
+  "verdict_reasoning": "BAX is canonically a cytosolic/mitochondrial pro-apoptotic BCL2-family protein. However, during apoptosis and immunogenic cell death, BAX undergoes conformational activation and inserts into the outer mitochondrial membrane and can translocate to the plasma membrane outer leaflet. Multiple studies document BAX surface exposure on apoptotic and stressed cells, including cancer cells undergoing ICD. This cell-death-induced PM translocation qualifies as contextual surface accessibility via cell_state_induced mechanism, making it a potential target for surface-directed agents in that context.",
   "correct": true,
-  "prompt_tokens": 3829,
-  "completion_tokens": 164,
+  "prompt_tokens": 4994,
+  "completion_tokens": 163,
   "n_web_searches": 0,
-  "cost_usd": 0.013947,
-  "latency_s": 4.67573712504236,
+  "cost_usd": 0.017427,
+  "latency_s": 5.097751000022981,
   "error": null,
   "raw_text": ""
 }
