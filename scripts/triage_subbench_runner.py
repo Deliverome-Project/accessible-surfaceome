@@ -269,11 +269,18 @@ def _run_one(
     reasoning = parsed.get("verdict_reasoning", "")
     # yes/contextual are equivalent for accuracy accounting (a
     # tissue/state-restricted hit is operationally the same as a
-    # ubiquitous one); `no` is only correct against `no`.
+    # ubiquitous one); `no` is only correct against `no`. A missing
+    # prediction is never correct, even if truth is also missing —
+    # otherwise a parse failure on a None-truth gene would silently
+    # score as a hit.
     _POSITIVE = {"yes", "contextual"}
     correct = (
-        pred_v == truth_verdict
-        or (pred_v in _POSITIVE and truth_verdict in _POSITIVE)
+        pred_v is not None
+        and truth_verdict is not None
+        and (
+            pred_v == truth_verdict
+            or (pred_v in _POSITIVE and truth_verdict in _POSITIVE)
+        )
     )
     return RunRecord(
         variant=variant, model=model, gene_symbol=gene_symbol,
