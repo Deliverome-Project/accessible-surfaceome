@@ -129,9 +129,14 @@ separate from the website's `signups` D1.
   Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
   long-term) → on-disk JSON under `data/eval/` and `data/annotations/`
   (canonical source — re-uploadable into a fresh D1).
+- **Wrangler is pinned at the repo root** via `/package.json` —
+  run `npm ci` from the repo root once to install it under
+  `node_modules/.bin/wrangler`. The cloudflare/ scripts call
+  `npx --yes wrangler ...` so the pinned version always wins over
+  any globally installed wrangler. CI does the same `npm ci`.
 - **Required CI secrets** (one-time): `CLOUDFLARE_API_TOKEN` (D1:Edit
   + R2:Edit) and `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket itself is
-  provisioned locally via `wrangler r2 bucket create deliverome-d1-backups`.
+  provisioned locally via `npx --yes wrangler r2 bucket create deliverome-d1-backups`.
 
 When editing the D1 schema or adding a new uploader path, add it to
 the workflow's `paths:` filter so CI catches the change.

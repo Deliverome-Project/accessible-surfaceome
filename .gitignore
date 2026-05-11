@@ -41,3 +41,9 @@ data/eval/triage_bench_v1/
 # citation metadata for every PMID/PMC/UniProt/WO the agent has fetched).
 # Reproducible from the upstream sources; commit a curated baseline later.
 data/sources/
+
+# Node devDependencies. wrangler is pinned in /package.json (used by the
+# cloudflare/ scripts for D1 / R2). The viewer SPA has its own
+# package.json + node_modules under viewer/. Reproducible via `npm ci`.
+node_modules/
+viewer/node_modules/

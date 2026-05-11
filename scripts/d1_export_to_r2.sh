@@ -7,9 +7,14 @@
 # durability, automatically versioned by timestamped object key.
 #
 # REQUIREMENTS
-#   * wrangler authenticated against the Deliverome Cloudflare account
+#   * wrangler installed via `npm ci` at the repo root (pins the version
+#     in package.json). Available under node_modules/.bin and via
+#     `npx wrangler` — this script calls `npx --yes wrangler ...` so the
+#     pinned version always wins over any globally installed wrangler.
+#     Authenticate via `wrangler login` or by setting CLOUDFLARE_API_TOKEN
+#     + CLOUDFLARE_ACCOUNT_ID in the shell.
 #   * R2 bucket `deliverome-d1-backups` must exist
-#       wrangler r2 bucket create deliverome-d1-backups
+#       npx --yes wrangler r2 bucket create deliverome-d1-backups
 #   * D1 database `deliverome_agent_runs` must exist
 #
 # USAGE
@@ -34,7 +39,7 @@ trap 'if [[ $KEEP_LOCAL -eq 0 ]]; then rm -rf "$TMPDIR"; fi' EXIT
 SQL_FILE="$TMPDIR/${DB_NAME}_${TIMESTAMP}.sql"
 
 echo "==> Exporting D1 $DB_NAME → $SQL_FILE"
-wrangler d1 export "$DB_NAME" \
+npx --yes wrangler d1 export "$DB_NAME" \
     --remote \
     --output="$SQL_FILE"
 
@@ -51,13 +56,13 @@ DATED_KEY="d1-backups/${DB_NAME}/${YEAR}/${MONTH}/${DB_NAME}_${TIMESTAMP}.sql"
 LATEST_KEY="d1-backups/${DB_NAME}/latest.sql"
 
 echo "==> Uploading to R2: $BUCKET/$DATED_KEY"
-wrangler r2 object put "$BUCKET/$DATED_KEY" \
+npx --yes wrangler r2 object put "$BUCKET/$DATED_KEY" \
     --file="$SQL_FILE" \
     --content-type="application/sql" \
     --remote
 
 echo "==> Updating R2: $BUCKET/$LATEST_KEY"
-wrangler r2 object put "$BUCKET/$LATEST_KEY" \
+npx --yes wrangler r2 object put "$BUCKET/$LATEST_KEY" \
     --file="$SQL_FILE" \
     --content-type="application/sql" \
     --remote
@@ -73,7 +78,7 @@ cat > "$MANIFEST" <<EOF
   "dated_key": "$DATED_KEY"
 }
 EOF
-wrangler r2 object put "$BUCKET/d1-backups/${DB_NAME}/${YEAR}/${MONTH}/${DB_NAME}_${TIMESTAMP}.manifest.json" \
+npx --yes wrangler r2 object put "$BUCKET/d1-backups/${DB_NAME}/${YEAR}/${MONTH}/${DB_NAME}_${TIMESTAMP}.manifest.json" \
     --file="$MANIFEST" \
     --content-type="application/json" \
     --remote

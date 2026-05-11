@@ -104,10 +104,15 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
   Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
   long-term) → on-disk JSON under `data/eval/` and `data/annotations/`
   (canonical source — re-uploadable into a fresh D1).
+- **Wrangler is pinned** at the repo root via `/package.json`
+  (devDependency). Run `npm ci` once to install it under
+  `node_modules/.bin/`; the cloudflare/ scripts and the CI workflow
+  both invoke it as `npx --yes wrangler ...` so the pinned version
+  always wins.
 - **CI secrets** (one-time, in repo Settings → Secrets and variables
   → Actions): `CLOUDFLARE_API_TOKEN` (scoped D1:Edit + R2:Edit) and
   `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket is provisioned locally via
-  `wrangler r2 bucket create deliverome-d1-backups`.
+  `npx --yes wrangler r2 bucket create deliverome-d1-backups`.
 - When adding a new data path the DB stores, add it to the
   `paths:` filter in `.github/workflows/d1-backup.yml` so CI catches
   the change and exports a fresh dump.

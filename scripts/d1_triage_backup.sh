@@ -15,9 +15,13 @@
 #   bash scripts/d1_triage_backup.sh /custom/output/dir
 #
 # REQUIREMENTS
-#   * wrangler (npm i -g wrangler) authenticated against the Deliverome
-#     Cloudflare account
-#   * The DB named `deliverome_agent_runs` must already exist (see cloudflare/README.md)
+#   * wrangler installed via `npm ci` at the repo root — pins the version
+#     in package.json; available under node_modules/.bin and via
+#     `npx wrangler`. Authenticated against the Deliverome Cloudflare
+#     account either via `wrangler login` or by setting
+#     CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID in the shell.
+#   * The DB named `deliverome_agent_runs` must already exist (see
+#     cloudflare/README.md).
 
 set -euo pipefail
 
@@ -28,7 +32,7 @@ TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 OUT_FILE="$OUTPUT_DIR/deliverome_agent_runs_${TIMESTAMP}.sql"
 
 echo "Exporting D1 deliverome_agent_runs → $OUT_FILE"
-wrangler d1 export deliverome_agent_runs \
+npx --yes wrangler d1 export deliverome_agent_runs \
     --remote \
     --output="$OUT_FILE"
 
