@@ -42,7 +42,7 @@ Stably surface by the protein's own mechanism: TM domain, GPI, outer-leaflet lip
 | **DSG3** | P32926 | `disagreement_rich_positive` | `classical_surface_receptor` | Desmoglein 3; pemphigus autoantigen |
 | **GYPA** | P02724 | `disagreement_rich_positive` | `classical_surface_receptor` | Glycophorin A; RBC marker |
 | **DSG4** | Q86SJ6 | `disagreement_rich_positive` | `classical_surface_receptor` | Desmoglein 4; hair-follicle restricted |
-| **LRRC33** | Q86YC3 | `disagreement_rich_positive` | `classical_surface_receptor` | NRROS / LRRC33; myeloid-cell analog of GARP |
+| **NRROS** | Q86YC3 | `disagreement_rich_positive` | `classical_surface_receptor` | Legacy alias LRRC33; myeloid-cell analog of GARP |
 | **ADORA3** | P0DMS8 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Adenosine A3 receptor |
 | **GIPR** | P48546 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Tirzepatide approved |
 | **GCGR** | P47871 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Glucagon receptor |

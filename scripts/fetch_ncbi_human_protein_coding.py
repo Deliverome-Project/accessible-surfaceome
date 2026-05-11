@@ -4,12 +4,19 @@ Source: ``https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens
 — the authoritative whole-genome enumeration that drives the
 ``WHOLE_GENOME_N`` constant in ``scripts/triage_subbench_summary.py``.
 
-Writes three artifacts under ``data/external/ncbi_gene_info/``:
+Writes four artifacts under ``data/external/ncbi_gene_info/``:
 
 * ``Homo_sapiens.gene_info.gz``  raw NCBI dump
-* ``Homo_sapiens.protein_coding.tsv``  filtered to protein-coding biotype,
-  with HGNC / Ensembl / MIM cross-references parsed out of the
-  pipe-separated ``dbXrefs`` field
+* ``Homo_sapiens.protein_coding.tsv``  filtered to protein-coding biotype
+  (20,624 rows as of 2026-05), with HGNC / Ensembl / MIM cross-references
+  parsed out of the pipe-separated ``dbXrefs`` field
+* ``Homo_sapiens.protein_coding.with_hgnc.tsv``  the further-trimmed
+  subset that has a non-empty ``hgnc_id`` (19,464 rows). This is the
+  canonical whole-genome denominator used by ``WHOLE_GENOME_N``. The
+  ~1,160 rows dropped are dominated by ``LOC*`` machine-predicted ORFs,
+  readthrough fusions, and ``uncharacterized protein`` placeholders that
+  HGNC has not promoted to first-class symbols. See
+  ``docs/data-sources/whole-genome-gene-catalogs.md``.
 * ``Homo_sapiens.gene_info.summary.json``  biotype counts + fetch
   metadata (source URL, fetch timestamp)
 
@@ -46,6 +53,7 @@ def fetch_and_filter(out_dir: Path) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     gz_path = out_dir / "Homo_sapiens.gene_info.gz"
     tsv_path = out_dir / "Homo_sapiens.protein_coding.tsv"
+    trimmed_path = out_dir / "Homo_sapiens.protein_coding.with_hgnc.tsv"
     summary_path = out_dir / "Homo_sapiens.gene_info.summary.json"
 
     print(f"fetching {URL} ...")
@@ -72,11 +80,19 @@ def fetch_and_filter(out_dir: Path) -> dict:
                 "mim": _xref(row["dbXrefs"], "MIM:"),
             })
 
+    fieldnames = list(pc_rows[0].keys())
     with tsv_path.open("w") as fh:
-        writer = csv.DictWriter(fh, fieldnames=list(pc_rows[0].keys()), delimiter="\t")
+        writer = csv.DictWriter(fh, fieldnames=fieldnames, delimiter="\t")
         writer.writeheader()
         writer.writerows(pc_rows)
     print(f"wrote {len(pc_rows):,} protein-coding rows to {tsv_path}")
+
+    pc_with_hgnc = [r for r in pc_rows if r["hgnc_id"]]
+    with trimmed_path.open("w") as fh:
+        writer = csv.DictWriter(fh, fieldnames=fieldnames, delimiter="\t")
+        writer.writeheader()
+        writer.writerows(pc_with_hgnc)
+    print(f"wrote {len(pc_with_hgnc):,} protein-coding-with-HGNC rows to {trimmed_path}")
 
     summary = {
         "source_url": URL,
@@ -84,7 +100,7 @@ def fetch_and_filter(out_dir: Path) -> dict:
         "total_human_gene_records": sum(biotype_counts.values()),
         "biotype_counts": dict(biotype_counts.most_common()),
         "protein_coding_n": len(pc_rows),
-        "protein_coding_with_hgnc": sum(1 for r in pc_rows if r["hgnc_id"]),
+        "protein_coding_with_hgnc": len(pc_with_hgnc),
         "protein_coding_with_ensembl": sum(1 for r in pc_rows if r["ensembl_gene"]),
     }
     summary_path.write_text(json.dumps(summary, indent=2) + "\n")

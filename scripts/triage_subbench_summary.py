@@ -44,13 +44,15 @@ OUT_DIR = ROOT / "data/analysis/triage_bench"
 # Extrapolate per-cell subbench costs to a whole-genome triage pass.
 # All cost annotations on the plots are reported as $/whole-genome at 1
 # replicate per gene — the apples-to-apples number for "would this fly
-# on the real surfaceome?". WHOLE_GENOME_N is sourced from the canonical
-# NCBI protein-coding count (see scripts/fetch_ncbi_human_protein_coding.py
-# and data/external/ncbi_gene_info/Homo_sapiens.gene_info.summary.json);
-# refresh with that script and update the constant when NCBI revises the
-# count (drift is in the tens of genes per quarter).
+# on the real surfaceome?". WHOLE_GENOME_N is NCBI protein-coding genes
+# that also carry an HGNC cross-reference — this drops ~1,160 LOC*
+# machine-predicted ORFs and readthroughs that NCBI annotates as
+# protein-coding but HGNC has not promoted. Source-comparison and
+# alternative denominators are documented in
+# docs/data-sources/whole-genome-gene-catalogs.md. Refresh with
+# scripts/fetch_ncbi_human_protein_coding.py.
 SUBBENCH_GENE_N = 17
-WHOLE_GENOME_N = 20624  # NCBI Homo_sapiens protein-coding, fetched 2026-05-11
+WHOLE_GENOME_N = 19464  # NCBI Homo_sapiens protein-coding ∩ has HGNC xref, fetched 2026-05-11
 GENOME_SCALE = WHOLE_GENOME_N / SUBBENCH_GENE_N  # ~1213x
 
 # Variant order = "amount of context" axis. Each variant gets a darker
