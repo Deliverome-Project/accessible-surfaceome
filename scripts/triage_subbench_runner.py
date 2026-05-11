@@ -15,8 +15,12 @@ pricing table).
 
 USAGE — note this script does NOT auto-execute. Invoke directly:
 
+    # Single model:
     uv run python scripts/triage_subbench_runner.py --model claude-haiku-4-5 --replicates 2
-    uv run python scripts/triage_subbench_runner.py --model claude-sonnet-4-6 --replicates 2
+
+    # All three models in one shot (shared thread pool, single cost report):
+    uv run python scripts/triage_subbench_runner.py \\
+        --model claude-haiku-4-5 claude-sonnet-4-6 claude-opus-4-7 --replicates 2
 
 For a smoke test of one variant on one gene:
 
@@ -284,9 +288,11 @@ def _persist(rec: RunRecord) -> Path:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--model", default="claude-haiku-4-5",
+    ap.add_argument("--model", nargs="+", default=["claude-haiku-4-5"],
                     choices=list(MODEL_PRICING.keys()),
-                    help="Anthropic model id.")
+                    help="Anthropic model id(s). Pass multiple to run all in one "
+                         "invocation under a shared thread pool — outputs separate "
+                         "per-model directories under data/eval/triage_subbench_v1/.")
     ap.add_argument("--replicates", type=int, default=2,
                     help="How many times to run each (variant, gene) cell.")
     ap.add_argument("--variants", nargs="+", default=list(VARIANTS.keys()),
@@ -309,22 +315,23 @@ def main() -> None:
         if not rows:
             raise SystemExit(f"--genes {args.genes!r} matched no sub-benchmark rows")
 
-    cells: list[tuple[str, dict, int]] = []
-    for variant in args.variants:
-        for row in rows:
-            for rep in range(1, args.replicates + 1):
-                cells.append((variant, row, rep))
+    cells: list[tuple[str, str, dict, int]] = []
+    for model in args.model:
+        for variant in args.variants:
+            for row in rows:
+                for rep in range(1, args.replicates + 1):
+                    cells.append((variant, model, row, rep))
 
     print(f"Sub-benchmark: {len(rows)} proteins × {len(args.variants)} variants × "
-          f"{args.replicates} replicates = {len(cells)} cells")
-    print(f"Model: {args.model}")
+          f"{args.replicates} replicates × {len(args.model)} model(s) = {len(cells)} cells")
+    print(f"Models: {', '.join(args.model)}")
     print(f"Output: {OUT_ROOT}")
     print()
 
     if args.dry_run:
         print("DRY RUN — printing planned cells, not calling API.")
-        for variant, row, rep in cells[:20]:
-            print(f"  {variant:10s}  {row['gene_symbol']:10s}  run{rep}")
+        for variant, model, row, rep in cells[:20]:
+            print(f"  {model:18s}  {variant:10s}  {row['gene_symbol']:10s}  run{rep}")
         if len(cells) > 20:
             print(f"  ... + {len(cells) - 20} more")
         return
@@ -335,11 +342,11 @@ def main() -> None:
         futures = {
             ex.submit(
                 _run_one,
-                variant=v, model=args.model, gene_symbol=row["gene_symbol"],
+                variant=v, model=m, gene_symbol=row["gene_symbol"],
                 replicate=rep, truth_verdict=row["ground_truth_verdict"],
                 truth_class=row["class"],
-            ): (v, row["gene_symbol"], rep)
-            for (v, row, rep) in cells
+            ): (v, m, row["gene_symbol"], rep)
+            for (v, m, row, rep) in cells
         }
         for i, fut in enumerate(as_completed(futures), start=1):
             rec = fut.result()
@@ -347,29 +354,39 @@ def main() -> None:
             results.append(rec)
             marker = "✓" if rec.correct else ("✗" if rec.error is None else "!")
             err = f"  ERR={rec.error}" if rec.error else ""
-            print(f"  [{i:3d}/{len(cells)}] {marker} {rec.variant:10s}  {rec.gene_symbol:10s}  "
+            print(f"  [{i:3d}/{len(cells)}] {marker} {_model_slug(rec.model):14s} {rec.variant:10s}  {rec.gene_symbol:10s}  "
                   f"r{rec.replicate}  truth={rec.truth_verdict:11s}  pred={rec.predicted_verdict or '—':12s}  "
                   f"reason={rec.predicted_reason or '—':30s}  ${rec.cost_usd:.4f}  {rec.latency_s:5.1f}s{err}")
     wall = time.monotonic() - start
     print(f"\nWallclock: {wall:.1f}s")
     print()
 
-    # Per-variant summary.
-    print(f"{'variant':12s}  {'n':4s}  {'acc':8s}  {'cost':10s}  {'mean_lat':10s}  {'mean_web':10s}")
-    print("-" * 70)
-    for variant in args.variants:
-        sub = [r for r in results if r.variant == variant]
+    # Per-(model, variant) summary.
+    print(f"{'model':16s} {'variant':12s}  {'n':4s}  {'acc':8s}  {'cost':10s}  {'mean_lat':10s}  {'mean_web':10s}")
+    print("-" * 90)
+    for model in args.model:
+        for variant in args.variants:
+            sub = [r for r in results if r.variant == variant and r.model == model]
+            if not sub:
+                continue
+            n = len(sub)
+            acc = sum(1 for r in sub if r.correct) / n
+            cost = sum(r.cost_usd for r in sub)
+            lat = sum(r.latency_s for r in sub) / n
+            wsearch = sum(r.n_web_searches for r in sub) / n
+            print(f"  {_model_slug(model):14s} {variant:10s}  {n:4d}  {acc:6.1%}  ${cost:8.3f}  {lat:7.1f}s    {wsearch:5.1f}")
+
+    # Per-model totals.
+    print()
+    for model in args.model:
+        sub = [r for r in results if r.model == model]
         if not sub:
             continue
-        n = len(sub)
-        acc = sum(1 for r in sub if r.correct) / n
-        cost = sum(r.cost_usd for r in sub)
-        lat = sum(r.latency_s for r in sub) / n
-        wsearch = sum(r.n_web_searches for r in sub) / n
-        print(f"  {variant:10s}  {n:4d}  {acc:6.1%}  ${cost:8.3f}  {lat:7.1f}s    {wsearch:5.1f}")
+        print(f"  {_model_slug(model):14s} total: ${sum(r.cost_usd for r in sub):.3f}  "
+              f"(n={len(sub)}, {sum(1 for r in sub if r.correct)/len(sub):.1%} verdict-correct)")
 
     print()
-    print(f"TOTAL COST: ${sum(r.cost_usd for r in results):.3f}")
+    print(f"GRAND TOTAL COST: ${sum(r.cost_usd for r in results):.3f}")
 
 
 if __name__ == "__main__":
