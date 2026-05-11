@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "CRISP1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "CRISP1 is a secreted protein expressed by the epididymal epithelium and secreted into the lumen, where it associates with the sperm surface during epididymal maturation. Two populations are documented: (1) a loosely bound fraction that is released during capacitation (reversible, wash-sensitive \u2014 this is secreted_only territory); and (2) a strongly/tightly bound fraction that behaves as an integral membrane protein and persists on capacitated sperm through the acrosome reaction, relocating to the equatorial segment where it mediates gamete fusion. The tightly bound population passes the wash test and is surface-exposed, qualifying as a stable surface attachment in a specific cell state (mature epididymal/capacitated sperm). Thus CRISP1 reaches the outer face of the PM by its own stable association mechanism under a defined physiological state, warranting 'contextual' rather than 'no' or 'secreted_only'.",
+  "correct": true,
+  "prompt_tokens": 20655,
+  "completion_tokens": 300,
+  "n_web_searches": 1,
+  "cost_usd": 0.07646499999999999,
+  "latency_s": 14.723751124984119,
+  "error": null,
+  "raw_text": ""
+}

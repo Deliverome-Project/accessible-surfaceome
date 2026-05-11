@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A is a cytosolic chaperone that translocates to the plasma membrane via lipid-binding (phosphatidylserine interaction) under stress conditions (heat shock, cancer transformation). Although it lacks transmembrane or classical secretory signals, cell-surface biotinylation demonstrates it reaches the extracellular-facing PM in both heat-shocked and cancer cells\u2014contexts where tumor-specific surface display is well-documented and functionally important for immune activation, endocytosis, and tumor survival. This stress/cancer-induced ecto-presentation qualifies as cell_state_induced contextual surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 54359,
+  "completion_tokens": 1118,
+  "n_web_searches": 3,
+  "cost_usd": 0.089949,
+  "latency_s": 13.315581374976318,
+  "error": null,
+  "raw_text": ""
+}

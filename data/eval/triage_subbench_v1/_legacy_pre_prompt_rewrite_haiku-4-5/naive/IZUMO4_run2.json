@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "IZUMO4 is a single-pass transmembrane protein of the IZUMO family with a documented extracellular immunoglobulin-like domain. It localizes to the plasma membrane, particularly on sperm cells, where it mediates reproductive cell-cell interactions. The protein body is stably anchored to the outer leaflet via its TM domain with a substantial ectodomain accessible to extracellular binders.",
+  "correct": false,
+  "prompt_tokens": 1487,
+  "completion_tokens": 505,
+  "n_web_searches": 0,
+  "cost_usd": 0.004012,
+  "latency_s": 4.585537499981001,
+  "error": null,
+  "raw_text": ""
+}

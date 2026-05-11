@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "CRISP1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "CRISP1 is a secreted glycoprotein that associates with sperm plasma membrane in the epididymis. A strongly bound population persists as wash-resistant on the sperm surface\u2014behaving as an integral membrane protein\u2014and participates in zona pellucida and gamete fusion. This stably anchored sperm-surface form represents outer-leaflet accessibility, but is restricted to male germ cells (germline/sperm compartment).",
+  "correct": true,
+  "prompt_tokens": 38622,
+  "completion_tokens": 939,
+  "n_web_searches": 2,
+  "cost_usd": 0.063317,
+  "latency_s": 11.829832624993287,
+  "error": null,
+  "raw_text": ""
+}

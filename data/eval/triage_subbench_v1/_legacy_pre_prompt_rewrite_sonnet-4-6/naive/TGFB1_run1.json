@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGFB1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is a secreted cytokine that circulates as a latent complex (LLC/SLC) and can associate stably with the cell surface via LTBP or GARP (LRRC32) anchoring on regulatory T cells, platelets, and other cell types. When tethered through GARP or LTBP to transmembrane proteins, the latent TGFB1 complex is wash-resistant and accessible from the extracellular face. However, this surface presentation is cell-type restricted and not the baseline state for all cells. In the absence of such anchoring, TGFB1 is effectively secreted/soluble. Hence contextual, with tissue/cell-type-restricted stable surface attachment.",
+  "correct": true,
+  "prompt_tokens": 1489,
+  "completion_tokens": 210,
+  "n_web_searches": 0,
+  "cost_usd": 0.007617,
+  "latency_s": 5.785977291001473,
+  "error": null,
+  "raw_text": ""
+}

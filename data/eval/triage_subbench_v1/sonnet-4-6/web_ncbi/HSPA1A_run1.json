@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is primarily a cytosolic chaperone lacking classical transmembrane domains or secretory signals. However, extensive evidence establishes a tumor-cell-selective surface form: membrane-bound HSPA1A is detected by flow cytometry on a wide variety of tumor cell lines and primary tumors using the cmHsp70.1 mAb that recognizes an extracellularly exposed epitope of the C-terminal domain. Surface localization is mediated by high-affinity binding to negatively charged phospholipids (phosphatidylserine, Gb3) in the outer leaflet, particularly in cholesterol-rich microdomains. This is tumor/stress-state-selective and not present on normal tissues screened. Thus, surface exposure occurs only under specific cell-state conditions (malignant transformation/stress), qualifying as contextual via cell_state_induced.",
+  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is a canonical cytosolic chaperone with no TM domain or GPI anchor. However, multiple published studies document its translocation to the outer face of the plasma membrane in tumor cells and under stress conditions, where it inserts into lipid rafts via affinity for negatively charged phospholipids (phosphatidylserine) exposed on the outer leaflet of cancer cells. Surface-expressed HSPA1A is recognized by NK cells and is being explored as a therapeutic target. This is a well-characterised cancer-cell/stress-induced ecto-chaperone phenomenon qualifying as cell_state_induced. The surface pool is absent (or minimal) in normal non-stressed cells, making 'yes' inappropriate, but 'contextual' is well-supported.",
   "correct": true,
-  "prompt_tokens": 24683,
-  "completion_tokens": 294,
+  "prompt_tokens": 31813,
+  "completion_tokens": 368,
   "n_web_searches": 1,
-  "cost_usd": 0.088459,
-  "latency_s": 13.50689112499822,
+  "cost_usd": 0.11095899999999999,
+  "latency_s": 9.7499484999571,
   "error": null,
   "raw_text": ""
 }

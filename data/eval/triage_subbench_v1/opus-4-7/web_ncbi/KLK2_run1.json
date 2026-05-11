@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "KLK2 (hK2) is a secreted trypsin-like serine protease of the kallikrein family, produced by prostate epithelium and released into seminal fluid and serum where it cleaves pro-PSA. It has no TM domain, no GPI anchor, and no documented wash-resistant covalent tethering to a surface partner. Clinical hK2-directed programs (e.g., radioligand/CAR-T) exploit hK2 captured/retained in the prostate tumor microenvironment, but the protein itself is secreted and only reversibly associates with cells/matrix \u2014 failing the wash test.",
+  "correct": false,
+  "prompt_tokens": 10813,
+  "completion_tokens": 230,
+  "n_web_searches": 0,
+  "cost_usd": 0.179445,
+  "latency_s": 9.896304290974513,
+  "error": null,
+  "raw_text": ""
+}

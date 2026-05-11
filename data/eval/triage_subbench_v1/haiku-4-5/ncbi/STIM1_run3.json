@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "STIM1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a single-pass TM protein with an N-terminal signal peptide and canonical ER-retention signals (KDEL-like motifs), localizing primarily to the ER. However, upon store depletion, STIM1 oligomerizes and translocates to ER-PM junctional regions where it directly gates Orai1 and TRPC channels. This ER-to-PM translocation is activation-induced (store-depletion-triggered), dynamic, and constitutes a documented minority pool at the outer leaflet during the Ca2+ signaling cycle. The protein body reaches the outer face as a consequence of organized ER-PM junctional clustering and direct coupling to Orai1; it is not a stable surface resident but qualifies as contextual under dual-localization and activation-induced display.",
+  "correct": true,
+  "prompt_tokens": 5652,
+  "completion_tokens": 226,
+  "n_web_searches": 0,
+  "cost_usd": 0.006782,
+  "latency_s": 2.9158372919773683,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "CRISP1 is secreted by the epididymal epithelium into the epididymal lumen and binds post-translationally to the sperm surface during epididymal transit, where a tightly-bound population persists through capacitation and the acrosome reaction and is recognized by antibodies on ejaculated sperm (proposed contraceptive target). Surface display is restricted to the germline/sperm lineage, and attachment is acquired in a specialized secretory compartment with a wash-resistant pool. Best fits tissue-restricted surface display on sperm rather than a baseline somatic surface protein.",
+  "correct": true,
+  "prompt_tokens": 35770,
+  "completion_tokens": 792,
+  "n_web_searches": 1,
+  "cost_usd": 0.60595,
+  "latency_s": 12.625318958016578,
+  "error": null,
+  "raw_text": ""
+}

@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "endomembrane_resident",
-  "verdict_reasoning": "B4GALT1 is a type II membrane protein resident in the Golgi apparatus. Its N-terminal hydrophobic signal sequence directs it to the Golgi, where it remains as a Golgi-membrane-resident glycosyltransferase. Type II membrane proteins in the secretory pathway (signal sequence uncleaved, catalytic domain facing the lumen) are endomembrane-resident, not surface-accessible. The protein has no documented trafficking to the plasma membrane, no ectodomain shedding, and no cell-surface therapeutic engagement. It is not accessible from the extracellular face.",
+  "verdict_reasoning": "B4GALT1 is a type II membrane-bound glycosyltransferase resident in the Golgi apparatus. Its N-terminal hydrophobic signal sequence (uncleaved) anchors it to the Golgi membrane with the catalytic domain facing the lumen. Golgi-resident enzymes are endomembrane-resident and do not reach the outer leaflet of the plasma membrane under baseline conditions. No evidence of surface trafficking, ectodomain shedding, cell-state-induced surfacing, or tissue-restricted PM display.",
   "correct": false,
-  "prompt_tokens": 3896,
-  "completion_tokens": 176,
+  "prompt_tokens": 5669,
+  "completion_tokens": 161,
   "n_web_searches": 0,
-  "cost_usd": 0.004776,
-  "latency_s": 3.382335791015066,
+  "cost_usd": 0.006474,
+  "latency_s": 2.038280709006358,
   "error": null,
   "raw_text": ""
 }

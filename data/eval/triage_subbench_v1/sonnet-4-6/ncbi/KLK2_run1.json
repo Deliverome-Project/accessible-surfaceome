@@ -7,13 +7,13 @@
   "truth_class": "disagreement_rich_positive",
   "predicted_verdict": "no",
   "predicted_reason": "secreted_only",
-  "verdict_reasoning": "KLK2 (hK2) is a secreted serine protease of the kallikrein family. It possesses a signal peptide and is constitutively secreted into the extracellular milieu (seminal plasma, serum) without a transmembrane domain or GPI anchor. It is not stably anchored to the cell surface \u2014 it exists in equilibrium as a soluble secreted enzyme. While it is elevated in prostate cancer and used as a biomarker in fluids, there is no documented stable TM-partner tethering or wash-resistant surface pool. Verdict is no / secreted_only.",
+  "verdict_reasoning": "KLK2 (hK2) is a secreted serine protease. It is synthesized with a signal peptide and pro-peptide, processed through the secretory pathway, and released as a soluble enzyme into the extracellular milieu (notably prostatic fluid and serum). It has no transmembrane domain, no GPI anchor, and no documented stable cell-surface anchoring mechanism. It is detected in serum/plasma as a soluble protein and used as a prostate cancer biomarker in that soluble form. There is no documented wash-resistant surface pool, no TM-partner tethering, and no cell-state-induced outer-leaflet display. It is a secreted-only protein.",
   "correct": false,
-  "prompt_tokens": 5601,
-  "completion_tokens": 173,
+  "prompt_tokens": 5604,
+  "completion_tokens": 192,
   "n_web_searches": 0,
-  "cost_usd": 0.019398,
-  "latency_s": 5.06123591697542,
+  "cost_usd": 0.019692,
+  "latency_s": 4.762215959024616,
   "error": null,
   "raw_text": ""
 }

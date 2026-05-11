@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA5",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-luminal chaperone, but during stress, viral infection, and malignant transformation it is well-documented to traffic to the cell surface where it is exposed on the outer leaflet of the plasma membrane. Surface GRP78 has been exploited as a tumor-specific target by antibodies, ADCs, and peptide-drug conjugates in multiple cancer programs. The surface form retains its own stable membrane association in stressed/tumor cells, qualifying as cell-state-induced dual localization rather than transient recruitment.",
+  "correct": true,
+  "prompt_tokens": 3862,
+  "completion_tokens": 164,
+  "n_web_searches": 0,
+  "cost_usd": 0.014046,
+  "latency_s": 4.908337332948577,
+  "error": null,
+  "raw_text": ""
+}

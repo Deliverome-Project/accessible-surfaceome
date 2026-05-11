@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGOLN2 (TGN46) is a single-pass type I TM protein whose steady-state localization is the trans-Golgi network, but it constitutively cycles between the TGN and the plasma membrane via CARTS (PKD-dependent TGN-to-PM carriers), returning via early endosomes. The cytoplasmic YQRL motif drives PM internalization and TGN retrieval, keeping the dominant pool intracellular. Nevertheless, a real PM pool is present at steady state via the protein's own TM anchor and trafficking mechanism \u2014 not via recruitment by another surface protein. This is classic dual_localization cycling between an endomembrane compartment and the PM.",
+  "correct": true,
+  "prompt_tokens": 33175,
+  "completion_tokens": 419,
+  "n_web_searches": 1,
+  "cost_usd": 0.11581,
+  "latency_s": 11.159532833029516,
+  "error": null,
+  "raw_text": ""
+}

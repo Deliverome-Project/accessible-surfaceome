@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase that is N-terminally myristoylated and palmitoylated, anchoring it to the inner leaflet of the plasma membrane. Canonically it is an inner-leaflet-anchored cytoplasmic kinase. However, cancer-cell ecto-kinase biology is well-documented for Src-family members including LYN itself, where it is displayed on the outer leaflet of tumor cells (e.g., B-cell malignancies, breast cancer). This cancer-cell-restricted ecto-pool qualifies as cell_state_induced surface display, making the verdict contextual rather than a flat no.",
+  "correct": true,
+  "prompt_tokens": 4945,
+  "completion_tokens": 191,
+  "n_web_searches": 0,
+  "cost_usd": 0.0177,
+  "latency_s": 4.946283541969024,
+  "error": null,
+  "raw_text": ""
+}

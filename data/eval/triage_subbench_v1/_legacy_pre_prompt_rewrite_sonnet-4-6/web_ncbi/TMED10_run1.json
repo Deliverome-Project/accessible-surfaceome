@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I single-pass transmembrane protein (N-terminal luminal GOLD domain, C-terminal cytoplasmic KKXX retention motif) that cycles between ER, Golgi cisternae, and the plasma membrane. Multiple independent sources \u2014 including RefSeq, GeneCards/UniProt annotations, and primary literature \u2014 explicitly document PM localization. The lumenal GOLD domain faces the extracellular space at the PM, making it accessible to extracellular binders. However, the dominant compartment is endomembrane (Golgi/ER trafficking), with the cytoplasmic KKXX motif driving ER/Golgi retention that is only partially overridden by the lumenal domain. The protein reaches the outer PM leaflet by its own TM mechanism (not via recruitment by another surface protein), qualifying as dual_localization.",
+  "correct": true,
+  "prompt_tokens": 19709,
+  "completion_tokens": 751,
+  "n_web_searches": 1,
+  "cost_usd": 0.08039199999999999,
+  "latency_s": 21.338642708957195,
+  "error": null,
+  "raw_text": ""
+}

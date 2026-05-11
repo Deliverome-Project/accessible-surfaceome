@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "EREG",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "EREG encodes epiregulin, an EGF-family ligand that is synthesized as a single-pass type-I transmembrane precursor (~46 kDa). This pro-epiregulin is expressed on the cell surface and mediates juxtacrine signaling before being shed by sheddases (e.g., ADAM10/ADAM17) to release the mature soluble ~18 kDa ligand that binds EGFR/ERBB4. The dominant biological actor is the shed soluble form; the TM precursor stage is real but transient. This fits the 'transient TM precursor of a shed-ligand-dominant gene' pattern, qualifying as contextual/dual_localization.",
+  "correct": true,
+  "prompt_tokens": 5587,
+  "completion_tokens": 201,
+  "n_web_searches": 0,
+  "cost_usd": 0.019776,
+  "latency_s": 10.316989166021813,
+  "error": null,
+  "raw_text": ""
+}

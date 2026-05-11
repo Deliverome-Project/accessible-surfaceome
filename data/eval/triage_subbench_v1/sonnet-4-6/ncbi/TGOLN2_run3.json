@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 (TGN46/TGN51) is a type I integral membrane protein that resides primarily in the trans-Golgi network and cycles between early endosomes and the TGN. It is a canonical endomembrane-resident protein \u2014 its steady-state localization is the TGN lumen-facing membrane, not the plasma membrane outer leaflet. While it cycles through endosomes, it does not reach the cell surface in a documented stable or therapeutically exploitable way. No surface-directed therapeutics, CD designation, or documented ecto-pool in stress/cancer contexts are established for this protein.",
+  "correct": false,
+  "prompt_tokens": 5592,
+  "completion_tokens": 161,
+  "n_web_searches": 0,
+  "cost_usd": 0.019191,
+  "latency_s": 4.598410749982577,
+  "error": null,
+  "raw_text": ""
+}

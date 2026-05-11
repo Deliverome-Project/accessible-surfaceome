@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "STIM1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "STIM1 is an ER-resident transmembrane protein that senses calcium depletion in the ER lumen. Under resting conditions, STIM1 is retained in the ER via its single transmembrane domain and interacts with ER chaperones. However, upon store depletion (ER calcium release), STIM1 undergoes a conformational change, translocates to ER-PM junctions, and directly couples to and activates Orai1 channels in the plasma membrane. During this activated state, STIM1 transiently accumulates at the plasma membrane and forms punctate clusters at ER-PM contact sites. This is a classic example of induced surface trafficking under a specific cellular condition (calcium store depletion). The surface pool is dynamic and dependent on intracellular calcium signaling state\u2014not a baseline constitutive surface resident.",
+  "correct": true,
+  "prompt_tokens": 1486,
+  "completion_tokens": 235,
+  "n_web_searches": 0,
+  "cost_usd": 0.002661,
+  "latency_s": 2.6523125419626012,
+  "error": null,
+  "raw_text": ""
+}

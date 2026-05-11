@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "CRISP1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "CRISP1 is a secreted glycoprotein that stably associates with the sperm plasma membrane during epididymal maturation. Two populations exist: loosely bound and tightly bound forms. The tightly bound form persists on the sperm surface after washing and participates in sperm-egg fusion through direct binding to egg-complementary sites. The protein is accessible to extracellular probes including antibodies and is functionally engaged at the outer face of the sperm plasma membrane. However, surface presence is limited to sperm (a specialized germ cell context) and depends on post-translational recruitment to this cell-surface partner via stable non-covalent association.",
+  "correct": true,
+  "prompt_tokens": 33052,
+  "completion_tokens": 857,
+  "n_web_searches": 2,
+  "cost_usd": 0.057337,
+  "latency_s": 12.72032299998682,
+  "error": null,
+  "raw_text": ""
+}

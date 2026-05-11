@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL-2 family member that resides predominantly in the cytosol of healthy cells. Upon apoptotic signaling it translocates to and inserts into the mitochondrial outer membrane (and ER membrane), where it oligomerizes to form pores mediating cytochrome c release. All membrane biology is strictly intracellular (mitochondrial outer membrane and ER); there is no evidence of BAX reaching the outer leaflet of the plasma membrane by any mechanism. No plasma-membrane-directed therapeutic (ADC, CAR-T, surface antibody) targets BAX as a cell-surface antigen. The protein is not secreted and has no GPI anchor, signal peptide, or plasma-membrane TM domain.",
+  "correct": false,
+  "prompt_tokens": 41894,
+  "completion_tokens": 694,
+  "n_web_searches": 2,
+  "cost_usd": 0.15609199999999998,
+  "latency_s": 15.329210750001948,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "BAX is a cytosolic/intracellular pro-apoptotic BCL2 family member. In healthy cells it is predominantly cytosolic (monomeric, soluble); upon apoptotic stimulation it translocates to the mitochondrial outer membrane (MOM) where it oligomerizes and permeabilizes the MOM to release cytochrome c. All documented localizations are intracellular: cytosol, MOM, and minority ER membrane. There is no evidence for plasma membrane surface exposure, no GPI anchor, no signal peptide targeting the secretory pathway, no CD designation, and no therapeutic programs targeting BAX on the extracellular face of the plasma membrane. Its membrane action is entirely on the cytoplasm-facing outer leaflet of the MOM, not the plasma membrane outer leaflet accessible from outside the cell.",
+  "correct": false,
+  "prompt_tokens": 42101,
+  "completion_tokens": 322,
+  "n_web_searches": 2,
+  "cost_usd": 0.151133,
+  "latency_s": 9.418291250010952,
+  "error": null,
+  "raw_text": ""
+}

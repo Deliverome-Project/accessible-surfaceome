@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "TGN46/TGN38 is a type I integral membrane protein predominantly at the trans-Golgi network but cycles constitutively through the plasma membrane via secretory vesicles before retrieval back to the TGN. This cycling produces a documented minority surface pool with the extracellular domain exposed at the outer leaflet \u2014 widely used experimentally as a PM-recycling marker. Dominant compartment is endomembrane, but a bona-fide surface fraction exists via its own TM anchor.",
+  "verdict_reasoning": "TGN46/TGN38 is a type I TM protein predominantly resident at the trans-Golgi network but cycles through the plasma membrane via secretory vesicles before retrieval back to the TGN. A minority surface pool is well documented (used experimentally as a recycling marker via anti-TGN38 antibody uptake on intact cells). Surface accessibility is real but transient and minor relative to the TGN steady-state pool.",
   "correct": true,
-  "prompt_tokens": 5476,
-  "completion_tokens": 198,
+  "prompt_tokens": 7885,
+  "completion_tokens": 177,
   "n_web_searches": 0,
-  "cost_usd": 0.09699,
-  "latency_s": 3.5859670829959214,
+  "cost_usd": 0.13155,
+  "latency_s": 4.003046166035347,
   "error": null,
   "raw_text": ""
 }

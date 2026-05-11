@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPD1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "HSPD1 (Hsp60) is a mitochondrial chaperonin resident in the mitochondrial matrix. It is a soluble protein that does not have a transmembrane domain, GPI anchor, or any mechanism for stable anchoring to the outer leaflet of the plasma membrane. While the NCBI summary notes it may function as a signaling molecule in innate immunity, this refers to its intracellular signaling role (e.g., via TLR9 in the endosome), not surface accessibility. The protein is not secreted and does not cycle to the PM. No isoforms are membrane-anchored. It is not the target of any cell-surface-directed therapeutic modalities.",
+  "correct": false,
+  "prompt_tokens": 3849,
+  "completion_tokens": 197,
+  "n_web_searches": 0,
+  "cost_usd": 0.004834,
+  "latency_s": 5.190273875021376,
+  "error": null,
+  "raw_text": ""
+}

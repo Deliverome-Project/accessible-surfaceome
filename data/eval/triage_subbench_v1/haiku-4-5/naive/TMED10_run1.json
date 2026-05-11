@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "endomembrane_resident",
-  "verdict_reasoning": "TMED10 (transmembrane emp24 domain-containing protein 10) is a component of the COPII vesicle coat machinery and resides in the ER-Golgi intermediate compartment (ERGIC) and cis-Golgi. It is an integral membrane protein of the endomembrane system with no documented mechanism to reach the outer leaflet of the plasma membrane. While it is a multi-pass TM protein, its topology orients it for intra-Golgi trafficking, not surface display. No cell-state, tissue-restricted, or dual-localization variant surfaces it extracellularly. It is a cargo-selection and membrane-trafficking component, not a surface receptor or PM-resident protein.",
+  "verdict_reasoning": "TMED10 is a p24 family cargo receptor localized to the ER-Golgi intermediate compartment and cis-Golgi. It cycles within the early secretory pathway but does not reach the plasma membrane outer leaflet under baseline conditions or documented conditional contexts. It is endomembrane-resident with no evidence of PM surface accessibility, ectodomain shedding, covalent/wash-resistant PM tethering, cell-state-induced surfacing, or developmental/tissue-restricted outer-leaflet display.",
   "correct": false,
-  "prompt_tokens": 1486,
-  "completion_tokens": 200,
+  "prompt_tokens": 4924,
+  "completion_tokens": 557,
   "n_web_searches": 0,
-  "cost_usd": 0.002486,
-  "latency_s": 2.622956625011284,
+  "cost_usd": 0.007709,
+  "latency_s": 5.969167957955506,
   "error": null,
   "raw_text": ""
 }

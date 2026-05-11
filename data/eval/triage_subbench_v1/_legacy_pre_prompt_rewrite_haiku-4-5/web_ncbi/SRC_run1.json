@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "SRC",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "SRC is canonically myristoylated and anchored to the inner (cytoplasmic) leaflet of the plasma membrane, making it inaccessible to extracellular binders under baseline conditions. However, documented evidence shows that in cancer cells under conditions of overexpression and autophagolysosomal activity, SRC undergoes noncanonical topological inversion and is exocytosed to present its protein body on the outer cell surface. This inversion and presentation occur via SRC's own trafficking mechanism (autophagolysosomal route), not transient recruitment to another surface protein, qualifying it as surface-accessible under the documented cancer cell state.",
+  "correct": true,
+  "prompt_tokens": 38826,
+  "completion_tokens": 915,
+  "n_web_searches": 2,
+  "cost_usd": 0.063401,
+  "latency_s": 10.887955415993929,
+  "error": null,
+  "raw_text": ""
+}

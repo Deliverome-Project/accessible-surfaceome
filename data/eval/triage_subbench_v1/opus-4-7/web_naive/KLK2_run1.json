@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "KLK2 is a secreted trypsin-like serine protease produced by prostate epithelium with no TM/GPI anchor, yet recent IHC, multiplex-IF, confocal, and flow-cytometry data confirm a bona-fide cell-surface pool on prostate cancer cells alongside the dominant secreted pool. Surface KLK2 is being clinically targeted by a CD3 bispecific (pasritamig, Ph3), 225Ac radioligand (JNJ-69086420), and CAR-T programs, with documented antibody binding and internalization on intact cells. Dual surface + secreted localization restricted to prostate lineage.",
+  "correct": true,
+  "prompt_tokens": 40423,
+  "completion_tokens": 862,
+  "n_web_searches": 1,
+  "cost_usd": 0.680995,
+  "latency_s": 15.679829208995216,
+  "error": null,
+  "raw_text": ""
+}

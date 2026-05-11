@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "endomembrane_resident",
-  "verdict_reasoning": "TGOLN2 is a type I integral membrane protein localized to the trans-Golgi network (TGN), a non-PM endomembrane compartment. It cycles between early endosomes and the TGN as part of the secretory pathway's sorting and vesicle-formation machinery. No evidence of stable surface localization, GPI anchoring, or ectodomain shedding; the protein body does not reach the outer face of the plasma membrane.",
+  "verdict_reasoning": "TGOLN2 is a type I integral membrane protein localized to the trans-Golgi network (TGN), a deep endomembrane compartment. It cycles between early endosomes and the TGN as part of the exocytic/recycling pathway, but does not reach the plasma membrane or outer leaflet under baseline conditions. No evidence of surface trafficking, cell-state-induced relocalization, or dual-localization to the PM. The protein's function is purely intracellular sorting.",
   "correct": false,
-  "prompt_tokens": 3818,
-  "completion_tokens": 144,
+  "prompt_tokens": 5591,
+  "completion_tokens": 151,
   "n_web_searches": 0,
-  "cost_usd": 0.004538,
-  "latency_s": 1.5900353339966387,
+  "cost_usd": 0.006346,
+  "latency_s": 1.8640497919986956,
   "error": null,
   "raw_text": ""
 }

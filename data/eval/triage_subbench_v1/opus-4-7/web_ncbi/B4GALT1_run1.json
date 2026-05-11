@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "B4GALT1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "B4GALT1 is canonically a type II Golgi-resident glycosyltransferase, but the long-form isoform has documented plasma-membrane localization with the catalytic domain exposed extracellularly, where it functions as a cell-surface recognition molecule binding oligosaccharide ligands on opposing cells/ECM (e.g., sperm-egg, migratory edge, intercellular junctions). UniProt explicitly annotates 'Cell membrane; Single-pass type II membrane protein' and 'Cell surface' alongside Golgi. This is a dual-localization case where the protein has its own TM anchor at the PM in a minority pool.",
+  "correct": true,
+  "prompt_tokens": 40233,
+  "completion_tokens": 332,
+  "n_web_searches": 1,
+  "cost_usd": 0.638395,
+  "latency_s": 12.022454916033894,
+  "error": null,
+  "raw_text": ""
+}

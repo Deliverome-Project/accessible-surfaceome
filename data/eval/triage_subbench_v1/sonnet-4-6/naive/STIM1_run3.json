@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "STIM1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "STIM1 (Stromal Interaction Molecule 1) is a single-pass type I transmembrane protein resident primarily in the ER membrane, but it has a well-characterized stable pool at the plasma membrane. The N-terminal EF-hand domain faces the ER lumen (and extracellular space at the PM), while the C-terminus is cytoplasmic. At the PM, STIM1 is anchored as a type I TM protein with an exposed extracellular/luminal N-terminal domain accessible from the outside. This PM pool is genuine and stable, not merely transient recruitment. Surface biotinylation and antibody-binding studies confirm extracellular epitope accessibility on intact cells. It is a bona fide surface-accessible protein via its own TM anchor.",
+  "correct": false,
+  "prompt_tokens": 4925,
+  "completion_tokens": 213,
+  "n_web_searches": 0,
+  "cost_usd": 0.01797,
+  "latency_s": 5.3821342079900205,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "KLK2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "KLK2 (human kallikrein-2, hK2) is a serine protease secreted via the classical secretory pathway with a signal peptide. It is a secreted protein, but it is well-documented to remain transiently cell-surface associated on prostatic epithelial cells and prostate cancer cells, where it binds to cell-surface receptors (e.g., LRP) and extracellular matrix components. However, more importantly, KLK2 is a secreted protein without a TM domain or GPI anchor, and its surface association is reversible/non-covalent. Applying the recruitment and wash tests, it would wash off. The dominant biology is secreted. Verdict: secreted_only / no.",
+  "correct": false,
+  "prompt_tokens": 4925,
+  "completion_tokens": 206,
+  "n_web_searches": 0,
+  "cost_usd": 0.017865,
+  "latency_s": 5.222369124996476,
+  "error": null,
+  "raw_text": ""
+}

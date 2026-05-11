@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA5",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-luminal chaperone, but has well-documented cell-surface display on tumor cells, stressed cells (UPR/ER stress), and during cell death. Cell-surface GRP78 is an active therapeutic target (anti-GRP78 antibodies, ADCs, CAR-T programs). The ecto-pool reaches the outer leaflet under stress/oncogenic transformation, qualifying as contextual via cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 6955,
+  "completion_tokens": 205,
+  "n_web_searches": 0,
+  "cost_usd": 0.1197,
+  "latency_s": 4.7192540830001235,
+  "error": null,
+  "raw_text": ""
+}

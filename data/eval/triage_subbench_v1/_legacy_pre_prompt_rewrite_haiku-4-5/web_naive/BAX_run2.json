@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "BAX",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "BAX is a pro-apoptotic Bcl-2 family member that localizes exclusively to the cytosol in healthy cells and, upon apoptotic activation, inserts into the mitochondrial outer membrane (MOM), not the plasma membrane. The protein's C-terminal transmembrane domain mediates binding to mitochondria via internal targeting signals, not surface exposure. There is no documented plasma membrane localization, no surface-anchoring mechanism, and no therapeutic evidence of surface accessibility. The protein body is entirely intracellular.",
+  "correct": false,
+  "prompt_tokens": 37245,
+  "completion_tokens": 734,
+  "n_web_searches": 2,
+  "cost_usd": 0.060915,
+  "latency_s": 9.75194962497335,
+  "error": null,
+  "raw_text": ""
+}

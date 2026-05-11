@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGFB1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is secreted as a latent complex: the propeptide (LAP) remains non-covalently bound to mature TGFB1, and the latent complex is covalently tethered to cell-surface/ECM via LTBPs and to GARP/LRRC33 on cells (notably Tregs, platelets) through disulfide bonds. GARP-anchored latent TGFB1 is a wash-resistant cell-surface pool and a validated antibody target (e.g., anti-GARP/TGFB1 complex programs). This is stable surface attachment to a TM partner, not free secretion.",
+  "correct": true,
+  "prompt_tokens": 6955,
+  "completion_tokens": 234,
+  "n_web_searches": 0,
+  "cost_usd": 0.121875,
+  "latency_s": 5.224610666977242,
+  "error": null,
+  "raw_text": ""
+}

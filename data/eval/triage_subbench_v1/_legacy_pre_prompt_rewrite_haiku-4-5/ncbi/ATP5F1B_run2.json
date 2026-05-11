@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "ATP5F1B is the F1-\u03b2 subunit of mitochondrial ATP synthase, a soluble catalytic protein resident in the mitochondrial matrix. It is part of the F1 core complex, which sits in the mitochondrial matrix and does not span or contact the plasma membrane. No transmembrane domain, GPI anchor, or surface-trafficking mechanism exists. The protein is strictly mitochondrial-internal.",
+  "correct": false,
+  "prompt_tokens": 3892,
+  "completion_tokens": 130,
+  "n_web_searches": 0,
+  "cost_usd": 0.004542,
+  "latency_s": 1.8013172089704312,
+  "error": null,
+  "raw_text": ""
+}

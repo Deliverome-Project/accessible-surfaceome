@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane protein with its own membrane anchor that reaches the outer leaflet of the plasma membrane, but only after the acrosome reaction\u2014a defined, non-baseline cellular state. Baseline state: sequestered in acrosomal membrane. Post-acrosomal reaction: surface-exposed on equatorial segment. This tissue-restricted (germline/sperm) + cell-state-induced (acrosome reaction) combination classifies as contextual. The protein body is accessible from extracellular space via its own TM mechanism once the acrosome reaction occurs.",
+  "correct": true,
+  "prompt_tokens": 42591,
+  "completion_tokens": 790,
+  "n_web_searches": 2,
+  "cost_usd": 0.066541,
+  "latency_s": 10.007043624995276,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA5",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-lumenal chaperone retained by its KDEL motif. However, under ER stress\u2014particularly in cancer cells\u2014a subpopulation translocates to the plasma membrane outer face via its own mechanism (a transmembrane subfraction cycling from ER to PM, and/or direct lipid-bilayer insertion). Cell-surface GRP78 (csGRP78) is extensively documented across AML, GBM, pancreatic, lung, and breast cancer. Multiple CAR-T, monoclonal antibody, and peptide-based therapeutic programs directly target csGRP78. Surface display is driven by ER stress/cancer cell state (disproportionate overexpression vs. KDEL-R1), qualifying as cell_state_induced. The protein body itself reaches the extracellular face; this is not a pMHC-only or soluble-ligand story.",
+  "correct": true,
+  "prompt_tokens": 60798,
+  "completion_tokens": 1162,
+  "n_web_searches": 2,
+  "cost_usd": 0.219824,
+  "latency_s": 25.825393917039037,
+  "error": null,
+  "raw_text": ""
+}

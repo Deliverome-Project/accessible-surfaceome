@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "STIM1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a type I single-pass TM protein that is predominantly ER-resident but translocates to ER-plasma membrane junctions upon ER Ca2+ depletion, where its cytoplasmic domain directly engages Orai1 channels in the PM. The protein body reaches the outer face via its own TM anchor in a documented, activation-dependent manner. This qualifies as dual localization with a regulated PM pool under store-depletion conditions.",
+  "correct": true,
+  "prompt_tokens": 44530,
+  "completion_tokens": 731,
+  "n_web_searches": 2,
+  "cost_usd": 0.068185,
+  "latency_s": 9.056729834002908,
+  "error": null,
+  "raw_text": ""
+}

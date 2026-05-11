@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 (p24\u03b4) is a single-pass type I TM protein of the p24 family, predominantly resident in ER-Golgi intermediate compartment and cis-Golgi where it functions as a cargo receptor cycling between ER and Golgi. It has a documented minor plasma membrane pool via constitutive vesicular cycling through the secretory pathway, with the short cytoplasmic tail inside and ectodomain facing the lumen/extracellular space when at PM. Surface presence is real but minor relative to dominant Golgi/ERGIC residence.",
+  "correct": true,
+  "prompt_tokens": 6954,
+  "completion_tokens": 222,
+  "n_web_searches": 0,
+  "cost_usd": 0.12096,
+  "latency_s": 4.418847666995134,
+  "error": null,
+  "raw_text": ""
+}

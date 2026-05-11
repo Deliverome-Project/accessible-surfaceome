@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPD1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 (Hsp60) is a mitochondrial matrix chaperonin with canonical inner-compartment localization. However, documented evidence supports surface display in specific contexts: (1) cancer cells exhibit ecto-Hsp60 on the outer leaflet as part of the immunogenic chaperone ecto-pool \u2014 a well-characterized phenomenon in tumor biology; (2) cell-death pathways (apoptosis, necroptosis, immunogenic cell death) externalize mitochondrial proteins including Hsp60 to the PM outer face; (3) immune activation in dendritic cells and other antigen-presenting cells drives regulated translocation of Hsp60 to the surface. The baseline mitochondrial matrix residency is clear, but non-baseline ecto-pools in cancer, cell death, and immune-activation contexts qualify as contextual surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 5622,
+  "completion_tokens": 233,
+  "n_web_searches": 0,
+  "cost_usd": 0.006787,
+  "latency_s": 3.0954315409762785,
+  "error": null,
+  "raw_text": ""
+}

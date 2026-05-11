@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA5",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (BiP/GRP78) is a canonical ER-luminal chaperone, predominantly resident in the ER lumen and ER-associated membranes. However, under ER stress (unfolded protein response activation, hypoxia, nutrient deprivation), HSPA5 translocates to the cell surface and has been detected on the outer leaflet of stressed cells. Additionally, cancer cells frequently display HSPA5 on the outer leaflet as an ecto-chaperone, and it is a known target of cell-surface-directed antibodies and therapeutic programs in oncology. Cell-death-induced (apoptotic / necroptotic) surface exposure of ER chaperones also occurs. The baseline compartment is ER-lumen, but documented stress-state and cancer-cell ecto-display qualifies it as contextual rather than no.",
+  "correct": true,
+  "prompt_tokens": 4924,
+  "completion_tokens": 237,
+  "n_web_searches": 0,
+  "cost_usd": 0.006109,
+  "latency_s": 2.9921331670484506,
+  "error": null,
+  "raw_text": ""
+}

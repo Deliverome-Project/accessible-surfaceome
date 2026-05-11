@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B4GALT1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "B4GALT1 is a type II membrane-bound glycosyltransferase resident in the Golgi apparatus. The N-terminal hydrophobic signal sequence directs it to the Golgi, where it remains anchored via a retained signal sequence as a type II TM protein. The Golgi is an endomembrane compartment, not the plasma membrane. While type II TM proteins do have a luminal domain topologically analogous to an extracellular domain, that domain faces the Golgi lumen, not the extracellular space. B4GALT1 has no documented plasma-membrane localization, PM-cycling pool, or cell-state-induced surface display. It is exclusively endomembrane-resident.",
+  "correct": false,
+  "prompt_tokens": 5669,
+  "completion_tokens": 205,
+  "n_web_searches": 0,
+  "cost_usd": 0.006694,
+  "latency_s": 2.5779524170211516,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "STIM1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a type I single-pass TM protein with an N-terminal extracellular domain. Canonical localization is ER-resident; however, it exhibits documented dual localization with a constitutive minority population at the plasma membrane (detected by surface biotinylation and immunofluorescence). The PM pool is achieved via its own TM topology and N-linked glycosylation-dependent trafficking (at Asn131 and Asn171), not transient recruitment. Absence of a di-lysine ER-retention motif permits partial escape to the PM. The protein does reach the outer leaflet by its own membrane anchor, but the majority-intracellular/minority-surface distribution pattern meets the contextual criterion.",
+  "correct": true,
+  "prompt_tokens": 44061,
+  "completion_tokens": 1214,
+  "n_web_searches": 2,
+  "cost_usd": 0.070131,
+  "latency_s": 13.182986792002339,
+  "error": null,
+  "raw_text": ""
+}

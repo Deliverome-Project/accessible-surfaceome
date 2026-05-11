@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a sperm-specific gamete fusion protein with a single-pass TM domain and Ig-like ectodomain, classified in the gamete adhesion & fusion factors gene group. It reaches the sperm surface during spermatogenesis and is essential for sperm-egg membrane interaction. Surface display is restricted to the male germline lineage and is developmentally/differentiation-stage-restricted (post-meiotic spermatid/sperm stage). While it possesses its own TM anchor, the biological significance is confined to germline reproduction; it is not displayed on somatic cell surfaces under any documented condition. This narrow developmental/germline lineage restriction qualifies as tissue-restricted surface display.",
+  "correct": true,
+  "prompt_tokens": 5558,
+  "completion_tokens": 200,
+  "n_web_searches": 0,
+  "cost_usd": 0.006558,
+  "latency_s": 2.8327151669654995,
+  "error": null,
+  "raw_text": ""
+}

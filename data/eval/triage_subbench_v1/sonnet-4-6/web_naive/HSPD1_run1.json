@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin with no TM domain or GPI anchor. However, multiple independent studies using flow cytometry, confocal microscopy, and atomic force microscopy confirm full-length HSP60 protein on the outer face of the plasma membrane in tumor cells, stressed endothelial cells (HUVECs), and lymphocytes. Surface expression is upregulated by heat stress, inflammation, and tumorigenesis, and the protein associates with lipid rafts at the outer leaflet. Surface localization is clearly cell-state-induced rather than constitutive in most normal resting cells. The exact translocation mechanism is unresolved but the surface pool is wash-detectable (antibody-accessible on live unfixed cells). Qualifies as contextual via cell_state_induced.",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin with no TM domain, GPI anchor, or conventional signal peptide. ~80% of the protein resides in the mitochondrial matrix. However, a well-documented minority pool translocates to the outer plasma membrane under stress, inflammatory states, and oncogenic transformation \u2014 confirmed by immunogold EM on tumor cell lines showing HSP60 at the plasma-cell membrane. This cancer/stress-induced ecto-display qualifies as cell_state_induced surface accessibility. The surface pool is absent or negligible at baseline in non-transformed cells.",
   "correct": true,
-  "prompt_tokens": 37856,
-  "completion_tokens": 842,
+  "prompt_tokens": 46042,
+  "completion_tokens": 785,
   "n_web_searches": 2,
-  "cost_usd": 0.146198,
-  "latency_s": 20.958687042002566,
+  "cost_usd": 0.169901,
+  "latency_s": 15.83733895799378,
   "error": null,
   "raw_text": ""
 }

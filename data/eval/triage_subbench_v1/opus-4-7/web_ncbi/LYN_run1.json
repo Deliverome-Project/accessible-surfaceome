@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase canonically anchored to the inner leaflet of the PM via N-terminal myristoylation/palmitoylation, making it cytoplasmic-facing at baseline. However, ecto-LYN/surface display of Src-family kinases has been reported on tumor cells and during cell-state changes, and LYN translocates with signaling complexes. Given the inner-leaflet anchoring is the dominant biology but cancer/stress-induced ecto-display is plausible for SFKs, contextual via cell-state-induced is the safer call than no.",
+  "correct": true,
+  "prompt_tokens": 10747,
+  "completion_tokens": 230,
+  "n_web_searches": 0,
+  "cost_usd": 0.178455,
+  "latency_s": 8.592672874976415,
+  "error": null,
+  "raw_text": ""
+}

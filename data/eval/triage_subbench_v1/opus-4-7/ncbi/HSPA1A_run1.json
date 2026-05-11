@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA1A is predominantly a cytosolic chaperone, but under stress, malignant transformation, and apoptosis it is well-documented to relocalize to the outer leaflet of the plasma membrane on tumor cells (via PS/lipid binding and other mechanisms), where it is accessible to antibodies and has been exploited therapeutically (e.g., cmHsp70.1). Surface display is cell-state-induced rather than baseline.",
+  "verdict_reasoning": "HSPA1A (HSP70) is canonically cytosolic but is well-documented to translocate to the outer leaflet of stressed and tumor cells (membrane HSP70 / mHsp70), serving as a tumor-selective surface marker targeted by clinical agents (e.g., cmHsp70.1 antibody, TKD-peptide approaches). Cancer/stress-induced ecto-display qualifies as contextual cell-state-induced surfacing.",
   "correct": true,
-  "prompt_tokens": 5569,
-  "completion_tokens": 185,
+  "prompt_tokens": 7978,
+  "completion_tokens": 191,
   "n_web_searches": 0,
-  "cost_usd": 0.09741,
-  "latency_s": 3.959630375029519,
+  "cost_usd": 0.133995,
+  "latency_s": 3.874439708015416,
   "error": null,
   "raw_text": ""
 }

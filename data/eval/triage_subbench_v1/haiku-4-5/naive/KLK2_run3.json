@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "KLK2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "KLK2 is a serine protease synthesized with a signal peptide and secreted constitutively into body fluids and extracellular space. It has no transmembrane domain, GPI anchor, or outer-leaflet lipidation. There is no documented covalent or wash-resistant post-translational anchoring to a cell-surface TM partner, and no evidence for cell-state-induced outer-leaflet display or tissue-restricted surface residency. KLK2 remains in equilibrium with the soluble extracellular pool.",
+  "correct": false,
+  "prompt_tokens": 4924,
+  "completion_tokens": 698,
+  "n_web_searches": 0,
+  "cost_usd": 0.008414,
+  "latency_s": 6.843674584000837,
+  "error": null,
+  "raw_text": ""
+}

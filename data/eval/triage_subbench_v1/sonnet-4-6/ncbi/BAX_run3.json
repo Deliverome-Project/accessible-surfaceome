@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is canonically a cytosolic/mitochondrial protein, but during apoptosis and immunogenic cell death it undergoes conformational activation and inserts into the outer mitochondrial membrane, and importantly it translocates to the plasma membrane outer leaflet in apoptotic/dying cells where it is exposed on the cell surface. Multiple studies document BAX surface exposure on apoptotic tumor cells, making it a documented cell-state-induced ecto-protein. This qualifies as contextual/cell_state_induced even though baseline localization is cytoplasmic/mitochondrial.",
+  "correct": true,
+  "prompt_tokens": 5602,
+  "completion_tokens": 161,
+  "n_web_searches": 0,
+  "cost_usd": 0.019221,
+  "latency_s": 4.098353790992405,
+  "error": null,
+  "raw_text": ""
+}

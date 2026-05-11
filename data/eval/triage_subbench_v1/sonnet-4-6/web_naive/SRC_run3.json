@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "SRC",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase canonically anchored by N-myristoylation to the inner leaflet of the plasma membrane \u2014 it has no TM domain, GPI anchor, or extracellular domain and is inaccessible from outside normal cells. However, in cancer cells, where Src is overexpressed and autophagic flux is dysregulated, Src undergoes topological inversion via autophagolysosomal exocytosis (ALE), placing the protein body on the outer leaflet as extracellular Src (eSrc). This has been documented on bladder, colorectal, breast, and pancreatic tumor cell lines, xenografts, and primary patient tumor samples, but not on healthy tissue or immune cells. Anti-eSrc antibodies formulated as ADCs, bispecific T cell engagers, and radioligand therapeutics have demonstrated preclinical efficacy against this surface pool. This is a well-evidenced oncogenic-state ecto-display qualifying as cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 44265,
+  "completion_tokens": 980,
+  "n_web_searches": 2,
+  "cost_usd": 0.16749499999999998,
+  "latency_s": 21.18966299999738,
+  "error": null,
+  "raw_text": ""
+}

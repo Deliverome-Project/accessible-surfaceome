@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family expressed in testis/sperm. Unlike IZUMO1 (single-pass TM), IZUMO4 lacks a TM domain and is a secreted Ig-superfamily protein, but it forms a stable complex with IZUMO1 on the sperm surface via disulfide/non-covalent association, contributing to the sperm-egg fusion machinery. Surface display is restricted to the germline lineage (mature sperm), so this is tissue-restricted contextual surface accessibility rather than a canonical anchored receptor.",
+  "correct": true,
+  "prompt_tokens": 6956,
+  "completion_tokens": 232,
+  "n_web_searches": 0,
+  "cost_usd": 0.12174,
+  "latency_s": 4.742760459019337,
+  "error": null,
+  "raw_text": ""
+}

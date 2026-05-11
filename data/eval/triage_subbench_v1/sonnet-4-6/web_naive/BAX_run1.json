@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "cytoplasmic",
-  "verdict_reasoning": "BAX is a pro-apoptotic BCL-2 family member that resides predominantly in the cytosol of healthy cells. Upon apoptotic signaling it translocates to and inserts into the mitochondrial outer membrane (and ER membrane), where it oligomerizes to form pores mediating cytochrome c release. All membrane biology is strictly intracellular (mitochondrial outer membrane and ER); there is no evidence of BAX reaching the outer leaflet of the plasma membrane by any mechanism. No plasma-membrane-directed therapeutic (ADC, CAR-T, surface antibody) targets BAX as a cell-surface antigen. The protein is not secreted and has no GPI anchor, signal peptide, or plasma-membrane TM domain.",
+  "verdict_reasoning": "BAX is canonically cytosolic at baseline and, upon apoptotic activation, translocates to the mitochondrial outer membrane (MOM) where it oligomerizes to form MOMP pores. It has no TM domain, GPI anchor, or any mechanism to reach the plasma membrane outer leaflet. Its role in ICD is strictly upstream: BAX/BAK MOMP triggers calreticulin trafficking to the PM outer leaflet, but BAX itself is not the displayed DAMP \u2014 CRT is. No surface proteomics, flow cytometry, or surface biotinylation studies document BAX on the extracellular face of the PM. All therapeutic programs (BH3 mimetics, small molecules) target its intracellular hydrophobic groove. pMHC is not credited per triage rules. No contextual bucket (cell_state_induced, lysosomal_exocytosis, stable_surface_attachment, tissue_restricted_surface, dual_localization) applies to the protein body reaching the outer leaflet.",
   "correct": false,
-  "prompt_tokens": 41894,
-  "completion_tokens": 694,
+  "prompt_tokens": 42112,
+  "completion_tokens": 1094,
   "n_web_searches": 2,
-  "cost_usd": 0.15609199999999998,
-  "latency_s": 15.329210750001948,
+  "cost_usd": 0.162746,
+  "latency_s": 24.99546162498882,
   "error": null,
   "raw_text": ""
 }

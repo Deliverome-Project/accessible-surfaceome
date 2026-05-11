@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "STIM1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a single-pass ER membrane protein (type I, luminal N-terminus) that senses ER Ca2+ depletion and oligomerizes at ER-PM junctions to gate Orai1. However, a documented PM-resident pool exists: STIM1 traffics to the plasma membrane in some cell types with its N-terminal EF-hand/SAM domain exposed extracellularly, and surface STIM1 has been reported on cancer cells and platelets. This minority surface pool qualifies as contextual via dual localization, though the dominant compartment is ER.",
+  "correct": true,
+  "prompt_tokens": 6954,
+  "completion_tokens": 225,
+  "n_web_searches": 0,
+  "cost_usd": 0.121185,
+  "latency_s": 4.506402582977898,
+  "error": null,
+  "raw_text": ""
+}

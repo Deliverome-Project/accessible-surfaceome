@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a single-pass TM Ig-like sperm surface protein essential for sperm-egg plasma membrane fusion. It has its own membrane anchor and is displayed on the outer leaflet, but expression is restricted to the male germline (spermatozoa), with surface exposure unmasked after the acrosome reaction. This narrow germline/developmental lineage restriction maps to tissue_restricted_surface rather than yes.",
+  "correct": true,
+  "prompt_tokens": 10759,
+  "completion_tokens": 187,
+  "n_web_searches": 0,
+  "cost_usd": 0.17541,
+  "latency_s": 8.817936917010229,
+  "error": null,
+  "raw_text": ""
+}

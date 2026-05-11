@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "LYN",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a non-receptor tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-myristoylation and S-palmitoylation. Its protein body is exposed to the cytoplasm, not the extracellular space. Although it functionally couples with surface receptors (BCR, Fc\u03b5RI, CD19) and can be recruited to the plasma membrane in specific cellular contexts, it achieves these interactions through intracellular signaling from the cytoplasmic face. It has no transmembrane domain, GPI anchor, or outer-leaflet lipidation. The protein does not meet surface accessibility criteria.",
+  "correct": false,
+  "prompt_tokens": 39670,
+  "completion_tokens": 1046,
+  "n_web_searches": 2,
+  "cost_usd": 0.0649,
+  "latency_s": 11.998728125006892,
+  "error": null,
+  "raw_text": ""
+}

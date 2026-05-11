@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is predominantly a cytosolic chaperone with no classical TM domain or GPI anchor. However, extensive literature documents tumor-selective and stress-induced plasma membrane surface expression: (1) membrane-bound HSPA1A is detected on a wide variety of human and mouse tumor cell types by flow cytometry using conformational anti-HSP70 mAbs (cmHsp70.1) that recognize an extracellularly exposed epitope; (2) surface localization is mechanistically linked to interaction with sphingoglycolipid Gb3 and/or phosphatidylserine in tumor/stressed cells; (3) the surface pool is demonstrably stress- and cell-state-induced\u2014absent or minimal on matched normal tissues. This qualifies as cell_state_induced / dual_localization contextual surface accessibility. Soluble/secreted and exosomal forms also exist but the documented plasma-membrane-integrated pool in tumor/stressed cells constitutes genuine outer-leaflet accessibility for surface-directed binders.",
+  "verdict_reasoning": "HSPA1A (HSP70-1/HSP72) is canonically a cytosolic stress-inducible chaperone with no TM domain, GPI anchor, or constitutive surface mechanism. However, multiple independent studies document its translocation to the outer leaflet of the plasma membrane specifically on tumor cells and under stress conditions (heat, oxidative stress, oncogenic transformation), where it is detectable by flow cytometry and surface biotinylation. The mechanism involves insertion into lipid rafts/negatively-charged phospholipids (phosphatidylserine) in a non-classical, ER/Golgi-independent manner. This cancer-cell-restricted ecto-pool is the established surface story and represents a documented non-baseline surface biology qualifying as cell_state_induced. The baseline localization is cytoplasmic; surface display is restricted to stress/transformed states.",
   "correct": true,
-  "prompt_tokens": 26155,
-  "completion_tokens": 342,
+  "prompt_tokens": 33300,
+  "completion_tokens": 289,
   "n_web_searches": 1,
-  "cost_usd": 0.093595,
-  "latency_s": 10.222744334023446,
+  "cost_usd": 0.11423499999999999,
+  "latency_s": 9.634529999981169,
   "error": null,
   "raw_text": ""
 }

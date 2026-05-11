@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "BAX",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is canonically cytosolic/mitochondrial-outer-membrane and drives MOMP during apoptosis. However, during apoptosis and immunogenic cell death, BAX (along with BAK) translocates and is exposed on the outer mitochondrial membrane and has documented cell-death-associated externalization on dying cells. This is a cell-state-induced surface story, not a baseline anchor, so contextual rather than yes. Not pMHC-only.",
+  "correct": true,
+  "prompt_tokens": 6953,
+  "completion_tokens": 190,
+  "n_web_searches": 0,
+  "cost_usd": 0.118545,
+  "latency_s": 4.734239834011532,
+  "error": null,
+  "raw_text": ""
+}

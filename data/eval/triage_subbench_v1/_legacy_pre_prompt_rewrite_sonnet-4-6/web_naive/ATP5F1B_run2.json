@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B canonically resides on the mitochondrial inner membrane (matrix-side peripheral protein, no TM domain of its own). However, extensive evidence documents an 'ectopic' surface pool: flow cytometry confirms ATP5B protein on the outer surface of leukemia (NB4, HL-60), endothelial, hepatocyte, adipocyte, and cancer cell lines. Surface trafficking occurs via mitochondrial membrane fusion to the plasma membrane (DRP1/KIF5B-dependent). The surface complex retains catalytic activity and binds anti-ATP5B antibodies at 4\u00b0C, indicating a stable, wash-resistant surface pool. OMIM cites its role as an ecto-ApoA-I receptor on hepatocytes. Surface expression is cell-type- and context-restricted, qualifying as contextual.",
+  "correct": true,
+  "prompt_tokens": 26946,
+  "completion_tokens": 935,
+  "n_web_searches": 2,
+  "cost_usd": 0.114863,
+  "latency_s": 23.798813291999977,
+  "error": null,
+  "raw_text": ""
+}

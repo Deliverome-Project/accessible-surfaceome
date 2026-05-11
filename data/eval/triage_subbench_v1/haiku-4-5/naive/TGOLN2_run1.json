@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "endomembrane_resident",
-  "verdict_reasoning": "TGOLN2 is a trans-Golgi network resident protein involved in intracellular cargo sorting and trafficking. It localizes to the TGN and related Golgi compartments as a peripheral or integral membrane component. It functions in the secretory pathway machinery but does not itself reach the outer leaflet of the plasma membrane under any documented condition. No TM domain, GPI anchor, or mechanism for stable surface presentation is documented.",
+  "verdict_reasoning": "TGOLN2 is a type I TM protein whose canonical and dominant localization is the trans-Golgi network, an endomembrane compartment. Although it cycles through the plasma membrane and endosomal compartments as part of its trafficking and sorting functions, it is not stably resident at the cell surface and the PM transit is transient and incidental to its intracellular trafficking role, not a documented baseline or context-induced surface pool. The protein is endomembrane-resident.",
   "correct": false,
-  "prompt_tokens": 1487,
-  "completion_tokens": 505,
+  "prompt_tokens": 4925,
+  "completion_tokens": 713,
   "n_web_searches": 0,
-  "cost_usd": 0.004012,
-  "latency_s": 5.520582334022038,
+  "cost_usd": 0.00849,
+  "latency_s": 8.277568832971156,
   "error": null,
   "raw_text": ""
 }

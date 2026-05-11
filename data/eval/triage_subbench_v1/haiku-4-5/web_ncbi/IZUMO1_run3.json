@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane protein localized to the acrosomal membrane in fresh, non-activated sperm. During the acrosome reaction\u2014a well-defined activation state required for gamete fusion\u2014IZUMO1 is translocated to the sperm plasma membrane where it serves as an essential ligand for the egg receptor JUNO. The protein body reaches the outer leaflet via its own TM anchor in response to a stereotyped cell-state change, qualifying as cell_state_induced surface display.",
+  "correct": true,
+  "prompt_tokens": 43931,
+  "completion_tokens": 776,
+  "n_web_searches": 2,
+  "cost_usd": 0.067811,
+  "latency_s": 9.476017833978403,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via dual N-terminal lipid modifications: myristoylation at Gly-2 and palmitoylation at Cys-3. It has no transmembrane domain and no extracellular domain; its entire kinase body faces the cytoplasm. It is not accessible from the extracellular face. No documented outer-leaflet, cancer-ecto, or cell-death-induced surface display was found.",
+  "correct": false,
+  "prompt_tokens": 33431,
+  "completion_tokens": 356,
+  "n_web_searches": 1,
+  "cost_usd": 0.115633,
+  "latency_s": 8.484296792012174,
+  "error": null,
+  "raw_text": ""
+}

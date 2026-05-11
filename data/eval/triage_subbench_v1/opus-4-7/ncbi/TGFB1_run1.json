@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "stable_surface_attachment",
-  "verdict_reasoning": "TGF-\u03b21 is secreted as a latent complex where LAP remains disulfide-bonded to the mature dimer, and the entire latent complex is covalently tethered to cell-surface GARP (LRRC32) or LRRC33 on Tregs, platelets, and myeloid cells via disulfide bonds. This wash-resistant covalent anchoring to a TM partner places the TGF-\u03b21/LAP body on the outer leaflet. Clinically targeted on-surface by anti-GARP:TGF-\u03b21 and latent-complex antibodies.",
+  "verdict_reasoning": "TGFB1 is secreted but forms the Large Latent Complex where LAP remains non-covalently associated with mature TGF-\u03b21 and is covalently tethered via LTBP to ECM and to cell-surface anchors such as GARP/LRRC32 and LRRC33 through disulfide bonds. This wash-resistant covalent tethering to a TM partner (GARP on Tregs/platelets) presents latent TGF-\u03b21 on the cell surface and is the basis of clinical anti-GARP/TGF-\u03b21 antibody programs.",
   "correct": true,
-  "prompt_tokens": 5538,
-  "completion_tokens": 223,
+  "prompt_tokens": 7947,
+  "completion_tokens": 220,
   "n_web_searches": 0,
-  "cost_usd": 0.099795,
-  "latency_s": 4.074473583023064,
+  "cost_usd": 0.135705,
+  "latency_s": 4.324296250008047,
   "error": null,
   "raw_text": ""
 }

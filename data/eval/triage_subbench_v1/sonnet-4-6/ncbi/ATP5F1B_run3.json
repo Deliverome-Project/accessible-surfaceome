@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (F1-beta) is canonically a mitochondrial matrix/inner-membrane-facing subunit of the F1Fo ATP synthase. However, it is well-documented as an 'ecto-ATP synthase' on the outer leaflet of the plasma membrane in certain cancer cell types and other contexts (e.g., hepatocytes, endothelial cells, tumor cells), where it acts as a receptor for angiostatin and apolipoprotein A-I. This cancer/cell-state-induced ecto-display qualifies as contextual surface accessibility under cell_state_induced, even though the baseline localization is mitochondrial.",
+  "correct": true,
+  "prompt_tokens": 5666,
+  "completion_tokens": 183,
+  "n_web_searches": 0,
+  "cost_usd": 0.019743,
+  "latency_s": 5.7409869999974035,
+  "error": null,
+  "raw_text": ""
+}

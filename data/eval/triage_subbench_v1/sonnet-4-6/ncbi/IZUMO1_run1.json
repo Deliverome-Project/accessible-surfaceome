@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "tissue_restricted_surface",
-  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane protein (Ig-like fold ectodomain) that is expressed exclusively on mature sperm cells, where it localizes to the sperm surface and is essential for sperm-oocyte plasma membrane fusion. It has its own TM domain and is genuinely surface-displayed, but only in the highly restricted germline/gamete lineage (mature spermatozoa). Per the triage rules, a TM protein with bona fide outer-leaflet display restricted to a narrow developmental/gamete lineage maps to contextual/tissue_restricted_surface, not yes/classical_surface_receptor.",
+  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane protein of the Ig-like cell adhesion / IZUMO family expressed specifically on sperm cells, where it resides on the outer leaflet of the sperm plasma membrane and mediates sperm-oocyte fusion. It has its own TM anchor and is a bona fide surface protein, but its expression is restricted to the germline / gamete lineage (sperm-specific). Per the triage rules, surface display via one's own TM anchor that is restricted to a narrow germline/reproductive lineage maps to contextual / tissue_restricted_surface rather than yes.",
   "correct": true,
-  "prompt_tokens": 4951,
-  "completion_tokens": 171,
+  "prompt_tokens": 5559,
+  "completion_tokens": 167,
   "n_web_searches": 0,
-  "cost_usd": 0.017418,
-  "latency_s": 5.12641445902409,
+  "cost_usd": 0.019182,
+  "latency_s": 4.447327165980823,
   "error": null,
   "raw_text": ""
 }

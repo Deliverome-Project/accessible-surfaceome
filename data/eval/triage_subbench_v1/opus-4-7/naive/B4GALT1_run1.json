@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "B4GALT1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "B4GALT1 (beta-1,4-galactosyltransferase 1) is a type II single-pass TM glycosyltransferase canonically resident in the trans-Golgi where it transfers galactose to glycoprotein/glycolipid substrates. However, it has a well-documented dual-localization surface pool on the plasma membrane of multiple cell types (sperm, lymphocytes, neurons, tumor cells), where it acts as a cell-surface lectin/adhesion receptor recognizing GlcNAc-terminated glycans \u2014 most notably on sperm during egg binding and on cancer cells. The TM precursor faces the extracellular leaflet at the PM, making the catalytic domain accessible from outside.",
+  "correct": true,
+  "prompt_tokens": 6956,
+  "completion_tokens": 272,
+  "n_web_searches": 0,
+  "cost_usd": 0.12474,
+  "latency_s": 6.632483749999665,
+  "error": null,
+  "raw_text": ""
+}

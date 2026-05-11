@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "EREG",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "EREG is synthesized as a type I single-pass transmembrane precursor (pro-EREG, ~19 kDa glycosylated) that traffics to the basolateral plasma membrane surface before being constitutively cleaved by ADAM17 (and other ADAMs) in the juxtamembrane/ectodomain region, releasing the soluble 46-aa mature ligand as the dominant biological actor. The TM precursor stage is real and surface-accessible (EGF domain faces extracellular space), but it is short-lived and constitutively shed. The soluble form is the canonical signaling molecule. This architecture \u2014 small EGF-family proligand with transient TM precursor \u2014 maps to contextual/dual_localization: the TM stage qualifies for surface accessibility but is not a stable surface-resident form.",
+  "correct": true,
+  "prompt_tokens": 28812,
+  "completion_tokens": 496,
+  "n_web_searches": 1,
+  "cost_usd": 0.103876,
+  "latency_s": 13.625747499987483,
+  "error": null,
+  "raw_text": ""
+}

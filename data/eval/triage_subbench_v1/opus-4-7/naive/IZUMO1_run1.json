@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a single-pass type I transmembrane sperm-surface protein essential for sperm-egg fusion, binding JUNO on the oocyte. Its own anchor (TM domain) is unambiguous, but expression is restricted to the male germline / mature sperm lineage. This narrow germline-restricted surface display maps to tissue_restricted_surface rather than yes.",
+  "correct": true,
+  "prompt_tokens": 6956,
+  "completion_tokens": 169,
+  "n_web_searches": 0,
+  "cost_usd": 0.117015,
+  "latency_s": 5.938516375026666,
+  "error": null,
+  "raw_text": ""
+}

@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA5 is primarily ER-resident but documented to reach the plasma membrane and extracellular environment via two complementary mechanisms: (1) secretory pathway trafficking and (2) direct insertion into lipid bilayers through high-affinity binding to negatively charged phospholipids (PS, cardiolipin). Surface HSPA5 is functionally active as a viral receptor and signal-transducing co-receptor, and stress-inducible translocation to the PM is well-established in cancer and ER-stressed cells. The protein reaches the outer face via its own lipid-binding domains, not merely as transient cargo. Lacks transmembrane domain but compensates via oligomeric phospholipid insertion.",
+  "verdict_reasoning": "HSPA5 is canonically ER-luminal but undergoes documented stress-induced translocation to the cell surface outer leaflet under ER stress, viral infection, and in cancer cells. During these states, surface HSPA5 functions as a viral receptor, co-receptor, and immune modulator. The protein body itself is transported to the PM via its own translocation mechanism, not via reversible recruitment by another surface protein, qualifying as cell_state_induced contextual surface accessibility.",
   "correct": true,
-  "prompt_tokens": 38281,
-  "completion_tokens": 1147,
+  "prompt_tokens": 43743,
+  "completion_tokens": 882,
   "n_web_searches": 2,
-  "cost_usd": 0.064016,
-  "latency_s": 13.66031704103807,
+  "cost_usd": 0.068153,
+  "latency_s": 10.615568583016284,
   "error": null,
   "raw_text": ""
 }

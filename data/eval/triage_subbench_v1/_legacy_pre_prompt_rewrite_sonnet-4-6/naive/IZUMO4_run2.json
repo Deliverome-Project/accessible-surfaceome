@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family of proteins. Unlike IZUMO1, which is a sperm-surface protein critical for fertilization, IZUMO4 (also known as CRISP7 or related to the IZUMO family) appears to be primarily an intracellular/secreted protein. Based on available knowledge, IZUMO4 lacks a canonical transmembrane domain and does not have well-documented stable surface expression on somatic cells. It is not known to be GPI-anchored or stably co-trafficked as a surface complex partner. Given lack of strong evidence for outer leaflet exposure, verdict is no.",
+  "correct": false,
+  "prompt_tokens": 1488,
+  "completion_tokens": 183,
+  "n_web_searches": 0,
+  "cost_usd": 0.007209,
+  "latency_s": 4.194978707993869,
+  "error": null,
+  "raw_text": ""
+}

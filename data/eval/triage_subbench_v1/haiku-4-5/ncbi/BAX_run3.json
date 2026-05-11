@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "BAX",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL2-family member, canonically cytosolic and mitochondrial-outer-membrane resident. However, BAX undergoes cell-death-induced surface externalization during apoptosis and other forms of programmed cell death (apoptosis, necroptosis); cytosolic BAX translocates to the PM outer leaflet and is exposed on dying cells. This qualifies as contextual surface display via cell-state-induced mechanism. Additionally, BAX has been reported as a target for some immuno-therapeutic modalities that engage it on the surface of apoptotic / dying cells.",
+  "correct": true,
+  "prompt_tokens": 5601,
+  "completion_tokens": 176,
+  "n_web_searches": 0,
+  "cost_usd": 0.006481,
+  "latency_s": 2.7021049589966424,
+  "error": null,
+  "raw_text": ""
+}

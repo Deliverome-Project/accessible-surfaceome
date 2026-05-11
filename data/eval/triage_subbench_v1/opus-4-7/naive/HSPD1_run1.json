@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPD1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin, but has well-documented surface display on tumor cells and stressed cells (heat shock, oxidative stress), where it acts as a damage-associated molecular pattern and immunogenic target. Cancer ecto-HSP60 is recognized as a tumor-associated surface antigen and has been pursued as an immunotherapy target. This qualifies as cell-state-induced surfacing despite the dominant mitochondrial localization.",
+  "correct": true,
+  "prompt_tokens": 6955,
+  "completion_tokens": 208,
+  "n_web_searches": 0,
+  "cost_usd": 0.119925,
+  "latency_s": 3.919567957986146,
+  "error": null,
+  "raw_text": ""
+}

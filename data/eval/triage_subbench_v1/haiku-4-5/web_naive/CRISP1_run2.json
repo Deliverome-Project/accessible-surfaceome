@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "secreted_only",
-  "verdict_reasoning": "CRISP1 is a secreted glycoprotein without transmembrane domains, GPI anchoring, or covalent surface linkages. It transiently binds sperm and egg surfaces via reversible non-covalent interactions with putative receptors, but does not itself reach or anchor to the plasma membrane outer face via its own mechanism. The protein equilibrates between secreted and receptor-bound pools and is released during capacitation. No therapeutic modality would target CRISP1 as a cell-surface antigen; it is a secreted ligand only.",
+  "verdict_reasoning": "CRISP1 is a purely secreted glycoprotein with a signal peptide and no transmembrane domain, GPI anchor, or intrinsic membrane-anchoring motif. While it associates with sperm and egg plasma membranes during fertilization, these are reversible non-covalent interactions that remain in equilibrium with the secreted pool. The protein body lacks a stable physical link to the cell surface membrane\u2014it is recruited only by complementary binding to surface receptors on gametes, failing the recruitment test. Classification: secreted protein, not surface-accessible.",
   "correct": false,
-  "prompt_tokens": 39686,
-  "completion_tokens": 951,
+  "prompt_tokens": 88130,
+  "completion_tokens": 1115,
   "n_web_searches": 3,
-  "cost_usd": 0.07444100000000001,
-  "latency_s": 11.332501791999675,
+  "cost_usd": 0.123705,
+  "latency_s": 14.827432833029889,
   "error": null,
   "raw_text": ""
 }

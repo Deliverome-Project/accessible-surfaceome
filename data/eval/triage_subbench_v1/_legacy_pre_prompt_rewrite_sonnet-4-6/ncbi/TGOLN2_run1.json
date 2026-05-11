@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGN46/TGOLN2 is a type I single-pass TM protein that predominantly resides in the trans-Golgi network but continuously cycles between the TGN and early endosomes via the plasma membrane. Well-documented in the literature, TGN46 transiently appears at the cell surface before being retrieved by clathrin-mediated endocytosis back to the TGN. This TGN\u2192PM\u2192endosome\u2192TGN cycling means a minority but real pool of the protein is accessible from the extracellular face at steady state, making it at least contextually surface accessible via its own TM anchor during the PM phase of its trafficking cycle.",
+  "correct": true,
+  "prompt_tokens": 3819,
+  "completion_tokens": 173,
+  "n_web_searches": 0,
+  "cost_usd": 0.014052,
+  "latency_s": 4.958411875006277,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (ATP synthase subunit beta) is canonically a mitochondrial inner-membrane complex subunit facing the matrix, part of the F1 catalytic head of ATP synthase. However, it is well-documented as an ecto-ATP synthase on the outer leaflet of the plasma membrane in multiple cell types, particularly cancer cells, hepatocytes, endothelial cells, and immune cells. This cell-surface pool participates in extracellular ATP synthesis and serves as a receptor for angiostatin, apoA-I, and other ligands. Surface expression is context-dependent (cell-type and/or oncogenic/metabolic state), qualifying this as contextual/cell_state_induced rather than constitutive.",
+  "correct": true,
+  "prompt_tokens": 4926,
+  "completion_tokens": 203,
+  "n_web_searches": 0,
+  "cost_usd": 0.017823,
+  "latency_s": 5.408980874984991,
+  "error": null,
+  "raw_text": ""
+}

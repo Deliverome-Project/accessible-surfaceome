@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 (TMP21/p23) is a type I single-pass transmembrane protein of the p24 family. NCBI explicitly notes localization to both the plasma membrane and Golgi cisternae, indicating dual localization \u2014 it cycles between the Golgi/ER-Golgi intermediate compartment and the plasma membrane as part of COPI/COPII vesicular trafficking. The dominant compartment is the Golgi/endomembrane system, but a documented PM pool exists. Its outer-leaflet extracellular domain (GOLD domain) is accessible when at the PM. This fits dual_localization: a minority, cycling PM pool alongside a dominant endomembrane residence.",
+  "correct": true,
+  "prompt_tokens": 5632,
+  "completion_tokens": 192,
+  "n_web_searches": 0,
+  "cost_usd": 0.019776,
+  "latency_s": 5.260318833985366,
+  "error": null,
+  "raw_text": ""
+}

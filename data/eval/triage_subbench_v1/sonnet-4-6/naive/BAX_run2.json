@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "BAX is normally a cytoplasmic/cytosolic protein (and loosely associated with mitochondrial outer membrane in some cells). Upon apoptotic signaling, BAX undergoes conformational activation, translocates to the mitochondrial outer membrane, and inserts to form pores. Critically, during apoptosis BAX also reaches the plasma membrane outer leaflet \u2014 its N-terminal epitopes become exposed on the cell surface in apoptotic/stressed cells. This surface exposure is documented (e.g., anti-BAX antibodies detect surface BAX on apoptotic cells). Thus BAX reaches the outer PM face only under cell-state-specific (apoptotic/stressed) conditions.",
+  "verdict_reasoning": "BAX is canonically a cytosolic/cytoplasmic pro-apoptotic BCL-2 family protein that is predominantly soluble or loosely associated with the outer mitochondrial membrane at baseline. However, during apoptosis and immunogenic cell death (ICD), BAX undergoes conformational activation, oligomerizes, and inserts into the mitochondrial outer membrane and the plasma membrane outer leaflet, where its N-terminal domain (detected by conformation-specific antibodies like 6A7) becomes exposed on the cell surface. This apoptosis/ICD-induced PM translocation and exposure on the outer leaflet of dying/stressed tumor cells is well-documented. Thus BAX qualifies as contextual via cell_state_induced (apoptosis, ICD, and stress-induced surface display).",
   "correct": true,
-  "prompt_tokens": 1485,
-  "completion_tokens": 186,
+  "prompt_tokens": 4923,
+  "completion_tokens": 218,
   "n_web_searches": 0,
-  "cost_usd": 0.007245,
-  "latency_s": 5.193744458025321,
+  "cost_usd": 0.018039,
+  "latency_s": 7.663844124996103,
   "error": null,
   "raw_text": ""
 }

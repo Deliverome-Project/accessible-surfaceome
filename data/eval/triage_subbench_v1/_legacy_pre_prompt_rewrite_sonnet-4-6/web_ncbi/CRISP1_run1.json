@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "CRISP1 is a secreted protein produced by the epididymal epithelium with no transmembrane domain, GPI anchor, or other membrane-anchoring motif of its own. It is secreted into the epididymal lumen and associates with the sperm surface post-translationally. Critically, the dominant (protein D) form maintains only a reversible, equilibrium-based interaction with the sperm surface and is removed by a single wash. The minor (protein E) form is more tightly bound, but this is a post-translational non-covalent association with an exogenous cell surface rather than an intrinsic anchoring mechanism of the CRISP1 protein body. There is no TM domain, no GPI anchor, no covalent linkage to a TM scaffold, and no evidence that CRISP1 on a somatic cell surface is relevant to therapeutic targeting. This is secreted_only biology: CRISP1 reaches the sperm surface via reversible non-covalent recruitment, not via its own stable membrane-anchoring mechanism. The wash test fails for the dominant form.",
+  "correct": false,
+  "prompt_tokens": 21857,
+  "completion_tokens": 334,
+  "n_web_searches": 1,
+  "cost_usd": 0.080581,
+  "latency_s": 9.80240045802202,
+  "error": null,
+  "raw_text": ""
+}

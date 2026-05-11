@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B4GALT1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "B4GALT1 is a type II membrane protein resident in the Golgi apparatus. The N-terminal signal sequence serves as a transmembrane domain that anchors the protein to the Golgi membrane, not the plasma membrane. This is an endomembrane-resident glycosyltransferase involved in intracellular glycoconjugate biosynthesis. While classified as 'membrane-bound', the Golgi localization is the defining feature of its biology, making it inaccessible to extracellular binders without cell lysis.",
+  "correct": false,
+  "prompt_tokens": 4488,
+  "completion_tokens": 164,
+  "n_web_searches": 0,
+  "cost_usd": 0.005308,
+  "latency_s": 2.069129207986407,
+  "error": null,
+  "raw_text": ""
+}

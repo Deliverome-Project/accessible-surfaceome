@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "nuclear",
-  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family, which comprises sperm-specific fertilization proteins. The NCBI summary explicitly states the protein is located in the nucleus. No documented membrane anchor, GPI modification, or surface isoform is described. The IZUMO family are generally intracellular or sperm-surface proteins involved in gamete fusion, and IZUMO4 shows no evidence of plasma-membrane accessibility in somatic cells.",
+  "verdict_reasoning": "IZUMO4 is a nuclear-resident protein belonging to the IZUMO family. NCBI localization data explicitly place it in the nucleus with no documented membrane topology, GPI anchor, or surface display in any cell state. The IZUMO family are canonically germline/gamete-restricted proteins involved in fertilization; even germline members with known surface roles (e.g., IZUMO1 on sperm flagellum) have explicit membrane anchors documented in the literature. IZUMO4's nuclear localization and absence of any TM domain annotation or surface biology in canonical sources support a strictly intracellular verdict.",
   "correct": false,
-  "prompt_tokens": 3708,
-  "completion_tokens": 138,
+  "prompt_tokens": 5481,
+  "completion_tokens": 176,
   "n_web_searches": 0,
-  "cost_usd": 0.004398,
-  "latency_s": 1.70819204201689,
+  "cost_usd": 0.006361,
+  "latency_s": 2.60788045800291,
   "error": null,
   "raw_text": ""
 }

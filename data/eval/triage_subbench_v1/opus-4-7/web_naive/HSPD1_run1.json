@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPD1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1/HSP60 is canonically a mitochondrial matrix chaperonin, but extramitochondrial localization including plasma membrane display is documented, with levels increasing during inflammation and tumorigenesis. Immunogold EM on tumor cells shows HSP60 at the plasma-cell membrane, and surface-proteome profiling of cancer cells identifies it among surface chaperones. The cancer-cell ecto-pool reaches the outer leaflet under a non-baseline cell state, qualifying as cell_state_induced contextual surface accessibility rather than no.",
+  "correct": true,
+  "prompt_tokens": 39690,
+  "completion_tokens": 501,
+  "n_web_searches": 1,
+  "cost_usd": 0.642925,
+  "latency_s": 10.315458083990961,
+  "error": null,
+  "raw_text": ""
+}

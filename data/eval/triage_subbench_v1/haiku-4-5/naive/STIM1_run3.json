@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "STIM1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "STIM1 is an ER-resident transmembrane protein with a single-pass TM domain that anchors it to the ER membrane. Upon ER Ca2+ depletion, STIM1 undergoes a conformational change, oligomerizes, and translocates to ER-PM junctional contacts, where its cytoplasmic domains directly interact with and activate the PM-resident Orai1 Ca2+ channel. The N-terminal EF-hand and SAM domain (luminal/ER-facing) sense Ca2+ depletion; the C-terminal coiled-coil domains (cytoplasmic-facing) engage Orai1 at the PM. STIM1 reaches the outer face of the plasma membrane as a stable component of the ER-PM junction during store-operated calcium entry (SOCE). The protein is tethered to the PM via direct protein-protein interaction with Orai1 and possibly other junction scaffolds; it is not secreted, not merely transiently recruited, but rather a bona-fide participant in a membrane-anchored signaling complex that physically bridges the ER and PM.",
+  "correct": false,
+  "prompt_tokens": 4924,
+  "completion_tokens": 298,
+  "n_web_searches": 0,
+  "cost_usd": 0.006414,
+  "latency_s": 3.6865095000248402,
+  "error": null,
+  "raw_text": ""
+}

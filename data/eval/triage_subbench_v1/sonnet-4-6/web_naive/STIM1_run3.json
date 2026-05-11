@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "STIM1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a single-pass TM protein primarily resident in the ER membrane, where its N-terminal EF-hand/SAM domain faces the ER lumen and its C-terminus is cytoplasmic. However, a genuine plasma membrane pool (STIM1PM) with an extracellular N-terminus has been confirmed by N-linked glycosylation analysis, flow cytometry, and ELISA in multiple cell types including cancer cell lines. This PM-localized fraction is a true type I (and dual-topology) surface TM protein with an accessible extracellular domain. The ER-to-PM translocation during store-operated Ca2+ entry (SOCE) positions STIM1 at ER-PM junctions on the cytoplasmic face, which does not contribute to outer-leaflet accessibility. The documented minor PM-resident pool in select cell types qualifies as dual_localization/contextual.",
+  "correct": true,
+  "prompt_tokens": 27456,
+  "completion_tokens": 706,
+  "n_web_searches": 1,
+  "cost_usd": 0.102958,
+  "latency_s": 16.333518583036494,
+  "error": null,
+  "raw_text": ""
+}

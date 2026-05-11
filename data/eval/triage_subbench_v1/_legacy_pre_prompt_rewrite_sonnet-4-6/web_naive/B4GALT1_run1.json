@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B4GALT1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "B4GALT1 is a canonical type II transmembrane glycosyltransferase whose primary and dominant localization is the trans-Golgi apparatus. Its N-terminal cytoplasmic tail and TM domain anchor it to the Golgi membrane, with the catalytic domain facing the Golgi lumen \u2014 not the extracellular face of the plasma membrane. A minor PM pool has been documented in specific contexts (e.g., mouse sperm-egg recognition), but this is not established as stable, baseline outer-leaflet surface localization in human cells. The soluble form arises from proteolytic shedding in the stem region and is secreted \u2014 it does not remain anchored to the plasma membrane outer leaflet. No therapeutic programs targeting it as a surface-accessible antigen are documented. Overall, the protein body is not accessibly presented on the extracellular face of the plasma membrane under baseline conditions.",
+  "correct": false,
+  "prompt_tokens": 21047,
+  "completion_tokens": 1105,
+  "n_web_searches": 1,
+  "cost_usd": 0.08971599999999999,
+  "latency_s": 23.42323979199864,
+  "error": null,
+  "raw_text": ""
+}

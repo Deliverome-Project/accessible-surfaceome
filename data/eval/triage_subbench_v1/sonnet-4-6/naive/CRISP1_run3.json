@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "CRISP1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "CRISP1 (Cysteine-Rich Secretory Protein 1) is a secreted protein expressed predominantly in the epididymis and found on the sperm surface, where it plays roles in sperm-egg binding and fertilization. It lacks a transmembrane domain and is secreted, but on mature spermatozoa it binds stably to the sperm plasma membrane outer leaflet (adsorbed onto the sperm head/tail surface during epididymal transit in a wash-resistant manner). Expression is restricted to the male reproductive tract / spermatozoa \u2014 a narrow germline/reproductive lineage. This qualifies as contextual/tissue_restricted_surface: the protein reaches the outer leaflet of the PM but only in this specialized reproductive cell type.",
+  "correct": true,
+  "prompt_tokens": 4925,
+  "completion_tokens": 210,
+  "n_web_searches": 0,
+  "cost_usd": 0.017925,
+  "latency_s": 5.633358749968465,
+  "error": null,
+  "raw_text": ""
+}

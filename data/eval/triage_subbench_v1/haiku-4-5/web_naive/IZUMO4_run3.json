@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "IZUMO4 is a soluble, non-transmembrane protein that localizes to the intra-acrosomal compartment and cytoplasm. It lacks any intrinsic mechanism (TM domain, GPI anchor, outer-leaflet lipidation) for surface anchoring. Although it participates in sperm-egg fusion biology and protein complexes, these functions do not establish surface accessibility of the protein body itself from the extracellular face. The protein is intracellular at baseline and does not reach the outer leaflet via its own mechanism.",
+  "correct": false,
+  "prompt_tokens": 58413,
+  "completion_tokens": 868,
+  "n_web_searches": 3,
+  "cost_usd": 0.092753,
+  "latency_s": 11.533876499976031,
+  "error": null,
+  "raw_text": ""
+}

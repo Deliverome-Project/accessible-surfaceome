@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B is primarily a mitochondrial inner-membrane F1-catalytic-core protein; however, documented evidence shows translocation to the cell surface under specific non-baseline conditions: (1) tumor-like acidic and hypoxic microenvironments, (2) cancer cells (multiple cancer types), (3) endothelial cells under hemodynamic stress or hypercholesterolemia. Translocation is stress/state-induced, not baseline. The protein reaches the outer leaflet via mitochondrial-to-surface translocation in response to oncogenic transformation and metabolic stress. Cell surface ATP5B engages in multiple biological processes (viral entry, T-cell recognition, extracellular ATP generation, metastasis) and is recognized as a therapeutic target in cancer. This qualifies as cell_state_induced contextual surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 62972,
+  "completion_tokens": 1470,
+  "n_web_searches": 3,
+  "cost_usd": 0.100322,
+  "latency_s": 17.5997982089757,
+  "error": null,
+  "raw_text": ""
+}

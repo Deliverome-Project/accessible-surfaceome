@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "stable_surface_attachment",
-  "verdict_reasoning": "TGFB1 is secreted but exists in a large latent complex (LLC) where the LAP prodomain remains disulfide-bonded to the mature dimer and the complex is covalently tethered to LTBP proteins, which in turn can be crosslinked to ECM or to cell-surface TM proteins (LRRC32/GARP, LRRC33/NRROS). On certain cell types (Tregs, platelets, macrophages), GARP or NRROS covalently anchors the latent TGF-\u03b21 complex to the plasma membrane outer face in a wash-resistant manner. This constitutes stable surface attachment via a TM scaffold, making the protein body accessible from the extracellular face in those contexts.",
+  "verdict_reasoning": "TGFB1 is secreted but exists in a large latent complex (LLC) where LAP and the mature dimer are non-covalently and disulfide-tethered to LTBP proteins, which in turn are covalently cross-linked to extracellular matrix or can be tethered to cell-surface integrin/receptor scaffolds (e.g., LRRC32/GARP, LRRC33/NRROS) via disulfide bonds \u2014 a wash-resistant, stable cell-surface association on immune cells and other cell types. This is a documented stable_surface_attachment mechanism rather than purely secreted-only, qualifying as contextual surface accessibility.",
   "correct": true,
-  "prompt_tokens": 3867,
-  "completion_tokens": 213,
+  "prompt_tokens": 5640,
+  "completion_tokens": 192,
   "n_web_searches": 0,
-  "cost_usd": 0.014796,
-  "latency_s": 6.331665957986843,
+  "cost_usd": 0.0198,
+  "latency_s": 5.446579749986995,
   "error": null,
   "raw_text": ""
 }

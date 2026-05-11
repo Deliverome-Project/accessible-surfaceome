@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "EREG",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "EREG is synthesized as a type I transmembrane pro-form (signal peptide, EGF-like ectodomain, TM domain, cytoplasmic tail) that is trafficked to the cell surface where it is accessible from the extracellular face via its own TM anchor. ADAM17-mediated ectodomain shedding then releases the soluble 46 aa mature peptide. The surface pro-form is a documented, real cell-surface state (exploited for juxtacrine signaling), but shedding is constitutive and rapid, making the dominant circulating/functional form the cleaved secreted peptide. Surface accessibility is therefore real but transient/context-dependent rather than stable baseline.",
+  "correct": false,
+  "prompt_tokens": 20591,
+  "completion_tokens": 570,
+  "n_web_searches": 1,
+  "cost_usd": 0.08032299999999999,
+  "latency_s": 13.564414874999784,
+  "error": null,
+  "raw_text": ""
+}

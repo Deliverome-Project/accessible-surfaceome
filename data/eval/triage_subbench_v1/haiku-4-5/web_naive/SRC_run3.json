@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "SRC",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC is canonically myristoylated and inner-leaflet-anchored at the plasma membrane at baseline. However, recent evidence (March 2026 Science) demonstrates that SRC is noncanonically translocated to the outer cell surface in cancer cells via autophagolysosomal exocytosis, creating an ecto-form (eSrc) detectable on bladder, colorectal, breast, pancreatic and other tumor cells. This cancer-specific surface pool is validated in patient tumor samples and is targetable by bispecific antibodies, ADCs, and radioligand therapeutics. This qualifies as cell_state_induced surface display under oncogenic transformation.",
+  "correct": true,
+  "prompt_tokens": 58459,
+  "completion_tokens": 1065,
+  "n_web_searches": 3,
+  "cost_usd": 0.09378399999999999,
+  "latency_s": 12.79143445804948,
+  "error": null,
+  "raw_text": ""
+}

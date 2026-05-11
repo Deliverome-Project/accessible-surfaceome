@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "LYN",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase canonically localized to the cytoplasm and associated with the inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. While baseline localization is cytosolic/inner-leaflet, LYN has documented surface display in specialized contexts: (1) B-cell and mast-cell activation-induced translocation to the outer leaflet during receptor signaling and degranulation; (2) cancer-cell ecto-kinase display \u2014 oncogenic transformation relocates LYN and other Src-family kinases to the outer face where they function as ecto-kinases; (3) immunogenic cell-death-related externalization. These non-baseline surface pools qualify as contextual surface accessibility via cell-state and activation-induced mechanisms.",
+  "correct": true,
+  "prompt_tokens": 5552,
+  "completion_tokens": 223,
+  "n_web_searches": 0,
+  "cost_usd": 0.006667,
+  "latency_s": 8.668187999981456,
+  "error": null,
+  "raw_text": ""
+}

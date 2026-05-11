@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (ATP5B, beta subunit of F1Fo ATP synthase / Complex V) is canonically embedded in the mitochondrial inner membrane with F1 facing the matrix. However, ectopic ATP synthase (ecto-ATP synthase / ecto-ATP5B) is well-documented on the plasma membrane of cancer cells (breast, prostate, lung, HCC, leukemia), vascular endothelial cells, hepatocytes, adipocytes, and keratinocytes, with the F1 catalytic domain (including beta) facing extracellular space. Surface display validated by flow cytometry on intact cells, confocal IF on non-permeabilized cells, and aptamer/antibody targeting (Apt63, angiostatin, anti-beta mAbs). Translocation occurs via DRP1/KIF5B microtubule trafficking and mitochondria-PM membrane fusion, enhanced under tumor stress (hypoxia, acidosis, starvation). Actively pursued as cancer therapeutic target.",
+  "correct": true,
+  "prompt_tokens": 39016,
+  "completion_tokens": 883,
+  "n_web_searches": 1,
+  "cost_usd": 0.661465,
+  "latency_s": 14.10158566600876,
+  "error": null,
+  "raw_text": ""
+}

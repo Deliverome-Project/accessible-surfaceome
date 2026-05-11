@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "BAX is canonically a cytosolic/mitochondrial outer-membrane pro-apoptotic BCL2-family protein. Under baseline conditions it resides predominantly in the cytosol or loosely associates with mitochondrial outer membrane. During apoptosis induction, BAX undergoes conformational activation, oligomerizes, and inserts into the mitochondrial outer membrane and also translocates to the plasma membrane outer leaflet of dying/apoptotic cells, where it has been documented on the cell surface. This cell-death-induced PM exposure qualifies as contextual surface accessibility under the cell_state_induced (apoptosis/ICD) category.",
+  "verdict_reasoning": "BAX is canonically a cytosolic/mitochondrial-outer-membrane pro-apoptotic protein. However, during apoptosis and immunogenic cell death, BAX translocates from the cytosol to the mitochondrial outer membrane and, critically, has documented exposure on the outer leaflet of the plasma membrane of dying/apoptotic cells. This cell-death-induced PM translocation qualifies as contextual surface accessibility under the cell_state_induced bucket. Multiple studies have detected BAX on the extracellular face of apoptotic tumor cells, enabling antibody-based targeting approaches.",
   "correct": true,
-  "prompt_tokens": 4994,
-  "completion_tokens": 177,
+  "prompt_tokens": 5602,
+  "completion_tokens": 165,
   "n_web_searches": 0,
-  "cost_usd": 0.017637,
-  "latency_s": 5.229694582987577,
+  "cost_usd": 0.019281,
+  "latency_s": 4.466226999997161,
   "error": null,
   "raw_text": ""
 }

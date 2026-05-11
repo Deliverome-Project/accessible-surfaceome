@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "ATP5F1B (ATP synthase F1 beta subunit) is canonically a soluble subunit of the mitochondrial F1 catalytic core, facing the matrix. However, extensive literature documents its ectopic presence on the outer plasma membrane surface in multiple normal cell types (hepatocytes, endothelial cells, adipocytes, keratinocytes, cardiomyocytes) and in several cancer types (NSCLC, prostate cancer, leukemia). The whole ATP synthase complex is transported to the cell surface via mitochondrial membrane fusion, anchoring the F1 domain extracellularly. At the surface it functions as a receptor (e.g., apoA-I/HDL receptor) and produces extracellular ATP. Surface expression is upregulated in malignant/activated cell states. Because this surface localization is cell-type- and state-dependent rather than universal, and the dominant baseline compartment remains mitochondrial, the verdict is contextual (cell_state_induced / tissue-restricted surface, with the F1 domain oriented extracellularly).",
+  "verdict_reasoning": "ATP5F1B (ATP5B) is canonically the beta subunit of the F1 catalytic core on the inner mitochondrial membrane. However, extensive peer-reviewed evidence documents its ectopic translocation to the outer leaflet of the plasma membrane \u2014 termed 'ecto-ATP synthase' (eATP synthase) \u2014 in tumor cells (breast, prostate, AML, liver, lung carcinoma) and some normal cell types (endothelial cells, hepatocytes). The intact complex is transported from mitochondria to the cell surface via microtubule-dependent membrane fusion. Aptamers and monoclonal antibodies targeting ecto-ATP5B bind intact cells and exert functional/cytotoxic effects, confirming outer-leaflet accessibility. This surface pool is restricted to specific oncogenic/cell-state contexts and certain normal cell types, not a baseline feature of most somatic cells.",
   "correct": true,
-  "prompt_tokens": 20808,
-  "completion_tokens": 333,
+  "prompt_tokens": 25254,
+  "completion_tokens": 402,
   "n_web_searches": 1,
-  "cost_usd": 0.077419,
-  "latency_s": 9.553751333034597,
+  "cost_usd": 0.091792,
+  "latency_s": 11.29606933298055,
   "error": null,
   "raw_text": ""
 }

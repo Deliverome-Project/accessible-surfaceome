@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA1A",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A encodes the inducible cytosolic HSP70 chaperone, canonically intracellular. However, it is well-documented that HSP70 (HSP72) translocates to the outer leaflet of the plasma membrane on tumor cells, stressed cells, and apoptotic/necrotic cells. Cell-surface HSP70 on cancer cells is a recognized cancer-restricted ecto-form targeted by antibodies and NK-cell-based therapies. Heat-shock, hypoxia, and other stress conditions also drive PM display. The protein body thus reaches the extracellular face in a cell-state-dependent manner qualifying as contextual/cell_state_induced, not constitutive surface biology.",
+  "correct": true,
+  "prompt_tokens": 5658,
+  "completion_tokens": 197,
+  "n_web_searches": 0,
+  "cost_usd": 0.019929,
+  "latency_s": 6.492380500014406,
+  "error": null,
+  "raw_text": ""
+}

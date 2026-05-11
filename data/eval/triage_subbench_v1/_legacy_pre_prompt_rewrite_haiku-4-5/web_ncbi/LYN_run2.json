@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "LYN",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase that is stably anchored to the cytoplasmic face of the plasma membrane via N-terminal myristoylation (Gly2) and palmitoylation (Cys3). These lipid modifications are necessary and sufficient for plasma membrane association. LYN localizes to lipid rafts and associates with BCR, CD19, CD40 and Fc\u03b5RI on the cell surface. While it functions on the cytoplasmic face of the PM, it reaches that location via its own mechanism (lipid anchoring) rather than through transient recruitment, making it surface-accessible by the cardinal rule.",
+  "correct": false,
+  "prompt_tokens": 38961,
+  "completion_tokens": 841,
+  "n_web_searches": 2,
+  "cost_usd": 0.063166,
+  "latency_s": 9.793273249990307,
+  "error": null,
+  "raw_text": ""
+}

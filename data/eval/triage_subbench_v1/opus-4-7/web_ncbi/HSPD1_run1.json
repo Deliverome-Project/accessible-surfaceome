@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPD1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSP60/HSPD1 is canonically a mitochondrial matrix chaperonin essential for protein folding, but is well-documented as a cell-surface 'ecto-HSP60' on stressed, apoptotic, infected, and tumor cells, where it acts as a danger signal engaging innate immune receptors. Tumor-cell surface HSP60 has been pursued as a therapeutic/diagnostic target. This matches cell_state_induced (stress/oncogenic/cell-death surface translocation of a nominally intracellular chaperone).",
+  "correct": true,
+  "prompt_tokens": 10849,
+  "completion_tokens": 220,
+  "n_web_searches": 0,
+  "cost_usd": 0.179235,
+  "latency_s": 9.169282875023782,
+  "error": null,
+  "raw_text": ""
+}

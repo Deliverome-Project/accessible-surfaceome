@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is annotated as nuclear-resident with no TM domain, GPI anchor, or membrane-anchoring mechanism. Unlike IZUMO1/2/3 which are sperm-surface or membrane-associated proteins, IZUMO4 lacks a canonical surface-anchoring feature and is placed in the nucleus by Alliance of Genome Resources. No documented cancer ecto-display, cell-death-induced surfacing, or developmental surface pool is established for this family member. No therapeutic surface-targeting program is known for IZUMO4. Nuclear localization with no membrane-anchoring mechanism is the dominant biology.",
+  "correct": false,
+  "prompt_tokens": 5482,
+  "completion_tokens": 158,
+  "n_web_searches": 0,
+  "cost_usd": 0.018816,
+  "latency_s": 4.692660333006643,
+  "error": null,
+  "raw_text": ""
+}

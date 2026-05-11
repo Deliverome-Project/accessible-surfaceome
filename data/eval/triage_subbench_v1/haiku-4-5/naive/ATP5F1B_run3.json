@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "ATP5F1B (ATP synthase F1 subunit beta) is a core catalytic subunit of the F1 domain of ATP synthase, assembled on the inner mitochondrial membrane facing the matrix. It is a soluble protein within the F1 complex, not membrane-integrated and not accessible from the extracellular face. The F1 domain sits on the matrix side of the inner membrane; the protein has no transmembrane domain, GPI anchor, or outer-leaflet lipidation. While ATP synthase is an essential enzyme and ATP5F1B is a structured protein involved in proton-driven ATP synthesis, it does not reach the outer face of the plasma membrane via any mechanism\u2014it is confined to the mitochondrial matrix-side compartment. No cell-state, tissue-restricted, or stress-induced translocation to the PM has been documented.",
+  "correct": false,
+  "prompt_tokens": 4925,
+  "completion_tokens": 228,
+  "n_web_searches": 0,
+  "cost_usd": 0.006065,
+  "latency_s": 2.8310370830004103,
+  "error": null,
+  "raw_text": ""
+}

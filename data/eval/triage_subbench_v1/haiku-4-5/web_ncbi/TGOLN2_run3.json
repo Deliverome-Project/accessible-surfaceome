@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGOLN2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGOLN2/TGN46 is a single-pass type I transmembrane protein with constitutive cycling between the trans-Golgi network and the plasma membrane. While its steady-state localization is the TGN, it cycles to the PM via CARTS (PKD-dependent carriers) and returns via endosomes. This documented cycling creates a minority but real and measurable PM pool via its own TM anchor mechanism. The protein has its own membrane topology and active vesicular trafficking route to the surface, not transient non-covalent recruitment. This satisfies the dual_localization contextual criterion: active vesicular cycling between an intracellular compartment (TGN) and the PM, with the protein anchored via its own TM domain during the surface phase.",
+  "correct": true,
+  "prompt_tokens": 40779,
+  "completion_tokens": 874,
+  "n_web_searches": 2,
+  "cost_usd": 0.065149,
+  "latency_s": 10.738338084018324,
+  "error": null,
+  "raw_text": ""
+}

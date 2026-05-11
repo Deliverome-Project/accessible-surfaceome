@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": null,
+  "predicted_reason": null,
+  "verdict_reasoning": "",
+  "correct": false,
+  "prompt_tokens": 39171,
+  "completion_tokens": 602,
+  "n_web_searches": 1,
+  "cost_usd": 0.642715,
+  "latency_s": 12.252738125040196,
+  "error": "could not parse JSON from response",
+  "raw_text": "TGOLN2 encodes TGN46 (also known as TGN38 in rodents), a well-known trans-Golgi network marker. It's a single-pass type I TM protein that cycles between the TGN and the plasma membrane, with the majority at the TGN at steady state but a documented minority surface pool used in trafficking studies.\nStrong evidence: TGOLN2/TGN46 is a type I single-pass TM protein with steady-state TGN localization but documented rapid cycling between TGN and plasma membrane via CARTS carriers, returning via endosomes. This fits `contextual` / `dual_localization` cleanly \u2014 the protein has its own TM anchor and a documented (minority) PM pool from active vesicular cycling.\n\n{\n  \"verdict\": \"contextual\",\n  \"verdict_reasoning\": \"TGOLN2 encodes TGN46, a type I single-pass transmembrane glycoprotein with steady-state localization to the trans-Golgi network. <cite index=\"1-10\">Despite TGN steady-state localization, TGN38/TGN46 rapidly cycles between the TGN and the plasma membrane, exiting the TGN in CARTS carri"
+}

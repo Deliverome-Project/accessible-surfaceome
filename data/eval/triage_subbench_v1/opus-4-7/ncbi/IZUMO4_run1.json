@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "tissue_restricted_surface",
-  "verdict_reasoning": "IZUMO4 is a member of the IZUMO sperm-egg fusion family. While it lacks a TM domain itself and NCBI notes nuclear localization, IZUMO4 forms disulfide-linked complexes with IZUMO1 (a TM sperm surface protein) on the sperm plasma membrane, where it participates in the fertilization complex. This stable complex partnership co-traffics it to the sperm surface in this specific cell type.",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family, sperm-surface immunoglobulin-like proteins involved in gamete fusion. IZUMO4 lacks a TM anchor itself but forms a stable complex with other IZUMO members and is displayed on the sperm surface during fertilization \u2014 a narrow germline-restricted surface context. Despite the NCBI nuclear annotation, the IZUMO family biology and disulfide-linked complex partnership with TM IZUMO proteins on sperm support contextual surface accessibility restricted to the gamete lineage.",
   "correct": true,
-  "prompt_tokens": 5337,
-  "completion_tokens": 189,
+  "prompt_tokens": 7746,
+  "completion_tokens": 230,
   "n_web_searches": 0,
-  "cost_usd": 0.09423,
-  "latency_s": 3.7175757079967298,
+  "cost_usd": 0.13344,
+  "latency_s": 4.4239216659916565,
   "error": null,
   "raw_text": ""
 }

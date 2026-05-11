@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "CRISP1 is a secreted protein that achieves stable, wash-resistant association with the sperm plasma membrane surface through its own binding mechanism. The protein is accessible from the extracellular face and serves as a target for antibodies and immune surveillance, as demonstrated by contraceptive immunization studies. Two binding populations exist\u2014loosely and tightly bound\u2014with the tight form persisting in the female reproductive tract. This represents stable surface accessibility via its own mechanism, meeting the criteria for 'yes'.",
+  "correct": false,
+  "prompt_tokens": 42874,
+  "completion_tokens": 1050,
+  "n_web_searches": 3,
+  "cost_usd": 0.078124,
+  "latency_s": 11.781233667046763,
+  "error": null,
+  "raw_text": ""
+}

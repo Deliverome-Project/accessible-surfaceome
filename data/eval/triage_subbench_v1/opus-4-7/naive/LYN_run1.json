@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase, canonically anchored to the inner leaflet of the PM via N-terminal myristoylation/palmitoylation \u2014 intracellular by baseline. However, LYN has documented ecto-display on the surface of tumor cells (notably hematologic malignancies and some solid tumors), part of the broader 'ecto-kinase' phenomenon where Src-family kinases appear on the outer leaflet of cancer cells. This cancer-cell-restricted ecto-pool qualifies as contextual surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 6953,
+  "completion_tokens": 222,
+  "n_web_searches": 0,
+  "cost_usd": 0.120945,
+  "latency_s": 4.674652124987915,
+  "error": null,
+  "raw_text": ""
+}

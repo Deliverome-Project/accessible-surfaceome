@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "CRISP1 is a secreted protein that lacks an intrinsic transmembrane domain or GPI anchor but becomes stably surface-associated through binding to sperm plasma membrane proteins (PMCA4b and others) during epididymal maturation. A strongly bound population behaves as an integral membrane protein. The protein reaches the outer leaflet via its own mechanism\u2014stable, wash-resistant anchoring to TM partner proteins\u2014not transient recruitment.",
+  "correct": true,
+  "prompt_tokens": 29255,
+  "completion_tokens": 815,
+  "n_web_searches": 2,
+  "cost_usd": 0.05333,
+  "latency_s": 13.251434082980268,
+  "error": null,
+  "raw_text": ""
+}

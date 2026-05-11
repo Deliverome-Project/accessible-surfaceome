@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "stable_surface_attachment",
-  "verdict_reasoning": "TGFB1 is a secreted cytokine with no intrinsic transmembrane domain. It lacks a membrane anchor of its own. However, the latent TGF-\u03b21 complex (LAP-TGF-\u03b21) is stably presented on the extracellular face of the plasma membrane in specific cell types \u2014 on regulatory T cells via GARP (LRRC32) and on macrophages/microglia via NRROS (LRRC33), both transmembrane proteins. This surface tethering is wash-resistant and non-covalent but stable, exposing the LAP and mature TGF-\u03b21 domains to the outer leaflet. Integrin-mediated activation of this surface pool is well characterized. Recent therapeutic mAbs (Cell Reports, 2025) explicitly target membrane-bound latent TGF-\u03b21 on Tregs, confirming surface accessibility. The dominant form is secreted/ECM-deposited, making surface presentation cell-state and cell-type restricted rather than universal.",
+  "verdict_reasoning": "TGFB1 is a secreted growth factor (no TM domain) whose dominant fate is ECM deposition as a large latent complex (LLC) via LTBP. However, on activated Tregs, stimulated B cells, platelets, and macrophages, the latent TGF-\u03b21 LAP domain forms covalent disulfide bonds with the TM protein GARP (LRRC32) or LRRC33/NRROS, stably anchoring it to the outer leaflet. This disulfide tethering to a TM scaffold is wash-resistant and cell-state dependent (immune activation), qualifying as stable_surface_attachment. The ECM-deposited pool is secreted_only, but the covalent GARP/LRRC33 surface pool is the biologically relevant surface story for immune-oncology targeting.",
   "correct": true,
-  "prompt_tokens": 31862,
-  "completion_tokens": 959,
+  "prompt_tokens": 42539,
+  "completion_tokens": 1073,
   "n_web_searches": 2,
-  "cost_usd": 0.129971,
-  "latency_s": 20.691150165977888,
+  "cost_usd": 0.163712,
+  "latency_s": 22.18000154098263,
   "error": null,
   "raw_text": ""
 }

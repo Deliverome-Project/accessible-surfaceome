@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA5",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (BiP/GRP78) is canonically ER-luminal, but has documented cell-state-induced surface display in cancer and stress contexts. Tumor cells and stressed cells externalize HSPA5 to the plasma membrane outer leaflet, where it functions as an immunogenic ecto-chaperone and immunosuppressive factor. Cancer-directed immunotherapies and monoclonal antibodies target surface HSPA5 on tumor cells. This non-baseline ecto-pool qualifies as contextual via cell_state_induced (oncogenic transformation and ER stress-related externalization).",
+  "correct": true,
+  "prompt_tokens": 5634,
+  "completion_tokens": 175,
+  "n_web_searches": 0,
+  "cost_usd": 0.006509,
+  "latency_s": 2.6140575000317767,
+  "error": null,
+  "raw_text": ""
+}

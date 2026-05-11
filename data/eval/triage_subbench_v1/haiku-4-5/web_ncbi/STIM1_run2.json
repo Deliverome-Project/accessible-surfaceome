@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "STIM1 is primarily an ER-resident type I transmembrane protein, but documented evidence shows a stable fraction localizes to the plasma membrane in some cell types. This PM-localized isoform (STIM1PM) has its own transmembrane domain and is stabilized at the surface via N-glycosylation, forming both type I and type II topologies. The protein reaches the outer face via its intrinsic TM anchor and maintains stable surface presence with functional roles in calcium signaling. This qualifies as dual_localization with documented cell-type-dependent or condition-dependent surface expression via the protein's own mechanism.",
+  "verdict_reasoning": "STIM1 is a type I single-pass TM protein primarily resident in the ER, but translocates to the plasma membrane upon ER Ca\u00b2\u207a store depletion and during mitosis. The protein reaches the outer PM face via its own TM domain and forms a stable complex with Orai1 at the PM to activate store-operated Ca\u00b2\u207a entry. This conditional, stimulus-induced surface display qualifies as dual_localization.",
   "correct": true,
-  "prompt_tokens": 37100,
-  "completion_tokens": 790,
+  "prompt_tokens": 44447,
+  "completion_tokens": 999,
   "n_web_searches": 2,
-  "cost_usd": 0.06105000000000001,
-  "latency_s": 13.055618374957703,
+  "cost_usd": 0.069442,
+  "latency_s": 11.665858416992705,
   "error": null,
   "raw_text": ""
 }

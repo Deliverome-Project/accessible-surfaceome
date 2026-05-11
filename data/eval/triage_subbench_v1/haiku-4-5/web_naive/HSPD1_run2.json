@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPD1 is a mitochondrial chaperonin with baseline localization in the mitochondrial matrix. Under condition-specific circumstances\u2014particularly inflammatory states and tumorigenesis\u2014HSPD1 translocates to the cytoplasm and accumulates at the plasma membrane and extracellular space. While plasma membrane presence is documented, it is inducible rather than constitutive, and HSPD1 lacks an intrinsic membrane anchor (TM domain, GPI anchor, or stable lipidation). The protein reaches the surface through mobilization from mitochondria or secretion during cellular stress, making surface accessibility conditional rather than baseline. This qualifies as contextual surface biology.",
+  "verdict_reasoning": "HSPD1 is canonically mitochondrial/cytoplasmic but exhibits documented stress-induced and cancer-cell-induced surface display. Heat-stressed endothelial cells, cancer cells (actively releasing via exosomes), and capacitated sperm all display HSP60 on the outer leaflet. The protein reaches the PM by its own mechanism (active exocytosis). This is cell_state_induced surface accessibility: primarily oncogenic transformation (tumor cells) and acute stress (heat, hypoxia, infection-context).",
   "correct": true,
-  "prompt_tokens": 43315,
-  "completion_tokens": 1112,
+  "prompt_tokens": 60305,
+  "completion_tokens": 1153,
   "n_web_searches": 3,
-  "cost_usd": 0.078875,
-  "latency_s": 12.411750333965756,
+  "cost_usd": 0.09607,
+  "latency_s": 14.698953834013082,
   "error": null,
   "raw_text": ""
 }

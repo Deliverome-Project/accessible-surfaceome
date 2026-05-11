@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA5 (BiP) is a canonical ER-lumenal HSP70 chaperone, primarily resident in the endoplasmic reticulum. However, it has documented surface accessibility under cellular stress conditions: (1) during ER stress and the unfolded protein response, HSPA5 can be recruited to the plasma membrane as part of stress-induced immune signaling; (2) in apoptosis and immunogenic cell death, HSPA5 is externalized and exposed on the cell surface where it can be recognized by immune receptors; (3) in some cancer cells, HSPA5 is present on the surface and serves as a tumor-associated antigen. These are documented, reproducible states rather than secretion-mediated transient binding. The protein reaches the outer face via its own mechanism during these stress contexts, not merely as cargo in secretory vesicles or through reversible ECM/receptor binding.",
+  "verdict_reasoning": "HSPA5/BiP is a canonical ER-lumen chaperone with a KDEL retention signal, resident intracellularly at baseline. However, it undergoes well-documented surface translocation in cancer cells and under cellular stress (ER stress, hypoxia, heat shock). Ecto-BiP is recognized as an immunogenic surface antigen on tumor cells and is the target of cell-surface-directed therapeutic programs (antibodies, CAR-T). This cell-state-induced ecto-presentation qualifies as contextual surface accessibility.",
   "correct": true,
-  "prompt_tokens": 1486,
-  "completion_tokens": 245,
+  "prompt_tokens": 4924,
+  "completion_tokens": 669,
   "n_web_searches": 0,
-  "cost_usd": 0.002711,
-  "latency_s": 3.329393375024665,
+  "cost_usd": 0.008269,
+  "latency_s": 7.599611957964953,
   "error": null,
   "raw_text": ""
 }

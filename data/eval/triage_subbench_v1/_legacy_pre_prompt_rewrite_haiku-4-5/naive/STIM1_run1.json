@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "STIM1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is an ER-resident Ca\u00b2\u207a sensor with a single transmembrane domain in the ER membrane. Under resting conditions it is sequestered in the ER. Upon ER Ca\u00b2\u207a depletion, STIM1 oligomerizes and translocates to ER-plasma membrane (PM) contact sites (ER-PM junctions), where its C-terminal region interacts with and activates PM-resident Orai1 channels. At these junctions, STIM1's extracellular-like luminal domain faces the ER lumen, but its cytoplasmic tail reaches toward the PM inner leaflet to engage Orai1. STIM1 itself does not insert into or anchor to the PM via its own TM domain\u2014rather, it remains tethered at ER-PM apposition zones. The protein transiently associates with the PM microenvironment as part of store-operated Ca\u00b2\u207a entry (SOCE) signaling but does not stably integrate into or cross the PM outer leaflet. Thus STIM1 reaches a surface-proximal state only under activated / Ca\u00b2\u207a-depleted conditions and only at specialized contact sites, not as a stable outer-leaflet resident.",
+  "correct": true,
+  "prompt_tokens": 1486,
+  "completion_tokens": 326,
+  "n_web_searches": 0,
+  "cost_usd": 0.003116,
+  "latency_s": 3.7307822079746984,
+  "error": null,
+  "raw_text": ""
+}

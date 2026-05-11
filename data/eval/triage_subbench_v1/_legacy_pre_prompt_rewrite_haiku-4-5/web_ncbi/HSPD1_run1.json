@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPD1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "HSPD1 encodes HSP60, a mitochondrial chaperonin protein. The NCBI summary explicitly identifies it as a mitochondrial protein with functions in mitochondrial protein folding and assembly. HGNC gene-group memberships confirm mitochondrial nucleoid association. While the summary mentions a potential role as a signaling molecule in innate immunity, this does not establish surface accessibility of the protein body itself. The protein is localized to the mitochondrial matrix/inner compartment, not the plasma membrane. No membrane-anchored isoform, GPI anchor, or surface trafficking mechanism is documented. The protein does not reach the outer leaflet of the plasma membrane by its own mechanism.",
+  "correct": false,
+  "prompt_tokens": 4441,
+  "completion_tokens": 192,
+  "n_web_searches": 0,
+  "cost_usd": 0.005401,
+  "latency_s": 2.8379192920401692,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B4GALT1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "B4GALT1 (beta-1,4-galactosyltransferase 1) is a type II single-pass transmembrane Golgi-resident glycosyltransferase. Its canonical localization is the trans-Golgi apparatus where it glycosylates N- and O-glycans. However, B4GALT1 has a well-documented cell-surface pool on numerous cell types, particularly on the outer leaflet of the plasma membrane where it participates in cell adhesion and lactosylceramide synthesis. This surface pool is not the dominant compartment (most enzyme resides in Golgi), and a soluble secreted form also exists. The surface display depends on cell type and state, qualifying as dual_localization/contextual rather than yes.",
+  "correct": true,
+  "prompt_tokens": 4927,
+  "completion_tokens": 215,
+  "n_web_searches": 0,
+  "cost_usd": 0.018006,
+  "latency_s": 5.119610082998406,
+  "error": null,
+  "raw_text": ""
+}

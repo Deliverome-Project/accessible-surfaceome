@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGOLN2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 is an integral transmembrane protein resident in the trans-Golgi network (TGN) and late-endosomal system. Its canonical localization is to endomembrane compartments, not the plasma membrane. No documented PM pool, ectodomain shedding, surface-directed therapeutic engagement, covalent surface anchoring, or cell-state\u2013induced surfacing has been reported. It is not a stable partner of PM-anchored proteins. The protein remains endomembrane-resident under baseline and non-baseline conditions.",
+  "correct": false,
+  "prompt_tokens": 4925,
+  "completion_tokens": 627,
+  "n_web_searches": 0,
+  "cost_usd": 0.00806,
+  "latency_s": 6.567107665992808,
+  "error": null,
+  "raw_text": ""
+}

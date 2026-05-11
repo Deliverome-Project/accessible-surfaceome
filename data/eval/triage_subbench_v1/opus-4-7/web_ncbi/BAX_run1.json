@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "BAX",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is canonically a cytosolic/mitochondrial outer membrane pro-apoptotic effector, but during apoptosis it translocates and oligomerizes at the mitochondrial outer membrane and is also externalized/exposed on the plasma membrane outer leaflet of dying cells (documented BAX surface exposure during apoptosis/ICD). This is a cell-death-induced ecto-pool rather than baseline surface residency, so contextual via cell_state_induced is the right call rather than no.",
+  "correct": true,
+  "prompt_tokens": 10819,
+  "completion_tokens": 205,
+  "n_web_searches": 0,
+  "cost_usd": 0.17766,
+  "latency_s": 8.43583812500583,
+  "error": null,
+  "raw_text": ""
+}

@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "STIM1 is predominantly ER-resident, but exhibits a documented, functional plasma membrane pool with its N-terminal domain accessible from the extracellular face. The protein reaches the PM via its own type I TM anchor. Surface-applied antibodies can engage the extracellular N-terminus and modulate SOCE. The PM pool is minor but physiologically real and functionally relevant. This constitutes dual localization with documented surface accessibility.",
+  "verdict_reasoning": "STIM1 is a single-pass TM protein predominantly resident in the ER lumen but with a documented, functional plasma membrane pool. The protein has its own TM anchor and reaches the surface via regulated dual localization (ER-PM cycling), particularly upon calcium store depletion. PM STIM1 is stabilized by N-glycosylation and participates in store-operated calcium entry signaling. This meets the dual_localization criterion: the protein has constitutive PM residence (though minor) plus state-dependent PM enrichment.",
   "correct": true,
-  "prompt_tokens": 32994,
-  "completion_tokens": 919,
+  "prompt_tokens": 41812,
+  "completion_tokens": 1137,
   "n_web_searches": 2,
-  "cost_usd": 0.057589,
-  "latency_s": 13.925840625015553,
+  "cost_usd": 0.067497,
+  "latency_s": 12.351385583984666,
   "error": null,
   "raw_text": ""
 }

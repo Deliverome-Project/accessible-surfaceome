@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGOLN2 (TGN46/TGN38) is a single-pass type I TM protein that resides predominantly in the trans-Golgi network but cycles continuously between the TGN and the plasma membrane via secretory vesicles. A minor but documented PM pool exists at steady state, with its ectodomain exposed extracellularly during the surface phase before rapid endocytosis back to the TGN. This dual-localization cycling qualifies for contextual surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 6956,
+  "completion_tokens": 191,
+  "n_web_searches": 0,
+  "cost_usd": 0.118665,
+  "latency_s": 4.563652292010374,
+  "error": null,
+  "raw_text": ""
+}

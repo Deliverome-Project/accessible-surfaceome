@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPD1 (Hsp60) is a mitochondrial matrix chaperonin resident in the mitochondrial inner compartment. However, it has documented surface exposure under specific conditions: (1) as a damage-associated molecular pattern (DAMP) released during cell stress, necrosis, or ICD; (2) transient surface display on apoptotic cells and during lysosomal exocytosis in certain cell states; (3) potential TLR4/MyD88-mediated immune signaling via surface-displayed or shed forms. The NCBI summary explicitly notes it may function as a signaling molecule in the innate immune system, implying extracellular or surface-accessible roles beyond canonical mitochondrial residence. These context-dependent surface exposures and immune-signaling roles qualify it as contextual rather than strictly intracellular.",
+  "verdict_reasoning": "HSPD1 is a canonical mitochondrial chaperonin residing in the mitochondrial matrix. However, it has well-documented cell-state-induced surface display in cancer cells and immune-activated contexts: tumor cells and stressed cells externalize HSPD1 to the outer leaflet as an immune-regulatory 'danger-associated molecular pattern' (DAMP) and target for NK / \u03b3\u03b4 T cell recognition. This ecto-HSPD1 pool is the basis for therapeutic interest (HSP60-targeted antibodies, CAR-T programs). The baseline compartment is mitochondrial-internal; the surface pool is stress / cancer-state-restricted.",
   "correct": true,
-  "prompt_tokens": 3849,
-  "completion_tokens": 230,
+  "prompt_tokens": 5622,
+  "completion_tokens": 190,
   "n_web_searches": 0,
-  "cost_usd": 0.004999,
-  "latency_s": 2.9951538749737665,
+  "cost_usd": 0.006572,
+  "latency_s": 2.8747073329868726,
   "error": null,
   "raw_text": ""
 }

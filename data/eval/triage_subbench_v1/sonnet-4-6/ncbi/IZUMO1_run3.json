@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a sperm-specific single-pass transmembrane protein (Ig-like / IZUMO family) that resides in the acrosomal membrane in non-capacitated sperm. Upon capacitation and acrosomal reaction, IZUMO1 redistributes to the entire sperm plasma membrane outer leaflet, where it directly participates in sperm-egg fusion. It has its own TM anchor and reaches the outer leaflet, but this surface display is restricted to the narrow germline/gamete (sperm) lineage and is activation-dependent. This maps to contextual / tissue_restricted_surface: the protein body does reach the outer leaflet via its own TM anchor, but exclusively in a single, narrow developmental/germline cell type.",
+  "correct": true,
+  "prompt_tokens": 5559,
+  "completion_tokens": 198,
+  "n_web_searches": 0,
+  "cost_usd": 0.019647,
+  "latency_s": 4.964001915999688,
+  "error": null,
+  "raw_text": ""
+}

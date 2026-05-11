@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPD1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 encodes HSP60, canonically a mitochondrial matrix chaperonin. However, multiple well-documented lines of evidence show surface/extracellular HSP60: (1) tumor cells display HSP60 on the outer leaflet of the plasma membrane (cancer ecto-chaperone phenomenon, stress/oncogenic-state-induced), (2) apoptotic and stressed cells externalize HSP60 as part of immunogenic cell death signaling, (3) HSP60 is detected on the surface of immune cells and certain normal cell types under activation or stress. There is no GPI anchor or TM domain; surface presence is cell-state-induced. This qualifies as contextual/cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 4926,
+  "completion_tokens": 205,
+  "n_web_searches": 0,
+  "cost_usd": 0.017853,
+  "latency_s": 5.502497207955457,
+  "error": null,
+  "raw_text": ""
+}

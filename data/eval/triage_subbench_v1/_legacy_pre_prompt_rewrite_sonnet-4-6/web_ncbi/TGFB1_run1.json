@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGFB1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is a secreted cytokine that exists predominantly in a latent form (LAP-TGF-\u03b21 complex). It reaches the outer face of the plasma membrane specifically on activated Tregs, platelets, and stimulated B cells via covalent (disulfide) linkage to GARP/LRRC32, a transmembrane protein. This GARP:latent-TGF-\u03b21 complex is stably surface-displayed and targeted by therapeutic mAbs. LRRC33 similarly anchors it on myeloid/microglial cells. The surface presentation is cell-state- and cell-type-restricted (activation-dependent on Tregs/B cells; constitutive on platelets), and the disulfide bond to GARP meets the wash-resistance criterion. The dominant pool is soluble/ECM-deposited, making this contextual rather than yes.",
+  "correct": true,
+  "prompt_tokens": 42998,
+  "completion_tokens": 358,
+  "n_web_searches": 2,
+  "cost_usd": 0.154364,
+  "latency_s": 11.427690041949973,
+  "error": null,
+  "raw_text": ""
+}

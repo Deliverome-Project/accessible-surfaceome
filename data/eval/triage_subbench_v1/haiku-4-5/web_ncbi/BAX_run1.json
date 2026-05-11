@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "cytoplasmic",
-  "verdict_reasoning": "BAX is a pro-apoptotic BCL2 family protein that is predominantly cytosolic in healthy cells and translocates to the mitochondrial outer membrane upon apoptotic stimulus. There is no evidence of plasma membrane localization or surface accessibility from the extracellular face. The protein's C-terminal tail anchor directs it exclusively to mitochondria, not to the cell surface. BAX functions as an intracellular regulator of apoptosis via mitochondrial membrane permeabilization, with no role in direct extracellular binder engagement.",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL2 family member that resides in the cytosol at baseline and translocates to the mitochondrial outer membrane (endomembrane) upon apoptotic activation. It lacks any transmembrane domain anchoring it to the plasma membrane, possesses no signal peptide for secretion, has no GPI anchor, and has no documented plasma membrane pool or surface accessibility mechanism. While BAX does interact with mitochondrial membranes during apoptosis, this is intracellular trafficking to an endomembrane compartment, not surface accessibility from the extracellular face.",
   "correct": false,
-  "prompt_tokens": 38498,
-  "completion_tokens": 759,
+  "prompt_tokens": 47598,
+  "completion_tokens": 1100,
   "n_web_searches": 2,
-  "cost_usd": 0.062293,
-  "latency_s": 9.800877541012596,
+  "cost_usd": 0.073098,
+  "latency_s": 13.435911541979294,
   "error": null,
   "raw_text": ""
 }

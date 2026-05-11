@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSP60/HSPD1 is canonically a mitochondrial matrix chaperonin, but there is well-documented surface translocation under stress, infection, and pro-inflammatory conditions. Multiple studies confirm HSP60 on the outer leaflet of the plasma membrane of various cell types (tumor cells, immune cells, cardiomyocytes under stress), where it acts as a DAMP/innate-immune signaling molecule accessible to antibodies and immune effectors. This documented cell-state-induced surface pool qualifies as contextual via its own trafficking mechanism to the outer leaflet.",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin, but it is well-documented to translocate to the outer leaflet of the plasma membrane in multiple non-baseline contexts: (1) cancer/tumor cells display HSP60 on the cell surface as a stress-induced ecto-chaperone, making it a target for cancer immunotherapy and ADC approaches; (2) heat shock, oxidative stress, and other stress states induce its PM surface exposure on various cell types; (3) apoptosis and ICD also result in PM-surface HSP60 display. These documented ecto-pools qualify as cell_state_induced contextual surface biology.",
   "correct": true,
-  "prompt_tokens": 3850,
-  "completion_tokens": 164,
+  "prompt_tokens": 5623,
+  "completion_tokens": 190,
   "n_web_searches": 0,
-  "cost_usd": 0.01401,
-  "latency_s": 4.7210490420111455,
+  "cost_usd": 0.019719,
+  "latency_s": 4.912326124962419,
   "error": null,
   "raw_text": ""
 }

@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "SRC",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC (c-Src) is canonically a non-receptor tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation and a polybasic cluster \u2014 not the outer face. However, a 2026 Science study demonstrated that in cancer cells, Src undergoes topological inversion onto the extracellular face of the plasma membrane through autophagolysosomal exocytosis (ALE), yielding extracellular membrane-associated Src (eSrc). This eSrc is present in primary tumors and is targetable by antibody-based therapeutics that mediate tumor cell killing. The protein reaches the outer face by its own (lipid-anchor-driven) mechanism after topological inversion \u2014 not via transient recruitment to another surface receptor. This cancer-cell-state-specific outer-face presentation qualifies as contextual.",
+  "correct": true,
+  "prompt_tokens": 23492,
+  "completion_tokens": 614,
+  "n_web_searches": 1,
+  "cost_usd": 0.089686,
+  "latency_s": 15.00088649999816,
+  "error": null,
+  "raw_text": ""
+}

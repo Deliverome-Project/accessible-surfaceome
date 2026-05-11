@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "tissue_restricted_surface",
-  "verdict_reasoning": "CRISP1 is a secreted epididymal protein that binds to the sperm surface during epididymal transit. It becomes stably associated with the sperm plasma membrane (postacrosomal / equatorial segment) in a wash-resistant manner, enabling its role in sperm-egg fusion. This constitutes a tissue-restricted surface display confined to mature sperm and the epididymal compartment. The protein reaches the outer leaflet of the sperm PM via stable post-translational surface attachment in this narrow germline/gamete lineage, qualifying as contextual / tissue_restricted_surface rather than a broadly surface-accessible protein.",
+  "verdict_reasoning": "CRISP1 is a secreted cysteine-rich protein expressed in the epididymis that binds to the sperm surface (postacrosomal/equatorial segment) and is involved in sperm-egg fusion. It is secreted into the epididymal lumen and associates stably with the sperm plasma membrane outer leaflet, making it surface-accessible on sperm cells. However, this surface display is restricted to a narrow germline/reproductive lineage (epididymal secretion onto sperm), qualifying it as tissue_restricted_surface rather than broadly expressed surface protein.",
   "correct": true,
-  "prompt_tokens": 5026,
-  "completion_tokens": 167,
+  "prompt_tokens": 5634,
+  "completion_tokens": 164,
   "n_web_searches": 0,
-  "cost_usd": 0.017583,
-  "latency_s": 4.715312666026875,
+  "cost_usd": 0.019362,
+  "latency_s": 4.1653100829571486,
   "error": null,
   "raw_text": ""
 }

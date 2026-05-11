@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGFB1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "TGFB1 encodes a secreted cytokine with no transmembrane domain, GPI anchor, or intrinsic outer-leaflet lipidation. After cleavage in the Golgi, the large latent complex (mature TGF-\u03b21 + LAP + LTBP) is secreted and sequestered in the ECM. Although a LAP-bound form of TGF-\u03b21 is presented on the surface of Tregs and platelets via non-covalent association with the transmembrane proteins GARP (LRRC32) and LRRC33, this surface localization is mediated entirely by those TM partners \u2014 not by any intrinsic mechanism of TGFB1 itself. This is reversible non-covalent recruitment ('something else holds it there'), which per the cardinal rule maps to secreted_only/no. Therapeutic antibodies against TGF-\u03b21 target the soluble/ECM-deposited cytokine form (neutralizing mAbs), not a surface-integrated protein body.",
+  "correct": false,
+  "prompt_tokens": 29388,
+  "completion_tokens": 1055,
+  "n_web_searches": 2,
+  "cost_usd": 0.123989,
+  "latency_s": 21.742802207998466,
+  "error": null,
+  "raw_text": ""
+}

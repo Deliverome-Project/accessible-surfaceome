@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "stable_surface_attachment",
-  "verdict_reasoning": "TGFB1 is a secreted cytokine synthesized as a preproprotein and processed into a latent complex (mature TGFB1 homodimer + LAP + LTBP) or an active form. The latent complex is sequestered in the extracellular matrix and becomes surface-accessible only upon context-dependent activation (mechanical tension, proteolytic cleavage, integrin-mediated release, acidic microenvironment, reactive oxygen species, thrombospondin binding). Soluble active TGFB1 can transiently recruit to cell-surface TGF-beta receptors but does not carry its own membrane anchor. The latent form's association with LTBP and ECM deposition qualifies as stable extracellular tethering in tissue context, and integrin-mediated release from ECM onto cells is a major biological mechanism. This positions TGFB1 as contextually surface-accessible via activation and ECM sequestration rather than constitutively or via its own TM/GPI mechanism.",
+  "verdict_reasoning": "TGFB1 is a secreted ligand that circulates predominantly as a soluble mature peptide dimer or in a latent complex with LAP and latent TGF-beta binding protein (LTBP). However, the latent complex can be anchored to the cell surface and extracellular matrix via LTBP, and cell-surface-tethered latent TGF-beta is a documented biological form where the latent complex remains associated with the cell surface before activation. This represents stable surface attachment of the secreted protein to a cell-surface or matrix component. Additionally, integrins can activate latent TGF-beta at the cell surface, implicating a surface-resident pool. The protein is not membrane-anchored by its own mechanism, but reaches the outer face via wash-resistant tethering to LTBP-anchored complexes, qualifying as contextual surface attachment rather than purely secreted.",
   "correct": true,
-  "prompt_tokens": 3866,
-  "completion_tokens": 281,
+  "prompt_tokens": 5639,
+  "completion_tokens": 246,
   "n_web_searches": 0,
-  "cost_usd": 0.005271,
-  "latency_s": 3.77599008299876,
+  "cost_usd": 0.006869,
+  "latency_s": 5.817239541967865,
   "error": null,
   "raw_text": ""
 }

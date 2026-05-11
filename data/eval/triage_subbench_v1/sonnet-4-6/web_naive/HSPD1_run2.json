@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPD1 (HSP60) is primarily a mitochondrial matrix chaperonin but is well-documented to appear at the outer face of the plasma membrane under stress (heat, hypoxia, oxidative stress) and in malignantly transformed cells. Full-length protein has been detected on the cell surface of tumor lines and stressed endothelial cells by flow cytometry, AFM, and antibodies to both termini. Surface anchoring involves lipid raft association and PKA-regulated attachment to histone H2B in T-lymphocyte membranes. No canonical TM domain or GPI anchor; surface exposure is non-canonical and condition-dependent, making this contextual/cell_state_induced. The mechanism is intrinsic to the protein (not mere reversible recruitment by another receptor), meeting the wash-resistance criterion for contextual classification.",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin with dominant intracellular localization. However, multiple independent studies using western blot of isolated plasma membrane fractions, TEM-immunogold, and lipid-raft fractionation document a surface pool specifically in tumor/transformed cells (H292, A549, Daudi) that is absent in normal bronchial epithelial cells. This surface display is amplified by oncogenic transformation and inflammatory/stress states, involves active Golgi-dependent trafficking to lipid rafts, and represents an ecto-HSP60 pool on the outer leaflet. The mechanism is cell-state-induced (oncogenic transformation / stress), not constitutive baseline surface expression.",
   "correct": true,
-  "prompt_tokens": 37265,
-  "completion_tokens": 1001,
+  "prompt_tokens": 45614,
+  "completion_tokens": 755,
   "n_web_searches": 2,
-  "cost_usd": 0.14681,
-  "latency_s": 23.87543524999637,
+  "cost_usd": 0.16816699999999998,
+  "latency_s": 17.129379875026643,
   "error": null,
   "raw_text": ""
 }

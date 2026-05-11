@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA1A (HSP70-1) is predominantly a cytoplasmic/nuclear chaperone under normal conditions. However, it is well-documented to translocate to the plasma membrane surface under stress conditions (heat shock, oxidative stress, hypoxia) and on tumor cells, where it can be detected on the outer leaflet. This surface form is accessible to antibodies and has been targeted by immunotherapy approaches. Surface HSP70 appears to be membrane-anchored (associated with lipid rafts/ceramide-rich domains), making it wash-resistant in the surface state. Thus, surface localization is cell-state-induced rather than constitutive.",
+  "verdict_reasoning": "HSPA1A encodes HSP70-1, the canonical inducible cytosolic chaperone. Under baseline conditions it is cytosolic/nuclear. However, it is well-documented to translocate to the outer leaflet of the plasma membrane under heat shock, other stress conditions, oncogenic transformation, and immunogenic/apoptotic cell death. Cancer cells in particular display HSP70 on their outer leaflet (cancer ecto-chaperone), a phenomenon exploited by therapeutic antibodies and CAR-T approaches targeting cell-surface HSP70. This is a classical example of stress/cancer-cell-state-induced outer-leaflet surface display of a nominally cytosolic protein.",
   "correct": true,
-  "prompt_tokens": 1488,
-  "completion_tokens": 185,
+  "prompt_tokens": 4926,
+  "completion_tokens": 193,
   "n_web_searches": 0,
-  "cost_usd": 0.007239,
-  "latency_s": 5.184125583036803,
+  "cost_usd": 0.017673,
+  "latency_s": 5.3201348329894245,
   "error": null,
   "raw_text": ""
 }

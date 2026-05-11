@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family, whose characterized members (IZUMO1, IZUMO3, IZUMO5) are sperm-specific proteins with roles in fertilization. However, the NCBI localization data explicitly assigns IZUMO4 to the nucleus, and no documented evidence of surface accessibility, membrane anchoring, or cell-state-induced ectodomain display is established for this protein. The nuclear localization is the defining compartment; no contextual surface-display pathway (cancer ecto-presentation, developmental germline-restricted display, cell-death induction, or activation-linked exocytosis) has been documented to override this baseline.",
+  "correct": false,
+  "prompt_tokens": 5481,
+  "completion_tokens": 190,
+  "n_web_searches": 0,
+  "cost_usd": 0.006431,
+  "latency_s": 2.767353249946609,
+  "error": null,
+  "raw_text": ""
+}

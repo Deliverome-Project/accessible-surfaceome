@@ -7,13 +7,13 @@
   "truth_class": "wrong_side_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "inner_leaflet_anchored",
-  "verdict_reasoning": "LYN is a Src-family tyrosine kinase anchored exclusively to the inner/cytoplasmic leaflet of the plasma membrane via N-terminal myristoylation (Gly-2) and palmitoylation (Cys-3). It has no transmembrane domain, no extracellular domain, and no GPI anchor; it operates entirely on the cytoplasmic face. No evidence exists for surface exposure on the outer leaflet. All therapeutic strategies (small-molecule kinase inhibitors) are intracellular. The inner-leaflet lipid anchor means it is wash-resistant on the cytoplasmic face but completely inaccessible from the extracellular space.",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via dual N-terminal lipid modifications: N-myristoylation at Gly-2 and palmitoylation at Cys-3. It has no transmembrane domain, no GPI anchor, and no extracellular domain. Its entire protein body faces the cytosol. Loss-of-function mutants lacking both acylation sites delocalize to the cytoplasm, confirming that lipid anchoring is the sole membrane-association mechanism. No documented outer-leaflet, cancer-ecto, or cell-death-induced surface exposure of the LYN protein body has been reported.",
   "correct": false,
-  "prompt_tokens": 25305,
-  "completion_tokens": 666,
+  "prompt_tokens": 33659,
+  "completion_tokens": 677,
   "n_web_searches": 1,
-  "cost_usd": 0.09590499999999999,
-  "latency_s": 13.627240250003524,
+  "cost_usd": 0.12113199999999999,
+  "latency_s": 13.25278049998451,
   "error": null,
   "raw_text": ""
 }

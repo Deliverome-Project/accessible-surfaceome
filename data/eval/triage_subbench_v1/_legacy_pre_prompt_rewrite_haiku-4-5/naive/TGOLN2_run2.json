@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGOLN2",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 is a trans-Golgi network and early endosomal TM protein. Although it bears a single TM domain, its steady-state localization is intracellular (TGN/recycling endosomes), and it serves a cargo-sorting function within the secretory pathway. No documented baseline or induced surfacing to the plasma membrane outer leaflet; remains endomembrane-resident.",
+  "correct": false,
+  "prompt_tokens": 1487,
+  "completion_tokens": 573,
+  "n_web_searches": 0,
+  "cost_usd": 0.004352,
+  "latency_s": 6.267276041966397,
+  "error": null,
+  "raw_text": ""
+}

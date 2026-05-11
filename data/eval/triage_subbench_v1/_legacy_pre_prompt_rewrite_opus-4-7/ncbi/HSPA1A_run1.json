@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A is predominantly a cytosolic chaperone, but under stress, malignant transformation, and apoptosis it is well-documented to relocalize to the outer leaflet of the plasma membrane on tumor cells (via PS/lipid binding and other mechanisms), where it is accessible to antibodies and has been exploited therapeutically (e.g., cmHsp70.1). Surface display is cell-state-induced rather than baseline.",
+  "correct": true,
+  "prompt_tokens": 5569,
+  "completion_tokens": 185,
+  "n_web_searches": 0,
+  "cost_usd": 0.09741,
+  "latency_s": 3.959630375029519,
+  "error": null,
+  "raw_text": ""
+}

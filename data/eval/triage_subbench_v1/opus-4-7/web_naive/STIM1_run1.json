@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "STIM1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a type I single-pass TM protein predominantly resident in the ER membrane, where it senses ER Ca2+ depletion and clusters at ER-PM junctions to activate ORAI1/TRPC channels (inner-leaflet apposition, not surface exposure). However, STIM1 was originally identified as a PM protein, and a minority fraction (~20-30% by surface biotinylation) is documented on the plasma membrane in multiple cell types (VSMCs, pancreatic epithelial cells), with the N-terminal EF-hand/SAM ectodomain accessible to extracellular antibodies that inhibit Ca2+ entry. Recent work confirms dual topology at the PM. This is a documented dual-localization with its own TM anchor at the surface.",
+  "correct": true,
+  "prompt_tokens": 39884,
+  "completion_tokens": 612,
+  "n_web_searches": 1,
+  "cost_usd": 0.65416,
+  "latency_s": 11.301008499984164,
+  "error": null,
+  "raw_text": ""
+}

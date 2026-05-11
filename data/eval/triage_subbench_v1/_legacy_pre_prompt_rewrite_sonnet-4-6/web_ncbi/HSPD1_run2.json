@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPD1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 (HSP60) is primarily a mitochondrial matrix chaperonin with no classical TM domain or GPI anchor. However, multiple independent lines of evidence document its presence on the outer face of the plasma membrane under specific cell-state conditions: (1) full-length HSP60 is detected by surface biotin-labeling and FACS on Daudi and tumor cell membranes (H292, A549), associated with lipid rafts; (2) heat-stressed endothelial cells (HUVECs) present HSP60 on their surface, confirmed by AFM, CLSM, and flow cytometry (~10% of stressed cells); (3) surface localization is documented to increase during inflammatory states and tumorigenesis. The mechanism of surface translocation is non-canonical (cytosol-to-PM trafficking, lipid raft association) and is consistently dependent on cell stress/tumor state. It is not constitutively surface-resident in normal resting cells. This qualifies as contextual/cell_state_induced surface accessibility, with the protein body reaching the outer leaflet by its own stress-induced trafficking mechanism.",
+  "correct": true,
+  "prompt_tokens": 54735,
+  "completion_tokens": 418,
+  "n_web_searches": 2,
+  "cost_usd": 0.19047499999999998,
+  "latency_s": 14.156630874960683,
+  "error": null,
+  "raw_text": ""
+}

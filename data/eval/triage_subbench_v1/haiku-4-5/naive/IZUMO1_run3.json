@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a canonical single-pass TM receptor with a substantial immunoglobulin-like ectodomain stably integrated into the sperm plasma membrane and exposed on the outer leaflet. However, expression is strictly restricted to male germ cells (spermatids and mature sperm). Surface display is gated by narrow germline lineage restriction, qualifying it as tissue-restricted surface accessibility rather than baseline somatic surface availability.",
+  "correct": true,
+  "prompt_tokens": 4925,
+  "completion_tokens": 577,
+  "n_web_searches": 0,
+  "cost_usd": 0.00781,
+  "latency_s": 5.981022416963242,
+  "error": null,
+  "raw_text": ""
+}

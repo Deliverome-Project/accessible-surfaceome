@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "B4GALT1 is canonically a type II Golgi-resident transmembrane glycosyltransferase anchored in the trans-Golgi membrane with its catalytic domain facing the Golgi lumen. However, a well-documented plasma membrane form exists: proteolytic cleavage in the stem region (at Arg-77) generates a shed soluble form, but prior to shedding the intact TM-anchored protein traffics to the cell surface where it acts as a cell-cell and cell-matrix recognition molecule (e.g., sperm-egg interactions). The membrane-anchored protein reaches the outer leaflet via its own TM domain before shedding. This documented, cell-type/state-dependent surface pool qualifies as dual_localization contextual rather than a full 'yes', because the dominant compartment is the Golgi and surface presence is restricted to specific biological contexts.",
+  "verdict_reasoning": "B4GALT1 is a type II single-pass TM glycoprotein whose canonical home is the trans-Golgi, where it functions as a galactosyltransferase. However, UniProt/GeneCards annotations (PubMed:1714903) explicitly place a processed cell-surface form 'mainly localized at the plasma membrane' in specific contexts (sperm-egg recognition, cell-cell adhesion, development). The protein reaches the outer leaflet via its own TM anchor in those contexts, qualifying as contextual/dual_localization: Golgi-resident under baseline conditions, but with a documented PM pool restricted to particular cell types and developmental states.",
   "correct": true,
-  "prompt_tokens": 21047,
-  "completion_tokens": 802,
+  "prompt_tokens": 27817,
+  "completion_tokens": 817,
   "n_web_searches": 1,
-  "cost_usd": 0.085171,
-  "latency_s": 18.029250583960675,
+  "cost_usd": 0.105706,
+  "latency_s": 18.75508329202421,
   "error": null,
   "raw_text": ""
 }

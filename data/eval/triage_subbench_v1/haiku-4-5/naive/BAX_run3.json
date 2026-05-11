@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "BAX",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL-2-family effector that is cytosolic/mitochondrial at baseline but translocates to the outer leaflet of the plasma membrane during apoptosis and other forms of programmed cell death. Surface externalization is documented by flow cytometry on apoptotic cells, biotinylation, and proteomics. It functions as an apoptotic 'eat-me' signal. This is cell-state-induced surface display \u2014 BAX reaches the outer face only under apoptotic/cell-death conditions, not in healthy baseline cells.",
+  "correct": true,
+  "prompt_tokens": 4922,
+  "completion_tokens": 663,
+  "n_web_searches": 0,
+  "cost_usd": 0.008237,
+  "latency_s": 6.72548729198752,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA1A",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A is canonically a cytosolic chaperone lacking a TM domain or secretory signal. However, multiple independent studies using flow cytometry on viable cells, surface biotinylation, and cell-surface iodination confirm that HSPA1A translocates to and embeds in the outer leaflet of the plasma membrane specifically in tumor cells and heat-stressed cells, driven by high-affinity binding to saturated phosphatidylserine and Gb3 in lipid rafts. Normal resting cells do not display surface HSPA1A. The C-terminal domain is exposed extracellularly on viable tumor cells and is targeted by clinical-grade mAb cmHsp70.1. This is a well-documented oncogenic/stress-state ecto-pool qualifying as cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 45949,
+  "completion_tokens": 773,
+  "n_web_searches": 2,
+  "cost_usd": 0.16944199999999998,
+  "latency_s": 17.572918915946502,
+  "error": null,
+  "raw_text": ""
+}

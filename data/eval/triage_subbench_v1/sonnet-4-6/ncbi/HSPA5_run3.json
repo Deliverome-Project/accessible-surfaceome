@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA5",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5/GRP78/BiP is canonically an ER-luminal chaperone with an ER-retention signal (KDEL). However, extensive literature documents its translocation to the cell surface under stress conditions (hypoxia, ER stress, tumorigenesis, viral infection), where it acts as an ecto-chaperone on the outer leaflet of tumor cells and stressed/infected cells. Surface GRP78 is a validated therapeutic target in oncology (antibodies, ADCs, CAR-T approaches targeting cancer-cell surface GRP78). This qualifies as cell_state_induced contextual surface display.",
+  "correct": true,
+  "prompt_tokens": 5635,
+  "completion_tokens": 175,
+  "n_web_searches": 0,
+  "cost_usd": 0.01953,
+  "latency_s": 4.830758333031554,
+  "error": null,
+  "raw_text": ""
+}

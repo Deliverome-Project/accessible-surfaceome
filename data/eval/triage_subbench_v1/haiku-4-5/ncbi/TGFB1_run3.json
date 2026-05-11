@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGFB1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is a secreted ligand that exists in latent and active forms. The latent complex (mature dimer + LAP + LTBP) remains cell-surface-associated and extracellularly anchored via covalent disulfide and non-covalent interactions with LTBP (a matrix-associated TM/ECM protein), creating a wash-resistant surface pool. The mature active dimer is released by proteolytic activation and signaling. The latent surface-anchored pool is the primary biological form in many tissues and is targeted by therapeutic programs; thus the protein qualifies as contextually surface-accessible via latent-complex tethering.",
+  "correct": true,
+  "prompt_tokens": 5639,
+  "completion_tokens": 190,
+  "n_web_searches": 0,
+  "cost_usd": 0.006589,
+  "latency_s": 3.0422461249982007,
+  "error": null,
+  "raw_text": ""
+}

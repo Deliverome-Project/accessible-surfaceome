@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "ATP5F1B encodes the beta subunit of the F1 catalytic core of mitochondrial ATP synthase. The F1 complex is a soluble protein assembly resident in the mitochondrial matrix, anchored to the membrane via the Fo proton-channel component but not itself membrane-spanning or surface-exposed. The protein is an inner-mitochondrial-membrane facing component with no documented translocation to the plasma membrane, no TM domain, no GPI anchor, and no surface-exposure even under stress or cell-death states. The protein's biology is wholly mitochondrial bioenergetics.",
+  "correct": false,
+  "prompt_tokens": 5665,
+  "completion_tokens": 171,
+  "n_web_searches": 0,
+  "cost_usd": 0.00652,
+  "latency_s": 2.540876292041503,
+  "error": null,
+  "raw_text": ""
+}

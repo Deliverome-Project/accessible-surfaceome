@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "ATP5F1B encodes the beta subunit of mitochondrial ATP synthase F1 complex. The HGNC gene-group membership and NCBI summary explicitly identify this as a mitochondrial protein\u2014a core component of the oxidative phosphorylation machinery embedded in the inner mitochondrial membrane. The protein is synthesized in the mitochondrial matrix or cytoplasm and is integrated into the inner mitochondrial membrane as part of the F1 catalytic core. There is no evidence of surface trafficking, a transmembrane domain bridging to the plasma membrane, GPI anchoring, ectodomain shedding, or any cell-state-dependent surface localization. The compartmentalization to the inner mitochondrial membrane is constitutive and exclusive. The protein body does not reach the outer face of the plasma membrane via its own mechanism or as a stable partner of a surface-anchored complex.",
+  "correct": false,
+  "prompt_tokens": 4484,
+  "completion_tokens": 235,
+  "n_web_searches": 0,
+  "cost_usd": 0.005659,
+  "latency_s": 2.8253338750218973,
+  "error": null,
+  "raw_text": ""
+}

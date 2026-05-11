@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "IZUMO4 is a soluble protein lacking a transmembrane domain. Primary evidence indicates it is cytoplasmic/nuclear (per NCBI/Protein Atlas), and characterized as intra-acrosomal in sperm. Unlike its family members IZUMO1-3, IZUMO4 does not possess the structural features required for direct cell-surface accessibility. While it participates in fertilization-related protein complexes during sperm biology, it engages soluble or compartmentalized partners rather than functioning as an extracellular-accessible receptor or membrane-anchored protein.",
+  "correct": false,
+  "prompt_tokens": 32260,
+  "completion_tokens": 768,
+  "n_web_searches": 2,
+  "cost_usd": 0.0561,
+  "latency_s": 8.333504499983974,
+  "error": null,
+  "raw_text": ""
+}

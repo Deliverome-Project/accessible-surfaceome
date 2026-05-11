@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "KLK2 encodes a secreted trypsin-like serine protease traditionally classified as secreted into prostatic fluid. However, recent peer-reviewed evidence (Shen et al., Clin Cancer Res 2025; flow cytometry and confocal microscopy in VCaP cells and mCRPC patient samples) has confirmed cell-surface expression on prostate cancer cells, with documented antibody internalization. hK2 is described as 'both secreted and membrane-bound' (JNM 2024). Multiple cell-surface-directed therapeutics are in clinical development: pasritamig (KLK2\u00d7CD3 bispecific, Phase 3), 225Ac-KLK2 radioligand therapy, and KLK2-targeted CAR-T. Surface expression is tissue-restricted (prostate cancer cells) and not the canonical baseline state\u2014normal physiology is secretion\u2014qualifying this as contextual rather than constitutive yes. The mechanism of membrane retention is not fully characterized (no canonical TM domain; likely association with cell-surface partners or retention in prostate cancer state), making tissue_restricted_surface the best fit.",
+  "correct": false,
+  "prompt_tokens": 36939,
+  "completion_tokens": 412,
+  "n_web_searches": 2,
+  "cost_usd": 0.136997,
+  "latency_s": 12.568581375002395,
+  "error": null,
+  "raw_text": ""
+}

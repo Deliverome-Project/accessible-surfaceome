@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPD1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 is canonically mitochondrial but exhibits documented cell-surface accessibility under stress, inflammatory, and oncogenic conditions. 15-20% of total cellular HSPD1 localizes to extramitochondrial sites including the plasma membrane, particularly in non-baseline states. Surface presence increases during stress, inflammation, and tumorigenesis. In cancer cells, it accumulates at the PM and is secreted via exosomes. Stress-induced surface translocation and cancer ecto-display qualify as cell_state_induced contextual accessibility.",
+  "correct": true,
+  "prompt_tokens": 49935,
+  "completion_tokens": 1149,
+  "n_web_searches": 3,
+  "cost_usd": 0.08568,
+  "latency_s": 14.670005291001871,
+  "error": null,
+  "raw_text": ""
+}

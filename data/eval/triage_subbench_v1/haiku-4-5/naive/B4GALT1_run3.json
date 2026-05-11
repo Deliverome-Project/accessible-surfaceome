@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B4GALT1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "B4GALT1 (UDP-Gal:betaGlcNAc beta-1,4-galactosyltransferase 1) is a Golgi-resident glycosyltransferase with a single transmembrane domain anchoring it to the Golgi membrane. The TM domain is positioned to place the catalytic domain in the Golgi lumen. However, B4GALT1 is well-documented to have a surface pool on the plasma membrane in addition to its dominant Golgi localization. Surface expression of B4GALT1 has been demonstrated by cell-surface biotinylation and flow cytometry in multiple cell types. The protein cycles between the Golgi and PM via secretory trafficking pathways, maintaining a stable minority surface pool. This PM residency is constitutive (not induced) and reflects its own TM anchor and participation in normal secretory cycling. The surface-exposed catalytic domain can mediate galactosylation of cell-surface glycoproteins and glycolipids, making it functionally relevant at the cell surface.",
+  "correct": false,
+  "prompt_tokens": 4926,
+  "completion_tokens": 281,
+  "n_web_searches": 0,
+  "cost_usd": 0.006331,
+  "latency_s": 3.293174332997296,
+  "error": null,
+  "raw_text": ""
+}

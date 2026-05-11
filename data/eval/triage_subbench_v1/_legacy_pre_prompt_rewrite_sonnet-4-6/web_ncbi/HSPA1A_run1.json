@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is primarily a cytosolic chaperone lacking classical transmembrane domains or secretory signals. However, extensive evidence establishes a tumor-cell-selective surface form: membrane-bound HSPA1A is detected by flow cytometry on a wide variety of tumor cell lines and primary tumors using the cmHsp70.1 mAb that recognizes an extracellularly exposed epitope of the C-terminal domain. Surface localization is mediated by high-affinity binding to negatively charged phospholipids (phosphatidylserine, Gb3) in the outer leaflet, particularly in cholesterol-rich microdomains. This is tumor/stress-state-selective and not present on normal tissues screened. Thus, surface exposure occurs only under specific cell-state conditions (malignant transformation/stress), qualifying as contextual via cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 24683,
+  "completion_tokens": 294,
+  "n_web_searches": 1,
+  "cost_usd": 0.088459,
+  "latency_s": 13.50689112499822,
+  "error": null,
+  "raw_text": ""
+}

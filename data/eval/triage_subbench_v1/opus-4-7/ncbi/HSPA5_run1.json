@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "GRP78/BiP is canonically an ER lumen chaperone, but under ER stress, tumor transformation, and viral infection a documented pool relocalizes to the cell surface (csGRP78), where it serves as a receptor for multiple ligands and viruses and is the target of clinical-stage anti-csGRP78 antibodies and peptide-drug conjugates in oncology. Surface display is cell-state-induced (stress/transformation) rather than baseline.",
+  "verdict_reasoning": "GRP78/BiP is canonically an ER-luminal HSP70 chaperone, but a well-documented cell-surface pool (csGRP78) appears on tumor cells and stressed cells, driven by ER-stress / UPR / oncogenic transformation. csGRP78 is an active oncology target with antibody, ADC, and CAR-T programs engaging it on the tumor cell surface. Baseline localization is ER lumen; surface display is stress/cancer-induced.",
   "correct": true,
-  "prompt_tokens": 5537,
-  "completion_tokens": 191,
+  "prompt_tokens": 7946,
+  "completion_tokens": 196,
   "n_web_searches": 0,
-  "cost_usd": 0.09738,
-  "latency_s": 3.870928583026398,
+  "cost_usd": 0.13389,
+  "latency_s": 3.9139647079864517,
   "error": null,
   "raw_text": ""
 }

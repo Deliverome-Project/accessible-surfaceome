@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (heat shock protein A1A / HSP70) is a canonical cytoplasmic chaperone with dominant intracellular localization. However, it has documented surface display under stress and cancer contexts: (1) cell-state induction \u2014 heat shock, ER stress, and oxidative stress drive HSP70 translocation to the plasma membrane outer leaflet where it functions in danger signaling and immune recognition; (2) cancer ecto-display \u2014 tumor cells constitutively expose HSP70 on the outer surface via both canonical stress-response pathways and oncogene-driven ecto-translocation, where it acts as a tumor-associated antigen and ligand for pattern-recognition receptors (TLR2, TLR4, LOX-1, CD40). (3) Cell-death induction \u2014 apoptotic and necroptotic cells externalize HSP70 to the outer leaflet as a damage-associated molecular pattern. Surface HSP70 is the target of therapeutic antibodies, CAR-T programs, and checkpoint modulators in oncology. The baseline compartment is cytoplasmic/ER-associated, but non-baseline stress-state and cancer-cell ecto-pools are well-documented and clinically relevant.",
+  "correct": true,
+  "prompt_tokens": 4925,
+  "completion_tokens": 318,
+  "n_web_searches": 0,
+  "cost_usd": 0.006515,
+  "latency_s": 4.218346833018586,
+  "error": null,
+  "raw_text": ""
+}

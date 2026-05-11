@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGFB1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is secreted as a latent complex: the LAP (latency-associated peptide) remains non-covalently associated with the mature TGF-\u03b21 dimer and the whole complex is covalently tethered to LTBP or GARP (LRRC32) / LRRC33 on the cell surface via disulfide bonds. GARP is a transmembrane protein that anchors the latent TGF-\u03b21 complex to the outer leaflet of Tregs, platelets, and other cells via a covalent disulfide bond \u2014 making this a wash-resistant covalent attachment to a TM scaffold. This meets the 'stable_surface_attachment' criterion for contextual, as it is cell-type restricted (Tregs, platelets, certain stromal cells).",
+  "correct": true,
+  "prompt_tokens": 4927,
+  "completion_tokens": 232,
+  "n_web_searches": 0,
+  "cost_usd": 0.018261,
+  "latency_s": 6.047281917009968,
+  "error": null,
+  "raw_text": ""
+}

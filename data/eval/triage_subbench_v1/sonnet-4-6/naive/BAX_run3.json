@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is canonically a cytoplasmic/mitochondrial outer-membrane pro-apoptotic BCL-2 family protein. At baseline it resides predominantly in the cytosol or loosely associated with the mitochondrial outer membrane. Upon apoptosis induction, BAX undergoes conformational activation, oligomerizes, and inserts its transmembrane domain into the mitochondrial outer membrane and also translocates to the plasma membrane outer leaflet, where it can be detected by conformation-specific antibodies in dying/apoptotic cells. This cell-death-induced PM outer-leaflet exposure qualifies as contextual/cell_state_induced surface accessibility relevant for ICD-targeting therapeutic strategies.",
+  "correct": true,
+  "prompt_tokens": 4923,
+  "completion_tokens": 194,
+  "n_web_searches": 0,
+  "cost_usd": 0.017679,
+  "latency_s": 5.049140958988573,
+  "error": null,
+  "raw_text": ""
+}

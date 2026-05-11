@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "B4GALT1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "B4GALT1 is a type II single-pass TM glycosyltransferase predominantly resident in trans-Golgi, but the long-form isoform (with an extended cytoplasmic tail) is well-documented to traffic to the plasma membrane with its catalytic ectodomain facing the extracellular space, where it functions as a surface recognition receptor for oligosaccharide ligands on opposing cells and ECM (sperm-egg recognition, cell migration, MCF-7 surface receptor activity). UniProt explicitly annotates 'Cell membrane; Single-pass type II membrane protein' and 'Cell surface'. Dual Golgi/PM localization with its own TM anchor at the surface qualifies as contextual/dual_localization.",
+  "correct": true,
+  "prompt_tokens": 36943,
+  "completion_tokens": 615,
+  "n_web_searches": 1,
+  "cost_usd": 0.61027,
+  "latency_s": 15.954163916991092,
+  "error": null,
+  "raw_text": ""
+}

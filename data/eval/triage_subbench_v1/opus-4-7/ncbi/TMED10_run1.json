@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "TMED10 is a type I single-pass TM p24-family cargo receptor predominantly cycling between ER and Golgi, but NCBI explicitly notes plasma membrane localization as well. The protein cycles through the secretory pathway and has a documented minority PM pool with its extracellular/lumenal GOLD domain facing outward when at the PM, making the ectodomain accessible from outside in that fraction.",
+  "verdict_reasoning": "TMED10/p24\u03b4 is a type I single-pass TM cargo receptor predominantly resident in ER-Golgi-ERGIC compartments cycling through the secretory pathway. NCBI explicitly notes plasma membrane localization alongside Golgi cisternae, consistent with a minority PM pool from secretory cycling. The small cytoplasmic tail and large GOLD-domain ectodomain face the extracellular side when at the PM. Dominant compartment is endomembrane, but documented PM fraction qualifies as contextual.",
   "correct": true,
-  "prompt_tokens": 5545,
-  "completion_tokens": 171,
+  "prompt_tokens": 7954,
+  "completion_tokens": 215,
   "n_web_searches": 0,
-  "cost_usd": 0.096,
-  "latency_s": 3.4690519170253538,
+  "cost_usd": 0.135435,
+  "latency_s": 4.315533958026208,
   "error": null,
   "raw_text": ""
 }

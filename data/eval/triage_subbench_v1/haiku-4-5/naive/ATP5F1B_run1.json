@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "mitochondrial_internal",
-  "verdict_reasoning": "ATP5F1B (ATP synthase F1 subunit beta) is a core catalytic subunit of the mitochondrial ATP synthase complex (Complex V). It localizes exclusively to the inner mitochondrial membrane as part of the F1 head domain and does not reach the outer leaflet of the plasma membrane. While ATP synthase is a membrane protein, it is a resident of the inner mitochondrial membrane\u2014an endomembrane compartment internal to the cell. There is no documented mechanism for ATP5F1B to transit to or assemble at the plasma membrane under any physiological condition. Surface accessibility would require plasma membrane targeting and either a transmembrane domain or stable partnership with a surface-anchored protein, neither of which applies to this mitochondrial matrix-facing catalytic subunit.",
+  "verdict_reasoning": "ATP5F1B encodes the F1 subunit B of ATP synthase, a core catalytic component of the inner mitochondrial membrane. It is a mitochondrial matrix-facing protein integrated into the inner membrane as part of the multi-subunit ATP synthase complex. It has no transmembrane domain anchoring it to the plasma membrane, no GPI anchor, no outer-leaflet lipidation, and no documented surface trafficking. It is not a secreted protein, not a TM-precursor of a shed ligand, not covalently tethered to a surface receptor, and has no documented PM pool even under cell-state stress, cancer conditions, cell death, or tissue-restricted contexts. ATP synthase subunits are canonically intramitochondrial and are not targets of surface-directed therapeutics.",
   "correct": false,
-  "prompt_tokens": 1487,
-  "completion_tokens": 210,
+  "prompt_tokens": 4925,
+  "completion_tokens": 217,
   "n_web_searches": 0,
-  "cost_usd": 0.002537,
-  "latency_s": 2.341569249983877,
+  "cost_usd": 0.00601,
+  "latency_s": 2.914623374992516,
   "error": null,
   "raw_text": ""
 }

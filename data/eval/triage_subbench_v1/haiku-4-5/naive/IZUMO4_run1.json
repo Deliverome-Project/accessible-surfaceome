@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "yes",
   "predicted_reason": "classical_surface_receptor",
-  "verdict_reasoning": "IZUMO4 is a single-pass transmembrane protein with an extracellular immunoglobulin-like domain. As a member of the IZUMO family involved in sperm-egg fusion, it requires surface accessibility on the spermatozoon. The protein has its own TM anchor and ectodomain, making it a classical surface receptor architecture.",
+  "verdict_reasoning": "IZUMO4 is a single-pass transmembrane protein anchored to the sperm plasma membrane with a functional extracellular domain. It is stably surface-resident on spermatozoa, where it mediates sperm-egg interaction. The protein body is accessible from the extracellular space via its own TM anchor mechanism, classifying it as a classical surface receptor despite its germline-restricted expression.",
   "correct": false,
-  "prompt_tokens": 1487,
-  "completion_tokens": 505,
+  "prompt_tokens": 4925,
+  "completion_tokens": 550,
   "n_web_searches": 0,
-  "cost_usd": 0.004012,
-  "latency_s": 4.65303391701309,
+  "cost_usd": 0.007675,
+  "latency_s": 5.451852416968904,
   "error": null,
   "raw_text": ""
 }

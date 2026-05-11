@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (Hsp70-1) is canonically a cytosolic/nuclear stress-inducible chaperone, but it is well-documented to translocate to the outer plasma membrane leaflet under stress and especially on tumor cells (membrane Hsp70 / mHsp70). This tumor-restricted ecto-Hsp70 is the basis for clinical programs (e.g., cmHsp70.1 antibody, TKD-peptide NK-cell therapy). Surface display is non-baseline, driven by oncogenic state and stress.",
+  "correct": true,
+  "prompt_tokens": 6956,
+  "completion_tokens": 220,
+  "n_web_searches": 0,
+  "cost_usd": 0.12084,
+  "latency_s": 5.713817249983549,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGFB1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is a secreted ligand that circulates as a latent complex (mature peptide homodimer + LAP homodimer + LTBP). The LTBP-containing large latent complex is covalently cross-linked (via transglutaminase) to extracellular matrix or tethered to cell-surface receptors (GARP/LRRC32, LRRC33) on regulatory T cells, platelets, and macrophages, forming a wash-resistant cell-surface pool. This stable surface anchoring via TM scaffold partners (GARP/LRRC33) qualifies as `stable_surface_attachment`. Surface display is thus documented but restricted to specific cell types and activation states, making this contextual rather than constitutive.",
+  "correct": true,
+  "prompt_tokens": 5640,
+  "completion_tokens": 200,
+  "n_web_searches": 0,
+  "cost_usd": 0.01992,
+  "latency_s": 5.490289792011026,
+  "error": null,
+  "raw_text": ""
+}

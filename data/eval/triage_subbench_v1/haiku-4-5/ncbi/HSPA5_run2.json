@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA5 (BiP/GRP78) is a canonical ER-lumenal chaperone. However, under cellular stress (viral infection, tumorigenesis, ER stress), HSPA5 translocates to the cell surface where it functions as a danger-associated molecular pattern (DAMP) recognized by immune receptors and targeted by therapeutic antibodies. Surface HSPA5 is also induced in cancer cells and is a documented target of CAR-T and antibody programs. The surface form arises via stress-induced trafficking and dual localization rather than constitutive PM residence.",
+  "verdict_reasoning": "HSPA5 (BiP/GRP78) is an ER-luminal chaperone canonically resident in the ER lumen. However, it has documented surface-accessible pools in two key contexts: (1) cell-state-induced ecto-presentation in cancer cells \u2014 tumor cells display HSPA5 on the outer leaflet as an immunogenic stress-antigen, recognized by antibodies and CAR-T programs; (2) cell-death-induced surface exposure \u2014 apoptotic and necroptotic cells externalize HSPA5 to the plasma membrane. These non-baseline surface displays qualify as contextual / cell_state_induced.",
   "correct": true,
-  "prompt_tokens": 3861,
-  "completion_tokens": 172,
+  "prompt_tokens": 5634,
+  "completion_tokens": 185,
   "n_web_searches": 0,
-  "cost_usd": 0.004721,
-  "latency_s": 2.2106718749855645,
+  "cost_usd": 0.006559,
+  "latency_s": 2.954921624972485,
   "error": null,
   "raw_text": ""
 }

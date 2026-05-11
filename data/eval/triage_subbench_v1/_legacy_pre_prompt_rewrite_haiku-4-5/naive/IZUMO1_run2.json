@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "IZUMO1 is a sperm surface protein that is exposed on the outer leaflet of the sperm plasma membrane via a GPI anchor, but only during or after the acrosome reaction \u2014 a sperm-specific, cell-state-dependent exocytotic event triggered during fertilization. Before acrosome reaction, IZUMO1 is sequestered within the acrosome, an exocytotic vesicle. Upon acrosomal exocytosis, IZUMO1-containing membranes fuse with the plasma membrane, stably exposing IZUMO1 on the sperm surface where it mediates binding to the egg zona pellucida receptor JUNO. This is a classic example of induced surface exposure via exocytosis of a specialized organellar compartment in a germ cell.",
+  "correct": true,
+  "prompt_tokens": 1487,
+  "completion_tokens": 226,
+  "n_web_searches": 0,
+  "cost_usd": 0.002617,
+  "latency_s": 2.4606469579739496,
+  "error": null,
+  "raw_text": ""
+}

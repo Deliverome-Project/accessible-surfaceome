@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B4GALT1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "B4GALT1 is a type II membrane protein with an N-terminal TM anchor. Its primary residence is the Golgi, where it functions as a galactosyltransferase. However, it is well-documented that B4GALT1 is also expressed on the cell surface \u2014 notably on sperm and other cell types \u2014 where it acts as a receptor for zona pellucida glycoproteins and modulates signaling. This surface pool is genuine (the TM anchor remains; it is not shed), making it a dual-localization protein with a documented PM minority fraction alongside its dominant Golgi residency.",
+  "correct": true,
+  "prompt_tokens": 3897,
+  "completion_tokens": 177,
+  "n_web_searches": 0,
+  "cost_usd": 0.014346,
+  "latency_s": 4.790720082994085,
+  "error": null,
+  "raw_text": ""
+}

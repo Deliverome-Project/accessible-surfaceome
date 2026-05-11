@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "EREG",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "EREG (epiregulin) is an EGF-family ligand encoded as a single-pass type I transmembrane precursor (pro-epiregulin) that is anchored at the plasma membrane before regulated juxtamembrane shedding by ADAM10/17 releases the soluble EGF-like ectodomain. The TM precursor stage supports juxtacrine signaling from the cell surface, but the dominant biological actor is the soluble shed form. This fits the 'transient TM precursor of a shed-ligand-dominant gene' pattern \u2014 the TM-anchored form is real and surface-accessible but short-lived relative to the secreted pool, qualifying as contextual/dual_localization.",
+  "correct": true,
+  "prompt_tokens": 4924,
+  "completion_tokens": 199,
+  "n_web_searches": 0,
+  "cost_usd": 0.017757,
+  "latency_s": 5.151086375000887,
+  "error": null,
+  "raw_text": ""
+}

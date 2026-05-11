@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGN46/TGN38 is a type I TM protein predominantly resident in the trans-Golgi network but cycles between TGN, endosomes, and the plasma membrane via the secretory/endocytic pathway. A documented minority surface pool is reached during this cycling (widely exploited as an internalization marker), giving its own TM anchor on the PM during the surface phase. This fits dual_localization with a minor but real PM fraction alongside a dominant TGN home.",
+  "correct": true,
+  "prompt_tokens": 10793,
+  "completion_tokens": 189,
+  "n_web_searches": 0,
+  "cost_usd": 0.17607,
+  "latency_s": 8.613496500009205,
+  "error": null,
+  "raw_text": ""
+}

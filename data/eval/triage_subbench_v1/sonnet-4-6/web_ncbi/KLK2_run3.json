@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "KLK2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "KLK2 (hK2) is canonically a secreted trypsin-like serine protease abundantly produced and secreted by prostate luminal epithelium, detectable at high levels in seminal plasma and blood. It lacks a canonical transmembrane domain. However, a 2025 Clinical Cancer Research study systematically confirmed KLK2 cell-surface expression in prostate cancer cell lines (VCaP) by FACS and confocal microscopy co-localizing with EpCAM, and in patient-derived mCRPC tumor cells \u2014 establishing an oncogenic-state ecto-pool. Multiple KLK2-directed therapeutics (bispecific T-cell engager pasritamig/JNJ-78278343, CAR-T, actinium-225 radioligand) have entered clinical trials engaging KLK2 on the cell surface of prostate cancer cells. This qualifies as cell_state_induced (cancer-restricted surface display of a nominally secreted protein), not a stable baseline surface localization.",
+  "correct": true,
+  "prompt_tokens": 28917,
+  "completion_tokens": 329,
+  "n_web_searches": 1,
+  "cost_usd": 0.101686,
+  "latency_s": 10.132617666036822,
+  "error": null,
+  "raw_text": ""
+}

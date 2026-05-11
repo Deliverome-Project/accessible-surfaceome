@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-luminal chaperone, but during stress, viral infection, and malignant transformation it is well-documented to traffic to the cell surface where it is exposed on the outer leaflet of the plasma membrane. Surface GRP78 has been exploited as a tumor-specific target by antibodies, ADCs, and peptide-drug conjugates in multiple cancer programs. The surface form retains its own stable membrane association in stressed/tumor cells, qualifying as cell-state-induced dual localization rather than transient recruitment.",
+  "verdict_reasoning": "HSPA5/GRP78/BiP is canonically an ER-luminal chaperone. However, it is well-documented to translocate to the cell surface under stress conditions including oncogenic transformation, viral infection, ER stress, and immunogenic cell death. Surface GRP78 has been exploited as a cancer-cell-selective target by antibodies, ADCs, and bispecifics (e.g., anti-GRP78 antibody programs in multiple solid tumors). The surface pool is absent or minimal in most normal adult tissues but present on tumor cells and stressed/infected cells, qualifying as cell_state_induced contextual surface biology.",
   "correct": true,
-  "prompt_tokens": 3862,
-  "completion_tokens": 164,
+  "prompt_tokens": 5635,
+  "completion_tokens": 179,
   "n_web_searches": 0,
-  "cost_usd": 0.014046,
-  "latency_s": 4.908337332948577,
+  "cost_usd": 0.01959,
+  "latency_s": 4.716536709049251,
   "error": null,
   "raw_text": ""
 }

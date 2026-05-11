@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 (TGN46/TGN38 homolog, also known as TGN46) is a type I single-pass transmembrane protein that cycles between the trans-Golgi network (TGN) and endosomes. Its dominant steady-state localization is the TGN; it is a canonical marker protein for the TGN. While it undergoes itinerant cycling through endosomes and briefly passes through the plasma membrane as part of its trafficking itinerary, the surface-resident pool is extremely transient and rapidly retrieved via clathrin-mediated endocytosis. No substantial stable surface pool has been documented and it is not used as a therapeutic surface target. The dominant and functionally relevant compartment is endomembrane (TGN), so this is best classified as endomembrane-resident.",
+  "correct": false,
+  "prompt_tokens": 4926,
+  "completion_tokens": 226,
+  "n_web_searches": 0,
+  "cost_usd": 0.018168,
+  "latency_s": 5.602990624960512,
+  "error": null,
+  "raw_text": ""
+}

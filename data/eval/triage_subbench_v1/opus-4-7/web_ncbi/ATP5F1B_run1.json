@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (ATP5B) is canonically a mitochondrial inner-membrane F1Fo-ATP synthase subunit, but a documented ectopic plasma-membrane pool (ecto-ATP synthase) is displayed on the outer leaflet of tumor cells (NSCLC, breast, prostate, leukemia) and some normal cells (hepatocytes, endothelial cells, adipocytes), with the F1 catalytic head facing extracellularly. It serves as a surface receptor for HDL/apoA-I and angiostatin and is being explored as an antibody/aptamer target, satisfying cell-state-induced (oncogenic / hypoxic / specialized normal-cell) surface display.",
+  "correct": true,
+  "prompt_tokens": 39205,
+  "completion_tokens": 366,
+  "n_web_searches": 1,
+  "cost_usd": 0.625525,
+  "latency_s": 13.934734667011071,
+  "error": null,
+  "raw_text": ""
+}

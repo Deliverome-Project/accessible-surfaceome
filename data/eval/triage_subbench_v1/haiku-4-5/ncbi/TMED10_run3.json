@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED10",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I TM protein (GOLD-domain p24 family member) with documented localization to both Golgi cisternae and the plasma membrane. The NCBI summary explicitly states PM localization alongside its dominant Golgi trafficking function. The protein has its own TM anchor and reaches the outer leaflet as part of normal secretory cycling and vesicular trafficking \u2014 consistent with dual_localization between ER/Golgi and the PM. While its major biological role is intracellular trafficking, the documented PM pool qualifies it for contextual rather than no.",
+  "correct": true,
+  "prompt_tokens": 5631,
+  "completion_tokens": 167,
+  "n_web_searches": 0,
+  "cost_usd": 0.006466,
+  "latency_s": 2.233521040994674,
+  "error": null,
+  "raw_text": ""
+}

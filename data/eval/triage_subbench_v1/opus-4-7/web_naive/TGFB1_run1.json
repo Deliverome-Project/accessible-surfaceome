@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGFB1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is secreted as a latent pro-cytokine (LAP-TGF\u03b21) but is covalently disulfide-tethered via Cys33 of LAP to the transmembrane partners GARP/LRRC32 (on platelets and activated FOXP3+ Tregs) and LRRC33 (on myeloid cells), producing a wash-resistant surface-displayed complex assembled intracellularly and co-trafficked to the PM. Anti-LAP and anti-GARP:TGF\u03b21 antibodies (e.g., livmoniplimab) clinically engage this surface pool. Soluble/ECM (LTBP-bound) pools also exist, so display is context-restricted to GARP+/LRRC33+ cells.",
+  "correct": true,
+  "prompt_tokens": 35731,
+  "completion_tokens": 756,
+  "n_web_searches": 1,
+  "cost_usd": 0.602665,
+  "latency_s": 13.500040374987293,
+  "error": null,
+  "raw_text": ""
+}

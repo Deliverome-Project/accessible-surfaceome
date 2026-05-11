@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I TM p24-family trafficking protein predominantly resident in ER-Golgi cisternae, cycling within the early secretory pathway. NCBI explicitly notes plasma membrane localization in addition to Golgi, consistent with a minority surface pool delivered via secretory cycling. The TM topology places the GOLD/ectodomain on the extracellular face when at the PM. Dominant compartment is endomembrane, but a documented PM pool qualifies as contextual via dual localization.",
+  "correct": true,
+  "prompt_tokens": 10862,
+  "completion_tokens": 205,
+  "n_web_searches": 0,
+  "cost_usd": 0.178305,
+  "latency_s": 8.935869209002703,
+  "error": null,
+  "raw_text": ""
+}

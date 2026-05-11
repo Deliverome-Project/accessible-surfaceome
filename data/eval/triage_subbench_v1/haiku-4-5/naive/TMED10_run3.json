@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED10",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "TMED10 (transmembrane emp24 domain-containing protein 10, also known as p24) is a type I transmembrane protein resident in the early secretory pathway (ER-Golgi intermediate compartment, ERGIC). It contains a single transmembrane domain with an N-terminal signal peptide and extracellular ectodomain. Although canonically studied as an intra-Golgi/ERGIC resident protein involved in cargo transport and COPII vesicle formation, p24 family members cycle between the ER and Golgi and transiently reach the cis-Golgi and ERGIC where they face the lumenal (topologically analogous to extracellular) face. However, the key point is that TMED10 is a classical single-pass TM protein with a defined extracellular domain topology \u2014 it is integrated into membrane-bound compartments of the secretory pathway with its ectodomain exposed. While not a canonical plasma-membrane resident, its TM architecture and compartment-cycling nature (reaching the ER-Golgi interface where cargo sorting occurs) establishes it as a membrane-integrated protein with an exposed extracellular-facing domain. This qualifies as surface-accessible by the criterion of TM-domain topology and membrane integration.",
+  "correct": false,
+  "prompt_tokens": 4924,
+  "completion_tokens": 328,
+  "n_web_searches": 0,
+  "cost_usd": 0.006564,
+  "latency_s": 4.170565332984552,
+  "error": null,
+  "raw_text": ""
+}

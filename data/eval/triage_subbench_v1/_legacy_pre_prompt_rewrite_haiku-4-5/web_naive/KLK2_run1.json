@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "KLK2 was traditionally characterized as a secreted serine protease, with dominant cytoplasmic/ER-translocated/extracellular compartmentalization. However, robust evidence now demonstrates cell surface expression in prostate cancer cells and dissociated metastatic tissue (FACS-confirmed, confocal microscopy with EpCAM colocalization). Multiple surface-directed therapeutics (CD3-KLK2 bispecific, radioligand therapy, antibody drug conjugates) show clinical/preclinical efficacy, validating stable surface accessibility. The protein lacks an intrinsic TM domain or GPI anchor, reaching the surface via canonical secretory pathway in a context-dependent (cancer cell state) manner. Surface pool is likely sustained but mechanism is unknown\u2014possibly non-covalent binding to TM partner or altered trafficking in neoplastic state. Qualifies as contextual: documented surface expression in specific cells/disease context, therapeutically accessible, but not via constitutive intrinsic anchoring mechanism.",
+  "correct": false,
+  "prompt_tokens": 74515,
+  "completion_tokens": 1390,
+  "n_web_searches": 3,
+  "cost_usd": 0.111465,
+  "latency_s": 17.220586624986026,
+  "error": null,
+  "raw_text": ""
+}

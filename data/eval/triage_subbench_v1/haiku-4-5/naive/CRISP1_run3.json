@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "CRISP1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "gpi_anchored",
+  "verdict_reasoning": "CRISP1 (Cysteine-Rich Secretory Protein 1) is a glycoprotein with a GPI anchor (glycosylphosphatidylinositol anchor) that tethers it to the outer leaflet of the plasma membrane. It is expressed on the surface of immune cells, particularly T cells and NK cells, where it plays a role in cell-cell adhesion and immune regulation. The GPI anchor is a stable, covalent mechanism for outer-leaflet anchoring that is resistant to detergent extraction and persists after washing. This qualifies CRISP1 as a bona fide surface-accessible protein under its baseline localization.",
+  "correct": false,
+  "prompt_tokens": 4924,
+  "completion_tokens": 188,
+  "n_web_searches": 0,
+  "cost_usd": 0.005864,
+  "latency_s": 2.366755540948361,
+  "error": null,
+  "raw_text": ""
+}

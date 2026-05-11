@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "mitochondrial_internal",
-  "verdict_reasoning": "ATP5F1B (ATP synthase F1 subunit B) is a core catalytic subunit of the F1 sector of ATP synthase. ATP synthase is an inner-mitochondrial-membrane complex embedded in the cristae. ATP5F1B is a soluble protein within the F1 assembly\u2014it does not span or associate with the lipid bilayer itself, and it has no extracellular domain, GPI anchor, or mechanism to reach the plasma membrane. It resides exclusively in the mitochondrial matrix-facing compartment of the inner mitochondrial membrane complex. It is not surface-accessible.",
+  "verdict_reasoning": "ATP5F1B is a mitochondrial matrix-facing F1 catalytic subunit of ATP synthase, embedded in the inner mitochondrial membrane as part of an obligate oligomeric complex. It has no membrane anchor of its own, no secretion pathway, no documented surface pool, and no known cell-state, developmental, or stress-induced relocalization to the plasma membrane. It is inaccessible from the extracellular space.",
   "correct": false,
-  "prompt_tokens": 1487,
-  "completion_tokens": 175,
+  "prompt_tokens": 4925,
+  "completion_tokens": 505,
   "n_web_searches": 0,
-  "cost_usd": 0.002362,
-  "latency_s": 2.137812583008781,
+  "cost_usd": 0.00745,
+  "latency_s": 5.63478970900178,
   "error": null,
   "raw_text": ""
 }

@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "KLK2 is predominantly a secreted serine protease, but recent systematic studies (2025) confirm that it achieves robust cell surface expression in prostate cancer cells, accessible to bispecific T-cell engagers, CAR-T, and radioligand therapy. The protein has dual localization: secreted into prostatic fluid (established function) and surface-localized in prostate cancer (documented by IHC, immunofluorescence, and FACS). The surface pool appears contextual to the malignant state or cell type (prostate epithelium/cancer cells) rather than a baseline classical surface receptor property, but the accessibility is well-documented and therapeutically validated.",
+  "correct": false,
+  "prompt_tokens": 36606,
+  "completion_tokens": 815,
+  "n_web_searches": 2,
+  "cost_usd": 0.060681,
+  "latency_s": 10.086228125030175,
+  "error": null,
+  "raw_text": ""
+}

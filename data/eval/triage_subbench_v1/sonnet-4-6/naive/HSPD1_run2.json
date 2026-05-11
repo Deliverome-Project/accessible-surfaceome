@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin, but it is well-documented to appear on the plasma membrane outer surface under stress, apoptosis, tumor transformation, and inflammatory conditions. Cell-surface HSP60 has been detected on tumor cells and stressed cells via flow cytometry and is recognized by antibodies, NK cells, and experimental immunotherapeutics. It lacks a classical TM domain or GPI anchor but associates with the outer leaflet in a cell-state-dependent manner. Because surface exposure requires specific conditions (stress/disease state), verdict is contextual.",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin. However, it has well-documented cell-state-induced surface display: it translocates to the outer leaflet of the plasma membrane on tumor cells (cancer ecto-chaperone), on cells undergoing heat shock/stress, and on apoptotic/ICD cells. Surface HSP60 on tumor cells is recognized by NK cells and has been targeted by antibody-based therapeutic strategies. This non-baseline outer-leaflet pool qualifies as contextual/cell_state_induced despite the dominant mitochondrial localization.",
   "correct": true,
-  "prompt_tokens": 1488,
-  "completion_tokens": 173,
+  "prompt_tokens": 4926,
+  "completion_tokens": 177,
   "n_web_searches": 0,
-  "cost_usd": 0.007059,
-  "latency_s": 5.203120124991983,
+  "cost_usd": 0.017433,
+  "latency_s": 4.773924749984872,
   "error": null,
   "raw_text": ""
 }

@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "TGOLN2 (TGN46) is a single-pass type-I transmembrane protein that rapidly cycles between the trans-Golgi network and the plasma membrane. Although its steady-state localization is at the TGN, it reaches the cell surface via documented CARTS carriers and maintains a dynamic, wash-resistant presence at the plasma membrane as an anchored integral membrane protein. The protein has a functional endocytic signal (YQRL motif) that drives retrieval from the PM back to the TGN, maintaining steady-state TGN localization despite continuous trafficking. This constitutive cycling pattern qualifies as dual localization with stable membrane anchoring\u2014a contextual surface presentation.",
+  "verdict_reasoning": "TGOLN2 is a type I integral membrane protein with a transmembrane domain that constitutively cycles between the TGN and the plasma membrane via endosomes. While its steady-state localization is predominantly in the TGN, it documented reaches the cell surface as part of normal trafficking via carriers (CARTS) destined for the plasma membrane. The protein has its own anchor (transmembrane domain) and traffics to the surface as part of its natural cycle, not as cargo of another protein. This qualifies as dual_localization: the protein has a stable surface pool despite dominant intracellular localization, via its own trafficking machinery.",
   "correct": true,
-  "prompt_tokens": 33959,
-  "completion_tokens": 913,
+  "prompt_tokens": 40463,
+  "completion_tokens": 737,
   "n_web_searches": 2,
-  "cost_usd": 0.05852400000000001,
-  "latency_s": 10.885791332984809,
+  "cost_usd": 0.064148,
+  "latency_s": 9.648268792021554,
   "error": null,
   "raw_text": ""
 }

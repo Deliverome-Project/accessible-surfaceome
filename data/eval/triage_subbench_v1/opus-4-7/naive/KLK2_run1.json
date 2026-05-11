@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "KLK2 (kallikrein-related peptidase 2) is a secreted serine protease produced predominantly by prostate epithelium, released into seminal fluid and serum. It has a signal peptide and is constitutively secreted with no TM domain, GPI anchor, or documented wash-resistant covalent tethering to a surface partner. While it can transiently bind protease inhibitors (e.g., PCI) in solution, this is reversible equilibrium, not stable surface anchoring. Clinical interest (e.g., radioligand/ADC programs) targets the secreted/tissue-bound pool, not a bona fide surface pool.",
+  "correct": false,
+  "prompt_tokens": 6954,
+  "completion_tokens": 242,
+  "n_web_searches": 0,
+  "cost_usd": 0.12246,
+  "latency_s": 4.91203329100972,
+  "error": null,
+  "raw_text": ""
+}

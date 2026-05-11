@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "STIM1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a single-pass type I transmembrane protein residing primarily in the ER membrane, where its luminal EF-hand domain senses Ca2+ store depletion. Upon store depletion, STIM1 oligomerizes and translocates to ER-PM junctions, where its cytoplasmic SOAR/CAD domain directly gates Orai channels at the plasma membrane. Crucially, a fraction of STIM1 is also present at the plasma membrane itself with its N-terminal domain facing the extracellular space, making it directly accessible from the extracellular face. Anti-STIM1 antibodies targeting the extracellular domain block SOCE, confirming surface accessibility.",
+  "correct": false,
+  "prompt_tokens": 3880,
+  "completion_tokens": 198,
+  "n_web_searches": 0,
+  "cost_usd": 0.01461,
+  "latency_s": 4.968737541988958,
+  "error": null,
+  "raw_text": ""
+}

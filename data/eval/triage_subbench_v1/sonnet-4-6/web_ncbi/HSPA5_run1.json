@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-lumenal chaperone with a KDEL retention signal, resident in the ER under normal conditions. However, well-documented stress-induced translocation to the cell surface occurs during ER stress, viral infection, and in cancer cells (including prostate, ovarian, and lung cancers). Multiple published reviews explicitly describe 'cell surface HSPA5' as a therapeutic target, with antibody-based strategies, and it has been described as a viral entry receptor. Surface translocation is condition-dependent (ER stress / tumorigenesis), making this a clear contextual verdict via cell_state_induced mechanism.",
+  "verdict_reasoning": "HSPA5/GRP78/BiP is canonically an ER-lumenal chaperone retained by its KDEL motif. However, under ER stress conditions \u2014 including hypoxia, nutrient deprivation, tumorigenesis, and viral infection \u2014 it escapes ER retention and translocates to the outer leaflet of the plasma membrane, where it functions as a co-receptor and signaling hub. Surface GRP78 is well-documented on multiple cancer cell types (prostate, breast, ovarian) by non-permeabilized flow cytometry and surface biotinylation assays, and is targeted by antibody therapeutics. This is a classic oncogenic/stress-state-induced ecto-form of a nominally intracellular protein.",
   "correct": true,
-  "prompt_tokens": 26359,
-  "completion_tokens": 244,
+  "prompt_tokens": 35511,
+  "completion_tokens": 474,
   "n_web_searches": 1,
-  "cost_usd": 0.092737,
-  "latency_s": 8.380153333011549,
+  "cost_usd": 0.12364299999999999,
+  "latency_s": 12.809979290992487,
   "error": null,
   "raw_text": ""
 }

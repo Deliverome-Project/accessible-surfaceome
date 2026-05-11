@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "endomembrane_resident",
-  "verdict_reasoning": "TMED10 (transmembrane emp24 domain containing 10) is a component of the COPII vesicle coat and resides primarily in the endoplasmic reticulum and Golgi compartments. It is an ER-resident protein with a single transmembrane domain whose topology positions its bulk on the luminal/intra-compartmental side. TMED10 participates in ER-to-Golgi vesicular trafficking as part of the cargo selection and coat assembly machinery, but does not itself traffic to the plasma membrane via its own mechanism. It remains sequestered in the secretory pathway organelles and is not accessible from the extracellular face.",
+  "verdict_reasoning": "TMED10 is a multi-pass transmembrane protein that functions as an integral membrane component of the ER-ERGIC-cis-Golgi system. It is a canonical endomembrane coat protein with no documented surface trafficking, ectodomain shedding, secretion, or cell-state-induced surfacing. The protein is retained intracellularly via its four transmembrane domains and plays a role in anterograde cargo transport and COPI/COPII coat assembly\u2014functions incompatible with PM accessibility.",
   "correct": false,
-  "prompt_tokens": 1486,
-  "completion_tokens": 189,
+  "prompt_tokens": 4924,
+  "completion_tokens": 544,
   "n_web_searches": 0,
-  "cost_usd": 0.002431,
-  "latency_s": 2.544955875026062,
+  "cost_usd": 0.007644,
+  "latency_s": 6.055461583950091,
   "error": null,
   "raw_text": ""
 }

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B4GALT1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "B4GALT1 is a type II single-pass TM Golgi-resident glycosyltransferase \u2014 its canonical home is the Golgi apparatus where it synthesizes lactosamine on glycoconjugates. However, it is well-documented to have a cell-surface form: on sperm and on fertilizing eggs a surface pool of B4GALT1 acts as a zona pellucida receptor, mediating sperm-egg binding. Additionally, in lactating mammary epithelium it forms a complex with alpha-lactalbumin. This tissue-restricted surface display (germline/reproductive lineage and specialized epithelium) qualifies as contextual/tissue_restricted_surface. The dominant compartment is Golgi/endomembrane, but the documented outer-leaflet pool in those specific biological contexts precludes a 'no' verdict.",
+  "correct": true,
+  "prompt_tokens": 5670,
+  "completion_tokens": 216,
+  "n_web_searches": 0,
+  "cost_usd": 0.02025,
+  "latency_s": 5.7188387920032255,
+  "error": null,
+  "raw_text": ""
+}

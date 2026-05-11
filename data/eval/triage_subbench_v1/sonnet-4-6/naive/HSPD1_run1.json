@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPD1 encodes HSP60 (mitochondrial chaperonin), whose canonical location is the mitochondrial matrix. However, multiple studies document a bona fide plasma membrane form of HSP60 on the surface of various cell types\u2014particularly tumor cells, stressed cells, and cells undergoing ICD. This surface HSP60 has been validated by flow cytometry on intact (non-permeabilized) cells and by antibody binding to living cells, and it persists through wash steps. Because surface expression is induced by stress/oncogenic transformation rather than constitutive, this is best classified as contextual/cell_state_induced.",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperonin. However, it is well-documented to translocate to the cell surface under stress, oncogenic transformation, and immunogenic/apoptotic conditions. Surface HSP60 has been detected on tumor cells and stressed cells by flow cytometry and surface biotinylation, where it acts as a danger signal and target for NK cells and antibodies. Several antibody and CAR-T programs have been directed against cell-surface HSP60 on cancer cells. This qualifies as cell_state_induced contextual surface accessibility.",
   "correct": true,
-  "prompt_tokens": 1488,
-  "completion_tokens": 178,
+  "prompt_tokens": 4926,
+  "completion_tokens": 174,
   "n_web_searches": 0,
-  "cost_usd": 0.007134,
-  "latency_s": 4.881402000028174,
+  "cost_usd": 0.017388,
+  "latency_s": 4.939674832974561,
   "error": null,
   "raw_text": ""
 }

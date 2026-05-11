@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is canonically a cytosolic/mitochondrial pro-apoptotic BCL2-family protein. However, during apoptosis and immunogenic cell death, BAX undergoes conformational activation and inserts into the outer mitochondrial membrane and can translocate to the plasma membrane outer leaflet. Multiple studies document BAX surface exposure on apoptotic and stressed cells, including cancer cells undergoing ICD. This cell-death-induced PM translocation qualifies as contextual surface accessibility via cell_state_induced mechanism, making it a potential target for surface-directed agents in that context.",
+  "correct": true,
+  "prompt_tokens": 4994,
+  "completion_tokens": 163,
+  "n_web_searches": 0,
+  "cost_usd": 0.017427,
+  "latency_s": 5.097751000022981,
+  "error": null,
+  "raw_text": ""
+}

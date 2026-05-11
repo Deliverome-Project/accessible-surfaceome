@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED10",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "TMED10 is a type I membrane protein with documented localization to both the plasma membrane and Golgi cisternae. The NCBI summary explicitly states it is 'localized to the plasma membrane and golgi cisternae' and describes its role in 'vesicular protein trafficking' and as part of a 'heteromeric secretase complex.' As a type I membrane protein (single TM domain with extracellular N-terminal domain), it has its own intrinsic membrane-anchoring mechanism and stable presence on the outer face of the plasma membrane. The gene belongs to the canonical 'Transmembrane p24 trafficking proteins' gene-group family, confirming its membrane-resident biology. The protein's documented presence at the PM via its own TM mechanism qualifies it as surface-accessible.",
+  "correct": false,
+  "prompt_tokens": 4450,
+  "completion_tokens": 215,
+  "n_web_searches": 0,
+  "cost_usd": 0.005525,
+  "latency_s": 2.5921214170521125,
+  "error": null,
+  "raw_text": ""
+}

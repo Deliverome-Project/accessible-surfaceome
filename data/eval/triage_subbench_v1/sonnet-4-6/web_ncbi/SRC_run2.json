@@ -7,13 +7,13 @@
   "truth_class": "wrong_side_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "SRC (c-Src) is canonically a non-receptor tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation and a polybasic cluster \u2014 not accessible from the extracellular face under baseline conditions. However, a 2026 Science study demonstrated that in cancer cells, Src undergoes topological inversion onto the cell surface via autophagolysosomal exocytosis (ALE), making it accessible from the extracellular face as 'eSrc'. Anti-Src antibody-based therapies were shown to mediate tumor cell killing in this context. This documented cancer-state surface presentation qualifies as contextual via cell_state_induced/lysosomal_exocytosis.",
+  "verdict_reasoning": "SRC (p60-Src) is canonically a non-receptor tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-myristoylation and a polybasic cluster\u2014it is not accessible from the extracellular face under baseline conditions. However, a 2026 Science paper demonstrates that in cancer cells, Src undergoes topological inversion to the outer cell surface through autophagolysosomal exocytosis (ALE), driven by upregulated Src protein levels and dysregulated autophagic flux characteristic of cancer. This extracellular Src (eSrc) was detected on cancer cell lines, xenografts, and patient tumor samples, and is proposed as a therapeutic target for antibodies. This qualifies as cell_state_induced (oncogenic transformation) surface display.",
   "correct": true,
-  "prompt_tokens": 23492,
-  "completion_tokens": 460,
+  "prompt_tokens": 27475,
+  "completion_tokens": 415,
   "n_web_searches": 1,
-  "cost_usd": 0.087376,
-  "latency_s": 11.169423250015825,
+  "cost_usd": 0.09865,
+  "latency_s": 10.65096562501276,
   "error": null,
   "raw_text": ""
 }

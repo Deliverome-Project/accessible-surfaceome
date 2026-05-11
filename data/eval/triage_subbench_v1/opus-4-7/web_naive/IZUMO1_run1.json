@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a type-I single-pass transmembrane immunoglobulin-superfamily protein with a ~300-residue extracellular Izumo+Ig domain ectodomain and a short cytoplasmic tail. Expression is strictly restricted to the testis/sperm lineage. In fresh spermatozoa it resides in the inner acrosomal membrane and is not surface-exposed; only after capacitation and the acrosome reaction does it translocate to the outer sperm plasma membrane (equatorial segment) where it engages egg JUNO/FCRL3. Its own TM anchor is unambiguous, but surface display is confined to a narrow germline lineage and acrosome-reacted state, fitting tissue_restricted_surface rather than yes.",
+  "correct": true,
+  "prompt_tokens": 42035,
+  "completion_tokens": 579,
+  "n_web_searches": 1,
+  "cost_usd": 0.6839500000000001,
+  "latency_s": 10.555002583016176,
+  "error": null,
+  "raw_text": ""
+}

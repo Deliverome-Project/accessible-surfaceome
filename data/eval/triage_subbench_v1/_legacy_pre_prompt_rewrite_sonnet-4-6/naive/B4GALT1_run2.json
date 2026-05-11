@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B4GALT1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "B4GALT1 (beta-1,4-galactosyltransferase 1) is predominantly a Golgi-resident type II transmembrane protein responsible for lactose and glycan synthesis. However, it is well-documented to have a surface-expressed isoform on certain cell types (notably sperm, leukocytes, and some tumor cells), where it functions as a cell-surface receptor/adhesion molecule that binds glycan ligands. This surface pool is a stable TM-anchored form, not merely transient recruitment. Given the tissue/cell-type restriction of surface expression, verdict is contextual.",
+  "correct": true,
+  "prompt_tokens": 1489,
+  "completion_tokens": 180,
+  "n_web_searches": 0,
+  "cost_usd": 0.007167,
+  "latency_s": 5.181939833972137,
+  "error": null,
+  "raw_text": ""
+}

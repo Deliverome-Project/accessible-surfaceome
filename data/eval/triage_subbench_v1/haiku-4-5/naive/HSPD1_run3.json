@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPD1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 (heat shock protein family D member 1, also known as Hsp60) is canonically a mitochondrial-matrix chaperone resident in the inner mitochondrial compartment. However, it has documented surface display under cell-state conditions: (1) stress-induced externalization \u2014 ER stress, heat shock, and oxidative stress trigger translocation of HSPD1 to the outer leaflet of the plasma membrane and the extracellular space in multiple cell types; (2) cancer-cell ecto-display \u2014 tumor cells display HSPD1 on the outer face as an ecto-chaperone (cancer ecto-Hsp60), facilitating tumor-stromal cross-talk and immune evasion; (3) cell-death pathways \u2014 apoptotic and necroptotic cells externalizing HSPD1 to the surface as a damage-associated molecular pattern (DAMP). These non-baseline surface pools qualify as contextual surface accessibility. HSPD1 is also a validated clinical CAR-T target in multiple myeloma and solid tumors, with programs targeting the surface-displayed pool. The protein's own mechanism for ecto-display appears stress-mediated PM translocation or specialized exocytosis; the baseline compartment is mitochondrial-internal, but the documented stress-induced and cancer-cell-restricted surface pools are stable enough for therapeutic engagement.",
+  "correct": true,
+  "prompt_tokens": 4925,
+  "completion_tokens": 354,
+  "n_web_searches": 0,
+  "cost_usd": 0.006695,
+  "latency_s": 4.332361042033881,
+  "error": null,
+  "raw_text": ""
+}

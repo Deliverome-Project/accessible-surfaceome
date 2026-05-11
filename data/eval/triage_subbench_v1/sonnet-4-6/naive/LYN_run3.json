@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase that is N-terminally myristoylated and palmitoylated, anchoring it to the cytoplasmic (inner) leaflet of the plasma membrane. Its canonical localization is inner-leaflet of the PM and intracellular membranes. However, LYN has documented ecto-kinase display on the outer leaflet of tumor/cancer cells (cancer ecto-kinase), and inner-leaflet-anchored kinases with documented cancer-cell outer-leaflet display qualify as contextual/cell_state_induced under the pre-no checklist rules.",
+  "correct": true,
+  "prompt_tokens": 4924,
+  "completion_tokens": 185,
+  "n_web_searches": 0,
+  "cost_usd": 0.017547,
+  "latency_s": 4.6731258340296336,
+  "error": null,
+  "raw_text": ""
+}

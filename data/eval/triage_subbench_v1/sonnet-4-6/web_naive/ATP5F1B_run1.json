@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "ATP5F1B (ATP5B) is the catalytic beta subunit of mitochondrial F1Fo ATP synthase, with its dominant localization at the inner mitochondrial membrane. However, multiple independent lines of evidence document an ectopic surface pool (ecto-ATP synthase) on tumor, endothelial, and neuronal cells: the complex is physically trafficked from mitochondria to the plasma membrane via microtubule/DRP1/KIF5B, and the mitochondrial membrane fuses to the PM to anchor it. RNA aptamers and antibodies targeting surface ATP5B are validated therapeutic leads in breast and prostate cancer. Surface expression is cell-state/tumor-context dependent, not the universal baseline, making this contextual rather than yes.",
+  "verdict_reasoning": "ATP5F1B (ATP synthase F1 beta subunit) is canonically a mitochondrial inner-membrane protein forming the catalytic F1 domain of Complex V. However, extensive published evidence documents an ectopic surface pool (eATP synthase) on the outer leaflet of the plasma membrane in multiple cancer and normal cell types: hepatocytes, endothelial cells, adipocytes, keratinocytes, leukemia cells (NB4, HL-60), NSCLC (A549), prostate (PC-3M, LN3), and breast cancer cells. Surface display is confirmed by flow cytometry on intact cells, surface biotinylation, and aptamer/antibody binding to non-permeabilized cells. The mechanism involves mitochondrial assembly followed by DRP1/KIF5B-dependent microtubule transport and mitochondrial membrane-plasma membrane fusion, anchoring the complex at the cell surface. Surface expression is enriched in oncogenic/transformed states and correlates with metastatic aggressiveness, qualifying as cell_state_induced. This is not pMHC biology.",
   "correct": true,
-  "prompt_tokens": 31651,
-  "completion_tokens": 845,
+  "prompt_tokens": 34343,
+  "completion_tokens": 420,
   "n_web_searches": 2,
-  "cost_usd": 0.127628,
-  "latency_s": 19.643443708017003,
+  "cost_usd": 0.129329,
+  "latency_s": 10.98530145798577,
   "error": null,
   "raw_text": ""
 }

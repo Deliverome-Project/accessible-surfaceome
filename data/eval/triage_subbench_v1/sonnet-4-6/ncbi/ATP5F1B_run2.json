@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "ATP5F1B is canonically a mitochondrial F1 subunit residing in the mitochondrial matrix-facing catalytic head. However, multiple independent groups have documented ectopic display of ATP synthase beta subunit on the plasma membrane outer leaflet, particularly on tumor cells, hepatocytes, endothelial cells, and adipocytes \u2014 where it acts as a receptor for apoA-I, angiostatin, and other ligands. This surface pool is not a GPI-anchored or TM-domain-based form, but functional cell-surface ATP synthase complexes have been detected by flow cytometry and antibody labeling. This documented, cell-type-restricted outer-face localization qualifies as contextual rather than constitutive.",
+  "verdict_reasoning": "ATP5F1B encodes the beta subunit of mitochondrial F1-ATP synthase, canonically resident in the mitochondrial inner membrane facing the matrix. However, there is well-documented evidence that the F1-ATPase complex, including the beta subunit (also known as HEL-S-271 / ecto-F1-ATPase), translocates to the plasma membrane outer leaflet on certain cancer cells, hepatocytes, adipocytes, and endothelial cells, where it functions as a receptor/surface ATPase. This ecto-F1beta is a documented cancer-cell-state-induced surface target exploited by anti-tumor antibodies and natural ligands like angiostatin. This qualifies as contextual / cell_state_induced surface display.",
   "correct": true,
-  "prompt_tokens": 3893,
-  "completion_tokens": 205,
+  "prompt_tokens": 5666,
+  "completion_tokens": 211,
   "n_web_searches": 0,
-  "cost_usd": 0.014754,
-  "latency_s": 5.598994459025562,
+  "cost_usd": 0.020163,
+  "latency_s": 5.065721791994292,
   "error": null,
   "raw_text": ""
 }

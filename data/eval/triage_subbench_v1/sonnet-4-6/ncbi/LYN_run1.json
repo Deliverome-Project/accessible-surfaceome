@@ -7,13 +7,13 @@
   "truth_class": "wrong_side_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "LYN is a Src-family tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. Canonically it is inner-leaflet-anchored (cytoplasmic face). However, multiple studies document LYN ecto-display on the outer leaflet of cancer cells (ecto-kinase phenomenon), placing it in the cell_state_induced / cancer ecto-kinase category. This documented outer-leaflet pool in tumor cells \u2014 even though baseline localization is inner-leaflet \u2014 qualifies it as contextual rather than no.",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase that is N-terminally myristoylated and palmitoylated, anchoring it to the inner leaflet of the plasma membrane \u2014 not the outer leaflet under baseline conditions. However, tumor cells and cells undergoing immunogenic/programmed cell death have documented ecto-LYN display on the outer leaflet (cancer ecto-kinase biology). Additionally, activation-induced redistribution in immune cells (B cells, mast cells) places LYN at lipid rafts on the PM inner face, with cell-state-induced outer-leaflet exposure documented in cancer contexts. This qualifies as contextual/cell_state_induced rather than yes (inner-leaflet anchor baseline) or no.",
   "correct": true,
-  "prompt_tokens": 4945,
-  "completion_tokens": 164,
+  "prompt_tokens": 5553,
+  "completion_tokens": 202,
   "n_web_searches": 0,
-  "cost_usd": 0.017295,
-  "latency_s": 4.276510833995417,
+  "cost_usd": 0.019689,
+  "latency_s": 5.460056125011761,
   "error": null,
   "raw_text": ""
 }

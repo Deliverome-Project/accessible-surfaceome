@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a type I single-pass transmembrane protein with a large extracellular domain and a short cytoplasmic C-tail. In resting/acrosome-intact sperm, it is sequestered inside the acrosomal compartment and not surface-accessible. Following capacitation and acrosomal exocytosis (the acrosome reaction), IZUMO1 is translocated to the equatorial/post-acrosomal segment of the sperm plasma membrane, where its ectodomain is fully exposed on the outer leaflet and engages its egg receptor JUNO. Surface exposure is therefore strictly cell-state dependent (acrosome reaction). Because the protein reaches the outer leaflet via its own TM anchor during the surface state, the verdict is contextual/cell_state_induced rather than no.",
+  "correct": true,
+  "prompt_tokens": 40828,
+  "completion_tokens": 898,
+  "n_web_searches": 2,
+  "cost_usd": 0.15595399999999998,
+  "latency_s": 25.69661379203899,
+  "error": null,
+  "raw_text": ""
+}

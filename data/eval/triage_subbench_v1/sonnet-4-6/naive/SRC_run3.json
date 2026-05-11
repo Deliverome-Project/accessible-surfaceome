@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "SRC",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase canonically anchored to the cytoplasmic face of the plasma membrane via N-terminal myristoylation and palmitoylation (inner-leaflet anchored). Its kinase domain faces the cytoplasm. However, tumor cells are well-documented to display SRC (and active pY416-SRC) on the outer leaflet as a cancer ecto-kinase. This cell-state-induced ecto-SRC pool on the outer leaflet of transformed/cancer cells qualifies as contextual surface accessibility under the cell_state_induced bucket. Baseline localization is inner-leaflet/cytoplasmic, so 'yes' is not appropriate.",
+  "correct": true,
+  "prompt_tokens": 4923,
+  "completion_tokens": 198,
+  "n_web_searches": 0,
+  "cost_usd": 0.017739,
+  "latency_s": 5.2089075410040095,
+  "error": null,
+  "raw_text": ""
+}

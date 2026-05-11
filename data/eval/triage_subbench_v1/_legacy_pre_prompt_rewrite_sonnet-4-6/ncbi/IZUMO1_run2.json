@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane protein (Ig-like fold ectodomain) that is essential for sperm-oocyte plasma membrane fusion. It is expressed exclusively on mature sperm \u2014 a highly restricted germline/gamete cell type \u2014 where it is displayed on the outer leaflet of the sperm plasma membrane. Despite possessing its own TM anchor, expression is confined to sperm, qualifying as tissue_restricted_surface (gamete-lineage-restricted) rather than broadly expressed surface receptor. The protein body is unambiguously at the extracellular face during fertilization, making it accessible to binders, but only in this narrow developmental/germline context.",
+  "correct": true,
+  "prompt_tokens": 4951,
+  "completion_tokens": 178,
+  "n_web_searches": 0,
+  "cost_usd": 0.017523,
+  "latency_s": 5.39276883401908,
+  "error": null,
+  "raw_text": ""
+}

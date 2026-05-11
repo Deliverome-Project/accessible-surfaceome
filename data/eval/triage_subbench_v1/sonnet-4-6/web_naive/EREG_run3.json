@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "EREG",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "EREG (epiregulin) is synthesized as a single-pass ~162-aa transmembrane glycoprotein precursor (~19 kDa) with the mature EGF domain in its extracellular region. ADAM sheddases cleave the precursor to release the ~6 kDa/46-aa soluble mature ligand that acts on EGFR and ErbB4. The TM precursor stage is a real, bona fide surface form (documented at the basolateral cell surface of epithelial cells), enabling juxtacrine signaling. However, the dominant biological actor is the shed soluble form; the membrane-anchored stage is transient. This fits the 'transient TM precursor of a shed-ligand-dominant gene' pattern: the surface state is real but short-lived, making contextual / dual_localization the correct call.",
+  "correct": true,
+  "prompt_tokens": 23704,
+  "completion_tokens": 815,
+  "n_web_searches": 1,
+  "cost_usd": 0.09333699999999999,
+  "latency_s": 20.305147792038042,
+  "error": null,
+  "raw_text": ""
+}

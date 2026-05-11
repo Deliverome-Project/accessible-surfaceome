@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is primarily a cytosolic chaperone with no canonical TM domain or secretory signal. However, it is well-documented to translocate to the outer leaflet of the plasma membrane in stressed and malignantly transformed cells via direct binding to phosphatidylserine and phosphoinositide lipids. The C-terminal substrate-binding domain is exposed extracellularly on viable tumor cells and is recognized by the clinical-stage cmHsp70.1 monoclonal antibody. Active CAR-T, ADC, and antibody programs directly target membrane-HSPA1A. Surface localization is cell-state restricted (stress/cancer), placing this firmly in contextual/cell_state_induced rather than constitutive surface expression.",
+  "verdict_reasoning": "HSPA1A (HSP70-1/Hsp72) is canonically a cytosolic chaperone with no TM domain, GPI anchor, or signal peptide. However, extensive evidence demonstrates its translocation to the outer leaflet of the plasma membrane specifically in tumor cells and heat/stress-conditioned cells, driven by binding to phosphatidylserine and the glycosphingolipid Gb3 in lipid rafts. Surface biotinylation, flow cytometry with conformation-sensitive antibodies (cmHsp70.1), and global membrane proteomics all confirm an extracellular-face-exposed pool on viable tumor cells. This is a canonical cancer ecto-chaperone surface story qualifying as cell_state_induced. Normal unstressed cells do not display HSPA1A on the outer leaflet.",
   "correct": true,
-  "prompt_tokens": 37853,
-  "completion_tokens": 1100,
+  "prompt_tokens": 44294,
+  "completion_tokens": 939,
   "n_web_searches": 2,
-  "cost_usd": 0.150059,
-  "latency_s": 24.111586916958913,
+  "cost_usd": 0.16696699999999998,
+  "latency_s": 19.83312887500506,
   "error": null,
   "raw_text": ""
 }

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "KLK2",
+  "replicate": 2,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "KLK2 is a secreted serine protease of the kallikrein family, primarily expressed in prostate tissue. The NCBI summary indicates it is secreted and functions in processing pro-PSA. However, kallikreins are known to have documented surface-associated and tissue-fluid pools in specialized contexts (prostate, seminal plasma, prostatic secretions). The protein can be detected in serum and tissue fluids, and there is evidence of surface-proximal activity in prostate epithelial compartments. While the dominant form is secreted, the tissue-restricted expression in prostate and potential for localized surface engagement in the prostatic epithelial niche (analogous to other tissue-kallikrein biology) warrants `contextual` rather than `secreted_only`.",
+  "correct": false,
+  "prompt_tokens": 3830,
+  "completion_tokens": 214,
+  "n_web_searches": 0,
+  "cost_usd": 0.0049,
+  "latency_s": 2.7274113340536132,
+  "error": null,
+  "raw_text": ""
+}

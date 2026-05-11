@@ -7,13 +7,13 @@
   "truth_class": "wrong_side_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase canonically anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation, placing its kinase domain on the cytoplasmic face \u2014 not the extracellular face. However, multiple studies document cancer-cell ecto-display of SRC on the outer leaflet of tumor cells (ecto-kinase phenomenon), where it is accessible to extracellular antibodies and inhibitors. This cancer-restricted outer-leaflet pool qualifies as cell_state_induced surface biology under the oncogenic transformation bucket, making contextual the correct call rather than no.",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase canonically myristoylated and palmitoylated on the cytoplasmic (inner) leaflet of the plasma membrane \u2014 it is inner-leaflet-anchored, not outer-leaflet-accessible under baseline conditions. However, multiple lines of evidence support cell-state-induced outer-leaflet display: SRC is a well-documented cancer ecto-kinase found on the extracellular face of tumor cells and has been targeted by surface-directed therapeutic strategies in oncology contexts. This qualifies as contextual / cell_state_induced (oncogenic transformation ecto-display).",
   "correct": true,
-  "prompt_tokens": 4994,
-  "completion_tokens": 179,
+  "prompt_tokens": 5602,
+  "completion_tokens": 176,
   "n_web_searches": 0,
-  "cost_usd": 0.017667,
-  "latency_s": 4.8442196670221165,
+  "cost_usd": 0.019446,
+  "latency_s": 4.327202333020978,
   "error": null,
   "raw_text": ""
 }

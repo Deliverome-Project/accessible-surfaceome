@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "CRISP1 (UniProt P54107) is a classical secreted glycoprotein of the CAP/CRISP family. It has no transmembrane domain, no GPI anchor, and no known covalent or wash-resistant link to any TM partner. It is expressed in the epididymis, secreted into the epididymal lumen, and reversibly adsorbs onto the postacrosomal region of the sperm head surface \u2014 an interaction that is lost during capacitation. This non-covalent, reversible binding to the sperm surface fails the wash test and does not constitute surface anchoring via the protein's own mechanism. No therapeutic surface-targeting programs (ADC, CAR-T, bispecific) targeting CRISP1 on the cell surface are documented. Verdict: no / secreted_only.",
+  "correct": false,
+  "prompt_tokens": 24739,
+  "completion_tokens": 575,
+  "n_web_searches": 2,
+  "cost_usd": 0.102842,
+  "latency_s": 13.55340899998555,
+  "error": null,
+  "raw_text": ""
+}

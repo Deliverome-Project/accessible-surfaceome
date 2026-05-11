@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (ATP synthase F1 beta subunit) is canonically a mitochondrial inner-membrane complex component facing the matrix. However, it has well-documented ectopic cell-surface expression ('ecto-F1-ATPase') on hepatocytes, endothelial cells, and notably tumor cells, where it acts as a receptor for apoA-I, angiostatin, and others. This cancer/tissue-associated ecto-pool has been pursued therapeutically, qualifying as contextual cell-state-induced surface display rather than no.",
+  "correct": true,
+  "prompt_tokens": 6957,
+  "completion_tokens": 222,
+  "n_web_searches": 0,
+  "cost_usd": 0.121005,
+  "latency_s": 4.402422540995758,
+  "error": null,
+  "raw_text": ""
+}

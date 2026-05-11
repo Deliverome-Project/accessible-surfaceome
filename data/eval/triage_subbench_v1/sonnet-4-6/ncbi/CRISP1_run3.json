@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "CRISP1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "CRISP1 is a secreted epididymal protein that binds to the sperm surface post-translationally, becoming stably associated with the sperm plasma membrane (postacrosomal/equatorial segment) in a wash-resistant manner relevant to sperm-egg fusion. It lacks a transmembrane domain of its own, but its stable surface association on sperm is well-documented. This represents both tissue-restricted (germline/reproductive lineage) surface display and stable surface attachment to a cell-type-specific membrane compartment, qualifying as contextual rather than yes due to the narrow germline/sperm-restricted context.",
+  "correct": true,
+  "prompt_tokens": 5634,
+  "completion_tokens": 173,
+  "n_web_searches": 0,
+  "cost_usd": 0.019497,
+  "latency_s": 4.90099795802962,
+  "error": null,
+  "raw_text": ""
+}

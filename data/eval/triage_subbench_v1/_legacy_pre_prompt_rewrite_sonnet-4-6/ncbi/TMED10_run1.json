@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I single-pass transmembrane protein (p24 family) with an extracellular GOLD domain. The NCBI summary explicitly states it localizes to the plasma membrane and Golgi cisternae \u2014 a classic dual-localization pattern. At the plasma membrane the extracellular GOLD domain is exposed on the outer leaflet, making it accessible to extracellular binders. The dominant compartment is the Golgi (COPI/COPII trafficking machinery), but a documented PM pool exists. This fits dual_localization: the protein carries its own TM anchor and cycles to the cell surface.",
+  "correct": true,
+  "prompt_tokens": 3859,
+  "completion_tokens": 176,
+  "n_web_searches": 0,
+  "cost_usd": 0.014217,
+  "latency_s": 4.777343207970262,
+  "error": null,
+  "raw_text": ""
+}

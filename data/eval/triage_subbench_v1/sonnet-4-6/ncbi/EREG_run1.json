@@ -7,13 +7,13 @@
   "truth_class": "disagreement_rich_positive",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "EREG encodes epiregulin, an EGF-family growth factor synthesized as a type-I single-pass transmembrane precursor (pro-epiregulin) anchored at the plasma membrane before regulated ectodomain shedding by ADAM proteases releases the soluble growth factor. The membrane-anchored precursor supports juxtacrine signaling from the cell surface, but this TM stage is transient \u2014 the dominant biological form is the shed soluble ligand that acts on EGFR/ERBB4. This matches the 'transient TM precursor of a shed-ligand-dominant gene' pattern: real surface stage qualifies as contextual/dual_localization rather than yes or secreted_only.",
+  "verdict_reasoning": "EREG (epiregulin) is synthesized as a single-pass type I transmembrane precursor. The membrane-anchored proform mediates juxtacrine signaling before regulated ectodomain shedding (by ADAM10/17) releases the soluble EGF-like ligand that is the dominant circulating form. The TM precursor stage is real and documented on the cell surface, but is transient \u2014 the shed soluble ligand is the canonical biological actor driving EGFR/ERBB4 signaling. This matches the 'transient TM precursor of a shed-ligand-dominant gene' pattern: surface-accessible at the TM-precursor stage but not a stable canonical surface receptor.",
   "correct": true,
-  "prompt_tokens": 5584,
-  "completion_tokens": 199,
+  "prompt_tokens": 5587,
+  "completion_tokens": 197,
   "n_web_searches": 0,
-  "cost_usd": 0.019737,
-  "latency_s": 5.568264166999143,
+  "cost_usd": 0.019716,
+  "latency_s": 5.8646374169620685,
   "error": null,
   "raw_text": ""
 }

@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPD1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1/HSP60 is canonically a mitochondrial chaperonin with no TM domain or GPI anchor. However, well-documented literature shows it also occurs at the plasma membrane and in the extracellular space, particularly in tumor cells and under stress conditions. Multiple sources confirm 'Hsp60 also occurs in the cytosol, plasma-cell membrane, intercellular space, and blood' and that 'its odyssey from tumor cells to other destinations includes plasma membrane-associated stages.' Tumor cells actively secrete HSP60 and display it on their surface, qualifying as a cancer/oncogenic-state ecto-chaperone. Stress-induced and cell-death-related surface exposure also documented. No stable TM anchor of its own, so the surface pool is cell-state-induced (oncogenic transformation, stress) rather than a baseline property.",
+  "correct": true,
+  "prompt_tokens": 30608,
+  "completion_tokens": 302,
+  "n_web_searches": 1,
+  "cost_usd": 0.10635399999999999,
+  "latency_s": 11.672144457988907,
+  "error": null,
+  "raw_text": ""
+}

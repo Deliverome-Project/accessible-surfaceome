@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGFB1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is a secreted cytokine that circulates primarily in a latent complex with LAP (latency-associated peptide) and LTBP (latent TGF-beta binding protein). The latent complex can be cell-surface-anchored via LTBP's interaction with ECM and cell-surface integrins, and can be activated at the cell surface by proteolytic cleavage or integrin-mediated mechanical release. Additionally, active mature TGFB1 can transiently engage TGF-beta receptors on the cell surface. While TGFB1 itself is not membrane-anchored, the latent complex achieves surface localization via stable association with LTBP and integrin-dependent anchoring, qualifying for contextual surface accessibility under specific conditions (integrin engagement, tissue context, activation state).",
+  "correct": true,
+  "prompt_tokens": 3866,
+  "completion_tokens": 234,
+  "n_web_searches": 0,
+  "cost_usd": 0.005036,
+  "latency_s": 2.653680792020168,
+  "error": null,
+  "raw_text": ""
+}

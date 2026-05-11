@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase, canonically inner-leaflet-anchored to the PM via N-terminal myristoylation+palmitoylation, with cytoplasmic and nuclear pools. Baseline topology is intracellular (kinase domain faces cytosol). However, SFKs including LYN are documented to be 'inverted' onto the outer leaflet of cancer cells via autophagolysosomal exocytosis (Wells lab / Science), and LYN/FYN have been proposed as ecto-kinase diagnostic/therapeutic targets in esophageal squamous cell carcinoma. This cancer-cell ecto-pool qualifies as contextual cell-state-induced surface display.",
+  "correct": true,
+  "prompt_tokens": 42658,
+  "completion_tokens": 686,
+  "n_web_searches": 1,
+  "cost_usd": 0.70132,
+  "latency_s": 13.45224287500605,
+  "error": null,
+  "raw_text": ""
+}

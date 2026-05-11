@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO sperm-egg fusion family. While it lacks a TM domain itself and NCBI notes nuclear localization, IZUMO4 forms disulfide-linked complexes with IZUMO1 (a TM sperm surface protein) on the sperm plasma membrane, where it participates in the fertilization complex. This stable complex partnership co-traffics it to the sperm surface in this specific cell type.",
+  "correct": true,
+  "prompt_tokens": 5337,
+  "completion_tokens": 189,
+  "n_web_searches": 0,
+  "cost_usd": 0.09423,
+  "latency_s": 3.7175757079967298,
+  "error": null,
+  "raw_text": ""
+}

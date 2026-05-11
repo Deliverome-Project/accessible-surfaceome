@@ -46,6 +46,7 @@ from anthropic import Anthropic
 
 from accessible_surfaceome.agents._support import client as _client_module
 from accessible_surfaceome.agents.surface_triage.orchestrator import _render_task
+from accessible_surfaceome.env import load_env
 from accessible_surfaceome.tools._shared.http import open_default_client
 from accessible_surfaceome.tools.gene_lookup import resolve
 
@@ -307,6 +308,10 @@ def main() -> None:
     args = ap.parse_args()
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
+    # Pull ANTHROPIC_API_KEY (and NCBI_API_KEY if present) from repo-root
+    # .env so a freshly-bootstrapped worktree picks them up without a shell
+    # export. Same precedence rules as the main CLI — see env.py.
+    load_env()
 
     with SUBBENCH_TSV.open() as f:
         rows = list(csv.DictReader(f, delimiter="\t"))

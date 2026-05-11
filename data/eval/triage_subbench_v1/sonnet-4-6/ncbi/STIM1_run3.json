@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "STIM1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "STIM1 is a type 1 single-pass transmembrane protein that functions as an ER Ca2+ sensor. Upon store depletion, STIM1 oligomerizes and translocates to ER-PM junctions where its cytosolic SOAR/CAD domain directly gates Orai channels at the plasma membrane. Critically, STIM1 itself has a short N-terminal extracellular (ER-luminal) domain exposed on the outer leaflet of the ER, and when it traffics to the plasma membrane (a documented minority pool confirmed by surface biotinylation and flow cytometry), its N-terminal domain is extracellular. This stable PM-resident pool with an extracellular domain makes STIM1 accessible from the cell exterior.",
+  "correct": false,
+  "prompt_tokens": 5653,
+  "completion_tokens": 211,
+  "n_web_searches": 0,
+  "cost_usd": 0.020124,
+  "latency_s": 5.47025733301416,
+  "error": null,
+  "raw_text": ""
+}

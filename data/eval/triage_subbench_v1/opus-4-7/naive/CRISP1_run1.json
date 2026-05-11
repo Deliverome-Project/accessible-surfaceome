@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "CRISP1 is a secreted cysteine-rich epididymal protein that becomes stably bound to the sperm surface during epididymal transit. It associates with sperm in a wash-resistant manner (a tightly-bound population persists through capacitation) and plays a role in sperm-egg fusion. This is germline/reproductive-lineage-restricted surface attachment of a secreted protein onto a TM-anchored sperm membrane, fitting stable_surface_attachment in a tissue-restricted context.",
+  "correct": true,
+  "prompt_tokens": 6955,
+  "completion_tokens": 206,
+  "n_web_searches": 0,
+  "cost_usd": 0.119775,
+  "latency_s": 4.3826568750082515,
+  "error": null,
+  "raw_text": ""
+}

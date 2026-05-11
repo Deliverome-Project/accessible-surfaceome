@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA1A encodes the inducible cytosolic HSP70 chaperone. Its canonical localization is cytoplasmic/nuclear, but robust literature documents stress-induced and tumor-cell translocation to the outer leaflet of the plasma membrane (cell-surface HSP70 / csHSP70), where it acts as a recognition signal for NK cells and serves as a target for antibody, CAR-T, and tumor-vaccine programs. This cancer/stress-induced ecto-display qualifies as contextual / cell_state_induced surface accessibility. The protein lacks its own TM domain or GPI anchor; surface display is dependent on cell stress or oncogenic transformation.",
+  "verdict_reasoning": "HSPA1A encodes cytosolic HSP70 (HSP72), canonically a cytoplasmic/ER chaperone. However, multiple lines of evidence document its translocation to the outer leaflet of the plasma membrane under stress, oncogenic transformation, and immunogenic/apoptotic cell death. Tumor cells constitutively display membrane HSP70 (mHSP70) on their surface, and this ecto-HSP70 pool has been extensively exploited as a tumor-selective surface target for NK-cell-activating agents, antibody-based diagnostics, and CAR-T approaches. Cell-death and heat-stress conditions also drive PM surface display. This qualifies as cell_state_induced contextual surface accessibility.",
   "correct": true,
-  "prompt_tokens": 5050,
-  "completion_tokens": 185,
+  "prompt_tokens": 5658,
+  "completion_tokens": 200,
   "n_web_searches": 0,
-  "cost_usd": 0.017925,
-  "latency_s": 4.8420914160087705,
+  "cost_usd": 0.019974,
+  "latency_s": 5.435133624996524,
   "error": null,
   "raw_text": ""
 }

@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "endomembrane_resident",
-  "verdict_reasoning": "TGOLN2 is a trans-Golgi network and early endosomal TM protein. Although it bears a single TM domain, its steady-state localization is intracellular (TGN/recycling endosomes), and it serves a cargo-sorting function within the secretory pathway. No documented baseline or induced surfacing to the plasma membrane outer leaflet; remains endomembrane-resident.",
+  "verdict_reasoning": "TGOLN2 is a multi-pass transmembrane protein stably resident in the trans-Golgi network and early endosomes. Its topology and trafficking mechanisms confine it to the secretory pathway, with no documented plasma membrane localization under baseline or specialized conditions (stress, cancer, cell death, activation). No therapeutic programs target a surface pool.",
   "correct": false,
-  "prompt_tokens": 1487,
-  "completion_tokens": 573,
+  "prompt_tokens": 4925,
+  "completion_tokens": 551,
   "n_web_searches": 0,
-  "cost_usd": 0.004352,
-  "latency_s": 6.267276041966397,
+  "cost_usd": 0.00768,
+  "latency_s": 5.7751027080230415,
   "error": null,
   "raw_text": ""
 }

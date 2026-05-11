@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic/inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. It has no transmembrane domain and no extracellular exposure. All published localization data place LYN at the intracellular face of the PM (and perinuclear/Golgi region), with additional pools in the nucleus and endomembranes. No isoform or post-translational mechanism delivers LYN to the outer leaflet. It is not the target of any surface-directed antibody, ADC, or CAR-T program. Small-molecule kinase inhibitors access it intracellularly. The protein body is entirely intracellular.",
+  "correct": false,
+  "prompt_tokens": 24979,
+  "completion_tokens": 608,
+  "n_web_searches": 1,
+  "cost_usd": 0.094057,
+  "latency_s": 14.073540458048228,
+  "error": null,
+  "raw_text": ""
+}

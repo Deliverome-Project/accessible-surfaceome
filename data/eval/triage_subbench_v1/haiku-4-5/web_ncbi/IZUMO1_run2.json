@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "IZUMO1 is a type I transmembrane glycoprotein with a structured extracellular domain (Izumo + Ig-like domains) stably anchored to the plasma membrane via its own transmembrane domain. The protein is expressed sperm-specifically and is surface-accessible post-acrosome reaction, qualifying as a classic gamete adhesion molecule and cell-surface fusogen. While the protein reaches the outer leaflet via its own TM anchor mechanism (meeting the cardinal recruitment test), surface presentation is restricted to a specific cell state (acrosome-reacted sperm), warranting a contextual rather than unconditional yes verdict.",
+  "verdict_reasoning": "IZUMO1 is a Type Ia transmembrane protein with a large extracellular immunoglobulin-like domain. However, in resting fresh sperm it is sequestered inside the acrosome and not exposed on the cell surface. Surface exposure occurs only after acrosomal exocytosis\u2014a well-characterized cell-state-induced event that occurs during sperm capacitation and the acrosome reaction in response to fertilization-competency signals. Once surface-exposed, IZUMO1 functions as a bona-fide ligand for the egg-surface receptor JUNO, mediating sperm-oocyte recognition and fusion. The protein therefore reaches the outer leaflet via its own transmembrane anchor but only under the specific non-baseline condition of acrosomal activation.",
   "correct": true,
-  "prompt_tokens": 43199,
-  "completion_tokens": 1099,
+  "prompt_tokens": 46571,
+  "completion_tokens": 851,
   "n_web_searches": 2,
-  "cost_usd": 0.068694,
-  "latency_s": 13.625110042048618,
+  "cost_usd": 0.070826,
+  "latency_s": 10.3937660829979,
   "error": null,
   "raw_text": ""
 }

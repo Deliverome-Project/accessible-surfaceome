@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "TMED10 (p24\u03b41/TMP21) is a type I single-pass transmembrane protein of the p24 family. It has a large luminal/extracellular domain and a short cytoplasmic tail. It cycles between the ER, Golgi, and plasma membrane as part of COPI/COPII vesicle machinery, and a stable surface pool has been documented on the outer leaflet of the plasma membrane. It functions as a cargo receptor in the secretory pathway and reaches the cell surface where its ectodomain is accessible. It is a classical single-pass TM protein with a substantial extracellular domain, qualifying as surface accessible.",
+  "correct": false,
+  "prompt_tokens": 4925,
+  "completion_tokens": 190,
+  "n_web_searches": 0,
+  "cost_usd": 0.017625,
+  "latency_s": 5.1235443339683115,
+  "error": null,
+  "raw_text": ""
+}

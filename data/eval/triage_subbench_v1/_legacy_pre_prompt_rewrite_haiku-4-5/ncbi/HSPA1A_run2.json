@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "HSPA1A is a canonical cytosolic heat shock protein (Hsp70 family member). It functions as a molecular chaperone stabilizing and folding proteins in the cytosol and organelles, and participates in the ubiquitin-proteasome pathway. No transmembrane domain, GPI anchor, or documented surface localization. Not a secreted protein. The only potential \"surface\" engagement would be MHC presentation of HSPA1A-derived peptides by intracellular antigen-presentation pathways, which does not constitute surface accessibility of the protein body itself.",
+  "correct": false,
+  "prompt_tokens": 3884,
+  "completion_tokens": 168,
+  "n_web_searches": 0,
+  "cost_usd": 0.004724,
+  "latency_s": 2.2635170409921557,
+  "error": null,
+  "raw_text": ""
+}

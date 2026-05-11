@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "stable_surface_attachment",
-  "verdict_reasoning": "CRISP1 is secreted by epididymal epithelium into the epididymal lumen, where it binds stably to the dorsal/postacrosomal region of the sperm plasma membrane during epididymal transit. This association is wash-resistant (a tightly bound population persists on ejaculated sperm) and the protein then functions at the sperm surface during sperm-egg fusion. Thus the protein body reaches an outer-leaflet PM location via post-translational deposition onto a partner cell surface, fitting stable_surface_attachment.",
+  "verdict_reasoning": "CRISP1 is secreted by the epididymis but binds to the sperm surface (dorsal head/postacrosomal region) during epididymal maturation, where it remains stably associated and participates in sperm-egg fusion. This is a wash-resistant post-translational attachment to a specialized germline cell surface acquired during transit through the epididymal lumen, restricted to the male germline lineage.",
   "correct": true,
-  "prompt_tokens": 5545,
-  "completion_tokens": 215,
+  "prompt_tokens": 7954,
+  "completion_tokens": 168,
   "n_web_searches": 0,
-  "cost_usd": 0.0993,
-  "latency_s": 3.5424368330277503,
+  "cost_usd": 0.13191,
+  "latency_s": 3.254747084050905,
   "error": null,
   "raw_text": ""
 }

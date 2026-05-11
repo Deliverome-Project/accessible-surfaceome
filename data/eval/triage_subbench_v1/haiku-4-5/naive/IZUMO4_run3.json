@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO4 is a single-pass transmembrane protein with an extracellular immunoglobulin-like ectodomain. It is stably integrated into the plasma membrane with genuine outer-leaflet topology. However, it is expressed exclusively or predominantly in the male germline (spermatogenic cells/sperm) and is not broadly surface-accessible across somatic tissues. Its surface display is restricted to a narrow developmental lineage despite having its own membrane anchor.",
+  "correct": true,
+  "prompt_tokens": 4925,
+  "completion_tokens": 629,
+  "n_web_searches": 0,
+  "cost_usd": 0.00807,
+  "latency_s": 6.767457708949223,
+  "error": null,
+  "raw_text": ""
+}

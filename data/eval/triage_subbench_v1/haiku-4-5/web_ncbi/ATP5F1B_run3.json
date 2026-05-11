@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "ATP5F1B encodes the \u03b2-subunit of the F1 catalytic core of mitochondrial ATP synthase. The protein is a structural component of the inner mitochondrial membrane-facing catalytic domain, localized to the mitochondrial matrix side of Complex V. It is not a surface-exposed protein and has no documented surface-trafficking isoforms, cell-state-induced externalization, or stable surface-anchoring partners. HGNC gene-group membership (mitochondrial complex V, ATPase family) confirms mitochondrial localization. No therapeutic programs target this protein on the cell surface, and no cancer-cell ecto-display or cell-death-related externalization has been documented for this structural mitochondrial enzyme subunit.",
+  "correct": false,
+  "prompt_tokens": 7755,
+  "completion_tokens": 202,
+  "n_web_searches": 0,
+  "cost_usd": 0.008765,
+  "latency_s": 3.102778458967805,
+  "error": null,
+  "raw_text": ""
+}

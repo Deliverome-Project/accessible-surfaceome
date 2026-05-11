@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "EREG",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "EREG is an EGF-family ligand synthesized as a single-pass transmembrane proligand (proEREG) that is processed by ADAM-family sheddases to release the soluble mature EGF-like domain, which is the dominant signaling actor on EGFR/ERBB4. The TM precursor stage is real and supports juxtacrine signaling but is transient relative to the shed soluble form. Fits dual_localization (transient TM precursor of a shed-ligand-dominant gene) rather than secreted_only.",
+  "correct": true,
+  "prompt_tokens": 10801,
+  "completion_tokens": 205,
+  "n_web_searches": 0,
+  "cost_usd": 0.17739,
+  "latency_s": 8.94084162497893,
+  "error": null,
+  "raw_text": ""
+}

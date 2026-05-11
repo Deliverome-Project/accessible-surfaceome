@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "SRC",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC is a cytoplasmic non-receptor tyrosine kinase canonically localized to the inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation, anchoring it to the cytoplasmic face. However, SRC is well-documented to undergo cell-state-induced and oncogenic-transformation-dependent surface translocation. In transformed and tumor cells, SRC displays on the outer leaflet ('ecto-SRC') and is recognized by antibodies and targeted therapeutically. SRC also cycles transiently to the PM during signaling and is recruited to receptor complexes. These non-baseline surface pools qualify as contextual via cell_state_induced (transformation-associated ecto-display) and dual_localization (minor PM cycling pools).",
+  "correct": true,
+  "prompt_tokens": 5601,
+  "completion_tokens": 212,
+  "n_web_searches": 0,
+  "cost_usd": 0.006661,
+  "latency_s": 3.4602995829773135,
+  "error": null,
+  "raw_text": ""
+}

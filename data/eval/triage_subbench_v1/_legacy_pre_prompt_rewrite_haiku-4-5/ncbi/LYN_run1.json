@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase with documented dual localization. It is primarily cytoplasmic and involved in intracellular signal transduction (particularly in immune cells like mast cells and B cells), but possesses an N-terminal myristoylation site that anchors it to the inner leaflet of the plasma membrane and intracellular membranes. Critically, LYN is also recruited to the outer leaflet via stable non-covalent association with membrane-proximal domains of surface receptors (BCR, Fc\u03b5RI, other immune receptors) during signal initiation\u2014a well-documented mechanism in B-cell and mast-cell biology. This receptor-associated pool constitutes a functionally important surface-proximal population. Additionally, some Src-family kinases reach the outer leaflet transiently or constitutively via lipid-binding or complex assembly with surface partners. The protein thus qualifies as contextual via dual_localization (inner-leaflet myristoylation + receptor-associated surface-proximal signaling complex) rather than classical surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 3779,
+  "completion_tokens": 282,
+  "n_web_searches": 0,
+  "cost_usd": 0.005189,
+  "latency_s": 3.5439272089861333,
+  "error": null,
+  "raw_text": ""
+}

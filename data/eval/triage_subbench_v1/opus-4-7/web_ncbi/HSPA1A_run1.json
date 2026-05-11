@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (HSP70) is canonically a cytosolic chaperone, but it is well-documented to translocate to the outer leaflet of the plasma membrane under stress and especially on tumor cells, where membrane-bound HSP70 is a recognized cancer-cell ecto-marker targeted by antibodies (e.g., cmHsp70.1) and NK-cell therapies. This cancer/stress-induced ecto-display qualifies as contextual surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 10886,
+  "completion_tokens": 197,
+  "n_web_searches": 0,
+  "cost_usd": 0.178065,
+  "latency_s": 4.028310167021118,
+  "error": null,
+  "raw_text": ""
+}

@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-lumenal chaperone retained by the KDEL signal and lacks a classical TM domain. However, under ER stress (especially in cancer/hypoxia), it translocates to the outer face of the plasma membrane via its own mechanism (a subpopulation behaves as an ER transmembrane protein that cycles to the PM). Surface GRP78 is documented across AML, GBM, lung, pancreatic, and breast cancers and is restricted intracellularly in normal cells. Multiple CAR-T, antibody, and peptide-drug programs directly target cell-surface GRP78 in preclinical and clinical settings, confirming genuine extracellular accessibility in the stress/cancer cell state.",
+  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-luminal chaperone retained by a C-terminal KDEL motif with no constitutive TM anchor or GPI signal. Under ER stress (hypoxia, nutrient deprivation, oncogenic transformation, viral infection), it escapes ER retrieval via unconventional vesicular/endosomal trafficking and is displayed on the outer leaflet of the plasma membrane. Cell-surface HSPA5 (csGRP78) is well-documented by FACS, surface biotinylation, and cancer-patient autoantibodies; it is therapeutically targeted by cyclic peptides, antibodies, and ADCs on tumor cells. Display is strictly state-dependent (ER stress / cancer / infection), qualifying as cell_state_induced contextual.",
   "correct": true,
-  "prompt_tokens": 59062,
-  "completion_tokens": 718,
+  "prompt_tokens": 47544,
+  "completion_tokens": 730,
   "n_web_searches": 2,
-  "cost_usd": 0.207956,
-  "latency_s": 19.657330084010027,
+  "cost_usd": 0.173582,
+  "latency_s": 19.87789420899935,
   "error": null,
   "raw_text": ""
 }

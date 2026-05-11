@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "EREG",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "EREG (epiregulin) is a single-pass transmembrane ligand of the EGF receptor family. It is synthesized as a membrane-anchored TM precursor with an N-terminal signal peptide, a large extracellular EGF-like ligand domain, a transmembrane domain, and a short cytoplasmic tail. The TM precursor resides stably on the cell surface and undergoes regulated ectodomain shedding by ADAM sheddases (particularly ADAM10/ADAM17), releasing the soluble EGF domain into solution. However, the membrane-anchored precursor form is the canonical biological entity: it supports juxtacrine signaling to neighboring cells and is the target of surface-directed therapies. Cell-surface biotinylation and flow-cytometry studies confirm stable cell-surface residence of the TM form. The protein is not transiently anchored and the TM stage is not dependent on unstable co-trafficking or cell-state induction \u2014 it is the default biogenesis pathway. This is the canonical single-pass TM receptor / ligand architecture.",
+  "correct": false,
+  "prompt_tokens": 4923,
+  "completion_tokens": 287,
+  "n_web_searches": 0,
+  "cost_usd": 0.006358,
+  "latency_s": 3.651174209022429,
+  "error": null,
+  "raw_text": ""
+}

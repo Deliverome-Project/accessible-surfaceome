@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "stable_surface_attachment",
-  "verdict_reasoning": "TGFB1 is secreted as a large latent complex (LLC) in which the LAP prodomain remains disulfide-bonded to the mature TGF-\u03b21 dimer, and the entire complex is covalently tethered to LTBP proteins that can anchor it to the extracellular matrix or, critically, to the cell surface via covalent linkage to TM proteins such as GARP (LRRC32) and LRRC33. On regulatory T cells and other cell types, this GARP\u2013proTGFB1 complex is stably displayed on the plasma membrane as a wash-resistant, covalently tethered entity, making the protein body surface accessible. This is a documented, cell-type-specific surface form, qualifying as contextual/stable_surface_attachment.",
+  "verdict_reasoning": "TGFB1 is secreted but exists in a large latent complex (LLC) where the mature peptide homodimer is non-covalently/covalently tethered to LAP and LTBP. LTBP proteins are anchored to the extracellular matrix and to cell-surface proteins (e.g., GARP/LRRC32, LRRC33) via disulfide and wash-resistant interactions, creating a stable cell-surface-tethered pool on regulatory T cells, platelets, and myeloid cells. This constitutes a documented stable surface attachment via a TM scaffold partner (GARP), qualifying as wash-resistant anchoring rather than freely secreted equilibrium. The surface-tethered latent complex is a validated therapeutic target for surface-directed antibodies.",
   "correct": true,
-  "prompt_tokens": 3867,
-  "completion_tokens": 221,
+  "prompt_tokens": 5640,
+  "completion_tokens": 205,
   "n_web_searches": 0,
-  "cost_usd": 0.014916,
-  "latency_s": 6.090376332984306,
+  "cost_usd": 0.019995,
+  "latency_s": 5.703333750017919,
   "error": null,
   "raw_text": ""
 }

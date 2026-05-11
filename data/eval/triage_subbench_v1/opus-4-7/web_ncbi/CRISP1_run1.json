@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "CRISP1 is secreted by the epididymal epithelium into the lumen and binds the dorsal region of the sperm head during epididymal maturation, where it remains associated with the sperm plasma membrane and participates in sperm-egg fusion. This is wash-resistant post-translational attachment of a secreted protein to a specific cell-surface (sperm) compartment acquired during transit through a specialized secretory environment, making the protein body accessible on the outer face of mature sperm \u2014 a tissue/lineage-restricted display via stable surface attachment rather than simple secretion.",
+  "correct": true,
+  "prompt_tokens": 10862,
+  "completion_tokens": 227,
+  "n_web_searches": 0,
+  "cost_usd": 0.179955,
+  "latency_s": 9.102559708000626,
+  "error": null,
+  "raw_text": ""
+}

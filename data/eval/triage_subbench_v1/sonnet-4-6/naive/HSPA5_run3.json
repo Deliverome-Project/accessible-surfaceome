@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA5",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-luminal chaperone retained by KDEL. However, it is well-documented to translocate to the outer leaflet of the plasma membrane on tumor cells, stressed cells, and cells undergoing immunogenic cell death \u2014 where it functions as a co-receptor and is recognized by antibodies, ADCs, and CAR-T constructs directed against the cell surface. This cancer/stress-induced ecto-GRP78 pool is reproducibly detected by flow cytometry and surface biotinylation. The surface display is cell-state-induced (oncogenic transformation, ER stress, hypoxia, ICD) rather than constitutive. Baseline localization is ER-luminal, making this contextual/cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 4925,
+  "completion_tokens": 220,
+  "n_web_searches": 0,
+  "cost_usd": 0.018075,
+  "latency_s": 5.509361791017,
+  "error": null,
+  "raw_text": ""
+}

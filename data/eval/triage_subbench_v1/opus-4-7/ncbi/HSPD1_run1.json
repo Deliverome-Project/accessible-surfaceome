@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSP60/HSPD1 is canonically a mitochondrial matrix chaperonin, but it is well documented as a surface-displayed stress/danger signal on tumor cells, stressed/infected cells, and apoptotic cells, where it acts as an innate immune ligand and has been pursued as a surface target. Surface display is induced by cell state rather than baseline localization.",
+  "verdict_reasoning": "HSP60 is canonically a mitochondrial matrix chaperonin, but it has well-documented ecto-surface display on tumor cells and on stressed/apoptotic cells, where it acts as a danger signal engaged by innate immune receptors. This cancer/stress-induced outer-leaflet pool has been targeted by antibodies and is the basis for HSP60-directed immunotherapy concepts. Baseline localization is intramitochondrial, so surface accessibility is state-dependent.",
   "correct": true,
-  "prompt_tokens": 5532,
-  "completion_tokens": 161,
+  "prompt_tokens": 7941,
+  "completion_tokens": 201,
   "n_web_searches": 0,
-  "cost_usd": 0.095055,
-  "latency_s": 3.396773666027002,
+  "cost_usd": 0.13419,
+  "latency_s": 3.917902041983325,
   "error": null,
   "raw_text": ""
 }

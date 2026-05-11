@@ -7,13 +7,13 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "TMED10 is a type I membrane protein (single-pass TM) with a GOLD domain, localized to both the plasma membrane and Golgi cisternae. The dual localization to PM and Golgi \u2014 with documented PM residence via its own TM anchor \u2014 qualifies as contextual via dual_localization. Although its primary role is in ER-Golgi vesicular trafficking, the protein's own transmembrane topology ensures it can be surface-accessible during its trafficking cycle and steady-state PM distribution.",
+  "verdict_reasoning": "TMED10 is a type I membrane protein of the p24 trafficking family with a single transmembrane domain. NCBI explicitly states it localizes to both the plasma membrane and Golgi cisternae, establishing a documented dual localization. The protein cycles between these compartments as part of vesicular protein trafficking and heteromeric secretase complex function. While its canonical role centers on Golgi/trafficking function, the documented PM pool qualifies it as contextual rather than endomembrane-resident-only.",
   "correct": true,
-  "prompt_tokens": 3858,
-  "completion_tokens": 153,
+  "prompt_tokens": 5631,
+  "completion_tokens": 150,
   "n_web_searches": 0,
-  "cost_usd": 0.004623,
-  "latency_s": 2.620556999987457,
+  "cost_usd": 0.006381,
+  "latency_s": 2.3859940000111237,
   "error": null,
   "raw_text": ""
 }

@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "BAX",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL-2 family member that localizes to the cytosol in healthy cells and translocates to the mitochondrial outer membrane (MOM) upon apoptotic stress. The protein has no documented plasma membrane or extracellular face accessibility. Its transmembrane domain is sequestered in an internal hydrophobic pocket until activation triggers mitochondrial targeting, but this targeting is exclusively to the MOM, not the plasma membrane. No surface pool, shedding, or stress-induced ecto-display has been documented. BAX activation and function occur entirely in the intracellular compartment.",
+  "correct": false,
+  "prompt_tokens": 56770,
+  "completion_tokens": 1077,
+  "n_web_searches": 3,
+  "cost_usd": 0.092155,
+  "latency_s": 12.72469825000735,
+  "error": null,
+  "raw_text": ""
+}

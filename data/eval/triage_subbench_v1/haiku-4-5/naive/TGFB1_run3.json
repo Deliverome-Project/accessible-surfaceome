@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGFB1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "TGFB1 is a classical secreted cytokine with a signal peptide and no transmembrane domain or lipid anchor at any stage. It is secreted as a soluble protein and binds cell-surface receptors via reversible non-covalent interaction while remaining in equilibrium with the soluble pool. No documented stable surface tethering, covalent anchoring, or non-baseline cell-state/tissue-restricted surface display. Fails the recruitment test: protein washes off and is not stably linked to the membrane.",
+  "correct": false,
+  "prompt_tokens": 4926,
+  "completion_tokens": 821,
+  "n_web_searches": 0,
+  "cost_usd": 0.009031,
+  "latency_s": 8.831124374992214,
+  "error": null,
+  "raw_text": ""
+}

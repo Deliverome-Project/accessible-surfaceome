@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "secreted_only",
-  "verdict_reasoning": "TGFB1 (transforming growth factor beta 1) is a secreted cytokine that is synthesized as a pre-pro-protein, processed in the ER/Golgi, and secreted into the extracellular space as a soluble or ECM-sequestered ligand. It does not possess a transmembrane domain, GPI anchor, or any intrinsic outer-leaflet lipidation. TGFB1 acts as a diffusible paracrine/autocrine factor that binds to TGF-\u03b2 receptors on cell surfaces via reversible non-covalent interaction. The protein body itself never reaches the outer leaflet via its own mechanism; it remains soluble or ECM-deposited. While it can engage surface receptors, this is transient equilibrium binding, not a stable surface association. pMHC presentation is not the primary biology. Therefore, TGFB1 is not surface-accessible as a drug target antigen.",
+  "verdict_reasoning": "TGFB1 is a secreted cytokine with no transmembrane domain, GPI anchor, or covalent surface tether. Although it associates with cell surfaces indirectly via LTBP-integrin interactions and matrix deposition, the protein itself remains in equilibrium with the soluble pool and has no stable direct link to the plasma membrane. It is a canonical secreted soluble ligand, not surface-resident.",
   "correct": false,
-  "prompt_tokens": 1488,
-  "completion_tokens": 258,
+  "prompt_tokens": 4926,
+  "completion_tokens": 962,
   "n_web_searches": 0,
-  "cost_usd": 0.002778,
-  "latency_s": 2.912873124994803,
+  "cost_usd": 0.009736,
+  "latency_s": 9.802870166953653,
   "error": null,
   "raw_text": ""
 }

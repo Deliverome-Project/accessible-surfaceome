@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA5",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 is primarily an ER-resident chaperone but undergoes documented cell-surface translocation under ER stress and in cancer cells via its own mechanism\u2014oligomerization and interaction with negatively charged phospholipids. Surface HSPA5 acts as a functional receptor, co-receptor, and signaling scaffold. Multiple therapeutic programs (ADCs, CAR-T, monoclonal antibodies) target cell-surface HSPA5 in cancer. The protein does not constitutively reside on the surface in normal physiology but achieves it via specific, reproducible triggers (ER stress, oncogenic transformation, overexpression). This dual localization with documented stress-induced surface trafficking qualifies as contextual surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 59899,
+  "completion_tokens": 1143,
+  "n_web_searches": 3,
+  "cost_usd": 0.095614,
+  "latency_s": 15.96398387500085,
+  "error": null,
+  "raw_text": ""
+}

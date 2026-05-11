@@ -7,13 +7,13 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "stable_surface_attachment",
-  "verdict_reasoning": "TGFB1 is primarily a secreted cytokine that circulates in a latent complex (LLC/SLC) and binds TGF-\u03b2 receptors transiently \u2014 that interaction is reversible and does not survive washing. However, TGFB1 is also produced as a membrane-anchored latent form: the large latent complex can be tethered to the cell surface via LRRC32 (GARP) or LLTBP on Treg and other cell types, forming a wash-resistant, stable surface complex. In this context, the TGFB1 protein body is genuinely accessible from the extracellular face. This surface form is cell-type and state restricted (Tregs, platelets, certain stromal cells), qualifying as contextual rather than universally yes.",
+  "verdict_reasoning": "TGFB1 is synthesized as a precursor (pre-pro-TGF-\u03b21) that is cleaved but remains non-covalently latent as the Large Latent Complex (LLC). The LLC is secreted and can be covalently tethered to the cell surface via LTBP isoforms crosslinked to ECM, or via LRRC32 (GARP) and LLTBP1 on the surface of Tregs and platelets, forming a stable, wash-resistant surface complex. Thus, the mature/latent TGF-\u03b21 protein body reaches the outer leaflet of specific cell types (Tregs, platelets, tumor stroma) through stable covalent/wash-resistant anchoring to TM partners \u2014 not merely reversible receptor binding \u2014 qualifying as contextual/stable_surface_attachment.",
   "correct": true,
-  "prompt_tokens": 1489,
-  "completion_tokens": 226,
+  "prompt_tokens": 4927,
+  "completion_tokens": 235,
   "n_web_searches": 0,
-  "cost_usd": 0.007857,
-  "latency_s": 7.221583125006873,
+  "cost_usd": 0.018306,
+  "latency_s": 5.8883926249691285,
   "error": null,
   "raw_text": ""
 }

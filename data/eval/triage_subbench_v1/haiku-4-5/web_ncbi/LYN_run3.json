@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "LYN",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase that is constitutively anchored to the cytoplasmic (inner) face of the plasma membrane via N-terminal myristoylation and palmitoylation. Although LYN stably resides at the plasma membrane via its own lipid-modification-dependent mechanism, it is exclusively localized to the inner leaflet and interacts with the intracellular domains of surface receptors from the cytoplasmic side. There is no evidence or mechanism for LYN to reach the extracellular (outer) face of the plasma membrane. It cannot be accessed by cell-surface-directed biologics (antibodies, CAR-T, etc.) from the extracellular space.",
+  "correct": false,
+  "prompt_tokens": 47581,
+  "completion_tokens": 1132,
+  "n_web_searches": 2,
+  "cost_usd": 0.073241,
+  "latency_s": 13.50764879095368,
+  "error": null,
+  "raw_text": ""
+}

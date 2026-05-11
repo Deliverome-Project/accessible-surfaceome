@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO4 lacks a transmembrane domain and is a soluble protein, but it is detected in sperm as part of larger complexes with TM IZUMO family members (notably IZUMO3) and is localized to the acrosomal region. Studies report IZUMO4-JUNO interactions and antibody blockade of fertilization, implying surface accessibility on acrosome-reacted/germline cells. Display is restricted to the sperm/germline lineage and tied to acrosomal exocytosis, so the protein body reaches the outer face only in a narrow developmental context.",
+  "correct": true,
+  "prompt_tokens": 39134,
+  "completion_tokens": 731,
+  "n_web_searches": 1,
+  "cost_usd": 0.651835,
+  "latency_s": 18.84398083301494,
+  "error": null,
+  "raw_text": ""
+}

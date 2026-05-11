@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a single-pass type I transmembrane protein of the immunoglobulin superfamily expressed in sperm. In mature capacitated/acrosome-reacted spermatozoa, IZUMO1 translocates to the sperm surface (outer leaflet) where it is essential for sperm-egg fusion, binding its receptor JUNO on the egg. Prior to acrosome reaction, IZUMO1 is sequestered in the acrosomal membrane and is not surface-exposed. This activation-state-dependent redistribution to the outer leaflet in a specific cell type (acrosome-reacted sperm) places it in contextual/tissue_restricted_surface territory \u2014 it has its own TM anchor but surface display is restricted to a narrow germline/reproductive lineage and a specific activation state.",
+  "correct": true,
+  "prompt_tokens": 4926,
+  "completion_tokens": 227,
+  "n_web_searches": 0,
+  "cost_usd": 0.018183,
+  "latency_s": 5.6972008750308305,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. These lipid modifications attach it to the cytoplasmic face of the PM, not the extracellular face. Its catalytic and SH2/SH3 domains are entirely cytoplasmic. It has no transmembrane domain, no GPI anchor, and no extracellular domain. It is not co-trafficked as part of a stable surface-exposed complex. There is no documented surface exposure on the outer leaflet accessible to extracellular binders.",
+  "correct": false,
+  "prompt_tokens": 1486,
+  "completion_tokens": 188,
+  "n_web_searches": 0,
+  "cost_usd": 0.007278,
+  "latency_s": 4.192906082957052,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "SRC",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase anchored to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. It has no transmembrane domain and no extracellular domain. All documented localization is to intracellular membranes (plasma membrane inner leaflet, endosomes, Golgi, ER) and cytoplasm. There is no mechanism for the protein body to reach the extracellular face. While small-molecule inhibitors and kinase-directed biologics target SRC, they engage the intracellular kinase domain, not any surface-accessible epitope.",
+  "correct": false,
+  "prompt_tokens": 48416,
+  "completion_tokens": 802,
+  "n_web_searches": 2,
+  "cost_usd": 0.072426,
+  "latency_s": 9.719753166951705,
+  "error": null,
+  "raw_text": ""
+}

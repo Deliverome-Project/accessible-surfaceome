@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGFB1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is secreted but its latent complex (LAP + mature TGF-\u03b21) is covalently tethered to cell surfaces via GARP (LRRC32) and LRRC33 on Tregs, platelets, and myeloid cells through disulfide bonds, forming a wash-resistant surface-displayed latent complex. This surface-anchored LAP/TGF-\u03b21 is a validated therapeutic target (e.g., anti-GARP:TGF-\u03b21 antibodies). Membrane-bound latent TGF-\u03b21 is therefore accessible from the extracellular face via stable covalent attachment to a TM partner, not merely reversible recruitment.",
+  "correct": true,
+  "prompt_tokens": 10855,
+  "completion_tokens": 258,
+  "n_web_searches": 0,
+  "cost_usd": 0.182175,
+  "latency_s": 8.820882999978494,
+  "error": null,
+  "raw_text": ""
+}

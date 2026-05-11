@@ -72,10 +72,13 @@ MODEL_MARKER = {
     "claude-sonnet-4-6": "D",
     "claude-opus-4-7":   "s",
 }
-# Models whose runs were captured under the current (post-PR16) triage prompt;
-# everything not in this set was captured under an earlier prompt and gets a
-# footnote-style caveat on plots that mix them.
-PROMPT_FRESH_MODELS: frozenset[str] = frozenset({"claude-opus-4-7"})
+# After the May-2026 prompt-parity rewrite + truth-label cleanup, all
+# current per-cell runs live under <model>/<variant>/...  Stale runs are
+# under _legacy_pre_prompt_rewrite_*/  and are excluded by _load_runs.
+# Keep this constant as an empty set so the legacy footnote machinery in
+# plot_cost_vs_accuracy degrades to a no-op without removing it (and so
+# future mixed-prompt epochs can re-enable it by adding model ids back).
+PROMPT_FRESH_MODELS: frozenset[str] = frozenset()
 
 
 def _load_ground_truth() -> dict[str, dict[str, str]]:
@@ -87,25 +90,20 @@ def _load_runs() -> list[dict]:
     """Collect every persisted per-cell record.
 
     Path layout: data/eval/triage_subbench_v1/<model_slug>/<variant>/<gene>_run<N>.json
-    Falls back to the flat <variant>/<gene>_run<N>.json layout for legacy
-    records — those carry the model name in-record.
+
+    Directories whose name starts with ``_`` (e.g. ``_legacy_pre_prompt_rewrite_*``,
+    ``_backup_*``, ``_main_bench_*``) are skipped — they hold snapshots of
+    runs captured against earlier prompts / earlier truth labels and would
+    contaminate the current figures.
     """
     out = []
     for entry in sorted(RUNS_DIR.iterdir()):
-        if not entry.is_dir():
+        if not entry.is_dir() or entry.name.startswith("_"):
             continue
-        # Model-isolated layout (new).
         for variant_dir in sorted(entry.iterdir()):
             if not variant_dir.is_dir() or variant_dir.name not in VARIANT_ORDER:
                 continue
             for path in sorted(variant_dir.glob("*_run*.json")):
-                try:
-                    out.append(json.loads(path.read_text()))
-                except json.JSONDecodeError:
-                    continue
-        # Legacy flat layout (variants directly under RUNS_DIR).
-        if entry.name in VARIANT_ORDER:
-            for path in sorted(entry.glob("*_run*.json")):
                 try:
                     out.append(json.loads(path.read_text()))
                 except json.JSONDecodeError:
@@ -451,6 +449,159 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
     plt.close(fig)
 
 
+def _best_of_k_accuracy(
+    df: pd.DataFrame, model: str, variant: str, k: int, strategy: str = "majority"
+) -> float | None:
+    """Compute per-gene ensemble accuracy at fixed K reps.
+
+    Two strategies:
+
+    * ``majority`` — for each gene, pick the verdict with the most votes
+      across the first K reps. Tie-break by truth-match (gives the ensemble
+      the benefit of the doubt on hung juries; this is the standard
+      "consensus with oracle tiebreak" used in the per-protein grid).
+    * ``oracle`` — gene counts correct if ANY of the K reps got it right;
+      upper-bound ensemble (assuming you could perfectly route to the
+      right rep).
+
+    Returns ``None`` when fewer than K reps exist for some gene in this
+    cell (i.e. the plot point isn't well-defined).
+    """
+    cell = df[(df.model == model) & (df.variant == variant)]
+    if cell.empty:
+        return None
+
+    per_gene_correct = []
+    for gene, group in cell.groupby("gene_symbol"):
+        if len(group) < k:
+            return None  # ragged — skip this K for this cell
+        # Take the first K reps in replicate-order (sorting so the result
+        # is deterministic across runs).
+        sub = group.sort_values("replicate").head(k)
+        truth = sub.truth_verdict.iloc[0]
+        if strategy == "oracle":
+            per_gene_correct.append(bool(sub["correct"].any()))
+        else:  # majority
+            counts = sub.predicted_verdict.value_counts()
+            top = counts.max()
+            top_preds = counts[counts == top].index.tolist()
+            # Oracle tiebreak: if truth is among the tied top, pick it.
+            chosen = truth if truth in top_preds else top_preds[0]
+            per_gene_correct.append(chosen == truth)
+    return sum(per_gene_correct) / len(per_gene_correct)
+
+
+def plot_best_of_k(df: pd.DataFrame, out_dir: Path) -> None:
+    """Best-of-K ensemble accuracy as a function of replicate budget K.
+
+    For each (model, variant), draws a line of majority-vote accuracy vs
+    K (with oracle-tiebreak on hung juries), plus a dashed "oracle" line
+    showing the any-correct ceiling. Annotates the K at which majority
+    accuracy first hits 100% or plateaus (≤ 1/N improvement vs previous K).
+    """
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+
+    models = [m for m in MODEL_ORDER if m in df.model.unique()]
+    fig, axes = plt.subplots(
+        1, len(models), figsize=(4.5 * len(models) + 1.0, 5.5), sharey=True,
+    )
+    if len(models) == 1:
+        axes = [axes]
+
+    # Truth-table row count drives the "plateau" threshold: any K-to-K+1
+    # change < 1 / n_genes is essentially a single-gene swing.
+    n_genes = df.gene_symbol.nunique()
+    plateau_eps = 1.0 / max(n_genes, 1)
+
+    for ax, model in zip(axes, models):
+        cell_rep_counts = (
+            df[df.model == model]
+            .groupby(["variant", "gene_symbol"])
+            .size()
+            .groupby("variant")
+            .min()
+        )
+        # Max K we can plot for this model = min reps per gene across variants.
+        max_k_per_variant = {v: int(n) for v, n in cell_rep_counts.items()}
+
+        for variant in VARIANT_ORDER:
+            max_k = max_k_per_variant.get(variant, 0)
+            if max_k < 1:
+                continue
+            ks = list(range(1, max_k + 1))
+            maj_acc = [_best_of_k_accuracy(df, model, variant, k, "majority") for k in ks]
+            orc_acc = [_best_of_k_accuracy(df, model, variant, k, "oracle") for k in ks]
+            color = CLAUDE_ORANGE_SHADES[variant]
+            # Majority-vote line — solid
+            ax.plot(ks, maj_acc, marker="o", markersize=8, color=color,
+                    linewidth=2.0, label=VARIANT_LABEL[variant], zorder=4)
+            # Oracle ceiling — dashed, slightly transparent
+            ax.plot(ks, orc_acc, marker="^", markersize=6, color=color,
+                    linewidth=1.0, linestyle="--", alpha=0.55, zorder=3)
+
+            # Annotate plateau / 100% point on the majority curve.
+            for i, k in enumerate(ks):
+                if maj_acc[i] is None:
+                    continue
+                hit_100 = maj_acc[i] >= 1.0 - 1e-9
+                stalled = (
+                    i > 0 and maj_acc[i - 1] is not None
+                    and abs(maj_acc[i] - maj_acc[i - 1]) <= plateau_eps
+                )
+                if hit_100 or (stalled and i == len(ks) - 1):
+                    ax.scatter([k], [maj_acc[i]], s=180, marker="o",
+                               facecolor="none", edgecolor=color,
+                               linewidth=2.4, zorder=5)
+                    ax.annotate(
+                        f"K={k}\n{maj_acc[i]:.0%}",
+                        (k, maj_acc[i]), xytext=(8, -4),
+                        textcoords="offset points", fontsize=8.5,
+                        color=color,
+                    )
+                    break
+
+        ax.set_title(MODEL_LABEL[model], fontsize=12)
+        ax.set_xlabel("Reps combined (K)")
+        ax.set_xticks(range(1, max(max_k_per_variant.values(), default=1) + 1))
+        ax.set_ylim(0, 1.05)
+        ax.grid(True, axis="y", linestyle=":", alpha=0.4)
+
+    axes[0].set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
+
+    # Shared legend below the row of subplots.
+    from matplotlib.lines import Line2D
+    handles = [
+        Line2D([], [], marker="o", color=CLAUDE_ORANGE_SHADES[v],
+               markersize=8, linewidth=2.0, label=VARIANT_LABEL[v].replace("\n", " "))
+        for v in VARIANT_ORDER
+    ] + [
+        Line2D([], [], marker="^", color=COLORS["neutral"], markersize=6,
+               linewidth=1.0, linestyle="--", alpha=0.7,
+               label="Oracle ceiling (any rep correct)"),
+        Line2D([], [], marker="o", color="white",
+               markerfacecolor="none", markeredgecolor=COLORS["dark"],
+               markersize=12, markeredgewidth=2.0, linewidth=0,
+               label="Plateau / 100% marker"),
+    ]
+    fig.legend(
+        handles=handles, loc="lower center",
+        bbox_to_anchor=(0.5, -0.02), ncol=3, frameon=False, fontsize=9,
+    )
+    fig.suptitle(
+        "Best-of-K ensemble accuracy across prompt variants  ·  "
+        "solid = majority vote with oracle tiebreak  ·  dashed = oracle ceiling",
+        fontsize=11, y=1.005,
+    )
+    fig.tight_layout(rect=(0, 0.06, 1, 0.98))
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    save_figure(
+        fig, filename="subbench_best_of_k",
+        output_dir=str(out_dir), formats=["pdf", "png"],
+    )
+    plt.close(fig)
+
+
 def main() -> None:
     df = _build_dataframe()
     if df.empty:
@@ -463,7 +614,8 @@ def main() -> None:
     plot_accuracy_by_variant(df, OUT_DIR)
     plot_per_protein(df, OUT_DIR)
     plot_cost_vs_accuracy(df, OUT_DIR)
-    print(f"\nWrote 3 plots to {OUT_DIR}")
+    plot_best_of_k(df, OUT_DIR)
+    print(f"\nWrote 4 plots to {OUT_DIR}")
 
 
 if __name__ == "__main__":

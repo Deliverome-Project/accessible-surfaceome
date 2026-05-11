@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPD1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial chaperonin, but is well-documented to translocate to the plasma membrane outer leaflet under stress, oncogenic transformation, and apoptosis/ICD conditions. Cancer cells display HSP60 prominently on the cell surface (ecto-HSP60), where it has been exploited as a CAR-T and antibody target. In non-cancerous cells, stress and apoptosis also drive surface translocation. The protein lacks a classical TM domain or GPI anchor; surface display is cell-state-induced. This qualifies as contextual/cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 5623,
+  "completion_tokens": 168,
+  "n_web_searches": 0,
+  "cost_usd": 0.019389,
+  "latency_s": 5.249717040976975,
+  "error": null,
+  "raw_text": ""
+}

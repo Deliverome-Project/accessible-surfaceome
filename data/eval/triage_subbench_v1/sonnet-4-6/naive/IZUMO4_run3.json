@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family of immunoglobulin-superfamily proteins. The founding member IZUMO1 is a well-characterized sperm surface protein essential for sperm-egg fusion. IZUMO4 (also known as IZUMO family member 4) shares structural features with the family and has been reported in testis/sperm tissue, suggesting germline/reproductive-lineage-restricted surface expression. Given its Ig-like domain architecture and family membership, surface display on sperm cells is plausible, but expression appears restricted to a narrow germline/reproductive lineage, making this contextual/tissue_restricted_surface rather than broadly surface-accessible.",
+  "correct": true,
+  "prompt_tokens": 4926,
+  "completion_tokens": 197,
+  "n_web_searches": 0,
+  "cost_usd": 0.017733,
+  "latency_s": 4.783340124995448,
+  "error": null,
+  "raw_text": ""
+}

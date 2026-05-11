@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA1A",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is predominantly a cytosolic chaperone with no classical TM domain or GPI anchor. However, extensive literature documents tumor-selective and stress-induced plasma membrane surface expression: (1) membrane-bound HSPA1A is detected on a wide variety of human and mouse tumor cell types by flow cytometry using conformational anti-HSP70 mAbs (cmHsp70.1) that recognize an extracellularly exposed epitope; (2) surface localization is mechanistically linked to interaction with sphingoglycolipid Gb3 and/or phosphatidylserine in tumor/stressed cells; (3) the surface pool is demonstrably stress- and cell-state-induced\u2014absent or minimal on matched normal tissues. This qualifies as cell_state_induced / dual_localization contextual surface accessibility. Soluble/secreted and exosomal forms also exist but the documented plasma-membrane-integrated pool in tumor/stressed cells constitutes genuine outer-leaflet accessibility for surface-directed binders.",
+  "correct": true,
+  "prompt_tokens": 26155,
+  "completion_tokens": 342,
+  "n_web_searches": 1,
+  "cost_usd": 0.093595,
+  "latency_s": 10.222744334023446,
+  "error": null,
+  "raw_text": ""
+}

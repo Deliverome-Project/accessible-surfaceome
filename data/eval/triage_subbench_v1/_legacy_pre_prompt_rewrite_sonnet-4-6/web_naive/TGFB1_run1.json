@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGFB1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is a secreted cytokine with no intrinsic transmembrane domain. It lacks a membrane anchor of its own. However, the latent TGF-\u03b21 complex (LAP-TGF-\u03b21) is stably presented on the extracellular face of the plasma membrane in specific cell types \u2014 on regulatory T cells via GARP (LRRC32) and on macrophages/microglia via NRROS (LRRC33), both transmembrane proteins. This surface tethering is wash-resistant and non-covalent but stable, exposing the LAP and mature TGF-\u03b21 domains to the outer leaflet. Integrin-mediated activation of this surface pool is well characterized. Recent therapeutic mAbs (Cell Reports, 2025) explicitly target membrane-bound latent TGF-\u03b21 on Tregs, confirming surface accessibility. The dominant form is secreted/ECM-deposited, making surface presentation cell-state and cell-type restricted rather than universal.",
+  "correct": true,
+  "prompt_tokens": 31862,
+  "completion_tokens": 959,
+  "n_web_searches": 2,
+  "cost_usd": 0.129971,
+  "latency_s": 20.691150165977888,
+  "error": null,
+  "raw_text": ""
+}

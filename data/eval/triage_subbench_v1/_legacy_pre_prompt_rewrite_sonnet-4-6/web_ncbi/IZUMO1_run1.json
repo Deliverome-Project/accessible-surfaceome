@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a type-I single-pass transmembrane glycoprotein (IgSF family) expressed on sperm. In acrosome-intact sperm it resides on the inner and outer acrosomal membranes, not the plasma membrane outer leaflet. Upon the acrosome reaction (AR), IZUMO1 translocates to the sperm plasma membrane equatorial segment, presenting its ectodomain extracellularly where it engages its egg-surface receptor JUNO. Surface accessibility is therefore real and well-documented, but strictly contingent on the acrosome-reacted cell state. This fits 'contextual / cell_state_induced': the protein body reaches the outer leaflet of the PM only after AR, via its own TM anchor.",
+  "correct": true,
+  "prompt_tokens": 23757,
+  "completion_tokens": 265,
+  "n_web_searches": 1,
+  "cost_usd": 0.08524599999999999,
+  "latency_s": 11.028428624966182,
+  "error": null,
+  "raw_text": ""
+}

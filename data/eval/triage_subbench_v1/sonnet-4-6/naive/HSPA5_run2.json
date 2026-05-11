@@ -7,13 +7,13 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-resident HSP70 chaperone retained by the KDEL motif. However, it is well-documented to traffic to the cell surface under stress conditions (ER stress, hypoxia, oncogenic transformation, oxidative stress) where it appears on the outer leaflet of the plasma membrane. Cell-surface GRP78 (csGRP78) has been validated as a functional receptor/co-receptor on tumor cells and certain stressed cells, and is a bona fide drug target for antibodies, ADCs, and other binders. It reaches the outer face by its own trafficking mechanism under these specific cell states.",
+  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-luminal chaperone retained by KDEL. However, it is well-documented to translocate to the cell surface under ER stress, hypoxia, and oncogenic transformation, where it appears on the outer leaflet as 'cell-surface GRP78' (csGRP78). This ecto-form has been targeted by antibodies, ADCs, and CAR-T approaches in cancer. The surface display is cell-state-induced (stress/cancer context), not constitutive under baseline conditions, making this contextual/cell_state_induced rather than yes.",
   "correct": true,
-  "prompt_tokens": 1487,
-  "completion_tokens": 187,
+  "prompt_tokens": 4925,
+  "completion_tokens": 185,
   "n_web_searches": 0,
-  "cost_usd": 0.007266,
-  "latency_s": 4.981467207951937,
+  "cost_usd": 0.01755,
+  "latency_s": 5.441834750003181,
   "error": null,
   "raw_text": ""
 }

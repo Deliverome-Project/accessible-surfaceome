@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "BAX (BCL2-associated X protein) is a pro-apoptotic BCL-2 family member that resides predominantly in the cytosol of healthy cells. Upon apoptotic stimulation, it translocates from the cytosol and inserts into the mitochondrial outer membrane (MOM), where it oligomerizes to form apoptotic pores mediating cytochrome c release. Additional intracellular localization to the ER membrane has been documented. BAX has no plasma membrane-targeting mechanism, no GPI anchor, no signal peptide for the secretory pathway, and no extracellular domain. All membrane biology is strictly intracellular (MOM and ER). No surface-directed therapeutics target the BAX protein body from the extracellular face. pMHC presentation is excluded per triage rules.",
+  "correct": false,
+  "prompt_tokens": 23160,
+  "completion_tokens": 656,
+  "n_web_searches": 1,
+  "cost_usd": 0.08932,
+  "latency_s": 14.719772959011607,
+  "error": null,
+  "raw_text": ""
+}
