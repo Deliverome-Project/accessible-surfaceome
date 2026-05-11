@@ -191,19 +191,21 @@ def make_plot(out_dir: Path) -> None:
     overall = overall_accuracy()
     df = _long_dataframe()
 
-    # Sort callers by overall accuracy (descending) so the most-accurate
-    # appears leftmost in each cluster.
-    all_labels = [label for _, label in _all_callers()]
-    db_labels_sorted = sorted(all_labels, key=lambda lbl: -overall[lbl])
-    # Color identity per caller: surface DBs use brand-palette colors;
-    # Haiku gets Claude orange. Lookup is by label so order doesn't matter.
+    # Layout: Haiku sits leftmost as its own visual group, separated from
+    # the 5 DBs by a small gap. The DBs are sorted among themselves by
+    # overall accuracy (descending). Color identity per caller: DBs use
+    # brand-palette colors; Haiku gets Claude orange.
+    db_labels_only = [label for _, label in DB_FLAGS_5]
+    db_labels_sorted_dbs = sorted(db_labels_only, key=lambda lbl: -overall[lbl])
+    # Final caller order along x within each cluster: Haiku first, then DBs.
+    callers_sorted = [HAIKU_LABEL, *db_labels_sorted_dbs]
     palette_lookup = {
         label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)
     }
     palette_lookup[HAIKU_LABEL] = HAIKU_COLOR
-    palette_sorted = [palette_lookup[lbl] for lbl in db_labels_sorted]
+    palette_sorted = [palette_lookup[lbl] for lbl in callers_sorted]
 
-    fig, ax = plt.subplots(figsize=(11.5, 5.5))
+    fig, ax = plt.subplots(figsize=(12, 5.5))
 
     sns.barplot(
         data=df,
@@ -211,18 +213,47 @@ def make_plot(out_dir: Path) -> None:
         y="fraction",
         hue="database",
         order=[VERDICT_LABEL[v] for v in VERDICT_ORDER],
-        hue_order=db_labels_sorted,
+        hue_order=callers_sorted,
         palette=palette_sorted,
         edgecolor="none",
         saturation=1.0,
         ax=ax,
     )
 
+    # Spatially separate the Haiku bar from the DB cluster: walk every
+    # patch and shift the DB bars (callers_sorted[1:]) rightward by a
+    # visible gap. seaborn lays patches hue-major then x-major, so the
+    # first len(VERDICT_ORDER) patches belong to the Haiku hue.
+    n_v = len(VERDICT_ORDER)
+    n_callers = len(callers_sorted)
+    bar_width = ax.patches[0].get_width()
+    gap = bar_width * 0.8  # ~0.8× one bar width — visible but not gaping
+    for caller_idx in range(1, n_callers):  # skip Haiku (idx 0); shift DBs right
+        for j in range(n_v):
+            patch = ax.patches[caller_idx * n_v + j]
+            patch.set_x(patch.get_x() + gap)
+
+    # Add a faint vertical separator at the Haiku/DB boundary for each
+    # verdict cluster — sits between the right edge of the Haiku bar and
+    # the left edge of the first DB bar.
+    for verdict_idx, verdict in enumerate(VERDICT_ORDER):
+        haiku_patch = ax.patches[0 * n_v + verdict_idx]
+        sep_x = haiku_patch.get_x() + bar_width + (gap / 2)
+        ax.axvline(
+            sep_x,
+            ymin=0.02,
+            ymax=0.92,
+            color=COLORS["neutral"],
+            linestyle=":",
+            linewidth=0.8,
+            alpha=0.5,
+        )
+
     # Annotate each bar with n_correct / n_total. Walk the patches in
     # legend-order; seaborn lays them out hue-major then x-major.
-    for i, caller_label in enumerate(db_labels_sorted):
+    for i, caller_label in enumerate(callers_sorted):
         for j, verdict in enumerate(VERDICT_ORDER):
-            bar = ax.patches[i * len(VERDICT_ORDER) + j]
+            bar = ax.patches[i * n_v + j]
             row = df[(df.database == caller_label) & (df.verdict == verdict)].iloc[0]
             ax.text(
                 bar.get_x() + bar.get_width() / 2,
@@ -243,7 +274,7 @@ def make_plot(out_dir: Path) -> None:
     # Replace seaborn's default legend with sorted-by-overall-accuracy version
     # placed outside the plotting area on the right.
     handles, _ = ax.get_legend_handles_labels()
-    legend_labels = [f"{lbl} ({overall[lbl]:.0%})" for lbl in db_labels_sorted]
+    legend_labels = [f"{lbl} ({overall[lbl]:.0%})" for lbl in callers_sorted]
     ax.legend(
         handles,
         legend_labels,

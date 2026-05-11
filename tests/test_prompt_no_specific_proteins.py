@@ -26,9 +26,12 @@ import re
 from pathlib import Path
 
 # Every prompt file the triage agent consumes. Add new prompt files
-# here as they're introduced.
+# here as they're introduced. All active + variant prompts are guarded.
 PROMPT_FILES = [
     Path("src/accessible_surfaceome/agents/surface_triage/prompts/system.md"),
+    Path("src/accessible_surfaceome/agents/surface_triage/prompts/system_naive.md"),
+    Path("src/accessible_surfaceome/agents/surface_triage/prompts/system_web.md"),
+    Path("src/accessible_surfaceome/agents/surface_triage/prompts/system_web_naive.md"),
     Path("src/accessible_surfaceome/agents/surface_triage/prompts/task_template.md"),
 ]
 
