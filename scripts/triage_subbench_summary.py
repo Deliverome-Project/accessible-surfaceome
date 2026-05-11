@@ -41,6 +41,14 @@ SUBBENCH_TSV = ROOT / "data/eval/triage_subbench_v1.tsv"
 RUNS_DIR = ROOT / "data/eval/triage_subbench_v1"
 OUT_DIR = ROOT / "data/analysis/triage_bench"
 
+# Extrapolate per-cell subbench costs to a whole-genome triage pass.
+# All cost annotations on the plots are reported as $/20k-gene-pass at 1
+# replicate per gene — the apples-to-apples number for "would this fly
+# on the real surfaceome?"
+SUBBENCH_GENE_N = 17
+WHOLE_GENOME_N = 20000
+GENOME_SCALE = WHOLE_GENOME_N / SUBBENCH_GENE_N  # ~1176x
+
 # Variant order = "amount of context" axis. Each variant gets a darker
 # shade of Claude orange as the context augmentation increases.
 VARIANT_ORDER = ["naive", "ncbi", "web_naive", "web_ncbi"]
@@ -278,15 +286,19 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
                     linewidth=1.1, zorder=5,
                 )
 
-            # n_correct/n + $cost annotation
+            # n_correct/n + $cost annotation. Cost is reported as the
+            # extrapolated $/whole-genome pass (20k genes at 1 rep each),
+            # not the $/17-gene-subbench number, so the bar reads as
+            # "what this would cost to run on the real surfaceome."
             row = agg[(agg.variant == variant) & (agg.model == model)]
             if row.empty:
                 continue
             r = row.iloc[0]
+            cost_per_genome = (r.total_cost / r.n) * WHOLE_GENOME_N
             ax.text(
                 bar_x,
                 bar.get_height() + 0.018,
-                f"{int(r.n_correct)}/{int(r.n)}\n${r.total_cost:.2f}",
+                f"{int(r.n_correct)}/{int(r.n)}\n${cost_per_genome:,.0f}",
                 ha="center", va="bottom",
                 fontsize=8.5, color=COLORS["dark"],
                 linespacing=1.2,
@@ -326,9 +338,11 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
                 m_, v_ = cell
                 return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
             comp = f"{_short(rec['a'])}\n+ {_short(rec['b'])}\n→ {_short(rec['c'])}*"
+            # rec["cost"] is per-gene; extrapolate to a 20k-gene pass.
+            cost_per_genome = rec["cost"] * WHOLE_GENOME_N
             ax.text(
                 x_pos, rec["acc"] + 0.018,
-                f"{label}\n${rec['cost'] * 17:.2f}\n{rec['n_dis']}/17 tied",
+                f"{label}\n${cost_per_genome:,.0f}\n{rec['n_dis']}/17 tied",
                 ha="center", va="bottom",
                 fontsize=8.5, color=COLORS["dark"], linespacing=1.2,
                 fontweight="bold",
@@ -345,7 +359,8 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
     ax.set_title(
         "Triage sub-benchmark: variant × model accuracy  ·  "
-        "Combined = cheapest lazy 3-cell ensemble (A + B → C tiebreak)"
+        f"costs extrapolated to a {WHOLE_GENOME_N // 1000}k-gene whole-genome pass at 1 rep/gene  ·  "
+        "Combined = cheapest lazy 3-cell ensemble (A+B → C tiebreak)"
     )
     xtick_positions = list(range(len(models))) + (
         [len(models)] if combined_tiers else []
@@ -507,6 +522,10 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         )
     )
     per_rep["accuracy"] = per_rep.n_correct / per_rep.n
+    # Extrapolate per-replicate (17-gene) cost to a whole-genome pass
+    # (20k genes at 1 rep) so the x-axis is the apples-to-apples
+    # production-cost number, not the per-subbench-rep number.
+    per_rep["genome_cost"] = per_rep.total_cost * GENOME_SCALE
 
     fig, ax = plt.subplots(figsize=(8.5, 5.8))
     mixed_prompts = (
@@ -525,7 +544,7 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         first_labeled: set[tuple[str, str]] = set()
         for _, row in sub.iterrows():
             ax.scatter(
-                row.total_cost, row.accuracy,
+                row.genome_cost, row.accuracy,
                 s=200, color=CLAUDE_ORANGE_SHADES[row.variant],
                 marker=marker, edgecolor=COLORS["dark"], linewidth=1.0,
                 zorder=3,
@@ -534,13 +553,13 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
             if key not in first_labeled:
                 label = row.variant + ("*" if mixed_prompts and is_fresh else "")
                 ax.annotate(
-                    label, (row.total_cost, row.accuracy),
+                    label, (row.genome_cost, row.accuracy),
                     xytext=(8, 4), textcoords="offset points", fontsize=9,
                     color=COLORS["neutral"],
                 )
                 first_labeled.add(key)
 
-    ax.set_xlabel("Cost per replicate on 17-protein sub-benchmark (USD)")
+    ax.set_xlabel(f"Cost per whole-genome triage pass ({WHOLE_GENOME_N // 1000}k genes × 1 rep, USD)")
     ax.set_ylabel("Verdict accuracy per replicate")
     n_points = int(per_rep.shape[0])
     n_cells = int(per_rep.groupby(["model", "variant"]).ngroups)
