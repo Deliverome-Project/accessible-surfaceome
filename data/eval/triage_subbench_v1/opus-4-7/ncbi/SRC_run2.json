@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "SRC",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC is an N-myristoylated non-receptor tyrosine kinase canonically anchored to the cytoplasmic (inner) leaflet of the plasma membrane and endomembranes \u2014 not extracellularly accessible at baseline. However, ecto-SRC / surface-displayed active SRC has been documented on tumor cells as part of the broader cancer ecto-kinome, qualifying as cell-state-induced outer-leaflet display. No germline/developmental narrow-lineage surface restriction; not a lysosomal TM protein; no documented PM minority pool with own extracellular anchor (inner-leaflet anchored at baseline); no wash-resistant TM-partner tethering described. The cancer ecto-display is the only contextual surface story.",
+  "correct": true,
+  "prompt_tokens": 8409,
+  "completion_tokens": 361,
+  "n_web_searches": 0,
+  "cost_usd": 0.15321,
+  "latency_s": 5.762122874963097,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Strength of ecto-SRC evidence on tumor cells is limited; could plausibly be `no`/`inner_leaflet_anchored` if cancer surface display is not credited.",
+  "error": null,
+  "raw_text": ""
+}

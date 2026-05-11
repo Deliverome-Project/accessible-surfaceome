@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "STIM1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a single-pass type I TM protein resident in the ER membrane, where its luminal EF-hand senses Ca2+ store depletion and it oligomerizes at ER-PM junctions to gate Orai channels. Its dominant compartment is the ER, but a documented minority pool reaches the plasma membrane (PM-STIM1) with the N-terminal EF-SAM domain exposed extracellularly, and surface STIM1 has been detected by surface biotinylation and targeted by antibodies in functional studies. This qualifies as dual_localization \u2014 an ER-resident TM protein with a real, if minor, surface pool with extracellular N-terminus.",
+  "correct": true,
+  "prompt_tokens": 8474,
+  "completion_tokens": 318,
+  "n_web_searches": 0,
+  "cost_usd": 0.15096,
+  "latency_s": 5.431678582972381,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Surface STIM1 pool is small and context-dependent; whether it is robust/abundant enough for therapeutic targeting is unclear.",
+  "error": null,
+  "raw_text": ""
+}

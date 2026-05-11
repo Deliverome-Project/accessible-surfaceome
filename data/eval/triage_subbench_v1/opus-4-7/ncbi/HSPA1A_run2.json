@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA1A",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (Hsp70/HSP72) is canonically a cytosolic chaperone, but it is one of the best-documented examples of cancer-cell and stress-induced ecto-display: tumor cells present Hsp70 on the outer plasma membrane leaflet (the basis for the cmHsp70.1 antibody and multiple clinical Hsp70-membrane-targeting programs), and stressed/apoptotic cells externalize Hsp70 to act as a DAMP. This is a documented cell-state-induced surface pool (cancer transformation + stress/ICD), not pMHC-only. Mechanism of outer-leaflet anchoring is non-classical (lipid binding, e.g. Bag4/PS), so it is contextual rather than baseline yes.",
+  "correct": true,
+  "prompt_tokens": 8476,
+  "completion_tokens": 311,
+  "n_web_searches": 0,
+  "cost_usd": 0.150465,
+  "latency_s": 11.229220666980837,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

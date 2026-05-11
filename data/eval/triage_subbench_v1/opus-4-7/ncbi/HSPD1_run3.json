@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPD1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1/HSP60 is canonically a mitochondrial matrix chaperonin essential for folding imported proteins. However, an ecto-HSP60 pool is well documented on the surface of stressed and tumor cells, where it acts as a danger signal engaging innate immune receptors (TLR2/4) and is recognized by anti-tumor antibodies. Cancer-cell and stress-induced surface display qualifies as cell_state_induced contextual accessibility. Not a TM/GPI protein at baseline; recruitment to outer leaflet is condition-dependent.",
+  "correct": true,
+  "prompt_tokens": 8439,
+  "completion_tokens": 299,
+  "n_web_searches": 0,
+  "cost_usd": 0.14901,
+  "latency_s": 4.612000708002597,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Magnitude and reproducibility of surface HSP60 pool across tumor types; some reports attribute signal to EV-associated rather than PM-anchored protein.",
+  "error": null,
+  "raw_text": ""
+}

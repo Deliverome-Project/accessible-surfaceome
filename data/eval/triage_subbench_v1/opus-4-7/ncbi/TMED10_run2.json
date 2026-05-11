@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TMED10",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I single-pass TM p24-family cargo receptor that cycles between ER, Golgi, and the plasma membrane as part of COPI/COPII vesicular trafficking. NCBI explicitly notes plasma membrane localization alongside Golgi residency, and surface biotinylation studies have detected a PM pool. The dominant compartment is the early secretory pathway, but a documented minority surface pool from constitutive cycling places this in dual_localization rather than endomembrane_resident-only. Not a canonical surface receptor, so not `yes`.",
+  "correct": true,
+  "prompt_tokens": 8452,
+  "completion_tokens": 296,
+  "n_web_searches": 0,
+  "cost_usd": 0.14898,
+  "latency_s": 5.192702708009165,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Size and accessibility of the PM pool is modest; uncertain whether the short extracellular/luminal GOLD domain at the surface is a tractable binder epitope.",
+  "error": null,
+  "raw_text": ""
+}

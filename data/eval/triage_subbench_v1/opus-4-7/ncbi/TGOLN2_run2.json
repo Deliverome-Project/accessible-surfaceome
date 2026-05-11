@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGOLN2",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGN46/TGN38 is a type I single-pass TM protein whose steady-state pool resides in the TGN, but it constitutively cycles between TGN, endosomes, and the plasma membrane. A minor but well-documented surface pool is detectable by surface biotinylation and antibody internalization assays, and the protein is routinely used as a marker for TGN-PM recycling. Anchor is its own TM domain; surface fraction is small but real. Does not fit yes (dominant compartment is TGN, not PM); fits dual_localization via vesicular cycling.",
+  "correct": true,
+  "prompt_tokens": 8383,
+  "completion_tokens": 238,
+  "n_web_searches": 0,
+  "cost_usd": 0.143595,
+  "latency_s": 9.977899833000265,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

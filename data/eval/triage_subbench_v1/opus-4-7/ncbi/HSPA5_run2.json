@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA5",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5/GRP78/BiP is canonically an ER-luminal HSP70 chaperone, but has well-documented cell-surface display on tumor cells and under ER stress (csGRP78), where it acts as a signaling receptor and is the target of multiple clinical anti-GRP78 antibody, ADC, and CAR-T programs. The cancer/stress-induced ecto-pool qualifies as cell_state_induced. Not yes because baseline localization is ER lumen with no intrinsic membrane anchor; surface display is restricted to stressed/transformed cells.",
+  "correct": true,
+  "prompt_tokens": 8444,
+  "completion_tokens": 246,
+  "n_web_searches": 0,
+  "cost_usd": 0.14511,
+  "latency_s": 9.537429708987474,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

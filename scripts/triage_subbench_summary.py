@@ -98,6 +98,7 @@ FRESH_CELLS: frozenset[tuple[str, str]] = frozenset({
     ("claude-sonnet-4-6", "naive"),
     ("claude-sonnet-4-6", "ncbi"),
     ("claude-opus-4-7", "naive"),
+    ("claude-opus-4-7", "ncbi"),
 })
 # When True, _build_dataframe filters records to FRESH_CELLS only — used
 # when the user wants the "latest prompt version only" view. Set via the
@@ -1400,6 +1401,155 @@ def plot_best_of_k(df: pd.DataFrame, out_dir: Path) -> None:
     plt.close(fig)
 
 
+def plot_lazy_ensemble_landscape(df: pd.DataFrame, out_dir: Path) -> None:
+    """Dedicated panel: what does pure lazy actually achieve?
+
+    For every (A, B, C) triple, plot (expected $/genome, accuracy) as a
+    scatter point. Marker color encodes the tiebreaker cell (C), which
+    is what differentiates triples that share an (A, B) pair.
+    Annotate the cheapest triple at each unique accuracy level so the
+    structural ceiling is obvious.
+
+    Companion to plot_cost_vs_accuracy, which folds lazy into a
+    one-dot-per-strategy view. This plot exists so the reader can see
+    the *full* lazy-ensemble landscape — where lazy can and cannot
+    reach, independent of cascade strategies.
+    """
+    from itertools import combinations
+
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    truth = _load_ground_truth()
+    cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
+
+    def _short(cell):
+        m_, v_ = cell
+        return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
+
+    # Sweep every (A, B, C) triple. A and B are unordered; C is the
+    # tiebreaker. Record (cost, acc, A, B, C, n_dis).
+    triples: list[dict] = []
+    for a, b in combinations(cells, 2):
+        for c in cells:
+            if c in (a, b):
+                continue
+            acc, cost, n_dis = _lazy_ensemble(df, truth, a, b, c)
+            triples.append({
+                "a": a, "b": b, "c": c,
+                "acc": acc, "cost_per_genome": cost * WHOLE_GENOME_N,
+                "n_dis": n_dis,
+            })
+    if not triples:
+        return
+
+    fig, ax = plt.subplots(figsize=(11, 6))
+
+    # Build a deterministic color per tiebreaker cell. Use a categorical
+    # palette so the legend stays readable.
+    c_cells = sorted({t["c"] for t in triples})
+    palette = sns.color_palette("Set2", n_colors=len(c_cells))
+    color_for_c = dict(zip(c_cells, palette))
+
+    # Marker per (A, B) PAIR — we use shape to encode "which two cells
+    # do the voting". Pick from a stable list.
+    pair_markers = ["o", "s", "D", "^", "v", "P", "X", "*", "h", "<"]
+    pair_keys = sorted({(t["a"], t["b"]) for t in triples})
+    marker_for_pair = {
+        pair: pair_markers[i % len(pair_markers)]
+        for i, pair in enumerate(pair_keys)
+    }
+
+    # Plot each triple. Slight horizontal jitter on overlapping points
+    # is unnecessary at log-x because cost spreads naturally.
+    for t in triples:
+        ax.scatter(
+            t["cost_per_genome"], t["acc"],
+            s=110, color=color_for_c[t["c"]],
+            marker=marker_for_pair[(t["a"], t["b"])],
+            edgecolor=COLORS["dark"], linewidth=0.9, alpha=0.85, zorder=3,
+        )
+
+    # Horizontal ceiling line at the max-achievable accuracy.
+    max_acc = max(t["acc"] for t in triples)
+    ax.axhline(max_acc, color=COLORS["dark"], linestyle="--",
+               linewidth=1.2, alpha=0.6, zorder=2)
+    ax.text(
+        ax.get_xlim()[1] * 0.99, max_acc + 0.005,
+        f"  lazy ceiling: {max_acc:.1%}",
+        ha="right", va="bottom",
+        color=COLORS["dark"], fontsize=10, fontweight="bold",
+        style="italic",
+    )
+
+    # Annotate the cheapest triple at each unique accuracy level.
+    by_acc: dict[float, dict] = {}
+    for t in triples:
+        ak = round(t["acc"], 4)
+        if ak not in by_acc or t["cost_per_genome"] < by_acc[ak]["cost_per_genome"]:
+            by_acc[ak] = t
+    for ak, t in sorted(by_acc.items()):
+        label = (
+            f"{_short(t['a'])} + {_short(t['b'])}\n"
+            f"→ {_short(t['c'])}*  ({t['n_dis']}/17 tied)"
+        )
+        ax.annotate(
+            label,
+            (t["cost_per_genome"], t["acc"]),
+            xytext=(8, 6), textcoords="offset points",
+            fontsize=7.8, color=COLORS["dark"],
+            arrowprops=dict(arrowstyle="-", color=COLORS["dark"],
+                            lw=0.6, alpha=0.4),
+        )
+
+    ax.set_xlabel(
+        f"Expected cost per whole-genome triage pass "
+        f"({WHOLE_GENOME_N:,} NCBI protein-coding genes × 1 rep, USD)"
+    )
+    ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
+    ax.set_title(
+        f"Lazy-ensemble landscape: {len(triples)} (A, B, C) triples  ·  "
+        "A + B → C tiebreaker on disagreement  ·  "
+        "yes≡contextual scoring  ·  expected cost = c(A) + c(B) + P(A,B disagree) · c(C)"
+    )
+    ax.set_xscale("log")
+    ax.set_ylim(0, 1.05)
+    sns.despine(ax=ax, top=True, right=True)
+
+    # Legend: tiebreaker color + (A, B) marker shape.
+    from matplotlib.lines import Line2D
+    color_handles = [
+        Line2D([], [], marker="o", color="w",
+               markerfacecolor=color_for_c[c],
+               markeredgecolor=COLORS["dark"], markersize=10,
+               label=f"tiebreaker C = {_short(c)}")
+        for c in c_cells
+    ]
+    shape_handles = [
+        Line2D([], [], marker=marker_for_pair[pair], color="w",
+               markerfacecolor="white", markeredgecolor=COLORS["dark"],
+               markersize=9,
+               label=f"A+B = {_short(pair[0])} + {_short(pair[1])}")
+        for pair in pair_keys
+    ]
+    legend1 = ax.legend(
+        handles=color_handles, title="Tiebreaker (color)",
+        loc="upper left", bbox_to_anchor=(1.02, 1.0),
+        frameon=False, fontsize=8,
+    )
+    ax.add_artist(legend1)
+    ax.legend(
+        handles=shape_handles, title="A + B pair (shape)",
+        loc="lower left", bbox_to_anchor=(1.02, 0.0),
+        frameon=False, fontsize=8,
+    )
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    save_figure(
+        fig, filename="subbench_lazy_landscape",
+        output_dir=str(out_dir), formats=["pdf", "png"],
+    )
+    plt.close(fig)
+
+
 def main() -> None:
     df = _build_dataframe()
     if df.empty:
@@ -1415,7 +1565,8 @@ def main() -> None:
     plot_per_protein(df, OUT_DIR)
     plot_cost_vs_accuracy(df, OUT_DIR)
     plot_best_of_k(df, OUT_DIR)
-    print(f"\nWrote 4 plots to {OUT_DIR}")
+    plot_lazy_ensemble_landscape(df, OUT_DIR)
+    print(f"\nWrote 5 plots to {OUT_DIR}")
 
 
 if __name__ == "__main__":

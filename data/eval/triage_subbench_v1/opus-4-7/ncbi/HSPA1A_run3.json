@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA1A",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (Hsp70) is canonically a cytosolic chaperone, but it is well-documented as a tumor-cell surface marker: stressed and transformed cells display Hsp70 on the outer leaflet of the plasma membrane (membrane Hsp70 / memHsp70), recognized by the clinical-stage cmHsp70.1 antibody and exploited by NK-cell-targeting strategies (e.g., TKD peptide). Surface Hsp70 is also externalized during immunogenic cell death and stress. Mechanism is non-classical (lipid binding to outer-leaflet phosphatidylserine / Bag-mediated translocation), so this fits cell-state-induced ecto-display rather than a baseline anchor.",
+  "correct": true,
+  "prompt_tokens": 8476,
+  "completion_tokens": 302,
+  "n_web_searches": 0,
+  "cost_usd": 0.14979,
+  "latency_s": 10.695769499987364,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane Ig-like protein displayed on the outer leaflet of mature sperm following the acrosome reaction, where it mediates sperm-egg plasma membrane binding/fusion via JUNO on the oocyte. It has its own TM anchor and clear extracellular Ig domain, but expression is restricted to the germline (spermatozoa) and surface accessibility is further gated by acrosomal exocytosis. This narrow germline/developmental-lineage restriction places it in tissue_restricted_surface rather than yes.",
+  "correct": true,
+  "prompt_tokens": 8349,
+  "completion_tokens": 245,
+  "n_web_searches": 0,
+  "cost_usd": 0.14361,
+  "latency_s": 4.411867916001938,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

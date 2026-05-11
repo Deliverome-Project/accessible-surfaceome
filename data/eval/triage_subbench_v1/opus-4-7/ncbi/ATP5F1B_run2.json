@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B is canonically the beta subunit of mitochondrial F1Fo ATP synthase in the inner mitochondrial membrane matrix-facing complex. However, ectopic surface expression of ATP synthase components (including the beta subunit) on the plasma membrane of tumor cells, hepatocytes, endothelial cells, and adipocytes is well documented \u2014 'ecto-F1-ATPase' / 'ecto-ATP synthase' acts as a receptor for apoA-I, angiostatin, and other ligands, and is being explored as a tumor surface target. This non-baseline surface display on transformed and selected normal cells maps to cell_state_induced rather than no.",
+  "correct": true,
+  "prompt_tokens": 8523,
+  "completion_tokens": 337,
+  "n_web_searches": 0,
+  "cost_usd": 0.15312,
+  "latency_s": 6.110384083003737,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Whether ecto-ATP synthase surface display is robust/specific enough on tumor cells for therapeutic targeting vs. an artifact-prone minor pool.",
+  "error": null,
+  "raw_text": ""
+}

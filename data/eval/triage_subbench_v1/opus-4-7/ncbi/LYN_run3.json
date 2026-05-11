@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "LYN",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation/palmitoylation \u2014 canonically cytoplasmic-facing. However, like other SFKs, LYN has documented ecto-display on tumor cells (cancer ecto-kinase pool) and externalization during apoptosis/immunogenic cell death, providing a non-baseline outer-leaflet pool. No TM domain, no GPI, no stable TM-partner tethering at baseline. Lysosomal exocytosis n/a; no narrow germline/developmental restriction; no documented wash-resistant TM-partner anchor. The contextual call rests on cancer/cell-death-induced ecto-presentation.",
+  "correct": true,
+  "prompt_tokens": 8337,
+  "completion_tokens": 364,
+  "n_web_searches": 0,
+  "cost_usd": 0.152355,
+  "latency_s": 5.540783750009723,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Strength of evidence for LYN-specific tumor ecto-surface display is modest; primarily inferred from SFK-family convergent biology rather than LYN-specific surface proteomics.",
+  "error": null,
+  "raw_text": ""
+}

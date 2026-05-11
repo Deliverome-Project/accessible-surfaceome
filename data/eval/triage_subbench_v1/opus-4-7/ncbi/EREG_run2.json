@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "EREG",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "EREG is an EGF-family ligand synthesized as a single-pass type I transmembrane proligand (pro-EREG) that is anchored at the plasma membrane before ADAM17-mediated ectodomain shedding releases the soluble active EGF-like ligand. The TM precursor stage is real and supports juxtacrine EGFR/ERBB4 signaling, but it is short-lived and the soluble shed form is the dominant biological actor. This matches the transient-TM-precursor-of-shed-ligand pattern, qualifying as contextual via dual_localization rather than secreted_only.",
+  "correct": true,
+  "prompt_tokens": 8391,
+  "completion_tokens": 306,
+  "n_web_searches": 0,
+  "cost_usd": 0.148815,
+  "latency_s": 4.981317375029903,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Surface residence time of pro-EREG TM precursor is short; uncertain whether the membrane pool is therapeutically addressable vs. the dominant soluble shed form.",
+  "error": null,
+  "raw_text": ""
+}

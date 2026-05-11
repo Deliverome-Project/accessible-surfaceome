@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPD1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1/HSP60 is canonically a mitochondrial matrix chaperonin essential for folding imported proteins. However, an ecto-HSP60 pool is well documented on the surface of stressed and tumor cells, where it serves as a DAMP/innate immune signaling molecule and has been pursued as an immunotherapy target. Cell-death and infection contexts also externalize HSP60. This non-baseline surface display fits cell_state_induced. Not a classical TM/GPI protein, so not 'yes'; the documented stress/cancer ecto-pool rules out 'no'.",
+  "correct": true,
+  "prompt_tokens": 8439,
+  "completion_tokens": 294,
+  "n_web_searches": 0,
+  "cost_usd": 0.148635,
+  "latency_s": 5.221206374990288,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Magnitude and therapeutic tractability of the surface HSP60 pool vs. dominant mitochondrial localization is debated.",
+  "error": null,
+  "raw_text": ""
+}

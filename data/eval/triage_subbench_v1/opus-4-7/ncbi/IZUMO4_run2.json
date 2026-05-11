@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO4",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family of immunoglobulin-domain proteins involved in sperm-egg fusion. Unlike IZUMO1 (a sperm-surface TM protein), IZUMO4 lacks a transmembrane domain and is secreted/soluble, but it is documented to form heteromeric complexes with IZUMO1 and other IZUMO family members on the sperm surface, where it is displayed in the germline lineage. This places it in tissue/lineage-restricted surface display via stable complex partnership in sperm. Surface accessibility is therefore restricted to the germline reproductive lineage. Not pmhc-only; not purely secreted given documented IZUMO-complex association on sperm surface. Other contextual buckets (cancer ecto, cell death, lysosomal exocytosis, sheddase precursor) not documented.",
+  "correct": true,
+  "prompt_tokens": 8244,
+  "completion_tokens": 405,
+  "n_web_searches": 0,
+  "cost_usd": 0.154035,
+  "latency_s": 6.32038912497228,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Unclear whether IZUMO4's association with sperm-surface IZUMO1 complex is wash-resistant/stable enough to qualify vs. behaving as secreted seminal protein.",
+  "error": null,
+  "raw_text": ""
+}

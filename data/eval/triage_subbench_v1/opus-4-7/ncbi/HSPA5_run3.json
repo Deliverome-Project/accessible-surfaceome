@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA5",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5/GRP78/BiP is canonically an ER-luminal HSP70 chaperone, but has extensive documented cell-surface display on tumor cells and stressed cells (cs-GRP78), driven by ER stress and oncogenic transformation. This surface pool is a validated therapeutic target with multiple antibody, ADC, and CAR-T programs in development against cs-GRP78. Ruling out other buckets: not lysosomal TM; the surface pool is cancer/stress-induced rather than a constitutive minority cycling pool; not narrow germline/developmental display; no covalent TM-partner tethering established. Best fit is cell_state_induced via ER stress and oncogenic transformation.",
+  "correct": true,
+  "prompt_tokens": 8444,
+  "completion_tokens": 290,
+  "n_web_searches": 0,
+  "cost_usd": 0.14841,
+  "latency_s": 10.74040224996861,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}
