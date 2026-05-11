@@ -16,6 +16,7 @@ import csv
 import hashlib
 import json
 import logging
+import threading
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -322,4 +323,120 @@ def _summarize_dry(
             "runs_inserted": 0, "runs_skipped": 0, "would_insert": len(records)}
 
 
-__all__ = ["upload_subbench_runs", "PromptInfo"]
+class D1RunSink:
+    """Streaming sink that writes triage runs to D1 as they complete.
+
+    Designed for the runner's hot path: one ``D1RunSink`` is created
+    before the worker pool starts, prompt + benchmark snapshots are
+    interned once, and each worker calls :meth:`insert` after a
+    successful per-cell completion. Thread-safe — ``D1Client.query``
+    uses httpx, and the only shared mutable state is the existing-keys
+    set protected by an internal lock.
+
+    The on-disk JSON record under
+    ``data/eval/triage_<sub?>bench_v1/<model>/<variant>/<gene>_run<N>.json``
+    remains the canonical source of truth — the sink is a *real-time
+    mirror*, not a replacement. If a D1 insert fails (network blip, rate
+    limit), the error is logged and the JSON write still landed; the
+    batch uploader can fill in the gap later.
+    """
+
+    def __init__(
+        self,
+        *,
+        run_id: str,
+        bench_tsv: Path,
+        prompt_filenames_by_variant: dict[str, str] | None = None,
+        prompts_dir: Path | None = None,
+    ):
+        self.run_id = run_id
+        self._lock = threading.Lock()
+        bench_rows = _load_benchmark_rows(bench_tsv)
+        self.bench_version = _bench_version(bench_tsv)
+        self._bench_by_gene = {r["gene_symbol"]: r for r in bench_rows}
+        variant_to_filename = prompt_filenames_by_variant or VARIANT_TO_PROMPT
+        # Pre-load every prompt we might see — cheap (4 files, ~20KB each).
+        prompts_dir = prompts_dir or PROMPTS_DIR
+        self._prompts_by_variant: dict[str, PromptInfo] = {}
+        for variant, fname in variant_to_filename.items():
+            path = prompts_dir / fname
+            if not path.exists():
+                continue
+            text = path.read_text()
+            self._prompts_by_variant[variant] = PromptInfo(
+                sha=_sha256(text),
+                filename=fname,
+                text=text,
+                n_lines=len(text.splitlines()),
+                schema_version=TRIAGE_SCHEMA_VERSION,
+            )
+
+        self._client = D1Client()
+        # Intern prompts + benchmark snapshot once.
+        for prompt in self._prompts_by_variant.values():
+            _intern_prompt(self._client, prompt)
+        _intern_benchmark(self._client, self.bench_version, bench_rows)
+        # Reload the (run_id, …) key set so re-runs of the same sweep
+        # don't double-insert.
+        self._existing = _existing_keys(self._client, self.run_id)
+
+        logger.info(
+            "D1RunSink ready: run_id=%s bench_version=%s prompts=%d bench_rows=%d existing=%d",
+            self.run_id, self.bench_version, len(self._prompts_by_variant),
+            len(bench_rows), len(self._existing),
+        )
+
+    def insert(self, record: dict[str, Any]) -> bool:
+        """Insert one per-cell record. Returns True on success / dedup-skip,
+        False if the record was unprocessable. Never raises on D1
+        failures — logs and returns False so the runner can keep going.
+        """
+        variant = record.get("variant")
+        if variant not in self._prompts_by_variant:
+            logger.warning("D1RunSink: unknown variant %r; skipping", variant)
+            return False
+        prompt = self._prompts_by_variant[variant]
+        gene = record["gene_symbol"]
+        bench_row = self._bench_by_gene.get(gene)
+        uniprot_acc: str | None = bench_row.get("uniprot_acc") if bench_row else None
+        truth_class: str = (
+            bench_row.get("class", "") if bench_row else record.get("truth_class", "") or ""
+        )
+        key = (
+            gene, record["model"], variant,
+            int(record.get("replicate", 0)), prompt.sha,
+        )
+        with self._lock:
+            if key in self._existing:
+                return True
+            self._existing.add(key)
+        try:
+            _insert_run(
+                self._client,
+                run_id=self.run_id,
+                record=record,
+                prompt_sha=prompt.sha,
+                bench_version=self.bench_version,
+                uniprot_acc=uniprot_acc,
+                truth_class=truth_class,
+            )
+            return True
+        except Exception as exc:  # noqa: BLE001
+            # Roll the dedup-key back so a retry can re-attempt.
+            with self._lock:
+                self._existing.discard(key)
+            logger.warning("D1RunSink: insert failed for %s/%s/%s: %s",
+                           gene, record["model"], variant, exc)
+            return False
+
+    def close(self) -> None:
+        self._client.close()
+
+    def __enter__(self) -> D1RunSink:
+        return self
+
+    def __exit__(self, *_exc: Any) -> None:
+        self.close()
+
+
+__all__ = ["upload_subbench_runs", "PromptInfo", "D1RunSink"]

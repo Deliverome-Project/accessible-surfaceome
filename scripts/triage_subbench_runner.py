@@ -39,6 +39,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -52,8 +53,14 @@ from accessible_surfaceome.tools.gene_lookup import resolve
 
 logger = logging.getLogger(__name__)
 ROOT = Path("/Users/rebeccacarlson/Git/accessible-surfaceome/.claude/worktrees/optimistic-goldwasser-ea19aa")
-SUBBENCH_TSV = ROOT / "data/eval/triage_subbench_v1.tsv"
-OUT_ROOT = ROOT / "data/eval/triage_subbench_v1"
+BENCH_TSV_BY_NAME = {
+    "subbench": (ROOT / "data/eval/triage_subbench_v1.tsv", ROOT / "data/eval/triage_subbench_v1"),
+    "benchmark": (ROOT / "data/eval/triage_benchmark_v1.tsv", ROOT / "data/eval/triage_bench_v1"),
+}
+# Defaults — overridable via --bench. Kept as module-level globals because
+# _persist() reads OUT_ROOT and we want a single source of truth.
+SUBBENCH_TSV = BENCH_TSV_BY_NAME["subbench"][0]
+OUT_ROOT = BENCH_TSV_BY_NAME["subbench"][1]
 PROMPTS_DIR = ROOT / "src/accessible_surfaceome/agents/surface_triage/prompts"
 
 # Per-million-token list pricing for input + output. Update as Anthropic
@@ -307,6 +314,18 @@ def _persist(rec: RunRecord) -> Path:
     return path
 
 
+def _maybe_stream_to_d1(rec: RunRecord, sink: Any | None) -> str:
+    """Mirror one completed record into D1 if a sink is configured.
+
+    Returns a short status tag for the progress line so the operator can
+    see which cells landed in D1 vs which fell back to JSON-only.
+    """
+    if sink is None:
+        return ""
+    ok = sink.insert(rec.__dict__)
+    return "  d1=✓" if ok else "  d1=✗"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model", nargs="+", default=["claude-haiku-4-5"],
@@ -325,7 +344,23 @@ def main() -> None:
                     help="ThreadPoolExecutor workers.")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the planned cells and exit without API calls.")
+    ap.add_argument("--bench", choices=list(BENCH_TSV_BY_NAME.keys()), default="subbench",
+                    help="Which benchmark to run: 'subbench' (17 persistent-error genes) "
+                         "or 'benchmark' (full 147-gene triage_benchmark_v1).")
+    ap.add_argument("--d1", action="store_true",
+                    help="Stream each completed cell to the surfaceome_agents D1 "
+                         "database in real time. Requires CLOUDFLARE_* env vars in "
+                         ".env (see cloudflare/README.md). The JSON write under "
+                         "data/eval/triage_*bench_v1/ remains the canonical record; "
+                         "the D1 mirror is for live dashboards + dropping the "
+                         "batch-upload step.")
+    ap.add_argument("--run-id", default=None,
+                    help="Tag for this sweep in D1's triage_run.run_id column. "
+                         "Default: a fresh uuid. Only meaningful with --d1.")
     args = ap.parse_args()
+
+    global SUBBENCH_TSV, OUT_ROOT
+    SUBBENCH_TSV, OUT_ROOT = BENCH_TSV_BY_NAME[args.bench]
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     # Pull ANTHROPIC_API_KEY (and NCBI_API_KEY if present) from repo-root
@@ -361,6 +396,17 @@ def main() -> None:
             print(f"  ... + {len(cells) - 20} more")
         return
 
+    # Optional D1 streaming sink — initialized once before the worker
+    # pool so prompts + benchmark snapshot are interned exactly once.
+    d1_sink = None
+    if args.d1:
+        import uuid as _uuid
+        from accessible_surfaceome.cloud.triage_upload import D1RunSink
+        run_id = args.run_id or f"{datetime.now(UTC).strftime('%Y-%m-%dT%H%M%SZ')}_{_uuid.uuid4().hex[:8]}"
+        d1_sink = D1RunSink(run_id=run_id, bench_tsv=SUBBENCH_TSV)
+        print(f"D1 streaming enabled: run_id={d1_sink.run_id}  bench_version={d1_sink.bench_version}")
+        print()
+
     results: list[RunRecord] = []
     start = time.monotonic()
     with ThreadPoolExecutor(max_workers=args.concurrency) as ex:
@@ -376,12 +422,16 @@ def main() -> None:
         for i, fut in enumerate(as_completed(futures), start=1):
             rec = fut.result()
             _persist(rec)
+            d1_tag = _maybe_stream_to_d1(rec, d1_sink)
             results.append(rec)
             marker = "✓" if rec.correct else ("✗" if rec.error is None else "!")
             err = f"  ERR={rec.error}" if rec.error else ""
             print(f"  [{i:3d}/{len(cells)}] {marker} {_model_slug(rec.model):14s} {rec.variant:10s}  {rec.gene_symbol:10s}  "
                   f"r{rec.replicate}  truth={rec.truth_verdict:11s}  pred={rec.predicted_verdict or '—':12s}  "
-                  f"reason={rec.predicted_reason or '—':30s}  ${rec.cost_usd:.4f}  {rec.latency_s:5.1f}s{err}")
+                  f"reason={rec.predicted_reason or '—':30s}  ${rec.cost_usd:.4f}  {rec.latency_s:5.1f}s{d1_tag}{err}")
+
+    if d1_sink is not None:
+        d1_sink.close()
     wall = time.monotonic() - start
     print(f"\nWallclock: {wall:.1f}s")
     print()
