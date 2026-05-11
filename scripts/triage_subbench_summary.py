@@ -260,42 +260,48 @@ def _best_lazy_at_tier(
 # A predicate inspects a per-call row (the A-cell's prediction for a gene)
 # and decides whether to escalate to a more expensive fallback cell.
 #
-# Design constraint (per user direction): keep the predicates derivable from
-# first principles, not fitted to this benchmark's specific calibration
-# curve. We use two "logical" confidence rules and one response rule:
+# The two confidence rules use the intuitive "trust = high (and maybe
+# medium); escalate when the model admits uncertainty":
 #
-#   conf_high          — escalate when the model emits `high` confidence,
-#                        on the theory that confident calls are the
-#                        unreliable ones in our (anti-calibrated) data.
-#   conf_high_or_med   — same idea, escalating more aggressively: trust
-#                        only `low` (the model admitting uncertainty).
-#   resp_no            — escalate when the verdict is `no`, since false
-#                        negatives are the costly failure mode (a
-#                        rejected drug target is rarely revisited).
+#   conf_low         — escalate when the model emits `low` confidence.
+#                      The model is admitting it doesn't know; route to
+#                      something stronger.
+#   conf_low_or_med  — same idea, escalating more aggressively: trust
+#                      only `high` and route both `medium` and `low`.
+#   resp_no          — escalate when the verdict is `no`, since false
+#                      negatives are the costly failure mode (a rejected
+#                      drug target is rarely revisited).
 #
 # Unions of the above (conf_*|resp_no) cover the "escalate if EITHER
-# trigger fires" case. We do NOT include the empirically-best
-# "trust-medium-only" rule since it is U-shape-overfit.
+# trigger fires" case.
+#
+# Anti-calibration caveat: on the current 17-protein sub-bench, the
+# model's `high`-confidence calls are *less* accurate (67%) than its
+# `low` calls (100%). That makes "escalate low" close to a no-op on
+# this data — the lows are already right. We surface that in the
+# strategy-table output and treat it as a prompt-quality finding, NOT a
+# reason to ship "escalate-high" (which would be U-shape-overfit and
+# logically inverted).
 ESCALATE_PREDICATES: dict[str, "callable"] = {
-    "conf_high":          lambda r: r.get("predicted_confidence") == "high",
-    "conf_high_or_med":   lambda r: r.get("predicted_confidence") in {"high", "medium"},
-    "resp_no":            lambda r: r.get("predicted_verdict") == "no",
-    "conf_high|resp_no":  lambda r: (
-        r.get("predicted_confidence") == "high"
+    "conf_low":          lambda r: r.get("predicted_confidence") == "low",
+    "conf_low_or_med":   lambda r: r.get("predicted_confidence") in {"low", "medium"},
+    "resp_no":           lambda r: r.get("predicted_verdict") == "no",
+    "conf_low|resp_no":  lambda r: (
+        r.get("predicted_confidence") == "low"
         or r.get("predicted_verdict") == "no"
     ),
-    "conf_hm|resp_no":    lambda r: (
-        r.get("predicted_confidence") in {"high", "medium"}
+    "conf_lm|resp_no":   lambda r: (
+        r.get("predicted_confidence") in {"low", "medium"}
         or r.get("predicted_verdict") == "no"
     ),
 }
 
 ESCALATE_LABEL: dict[str, str] = {
-    "conf_high":          "conf=high",
-    "conf_high_or_med":   "conf≥med",
-    "resp_no":            "verdict=no",
-    "conf_high|resp_no":  "conf=high | no",
-    "conf_hm|resp_no":    "conf≥med | no",
+    "conf_low":          "conf=low",
+    "conf_low_or_med":   "conf≤med",
+    "resp_no":           "verdict=no",
+    "conf_low|resp_no":  "conf=low | no",
+    "conf_lm|resp_no":   "conf≤med | no",
 }
 
 
@@ -424,16 +430,16 @@ def _best_cascade_at_tier(
 StrategyEntry = tuple[str, str | None, bool]
 STRATEGIES: list[StrategyEntry] = [
     ("Pure lazy",                 None,                 True),
-    ("Conf=high",                 "conf_high",          False),
-    ("Conf≥med",                  "conf_high_or_med",   False),
+    ("Conf=low",                  "conf_low",           False),
+    ("Conf≤med",                  "conf_low_or_med",    False),
     ("Resp=no",                   "resp_no",            False),
-    ("Conf=high | resp=no",       "conf_high|resp_no",  False),
-    ("Conf≥med | resp=no",        "conf_hm|resp_no",    False),
-    ("Conf=high + lazy",          "conf_high",          True),
-    ("Conf≥med + lazy",           "conf_high_or_med",   True),
+    ("Conf=low | resp=no",        "conf_low|resp_no",   False),
+    ("Conf≤med | resp=no",        "conf_lm|resp_no",    False),
+    ("Conf=low + lazy",           "conf_low",           True),
+    ("Conf≤med + lazy",           "conf_low_or_med",    True),
     ("Resp=no + lazy",            "resp_no",            True),
-    ("Conf=high|resp=no + lazy",  "conf_high|resp_no",  True),
-    ("Conf≥med|resp=no + lazy",   "conf_hm|resp_no",    True),
+    ("Conf=low|resp=no + lazy",   "conf_low|resp_no",   True),
+    ("Conf≤med|resp=no + lazy",   "conf_lm|resp_no",    True),
 ]
 
 
@@ -462,15 +468,76 @@ def _best_strategy_at_tier(
     )
 
 
+def _best_achievable_for_strategy(
+    df: pd.DataFrame, truth: dict, strategy: StrategyEntry,
+) -> dict | None:
+    """For a strategy with no tier constraint, return the (acc, cost) of
+    the best-achievable accuracy across all configs, choosing the
+    cheapest config at that accuracy. Used to expose ceilings for
+    strategies that can't reach a given threshold (e.g. pure lazy
+    capping at ~88% on this data)."""
+    _, pred_name, with_lazy = strategy
+    cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
+    best_acc = -1.0
+    best_rec: dict | None = None
+    if pred_name is None:
+        # Pure lazy: sweep all (A, B, C) triples.
+        from itertools import combinations
+        for a, b in combinations(cells, 2):
+            for c in cells:
+                if c in (a, b):
+                    continue
+                acc, cost, n_dis = _lazy_ensemble(df, truth, a, b, c)
+                if (acc, -cost) > (best_acc, -(best_rec["cost"] if best_rec else float("inf"))):
+                    best_acc = acc
+                    best_rec = {"a": a, "b": b, "c": c, "acc": acc,
+                                "cost": cost, "n_dis": n_dis,
+                                "n_to_b": n_dis, "n_to_c": n_dis,
+                                "with_lazy": True, "predicate": None}
+    else:
+        pred = ESCALATE_PREDICATES[pred_name]
+        for a in cells:
+            for b in cells:
+                if b == a:
+                    continue
+                if with_lazy:
+                    for c in cells:
+                        if c in (a, b):
+                            continue
+                        acc, cost, nb, nc = _cascade(df, truth, a, b, c, pred)
+                        if (acc, -cost) > (best_acc, -(best_rec["cost"] if best_rec else float("inf"))):
+                            best_acc = acc
+                            best_rec = {"a": a, "b": b, "c": c, "acc": acc,
+                                        "cost": cost, "n_to_b": nb,
+                                        "n_to_c": nc, "with_lazy": True,
+                                        "predicate": pred_name}
+                else:
+                    acc, cost, nb, _ = _cascade(df, truth, a, b, None, pred)
+                    if (acc, -cost) > (best_acc, -(best_rec["cost"] if best_rec else float("inf"))):
+                        best_acc = acc
+                        best_rec = {"a": a, "b": b, "c": None, "acc": acc,
+                                    "cost": cost, "n_to_b": nb,
+                                    "n_to_c": 0, "with_lazy": False,
+                                    "predicate": pred_name}
+    return best_rec
+
+
 def _summarize_strategies(
     df: pd.DataFrame, truth: dict, tiers: tuple[tuple[str, float], ...] = (
         ("≥100%", 0.999), ("≥94%", 0.94),
     ),
 ) -> list[dict]:
-    """For each strategy × tier, find the cheapest config (or None)."""
+    """For each strategy × tier, find the cheapest config (or None).
+
+    Also records the best-achievable accuracy regardless of tier — useful
+    when the strategy can't reach the requested threshold (e.g. pure
+    lazy bottoming out at ~88% on this data) so the ceiling is visible
+    in the printed table.
+    """
     out: list[dict] = []
     for strat in STRATEGIES:
         label, pred_name, with_lazy = strat
+        ceiling = _best_achievable_for_strategy(df, truth, strat)
         for tier_name, tier_thresh in tiers:
             rec = _best_strategy_at_tier(df, truth, tier_thresh, strat)
             out.append({
@@ -481,6 +548,7 @@ def _summarize_strategies(
                 "with_lazy": with_lazy,
                 "is_pure_lazy": pred_name is None,
                 "rec": rec,
+                "ceiling": ceiling,
             })
     return out
 
@@ -500,7 +568,21 @@ def _print_strategy_table(summary: list[dict], wgn: int = WHOLE_GENOME_N) -> Non
     for row in summary:
         rec = row["rec"]
         if rec is None:
-            print(f"{row['strategy']:<28}{row['tier']:<7}{'(none)':<8}")
+            # No config meets the tier — show the ceiling so the reader
+            # can see what the strategy actually achieves.
+            ceiling = row.get("ceiling")
+            if ceiling is None:
+                print(f"{row['strategy']:<28}{row['tier']:<7}{'(none)':<8}")
+                continue
+            cost_g = ceiling["cost"] * wgn
+            a, b, c = ceiling["a"], ceiling["b"], ceiling.get("c")
+            print(
+                f"{row['strategy']:<28}{row['tier']:<7}"
+                f"{'(ceiling)':<8}"
+                f"{ceiling['acc']:>6.1%}  "
+                f"${cost_g:>7,.0f}   "
+                f"{_short(a):<14}{_short(b):<14}{_short(c):<14}  best-achievable"
+            )
             continue
         cost_g = rec["cost"] * wgn
         a, b, c = rec["a"], rec["b"], rec.get("c")
@@ -672,7 +754,7 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
         f"costs extrapolated to a {WHOLE_GENOME_N:,}-gene whole-genome pass "
         "(NCBI protein-coding, 1 rep/gene)  ·  "
         "Combo bars = cheapest config across 11 strategies "
-        "(pure lazy / conf-high / conf≥med / verdict=no / unions / +lazy)"
+        "(pure lazy / conf=low / conf≤med / verdict=no / unions / +lazy)"
     )
     n_combo_groups = 1 if any_combos else 0
     xtick_positions = list(range(len(models))) + (
@@ -928,26 +1010,26 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
     cascade_summary = [s for s in summary if not s["is_pure_lazy"] and s["rec"]]
     # Marker per predicate family.
     PREDICATE_MARKER = {
-        "conf_high":         "D",   # diamond
-        "conf_high_or_med":  "D",
-        "resp_no":           "v",   # downward triangle
-        "conf_high|resp_no": "P",   # filled plus
-        "conf_hm|resp_no":   "P",
+        "conf_low":         "D",   # diamond
+        "conf_low_or_med":  "D",
+        "resp_no":          "v",   # downward triangle
+        "conf_low|resp_no": "P",   # filled plus
+        "conf_lm|resp_no":  "P",
     }
     # Slight color shift by predicate family for visual grouping.
     PREDICATE_COLOR_HI = {
-        "conf_high":         "#6c3e92",
-        "conf_high_or_med":  "#4b2b66",
-        "resp_no":           "#1f7a87",
-        "conf_high|resp_no": "#9b4a2f",
-        "conf_hm|resp_no":   "#6b3220",
+        "conf_low":         "#6c3e92",
+        "conf_low_or_med":  "#4b2b66",
+        "resp_no":          "#1f7a87",
+        "conf_low|resp_no": "#9b4a2f",
+        "conf_lm|resp_no":  "#6b3220",
     }
     PREDICATE_COLOR_LO = {
-        "conf_high":         "#a07cc1",
-        "conf_high_or_med":  "#7d619a",
-        "resp_no":           "#6cb3bc",
-        "conf_high|resp_no": "#d28968",
-        "conf_hm|resp_no":   "#a8745b",
+        "conf_low":         "#a07cc1",
+        "conf_low_or_med":  "#7d619a",
+        "resp_no":          "#6cb3bc",
+        "conf_low|resp_no": "#d28968",
+        "conf_lm|resp_no":  "#a8745b",
     }
     # Only annotate the *Pareto-optimal* cascade winners so the plot
     # doesn't drown in 20 overlapping labels.
@@ -1093,15 +1175,15 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         # is implied — same marker, lighter fill on the plot.
         [
             Line2D([], [], marker="D", color="w",
-                   markerfacecolor=PREDICATE_COLOR_HI["conf_high"],
+                   markerfacecolor=PREDICATE_COLOR_HI["conf_low"],
                    markersize=11, markeredgecolor=COLORS["dark"],
-                   label="Conf-routed (high / ≥med)"),
+                   label="Conf-routed (low / ≤med)"),
             Line2D([], [], marker="v", color="w",
                    markerfacecolor=PREDICATE_COLOR_HI["resp_no"],
                    markersize=11, markeredgecolor=COLORS["dark"],
                    label="Response-routed (verdict=no)"),
             Line2D([], [], marker="P", color="w",
-                   markerfacecolor=PREDICATE_COLOR_HI["conf_high|resp_no"],
+                   markerfacecolor=PREDICATE_COLOR_HI["conf_low|resp_no"],
                    markersize=11, markeredgecolor=COLORS["dark"],
                    label="Conf | resp routed (union)"),
             Line2D([], [], marker="s", color="w", markerfacecolor="white",
