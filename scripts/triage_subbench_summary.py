@@ -86,12 +86,19 @@ MODEL_MARKER = {
     "claude-sonnet-4-6": "D",
     "claude-opus-4-7":   "s",
 }
-# After the May-2026 prompt-parity rewrite + truth-label cleanup, all
-# current per-cell runs live under <model>/<variant>/...  Stale runs are
-# under _legacy_pre_prompt_rewrite_*/  and are excluded by _load_runs.
-# Keep this constant as an empty set so the legacy footnote machinery in
-# plot_cost_vs_accuracy degrades to a no-op without removing it (and so
-# future mixed-prompt epochs can re-enable it by adding model ids back).
+# Cells run under the current (post-imperative-rewrite, post-confidence-
+# schema-addition) prompt. Anything not in this set was captured against
+# an earlier prompt revision and gets a "stale" tag in the plot legends
+# + an explanatory footnote. Re-running a stale cell with the runner
+# overwrites the JSONs in-place; add the (model, variant) tuple here
+# afterward to mark it fresh.
+FRESH_CELLS: frozenset[tuple[str, str]] = frozenset({
+    ("claude-haiku-4-5", "naive"),
+    ("claude-haiku-4-5", "ncbi"),
+    ("claude-sonnet-4-6", "naive"),
+    ("claude-sonnet-4-6", "ncbi"),
+})
+# Back-compat: kept for callers / older code paths that referenced this.
 PROMPT_FRESH_MODELS: frozenset[str] = frozenset()
 
 
@@ -266,6 +273,10 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
     # one Rectangle per model in x-axis order. This is the reliable way to
     # recover the actual bar geometry seaborn placed — manual indexing
     # via `ax.patches` is fragile when seaborn skips zero-data combinations.
+    cells_in_data = {(r.model, r.variant) for _, r in agg.iterrows()}
+    has_stale = bool(cells_in_data - FRESH_CELLS)
+    has_fresh = bool(cells_in_data & FRESH_CELLS)
+    mixed_prompts = has_stale and has_fresh
     for variant_idx, variant in enumerate(VARIANT_ORDER):
         if variant_idx >= len(ax.containers):
             continue
@@ -275,6 +286,11 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
                 continue
             bar = container.patches[model_idx]
             bar_x = bar.get_x() + bar.get_width() / 2
+            # Stale-cell visual flag: stripe pattern + lower alpha.
+            is_fresh = (model, variant) in FRESH_CELLS
+            if mixed_prompts and not is_fresh:
+                bar.set_hatch("///")
+                bar.set_alpha(0.55)
 
             # Per-rep dots
             cell_reps = per_rep[(per_rep.variant == variant) & (per_rep.model == model)]
@@ -411,6 +427,24 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
     )
     sns.despine(ax=ax, top=True, right=True)
 
+    if mixed_prompts:
+        stale_cells = sorted(cells_in_data - FRESH_CELLS)
+        fresh_cells = sorted(cells_in_data & FRESH_CELLS)
+        fresh_labels = ", ".join(
+            f"{m.replace('claude-', '').split('-')[0]}/{v}" for m, v in fresh_cells
+        )
+        stale_summary = ", ".join(
+            f"{m.replace('claude-', '').split('-')[0]}/{v}" for m, v in stale_cells
+        )
+        fig.text(
+            0.5, 0.005,
+            f"Hatched bars = stale: captured under earlier prompt revisions ({stale_summary}). "
+            f"Solid bars = current prompt: {fresh_labels}.",
+            ha="center", va="bottom", fontsize=8,
+            color=COLORS["neutral"], style="italic",
+        )
+        fig.subplots_adjust(bottom=0.12)
+
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(
         fig, filename="subbench_accuracy_by_variant",
@@ -535,29 +569,34 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
     per_cell["genome_cost"] = per_cell.cost_per_rep_mean * WHOLE_GENOME_N
 
     fig, ax = plt.subplots(figsize=(9.0, 5.8))
-    mixed_prompts = (
-        bool(per_cell.model.isin(PROMPT_FRESH_MODELS).any())
-        and bool((~per_cell.model.isin(PROMPT_FRESH_MODELS)).any())
-    )
+    cells_in_data = {(r.model, r.variant) for _, r in per_cell.iterrows()}
+    has_stale = bool(cells_in_data - FRESH_CELLS)
+    has_fresh = bool(cells_in_data & FRESH_CELLS)
+    mixed_prompts = has_stale and has_fresh
 
     for model in MODEL_ORDER:
         sub = per_cell[per_cell.model == model]
         if sub.empty:
             continue
         marker = MODEL_MARKER.get(model, "o")
-        is_fresh = model in PROMPT_FRESH_MODELS
         for _, row in sub.iterrows():
+            is_fresh = (row.model, row.variant) in FRESH_CELLS
             ax.scatter(
                 row.genome_cost, row.accuracy,
-                s=220, color=CLAUDE_ORANGE_SHADES[row.variant],
-                marker=marker, edgecolor=COLORS["dark"], linewidth=1.0,
+                s=220,
+                color=CLAUDE_ORANGE_SHADES[row.variant] if is_fresh else "white",
+                marker=marker,
+                edgecolor=CLAUDE_ORANGE_SHADES[row.variant] if not is_fresh else COLORS["dark"],
+                linewidth=1.3 if not is_fresh else 1.0,
+                alpha=0.55 if not is_fresh else 1.0,
                 zorder=3,
             )
-            label = row.variant + ("*" if mixed_prompts and is_fresh else "")
+            label = row.variant + ("†" if mixed_prompts and not is_fresh else "")
             ax.annotate(
                 label, (row.genome_cost, row.accuracy),
                 xytext=(8, 4), textcoords="offset points", fontsize=9,
                 color=COLORS["neutral"],
+                alpha=0.7 if not is_fresh else 1.0,
             )
 
     # Lazy-ensemble Combined points — same teal-on-teal colour scheme as
@@ -692,6 +731,24 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
     ax.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.02, 1.0),
               frameon=False, borderaxespad=0.0)
     sns.despine(ax=ax, top=True, right=True)
+
+    if mixed_prompts:
+        stale_cells = sorted(cells_in_data - FRESH_CELLS)
+        fresh_cells = sorted(cells_in_data & FRESH_CELLS)
+        fresh_labels = ", ".join(
+            f"{m.replace('claude-', '').split('-')[0]}/{v}" for m, v in fresh_cells
+        )
+        stale_summary = ", ".join(
+            f"{m.replace('claude-', '').split('-')[0]}/{v}" for m, v in stale_cells
+        )
+        fig.text(
+            0.5, 0.005,
+            f"†Hollow markers = stale: captured under earlier prompt revisions ({stale_summary}). "
+            f"Filled markers = current prompt: {fresh_labels}.",
+            ha="center", va="bottom", fontsize=8,
+            color=COLORS["neutral"], style="italic",
+        )
+        fig.subplots_adjust(bottom=0.14)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(

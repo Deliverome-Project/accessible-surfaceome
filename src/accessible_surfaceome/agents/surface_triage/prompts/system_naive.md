@@ -105,6 +105,11 @@ Emit a **single JSON object** as your entire response. No prose around it, no ma
 {
   "verdict": "yes" | "contextual" | "no",
   "verdict_reasoning": "<= 800 chars explaining the call",
-  "reason": "<one of the literals above>"
+  "reason": "<one of the literals above>",
+  "confidence": "low" | "medium" | "high",
+  "key_uncertainty": "<= 200 chars naming the unresolved ambiguity, or null"
 }
 ```
+
+- `confidence`: emit `high` only when the verdict rests on explicit, unambiguous evidence (TM/GPI annotation, a named cell-surface-directed clinical program, direct surface-proteomics detection, or a clearly intracellular compartment with no documented PM pool). Emit `medium` when the verdict is well-supported but rests on judgment between two plausible buckets. Emit `low` when at least one contextual bucket has a plausible argument you couldn't conclusively rule out, when the call rests primarily on absence of evidence, or when family-lineage / cross-species evidence pulls against the per-gene evidence.
+- `key_uncertainty`: when `confidence != "high"`, name the specific unresolved bucket or mechanism in ≤200 chars (e.g., "uncertain whether documented PM cycling pool is large enough to count as `dual_localization`" or "family-lineage prior contradicts gene-specific NCBI compartment call"). Set to `null` only when confidence is `high`.

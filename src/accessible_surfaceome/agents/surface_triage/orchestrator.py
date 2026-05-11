@@ -360,6 +360,8 @@ def _persist_triage(
             verdict=draft.verdict,
             verdict_reasoning=draft.verdict_reasoning,
             reason=draft.reason,
+            confidence=draft.confidence,
+            key_uncertainty=draft.key_uncertainty,
             search_log=search_log,
             model_path=draft.model_path,
         )

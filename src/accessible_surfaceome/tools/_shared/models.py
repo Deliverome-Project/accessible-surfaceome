@@ -1283,6 +1283,7 @@ TRIAGE_SCHEMA_VERSION = "v0.9.0"
 
 TriageVerdict = Literal["yes", "contextual", "no"]
 TriageModelPath = Literal["haiku_only", "sonnet_only", "opus_only"]
+TriageConfidence = Literal["low", "medium", "high"]
 
 
 # Per-verdict reason taxonomies. Each is a closed enum + escape-hatch
@@ -1483,6 +1484,8 @@ class TriageRecordDraft(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(..., max_length=800)
     reason: TriageReason
+    confidence: TriageConfidence
+    key_uncertainty: str | None = Field(default=None, max_length=200)
     model_path: TriageModelPath = "haiku_only"
 
     @model_validator(mode="after")
@@ -1510,6 +1513,8 @@ class TriageRecord(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(..., max_length=800)
     reason: TriageReason
+    confidence: TriageConfidence
+    key_uncertainty: str | None = Field(default=None, max_length=200)
     search_log: list[SearchEntry] = Field(default_factory=list)
     model_path: TriageModelPath = "haiku_only"
 
@@ -1618,6 +1623,7 @@ __all__ = [
     "TriageVerdict",
     "TriageModelPath",
     "TriageReason",
+    "TriageConfidence",
     "YesReason",
     "ContextualReason",
     "NoReason",

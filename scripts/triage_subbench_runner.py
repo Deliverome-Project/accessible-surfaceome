@@ -100,6 +100,8 @@ class RunRecord:
     n_web_searches: int
     cost_usd: float
     latency_s: float
+    predicted_confidence: str | None = None
+    predicted_key_uncertainty: str | None = None
     error: str | None = None
     raw_text: str = ""
 
@@ -262,12 +264,16 @@ def _run_one(
         )
     pred_v = parsed.get("verdict")
     pred_r = parsed.get("reason")
+    pred_c = parsed.get("confidence")
+    pred_ku = parsed.get("key_uncertainty")
     reasoning = parsed.get("verdict_reasoning", "")
     correct = pred_v == truth_verdict
     return RunRecord(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
-        predicted_verdict=pred_v, predicted_reason=pred_r, verdict_reasoning=reasoning,
+        predicted_verdict=pred_v, predicted_reason=pred_r,
+        predicted_confidence=pred_c, predicted_key_uncertainty=pred_ku,
+        verdict_reasoning=reasoning,
         correct=correct, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
         n_web_searches=n_searches, cost_usd=cost, latency_s=latency,
     )

@@ -76,6 +76,7 @@ def test_every_reason_matches_verdict_via_schema(benchmark_rows: list) -> None:
                     verdict=r.ground_truth_verdict,
                     verdict_reasoning="benchmark roundtrip",
                     reason=reason,
+                    confidence="high",  # placeholder; reason↔verdict roundtrip only
                 )
             except Exception as exc:  # noqa: BLE001
                 failures.append(

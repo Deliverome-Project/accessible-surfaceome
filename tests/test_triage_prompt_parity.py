@@ -213,6 +213,23 @@ SHARED_FINGERPRINTS: dict[str, str] = {
     "output_contract_reasoning": (
         '"verdict_reasoning": "<= 800 chars explaining the call"'
     ),
+    "output_contract_confidence": (
+        '"confidence": "low" | "medium" | "high"'
+    ),
+    "output_contract_key_uncertainty": (
+        '"key_uncertainty": "<= 200 chars naming the unresolved ambiguity, or null"'
+    ),
+    "confidence_high_criterion": (
+        "emit `high` only when the verdict rests on explicit, unambiguous evidence"
+    ),
+    "confidence_low_criterion": (
+        "Emit `low` when at least one contextual bucket has a plausible "
+        "argument you couldn't conclusively rule out"
+    ),
+    "key_uncertainty_when_not_high": (
+        "when `confidence != \"high\"`, name the specific unresolved "
+        "bucket or mechanism in ≤200 chars"
+    ),
     "preamble_must_enumerate_contextual": (
         "When you emit `no`, your `verdict_reasoning` must explicitly name "
         "each of the 5 contextual reasons and state the specific evidence "
