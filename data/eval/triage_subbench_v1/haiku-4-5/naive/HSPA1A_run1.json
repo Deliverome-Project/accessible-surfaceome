@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "HSPA1A (Heat Shock Protein A1A, also known as HSP70) is a canonical cytoplasmic chaperone protein. It resides in the cytosol and ER lumen, where it functions in protein folding, unfolding, and translocation. While HSP70 can be released into the extracellular space during cell stress or damage (acting as a DAMP), this release is via secretion into the soluble pool, not stable anchoring or integration into the plasma membrane outer leaflet. Extracellular HSP70 binds to surface receptors (TLRs, LOX-1, SREC-1) via transient non-covalent interactions but does not itself reach the outer membrane face by its own mechanism. The protein lacks transmembrane domains, GPI anchors, or lipidation signals that would enable stable PM residence. Transient recruitment to surface receptors does not confer surface accessibility for binder development.",
+  "correct": false,
+  "prompt_tokens": 1487,
+  "completion_tokens": 255,
+  "n_web_searches": 0,
+  "cost_usd": 0.002762,
+  "latency_s": 3.6463510830071755,
+  "error": null,
+  "raw_text": ""
+}

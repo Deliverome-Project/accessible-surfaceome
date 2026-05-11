@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "LYN",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase canonically localized to the cytoplasm and associated with intracellular signaling complexes, particularly in mast cells and B cells. However, Src-family kinases including LYN are known to undergo palmitoylation and myristoylation, anchoring them to the inner leaflet of the plasma membrane and enabling their recruitment to signaling complexes at the PM. Additionally, LYN undergoes documented cell-state-dependent surface exposure in activated B cells and mast cells during immune signaling, and is part of surface receptor signaling (BCR, Fc\u03b5RI) machinery. The protein has a minority but documented PM pool tied to its function in receptor tyrosine kinase signaling, qualifying it as dual-localized with contextual surface accessibility during immune-cell activation.",
+  "correct": true,
+  "prompt_tokens": 3779,
+  "completion_tokens": 224,
+  "n_web_searches": 0,
+  "cost_usd": 0.004899,
+  "latency_s": 2.673597375047393,
+  "error": null,
+  "raw_text": ""
+}

@@ -42,7 +42,7 @@ When in doubt, ask: *if you wash the cells, does the protein stay on the surface
 - `lysosomal_exocytosis` — lysosomal / late-endosomal TM protein reaches PM during lysosomal exocytosis.
 - `pmhc_presented_peptide` — the protein body is intracellular but a peptide derived from it is MHC-presented and clinically engaged (TCR-T, TCR-mimic, bispecific). **pMHC is always contextual, never `yes`**.
 - `dual_localization` — documented dual localizations with PM minority pool alongside a dominant non-PM compartment.
-- `covalent_surface_attachment` — a secreted protein covalently anchored to a cell-surface TM partner post-translationally (disulfide-tethered latent ligands, thioester-mediated deposition on cells). **Matrix/stroma deposition does NOT count.**
+- `stable_surface_attachment` — a secreted (or otherwise non-membrane-anchored) protein becomes **stably anchored to a cell-surface partner post-translationally** — covalently (disulfide tethering, thioester deposition, transamidase cross-linking) **or via wash-resistant, non-reversible non-covalent association**. Wash-resistance is the defining criterion: the protein remains attached after washing and is *not* in equilibrium with the soluble pool. **Excluded (use `secreted_only`):** Ca²⁺-dependent reversible lipid binding, integrin-mediated ECM tethering, transient cytokine-receptor equilibria. **Matrix/stroma deposition does NOT count.**
 - `other` — requires `reason_other_label`.
 
 ### Allowed when `verdict = "no"`:

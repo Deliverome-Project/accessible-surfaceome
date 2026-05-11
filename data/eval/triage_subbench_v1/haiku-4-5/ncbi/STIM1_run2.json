@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "STIM1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "STIM1 is a type 1 transmembrane protein resident in the ER membrane. Under basal conditions it resides predominantly in the ER lumen-facing domain. However, upon Ca\u00b2\u207a store depletion, STIM1 undergoes a well-characterized conformational change, oligomerizes, and translocates to ER-PM junctional regions where it directly interacts with and gates Orai1 Ca\u00b2\u207a channels on the plasma membrane. During this activated state, STIM1's C-terminal cytoplasmic domain reaches the outer face of the PM through stable junctional clustering with its TM partner Orai1. This represents a cell-state-induced (stimulus-dependent) surface accessibility mechanism triggered by ER Ca\u00b2\u207a depletion.",
+  "correct": true,
+  "prompt_tokens": 3879,
+  "completion_tokens": 221,
+  "n_web_searches": 0,
+  "cost_usd": 0.004984,
+  "latency_s": 2.711274624976795,
+  "error": null,
+  "raw_text": ""
+}

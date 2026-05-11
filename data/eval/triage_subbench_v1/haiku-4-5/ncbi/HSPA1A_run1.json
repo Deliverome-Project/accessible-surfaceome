@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "HSPA1A is a cytoplasmic heat shock protein (Hsp70 family) with no transmembrane domain, GPI anchor, or other membrane-anchoring mechanism. It functions in cytosolic and organellar protein folding and the ubiquitin-proteasome pathway. The NCBI summary and gene-group membership (Heat shock 70kDa proteins, TIM23 complex) confirm a strictly intracellular localization. No documented surface isoform, lysosomal-exocytosis route, dual-localization pool, or covalent/stable tethering to a surface partner has been established. Not a target of surface-directed therapeutics. pMHC presentation of derived peptides does not establish surface accessibility of the protein body.",
+  "correct": false,
+  "prompt_tokens": 3884,
+  "completion_tokens": 210,
+  "n_web_searches": 0,
+  "cost_usd": 0.004934,
+  "latency_s": 2.7032128339633346,
+  "error": null,
+  "raw_text": ""
+}

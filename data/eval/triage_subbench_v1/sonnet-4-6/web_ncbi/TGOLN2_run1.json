@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 (TGN46/TGN51) is a type I integral membrane protein that resides in the trans-Golgi network and cycles between the TGN and early endosomes. Its membrane anchor is embedded in the TGN/endosomal membranes, placing the bulk of the protein in the endomembrane system lumen \u2014 not on the outer leaflet of the plasma membrane. It has no documented stable plasma membrane surface pool, no CD designation, no surface-directed therapeutics, and no evidence of GPI anchor or outer-leaflet mechanism. Cycling through TGN/endosomes does not constitute plasma membrane surface accessibility.",
+  "correct": false,
+  "prompt_tokens": 4411,
+  "completion_tokens": 173,
+  "n_web_searches": 0,
+  "cost_usd": 0.015828,
+  "latency_s": 6.380185209040064,
+  "error": null,
+  "raw_text": ""
+}

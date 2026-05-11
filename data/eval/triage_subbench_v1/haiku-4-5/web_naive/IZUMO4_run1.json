@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "IZUMO4 is a soluble protein lacking a transmembrane domain or any surface-anchoring mechanism. It localizes to the intra-acrosomal compartment of sperm (an intracellular vesicle), not to the plasma membrane outer face. Although it participates in sperm-egg fusion complexes, it does so as a soluble component recruited transiently to other membrane proteins' vicinity, not via stable surface exposure by its own mechanism. The protein body itself is not accessible from the extracellular face.",
+  "correct": false,
+  "prompt_tokens": 35490,
+  "completion_tokens": 842,
+  "n_web_searches": 2,
+  "cost_usd": 0.0597,
+  "latency_s": 9.031888291996438,
+  "error": null,
+  "raw_text": ""
+}

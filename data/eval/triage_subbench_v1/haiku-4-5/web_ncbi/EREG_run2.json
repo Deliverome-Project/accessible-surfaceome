@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "EREG",
+  "replicate": 2,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "EREG is initially expressed as a transmembrane pro-protein, but is rapidly cleaved by ADAM sheddases (especially ADAM17) to release a soluble 46-amino acid mature peptide. While the pro-EREG precursor transiently reaches the cell surface before cleavage, the biologically active mature EREG is secreted into the extracellular space. The protein body of interest (the mature ligand) lacks a membrane anchor and functions as a secreted growth factor. The mature form is not stably surface-anchored via its own mechanism\u2014it is released into solution.",
+  "correct": false,
+  "prompt_tokens": 29995,
+  "completion_tokens": 845,
+  "n_web_searches": 2,
+  "cost_usd": 0.054220000000000004,
+  "latency_s": 9.649283208011184,
+  "error": null,
+  "raw_text": ""
+}

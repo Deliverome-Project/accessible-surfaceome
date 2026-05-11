@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "EREG",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "EREG (epiregulin) is a membrane-anchored ligand of the EGF receptor family. It is synthesized as a transmembrane precursor (pro-EREG) with an N-terminal signal peptide, a large extracellular EGF-like domain, a transmembrane helix, and a short cytoplasmic tail. The mature form is displayed on the cell surface via its transmembrane anchor, making it accessible to EGFR and ErbB4 on neighboring cells. While EREG can be proteolytically shed to release a soluble form, the protein body is stably present on the outer face of the PM as a classical single-pass transmembrane receptor ligand.",
+  "correct": true,
+  "prompt_tokens": 1485,
+  "completion_tokens": 199,
+  "n_web_searches": 0,
+  "cost_usd": 0.00248,
+  "latency_s": 2.268604292010423,
+  "error": null,
+  "raw_text": ""
+}

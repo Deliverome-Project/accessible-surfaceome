@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "SRC",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase that resides on the cytoplasmic (inner) leaflet of the plasma membrane and intracellular membranes. It is myristoylated and palmitoylated at its N-terminus, anchoring it to the cytoplasmic face of the PM \u2014 not the extracellular face. No transmembrane domain, no GPI anchor, no extracellular domain exists. Its kinase activity and SH2/SH3 domains all face the cytoplasm. No documented extracellular surface pool or stable TM-partner tethering places it on the outer leaflet.",
+  "correct": false,
+  "prompt_tokens": 3829,
+  "completion_tokens": 172,
+  "n_web_searches": 0,
+  "cost_usd": 0.014067,
+  "latency_s": 4.470663666957989,
+  "error": null,
+  "raw_text": ""
+}

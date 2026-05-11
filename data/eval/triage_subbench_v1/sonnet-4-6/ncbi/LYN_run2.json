@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is an N-terminally myristoylated and palmitoylated Src-family kinase that anchors to the cytoplasmic (inner) leaflet of the plasma membrane. Its catalytic domain, SH2, and SH3 domains all face the cytoplasm. There is no extracellular domain, no GPI anchor, no TM helix, and no documented stable surface complex that would expose the protein body to the extracellular space. No antibody, ADC, or CAR-T targets LYN on the cell surface. The protein body is inaccessible from outside the cell.",
+  "correct": false,
+  "prompt_tokens": 3780,
+  "completion_tokens": 382,
+  "n_web_searches": 0,
+  "cost_usd": 0.01707,
+  "latency_s": 9.005890750035178,
+  "error": null,
+  "raw_text": ""
+}

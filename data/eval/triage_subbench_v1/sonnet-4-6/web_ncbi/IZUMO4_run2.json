@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "IZUMO4 is explicitly described as a soluble protein lacking a transmembrane domain, in contrast to IZUMO1/2/3 which are transmembrane proteins. Primary literature (Ellerman et al. 2009) classifies it as an intraacrosomal sperm protein; OMIM notes it is likely intraacrosomal; the Protein Atlas reports cytoplasmic expression in seminiferous duct cells; and the NCBI summary places it in the nucleus. There is no documented TM isoform, GPI anchor, or stable wash-resistant association with a TM partner that would anchor IZUMO4 to the outer face of the plasma membrane. No surface-directed therapeutics are known. It is a secreted/soluble intracellular protein.",
+  "correct": false,
+  "prompt_tokens": 32281,
+  "completion_tokens": 631,
+  "n_web_searches": 2,
+  "cost_usd": 0.126308,
+  "latency_s": 14.15165704197716,
+  "error": null,
+  "raw_text": ""
+}

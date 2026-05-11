@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPD1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1/HSP60 is canonically a mitochondrial chaperonin, but it has well-documented cell-state-induced surface translocation. Under stress, heat shock, infection, apoptosis, and oncogenic transformation, HSP60 relocates to the plasma membrane outer leaflet, where it acts as a signaling/innate-immune molecule accessible to extracellular ligands, antibodies, and immune cells. Multiple antibody and immunotherapy studies have targeted surface HSP60 on tumor and stressed cells. This surface form is context-dependent (not the baseline mitochondrial localization), qualifying as contextual/cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 3850,
+  "completion_tokens": 180,
+  "n_web_searches": 0,
+  "cost_usd": 0.01425,
+  "latency_s": 4.938347542018164,
+  "error": null,
+  "raw_text": ""
+}

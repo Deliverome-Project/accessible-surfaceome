@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "SRC",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "SRC is a cytoplasmic non-receptor tyrosine kinase, predominantly intracellular and soluble. However, SRC undergoes N-terminal myristoylation and palmitoylation, enabling association with the inner leaflet of the plasma membrane and transient recruitment to membrane-proximal signaling complexes downstream of surface receptors (e.g., receptor tyrosine kinases, integrins). Under specific oncogenic or stress conditions, SRC can become more stably membrane-associated and participate in surface-proximal signaling clusters. While SRC itself lacks a transmembrane domain or GPI anchor and does not achieve stable outer-leaflet residency by its own mechanism, its dynamic lipid-driven membrane association and documented roles in surface receptor signaling warrant `contextual` rather than outright rejection, pending cell state and experimental context.",
+  "correct": true,
+  "prompt_tokens": 1484,
+  "completion_tokens": 224,
+  "n_web_searches": 0,
+  "cost_usd": 0.002604,
+  "latency_s": 2.9620604169904254,
+  "error": null,
+  "raw_text": ""
+}

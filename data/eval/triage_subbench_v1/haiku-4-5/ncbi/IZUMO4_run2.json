@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family, which comprises sperm-specific fertilization proteins. The NCBI summary explicitly states the protein is located in the nucleus. No documented membrane anchor, GPI modification, or surface isoform is described. The IZUMO family are generally intracellular or sperm-surface proteins involved in gamete fusion, and IZUMO4 shows no evidence of plasma-membrane accessibility in somatic cells.",
+  "correct": false,
+  "prompt_tokens": 3708,
+  "completion_tokens": 138,
+  "n_web_searches": 0,
+  "cost_usd": 0.004398,
+  "latency_s": 1.70819204201689,
+  "error": null,
+  "raw_text": ""
+}

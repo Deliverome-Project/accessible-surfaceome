@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "SRC",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "SRC is a cytoplasmic non-receptor tyrosine kinase that localizes primarily to the cytoplasm and associates with the inner leaflet of the plasma membrane through myristoylation and palmitoylation. While SRC can transiently interact with and phosphorylate surface receptors (e.g., receptor tyrosine kinases, integrins, cadherins), it lacks a transmembrane domain or GPI anchor. SRC reaches the inner leaflet via lipidation but does not stably occupy the outer face by its own mechanism. However, under specific conditions (e.g., cell transformation, integrin-mediated signaling, or adhesion dynamics), SRC undergoes context-dependent redistribution and can associate with PM-proximal signaling complexes at surface receptors. The protein is not stably anchored to the outer leaflet but transiently recruited to inner-leaflet membrane compartments in response to surface receptor engagement, making it borderline between cytoplasmic and surface-accessible.",
+  "correct": true,
+  "prompt_tokens": 1484,
+  "completion_tokens": 261,
+  "n_web_searches": 0,
+  "cost_usd": 0.002789,
+  "latency_s": 2.8272250409936532,
+  "error": null,
+  "raw_text": ""
+}

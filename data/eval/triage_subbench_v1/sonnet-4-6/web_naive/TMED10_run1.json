@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I transmembrane p24-family cargo receptor whose dominant steady-state localization is the ER-Golgi intermediate compartment and Golgi cisternae, where it regulates COPI/COPII vesicular trafficking. However, multiple sources explicitly note it is also 'localized to the plasma membrane' as a cycling minority pool consistent with the constitutive Golgi-to-PM trafficking route of p24 proteins. Its luminal GOLD domain faces the extracellular-equivalent lumen at the PM, so the protein body reaches the outer face during this trafficking. There are no surface-directed therapeutic programs (ADC/CAR-T/bispecific). Classified as contextual via dual_localization: PM pool is real but minor relative to the dominant endomembrane compartment.",
+  "correct": true,
+  "prompt_tokens": 19665,
+  "completion_tokens": 712,
+  "n_web_searches": 1,
+  "cost_usd": 0.079675,
+  "latency_s": 17.90310420905007,
+  "error": null,
+  "raw_text": ""
+}

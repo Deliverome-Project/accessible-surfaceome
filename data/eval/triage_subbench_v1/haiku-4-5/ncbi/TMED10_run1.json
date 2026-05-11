@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I membrane protein with a single transmembrane domain localized to both the Golgi cisternae and plasma membrane. The NCBI summary explicitly states 'localized to the plasma membrane and golgi cisternae.' As a member of the p24 family involved in vesicular trafficking, it cycles between these compartments. The dominant compartment is the secretory pathway (Golgi), but the protein has a documented PM pool via its own TM anchor as part of normal trafficking dynamics. This dual localization qualifies for contextual surface accessibility via the dual_localization mechanism.",
+  "correct": true,
+  "prompt_tokens": 3858,
+  "completion_tokens": 170,
+  "n_web_searches": 0,
+  "cost_usd": 0.004708,
+  "latency_s": 4.624578290968202,
+  "error": null,
+  "raw_text": ""
+}

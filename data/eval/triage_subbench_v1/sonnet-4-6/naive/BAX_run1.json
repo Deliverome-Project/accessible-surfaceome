@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is predominantly a cytosolic/cytoplasmic protein under baseline conditions, existing as an inactive monomer. Upon apoptotic stimulation, BAX undergoes conformational activation, translocates to the outer mitochondrial membrane (OMM), and oligomerizes to form pores (MOMP). During apoptosis, BAX has also been documented to reach the plasma membrane outer leaflet, where it can be detected by antibodies from the extracellular face in early/mid-apoptotic cells. This cell-state-dependent surface exposure on the plasma membrane outer leaflet makes BAX contextual\u2014its protein body is accessible extracellularly only under apoptotic/stress conditions.",
+  "correct": true,
+  "prompt_tokens": 1485,
+  "completion_tokens": 192,
+  "n_web_searches": 0,
+  "cost_usd": 0.007335,
+  "latency_s": 4.895661999995355,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA5",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (BiP/GRP78) is a canonical ER-lumenal chaperone. However, under cellular stress (viral infection, tumorigenesis, ER stress), HSPA5 translocates to the cell surface where it functions as a danger-associated molecular pattern (DAMP) recognized by immune receptors and targeted by therapeutic antibodies. Surface HSPA5 is also induced in cancer cells and is a documented target of CAR-T and antibody programs. The surface form arises via stress-induced trafficking and dual localization rather than constitutive PM residence.",
+  "correct": true,
+  "prompt_tokens": 3861,
+  "completion_tokens": 172,
+  "n_web_searches": 0,
+  "cost_usd": 0.004721,
+  "latency_s": 2.2106718749855645,
+  "error": null,
+  "raw_text": ""
+}

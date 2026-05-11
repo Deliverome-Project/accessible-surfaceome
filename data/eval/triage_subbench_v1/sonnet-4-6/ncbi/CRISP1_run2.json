@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "CRISP1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "CRISP1 is a secreted epididymal protein that binds to the sperm surface during epididymal transit. This binding is stable and wash-resistant \u2014 CRISP1 is deposited onto the sperm plasma membrane in the epididymal lumen and remains stably associated with the postacrosomal/equatorial segment through fertilization. This constitutes a stable post-translational surface attachment to a cell surface rather than a transient equilibrium with a soluble pool. The protein is thus surface-accessible on sperm cells via this mechanism, qualifying as contextual/stable_surface_attachment in a tissue-restricted (epididymis/sperm) context.",
+  "correct": true,
+  "prompt_tokens": 3861,
+  "completion_tokens": 184,
+  "n_web_searches": 0,
+  "cost_usd": 0.014343,
+  "latency_s": 7.213620416994672,
+  "error": null,
+  "raw_text": ""
+}

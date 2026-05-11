@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is normally a cytoplasmic/cytosolic protein (and loosely associated with mitochondrial outer membrane in some cells). Upon apoptotic signaling, BAX undergoes conformational activation, translocates to the mitochondrial outer membrane, and inserts to form pores. Critically, during apoptosis BAX also reaches the plasma membrane outer leaflet \u2014 its N-terminal epitopes become exposed on the cell surface in apoptotic/stressed cells. This surface exposure is documented (e.g., anti-BAX antibodies detect surface BAX on apoptotic cells). Thus BAX reaches the outer PM face only under cell-state-specific (apoptotic/stressed) conditions.",
+  "correct": true,
+  "prompt_tokens": 1485,
+  "completion_tokens": 186,
+  "n_web_searches": 0,
+  "cost_usd": 0.007245,
+  "latency_s": 5.193744458025321,
+  "error": null,
+  "raw_text": ""
+}

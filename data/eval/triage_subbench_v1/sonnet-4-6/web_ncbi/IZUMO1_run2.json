@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a Type I single-pass transmembrane protein with an extracellular ectodomain. In acrosome-intact sperm it resides in the acrosomal membrane (inner and outer leaflets). Upon acrosome reaction, it translocates to the plasma membrane of the equatorial segment, where it is surface-exposed and binds the egg receptor JUNO to mediate sperm-egg fusion. The protein body reaches the outer leaflet by its own transmembrane anchor, but this surface exposure is strictly conditioned on completion of the acrosome reaction. Verdict is contextual/cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 23757,
+  "completion_tokens": 327,
+  "n_web_searches": 1,
+  "cost_usd": 0.08617599999999999,
+  "latency_s": 8.901358583010733,
+  "error": null,
+  "raw_text": ""
+}

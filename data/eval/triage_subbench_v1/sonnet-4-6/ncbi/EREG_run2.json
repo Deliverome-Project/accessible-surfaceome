@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "EREG",
+  "replicate": 2,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "EREG encodes epiregulin, a secreted peptide growth factor of the EGF family. It is synthesized as a transmembrane precursor (pro-epiregulin) that undergoes ectodomain shedding by ADAM proteases, releasing the mature soluble ligand. The shed soluble form circulates and binds EGFR/ERBB4 on target cells, but this is transient non-covalent receptor recruitment \u2014 the protein body itself has no stable surface anchor after cleavage. The pro-form is transiently membrane-anchored during processing, but the biologically active and dominant form is the shed ectodomain. No stable surface-anchored isoform is documented. Verdict: secreted_only.",
+  "correct": false,
+  "prompt_tokens": 3814,
+  "completion_tokens": 202,
+  "n_web_searches": 0,
+  "cost_usd": 0.014472,
+  "latency_s": 5.954179833992384,
+  "error": null,
+  "raw_text": ""
+}

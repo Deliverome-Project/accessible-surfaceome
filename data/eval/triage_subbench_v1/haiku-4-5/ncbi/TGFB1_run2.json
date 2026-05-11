@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGFB1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is a secreted cytokine synthesized as a preproprotein and processed into a latent complex (mature TGFB1 homodimer + LAP + LTBP) or an active form. The latent complex is sequestered in the extracellular matrix and becomes surface-accessible only upon context-dependent activation (mechanical tension, proteolytic cleavage, integrin-mediated release, acidic microenvironment, reactive oxygen species, thrombospondin binding). Soluble active TGFB1 can transiently recruit to cell-surface TGF-beta receptors but does not carry its own membrane anchor. The latent form's association with LTBP and ECM deposition qualifies as stable extracellular tethering in tissue context, and integrin-mediated release from ECM onto cells is a major biological mechanism. This positions TGFB1 as contextually surface-accessible via activation and ECM sequestration rather than constitutively or via its own TM/GPI mechanism.",
+  "correct": true,
+  "prompt_tokens": 3866,
+  "completion_tokens": 281,
+  "n_web_searches": 0,
+  "cost_usd": 0.005271,
+  "latency_s": 3.77599008299876,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "BAX",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "BAX is a BCL2-family pro-apoptotic protein that is predominantly cytosolic in healthy cells and translocates to the outer mitochondrial membrane upon apoptotic stimulation, where it oligomerizes to form pores. Its action is at the mitochondrial outer membrane (cytoplasmic face) and cytoplasm \u2014 it has no extracellular domain, no GPI anchor, no TM domain that places it on the outer leaflet of the plasma membrane. There is no documented stable surface pool accessible from outside the cell. Its only surface story would be pMHC presentation of intracellular peptides.",
+  "correct": false,
+  "prompt_tokens": 3829,
+  "completion_tokens": 170,
+  "n_web_searches": 0,
+  "cost_usd": 0.014037,
+  "latency_s": 4.593244749994483,
+  "error": null,
+  "raw_text": ""
+}

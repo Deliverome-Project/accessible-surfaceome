@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA5",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5/GRP78/BiP is canonically an ER-lumenal chaperone, but under stress conditions (cancer, viral infection, ischemia, unfolded protein response), a documented fraction translocates to the cell surface where it acts as a co-receptor and signaling hub. Surface GRP78 has been validated as a therapeutic target by multiple antibody and ADC programs that engage it on the outer leaflet of tumor cells. This qualifies as cell-state-induced surface exposure of the protein body, even though the dominant localization is ER-lumenal.",
+  "correct": true,
+  "prompt_tokens": 3862,
+  "completion_tokens": 165,
+  "n_web_searches": 0,
+  "cost_usd": 0.014061,
+  "latency_s": 4.878526292042807,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A encodes the inducible Hsp70 chaperone, primarily cytosolic. However, surface translocation is well-documented under stress conditions (heat shock, oxidative stress, tumor transformation): Hsp70 appears on the outer plasma membrane leaflet of stressed and malignant cells, where it acts as an NK-cell activating ligand and tumor immunotherapy target. This stress-induced surface exposure \u2014 without a classical TM anchor, but via direct membrane association \u2014 represents a documented cell-state-induced surface pool. Multiple CAR-T and antibody programs exploit this surface Hsp70 display.",
+  "correct": true,
+  "prompt_tokens": 3885,
+  "completion_tokens": 172,
+  "n_web_searches": 0,
+  "cost_usd": 0.014235,
+  "latency_s": 5.005421000008937,
+  "error": null,
+  "raw_text": ""
+}

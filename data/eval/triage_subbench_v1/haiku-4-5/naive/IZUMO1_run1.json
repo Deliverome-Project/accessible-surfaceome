@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane protein with an extracellular domain (Ig-domain fold), but its surface accessibility is restricted to male gametes\u2014specifically, it is expressed on the sperm plasma membrane during spermatogenesis and remains membrane-bound on mature sperm. In somatic cells and oocytes, IZUMO1 is not surface-accessible under normal physiological conditions. The protein's role is fertilization-specific: it mediates sperm-oocyte binding and fusion. While it has the TM architecture of a surface receptor, its accessibility is strictly contingent on the gamete context (spermatogenesis, sperm maturation). In non-reproductive somatic cells used in most drug development, IZUMO1 is not a functional surface target.",
+  "correct": true,
+  "prompt_tokens": 1487,
+  "completion_tokens": 217,
+  "n_web_searches": 0,
+  "cost_usd": 0.002572,
+  "latency_s": 2.681223291961942,
+  "error": null,
+  "raw_text": ""
+}

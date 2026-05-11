@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "ATP5F1B encodes the F1 beta subunit of mitochondrial ATP synthase, a soluble catalytic protein resident in the mitochondrial matrix and inner membrane. It is a canonical mitochondrial-matrix protein with no membrane-spanning domain of its own, no GPI anchor, no secretory signal, and no documented surface trafficking or cell-state-induced externalization. The protein is part of the F1 catalytic core, which is soluble and faces the matrix side of the inner mitochondrial membrane. There is no evidence of surface accessibility from the extracellular space.",
+  "correct": false,
+  "prompt_tokens": 3892,
+  "completion_tokens": 167,
+  "n_web_searches": 0,
+  "cost_usd": 0.004727,
+  "latency_s": 2.2019130830303766,
+  "error": null,
+  "raw_text": ""
+}

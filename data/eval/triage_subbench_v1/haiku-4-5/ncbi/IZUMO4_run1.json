@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is annotated as nuclear-resident by the NCBI summary. The IZUMO family are sperm-fertility proteins; IZUMO1 is a well-characterized sperm-surface protein essential for gamete fusion, but IZUMO4 has a distinct subcellular localization (nucleus) and no documented membrane anchor, surface isoform, or evidence of surface trafficking. The nuclear localization is the sole documented compartment.",
+  "correct": false,
+  "prompt_tokens": 3708,
+  "completion_tokens": 136,
+  "n_web_searches": 0,
+  "cost_usd": 0.004388,
+  "latency_s": 2.0076132499962114,
+  "error": null,
+  "raw_text": ""
+}

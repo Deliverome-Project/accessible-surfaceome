@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPD1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 (HSP60) is primarily a mitochondrial matrix chaperonin but is well-documented to appear at the outer face of the plasma membrane under stress (heat, hypoxia, oxidative stress) and in malignantly transformed cells. Full-length protein has been detected on the cell surface of tumor lines and stressed endothelial cells by flow cytometry, AFM, and antibodies to both termini. Surface anchoring involves lipid raft association and PKA-regulated attachment to histone H2B in T-lymphocyte membranes. No canonical TM domain or GPI anchor; surface exposure is non-canonical and condition-dependent, making this contextual/cell_state_induced. The mechanism is intrinsic to the protein (not mere reversible recruitment by another receptor), meeting the wash-resistance criterion for contextual classification.",
+  "correct": true,
+  "prompt_tokens": 37265,
+  "completion_tokens": 1001,
+  "n_web_searches": 2,
+  "cost_usd": 0.14681,
+  "latency_s": 23.87543524999637,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a sperm-specific single-pass transmembrane protein (type I) belonging to the Ig-like cell adhesion molecule family. On mature spermatozoa it resides in the acrosomal membrane intracellularly before acrosome reaction; upon acrosomal exocytosis it redistributes to the sperm plasma membrane outer face, where it is essential for binding and fusion with the oocyte. Its surface exposure is therefore cell-state/event-dependent (acrosome-reacted sperm), qualifying as contextual via cell_state_induced rather than constitutive surface display.",
+  "correct": true,
+  "prompt_tokens": 3786,
+  "completion_tokens": 173,
+  "n_web_searches": 0,
+  "cost_usd": 0.013953,
+  "latency_s": 4.846344334015157,
+  "error": null,
+  "raw_text": ""
+}

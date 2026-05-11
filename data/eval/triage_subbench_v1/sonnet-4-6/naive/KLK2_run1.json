@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "KLK2 (kallikrein-2) is a secreted serine protease. It is synthesized as a preproenzyme, signal peptide directs it through the secretory pathway, and the mature protein is released extracellularly into the fluid/tissue environment (notably seminal plasma). It has no transmembrane domain, no GPI anchor, and no documented stable wash-resistant attachment to a cell-surface protein. Its extracellular presence is as a soluble secreted enzyme, not as a stably membrane-anchored protein. Therefore, the protein body is not surface accessible in the sense required for membrane-targeted modalities.",
+  "correct": false,
+  "prompt_tokens": 1487,
+  "completion_tokens": 376,
+  "n_web_searches": 0,
+  "cost_usd": 0.010101,
+  "latency_s": 7.342913291999139,
+  "error": null,
+  "raw_text": ""
+}

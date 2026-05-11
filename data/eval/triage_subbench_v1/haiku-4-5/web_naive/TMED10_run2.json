@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED10",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I transmembrane protein with documented dual localization to both ER-Golgi and plasma membrane compartments. The lumenal/extracellular domain (Thr91-Glu110) is functionally active, mediating direct interactions with cell-surface TGF-\u03b2 receptors (ALK5, T\u03b2RII), demonstrating that the protein body reaches the outer face of the PM via its own TM-anchored mechanism. While the dominant compartment is ER-Golgi (involved in vesicular trafficking), a documented minority pool localizes stably to the plasma membrane, enabling surface engagement with extracellular ligands and receptors.",
+  "correct": true,
+  "prompt_tokens": 43079,
+  "completion_tokens": 936,
+  "n_web_searches": 3,
+  "cost_usd": 0.077759,
+  "latency_s": 10.591489167010877,
+  "error": null,
+  "raw_text": ""
+}

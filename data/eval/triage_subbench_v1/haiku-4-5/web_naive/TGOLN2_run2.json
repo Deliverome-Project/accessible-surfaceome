@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGOLN2",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGOLN2 is a type I integral membrane protein with a transmembrane domain that cycles between the trans-Golgi network and the plasma membrane via endosomes. While the dominant steady-state localization is intracellular (TGN), documented surface cycling via its own TM anchor qualifies it as contextual rather than no. The protein transiently accesses the outer leaflet during constitutive retrieval trafficking, reaching the surface via its own mechanism (TM-anchored topology) rather than transient recruitment to other surface proteins.",
+  "correct": true,
+  "prompt_tokens": 24521,
+  "completion_tokens": 863,
+  "n_web_searches": 2,
+  "cost_usd": 0.048836000000000004,
+  "latency_s": 9.652058375009801,
+  "error": null,
+  "raw_text": ""
+}

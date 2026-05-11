@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "BAX",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL-2 family member normally resident in the cytoplasm and outer mitochondrial membrane (OMM). Under apoptotic stress, BAX undergoes conformational change, oligomerizes at the OMM, and forms a pore. During this apoptotic state, BAX can also transiently expose epitopes accessible to antibodies and other binders from outside the cell. Additionally, in some contexts (notably ICD / immunogenic cell death), apoptotic cells exhibit surface exposure of BAX and other OMM proteins through loss of membrane integrity and PM blebbing. BAX is not a baseline plasma membrane protein, but becomes surface-accessible during apoptosis-driven cell death when OMM becomes continuous with PM or during secondary necrosis. This qualifies as contextual rather than baseline surface accessibility.",
+  "correct": true,
+  "prompt_tokens": 1484,
+  "completion_tokens": 225,
+  "n_web_searches": 0,
+  "cost_usd": 0.002609,
+  "latency_s": 3.0854039159603417,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "EREG",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "EREG is an EGF family member initially expressed as a membrane-anchored proform, but the functional, biologically relevant form is shed by ADAM-family proteases as a 46-aa soluble ligand. After cleavage, mature EREG is secreted and circulates as a free ligand to activate distant EGFR/ERBB4 receptors; it is not stably anchored to the plasma membrane. The protein body (mature EREG) does not reach the outer leaflet via its own mechanism post-secretion\u2014it is released into extracellular space only.",
+  "correct": false,
+  "prompt_tokens": 46484,
+  "completion_tokens": 1144,
+  "n_web_searches": 3,
+  "cost_usd": 0.082204,
+  "latency_s": 13.174219042004552,
+  "error": null,
+  "raw_text": ""
+}

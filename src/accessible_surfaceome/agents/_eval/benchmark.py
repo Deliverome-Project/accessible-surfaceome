@@ -31,7 +31,13 @@ class BenchmarkRow:
     class_: str
     ground_truth_verdict: str  # "yes" | "contextual" | "no"
     ground_truth_signal: str  # "likely_accessible" | "possibly_accessible" | "unlikely" | "unknown"
+    ground_truth_reason: str  # TriageReason literal; "|"-separated if multiple accepted reasons
     rationale: str
+
+    @property
+    def accepted_reasons(self) -> tuple[str, ...]:
+        """Pipe-separated reason values, parsed. A correct agent emits ANY of these."""
+        return tuple(r.strip() for r in self.ground_truth_reason.split("|") if r.strip())
 
 
 def load_benchmark(
@@ -77,6 +83,7 @@ def _iter_tsv_rows(path: Path) -> Iterator[BenchmarkRow]:
                 class_=raw["class"],
                 ground_truth_verdict=raw["ground_truth_verdict"],
                 ground_truth_signal=raw["ground_truth_signal"],
+                ground_truth_reason=raw.get("ground_truth_reason", ""),
                 rationale=raw["rationale"],
             )
 
@@ -134,6 +141,7 @@ def _top_k_opencell_programmatic(
             class_="opencell_vesicle_negative_programmatic",
             ground_truth_verdict="no",
             ground_truth_signal="unlikely",
+            ground_truth_reason="endomembrane_resident",
             rationale=(
                 f"OpenCell grade-3 vesicle in M1 with {n_votes} surface-source "
                 f"votes; imaged-confirmed intracellular"

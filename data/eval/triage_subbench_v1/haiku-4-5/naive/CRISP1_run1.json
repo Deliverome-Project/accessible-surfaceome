@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "CRISP1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "extracellular_face_protein",
+  "verdict_reasoning": "CRISP1 (cysteine-rich secretory protein 1) is a secreted protein belonging to the CRISP/antigen 5/pathogenesis-related 1 (CAP) family. It is secreted from cells and binds to the outer leaflet of the plasma membrane via stable, non-covalent interactions with membrane lipids and/or membrane proteins. CRISP1 has been documented to associate with the cell surface and extracellular matrix, where it can interact with integrins and other cell-surface receptors. This stable association with the outer face of the PM via its own lipid-binding and protein-binding mechanisms qualifies it as surface-accessible by the recruitment test\u2014it reaches and remains on the outer leaflet through its inherent biochemical properties, not merely as cargo in transit.",
+  "correct": false,
+  "prompt_tokens": 1486,
+  "completion_tokens": 222,
+  "n_web_searches": 0,
+  "cost_usd": 0.002596,
+  "latency_s": 2.825219125021249,
+  "error": null,
+  "raw_text": ""
+}

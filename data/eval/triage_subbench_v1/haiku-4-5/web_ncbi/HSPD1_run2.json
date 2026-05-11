@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPD1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "HSPD1 encodes mitochondrial Hsp60 (chaperonin-60), a canonical mitochondrial matrix protein essential for protein folding in the mitochondrial stroma. The HGNC gene-group memberships explicitly identify it as a 'Mitochondrial nucleoid associated protein' with chaperonin function. The NCBI summary confirms its role as a mitochondrial protein functioning in mitochondrial protein import and folding \u2014 fundamentally intracellular compartmentalization. While the summary mentions possible 'signaling molecule in the innate immune system' function, this refers to its cytoplasmic or soluble form (e.g., as a damage-associated molecular pattern), not surface anchoring. No transmembrane domain, GPI anchor, or surface trafficking mechanism is documented. The protein does not possess its own mechanism to reach the outer leaflet of the plasma membrane, and the innate immune signaling role does not imply or require surface localization \u2014 cytoplasmic recognition (e.g., by pattern receptors like NOD-like receptors) is the canonical pathway. No cell-surface-directed therapeutics, ectodomain-shedding isoforms, or documented surface localization under any cell state are reported.",
+  "correct": false,
+  "prompt_tokens": 4441,
+  "completion_tokens": 314,
+  "n_web_searches": 0,
+  "cost_usd": 0.006011,
+  "latency_s": 4.075099917012267,
+  "error": null,
+  "raw_text": ""
+}

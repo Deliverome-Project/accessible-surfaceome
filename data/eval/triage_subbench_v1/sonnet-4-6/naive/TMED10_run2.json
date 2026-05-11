@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED10 (p24\u03b41/TMP21) is a type I transmembrane protein of the p24 family that resides predominantly in the ER-Golgi intermediate compartment (ERGIC) and Golgi apparatus, cycling between these compartments via COPI/COPII vesicles. Its primary function is in cargo selection and vesicle budding within the early secretory pathway. Although it has a single-pass TM domain and a luminal/extracellular domain, its steady-state localization is endomembrane, not the plasma membrane. No documented stable PM pool or surface-accessible form is established for TMED10.",
+  "correct": false,
+  "prompt_tokens": 1487,
+  "completion_tokens": 184,
+  "n_web_searches": 0,
+  "cost_usd": 0.007221,
+  "latency_s": 5.744491040997673,
+  "error": null,
+  "raw_text": ""
+}

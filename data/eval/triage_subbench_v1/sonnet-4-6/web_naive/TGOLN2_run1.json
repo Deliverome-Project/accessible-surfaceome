@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGOLN2 (TGN46) is a type I integral membrane protein that is predominantly localized to the trans-Golgi network (an endomembrane compartment), but is well-documented to constitutively cycle between the TGN and the plasma membrane via endosomes. At the cell surface, its large lumenal/glycosylated domain is extracellularly exposed, making it transiently accessible from the outside. This cycling is an intrinsic property of the protein's own trafficking mechanism, not passive recruitment by another surface protein. The surface pool is a minority fraction, so the verdict is contextual rather than yes.",
+  "correct": true,
+  "prompt_tokens": 16185,
+  "completion_tokens": 606,
+  "n_web_searches": 1,
+  "cost_usd": 0.067645,
+  "latency_s": 14.27231958298944,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a sperm-specific gamete adhesion/fusion factor with an Ig-like ectodomain and a transmembrane domain (single-pass TM protein). It is surface-exposed on sperm plasma membrane where it mediates sperm-egg binding and fusion during fertilization. However, its surface accessibility is restricted to the specialized context of spermatogenesis and the male gamete \u2014 it is not expressed on somatic cells accessible to systemic therapeutics. A binder could in principle access the protein on sperm in testicular or reproductive-tract settings, but not on typical cell-surface-therapy target tissues. This tissue/cell-type restriction and developmental specialization qualifies it as contextual rather than broadly accessible.",
+  "correct": true,
+  "prompt_tokens": 3785,
+  "completion_tokens": 201,
+  "n_web_searches": 0,
+  "cost_usd": 0.00479,
+  "latency_s": 2.893229249981232,
+  "error": null,
+  "raw_text": ""
+}

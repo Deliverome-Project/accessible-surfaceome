@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGOLN2 (TGN46) is a type I single-pass integral membrane protein whose dominant localization is the trans-Golgi network, but it constitutively cycles between the TGN, endosomes, and the plasma membrane via its own TM anchor. When at the cell surface, its large lumenal/extracellular domain is exposed on the outer leaflet. The PM pool is a minor, transient fraction; the steady-state bulk resides in the endomembrane. This dual localization with documented, intrinsic surface transit qualifies as contextual.",
+  "correct": true,
+  "prompt_tokens": 16185,
+  "completion_tokens": 715,
+  "n_web_searches": 1,
+  "cost_usd": 0.06928,
+  "latency_s": 15.073409667005762,
+  "error": null,
+  "raw_text": ""
+}

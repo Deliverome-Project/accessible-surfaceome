@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation at Gly2 and palmitoylation at Cys3. Its entire protein body \u2014 SH4, SH3, SH2, and kinase domains \u2014 faces the cytoplasm. It has no transmembrane domain, no GPI anchor, no ectodomain, and no secreted isoform. All literature consistently describes it as acting at the 'cytoplasmic face' of the plasma membrane. No extracellular binder could access the protein body from outside the cell.",
+  "correct": false,
+  "prompt_tokens": 27240,
+  "completion_tokens": 402,
+  "n_web_searches": 1,
+  "cost_usd": 0.09774999999999999,
+  "latency_s": 10.498664874990936,
+  "error": null,
+  "raw_text": ""
+}

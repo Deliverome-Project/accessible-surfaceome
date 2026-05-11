@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "BAX",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL-2 family member that is primarily cytoplasmic in healthy cells, but undergoes a well-documented conformational change and translocation to the outer mitochondrial membrane (OMM) during apoptosis induction. Under apoptotic stress, BAX inserts into the OMM as part of the mitochondrial outer membrane permeabilization (MOMP) machinery. Additionally, BAX has been reported to traffic to the plasma membrane under certain stress conditions and during ICD (immunogenic cell death). While not a canonical surface protein under baseline conditions, the documented translocation of BAX to the outer leaflet of the plasma membrane during apoptosis and cellular stress qualifies it as contextual rather than a clear 'no'.",
+  "correct": true,
+  "prompt_tokens": 1484,
+  "completion_tokens": 209,
+  "n_web_searches": 0,
+  "cost_usd": 0.002529,
+  "latency_s": 2.330276542052161,
+  "error": null,
+  "raw_text": ""
+}

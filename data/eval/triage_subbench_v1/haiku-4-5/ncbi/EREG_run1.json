@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "EREG",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "EREG is a secreted EGF-family ligand with no membrane anchor. It is synthesized as a transmembrane precursor but is cleaved and released as a soluble growth factor that acts on EGFR and ERBB4 via reversible receptor binding. The protein body itself does not stably remain on the outer leaflet\u2014it enters the soluble pool in equilibrium with cell-surface receptors. The therapeutic value is as a circulating ligand, not as a cell-surface-anchored target.",
+  "correct": false,
+  "prompt_tokens": 3813,
+  "completion_tokens": 152,
+  "n_web_searches": 0,
+  "cost_usd": 0.004573,
+  "latency_s": 2.299630166962743,
+  "error": null,
+  "raw_text": ""
+}

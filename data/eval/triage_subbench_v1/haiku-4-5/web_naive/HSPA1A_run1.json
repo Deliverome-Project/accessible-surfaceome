@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A is primarily cytosolic but documented to localize stably at the plasma membrane of stressed and tumor cells through stress-inducible mechanisms. Its surface presentation depends on selective, wash-resistant binding to endosomal and plasma membrane lipids (phosphatidylserine, PI(4)P, PI(3)P, PI(4,5)P2)\u2014not on recruitment by other surface proteins. The protein reaches both the inner leaflet and extracellular space under stress conditions. While HSPA1A lacks classical TM domains and signal peptides, its documented surface localization via lipid interaction and EV secretion, combined with functional roles on stressed/tumor cell surfaces, establishes it as a contextual surface protein.",
+  "correct": true,
+  "prompt_tokens": 47034,
+  "completion_tokens": 1040,
+  "n_web_searches": 3,
+  "cost_usd": 0.082234,
+  "latency_s": 12.462230958044529,
+  "error": null,
+  "raw_text": ""
+}

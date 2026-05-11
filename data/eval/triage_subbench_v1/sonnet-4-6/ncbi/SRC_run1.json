@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "SRC",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase anchored to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. Its kinase domain, SH2, and SH3 domains all face the cytoplasm. There is no extracellular domain, no transmembrane segment, and no GPI anchor. It has no CD designation. Although it associates with the inner face of the PM, it is not accessible from the extracellular space. No documented isoform or post-translational modification exposes any portion of the protein body to the outer leaflet.",
+  "correct": false,
+  "prompt_tokens": 3829,
+  "completion_tokens": 165,
+  "n_web_searches": 0,
+  "cost_usd": 0.013962,
+  "latency_s": 5.194001458003186,
+  "error": null,
+  "raw_text": ""
+}

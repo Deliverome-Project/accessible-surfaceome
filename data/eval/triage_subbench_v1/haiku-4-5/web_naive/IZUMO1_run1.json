@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a type I transmembrane protein with constitutive outer-leaflet accessibility via its own TM domain. However, surface exposure is conditional: the protein is sequestered in the acrosomal membrane in fresh sperm and translocates to the sperm plasma membrane only after the acrosome reaction. During this activated state, IZUMO1 stably integrates into the plasma membrane outer face where it functions in gamete recognition and fusion. The protein thus reaches the outer face through its own mechanism in a documented, cell-state-dependent manner.",
+  "correct": true,
+  "prompt_tokens": 52914,
+  "completion_tokens": 929,
+  "n_web_searches": 3,
+  "cost_usd": 0.087559,
+  "latency_s": 11.010565124975983,
+  "error": null,
+  "raw_text": ""
+}

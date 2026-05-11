@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "EREG",
+  "replicate": 2,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "EREG (epiregulin) is a membrane-anchored ligand of the EGF receptor family. It is synthesized as a transmembrane precursor (proEREG) with an extracellular EGF-like domain on the outer face of the plasma membrane. The ectodomain is shed by proteolytic cleavage to release soluble epiregulin, but the membrane-anchored form is stably present on the outer leaflet via its single transmembrane domain, making it accessible to extracellular binders and capable of trans-interactions. The protein body (the ectodomain) is exposed on the outer face by virtue of its TM topology.",
+  "correct": true,
+  "prompt_tokens": 1485,
+  "completion_tokens": 190,
+  "n_web_searches": 0,
+  "cost_usd": 0.002435,
+  "latency_s": 2.363535792042967,
+  "error": null,
+  "raw_text": ""
+}

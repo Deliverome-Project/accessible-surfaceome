@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA5",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "HSPA5 is a canonical ER-lumen resident chaperone containing KDEL ER-retention signal. It lacks a TM domain, GPI anchor, or outer-leaflet lipidation. Baseline localization is intracellular (ER). While stress-induced translocation to the surface may occur as a DAMP in pathological contexts, this does not constitute stable surface accessibility by its own mechanism.",
+  "correct": false,
+  "prompt_tokens": 1486,
+  "completion_tokens": 482,
+  "n_web_searches": 0,
+  "cost_usd": 0.003896,
+  "latency_s": 6.084487457992509,
+  "error": null,
+  "raw_text": ""
+}

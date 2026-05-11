@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "EREG",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "EREG encodes a transmembrane pro-protein that traffics to the cell surface via intrinsic basolateral sorting motifs. The pro-EREG protein body is anchored to the outer leaflet of the plasma membrane through its transmembrane domain, where it is subsequently cleaved by ADAM proteases to release the mature soluble ligand. The protein reaches the surface via its own TM-anchoring mechanism, meeting the cardinal recruitment test.",
+  "correct": true,
+  "prompt_tokens": 36752,
+  "completion_tokens": 729,
+  "n_web_searches": 2,
+  "cost_usd": 0.060397000000000006,
+  "latency_s": 9.035395833023358,
+  "error": null,
+  "raw_text": ""
+}

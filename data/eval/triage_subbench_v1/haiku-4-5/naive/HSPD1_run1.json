@@ -1,0 +1,19 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPD1",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "HSPD1 encodes HSP60, a chaperone protein resident in the mitochondrial matrix. Its primary localization is intramitochondrial; it functions as a 60 kDa heat-shock protein facilitating protein folding within the mitochondrial compartment. While HSP60 can be released during cell stress or damage and may transiently appear in the cytoplasm or extracellular space as a damage-associated molecular pattern (DAMP), there is no evidence of a constitutive or stable mechanism by which the protein integrates into or anchors to the plasma membrane outer leaflet. Release to the extracellular space is a consequence of mitochondrial rupture or cell lysis, not an independent mechanism for surface accessibility. The protein lacks transmembrane domains, GPI anchors, or documented stable partnership with surface-anchored proteins. Extracellular HSP60 functions as a secreted/released soluble protein and does not meet the criterion of stable outer-leaflet presence via its own mechanism.",
+  "correct": false,
+  "prompt_tokens": 1487,
+  "completion_tokens": 265,
+  "n_web_searches": 0,
+  "cost_usd": 0.002812,
+  "latency_s": 3.1769961250247434,
+  "error": null,
+  "raw_text": ""
+}

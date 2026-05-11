@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "TMED10 is a type I membrane protein with documented localization to both the plasma membrane and Golgi cisternae. The NCBI summary explicitly states it is 'localized to the plasma membrane,' and membership in the 'Transmembrane p24 trafficking proteins' gene family confirms it is a bona fide membrane-integrated protein. Type I membrane topology means the protein spans the membrane with its N-terminus in the ER/Golgi lumen during trafficking and reaches the plasma membrane as part of normal vesicular trafficking. No evidence suggests the surface localization is conditional or transient; it is baseline biology for a p24 family member involved in vesicular protein trafficking. This qualifies as a classical surface receptor with stable surface accessibility via its own transmembrane domain.",
+  "correct": false,
+  "prompt_tokens": 4450,
+  "completion_tokens": 207,
+  "n_web_searches": 0,
+  "cost_usd": 0.005485,
+  "latency_s": 3.1950424159877002,
+  "error": null,
+  "raw_text": ""
+}

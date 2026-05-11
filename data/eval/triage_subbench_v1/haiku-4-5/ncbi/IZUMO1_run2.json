@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "IZUMO1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a sperm-specific, gamete adhesion factor essential for sperm-egg fusion. It is a single-pass transmembrane protein with an extracellular immunoglobulin-like domain. While constitutively surface-expressed on sperm, its relevance to therapeutic targeting is strictly limited to the germ cell compartment and meiotic/fertilization biology. Surface accessibility is genuine but contextual to specialized gamete cell type and fertilization biology.",
+  "correct": true,
+  "prompt_tokens": 3785,
+  "completion_tokens": 145,
+  "n_web_searches": 0,
+  "cost_usd": 0.00451,
+  "latency_s": 2.3636788750300184,
+  "error": null,
+  "raw_text": ""
+}

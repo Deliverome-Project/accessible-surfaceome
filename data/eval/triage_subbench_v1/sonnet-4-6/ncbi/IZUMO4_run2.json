@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is annotated as nuclear-localized by Alliance of Genome Resources. Unlike IZUMO1 (the sperm-fusion protein with a TM domain), IZUMO4 lacks a predicted transmembrane domain and has no documented plasma membrane or extracellular pool. The IZUMO family contains members with surface roles (IZUMO1), but IZUMO4 specifically is the atypical nuclear member. No TM domain, GPI anchor, or stable surface-partner association has been reported. No therapeutic programs target it at the cell surface.",
+  "correct": false,
+  "prompt_tokens": 3709,
+  "completion_tokens": 165,
+  "n_web_searches": 0,
+  "cost_usd": 0.013602,
+  "latency_s": 4.505281624966301,
+  "error": null,
+  "raw_text": ""
+}

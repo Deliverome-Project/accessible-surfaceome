@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "LYN is a Src-family tyrosine kinase that is dually acylated (myristoylated at Gly2 and palmitoylated at Cys3), anchoring it to the inner leaflet of the plasma membrane \u2014 making it inner-leaflet-anchored by default. However, LYN is also well-documented to associate with lipid raft microdomains and is co-immunoprecipitated with surface receptors (BCR, Fc\u03b5RI, CD19), and importantly, palmitoylation-dependent membrane association places it at the cytoplasmic face, not the extracellular face. No extracellular domain exists. The protein body is cytoplasmic-face-anchored; it is not accessible from the extracellular side. The dominant biology is inner-leaflet anchoring \u2014 surface-directed therapeutics target associated receptors, not LYN itself. Verdict: no / inner_leaflet_anchored.",
+  "correct": false,
+  "prompt_tokens": 3780,
+  "completion_tokens": 444,
+  "n_web_searches": 0,
+  "cost_usd": 0.018,
+  "latency_s": 10.536193292005919,
+  "error": null,
+  "raw_text": ""
+}

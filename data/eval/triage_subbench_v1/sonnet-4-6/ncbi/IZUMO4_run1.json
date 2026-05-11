@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is an IZUMO family member but is annotated as nuclear-resident, unlike IZUMO1/2/3 which have surface/membrane roles in sperm-egg fusion. IZUMO4 lacks a predicted transmembrane domain and GPI anchor; its UniProt entry describes it as a nuclear protein. No surface isoforms, TM anchors, or documented PM pool have been reported. The IZUMO family membership alone does not override the nuclear localization when the protein itself lacks a membrane anchor. No cell-surface-directed therapeutic programs are known. Nuclear classification is appropriate.",
+  "correct": false,
+  "prompt_tokens": 3709,
+  "completion_tokens": 171,
+  "n_web_searches": 0,
+  "cost_usd": 0.013692,
+  "latency_s": 4.753070708015002,
+  "error": null,
+  "raw_text": ""
+}

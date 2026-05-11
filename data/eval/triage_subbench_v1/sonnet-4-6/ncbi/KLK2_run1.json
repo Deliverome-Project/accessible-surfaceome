@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "KLK2 (hK2) is a secreted serine protease of the kallikrein family. It is synthesized as a preproprotein, processed, and secreted into the extracellular space/prostatic fluid. It lacks a transmembrane domain, GPI anchor, or any documented stable surface-anchoring mechanism. Its detection in serum/prostatic fluid reflects a freely secreted form. No isoform is membrane-anchored, and no wash-resistant TM-partner tethering has been documented. It is not targeted by cell-surface-directed antibody or CAR-T programs against the protein body on cells.",
+  "correct": false,
+  "prompt_tokens": 3831,
+  "completion_tokens": 176,
+  "n_web_searches": 0,
+  "cost_usd": 0.014133,
+  "latency_s": 5.715604292054195,
+  "error": null,
+  "raw_text": ""
+}

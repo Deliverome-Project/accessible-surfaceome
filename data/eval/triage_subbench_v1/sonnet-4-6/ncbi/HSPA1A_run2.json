@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA1A",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (Hsp70/HSP72) is primarily a cytosolic chaperone, but there is well-documented cell-state-induced surface translocation: under heat shock, oxidative stress, and in tumor cells, Hsp70 is trafficked to and stably displayed on the outer plasma membrane leaflet. Surface Hsp70 on tumor cells is a recognized target for NK cell-mediated killing and has been exploited in therapeutic antibody and CAR-NK programs engaging surface-exposed Hsp70 on cancer cells. This surface exposure is cell-state-dependent (stress/tumor context) rather than constitutive, warranting 'contextual' rather than 'yes'.",
+  "correct": true,
+  "prompt_tokens": 3885,
+  "completion_tokens": 192,
+  "n_web_searches": 0,
+  "cost_usd": 0.014535,
+  "latency_s": 5.291532375034876,
+  "error": null,
+  "raw_text": ""
+}

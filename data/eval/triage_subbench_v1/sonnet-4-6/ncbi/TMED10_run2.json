@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 (TMP21/p23) is a type I single-pass transmembrane protein of the p24 family. The NCBI summary explicitly states it is localized to both the plasma membrane and Golgi cisternae, making it a dual-localization protein with a documented minority PM pool alongside its dominant Golgi/COPI vesicle trafficking role. As a type I TM protein, when it reaches the plasma membrane it presents an extracellular domain accessible from outside the cell. This satisfies the contextual criterion via dual_localization.",
+  "correct": true,
+  "prompt_tokens": 3859,
+  "completion_tokens": 160,
+  "n_web_searches": 0,
+  "cost_usd": 0.013977,
+  "latency_s": 4.311249915976077,
+  "error": null,
+  "raw_text": ""
+}

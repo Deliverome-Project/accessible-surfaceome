@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TGOLN2",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 is a trans-Golgi network (TGN) integral membrane protein. The NCBI summary explicitly localizes it to the TGN and early endosomes \u2014 both intracellular compartments. While it is a type I integral membrane protein (possessing a transmembrane domain), the membrane it resides in is the Golgi apparatus and endosomal system, not the plasma membrane. It cycles between early endosomes and TGN during secretory cargo processing but does not reach the outer face of the plasma membrane as a resident surface protein. There is no documented surface pool, dual localization to the PM, cell-state-induced surfacing, or stable surface-anchored form.",
+  "correct": false,
+  "prompt_tokens": 3818,
+  "completion_tokens": 196,
+  "n_web_searches": 0,
+  "cost_usd": 0.004798,
+  "latency_s": 4.137514292029664,
+  "error": null,
+  "raw_text": ""
+}

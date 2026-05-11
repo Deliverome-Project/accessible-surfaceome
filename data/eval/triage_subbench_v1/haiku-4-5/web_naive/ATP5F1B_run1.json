@@ -1,0 +1,19 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATP5F1B is a component of the mitochondrial ATP synthase complex that predominantly localizes to the inner mitochondrial membrane matrix side. However, documented evidence establishes that the complete F1Fo-ATP synthase complex, including ATP5F1B, undergoes translocation to the plasma membrane in specific cell types (hepatocytes, endothelial cells, adipocytes, cancer cells). This translocation occurs via a defined mechanism: assembly in mitochondria, transport along microtubules (via DRP1/KIF5B), and mitochondrial-plasma membrane fusion. The surface pool exhibits catalytic activity and is confirmed by multiple orthogonal methods. Surface localization is tissue/cell-type restricted and not the dominant baseline pool, qualifying this as contextual rather than yes.",
+  "correct": true,
+  "prompt_tokens": 55338,
+  "completion_tokens": 1292,
+  "n_web_searches": 3,
+  "cost_usd": 0.09179799999999999,
+  "latency_s": 16.4685605840059,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "SRC",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "SRC is a cytoplasmic Src-family tyrosine kinase with no intrinsic membrane anchor. However, it undergoes N-terminal myristoylation and palmitoylation, enabling transient association with the inner leaflet of the plasma membrane and/or other endomembranes. SRC also cycles between cytoplasm and membrane compartments during signaling, particularly when recruited to receptor-family complexes at the PM via SH2/SH3 interactions with anchored partners (e.g., receptor tyrosine kinases, integrins, tetraspanins). The protein body itself does not have a mechanism to stably access the outer leaflet; however, documented dual localization with a minority PM pool during active signaling qualifies as contextual surface-associated biology.",
+  "correct": true,
+  "prompt_tokens": 3828,
+  "completion_tokens": 214,
+  "n_web_searches": 0,
+  "cost_usd": 0.004898,
+  "latency_s": 2.9981246250099503,
+  "error": null,
+  "raw_text": ""
+}

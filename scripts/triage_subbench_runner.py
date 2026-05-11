@@ -215,17 +215,19 @@ def _run_one(
             f"of this protein's biology."
         )
 
-    tools = [WEB_SEARCH_TOOL] if cfg["web_search"] else []
-
     started = time.monotonic()
+    # Build kwargs; omit `tools` entirely for no-tool variants — the API
+    # rejects `tools=None` with "Input should be a valid array".
+    create_kwargs: dict[str, Any] = {
+        "model": model,
+        "max_tokens": 4096,
+        "system": system_prompt,
+        "messages": [{"role": "user", "content": user_message}],
+    }
+    if cfg["web_search"]:
+        create_kwargs["tools"] = [WEB_SEARCH_TOOL]
     try:
-        response = _client().messages.create(
-            model=model,
-            max_tokens=4096,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_message}],
-            tools=tools or None,
-        )
+        response = _client().messages.create(**create_kwargs)
     except Exception as exc:  # noqa: BLE001
         latency = time.monotonic() - started
         return RunRecord(
@@ -266,8 +268,14 @@ def _run_one(
     )
 
 
+def _model_slug(model: str) -> str:
+    return model.replace("claude-", "").replace("anthropic-", "")
+
+
 def _persist(rec: RunRecord) -> Path:
-    out_dir = OUT_ROOT / rec.variant
+    # Per-cell records are isolated by model so concurrent Haiku + Sonnet
+    # runs don't clobber each other.
+    out_dir = OUT_ROOT / _model_slug(rec.model) / rec.variant
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / f"{rec.gene_symbol}_run{rec.replicate}.json"
     path.write_text(json.dumps(rec.__dict__, indent=2) + "\n")

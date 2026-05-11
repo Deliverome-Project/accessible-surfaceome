@@ -1,0 +1,19 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "IZUMO1 is a sperm-specific single-pass transmembrane protein (Ig-like fold) that resides in the acrosomal membrane of non-capacitated sperm and relocates to the entire sperm plasma membrane surface after the acrosomal reaction. On acrosome-reacted sperm the extracellular domain is fully exposed and mediates binding to oocyte JUNO (Folr4) \u2014 this is the essential sperm-egg fusion event. Thus the protein body is surface-accessible on the outer leaflet, but only in the specific cellular context of acrosome-reacted (capacitated/activated) sperm. This qualifies as tissue_restricted_surface / cell-state-induced surface expression on a specialized cell type.",
+  "correct": true,
+  "prompt_tokens": 3786,
+  "completion_tokens": 204,
+  "n_web_searches": 0,
+  "cost_usd": 0.014418,
+  "latency_s": 5.318861250008922,
+  "error": null,
+  "raw_text": ""
+}

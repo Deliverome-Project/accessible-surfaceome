@@ -1,0 +1,19 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (ATP synthase F1 beta subunit) is canonically a soluble subunit of the mitochondrial F1 catalytic core, facing the matrix. However, extensive literature documents its ectopic presence on the outer plasma membrane surface in multiple normal cell types (hepatocytes, endothelial cells, adipocytes, keratinocytes, cardiomyocytes) and in several cancer types (NSCLC, prostate cancer, leukemia). The whole ATP synthase complex is transported to the cell surface via mitochondrial membrane fusion, anchoring the F1 domain extracellularly. At the surface it functions as a receptor (e.g., apoA-I/HDL receptor) and produces extracellular ATP. Surface expression is upregulated in malignant/activated cell states. Because this surface localization is cell-type- and state-dependent rather than universal, and the dominant baseline compartment remains mitochondrial, the verdict is contextual (cell_state_induced / tissue-restricted surface, with the F1 domain oriented extracellularly).",
+  "correct": true,
+  "prompt_tokens": 20808,
+  "completion_tokens": 333,
+  "n_web_searches": 1,
+  "cost_usd": 0.077419,
+  "latency_s": 9.553751333034597,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,161 +1,184 @@
 # Triage benchmark v1 — controls
 
-Total: **114 proteins** (45 `yes`, 23 `maybe`, 46 `no`)
+Total: **124 proteins** (51 `yes`, 23 `contextual`, 50 `no`).
 
-**DBs/5** column: count out of 5 retained M1 surface databases (UniProt subcellular query, GO cellular component, HPA, SURFY, CSPA). DeepTMHMM and JensenLab COMPARTMENTS are excluded from the triage stack. `—` means the protein is not in the M1 candidate universe.
+The benchmark uses the schema vocabulary directly — `ground_truth_verdict` is one of `yes` / `contextual` / `no` matching `TriageVerdict` in `src/accessible_surfaceome/tools/_shared/models.py`, and `ground_truth_reason` is one of the literals in `TriageReason`. Every row roundtrips through `TriageRecordDraft` — see `tests/test_triage_benchmark_schema.py`.
 
-## Yes — surface accessible
+## Yes — surface accessible (51)
 
 Stably surface by the protein's own mechanism: TM domain, GPI, outer-leaflet lipidation, direct outer-leaflet lipid binding, pore assembly, or stable complex-partner co-trafficking.
 
-| Gene | UniProt | Class | DBs/5 | Localization / rationale |
+| Gene | UniProt | Class | Reason | Localization / rationale |
 |---|---|---|---|---|
-| **CCR8** | P51685 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,go) | clinical mAb: Multiple anti-CCR8 mAb programs (Treg depletion) |
-| **CD74** | P04233 | `disagreement_rich_positive` | **4/5** (surfy,cspa,uniprot,go) | Invariant chain on B/dendritic cell surface; clinical-stage Milatuzumab ADC |
-| **CLDN6** | P56747 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | CAR-T + ADC + bispecific: BNT211 CAR-T (BioNTech), AMG794 bispecific, multiple ADCs. Tight-junction claudin |
-| **DLL3** | Q9NYJ7 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,hpa) | approved bispecific: Tarlatamab/Imdelltra approved 2024 SCLC |
-| **DSG3** | P32926 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,go) | Desmoglein 3 — single-pass type I TM cadherin in desmosomes of basal keratinocytes and oral mucosa. **Pemphigus vulgaris autoantigen** — patient autoantibodies bind cell-surface DSG3 on keratinocytes (validation of surface accessibility). Tissue-restricted expression. |
-| **EFNA4** | P52798 | `disagreement_rich_positive` | **2/5** (surfy,cspa) | clinical ADC: PF-06647263 ADC |
-| **EPHB4** | P54760 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical mAb: Soluble EphB4 fusion programs |
-| **EREG** | O14944 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | clinical mAb: Anti-EREG programs (epiregulin) |
-| **FLT3** | P36888 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical ADC + CAR-T: AMG553 CAR-T, FLT3xCD3 bispecifics |
-| **FZD10** | Q9ULW2 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,go) | clinical mAb: OTSA101-DTPA (radioimmunoconjugate) |
-| **FZD7** | O75084 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | clinical mAb: Vantictumab (OMP-18R5, Ipsen/OncoMed); 7TM Wnt receptor |
-| **GFRA1** | P56159 | `disagreement_rich_positive` | **3/5** (surfy,cspa,go) | clinical ADC: Multiple GFRalpha-1 ADC programs |
-| **GPNMB** | Q14956 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical ADC: Glembatumumab vedotin (Celldex) |
-| **GPRC5D** | Q9NZD1 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | approved bispecific + CAR-T: Talquetamab approved 2023 (multiple myeloma); orphan GPCR |
-| **GUCY2C** | P25092 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | approved bispecific + ADC: M9140 ADC; multiple approved/clinical programs |
-| **GYPA** | P02724 | `disagreement_rich_positive` | **3/5** (surfy,uniprot,hpa) | Glycophorin A (MNS blood group antigen) — single-pass type I TM sialoglycoprotein on the erythrocyte surface. Classical surface architecture; RBC-restricted expression. Targeted by anti-GYPA in blood-group serology and as an RBC marker in clinical immunology. |
-| **KLK2** | P20151 | `disagreement_rich_positive` | — | clinical ADC: Multiple programs; secreted+membrane prostate antigen |
-| **LGR5** | O75473 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | clinical ADC: Multiple Wnt-receptor ADC programs |
-| **LRRC15** | Q8TF66 | `disagreement_rich_positive` | **5/5** (surfy,cspa,uniprot,go,hpa) | Mesenchymal/stromal surface receptor; clinical-stage ABBV-085 ADC |
-| **LRRC32** | Q14392 | `disagreement_rich_positive` | **4/5** (surfy,cspa,uniprot,go) | GARP — single-pass type I TM glycoprotein with a large LRR extracellular domain. Restricted expression on Tregs and platelets. Anchors latent TGF-β1 to the cell surface via covalent disulfide bonds. Clinical antibody program: **livmoniplimab (ABBV-151)** targets the GARP:latent-TGF-β1 complex in solid-tumor combination trials with anti-PD1. |
-| **MUC1** | P15941 | `disagreement_rich_positive` | **4/5** (surfy,uniprot,go,hpa) | TROP-2-adjacent validated tumor antigen; large mucin ECD; multiple antibody programs |
-| **OR1A1** | Q9P1Q5 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | Olfactory receptor 1A1 — classical 7TM rhodopsin-family GPCR. Stably surface on olfactory sensory neurons (and reported in some ectopic-expression contexts). Expression is tissue-restricted to a specialized cell type but the surface architecture is unambiguous when expressed. |
-| **PSCA** | O43653 | `disagreement_rich_positive` | **2/5** (surfy,hpa) | clinical CAR-T + ADC: Multiple PSCA programs; GPI-anchored |
-| **ROR1** | Q01973 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical CAR-T + ADC: Cirmtuzumab, Zilovertamab vedotin, Lyell CAR-T |
-| **ROR2** | Q01974 | `disagreement_rich_positive` | **3/5** (surfy,cspa,uniprot) | clinical ADC: BA3021 conditionally-active ADC (BioAtla) |
-| **ROS1** | P08922 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | approved TKI + clinical ADC: Crizotinib/lorlatinib approved (small molecule); ADC programs in development |
-| **SEZ6** | Q53EL9 | `disagreement_rich_positive` | **2/5** (surfy,uniprot) | clinical ADC: ABBV-011 ADC (AbbVie SCLC) |
-| **SLC34A2** | O95436 | `disagreement_rich_positive` | **4/5** (surfy,uniprot,go,hpa) | Apical phosphate transporter; clinical Lifastuzumab vedotin ADC |
-| **STEAP1** | Q9UHE8 | `disagreement_rich_positive` | — | TCR-T + bispecific: GSK4427296 TCR-T + AMG509 bispecific. 6-pass TM with small ECLs — also tests minimal_ectoloops case |
-| **TFRC** | P02786 | `disagreement_rich_positive` | **3/5** (cspa,uniprot,go) | Transferrin receptor 1 (CD71); classical iron-uptake receptor; **multiple clinical antibody programs** (CX-2029 EpCAM-conditional ADC, TROP-2/TFRC dual-targeting), plus the standard transferrin-conjugate brain-shuttle approaches. Type II single-pass TM with large ECD. Missed by SURFY and HPA despite being a canonical surface receptor. |
-| **ADORA3** | P0DMS8 | `gpcr_extracellular_pocket` | **1/5** (uniprot) | clinical small molecule: Adenosine A3 receptor; multiple clinical programs |
-| **AVPR1A** | P37288 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Vasopressin V1A receptor; conivaptan family |
-| **BDKRB1** | P46663 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Bradykinin B1 receptor; multiple programs |
-| **GCGR** | P47871 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical peptide drug: Multiple glucagon receptor programs |
-| **GIPR** | P48546 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | approved peptide drug: Tirzepatide (GIP/GLP-1 dual agonist) approved |
-| **GPBAR1** | Q8TDU6 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Bile acid receptor TGR5; multiple programs |
-| **GRM4** | Q14833 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Metabotropic glutamate receptor 4; CNS programs |
-| **HRH2** | P25021 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | approved small molecule: H2 receptor (ranitidine/famotidine class) |
-| **HTR2C** | P28335 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | approved small molecule: Lorcaserin (was approved); 7TM serotonin receptor |
-| **MC1R** | Q01726 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | approved peptide: Afamelanotide (Scenesse) approved; melanocortin |
-| **NPY5R** | Q15761 | `gpcr_extracellular_pocket` | **2/5** (surfy,uniprot) | clinical small molecule: Neuropeptide Y receptor 5; obesity programs |
-| **B2M** | P61769 | `stable_complex_positive` | **3/5** (uniprot,go,hpa) | β2-microglobulin; structural light chain of MHC class I (and CD1 family). **No anchor of its own**, but is stably present on the surface of every nucleated cell as the non-covalent partner of TM-anchored MHC-I heavy chain — assembled in the ER and co-trafficked. Canonical example of accessibility via stable complex partnership. Clinical anti-B2M programs exist (historical mAb work, current B2M-directed CAR-T approaches in multiple myeloma). |
-| **CD19** | P15391 | `validated_positive` | **4/5** (surfy,cspa,uniprot,go) | Approved CAR-T + ADC; classical B-cell surface marker |
-| **ERBB2** | P04626 | `validated_positive` | **5/5** (surfy,cspa,uniprot,go,hpa) | Approved ADC; classical surface receptor with large ECD |
-| **FOLR1** | P15328 | `validated_positive` | **4/5** (surfy,cspa,uniprot,go) | Approved Mirvetuximab (ELAHERE); GPI-anchored on outer leaflet |
+| **CD19** | P15391 | `validated_positive` | `classical_surface_receptor` | Approved CAR-T + ADC; classical B-cell surface marker |
+| **FOLR1** | P15328 | `validated_positive` | `gpi_anchored` | Approved Mirvetuximab (ELAHERE); GPI-anchored on outer leaflet |
+| **MUC1** | P15941 | `disagreement_rich_positive` | `classical_surface_receptor` | Single-pass TM with large mucin ECD |
+| **CD74** | P04233 | `disagreement_rich_positive` | `classical_surface_receptor` | Invariant chain on B/dendritic cell surface; Milatuzumab ADC |
+| **SLC34A2** | O95436 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | Apical phosphate transporter; Lifastuzumab vedotin ADC |
+| **STEAP1** | Q9UHE8 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | 6-pass TM with small ECLs; TCR-T + bispecific |
+| **KLK2** | P20151 | `disagreement_rich_positive` | `extracellular_face_protein` | Secreted+membrane prostate antigen |
+| **CLDN6** | P56747 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | Tight-junction claudin |
+| **GPRC5D** | Q9NZD1 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | Approved bispecific + CAR-T (talquetamab) |
+| **GUCY2C** | P25092 | `disagreement_rich_positive` | `classical_surface_receptor` | Approved bispecific + ADC (M9140) |
+| **PSCA** | O43653 | `disagreement_rich_positive` | `gpi_anchored` | Clinical CAR-T + ADC |
+| **SEZ6** | Q53EL9 | `disagreement_rich_positive` | `classical_surface_receptor` | Clinical ADC (ABBV-011) |
+| **FZD7** | O75084 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | Vantictumab; 7TM Wnt receptor |
+| **LGR5** | O75473 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | Wnt-receptor ADC programs |
+| **EFNA4** | P52798 | `disagreement_rich_positive` | `gpi_anchored` | PF-06647263 ADC |
+| **EREG** | O14944 | `disagreement_rich_positive` | `classical_surface_receptor` | Anti-EREG mAb programs |
+| **ROS1** | P08922 | `disagreement_rich_positive` | `classical_surface_receptor` | Approved TKI + clinical ADC |
+| **DLL3** | Q9NYJ7 | `disagreement_rich_positive` | `classical_surface_receptor` | Approved bispecific (tarlatamab) |
+| **ROR1** | Q01973 | `disagreement_rich_positive` | `classical_surface_receptor` | Clinical CAR-T + ADC |
+| **ROR2** | Q01974 | `disagreement_rich_positive` | `classical_surface_receptor` | BA3021 conditionally-active ADC |
+| **CCR8** | P51685 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | Anti-CCR8 mAb (Treg depletion) |
+| **EPHB4** | P54760 | `disagreement_rich_positive` | `classical_surface_receptor` | Soluble EphB4 fusion programs |
+| **FLT3** | P36888 | `disagreement_rich_positive` | `classical_surface_receptor` | AMG553 CAR-T, FLT3×CD3 bispecifics |
+| **GFRA1** | P56159 | `disagreement_rich_positive` | `gpi_anchored` | GFRalpha-1 ADC programs |
+| **GPNMB** | Q14956 | `disagreement_rich_positive` | `classical_surface_receptor` | Glembatumumab vedotin |
+| **FZD10** | Q9ULW2 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | OTSA101-DTPA radioimmunoconjugate |
+| **TFRC** | P02786 | `disagreement_rich_positive` | `classical_surface_receptor` | Transferrin receptor 1 (CD71) |
+| **LRRC32** | Q14392 | `disagreement_rich_positive` | `classical_surface_receptor` | GARP on Tregs; livmoniplimab |
+| **OR1A1** | Q9P1Q5 | `disagreement_rich_positive` | `multipass_with_exposed_loops` | Olfactory receptor 1A1; 7TM GPCR |
+| **DSG3** | P32926 | `disagreement_rich_positive` | `classical_surface_receptor` | Desmoglein 3; pemphigus autoantigen |
+| **GYPA** | P02724 | `disagreement_rich_positive` | `classical_surface_receptor` | Glycophorin A; RBC marker |
+| **DSG4** | Q86SJ6 | `disagreement_rich_positive` | `classical_surface_receptor` | Desmoglein 4; hair-follicle restricted |
+| **LRRC33** | Q86YC3 | `disagreement_rich_positive` | `classical_surface_receptor` | NRROS / LRRC33; myeloid-cell analog of GARP |
+| **ADORA3** | P0DMS8 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Adenosine A3 receptor |
+| **GIPR** | P48546 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Tirzepatide approved |
+| **GCGR** | P47871 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Glucagon receptor |
+| **HTR2C** | P28335 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | 7TM serotonin receptor |
+| **MC1R** | Q01726 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Afamelanotide approved |
+| **GPBAR1** | Q8TDU6 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Bile-acid receptor TGR5 |
+| **BDKRB1** | P46663 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Bradykinin B1 receptor |
+| **HRH2** | P25021 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | H2 receptor (famotidine class) |
+| **NPY5R** | Q15761 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | NPY5R obesity programs |
+| **GRM4** | Q14833 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Metabotropic glutamate receptor 4 |
+| **AVPR1A** | P37288 | `gpcr_extracellular_pocket` | `multipass_with_exposed_loops` | Vasopressin V1A receptor |
+| **B2M** | P61769 | `stable_complex_positive` | `stable_complex_partner` | β2-microglobulin — co-trafficked with MHC-I |
+| **PRNP** | P04156 | `gpi_anchored_positive` | `gpi_anchored` | Cellular prion protein |
+| **MSLN** | Q13421 | `gpi_anchored_positive` | `gpi_anchored` | Mesothelin |
+| **CEACAM5** | P06731 | `gpi_anchored_positive` | `gpi_anchored` | CEA |
+| **CD24** | P25063 | `gpi_anchored_positive` | `gpi_anchored` | CD24 |
+| **BST2** | Q10589 | `gpi_anchored_positive` | `gpi_anchored` | Tetherin (dual TM + GPI architecture) |
+| **DPEP1** | P16444 | `gpi_anchored_positive` | `gpi_anchored` | Renal dipeptidase |
 
-## Maybe — contextual / borderline
+## Contextual — conditional / borderline (23)
 
-Conditional, induced, cycling, dual-localized, MHC-presented, or covalently-attached cases. Surface presence is real but state- or condition-dependent.
+Conditional, induced, cycling, dual-localized, or stably (wash-resistantly) attached cases. Surface presence is real but state- or condition-dependent. **pMHC presentation alone does not qualify** — see the "No" section.
 
-| Gene | UniProt | Class | DBs/5 | Localization / rationale |
+| Gene | UniProt | Class | Reason | Localization / rationale |
 |---|---|---|---|---|
-| **LRRC33** | Q86YC3 | `covalent_attachment_borderline` | **3/5** (surfy,uniprot,go) | NRROS / LRRC33 — TM partner that **disulfide-tethers latent TGF-β1 on myeloid cells** (microglia, monocytes), analogous to GARP on Tregs. The covalent-disulfide-tethered LRRC33:latent-TGF-β1 complex is a documented surface target in CNS / myeloid contexts. Same covalent_surface_attachment mechanism class as TGFB1 / GARP. |
-| **TGFB1** | P01137 | `covalent_attachment_borderline` | **3/5** (cspa,go,hpa) | TGF-β1 is secreted as a precursor cleaved into LAP + mature TGF-β1 (small latent complex). On Tregs / platelets the complex is **covalently disulfide-bonded to surface GARP (LRRC32)** via specific intermolecular cysteine pairs, co-trafficked from the ER as a single unit. Livmoniplimab (ABBV-151) is a clinical antibody specifically targeting the GARP:latent-TGF-β1 complex. Covalent surface attachment is the right mechanism category. |
-| **HSPD1** | P10809 | `dual_localization_borderline` | **1/5** (go) | HSP60 — canonically mitochondrial matrix chaperonin. **Reported on the cell surface** in tumor cells, stress contexts, and as a damage-associated molecular pattern (DAMP). Mechanism of surface translocation is debated (chaperone export, mitochondrial leakage, vesicular). Tests whether the model recognizes the minority-surface dual-localization pattern. |
-| **PRNP** | P04156 | `dual_localization_borderline` | **3/5** (surfy,cspa,go) | Cellular prion protein — GPI-anchored on the outer leaflet, abundant in neurons. Has documented intracellular pools (ER, endolysosomal) alongside the dominant surface form, and stress conditions modulate surface vs intracellular distribution. Anti-PRNP antibodies recognize the surface form clinically; conformational variant PrP^Sc is the disease antigen. |
-| **B4GALT1** | P15291 | `induced_borderline` | **2/5** (uniprot,go) | β-1,4-galactosyltransferase 1; primarily Golgi-resident, but **a cell-surface form on sperm mediates zona pellucida adhesion**; also reported on tumor cells. Conditional/cell-type-restricted surfacing. |
-| **BAX** | Q07812 | `induced_borderline` | **1/5** (hpa) | Pro-apoptotic Bcl-2 family; canonically translocates to mitochondrial outer membrane during apoptosis. **Surface BAX has been reported as an apoptotic-cell marker** (parallel to CALR's ICD-induced surface translocation). |
-| **CALR** | P27797 | `induced_borderline` | **3/5** (cspa,uniprot,go) | ER-resident at baseline; reaches outer leaflet during immunogenic cell death |
-| **HSPA1A** | P0DMV8 | `induced_borderline` | — | Cytoplasmic at baseline; tumor-stress-induced surface presentation |
-| **HSPA5** | P11021 | `induced_borderline` | **1/5** (uniprot) | ER chaperone at baseline; ER-stress/oncogenic-state translocation to outer leaflet |
-| **LAMP1** | P11279 | `induced_borderline` | **2/5** (surfy,cspa) | Classical lysosomal membrane glycoprotein; reaches plasma membrane via lysosomal exocytosis (CD107a degranulation marker on NK / cytotoxic T cells, surface staining on metastatic tumor cells). Conditional surfacing puts it in the maybe class. |
-| **LAMP2** | P13473 | `induced_borderline` | **3/5** (surfy,cspa,hpa) | Second canonical lysosomal membrane glycoprotein (CD107b). Reaches the PM via lysosomal exocytosis on activated cytotoxic lymphocytes / NK cells — same conditional-surfacing mechanism as LAMP1. Surface staining is a marker of degranulation. |
-| **STIM1** | Q13586 | `induced_borderline` | **4/5** (surfy,cspa,uniprot,go) | ER calcium sensor; canonically ER-resident, but **clusters at ER-PM junctions during store-operated calcium entry (SOCE)**; some PM staining reports. Borderline due to ER-PM junction localization. |
-| **TGOLN2** | O43493 | `induced_borderline` | **2/5** (surfy,uniprot) | TGN46 — **cycles continuously between TGN and PM** via the secretory recycling pathway; canonical marker for the TGN-PM trafficking cycle. Transient but routine surface presence. |
-| **TMED10** | P49755 | `induced_borderline` | **1/5** (go) | TMED10 cargo receptor; same ER↔Golgi↔PM cycling pattern as TMED9. Transient PM presence in the secretory pathway. |
-| **TMED9** | Q9BVK6 | `induced_borderline` | **1/5** (cspa) | TMED9 cargo receptor; **cycles ER↔Golgi↔PM** in the secretory pathway with transient PM presence. Cargo-cycling proteins reach the outer face routinely. |
-| **VDAC1** | P21796 | `induced_borderline` | **1/5** (cspa) | Mitochondrial outer-membrane porin; **plasma-membrane VDAC1 (pl-VDAC) is well-documented** in B cells, neurons, sperm, cancer cells, erythrocytes. Anti-VDAC1 antibodies in development. Borderline due to dual-localization. |
-| **PMEL** | P40967 | `mixed_mechanism_borderline` | **2/5** (surfy,cspa) | Primarily melanosomal (lysosome-related organelle); pMHC presentation is the dominant accessibility mechanism (Tebentafusp targets gp100 peptide-MHC, not PMEL on the surface). Borderline like other pMHC cases. |
-| **CTAG1B** | P78358 | `pmhc_borderline` | — | HLA-A*02-restricted cancer-testis antigen (NY-ESO-1); clinical TCR-T programs |
-| **KAAG1** | Q9UBP8 | `pmhc_borderline` | — | HLA-B7-restricted CTL peptide; protein not directly accessible but its peptide is pMHC-presented |
-| **PRAME** | P78395 | `pmhc_borderline` | **1/5** (hpa) | HLA-A*02-restricted; clinical T-cell engagers (brenetafusp/IMC-F106C) |
-| **C3** | P01024 | `secreted_borderline` | **2/5** (cspa,uniprot) | Complement C3 secreted plasma protein; cleavage fragment **C3b is covalently deposited on cell surfaces during opsonization**. Borderline because C3 itself is soluble but its activation product is surface-anchored. |
-| **LYN** | P07948 | `wrong_side_borderline` | **2/5** (go,hpa) | Src-family tyrosine kinase; canonically inner-leaflet myristoylated/palmitoylated. **Cell-surface LYN reported on B cells and in some cancer contexts**, parallel to ecto-SRC. Borderline pathological surfacing. |
-| **SRC** | P12931 | `wrong_side_borderline` | **2/5** (go,hpa) | Proto-oncogene tyrosine kinase; canonically myristoylated/palmitoylated to inner leaflet (cytoplasmic face). Ecto-SRC has been reported on cancer cell surfaces (melanoma, other tumors) — borderline conditional/pathological surfacing. M1 votes 3/6. |
+| **CALR** | P27797 | `induced_borderline` | `cell_state_induced` | ER-resident at baseline; outer leaflet during ICD |
+| **HSPA1A** | P0DMV8 | `induced_borderline` | `cell_state_induced` | Cytoplasmic; tumor-stress-induced surface |
+| **HSPA5** | P11021 | `induced_borderline` | `cell_state_induced` | ER chaperone (GRP78/BiP); ER-stress translocation |
+| **LAMP1** | P11279 | `induced_borderline` | `lysosomal_exocytosis` | CD107a; lysosomal → PM via exocytosis |
+| **LAMP2** | P13473 | `induced_borderline` | `lysosomal_exocytosis` | CD107b; same exocytosis mechanism as LAMP1 |
+| **TGOLN2** | O43493 | `induced_borderline` | `dual_localization` | TGN46; continuous TGN ↔ PM recycling |
+| **B4GALT1** | P15291 | `induced_borderline` | `tissue_restricted_surface` | Sperm-specific cell-surface form (ZP adhesion) |
+| **VDAC1** | P21796 | `induced_borderline` | `dual_localization` | pl-VDAC on B cells, sperm, cancer cells |
+| **BAX** | Q07812 | `induced_borderline` | `cell_state_induced` | Surface BAX as apoptotic-cell marker |
+| **STIM1** | Q13586 | `induced_borderline` | `dual_localization` | ER-PM junctions during SOCE |
+| **IZUMO1** | Q8IYV9 | `induced_borderline` | `cell_state_induced` | Acrosomal cap; PM-exposed after acrosome reaction |
+| **IZUMO4** | Q1ZYL8 | `induced_borderline` | `cell_state_induced` | Same acrosomal-cap → PM biology as IZUMO1 |
+| **SRC** | P12931 | `wrong_side_borderline` | `cell_state_induced` | Inner-leaflet Src family; ecto-SRC in cancer |
+| **LYN** | P07948 | `wrong_side_borderline` | `cell_state_induced` | Inner-leaflet Src-family; cell-surface LYN reported |
+| **HSPD1** | P10809 | `dual_localization_borderline` | `dual_localization` | HSP60; surface-reported DAMP / tumor marker |
+| **ATP5F1B** | P06576 | `dual_localization_borderline` | `dual_localization` | Mitochondrial matrix + ecto-F1-ATPase |
+| **LAMP3** | Q9UQV4 | `lysosomal_exocytosis_borderline` | `lysosomal_exocytosis` | DC-LAMP; PM via exocytosis on mature DCs |
+| **CD63** | P08962 | `lysosomal_exocytosis_borderline` | `lysosomal_exocytosis` | Tetraspanin TSPAN30; exosomal-surface marker |
+| **CD68** | P34810 | `lysosomal_exocytosis_borderline` | `lysosomal_exocytosis` | Macrosialin; macrophage exocytosis |
+| **SCARB2** | Q14108 | `lysosomal_exocytosis_borderline` | `lysosomal_exocytosis` | LIMP-2; lysosomal + EV71 entry receptor |
+| **TGFB1** | P01137 | `surface_attachment_borderline` | `stable_surface_attachment` | Latent TGF-β1 disulfide-tethered to GARP |
+| **C3** | P01024 | `surface_attachment_borderline` | `stable_surface_attachment` | C3b thioester-deposited on opsonized cells |
+| **CRISP1** | P54107 | `surface_attachment_borderline` | `stable_surface_attachment` | Epididymal CRISP1 stably attached to sperm PM |
 
-## No — not surface accessible
+## No — not surface accessible (50)
 
-Cytoplasmic, nuclear, mitochondrial-internal, endomembrane-resident, nuclear-envelope, inner-leaflet-anchored, or secreted-only (including transient recruitment + matrix deposition + EV cargo).
+Cytoplasmic, nuclear, mitochondrial-internal, endomembrane-resident, nuclear-envelope, inner-leaflet-anchored, secreted-only, or pMHC-only-intracellular.
 
-| Gene | UniProt | Class | DBs/5 | Localization / rationale |
+| Gene | UniProt | Class | Reason | Localization / rationale |
 |---|---|---|---|---|
-| **AKT2** | P31751 | `approved_drug_intracellular_negative` | **1/5** (go) | AKT2 serine/threonine kinase; cytoplasmic. Capivasertib clinical/approved. |
-| **BRAF** | P15056 | `approved_drug_intracellular_negative` | **1/5** (hpa) | B-Raf serine/threonine kinase; cytoplasmic. **Vemurafenib/dabrafenib approved**. Tests "approved drug ⇒ surface" trap. |
-| **BTK** | Q06187 | `approved_drug_intracellular_negative` | **1/5** (hpa) | Bruton's tyrosine kinase; cytoplasmic. **Ibrutinib approved**. |
-| **HDAC6** | Q9UBN7 | `approved_drug_intracellular_negative` | **1/5** (go) | Histone deacetylase 6; cytoplasmic/perinuclear with no membrane anchor. 'Extracellular HDAC6' reports are mostly vesicular cargo (in EVs, not cell-surface accessible) or recruitment-style binding. **No own membrane anchor** — recruitment ≠ surface accessibility. Multiple clinical small-molecule inhibitors target the intracellular catalytic pocket. |
-| **IKBKB** | O14920 | `approved_drug_intracellular_negative` | **1/5** (go) | IKK-β; cytoplasmic. Multiple clinical NF-κB-pathway programs. |
-| **JAK1** | P23458 | `approved_drug_intracellular_negative` | **1/5** (go) | JAK1 tyrosine kinase; cytoplasmic. Multiple approved JAK inhibitors. |
-| **JAK2** | O60674 | `approved_drug_intracellular_negative` | **1/5** (go) | JAK2 tyrosine kinase; cytoplasmic. **Ruxolitinib approved** (myelofibrosis). |
-| **JAK3** | P52333 | `approved_drug_intracellular_negative` | **2/5** (go,hpa) | JAK3 tyrosine kinase; cytoplasmic (associates with γc of cytokine receptors). Tofacitinib target. |
-| **LRRK2** | Q5S007 | `approved_drug_intracellular_negative` | **1/5** (go) | LRRK2 kinase; cytoplasmic/peripheral. **Parkinson's clinical programs**. |
-| **MAP2K1** | Q02750 | `approved_drug_intracellular_negative` | **1/5** (hpa) | MEK1 kinase; cytoplasmic. **Cobimetinib/trametinib approved**. |
-| **MAP2K2** | P36507 | `approved_drug_intracellular_negative` | **1/5** (go) | MEK2 kinase; cytoplasmic. |
-| **SYK** | P43405 | `approved_drug_intracellular_negative` | **2/5** (go,hpa) | Spleen tyrosine kinase; cytoplasmic. Fostamatinib target. |
-| **TYK2** | P29597 | `approved_drug_intracellular_negative` | **1/5** (go) | TYK2 tyrosine kinase; cytoplasmic. Deucravacitinib approved (psoriasis). |
-| **APPL1** | Q9UKG1 | `opencell_vesicle_negative` | **1/5** (hpa) | Imaged-confirmed signaling endosome; M1 false positive |
-| **A2M** | P01023 | `secreted_negative` | **1/5** (cspa) | α2-macroglobulin; secreted plasma protease inhibitor. |
-| **APOB** | P04114 | `secreted_negative` | **1/5** (cspa) | Apolipoprotein B-100; secreted on lipoprotein particles. |
-| **F2** | P00734 | `secreted_negative` | **2/5** (cspa,go) | Prothrombin secreted coagulation zymogen. Recruits to activated-platelet surfaces during prothrombinase-complex assembly via Gla-domain binding to phosphatidylserine, but **the protein has no membrane anchor of its own** — surface association is via binding, not membrane insertion. Recruitment ≠ surface accessibility. |
-| **FN1** | P02751 | `secreted_negative` | **1/5** (cspa) | Fibronectin secreted ECM glycoprotein. Forms cell-surface fibronectin matrix via integrin α5β1 binding (recruitment), and EDB-fibronectin antibodies target tumor-stromal fibronectin, but **the protein has no membrane anchor of its own** — it's a soluble protein that binds surface receptors. Recruitment ≠ surface accessibility. |
-| **IGF1** | P05019 | `secreted_negative` | **1/5** (go) | Insulin-like growth factor 1; secreted hormone. |
-| **IL6** | P05231 | `secreted_negative` | **1/5** (go) | Interleukin-6; secreted cytokine. |
-| **MUC5AC** | P98088 | `secreted_negative` | — | Fully secreted gel-forming mucin; no membrane tether |
-| **TF** | P02787 | `secreted_negative` | **2/5** (cspa,go) | Transferrin; secreted iron-transport plasma protein. |
-| **VEGFA** | P15692 | `secreted_negative` | **1/5** (go) | Vascular endothelial growth factor A; secreted angiogenic factor. |
-| **ABCB9** | Q9NP78 | `wrong_compartment_negative` | **1/5** (surfy) | Polytopic TM but lysosomal; TM topology does not imply PM accessibility |
-| **ATG9A** | Q7Z3C6 | `wrong_compartment_negative` | **2/5** (surfy,cspa) | Cycles between Golgi/endosomes/autophagosomal precursors; multi-pass TM but never PM in steady state |
-| **GALNT1** | Q10472 | `wrong_compartment_negative` | **1/5** (cspa) | N-acetylgalactosaminyltransferase 1; Golgi glycosyltransferase. |
-| **GORASP2** | Q9H8Y8 | `wrong_compartment_negative` | — | Peripheral on Golgi cytosolic face; tests inner-leaflet/cytosolic-Golgi confusion |
-| **ITPR1** | Q14643 | `wrong_compartment_negative` | **1/5** (cspa) | IP3 receptor type 1; ER membrane calcium channel. |
-| **ITPR3** | Q14573 | `wrong_compartment_negative` | **2/5** (cspa,uniprot) | IP3 receptor type 3; ER membrane calcium channel. |
-| **NUP210** | Q8TEM1 | `wrong_compartment_negative` | **2/5** (surfy,cspa) | Nuclear pore complex transmembrane component; nuclear envelope. |
-| **RPN1** | P04843 | `wrong_compartment_negative` | **2/5** (surfy,cspa) | Ribophorin 1; ER membrane subunit of OST glycosylation complex. |
-| **RPN2** | P04844 | `wrong_compartment_negative` | **1/5** (cspa) | Ribophorin 2; ER membrane subunit of OST. |
-| **SCAP** | Q12770 | `wrong_compartment_negative` | **2/5** (surfy,cspa) | SREBP cleavage-activating protein; ER cholesterol sensor. |
-| **SEC61G** | P60059 | `wrong_compartment_negative` | **1/5** (uniprot) | Sec61 translocon γ subunit; ER protein-translocation channel. |
-| **STING1** | Q86WV6 | `wrong_compartment_negative` | — | ER signaling adaptor (TMEM173); TM-rich but never on PM |
-| **SUN1** | O94901 | `wrong_compartment_negative` | **1/5** (cspa) | SUN domain protein 1; inner nuclear membrane (LINC complex). |
-| **SUN2** | Q9UH99 | `wrong_compartment_negative` | **1/5** (cspa) | SUN domain protein 2; inner nuclear membrane. |
-| **SYNE1** | Q8NF91 | `wrong_compartment_negative` | **1/5** (go) | Nesprin-1; outer nuclear membrane (LINC complex), cytoskeleton-coupled. |
-| **SYNE2** | Q8WXH0 | `wrong_compartment_negative` | **1/5** (go) | Nesprin-2; outer nuclear membrane. |
-| **GNAQ** | P50148 | `wrong_side_negative` | **2/5** (go,hpa) | Heterotrimeric G-alpha-q; lipidated cytoplasmic-side anchor. |
-| **GNB1** | P62873 | `wrong_side_negative` | **2/5** (go,hpa) | G-protein beta-1 subunit; peripheral on inner leaflet via Gγ prenylation. |
-| **HCK** | P08631 | `wrong_side_negative` | **2/5** (go,hpa) | Hematopoietic cell kinase (Src family); inner-leaflet lipid-anchored. |
-| **KRAS** | P01116 | `wrong_side_negative` | **1/5** (go) | Membrane-anchored on the cytoplasmic face; tests "membrane = surface" trap |
-| **NRAS** | P01111 | `wrong_side_negative` | **1/5** (hpa) | Ras GTPase; lipidated inner leaflet (same family as KRAS in benchmark). |
-| **RAC1** | P63000 | `wrong_side_negative` | **1/5** (go) | Rac1 GTPase; geranylgeranylated to inner leaflet. |
-| **RHOA** | P61586 | `wrong_side_negative` | **2/5** (go,hpa) | Rho GTPase; geranylgeranylated to inner leaflet. Cytoplasmic signaling. |
+| **PMEL** | P40967 | `pmhc_only_negative` | `pmhc_only_intracellular` | Melanosomal; Tebentafusp targets gp100·HLA, not PMEL on the cell surface |
+| **PRAME** | P78395 | `pmhc_only_negative` | `pmhc_only_intracellular` | Cancer-testis; brenetafusp / IMC-F106C target the pMHC |
+| **AKT2** | P31751 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic; capivasertib target |
+| **BRAF** | P15056 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic; vemurafenib/dabrafenib approved |
+| **BTK** | Q06187 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic; ibrutinib approved |
+| **HDAC6** | Q9UBN7 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic/perinuclear |
+| **IKBKB** | O14920 | `approved_drug_intracellular_negative` | `cytoplasmic` | IKK-β |
+| **JAK1** | P23458 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic JAK1 |
+| **JAK2** | O60674 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic; ruxolitinib approved |
+| **JAK3** | P52333 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic; tofacitinib target |
+| **LRRK2** | Q5S007 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic/peripheral |
+| **MAP2K1** | Q02750 | `approved_drug_intracellular_negative` | `cytoplasmic` | MEK1 |
+| **MAP2K2** | P36507 | `approved_drug_intracellular_negative` | `cytoplasmic` | MEK2 |
+| **SYK** | P43405 | `approved_drug_intracellular_negative` | `cytoplasmic` | Spleen TK |
+| **TYK2** | P29597 | `approved_drug_intracellular_negative` | `cytoplasmic` | Cytoplasmic; deucravacitinib approved |
+| **APPL1** | Q9UKG1 | `opencell_vesicle_negative` | `endomembrane_resident` | Signaling endosome; M1 false positive |
+| **A2M** | P01023 | `secreted_negative` | `secreted_only` | α2-macroglobulin |
+| **APOB** | P04114 | `secreted_negative` | `secreted_only` | Apolipoprotein B-100 |
+| **F2** | P00734 | `secreted_negative` | `secreted_only` | Prothrombin; Ca²⁺-dependent reversible Gla-PS recruitment |
+| **FN1** | P02751 | `secreted_negative` | `secreted_only` | Fibronectin ECM glycoprotein |
+| **IGF1** | P05019 | `secreted_negative` | `secreted_only` | IGF-1 hormone |
+| **IL6** | P05231 | `secreted_negative` | `secreted_only` | IL-6 cytokine |
+| **TF** | P02787 | `secreted_negative` | `secreted_only` | Transferrin |
+| **VEGFA** | P15692 | `secreted_negative` | `secreted_only` | VEGF-A |
+| **ZP3** | P21754 | `secreted_negative` | `secreted_only` | Zona pellucida 3; matrix-deposited |
+| **ABCB9** | Q9NP78 | `wrong_compartment_negative` | `endomembrane_resident` | Polytopic TM but lysosomal |
+| **ATG9A** | Q7Z3C6 | `wrong_compartment_negative` | `endomembrane_resident` | Cycles Golgi/endosomes/autophagosomes; never PM |
+| **GALNT1** | Q10472 | `wrong_compartment_negative` | `endomembrane_resident` | Golgi glycosyltransferase |
+| **ITPR1** | Q14643 | `wrong_compartment_negative` | `endomembrane_resident` | IP3R-1; ER Ca²⁺ channel |
+| **ITPR3** | Q14573 | `wrong_compartment_negative` | `endomembrane_resident` | IP3R-3; ER Ca²⁺ channel |
+| **NUP210** | Q8TEM1 | `wrong_compartment_negative` | `nuclear_envelope` | Nuclear pore TM |
+| **RPN1** | P04843 | `wrong_compartment_negative` | `endomembrane_resident` | Ribophorin 1; ER OST |
+| **RPN2** | P04844 | `wrong_compartment_negative` | `endomembrane_resident` | Ribophorin 2; ER OST |
+| **SCAP** | Q12770 | `wrong_compartment_negative` | `endomembrane_resident` | SREBP cleavage-activating; ER cholesterol sensor |
+| **SEC61G** | P60059 | `wrong_compartment_negative` | `endomembrane_resident` | Sec61 translocon γ; ER |
+| **SUN1** | O94901 | `wrong_compartment_negative` | `nuclear_envelope` | SUN1; inner nuclear membrane (LINC) |
+| **SUN2** | Q9UH99 | `wrong_compartment_negative` | `nuclear_envelope` | SUN2; inner nuclear membrane |
+| **SYNE1** | Q8NF91 | `wrong_compartment_negative` | `nuclear_envelope` | Nesprin-1; outer nuclear membrane |
+| **SYNE2** | Q8WXH0 | `wrong_compartment_negative` | `nuclear_envelope` | Nesprin-2; outer nuclear membrane |
+| **TMED9** | Q9BVK6 | `wrong_compartment_negative` | `endomembrane_resident` | p24 cargo receptor; ER-Golgi cycling |
+| **TMED10** | P49755 | `wrong_compartment_negative` | `endomembrane_resident` | p24 cargo receptor; ER-Golgi cycling |
+| **HMGB1** | P09429 | `nuclear_negative` | `nuclear` | Chromatin / nucleoplasmic; released as soluble DAMP |
+| **HNRNPK** | P61978 | `nuclear_negative` | `nuclear` | Nucleoplasmic RNA-binding protein |
+| **GNAQ** | P50148 | `wrong_side_negative` | `inner_leaflet_anchored` | Heterotrimeric Gα-q |
+| **GNB1** | P62873 | `wrong_side_negative` | `inner_leaflet_anchored` | Gβ-1 |
+| **HCK** | P08631 | `wrong_side_negative` | `inner_leaflet_anchored` | Src-family kinase |
+| **KRAS** | P01116 | `wrong_side_negative` | `inner_leaflet_anchored` | Inner-leaflet farnesylated |
+| **NRAS** | P01111 | `wrong_side_negative` | `inner_leaflet_anchored` | Inner-leaflet Ras |
+| **RAC1** | P63000 | `wrong_side_negative` | `inner_leaflet_anchored` | Inner-leaflet Rac |
+| **RHOA** | P61586 | `wrong_side_negative` | `inner_leaflet_anchored` | Inner-leaflet Rho |
 
 ## Class composition
 
 | Class | Verdict | Count |
 |---|---|---:|
-| `approved_drug_intracellular_negative` | `no` | 13 |
-| `covalent_attachment_borderline` | `maybe` | 2 |
-| `disagreement_rich_positive` | `yes` | 30 |
-| `dual_localization_borderline` | `maybe` | 2 |
+| `validated_positive` | `yes` | 2 |
+| `disagreement_rich_positive` | `yes` | 31 |
 | `gpcr_extracellular_pocket` | `yes` | 11 |
-| `induced_borderline` | `maybe` | 12 |
-| `mixed_mechanism_borderline` | `maybe` | 1 |
-| `opencell_vesicle_negative` | `no` | 1 |
-| `pmhc_borderline` | `maybe` | 3 |
-| `secreted_borderline` | `maybe` | 1 |
-| `secreted_negative` | `no` | 9 |
 | `stable_complex_positive` | `yes` | 1 |
-| `validated_positive` | `yes` | 3 |
+| `gpi_anchored_positive` | `yes` | 6 |
+| `induced_borderline` | `contextual` | 12 |
+| `wrong_side_borderline` | `contextual` | 2 |
+| `dual_localization_borderline` | `contextual` | 2 |
+| `lysosomal_exocytosis_borderline` | `contextual` | 4 |
+| `surface_attachment_borderline` | `contextual` | 3 |
+| `approved_drug_intracellular_negative` | `no` | 13 |
+| `opencell_vesicle_negative` | `no` | 1 |
+| `secreted_negative` | `no` | 9 |
 | `wrong_compartment_negative` | `no` | 16 |
-| `wrong_side_borderline` | `maybe` | 2 |
+| `nuclear_negative` | `no` | 2 |
 | `wrong_side_negative` | `no` | 7 |
+| `pmhc_only_negative` | `no` | 2 |
+
+**Totals:** 51 yes + 23 contextual + 50 no = **124**.
+
+## Recent revisions
+
+- **pMHC excluded from triage.** Schema dropped `pmhc_presented_peptide` from `_CONTEXTUAL_REASONS` and added `pmhc_only_intracellular` to `_NO_REASONS`. The retained pMHC entries (PMEL, PRAME) moved from `contextual` (`pmhc_borderline`) → `no` (`pmhc_only_negative`); KAAG1, CTAG1B, MAGEA4, WT1, AFP, SSX2 were removed from the benchmark. Rationale: every intracellular protein has potentially MHC-presentable peptides, so pMHC presentation alone is not a discriminating signal for surface accessibility of the *protein body* — TCR / TCR-mimic / bispecific programs are tracked downstream as a separate axis.
+- Added `ground_truth_reason` column populated against the schema's `TriageReason` enum. Every row roundtrips through `TriageRecordDraft` (`tests/test_triage_benchmark_schema.py`).
+- Reason renamed: `covalent_surface_attachment` → `stable_surface_attachment` to match the loosened scope (covalent *or* wash-resistant non-covalent post-translational anchoring). Schema version bumped `v0.7.0 → v0.8.0`.
+- Migrated `ground_truth_verdict` vocabulary `maybe → contextual` to match the schema literal. Also fixed a silent scoring bug: `scoring.py` / `database_baselines.py` / `triage_bench_db_barplot.py` previously compared against `"maybe"` only, treating the agent's `"contextual"` outputs as `no`.
+- Relabel batch: PRNP `contextual → yes` (`gpi_anchored`); LRRC33 `contextual → yes` (`classical_surface_receptor`); TMED9, TMED10 `contextual → no` (`endomembrane_resident`); ZP3 `yes → no` (`secreted_only` — matrix-deposited); IZUMO1, IZUMO4 `yes → contextual` (`cell_state_induced` — acrosome-reaction-dependent); ATP5F1B `no → contextual` (`dual_localization` — documented ecto-F1-ATPase); CRISP1 `yes → contextual` (`stable_surface_attachment` under loosened wash-resistant definition).
+- Removed: TGFB2, TGFB3 (β2/β3 GARP/LRRC33 surface tethering not well-established); KAAG1, CTAG1B, MAGEA4, WT1, AFP, SSX2 (pure pMHC cases redundant with PMEL+PRAME under the new policy).
+- Class renames: `covalent_attachment_borderline` → `surface_attachment_borderline`; `secreted_borderline` folded in; `pmhc_borderline` → `pmhc_only_negative` (under the new pMHC-excluded policy); `tissue_restricted_positive` deleted (members redistributed); `mitochondrial_internal_negative` deleted (sole member moved to `dual_localization_borderline`).
