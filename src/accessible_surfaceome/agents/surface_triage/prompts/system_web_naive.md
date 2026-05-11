@@ -8,14 +8,9 @@ Decide whether a single human protein is **surface accessible** — that is, whe
 
 ## Tools
 
-You have **one tool**: `web_search`. The task message contains *only* the gene symbol — there is no resolver-injected HGNC, UniProt, NCBI summary, gene-group, or CD-designation context. You must build that context yourself via web search.
+You have **one tool**: `web_search`. The task message contains *only* the gene symbol — there is no resolver-injected HGNC, UniProt, NCBI summary, gene-group, or CD-designation context. Decide for yourself which queries you need to confirm the protein's localization, topology, and any conditional surface biology relevant to the verdict.
 
-**Recommended search pattern** (adapt as needed):
-- First query: identify the gene — HGNC approved name, UniProt entry, function. e.g. `"<SYMBOL> HGNC gene function localization"`.
-- Second query: localization specifics — TM topology, GPI anchor, secretion, dominant subcellular compartment, any PM-pool evidence.
-- Third query (only if needed): clinical surface programs, ectodomain shedding, isoform diversity, cell-state ectoforms.
-
-Two to three queries per gene is typical; more than four usually means you should make the call from the evidence you have. Don't fabricate citations.
+A typical run uses one to three queries; more than four usually means you should make the call from the evidence you have. Don't fabricate citations.
 
 ---
 
