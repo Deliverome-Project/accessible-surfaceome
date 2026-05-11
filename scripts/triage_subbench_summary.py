@@ -154,6 +154,77 @@ def _accuracy_by_variant(df: pd.DataFrame) -> pd.DataFrame:
     return agg
 
 
+def _lazy_ensemble(
+    df: pd.DataFrame,
+    truth: dict[str, dict],
+    a: tuple[str, str], b: tuple[str, str], c: tuple[str, str],
+) -> tuple[float, float, int]:
+    """Lazy 3-cell ensemble: take 1 rep from A + 1 from B. If they agree,
+    accept. If they disagree, fetch 1 rep from C and majority-vote across
+    all three. When all three disagree (rare), the tiebreaker cell (C)
+    wins by design.
+
+    Returns ``(accuracy, expected_cost_per_gene, n_disagreements_in_17)``.
+    Expected cost = cost(A) + cost(B) + P(A,B disagree) * cost(C).
+    """
+    from collections import Counter
+    cost_per_rep = df.groupby(["model", "variant"]).cost_usd.mean().to_dict()
+    genes = sorted(truth.keys())
+
+    def _pred(cell, gene):
+        sub = df[(df.model == cell[0]) & (df.variant == cell[1]) &
+                 (df.gene_symbol == gene)].sort_values("replicate")
+        return sub.iloc[0].predicted_verdict if len(sub) else None
+
+    correct, n_dis = 0, 0
+    for g in genes:
+        pa, pb = _pred(a, g), _pred(b, g)
+        if pa is None or pb is None:
+            continue
+        if pa == pb:
+            chosen = pa
+        else:
+            n_dis += 1
+            pc = _pred(c, g)
+            if pc is None:
+                chosen = pa
+            else:
+                counts = Counter([pa, pb, pc])
+                top = counts.most_common(1)[0][1]
+                tied = [v for v, n_ in counts.items() if n_ == top]
+                chosen = tied[0] if len(tied) == 1 else pc
+        if chosen == truth[g]["ground_truth_verdict"]:
+            correct += 1
+    n = len(genes)
+    acc = correct / n
+    exp_cost = (
+        cost_per_rep[a] + cost_per_rep[b]
+        + (n_dis / n) * cost_per_rep[c]
+    )
+    return acc, exp_cost, n_dis
+
+
+def _best_lazy_at_tier(
+    df: pd.DataFrame, truth: dict, acc_threshold: float
+) -> dict | None:
+    """Sweep every (A, B, C) triple and return the cheapest configuration
+    meeting ``acc_threshold``. Returns a dict with the trio + metrics."""
+    from itertools import combinations
+    cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
+    best = None
+    for a, b in combinations(cells, 2):
+        for c in cells:
+            if c == a or c == b:
+                continue
+            acc, cost, n_dis = _lazy_ensemble(df, truth, a, b, c)
+            if acc + 1e-9 < acc_threshold:
+                continue
+            if best is None or cost < best["cost"]:
+                best = {"a": a, "b": b, "c": c, "acc": acc, "cost": cost,
+                        "n_dis": n_dis}
+    return best
+
+
 def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     agg = _accuracy_by_variant(df)
@@ -221,12 +292,72 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
                 linespacing=1.2,
             )
 
+    # --- Combined / lazy-ensemble group ----------------------------------
+    # Cheapest lazy 3-cell ensembles at two accuracy tiers: 100% (no false
+    # negatives) and 94% (matches single-Opus). The lazy strategy only
+    # invokes the tiebreaker cell on disagreements, so the expected cost
+    # per gene is c(A) + c(B) + P(disagree) * c(C).
+    truth_rows = _load_ground_truth()
+    combined_tiers = [
+        ("100%", _best_lazy_at_tier(df, truth_rows, 0.999)),
+        ("≥94%", _best_lazy_at_tier(df, truth_rows, 0.94)),
+    ]
+    combined_tiers = [(lbl, r) for lbl, r in combined_tiers if r]
+
+    if combined_tiers:
+        n_models = len(models)
+        # Reserve a "Combined" group at x = n_models. Use 2 bars wide,
+        # styled to stand out from the orange-shade variant palette.
+        n_combined = len(combined_tiers)
+        bar_w = 0.32
+        group_center = n_models
+        # Center the bars within the group.
+        offsets = [(i - (n_combined - 1) / 2) * (bar_w + 0.03)
+                   for i in range(n_combined)]
+        combined_color = COLORS["secondary"]  # teal — distinct from orange
+        combined_color_lighter = "#7eafa4"     # lighter teal for the ≥94% bar
+        bar_colors = [combined_color, combined_color_lighter][:n_combined]
+        for (label, rec), off, fc in zip(combined_tiers, offsets, bar_colors):
+            x_pos = group_center + off
+            ax.bar(x_pos, rec["acc"], width=bar_w, color=fc,
+                   edgecolor="none", zorder=2)
+            # Composition string, abbreviated for legibility.
+            def _short(cell):
+                m_, v_ = cell
+                return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
+            comp = f"{_short(rec['a'])}\n+ {_short(rec['b'])}\n→ {_short(rec['c'])}*"
+            ax.text(
+                x_pos, rec["acc"] + 0.018,
+                f"{label}\n${rec['cost'] * 17:.2f}\n{rec['n_dis']}/17 tied",
+                ha="center", va="bottom",
+                fontsize=8.5, color=COLORS["dark"], linespacing=1.2,
+                fontweight="bold",
+            )
+            # Composition annotation INSIDE the bar (small italic text).
+            ax.text(
+                x_pos, rec["acc"] / 2, comp,
+                ha="center", va="center",
+                fontsize=7.5, color="white", linespacing=1.2,
+                style="italic",
+            )
+
     ax.set_xlabel("")
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
-    ax.set_title("Triage sub-benchmark: variant × model accuracy (dots = per replicate)")
-    ax.set_xticks(range(len(models)))
-    ax.set_xticklabels([MODEL_LABEL[m] for m in models])
-    ax.set_ylim(0, 1.18)
+    ax.set_title(
+        "Triage sub-benchmark: variant × model accuracy  ·  "
+        "Combined = cheapest lazy 3-cell ensemble (A + B → C tiebreak)"
+    )
+    xtick_positions = list(range(len(models))) + (
+        [len(models)] if combined_tiers else []
+    )
+    xtick_labels = [MODEL_LABEL[m] for m in models] + (
+        ["Combined\n(lazy ensemble)"] if combined_tiers else []
+    )
+    ax.set_xticks(xtick_positions)
+    ax.set_xticklabels(xtick_labels)
+    if combined_tiers:
+        ax.set_xlim(-0.6, len(models) + 0.6)
+    ax.set_ylim(0, 1.22)
     # Build the legend from coloured Patch swatches so each variant's shade
     # is visible in the legend (the default barplot legend renders as
     # outline-only lines when we override the labels).
@@ -241,7 +372,15 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
             markeredgecolor=COLORS["dark"], markeredgewidth=1.1,
             markersize=8, label="One replicate",
         )
-    ]
+    ] + (
+        [
+            Patch(facecolor=COLORS["secondary"], edgecolor="none",
+                  label="Lazy ensemble ≥ 100%"),
+            Patch(facecolor="#7eafa4", edgecolor="none",
+                  label="Lazy ensemble ≥ 94%"),
+        ]
+        if combined_tiers else []
+    )
     ax.legend(
         handles=legend_handles,
         title="Prompt variant",
