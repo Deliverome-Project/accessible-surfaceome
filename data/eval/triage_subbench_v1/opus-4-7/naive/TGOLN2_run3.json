@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TGOLN2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TGOLN2 (TGN46/TGN38 human ortholog) is a type-I single-pass TM protein that primarily resides in the trans-Golgi network but constitutively cycles between the TGN and the plasma membrane via secretory vesicles and endocytic recycling. Its ectodomain is exposed on the outer leaflet during the brief PM-residence phase of this cycle, and surface biotinylation / anti-TGN46 antibody uptake assays in intact cells routinely detect it at the cell surface. The dominant steady-state compartment is the TGN, but a documented minority PM pool exists via active vesicular cycling, which fits dual_localization. Not yes because surface residency is transient/minor; not no because the PM pool is well-documented.",
+  "correct": true,
+  "prompt_tokens": 7440,
+  "completion_tokens": 301,
+  "n_web_searches": 0,
+  "cost_usd": 0.134175,
+  "latency_s": 5.547788124997169,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

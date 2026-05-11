@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA1A",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A (Hsp70-1) is canonically a cytosolic/nuclear inducible chaperone with no TM domain, GPI anchor, or signal peptide. However, it has well-documented stress- and cancer-induced surface translocation: tumor cells display membrane-bound Hsp70 on the outer leaflet (via PS/lipid binding, notably to Gb3/BMP-rich microdomains), and this 'mHsp70' tumor-ecto-pool is the basis of clinical programs (e.g., TKD-peptide-targeting NK-cell therapy, cmHsp70.1 antibody). This is a classic cell-state-induced ecto-chaperone. Not lysosomal exocytosis-dependent in the canonical sense; not a TM-partner-tethered protein; not germline-restricted. Best fit: cell_state_induced (oncogenic transformation + stress).",
+  "correct": true,
+  "prompt_tokens": 7440,
+  "completion_tokens": 353,
+  "n_web_searches": 0,
+  "cost_usd": 0.138075,
+  "latency_s": 6.716118874959648,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

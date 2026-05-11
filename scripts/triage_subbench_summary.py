@@ -97,7 +97,12 @@ FRESH_CELLS: frozenset[tuple[str, str]] = frozenset({
     ("claude-haiku-4-5", "ncbi"),
     ("claude-sonnet-4-6", "naive"),
     ("claude-sonnet-4-6", "ncbi"),
+    ("claude-opus-4-7", "naive"),
 })
+# When True, _build_dataframe filters records to FRESH_CELLS only — used
+# when the user wants the "latest prompt version only" view. Set via the
+# --fresh-only CLI flag.
+FILTER_TO_FRESH = True
 # Back-compat: kept for callers / older code paths that referenced this.
 PROMPT_FRESH_MODELS: frozenset[str] = frozenset()
 
@@ -145,6 +150,9 @@ def _build_dataframe() -> pd.DataFrame:
     rows = []
     for r in runs:
         gene = r["gene_symbol"]
+        cell = (r["model"], r["variant"])
+        if FILTER_TO_FRESH and cell not in FRESH_CELLS:
+            continue
         current_truth = (truth.get(gene) or {}).get("ground_truth_verdict") or r["truth_verdict"]
         rows.append({
             "variant": r["variant"],
@@ -154,6 +162,8 @@ def _build_dataframe() -> pd.DataFrame:
             "truth_verdict": current_truth,
             "predicted_verdict": r["predicted_verdict"] or "MISSING",
             "predicted_reason": r["predicted_reason"] or "",
+            "predicted_confidence": r.get("predicted_confidence"),
+            "predicted_key_uncertainty": r.get("predicted_key_uncertainty"),
             "correct": (r["predicted_verdict"] or "") == current_truth,
             "cost_usd": r["cost_usd"],
             "latency_s": r["latency_s"],
@@ -243,6 +253,83 @@ def _best_lazy_at_tier(
             if best is None or cost < best["cost"]:
                 best = {"a": a, "b": b, "c": c, "acc": acc, "cost": cost,
                         "n_dis": n_dis}
+    return best
+
+
+def _confidence_routed(
+    df: pd.DataFrame,
+    truth: dict[str, dict],
+    base: tuple[str, str],
+    fallback: tuple[str, str],
+    trust_levels: tuple[str, ...] = ("medium",),
+) -> tuple[float, float, int]:
+    """Confidence-routed cascade: always run ``base``; when its emitted
+    confidence is in ``trust_levels``, accept; otherwise escalate to
+    ``fallback``.
+
+    Motivated by the observation that `medium`-confidence calls in our
+    data are dramatically more accurate (~92%) than `high`-confidence
+    calls (~61%) — the model rationalizes its way to `high` when its
+    training has a one-sided view. Trusting `medium` and routing the
+    rest to a stronger fallback gives most of the fallback's accuracy
+    at a fraction of its cost.
+
+    Returns ``(accuracy, expected_cost_per_gene, n_routed_to_fallback)``.
+    Expected cost = cost(base) + P(non-trust | base) * cost(fallback).
+    """
+    cost_per_rep = df.groupby(["model", "variant"]).cost_usd.mean().to_dict()
+    genes = sorted(truth.keys())
+
+    def _row(cell, gene):
+        sub = df[
+            (df.model == cell[0])
+            & (df.variant == cell[1])
+            & (df.gene_symbol == gene)
+        ].sort_values("replicate")
+        return sub.iloc[0] if len(sub) else None
+
+    correct, n_escalated = 0, 0
+    for g in genes:
+        ra = _row(base, g)
+        if ra is None:
+            continue
+        conf = ra.get("predicted_confidence")
+        if conf in trust_levels:
+            chosen = ra.predicted_verdict
+        else:
+            rb = _row(fallback, g)
+            if rb is None:
+                chosen = ra.predicted_verdict
+            else:
+                chosen = rb.predicted_verdict
+                n_escalated += 1
+        if chosen == truth[g]["ground_truth_verdict"]:
+            correct += 1
+    n = len(genes)
+    acc = correct / n
+    exp_cost = cost_per_rep[base] + (n_escalated / n) * cost_per_rep[fallback]
+    return acc, exp_cost, n_escalated
+
+
+def _best_confidence_routed_at_tier(
+    df: pd.DataFrame, truth: dict, acc_threshold: float
+) -> dict | None:
+    """Sweep every (base, fallback) pair and return the cheapest
+    confidence-routed cascade meeting ``acc_threshold``."""
+    cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
+    best = None
+    for base in cells:
+        for fallback in cells:
+            if fallback == base:
+                continue
+            acc, cost, n_esc = _confidence_routed(df, truth, base, fallback)
+            if acc + 1e-9 < acc_threshold:
+                continue
+            if best is None or cost < best["cost"]:
+                best = {
+                    "base": base, "fallback": fallback,
+                    "acc": acc, "cost": cost, "n_escalated": n_esc,
+                }
     return best
 
 
@@ -608,6 +695,11 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         ("≥94%",  _best_lazy_at_tier(df, truth_rows, 0.94),  "#7eafa4"),
     ]
     combined_tiers = [(lbl, r, c) for lbl, r, c in combined_tiers if r]
+
+    def _short(cell):
+        m_, v_ = cell
+        return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
+
     for label, rec, fc in combined_tiers:
         gc = rec["cost"] * WHOLE_GENOME_N
         ax.scatter(
@@ -615,18 +707,41 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
             s=380, color=fc, marker="*",
             edgecolor=COLORS["dark"], linewidth=1.2, zorder=5,
         )
-
-        def _short(cell):
-            m_, v_ = cell
-            return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
         combo_label = (
-            f"Combined {label}\n"
+            f"Lazy-disagree {label}\n"
             f"{_short(rec['a'])} + {_short(rec['b'])} → {_short(rec['c'])}"
         )
         ax.annotate(
             combo_label, (gc, rec["acc"]),
             xytext=(10, -8), textcoords="offset points", fontsize=8.5,
             color=COLORS["dark"], fontweight="bold",
+        )
+
+    # Confidence-routed cascade points — purple diamonds to set apart
+    # from the lazy-disagree stars. Routes on per-call confidence: when
+    # the base cell emits non-`medium`, escalate to the fallback. Trusts
+    # the `medium`-is-most-accurate calibration finding.
+    confidence_tiers = [
+        ("≥100%", _best_confidence_routed_at_tier(df, truth_rows, 0.999), "#6c3e92"),
+        ("≥94%",  _best_confidence_routed_at_tier(df, truth_rows, 0.94),  "#a07cc1"),
+    ]
+    confidence_tiers = [(lbl, r, c) for lbl, r, c in confidence_tiers if r]
+    for label, rec, fc in confidence_tiers:
+        gc = rec["cost"] * WHOLE_GENOME_N
+        ax.scatter(
+            gc, rec["acc"],
+            s=300, color=fc, marker="D",
+            edgecolor=COLORS["dark"], linewidth=1.2, zorder=5,
+        )
+        combo_label = (
+            f"Conf-routed {label}\n"
+            f"{_short(rec['base'])} → {_short(rec['fallback'])}\n"
+            f"(escalated {rec['n_escalated']}/{len(truth_rows)})"
+        )
+        ax.annotate(
+            combo_label, (gc, rec["acc"]),
+            xytext=(10, 8), textcoords="offset points", fontsize=8,
+            color=fc, fontweight="bold",
         )
 
     # --- Pareto frontier ----------------------------------------------
@@ -639,8 +754,11 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         (row.genome_cost, row.accuracy, f"{row.model}/{row.variant}")
         for _, row in per_cell.iterrows()
     ] + [
-        (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Combined {label}")
+        (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Lazy-disagree {label}")
         for label, rec, _ in combined_tiers
+    ] + [
+        (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Conf-routed {label}")
+        for label, rec, _ in confidence_tiers
     ]
     frontier_points.sort(key=lambda p: p[0])
     pareto = []
@@ -717,12 +835,22 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         [
             Line2D([], [], marker="*", color="w", markerfacecolor=COLORS["secondary"],
                    markersize=15, markeredgecolor=COLORS["dark"],
-                   label="Combined lazy ≥100%"),
+                   label="Lazy-disagree ≥100%"),
             Line2D([], [], marker="*", color="w", markerfacecolor="#7eafa4",
                    markersize=15, markeredgecolor=COLORS["dark"],
-                   label="Combined lazy ≥94%"),
+                   label="Lazy-disagree ≥94%"),
         ]
         if combined_tiers else []
+    ) + (
+        [
+            Line2D([], [], marker="D", color="w", markerfacecolor="#6c3e92",
+                   markersize=11, markeredgecolor=COLORS["dark"],
+                   label="Conf-routed ≥100%"),
+            Line2D([], [], marker="D", color="w", markerfacecolor="#a07cc1",
+                   markersize=11, markeredgecolor=COLORS["dark"],
+                   label="Conf-routed ≥94%"),
+        ]
+        if confidence_tiers else []
     ) + (
         [Line2D([], [], color=COLORS["dark"], linewidth=1.6,
                 linestyle="--", alpha=0.6, label="Pareto frontier")]

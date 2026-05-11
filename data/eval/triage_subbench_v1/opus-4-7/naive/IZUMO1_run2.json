@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "IZUMO1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "tissue_restricted_surface",
+  "verdict_reasoning": "IZUMO1 is a single-pass type I transmembrane immunoglobulin-superfamily protein expressed exclusively on spermatozoa, essential for sperm-egg fusion via binding to JUNO on the oocyte. It has its own TM anchor and an extracellular Ig-like ectodomain, but surface display is restricted to the male germline lineage (post-acrosome-reaction sperm), making this tissue/lineage-restricted rather than a broadly accessible classical surface receptor. Maps to contextual/tissue_restricted_surface per the rule that germline-restricted display with its own anchor is contextual, not yes.",
+  "correct": true,
+  "prompt_tokens": 7440,
+  "completion_tokens": 267,
+  "n_web_searches": 0,
+  "cost_usd": 0.131625,
+  "latency_s": 4.742224624962546,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

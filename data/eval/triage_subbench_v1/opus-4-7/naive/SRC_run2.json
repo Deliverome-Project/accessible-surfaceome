@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "SRC",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase canonically anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation, so baseline localization is cytoplasmic-face only and not accessible from outside. However, ecto-SRC / surface-displayed active SRC has been documented on tumor cells and in certain activated states, consistent with the broader cancer ecto-kinase phenomenon where nominally inner-leaflet kinases appear on the outer leaflet of transformed cells. This qualifies as cell-state-induced contextual surface display. Not classical surface receptor (no TM/GPI), not lysosomal exocytosis, not stable TM-partner tethering, not narrow germline lineage, not dual constitutive PM topology \u2014 the surface pool is tumor/activation-state restricted.",
+  "correct": true,
+  "prompt_tokens": 7437,
+  "completion_tokens": 384,
+  "n_web_searches": 0,
+  "cost_usd": 0.140355,
+  "latency_s": 6.339057708973996,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Strength and reproducibility of ecto-SRC surface display on tumor cells is limited; baseline biology is overwhelmingly inner-leaflet cytoplasmic.",
+  "error": null,
+  "raw_text": ""
+}

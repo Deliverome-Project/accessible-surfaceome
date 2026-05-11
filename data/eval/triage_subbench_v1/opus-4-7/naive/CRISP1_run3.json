@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "CRISP1",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "CRISP1 (Cysteine-Rich Secretory Protein 1) is secreted by the male reproductive tract (epididymis) and binds to the sperm surface during epididymal maturation. It associates with the sperm plasma membrane in two populations: a loosely-bound pool that is released during capacitation, and a tightly-bound pool that remains wash-resistant on the sperm head and is implicated in sperm-egg fusion. This wash-resistant attachment to the sperm surface, acquired during transit through the specialized epididymal secretory environment, fits stable_surface_attachment. The display is also restricted to a narrow germline lineage (mature sperm). Not a TM protein itself; reaches the outer leaflet only via post-secretory tethering to sperm.",
+  "correct": true,
+  "prompt_tokens": 7439,
+  "completion_tokens": 370,
+  "n_web_searches": 0,
+  "cost_usd": 0.139335,
+  "latency_s": 6.637131042021792,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Split between stable_surface_attachment (wash-resistant sperm-surface pool) and tissue_restricted_surface (germline-only display); both apply, chose attachment mechanism.",
+  "error": null,
+  "raw_text": ""
+}

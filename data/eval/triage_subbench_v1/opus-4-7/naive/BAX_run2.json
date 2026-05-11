@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "BAX",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "BAX is canonically a cytosolic/loosely-membrane-associated pro-apoptotic Bcl-2 family protein that translocates to the mitochondrial outer membrane to permeabilize it during apoptosis. However, during apoptotic and immunogenic cell death, BAX (along with BAK) has been documented to be exposed on the outer leaflet of the plasma membrane of dying/apoptotic cells, and anti-BAX antibody approaches to detect apoptotic cells exploit this. Cell-death-induced surface exposure qualifies as contextual/cell_state_induced. Not classical_surface (no TM/GPI); not secreted; not tissue-restricted germline; not lysosomal TM; no wash-resistant TM-partner tether at baseline.",
+  "correct": true,
+  "prompt_tokens": 7437,
+  "completion_tokens": 366,
+  "n_web_searches": 0,
+  "cost_usd": 0.139005,
+  "latency_s": 5.850339750002604,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Strength/reproducibility of BAX outer-leaflet PM exposure during apoptosis versus mitochondrial-outer-membrane-only translocation is debated.",
+  "error": null,
+  "raw_text": ""
+}

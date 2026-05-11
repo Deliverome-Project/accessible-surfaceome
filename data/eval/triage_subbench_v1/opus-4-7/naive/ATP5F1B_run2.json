@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (ATP synthase F1 beta subunit) is canonically a mitochondrial inner-membrane-facing matrix protein, part of the F1 catalytic core of mitochondrial ATP synthase. However, ecto-F1-ATPase (including the beta subunit) has been documented on the plasma membrane outer leaflet of hepatocytes, endothelial cells, adipocytes, and a variety of tumor cells, where it serves as a receptor for apolipoprotein A-I, angiostatin, and coupling factor 6. This cancer/tissue-restricted ecto-display qualifies as cell_state_induced. Antibody and small-molecule programs targeting ecto-F1-ATPase beta have been explored in oncology and metabolic disease.",
+  "correct": true,
+  "prompt_tokens": 7441,
+  "completion_tokens": 365,
+  "n_web_searches": 0,
+  "cost_usd": 0.13899,
+  "latency_s": 6.103487499989569,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Mechanism of mitochondrial-to-PM trafficking of F1 components is not fully resolved; surface pool is minor relative to mitochondrial pool.",
+  "error": null,
+  "raw_text": ""
+}

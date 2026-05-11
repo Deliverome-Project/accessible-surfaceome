@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPD1",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPD1 (HSP60) is canonically a mitochondrial matrix chaperone, but it has well-documented non-baseline surface display: (a) tumor cells present HSP60 on the outer plasma membrane leaflet (cancer ecto-chaperone), recognized by antibodies and exploited in preclinical immunotherapy; (b) stressed and apoptotic/pre-apoptotic cells externalize HSP60 to the cell surface as a danger signal engaging innate immune receptors; (c) infected cells also show surface HSP60. This is the classic cell-state-induced ecto-chaperone pattern (parallel to HSP70/GRP78/calreticulin). Not lysosomal exocytosis, not a stable TM-partner tether, not germline-restricted, not baseline dual localization \u2014 fits cell_state_induced (stress/cancer/cell-death).",
+  "correct": true,
+  "prompt_tokens": 7439,
+  "completion_tokens": 404,
+  "n_web_searches": 0,
+  "cost_usd": 0.141885,
+  "latency_s": 7.686162750003859,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Robustness and tumor-selectivity of the ecto-HSP60 pool vs. mitochondrial dominance; whether surface display is sufficient for binder access in vivo.",
+  "error": null,
+  "raw_text": ""
+}

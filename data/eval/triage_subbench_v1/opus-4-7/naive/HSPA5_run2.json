@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA5",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (GRP78/BiP) is canonically an ER-luminal chaperone, but it is well-documented to translocate to the cell surface under stress and especially in tumor cells (cancer cell-surface GRP78). Cell-surface GRP78 is an active oncology target with multiple antibody, peptide, and ADC programs engaging it on the outer leaflet of tumor cells. This qualifies as cell_state_induced contextual surface display (ER-stress / oncogenic transformation ecto-pool). Not yes because baseline localization is ER-luminal with its KDEL retention; the surface pool is restricted to stressed/transformed cells.",
+  "correct": true,
+  "prompt_tokens": 7439,
+  "completion_tokens": 272,
+  "n_web_searches": 0,
+  "cost_usd": 0.131985,
+  "latency_s": 5.061187416955363,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

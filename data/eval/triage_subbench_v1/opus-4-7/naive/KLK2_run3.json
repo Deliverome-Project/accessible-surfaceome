@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "KLK2",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "KLK2 (kallikrein-2) is a secreted serine protease synthesized as a pre-pro-enzyme, cleaved in the secretory pathway, and released into prostatic fluid and serum. It has a signal peptide but no TM domain, no GPI anchor, no outer-leaflet lipidation. Walking contextual buckets: (1) cell_state_induced \u2014 no documented cancer/cell-death/activation ecto-pool of the protein body; (2) tissue_restricted_surface \u2014 prostate-restricted expression but as a secreted enzyme, not surface-anchored; (3) lysosomal_exocytosis \u2014 not a lysosomal TM protein; (4) dual_localization \u2014 no documented stable PM minority pool; (5) stable_surface_attachment \u2014 no wash-resistant covalent/non-covalent tethering to a TM partner documented. Clinical KLK2-targeting programs (e.g., JNJ-78278343 CD3 bispecific, PSMA-like radioligand efforts) target the secreted/locally-deposited pool, not a stable cell-surface form.",
+  "correct": false,
+  "prompt_tokens": 7438,
+  "completion_tokens": 472,
+  "n_web_searches": 0,
+  "cost_usd": 0.14697,
+  "latency_s": 7.25099654198857,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Some reports suggest KLK2 may associate with prostate cancer cell surfaces via protease-inhibitor or substrate interactions, but wash-resistant tethering is not clearly established.",
+  "error": null,
+  "raw_text": ""
+}

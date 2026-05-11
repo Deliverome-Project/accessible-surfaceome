@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HSPA5",
+  "replicate": 3,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (BiP/GRP78) is canonically an ER-luminal chaperone, but it has extensive documented cell-surface display on tumor cells and stressed cells (cell-surface GRP78, csGRP78). This ecto-GRP78 pool is a well-validated cancer target with multiple clinical-stage antibody, ADC, and peptide-drug-conjugate programs directed at the surface form. The mechanism involves ER-stress / UPR-induced relocalization to the outer leaflet of tumor and stressed cells, fitting cell_state_induced (oncogenic transformation + ER stress). Baseline ER residency dominates in normal cells, but the cancer-cell ecto-pool is the surface story.",
+  "correct": true,
+  "prompt_tokens": 7439,
+  "completion_tokens": 296,
+  "n_web_searches": 0,
+  "cost_usd": 0.133785,
+  "latency_s": 5.910136749967933,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}
