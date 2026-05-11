@@ -32,7 +32,12 @@ PROMPTS_DIR = (
 MODELS_PATH = REPO_ROOT / "src" / "accessible_surfaceome" / "tools" / "_shared" / "models.py"
 EXAMPLE_PATH = REPO_ROOT / "data" / "triage" / "B2M.json"
 BENCHMARK_PATH = REPO_ROOT / "data" / "eval" / "triage_benchmark_v1.tsv"
+SUBBENCH_PATH = REPO_ROOT / "data" / "eval" / "triage_subbench_v1.tsv"
+SUBBENCH_RUNS_DIR = REPO_ROOT / "data" / "eval" / "triage_subbench_v1"
 OUTPUT_HTML = REPO_ROOT / "docs" / "eval" / "triage_agent_reference.html"
+
+SUBBENCH_MODELS = ["haiku-4-5", "sonnet-4-6"]
+SUBBENCH_VARIANTS = ["naive", "ncbi", "web_naive", "web_ncbi"]
 
 # (slug, filename, display label, blurb)
 PROMPT_VARIANTS = [
@@ -180,6 +185,86 @@ def _load_benchmark() -> list[dict[str, str]]:
         return list(csv.DictReader(f, delimiter="\t"))
 
 
+def _load_subbench() -> list[dict[str, str]]:
+    if not SUBBENCH_PATH.exists():
+        return []
+    with SUBBENCH_PATH.open() as f:
+        return list(csv.DictReader(f, delimiter="\t"))
+
+
+def _score_subbench(subbench_rows: list[dict[str, str]]) -> dict:
+    """Walk data/eval/triage_subbench_v1/<model>/<variant>/<gene>_run*.json and
+    score each model x variant combination against ground_truth_verdict /
+    ground_truth_reason. Returns a nested dict suitable for rendering.
+
+    A run is correct on verdict if predicted_verdict == ground_truth_verdict;
+    correct on reason if (verdict-correct AND predicted_reason ==
+    ground_truth_reason). Missing runs are skipped silently.
+    """
+    truth_by_gene: dict[str, tuple[str, str]] = {
+        r["gene_symbol"]: (
+            r["ground_truth_verdict"],
+            r["ground_truth_reason"],
+        )
+        for r in subbench_rows
+    }
+
+    grid: dict[str, dict[str, dict[str, object]]] = {}
+    per_gene: dict[str, dict[str, dict[str, object]]] = {}
+    for model in SUBBENCH_MODELS:
+        grid[model] = {}
+        for variant in SUBBENCH_VARIANTS:
+            run_dir = SUBBENCH_RUNS_DIR / model / variant
+            if not run_dir.exists():
+                grid[model][variant] = {
+                    "n_runs": 0,
+                    "n_verdict_correct": 0,
+                    "n_reason_correct": 0,
+                }
+                continue
+            n_runs = 0
+            n_v = 0
+            n_r = 0
+            for path in sorted(run_dir.glob("*.json")):
+                try:
+                    data = json.loads(path.read_text())
+                except json.JSONDecodeError:
+                    continue
+                gene = (
+                    data.get("gene_symbol")
+                    or path.stem.split("_run")[0]
+                )
+                tv, tr = truth_by_gene.get(gene, (None, None))
+                if tv is None:
+                    continue
+                pv = data.get("predicted_verdict") or data.get("verdict")
+                pr = data.get("predicted_reason") or data.get("reason")
+                n_runs += 1
+                v_ok = pv == tv
+                r_ok = v_ok and pr == tr
+                n_v += int(v_ok)
+                n_r += int(r_ok)
+                bucket = per_gene.setdefault(gene, {}).setdefault(model, {}).setdefault(
+                    variant, {"runs": [], "n_v": 0, "n_r": 0}
+                )
+                bucket["runs"].append({
+                    "run_id": path.stem,
+                    "predicted_verdict": pv,
+                    "predicted_reason": pr,
+                    "verdict_correct": v_ok,
+                    "reason_correct": r_ok,
+                })
+                bucket["n_v"] = int(bucket["n_v"]) + int(v_ok)
+                bucket["n_r"] = int(bucket["n_r"]) + int(r_ok)
+            grid[model][variant] = {
+                "n_runs": n_runs,
+                "n_verdict_correct": n_v,
+                "n_reason_correct": n_r,
+            }
+
+    return {"grid": grid, "per_gene": per_gene}
+
+
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -304,6 +389,27 @@ details[open] summary { margin-bottom: 12px; }
 .reason-tag { display: inline-block; background: var(--bg-warm); color: var(--ink);
   padding: 2px 8px; border-radius: 6px; font-family: ui-monospace, Menlo, monospace;
   font-size: 11.5px; }
+
+/* Subbench score grid */
+.subbench-grid { width: 100%; border-collapse: collapse; background: white;
+  border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  font-size: 13px; margin-bottom: 28px; }
+.subbench-grid th, .subbench-grid td { padding: 9px 12px;
+  border-bottom: 1px solid var(--line); text-align: left; }
+.subbench-grid th { background: var(--bg-warm); color: var(--ink);
+  font-weight: 700; font-size: 11.5px; text-transform: uppercase;
+  letter-spacing: 0.05em; }
+.subbench-grid tr:last-child td { border-bottom: none; }
+.subbench-grid td.model { font-weight: 700; font-family: ui-monospace, Menlo, monospace; }
+.subbench-grid td.score { font-family: ui-monospace, Menlo, monospace;
+  text-align: center; }
+.subbench-grid td.score .pct { display: block; font-weight: 700; color: var(--ink); }
+.subbench-grid td.score .frac { font-size: 11.5px; color: var(--neutral); }
+.subbench-grid td.score.weak .pct { color: var(--primary); }
+.subbench-grid td.score.mid .pct { color: #C68A1B; }
+.subbench-grid td.score.strong .pct { color: var(--secondary); }
+.subbench-note { font-size: 12.5px; color: var(--neutral); margin: 4px 0 16px 0; }
+.subbench-history { color: var(--neutral); font-size: 12px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -326,6 +432,7 @@ details[open] summary { margin-bottom: 12px; }
   <a href="#jsonschema">JSON schema</a>
   <a href="#example">Example output</a>
   <a href="#benchmark">Benchmark</a>
+  <a href="#subbench">17-gene subbench</a>
 </nav>
 
 <main>
@@ -390,12 +497,48 @@ details[open] summary { margin-bottom: 12px; }
   </table>
 </section>
 
+<section id="subbench">
+  <h2>17-gene subbench <span class="pill">__SUBBENCH_N__ genes</span></h2>
+  <p class="lede">Persistent-error subset at <code>data/eval/triage_subbench_v1.tsv</code> — every entry has been a stable source of FN / FP across iterations. Used for rapid prompt-iteration cycles. Score grid below shows verdict accuracy (V) and verdict+reason accuracy (R) for each (model, prompt-variant) pair.</p>
+
+  <table class="subbench-grid">
+    <thead>
+      <tr>
+        <th>Model</th>
+        __SUBBENCH_VARIANT_HEADERS__
+      </tr>
+    </thead>
+    <tbody id="subbench-grid-tbody"></tbody>
+  </table>
+  <p class="subbench-note">V = correct verdict; R = correct verdict <em>and</em> correct reason. Each cell shows percent (top) and absolute fraction (bottom). Colour: red &lt; 50%, amber 50–75%, green ≥ 75%.</p>
+
+  <table class="benchmark-table" id="subbench-table">
+    <thead>
+      <tr>
+        <th data-key="gene_symbol">Gene</th>
+        <th data-key="uniprot_acc">UniProt</th>
+        <th data-key="class">Class</th>
+        <th data-key="ground_truth_verdict">Verdict</th>
+        <th data-key="ground_truth_signal">Signal</th>
+        <th data-key="ground_truth_reason">Reason</th>
+        <th data-key="rationale">Rationale</th>
+        <th data-key="error_history">Error history</th>
+      </tr>
+    </thead>
+    <tbody id="subbench-tbody"></tbody>
+  </table>
+</section>
+
 </main>
 
 <script>
 const promptVariants = __PROMPT_VARIANTS_JSON__;
 const taskSource = __TASK_JSON__;
 const benchmark = __BENCHMARK_JSON__;
+const subbench = __SUBBENCH_JSON__;
+const subbenchScores = __SUBBENCH_SCORES_JSON__;
+const subbenchModels = __SUBBENCH_MODELS_JSON__;
+const subbenchVariants = __SUBBENCH_VARIANTS_JSON__;
 
 // Tab UI for prompt variants.
 const tabs = document.getElementById("prompt-tabs");
@@ -492,6 +635,48 @@ search.addEventListener("input", renderTable);
 verdictFilter.addEventListener("change", renderTable);
 renderTable();
 
+// Subbench score grid (model rows × variant columns; each cell shows V/R).
+function scoreBucket(pct) {
+  if (pct >= 75) return "strong";
+  if (pct >= 50) return "mid";
+  return "weak";
+}
+const subbenchTbody = document.getElementById("subbench-grid-tbody");
+if (subbenchTbody) {
+  const rows = subbenchModels.map(model => {
+    const cells = subbenchVariants.map(variant => {
+      const cell = (subbenchScores[model] || {})[variant] || {n_runs: 0, n_verdict_correct: 0, n_reason_correct: 0};
+      const n = cell.n_runs;
+      if (!n) return `<td class="score">—</td>`;
+      const vPct = Math.round((cell.n_verdict_correct / n) * 100);
+      const rPct = Math.round((cell.n_reason_correct / n) * 100);
+      const vClass = scoreBucket(vPct);
+      const rClass = scoreBucket(rPct);
+      return `<td class="score ${vClass}"><span class="pct">V ${vPct}%</span><span class="frac">${cell.n_verdict_correct}/${n}</span></td>
+              <td class="score ${rClass}"><span class="pct">R ${rPct}%</span><span class="frac">${cell.n_reason_correct}/${n}</span></td>`;
+    }).join("");
+    return `<tr><td class="model">${model}</td>${cells}</tr>`;
+  });
+  subbenchTbody.innerHTML = rows.join("");
+}
+
+// Subbench detail table (reuses the .benchmark-table style).
+const subbenchDetailTbody = document.getElementById("subbench-tbody");
+if (subbenchDetailTbody) {
+  subbenchDetailTbody.innerHTML = subbench.map(r => `
+    <tr>
+      <td class="gene">${r.gene_symbol}</td>
+      <td class="acc">${r.uniprot_acc}</td>
+      <td>${(r.class || "").replaceAll("_", " ")}</td>
+      <td><span class="verdict-pill ${r.ground_truth_verdict}">${r.ground_truth_verdict}</span></td>
+      <td>${(r.ground_truth_signal || "").replaceAll("_", " ")}</td>
+      <td><span class="reason-tag">${r.ground_truth_reason || ""}</span></td>
+      <td class="rationale">${r.rationale || ""}</td>
+      <td class="subbench-history">${r.error_history || ""}</td>
+    </tr>
+  `).join("");
+}
+
 hljs.highlightAll();
 </script>
 </body>
@@ -502,6 +687,8 @@ hljs.highlightAll();
 def main() -> None:
     variants = _load_prompt_variants()
     benchmark = _load_benchmark()
+    subbench = _load_subbench()
+    subbench_scored = _score_subbench(subbench)
     models_text = MODELS_PATH.read_text()
     pydantic_src = _extract_pydantic_source(models_text, _PYDANTIC_NAMES)
     json_schema = json.dumps(
@@ -513,16 +700,27 @@ def main() -> None:
     )
     schema_version = schema_version_match.group(1) if schema_version_match else "?"
 
+    # Build the <th> header row for the subbench grid: one (V, R) pair per variant.
+    subbench_variant_headers = "".join(
+        f'<th colspan="2">{v.replace("_", " ")}</th>' for v in SUBBENCH_VARIANTS
+    )
+
     rendered = (
         HTML_TEMPLATE.replace("__SCHEMA_VERSION__", schema_version)
         .replace("__N_VARIANTS__", str(len(variants)))
         .replace("__BENCH_N__", str(len(benchmark)))
+        .replace("__SUBBENCH_N__", str(len(subbench)))
+        .replace("__SUBBENCH_VARIANT_HEADERS__", subbench_variant_headers)
         .replace("__PROMPT_VARIANTS_JSON__", json.dumps(variants))
         .replace("__TASK_JSON__", json.dumps(SAMPLE_TASK))
         .replace("__PYDANTIC_JSON__", json.dumps(pydantic_src))
         .replace("__JSONSCHEMA_JSON__", json.dumps(json_schema))
         .replace("__EXAMPLE_JSON__", json.dumps(example_record))
         .replace("__BENCHMARK_JSON__", json.dumps(benchmark))
+        .replace("__SUBBENCH_JSON__", json.dumps(subbench))
+        .replace("__SUBBENCH_SCORES_JSON__", json.dumps(subbench_scored["grid"]))
+        .replace("__SUBBENCH_MODELS_JSON__", json.dumps(SUBBENCH_MODELS))
+        .replace("__SUBBENCH_VARIANTS_JSON__", json.dumps(SUBBENCH_VARIANTS))
     )
 
     OUTPUT_HTML.parent.mkdir(parents=True, exist_ok=True)
@@ -530,7 +728,7 @@ def main() -> None:
     print(
         f"wrote {OUTPUT_HTML.relative_to(REPO_ROOT)} "
         f"({len(rendered):,} chars, {len(variants)} prompt variants, "
-        f"{len(benchmark)} benchmark rows)"
+        f"{len(benchmark)} benchmark rows, {len(subbench)} subbench rows)"
     )
 
 

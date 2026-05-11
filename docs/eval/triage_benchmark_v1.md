@@ -1,10 +1,10 @@
 # Triage benchmark v1 — controls
 
-Total: **124 proteins** (51 `yes`, 23 `contextual`, 50 `no`).
+Total: **147 proteins** (71 `yes`, 27 `contextual`, 49 `no`).
 
 The benchmark uses the schema vocabulary directly — `ground_truth_verdict` is one of `yes` / `contextual` / `no` matching `TriageVerdict` in `src/accessible_surfaceome/tools/_shared/models.py`, and `ground_truth_reason` is one of the literals in `TriageReason`. Every row roundtrips through `TriageRecordDraft` — see `tests/test_triage_benchmark_schema.py`.
 
-## Yes — surface accessible (51)
+## Yes — surface accessible (71)
 
 Stably surface by the protein's own mechanism: TM domain, GPI, outer-leaflet lipidation, direct outer-leaflet lipid binding, pore assembly, or stable complex-partner co-trafficking.
 
@@ -62,7 +62,7 @@ Stably surface by the protein's own mechanism: TM domain, GPI, outer-leaflet lip
 | **BST2** | Q10589 | `gpi_anchored_positive` | `gpi_anchored` | Tetherin (dual TM + GPI architecture) |
 | **DPEP1** | P16444 | `gpi_anchored_positive` | `gpi_anchored` | Renal dipeptidase |
 
-## Contextual — conditional / borderline (23)
+## Contextual — conditional / borderline (27)
 
 Conditional, induced, cycling, dual-localized, or stably (wash-resistantly) attached cases. Surface presence is real but state- or condition-dependent. **pMHC presentation alone does not qualify** — see the "No" section.
 
@@ -92,7 +92,7 @@ Conditional, induced, cycling, dual-localized, or stably (wash-resistantly) atta
 | **C3** | P01024 | `surface_attachment_borderline` | `stable_surface_attachment` | C3b thioester-deposited on opsonized cells |
 | **CRISP1** | P54107 | `surface_attachment_borderline` | `stable_surface_attachment` | Epididymal CRISP1 stably attached to sperm PM |
 
-## No — not surface accessible (50)
+## No — not surface accessible (49)
 
 Cytoplasmic, nuclear, mitochondrial-internal, endomembrane-resident, nuclear-envelope, inner-leaflet-anchored, secreted-only, or pMHC-only-intracellular.
 
@@ -153,28 +153,32 @@ Cytoplasmic, nuclear, mitochondrial-internal, endomembrane-resident, nuclear-env
 
 | Class | Verdict | Count |
 |---|---|---:|
-| `validated_positive` | `yes` | 2 |
-| `disagreement_rich_positive` | `yes` | 31 |
-| `gpcr_extracellular_pocket` | `yes` | 11 |
+| `validated_positive` | `yes` | 5 |
+| `disagreement_rich_positive` | `yes` | 43 |
+| `gpcr_extracellular_pocket` | `yes` | 12 |
 | `stable_complex_positive` | `yes` | 1 |
-| `gpi_anchored_positive` | `yes` | 6 |
+| `gpi_anchored_positive` | `yes` | 12 |
 | `induced_borderline` | `contextual` | 12 |
 | `wrong_side_borderline` | `contextual` | 2 |
-| `dual_localization_borderline` | `contextual` | 2 |
+| `dual_localization_borderline` | `contextual` | 4 |
 | `lysosomal_exocytosis_borderline` | `contextual` | 4 |
 | `surface_attachment_borderline` | `contextual` | 3 |
 | `approved_drug_intracellular_negative` | `no` | 13 |
 | `opencell_vesicle_negative` | `no` | 1 |
 | `secreted_negative` | `no` | 9 |
-| `wrong_compartment_negative` | `no` | 16 |
+| `wrong_compartment_negative` | `no` | 15 |
 | `nuclear_negative` | `no` | 2 |
 | `wrong_side_negative` | `no` | 7 |
 | `pmhc_only_negative` | `no` | 2 |
 
-**Totals:** 51 yes + 23 contextual + 50 no = **124**.
+**Totals:** 71 yes + 27 contextual + 49 no = **147**.
 
 ## Recent revisions
 
+- **Added LY6K + LYPD3** (both 2/5 — SFY, CSPA only) — LY6/PLAUR-family GPI-anchored cancer-testis / tumor antigens. Same architectural pattern as LYPD1 / CD24; tests recognition of GPI architecture from family-membership when UP / GO / HPA all miss it.
+- **Added 3 more low-DB-cover candidates** (AMHR2 2/5, TM4SF1 2/5, ALPPL2 0/5 M1-escape) — all bona-fide surface (TGFβ-receptor-family TM, tetraspanin, GPI-anchored phosphatase respectively); high-leverage agent-rescue test cases. ALPPL2 sits with STEAP2 as the second M1-escape entry.
+- **Added 18 candidate-surface entries** for tumor-antigen / surfaceome coverage: EPCAM, MCSP (CSPG4), TACSTD2, CD276, CEACAM6, MUC16, PTK7, CLDN18 (CLDN18.2), FOLH1 (PSMA), GPC3, NECTIN4, CA9, DLK1, GPC2, LYPD1, SSTR2, STEAP2 (all `yes` across the 5/5 → 0/5 DB-coverage range), plus TYRP1 as `contextual / dual_localization` (melanosomal-dominant with documented melanoma-surface fraction — same biology family as PMEL but cleaner surface evidence). Three approved-drug anchors added to `validated_positive`: TACSTD2 (Trodelvy / Dato-DXd), FOLH1 (Pluvicto), NECTIN4 (Padcev). STEAP2 is a deliberate 0/5 M1-escape test case (not in pipeline; tests family-extrapolation from STEAP1).
+- EREG relabeled `yes → contextual` / `classical_surface_receptor → dual_localization`: dominant detected biologically active form is the soluble shed ligand; TM precursor transits PM transiently before ADAM/MMP shedding.
 - **pMHC excluded from triage.** Schema dropped `pmhc_presented_peptide` from `_CONTEXTUAL_REASONS` and added `pmhc_only_intracellular` to `_NO_REASONS`. The retained pMHC entries (PMEL, PRAME) moved from `contextual` (`pmhc_borderline`) → `no` (`pmhc_only_negative`); KAAG1, CTAG1B, MAGEA4, WT1, AFP, SSX2 were removed from the benchmark. Rationale: every intracellular protein has potentially MHC-presentable peptides, so pMHC presentation alone is not a discriminating signal for surface accessibility of the *protein body* — TCR / TCR-mimic / bispecific programs are tracked downstream as a separate axis.
 - Added `ground_truth_reason` column populated against the schema's `TriageReason` enum. Every row roundtrips through `TriageRecordDraft` (`tests/test_triage_benchmark_schema.py`).
 - Reason renamed: `covalent_surface_attachment` → `stable_surface_attachment` to match the loosened scope (covalent *or* wash-resistant non-covalent post-translational anchoring). Schema version bumped `v0.7.0 → v0.8.0`.
