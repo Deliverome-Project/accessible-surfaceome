@@ -18,9 +18,9 @@ A typical run uses one to three queries; more than four usually means you should
 
 Emit one of three verdicts:
 
-- **`yes`** — the protein body is **stably present on the outer face of the plasma membrane** under its baseline localization, via its own mechanism (TM domain, GPI anchor, other outer-leaflet lipidation, direct outer-leaflet lipid binding, pore assembly, or being a stable non-covalent partner of an anchored protein co-trafficked to the surface as a complex).
-- **`contextual`** — the protein reaches the outer face of the PM **only under specific, documented conditions** (cell state, tissue or cell type, trafficking cycling, dual localization, stable post-translational surface attachment). The protein body must reach the outer face via its **own mechanism** during the surface state — *transient* recruitment to other surface receptors does NOT count.
-- **`no`** — the protein body is not accessible from outside the cell. Includes cytoplasmic, nuclear, mitochondrial-internal, ER/Golgi/lysosomal/peroxisomal/autophagosomal-membrane-resident, inner-leaflet-anchored, secreted-only proteins (including those with only transient non-covalent recruitment to other surface receptors), and proteins whose only "surface" story is pMHC presentation.
+- **`yes`** — the protein body is stably present on the outer face of the PM under its baseline localization, via its own mechanism (TM domain, GPI anchor, other outer-leaflet lipidation, direct outer-leaflet lipid binding, pore assembly, or stable non-covalent partner of an anchored protein co-trafficked as a complex). See the `reason` enum below for the specific mechanism categories.
+- **`contextual`** — the protein body reaches the outer face only under specific, documented conditions (cell state, tissue / cell type, trafficking cycling, dual localization, stable post-translational TM-partner anchoring). *Transient* recruitment to other surface receptors does NOT count.
+- **`no`** — the protein body is not accessible from outside the cell: cytoplasmic, nuclear, mitochondrial-internal, endomembrane-resident, nuclear-envelope, inner-leaflet-anchored, secreted-only, or pMHC-only-intracellular.
 
 ## Cardinal rule: the recruitment test
 
@@ -30,6 +30,8 @@ Emit one of three verdicts:
 - "Something else holds it there" → `no` / `secreted_only`. Reversible non-covalent recruitment stays in equilibrium with the soluble pool; same exclusion applies to vesicle cargo and covalent deposition into ECM or stroma.
 
 If you wash the cells, does the protein stay on the surface via a stable physical link to the membrane or a TM partner? If yes, `contextual` at minimum. If it leaves with the wash, `no`.
+
+The recruitment test is the single most common borderline-call discriminator — apply it before defaulting to `secreted_only`.
 
 ## `reason` — pick the single enum value that best fits
 
@@ -52,7 +54,7 @@ If you wash the cells, does the protein stay on the surface via a stable physica
 
 1. **Is the protein the target of a *cell-surface-directed* therapeutic?** ADC / CAR-T / bispecific / surface-binding antibody programs are strong evidence for at least `contextual`. Don't conflate with anti-soluble-ligand antibodies or pMHC-targeting programs.
 
-2. **Does the gene encode a membrane-anchored isoform alongside a soluble one, or is the "soluble" form actually a shed ectodomain?** If any isoform retains a membrane anchor — or the soluble form is plausibly a shed ectodomain — the gene is at least `contextual`.
+2. **Does the gene encode a membrane-anchored isoform alongside a soluble one, or is the "soluble" form actually a shed ectodomain?** If any isoform retains a membrane anchor — or the soluble form is plausibly a shed ectodomain — the gene is at least `contextual`. **A bona-fide single-pass TM precursor that transits the PM before regulated proteolytic shedding is `yes` / `classical_surface_receptor`** — the precursor IS the surface form, even when it's predominantly detected as a soluble ectodomain.
 
 3. **Could the protein body remain anchored to a TM partner via a covalent or wash-resistant post-translational link?** Apply the wash test. Don't reflexively classify all "secreted" proteins as `secreted_only`.
 

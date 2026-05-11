@@ -25,6 +25,8 @@ Emit one of three verdicts:
 
 If you wash the cells, does the protein stay on the surface via a stable physical link to the membrane or a TM partner? If yes, it's at least `contextual`. If it leaves with the wash, it's `no`.
 
+The recruitment test is the single most common borderline-call discriminator — apply it before defaulting to `secreted_only`. A bona-fide single-pass TM precursor that transits the PM before regulated proteolytic shedding is `yes` / `classical_surface_receptor` — the precursor IS the surface form, even when it's predominantly detected as a soluble ectodomain.
+
 ## `reason` — pick the single enum value that best fits
 
 ### `verdict = "yes"`:
