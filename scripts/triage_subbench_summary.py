@@ -256,103 +256,66 @@ def _best_lazy_at_tier(
     return best
 
 
-def _confidence_routed(
-    df: pd.DataFrame,
-    truth: dict[str, dict],
-    base: tuple[str, str],
-    fallback: tuple[str, str],
-    trust_levels: tuple[str, ...] = ("medium",),
-) -> tuple[float, float, int]:
-    """Confidence-routed cascade: always run ``base``; when its emitted
-    confidence is in ``trust_levels``, accept; otherwise escalate to
-    ``fallback``.
+# --- Escalation predicates -------------------------------------------------
+# A predicate inspects a per-call row (the A-cell's prediction for a gene)
+# and decides whether to escalate to a more expensive fallback cell.
+#
+# Design constraint (per user direction): keep the predicates derivable from
+# first principles, not fitted to this benchmark's specific calibration
+# curve. We use two "logical" confidence rules and one response rule:
+#
+#   conf_high          — escalate when the model emits `high` confidence,
+#                        on the theory that confident calls are the
+#                        unreliable ones in our (anti-calibrated) data.
+#   conf_high_or_med   — same idea, escalating more aggressively: trust
+#                        only `low` (the model admitting uncertainty).
+#   resp_no            — escalate when the verdict is `no`, since false
+#                        negatives are the costly failure mode (a
+#                        rejected drug target is rarely revisited).
+#
+# Unions of the above (conf_*|resp_no) cover the "escalate if EITHER
+# trigger fires" case. We do NOT include the empirically-best
+# "trust-medium-only" rule since it is U-shape-overfit.
+ESCALATE_PREDICATES: dict[str, "callable"] = {
+    "conf_high":          lambda r: r.get("predicted_confidence") == "high",
+    "conf_high_or_med":   lambda r: r.get("predicted_confidence") in {"high", "medium"},
+    "resp_no":            lambda r: r.get("predicted_verdict") == "no",
+    "conf_high|resp_no":  lambda r: (
+        r.get("predicted_confidence") == "high"
+        or r.get("predicted_verdict") == "no"
+    ),
+    "conf_hm|resp_no":    lambda r: (
+        r.get("predicted_confidence") in {"high", "medium"}
+        or r.get("predicted_verdict") == "no"
+    ),
+}
 
-    Motivated by the observation that `medium`-confidence calls in our
-    data are dramatically more accurate (~92%) than `high`-confidence
-    calls (~61%) — the model rationalizes its way to `high` when its
-    training has a one-sided view. Trusting `medium` and routing the
-    rest to a stronger fallback gives most of the fallback's accuracy
-    at a fraction of its cost.
-
-    Returns ``(accuracy, expected_cost_per_gene, n_routed_to_fallback)``.
-    Expected cost = cost(base) + P(non-trust | base) * cost(fallback).
-    """
-    cost_per_rep = df.groupby(["model", "variant"]).cost_usd.mean().to_dict()
-    genes = sorted(truth.keys())
-
-    def _row(cell, gene):
-        sub = df[
-            (df.model == cell[0])
-            & (df.variant == cell[1])
-            & (df.gene_symbol == gene)
-        ].sort_values("replicate")
-        return sub.iloc[0] if len(sub) else None
-
-    correct, n_escalated = 0, 0
-    for g in genes:
-        ra = _row(base, g)
-        if ra is None:
-            continue
-        conf = ra.get("predicted_confidence")
-        if conf in trust_levels:
-            chosen = ra.predicted_verdict
-        else:
-            rb = _row(fallback, g)
-            if rb is None:
-                chosen = ra.predicted_verdict
-            else:
-                chosen = rb.predicted_verdict
-                n_escalated += 1
-        if chosen == truth[g]["ground_truth_verdict"]:
-            correct += 1
-    n = len(genes)
-    acc = correct / n
-    exp_cost = cost_per_rep[base] + (n_escalated / n) * cost_per_rep[fallback]
-    return acc, exp_cost, n_escalated
+ESCALATE_LABEL: dict[str, str] = {
+    "conf_high":          "conf=high",
+    "conf_high_or_med":   "conf≥med",
+    "resp_no":            "verdict=no",
+    "conf_high|resp_no":  "conf=high | no",
+    "conf_hm|resp_no":    "conf≥med | no",
+}
 
 
-def _best_confidence_routed_at_tier(
-    df: pd.DataFrame, truth: dict, acc_threshold: float
-) -> dict | None:
-    """Sweep every (base, fallback) pair and return the cheapest
-    confidence-routed cascade meeting ``acc_threshold``."""
-    cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
-    best = None
-    for base in cells:
-        for fallback in cells:
-            if fallback == base:
-                continue
-            acc, cost, n_esc = _confidence_routed(df, truth, base, fallback)
-            if acc + 1e-9 < acc_threshold:
-                continue
-            if best is None or cost < best["cost"]:
-                best = {
-                    "base": base, "fallback": fallback,
-                    "acc": acc, "cost": cost, "n_escalated": n_esc,
-                }
-    return best
-
-
-def _hybrid_conf_lazy(
+def _cascade(
     df: pd.DataFrame,
     truth: dict[str, dict],
     a: tuple[str, str],
     b: tuple[str, str],
-    c: tuple[str, str],
-    trust_levels: tuple[str, ...] = ("medium",),
+    c: tuple[str, str] | None,
+    escalate: "callable",
 ) -> tuple[float, float, int, int]:
-    """Hybrid cascade: confidence-route + lazy-disagree.
+    """Unified cascade. Run A always. If ``escalate(A's row)`` fires,
+    run B. If ``c`` is provided and A and B then disagree, run C and
+    majority-vote across {A, B, C}.
 
-    1. Always run A.
-    2. If A's confidence is in ``trust_levels`` → accept A's verdict, stop.
-    3. Else run B.
-       - If A and B agree → accept.
-       - If they disagree → run C (tiebreaker), majority vote across all three.
+    Special case: when ``escalate`` always returns True and ``c`` is
+    provided, this collapses to the pure lazy-disagree ensemble.
 
-    The expected cost per gene:
-        c(A) + P(non-trust | A) * (c(B) + P(disagree | non-trust) * c(C))
-
-    Returns ``(accuracy, expected_cost_per_gene, n_escalated_to_B, n_escalated_to_C)``.
+    Returns ``(accuracy, expected_cost_per_gene, n_to_B, n_to_C)``.
+    Expected cost = c(A) + P(esc) · c(B) + P(disagree | esc) · c(C).
     """
     from collections import Counter
     cost_per_rep = df.groupby(["model", "variant"]).cost_usd.mean().to_dict()
@@ -366,32 +329,34 @@ def _hybrid_conf_lazy(
         ].sort_values("replicate")
         return sub.iloc[0] if len(sub) else None
 
-    correct = 0
-    n_esc_b = 0
-    n_esc_c = 0
+    correct = n_b = n_c = 0
     for g in genes:
         ra = _row(a, g)
         if ra is None:
             continue
-        conf_a = ra.get("predicted_confidence")
-        if conf_a in trust_levels:
+        if not escalate(ra):
             chosen = ra.predicted_verdict
         else:
-            n_esc_b += 1
+            n_b += 1
             rb = _row(b, g)
             if rb is None:
                 chosen = ra.predicted_verdict
+            elif c is None:
+                # No lazy-tiebreaker: accept B's verdict on escalation.
+                chosen = rb.predicted_verdict
             elif rb.predicted_verdict == ra.predicted_verdict:
                 chosen = ra.predicted_verdict
             else:
-                n_esc_c += 1
+                n_c += 1
                 rc = _row(c, g)
                 if rc is None:
-                    chosen = ra.predicted_verdict
+                    chosen = rb.predicted_verdict
                 else:
-                    counts = Counter([ra.predicted_verdict,
-                                      rb.predicted_verdict,
-                                      rc.predicted_verdict])
+                    counts = Counter([
+                        ra.predicted_verdict,
+                        rb.predicted_verdict,
+                        rc.predicted_verdict,
+                    ])
                     top = counts.most_common(1)[0][1]
                     tied = [v for v, n_ in counts.items() if n_ == top]
                     chosen = tied[0] if len(tied) == 1 else rc.predicted_verdict
@@ -399,38 +364,157 @@ def _hybrid_conf_lazy(
             correct += 1
     n = len(genes)
     acc = correct / n
-    exp_cost = (
-        cost_per_rep[a]
-        + (n_esc_b / n) * cost_per_rep[b]
-        + (n_esc_c / n) * cost_per_rep[c]
-    )
-    return acc, exp_cost, n_esc_b, n_esc_c
+    exp_cost = cost_per_rep[a] + (n_b / n) * cost_per_rep[b]
+    if c is not None:
+        exp_cost += (n_c / n) * cost_per_rep[c]
+    return acc, exp_cost, n_b, n_c
 
 
-def _best_hybrid_at_tier(
-    df: pd.DataFrame, truth: dict, acc_threshold: float
+def _best_cascade_at_tier(
+    df: pd.DataFrame,
+    truth: dict,
+    acc_threshold: float,
+    *,
+    predicate_name: str,
+    with_lazy: bool,
 ) -> dict | None:
-    """Sweep every (A, B, C) triple and return the cheapest hybrid
-    confidence-route + lazy-disagree cascade meeting ``acc_threshold``."""
+    """Sweep (A, B[, C]) configurations for one cascade strategy; return
+    the cheapest configuration that meets ``acc_threshold``."""
+    pred = ESCALATE_PREDICATES[predicate_name]
     cells = sorted({(r["model"], r["variant"]) for _, r in df.iterrows()})
-    best = None
+    best: dict | None = None
     for a in cells:
         for b in cells:
             if b == a:
                 continue
-            for c in cells:
-                if c == a or c == b:
-                    continue
-                acc, cost, n_b, n_c = _hybrid_conf_lazy(df, truth, a, b, c)
+            if with_lazy:
+                for c in cells:
+                    if c in (a, b):
+                        continue
+                    acc, cost, nb, nc = _cascade(df, truth, a, b, c, pred)
+                    if acc + 1e-9 < acc_threshold:
+                        continue
+                    if best is None or cost < best["cost"]:
+                        best = {
+                            "a": a, "b": b, "c": c,
+                            "acc": acc, "cost": cost,
+                            "n_to_b": nb, "n_to_c": nc,
+                            "with_lazy": True,
+                            "predicate": predicate_name,
+                        }
+            else:
+                acc, cost, nb, _ = _cascade(df, truth, a, b, None, pred)
                 if acc + 1e-9 < acc_threshold:
                     continue
                 if best is None or cost < best["cost"]:
                     best = {
-                        "a": a, "b": b, "c": c,
+                        "a": a, "b": b, "c": None,
                         "acc": acc, "cost": cost,
-                        "n_escalated_b": n_b, "n_escalated_c": n_c,
+                        "n_to_b": nb, "n_to_c": 0,
+                        "with_lazy": False,
+                        "predicate": predicate_name,
                     }
     return best
+
+
+# Strategy registry. ``predicate=None`` is the pure-lazy fallback: A and
+# B always run, C runs only on disagreement (the original lazy-disagree
+# ensemble). Everything else is a cascade with an explicit escalation
+# trigger, optionally chained with a lazy-disagree tiebreaker.
+StrategyEntry = tuple[str, str | None, bool]
+STRATEGIES: list[StrategyEntry] = [
+    ("Pure lazy",                 None,                 True),
+    ("Conf=high",                 "conf_high",          False),
+    ("Conf≥med",                  "conf_high_or_med",   False),
+    ("Resp=no",                   "resp_no",            False),
+    ("Conf=high | resp=no",       "conf_high|resp_no",  False),
+    ("Conf≥med | resp=no",        "conf_hm|resp_no",    False),
+    ("Conf=high + lazy",          "conf_high",          True),
+    ("Conf≥med + lazy",           "conf_high_or_med",   True),
+    ("Resp=no + lazy",            "resp_no",            True),
+    ("Conf=high|resp=no + lazy",  "conf_high|resp_no",  True),
+    ("Conf≥med|resp=no + lazy",   "conf_hm|resp_no",    True),
+]
+
+
+def _best_strategy_at_tier(
+    df: pd.DataFrame, truth: dict, threshold: float, strategy: StrategyEntry,
+) -> dict | None:
+    """Dispatch a single STRATEGIES entry to its sweep. Pure lazy uses
+    the older _best_lazy_at_tier (already shape-compatible-ish); cascade
+    strategies use _best_cascade_at_tier."""
+    _, pred_name, with_lazy = strategy
+    if pred_name is None:
+        rec = _best_lazy_at_tier(df, truth, threshold)
+        if rec is None:
+            return None
+        # Normalize the shape so downstream code can iterate uniformly.
+        return {
+            **rec,
+            "n_to_b": rec.get("n_dis", 0),   # B is always run in pure lazy
+            "n_to_c": rec.get("n_dis", 0),   # C is run on every disagreement
+            "with_lazy": True,
+            "predicate": None,
+        }
+    return _best_cascade_at_tier(
+        df, truth, threshold,
+        predicate_name=pred_name, with_lazy=with_lazy,
+    )
+
+
+def _summarize_strategies(
+    df: pd.DataFrame, truth: dict, tiers: tuple[tuple[str, float], ...] = (
+        ("≥100%", 0.999), ("≥94%", 0.94),
+    ),
+) -> list[dict]:
+    """For each strategy × tier, find the cheapest config (or None)."""
+    out: list[dict] = []
+    for strat in STRATEGIES:
+        label, pred_name, with_lazy = strat
+        for tier_name, tier_thresh in tiers:
+            rec = _best_strategy_at_tier(df, truth, tier_thresh, strat)
+            out.append({
+                "strategy": label,
+                "tier": tier_name,
+                "tier_threshold": tier_thresh,
+                "predicate": pred_name,
+                "with_lazy": with_lazy,
+                "is_pure_lazy": pred_name is None,
+                "rec": rec,
+            })
+    return out
+
+
+def _print_strategy_table(summary: list[dict], wgn: int = WHOLE_GENOME_N) -> None:
+    """Format the per-strategy / per-tier winners as a tidy stdout table."""
+    def _short(cell):
+        if cell is None:
+            return "—"
+        m_, v_ = cell
+        return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
+
+    print("\n=== Combination strategy winners ===")
+    header = f"{'Strategy':<28}{'Tier':<7}{'Acc':<8}{'$/genome':<11}{'A':<14}{'B':<14}{'C':<14}  escalations"
+    print(header)
+    print("-" * len(header))
+    for row in summary:
+        rec = row["rec"]
+        if rec is None:
+            print(f"{row['strategy']:<28}{row['tier']:<7}{'(none)':<8}")
+            continue
+        cost_g = rec["cost"] * wgn
+        a, b, c = rec["a"], rec["b"], rec.get("c")
+        n_b = rec.get("n_to_b", rec.get("n_escalated", rec.get("n_dis", 0)))
+        n_c = rec.get("n_to_c", 0)
+        esc = f"{n_b}→B"
+        if c is not None:
+            esc += f", {n_c}→C"
+        print(
+            f"{row['strategy']:<28}{row['tier']:<7}"
+            f"{rec['acc']:>6.1%}  "
+            f"${cost_g:>7,.0f}   "
+            f"{_short(a):<14}{_short(b):<14}{_short(c):<14}  {esc}"
+        )
 
 
 def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
@@ -513,71 +597,73 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
                 linespacing=1.2,
             )
 
-    # --- Combination groups: lazy-disagree, confidence-routed, hybrid ----
-    # Three families of 3-cell combos at two accuracy tiers (≥100% / ≥94%).
-    #   - Lazy-disagree:      A + B → C tiebreak on disagreement.
-    #   - Confidence-routed:  base → fallback on non-`medium` confidence.
-    #   - Hybrid:             A + (run B only when A is non-`medium`) +
-    #                         (run C only when A and B then disagree).
+    # --- Best combination at each accuracy tier --------------------------
+    # Sweep every strategy in STRATEGIES (pure lazy + 5 escalation
+    # predicates × {with, without lazy tiebreak}). For each tier (100%,
+    # ≥94%) take the single cheapest winner across all strategies and
+    # show it as a labeled bar at the right of the per-cell groups.
     truth_rows = _load_ground_truth()
 
     def _short(cell):
+        if cell is None:
+            return "—"
         m_, v_ = cell
         return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
 
-    combo_groups = [
-        ("Lazy-disagree", COLORS["secondary"], "#7eafa4", [
-            ("100%", _best_lazy_at_tier(df, truth_rows, 0.999)),
-            ("≥94%", _best_lazy_at_tier(df, truth_rows, 0.94)),
-        ], lambda rec: f"{_short(rec['a'])}\n+ {_short(rec['b'])}\n→ {_short(rec['c'])}*",
-         lambda rec: f"{rec['n_dis']}/17 tied"),
-        ("Conf-routed", "#6c3e92", "#a07cc1", [
-            ("100%", _best_confidence_routed_at_tier(df, truth_rows, 0.999)),
-            ("≥94%", _best_confidence_routed_at_tier(df, truth_rows, 0.94)),
-        ], lambda rec: f"{_short(rec['base'])}\n→ {_short(rec['fallback'])}*",
-         lambda rec: f"{rec['n_escalated']}/17 esc"),
-        ("Hybrid", "#c66b1f", "#e7a777", [
-            ("100%", _best_hybrid_at_tier(df, truth_rows, 0.999)),
-            ("≥94%", _best_hybrid_at_tier(df, truth_rows, 0.94)),
-        ], lambda rec: f"{_short(rec['a'])}\n→ {_short(rec['b'])}\n→ {_short(rec['c'])}*",
-         lambda rec: f"{rec['n_escalated_b']}→B, {rec['n_escalated_c']}→C"),
-    ]
-    # Filter out groups where no tier found a configuration.
-    combo_groups = [
-        (label, c1, c2, tiers, comp_fn, count_fn)
-        for label, c1, c2, tiers, comp_fn, count_fn in combo_groups
-        if any(rec for _, rec in tiers)
-    ]
-    any_combos = bool(combo_groups)
+    summary = _summarize_strategies(df, truth_rows)
+    best_by_tier: dict[str, dict | None] = {}
+    for tier_name in ("≥100%", "≥94%"):
+        candidates = [s for s in summary if s["tier"] == tier_name and s["rec"]]
+        candidates.sort(key=lambda s: s["rec"]["cost"])
+        best_by_tier[tier_name] = candidates[0] if candidates else None
+    any_combos = any(best_by_tier.values())
 
+    # Two-bar combo group: brand them as best-overall winners. Use the
+    # familiar teal/sage palette so the combo bars stay visually distinct
+    # from the orange per-cell bars.
+    COMBO_HI = COLORS["secondary"]   # teal — best @ ≥100%
+    COMBO_LO = "#7eafa4"             # sage — best @ ≥94%
     if any_combos:
         n_models = len(models)
-        bar_w = 0.32
-        for group_idx, (label, c_hi, c_lo, tiers, comp_fn, count_fn) in enumerate(combo_groups):
-            group_center = n_models + group_idx
-            # Filter out unfilled tiers
-            tiers = [(lbl, rec) for lbl, rec in tiers if rec]
-            n_t = len(tiers)
-            offsets = [(i - (n_t - 1) / 2) * (bar_w + 0.03) for i in range(n_t)]
-            bar_colors = [c_hi, c_lo][:n_t]
-            for (tier_label, rec), off, fc in zip(tiers, offsets, bar_colors):
-                x_pos = group_center + off
-                ax.bar(x_pos, rec["acc"], width=bar_w, color=fc,
-                       edgecolor="none", zorder=2)
-                cost_per_genome = rec["cost"] * WHOLE_GENOME_N
-                ax.text(
-                    x_pos, rec["acc"] + 0.018,
-                    f"{tier_label}\n${cost_per_genome:,.0f}\n{count_fn(rec)}",
-                    ha="center", va="bottom",
-                    fontsize=7.5, color=COLORS["dark"], linespacing=1.2,
-                    fontweight="bold",
-                )
-                ax.text(
-                    x_pos, rec["acc"] / 2, comp_fn(rec),
-                    ha="center", va="center",
-                    fontsize=6.5, color="white", linespacing=1.2,
-                    style="italic",
-                )
+        bar_w = 0.34
+        group_center = n_models
+        tier_entries = [(t, best_by_tier[t]) for t in ("≥100%", "≥94%")]
+        tier_entries = [(t, r) for t, r in tier_entries if r]
+        n_t = len(tier_entries)
+        offsets = [(i - (n_t - 1) / 2) * (bar_w + 0.04) for i in range(n_t)]
+        bar_colors = [COMBO_HI, COMBO_LO][:n_t]
+        for (tier_name, entry), off, fc in zip(tier_entries, offsets, bar_colors):
+            rec = entry["rec"]
+            x_pos = group_center + off
+            ax.bar(x_pos, rec["acc"], width=bar_w, color=fc,
+                   edgecolor="none", zorder=2)
+            cost_per_genome = rec["cost"] * WHOLE_GENOME_N
+            n_b = rec.get("n_to_b", rec.get("n_dis", 0))
+            n_c = rec.get("n_to_c", 0)
+            esc = f"{n_b}→B"
+            if rec.get("c") is not None and not entry["is_pure_lazy"]:
+                esc += f", {n_c}→C"
+            elif entry["is_pure_lazy"]:
+                esc = f"{rec.get('n_dis', 0)}/17 tied"
+            ax.text(
+                x_pos, rec["acc"] + 0.018,
+                f"{tier_name}\n${cost_per_genome:,.0f}\n{esc}",
+                ha="center", va="bottom",
+                fontsize=8, color=COLORS["dark"],
+                linespacing=1.2, fontweight="bold",
+            )
+            comp = (
+                f"{entry['strategy']}\n"
+                f"{_short(rec['a'])}"
+                + (f"\n→ {_short(rec['b'])}" if rec.get('b') else "")
+                + (f"\n→ {_short(rec['c'])}" if rec.get('c') else "")
+            )
+            ax.text(
+                x_pos, rec["acc"] / 2, comp,
+                ha="center", va="center",
+                fontsize=7, color="white", linespacing=1.2,
+                style="italic",
+            )
 
     ax.set_xlabel("")
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
@@ -585,16 +671,16 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
         "Triage sub-benchmark: variant × model accuracy  ·  "
         f"costs extrapolated to a {WHOLE_GENOME_N:,}-gene whole-genome pass "
         "(NCBI protein-coding, 1 rep/gene)  ·  "
-        "3 combo families: lazy-disagree (A+B → C), conf-routed (base → fallback "
-        "on non-medium), hybrid (conf-route + lazy-disagree)"
+        "Combo bars = cheapest config across 11 strategies "
+        "(pure lazy / conf-high / conf≥med / verdict=no / unions / +lazy)"
     )
-    n_combo_groups = len(combo_groups)
-    xtick_positions = list(range(len(models))) + [
-        len(models) + i for i in range(n_combo_groups)
-    ]
-    xtick_labels = [MODEL_LABEL[m] for m in models] + [
-        label + "\ncombination" for label, *_ in combo_groups
-    ]
+    n_combo_groups = 1 if any_combos else 0
+    xtick_positions = list(range(len(models))) + (
+        [len(models)] if any_combos else []
+    )
+    xtick_labels = [MODEL_LABEL[m] for m in models] + (
+        ["Best\ncombination"] if any_combos else []
+    )
     ax.set_xticks(xtick_positions)
     ax.set_xticklabels(xtick_labels)
     if any_combos:
@@ -614,14 +700,15 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
             markeredgecolor=COLORS["dark"], markeredgewidth=1.1,
             markersize=8, label="One replicate",
         )
-    ] + [
-        h
-        for label, c_hi, c_lo, *_ in combo_groups
-        for h in (
-            Patch(facecolor=c_hi, edgecolor="none", label=f"{label} ≥ 100%"),
-            Patch(facecolor=c_lo, edgecolor="none", label=f"{label} ≥ 94%"),
-        )
-    ]
+    ] + (
+        [
+            Patch(facecolor=COMBO_HI, edgecolor="none",
+                  label="Best combo ≥ 100%"),
+            Patch(facecolor=COMBO_LO, edgecolor="none",
+                  label="Best combo ≥ 94%"),
+        ]
+        if any_combos else []
+    )
     ax.legend(
         handles=legend_handles,
         title="Prompt variant",
@@ -833,64 +920,81 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
             color=COLORS["dark"], fontweight="bold",
         )
 
-    # Confidence-routed cascade points — purple diamonds to set apart
-    # from the lazy-disagree stars. Routes on per-call confidence: when
-    # the base cell emits non-`medium`, escalate to the fallback. Trusts
-    # the `medium`-is-most-accurate calibration finding.
-    confidence_tiers = [
-        ("≥100%", _best_confidence_routed_at_tier(df, truth_rows, 0.999), "#6c3e92"),
-        ("≥94%",  _best_confidence_routed_at_tier(df, truth_rows, 0.94),  "#a07cc1"),
-    ]
-    confidence_tiers = [(lbl, r, c) for lbl, r, c in confidence_tiers if r]
-    for label, rec, fc in confidence_tiers:
+    # Cascade-strategy winners — sweep every entry in STRATEGIES and plot
+    # the cheapest config at each tier as a labeled marker. Marker shape
+    # encodes the predicate family; fill darkness encodes the tier.
+    summary = _summarize_strategies(df, truth_rows)
+    # Skip "Pure lazy" here — it's drawn separately as the star above.
+    cascade_summary = [s for s in summary if not s["is_pure_lazy"] and s["rec"]]
+    # Marker per predicate family.
+    PREDICATE_MARKER = {
+        "conf_high":         "D",   # diamond
+        "conf_high_or_med":  "D",
+        "resp_no":           "v",   # downward triangle
+        "conf_high|resp_no": "P",   # filled plus
+        "conf_hm|resp_no":   "P",
+    }
+    # Slight color shift by predicate family for visual grouping.
+    PREDICATE_COLOR_HI = {
+        "conf_high":         "#6c3e92",
+        "conf_high_or_med":  "#4b2b66",
+        "resp_no":           "#1f7a87",
+        "conf_high|resp_no": "#9b4a2f",
+        "conf_hm|resp_no":   "#6b3220",
+    }
+    PREDICATE_COLOR_LO = {
+        "conf_high":         "#a07cc1",
+        "conf_high_or_med":  "#7d619a",
+        "resp_no":           "#6cb3bc",
+        "conf_high|resp_no": "#d28968",
+        "conf_hm|resp_no":   "#a8745b",
+    }
+    # Only annotate the *Pareto-optimal* cascade winners so the plot
+    # doesn't drown in 20 overlapping labels.
+    cascade_points: list[tuple[float, float, str, str, dict]] = []
+    for entry in cascade_summary:
+        rec = entry["rec"]
         gc = rec["cost"] * WHOLE_GENOME_N
+        cascade_points.append((gc, rec["acc"], entry["tier"], entry["strategy"], entry))
+    # Plot each marker (small, low alpha for the non-winners).
+    pareto_cascade = set()  # set of (cost, acc) pareto-optimal cascade points
+    if cascade_points:
+        sorted_pts = sorted(cascade_points, key=lambda p: p[0])
+        best = -1.0
+        for gc, acc, _, _, _ in sorted_pts:
+            if acc > best + 1e-9:
+                pareto_cascade.add((round(gc, 6), round(acc, 6)))
+                best = acc
+    for gc, acc, tier, strat, entry in cascade_points:
+        pred = entry["predicate"]
+        fc = (PREDICATE_COLOR_HI if tier == "≥100%" else PREDICATE_COLOR_LO)[pred]
+        marker = PREDICATE_MARKER[pred]
+        is_pareto = (round(gc, 6), round(acc, 6)) in pareto_cascade
+        alpha = 1.0 if is_pareto else 0.35
+        size = 220 if is_pareto else 110
         ax.scatter(
-            gc, rec["acc"],
-            s=300, color=fc, marker="D",
-            edgecolor=COLORS["dark"], linewidth=1.2, zorder=5,
+            gc, acc, s=size, color=fc, marker=marker,
+            edgecolor=COLORS["dark"], linewidth=1.0 if is_pareto else 0.5,
+            zorder=5 if is_pareto else 3, alpha=alpha,
         )
-        combo_label = (
-            f"Conf-routed {label}\n"
-            f"{_short(rec['base'])} → {_short(rec['fallback'])}\n"
-            f"(escalated {rec['n_escalated']}/{len(truth_rows)})"
-        )
-        ax.annotate(
-            combo_label, (gc, rec["acc"]),
-            xytext=(10, 8), textcoords="offset points", fontsize=8,
-            color=fc, fontweight="bold",
-        )
-
-    # Hybrid cascade points — orange triangles, mix of conf-routing on A
-    # plus lazy-disagree on (B, C) for the escalated subset.
-    hybrid_tiers = [
-        ("≥100%", _best_hybrid_at_tier(df, truth_rows, 0.999), "#c66b1f"),
-        ("≥94%",  _best_hybrid_at_tier(df, truth_rows, 0.94),  "#e7a777"),
-    ]
-    hybrid_tiers = [(lbl, r, c) for lbl, r, c in hybrid_tiers if r]
-    for label, rec, fc in hybrid_tiers:
-        gc = rec["cost"] * WHOLE_GENOME_N
-        ax.scatter(
-            gc, rec["acc"],
-            s=320, color=fc, marker="^",
-            edgecolor=COLORS["dark"], linewidth=1.2, zorder=5,
-        )
-        combo_label = (
-            f"Hybrid {label}\n"
-            f"{_short(rec['a'])} → {_short(rec['b'])} → {_short(rec['c'])}\n"
-            f"({rec['n_escalated_b']}→B, {rec['n_escalated_c']}→C)"
-        )
-        ax.annotate(
-            combo_label, (gc, rec["acc"]),
-            xytext=(10, -18), textcoords="offset points", fontsize=8,
-            color=fc, fontweight="bold",
-        )
+        if is_pareto:
+            rec = entry["rec"]
+            comp = f"{_short(rec['a'])} → {_short(rec['b'])}"
+            if rec.get("c") is not None:
+                comp += f" → {_short(rec['c'])}"
+            ax.annotate(
+                f"{strat} {tier}\n{comp}",
+                (gc, acc),
+                xytext=(10, 6 if tier == "≥100%" else -18),
+                textcoords="offset points",
+                fontsize=7.5, color=fc, fontweight="bold",
+            )
 
     # --- Pareto frontier ----------------------------------------------
-    # Walk all points (per-cell + Combined) in cost-ascending order; keep
-    # a point only when its accuracy strictly exceeds the previous best.
-    # Draw a step curve through the survivors so the flattening / knee of
-    # the cost/accuracy curve is visible. Each horizontal segment shows
-    # the cost range where adding more spend doesn't buy accuracy.
+    # Walk all points (per-cell + cascade winners + pure-lazy) in
+    # cost-ascending order; keep a point only when its accuracy strictly
+    # exceeds the previous best. Draw a step curve through the survivors
+    # so the flattening / knee of the cost/accuracy curve is visible.
     frontier_points = [
         (row.genome_cost, row.accuracy, f"{row.model}/{row.variant}")
         for _, row in per_cell.iterrows()
@@ -898,11 +1002,8 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Lazy-disagree {label}")
         for label, rec, _ in combined_tiers
     ] + [
-        (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Conf-routed {label}")
-        for label, rec, _ in confidence_tiers
-    ] + [
-        (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Hybrid {label}")
-        for label, rec, _ in hybrid_tiers
+        (gc, acc, f"{strat} {tier}")
+        for gc, acc, tier, strat, _ in cascade_points
     ]
     frontier_points.sort(key=lambda p: p[0])
     pareto = []
@@ -956,7 +1057,8 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
     n_cells = int(per_cell.shape[0])
     ax.set_title(
         f"Cost vs accuracy frontier: {n_cells} per-cell points (replicates averaged) "
-        "+ 2 lazy-ensemble combined points"
+        "+ lazy-ensemble stars + cascade-strategy winners at ≥100% / ≥94% tiers "
+        "(faded markers = Pareto-dominated)"
     )
     ax.set_ylim(0, 1.07)
     ax.set_xscale("log")
@@ -986,25 +1088,30 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         ]
         if combined_tiers else []
     ) + (
+        # One legend entry per predicate family (marker shape), with a
+        # single representative color (the ≥100% shade). The ≥94% shade
+        # is implied — same marker, lighter fill on the plot.
         [
-            Line2D([], [], marker="D", color="w", markerfacecolor="#6c3e92",
+            Line2D([], [], marker="D", color="w",
+                   markerfacecolor=PREDICATE_COLOR_HI["conf_high"],
                    markersize=11, markeredgecolor=COLORS["dark"],
-                   label="Conf-routed ≥100%"),
-            Line2D([], [], marker="D", color="w", markerfacecolor="#a07cc1",
+                   label="Conf-routed (high / ≥med)"),
+            Line2D([], [], marker="v", color="w",
+                   markerfacecolor=PREDICATE_COLOR_HI["resp_no"],
                    markersize=11, markeredgecolor=COLORS["dark"],
-                   label="Conf-routed ≥94%"),
+                   label="Response-routed (verdict=no)"),
+            Line2D([], [], marker="P", color="w",
+                   markerfacecolor=PREDICATE_COLOR_HI["conf_high|resp_no"],
+                   markersize=11, markeredgecolor=COLORS["dark"],
+                   label="Conf | resp routed (union)"),
+            Line2D([], [], marker="s", color="w", markerfacecolor="white",
+                   markersize=11, markeredgecolor=COLORS["dark"],
+                   label="Dark fill = ≥100%, light = ≥94%"),
+            Line2D([], [], marker="s", color="w", markerfacecolor="white",
+                   markersize=11, markeredgecolor=COLORS["dark"], alpha=0.4,
+                   label="Faded = Pareto-dominated combo"),
         ]
-        if confidence_tiers else []
-    ) + (
-        [
-            Line2D([], [], marker="^", color="w", markerfacecolor="#c66b1f",
-                   markersize=12, markeredgecolor=COLORS["dark"],
-                   label="Hybrid ≥100%"),
-            Line2D([], [], marker="^", color="w", markerfacecolor="#e7a777",
-                   markersize=12, markeredgecolor=COLORS["dark"],
-                   label="Hybrid ≥94%"),
-        ]
-        if hybrid_tiers else []
+        if cascade_points else []
     ) + (
         [Line2D([], [], color=COLORS["dark"], linewidth=1.6,
                 linestyle="--", alpha=0.6, label="Pareto frontier")]
@@ -1202,6 +1309,8 @@ def main() -> None:
         )
     print(f"Loaded {len(df)} run records")
     print(df.groupby(["model", "variant"]).size().to_string())
+    truth = _load_ground_truth()
+    _print_strategy_table(_summarize_strategies(df, truth))
     plot_accuracy_by_variant(df, OUT_DIR)
     plot_per_protein(df, OUT_DIR)
     plot_cost_vs_accuracy(df, OUT_DIR)
