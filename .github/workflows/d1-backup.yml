@@ -1,6 +1,6 @@
 name: D1 backup → R2
 
-# Trigger an offsite SQL-dump backup of the `deliverome_agent_runs` D1
+# Trigger an offsite SQL-dump backup of the `surfaceome_agents` D1
 # database whenever changes touch the data the DB stores or the schema /
 # uploader that defines it.
 #
@@ -81,4 +81,4 @@ jobs:
           echo "Triggered by changes to: ${GITHUB_EVENT_NAME}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "Backup uploaded to R2 bucket: \`deliverome-d1-backups\`" >> $GITHUB_STEP_SUMMARY
-          echo "Latest pointer: \`d1-backups/deliverome_agent_runs/latest.sql\`" >> $GITHUB_STEP_SUMMARY
+          echo "Latest pointer: \`d1-backups/surfaceome_agents/latest.sql\`" >> $GITHUB_STEP_SUMMARY

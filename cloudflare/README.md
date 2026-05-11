@@ -1,6 +1,6 @@
 # Cloudflare integrations
 
-## deliverome_agent_runs — D1 database for reproducible agent runs
+## surfaceome_agents — D1 database for reproducible agent runs
 
 A separate D1 database from the existing `signups` one on the Deliverome
 Pages project. Holds BOTH:
@@ -34,19 +34,19 @@ so the pinned version always wins over any global install. (CI runs
 npx --yes wrangler login
 
 # 2. Create the database — captures the database UUID.
-npx --yes wrangler d1 create deliverome_agent_runs
+npx --yes wrangler d1 create surfaceome_agents
 #   ┌─────────────────────────────────────────────┐
-#   │ name = "deliverome_agent_runs"                     │
+#   │ name = "surfaceome_agents"                     │
 #   │ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-..." │   ← save this
 #   └─────────────────────────────────────────────┘
 
 # 3. Apply the schema to the remote DB.
-npx --yes wrangler d1 execute deliverome_agent_runs \
+npx --yes wrangler d1 execute surfaceome_agents \
     --remote \
     --file=cloudflare/d1_schema.sql
 
 # 4. Sanity-check that the tables exist.
-npx --yes wrangler d1 execute deliverome_agent_runs --remote --command \
+npx --yes wrangler d1 execute surfaceome_agents --remote --command \
     "SELECT name FROM sqlite_master WHERE type='table';"
 #   Expected: prompt_version, benchmark_version, triage_run, sqlite_sequence
 ```
@@ -58,9 +58,9 @@ In the Cloudflare dashboard:
 1. Navigate to the project
    ([Pages → deliverome → Settings → Bindings → Production](https://dash.cloudflare.com/8e7d57ba080f9fec53b320a1b9449b18/pages/view/deliverome/settings/production)).
 2. Under **D1 database bindings**, click **Add binding**.
-3. Variable name: `AGENT_RUNS` — short, parallels the existing `SIGNUPS`
+3. Variable name: `SURFACEOME_AGENTS` — short, parallels the existing `SIGNUPS`
    binding, and stays accurate once deep-dive tables share this DB.
-4. D1 database: pick `deliverome_agent_runs` from the dropdown.
+4. D1 database: pick `surfaceome_agents` from the dropdown.
 5. Repeat under the Preview tab if you want the same binding in preview deploys.
 
 The signups DB stays untouched — these are two independent bindings.
@@ -74,8 +74,8 @@ directly to D1's HTTP API (not via a worker), so it needs:
 # Account UUID — same hex that appears in the dashboard URL.
 CLOUDFLARE_ACCOUNT_ID=8e7d57ba080f9fec53b320a1b9449b18
 
-# UUID returned by `npx --yes wrangler d1 create deliverome_agent_runs` above.
-CLOUDFLARE_D1_DELIVEROME_ID=<uuid-from-step-2>
+# UUID returned by `npx --yes wrangler d1 create surfaceome_agents` above.
+CLOUDFLARE_D1_SURFACEOME_AGENTS_ID=<uuid-from-step-2>
 
 # API token with D1:Edit on this account. Create at
 # https://dash.cloudflare.com/profile/api-tokens → "Custom token" →
@@ -173,14 +173,14 @@ To list available restore points and restore:
 
 ```sh
 # What bookmarks are available?
-npx --yes wrangler d1 time-travel info deliverome_agent_runs
+npx --yes wrangler d1 time-travel info surfaceome_agents
 
 # Restore to a specific point in time (ISO 8601 timestamp).
-npx --yes wrangler d1 time-travel restore deliverome_agent_runs \
+npx --yes wrangler d1 time-travel restore surfaceome_agents \
     --timestamp '2026-05-10T20:00:00Z'
 
 # Or by bookmark id (returned from the info call).
-npx --yes wrangler d1 time-travel restore deliverome_agent_runs --bookmark <bookmark-id>
+npx --yes wrangler d1 time-travel restore surfaceome_agents --bookmark <bookmark-id>
 ```
 
 Restore is destructive — the database is rewound to the chosen point and
@@ -195,12 +195,12 @@ bash scripts/d1_triage_backup.sh
 ```
 
 This runs `npx --yes wrangler d1 export` and writes
-`data/processed/cloudflare/d1_backups/deliverome_agent_runs_<UTC-timestamp>.sql`
+`data/processed/cloudflare/d1_backups/surfaceome_agents_<UTC-timestamp>.sql`
 plus a sha256 companion file. Re-import a dump with:
 
 ```sh
-npx --yes wrangler d1 execute deliverome_agent_runs --remote \
-    --file=data/processed/cloudflare/d1_backups/deliverome_agent_runs_20260510T200000Z.sql
+npx --yes wrangler d1 execute surfaceome_agents --remote \
+    --file=data/processed/cloudflare/d1_backups/surfaceome_agents_20260510T200000Z.sql
 ```
 
 Run the export weekly (or before any schema migration) to keep an
@@ -220,8 +220,8 @@ The GitHub workflow `.github/workflows/d1-backup.yml` triggers
 
 Each run produces an offsite SQL dump in the R2 bucket
 `deliverome-d1-backups` under the dated key
-`d1-backups/deliverome_agent_runs/<YYYY>/<MM>/deliverome_agent_runs_<UTC>.sql`
-and updates the stable pointer `d1-backups/deliverome_agent_runs/latest.sql`.
+`d1-backups/surfaceome_agents/<YYYY>/<MM>/surfaceome_agents_<UTC>.sql`
+and updates the stable pointer `d1-backups/surfaceome_agents/latest.sql`.
 A small JSON manifest (sha256 + byte count) lands next to each dump for
 integrity checks.
 
@@ -247,15 +247,15 @@ Inspect / restore from R2:
 
 ```sh
 # List recent dumps.
-npx --yes wrangler r2 object list deliverome-d1-backups --prefix d1-backups/deliverome_agent_runs/
+npx --yes wrangler r2 object list deliverome-d1-backups --prefix d1-backups/surfaceome_agents/
 
 # Pull the latest pointer locally.
 npx --yes wrangler r2 object get deliverome-d1-backups \
-    d1-backups/deliverome_agent_runs/latest.sql \
+    d1-backups/surfaceome_agents/latest.sql \
     --output ./latest.sql
 
 # Re-import into D1 (DESTRUCTIVE — wipes current tables before applying).
-npx --yes wrangler d1 execute deliverome_agent_runs --remote --file=./latest.sql
+npx --yes wrangler d1 execute surfaceome_agents --remote --file=./latest.sql
 ```
 
 R2 is durable, cross-region, and outside the Time Travel window — this

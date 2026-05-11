@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Export the Cloudflare D1 `deliverome_agent_runs` database to a SQL file
+# Export the Cloudflare D1 `surfaceome_agents` database to a SQL file
 # and upload it to the R2 bucket `deliverome-d1-backups`.
 #
 # This is the CI-driven offsite backup layer (layer 2.5 in the
@@ -15,7 +15,7 @@
 #     + CLOUDFLARE_ACCOUNT_ID in the shell.
 #   * R2 bucket `deliverome-d1-backups` must exist
 #       npx --yes wrangler r2 bucket create deliverome-d1-backups
-#   * D1 database `deliverome_agent_runs` must exist
+#   * D1 database `surfaceome_agents` must exist
 #
 # USAGE
 #   bash scripts/d1_export_to_r2.sh
@@ -28,7 +28,7 @@
 
 set -euo pipefail
 
-DB_NAME="deliverome_agent_runs"
+DB_NAME="surfaceome_agents"
 BUCKET="deliverome-d1-backups"
 KEEP_LOCAL=0
 if [[ "${1:-}" == "--keep-local" ]]; then KEEP_LOCAL=1; fi

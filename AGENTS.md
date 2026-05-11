@@ -73,13 +73,13 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 ## CI & Checks
 - CI runs on PRs and pushes to `main` via `.github/workflows/ci.yml`.
 - CI validates lockfile consistency and runs Ruff, ty, compile, and pytest checks.
-- `.github/workflows/d1-backup.yml` exports the `deliverome_agent_runs`
+- `.github/workflows/d1-backup.yml` exports the `surfaceome_agents`
   D1 database to the R2 bucket `deliverome-d1-backups` on every push
   to `main` that touches the D1 schema, the eval data, or the
   uploader code. See **Cloudflare D1 + R2** below.
 
 ## Cloudflare D1 + R2 backups for agent runs
-- The `deliverome_agent_runs` D1 database stores every `surface_triage`
+- The `surfaceome_agents` D1 database stores every `surface_triage`
   and `surface_annotator` invocation with full reproducibility metadata
   (prompt SHA, benchmark version, schema version, prose reasoning).
   It's separate from the website's `signups` D1.

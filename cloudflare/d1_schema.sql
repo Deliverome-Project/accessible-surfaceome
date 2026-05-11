@@ -1,4 +1,4 @@
--- Schema for the `deliverome_agent_runs` Cloudflare D1 database.
+-- Schema for the `surfaceome_agents` Cloudflare D1 database.
 --
 -- One D1 database holds both surface_triage runs (per gene × variant ×
 -- replicate × model) and surface_annotator (deep-dive) runs (per gene
@@ -17,9 +17,9 @@
 -- Deliverome Pages project — see cloudflare/README.md for the provisioning
 -- walkthrough.
 --
--- To apply (run once after `wrangler d1 create deliverome_agent_runs`):
+-- To apply (run once after `wrangler d1 create surfaceome_agents`):
 --
---   wrangler d1 execute deliverome_agent_runs \\
+--   wrangler d1 execute surfaceome_agents \\
 --     --remote \\
 --     --file=cloudflare/d1_schema.sql
 

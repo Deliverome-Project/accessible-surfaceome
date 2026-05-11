@@ -106,7 +106,7 @@ The `viewer/` subproject is a static SPA. Per-gene records live under
 
 ## Cloudflare D1 + R2 backups for agent runs
 
-The `deliverome_agent_runs` D1 database stores every `surface_triage`
+The `surfaceome_agents` D1 database stores every `surface_triage`
 and `surface_annotator` invocation with full reproducibility metadata
 (prompt SHA, benchmark version, schema version, prose reasoning). It's
 separate from the website's `signups` D1.

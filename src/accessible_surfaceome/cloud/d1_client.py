@@ -15,7 +15,7 @@ target account.
 Env vars consumed (loaded by :mod:`accessible_surfaceome.env`):
 
   * ``CLOUDFLARE_ACCOUNT_ID``      — 32-char hex from the dashboard URL
-  * ``CLOUDFLARE_D1_DELIVEROME_ID``     — UUID of the deliverome_agent_runs D1 database
+  * ``CLOUDFLARE_D1_SURFACEOME_AGENTS_ID``     — UUID of the surfaceome_agents D1 database
   * ``CLOUDFLARE_API_TOKEN``        — bearer token with D1:Edit permission
 """
 
@@ -49,12 +49,12 @@ class D1Config:
     def from_env(cls) -> D1Config:
         missing: list[str] = []
         account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
-        db = os.environ.get("CLOUDFLARE_D1_DELIVEROME_ID", "").strip()
+        db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "").strip()
         token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
         if not account:
             missing.append("CLOUDFLARE_ACCOUNT_ID")
         if not db:
-            missing.append("CLOUDFLARE_D1_DELIVEROME_ID")
+            missing.append("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID")
         if not token:
             missing.append("CLOUDFLARE_API_TOKEN")
         if missing:
