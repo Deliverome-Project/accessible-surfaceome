@@ -802,14 +802,19 @@ def plot_accuracy_by_variant(df: pd.DataFrame, out_dir: Path) -> None:
                 fontsize=8, color=COLORS["dark"],
                 linespacing=1.2, fontweight="bold",
             )
-            comp = (
-                f"{entry['strategy']}\n"
-                f"{_short(rec['a'])}"
-                + (f"\n→ {_short(rec['b'])}" if rec.get('b') else "")
-                + (f"\n→ {_short(rec['c'])}" if rec.get('c') else "")
-            )
+            # Composition notation:
+            #  * Pure lazy: "A + B → C" — A and B vote, C is the tiebreaker.
+            #  * Cascade (no lazy):     "A → B"     — B fires on A's escalation.
+            #  * Cascade + lazy:        "A → B → C" — B fires on escalation,
+            #    C fires on the A/B disagreement after that.
+            comp_lines = [entry["strategy"], _short(rec["a"])]
+            if rec.get("b"):
+                sep = "+" if entry["is_pure_lazy"] else "→"
+                comp_lines.append(f"{sep} {_short(rec['b'])}")
+            if rec.get("c"):
+                comp_lines.append(f"→ {_short(rec['c'])}")
             ax.text(
-                x_pos, rec["acc"] / 2, comp,
+                x_pos, rec["acc"] / 2, "\n".join(comp_lines),
                 ha="center", va="center",
                 fontsize=6.8, color="white", linespacing=1.2,
                 style="italic",
@@ -1070,106 +1075,84 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
                 alpha=0.7 if not is_fresh else 1.0,
             )
 
-    # Lazy-ensemble Combined points — same teal-on-teal colour scheme as
-    # the accuracy_by_variant plot, distinctive star markers to set them
-    # apart from the per-cell points.
+    # Headline winners — exactly four points, matching the variant
+    # barplot's combo group: best cascade @ ≥100% / ≥94% (teal/sage
+    # diamonds) and best pure-lazy triple @ ≥100% / ≥94% (purple/
+    # lavender stars). Composition notation:
+    #   * cascade:   A → B  (or  A → B → C  for "+ lazy" cascades).
+    #   * pure lazy: A + B → C  (A and B vote, C is the tiebreaker).
     truth_rows = _load_ground_truth()
-    combined_tiers = [
-        ("≥100%", _best_lazy_at_tier(df, truth_rows, 0.999), COLORS["secondary"]),
-        ("≥94%",  _best_lazy_at_tier(df, truth_rows, 0.94),  "#7eafa4"),
-    ]
-    combined_tiers = [(lbl, r, c) for lbl, r, c in combined_tiers if r]
 
     def _short(cell):
         m_, v_ = cell
         return f"{m_.replace('claude-', '').split('-')[0]}/{v_}"
 
-    for label, rec, fc in combined_tiers:
+    summary = _summarize_strategies(df, truth_rows)
+
+    def _cheapest_at(tier_name, *, pure_lazy: bool):
+        cand = [
+            s for s in summary
+            if s["tier"] == tier_name and s["rec"]
+            and (s["is_pure_lazy"] == pure_lazy)
+        ]
+        cand.sort(key=lambda s: s["rec"]["cost"])
+        return cand[0] if cand else None
+
+    # Match the variant-plot palette so the two figures tell the same story.
+    BEST_HI = COLORS["secondary"]   # teal
+    BEST_LO = "#7eafa4"             # sage
+    LAZY_HI = "#6c3e92"             # purple
+    LAZY_LO = "#a07cc1"             # lavender
+
+    headline = [
+        ("Best combo ≥100%", _cheapest_at("≥100%", pure_lazy=False),
+         "D", BEST_HI),
+        ("Best combo ≥94%",  _cheapest_at("≥94%",  pure_lazy=False),
+         "D", BEST_LO),
+        ("Pure lazy ≥100%",  _cheapest_at("≥100%", pure_lazy=True),
+         "*", LAZY_HI),
+        ("Pure lazy ≥94%",   _cheapest_at("≥94%",  pure_lazy=True),
+         "*", LAZY_LO),
+    ]
+    combined_tiers = [
+        (lbl, e["rec"], color)
+        for lbl, e, _, color in headline
+        if e is not None and not lbl.startswith("Pure")
+    ]  # used downstream for legend conditioning
+    pure_lazy_present = any(
+        e is not None for lbl, e, _, _ in headline if lbl.startswith("Pure")
+    )
+
+    for label, entry, marker, fc in headline:
+        if entry is None:
+            continue
+        rec = entry["rec"]
         gc = rec["cost"] * WHOLE_GENOME_N
         ax.scatter(
             gc, rec["acc"],
-            s=380, color=fc, marker="*",
-            edgecolor=COLORS["dark"], linewidth=1.2, zorder=5,
+            s=420 if marker == "*" else 320,
+            color=fc, marker=marker,
+            edgecolor=COLORS["dark"], linewidth=1.3, zorder=5,
         )
-        combo_label = (
-            f"Lazy-disagree {label}\n"
-            f"{_short(rec['a'])} + {_short(rec['b'])} → {_short(rec['c'])}"
-        )
+        # Build the composition string with the right separator.
+        is_lazy = entry["is_pure_lazy"]
+        parts = [_short(rec["a"])]
+        if rec.get("b"):
+            sep = "+" if is_lazy else "→"
+            parts.append(f"{sep} {_short(rec['b'])}")
+        if rec.get("c"):
+            parts.append(f"→ {_short(rec['c'])}")
+        comp = " ".join(parts)
+        # ≥100% labels go above the marker; ≥94% labels go below so
+        # they don't collide on the log-x axis.
+        is_hi = "≥100%" in label
         ax.annotate(
-            combo_label, (gc, rec["acc"]),
-            xytext=(10, -8), textcoords="offset points", fontsize=8.5,
-            color=COLORS["dark"], fontweight="bold",
+            f"{label}\n{entry['strategy']}: {comp}",
+            (gc, rec["acc"]),
+            xytext=(10, 10 if is_hi else -22),
+            textcoords="offset points",
+            fontsize=8.5, color=COLORS["dark"], fontweight="bold",
         )
-
-    # Cascade-strategy winners — sweep every entry in STRATEGIES and plot
-    # the cheapest config at each tier as a labeled marker. Marker shape
-    # encodes the predicate family; fill darkness encodes the tier.
-    summary = _summarize_strategies(df, truth_rows)
-    # Skip "Pure lazy" here — it's drawn separately as the star above.
-    cascade_summary = [s for s in summary if not s["is_pure_lazy"] and s["rec"]]
-    # Marker per predicate family.
-    PREDICATE_MARKER = {
-        "conf_low":         "D",   # diamond
-        "conf_low_or_med":  "D",
-        "resp_no":          "v",   # downward triangle
-        "conf_low|resp_no": "P",   # filled plus
-        "conf_lm|resp_no":  "P",
-    }
-    # Slight color shift by predicate family for visual grouping.
-    PREDICATE_COLOR_HI = {
-        "conf_low":         "#6c3e92",
-        "conf_low_or_med":  "#4b2b66",
-        "resp_no":          "#1f7a87",
-        "conf_low|resp_no": "#9b4a2f",
-        "conf_lm|resp_no":  "#6b3220",
-    }
-    PREDICATE_COLOR_LO = {
-        "conf_low":         "#a07cc1",
-        "conf_low_or_med":  "#7d619a",
-        "resp_no":          "#6cb3bc",
-        "conf_low|resp_no": "#d28968",
-        "conf_lm|resp_no":  "#a8745b",
-    }
-    # Only annotate the *Pareto-optimal* cascade winners so the plot
-    # doesn't drown in 20 overlapping labels.
-    cascade_points: list[tuple[float, float, str, str, dict]] = []
-    for entry in cascade_summary:
-        rec = entry["rec"]
-        gc = rec["cost"] * WHOLE_GENOME_N
-        cascade_points.append((gc, rec["acc"], entry["tier"], entry["strategy"], entry))
-    # Plot each marker (small, low alpha for the non-winners).
-    pareto_cascade = set()  # set of (cost, acc) pareto-optimal cascade points
-    if cascade_points:
-        sorted_pts = sorted(cascade_points, key=lambda p: p[0])
-        best = -1.0
-        for gc, acc, _, _, _ in sorted_pts:
-            if acc > best + 1e-9:
-                pareto_cascade.add((round(gc, 6), round(acc, 6)))
-                best = acc
-    for gc, acc, tier, strat, entry in cascade_points:
-        pred = entry["predicate"]
-        fc = (PREDICATE_COLOR_HI if tier == "≥100%" else PREDICATE_COLOR_LO)[pred]
-        marker = PREDICATE_MARKER[pred]
-        is_pareto = (round(gc, 6), round(acc, 6)) in pareto_cascade
-        alpha = 1.0 if is_pareto else 0.35
-        size = 220 if is_pareto else 110
-        ax.scatter(
-            gc, acc, s=size, color=fc, marker=marker,
-            edgecolor=COLORS["dark"], linewidth=1.0 if is_pareto else 0.5,
-            zorder=5 if is_pareto else 3, alpha=alpha,
-        )
-        if is_pareto:
-            rec = entry["rec"]
-            comp = f"{_short(rec['a'])} → {_short(rec['b'])}"
-            if rec.get("c") is not None:
-                comp += f" → {_short(rec['c'])}"
-            ax.annotate(
-                f"{strat} {tier}\n{comp}",
-                (gc, acc),
-                xytext=(10, 6 if tier == "≥100%" else -18),
-                textcoords="offset points",
-                fontsize=7.5, color=fc, fontweight="bold",
-            )
 
     # --- Pareto frontier ----------------------------------------------
     # Walk all points (per-cell + cascade winners + pure-lazy) in
@@ -1180,11 +1163,9 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         (row.genome_cost, row.accuracy, f"{row.model}/{row.variant}")
         for _, row in per_cell.iterrows()
     ] + [
-        (rec["cost"] * WHOLE_GENOME_N, rec["acc"], f"Lazy-disagree {label}")
-        for label, rec, _ in combined_tiers
-    ] + [
-        (gc, acc, f"{strat} {tier}")
-        for gc, acc, tier, strat, _ in cascade_points
+        (entry["rec"]["cost"] * WHOLE_GENOME_N, entry["rec"]["acc"], label)
+        for label, entry, _, _ in headline
+        if entry is not None
     ]
     frontier_points.sort(key=lambda p: p[0])
     pareto = []
@@ -1237,9 +1218,10 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
     ax.set_ylabel("Verdict accuracy on 17-protein sub-benchmark")
     n_cells = int(per_cell.shape[0])
     ax.set_title(
-        f"Cost vs accuracy frontier: {n_cells} per-cell points (replicates averaged) "
-        "+ lazy-ensemble stars + cascade-strategy winners at ≥100% / ≥94% tiers "
-        "(faded markers = Pareto-dominated)"
+        f"Cost vs accuracy: {n_cells} per-cell points (replicates averaged)\n"
+        "+ four headline winners (best combo / pure lazy, each at ≥100% / ≥94%)  ·  "
+        "matches variant-plot combo bars",
+        fontsize=11, linespacing=1.3,
     )
     ax.set_ylim(0, 1.07)
     ax.set_xscale("log")
@@ -1259,40 +1241,24 @@ def plot_cost_vs_accuracy(df: pd.DataFrame, out_dir: Path) -> None:
         )
         for m in models_present
     ] + (
+        # Four headline winners — same color/shape mapping as the
+        # variant barplot's combo bars so the two figures tell the same
+        # story at a glance.
         [
-            Line2D([], [], marker="*", color="w", markerfacecolor=COLORS["secondary"],
-                   markersize=15, markeredgecolor=COLORS["dark"],
-                   label="Lazy-disagree ≥100%"),
-            Line2D([], [], marker="*", color="w", markerfacecolor="#7eafa4",
-                   markersize=15, markeredgecolor=COLORS["dark"],
-                   label="Lazy-disagree ≥94%"),
+            Line2D([], [], marker="D", color="w", markerfacecolor=BEST_HI,
+                   markersize=12, markeredgecolor=COLORS["dark"],
+                   label="Best combo ≥100% (cascade)"),
+            Line2D([], [], marker="D", color="w", markerfacecolor=BEST_LO,
+                   markersize=12, markeredgecolor=COLORS["dark"],
+                   label="Best combo ≥94% (cascade)"),
+            Line2D([], [], marker="*", color="w", markerfacecolor=LAZY_HI,
+                   markersize=16, markeredgecolor=COLORS["dark"],
+                   label="Pure lazy ≥100% (A+B → C)"),
+            Line2D([], [], marker="*", color="w", markerfacecolor=LAZY_LO,
+                   markersize=16, markeredgecolor=COLORS["dark"],
+                   label="Pure lazy ≥94% (A+B → C)"),
         ]
-        if combined_tiers else []
-    ) + (
-        # One legend entry per predicate family (marker shape), with a
-        # single representative color (the ≥100% shade). The ≥94% shade
-        # is implied — same marker, lighter fill on the plot.
-        [
-            Line2D([], [], marker="D", color="w",
-                   markerfacecolor=PREDICATE_COLOR_HI["conf_low"],
-                   markersize=11, markeredgecolor=COLORS["dark"],
-                   label="Conf-routed (low / ≤med)"),
-            Line2D([], [], marker="v", color="w",
-                   markerfacecolor=PREDICATE_COLOR_HI["resp_no"],
-                   markersize=11, markeredgecolor=COLORS["dark"],
-                   label="Response-routed (verdict=no)"),
-            Line2D([], [], marker="P", color="w",
-                   markerfacecolor=PREDICATE_COLOR_HI["conf_low|resp_no"],
-                   markersize=11, markeredgecolor=COLORS["dark"],
-                   label="Conf | resp routed (union)"),
-            Line2D([], [], marker="s", color="w", markerfacecolor="white",
-                   markersize=11, markeredgecolor=COLORS["dark"],
-                   label="Dark fill = ≥100%, light = ≥94%"),
-            Line2D([], [], marker="s", color="w", markerfacecolor="white",
-                   markersize=11, markeredgecolor=COLORS["dark"], alpha=0.4,
-                   label="Faded = Pareto-dominated combo"),
-        ]
-        if cascade_points else []
+        if combined_tiers or pure_lazy_present else []
     ) + (
         [Line2D([], [], color=COLORS["dark"], linewidth=1.6,
                 linestyle="--", alpha=0.6, label="Pareto frontier")]
