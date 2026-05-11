@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "VEGFA",
+  "replicate": 2,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted growth factor with no transmembrane domain, GPI anchor, or outer-leaflet lipidation. Alternative splicing generates isoforms (A165, A189) that bind heparan sulfate on cell surfaces and in extracellular matrix, but this is reversible, non-covalent, equilibrium-based binding to matrix components\u2014not a stable cell-surface anchor of VEGFA itself. The protein lacks any mechanism for its own stable surface anchoring: no TM precursor stage, no documented covalent TM-partner tethering, no cell-state-induced ectosurface display, no tissue-restricted or dual-localization pool. VEGFA is recruited to pericellular and matrix locations via soluble-phase diffusion and equilibrium interactions with cell-surface receptors and proteoglycans, but the protein body does not stably reach the outer leaflet by its own biophysical mechanism. No cell-surface-directed therapeutic program targets VEGFA as a cell-surface antigen.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 382,
+  "completion_tokens": 1486,
+  "n_web_searches": 2,
+  "cost_usd": 0.06605345,
+  "latency_s": 16.78515641699778,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ITPR1",
+  "replicate": 2,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 is an endoplasmic reticulum calcium channel with 6 transmembrane domains embedded in ER membrane, with the regulatory domain facing cytoplasm and TM stalk inserted in ER. No surface-directed therapeutics; no ectodomain shedding; no documented PM pool, cycling, or state-induced surface translocation. No evidence of cancer-induced, cell-death-induced, or activation-induced ecto-presentation. ER-resident only.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 383,
+  "completion_tokens": 1292,
+  "n_web_searches": 3,
+  "cost_usd": 0.08944194999999999,
+  "latency_s": 15.363938124966808,
+  "error": null,
+  "raw_text": ""
+}

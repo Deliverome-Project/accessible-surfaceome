@@ -93,7 +93,23 @@ def _intern_prompt(d1: D1Client, prompt: PromptInfo) -> None:
 
 
 def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str]]) -> None:
-    """INSERT OR IGNORE every benchmark row under the given bench_version.
+    """INSERT OR IGNORE every benchmark / gene-list row under the given
+    bench_version.
+
+    Handles two input shapes:
+
+    * Labeled benchmark TSV (``triage_benchmark_v1.tsv``,
+      ``triage_subbench_v1.tsv``): has uniprot_acc + class +
+      ground_truth_* columns. Stored verbatim — the truth join from
+      triage_run → benchmark_version returns the ground truth that was
+      live at sweep time.
+
+    * Unlabeled gene-list TSV (``whole_genome_minus_m1.tsv``,
+      genome-wide candidate sets): only gene_symbol guaranteed; truth
+      columns are empty strings. The benchmark_version row still gets
+      written so the sweep's input gene-set is queryable later — the
+      truth join returns empty strings, which the caller interprets as
+      "unlabeled".
 
     If the user re-labels a protein and re-runs, the new TSV gets a new
     content SHA → new bench_version → fresh insertion path. Old rows
@@ -108,11 +124,11 @@ def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str
             [
                 bench_version,
                 r["gene_symbol"],
-                r["uniprot_acc"],
-                r["class"],
-                r["ground_truth_verdict"],
-                r["ground_truth_signal"],
-                r["ground_truth_reason"],
+                r.get("uniprot_acc", ""),
+                r.get("class", ""),
+                r.get("ground_truth_verdict", ""),
+                r.get("ground_truth_signal", ""),
+                r.get("ground_truth_reason", ""),
                 r.get("rationale", ""),
             ],
         )

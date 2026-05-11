@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M is a non-TM light-chain subunit of MHC class I molecules. Although it has no transmembrane domain itself, B2M is a constitutive, stable non-covalent component of the MHC class I heterotrimer (\u03b11/\u03b12/\u03b13 + \u03b22M), assembled in the ER and co-trafficked to the cell surface as an integral part of the multi-subunit complex. The protein body of MHC-I includes \u03b22M; it is not merely presented *by* the complex but is a structural element of the surface receptor itself. B2M associates with multiple TM-anchored MHC and MHC-like molecules (classical MHC-I, CD1, MR1, FcRn, HLA-E/F/G), ensuring robust surface accessibility across most nucleated cell types.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 382,
+  "completion_tokens": 1119,
+  "n_web_searches": 2,
+  "cost_usd": 0.0635947,
+  "latency_s": 14.537080709007569,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a large soluble plasma glycoprotein with no transmembrane domain, GPI anchor, or outer-leaflet lipidation at any stage of its lifecycle. It circulates as an inactive precursor and is secreted constitutively by hepatocytes and immune cells. Upon complement activation, the C3b fragment covalently deposits (via a transient thioester intermediate, t\u00bd ~100 \u03bcs) on pathogen/foreign-particle surfaces for opsonization \u2014 this is target-cell deposition, not stable anchoring to a TM partner on the C3-producing host cell. Host cells actively suppress C3b retention via CD46, CD55, and CR1. Pre-no checklist: (1) no cell-surface-directed therapeutic targets C3 on a human host-cell outer leaflet \u2014 clinical anti-C3 programs (compstatin/pegcetacoplan) block soluble circulating C3; (2) no TM precursor isoform at any lifecycle stage; (3) C3b deposition on foreign targets is thioester chemistry on external surfaces, not wash-resistant anchoring to a host-cell TM scaffold \u2014 fails stable_surface_attachment; (4) no documented host-cell outer PM minority pool; (5) no gene-specific evidence of cancer/cell-death/activation-induced outer-leaflet display on host cells. Intracellular C3 in lymphocytes is cytoplasmic, not outer-leaflet.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": false,
+  "prompt_tokens": 376,
+  "completion_tokens": 1461,
+  "n_web_searches": 2,
+  "cost_usd": 0.15997295,
+  "latency_s": 32.84777337504784,
+  "error": null,
+  "raw_text": ""
+}

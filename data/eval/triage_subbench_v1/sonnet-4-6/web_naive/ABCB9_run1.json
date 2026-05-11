@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ABCB9 (TAPL) is a multi-pass lysosomal ABC half-transporter that resides exclusively in the limiting membrane of lysosomes. Its N-terminal TMD0 encodes a dominant lysosomal targeting signal and interacts with LAMP-1/LAMP-2B. A 2019 RUSH-assay study explicitly demonstrated 'TAPL is not found on the plasma membrane.' No cell-surface-directed therapeutic program, ectodomain shedding biology, or documented PM minority pool exists. Pre-no checklist: (1) cell_state_induced \u2014 no gene-specific evidence of cancer/apoptosis/activation-driven outer-leaflet display; (2) tissue_restricted_surface \u2014 high testis/DC expression is transcriptional, protein remains lysosomal; (3) lysosomal_exocytosis \u2014 no published evidence for ABCB9 reaching the PM via lysosomal exocytosis; (4) dual_localization \u2014 PM residence of the truncated coreTAPL construct is an artificial experimental artifact, not native biology; literature explicitly rules out PM pool for full-length protein; (5) stable_surface_attachment \u2014 no secreted form; not applicable to a TM lysosomal protein.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 380,
+  "completion_tokens": 1293,
+  "n_web_searches": 2,
+  "cost_usd": 0.15496759999999998,
+  "latency_s": 28.66772512497846,
+  "error": null,
+  "raw_text": ""
+}

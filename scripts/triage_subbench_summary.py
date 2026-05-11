@@ -95,8 +95,10 @@ MODEL_MARKER = {
 FRESH_CELLS: frozenset[tuple[str, str]] = frozenset({
     ("claude-haiku-4-5", "naive"),
     ("claude-haiku-4-5", "ncbi"),
+    ("claude-haiku-4-5", "web_naive"),
     ("claude-sonnet-4-6", "naive"),
     ("claude-sonnet-4-6", "ncbi"),
+    ("claude-sonnet-4-6", "web_naive"),
     ("claude-opus-4-7", "naive"),
     ("claude-opus-4-7", "ncbi"),
 })

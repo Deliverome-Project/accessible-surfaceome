@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED9",
+  "replicate": 2,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 is a type I transmembrane protein resident in the early secretory pathway (ER, ERGIC, Golgi). Its TM domain anchors it to endomembranes, and its luminal domains reside in the ER-Golgi lumen, not the extracellular space. It functions as an intracellular cargo receptor mediating vesicular transport between ER and Golgi. No evidence of surface-directed therapeutics, stress-induced ecto-presentation, cell-death externalization, tissue-restricted surface display, lysosomal exocytosis to the PM, dual PM residency, or stable post-translational surface anchoring. The protein's role in 'trafficking to the plasma membrane' refers to its cargo-handling function, not its own localization.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 383,
+  "completion_tokens": 1139,
+  "n_web_searches": 2,
+  "cost_usd": 0.0701957,
+  "latency_s": 14.349357458006125,
+  "error": null,
+  "raw_text": ""
+}

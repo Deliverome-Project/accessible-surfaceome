@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATG9A",
+  "replicate": 2,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is a multipass transmembrane protein (4 TM helices) primarily resident in post-Golgi compartments (TGN, endosomes, VTCs), but with documented PM trafficking. Cell surface biotinylation reveals ATG9A translocates to the plasma membrane via SNARE-mediated fusion of its vesicles. A baseline ~5% peripheral pool increases dramatically (+156%) upon EGF stimulation. The protein has its own membrane anchors (TM domains) and reaches the outer face through regulated vesicular delivery under activation/stress. This fits dual_localization: canonical intracellular baseline compartment with regulated, inducible surface pool via SNARE-mediated exocytosis.",
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Extent to which baseline ~5% surface pool represents true steady-state presence vs. transient trafficking intermediate; whether clinically relevant targeting could exploit the inducible surface pool under cell-state conditions",
+  "correct": false,
+  "prompt_tokens": 383,
+  "completion_tokens": 1255,
+  "n_web_searches": 3,
+  "cost_usd": 0.0961182,
+  "latency_s": 16.10235795803601,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M (beta-2 microglobulin) is constitutively displayed on the outer leaflet of virtually all nucleated cells as the non-covalent light-chain subunit of MHC class I (HLA) complexes. It has no transmembrane domain or GPI anchor of its own, but it is assembled intracellularly with the TM-anchored HLA heavy chain (\u03b1-chain) and co-trafficked as a stable complex to the cell surface, where it lies beside the \u03b13 domain, fully extracellular. This meets the stable_complex_partner criterion: B2M is a constitutive, wash-resistant partner of a TM-anchored scaffold, assembled and co-trafficked as a complex. It is also targeted by anti-cancer surface-directed antibody programs. The equilibrium exchange with soluble serum B2M is a secondary phenomenon; the dominant biology is stable surface display on the MHC-I complex on essentially every nucleated cell.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 377,
+  "completion_tokens": 1054,
+  "n_web_searches": 2,
+  "cost_usd": 0.1434347,
+  "latency_s": 23.941572582989465,
+  "error": null,
+  "raw_text": ""
+}

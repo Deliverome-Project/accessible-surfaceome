@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B2M",
+  "replicate": 2,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M is a 11.8 kDa protein with no TM domain of its own, but reaches the outer leaflet of the plasma membrane as a stable non-covalent partner of MHC class I heavy chains. It is co-trafficked intracellularly with MHC \u03b1 chains, forms a noncovalent complex at the surface, and is essential for stabilizing both the structure and surface expression of MHC class I molecules. B2M associates with MHC class I, CD1, MR1, FcRn, and other class I-like molecules, and is displayed on nearly all nucleated cells.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 382,
+  "completion_tokens": 1184,
+  "n_web_searches": 2,
+  "cost_usd": 0.0653497,
+  "latency_s": 13.216320124978665,
+  "error": null,
+  "raw_text": ""
+}

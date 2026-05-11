@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HMGB1",
+  "replicate": 2,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is a canonical nuclear DNA-binding protein without intrinsic membrane anchors (no TM domain, no GPI, no leader sequence). However, it shows documented surface accessibility exclusively under non-baseline conditions: (1) cell-death-induced (apoptosis, necrosis, pyroptosis)\u2014HMGB1 translocates to cytoplasm and is released via vesicular fusion with PM; (2) immune-cell activation\u2014activated macrophages/monocytes actively secrete HMGB1 via secretory lysosomes; (3) cancer contexts\u2014cytoplasmic/membrane accumulation in tumor cells. The protein body reaches the outer face only during these stress/death/activation states, via unconventional secretory machinery, not as a baseline resident. No documented wash-resistant PM anchor; release depends on vesicle-mediated or cell-lytic mechanisms.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": false,
+  "prompt_tokens": 384,
+  "completion_tokens": 1396,
+  "n_web_searches": 3,
+  "cost_usd": 0.09581795,
+  "latency_s": 16.41944229096407,
+  "error": null,
+  "raw_text": ""
+}

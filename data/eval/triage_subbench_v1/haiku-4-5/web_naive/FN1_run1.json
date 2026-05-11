@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "FN1 is a secreted extracellular matrix protein with no transmembrane domain, GPI anchor, lipidation, or covalent surface tethering. Although it transiently binds cell-surface integrin receptors (\u03b15\u03b21, \u03b1V\u03b23) during matrix assembly and fibrillogenesis, these are reversible non-covalent interactions in equilibrium with the soluble pool. The protein lacks its own membrane anchor; the recruiters (integrins) are the surface targets, not the fibronectin body. This transient equilibrium interaction does not confer stable surface accessibility. No cell-state-induced ecto-display, tissue-restricted surface pool, lysosomal exocytosis, dual-localization PM cycling, or stable post-translational TM-partner tethering is documented.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 382,
+  "completion_tokens": 1063,
+  "n_web_searches": 2,
+  "cost_usd": 0.06335845,
+  "latency_s": 12.288470083032735,
+  "error": null,
+  "raw_text": ""
+}

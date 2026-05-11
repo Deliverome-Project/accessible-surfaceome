@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is a multi-pass TM scramblase (4 TM helices per protomer; homotrimer) \u2014 the sole integral membrane protein of the core autophagy machinery. Its canonical localization is intracellular: TGN, recycling endosomes, and small vesicular-tubular clusters (VTCs). However, multiple direct experimental methods (surface biotinylation, super-resolution TIRF microscopy, APEX2-EM, pHluorin PM-fusion reporter) demonstrate that ATG9A translocates to the plasma membrane via SNARE-dependent vesicle fusion under PM damage (digitonin, SLO, gasdermin-B), nutrient starvation, and EGF/endocytic stimulation. At the PM, the protein is physically integrated in the bilayer with luminal loops accessible on the outer leaflet. It also cycles back via endocytosis (AP2-mediated, Tyr8-phosphorylation-dependent). Baseline PM pool is minor; it enlarges substantially under stress/damage. Fits dual_localization (constitutive cycling with stress-amplified PM pool). No dominant extracellular domain; outer-leaflet exposure is via small luminal loops.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": "The extracellular-exposed loops are small (no large ectodomain); accessibility to binders from the outer leaflet is limited but documented for the lumenal loop region via pHluorin topology studies.",
+  "correct": false,
+  "prompt_tokens": 378,
+  "completion_tokens": 1213,
+  "n_web_searches": 2,
+  "cost_usd": 0.1505702,
+  "latency_s": 28.671823834010866,
+  "error": null,
+  "raw_text": ""
+}

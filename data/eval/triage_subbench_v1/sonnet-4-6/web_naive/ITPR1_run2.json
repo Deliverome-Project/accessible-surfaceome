@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 2,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 is a tetrameric IP3-gated calcium release channel resident in the ER membrane. Its architecture is a 'mushroom-like' structure with the six-helix TM stalk inserted in the ER membrane and the entire ligand-binding cap (SD, IBC, regulatory, CTD domains) exposed to the cytosol \u2014 there is no extracellular-facing domain accessible from outside the plasma membrane. Pre-no checklist: (1) cell_state_induced \u2014 no documented outer-leaflet display in cancer, apoptosis, heat shock, or activation; ER-resident topology has no extracellular face at any cell state; (2) tissue_restricted_surface \u2014 no PM surface pool documented in any lineage or developmental stage; (3) lysosomal_exocytosis \u2014 not a lysosomal TM protein; (4) dual_localization \u2014 no documented PM minority pool in surface proteomics or flow cytometry on intact cells; HPA reports cytoplasmic expression only; (5) stable_surface_attachment \u2014 not secreted, no wash-resistant TM-partner tethering to plasma membrane. ITPR1-IgG autoantibodies (anti-Sj) target the intracellular protein in fixed/permeabilized tissue, not a surface-exposed epitope. No cell-surface-directed therapeutic exists. Verdict: endomembrane_resident.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 4,
+  "completion_tokens": 1146,
+  "n_web_searches": 2,
+  "cost_usd": 0.12658445,
+  "latency_s": 24.659108875028323,
+  "error": null,
+  "raw_text": ""
+}

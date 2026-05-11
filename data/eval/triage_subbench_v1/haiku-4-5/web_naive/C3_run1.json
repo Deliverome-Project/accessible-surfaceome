@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a secreted plasma protein synthesized in hepatocytes and circulating at ~1.2 mg/mL. It has no transmembrane domain or GPI anchor. While activated C3b can form transient covalent thioester bonds with cell surfaces via binding to antigens/immune complexes, the native C3 protein body is not stably anchored to the plasma membrane via its own mechanism\u2014it remains in equilibrium with the soluble pool. No documented cancer/cell-death/activation-induced ecto-display; no narrow germline/developmental/somatic display; not a lysosomal TM protein; no PM cycling pool independent of transient antigen attachment; no stable TM-partner tethering.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": false,
+  "prompt_tokens": 381,
+  "completion_tokens": 1082,
+  "n_web_searches": 3,
+  "cost_usd": 0.08525869999999999,
+  "latency_s": 13.64004708401626,
+  "error": null,
+  "raw_text": ""
+}

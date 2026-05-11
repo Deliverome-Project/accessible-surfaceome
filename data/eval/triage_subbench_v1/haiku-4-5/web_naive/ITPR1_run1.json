@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 is an ER-resident ligand-gated Ca2+ channel with six transmembrane domains anchored to the endoplasmic reticulum membrane, not the plasma membrane. The large cytosolic IP3-binding domain and channel architecture are wholly intracellular. No documented ectodomain shedding, plasma-membrane cycling, TM-partner tethering, cell-state-induced surfacing, tissue-restricted surface display, or other contextual mechanism allows the protein body to reach the outer leaflet of the cell surface. Not a binder target.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 383,
+  "completion_tokens": 920,
+  "n_web_searches": 2,
+  "cost_usd": 0.05827195,
+  "latency_s": 11.274672708008438,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 is a canonical ER-resident intracellular calcium channel. Its architecture (large N-terminal cytoplasmic ligand-binding domain, juxtamembrane domain, and C-terminal TM domain) is embedded in the ER membrane, with no domain facing the extracellular space. Immunolocalization consistently places it in the ER (and sub-apical ER in polarized epithelial cells). Pre-no checklist: (1) cell_state_induced \u2014 no documented outer-leaflet display under stress, cancer state, apoptosis, or activation; overexpressed ITPR3 mislocalizes to MAMs/nucleus, both intracellular; (2) tissue_restricted_surface \u2014 no germline/developmental outer-leaflet display reported; (3) lysosomal_exocytosis \u2014 ITPR3 is not a lysosomal TM protein; (4) dual_localization \u2014 'sub-apical ER near the plasma membrane' is not a PM pool; no surface biotinylation or flow cytometry evidence of PM residence; (5) stable_surface_attachment \u2014 no covalent or wash-resistant tethering to a TM partner on the plasma membrane. No cell-surface-directed clinical program found. Verdict: endomembrane-resident.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 378,
+  "completion_tokens": 1052,
+  "n_web_searches": 1,
+  "cost_usd": 0.08261769999999999,
+  "latency_s": 22.94319954200182,
+  "error": null,
+  "raw_text": ""
+}

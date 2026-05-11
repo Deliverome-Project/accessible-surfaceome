@@ -188,9 +188,30 @@ def _extract_text(response: Any) -> tuple[str, int]:
     return "\n".join(parts), n_searches
 
 
-def _cost(model: str, prompt_tokens: int, completion_tokens: int, n_web_searches: int) -> float:
+def _cost(
+    model: str,
+    prompt_tokens: int,
+    completion_tokens: int,
+    n_web_searches: int,
+    cache_creation_tokens: int = 0,
+    cache_read_tokens: int = 0,
+) -> float:
+    """Total $ cost for one API call.
+
+    Anthropic prompt caching pricing (as of 2026-Q1):
+      * `cache_creation_input_tokens` — billed at 1.25× the base input rate
+        (the system prompt being written to the cache).
+      * `cache_read_input_tokens` — billed at 0.10× the base input rate
+        (cache hits — every call after the first within the 5-min TTL).
+      * `input_tokens` (what the SDK calls just "input") excludes both
+        cache fields, so we add them as separate weighted components.
+    """
     in_price, out_price = MODEL_PRICING.get(model, (0.0, 0.0))
-    token_cost = (prompt_tokens * in_price + completion_tokens * out_price) / 1_000_000
+    uncached_in = prompt_tokens * in_price
+    cache_write = cache_creation_tokens * in_price * 1.25
+    cache_read = cache_read_tokens * in_price * 0.10
+    output = completion_tokens * out_price
+    token_cost = (uncached_in + cache_write + cache_read + output) / 1_000_000
     search_cost = n_web_searches * WEB_SEARCH_USD_PER_QUERY
     return token_cost + search_cost
 
@@ -232,10 +253,27 @@ def _run_one(
     started = time.monotonic()
     # Build kwargs; omit `tools` entirely for no-tool variants — the API
     # rejects `tools=None` with "Input should be a valid array".
+    #
+    # Prompt caching: mark the system prompt as ephemeral so it's billed
+    # at 1.25× input on first call but 0.10× input on subsequent calls
+    # within the 5-minute cache TTL. For our sweeps (147+ calls landing
+    # within seconds of each other), every call after the first reads
+    # the cached 1.8-2K-token system prompt at a 90% discount. Also
+    # helps inside multi-turn tool-use loops (web_search variants),
+    # which re-include the system prompt on every turn.
+    #
+    # Per Anthropic's pricing, cache hits on Sonnet save ~$0.005 per
+    # call; Haiku saves ~$0.0008. Free, no behaviour change.
     create_kwargs: dict[str, Any] = {
         "model": model,
         "max_tokens": 4096,
-        "system": system_prompt,
+        "system": [
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ],
         "messages": [{"role": "user", "content": user_message}],
     }
     if cfg["web_search"]:
@@ -257,7 +295,16 @@ def _run_one(
     usage = getattr(response, "usage", None)
     prompt_tokens = getattr(usage, "input_tokens", 0) or 0
     completion_tokens = getattr(usage, "output_tokens", 0) or 0
-    cost = _cost(model, prompt_tokens, completion_tokens, n_searches)
+    # Prompt-caching fields — non-zero only when the request marks
+    # parts of the prompt with cache_control. `input_tokens` excludes
+    # both cache fields, so we count them separately at their tier rates.
+    cache_creation_tokens = getattr(usage, "cache_creation_input_tokens", 0) or 0
+    cache_read_tokens = getattr(usage, "cache_read_input_tokens", 0) or 0
+    cost = _cost(
+        model, prompt_tokens, completion_tokens, n_searches,
+        cache_creation_tokens=cache_creation_tokens,
+        cache_read_tokens=cache_read_tokens,
+    )
 
     parsed = _parse_json_response(raw_text)
     if parsed is None:
@@ -314,16 +361,34 @@ def _persist(rec: RunRecord) -> Path:
     return path
 
 
-def _maybe_stream_to_d1(rec: RunRecord, sink: Any | None) -> str:
-    """Mirror one completed record into D1 if a sink is configured.
+def _commit_record(rec: RunRecord, sink: Any | None) -> str:
+    """Persist a completed run record.
 
-    Returns a short status tag for the progress line so the operator can
-    see which cells landed in D1 vs which fell back to JSON-only.
+    Two modes:
+
+    * **No D1 sink** — write the per-cell JSON under ``OUT_ROOT/`` as
+      before. Returns "".
+
+    * **D1 sink configured** — write to D1 first. On success, skip the
+      local JSON write (D1 is canonical; local copies are clutter at
+      genome-wide scale — 13,918 cells × ~3KB = ~42MB of throwaway files).
+      On D1 failure, fall back to local JSON so we don't lose the cell —
+      the batch uploader can replay it later. Returns ``"  d1=✓"`` or
+      ``"  d1=✗(local-fallback)"``.
+
+    Trade-off: under happy-path --d1 you can't grep the local JSON tree
+    for results; everything lives in D1. That's the design intent —
+    query via ``SELECT ... FROM triage_run``, not ``find data/eval/``.
     """
     if sink is None:
+        _persist(rec)
         return ""
     ok = sink.insert(rec.__dict__)
-    return "  d1=✓" if ok else "  d1=✗"
+    if ok:
+        return "  d1=✓"
+    # D1 hiccup — preserve the cell locally so it can be re-uploaded.
+    _persist(rec)
+    return "  d1=✗(local-fallback)"
 
 
 def main() -> None:
@@ -346,12 +411,23 @@ def main() -> None:
                     help="Print the planned cells and exit without API calls.")
     ap.add_argument("--bench", choices=list(BENCH_TSV_BY_NAME.keys()), default="subbench",
                     help="Which benchmark to run: 'subbench' (17 persistent-error genes) "
-                         "or 'benchmark' (full 147-gene triage_benchmark_v1).")
+                         "or 'benchmark' (full 147-gene triage_benchmark_v1). Ignored "
+                         "when --gene-list is provided.")
+    ap.add_argument("--gene-list", default=None,
+                    help="Path to a TSV with at least a 'gene_symbol' column — runs "
+                         "the triage agent on every gene listed, with no ground truth. "
+                         "Use for genome-wide / unlabeled sweeps (e.g. "
+                         "data/processed/whole_genome_minus_m1.tsv). Overrides --bench. "
+                         "When set, --out-root defaults to "
+                         "data/eval/triage_<basename>_v1/ unless explicitly overridden.")
+    ap.add_argument("--out-root", default=None,
+                    help="Directory for per-cell JSON records. Default: derived from "
+                         "--bench or --gene-list.")
     ap.add_argument("--d1", action="store_true",
                     help="Stream each completed cell to the surfaceome_agents D1 "
                          "database in real time. Requires CLOUDFLARE_* env vars in "
                          ".env (see cloudflare/README.md). The JSON write under "
-                         "data/eval/triage_*bench_v1/ remains the canonical record; "
+                         "data/eval/triage_*_v1/ remains the canonical record; "
                          "the D1 mirror is for live dashboards + dropping the "
                          "batch-upload step.")
     ap.add_argument("--run-id", default=None,
@@ -360,7 +436,18 @@ def main() -> None:
     args = ap.parse_args()
 
     global SUBBENCH_TSV, OUT_ROOT
-    SUBBENCH_TSV, OUT_ROOT = BENCH_TSV_BY_NAME[args.bench]
+    if args.gene_list:
+        # Unlabeled sweep — the "input TSV" is the gene-list itself.
+        SUBBENCH_TSV = Path(args.gene_list)
+        if not SUBBENCH_TSV.exists():
+            raise SystemExit(f"--gene-list path does not exist: {SUBBENCH_TSV}")
+        # Derive out-root from the gene-list filename (drop .tsv suffix).
+        default_out = ROOT / "data" / "eval" / f"triage_{SUBBENCH_TSV.stem}_v1"
+        OUT_ROOT = Path(args.out_root) if args.out_root else default_out
+    else:
+        SUBBENCH_TSV, OUT_ROOT = BENCH_TSV_BY_NAME[args.bench]
+        if args.out_root:
+            OUT_ROOT = Path(args.out_root)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
     # Pull ANTHROPIC_API_KEY (and NCBI_API_KEY if present) from repo-root
@@ -370,10 +457,21 @@ def main() -> None:
 
     with SUBBENCH_TSV.open() as f:
         rows = list(csv.DictReader(f, delimiter="\t"))
+    if not rows:
+        raise SystemExit(f"{SUBBENCH_TSV} has no data rows")
+    if "gene_symbol" not in rows[0]:
+        raise SystemExit(f"{SUBBENCH_TSV} missing required 'gene_symbol' column")
     if args.genes:
         rows = [r for r in rows if r["gene_symbol"] in set(args.genes)]
         if not rows:
-            raise SystemExit(f"--genes {args.genes!r} matched no sub-benchmark rows")
+            raise SystemExit(f"--genes {args.genes!r} matched no input rows")
+
+    # Gene-list inputs don't have truth fields; default to empty strings so
+    # _run_one's signature is happy and `correct` resolves to False (no
+    # truth to match against).
+    for r in rows:
+        r.setdefault("ground_truth_verdict", "")
+        r.setdefault("class", "")
 
     cells: list[tuple[str, str, dict, int]] = []
     for model in args.model:
@@ -382,10 +480,14 @@ def main() -> None:
                 for rep in range(1, args.replicates + 1):
                     cells.append((variant, model, row, rep))
 
-    print(f"Sub-benchmark: {len(rows)} proteins × {len(args.variants)} variants × "
+    sweep_label = "Gene-list" if args.gene_list else f"{args.bench.capitalize()} bench"
+    print(f"{sweep_label}: {len(rows)} proteins × {len(args.variants)} variants × "
           f"{args.replicates} replicates × {len(args.model)} model(s) = {len(cells)} cells")
-    print(f"Models: {', '.join(args.model)}")
-    print(f"Output: {OUT_ROOT}")
+    print(f"Input:   {SUBBENCH_TSV}")
+    print(f"Models:  {', '.join(args.model)}")
+    print(f"Output:  {OUT_ROOT}")
+    if args.gene_list:
+        print("Note:    unlabeled sweep — `correct` will be False for every cell")
     print()
 
     if args.dry_run:
@@ -421,8 +523,7 @@ def main() -> None:
         }
         for i, fut in enumerate(as_completed(futures), start=1):
             rec = fut.result()
-            _persist(rec)
-            d1_tag = _maybe_stream_to_d1(rec, d1_sink)
+            d1_tag = _commit_record(rec, d1_sink)
             results.append(rec)
             marker = "✓" if rec.correct else ("✗" if rec.error is None else "!")
             err = f"  ERR={rec.error}" if rec.error else ""

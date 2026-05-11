@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "C3",
+  "replicate": 2,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a 185-kDa soluble plasma protein secreted via ER-Golgi with a signal peptide (no TM domain). It circulates at ~1.2 mg/mL in plasma. While activated C3b fragments covalently deposit via thioester bonds onto target pathogen/apoptotic-cell surfaces for opsonization, this is post-translational surface covalent attachment to *target* cells downstream, not stable surface anchoring of the C3 protein body itself to the cell that produces it. The protein is secreted into the extracellular space and does not reach the outer leaflet of the cell membrane via its own mechanism. No cell-state-induced ecto-display, tissue-restricted surface pool, lysosomal exocytosis, PM cycling pool, or stable TM-partner tethering documented. The biology is secreted opsonin deposition, not cell-surface protein display.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": false,
+  "prompt_tokens": 387,
+  "completion_tokens": 1385,
+  "n_web_searches": 3,
+  "cost_usd": 0.09057825,
+  "latency_s": 19.214738167007454,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted protein with no transmembrane domain in any endogenous isoform. Although longer isoforms (VEGF189, VEGF206) bind reversibly to extracellular heparan sulfate proteoglycans and matrix near the cell surface, this is non-covalent equilibrium binding, not a stable membrane anchor. The protein has no GPI anchor, no outer-leaflet lipidation, and no covalent tether to a TM partner. Clinical antibody programs target the soluble secreted ligand, not a cell-surface precursor. No documented cell-death, oncogenic, activation-induced, or tissue-restricted ecto-display of endogenous VEGFA to the outer leaflet. Matrix-bound deposition (VEGF189) does not constitute surface accessibility as the protein remains in equilibrium with soluble pool and lacks its own anchoring mechanism.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 388,
+  "completion_tokens": 1582,
+  "n_web_searches": 2,
+  "cost_usd": 0.07079455,
+  "latency_s": 20.083088791987393,
+  "error": null,
+  "raw_text": ""
+}

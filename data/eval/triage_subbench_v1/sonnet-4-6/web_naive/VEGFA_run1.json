@@ -1,0 +1,21 @@
+{
+  "variant": "web_naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a classically secreted growth factor with a signal peptide but no transmembrane domain or GPI anchor. Its cell-surface association \u2014 seen for VEGF165 and VEGF189 isoforms \u2014 is mediated by reversible, non-covalent binding to heparan sulfate proteoglycans (HSPGs) on the extracellular matrix and cell surface, readily reversed by heparin, heparinase, or plasmin. This fails the wash-resistance criterion for 'stable_surface_attachment'. Pre-no checklist: (1) cell_state_induced \u2014 no documented outer-leaflet translocation of the VEGFA protein body itself under stress, ICD, or oncogenic state; hypoxia upregulates expression but the protein remains secreted; (2) tissue_restricted_surface \u2014 no isoform carries its own TM or GPI anchor in any lineage; (3) lysosomal_exocytosis \u2014 VEGFA is not a lysosomal TM protein; (4) dual_localization \u2014 cytoplasmic/Golgi and secreted pools exist but no bona fide PM-anchored minority pool; HSPG binding is reversible; (5) stable_surface_attachment \u2014 HSPG binding is heparin-releasable and therefore not wash-resistant. All approved anti-VEGFA therapeutics (bevacizumab, ranibizumab, aflibercept) target the circulating soluble form, not a cell-surface form.",
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "correct": true,
+  "prompt_tokens": 377,
+  "completion_tokens": 1419,
+  "n_web_searches": 2,
+  "cost_usd": 0.15867095,
+  "latency_s": 29.948393416998442,
+  "error": null,
+  "raw_text": ""
+}
