@@ -36,7 +36,7 @@ SUBBENCH_PATH = REPO_ROOT / "data" / "eval" / "triage_subbench_v1.tsv"
 SUBBENCH_RUNS_DIR = REPO_ROOT / "data" / "eval" / "triage_subbench_v1"
 OUTPUT_HTML = REPO_ROOT / "docs" / "eval" / "triage_agent_reference.html"
 
-SUBBENCH_MODELS = ["haiku-4-5", "sonnet-4-6"]
+SUBBENCH_MODELS: list[str] = []  # haiku/sonnet runs stale under v0.9.0 prompts; regenerate before re-listing
 SUBBENCH_VARIANTS = ["naive", "ncbi", "web_naive", "web_ncbi"]
 
 # (slug, filename, display label, blurb)
@@ -499,9 +499,9 @@ details[open] summary { margin-bottom: 12px; }
 
 <section id="subbench">
   <h2>17-gene subbench <span class="pill">__SUBBENCH_N__ genes</span></h2>
-  <p class="lede">Persistent-error subset at <code>data/eval/triage_subbench_v1.tsv</code> — every entry has been a stable source of FN / FP across iterations. Used for rapid prompt-iteration cycles. Score grid below shows verdict accuracy (V) and verdict+reason accuracy (R) for each (model, prompt-variant) pair.</p>
+  <p class="lede">Persistent-error subset at <code>data/eval/triage_subbench_v1.tsv</code> — every entry has been a stable source of FN / FP across iterations. Used for rapid prompt-iteration cycles. Per-gene definitions below; the score grid is omitted until runs are regenerated under the current v0.9.0 prompts (prior haiku/sonnet results were stale).</p>
 
-  <table class="subbench-grid">
+  <table class="subbench-grid" id="subbench-grid-table" hidden>
     <thead>
       <tr>
         <th>Model</th>
@@ -510,7 +510,7 @@ details[open] summary { margin-bottom: 12px; }
     </thead>
     <tbody id="subbench-grid-tbody"></tbody>
   </table>
-  <p class="subbench-note">V = correct verdict; R = correct verdict <em>and</em> correct reason. Each cell shows percent (top) and absolute fraction (bottom). Colour: red &lt; 50%, amber 50–75%, green ≥ 75%.</p>
+  <p class="subbench-note" id="subbench-grid-note" hidden>V = correct verdict; R = correct verdict <em>and</em> correct reason. Each cell shows percent (top) and absolute fraction (bottom). Colour: red &lt; 50%, amber 50–75%, green ≥ 75%.</p>
 
   <table class="benchmark-table" id="subbench-table">
     <thead>
@@ -642,7 +642,9 @@ function scoreBucket(pct) {
   return "weak";
 }
 const subbenchTbody = document.getElementById("subbench-grid-tbody");
-if (subbenchTbody) {
+if (subbenchTbody && subbenchModels.length) {
+  document.getElementById("subbench-grid-table").hidden = false;
+  document.getElementById("subbench-grid-note").hidden = false;
   const rows = subbenchModels.map(model => {
     const cells = subbenchVariants.map(variant => {
       const cell = (subbenchScores[model] || {})[variant] || {n_runs: 0, n_verdict_correct: 0, n_reason_correct: 0};
