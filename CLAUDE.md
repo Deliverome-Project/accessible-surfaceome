@@ -109,7 +109,10 @@ The `viewer/` subproject is a static SPA. Per-gene records live under
 The `surfaceome_agents` D1 database stores every `surface_triage`
 and `surface_annotator` invocation with full reproducibility metadata
 (prompt SHA, benchmark version, schema version, prose reasoning). It's
-separate from the website's `signups` D1.
+separate from the website's `signups` D1. **The Pages binding lives
+in the deliverome main-site repo's `wrangler.toml`** — this repo's
+Python tooling reads / writes via D1's HTTP API and does not require
+a Pages binding.
 
 - **Schema**: `cloudflare/d1_schema.sql` — 6 tables, 3 views. Triage +
   deep-dive share the DB; cross-table joins (`triage_vs_deep_dive`)

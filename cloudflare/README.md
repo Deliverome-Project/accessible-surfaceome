@@ -53,17 +53,35 @@ npx --yes wrangler d1 execute surfaceome_agents --remote --command \
 
 ### Bind the new D1 to the Deliverome Pages project
 
-In the Cloudflare dashboard:
+The Deliverome Pages project manages its bindings via `wrangler.toml`
+in the main-site repo (not via the dashboard, and not from this repo).
+Add the following block to that repo's `wrangler.toml`:
 
-1. Navigate to the project
-   ([Pages → deliverome → Settings → Bindings → Production](https://dash.cloudflare.com/8e7d57ba080f9fec53b320a1b9449b18/pages/view/deliverome/settings/production)).
-2. Under **D1 database bindings**, click **Add binding**.
-3. Variable name: `SURFACEOME_AGENTS` — short, parallels the existing `SIGNUPS`
-   binding, and stays accurate once deep-dive tables share this DB.
-4. D1 database: pick `surfaceome_agents` from the dropdown.
-5. Repeat under the Preview tab if you want the same binding in preview deploys.
+```toml
+[[d1_databases]]
+binding = "SURFACEOME_AGENTS"
+database_name = "surfaceome_agents"
+database_id = "<uuid-from-step-2>"
+```
 
-The signups DB stays untouched — these are two independent bindings.
+For preview-environment access, mirror under `[[env.preview.d1_databases]]`.
+Push + deploy the main-site repo to apply.
+
+Worker / Pages-Function code in that repo can then call:
+
+```ts
+env.SURFACEOME_AGENTS.prepare("SELECT * FROM triage_run WHERE ...").all();
+```
+
+**This repo's Python tooling does NOT need the Pages binding** — the
+`scripts/upload_triage_runs_to_d1.py` uploader and the
+`scripts/d1_export_to_r2.sh` backup script both call D1's HTTP API
+directly, authenticated by `CLOUDFLARE_API_TOKEN` and addressed by
+`CLOUDFLARE_D1_SURFACEOME_AGENTS_ID`. They work independently of any
+wrangler.toml binding.
+
+The signups DB binding stays untouched — these are independent
+bindings on the same Pages project.
 
 ### Environment variables for the Python uploader
 

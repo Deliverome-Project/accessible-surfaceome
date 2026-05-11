@@ -82,7 +82,10 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 - The `surfaceome_agents` D1 database stores every `surface_triage`
   and `surface_annotator` invocation with full reproducibility metadata
   (prompt SHA, benchmark version, schema version, prose reasoning).
-  It's separate from the website's `signups` D1.
+  It's separate from the website's `signups` D1. **The Pages binding
+  lives in the deliverome main-site repo's `wrangler.toml`** — this
+  repo's Python tooling reads / writes via D1's HTTP API and doesn't
+  need a Pages binding.
 - **Schema**: `cloudflare/d1_schema.sql` — 6 tables (`prompt_version`,
   `benchmark_version`, `triage_run`, `deep_dive_run`,
   `deep_dive_evidence`, `deep_dive_search_log`) plus 3 views. Triage
