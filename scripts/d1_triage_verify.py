@@ -1,4 +1,4 @@
-"""Reconcile the Cloudflare D1 `triage_results` database against the
+"""Reconcile the Cloudflare D1 `deliverome_agent_runs` database against the
 on-disk per-cell JSON records.
 
 The on-disk JSON files under ``data/eval/triage_subbench_v1/<model>/

@@ -73,6 +73,44 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 ## CI & Checks
 - CI runs on PRs and pushes to `main` via `.github/workflows/ci.yml`.
 - CI validates lockfile consistency and runs Ruff, ty, compile, and pytest checks.
+- `.github/workflows/d1-backup.yml` exports the `deliverome_agent_runs`
+  D1 database to the R2 bucket `deliverome-d1-backups` on every push
+  to `main` that touches the D1 schema, the eval data, or the
+  uploader code. See **Cloudflare D1 + R2** below.
+
+## Cloudflare D1 + R2 backups for agent runs
+- The `deliverome_agent_runs` D1 database stores every `surface_triage`
+  and `surface_annotator` invocation with full reproducibility metadata
+  (prompt SHA, benchmark version, schema version, prose reasoning).
+  It's separate from the website's `signups` D1.
+- **Schema**: `cloudflare/d1_schema.sql` — 6 tables (`prompt_version`,
+  `benchmark_version`, `triage_run`, `deep_dive_run`,
+  `deep_dive_evidence`, `deep_dive_search_log`) plus 3 views. Triage
+  and deep-dive share the DB so cross-table joins
+  (`triage_vs_deep_dive`) are cheap.
+- **Upload**: `scripts/upload_triage_runs_to_d1.py` after any sweep
+  produces per-cell JSON records under `data/eval/triage_subbench_v1/`.
+- **Verify**: `scripts/d1_triage_verify.py` reconciles D1 vs on-disk
+  JSON; exits non-zero on divergence.
+- **CI backup → R2**: every push to `main` that touches the relevant
+  paths (`cloudflare/d1_schema.sql`, `data/eval/triage_subbench_v1/**`,
+  `data/annotations/**`, `data/triage/**`,
+  `src/accessible_surfaceome/cloud/**`, the uploader / backup scripts
+  themselves) triggers `scripts/d1_export_to_r2.sh`, which runs
+  `wrangler d1 export` and uploads to the R2 bucket
+  `deliverome-d1-backups` under a dated key plus a stable
+  `latest.sql` pointer.
+- **Layered recovery** (cloudflare/README.md has the full walkthrough):
+  Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
+  long-term) → on-disk JSON under `data/eval/` and `data/annotations/`
+  (canonical source — re-uploadable into a fresh D1).
+- **CI secrets** (one-time, in repo Settings → Secrets and variables
+  → Actions): `CLOUDFLARE_API_TOKEN` (scoped D1:Edit + R2:Edit) and
+  `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket is provisioned locally via
+  `wrangler r2 bucket create deliverome-d1-backups`.
+- When adding a new data path the DB stores, add it to the
+  `paths:` filter in `.github/workflows/d1-backup.yml` so CI catches
+  the change and exports a fresh dump.
 
 ## Pull Request Conventions
 PR titles are validated by `.github/workflows/lint-pr-title.yml` (Conventional

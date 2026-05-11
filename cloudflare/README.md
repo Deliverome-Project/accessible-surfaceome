@@ -1,12 +1,23 @@
 # Cloudflare integrations
 
-## triage_results — D1 database for reproducible triage runs
+## deliverome_agent_runs — D1 database for reproducible agent runs
 
 A separate D1 database from the existing `signups` one on the Deliverome
-Pages project. Stores one row per (model × prompt-variant × replicate × gene)
-triage call with full reproducibility metadata: the prompt SHA, the
-benchmark version, the schema version, and the agent's full
-`verdict_reasoning` prose.
+Pages project. Holds BOTH:
+
+- **`triage_run`** — one row per `surface_triage` agent call (model ×
+  prompt-variant × replicate × gene) with full reproducibility metadata:
+  the prompt SHA, the benchmark version, the schema version, and the
+  agent's full `verdict_reasoning` prose.
+- **`deep_dive_run`** plus its child tables `deep_dive_evidence` and
+  `deep_dive_search_log` — one row per `surface_annotator` invocation
+  with the full `SurfaceomeRecord` payload, every Evidence claim, and
+  every SearchEntry from the agent's tool-use trace.
+
+One DB instead of two because the most valuable analytics are cross-
+table joins (the `triage_vs_deep_dive` view): "what did the deep dive
+find for proteins the triage flagged contextual at high cost?". This
+also conserves Pages D1-binding slots (free plan caps at 5/project).
 
 ### Provisioning (one-time, from your local machine)
 
@@ -19,19 +30,19 @@ and `wrangler` installed (`npm i -g wrangler`).
 wrangler login
 
 # 2. Create the database — captures the database UUID.
-wrangler d1 create triage_results
+wrangler d1 create deliverome_agent_runs
 #   ┌─────────────────────────────────────────────┐
-#   │ name = "triage_results"                     │
+#   │ name = "deliverome_agent_runs"                     │
 #   │ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-..." │   ← save this
 #   └─────────────────────────────────────────────┘
 
 # 3. Apply the schema to the remote DB.
-wrangler d1 execute triage_results \
+wrangler d1 execute deliverome_agent_runs \
     --remote \
-    --file=cloudflare/d1_triage_schema.sql
+    --file=cloudflare/d1_schema.sql
 
 # 4. Sanity-check that the tables exist.
-wrangler d1 execute triage_results --remote --command \
+wrangler d1 execute deliverome_agent_runs --remote --command \
     "SELECT name FROM sqlite_master WHERE type='table';"
 #   Expected: prompt_version, benchmark_version, triage_run, sqlite_sequence
 ```
@@ -44,7 +55,7 @@ In the Cloudflare dashboard:
    ([Pages → deliverome → Settings → Bindings → Production](https://dash.cloudflare.com/8e7d57ba080f9fec53b320a1b9449b18/pages/view/deliverome/settings/production)).
 2. Under **D1 database bindings**, click **Add binding**.
 3. Variable name: `TRIAGE_RESULTS` (or whatever the worker code expects).
-4. D1 database: pick `triage_results` from the dropdown.
+4. D1 database: pick `deliverome_agent_runs` from the dropdown.
 5. Repeat under the Preview tab if you want the same binding in preview deploys.
 
 The signups DB stays untouched — these are two independent bindings.
@@ -58,7 +69,7 @@ directly to D1's HTTP API (not via a worker), so it needs:
 # Account UUID — same hex that appears in the dashboard URL.
 CLOUDFLARE_ACCOUNT_ID=8e7d57ba080f9fec53b320a1b9449b18
 
-# UUID returned by `wrangler d1 create triage_results` above.
+# UUID returned by `wrangler d1 create deliverome_agent_runs` above.
 CLOUDFLARE_D1_TRIAGE_ID=<uuid-from-step-2>
 
 # API token with D1:Edit on this account. Create at
@@ -90,18 +101,23 @@ prompt_sha)` — re-running with the same `--run-id` skips duplicates.
 
 ### Schema overview
 
-Three tables and one view (see `d1_triage_schema.sql` for the canonical
+Six tables and three views (see `d1_schema.sql` for the canonical
 definition):
 
-| table              | rows | purpose                                                |
-|--------------------|------|---------------------------------------------------------|
-| `prompt_version`   | per unique prompt SHA | content-addressed snapshots; editing a prompt creates a new row |
-| `benchmark_version`| per (bench_version, gene_symbol) | point-in-time ground-truth labels |
-| `triage_run`       | per API call | every replicate, with full telemetry + prose reasoning |
+| table | rows | purpose |
+|---|---|---|
+| `prompt_version` | per unique prompt SHA | content-addressed prompt snapshots; editing a prompt creates a new row |
+| `benchmark_version` | per (bench_version, gene_symbol) | point-in-time ground-truth labels |
+| `triage_run` | per `surface_triage` API call | every replicate, full telemetry + `verdict_reasoning` |
+| `deep_dive_run` | per `surface_annotator` invocation | full `SurfaceomeRecord` JSON + denormalised headline / counts |
+| `deep_dive_evidence` | per Evidence claim | source DB, URL, verbatim span, claim_kind — joins to `deep_dive_run` |
+| `deep_dive_search_log` | per SearchEntry | every tool consultation in order |
 
-| view                  | purpose                                  |
-|-----------------------|------------------------------------------|
-| `triage_cell_summary` | pre-aggregated per-cell accuracy + cost  |
+| view | purpose |
+|---|---|
+| `triage_cell_summary` | pre-aggregated per-cell triage accuracy + cost |
+| `deep_dive_latest` | most-recent `deep_dive_run` per gene (collapses replicates) |
+| `triage_vs_deep_dive` | every triage call joined to the latest deep dive for that gene |
 
 Common queries:
 
@@ -152,14 +168,14 @@ To list available restore points and restore:
 
 ```sh
 # What bookmarks are available?
-wrangler d1 time-travel info triage_results
+wrangler d1 time-travel info deliverome_agent_runs
 
 # Restore to a specific point in time (ISO 8601 timestamp).
-wrangler d1 time-travel restore triage_results \
+wrangler d1 time-travel restore deliverome_agent_runs \
     --timestamp '2026-05-10T20:00:00Z'
 
 # Or by bookmark id (returned from the info call).
-wrangler d1 time-travel restore triage_results --bookmark <bookmark-id>
+wrangler d1 time-travel restore deliverome_agent_runs --bookmark <bookmark-id>
 ```
 
 Restore is destructive — the database is rewound to the chosen point and
@@ -174,16 +190,71 @@ bash scripts/d1_triage_backup.sh
 ```
 
 This runs `wrangler d1 export` and writes
-`data/processed/cloudflare/d1_backups/triage_results_<UTC-timestamp>.sql`
+`data/processed/cloudflare/d1_backups/deliverome_agent_runs_<UTC-timestamp>.sql`
 plus a sha256 companion file. Re-import a dump with:
 
 ```sh
-wrangler d1 execute triage_results --remote \
-    --file=data/processed/cloudflare/d1_backups/triage_results_20260510T200000Z.sql
+wrangler d1 execute deliverome_agent_runs --remote \
+    --file=data/processed/cloudflare/d1_backups/deliverome_agent_runs_20260510T200000Z.sql
 ```
 
 Run the export weekly (or before any schema migration) to keep an
 offline-grep-able trail beyond the Time Travel window.
+
+### Layer 2.5 — Automated SQL exports → R2 bucket (CI-driven)
+
+The GitHub workflow `.github/workflows/d1-backup.yml` triggers
+`scripts/d1_export_to_r2.sh` on every push to `main` that touches:
+
+- `cloudflare/d1_schema.sql` (schema changes)
+- `data/eval/triage_subbench_v1/**` (new triage run records)
+- `data/annotations/**` (new deep-dive records)
+- `data/triage/**` (production triage outputs)
+- `src/accessible_surfaceome/cloud/**` (uploader code)
+- `scripts/upload_triage_runs_to_d1.py` / `d1_export_to_r2.sh`
+
+Each run produces an offsite SQL dump in the R2 bucket
+`deliverome-d1-backups` under the dated key
+`d1-backups/deliverome_agent_runs/<YYYY>/<MM>/deliverome_agent_runs_<UTC>.sql`
+and updates the stable pointer `d1-backups/deliverome_agent_runs/latest.sql`.
+A small JSON manifest (sha256 + byte count) lands next to each dump for
+integrity checks.
+
+**One-time R2 setup** (run locally with `wrangler`):
+
+```sh
+# Create the R2 bucket the CI workflow targets.
+wrangler r2 bucket create deliverome-d1-backups
+
+# Set repo secrets in GitHub Settings → Secrets and variables → Actions:
+#   CLOUDFLARE_API_TOKEN   — scoped to D1:Edit + R2:Edit
+#   CLOUDFLARE_ACCOUNT_ID  — same hex as the dashboard URL
+```
+
+Manual trigger from your local machine:
+
+```sh
+bash scripts/d1_export_to_r2.sh            # CI mode: dump → R2, no local copy
+bash scripts/d1_export_to_r2.sh --keep-local  # also keep a local file
+```
+
+Inspect / restore from R2:
+
+```sh
+# List recent dumps.
+wrangler r2 object list deliverome-d1-backups --prefix d1-backups/deliverome_agent_runs/
+
+# Pull the latest pointer locally.
+wrangler r2 object get deliverome-d1-backups \
+    d1-backups/deliverome_agent_runs/latest.sql \
+    --output ./latest.sql
+
+# Re-import into D1 (DESTRUCTIVE — wipes current tables before applying).
+wrangler d1 execute deliverome_agent_runs --remote --file=./latest.sql
+```
+
+R2 is durable, cross-region, and outside the Time Travel window — this
+is the layer that protects against an account-level disaster.
 
 ### Layer 3 — The on-disk JSON records (canonical source of truth)
 
@@ -218,7 +289,7 @@ non-zero if anything's out of sync.
 | event | action |
 |---|---|
 | After every triage sweep | run uploader — records auto-flow to D1 |
-| Weekly | run `d1_triage_backup.sh` for offline SQL snapshot |
-| Before schema migration | back up + verify, run migration, verify again |
+| Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh dump lands in R2 with a dated key + `latest.sql` pointer |
+| Before schema migration | run `d1_triage_verify.py`, `d1_triage_backup.sh`, migrate, verify again |
 | After noticing weirdness | run `d1_triage_verify.py` first |
-| Catastrophic D1 loss | re-run the uploader; on-disk JSON is canonical |
+| Catastrophic D1 loss | restore from `r2://deliverome-d1-backups/d1-backups/.../latest.sql`, then re-run uploader for any post-backup runs (on-disk JSON is the deeper-than-D1 canonical source) |

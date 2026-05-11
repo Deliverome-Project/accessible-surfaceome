@@ -1,7 +1,7 @@
-"""Upload triage agent runs to the Cloudflare D1 ``triage_results`` database.
+"""Upload triage agent runs to the Cloudflare D1 ``deliverome_agent_runs`` database.
 
 Run AFTER provisioning the D1 database (see cloudflare/README.md) and
-setting the env vars CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_TRIAGE_ID,
+setting the env vars CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_D1_DELIVEROME_ID,
 CLOUDFLARE_API_TOKEN.
 
 Examples

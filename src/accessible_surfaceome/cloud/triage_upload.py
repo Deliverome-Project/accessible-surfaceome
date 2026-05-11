@@ -1,4 +1,4 @@
-"""Upload triage agent runs to the Cloudflare D1 ``triage_results`` database.
+"""Upload triage agent runs to the Cloudflare D1 ``deliverome_agent_runs`` database.
 
 Walks ``data/eval/triage_subbench_v1/<model>/<variant>/<gene>_run<N>.json``
 records, looks up each one's prompt SHA (interning new prompt versions

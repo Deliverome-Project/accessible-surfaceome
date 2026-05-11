@@ -17,7 +17,7 @@ from accessible_surfaceome.cloud.d1_client import D1Client, D1Config, D1Error
 
 def test_d1config_raises_with_missing_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("CLOUDFLARE_ACCOUNT_ID", raising=False)
-    monkeypatch.delenv("CLOUDFLARE_D1_TRIAGE_ID", raising=False)
+    monkeypatch.delenv("CLOUDFLARE_D1_DELIVEROME_ID", raising=False)
     monkeypatch.delenv("CLOUDFLARE_API_TOKEN", raising=False)
     with pytest.raises(D1Error, match="Missing D1 environment variables"):
         D1Config.from_env()
@@ -25,7 +25,7 @@ def test_d1config_raises_with_missing_env(monkeypatch: pytest.MonkeyPatch) -> No
 
 def test_d1config_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "acct")
-    monkeypatch.setenv("CLOUDFLARE_D1_TRIAGE_ID", "db")
+    monkeypatch.setenv("CLOUDFLARE_D1_DELIVEROME_ID", "db")
     monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "tok")
     cfg = D1Config.from_env()
     assert cfg.account_id == "acct"

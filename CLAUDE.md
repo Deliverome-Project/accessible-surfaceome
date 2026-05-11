@@ -104,6 +104,38 @@ The `viewer/` subproject is a static SPA. Per-gene records live under
 `/gene/:symbol`; agent/curl access is `?format=json|md` or the static
 `/data/genes/{SYMBOL}.json` URL. See `viewer/README.md` for build + deploy.
 
+## Cloudflare D1 + R2 backups for agent runs
+
+The `deliverome_agent_runs` D1 database stores every `surface_triage`
+and `surface_annotator` invocation with full reproducibility metadata
+(prompt SHA, benchmark version, schema version, prose reasoning). It's
+separate from the website's `signups` D1.
+
+- **Schema**: `cloudflare/d1_schema.sql` — 6 tables, 3 views. Triage +
+  deep-dive share the DB; cross-table joins (`triage_vs_deep_dive`)
+  are the primary analytics target.
+- **Upload**: `scripts/upload_triage_runs_to_d1.py` after a runner
+  produces per-cell JSON records.
+- **Verify**: `scripts/d1_triage_verify.py` reconciles D1 vs on-disk
+  JSON; exits non-zero on divergence.
+- **Backup to R2** is CI-driven: `.github/workflows/d1-backup.yml`
+  runs `scripts/d1_export_to_r2.sh` on every push to `main` that
+  touches `cloudflare/d1_schema.sql`, `data/eval/triage_subbench_v1/**`,
+  `data/annotations/**`, `data/triage/**`, the uploader code, or the
+  backup scripts themselves. Each run drops a timestamped SQL dump and
+  a stable `latest.sql` pointer into the R2 bucket
+  `deliverome-d1-backups`. Manual trigger via `workflow_dispatch`.
+- **Layered recovery** (cloudflare/README.md has the full walkthrough):
+  Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
+  long-term) → on-disk JSON under `data/eval/` and `data/annotations/`
+  (canonical source — re-uploadable into a fresh D1).
+- **Required CI secrets** (one-time): `CLOUDFLARE_API_TOKEN` (D1:Edit
+  + R2:Edit) and `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket itself is
+  provisioned locally via `wrangler r2 bucket create deliverome-d1-backups`.
+
+When editing the D1 schema or adding a new uploader path, add it to
+the workflow's `paths:` filter so CI catches the change.
+
 ## Doc Sync Rule
 
 Keep `CLAUDE.md` and `AGENTS.md` aligned when guidance changes.

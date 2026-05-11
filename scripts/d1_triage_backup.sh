@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Snapshot the Cloudflare D1 `triage_results` database to a local SQL file.
+# Snapshot the Cloudflare D1 `deliverome_agent_runs` database to a local SQL file.
 #
 # Cloudflare's Time Travel covers accidental data loss for 7-30 days. This
 # script is the *belt-and-suspenders* layer: a portable SQL dump you can
@@ -17,7 +17,7 @@
 # REQUIREMENTS
 #   * wrangler (npm i -g wrangler) authenticated against the Deliverome
 #     Cloudflare account
-#   * The DB named `triage_results` must already exist (see cloudflare/README.md)
+#   * The DB named `deliverome_agent_runs` must already exist (see cloudflare/README.md)
 
 set -euo pipefail
 
@@ -25,10 +25,10 @@ OUTPUT_DIR="${1:-data/processed/cloudflare/d1_backups}"
 mkdir -p "$OUTPUT_DIR"
 
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
-OUT_FILE="$OUTPUT_DIR/triage_results_${TIMESTAMP}.sql"
+OUT_FILE="$OUTPUT_DIR/deliverome_agent_runs_${TIMESTAMP}.sql"
 
-echo "Exporting D1 triage_results → $OUT_FILE"
-wrangler d1 export triage_results \
+echo "Exporting D1 deliverome_agent_runs → $OUT_FILE"
+wrangler d1 export deliverome_agent_runs \
     --remote \
     --output="$OUT_FILE"
 
@@ -43,4 +43,4 @@ echo "  $OUT_FILE"
 echo "  sha256: $SHA"
 echo
 echo "Older dumps in $OUTPUT_DIR:"
-ls -lh "$OUTPUT_DIR"/triage_results_*.sql 2>/dev/null | tail -5 || echo "  (this is the first)"
+ls -lh "$OUTPUT_DIR"/deliverome_agent_runs_*.sql 2>/dev/null | tail -5 || echo "  (this is the first)"
