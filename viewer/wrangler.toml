@@ -1,0 +1,6 @@
+# Cloudflare Pages deploy target for the surfaceome viewer.
+# Deployed at surfaceome.deliverome.org as its own Pages project,
+# separate from the main `deliverome.org` site.
+name = "surfaceome-viewer"
+pages_build_output_dir = "out"
+compatibility_date = "2026-05-01"

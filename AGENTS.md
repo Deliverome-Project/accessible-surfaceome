@@ -8,7 +8,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution).
 - `src/accessible_surfaceome/audit/` audit + figure scripts.
 - `src/accessible_surfaceome/tools/` per-machine install plumbing (not part of the data pipeline).
-- `viewer/` Vite + React + TypeScript SPA — per-gene record viewer, deploys to Cloudflare Pages.
+- `viewer/` Next.js 16 app — **standalone Cloudflare Pages project deployed at `surfaceome.deliverome.org`**. Design tokens mirrored from `Deliverome-Project/deliverome-internal` PR #24 (Rosy Maroon system); manual sync.
 - `data/raw/` source workbooks.
 - `data/external/` downloaded datasets + traceability manifests.
 - `data/processed/` normalized outputs and candidate universe tables.
@@ -24,8 +24,9 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run type checking: `uv run ty check`
 - Run tests: `uv run pytest -q`
 - Run hooks: `uv run pre-commit run --all-files --config .pre-commit-config.yaml`
-- Build viewer: `cd viewer && npm install && npm run build`
-- Run viewer dev server: `cd viewer && npm run dev` (http://localhost:5173)
+- Run viewer dev server: `cd viewer && npm install && npm run dev` (http://localhost:3000)
+- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export)
+- Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
 
 ## Agent Command Allowlist
 - Codex and Claude agents may run `uv run python <module-or-script> [args...]` for repo analyses and processing.

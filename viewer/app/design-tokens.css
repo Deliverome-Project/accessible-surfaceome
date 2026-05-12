@@ -1,0 +1,61 @@
+/*
+ * Deliverome Design Tokens
+ * ------------------------------------------------------------
+ * Single source of truth for color, typography, spacing, radii,
+ * shadows, and motion used by the Deliverome site. Documented
+ * in `site/design-system.md`. Do NOT inline raw hex values or
+ * font family strings elsewhere — reference variables from here.
+ */
+
+:root {
+  /* --- Brand reds (primary) --- */
+  --red-900: #6f0835; /* deep berry — primary accent / CTAs */
+  --red-700: #b14849; /* coral deep — accent labels */
+  --red-500: #e2655e; /* coral — highlights, numeric emphasis */
+  --red-100: rgba(111, 8, 53, 0.08);
+
+  /* --- Neutrals --- */
+  --ink: #141414;
+  --ink-soft: #1f1718;
+  --muted: #5a5f64;
+  --line: rgba(20, 20, 20, 0.1);
+  --bg: #fefefc;
+  --bg-soft: #ffffff;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-strong: #ffffff;
+
+  /* --- Semantic aliases --- */
+  --accent: var(--red-900);
+  --accent-soft: var(--red-100);
+  --highlight: var(--red-500);
+
+  /* --- Deprecated aliases (kept during CSS sweep) --- */
+  --coral: var(--red-500);
+  --coral-deep: var(--red-700);
+  --berry: var(--red-900);
+  --berry-soft: var(--red-100);
+
+  /* --- Typography --- */
+  --font-sans: "DM Sans", "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Newsreader", Georgia, serif;
+
+  /* --- Radii & shadows --- */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 2rem;
+  --shadow-sm: 0 4px 12px rgba(20, 20, 20, 0.05);
+  --shadow-md: 0 12px 32px rgba(20, 20, 20, 0.08);
+  --shadow-lg: 0 24px 60px rgba(20, 20, 20, 0.1);
+  --shadow: var(--shadow-md);
+
+  /* --- Motion --- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 180ms;
+  --dur-medium: 360ms;
+  --dur-slow: 720ms;
+}
+
+body.font-display-space-grotesk {
+  --font-display: var(--font-brand), var(--font-sans);
+}

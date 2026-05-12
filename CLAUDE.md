@@ -16,7 +16,7 @@ Current implementation focus: candidate-universe builders (M1).
 - `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution)
 - `src/accessible_surfaceome/audit/` audits + blog figures
 - `src/accessible_surfaceome/tools/` per-machine install plumbing
-- `viewer/` Vite + React + TypeScript SPA — per-gene record viewer (Cloudflare Pages)
+- `viewer/` Next.js 16 app — standalone Cloudflare Pages project deployed at `surfaceome.deliverome.org`
 - `data/raw/`, `data/external/`, `data/processed/`, `data/analysis/`
 - `docs/` plans/reports
 
@@ -34,7 +34,7 @@ uv run python -m accessible_surfaceome.merge
 bash scripts/check-py.sh
 uv run ty check
 uv run pytest -q
-cd viewer && npm install && npm run dev   # web viewer at localhost:5173
+cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 ```
 
 ## Quality Checks
@@ -113,12 +113,33 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
 
 ## Web Viewer
 
-The `viewer/` subproject is a static SPA. Per-gene records live under
-`viewer/public/data/genes/{SYMBOL}.json` and must validate against the
-`SurfaceomeRecord` Pydantic schema in
-`src/accessible_surfaceome/tools/_shared/models.py`. Detail page route is
-`/gene/:symbol`; agent/curl access is `?format=json|md` or the static
-`/data/genes/{SYMBOL}.json` URL. See `viewer/README.md` for build + deploy.
+`viewer/` is a **standalone Next.js 16 app** that ships as its own
+Cloudflare Pages project at **`surfaceome.deliverome.org`**. It is *not*
+a sub-route of `deliverome.org`'s main site — separate build, separate
+deploy target, separate domain.
+
+The design language is borrowed from
+`Deliverome-Project/deliverome-internal` PR #24 (Rosy Maroon: Maroon ·
+Teal · Amber · Lavender; Manrope + Playfair Display via
+`next/font/google`; PascalCase component dirs with `.module.css`; type
+primitives `.h-display` / `.h-section` / `.lede` / `.label-mono` from
+`app/globals.css`). Tokens are mirrored at
+`viewer/app/design-tokens.css` — they have to be re-synced manually
+when the deliverome.org system rev's.
+
+Data: `viewer/public/data/surfaceome/{SYMBOL}.json` is the static
+deploy artifact (also reachable as
+`https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.json`).
+The page bodies read those JSONs via `fs` at build time and SSG every
+gene through `generateStaticParams`. When the public Worker at
+`api.deliverome.org/surfaceome/v1/*` is live (source in
+`cloudflare/workers/surfaceome_api/`, bound to the `surfaceome_public`
+D1 mirror), the loader at `viewer/lib/surfaceome.ts` can swap `fs` for
+`fetch()` — same record shape.
+
+Per-gene records must validate against the `SurfaceomeRecord` Pydantic
+schema in `src/accessible_surfaceome/tools/_shared/models.py`. See
+`viewer/README.md` for local dev + Cloudflare Pages deploy.
 
 ## Cloudflare D1 + R2 backups for agent runs
 

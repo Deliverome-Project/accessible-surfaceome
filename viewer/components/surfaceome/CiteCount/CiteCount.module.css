@@ -1,0 +1,22 @@
+/*
+ * CiteCount — citation-count marker beside a field. Reads like a
+ * sidenote indicator (faint, teal) rather than a clickable badge.
+ */
+
+.cite {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.45rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: var(--fw-medium);
+  color: var(--teal-deepest);
+  background: var(--teal-tint);
+  border: 1px solid rgba(61, 107, 96, 0.22);
+  letter-spacing: 0.02em;
+  cursor: help;
+}
