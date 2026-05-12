@@ -12,9 +12,10 @@ import { SurfaceBiologyTab } from "../components/tabs/SurfaceBiology";
 import { ExpressionTab } from "../components/tabs/Expression";
 import { LandscapeTab } from "../components/tabs/Landscape";
 import { RiskFlagsTab } from "../components/tabs/RiskFlags";
+import { DeepDiveTab } from "../components/tabs/DeepDive";
 import { RawRecordTab } from "../components/tabs/RawRecord";
 
-type TabId = "biology" | "expression" | "landscape" | "risks" | "raw";
+type TabId = "biology" | "deepdive" | "expression" | "landscape" | "risks" | "raw";
 
 const TWEAK_DEFAULTS = {
   density: "comfortable" as "comfortable" | "compact",
@@ -73,10 +74,15 @@ export default function Detail() {
     const legacyPreclinical = rec.therapeutic_landscape?.preclinical_evidence?.length ?? 0;
     const newPreclinical = rec.surface_engagement_validation?.preclinical_evidence?.length ?? 0;
     const landscapeCount = legacyPatents + legacyPreclinical + newPreclinical;
+    const deepDiveCount =
+      (rec.isoform_accessibility?.length ?? 0)
+      + (rec.coreceptor_requirements?.length ?? 0)
+      + (rec.orthology?.length ?? 0);
     return [
       { id: "biology", label: "Surface biology" },
+      { id: "deepdive", label: "Deep dive", count: deepDiveCount },
       { id: "expression", label: "Expression" },
-      { id: "landscape", label: "Therapeutic landscape", count: landscapeCount },
+      { id: "landscape", label: "Engagement", count: landscapeCount },
       { id: "risks", label: "Risk flags", count: rec.risk_flags.length },
       { id: "raw", label: "Raw record" },
     ];
@@ -156,6 +162,7 @@ export default function Detail() {
       </div>
 
       {tab === "biology" && <SurfaceBiologyTab rec={rec!} isExpanded={isExpanded} toggleField={toggleField} />}
+      {tab === "deepdive" && <DeepDiveTab rec={rec!} isExpanded={isExpanded} toggleField={toggleField} />}
       {tab === "expression" && <ExpressionTab rec={rec!} isExpanded={isExpanded} toggleField={toggleField} />}
       {tab === "landscape" && <LandscapeTab rec={rec!} isExpanded={isExpanded} toggleField={toggleField} />}
       {tab === "risks" && <RiskFlagsTab rec={rec!} isExpanded={isExpanded} toggleField={toggleField} />}
