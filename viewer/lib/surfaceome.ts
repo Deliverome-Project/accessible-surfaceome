@@ -116,6 +116,32 @@ function enrichRowsWithNames(
   });
 }
 
+/**
+ * The Worker (`row_schema: 2`) packs the 5 surface-DB flags into a
+ * 5-bit integer to keep payloads compact:
+ *   bit 0 = uniprot, 1 = go, 2 = surfy, 3 = cspa, 4 = hpa.
+ * The committed snapshot still uses the object form. Decode the
+ * bitmask into the object shape so the CatalogTable can index by
+ * key. No-op when `row.db` is already an object (snapshot fallback).
+ */
+function decodeDbBitmask(rows: CatalogRow[]): CatalogRow[] {
+  return rows.map((r) => {
+    const dbValue = r.db as unknown;
+    if (typeof dbValue !== "number") return r;
+    const bits = dbValue;
+    return {
+      ...r,
+      db: {
+        uniprot: bits & 1 ? 1 : 0,
+        go: bits & 2 ? 1 : 0,
+        surfy: bits & 4 ? 1 : 0,
+        cspa: bits & 8 ? 1 : 0,
+        hpa: bits & 16 ? 1 : 0,
+      },
+    };
+  });
+}
+
 /** Look up the descriptive gene name for a symbol. Used by the gene
  *  viewer page header so the page renders e.g. ``transferrin`` under
  *  ``TF``. Returns ``null`` when the symbol isn't in the lookup. */
@@ -155,7 +181,7 @@ export async function loadCatalog(): Promise<Catalog> {
       return {
         source: "api",
         ...payload,
-        rows: enrichRowsWithNames(payload.rows, names),
+        rows: enrichRowsWithNames(decodeDbBitmask(payload.rows), names),
       };
     } catch (err) {
       console.warn(

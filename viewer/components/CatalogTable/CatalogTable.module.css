@@ -151,12 +151,20 @@
 .row {
   display: grid;
   grid-template-columns: var(--catalog-cols,
-    7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
+    1.75rem 7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
   align-items: center;
   font-family: var(--font-sans);
   font-size: 0.88rem;
   border-bottom: 1px solid var(--line-soft);
   min-height: 2.4rem;
+}
+
+.rowExpanded {
+  /* Expanded rows display the per-run reasoning underneath the
+   * normal cells. The expanded block uses grid-column: 1 / -1 to
+   * span every column. Align-items reverts to stretch so the
+   * detail block can lay out vertically. */
+  align-items: stretch;
 }
 
 /* Sticky header — same grid template as every body row guarantees
@@ -261,6 +269,132 @@
   min-width: 0;
 }
 
+/* Leading toggle cell + button — the +/− that opens the per-row
+ * triage-detail block. Small target, ink-soft default, accent on
+ * hover/active. */
+.toggleCell {
+  padding: 0.2rem 0.25rem 0.2rem 0.5rem;
+  justify-content: center;
+}
+
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.toggleBtn:hover,
+.toggleBtn:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggleBtn[aria-expanded="true"] {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+/* Expanded triage-detail block — spans every column of the parent
+ * grid row so the reasoning text isn't constrained to one cell.
+ * Indented from the leading toggle so the alignment reads as
+ * "child of this row". */
+.expandedBlock {
+  grid-column: 1 / -1;
+  padding: var(--space-3) var(--space-5) var(--space-5) 2.25rem;
+  background: var(--bg-soft);
+  border-top: 1px dashed var(--line-soft);
+}
+
+.expandedMeta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.runList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.runItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.runMeta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.runBadge {
+  display: inline-flex;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  background: var(--bg-warm);
+  color: var(--ink);
+}
+
+.runBadge[data-verdict="yes"] {
+  background: rgba(46, 122, 85, 0.14);
+  color: var(--success);
+}
+
+.runBadge[data-verdict="no"] {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+}
+
+.runBadge[data-verdict="contextual"] {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+}
+
+.runDim {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.runReasoning {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 78ch;
+}
+
 /* ============================================================
  * Cell content (overrides only — column widths come from grid
  * template, so no `width` here)
@@ -360,6 +494,31 @@
   flex-wrap: wrap;
 }
 
+/* Triage cell is now a button — clicking opens the same expanded
+ * detail as the leading "+". Reset native button chrome; keep
+ * baseline-aligned content, accent on hover/focus. */
+.verdictBtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.verdictBtn:hover,
+.verdictBtn:focus-visible {
+  opacity: 0.78;
+}
+
+.verdictBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
 .verdictLabel {
   display: inline-flex;
   padding: 0.18rem 0.5rem;
@@ -452,10 +611,10 @@
 @media (max-width: 720px) {
   .row {
     grid-template-columns:
-      7.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem;
+      1.75rem 7.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem;
   }
   .uniprotCell,
-  .headerRow .headerCell:nth-child(2) {
+  .headerRow .headerCell:nth-child(3) {
     display: none;
   }
 }

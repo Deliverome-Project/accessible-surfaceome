@@ -26,7 +26,38 @@ const ROW_OVERSCAN = 12;
 // so it absorbs any leftover horizontal space rather than leaving a
 // trailing empty gutter on wide viewports.
 const GRID_TEMPLATE =
-  "7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem";
+  "1.75rem 7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 6rem";
+
+// Worker base for the on-demand /v1/triage/{symbol} fetch the row
+// expander triggers. Falls back to the production deployment when
+// `NEXT_PUBLIC_SURFACEOME_API_BASE` isn't set (local dev or static
+// export without a build-time override). The `_PUBLIC_` prefix is
+// required for Next.js to inline the value into the client bundle.
+const TRIAGE_API_BASE =
+  process.env.NEXT_PUBLIC_SURFACEOME_API_BASE ?? "https://api.deliverome.org/surfaceome";
+
+interface TriageRun {
+  created_at: string;
+  model: string;
+  prompt_variant: string | null;
+  prompt_filename: string | null;
+  schema_version: string | null;
+  replicate: number | null;
+  predicted_verdict: string;
+  predicted_reason: string | null;
+  predicted_confidence: string | null;
+  predicted_key_uncertainty: string | null;
+  verdict_reasoning: string | null;
+  correct: number | null;
+  latency_s: number | null;
+  n_web_searches: number | null;
+  error: string | null;
+}
+
+type TriageDetailState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; runs: TriageRun[] };
 
 // Five gating DBs. DeepTMHMM + COMPARTMENTS were demoted from the
 // M1 universe gate upstream (kept in the D1 row for fidelity but
@@ -41,7 +72,10 @@ const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = 
 
 type SortKey = "symbol" | "uniprot" | "n_sources" | "triage" | "deep_dive";
 type SortDir = "asc" | "desc";
-type QuickFilter = "all" | "deep_dive" | "triage" | "n7";
+// Triage filter was dropped — every gene in the universe has a triage
+// verdict (the one gap, SEA, is a resolver-failure outlier), so the
+// chip filtered ~all rows in and offered no signal.
+type QuickFilter = "all" | "deep_dive" | "n7";
 
 function verdictTone(v: string | null | undefined): string {
   if (v === "yes") return styles.verdictYes;
@@ -72,6 +106,41 @@ export function CatalogTable({
   const [quick, setQuick] = useState<QuickFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("deep_dive");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  // Per-row "+" expander: tracks which symbols are open + the
+  // lazily-fetched /v1/triage/<symbol> response per symbol. We don't
+  // ship the full per-run reasoning in /v1/catalog (too big — 19k
+  // genes × ~1 KB reasoning = 20 MB) so the expand triggers a single
+  // small fetch and caches the result for the session.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [triageDetails, setTriageDetails] = useState<
+    Record<string, TriageDetailState>
+  >({});
+
+  function toggleExpand(symbol: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(symbol)) next.delete(symbol);
+      else next.add(symbol);
+      return next;
+    });
+    if (triageDetails[symbol]) return;
+    setTriageDetails((prev) => ({ ...prev, [symbol]: { status: "loading" } }));
+    fetch(`${TRIAGE_API_BASE}/v1/triage/${symbol}`, { cache: "force-cache" })
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`status ${res.status}`);
+        const data = (await res.json()) as { runs: TriageRun[] };
+        setTriageDetails((prev) => ({
+          ...prev,
+          [symbol]: { status: "ready", runs: data.runs ?? [] },
+        }));
+      })
+      .catch((err: Error) => {
+        setTriageDetails((prev) => ({
+          ...prev,
+          [symbol]: { status: "error", message: err.message },
+        }));
+      });
+  }
 
   // `mounted` gates the virtualized body so the SSR pass renders an
   // empty body — the header, toolbar, and footnotes still hydrate
@@ -99,7 +168,6 @@ export function CatalogTable({
         if (!hay.includes(q)) return false;
       }
       if (quick === "deep_dive" && !r.deep_dive) return false;
-      if (quick === "triage" && !r.triage) return false;
       if (quick === "n7" && r.n_sources < 5) return false;
       return true;
     });
@@ -181,14 +249,6 @@ export function CatalogTable({
           </button>
           <button
             type="button"
-            className={`${styles.chip} ${quick === "triage" ? styles.chipOn : ""}`}
-            onClick={() => setQuick("triage")}
-            aria-pressed={quick === "triage"}
-          >
-            Triaged <span className={styles.chipCount}>{n_with_triage}</span>
-          </button>
-          <button
-            type="button"
             className={`${styles.chip} ${quick === "n7" ? styles.chipOn : ""}`}
             onClick={() => setQuick("n7")}
             aria-pressed={quick === "n7"}
@@ -220,6 +280,9 @@ export function CatalogTable({
       >
         {/* Header row — sticky, identical grid template as every body row */}
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
+          {/* Leading toggle column. Empty header cell — every body row
+              has a `+` button in this slot to expand triage details. */}
+          <div className={styles.headerCell} aria-hidden="true" />
           <SortableHeader
             label="Symbol"
             k="symbol"
@@ -296,6 +359,7 @@ export function CatalogTable({
           {mounted && sorted.length > 0
             ? virtualItems.map((item) => {
                 const r = sorted[item.index];
+                const isExpanded = expanded.has(r.symbol);
                 return (
                   <CatalogRowView
                     key={`${r.symbol}-${r.uniprot}`}
@@ -303,6 +367,9 @@ export function CatalogTable({
                     measureRef={virtualizer.measureElement}
                     dataIndex={item.index}
                     virtualStart={item.start}
+                    isExpanded={isExpanded}
+                    onToggleExpand={toggleExpand}
+                    detail={isExpanded ? triageDetails[r.symbol] : undefined}
                   />
                 );
               })
@@ -380,11 +447,17 @@ function CatalogRowView({
   measureRef,
   dataIndex,
   virtualStart,
+  isExpanded,
+  onToggleExpand,
+  detail,
 }: {
   row: CatalogRow;
   measureRef?: (el: HTMLDivElement | null) => void;
   dataIndex?: number;
   virtualStart?: number;
+  isExpanded: boolean;
+  onToggleExpand: (symbol: string) => void;
+  detail: TriageDetailState | undefined;
 }) {
   const symbolCell = row.deep_dive ? (
     <Link href={`/${row.symbol}/`} className={styles.symbolLink}>
@@ -408,10 +481,25 @@ function CatalogRowView({
       ref={measureRef}
       data-index={dataIndex}
       role="row"
-      className={styles.row}
+      className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""}`}
       data-deep-dive={row.deep_dive || undefined}
       style={style}
     >
+      <div className={`${styles.cell} ${styles.toggleCell}`} role="cell">
+        <button
+          type="button"
+          className={styles.toggleBtn}
+          onClick={() => onToggleExpand(row.symbol)}
+          aria-label={
+            isExpanded
+              ? `Collapse triage details for ${row.symbol}`
+              : `Expand triage details for ${row.symbol}`
+          }
+          aria-expanded={isExpanded}
+        >
+          {isExpanded ? "−" : "+"}
+        </button>
+      </div>
       <div className={`${styles.cell} ${styles.symbolCell}`} role="cell">
         {symbolCell}
       </div>
@@ -438,14 +526,24 @@ function CatalogRowView({
       })}
       <div className={`${styles.cell} ${styles.triageCell}`} role="cell">
         {row.triage ? (
-          <span className={`${styles.verdict} ${verdictTone(row.triage.verdict)}`}>
+          <button
+            type="button"
+            className={`${styles.verdict} ${styles.verdictBtn} ${verdictTone(row.triage.verdict)}`}
+            onClick={() => onToggleExpand(row.symbol)}
+            aria-expanded={isExpanded}
+            aria-label={
+              isExpanded
+                ? `Collapse triage details for ${row.symbol}`
+                : `Open triage details for ${row.symbol}`
+            }
+          >
             <span className={styles.verdictLabel}>{row.triage.verdict}</span>
             {row.triage.reason ? (
               <span className={styles.verdictReason}>
                 {row.triage.reason.replace(/_/g, " ")}
               </span>
             ) : null}
-          </span>
+          </button>
         ) : (
           <span className={styles.dim}>—</span>
         )}
@@ -463,6 +561,105 @@ function CatalogRowView({
           <span className={styles.dim}>—</span>
         )}
       </div>
+      {isExpanded ? (
+        <div className={styles.expandedBlock}>
+          <TriageDetail symbol={row.symbol} fallback={row.triage} detail={detail} />
+        </div>
+      ) : null}
     </div>
+  );
+}
+
+function TriageDetail({
+  symbol,
+  fallback,
+  detail,
+}: {
+  symbol: string;
+  fallback: CatalogRow["triage"];
+  detail: TriageDetailState | undefined;
+}) {
+  if (!detail || detail.status === "loading") {
+    return (
+      <p className={styles.expandedMeta}>
+        Loading triage runs for <strong>{symbol}</strong>…
+      </p>
+    );
+  }
+  if (detail.status === "error") {
+    return (
+      <p className={styles.expandedMeta}>
+        Could not load triage details ({detail.message}).
+        {fallback ? (
+          <>
+            {" "}Cached verdict: <strong>{fallback.verdict}</strong>
+            {fallback.reason ? <> · {fallback.reason.replace(/_/g, " ")}</> : null}
+          </>
+        ) : null}
+      </p>
+    );
+  }
+  // Filter to the canonical genome-wide-sweep run — Sonnet 4.6 with
+  // the NCBI prompt variant. The /v1/triage endpoint returns ALL runs
+  // including benchmark / eval reruns, replicates, alternate prompts,
+  // and (on D1) duplicate uploads from sweep iterations. Take only
+  // the SINGLE latest sonnet/ncbi row so the expanded view shows one
+  // canonical verdict per gene; "history" can come from a future
+  // /history endpoint when it's useful.
+  const sweepRuns = detail.runs
+    .filter(
+      (r) =>
+        r.model.toLowerCase().includes("sonnet") && r.prompt_variant === "ncbi",
+    )
+    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+  const latestSweep = sweepRuns[0];
+  if (!latestSweep) {
+    return (
+      <p className={styles.expandedMeta}>
+        No genome-wide (Sonnet/NCBI) triage run recorded for{" "}
+        <strong>{symbol}</strong>.
+        {detail.runs.length > 0
+          ? ` ${detail.runs.length} other run(s) on file (not shown).`
+          : null}
+      </p>
+    );
+  }
+  // Render exactly one row — the latest sweep verdict.
+  return (
+    <ol className={styles.runList}>
+      {[latestSweep].map((run, i) => (
+        <li key={i} className={styles.runItem}>
+          <p className={styles.runMeta}>
+            <span className={styles.runBadge} data-verdict={run.predicted_verdict}>
+              {run.predicted_verdict}
+            </span>
+            {run.predicted_reason ? (
+              <span>{run.predicted_reason.replace(/_/g, " ")}</span>
+            ) : null}
+            <span className={styles.runDim}>·</span>
+            <span className={styles.runDim}>{run.model}</span>
+            {run.prompt_variant ? (
+              <>
+                <span className={styles.runDim}>·</span>
+                <span className={styles.runDim}>{run.prompt_variant}</span>
+              </>
+            ) : null}
+            {run.predicted_confidence ? (
+              <>
+                <span className={styles.runDim}>·</span>
+                <span className={styles.runDim}>
+                  conf {run.predicted_confidence}
+                </span>
+              </>
+            ) : null}
+            <span className={styles.runDim}>·</span>
+            <span className={styles.runDim}>{run.created_at.slice(0, 16)}</span>
+          </p>
+          {run.verdict_reasoning ? (
+            <p className={styles.runReasoning}>{run.verdict_reasoning}</p>
+          ) : null}
+        </li>
+      ))}
+    </ol>
   );
 }
