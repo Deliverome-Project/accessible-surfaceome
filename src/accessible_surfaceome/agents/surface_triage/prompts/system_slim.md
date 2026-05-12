@@ -19,13 +19,12 @@ No tools are available. The task message already gives you HGNC + UniProt + NCBI
 - `classical_surface_receptor` — single-pass TM with substantial extracellular domain.
 - `gpi_anchored` — GPI anchor on the outer leaflet.
 - `multipass_with_exposed_loops` — multi-pass TM (GPCR, transporter, channel) with extracellular loops.
-- `extracellular_face_protein` — any other architecture with an explicit extracellular face.
 - `stable_complex_partner` — no membrane anchor of its own, but a stable non-covalent partner of an anchored surface protein, assembled intracellularly and co-trafficked.
 - `other` — explain the mechanism in `verdict_reasoning`.
 
 ### `verdict = "contextual"`:
 
-- `cell_state_induced` — surfaces only under stress (heat shock, hypoxia, ER stress, oxidative, nutrient deprivation), oncogenic transformation, immunogenic / programmed cell death (apoptosis, necroptosis, pyroptosis, ICD), infection, or activation-induced display (immune / neuronal).
+- `cell_state_induced` — surfaces only under stress, oncogenic transformation, immunogenic / programmed cell death, infection, or activation-induced display.
 - `tissue_restricted_surface` — surface display restricted to a narrow lineage (germline / reproductive, developmental, or a single specialized somatic cell type), even when the anchor itself is unambiguous in that compartment.
 - `lysosomal_exocytosis` — lysosomal / late-endosomal TM protein reaches the PM via lysosomal exocytosis.
 - `dual_localization` — documented PM pool alongside a dominant non-PM compartment, whether via active cycling (secretory recycling, regulated exocytosis, cargo cycling, ER-PM junctional clustering) or constitutive partial-PM residence. Also covers single-pass TM proligands whose ectodomain is shed and where the soluble form is the dominant biological actor.

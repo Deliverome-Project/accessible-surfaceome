@@ -71,7 +71,7 @@ PROMPT_VARIANTS = [
         "slim",
         "system_slim.md",
         "Slim (NCBI + HGNC resolver, streamlined)",
-        "Streamlined sibling of the default. Same resolver context and task message; system prompt is ~65% shorter (5,506 → 1,942 tokens) — recruitment-test logic merged into the enum definitions, contextual subtype prose consolidated, opening pMHC framing removed (the `pmhc_only_intracellular` enum already covers it), and the 8-probe `Pre-no` checklist collapsed to 2 explicit patterns. Drops probes that re-tell the agent to use resolver context. See the diff section below.",
+        "Streamlined sibling of the default. Same resolver context and task message; system prompt is ~66% shorter (5,506 → 1,876 tokens) — recruitment-test logic merged into the enum definitions, contextual subtype prose consolidated, opening pMHC framing removed (the `pmhc_only_intracellular` enum already covers it), the 8-probe `Pre-no` checklist collapsed to 2 explicit patterns, and the rarely-used `extracellular_face_protein` reason retired (only 2 emissions across all D1 history; `other` already covers the edge case). See the diff section below.",
     ),
 ]
 
@@ -543,7 +543,7 @@ details[open] summary { margin-bottom: 12px; }
 
 <section id="slim-diff">
   <h2>Slim diff <span class="pill">system.md → system_slim.md</span></h2>
-  <p class="lede">Unified diff of the streamlined sibling variant. The slim prompt trades ~3,560 tokens (~65%) for a tighter call: cardinal-rule logic absorbed into the <code>secreted_only</code> / <code>stable_surface_attachment</code> enum definitions; contextual subtype prose consolidated; opening pMHC framing removed (the <code>pmhc_only_intracellular</code> enum already covers it); the 8-probe <code>Pre-no</code> checklist collapsed to 2 patterns; probes that re-tell the agent to use HGNC / NCBI resolver context dropped (the task message already carries it); per-verdict mechanism examples deferred to the <code>reason</code> enum (where they belong); register pared down for a sophisticated audience. Same accuracy story to be measured.</p>
+  <p class="lede">Unified diff of the streamlined sibling variant. The slim prompt trades ~3,630 tokens (~66%) for a tighter call: cardinal-rule logic absorbed into the <code>secreted_only</code> / <code>stable_surface_attachment</code> enum definitions; contextual subtype prose consolidated and parentheticals trimmed where the parent term carries the meaning; opening pMHC framing removed (the <code>pmhc_only_intracellular</code> enum already covers it); the 8-probe <code>Pre-no</code> checklist collapsed to 2 patterns; probes that re-tell the agent to use HGNC / NCBI resolver context dropped (the task message already carries it); per-verdict mechanism examples deferred to the <code>reason</code> enum; the rarely-used <code>extracellular_face_protein</code> reason retired (2 emissions across all D1 history; <code>other</code> already covers the edge case); register pared down for a sophisticated audience. Same accuracy story to be measured.</p>
   __SLIM_DIFF_HTML__
 </section>
 
