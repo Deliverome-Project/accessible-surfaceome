@@ -97,17 +97,19 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 
 ## Final-Figure Gist Convention
 
-When a figure is **promoted** to `data/analysis/triage_bench_final/` (or any other `*_final/` analysis directory) it must ship with a GitHub gist for reader-side reproduction. The gist is the artifact that gets linked from a Substack / blog post under the figure, since Substack can't host arbitrary CSV/code downloads.
+When a figure is **promoted** to `data/analysis/triage_bench_final/` (or any other `*_final/` analysis directory) it must ship with a GitHub gist for reader-side reproduction. The gist is what gets linked from a Substack / blog post under the figure, since Substack can't host arbitrary CSV/code downloads.
 
-Each gist contains:
-- `README.md` — one-paragraph context, install + run command, link back to the canonical generator in this repo.
-- A standalone Python reproduction script that reads data and emits a PNG. Should run with `pip install <minimal deps>` then `python make_<slug>.py` — no project-repo dependencies, no D1 credentials.
+Each gist contains exactly two files:
+- `01_<figure_slug>.md` — one-paragraph context, run command, hyperlinks to the canonical data source and the canonical figure generator in the repo. The `01_` prefix forces this file to the top of the gist's alphabetical file list so it acts as a README.
+- `make_<figure_slug>.py` — standalone Python reproduction script. Uses **PEP 723 inline-script metadata** (`# /// script ... # ///` header) to declare dependencies so readers run it with `uv run make_<figure_slug>.py` — no `pip install` step.
 
-**Data input** — pick the one that fits the figure's source:
-- **D1 (preferred when the canonical source is D1)** — script queries the public read-only D1 endpoint via HTTP and renders. Used for figures driven by `triage_run`, `deep_dive_run`, `resolver_context_version`, etc. No CSV in the gist.
-- **CSV-in-gist** — ship the CSV alongside the script when the canonical source is a TSV in the repo and the dataset is small enough to commit (<~100k rows / ~5 MB). Used for the surface-DB Venn and other candidate-universe figures.
+**Data fetching** — script reads from whichever source is canonical:
+- **D1 (preferred when the canonical source is D1)** — script queries the public read-only D1 endpoint via HTTP. Used for figures driven by `triage_run`, `deep_dive_run`, `resolver_context_version`, etc.
+- **Canonical TSV at `raw.githubusercontent.com`** — when the figure's data lives in a `data/processed/**.tsv` in the public repo, fetch it directly via the raw URL pinned to `main` (or a commit SHA for stronger immutability). **The TSV must be non-LFS** (LFS pointers don't resolve over the raw URL) and the repo must be public — add a `-filter -diff -merge text` exemption in `.gitattributes` to un-LFS any small canonical TSV the gists depend on.
 
-**Visibility:** create as **secret** by default — `gh gist create README.md make_<slug>.py [<slug>.csv] -d "<short desc>"` (omit `--public`). Secret gists are unguessable-URL only (not listed on your profile, not searchable), which is the right default for Substack-linked downloads. Flip to public via the web UI when discoverability is the goal; **public → secret is not reversible** (only delete-and-recreate). Always confirm with the user before publishing — gist creation is irreversible-ish and exposes derived data.
+Do not bundle a CSV in the gist unless the canonical source is unreachable (private repo, D1 without a public endpoint). Keep the gist as a thin wrapper around the canonical data.
+
+**Visibility:** create as **secret** by default — `gh gist create 01_<slug>.md make_<slug>.py -d "<short desc>"` (omit `--public`). Secret gists are unguessable-URL only (not listed on your profile, not searchable), which is the right default for Substack-linked downloads. Flip to public via the web UI when discoverability is the goal; **public → secret is not reversible** (only delete-and-recreate). Always confirm with the user before publishing.
 
 Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line so readers can find it from the source script. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
 
