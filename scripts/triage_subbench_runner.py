@@ -87,6 +87,15 @@ VARIANTS = {
     "ncbi":      {"prompt": "system.md",            "resolver": True,  "web_search": False},
     "web_naive": {"prompt": "system_web_naive.md", "resolver": False, "web_search": True},
     "web_ncbi":  {"prompt": "system_web.md",        "resolver": True,  "web_search": True},
+    # Cost-reduced variant of web_ncbi: shorter system prompt, capped at
+    # 1 web search via the prompt, halved max_tokens (model output is
+    # capped per-turn; halving it cuts the dominant output-token cost),
+    # and max_uses=2 in the web_search tool block as a hard ceiling.
+    "web_ncbi_reduced": {
+        "prompt": "system_web_reduced.md",
+        "resolver": True, "web_search": True,
+        "max_tokens": 2048, "web_max_uses": 2,
+    },
 }
 
 
@@ -268,7 +277,10 @@ def _run_one(
     # call; Haiku saves ~$0.0008. Free, no behaviour change.
     create_kwargs: dict[str, Any] = {
         "model": model,
-        "max_tokens": 4096,
+        # Per-variant override for cost-reduced runs (e.g. web_ncbi_reduced
+        # halves the per-turn output budget to 2048 to cut the dominant
+        # output-token cost on Sonnet/Opus).
+        "max_tokens": cfg.get("max_tokens", 4096),
         "system": [
             {
                 "type": "text",
@@ -279,7 +291,12 @@ def _run_one(
         "messages": [{"role": "user", "content": user_message}],
     }
     if cfg["web_search"]:
-        create_kwargs["tools"] = [WEB_SEARCH_TOOL]
+        # Per-variant override for max_uses (hard ceiling on web search
+        # calls; the prompt also asks for at most 1, but the API enforces).
+        web_tool = dict(WEB_SEARCH_TOOL)
+        if "web_max_uses" in cfg:
+            web_tool["max_uses"] = cfg["web_max_uses"]
+        create_kwargs["tools"] = [web_tool]
     try:
         response = _client().messages.create(**create_kwargs)
     except Exception as exc:  # noqa: BLE001
@@ -512,6 +529,31 @@ def main() -> None:
         d1_sink = D1RunSink(run_id=run_id, bench_tsv=SUBBENCH_TSV)
         print(f"D1 streaming enabled: run_id={d1_sink.run_id}  bench_version={d1_sink.bench_version}")
         print()
+
+    # Resume semantics: when an explicit --run-id is reused and the sink
+    # already has cells under it, skip those before submitting to the
+    # worker pool. The sink's insert-side dedupe would catch them too,
+    # but only after paying for the API call — for a 13k-gene sweep
+    # that's the difference between a 5-second restart and a $500 one.
+    if d1_sink is not None and args.run_id:
+        before = len(cells)
+        cells = [
+            (v, m, row, rep)
+            for (v, m, row, rep) in cells
+            if not d1_sink.already_done(
+                gene_symbol=row["gene_symbol"], model=m, variant=v, replicate=rep,
+            )
+        ]
+        skipped = before - len(cells)
+        if skipped:
+            print(f"Resume: skipping {skipped}/{before} cells already in D1 under run_id={args.run_id}")
+            print()
+
+    if not cells:
+        print("Nothing to do — all planned cells already exist in D1.")
+        if d1_sink is not None:
+            d1_sink.close()
+        return
 
     results: list[RunRecord] = []
     start = time.monotonic()

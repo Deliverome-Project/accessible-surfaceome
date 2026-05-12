@@ -448,6 +448,30 @@ class D1RunSink:
                            gene, record["model"], variant, exc)
             return False
 
+    def already_done(
+        self,
+        *,
+        gene_symbol: str,
+        model: str,
+        variant: str,
+        replicate: int,
+    ) -> bool:
+        """Has this exact cell already been inserted under our run_id?
+
+        Lets the runner skip the API call entirely for cells that landed
+        in a prior pass — important for genome-scale sweeps where a
+        crash mid-run would otherwise re-pay for thousands of cells on
+        restart. Mirrors the dedup logic in ``insert`` but uses no
+        network — just the cached ``_existing`` set loaded at
+        construction.
+        """
+        prompt = self._prompts_by_variant.get(variant)
+        if prompt is None:
+            return False
+        key = (gene_symbol, model, variant, int(replicate), prompt.sha)
+        with self._lock:
+            return key in self._existing
+
     def close(self) -> None:
         self._client.close()
 
