@@ -79,16 +79,24 @@ def test_query_raises_on_failure() -> None:
 
 
 def test_batch_executes_multiple() -> None:
+    # `D1Client.batch` was reshaped (see its docstring) to unroll into
+    # N sequential `query` POSTs after Cloudflare's HTTP API tightened
+    # `/query` to reject top-level arrays. Each statement now expects
+    # its own response envelope; the test mock queues one response per
+    # statement.
     transport = _mock_transport([
         {
             "success": True,
-            "result": [
-                {"success": True, "results": []},
-                {"success": True, "results": [{"id": 1}]},
-            ],
+            "result": [{"success": True, "results": []}],
             "errors": [],
             "messages": [],
-        }
+        },
+        {
+            "success": True,
+            "result": [{"success": True, "results": [{"id": 1}]}],
+            "errors": [],
+            "messages": [],
+        },
     ])
     with _make_client(transport) as client:
         results = client.batch([
