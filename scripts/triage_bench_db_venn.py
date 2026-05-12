@@ -18,6 +18,10 @@ Two visualizations of the same data:
 
 Outputs (PDF + PNG):
   data/analysis/triage_bench/{db_overlap_venn,db_overlap_upset}.{pdf,png}
+
+# Reproduction: https://gist.github.com/beccajcarlson/74cd7f3c093e3f54c7f57eeab11b895e
+#   (secret gist — minimal CSV + standalone Python; see Final-Figure
+#   Gist Convention in CLAUDE.md / AGENTS.md.)
 """
 
 from __future__ import annotations

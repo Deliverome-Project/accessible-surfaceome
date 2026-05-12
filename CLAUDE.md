@@ -95,6 +95,22 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 - **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
 - **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
 
+## Final-Figure Gist Convention
+
+When a figure is **promoted** to `data/analysis/triage_bench_final/` (or any other `*_final/` analysis directory) it must ship with a GitHub gist for reader-side reproduction. The gist is the artifact that gets linked from a Substack / blog post under the figure, since Substack can't host arbitrary CSV/code downloads.
+
+Each gist contains:
+- `README.md` — one-paragraph context, install + run command, link back to the canonical generator in this repo.
+- A standalone Python reproduction script that reads data and emits a PNG. Should run with `pip install <minimal deps>` then `python make_<slug>.py` — no project-repo dependencies, no D1 credentials.
+
+**Data input** — pick the one that fits the figure's source:
+- **D1 (preferred when the canonical source is D1)** — script queries the public read-only D1 endpoint via HTTP and renders. Used for figures driven by `triage_run`, `deep_dive_run`, `resolver_context_version`, etc. No CSV in the gist.
+- **CSV-in-gist** — ship the CSV alongside the script when the canonical source is a TSV in the repo and the dataset is small enough to commit (<~100k rows / ~5 MB). Used for the surface-DB Venn and other candidate-universe figures.
+
+**Visibility:** create as **secret** by default — `gh gist create README.md make_<slug>.py [<slug>.csv] -d "<short desc>"` (omit `--public`). Secret gists are unguessable-URL only (not listed on your profile, not searchable), which is the right default for Substack-linked downloads. Flip to public via the web UI when discoverability is the goal; **public → secret is not reversible** (only delete-and-recreate). Always confirm with the user before publishing — gist creation is irreversible-ish and exposes derived data.
+
+Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line so readers can find it from the source script. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
+
 ## Web Viewer
 
 The `viewer/` subproject is a static SPA. Per-gene records live under
