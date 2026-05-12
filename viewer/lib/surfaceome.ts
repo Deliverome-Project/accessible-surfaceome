@@ -19,7 +19,20 @@ import path from "node:path";
 import type { SurfaceomeRecord } from "./surfaceome-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
-const GENE_NAMES_PATH = path.join(process.cwd(), "public", "data", "gene_names.json");
+
+// Gene-name lookup is sourced directly from the NCBI triageable TSV
+// in the repo (data/external/ncbi_gene_info/...). The viewer used to
+// commit a pre-built JSON snapshot of this; we dropped it because the
+// TSV is already in the repo and parsing it once at build (~50 ms
+// for 19k rows) is cheaper than carrying a 150k-line derivative file.
+const GENE_NAMES_TSV = path.join(
+  process.cwd(),
+  "..",
+  "data",
+  "external",
+  "ncbi_gene_info",
+  "Homo_sapiens.protein_coding.with_hgnc.triageable.tsv",
+);
 
 /**
  * One row of the genome-wide catalog the index table renders. Sourced
@@ -91,19 +104,49 @@ interface GeneNameEntry {
   synonyms: string[];
 }
 
-interface GeneNamesFile {
-  generated_at: string;
-  n_genes: number;
-  source: string;
-  names: Record<string, GeneNameEntry>;
-}
+// Module-level memo. The TSV is ~3.5 MB / 19,325 rows; parsing it
+// once per build (or once per request in dev) is fine, but
+// `loadGeneName` is called for every gene-detail page (potentially
+// thousands at SSG time), so we cache after the first parse.
+let _geneNamesCache: Record<string, GeneNameEntry> | null = null;
 
 function loadGeneNamesMap(): Record<string, GeneNameEntry> {
+  if (_geneNamesCache) return _geneNamesCache;
   try {
-    const raw = readFileSync(GENE_NAMES_PATH, "utf-8");
-    return (JSON.parse(raw) as GeneNamesFile).names;
+    const raw = readFileSync(GENE_NAMES_TSV, "utf-8");
+    const lines = raw.split(/\r?\n/);
+    if (lines.length < 2) {
+      _geneNamesCache = {};
+      return _geneNamesCache;
+    }
+    const header = lines[0].split("\t");
+    const symIdx = header.indexOf("gene_symbol");
+    const nameIdx = header.indexOf("description");
+    const synIdx = header.indexOf("synonyms");
+    if (symIdx < 0 || nameIdx < 0 || synIdx < 0) {
+      _geneNamesCache = {};
+      return _geneNamesCache;
+    }
+    const out: Record<string, GeneNameEntry> = {};
+    for (let i = 1; i < lines.length; i++) {
+      const row = lines[i];
+      if (!row) continue;
+      const cols = row.split("\t");
+      const sym = cols[symIdx]?.trim();
+      if (!sym) continue;
+      const name = cols[nameIdx]?.trim() ?? "";
+      const rawSyn = cols[synIdx]?.trim() ?? "";
+      const synonyms =
+        rawSyn && rawSyn !== "-"
+          ? rawSyn.split("|").filter((s) => s && s !== "-")
+          : [];
+      out[sym] = { name, synonyms };
+    }
+    _geneNamesCache = out;
+    return out;
   } catch {
-    return {};
+    _geneNamesCache = {};
+    return _geneNamesCache;
   }
 }
 
