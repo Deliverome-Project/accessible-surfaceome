@@ -1,17 +1,23 @@
-"""5-way Venn diagram of the M1 surface databases.
+"""5-way Venn diagram of the M1 surface databases — two views.
 
 For each of the 5 retained surface DBs (UniProt subcellular query,
 GO cellular component, HPA, SURFY, CSPA), build the set of UniProt
 accessions in the M1 candidate universe that the DB votes ``true``.
-Render an elliptical 5-way Venn showing how those sets overlap.
 
-5-way Venns are intrinsically busy — 31 non-empty regions are
-possible — but they make the structure of DB agreement immediately
-visible: large central area = consensus surface proteins, lobes =
-DB-specific calls, narrow slivers = pairwise quirks.
+Two visualizations of the same data:
+
+* ``db_overlap_venn`` — elliptical 5-way Venn. Topologically correct
+  (every one of the 31 non-empty regions is represented) but **NOT
+  area-proportional** — that's a known unsolved problem in geometry
+  for 5 sets, no library produces a true area-proportional 5-ellipse
+  Venn. Reads as "structure of agreement at a glance".
+* ``db_overlap_upset`` — UpSetPlot rendering of the same data. **IS
+  area-proportional** (each intersection is a bar whose height is
+  its set size). Standard for ≥4 sets in genomics. Reads as "exactly
+  how many proteins agree across which combination of DBs".
 
 Outputs (PDF + PNG):
-  data/analysis/triage_bench/db_overlap_venn.{pdf,png}
+  data/analysis/triage_bench/{db_overlap_venn,db_overlap_upset}.{pdf,png}
 """
 
 from __future__ import annotations
@@ -21,6 +27,8 @@ import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import pandas as pd
+import upsetplot
 from venn import venn
 
 from accessible_surfaceome.audit._plotting_config import (
@@ -60,28 +68,24 @@ def make_plot(out_dir: Path) -> None:
     sorted_keys = sorted(sets, key=lambda k: -len(sets[k]))
     sorted_sets = {k: sets[k] for k in sorted_keys}
 
-    fig, ax = plt.subplots(figsize=(9, 9))
+    fig, ax = plt.subplots(figsize=(11, 10))
     venn(
         sorted_sets,
         ax=ax,
         cmap=CATEGORICAL_PALETTE[: len(sorted_sets)],
-        fontsize=10,
+        fontsize=15,
         legend_loc=None,  # custom legend below so it doesn't overlap the ellipses
     )
 
-    total_union = len(set().union(*sets.values()))
-    total_intersection = len(set.intersection(*sets.values()))
-    ax.set_title(
-        "Surface-database overlap across the M1 candidate universe\n"
-        f"n = {total_union:,} proteins flagged by ≥1 of 5 DBs · "
-        f"{total_intersection:,} in 5-way intersection",
-        fontsize=12,
-        pad=14,
-    )
+    # ax.set_title is a no-op under the project's no-titles policy
+    # (see _plotting_config.setup_plotting_style); the summary stats
+    # below can move into the figure caption in any document that
+    # embeds this plot.
     ax.set_xticks([])
     ax.set_yticks([])
 
-    # Legend with per-DB set size, anchored below the diagram
+    # Legend with per-DB set size, anchored below the diagram. Fontsize
+    # bumped to match the rest of the post-2026-05 plotting config.
     handles = [
         plt.Rectangle((0, 0), 1, 1, color=CATEGORICAL_PALETTE[i], alpha=0.6)
         for i in range(len(sorted_keys))
@@ -94,13 +98,57 @@ def make_plot(out_dir: Path) -> None:
         bbox_to_anchor=(0.5, -0.02),
         ncols=len(sorted_keys),
         frameon=False,
-        fontsize=10,
+        fontsize=14,
     )
 
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(
         fig,
         filename="db_overlap_venn",
+        output_dir=str(out_dir),
+        formats=("pdf", "png"),
+    )
+    plt.close(fig)
+
+
+def make_upset_plot(out_dir: Path) -> None:
+    """Render the same 5-set data as an UpSetPlot.
+
+    UpSetPlot solves the area-proportionality problem that a 5-ellipse
+    Venn can't: each intersection is shown as a bar whose height is
+    the number of proteins in exactly that combination of DBs.
+    Standard alternative for ≥4 sets in genomics.
+    """
+
+    setup_plotting_style(style="white", context="notebook", font_scale=1.0)
+    sets = build_sets(Path("data/processed/candidate_universe/candidate_universe.tsv"))
+
+    # upsetplot expects a pandas series indexed by a categorical
+    # boolean MultiIndex (one boolean column per set, one row per
+    # protein). Construct that from the universe TSV.
+    all_accs = sorted(set().union(*sets.values()))
+    rows = []
+    for acc in all_accs:
+        rows.append({label: acc in sets[label] for label in sets})
+    df = pd.DataFrame(rows, index=all_accs).astype(bool)
+    # from_indicators turns a wide boolean DataFrame into the multi-index
+    # categorical series upsetplot wants.
+    data = upsetplot.from_indicators(list(sets.keys()), data=df)
+
+    fig = plt.figure(figsize=(14, 7))
+    upset = upsetplot.UpSet(
+        data,
+        subset_size="count",
+        sort_by="cardinality",
+        sort_categories_by="cardinality",
+        facecolor=CATEGORICAL_PALETTE[0],
+    )
+    upset.plot(fig=fig)
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    save_figure(
+        fig,
+        filename="db_overlap_upset",
         output_dir=str(out_dir),
         formats=("pdf", "png"),
     )
@@ -115,6 +163,7 @@ def main() -> None:
         "VENN_OUT_DIR", "data/analysis/triage_bench_final"
     ))
     make_plot(out_dir)
+    make_upset_plot(out_dir)
 
 
 if __name__ == "__main__":

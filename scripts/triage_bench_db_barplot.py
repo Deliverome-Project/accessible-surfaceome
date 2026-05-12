@@ -360,51 +360,95 @@ def _draw_group_separators(
 
 
 def make_by_class_plot(out_dir: Path) -> None:
+    """Per-class accuracy of Sonnet + NCBI vs the 5 M1 surface DBs.
+
+    Compares one canonical LLM cell against the five classical
+    surface-flag sources across four columns:
+      - overall  : pooled accuracy across all 147 proteins
+      - yes      : accuracy on ground_truth=yes proteins
+      - contextual : accuracy on ground_truth=contextual
+      - no       : accuracy on ground_truth=no
+    """
+
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     overall = overall_accuracy()
-    df, meta = _long_dataframe()
+    fractions, totals, _, _ = compute_correctness()
 
-    callers = _display_order(overall)
-    caller_order = [label for _, label in callers]
-    n_callers_left = len(LLM_CELLS)  # raw LLM cells only; routed Combined hidden
+    # Restricted caller set: just the one canonical LLM + the 5 DBs.
+    SONNET_NCBI_KEY = "_llm_sonnet_ncbi"
+    sonnet_label = LLM_LABEL[SONNET_NCBI_KEY]
+    db_labels = [label for _, label in DB_FLAGS_5]
+    callers_in_plot = [sonnet_label, *db_labels]
+
+    # Build a long DataFrame with 4 columns × n_callers rows.
+    column_order = ["overall", "yes", "contextual", "no"]
+    column_label = {
+        "overall":    "overall\n(all 147 proteins)",
+        "yes":        VERDICT_LABEL["yes"],
+        "contextual": VERDICT_LABEL["contextual"],
+        "no":         VERDICT_LABEL["no"],
+    }
+    rows = []
+    for caller in callers_in_plot:
+        for col in column_order:
+            frac = overall[caller] if col == "overall" else fractions[col][caller]
+            rows.append({
+                "caller": caller,
+                "column": col,
+                "column_label": column_label[col],
+                "fraction": frac,
+            })
+    df = pd.DataFrame(rows)
+
     label_to_key = {label: key for key, label in _all_callers()}
-    palette = [_caller_color(label, label_to_key) for label in caller_order]
+    palette = [_caller_color(label, label_to_key) for label in callers_in_plot]
 
-    fig, ax = plt.subplots(figsize=(14, 5.5))
+    fig, ax = plt.subplots(figsize=(11, 5.5))
     sns.barplot(
         data=df,
-        x="verdict_label", y="fraction",
+        x="column_label", y="fraction",
         hue="caller",
-        order=[VERDICT_LABEL[v] for v in VERDICT_ORDER],
-        hue_order=caller_order,
+        order=[column_label[c] for c in column_order],
+        hue_order=callers_in_plot,
         palette=palette,
         edgecolor="none", saturation=1.0,
         ax=ax,
     )
 
-    # Insert a visible gap between the LLM cluster (left) and the DB
-    # cluster (right). Seaborn lays patches hue-major then x-major:
-    # patches [0..n_v-1] = first caller across the 3 verdicts, etc.
-    n_v = len(VERDICT_ORDER)
-    n_callers = len(caller_order)
+    # Insert a visible gap between the single LLM bar and the 5-DB
+    # cluster within each column group. Seaborn lays patches hue-major
+    # then x-major: each caller has len(column_order) patches in a row.
+    n_col = len(column_order)
+    n_callers = len(callers_in_plot)
     bar_width = ax.patches[0].get_width()
-    gap = bar_width * 0.8
-    for caller_idx in range(n_callers_left, n_callers):
-        for j in range(n_v):
-            patch = ax.patches[caller_idx * n_v + j]
+    gap = bar_width * 0.6
+    # First caller (Sonnet/ncbi) stays where it is. Shift every other
+    # caller to the right by `gap`.
+    for caller_idx in range(1, n_callers):
+        for j in range(n_col):
+            patch = ax.patches[caller_idx * n_col + j]
             patch.set_x(patch.get_x() + gap)
 
-    _draw_group_separators(ax, caller_order, bar_width, gap, n_callers_left)
-    _annotate_bars(ax, df, caller_order)
+    # Per-bar percentage annotations.
+    for i, caller in enumerate(callers_in_plot):
+        for j, col in enumerate(column_order):
+            patch = ax.patches[i * n_col + j]
+            frac = df[(df.caller == caller) & (df.column == col)].iloc[0].fraction
+            ax.text(
+                patch.get_x() + patch.get_width() / 2,
+                patch.get_height() + 0.01,
+                f"{frac:.0%}",
+                ha="center", va="bottom",
+                fontsize=9, color=COLORS["dark"],
+            )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction of class correctly classified")
-    ax.set_title("Surface-caller correctness per ground-truth class — 5 M1 DBs vs LLM cells")
+    ax.set_ylabel("Fraction correctly classified")
     ax.set_ylim(0, 1.14)
     ax.yaxis.set_major_locator(plt.MaxNLocator(6))
 
     handles, _ = ax.get_legend_handles_labels()
-    legend_labels = [f"{lbl} ({overall[lbl]:.0%})" for lbl in caller_order]
+    legend_labels = [f"{lbl}  ({overall[lbl]:.0%})" for lbl in callers_in_plot]
     ax.legend(
         handles, legend_labels,
         title="Caller (overall acc.)",
@@ -412,11 +456,10 @@ def make_by_class_plot(out_dir: Path) -> None:
         frameon=False, borderaxespad=0.0,
     )
 
-    totals_by_v = {v: df[df.verdict == v].iloc[0].n_total for v in VERDICT_ORDER}
-    subtitle_parts = [f"n({v}) = {totals_by_v[v]}" for v in VERDICT_ORDER]
-    n_esc = meta.get("n_escalated", 0)
-    n_tot = meta.get("n_total", 0) or 1
-    subtitle_parts.append(f"Combined escalates {n_esc}/{n_tot} ({n_esc/n_tot:.0%})")
+    # n-per-class subtitle.
+    subtitle_parts = [f"n({v}) = {totals[v]}" for v in VERDICT_ORDER]
+    n_all = sum(totals.values())
+    subtitle_parts.insert(0, f"n(overall) = {n_all}")
     ax.text(
         0.5, -0.16, "  ·  ".join(subtitle_parts),
         transform=ax.transAxes, ha="center", va="top",
@@ -433,54 +476,134 @@ def make_by_class_plot(out_dir: Path) -> None:
 
 
 def make_overall_plot(out_dir: Path) -> None:
+    """LLM-only overall accuracy, grouped by model with hatched variants.
+
+    Drops the M1 DB rows (they're in the by-class plot for direct LLM
+    vs DB comparison). Within each model group (Haiku / Sonnet / Opus),
+    one bar per variant — color encodes the model, hatch pattern
+    encodes the variant.
+    """
+
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     overall = overall_accuracy()
-    callers = _display_order(overall)
-    caller_order = [label for _, label in callers]
-    label_to_key = {label: key for key, label in _all_callers()}
-    colors = [_caller_color(label, label_to_key) for label in caller_order]
 
-    df = pd.DataFrame({
-        "caller": caller_order,
-        "accuracy": [overall[lbl] for lbl in caller_order],
-    })
+    # Group LLM cells by model. Variant order = light-to-dark context
+    # walk so the hatch pattern reads as "amount of resolver / web /
+    # literature scaffolding".
+    VARIANT_ORDER = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"]
+    VARIANT_LABEL = {
+        "naive":        "naive",
+        "ncbi":         "+ NCBI",
+        "web_ncbi":     "+ NCBI + web",
+        "pubmed_ncbi":  "+ NCBI + PubMed",
+    }
+    # Hatch by variant — solid for naive, denser diagonal / cross /
+    # dots as more context is layered on.
+    VARIANT_HATCH = {
+        "naive":        "",
+        "ncbi":         "///",
+        "web_ncbi":     "xxx",
+        "pubmed_ncbi":  "...",
+    }
+    # One base color per model, sequential Claude orange light → dark.
+    MODEL_ORDER = ["haiku-4-5", "sonnet-4-6", "opus-4-7"]
+    MODEL_LABEL = {
+        "haiku-4-5":  "Haiku 4.5",
+        "sonnet-4-6": "Sonnet 4.6",
+        "opus-4-7":   "Opus 4.7",
+    }
+    MODEL_COLOR = {
+        "haiku-4-5":  "#f1c4ab",
+        "sonnet-4-6": "#d87851",
+        "opus-4-7":   "#a85b3f",
+    }
+    # Bucket: model → list of (variant, vote_key) actually run for that
+    # model in this benchmark.
+    cells_by_model: dict[str, list[tuple[str, str]]] = {m: [] for m in MODEL_ORDER}
+    for vote_key, model_slug, variant in LLM_CELLS:
+        if model_slug in cells_by_model:
+            cells_by_model[model_slug].append((variant, vote_key))
 
-    fig, ax = plt.subplots(figsize=(13, 4.8))
-    sns.barplot(
-        data=df, x="caller", y="accuracy",
-        hue="caller", order=caller_order, hue_order=caller_order,
-        palette=colors, legend=False,
-        edgecolor="none", saturation=1.0, ax=ax,
-    )
+    fig, ax = plt.subplots(figsize=(11, 5.2))
 
-    # Insert a visual gap between LLM cluster (left) and DB cluster (right).
-    n_callers_left = len(LLM_CELLS)
-    bar_width = ax.patches[0].get_width()
-    gap = bar_width * 0.5
-    for caller_idx in range(n_callers_left, len(caller_order)):
-        ax.patches[caller_idx].set_x(ax.patches[caller_idx].get_x() + gap)
+    # Manual bar placement so we can hatch + color each cell precisely.
+    bar_width = 0.6
+    inter_variant_gap = 0.05      # within-model spacing
+    inter_model_gap = 0.9         # between-model spacing
+    tick_positions: list[float] = []
+    tick_labels: list[str] = []
+    x = 0.0
+    legend_seen_variants: set[str] = set()
+    legend_handles: list = []
+    legend_labels: list[str] = []
 
-    # Annotate AFTER the shift so the labels sit on the new bar centers.
-    for bar, lbl in zip(ax.patches, caller_order):
-        ax.text(
-            bar.get_x() + bar.get_width() / 2,
-            bar.get_height() + 0.012,
-            f"{overall[lbl]:.1%}",
-            ha="center", va="bottom",
-            fontsize=9, color=COLORS["dark"],
+    for model_slug in MODEL_ORDER:
+        cells = cells_by_model.get(model_slug, [])
+        if not cells:
+            continue
+        # Order cells by VARIANT_ORDER so hatches read consistently.
+        cells_sorted = sorted(
+            cells,
+            key=lambda vk: VARIANT_ORDER.index(vk[0]) if vk[0] in VARIANT_ORDER else 99,
         )
+        model_block_start = x
+        for variant, vote_key in cells_sorted:
+            label = LLM_LABEL[vote_key]
+            acc = overall[label]
+            color = MODEL_COLOR[model_slug]
+            hatch = VARIANT_HATCH.get(variant, "")
+            ax.bar(
+                x, acc, width=bar_width,
+                color=color,
+                edgecolor=COLORS["dark"],
+                linewidth=0.6,
+                hatch=hatch,
+            )
+            ax.text(
+                x, acc + 0.012,
+                f"{acc:.1%}",
+                ha="center", va="bottom",
+                fontsize=10, color=COLORS["dark"],
+            )
+            # Collect legend entries once per variant (color-agnostic
+            # since hatch defines the variant; use neutral grey for
+            # the legend swatch).
+            if variant not in legend_seen_variants:
+                legend_seen_variants.add(variant)
+                legend_handles.append(
+                    plt.Rectangle(
+                        (0, 0), 1, 1,
+                        facecolor="white",
+                        edgecolor=COLORS["dark"],
+                        hatch=hatch,
+                        linewidth=0.6,
+                    )
+                )
+                legend_labels.append(VARIANT_LABEL[variant])
+            x += bar_width + inter_variant_gap
+        # Center the model label under the block of variant bars.
+        block_center = (model_block_start + (x - inter_variant_gap - bar_width)) / 2 + bar_width / 2
+        tick_positions.append(block_center)
+        tick_labels.append(MODEL_LABEL[model_slug])
+        x += inter_model_gap
 
-    # Realign x-ticks to the post-shift bar centers — otherwise labels
-    # drift left of their bars in the DB cluster.
-    tick_positions = [p.get_x() + p.get_width() / 2 for p in ax.patches]
     ax.set_xticks(tick_positions)
-    ax.set_xticklabels(caller_order, rotation=30, ha="right", rotation_mode="anchor")
-
+    ax.set_xticklabels(tick_labels)
     ax.set_xlabel("")
-    ax.set_ylabel("Overall accuracy")
-    ax.set_title("Overall caller accuracy on 147-gene triage benchmark")
+    ax.set_ylabel("Overall accuracy on 147-gene benchmark")
     ax.set_ylim(0, 1.05)
     ax.yaxis.set_major_locator(plt.MaxNLocator(6))
+
+    # Variant legend (hatch-only) to the right of the plot.
+    ax.legend(
+        legend_handles, legend_labels,
+        title="Variant (hatch)",
+        loc="upper left",
+        bbox_to_anchor=(1.02, 1.0),
+        frameon=False,
+        borderaxespad=0.0,
+    )
+
     sns.despine(ax=ax, top=True, right=True)
 
     save_figure(
