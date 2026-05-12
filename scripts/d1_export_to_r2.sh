@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Export the Cloudflare D1 `surfaceome_agents` database to a SQL file
-# and upload it to the R2 bucket `deliverome-d1-backups`.
+# Export a Cloudflare D1 database to a SQL file and upload it to the
+# R2 bucket `deliverome-d1-backups`.
 #
 # This is the CI-driven offsite backup layer (layer 2.5 in the
 # disaster-recovery taxonomy): SQL dumps live in R2 with cross-region
@@ -15,11 +15,12 @@
 #     + CLOUDFLARE_ACCOUNT_ID in the shell.
 #   * R2 bucket `deliverome-d1-backups` must exist
 #       npx --yes wrangler r2 bucket create deliverome-d1-backups
-#   * D1 database `surfaceome_agents` must exist
+#   * The target D1 database must exist
 #
 # USAGE
-#   bash scripts/d1_export_to_r2.sh
-#   bash scripts/d1_export_to_r2.sh --keep-local   # also retain local copy
+#   bash scripts/d1_export_to_r2.sh                       # default surfaceome_agents
+#   bash scripts/d1_export_to_r2.sh --db surfaceome_public
+#   bash scripts/d1_export_to_r2.sh --keep-local          # also retain local copy
 #
 # CI USAGE
 #   See .github/workflows/d1-backup.yml — runs on push/PR that touches
@@ -31,7 +32,29 @@ set -euo pipefail
 DB_NAME="surfaceome_agents"
 BUCKET="deliverome-d1-backups"
 KEEP_LOCAL=0
-if [[ "${1:-}" == "--keep-local" ]]; then KEEP_LOCAL=1; fi
+
+# Parse flags in any order: --db <name>, --keep-local
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --db)
+            DB_NAME="$2"
+            shift 2
+            ;;
+        --keep-local)
+            KEEP_LOCAL=1
+            shift
+            ;;
+        -h|--help)
+            sed -n '2,28p' "$0"
+            exit 0
+            ;;
+        *)
+            echo "unknown flag: $1" >&2
+            echo "usage: $0 [--db <name>] [--keep-local]" >&2
+            exit 2
+            ;;
+    esac
+done
 
 TIMESTAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 TMPDIR="$(mktemp -d)"
