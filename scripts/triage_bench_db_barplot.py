@@ -432,10 +432,18 @@ def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_clas
     fractions, totals, _, _ = compute_correctness()
 
     # Restricted caller set: just the one canonical LLM + the 5 DBs.
+    # DBs are sorted descending by overall accuracy on this benchmark
+    # so the strongest source sits next to the LLM bar — same convention
+    # as the cost-vs-accuracy plot. With optimized cutoffs applied (when
+    # _USE_OPTIMIZED_CUTOFFS=True), the sort reflects the optimized
+    # accuracies, which can rearrange the bar order vs canonical.
     SONNET_NCBI_KEY = "_llm_sonnet_ncbi"
     sonnet_label = LLM_LABEL[SONNET_NCBI_KEY]
-    db_labels = [label for _, label in DB_FLAGS_5]
-    callers_in_plot = [sonnet_label, *db_labels]
+    db_labels_sorted = sorted(
+        (label for _, label in DB_FLAGS_5),
+        key=lambda lbl: -overall[lbl],
+    )
+    callers_in_plot = [sonnet_label, *db_labels_sorted]
 
     # Build a long DataFrame with 4 columns × n_callers rows.
     column_order = ["overall", "yes", "contextual", "no"]
