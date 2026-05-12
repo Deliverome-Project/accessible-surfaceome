@@ -576,27 +576,47 @@ def _run_one_with_retry(
     truth_class: str,
 ) -> RunRecord:
     """``_run_one`` with one automatic retry for transient failures
-    or schema-mismatch emissions.
+    or schema-mismatch emissions, plus a refusal-fallback to the
+    ``naive`` variant.
 
-    Two retry triggers (see :func:`_is_retryable`):
-      * Null verdict with a known-transient error (parse failure,
-        resolver 404, generic API error).
-      * Non-null verdict that violates the Pydantic schema's
-        verdict↔reason constraint (e.g. ``no + multipass_with_exposed_loops``,
-        which is internally inconsistent — multipass is a yes-only
-        reason). A fresh sample often emits a self-consistent combo.
+    Three retry / fallback triggers:
+      * **Null verdict + transient error** (parse failure, resolver
+        404, generic API error) → re-issue with the same variant.
+      * **Schema-mismatch emission** (verdict/reason combo violates
+        the Pydantic constraint, e.g. ``no + multipass_with_exposed_loops``)
+        → re-issue with the same variant. A fresh sample usually
+        emits a self-consistent combo.
+      * **Anthropic refusal** (``stop_reason='refusal'``) on a
+        resolver-context variant → fall back to the ``naive``
+        variant. Empirically (CTXN1, FBRS in the 2026-05 genome-wide
+        sweep), the refusal trigger lives in the resolver-injected
+        task message; the naive prompt's bare gene symbol routes
+        around it. The returned record carries ``variant='naive'``
+        so audit queries can identify cells where the fallback fired.
 
-    The retry is cheap (single re-issue, no exponential backoff).
-    If the retry also fails, the second attempt's record is returned
-    (so the persisted ``raw_text`` reflects the most recent attempt).
-    Refusals are not retried — those are stable safety-classifier
-    blocks.
+    Refusals on the naive variant are NOT further retried — those
+    really do refuse on the symbol alone.
     """
 
     first = _run_one(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
     )
+
+    # Refusal fallback: when a resolver-context variant gets refused,
+    # try the naive variant whose bare-symbol prompt doesn't trip the
+    # safety classifier.
+    if first.api_stop_reason == "refusal" and variant != "naive":
+        naive_attempt = _run_one(
+            variant="naive", model=model, gene_symbol=gene_symbol,
+            replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+        )
+        if naive_attempt.predicted_verdict is not None:
+            return naive_attempt
+        # Naive also failed — return the original refusal record so
+        # the persisted artifact reflects the user-requested variant.
+        return first
+
     if not _is_retryable(first):
         return first
     second = _run_one(
