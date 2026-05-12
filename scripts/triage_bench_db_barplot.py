@@ -644,39 +644,41 @@ def _f(r: dict, k: str) -> float | None:
         return None
 
 
-# Variants to plot in the supplemental figure: name, evaluator(record→bool),
-# group (which DB-family bar cluster it belongs to). The baseline-5 are
-# repeated here so each cluster has its own "baseline" anchor.
+# Filter variants to plot. The 5 baselines anchor each group; only
+# meaningful additional variants are included — i.e. ones that actually
+# differ from baseline on the 147-gene benchmark. Drop-low-conf /
+# drop-electronic-only / drop-unspecific / drop-mixed-conflict
+# "stricter" variants are no-ops on this gene set (the benchmark
+# proteins either pass the baseline filter already, or aren't in the
+# candidate universe at all) so they don't appear here. Similarly,
+# more-permissive UniProt and HPA variants would require reprocessing
+# upstream raw data (the universe TSV pre-filters those at load time),
+# so those aren't reachable from the current data either.
 DB_VARIANTS: list[tuple[str, "callable", str]] = [
-    ("UniProt baseline",                lambda r: _b(r, "uniprot_surface_flag"),                                "UniProt"),
-    ("GO baseline",                     lambda r: _b(r, "go_surface_flag"),                                     "GO"),
-    ("GO drop electronic-only",         lambda r: _b(r, "go_surface_flag") and not (_b(r, "go_has_electronic") and not (_b(r, "go_has_experimental") or _b(r, "go_has_curated"))), "GO"),
-    ("GO drop low-conf",                lambda r: _b(r, "go_surface_flag") and not _b(r, "go_low_confidence_only"), "GO"),
-    ("HPA baseline",                    lambda r: _b(r, "hpa_surface_flag"),                                    "HPA"),
-    ("HPA drop low-conf",               lambda r: _b(r, "hpa_surface_flag") and not _b(r, "hpa_low_confidence_only"), "HPA"),
-    ("SURFY baseline",                  lambda r: _b(r, "surfy_surface_flag"),                                  "SURFY"),
-    ("SURFY score>0.5",                 lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.5,  "SURFY"),
-    ("SURFY score>0.7",                 lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.7,  "SURFY"),
-    ("SURFY score>0.9",                 lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.9,  "SURFY"),
-    ("CSPA baseline",                   lambda r: _b(r, "cspa_surface_flag"),                                   "CSPA"),
-    ("CSPA drop unspecific",            lambda r: _b(r, "cspa_surface_flag") and not _b(r, "cspa_is_unspecific"), "CSPA"),
-    ("DeepTMHMM",                       lambda r: _b(r, "deeptmhmm_surface_flag"),                              "extra"),
-    ("Compartments",                    lambda r: _b(r, "compartments_surface_flag"),                           "extra"),
-    ("Consensus ≥2 sources",            lambda r: int(r.get("n_sources_surface", "0") or 0) >= 2,               "consensus"),
-    ("Consensus ≥3 sources",            lambda r: int(r.get("n_sources_surface", "0") or 0) >= 3,               "consensus"),
-    ("Consensus ≥4 sources",            lambda r: int(r.get("n_sources_surface", "0") or 0) >= 4,               "consensus"),
+    ("UniProt baseline",       lambda r: _b(r, "uniprot_surface_flag"), "UniProt"),
+    ("GO baseline",            lambda r: _b(r, "go_surface_flag"),      "GO"),
+    ("HPA baseline",           lambda r: _b(r, "hpa_surface_flag"),     "HPA"),
+    ("SURFY baseline",         lambda r: _b(r, "surfy_surface_flag"),   "SURFY"),
+    # SURFY ML-score tiers — distinct strictness levels from the baseline binary flag.
+    ("SURFY score>0.5",        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.5, "SURFY"),
+    ("SURFY score>0.7",        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.7, "SURFY"),
+    ("CSPA baseline",          lambda r: _b(r, "cspa_surface_flag"),    "CSPA"),
+    # Consensus filters — the only filter that beats every single-DB baseline
+    # is `n_sources_surface ≥ 2`. Stricter consensus levels become
+    # precision-only filters (very high neg accuracy, low pos recall).
+    ("Consensus ≥2 sources",   lambda r: int(r.get("n_sources_surface", "0") or 0) >= 2, "consensus"),
+    ("Consensus ≥3 sources",   lambda r: int(r.get("n_sources_surface", "0") or 0) >= 3, "consensus"),
 ]
 
-# Colors per group — keep the brand DB palette for the 5 baselines and
-# distinct shades for variants / extras / consensus.
+# Colors per group — brand palette for the 5 baselines; consensus gets
+# the success-green family.
 _VARIANT_GROUP_PALETTE: dict[str, list[str]] = {
     "UniProt":   [CATEGORICAL_PALETTE[0]],
-    "GO":        [CATEGORICAL_PALETTE[1], "#5d8a82", "#7aab9f"],   # base + 2 variants
-    "HPA":       [CATEGORICAL_PALETTE[2], "#f6c060"],
-    "SURFY":     [CATEGORICAL_PALETTE[3], "#a895d6", "#bca5dd", "#d4b9e5"],
-    "CSPA":      [CATEGORICAL_PALETTE[4], "#8a3041"],
-    "extra":     ["#6E1428", "#922038"],
-    "consensus": ["#2E7A55", "#5cae84", "#8acfaf"],
+    "GO":        [CATEGORICAL_PALETTE[1]],
+    "HPA":       [CATEGORICAL_PALETTE[2]],
+    "SURFY":     [CATEGORICAL_PALETTE[3], "#a895d6", "#d4b9e5"],
+    "CSPA":      [CATEGORICAL_PALETTE[4]],
+    "consensus": ["#2E7A55", "#5cae84"],
 }
 
 
