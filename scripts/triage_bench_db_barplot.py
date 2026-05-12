@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -61,24 +62,30 @@ DB_FLAGS_5: list[tuple[str, str]] = [
 # vote-key carries through the per-protein votes dict alongside the DB
 # flags so the per-class correctness logic can treat them uniformly.
 LLM_CELLS: list[tuple[str, str, str]] = [
-    # (vote_key, model_slug, variant)
+    # (vote_key, model_slug, variant). Order = canonical display order
+    # for the LLM-block of the bar charts: per-model light-to-dark
+    # context augmentation walk.
     ("_llm_haiku_naive",        "haiku-4-5",  "naive"),
     ("_llm_haiku_ncbi",         "haiku-4-5",  "ncbi"),
+    ("_llm_haiku_pubmed_ncbi",  "haiku-4-5",  "pubmed_ncbi"),
     ("_llm_haiku_web_ncbi",     "haiku-4-5",  "web_ncbi"),
     ("_llm_sonnet_naive",       "sonnet-4-6", "naive"),
     ("_llm_sonnet_ncbi",        "sonnet-4-6", "ncbi"),
     ("_llm_sonnet_pubmed_ncbi", "sonnet-4-6", "pubmed_ncbi"),
     ("_llm_sonnet_web_ncbi",    "sonnet-4-6", "web_ncbi"),
+    ("_llm_opus_naive",         "opus-4-7",   "naive"),
     ("_llm_opus_ncbi",          "opus-4-7",   "ncbi"),
 ]
 LLM_LABEL = {
     "_llm_haiku_naive":        "Haiku (naive)",
     "_llm_haiku_ncbi":         "Haiku (+ NCBI)",
+    "_llm_haiku_pubmed_ncbi":  "Haiku (+ NCBI + PubMed)",
     "_llm_haiku_web_ncbi":     "Haiku (+ NCBI + web)",
     "_llm_sonnet_naive":       "Sonnet (naive)",
     "_llm_sonnet_ncbi":        "Sonnet (+ NCBI)",
     "_llm_sonnet_pubmed_ncbi": "Sonnet (+ NCBI + PubMed)",
     "_llm_sonnet_web_ncbi":    "Sonnet (+ NCBI + web)",
+    "_llm_opus_naive":         "Opus (naive)",
     "_llm_opus_ncbi":          "Opus (+ NCBI)",
     "_llm_combined":           "Combined (Haiku→Sonnet)",
 }
@@ -99,11 +106,13 @@ DB_PALETTE = {label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FL
 LLM_PALETTE = {
     "_llm_haiku_naive":        "#f7d8c4",   # tint 65%
     "_llm_haiku_ncbi":         "#f1c4ab",   # tint 50%
+    "_llm_haiku_pubmed_ncbi":  "#eab695",   # tint 42% — fits between ncbi and web
     "_llm_haiku_web_ncbi":     "#ec9e7d",   # tint 38%
     "_llm_sonnet_naive":       "#e3a07d",   # tint 25%
     "_llm_sonnet_ncbi":        "#d87851",   # base Claude
     "_llm_sonnet_pubmed_ncbi": "#cb6f4a",   # base+, sits between ncbi and web
     "_llm_sonnet_web_ncbi":    "#c46139",   # shade 12%
+    "_llm_opus_naive":         "#b66547",   # shade 18% — sits before opus_ncbi
     "_llm_opus_ncbi":          "#a85b3f",   # shade 25%
     "_llm_combined":           "#7a3b25",   # shade 50%
 }
@@ -996,7 +1005,13 @@ def make_db_variants_plot(out_dir: Path) -> None:
 
 
 def main() -> None:
-    out_dir = ROOT / "data/analysis/triage_bench"
+    # Output dir overridable via DB_BARPLOT_OUT_DIR env var so the same
+    # script can render into staging vs the "final" rendering folder
+    # (data/analysis/triage_bench_final/) without code edits.
+    out_dir = Path(os.environ.get(
+        "DB_BARPLOT_OUT_DIR",
+        str(ROOT / "data/analysis/triage_bench"),
+    ))
     make_by_class_plot(out_dir)
     make_overall_plot(out_dir)
     make_cost_vs_accuracy_plot(out_dir)
