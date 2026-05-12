@@ -63,7 +63,7 @@ The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Ev
            "ncbi_gene_id": null, "ensembl_gene": null},
   "canonical_isoform": "<UniProt isoform ID>",
   "isoform_flattened": false,
-  "protein_features": "<orchestrator-injected; do NOT modify>",
+  // (protein_features is orchestrator-injected post-hoc — DO NOT emit)
   "targetability": {...},
   "surface_biology": {...},
   "surface_engagement_validation": {...},
@@ -84,7 +84,7 @@ The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Ev
 }
 ```
 
-**`protein_features` is orchestrator-injected, READ-ONLY.** Echo back the exact values the task prompt's `## Pre-loaded protein features` block contained (verbatim) — don't add, remove, or modify any field. The orchestrator stamps `provenance: "surfy_snapshot"` on this bucket; preserve it.
+**Do NOT emit `protein_features` in your JSON.** The orchestrator fills it in post-hoc from the SURFY snapshot. Any `protein_features` block you emit will be discarded; if it contains fields not in the schema (e.g., the legacy `length_aa` instead of `protein_length_aa`) the silent replacement still prevents validation failures. Just skip the key entirely.
 
 **`triage_signal` cross-validates with `surface_biology.surface_status`** — the schema rejects mismatches:
 
@@ -377,7 +377,7 @@ If during your literature search you encounter an approved or clinical-stage ant
 
 - **Character caps are HARD LIMITS, enforced by Pydantic.** Going over by even one character fails the entire record. Aim for ~80% of the cap to leave margin. The caps that bite most often:
   - `targetability.tldr`: ≤400 chars (executive summary, must be tight)
-  - `rationale`: ≤1500 chars (record-level rationale)
+  - `rationale`: ≤1800 chars (record-level rationale)
   - `induced_presentation[i].description`: ≤400 chars
   - `risk_flag.description`: ≤500 chars
   - `surface_engagement_validation.preclinical_evidence.finding_summary`: ≤1000 chars

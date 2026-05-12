@@ -253,6 +253,7 @@ def _annotate_one(
         run_dir=run_dir,
         source_store=source_store,
         audit_callable=audit_callable,
+        protein_features_override=protein_features,
     )
     if validation_status == "invalid":
         logger.warning(
@@ -503,6 +504,7 @@ def _persist_annotation(
     run_dir: Path,
     source_store: SourceTextStore,
     audit_callable: EntailmentAuditCallable | None = None,
+    protein_features_override: ProteinFeatures | None = None,
 ) -> tuple[Path | None, Path | None, Literal["valid", "invalid", "missing"], list[dict[str, Any]] | None]:
     """Promote the agent's ``SurfaceomeRecordDraft`` and persist as ``SurfaceomeRecord``.
 
@@ -534,6 +536,15 @@ def _persist_annotation(
 
     if annotation_json is None:
         return None, None, "missing", None
+
+    # Inject the orchestrator-loaded ProteinFeatures into the draft
+    # BEFORE Pydantic validation. The agent may emit a partial / wrong
+    # `protein_features` (e.g. legacy field names from prior schema),
+    # but those fields are authoritative on the orchestrator side, not
+    # agent-emitted. Stripping the agent's version + dumping the
+    # orchestrator's override prevents extra-field rejections.
+    if protein_features_override is not None:
+        annotation_json["protein_features"] = protein_features_override.model_dump()
 
     try:
         draft = SurfaceomeRecordDraft.model_validate(annotation_json)

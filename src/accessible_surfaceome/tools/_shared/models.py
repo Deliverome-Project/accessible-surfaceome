@@ -1247,7 +1247,7 @@ class SurfaceomeRecord(BaseModel):
     confidence: SynthesisConfidence
     confidence_reasoning: str
     contradiction_flag: bool
-    rationale: str = Field(..., max_length=1500)
+    rationale: str = Field(..., max_length=1800)
     model_path: ModelPath
     triage_signal: TriageSignal = "unknown"
 
@@ -1312,7 +1312,7 @@ class SurfaceomeRecordDraft(BaseModel):
     confidence: SynthesisConfidence
     confidence_reasoning: str
     contradiction_flag: bool
-    rationale: str = Field(..., max_length=1500)
+    rationale: str = Field(..., max_length=1800)
     model_path: ModelPath
     triage_signal: TriageSignal = "unknown"
 
