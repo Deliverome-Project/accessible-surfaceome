@@ -284,13 +284,13 @@
   opacity: 0.45;
 }
 
-.nBubble[data-n="5"],
-.nBubble[data-n="6"] {
+.nBubble[data-n="3"],
+.nBubble[data-n="4"] {
   background: var(--teal-tint);
   color: var(--teal-deepest);
 }
 
-.nBubble[data-n="7"] {
+.nBubble[data-n="5"] {
   background: var(--teal-mid);
   color: var(--fg-on-dark);
 }

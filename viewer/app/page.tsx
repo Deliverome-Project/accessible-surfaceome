@@ -24,15 +24,15 @@ export default async function HomePage() {
             A genome-wide table of <em>cell-surface candidates.</em>
           </h1>
           <p className={`lede ${styles.lede}`}>
-            Every human protein with at least one surface signal across seven
-            public databases, with the Haiku triage agent&apos;s verdict where it
-            has run, and Sonnet deep-dive records where they exist. Open
-            accession, evidence-cited, agent-readable.
+            Every protein-coding human gene, scored against five public
+            surface-membership databases, with the Haiku triage agent&apos;s
+            verdict where it has run and Sonnet deep-dive records where they
+            exist. Open accession, evidence-cited, agent-readable.
           </p>
           <ul className={styles.stats} aria-label="Catalog stats">
             <li className={styles.stat}>
               <span className={styles.statN}>{catalog.n_rows.toLocaleString()}</span>
-              <span className={`label-mono ${styles.statK}`}>candidates</span>
+              <span className={`label-mono ${styles.statK}`}>genes</span>
             </li>
             <li className={styles.stat}>
               <span className={styles.statN}>{catalog.n_with_triage.toLocaleString()}</span>
@@ -45,8 +45,8 @@ export default async function HomePage() {
               <span className={`label-mono ${styles.statK}`}>deep-dive</span>
             </li>
             <li className={styles.stat}>
-              <span className={styles.statN}>7</span>
-              <span className={`label-mono ${styles.statK}`}>sources</span>
+              <span className={styles.statN}>5</span>
+              <span className={`label-mono ${styles.statK}`}>DB sources</span>
             </li>
           </ul>
         </header>
@@ -62,9 +62,11 @@ export default async function HomePage() {
         <footer className={styles.footnotes}>
           <p>
             <span className="label-mono">DB columns ·</span> U UniProt · G GO ·
-            S SURFY · C CSPA · H HPA · T DeepTMHMM · M COMPARTMENTS. Each cell is
-            a single source&apos;s vote on whether the protein reaches the cell
-            surface; the <code>Sources</code> column is the union count.
+            S SURFY · C CSPA · H HPA. Each cell is one source&apos;s vote on
+            whether the protein reaches the cell surface; the{" "}
+            <code>Sources</code> column is the count of those five (the M1
+            universe gate). DeepTMHMM + COMPARTMENTS are tracked upstream as
+            auxiliary signals but don&apos;t appear here.
           </p>
           <p>
             <span className="label-mono">Triage ·</span> Haiku-only first pass.

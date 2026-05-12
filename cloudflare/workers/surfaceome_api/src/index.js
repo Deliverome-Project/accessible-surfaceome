@@ -177,12 +177,16 @@ async function handleCatalog(env) {
   ).first();
   const benchVersion = benchRow?.bench_version ?? null;
 
-  // Universe rows are the spine of the catalog: one per (gene, UniProt).
+  // Universe rows are the spine of the catalog: one per gene. We only
+  // SELECT the 5 gating DBs (uniprot, go, surfy, cspa, hpa) — DeepTMHMM
+  // and COMPARTMENTS are stored in the table for fidelity but are
+  // auxiliary signals (demoted from the M1 universe gate; see
+  // src/accessible_surfaceome/merge/__init__.py). n_sources_surface in
+  // the table is already the count over those 5 flags only.
   const universeRows = await env.DB.prepare(
     `SELECT gene_symbol, uniprot_acc, n_sources_surface,
             uniprot_surface_flag, go_surface_flag, surfy_surface_flag,
-            cspa_surface_flag, hpa_surface_flag, deeptmhmm_surface_flag,
-            compartments_surface_flag
+            cspa_surface_flag, hpa_surface_flag
        FROM candidate_universe_public
       WHERE universe_version = ?
       ORDER BY gene_symbol`
@@ -236,8 +240,6 @@ async function handleCatalog(env) {
         surfy: u.surfy_surface_flag ? 1 : 0,
         cspa: u.cspa_surface_flag ? 1 : 0,
         hpa: u.hpa_surface_flag ? 1 : 0,
-        deeptmhmm: u.deeptmhmm_surface_flag ? 1 : 0,
-        compartments: u.compartments_surface_flag ? 1 : 0,
       },
       triage: triageMap.get(u.gene_symbol) ?? null,
       deep_dive: deepSet.has(u.gene_symbol),
@@ -253,7 +255,7 @@ async function handleCatalog(env) {
       symbol: sym,
       uniprot: "",
       n_sources: 0,
-      db: { uniprot: 0, go: 0, surfy: 0, cspa: 0, hpa: 0, deeptmhmm: 0, compartments: 0 },
+      db: { uniprot: 0, go: 0, surfy: 0, cspa: 0, hpa: 0 },
       triage: triageMap.get(sym) ?? null,
       deep_dive: true,
     });

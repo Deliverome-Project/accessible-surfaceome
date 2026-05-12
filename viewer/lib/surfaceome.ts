@@ -33,14 +33,17 @@ export interface CatalogRow {
   symbol: string;
   uniprot: string;
   n_sources: number;
+  // Five gating DBs (uniprot, go, surfy, cspa, hpa). DeepTMHMM +
+  // COMPARTMENTS are demoted to auxiliary signals upstream
+  // (src/accessible_surfaceome/merge/__init__.py) and don't appear in
+  // the public catalog table — the database row still carries them
+  // for fidelity, but the Worker filters them out of /v1/catalog.
   db: {
     uniprot: number;
     go: number;
     surfy: number;
     cspa: number;
     hpa: number;
-    deeptmhmm: number;
-    compartments: number;
   };
   triage: { verdict: string; reason: string | null } | null;
   deep_dive: boolean;

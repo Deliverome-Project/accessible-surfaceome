@@ -5,14 +5,15 @@ import { useMemo, useState } from "react";
 import type { CatalogRow } from "../../lib/surfaceome";
 import styles from "./CatalogTable.module.css";
 
+// Five gating DBs. DeepTMHMM + COMPARTMENTS were demoted from the
+// M1 universe gate upstream (kept in the D1 row for fidelity but
+// hidden in the public catalog).
 const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
   { key: "go", short: "G", long: "GO" },
   { key: "surfy", short: "S", long: "SURFY" },
   { key: "cspa", short: "C", long: "CSPA" },
   { key: "hpa", short: "H", long: "HPA" },
-  { key: "deeptmhmm", short: "T", long: "DeepTMHMM" },
-  { key: "compartments", short: "M", long: "COMPARTMENTS" },
 ];
 
 type SortKey = "symbol" | "uniprot" | "n_sources" | "triage" | "deep_dive";
@@ -58,7 +59,7 @@ export function CatalogTable({
       }
       if (quick === "deep_dive" && !r.deep_dive) return false;
       if (quick === "triage" && !r.triage) return false;
-      if (quick === "n7" && r.n_sources < 7) return false;
+      if (quick === "n7" && r.n_sources < 5) return false;
       return true;
     });
   }, [rows, query, quick]);
@@ -134,7 +135,7 @@ export function CatalogTable({
             onClick={() => setQuick("n7")}
             aria-pressed={quick === "n7"}
           >
-            7-source consensus
+            5-source consensus
           </button>
         </div>
       </div>
