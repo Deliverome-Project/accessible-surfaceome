@@ -14,3 +14,27 @@ repos:
       - id: check-yaml
       - id: check-toml
       - id: check-json
+      - id: detect-private-key
+      # Block `.env` and other credential-bearing files from ever being
+      # staged. `.env` is in .gitignore, but a `git add -f` would still
+      # slip past it — this hook gives a loud, named error if anyone
+      # tries.
+      - id: forbid-new-submodules
+  - repo: local
+    hooks:
+      - id: forbid-env-files
+        name: "Block .env files (credentials must stay in .gitignored .env)"
+        entry: scripts/precommit/forbid_env_files.sh
+        language: script
+        # Match anything named .env, .env.<anything>, or **/.env at any
+        # depth. Allows `.env.example` (the documented template).
+        files: '(^|/)\.env(\..*)?$'
+        exclude: '\.env\.example$'
+      - id: scan-secrets
+        name: "Scan staged content for credential-shaped strings"
+        entry: scripts/precommit/scan_secrets.py
+        language: python
+        # Skip vendored / generated / data files; the regex is conservative
+        # but the false-positive rate on binary blobs and node_modules is
+        # not worth the noise.
+        exclude: '^(data/|.*/node_modules/|.*/\.next/|.*/out/|.*\.(lock|tsbuildinfo|fasta|fa)$)'
