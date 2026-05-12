@@ -630,6 +630,10 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
 
 
 CAND_TSV_PATH = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
+# Raw upstream snapshots — used for source-level filter-variants that
+# can't be reconstructed from the post-filter candidate_universe TSV.
+UNIPROT_RAW_TSV = ROOT / "data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.tsv"
+GO_RAW_TSV = ROOT / "data/external/go_human_surface_annotations/go_human_surface_annotations_by_gene_product.tsv"
 
 
 def _b(r: dict, k: str) -> bool:
@@ -644,37 +648,161 @@ def _f(r: dict, k: str) -> float | None:
         return None
 
 
-# Filter variants to plot. The 5 baselines anchor each group; only
-# meaningful additional variants are included — i.e. ones that actually
-# differ from baseline on the 147-gene benchmark. Drop-low-conf /
-# drop-electronic-only / drop-unspecific / drop-mixed-conflict
-# "stricter" variants are no-ops on this gene set (the benchmark
-# proteins either pass the baseline filter already, or aren't in the
-# candidate universe at all) so they don't appear here. Similarly,
-# more-permissive UniProt and HPA variants would require reprocessing
-# upstream raw data (the universe TSV pre-filters those at load time),
-# so those aren't reachable from the current data either.
+# Filter variants to plot. Baselines for the 5 DBs anchor each group;
+# additional variants are included only when they meaningfully differ
+# from baseline on the 147-gene benchmark.
+#
+# What's included and why (after auditing raw upstream sources):
+#   * UniProt TM-OR-signal — a topology-feature substitute for the
+#     subcellular-location filter. **+11.5pp over the current UniProt
+#     baseline.** Pulls TM-domain or signal-peptide features from raw
+#     UniProt TSV (not in the universe TSV).
+#   * UniProt permissive (incl. plain "Cell membrane") — +4.7pp;
+#     trades neg precision for pos recall. Source-level variant.
+#   * GO permissive (incl. IEA-only annotations) — +4.8pp over GO
+#     baseline; pulls the electronic-evidence tier from raw GO TSV.
+#   * SURFY score>0.5 / >0.7 — distinct ML-score strictness levels.
+#   * Consensus n_sources ≥ 2 / ≥ 3 — cross-source agreement.
+#
+# What was tested and excluded (no-ops or strict-overshoot):
+#   * Drop-electronic-only / drop-low-conf / drop-unspecific etc:
+#     identical to baseline on this gene set.
+#   * HPA stricter and looser variants: capped at ~41% regardless
+#     (HPA's annotations aren't discriminating on this benchmark).
+#   * SURFY tm/signal columns: snapshot has them all zero — unusable.
+#   * CSPA experiment-count / probability thresholds: all 46-47%,
+#     no traction.
+
+# Functions used by the plot below — extra raw lookups for UniProt
+# and GO. Defined inside _build_db_variants so the raw TSVs only load
+# when this supplemental figure is rendered.
+def _load_raw_uniprot() -> dict[str, dict]:
+    if not UNIPROT_RAW_TSV.exists():
+        return {}
+    out: dict[str, dict] = {}
+    with UNIPROT_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            out[r["accession"]] = r
+    return out
+
+
+def _load_raw_go() -> dict[str, dict]:
+    if not GO_RAW_TSV.exists():
+        return {}
+    out: dict[str, dict] = {}
+    with GO_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            out[r["DB_Object_ID"]] = r
+    return out
+
+
+def _uniprot_has_strict_term(s: str | None) -> bool:
+    if not s:
+        return False
+    parts = s.split("|")
+    return any(t in parts for t in ("Cell surface", "Apical cell membrane",
+                                     "Basolateral cell membrane", "GPI-anchor"))
+
+
+def _uniprot_feat_int(r: dict, key: str) -> int:
+    try:
+        return int(r.get(key) or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def _go_evidence_count(r: dict) -> int:
+    """Count any-evidence tiers (including IEA)."""
+    return sum(int(r.get(k) or 0) for k in
+               ("has_experimental", "has_curated", "has_sequence", "has_electronic"))
+
+
+# UniProt's `subcellular_locations` field is pipe-delimited. Cell-membrane
+# terms eligible for the permissive variant — broader than the strict
+# set used by the existing baseline loader.
+_UNIPROT_PERMISSIVE_TERMS = (
+    "Cell surface", "Apical cell membrane", "Basolateral cell membrane",
+    "GPI-anchor", "Cell membrane",
+)
+
+
+def _inject_raw_source_flags(rows: list[dict]) -> None:
+    """Look up each benchmark row's UniProt accession in the raw
+    upstream UniProt and GO TSVs, and inject extra boolean fields
+    that the DB_VARIANTS lambdas consume.
+
+    These fields can't be reconstructed from candidate_universe.tsv
+    because the per-source loaders pre-filter rows before merging."""
+    raw_uniprot = _load_raw_uniprot()
+    raw_go = _load_raw_go()
+    for r in rows:
+        acc = r.get("uniprot_accession") or ""
+        u = raw_uniprot.get(acc, {})
+        locs = u.get("subcellular_locations") or ""
+        loc_parts = set(locs.split("|")) if locs else set()
+        r["_uniprot_permissive"] = (
+            any(t in loc_parts for t in _UNIPROT_PERMISSIVE_TERMS)
+            or _uniprot_feat_int(u, "feature_topo_extracellular_count") > 0
+        )
+        r["_uniprot_tm_or_signal_or_surface"] = (
+            _uniprot_feat_int(u, "feature_transmembrane_count") > 0
+            or _uniprot_feat_int(u, "feature_signal_count") > 0
+            or _uniprot_has_strict_term(locs)
+        )
+        g = raw_go.get(acc, {})
+        r["_go_permissive"] = _go_evidence_count(g) > 0
+
+
 DB_VARIANTS: list[tuple[str, "callable", str]] = [
-    ("UniProt baseline",       lambda r: _b(r, "uniprot_surface_flag"), "UniProt"),
-    ("GO baseline",            lambda r: _b(r, "go_surface_flag"),      "GO"),
-    ("HPA baseline",           lambda r: _b(r, "hpa_surface_flag"),     "HPA"),
-    ("SURFY baseline",         lambda r: _b(r, "surfy_surface_flag"),   "SURFY"),
-    # SURFY ML-score tiers — distinct strictness levels from the baseline binary flag.
-    ("SURFY score>0.5",        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.5, "SURFY"),
-    ("SURFY score>0.7",        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.7, "SURFY"),
-    ("CSPA baseline",          lambda r: _b(r, "cspa_surface_flag"),    "CSPA"),
-    # Consensus filters — the only filter that beats every single-DB baseline
-    # is `n_sources_surface ≥ 2`. Stricter consensus levels become
-    # precision-only filters (very high neg accuracy, low pos recall).
-    ("Consensus ≥2 sources",   lambda r: int(r.get("n_sources_surface", "0") or 0) >= 2, "consensus"),
-    ("Consensus ≥3 sources",   lambda r: int(r.get("n_sources_surface", "0") or 0) >= 3, "consensus"),
+    # UniProt baselines + raw-source variants. Lambdas take a dict
+    # with `_raw_uniprot`/`_raw_go` injected by _build_db_variants.
+    ("UniProt baseline",
+        lambda r: _b(r, "uniprot_surface_flag"),
+        "UniProt"),
+    ("UniProt permissive\n(incl. plain Cell membrane)",
+        lambda r: bool(r.get("_uniprot_permissive")),
+        "UniProt"),
+    ("UniProt TM-or-signal-or-surface\n(topology proxy)",
+        lambda r: bool(r.get("_uniprot_tm_or_signal_or_surface")),
+        "UniProt"),
+    # GO baseline + permissive (incl. IEA)
+    ("GO baseline",
+        lambda r: _b(r, "go_surface_flag"),
+        "GO"),
+    ("GO permissive\n(incl. IEA-only)",
+        lambda r: bool(r.get("_go_permissive")),
+        "GO"),
+    # HPA, SURFY, CSPA — baseline only (no meaningful variants found)
+    ("HPA baseline",
+        lambda r: _b(r, "hpa_surface_flag"),
+        "HPA"),
+    ("SURFY baseline",
+        lambda r: _b(r, "surfy_surface_flag"),
+        "SURFY"),
+    ("SURFY score>0.5",
+        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.5,
+        "SURFY"),
+    ("SURFY score>0.7",
+        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.7,
+        "SURFY"),
+    ("CSPA baseline",
+        lambda r: _b(r, "cspa_surface_flag"),
+        "CSPA"),
+    # Consensus filters (cross-source agreement)
+    ("Consensus\n≥2 sources",
+        lambda r: int(r.get("n_sources_surface", "0") or 0) >= 2,
+        "consensus"),
+    ("Consensus\n≥3 sources",
+        lambda r: int(r.get("n_sources_surface", "0") or 0) >= 3,
+        "consensus"),
 ]
 
 # Colors per group — brand palette for the 5 baselines; consensus gets
-# the success-green family.
+# the success-green family. Within UniProt and GO the baseline anchors
+# the brand color and variants step toward darker shades.
 _VARIANT_GROUP_PALETTE: dict[str, list[str]] = {
-    "UniProt":   [CATEGORICAL_PALETTE[0]],
-    "GO":        [CATEGORICAL_PALETTE[1]],
+    "UniProt":   [CATEGORICAL_PALETTE[0], "#a82e3d", "#7a1f2a"],
+    "GO":        [CATEGORICAL_PALETTE[1], "#2c5048"],
     "HPA":       [CATEGORICAL_PALETTE[2]],
     "SURFY":     [CATEGORICAL_PALETTE[3], "#a895d6", "#d4b9e5"],
     "CSPA":      [CATEGORICAL_PALETTE[4]],
@@ -707,20 +835,19 @@ def make_db_variants_plot(out_dir: Path) -> None:
     """Supplemental figure: per-DB filter variants vs benchmark truth.
 
     Each bar is one filter variant's overall accuracy on the 147-gene
-    benchmark, color-coded by DB-family group. Bars within a group are
-    ordered by the variant's strictness (baseline → strict). DeepTMHMM
-    and Compartments — surface flags not in the headline 5-DB plot —
-    are shown in a separate "extra" group, and the consensus filters
-    (`n_sources_surface ≥ N`) get their own group on the right.
+    benchmark, color-coded by DB-family group. The five M1 surface DBs
+    each get a baseline bar; UniProt, GO, and SURFY also get additional
+    variants where raw-source filtering shifts the result meaningfully.
+    Consensus filters (`n_sources_surface ≥ N`) are on the right.
 
-    The base 5-DB result and the consensus filter are the two pieces
-    worth quoting in any subsequent narrative: baselines are already
-    well-calibrated (strict variants either don't move the needle or
-    overshoot to 0% positive recall), and the only filter that beats
-    every single-DB baseline is `n_sources_surface ≥ 2`.
+    UniProt TM-or-signal-or-surface is the strongest single-DB variant
+    (+11.5pp over UniProt baseline); the only consensus filter that
+    beats every single-DB baseline is `n_sources_surface ≥ 2`. See
+    DB_VARIANTS for the audit summary of what was tested and excluded.
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     rows = _benchmark_with_universe_join()
+    _inject_raw_source_flags(rows)
     n_total = len(rows)
 
     bars: list[dict] = []
