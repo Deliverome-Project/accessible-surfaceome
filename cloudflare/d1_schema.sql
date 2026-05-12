@@ -249,6 +249,88 @@ JOIN (
 ) g ON d.gene_symbol = g.gene_symbol AND d.created_at = g.latest;
 
 
+-- ---------------------------------------------------------------------------
+-- resolver_context_version — content-addressed snapshot of the dynamic
+-- task message that gets injected at runtime
+-- ---------------------------------------------------------------------------
+-- The system prompt is versioned by ``prompt_version`` (above), but the
+-- *user message* is generated per-call from live HGNC + UniProt + NCBI
+-- queries (the "resolver context") and, for the pubmed_ncbi variant, a
+-- PubMed-esearch-derived literature evidence block. NCBI summaries
+-- update and re-run results would shift if the context changed — so we
+-- content-address the assembled user message and let triage_run join
+-- to whichever snapshot it actually saw at run time.
+
+CREATE TABLE IF NOT EXISTS resolver_context_version (
+    context_sha       TEXT PRIMARY KEY,              -- sha256(user_message_text), hex
+    gene_symbol       TEXT NOT NULL,
+    text              TEXT NOT NULL,                 -- full user-message text
+    fetched_at        TEXT NOT NULL DEFAULT (datetime('now')),
+    -- Denormalized convenience columns parsed out of the resolver
+    -- output (NULL for variants that don't include these blocks, e.g.
+    -- the naive variants get only the bare gene name).
+    hgnc_gene_groups  TEXT,
+    cd_designation    TEXT,
+    ncbi_summary      TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_resolver_context_gene
+    ON resolver_context_version (gene_symbol);
+
+
+-- ---------------------------------------------------------------------------
+-- triage_search_log — one row per tool call (web_search / pubmed) the
+-- agent made on a triage run. Mirror of deep_dive_search_log.
+-- ---------------------------------------------------------------------------
+-- The triage_run table records the *count* of web searches (n_web_searches)
+-- but not the queries themselves or their results. For reproducibility
+-- and forensics ("which paper did the agent actually find?") we need
+-- the queries + result snippets. Filling this table is opt-in by the
+-- runner — historic rows will not be populated.
+
+CREATE TABLE IF NOT EXISTS triage_search_log (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    triage_run_id     INTEGER NOT NULL,                  -- FK → triage_run.id
+    step_index        INTEGER NOT NULL,                  -- order within the run
+    tool              TEXT NOT NULL,                     -- 'web_search', 'pubmed_lookup', etc.
+    query             TEXT,                              -- the query string the agent issued
+    n_results         INTEGER,
+    top_results_json  TEXT,                              -- [{title,url,snippet}, ...]
+    FOREIGN KEY (triage_run_id) REFERENCES triage_run(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_triage_search_run  ON triage_search_log (triage_run_id);
+CREATE INDEX IF NOT EXISTS idx_triage_search_tool ON triage_search_log (tool);
+
+
+-- ---------------------------------------------------------------------------
+-- triage_run column additions (post-initial-schema). To re-apply against
+-- an existing database, replay this SQL idempotently — SQLite ALTER
+-- TABLE ADD COLUMN is a no-op on duplicate columns when wrapped in a
+-- try/except by the wrangler client (the local dev path) but will hard-
+-- fail in raw d1 execute. New installs run the full file end-to-end
+-- and pick these up at table-creation time via a CTAS-style pattern;
+-- the alters below are only needed when migrating a previously-applied
+-- schema. Skip them on a fresh d1 by deleting the surfaceome_agents
+-- database and re-creating from this file in one shot.
+-- ---------------------------------------------------------------------------
+ALTER TABLE triage_run ADD COLUMN resolver_context_sha TEXT;
+-- Model decoding params (currently runner defaults, but record explicitly
+-- so a future tweak doesn't silently change historical comparability).
+ALTER TABLE triage_run ADD COLUMN temperature REAL;
+ALTER TABLE triage_run ADD COLUMN top_p REAL;
+ALTER TABLE triage_run ADD COLUMN max_tokens INTEGER;
+-- Anthropic API response metadata — `response.id` uniquely identifies
+-- the server-side call; stop_reason flags truncation / tool_use exits;
+-- response.model can be a dated alias (e.g. "claude-sonnet-4-6-20260301").
+ALTER TABLE triage_run ADD COLUMN api_response_id TEXT;
+ALTER TABLE triage_run ADD COLUMN api_stop_reason TEXT;
+ALTER TABLE triage_run ADD COLUMN api_model TEXT;
+
+CREATE INDEX IF NOT EXISTS idx_triage_run_resolver_ctx
+    ON triage_run (resolver_context_sha);
+
+
 -- Cross-table view: what does the deep dive say about each triage call?
 -- Joins on (gene_symbol, prompt_sha-of-triage) but uses latest deep dive per gene.
 CREATE VIEW IF NOT EXISTS triage_vs_deep_dive AS

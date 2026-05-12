@@ -41,7 +41,6 @@ SUBBENCH_RUNS = DATA_DIR / "eval" / "triage_subbench_v1"
 VARIANT_TO_PROMPT = {
     "naive":             "system_naive.md",
     "ncbi":              "system.md",
-    "slim":              "system_slim.md",
     "web_naive":         "system_web_naive.md",
     "web_ncbi":          "system_web.md",
     # Variants that share a prompt with another variant but vary the
@@ -143,6 +142,32 @@ def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str
         )
 
 
+def _intern_resolver_context(
+    d1: D1Client,
+    *,
+    gene_symbol: str,
+    user_message: str,
+    hgnc_gene_groups: str | None = None,
+    cd_designation: str | None = None,
+    ncbi_summary: str | None = None,
+) -> str:
+    """Content-address a resolver/user_message snapshot.
+
+    Returns the SHA. INSERT OR IGNORE keeps races safe. Caller passes
+    optional pre-parsed denormalized fields for hot-query convenience —
+    omit them and they'll just be NULL.
+    """
+    sha = _sha256(user_message)
+    d1.query(
+        "INSERT OR IGNORE INTO resolver_context_version "
+        "(context_sha, gene_symbol, text, hgnc_gene_groups, "
+        " cd_designation, ncbi_summary) VALUES (?, ?, ?, ?, ?, ?);",
+        [sha, gene_symbol, user_message,
+         hgnc_gene_groups, cd_designation, ncbi_summary],
+    )
+    return sha
+
+
 def _insert_run(
     d1: D1Client,
     *,
@@ -153,6 +178,21 @@ def _insert_run(
     uniprot_acc: str | None,
     truth_class: str,
 ) -> None:
+    # Resolver context — content-address whatever the agent saw as its
+    # user message, if the record carries it. Pre-2026-05 runner output
+    # lacks this field, in which case the join column stays NULL.
+    resolver_context_sha: str | None = None
+    user_message = record.get("user_message")
+    if user_message:
+        resolver_context_sha = _intern_resolver_context(
+            d1,
+            gene_symbol=record["gene_symbol"],
+            user_message=user_message,
+            hgnc_gene_groups=record.get("resolver_hgnc_gene_groups"),
+            cd_designation=record.get("resolver_cd_designation"),
+            ncbi_summary=record.get("resolver_ncbi_summary"),
+        )
+
     d1.query(
         "INSERT INTO triage_run ("
         " run_id, gene_symbol, uniprot_acc, bench_version, model, prompt_variant,"
@@ -160,8 +200,10 @@ def _insert_run(
         " verdict_reasoning, predicted_confidence, predicted_key_uncertainty,"
         " truth_verdict, truth_class, correct, prompt_tokens,"
         " completion_tokens, cache_creation_tokens, cache_read_tokens,"
-        " n_web_searches, cost_usd, latency_s, error, raw_text"
-        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+        " n_web_searches, cost_usd, latency_s, error, raw_text,"
+        " resolver_context_sha, temperature, top_p, max_tokens,"
+        " api_response_id, api_stop_reason, api_model"
+        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
         [
             run_id,
             record["gene_symbol"],
@@ -189,8 +231,23 @@ def _insert_run(
             float(record.get("latency_s") or 0.0),
             record.get("error"),
             record.get("raw_text") or None,
+            resolver_context_sha,
+            _maybe_float(record.get("temperature")),
+            _maybe_float(record.get("top_p")),
+            _maybe_int(record.get("max_tokens")),
+            record.get("api_response_id"),
+            record.get("api_stop_reason"),
+            record.get("api_model"),
         ],
     )
+
+
+def _maybe_float(v: Any) -> float | None:
+    return None if v is None else float(v)
+
+
+def _maybe_int(v: Any) -> int | None:
+    return None if v is None else int(v)
 
 
 def _existing_keys(d1: D1Client, run_id: str) -> set[tuple[str, str, str, int, str]]:
