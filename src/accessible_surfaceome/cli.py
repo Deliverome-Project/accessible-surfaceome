@@ -58,15 +58,13 @@ def main(argv: list[str] | None = None) -> None:
     )
     view.add_argument("gene", help="Gene to view (e.g. HER2).")
 
-    triage_parser = subparsers.add_parser(
-        "triage", help="Manage the lightweight Sonnet triage agent."
-    )
-    triage_sub = triage_parser.add_subparsers(dest="triage_command", required=True)
-    triage_sub.add_parser("sync", help="Create-or-update the remote triage agent + environment.")
-    triage_run = triage_sub.add_parser(
-        "run", help="Run a one-off triage session for a single gene."
-    )
-    triage_run.add_argument("gene", help="Gene symbol or UniProt accession (e.g. MUC5AC, P98088).")
+    # The legacy `triage` subcommand (Managed Agents one-off via
+    # `client.beta.sessions`) was retired because Anthropic's
+    # ``beta.agents`` API doesn't expose ``cache_control`` blocks — at
+    # genome scale that's roughly $200 of avoidable cost per sweep
+    # relative to the direct ``messages.create`` runner. For sweeps,
+    # use ``scripts/triage_subbench_runner.py``; for benchmark eval,
+    # use ``accessible-surfaceome triage-bench`` below.
 
     bench_parser = subparsers.add_parser(
         "triage-bench",
@@ -96,8 +94,6 @@ def main(argv: list[str] | None = None) -> None:
         merge.main(remainder)
     elif args.command == "agents":
         _run_agents(args)
-    elif args.command == "triage":
-        _run_triage(args)
     elif args.command == "triage-bench":
         _run_triage_bench(args)
 
@@ -165,42 +161,6 @@ def _run_agents(args: argparse.Namespace) -> None:
         if not annotation_path.exists():
             raise SystemExit(f"no record at {annotation_path}")
         print(_view.format_record(annotation_path))
-
-
-def _run_triage(args: argparse.Namespace) -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
-    from accessible_surfaceome.agents.surface_triage import orchestrator
-
-    if args.triage_command == "sync":
-        result = orchestrator.sync_agent_and_environment()
-        print(
-            json.dumps(
-                {
-                    "agent_id": result.agent_id,
-                    "agent_version": result.agent_version,
-                    "environment_id": result.environment_id,
-                    "agent_changed": result.agent_changed,
-                    "environment_changed": result.environment_changed,
-                },
-                indent=2,
-            )
-        )
-    elif args.triage_command == "run":
-        result = orchestrator.triage_gene(args.gene)
-        print(
-            json.dumps(
-                {
-                    "gene": args.gene,
-                    "session_id": result.session_id,
-                    "triage_path": str(result.triage_path) if result.triage_path else None,
-                    "run_dir": str(result.run_dir),
-                    "validation_status": result.validation_status,
-                    "triage_emitted": result.triage_json is not None,
-                    "triage_json": result.triage_json,
-                },
-                indent=2,
-            )
-        )
 
 
 def _run_triage_bench(args: argparse.Namespace) -> None:

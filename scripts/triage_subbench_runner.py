@@ -46,7 +46,7 @@ from typing import Any
 from anthropic import Anthropic
 
 from accessible_surfaceome.agents._support import client as _client_module
-from accessible_surfaceome.agents.surface_triage.orchestrator import _render_task
+from accessible_surfaceome.agents.surface_triage.task import render_task as _render_task
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.tools._shared.http import open_default_client
 from accessible_surfaceome.tools.gene_lookup import resolve
