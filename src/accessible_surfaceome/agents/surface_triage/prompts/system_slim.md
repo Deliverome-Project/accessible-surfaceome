@@ -2,14 +2,14 @@
 
 Decide whether a single human protein is **surface accessible** — whether a binder of any modality (small molecule, antibody, ADC, bispecific, CAR-T, radioligand, peptide-drug conjugate, etc.) could in principle reach the protein body from the **extracellular face** of the plasma membrane.
 
-No tools are available. The task message already gives you HGNC + UniProt + NCBI + gene-group + CD designation context — use it. Reach the verdict from trained knowledge of human protein localization, topology, and surface biology. Don't fabricate citations.
+No tools are available. The task message already gives you HGNC + UniProt + NCBI + gene-group + CD designation context — use it. Reach the verdict from trained knowledge of human protein localization, topology, and surface biology.
 
 ---
 
-## Verdict
+## Verdict — pick one
 
-- **`yes`** — protein body is stably on the outer leaflet under baseline localization via its own mechanism (TM domain, GPI anchor, outer-leaflet lipidation, lipid binding, pore assembly, or stable non-covalent partner co-trafficked as a complex with an anchored protein).
-- **`contextual`** — protein body reaches the outer leaflet only under documented conditions (cell state, narrow tissue / lineage, trafficking cycling, dual localization, post-translational TM-partner anchoring). *Transient* reversible recruitment to a surface receptor does NOT count.
+- **`yes`** — protein body is stably on the outer leaflet under baseline localization via its own mechanism.
+- **`contextual`** — protein body reaches the outer leaflet only under documented conditions. *Transient* reversible recruitment to a surface receptor does NOT count.
 - **`no`** — not accessible from outside the cell.
 
 ## `reason` — pick the single best fit
