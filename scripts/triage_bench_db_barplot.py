@@ -62,23 +62,25 @@ DB_FLAGS_5: list[tuple[str, str]] = [
 # flags so the per-class correctness logic can treat them uniformly.
 LLM_CELLS: list[tuple[str, str, str]] = [
     # (vote_key, model_slug, variant)
-    ("_llm_haiku_naive",     "haiku-4-5",  "naive"),
-    ("_llm_haiku_ncbi",      "haiku-4-5",  "ncbi"),
-    ("_llm_haiku_web_ncbi",  "haiku-4-5",  "web_ncbi"),
-    ("_llm_sonnet_naive",    "sonnet-4-6", "naive"),
-    ("_llm_sonnet_ncbi",     "sonnet-4-6", "ncbi"),
-    ("_llm_sonnet_web_ncbi", "sonnet-4-6", "web_ncbi"),
-    ("_llm_opus_ncbi",       "opus-4-7",   "ncbi"),
+    ("_llm_haiku_naive",        "haiku-4-5",  "naive"),
+    ("_llm_haiku_ncbi",         "haiku-4-5",  "ncbi"),
+    ("_llm_haiku_web_ncbi",     "haiku-4-5",  "web_ncbi"),
+    ("_llm_sonnet_naive",       "sonnet-4-6", "naive"),
+    ("_llm_sonnet_ncbi",        "sonnet-4-6", "ncbi"),
+    ("_llm_sonnet_pubmed_ncbi", "sonnet-4-6", "pubmed_ncbi"),
+    ("_llm_sonnet_web_ncbi",    "sonnet-4-6", "web_ncbi"),
+    ("_llm_opus_ncbi",          "opus-4-7",   "ncbi"),
 ]
 LLM_LABEL = {
-    "_llm_haiku_naive":     "Haiku (naive)",
-    "_llm_haiku_ncbi":      "Haiku (+ NCBI)",
-    "_llm_haiku_web_ncbi":  "Haiku (+ NCBI + web)",
-    "_llm_sonnet_naive":    "Sonnet (naive)",
-    "_llm_sonnet_ncbi":     "Sonnet (+ NCBI)",
-    "_llm_sonnet_web_ncbi": "Sonnet (+ NCBI + web)",
-    "_llm_opus_ncbi":       "Opus (+ NCBI)",
-    "_llm_combined":        "Combined (Haiku→Sonnet)",
+    "_llm_haiku_naive":        "Haiku (naive)",
+    "_llm_haiku_ncbi":         "Haiku (+ NCBI)",
+    "_llm_haiku_web_ncbi":     "Haiku (+ NCBI + web)",
+    "_llm_sonnet_naive":       "Sonnet (naive)",
+    "_llm_sonnet_ncbi":        "Sonnet (+ NCBI)",
+    "_llm_sonnet_pubmed_ncbi": "Sonnet (+ NCBI + PubMed)",
+    "_llm_sonnet_web_ncbi":    "Sonnet (+ NCBI + web)",
+    "_llm_opus_ncbi":          "Opus (+ NCBI)",
+    "_llm_combined":           "Combined (Haiku→Sonnet)",
 }
 
 # Combined cell: confidence-routed Haiku+NCBI → Sonnet+NCBI. Accept
@@ -95,14 +97,15 @@ LLM_KEYS = [k for k, _, _ in LLM_CELLS] + [COMBINED_KEY]
 # subbench by-variant plot. Base Claude orange is #d87851.
 DB_PALETTE = {label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)}
 LLM_PALETTE = {
-    "_llm_haiku_naive":     "#f7d8c4",   # tint 65%
-    "_llm_haiku_ncbi":      "#f1c4ab",   # tint 50%
-    "_llm_haiku_web_ncbi":  "#ec9e7d",   # tint 38%
-    "_llm_sonnet_naive":    "#e3a07d",   # tint 25%
-    "_llm_sonnet_ncbi":     "#d87851",   # base Claude
-    "_llm_sonnet_web_ncbi": "#c46139",   # shade 12%
-    "_llm_opus_ncbi":       "#a85b3f",   # shade 25%
-    "_llm_combined":        "#7a3b25",   # shade 50%
+    "_llm_haiku_naive":        "#f7d8c4",   # tint 65%
+    "_llm_haiku_ncbi":         "#f1c4ab",   # tint 50%
+    "_llm_haiku_web_ncbi":     "#ec9e7d",   # tint 38%
+    "_llm_sonnet_naive":       "#e3a07d",   # tint 25%
+    "_llm_sonnet_ncbi":        "#d87851",   # base Claude
+    "_llm_sonnet_pubmed_ncbi": "#cb6f4a",   # base+, sits between ncbi and web
+    "_llm_sonnet_web_ncbi":    "#c46139",   # shade 12%
+    "_llm_opus_ncbi":          "#a85b3f",   # shade 25%
+    "_llm_combined":           "#7a3b25",   # shade 50%
 }
 
 VERDICT_ORDER = ["yes", "contextual", "no"]
@@ -481,48 +484,92 @@ def make_overall_plot(out_dir: Path) -> None:
 WHOLE_GENOME_N = 19_464  # NCBI protein-coding ∩ has HGNC xref
 
 
+# Anthropic per-1M-token pricing. cache_write = 1.25× input (5-min TTL),
+# cache_read = 0.10× input. https://docs.anthropic.com/.../prompt-caching
+_PRICE: dict[str, dict[str, float]] = {
+    "claude-haiku-4-5":  {"in":  1.0, "cw":  1.25, "cr": 0.10, "out":  5.0},
+    "claude-sonnet-4-6": {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},
+    "claude-opus-4-7":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
+}
+_WEB_SEARCH_USD_PER_QUERY = 0.01
+
+# Empirical system-prompt size (cached tokens observed when caching
+# was actually engaged in a sister run). Used as the inferred
+# split-point for legacy records that lack cache_read/cache_creation
+# fields. Sonnet's system.md cached at ≈5670 tokens.
+_INFERRED_SYS_PROMPT_DEFAULT = 5700
+
+
 def _llm_cost_per_call() -> dict[str, float]:
-    """Mean per-gene cost for each LLM cell, with prompt caching applied.
+    """Cache-normalized mean cost per gene for each LLM cell.
 
-    Records that carry explicit cache_creation_tokens / cache_read_tokens
-    (new runner) use those directly. Records without (legacy runner)
-    have caching modeled retroactively — amortizing the system-prompt
-    payment across the cell's session size. This gives apples-to-apples
-    numbers regardless of when each cell was captured.
+    The goal is a fair production-grade $/call comparison even though
+    historic runs in the repo were captured under different caching
+    states. The rule:
+
+    * If the per-call record carries non-zero ``cache_read_tokens``
+      or ``cache_creation_tokens``, trust them: the run had real
+      caching, so we compute cost = sys-amortized + uncached + output.
+    * Otherwise the record is legacy/uncached. We infer the system
+      prompt size from a sister variant that did cache (or fall back
+      to a small constant), then split ``prompt_tokens`` into
+      sys_prompt + user_message and amortize the sys portion as if
+      caching had been active across the session.
+
+    This makes "Sonnet (+ NCBI)" comparable to "Sonnet (+ NCBI + PubMed)"
+    on the same x-axis without one being unfairly boosted because its
+    capture happened to disable caching.
     """
-    import sys as _sys
-    _sys.path.insert(0, str(Path(__file__).resolve().parent))
-    from triage_subbench_summary import _effective_cost_with_caching
-
-    # Map runs-dir variant slug to the canonical claude-* model name
-    # used by the cost helper.
-    def _full_model(slug: str) -> str:
-        if slug.startswith("claude-"):
-            return slug
-        return f"claude-{slug}"
-
     out: dict[str, float] = {}
     for vote_key, model, variant in LLM_CELLS:
-        records: list[dict] = []
-        for p in (LLM_RUNS_DIR / model / variant).glob("*_run1.json"):
-            try:
-                d = json.loads(p.read_text())
-            except json.JSONDecodeError:
-                continue
-            # Some legacy records don't carry model/variant fields;
-            # patch them in for the cost helper.
-            d.setdefault("model", _full_model(model))
-            d.setdefault("variant", variant)
-            records.append(d)
-        if not records:
-            out[vote_key] = 0.0
-            continue
-        n = len(records)
-        costs = [
-            _effective_cost_with_caching(r, session_size=n) for r in records
-        ]
-        out[vote_key] = sum(costs) / n
+        out[vote_key] = _cell_cost_per_call(model, variant)
     return out
+
+
+def _cell_cost_per_call(model: str, variant: str) -> float:
+    files = sorted((LLM_RUNS_DIR / model / variant).glob("*_run1.json"))
+    if not files:
+        return 0.0
+    pt_total = cr_total = cw_total = ot_total = ws_total = 0
+    for f in files:
+        try:
+            d = json.loads(f.read_text())
+        except json.JSONDecodeError:
+            continue
+        pt_total += int(d.get("prompt_tokens") or 0)
+        cr_total += int(d.get("cache_read_tokens") or 0)
+        cw_total += int(d.get("cache_creation_tokens") or 0)
+        ot_total += int(d.get("completion_tokens") or 0)
+        ws_total += int(d.get("n_web_searches") or 0)
+    n = len(files)
+    pt = pt_total / n
+    cr = cr_total / n
+    cw = cw_total / n
+    ot = ot_total / n
+    ws = ws_total / n
+
+    pricing = _PRICE.get(f"claude-{model}")
+    if pricing is None:
+        return 0.0
+
+    if cr > 0 or cw > 0:
+        # Caching observed — pt is the uncached portion (user message),
+        # cr/cw is the cached system prompt. Honor what the runner saw.
+        sys_size = max(cr, cw)
+        user_size = pt
+    else:
+        # Legacy uncached. Split pt into sys-prompt + user_message
+        # using the inferred system-prompt size.
+        sys_size = min(_INFERRED_SYS_PROMPT_DEFAULT, pt)
+        user_size = max(0.0, pt - sys_size)
+
+    sys_amortized_per_cell = (
+        sys_size * pricing["cw"] + (n - 1) * sys_size * pricing["cr"]
+    ) / (n * 1_000_000)
+    user_per_cell = user_size * pricing["in"] / 1_000_000
+    out_per_cell = ot * pricing["out"] / 1_000_000
+    web_per_cell = ws * _WEB_SEARCH_USD_PER_QUERY
+    return sys_amortized_per_cell + user_per_cell + out_per_cell + web_per_cell
 
 
 def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
