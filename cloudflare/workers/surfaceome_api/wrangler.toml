@@ -1,0 +1,38 @@
+# Cloudflare Worker that serves the public read-only Surfaceome API.
+#
+# Reads from the `surfaceome_public` D1 database (the public mirror of
+# `surfaceome_agents`). Designed to live under `api.deliverome.org/surfaceome/*`
+# or as a Workers-route on the existing Pages project.
+#
+# This file is committed to the public repo. The D1 database ID below is
+# not a secret — it's just an identifier; access is gated by the D1
+# binding mechanism on the Cloudflare account.
+
+name = "surfaceome-api"
+main = "src/index.js"
+compatibility_date = "2026-05-01"
+
+# Read-only binding to the public D1 mirror. The Worker code reads
+# `env.DB` and runs SQL against it.
+[[d1_databases]]
+binding = "DB"
+database_name = "surfaceome_public"
+database_id = "257f5fc6-1211-492f-8bcb-d36b8c33eca5"
+
+# Per-Worker observability: keep tail logs on so we can debug
+# production cache misses / 5xx without re-deploying with a verbose flag.
+[observability]
+enabled = true
+
+# Routes — pick one of these strategies after deciding subdomain vs path:
+#
+# 1. As a route on api.deliverome.org (recommended once the apex zone is set up):
+#      routes = [{ pattern = "api.deliverome.org/surfaceome/*", zone_name = "deliverome.org" }]
+#
+# 2. As an attached Worker to the Pages project (slot the binding into the
+#    existing Pages wrangler instead of standalone — see cloudflare/workers/
+#    surfaceome_api/README.md for the integration pattern).
+#
+# 3. Plain workers.dev (default, no custom routing): the Worker is
+#    reachable at surfaceome-api.<your-subdomain>.workers.dev — fine for
+#    development; rebind to a custom route before publicising the URL.
