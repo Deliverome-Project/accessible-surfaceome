@@ -19,9 +19,12 @@ Two visualizations of the same data:
 Outputs (PDF + PNG):
   data/analysis/triage_bench/{db_overlap_venn,db_overlap_upset}.{pdf,png}
 
-# Reproduction: https://gist.github.com/beccajcarlson/74cd7f3c093e3f54c7f57eeab11b895e
-#   (secret gist — minimal CSV + standalone Python; see Final-Figure
-#   Gist Convention in CLAUDE.md / AGENTS.md.)
+# Reproduction: https://gist.github.com/beccajcarlson/f0cfd8281a9d512174ac49c32d051bde
+#   db_overlap_venn — minimal PEP 723 standalone fetching the universe
+#   TSV via raw.githubusercontent.com. Mirror lives at
+#   data/analysis/figures/make_db_overlap_venn.py (canonical
+#   source-of-truth; the gist is the readers' minimal-dep mirror).
+#   See the Final-Figure Gist Convention in CLAUDE.md / AGENTS.md.
 """
 
 from __future__ import annotations

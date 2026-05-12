@@ -27,6 +27,22 @@ Outputs (PDF + PNG via the brand plotting config):
 
 * ``data/analysis/triage_bench/db_correctness_by_class.{pdf,png}``
 * ``data/analysis/triage_bench/db_correctness_overall.{pdf,png}``
+
+# Reproduction: per-figure standalone gists (secret; minimal PEP 723
+# scripts fetching canonical TSVs via raw.githubusercontent.com).
+# Mirrors live in data/analysis/figures/make_*.py (canonical
+# source-of-truth; the gists are the readers' minimal-dep mirror).
+#
+#   db_correctness_by_class:
+#     https://gist.github.com/beccajcarlson/b4d7c89ddd810bf38213b123512f9075
+#   db_cutoff_tradeoff:
+#     https://gist.github.com/beccajcarlson/06d053b54810285af495886871ee7f8a
+#   db_correctness_overall:
+#     https://gist.github.com/beccajcarlson/1e3d464fa905536611df4d5ee0950558
+#   benchmark_cost_vs_accuracy:
+#     https://gist.github.com/beccajcarlson/774ff119060c9d4c81a3f020afb576f7
+#
+# See Final-Figure Gist Convention in CLAUDE.md / AGENTS.md.
 """
 
 from __future__ import annotations
