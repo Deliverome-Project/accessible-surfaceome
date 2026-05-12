@@ -129,6 +129,40 @@ BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
 CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 LLM_RUNS_DIR = ROOT / "data/eval/triage_bench_v1"
 
+# When True, ``load_benchmark_with_votes`` rewrites the per-benchmark
+# UniProt and CSPA flags using the optimized cutoffs surfaced by the
+# trade-off audit (UniProt → TM+signal, CSPA → HC-only). All other
+# sources use their canonical rule. Toggled by main() so by-class and
+# overall plots can be re-rendered under both rule sets.
+_USE_OPTIMIZED_CUTOFFS = False
+
+
+def _optimized_uniprot_accs() -> set[str]:
+    """Set of UniProt accessions admitted by the TM+signal cutoff
+    (TM > 0 OR signal_peptide > 0 OR strict subcellular term)."""
+    accs: set[str] = set()
+    with UNIPROT_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            locs = r.get("subcellular_locations") or ""
+            strict = _uniprot_has_strict_term(locs)
+            tm = _uniprot_feat_int(r, "feature_transmembrane_count") > 0
+            sig = _uniprot_feat_int(r, "feature_signal_count") > 0
+            if strict or tm or sig:
+                accs.add(r["accession"])
+    return accs
+
+
+def _optimized_cspa_accs() -> set[str]:
+    """Set of UniProt accessions admitted by the CSPA HC-only cutoff
+    (drops `putative` and `unspecific` categories)."""
+    accs: set[str] = set()
+    cspa_path = ROOT / "data/processed/cspa/cspa_human_snapshot.tsv"
+    with cspa_path.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            if (r.get("cspa_is_high_confidence") or "").strip() == "1":
+                accs.add(r["uniprot_accession"])
+    return accs
+
 
 def _load_llm_predictions(model: str, variant: str) -> dict[str, dict]:
     """Return {gene_symbol: run_record_dict} for one cell."""
@@ -177,6 +211,15 @@ def load_benchmark_with_votes() -> list[dict[str, object]]:
         for r in csv.DictReader(fh, delimiter="\t"):
             acc = r["uniprot_accession"]
             votes_by_acc[acc] = {flag: (r.get(flag, "0") == "1") for flag, _ in DB_FLAGS_5}
+
+    # Optionally override UniProt + CSPA flags with the audit's
+    # optimized cutoffs (TM+signal and HC-only respectively).
+    if _USE_OPTIMIZED_CUTOFFS:
+        opt_up = _optimized_uniprot_accs()
+        opt_cspa = _optimized_cspa_accs()
+        for acc, votes in votes_by_acc.items():
+            votes["uniprot_surface_flag"] = acc in opt_up
+            votes["cspa_surface_flag"] = acc in opt_cspa
 
     llm_runs_by_cell = {
         vote_key: _load_llm_predictions(model, variant)
@@ -359,7 +402,7 @@ def _draw_group_separators(
         )
 
 
-def make_by_class_plot(out_dir: Path) -> None:
+def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_class") -> None:
     """Per-class accuracy of Sonnet + NCBI vs the 5 M1 surface DBs.
 
     Compares one canonical LLM cell against the five classical
@@ -469,13 +512,13 @@ def make_by_class_plot(out_dir: Path) -> None:
 
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(
-        fig, filename="db_correctness_by_class",
+        fig, filename=filename,
         output_dir=str(out_dir), formats=["pdf", "png"],
     )
     plt.close(fig)
 
 
-def make_overall_plot(out_dir: Path) -> None:
+def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall") -> None:
     """LLM-only overall accuracy, grouped by model with hatched variants.
 
     Drops the M1 DB rows (they're in the by-class plot for direct LLM
@@ -607,7 +650,7 @@ def make_overall_plot(out_dir: Path) -> None:
     sns.despine(ax=ax, top=True, right=True)
 
     save_figure(
-        fig, filename="db_correctness_overall",
+        fig, filename=filename,
         output_dir=str(out_dir), formats=["pdf", "png"],
     )
     plt.close(fig)
@@ -1688,6 +1731,22 @@ def main() -> None:
     make_cost_vs_accuracy_plot(out_dir)
     make_db_variants_plot(out_dir)
     make_db_tradeoff_plot(out_dir)
+
+    # Re-render the per-class and overall plots under the audit's
+    # optimized cutoffs (UniProt TM+signal, CSPA HC-only — see
+    # _RECOMMENDED_VARIANT). Saved under `_optimized_cutoffs` suffix
+    # so the canonical versions stay alongside for comparison.
+    global _USE_OPTIMIZED_CUTOFFS
+    _USE_OPTIMIZED_CUTOFFS = True
+    try:
+        make_by_class_plot(
+            out_dir, filename="db_correctness_by_class_optimized_cutoffs",
+        )
+        make_overall_plot(
+            out_dir, filename="db_correctness_overall_optimized_cutoffs",
+        )
+    finally:
+        _USE_OPTIMIZED_CUTOFFS = False
 
 
 if __name__ == "__main__":
