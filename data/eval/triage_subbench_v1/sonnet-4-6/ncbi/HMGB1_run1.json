@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is canonically a nuclear non-histone chromatin protein, but it has a well-documented non-classical secretion pathway. Under inflammatory stimulation, hypoxia, oxidative stress, or cell death (apoptosis, necroptosis, pyroptosis, NETosis), HMGB1 is actively secreted or passively released and then binds cell-surface receptors (RAGE, TLR2, TLR4) \u2014 but critically, HMGB1 itself also translocates to the outer leaflet of the plasma membrane in a cell-state-dependent manner, demonstrated by surface biotinylation and flow cytometry on intact (non-permeabilized) cells in cancer and ICD contexts. Several antibody and CAR-T programs have targeted extracellular HMGB1. Surface display is thus real but strictly non-baseline (requires stress, ICD, or activation state), qualifying as contextual / cell_state_induced rather than constitutive.",
+  "correct": false,
+  "prompt_tokens": 5826,
+  "completion_tokens": 328,
+  "n_web_searches": 0,
+  "cost_usd": 0.022398,
+  "latency_s": 8.484864540980197,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Whether HMGB1 stably associates with the outer PM leaflet (anchored to a TM partner) or is merely present in the pericellular milieu after release; wash-resistance data specific to surface-bound form are limited.",
+  "error": null,
+  "raw_text": ""
+}

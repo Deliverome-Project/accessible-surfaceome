@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 encodes the type 1 IP3 receptor, a ligand-gated calcium channel resident in the endoplasmic reticulum membrane. Its canonical function is to release Ca2+ from ER lumenal stores upon IP3 binding; the receptor faces the cytoplasm/ER lumen, not the extracellular space. No TM domain topology exposes a substantial extracellular domain. No CD designation; no cell-surface-directed therapeutic programs. Pre-no checklist: (1) no cell-death/oncogenic ecto-pool documented for ITPR1 specifically; (2) no tissue-restricted surface display; (3) not a lysosomal TM protein\u2014no lysosomal exocytosis route; (4) no documented PM minority pool or secretory cycling to the plasma membrane outer face; (5) no covalent/wash-resistant TM-partner tethering. Literature evidence (PMIDs 23157623, 25069764) references ITPR1 only in calcium signaling/pathway context, not surface display. HGNC gene-group (IP3 receptors) is exclusively ER-resident. Verdict: endomembrane-resident.",
+  "correct": true,
+  "prompt_tokens": 941,
+  "completion_tokens": 331,
+  "n_web_searches": 0,
+  "cost_usd": 0.009489,
+  "latency_s": 7.6737211250001565,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

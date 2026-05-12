@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is a multi-pass transmembrane protein (4 TM helices; the only TM protein of the core autophagy machinery) that resides predominantly in intracellular compartments: trans-Golgi network, recycling endosomes, early endosomes, phagophore assembly sites, and autophagosomes. Its dominant compartment is therefore endomembrane. However, multiple independent lines of evidence confirm a genuine plasma-membrane pool: (1) AP-2 sorting-signal mutants accumulate at the plasma membrane (cell-surface biotinylation + immunogold-EM), (2) ATG9A is recycled into the TGN from the plasma membrane via clathrin-coated structures under basal conditions, (3) a published PubMed study explicitly states 'ATG9A displays a broad intracellular distribution and is present in numerous compartments, including the plasma membrane,' and (4) plasma-membrane damage induces rapid translocation of ATG9A to the PM (TIRF, surface biotinylation) where it recruits ESCRT machinery for membrane repair. The topology of the TM domain (multi-pass, cytoplasmic N/C termini, extracellular-facing loops present) is consistent with outer-leaflet loop accessibility. The PM pool is real but minority and partially inducible, placing the verdict at contextual/dual_localization rather than yes.",
+  "correct": false,
+  "prompt_tokens": 31401,
+  "completion_tokens": 419,
+  "n_web_searches": 1,
+  "cost_usd": 0.11048799999999999,
+  "latency_s": 11.87818820803659,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

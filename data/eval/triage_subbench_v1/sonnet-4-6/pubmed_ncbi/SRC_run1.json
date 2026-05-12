@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "SRC",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "SRC (p60-Src) is a non-receptor tyrosine kinase anchored to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. Its catalytic domain, SH2, and SH3 domains all face the cytoplasm. There is no extracellular domain and no topology that exposes the protein body to the extracellular space. Checking all 5 contextual buckets: (1) no documented cancer ecto-pool on outer leaflet; (2) no documented cell-death-induced outer-leaflet display; (3) no germline/developmental restricted surface display; (4) activation-induced redistribution stays on cytoplasmic face; (5) no wash-resistant TM-partner tethering to outer leaflet. Clinical programs targeting SRC are all intracellular kinase inhibitors (dasatinib, bosutinib). No CD designation. Inner-leaflet lipid anchoring definitively places the protein body on the cytoplasmic face only.",
+  "correct": false,
+  "prompt_tokens": 2,
+  "completion_tokens": 293,
+  "n_web_searches": 0,
+  "cost_usd": 0.007392,
+  "latency_s": 5.953793958004098,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 344,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

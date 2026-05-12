@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "FN1 is a secreted glycoprotein that exists in three major pools: soluble plasma dimers, cell-surface-deposited multimers in the extracellular matrix, and a documented cell-surface pool assembled via integrin and other receptor binding. The protein has no intrinsic TM anchor but becomes stably incorporated into extracellular matrix and focal adhesion complexes via non-covalent binding to integrins and other cell-surface receptors, where it remains wash-resistant. This constitutes stable surface attachment via receptor-mediated anchoring. Additionally, FN1 undergoes regulated assembly into specialized ECM structures and has documented dual localization \u2014 both soluble and matrix-resident pools. The surface accessibility depends on the cellular context and adhesion state rather than being baseline present as a bona-fide membrane-anchored protein.",
+  "correct": false,
+  "prompt_tokens": 5891,
+  "completion_tokens": 346,
+  "n_web_searches": 0,
+  "cost_usd": 0.007621,
+  "latency_s": 4.569348291959614,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Whether integrin-bound FN1 at focal adhesions qualifies as 'wash-resistant stable surface attachment' (supporting contextual) versus 'reversible ECM deposition' (supporting no/secreted_only). FN1 is predominantly an ECM / stroma protein rather than a cell-surface plasma-membrane protein; the surface pool depends on active cell adhesion and integrin engagement. Binder accessibility is context-dependent on adhesion state and integrin expression.",
+  "error": null,
+  "raw_text": ""
+}

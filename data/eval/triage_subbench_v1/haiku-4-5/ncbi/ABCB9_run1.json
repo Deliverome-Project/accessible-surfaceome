@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ABCB9 (TAPL) is a lysosomal ABC transporter that localizes to the lysosomal membrane and functions in peptide translocation from the cytosol into the lysosomal lumen. The NCBI summary explicitly identifies it as a member of the MDR/TAP subfamily involved in antigen presentation and lysosomal peptide transport \u2014 a classic endomembrane resident. No documented PM pool, no TM-partner surface anchoring, no cell-state or tissue-restricted surface display, no ectodomain shedding, and no documented lysosomal exocytosis-dependent surface exposure. While it is a lysosomal TM protein, there is no evidence it reaches the outer leaflet via exocytosis or any other mechanism under baseline or induced conditions.",
+  "correct": true,
+  "prompt_tokens": 5860,
+  "completion_tokens": 235,
+  "n_web_searches": 0,
+  "cost_usd": 0.007035,
+  "latency_s": 4.024765749985818,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

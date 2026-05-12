@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is the only multi-pass transmembrane protein in the core autophagy machinery. Its dominant steady-state localization is the trans-Golgi network and a peripheral pool of ATG9A vesicles that traffic between Golgi, endosomes, and autophagosome assembly sites. However, ATG9A has a documented minority plasma membrane pool: it cycles between the PM and endosomes via clathrin-mediated endocytosis (AP2-dependent), with surface biotinylation and antibody-feeding experiments on intact cells directly detecting a surface fraction. As a multi-pass TM protein with extracellular/luminal loops, the surface pool is in principle accessible to extracellular binders. Best fit is dual_localization (vesicular cycling between endomembrane system and PM with its own TM anchor).",
+  "correct": false,
+  "prompt_tokens": 7277,
+  "completion_tokens": 381,
+  "n_web_searches": 0,
+  "cost_usd": 0.13773,
+  "latency_s": 6.893232874979731,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Surface pool is small and transient relative to the dominant TGN/endosomal pool; unclear whether the exposed loops present a tractable epitope for surface-directed binders.",
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 encodes the type 1 inositol 1,4,5-trisphosphate receptor, a large tetrameric calcium-release channel resident in the endoplasmic reticulum membrane. Its transmembrane segments face the ER lumen/cytoplasm, not the extracellular face of the plasma membrane. Pre-no checklist: (1) No cell-surface-directed therapeutic programs target the ITPR1 protein body extracellularly. (2) No ectodomain-shedding / TM-precursor biology documented. (3) No covalent or wash-resistant TM-partner tethering to the PM outer leaflet. (4) No documented minority PM pool or secretory cycling to the cell surface. (5) No cancer/oncogenic, cell-death, germline-restricted, or activation-induced outer-leaflet display documented for this protein specifically. No CD designation. HGNC family is IP3 receptors, all ER-resident. Verdict: strictly endomembrane-resident.",
+  "correct": true,
+  "prompt_tokens": 386,
+  "completion_tokens": 277,
+  "n_web_searches": 0,
+  "cost_usd": 0.007014,
+  "latency_s": 6.313937333994545,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

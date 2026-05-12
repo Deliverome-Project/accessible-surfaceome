@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a secreted plasma protein with no transmembrane domain, GPI anchor, or outer-leaflet lipidation. It is synthesized mainly by the liver, secreted into plasma, and activated proteolytically to C3a and C3b fragments. C3b can covalently opsonize cell surfaces via a transient thioester bond to hydroxyl/amine groups, but this deposits C3b onto target surfaces (bacteria, apoptotic cells, extracellular matrix) rather than stably anchoring the C3 protein body to the producer cell's outer leaflet \u2014 the same wash-resistance criterion that governs stable_surface_attachment. Pre-no checklist: (1) no cell-surface-directed therapeutic targeting C3 on a specific cell surface; (2) no TM precursor/shedding biology; (3) thioester-mediated opsonization of non-self surfaces is matrix/stroma-like deposition, not stable PM anchoring of C3 to a TM partner; (4) no documented PM minority pool on producer cells; (5) no documented cancer/cell-death/germline/activation-induced ecto-display of the C3 protein body on the outer leaflet of producer cells. Verdict: secreted_only.",
+  "correct": false,
+  "prompt_tokens": 2,
+  "completion_tokens": 334,
+  "n_web_searches": 0,
+  "cost_usd": 0.00812325,
+  "latency_s": 8.039157499966677,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 375,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

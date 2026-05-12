@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "Fibronectin is secreted as a soluble plasma dimer but is also assembled into a fibrillar matrix on the cell surface via integrin (\u03b15\u03b21)-mediated stepwise polymerization. The assembled fibronectin matrix is wash-resistant, covalently/non-covalently cross-linked into ECM fibrils, and stably associated with the cell surface \u2014 not in equilibrium with the soluble pool. Clinical programs (e.g., ED-B fibronectin-targeted radioligands, ADCs, immunocytokines like L19-based agents) target the surface/matrix-deposited form on tumor stroma. This fits stable_surface_attachment via integrin-templated matrix assembly, though matrix deposition is borderline with secreted_only.",
+  "correct": false,
+  "prompt_tokens": 8291,
+  "completion_tokens": 376,
+  "n_web_searches": 0,
+  "cost_usd": 0.152565,
+  "latency_s": 6.083653791982215,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Boundary between cell-surface fibrillar assembly (stable_surface_attachment) vs stromal ECM deposition (secreted_only); ED-B isoform clinical targeting supports surface accessibility.",
+  "error": null,
+  "raw_text": ""
+}

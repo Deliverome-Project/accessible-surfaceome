@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 (p24alpha2) is a member of the p24/TMED family of type I transmembrane cargo receptors resident in the ER-Golgi compartments. Its TM domain faces the lumenal/secretory side, but the protein cycles within the COPI/COPII vesicle system and is resident in ER and Golgi membranes \u2014 not the plasma membrane. No CD designation. The single literature hit (PMID 39766158) associates TMED9 with extracellular vesicle formation but as a cargo-sorting regulator, not as a PM surface protein. Pre-no checklist: no documented cancer/cell-death ecto-pool; no germline/tissue-restricted PM display; not a lysosomal TM protein undergoing exocytosis; no documented minority PM pool or secretory cycling to the PM; no wash-resistant TM-partner tethering at the outer leaflet. EV association reflects intracellular sorting function, not outer-leaflet display. The protein is an endomembrane-resident TM protein throughout its lifecycle.",
+  "correct": true,
+  "prompt_tokens": 3,
+  "completion_tokens": 307,
+  "n_web_searches": 0,
+  "cost_usd": 0.0080925,
+  "latency_s": 7.905875958036631,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 474,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

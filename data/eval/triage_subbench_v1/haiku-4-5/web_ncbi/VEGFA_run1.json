@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted growth factor with no transmembrane domain, GPI anchor, or covalent membrane-anchoring mechanism. Although higher-affinity heparin-binding isoforms (VEGF165, VEGF189, VEGF206) can associate with cell-surface and extracellular heparan sulfate proteoglycans, this is reversible non-covalent binding to extracellular receptors, not a stable membrane anchor of the protein itself. The protein body remains in equilibrium with the soluble pool and is recruited to the surface only via HSPG-mediated capture\u2014a prototypical case of a secreted ligand transiently bound by surface receptors, not a surface-accessible protein by its own mechanism. No documented cell-state-induced ecto-pool, tissue-restricted surface display, lysosomal-exocytosis stage, stable TM-partner tethering, or dual-localization mechanism with a documented PM anchor.",
+  "correct": true,
+  "prompt_tokens": 62539,
+  "completion_tokens": 1147,
+  "n_web_searches": 3,
+  "cost_usd": 0.098274,
+  "latency_s": 13.803801541973371,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

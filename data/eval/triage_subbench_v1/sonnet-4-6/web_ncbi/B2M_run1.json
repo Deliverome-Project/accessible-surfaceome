@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) is a stable, non-covalent partner of the MHC class I heavy chain (a type I transmembrane protein). Although B2M itself has no transmembrane domain, it is assembled intracellularly with the HLA alpha-chain and co-trafficked as a constitutive surface complex to the outer leaflet of the plasma membrane on virtually all nucleated cells. B2M lies on the extracellular face beside the alpha-3 domain, fully accessible from outside the cell. This is a textbook stable_complex_partner topology; the dissociation into soluble serum B2M is a downstream consequence of complex turnover, not evidence against surface residency. The pMHC scope exclusion does not apply here \u2014 it covers intracellular proteins whose only surface story is peptide MHC-presentation; B2M is itself an extracellular structural subunit of the MHC I complex. Anti-B2M therapeutic programs (e.g., in multiple myeloma) confirm cell-surface targeting.",
+  "correct": true,
+  "prompt_tokens": 29814,
+  "completion_tokens": 961,
+  "n_web_searches": 1,
+  "cost_usd": 0.113857,
+  "latency_s": 20.934029958036263,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

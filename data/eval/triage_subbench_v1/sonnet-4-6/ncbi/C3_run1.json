@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a secreted plasma protein synthesized primarily by the liver and released into circulation. It has no transmembrane domain, no GPI anchor, and no outer-leaflet lipidation. Its biological action occurs in the fluid phase or transiently on cell surfaces via covalent thioester-mediated opsonization (C3b deposition onto pathogens/cells). Pre-`no` checklist: (1) No cell-surface-directed antibody/ADC/CAR-T program targets the C3 protein body on the outer leaflet \u2014 anti-C3 therapeutics (e.g., AMY-101, APL-2) target the circulating soluble form. (2) C3b does deposit covalently onto cell surfaces via thioester chemistry, but this is deposition onto the extracellular matrix/pathogen/cell coat \u2014 C3 itself has no TM partner tethering it stably to the PM inner or outer leaflet. (3) No documented wash-resistant TM-partner anchoring. (4) No documented PM minority pool or cycling. (5) No gene-specific evidence for cancer ecto-display, cell-death surface exposure, germline/developmental restriction, or activation-induced PM translocation. C3b surface opsonization is transient covalent deposition to surface carbohydrates/proteins, not stable anchoring to a TM scaffold.",
+  "correct": false,
+  "prompt_tokens": 5878,
+  "completion_tokens": 362,
+  "n_web_searches": 0,
+  "cost_usd": 0.023064,
+  "latency_s": 9.167392915987875,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

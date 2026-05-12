@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 (p24alpha2) is a member of the p24/TMED family of endomembrane trafficking proteins. Its TM domain anchors it in the ER and Golgi membranes, with its GOLD domain facing the ER lumen and its short cytoplasmic tail facing the cytosol. All literature consistently places TMED9 in the ER, ERGIC, and cis-Golgi network, cycling between these compartments for cargo recognition and COPI/COPII vesicle budding. No plasma membrane pool has been documented. Pre-no checklist: (1) no cell-surface-directed therapeutic program found; (2) not a sheddase substrate at the PM \u2014 the protein is ER/Golgi-resident; (3) no wash-resistant TM-partner tethering to the PM; (4) no documented PM minority pool, lysosomal exocytosis, or cycling to the cell surface; (5) no gene-specific evidence of cancer/ICD/activation/germline outer-leaflet display. TMED9 is firmly endomembrane-resident with no documented outer-leaflet biology.",
+  "correct": true,
+  "prompt_tokens": 29568,
+  "completion_tokens": 974,
+  "n_web_searches": 1,
+  "cost_usd": 0.113314,
+  "latency_s": 21.473605790990405,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

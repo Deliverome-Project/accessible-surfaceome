@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "ABCB9 (also known as TAPL) is an ABC transporter predominantly localized to lysosomes/late endosomes, where it transports peptides from the cytosol into the lysosomal lumen. Its canonical compartment is the lysosomal membrane, making it an endomembrane-resident protein at baseline. However, lysosomal membrane proteins \u2014 including TM transporters like ABCB9 \u2014 can reach the plasma membrane transiently via lysosomal exocytosis, a documented pathway by which lysosomal contents and membranes are externalized. ABCB9 is a multi-pass TM protein with its own membrane anchor; during lysosomal exocytosis the luminal loops become extracellular. Surface proteomics data sets have detected ABCB9 on the plasma membrane in some cell types. This places ABCB9 in the lysosomal_exocytosis contextual bucket.",
+  "correct": false,
+  "prompt_tokens": 5162,
+  "completion_tokens": 333,
+  "n_web_searches": 0,
+  "cost_usd": 0.020481,
+  "latency_s": 7.8819959159591235,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Direct gene-specific surface-biotinylation or flow-cytometry evidence for ABCB9 PM display via lysosomal exocytosis is limited; extent of PM pool and which cell types exhibit this are not well-characterized.",
+  "error": null,
+  "raw_text": ""
+}

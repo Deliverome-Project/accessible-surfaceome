@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is a multi-pass transmembrane protein involved in autophagy. It is canonically localized to the trans-Golgi network (TGN), late endosomes, and recycling endosomes \u2014 not the plasma membrane at baseline. However, ATG9A undergoes documented vesicular trafficking cycling between intracellular compartments and the PM during autophagy induction. Upon starvation or autophagy stimulation, ATG9A-positive vesicles traffic to the autophagosome assembly site, and dynamic trafficking to and from the PM is required for autophagosome nucleation. This constitutes a dual_localization / cell_state_induced scenario: the protein has a documented PM pool under autophagy-activated (non-baseline) conditions, mediated by its own multi-pass TM architecture.",
+  "correct": false,
+  "prompt_tokens": 5160,
+  "completion_tokens": 382,
+  "n_web_searches": 0,
+  "cost_usd": 0.00707,
+  "latency_s": 6.293921165983193,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Uncertainty over whether ATG9A reaches the outer leaflet of the PM (accessible from outside) vs. trafficking through PM-contact sites (ER-PM junctions, TETHER-mediated contacts) without stable residence on the outer face. Direct surface-proteomics or surface-biotinylation data showing ATG9A accessibility on intact non-permeabilized cells under autophagy induction is not widely cited in the literature; most evidence focuses on intracellular vesicle trafficking and Atg interactions. If PM residence is limited to contact-site juxtaposition without exposure to the outer leaflet, the verdict would shift toward `no`.",
+  "error": null,
+  "raw_text": ""
+}

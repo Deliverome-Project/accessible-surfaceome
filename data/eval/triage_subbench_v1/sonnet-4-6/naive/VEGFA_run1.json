@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA (vascular endothelial growth factor A) is a secreted glycoprotein that binds cell-surface VEGF receptors (VEGFR1/2) in a reversible, equilibrium-dependent manner. It has no transmembrane domain, no GPI anchor, and no outer-leaflet lipidation of its own. The dominant isoforms (VEGF165, VEGF121, etc.) are constitutively secreted into the extracellular space. Some heparin-binding isoforms (VEGF189, VEGF206) bind heparan-sulfate proteoglycans on the ECM/cell surface, but this is reversible non-covalent binding in equilibrium with the soluble pool \u2014 not wash-resistant tethering to a TM partner. No stable covalent or wash-resistant post-translational anchoring to a TM scaffold has been documented. Anti-VEGFA therapeutics (bevacizumab, ranibizumab, aflibercept) target the circulating/soluble pool. Ruling out contextual buckets: no documented cancer/cell-death outer-leaflet ecto-pool; no germline-restricted TM display; no lysosomal-exocytosis mechanism; no documented minority PM cycling pool; no covalent TM-partner tethering.",
+  "correct": true,
+  "prompt_tokens": 5160,
+  "completion_tokens": 359,
+  "n_web_searches": 0,
+  "cost_usd": 0.020865,
+  "latency_s": 7.737834667030256,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

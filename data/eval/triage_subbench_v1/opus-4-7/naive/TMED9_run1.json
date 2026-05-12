@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 is a type I single-pass transmembrane protein of the p24/emp24/gp25L family residing in the early secretory pathway, cycling between ER and Golgi as a cargo receptor (COPI/COPII-mediated transport). Its TM domain anchors it in endomembrane compartments, not the PM. Ruling out contextual buckets: no documented cancer/cell-death/activation-induced outer-leaflet ecto-pool for TMED9 specifically; no narrow germline/developmental surface-restricted display; not a lysosomal TM protein undergoing lysosomal exocytosis; no documented PM minority pool or surface-cycling fraction (steady-state is ER-Golgi-ERGIC); no wash-resistant tethering to a TM partner at the PM. Cargo-receptor role is intra-secretory, not surface-delivering.",
+  "correct": true,
+  "prompt_tokens": 7276,
+  "completion_tokens": 388,
+  "n_web_searches": 0,
+  "cost_usd": 0.13824,
+  "latency_s": 6.492128458980005,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Cannot fully exclude a minor PM pool during constitutive cargo cycling, but no gene-specific surface-proteomics evidence known.",
+  "error": null,
+  "raw_text": ""
+}

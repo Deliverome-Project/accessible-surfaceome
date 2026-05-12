@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "C3 is a secreted complement protein, but upon activation it is cleaved to C3b which becomes covalently tethered to cell surfaces via its reactive thioester, forming a wash-resistant covalent bond with hydroxyl/amine groups on target cell membranes. This thioester-mediated covalent deposition onto cell surfaces is the canonical mechanism of opsonization and is the basis for therapeutics like pegcetacoplan. C3b/iC3b/C3d fragments are stably anchored to cell surfaces and accessible to binders (e.g., complement regulators, anti-C3b antibodies). This fits stable_surface_attachment via covalent thioester chemistry to a cell-surface acceptor.",
+  "correct": true,
+  "prompt_tokens": 8276,
+  "completion_tokens": 294,
+  "n_web_searches": 0,
+  "cost_usd": 0.14619,
+  "latency_s": 5.530493083992042,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

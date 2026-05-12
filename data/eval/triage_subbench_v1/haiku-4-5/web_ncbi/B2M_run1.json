@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) is a soluble protein that serves as a stable non-covalent light-chain partner of the MHC class I heavy chain. While B2M itself lacks a transmembrane domain, it is assembled intracellularly with the MHC class I heavy chain (which is membrane-anchored) and co-trafficked to the cell surface as an integral component of the MHC class I complex. The NCBI summary explicitly confirms B2M is found 'in association with the major histocompatibility complex (MHC) class I heavy chain on the surface of nearly all nucleated cells.' B2M remains stably bound to the surface-resident MHC class I complex and is not in equilibrium with a soluble pool during surface expression.",
+  "correct": true,
+  "prompt_tokens": 8017,
+  "completion_tokens": 797,
+  "n_web_searches": 0,
+  "cost_usd": 0.012002,
+  "latency_s": 7.285554000001866,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "secreted_only",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted heparin-binding growth factor in the PDGF/VEGF family. It is synthesized with a signal peptide, processed through the ER/Golgi, and secreted into the extracellular space where it signals to receptor tyrosine kinases (VEGFR1/2) on endothelial cells. While VEGFA binds heparan sulfate proteoglycans in the extracellular matrix and can form high-affinity gradients, it is not membrane-anchored at any stage of its lifecycle \u2014 no TM domain, no GPI anchor, no stable covalent tethering to a cell-surface partner that would wash-resist. The protein exists in equilibrium between the soluble pool and reversible interactions with ECM components. Heparin-binding properties allow gradient formation but do not constitute a stable surface anchor. No documented evidence of TM-precursor cleavage, cell-state-induced ectopic surface display, or non-covalent wash-resistant partner tethering.",
+  "correct": false,
+  "prompt_tokens": 5856,
+  "completion_tokens": 292,
+  "n_web_searches": 0,
+  "cost_usd": 0.007316,
+  "latency_s": 3.6155495829880238,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

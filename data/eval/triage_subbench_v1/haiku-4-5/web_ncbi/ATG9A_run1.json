@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is a multispanning transmembrane protein that cycles between intracellular compartments (TGN, recycling endosomes, early endosomes) and the plasma membrane via SNARE-dependent vesicular trafficking. It is not a classical surface receptor, but surface biotinylation and TIRF microscopy confirm documented PM surface pools that transiently appear in response to stress signals (starvation, EGF, membrane damage). Its baseline steady-state localization is intracellular, but the documented PM cycling and induced-surface pool upon stress qualify it as contextual via dual_localization.",
+  "correct": false,
+  "prompt_tokens": 48461,
+  "completion_tokens": 920,
+  "n_web_searches": 2,
+  "cost_usd": 0.073061,
+  "latency_s": 11.640685916005168,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

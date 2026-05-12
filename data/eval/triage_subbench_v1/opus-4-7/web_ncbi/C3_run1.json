@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a secreted plasma complement component synthesized as a preproprotein, processed to \u03b1/\u03b2 subunits and circulating in plasma. Upon activation it is cleaved to C3a (soluble anaphylatoxin) and C3b, which becomes covalently attached via its reactive thioester to nearby surfaces \u2014 but those surfaces are pathogens, immune complexes, or ECM/cell-surface acceptors as an opsonin deposited onto *other* cells; this is matrix/stroma-style covalent deposition onto external acceptors, not anchoring of C3 to its own producing cell. No TM domain, no GPI anchor, no documented PM pool of C3 itself on producing cells. Ruling out contextual buckets: no cancer/cell-death ecto-pool of C3 on its own cell; no germline/developmental-lineage surface display; not a lysosomal TM protein; no PM cycling/minority pool on producing cells; opsonin deposition onto bystander surfaces is recruitment-by-target, not self-anchoring. Clinical anti-C3 programs (e.g., pegcetacoplan) target the soluble plasma pool.",
+  "correct": false,
+  "prompt_tokens": 11332,
+  "completion_tokens": 430,
+  "n_web_searches": 0,
+  "cost_usd": 0.20223,
+  "latency_s": 7.339223209011834,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

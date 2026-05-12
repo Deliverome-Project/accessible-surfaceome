@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B (ATP synthase \u03b2 subunit) is canonically a soluble F1 subunit of the mitochondrial inner-membrane ATP synthase complex, with no TM domain or GPI anchor of its own. However, extensive gene-specific experimental evidence documents ecto-surface display (ectopic/eATP synthase) in multiple oncogenic and non-baseline contexts: (1) flow cytometry on live, non-permeabilized tumor cell lines (leukemia, lung, prostate, breast carcinoma) confirms outer-leaflet presence; (2) an RNA aptamer (Apt63) and multiple monoclonal antibodies raised against intact tumor cells bind the \u03b2 subunit at the cell surface, blocking extracellular ATP synthesis; (3) mechanistic work shows the assembled mitochondrial ATP synthase complex is trafficked to the plasma membrane via microtubule\u2013DRP1\u2013KIF5B transport and mitochondrial membrane fusion, anchoring it at the outer leaflet. This surface pool is documented in tumor cells and endothelial cells but is absent or negligible in normal non-endothelial somatic cells, making display condition-dependent (oncogenic transformation, endothelial activation). Mechanism maps to cell_state_induced under the oncogenic-transformation and activation-induced sub-categories.",
+  "correct": true,
+  "prompt_tokens": 728,
+  "completion_tokens": 411,
+  "n_web_searches": 1,
+  "cost_usd": 0.08712745,
+  "latency_s": 12.014083207992371,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 17751,
+  "cache_read_tokens": 7374,
+  "error": null,
+  "raw_text": ""
+}

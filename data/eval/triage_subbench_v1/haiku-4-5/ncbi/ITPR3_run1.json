@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 is an intracellular inositol 1,4,5-trisphosphate receptor and calcium channel located on the endoplasmic reticulum (ER) membrane. It functions as an ER-resident TM protein mediating Ca2+ release from intracellular stores in response to IP3 signaling. The protein is embedded in the ER membrane bilayer with its ligand-binding domain in the cytoplasmic/ER-luminal space and calcium-channel domain at the C-terminus \u2014 topology intrinsic to ER function. No documented cell-state-induced surface display, tissue-restricted surface presentation, lysosomal exocytosis, dual PM/ER localization, or stable surface-attachment mechanism has been reported for ITPR3. The protein has no TM anchor of its own to the plasma membrane and is not a stable partner of any known surface receptor. It remains endomembrane-resident under all documented biological conditions.",
+  "correct": true,
+  "prompt_tokens": 5882,
+  "completion_tokens": 273,
+  "n_web_searches": 0,
+  "cost_usd": 0.007247,
+  "latency_s": 3.2926566249807365,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

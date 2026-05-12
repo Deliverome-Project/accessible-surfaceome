@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "ABCB9 (TAPL) is a multi-pass TM ABC transporter resident in lysosomal membranes, where it transports peptides from the cytosol into the lysosomal lumen. Its dominant compartment is the lysosomal membrane, not the plasma membrane. However, lysosomal membrane proteins \u2014 including TM transporters \u2014 can reach the cell surface via lysosomal exocytosis, a well-documented pathway by which lysosomes fuse with the plasma membrane and deposit their limiting-membrane proteins on the outer leaflet. TAPL is a genuine integral membrane protein (multipass TM topology) with bona fide extracellular loops that would face the extracellular space upon lysosomal exocytosis. No clinical cell-surface-directed therapeutic program is noted, but the lysosomal_exocytosis mechanism applies to the protein class. Walking the pre-no checklist: no cancer ecto-pool data found; no cell-death-specific evidence; not germline-restricted; lysosomal exocytosis is plausible by class. No dedicated PM pool documented for ABCB9 specifically.",
+  "correct": false,
+  "prompt_tokens": 2,
+  "completion_tokens": 350,
+  "n_web_searches": 0,
+  "cost_usd": 0.0082995,
+  "latency_s": 8.444839207979385,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "No gene-specific surface biotinylation or flow-cytometry data confirming ABCB9 reaches the PM via lysosomal exocytosis; verdict rests on class-level biology for lysosomal TM proteins.",
+  "cache_creation_tokens": 358,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

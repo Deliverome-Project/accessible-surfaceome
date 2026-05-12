@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "LYN",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. As an inner-leaflet-anchored kinase it is not directly accessible from the extracellular face under baseline conditions. However, PMID 39289808 explicitly identifies LYN as a 'plasma-membrane-localized nonreceptor tyrosine kinase' upregulated on the trophoblast plasma membrane during syncytialization \u2014 a tissue/developmental-state-restricted context. PMID 11913944 and PMID 22488955 document LYN association with plasma membrane lipid rafts/microdomains in B cells and neutrophils, consistent with regulated PM association. The dominant localization is inner-leaflet/cytoplasmic, but documented PM minority pool and cell-type-restricted surface enrichment (trophoblast syncytialization, B-cell lipid rafts) support a contextual call via dual_localization rather than a strict no.",
+  "correct": true,
+  "prompt_tokens": 1188,
+  "completion_tokens": 379,
+  "n_web_searches": 0,
+  "cost_usd": 0.01095,
+  "latency_s": 7.650291250029113,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "LYN is canonically inner-leaflet anchored (myristoylated/palmitoylated); extracellular accessibility of the protein body itself is not established \u2014 the PM association is cytoplasmic-face. The trophoblast surface proteomics (PMID 39289808) may reflect detection of the cytoplasmic-face pool.",
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

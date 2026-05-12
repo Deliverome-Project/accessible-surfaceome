@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 encodes IP3 receptor type 1, a large tetrameric Ca\u00b2\u207a channel exclusively resident in the ER membrane. Its six transmembrane helices are embedded in the ER bilayer; both its large N-terminal ligand-binding domain and its C-terminal regulatory domain face the cytoplasm or ER lumen, not the extracellular space. No PM outer-leaflet pool, no GPI anchor, no shedding, no lysosomal exocytosis biology, no cancer/cell-death/activation-induced surface display, no stable surface TM-partner tethering, and no germline/tissue-restricted outer-leaflet display has been documented for ITPR1. No CD designation; gene-group membership (IP3 receptors) is an endomembrane family. All five contextual buckets are ruled out: (1) no cancer/oncogenic ecto-pool; (2) no cell-death surface exposure; (3) no germline/developmental outer-leaflet display; (4) no activation-induced PM translocation; (5) no wash-resistant TM-partner anchoring at the outer leaflet. No surface-directed therapeutic programs target the ITPR1 protein body from outside the cell.",
+  "correct": true,
+  "prompt_tokens": 27836,
+  "completion_tokens": 709,
+  "n_web_searches": 1,
+  "cost_usd": 0.104143,
+  "latency_s": 18.13489116600249,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

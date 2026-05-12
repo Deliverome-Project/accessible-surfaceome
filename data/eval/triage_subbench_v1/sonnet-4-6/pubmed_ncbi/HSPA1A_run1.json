@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA1A encodes the inducible cytosolic Hsp70 chaperone, canonically intracellular. However, there is substantial published evidence that Hsp70 (HSP70-1/HSPA1A) is displayed on the outer leaflet of the plasma membrane, particularly on tumor cells and under heat-stress conditions, without a classical TM domain or GPI anchor \u2014 likely via direct interaction with membrane lipids (phosphatidylserine) or membrane-associated partners. This cell-surface pool has been exploited therapeutically: NK-cell-based and antibody-based approaches target surface Hsp70 on cancer cells. The surface display is stress- and transformation-induced, fitting 'cell_state_induced'. It does not occur constitutively under baseline conditions in normal somatic cells, making 'yes' too strong. Pre-no checklist: cancer/oncogenic ecto-pool is well-documented for this specific protein; cell-death surface display also reported; no germline restriction; not a lysosomal TM protein; no stable TM-partner tethering known \u2014 the lipid-interaction mechanism is the proposed anchor.",
+  "correct": true,
+  "prompt_tokens": 2,
+  "completion_tokens": 314,
+  "n_web_searches": 0,
+  "cost_usd": 0.007917,
+  "latency_s": 8.129455790971406,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 400,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

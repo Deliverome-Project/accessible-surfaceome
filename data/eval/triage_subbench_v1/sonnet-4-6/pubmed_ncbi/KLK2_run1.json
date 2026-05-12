@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "KLK2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "disagreement_rich_positive",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "KLK2 is a secreted serine protease of the kallikrein family, classically described as lacking cell-surface localization. However, PMID 40627156 directly demonstrates KLK2 cell-surface expression in prostate cancer cell lines and patient-derived tumors via IHC and multiplex immunofluorescent staining, and PMID 40924642 confirms it is now recognized as a cell-surface target in that context. Surface expression appears restricted to prostatic/prostate cancer lineage cells, making this a tissue/cancer-state-restricted surface display rather than constitutive broad surface expression. The mechanism of surface retention is not yet fully characterized (no canonical TM domain or GPI anchor), but the experimental evidence of wash-resistant surface display in prostate cancer is documented. This fits 'contextual' / 'cell_state_induced' (oncogenic transformation / lineage-restricted tumor surface display) rather than 'yes', since baseline biology is secreted and surface expression is restricted to prostate cancer cells.",
+  "correct": true,
+  "prompt_tokens": 1127,
+  "completion_tokens": 336,
+  "n_web_searches": 0,
+  "cost_usd": 0.010122,
+  "latency_s": 8.1950435420149,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Mechanism anchoring KLK2 to the outer leaflet in prostate cancer cells is uncharacterized \u2014 no TM domain, GPI, or stable TM-partner tethering described yet; surface retention mechanism unclear.",
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

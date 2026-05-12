@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA encodes a secreted growth factor (signal peptide\u2192Golgi\u2192constitutive secretion) with no TM domain, GPI anchor, or outer-leaflet lipidation in any isoform. Shorter isoforms (VEGF121) are freely diffusible; longer heparin-binding isoforms (VEGF165, VEGF189) associate non-covalently with HSPGs on the cell surface and ECM, but this interaction is reversible and stays in equilibrium with the soluble pool \u2014 it washes off and does not constitute wash-resistant TM-partner anchoring. Clinical anti-VEGFA programs (bevacizumab, ranibizumab, aflibercept, pegaptanib) all target the soluble circulating pool, not a cell-surface-displayed protein body. Pre-no checklist: (1) no cell-surface-directed therapeutic targeting the protein body on the PM; (2) no TM precursor/ectodomain-shedding architecture; (3) HSPG binding is reversible \u2014 fails wash test; (4) no documented PM minority pool via cycling, lysosomal exocytosis, or ER-PM junctions; (5) no documented cancer/stress/activation/cell-death outer-leaflet protein-body display; no narrow germline/developmental surface display via own anchor.",
+  "correct": true,
+  "prompt_tokens": 30744,
+  "completion_tokens": 887,
+  "n_web_searches": 1,
+  "cost_usd": 0.115537,
+  "latency_s": 19.559404290979728,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

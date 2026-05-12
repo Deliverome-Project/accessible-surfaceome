@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 is a type I transmembrane protein exclusively localized to intracellular endomembrane compartments (ER, ERGIC, Golgi, post-Golgi secretory vesicles). Its role is in COPI/COPII-mediated vesicular transport and cargo recognition within the early secretory pathway. No documented cancer-state ecto-display, cell-death-induced externalization, tissue-restricted surface display, PM cycling, lysosomal exocytosis to PM, or stable surface-partner tethering. The protein body does not reach the outer leaflet of the plasma membrane.",
+  "correct": true,
+  "prompt_tokens": 53519,
+  "completion_tokens": 797,
+  "n_web_searches": 2,
+  "cost_usd": 0.077504,
+  "latency_s": 9.941907875007018,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

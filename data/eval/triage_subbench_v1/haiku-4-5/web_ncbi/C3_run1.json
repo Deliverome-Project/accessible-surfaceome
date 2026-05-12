@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a secreted protein synthesized with a signal peptide and no transmembrane domain. While C3b (its activated cleavage product) covalently attaches to pathogen and damaged-cell surfaces via a reactive thioester, C3 itself is a plasma protein with no intrinsic membrane anchor. Surface C3b deposition is a recruitment mechanism (complement activation enzymatically deposits C3b onto targets), not evidence of C3's own surface accessibility. Intracellular C3 pools are cytosolic or endosomal; no documented outer-leaflet display in baseline or stress states. No documented stable TM-partner tethering, no tissue-restricted surface lineage, no lysosomal exocytosis-dependent display, no documented activation-induced ecto-presentation, and no documented cancer/cell-death-induced surface translocation.",
+  "correct": false,
+  "prompt_tokens": 68758,
+  "completion_tokens": 1310,
+  "n_web_searches": 2,
+  "cost_usd": 0.095308,
+  "latency_s": 18.014129666029476,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "FN1 encodes fibronectin, a secreted glycoprotein with no transmembrane domain, no GPI anchor, and no inner- or outer-leaflet lipidation. It exists as a soluble plasma dimer and as ECM-deposited multimers. The 'cell surface' form is pericellular ECM assembled extracellularly adjacent to cells, anchored via reversible non-covalent interactions with integrins, collagen, fibrin, and heparan sulfate proteoglycans \u2014 not stably tethered to the plasma membrane by any wash-resistant covalent or stable post-translational link to a TM partner. Applying all 5 contextual checks: (1) no cell-death/ICD-induced outer-leaflet display documented for FN1 protein body; (2) no narrow germline/tissue-restricted TM display; (3) not a lysosomal TM protein; (4) no documented minority PM pool with own anchor \u2014 the 'cell surface' residence is ECM/integrin-ligand equilibrium that washes off; (5) no wash-resistant stable TM-partner tethering. Anti-FN EDB clinical programs target tumor ECM/stroma fibronectin, not the plasma membrane surface of tumor cells, so they do not establish cell-surface accessibility. FN1 is secreted_only.",
+  "correct": true,
+  "prompt_tokens": 35122,
+  "completion_tokens": 1159,
+  "n_web_searches": 1,
+  "cost_usd": 0.132751,
+  "latency_s": 24.99713299999712,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

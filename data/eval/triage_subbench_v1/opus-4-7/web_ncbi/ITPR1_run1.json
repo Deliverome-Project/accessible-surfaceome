@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 is the canonical IP3 receptor \u2014 a multi-pass ER membrane channel mediating Ca2+ release from the ER lumen into cytosol. Its TM domains and large regulatory/ligand-binding domain reside on the ER membrane, not the PM. Walking the contextual buckets: (a) cell_state_induced \u2014 no documented ecto-display in cancer/cell-death/activation; (b) tissue_restricted_surface \u2014 no germline/developmental outer-leaflet pool; (c) lysosomal_exocytosis \u2014 not a lysosomal protein; (d) dual_localization \u2014 no documented PM minority pool of the channel itself (some reports place IP3R at ER-PM junctions, but luminal face stays luminal, not extracellular); (e) stable_surface_attachment \u2014 not secreted, no TM-partner tethering. Endomembrane-resident ER channel.",
+  "correct": true,
+  "prompt_tokens": 11344,
+  "completion_tokens": 346,
+  "n_web_searches": 0,
+  "cost_usd": 0.19611,
+  "latency_s": 5.967246540996712,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA (VEGF-A) is a secreted growth factor with no transmembrane domain, no GPI anchor, and no intrinsic membrane anchor of its own. It is produced as a signal-peptide\u2013bearing homodimer that is constitutively secreted into the extracellular space, where it binds its receptors (VEGFR1, VEGFR2, NRP1) on other cells. Pre-`no` checklist: (1) Cell-state-induced surface display \u2014 no documented gene-specific outer-leaflet ecto-display on tumor or dying cells for VEGFA protein body itself; the upregulation in tumors is secretion-level upregulation, not surface anchoring. (2) Tissue-restricted surface display \u2014 the VEGF189 isoform binds tightly to cell-surface HSPGs and ECM, but this is reversible heparan-sulfate binding that stays in equilibrium with the soluble pool (Eylea blocks it, confirming it is accessible as a soluble pool); this is not wash-resistant anchoring to a TM partner. (3) Lysosomal exocytosis \u2014 VEGFA is not a lysosomal TM protein. (4) Dual localization / PM cycling \u2014 no documented stable minority PM pool via its own anchor; engineered membrane-tethered variants are artificial constructs, not endogenous biology. (5) Stable surface attachment via covalent/wash-resistant TM-partner tethering \u2014 no evidence. All therapeutic programs (bevacizumab, aflibercept, ranibizumab, etc.) target the circulating/soluble pool, not a cell-surface\u2013anchored form. Verdict: secreted_only.",
+  "correct": true,
+  "prompt_tokens": 674,
+  "completion_tokens": 491,
+  "n_web_searches": 1,
+  "cost_usd": 0.08788014999999999,
+  "latency_s": 14.840614042012021,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 17085,
+  "cache_read_tokens": 14748,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 encodes a tetrameric IP3-gated calcium-release channel resident in the ER/sarcoplasmic reticulum membrane. Its topology places all functional domains (N-terminal IP3-binding domain, regulatory domains, C-terminal channel pore) on the cytoplasmic face or within the ER lumen, with no extracellular-facing domain at the plasma membrane outer leaflet. It is not GPI-anchored, has no signal peptide for classical secretion, and is not a plasma-membrane receptor. Pre-no checklist: no documented cancer/cell-death outer-leaflet display for ITPR3 specifically; no germline/tissue-restricted PM pool; not a lysosomal TM protein; no documented minority PM pool or secretory cycling; no wash-resistant TM-partner tethering to a surface scaffold. No CD designation and HGNC group 'IP3 receptors' refers to intracellular ER calcium channels. No clinical surface-directed therapeutic program targets ITPR3 on intact cell surfaces.",
+  "correct": true,
+  "prompt_tokens": 2,
+  "completion_tokens": 279,
+  "n_web_searches": 0,
+  "cost_usd": 0.007317,
+  "latency_s": 7.4860958339995705,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 380,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

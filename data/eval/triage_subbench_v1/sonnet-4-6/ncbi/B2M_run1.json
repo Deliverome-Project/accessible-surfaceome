@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) is the non-covalent light chain subunit of MHC class I heterodimers. It has no transmembrane domain or GPI anchor of its own, but it assembles intracellularly with MHC class I heavy chains and is co-trafficked to the cell surface as an obligate stable complex. The NCBI summary explicitly states it is found 'on the surface of nearly all nucleated cells' in association with MHC class I. This is the canonical `stable_complex_partner` scenario: B2M is assembled intracellularly with a TM-anchored partner (HLA-A/B/C heavy chain) and is stably present at the outer face of the plasma membrane as part of that complex on virtually all nucleated cells. Multiple therapeutic programs (anti-B2M antibodies in myeloma) target this surface-exposed form directly.",
+  "correct": true,
+  "prompt_tokens": 5828,
+  "completion_tokens": 256,
+  "n_web_searches": 0,
+  "cost_usd": 0.021324,
+  "latency_s": 9.769585417001508,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "C3 is canonically a secreted plasma complement component synthesized by hepatocytes. However, upon activation, C3 is cleaved to C3b which is deposited onto target cell surfaces via a covalent thioester bond to hydroxyl/amine groups on surface proteins and carbohydrates \u2014 a wash-resistant covalent attachment. This is the basis for opsonization and the canonical mechanism for anti-C3/C3b therapeutics (e.g., pegcetacoplan targets C3; surface-deposited C3b/iC3b/C3d are recognized by complement receptors). Thus the protein body reaches the outer leaflet of target cells via covalent post-translational tethering, satisfying stable_surface_attachment.",
+  "correct": true,
+  "prompt_tokens": 7274,
+  "completion_tokens": 297,
+  "n_web_searches": 0,
+  "cost_usd": 0.131385,
+  "latency_s": 6.7534093339927495,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

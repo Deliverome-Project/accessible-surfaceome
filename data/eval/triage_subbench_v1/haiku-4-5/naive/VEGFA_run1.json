@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "VEGFA is a secreted growth factor that exists in two canonical forms: (1) a soluble secreted form released into the extracellular space and circulating serum, and (2) membrane-associated forms. The protein is transcribed as a precursor and undergoes alternative splicing producing multiple isoforms. Critically, VEGFA is tethered to the cell surface and extracellular matrix via heparan sulfate proteoglycans (HSPGs) and neuropilins, creating a stable, non-diffusible surface reservoir. The membrane-proximal isoforms (particularly VEGFA121 and shorter variants) retain heparin-binding domains and remain surface-associated post-secretion through wash-resistant interactions with HSPGs. Additionally, VEGFA binds stably to its canonical receptor VEGFR on the cell surface, and the protein is a well-characterized target of therapeutic antibodies (bevacizumab, others) and recombinant receptor-Fc fusion proteins (aflibercept) that engage VEGFA in the extracellular compartment, including on the cell surface. The surface-tethered pool is biologically relevant for juxtacrine signaling and local concentration effects. While much of the secreted VEGFA diffuses away, a substantial fraction remains anchored to the cell surface via HSPG binding and remains accessible to extracellular binders.",
+  "correct": false,
+  "prompt_tokens": 5159,
+  "completion_tokens": 366,
+  "n_web_searches": 0,
+  "cost_usd": 0.006989,
+  "latency_s": 4.387523249955848,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

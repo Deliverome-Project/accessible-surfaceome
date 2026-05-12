@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A (Autophagy-related protein 9A) is the only multi-pass transmembrane protein in the core autophagy machinery. Its canonical localization is the trans-Golgi network (TGN) and endosomal compartments, where it cycles between intracellular membranes and the phagophore assembly site. However, ATG9A has been detected at the plasma membrane via surface biotinylation and proteomics studies, and it cycles through the PM as part of its trafficking itinerary. This documented PM pool \u2014 even if minority and transient \u2014 places it in the dual_localization bucket: it has its own TM anchor (multi-pass) and reaches the outer leaflet during its trafficking cycle. Additionally, under autophagy-inducing stress conditions, ATG9A redistribution is enhanced, potentially increasing surface exposure. The protein is not constitutively enriched at the PM but does have a real, documented PM transit pool with its own TM anchor, qualifying as contextual/dual_localization.",
+  "correct": false,
+  "prompt_tokens": 5161,
+  "completion_tokens": 342,
+  "n_web_searches": 0,
+  "cost_usd": 0.020613,
+  "latency_s": 10.280186708027031,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Extent and stability of the PM pool is debated; most studies detect ATG9A at the PM transiently during trafficking rather than as a stable surface-resident pool. Whether extracellular loops are accessible to binders from the outside is not well-characterised.",
+  "error": null,
+  "raw_text": ""
+}

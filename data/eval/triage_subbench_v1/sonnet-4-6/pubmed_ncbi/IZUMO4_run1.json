@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family, but unlike IZUMO1 (sperm-specific surface protein) or IZUMO1R/JUNO (GPI-anchored egg surface protein), IZUMO4 lacks a classical TM domain and is annotated as nuclear by NCBI/Alliance of Genome Resources. UniProt Q1ZYL8 shows no signal peptide or TM helix. Pre-no checklist: no documented cancer/cell-death ecto-pool; no evidence of germline/gamete-restricted PM display despite sperm-related family members (IZUMO4 is nuclear-localized, not sperm-surface like IZUMO1); not a lysosomal TM protein; no documented PM minority pool or secretory cycling; no wash-resistant TM-partner tethering reported. No surface-directed therapeutic programs found. No surface biotinylation or flow-cytometry evidence in the literature for this protein body. IZUMO family membership alone does not confer surface biology when gene-specific localization is nuclear.",
+  "correct": false,
+  "prompt_tokens": 2,
+  "completion_tokens": 329,
+  "n_web_searches": 0,
+  "cost_usd": 0.007482,
+  "latency_s": 7.920855332980864,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "IZUMO4 is poorly characterized; nuclear annotation may be incomplete and no surface proteomics data were found to conclusively rule out a minor PM pool.",
+  "cache_creation_tokens": 224,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

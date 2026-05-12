@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 is an intracellular calcium-release channel resident in the endoplasmic reticulum membrane. The NCBI summary explicitly identifies it as 'an intracellular receptor for inositol 1,4,5-trisphosphate' that 'mediates calcium release from the endoplasmic reticulum'\u2014a canonical ER-luminal function with no documented surface trafficking, PM cycling, or cell-state-induced ecto-presentation. No membrane anchor bridges ITPR1 to the plasma membrane. While IP3R family proteins are multi-pass TM receptors, their topology is ER-resident with luminal coupling to IP3 binding sites; they lack an extracellular domain and do not transit to the outer leaflet of the PM. No documented cancer-state, cell-death, activation, or tissue-restricted surface display; no lysosomal exocytosis or PM minority pool reported. ITPR1 is not a surface therapeutic target and has no published surface-accessibility biology.",
+  "correct": true,
+  "prompt_tokens": 8076,
+  "completion_tokens": 285,
+  "n_web_searches": 0,
+  "cost_usd": 0.009501,
+  "latency_s": 5.488027832994703,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

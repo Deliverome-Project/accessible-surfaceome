@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a secreted plasma glycoprotein produced primarily by the liver and released into circulation. Its biological activity depends on proteolytic cleavage in the fluid phase or on activating surfaces. C3b and iC3b fragments deposit covalently onto microbial/cell surfaces via thioester-mediated chemistry, but this is matrix/stroma-equivalent deposition onto foreign surfaces, not stable anchoring to a host cell TM partner. The protein has no TM domain, no GPI signal, and no documented constitutive display on the outer leaflet of host plasma membranes as an intact protein. Checking all 5 contextual buckets: (1) no cancer/cell-death ecto-presentation of the C3 protein body on host cells; (2) no activation-induced PM pool; (3) not germline/tissue-restricted surface; (4) not a lysosomal TM protein; (5) covalent C3b deposition onto activating surfaces (pathogens, immune complexes) is extracellular-matrix-equivalent deposition, not wash-resistant tethering to a host-cell TM partner. Verdict: secreted protein with no stable host-cell surface anchoring.",
+  "correct": false,
+  "prompt_tokens": 377,
+  "completion_tokens": 310,
+  "n_web_searches": 0,
+  "cost_usd": 0.0270435,
+  "latency_s": 8.408954292011913,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 5670,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

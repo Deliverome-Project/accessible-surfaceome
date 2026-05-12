@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 encodes the type 1 inositol 1,4,5-trisphosphate receptor, a large tetrameric calcium-release channel resident in the endoplasmic reticulum membrane. Its cytoplasmic face ligand-binding domain faces the cytosol; the channel pore spans the ER membrane; no portion is topologically exposed to the extracellular space. Pre-no checklist: (1) no cell-surface-directed therapeutic program targets ITPR1 protein body extracellularly; (2) not an ectodomain-shedding TM precursor \u2014 it is an ER-resident channel with no extracellular domain; (3) no wash-resistant TM-partner tethering to the PM outer leaflet documented; (4) no documented PM minority pool \u2014 it is strictly ER-localized; (5) no gene-specific evidence for cancer/oncogenic outer-leaflet display, cell-death-induced surface exposure, germline-restricted PM display, or activation-induced PM translocation. Gene-group (IP3R family) and NCBI summary both consistently point to ER-resident intracellular calcium channel. No CD designation. All five contextual buckets ruled out.",
+  "correct": true,
+  "prompt_tokens": 5887,
+  "completion_tokens": 311,
+  "n_web_searches": 0,
+  "cost_usd": 0.022326,
+  "latency_s": 7.516204582992941,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

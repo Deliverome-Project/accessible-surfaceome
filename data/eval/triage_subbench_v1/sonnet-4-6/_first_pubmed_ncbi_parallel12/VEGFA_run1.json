@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted dimeric glycoprotein belonging to the PDGF/VEGF growth factor family. It is synthesized with a signal peptide, processed through the classical secretory pathway, and released as a soluble disulfide-linked homodimer into the extracellular space. It has no transmembrane domain, no GPI signal, and no outer-leaflet lipidation. Pre-`no` checklist: (1) Anti-VEGFA antibodies (bevacizumab, ranibizumab) target the circulating/soluble pool, not cell-surface-anchored protein \u2014 these are anti-soluble-ligand programs. (2) No TM precursor stage \u2014 VEGFA is not a single-pass TM proligand; it is constitutively secreted. (3) Heparin-binding to ECM/HSPG is reversible non-covalent equilibrium \u2014 not wash-resistant TM-partner tethering. (4) No documented minority PM pool via surface biotinylation or flow cytometry on intact cells. (5) No gene-specific evidence for cancer ecto-display, cell-death-induced surface exposure, germline-restricted surface display, or activation-induced translocation. It is a canonical secreted growth factor with no stable outer-leaflet anchor.",
+  "correct": true,
+  "prompt_tokens": 356,
+  "completion_tokens": 337,
+  "n_web_searches": 0,
+  "cost_usd": 0.007824,
+  "latency_s": 7.233849584008567,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

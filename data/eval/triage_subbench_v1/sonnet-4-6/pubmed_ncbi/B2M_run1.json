@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) is the non-covalently associated light chain of MHC class I complexes. It lacks a transmembrane domain of its own but is a constitutive, stable non-covalent partner of the MHC class I heavy chain (HLA-A/B/C), which is a classical single-pass TM protein. The B2M\u2013heavy-chain complex is assembled in the ER and co-trafficked to the plasma membrane where it is stably displayed on the outer leaflet of nearly all nucleated cells. This is the canonical, baseline surface state of B2M \u2014 not a transient or condition-dependent event. The NCBI summary explicitly states it is 'found in association with the MHC class I heavy chain on the surface of nearly all nucleated cells.' This fits the `stable_complex_partner` mechanism: B2M reaches the outer leaflet as an integral member of a co-trafficked TM-anchored complex. It is a well-established target of surface-directed therapeutics and CAR-T programs that engage MHC-I on the cell surface.",
+  "correct": true,
+  "prompt_tokens": 327,
+  "completion_tokens": 303,
+  "n_web_searches": 0,
+  "cost_usd": 0.007227,
+  "latency_s": 7.289129375014454,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

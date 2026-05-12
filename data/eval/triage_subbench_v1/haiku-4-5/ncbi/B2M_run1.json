@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) is a non-covalent partner of MHC class I heavy chains. The MHC class I complex is a stable heterodimer of the heavy chain (a single-pass TM receptor) and B2M, assembled in the ER and trafficked together to the cell surface as an obligate complex. B2M itself lacks a TM domain but is stably non-covalently associated with the surface-resident MHC class I heavy chain and is co-trafficked as part of this complex. The protein body reaches the outer leaflet via this stable complex partnership with an anchored surface protein. B2M is detected on the cell surface as part of functional pMHC complexes on nearly all nucleated cells; it is not merely MHC-presented as an intracellular peptide, but is a structural component of the displayed pMHC-I complex itself.",
+  "correct": true,
+  "prompt_tokens": 5827,
+  "completion_tokens": 260,
+  "n_web_searches": 0,
+  "cost_usd": 0.007127,
+  "latency_s": 3.4042310410295613,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

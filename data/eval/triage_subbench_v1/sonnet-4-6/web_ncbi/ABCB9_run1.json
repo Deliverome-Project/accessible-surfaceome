@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "ABCB9/TAPL is a multi-pass transmembrane protein that resides on the limiting membrane of lysosomes, where it transports peptides from the cytosol into the lysosomal lumen. Its lysosomal targeting is mediated by its N-terminal transmembrane domain (TMD0), and full-length ABCB9 traffics exclusively to lysosomes via ER\u2192Golgi\u2192endosome\u2192lysosome. As a lysosomal TM protein, it can transiently appear at the plasma membrane during lysosomal exocytosis, the well-documented mechanism by which lysosomal membrane fusion with the PM exposes lysosomal membrane constituents on the cell surface. No stable, constitutive plasma membrane pool is documented for the full-length protein (truncated core domain without TMD0 mislocalizes to PM, but this is an artifact). No evidence of cell-surface-directed therapeutics, ectodomain shedding, secreted form, or stable extracellular-face anchoring. Verdict is contextual/lysosomal_exocytosis because the protein is a bona fide lysosomal TM protein subject to the universal lysosomal exocytosis mechanism.",
+  "correct": false,
+  "prompt_tokens": 31000,
+  "completion_tokens": 1442,
+  "n_web_searches": 1,
+  "cost_usd": 0.12462999999999999,
+  "latency_s": 31.06092154199723,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "No gene-specific experimental documentation of ABCB9 appearing at the plasma membrane during lysosomal exocytosis; call rests on the class-level mechanism applicable to all lysosomal TM proteins.",
+  "error": null,
+  "raw_text": ""
+}

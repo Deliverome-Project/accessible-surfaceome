@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "ABCB9 (TAPL) is a multi-pass TM ABC transporter that resides predominantly in lysosomal/late-endosomal membranes, where it translocates peptides from the cytosol into the lysosomal lumen. It is not a plasma-membrane-resident transporter at baseline. However, lysosomal membrane proteins can reach the plasma membrane via lysosomal exocytosis, a well-documented process in which lysosomes fuse with the plasma membrane and transiently expose their limiting-membrane proteins on the cell surface. ABCB9 has a multi-pass TM architecture and resides in the lysosomal limiting membrane; lysosomal exocytosis therefore provides a plausible and class-supported route to outer-leaflet accessibility. Pre-no checklist: no dominant cancer/cell-death ecto-pool reported; not germline-restricted; no activation-induced PM pool documented; no wash-resistant TM-partner tethering; lysosomal TM protein \u2192 lysosomal_exocytosis applies.",
+  "correct": false,
+  "prompt_tokens": 5861,
+  "completion_tokens": 332,
+  "n_web_searches": 0,
+  "cost_usd": 0.022563,
+  "latency_s": 8.300147166999523,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Gene-specific experimental evidence for ABCB9 surface display via lysosomal exocytosis is lacking; the call rests on class-level lysosomal-TM-protein biology rather than protein-specific data.",
+  "error": null,
+  "raw_text": ""
+}

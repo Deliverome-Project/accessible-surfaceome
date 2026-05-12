@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted disulfide-linked homodimer and heparin-binding growth factor with no transmembrane domain, no GPI anchor, and no outer-leaflet lipidation. Its canonical biology is constitutive secretion into the extracellular space where it binds surface receptors (VEGFR1/2) on endothelial cells \u2014 the receptors are the surface targets, not VEGFA itself. Pre-no checklist: (1) Anti-VEGFA antibodies (bevacizumab, ranibizumab) target the circulating/soluble pool, not a cell-surface form \u2014 these are anti-soluble-ligand programs. (2) No TM precursor isoform; VEGFA is not a sheddase substrate with a stable membrane-anchored stage. (3) No documented wash-resistant covalent TM-partner tethering. (4) No documented PM minority pool; literature evidence (PMIDs cited) describes extracellular/secreted VEGFA acting on surface receptors of other cells, not VEGFA itself surfacing on the producing cell. (5) No gene-specific evidence of cancer-state ecto-display, cell-death surface exposure, germline-restricted surface display, or activation-induced PM translocation. VEGFA is secreted_only.",
+  "correct": true,
+  "prompt_tokens": 1116,
+  "completion_tokens": 354,
+  "n_web_searches": 0,
+  "cost_usd": 0.010359,
+  "latency_s": 8.658527833002154,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

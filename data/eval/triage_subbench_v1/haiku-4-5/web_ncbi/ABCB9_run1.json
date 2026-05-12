@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ABCB9 (TAPL) is a lysosomal-resident ABC transporter with 10 transmembrane helices. The N-terminal TMD0 domain contains the lysosomal targeting signal and is essential for lysosomal localization; deletion of this domain causes mislocalization to plasma membrane, confirming that active targeting to lysosomes excludes PM residence. Direct experimental evidence confirms TAPL is NOT detected on the plasma membrane: surface biotinylation is negative, dynamin inhibition does not accumulate it at PM, and it is absent from bone marrow-derived dendritic cells. Full-length protein traffics exclusively to lysosomes via ER\u2192Golgi\u2192early endosome\u2192lysosome route. No documented stress-induced, activation-induced, cell-death-induced, or tissue-restricted surface display. Not a candidate for cell-surface-directed therapeutics.",
+  "correct": true,
+  "prompt_tokens": 41123,
+  "completion_tokens": 913,
+  "n_web_searches": 2,
+  "cost_usd": 0.065688,
+  "latency_s": 12.44881470798282,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

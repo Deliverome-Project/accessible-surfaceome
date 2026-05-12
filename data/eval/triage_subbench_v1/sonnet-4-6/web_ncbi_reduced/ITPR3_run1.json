@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 encodes a large (~2700 aa) tetrameric Ca\u00b2\u207a-release channel residing in the endoplasmic reticulum membrane, where it mediates IP3-triggered Ca\u00b2\u207a release from ER stores. Its transmembrane domains span the ER membrane (not the plasma membrane), with functional domains facing the ER lumen and cytosol \u2014 none face the extracellular space. No cell-surface-directed therapeutic programs (antibody, ADC, CAR-T) were identified. Pre-`no` checklist: (1) no gene-specific evidence of cell-death- or oncogenic-state outer-leaflet display \u2014 cancer involvement is strictly intracellular ER-mitochondria Ca\u00b2\u207a signaling; (2) no tissue/germline-restricted PM pool documented; (3) not a lysosomal TM protein \u2014 ER-resident; (4) documented mislocalization in disease is to nucleus or MAM, not PM; (5) no covalent or wash-resistant tethering to any PM-anchored partner. Verdict: endomembrane-resident ER channel with no route to the outer leaflet.",
+  "correct": true,
+  "prompt_tokens": 700,
+  "completion_tokens": 722,
+  "n_web_searches": 1,
+  "cost_usd": 0.07278939999999999,
+  "latency_s": 21.808378832996823,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 12116,
+  "cache_read_tokens": 14748,
+  "error": null,
+  "raw_text": ""
+}

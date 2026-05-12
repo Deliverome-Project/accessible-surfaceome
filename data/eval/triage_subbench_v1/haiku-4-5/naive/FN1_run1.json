@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "FN1 encodes fibronectin, a large multi-domain extracellular matrix (ECM) glycoprotein. It is synthesized with an N-terminal signal peptide, transits the secretory pathway, and is constitutively secreted into the extracellular space. Fibronectin polymerizes and becomes incorporated into the ECM scaffold and stroma, not anchored to the plasma membrane. While fibronectin *binds* cell-surface integrins and other receptors via reversible non-covalent interactions, fibronectin itself has no transmembrane domain, GPI anchor, outer-leaflet lipidation, or stable covalent tethering to a surface protein. The protein remains in equilibrium with the soluble pool in plasma, serum, and tissue fluid. It is not a membrane-anchored component and does not qualify as a surface-accessible target by its own mechanism. Therapeutic antibodies (e.g., anti-FN1 programs) target the soluble / matrix-deposited form, not a cell-surface-anchored pool. No documented cell-state-induced ecto-presentation, tissue-restricted surface display, lysosomal-exocytosis route, PM-cycling dual home, or covalent TM-partner tethering exists for fibronectin.",
+  "correct": true,
+  "prompt_tokens": 5159,
+  "completion_tokens": 349,
+  "n_web_searches": 0,
+  "cost_usd": 0.006904,
+  "latency_s": 4.301889041031245,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

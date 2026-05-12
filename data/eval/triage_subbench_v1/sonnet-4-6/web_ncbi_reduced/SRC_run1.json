@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "SRC",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "wrong_side_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "SRC (c-Src) is an N-myristoylated non-receptor tyrosine kinase canonically anchored to the inner leaflet of the plasma membrane via its myristoyl group and polybasic SH4 cluster \u2014 not the extracellular face. However, a 2026 Science study provides gene-specific experimental evidence that in cancer cells, Src is topologically inverted onto the extracellular surface through autophagolysosomal exocytosis (ALE), generating extracellular membrane-associated Src (eSrc) detectable in primary tumors. Anti-Src antibody-based therapies exploiting this eSrc pool showed tumor cell killing in vitro and in xenograft models. This outer-leaflet display is cancer-state-specific (non-baseline), qualifying as cell_state_induced. At baseline in normal cells, Src body is strictly inner-leaflet-anchored and inaccessible from outside. The five contextual buckets: (1) cell_state_induced: YES \u2014 cancer-specific ALE-mediated outer-leaflet inversion documented gene-specifically; (2) tissue_restricted_surface: no evidence of germline/developmental display; (3) lysosomal_exocytosis: the ALE mechanism is functionally related but this is the cell_state_induced cancer mechanism; (4) dual_localization: no constitutive PM-outer-leaflet pool; (5) stable_surface_attachment: not applicable.",
+  "correct": true,
+  "prompt_tokens": 664,
+  "completion_tokens": 796,
+  "n_web_searches": 1,
+  "cost_usd": 0.11121669999999999,
+  "latency_s": 18.043388499994762,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 22686,
+  "cache_read_tokens": 7374,
+  "error": null,
+  "raw_text": ""
+}

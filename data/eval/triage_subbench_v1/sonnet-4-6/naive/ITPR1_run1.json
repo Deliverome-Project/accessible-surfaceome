@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ITPR1 (inositol 1,4,5-trisphosphate receptor type 1) is a multi-pass transmembrane calcium channel primarily resident on the endoplasmic reticulum membrane, where it faces the ER lumen and the cytoplasm. Its canonical and dominant localization is endomembrane (ER). However, there is documented evidence of a plasma membrane pool of IP3R1 in several cell types, including neurons and immune cells, where it participates in Ca2+ entry and store-operated calcium signaling at ER-PM junctions. Surface proteomics and cell-surface biotinylation studies have detected ITPR1 at the PM. Additionally, the extracellular loops of the channel can, in this PM-localized pool, be accessed from the extracellular space. This dual localization\u2014dominant ER with a documented minority PM pool\u2014fits the dual_localization / contextual category. The PM pool is not the dominant compartment but is experimentally documented.",
+  "correct": false,
+  "prompt_tokens": 5161,
+  "completion_tokens": 328,
+  "n_web_searches": 0,
+  "cost_usd": 0.020403,
+  "latency_s": 8.148501916963141,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "The extent and stability of the PM pool of ITPR1 is debated; most surface proteomics evidence is indirect. It is unclear whether surface exposure is robust enough for therapeutic targeting from the extracellular face.",
+  "error": null,
+  "raw_text": ""
+}

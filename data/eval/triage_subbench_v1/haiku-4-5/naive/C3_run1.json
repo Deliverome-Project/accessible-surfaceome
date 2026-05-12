@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 (complement component 3) is a soluble plasma protein synthesized primarily in the liver and secreted into the bloodstream as part of the complement cascade. It circulates in blood and interstitial fluid as a free soluble protein, not anchored to cell membranes. While C3 fragments (C3a, C3b, iC3b) deposit covalently onto cell surfaces and pathogen surfaces during complement activation, the parent C3 protein itself is not membrane-integrated or stably surface-anchored. C3 engages surface receptors (CR1, CR2, CR3, CR4) via reversible non-covalent binding but does not have its own membrane anchor; it remains in equilibrium with the soluble pool. No documented cell-state-induced ecto-presentation, tissue-restricted surface display, lysosomal exocytosis, dual PM/soluble localization, or covalent TM-partner tethering applies to the C3 protein body itself.",
+  "correct": false,
+  "prompt_tokens": 5158,
+  "completion_tokens": 275,
+  "n_web_searches": 0,
+  "cost_usd": 0.006533,
+  "latency_s": 3.445997292001266,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted, disulfide-linked homodimeric growth factor of the PDGF/VEGF family that signals through TM receptors (VEGFR1/2/3, NRP1/2) on endothelial cells. Anti-VEGFA antibodies (bevacizumab, ranibizumab) target the circulating/soluble ligand, not a surface pool on producer cells. Walking the contextual buckets: no documented cancer/cell-death/activation outer-leaflet ecto-pool of VEGFA itself; no narrow germline/developmental surface display with its own anchor; not a lysosomal TM protein; no PM minority pool \u2014 heparin/HSPG binding is reversible ECM/matrix association in equilibrium with the soluble pool, failing the wash test; no covalent/wash-resistant TM-partner tethering (binding to VEGFR is reversible recruitment, recruiter is the receptor). No TM isoform exists.",
+  "correct": true,
+  "prompt_tokens": 11314,
+  "completion_tokens": 365,
+  "n_web_searches": 0,
+  "cost_usd": 0.197085,
+  "latency_s": 6.55216445797123,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

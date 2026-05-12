@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 (complement C3) is a secreted plasma protein produced primarily by the liver. It has no transmembrane domain, no GPI anchor, and no other membrane-anchoring mechanism of its own. The mature protein circulates in blood and extracellular fluids as a soluble precursor. Upon complement activation, the cleavage fragment C3b contains a reactive thioester domain that allows it to covalently attach to pathogen surfaces or immune complexes \u2014 but this is deposition onto foreign/microbial surfaces (or opsonization of immune complexes), not stable anchoring to the outer leaflet of human cell plasma membranes. Pre-checklist: (1) No cell-surface-directed antibody/ADC/CAR-T targets C3 on the host cell surface \u2014 therapeutic anti-C3 programs (e.g., pegcetacoplan) target the soluble circulating pool. (2) Not an ectodomain-shedding TM precursor \u2014 C3 has no TM domain at any isoform stage. (3) No covalent/wash-resistant tethering to a host TM partner \u2014 C3b thioester covalently deposits onto pathogen/target surfaces but this is opsonization of foreign particles, not stable host-cell surface anchoring (and is immediately regulated/removed on host cells). (4) No documented PM minority pool on human cells \u2014 host-cell regulatory proteins (CD46, CD55, CD59) actively prevent C3b retention. (5) No documented cell-death-induced, oncogenic, activation-induced, germline-restricted, or lysosomal-exocytosis ecto-display. No dual localization or cycling pool to the plasma membrane outer leaflet. C3 is a secreted protein with no stable surface-anchoring mechanism on human cells.",
+  "correct": false,
+  "prompt_tokens": 30875,
+  "completion_tokens": 507,
+  "n_web_searches": 1,
+  "cost_usd": 0.11023,
+  "latency_s": 16.055125915969256,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

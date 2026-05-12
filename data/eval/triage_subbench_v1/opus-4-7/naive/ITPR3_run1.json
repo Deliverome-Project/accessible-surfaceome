@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ITPR3 (inositol 1,4,5-trisphosphate receptor type 3) is a multi-pass TM Ca2+ release channel canonically resident on the ER membrane, with C-terminal/N-terminal domains facing cytoplasm and the channel pore releasing Ca2+ from ER lumen to cytosol. However, there is documented plasma-membrane localization of IP3R3 in several cell types (e.g., apical PM of polarized epithelial cells, B cells, and immune cells), where it can mediate Ca2+ influx and has been detected by surface biotinylation/immunostaining on intact cells. This qualifies as contextual via dual_localization \u2014 minority PM pool alongside dominant ER residency, with its own multi-pass TM anchor at the PM.",
+  "correct": false,
+  "prompt_tokens": 7277,
+  "completion_tokens": 373,
+  "n_web_searches": 0,
+  "cost_usd": 0.13713,
+  "latency_s": 6.3544400410028175,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Uncertain whether PM pool of IP3R3 is robust/generalizable enough vs. predominantly ER-resident; surface evidence is cell-type-restricted and not universally accepted.",
+  "error": null,
+  "raw_text": ""
+}

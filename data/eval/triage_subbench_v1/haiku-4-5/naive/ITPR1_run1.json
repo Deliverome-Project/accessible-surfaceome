@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 is a canonical ER-integral IP\u2083-receptor calcium-release channel. Its functional domain spans the ER bilayer to sense cytoplasmic IP\u2083 and release ER-luminal Ca\u00b2\u207a. No cell-surface-directed therapeutic programs target it on the cell surface; no evidence of PM cycling, lysosomal exocytosis, cancer ecto-display, cell-death surface exposure, activation-induced translocation, or stable TM-partner tethering to PM. Mature protein is exclusively ER-resident.",
+  "correct": true,
+  "prompt_tokens": 5160,
+  "completion_tokens": 1016,
+  "n_web_searches": 0,
+  "cost_usd": 0.01024,
+  "latency_s": 10.402448250039015,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

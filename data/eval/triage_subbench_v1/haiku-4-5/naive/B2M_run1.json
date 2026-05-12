@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "B2M is a non-anchored structural partner of MHC class I, synthesized in the cytosol and reaching the cell surface exclusively via non-covalent binding to the MHC heavy chain. It has no intrinsic membrane-anchoring mechanism (no TM, no GPI, no lipidation) and is in equilibrium with a large soluble pool. The only surface-association route is pMHC-complex assembly, which is excluded from surface-accessibility triage per protocol. No cell-surface-directed therapeutic targets B2M itself. B2M qualifies as secreted_only (more specifically, pMHC-partner-intracellular): the protein body is not independently surface-accessible.",
+  "correct": false,
+  "prompt_tokens": 5159,
+  "completion_tokens": 1624,
+  "n_web_searches": 0,
+  "cost_usd": 0.013279,
+  "latency_s": 16.454134583997075,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 (transmembrane p24 trafficking protein 9) is an ER/Golgi cargo receptor and vesicle-trafficking protein. The p24 family proteins have a single-pass TM domain but reside in COPI/COPII vesicles and ER-Golgi membranes with their functional domain facing the endomembrane lumen, not the extracellular space. No surface display: the 'extracellular' face is the ER/Golgi lumen; the protein cycles within the early secretory pathway and does not reach the plasma membrane outer leaflet. Pre-no checklist: (1) no cell-surface-directed therapeutic targets TMED9; (2) not an ecto-domain-shedding receptor; (3) not covalently tethered to a TM surface partner; (4) no documented PM minority pool \u2014 EV association (PMID 39766158) reflects EV cargo, not PM outer-leaflet display; (5) no cancer/cell-death/activation/germline-restricted outer-leaflet evidence. Detection in plasma EVs is consistent with endosomal/multivesicular-body routing, not bona-fide cell-surface exposure. Endomembrane-resident classification is appropriate.",
+  "correct": true,
+  "prompt_tokens": 477,
+  "completion_tokens": 347,
+  "n_web_searches": 0,
+  "cost_usd": 0.008337,
+  "latency_s": 7.90091070800554,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

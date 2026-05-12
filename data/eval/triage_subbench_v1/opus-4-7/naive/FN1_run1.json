@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "FN1 (fibronectin) is a large secreted glycoprotein, but it has a well-documented cell-surface form: assembled fibronectin fibrils are anchored to cells via integrin (\u03b15\u03b21, \u03b1v\u03b23) binding through the RGD motif, and FN1 is incorporated into pericellular matrix. Critically, alternative splicing produces oncofetal isoforms (EDA/EDB-containing, e.g., FN1-EDB) that are deposited in tumor vasculature/stroma and are clinical targets of antibodies, ADCs, and radioligands (e.g., L19-based therapeutics targeting EDB). Surface/matrix deposition is wash-resistant via covalent disulfide cross-linking during fibrillogenesis and tissue transglutaminase crosslinking. This fits stable_surface_attachment via TM-partner (integrin) anchoring plus matrix incorporation in specific tissue/disease contexts.",
+  "correct": false,
+  "prompt_tokens": 7275,
+  "completion_tokens": 442,
+  "n_web_searches": 0,
+  "cost_usd": 0.142275,
+  "latency_s": 7.938371125026606,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Borderline between secreted_only (matrix/stromal deposition explicitly excluded per spec) and stable_surface_attachment via integrin tethering; clinical anti-EDB programs target matrix-deposited form.",
+  "error": null,
+  "raw_text": ""
+}

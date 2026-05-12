@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) is the non-covalently associated light chain of MHC class I complexes. On the cell surface it is entirely dependent on non-covalent association with the MHC class I heavy chain (HLA-A/B/C) loaded with peptide. B2M has no transmembrane domain, no GPI anchor, and no outer-leaflet lipid anchor of its own. Its surface presence is strictly as a recruited non-covalent partner held in equilibrium with a large soluble/secreted pool. It does not pass the wash-resistance test for stable_surface_attachment. It is also extensively shed/secreted as free soluble B2M into serum/urine. The only therapeutic surface-targeting programs (e.g., anti-MHC-I antibodies) target the HLA heavy chain as the anchor, not B2M as an independent surface entity. pMHC-targeting TCR-T/bispecific programs target the pMHC complex, not the B2M protein body per se. All five contextual buckets are ruled out: no documented cancer/cell-death ecto-pool independent of MHC-I; no germline/developmental-restricted surface display via own anchor; not a lysosomal TM protein; no independent PM cycling pool; no wash-resistant TM-partner tethering \u2014 only reversible non-covalent MHC-I association.",
+  "correct": false,
+  "prompt_tokens": 5160,
+  "completion_tokens": 451,
+  "n_web_searches": 0,
+  "cost_usd": 0.022245,
+  "latency_s": 10.175697790982667,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "B2M is detectable on the cell surface as part of MHC-I complexes, but whether this counts as 'stable_complex_partner' vs. reversible recruitment is borderline; ruled out because B2M is in equilibrium with a large soluble pool and the anchor is HLA, not B2M.",
+  "error": null,
+  "raw_text": ""
+}

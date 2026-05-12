@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "IZUMO4",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 (Q1ZYL8) is annotated as nuclear by NCBI/Alliance of Genome Resources and lacks a predicted TM domain or signal peptide, making it structurally divergent from surface-displaying IZUMO family members (IZUMO1\u20133 are sperm TM proteins). Pre-no checklist: no cell-surface-directed therapeutic programs documented; no TM precursor/shedding architecture; no wash-resistant TM-partner tethering; no documented PM minority pool or secretory cycling; no gene-specific evidence of cancer/cell-death/activation-induced outer-leaflet display or germline-restricted surface pool; not a lysosomal TM protein. HGNC family lineage (IZUMO) creates a mild surface prior, but IZUMO4 is the family outlier without membrane-anchoring topology, and per-gene nuclear localization evidence overrides class analogy.",
+  "correct": false,
+  "prompt_tokens": 226,
+  "completion_tokens": 875,
+  "n_web_searches": 0,
+  "cost_usd": 0.0350655,
+  "latency_s": 16.948590749991126,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "IZUMO4 is poorly characterized; the nuclear call rests on a brief Alliance annotation and absence of TM domain \u2014 a minority PM pool or germline-surface context cannot be fully excluded without direct experimental data.",
+  "cache_creation_tokens": 5670,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

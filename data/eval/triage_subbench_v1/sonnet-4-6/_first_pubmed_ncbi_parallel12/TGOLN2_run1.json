@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 encodes a type I integral membrane protein (TGN46/TGN51) that is a well-characterised resident of the trans-Golgi network. Its canonical localization is the TGN lumenal face, and it cycles between early endosomes and the TGN \u2014 both endomembrane compartments. Its ectodomain faces the TGN lumen / endosomal lumen, not the extracellular space. Pre-no checklist: (1) No cell-surface-directed therapeutic targets TGOLN2 on the outer leaflet. (2) Not a sheddase substrate with a documented PM precursor stage. (3) No stable covalent/wash-resistant TM-partner tethering to the cell surface. (4) No documented minority PM pool; cycling is between TGN and endosomes, not the plasma membrane. (5) No cancer/cell-death/germline/activation-induced outer-leaflet evidence for this protein specifically. No CD designation or surface-family lineage. Verdict: endomembrane-resident.",
+  "correct": false,
+  "prompt_tokens": 336,
+  "completion_tokens": 279,
+  "n_web_searches": 0,
+  "cost_usd": 0.0264555,
+  "latency_s": 7.283719500002917,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 5670,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

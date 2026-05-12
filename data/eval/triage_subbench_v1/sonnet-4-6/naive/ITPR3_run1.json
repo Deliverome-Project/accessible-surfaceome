@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 (Inositol 1,4,5-trisphosphate receptor type 3) is an ER/sarcoplasmic reticulum resident multi-pass TM channel protein. Its canonical localization is the ER membrane, where it faces the cytoplasm and ER lumen \u2014 not the extracellular space. The large regulatory domains face the cytosol; the channel pore spans the ER membrane. No substantial, stable outer-leaflet plasma membrane pool is established. Contextual checks: no documented cancer/cell-death-induced outer-leaflet ectodomain display; not restricted to germline/developmental lineages in a surface-displayed form; not a lysosomal TM protein undergoing exocytosis to PM; no documented minority PM pool with extracellular-face exposure; no wash-resistant TM-partner tethering to outer leaflet. IP3R3 has been reported at ER-PM junctions and mitochondria-associated membranes, but these are intracellular membrane contacts, not outer-leaflet plasma membrane display. No clinical surface-directed antibody/ADC/CAR-T program targets this protein on the cell surface.",
+  "correct": true,
+  "prompt_tokens": 5161,
+  "completion_tokens": 326,
+  "n_web_searches": 0,
+  "cost_usd": 0.020373,
+  "latency_s": 12.021760166971944,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

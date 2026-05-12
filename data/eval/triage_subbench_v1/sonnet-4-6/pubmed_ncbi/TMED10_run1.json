@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 is a type I single-pass TM protein (GOLD domain, p24 family) canonically residing in ER-Golgi membranes but with a documented plasma membrane pool. The NCBI summary explicitly states localization to 'the plasma membrane and golgi cisternae.' Multiple independent lines of evidence confirm PM presence: TMED10 is required for toxin oligomerization at the PM lipid nanodomains (PMID 36174556); it controls cell-surface PD-1 expression, with its inactivation reducing surface PD-1 (PMID 39510795); it regulates cell-surface expression of TAM receptor Axl and PM blebbing (PMID 30996093); and ATG9A vesicles carrying TMED10-loaded cargo fuse with the PM (PMID 40335523). Its dominant compartment is ER-Golgi (endomembrane), but a minority PM pool is well-documented \u2014 qualifying as dual_localization. The PM pool is not restricted to a single cell state or narrow lineage.",
+  "correct": true,
+  "prompt_tokens": 1369,
+  "completion_tokens": 304,
+  "n_web_searches": 0,
+  "cost_usd": 0.010368,
+  "latency_s": 7.569707666989416,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "HMGB1 is a canonical non-histone nuclear chromatin-binding protein with no transmembrane domain, GPI anchor, or outer-leaflet lipidation. Its dominant localization is nuclear (DNA chaperone) with a cytoplasmic pool under stress. It is released extracellularly via two routes: passive leakage during necrosis/lytic cell death and active secretion via a leaderless, lysosome-mediated pathway in activated immune cells. Once released, it acts as a soluble DAMP/cytokine that binds surface receptors (RAGE, TLR2, TLR4) on OTHER cells \u2014 the recruiter is RAGE/TLR on the receiving cell, not a stable physical link anchoring HMGB1 to the secreting cell's outer leaflet. Pre-'no' checklist: (1) Cell-surface-directed therapeutics: anti-HMGB1 antibodies target the soluble extracellular pool, not a stable cell-surface-anchored form \u2014 this is the anti-soluble-ligand pattern, not a surface-cell-directed program. (2) Ectodomain shedding: HMGB1 has no TM domain; no sheddase precursor biology. (3) Wash-resistant TM-partner tethering: no documented covalent or wash-resistant non-covalent anchoring to any TM protein. (4) PM minority pool/dual localization: secretory lysosome exocytosis releases HMGB1 into the medium \u2014 there is no documented stable cell-surface pool on the secreting cell detectable by flow cytometry or surface biotinylation of intact cells; the protein disperses into the extracellular space. (5) Cell-state/cancer/cell-death surface display: ICD releases HMGB1 into the extracellular milieu (passive release with membrane permeabilization), not outer-leaflet display on the dying cell surface \u2014 this is release, not surface anchoring. No gene-specific evidence of outer-leaflet display on intact viable or dying cells via surface biotinylation or flow cytometry on non-permeabilized cells. All five contextual buckets are ruled out.",
+  "correct": true,
+  "prompt_tokens": 73112,
+  "completion_tokens": 675,
+  "n_web_searches": 2,
+  "cost_usd": 0.249461,
+  "latency_s": 19.947684999962803,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

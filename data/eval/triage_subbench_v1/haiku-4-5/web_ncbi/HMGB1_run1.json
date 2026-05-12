@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is a nuclear/cytoplasmic protein with no intrinsic membrane anchor. However, it is documented to undergo cell-state-induced translocation to the extracellular space via passive release during multiple forms of cell death (apoptosis, necroptosis, pyroptosis, necrosis) and active secretion by immune cells in response to inflammatory stimuli. Gene-specific evidence shows externalization under defined pathological contexts. The extracellular pool functions as a DAMP but is soluble and not anchored to the plasma membrane, making it baseline-secreted. The defined stress/death-state context qualifies as cell_state_induced.",
+  "correct": false,
+  "prompt_tokens": 43411,
+  "completion_tokens": 1459,
+  "n_web_searches": 2,
+  "cost_usd": 0.070706,
+  "latency_s": 17.588659875036683,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

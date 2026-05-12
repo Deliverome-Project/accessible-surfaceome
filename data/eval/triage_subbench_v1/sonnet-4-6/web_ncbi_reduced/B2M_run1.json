@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) has no transmembrane region of its own but is the obligate non-covalent light chain of MHC class I heterotrimers, assembled intracellularly with the TM-anchored MHC-I heavy chain and co-trafficked as a stable complex to the plasma membrane outer leaflet. It is constitutively displayed on the extracellular face of nearly all nucleated cells. This is a canonical stable_complex_partner architecture: B2M is integrated into the complex during biogenesis in the ER, not recruited post-translationally from the extracellular milieu. It is essential for MHC-I surface expression and stability. The extracellular accessibility of B2M is exploited by bispecific and engineered therapeutic formats. This is not a transient non-covalent equilibrium binding from solution, but a co-assembled, co-trafficked obligate heterotrimeric complex.",
+  "correct": true,
+  "prompt_tokens": 645,
+  "completion_tokens": 782,
+  "n_web_searches": 1,
+  "cost_usd": 0.08321064999999998,
+  "latency_s": 21.537561125005595,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 14699,
+  "cache_read_tokens": 14748,
+  "error": null,
+  "raw_text": ""
+}

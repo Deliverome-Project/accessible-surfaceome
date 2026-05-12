@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is canonically a nuclear DNA-binding protein (chromatin architectural factor). However, it has well-documented non-baseline outer-leaflet/extracellular display: actively secreted by activated immune cells (monocytes/macrophages) via non-classical secretion, and passively released during necrosis, pyroptosis, and immunogenic cell death where it appears on the outer face of dying cells before full release. It acts as a prototypical DAMP engaging RAGE/TLR4 on target cells. Anti-HMGB1 antibody programs target the released extracellular pool. The surface-displayed/externalized stage during cell death and activation-induced secretion qualifies as cell-state-induced contextual surface exposure.",
+  "correct": false,
+  "prompt_tokens": 7277,
+  "completion_tokens": 355,
+  "n_web_searches": 0,
+  "cost_usd": 0.13578,
+  "latency_s": 7.275812084029894,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Most extracellular HMGB1 is fully released/soluble rather than stably surface-anchored; outer-leaflet display on dying cells is transient and may better fit secreted_only.",
+  "error": null,
+  "raw_text": ""
+}

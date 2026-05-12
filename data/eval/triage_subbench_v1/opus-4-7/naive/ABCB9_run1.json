@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ABCB9 (TAPL) is a half-transporter of the ABC family that resides in the lysosomal membrane, where it transports cytosolic peptides into the lysosomal lumen. It is an endomembrane-resident multipass TM protein with no documented stable plasma-membrane pool. Checking contextual buckets: (a) no documented cancer/cell-death/activation-induced ecto-display of ABCB9; (b) no narrow germline/developmental surface-restricted display (broadly expressed, testis-enriched but lysosomal there too); (c) although lysosomal, no documented lysosomal-exocytosis surfacing of ABCB9 specifically; (d) no documented PM minority pool or cycling; (e) not a soluble protein with TM-partner covalent tethering. Verdict: endomembrane-resident.",
+  "correct": true,
+  "prompt_tokens": 7277,
+  "completion_tokens": 385,
+  "n_web_searches": 0,
+  "cost_usd": 0.13803,
+  "latency_s": 6.877644957974553,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Possible undocumented surfacing via lysosomal exocytosis in secretory lysosome-containing cells (e.g., immune cells); no gene-specific evidence found.",
+  "error": null,
+  "raw_text": ""
+}

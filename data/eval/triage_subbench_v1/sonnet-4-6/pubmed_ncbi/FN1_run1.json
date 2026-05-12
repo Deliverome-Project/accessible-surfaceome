@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "Fibronectin (FN1) is a large glycoprotein secreted into plasma (soluble dimeric form) and deposited into the extracellular matrix as multimeric fibrils. It lacks a transmembrane domain, GPI anchor, or outer-leaflet lipidation. The NCBI summary notes both a plasma form and a cell-surface/ECM form, but ECM deposition is matrix-anchored covalent/non-covalent deposition \u2014 not stable attachment to a TM partner on the plasma membrane outer leaflet in the required sense. Pre-no checklist: (1) no cell-surface-directed antibody/ADC/CAR-T program against the FN1 protein body; (2) not a sheddase TM precursor \u2014 no TM domain in any isoform; (3) ECM fibrils are matrix-deposited, not wash-resistant TM-partner-tethered surface display; (4) no documented PM minority pool distinct from ECM deposition; (5) literature evidence (PMIDs 36812915, 39805388, 40734271) confirms secreted/ECM biology, no surface-biotinylation or flow-cytometry evidence of outer-leaflet display. All five contextual buckets lack gene-specific outer-leaflet evidence.",
+  "correct": true,
+  "prompt_tokens": 1386,
+  "completion_tokens": 353,
+  "n_web_searches": 0,
+  "cost_usd": 0.011154,
+  "latency_s": 9.02501558297081,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

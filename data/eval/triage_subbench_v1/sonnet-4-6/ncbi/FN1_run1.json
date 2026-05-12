@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "Fibronectin exists as a soluble plasma glycoprotein and as a multimeric form deposited in the extracellular matrix (ECM). Although it binds integrins and other cell-surface receptors, this binding is reversible non-covalent interaction \u2014 fibronectin is not itself a transmembrane protein, GPI-anchored, or stably tethered to a TM partner via wash-resistant linkage. The ECM/matrix-deposited form is covalently cross-linked into the stroma (transglutaminase) but this is matrix deposition, not cell-surface PM anchoring. Checking all 5 contextual buckets: no documented cancer/stress ecto-pool on the outer PM leaflet as a stably anchored protein; no narrow germline/developmental-lineage TM display; not a lysosomal TM protein; no documented minority PM-anchored pool via cycling; post-translational tethering is matrix deposition (excluded explicitly as secreted_only). The 'cell surface' mention in NCBI refers to ECM/pericellular matrix assembly, not TM anchoring. Anti-FN therapeutic programs target the soluble or ECM-deposited pool, not a cell-surface TM-anchored form.",
+  "correct": true,
+  "prompt_tokens": 5892,
+  "completion_tokens": 325,
+  "n_web_searches": 0,
+  "cost_usd": 0.022551,
+  "latency_s": 10.079434917017352,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

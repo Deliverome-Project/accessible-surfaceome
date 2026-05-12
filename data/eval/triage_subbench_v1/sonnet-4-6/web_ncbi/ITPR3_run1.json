@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 encodes a large tetrameric Ca\u00b2\u207a-release channel resident in the endoplasmic reticulum (ER) membrane. Its transmembrane domains face the ER lumen and cytoplasm; there is no extracellular-facing topology at the plasma membrane. Pre-`no` checklist: (1) No cell-surface-directed therapeutic (antibody/ADC/CAR-T) program targeting ITPR3 on the outer leaflet exists. (2) Not a shedding-substrate TM precursor \u2014 the protein has no ectodomain exposed extracellularly. (3) No wash-resistant covalent/stable tethering to a PM TM partner documented. (4) No documented PM minority pool \u2014 non-ER localizations in cancer are nuclear or MAM (both intracellular). (5) No gene-specific evidence for cell-state-induced outer-leaflet display; no tissue-restricted surface display; not a lysosomal TM protein undergoing exocytosis; no documented vesicular cycling to PM; no activation-induced surface translocation. The HGNC gene-group (IP3 receptors) is a canonically intracellular ER-channel family with no surface biology. All five contextual buckets are ruled out by absence of protein-specific evidence.",
+  "correct": true,
+  "prompt_tokens": 27564,
+  "completion_tokens": 855,
+  "n_web_searches": 1,
+  "cost_usd": 0.105517,
+  "latency_s": 20.14917779096868,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

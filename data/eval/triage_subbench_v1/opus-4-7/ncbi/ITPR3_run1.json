@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ITPR3 is a multi-pass TM IP3-gated Ca2+ release channel canonically resident in the ER membrane (endomembrane). However, a documented minority pool localizes to the plasma membrane in several cell types (e.g., polarized epithelia, B cells, platelets), where it can function as a PM Ca2+ channel with extracellular-facing loops accessible from outside. This dual ER/PM distribution qualifies as contextual via dual_localization. Not pMHC-only; not purely ER-resident.",
+  "correct": false,
+  "prompt_tokens": 8279,
+  "completion_tokens": 288,
+  "n_web_searches": 0,
+  "cost_usd": 0.145785,
+  "latency_s": 5.458294208045118,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Strength/breadth of documented PM pool for ITPR3 specifically vs ITPR1; if PM localization is not robustly established for this isoform, correct call would be endomembrane_resident.",
+  "error": null,
+  "raw_text": ""
+}

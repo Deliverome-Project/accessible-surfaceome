@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted, heparin-binding disulfide-linked homodimer growth factor with no transmembrane domain or GPI anchor. It is constitutively secreted into the extracellular space where it binds VEGFR receptors on endothelial cells. Anti-VEGF therapeutics (bevacizumab, ranibizumab, aflibercept) target the circulating/soluble pool, not a cell-surface-anchored form of VEGFA itself. Applying the pre-no checklist: no documented stable wash-resistant TM-partner tethering; no documented PM minority pool via lysosomal exocytosis or cycling; no TM isoform at any lifecycle stage; no cell-death- or activation-induced outer-leaflet pool documented for VEGFA protein body; no germline/tissue-restricted surface display; pMHC is not the surface story. The secreted pool may transiently associate with surface HSPGs but this is reversible and washes off. The recruiter (VEGFR) is the surface entity; VEGFA itself remains secreted_only.",
+  "correct": true,
+  "prompt_tokens": 5857,
+  "completion_tokens": 292,
+  "n_web_searches": 0,
+  "cost_usd": 0.021951,
+  "latency_s": 7.2547203750000335,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

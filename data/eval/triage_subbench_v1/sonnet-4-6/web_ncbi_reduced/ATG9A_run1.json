@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is a multipass transmembrane protein (4 TM helices per protomer, domain-swapped homotrimer) whose dominant localization is the TGN, recycling endosomes, and phagophore assembly sites. However, it demonstrably cycles through the plasma membrane: AP-2 binds its N-terminal sorting motif for clathrin-mediated internalization from the PM, and ATG9A on early endosomes is internalized from clathrin-coated structures on the cell membrane. This constitutes a documented, cycling PM pool with its own TM anchor. The luminal/extracellular-facing loops at the PM are minimal (no substantial ectodomain), and the dominant biological form is intracellular. The surface pool is a transient cycling intermediate, qualifying as dual_localization rather than stable surface residence. No evidence of large ecto-pool, cancer/cell-death surface induction, or wash-resistant surface tethering.",
+  "correct": false,
+  "prompt_tokens": 591,
+  "completion_tokens": 849,
+  "n_web_searches": 1,
+  "cost_usd": 0.07458115,
+  "latency_s": 19.377620542014483,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "The extracellular-facing loops of ATG9A at the PM are minimal; the PM pool is a transient trafficking intermediate rather than a stable surface-resident form. Unclear whether any accessible epitope is exposed on the outer leaflet during PM transit.",
+  "cache_creation_tokens": 12173,
+  "cache_read_tokens": 14748,
+  "error": null,
+  "raw_text": ""
+}

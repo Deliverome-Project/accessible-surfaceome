@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 (complement component 3) is a secreted plasma protein produced mainly by the liver and locally by macrophages/other cells. Its canonical biology is entirely extracellular/soluble: it circulates as a zymogen, is cleaved into C3a and C3b, and C3b can covalently deposit onto surfaces via thioester-mediated attachment to hydroxyl/amine groups on pathogens, apoptotic cells, or ECM \u2014 but this is matrix/pathogen deposition, not stable anchoring to a host cell's own TM partner. No TM domain, no GPI anchor, no outer-leaflet lipidation. Contextual checks: (1) no documented cancer/cell-death ecto-pool on outer leaflet of host cells; (2) no germline/developmental surface display with own anchor; (3) not a lysosomal TM protein; (4) no documented PM minority pool or secretory cycling to PM; (5) thioester covalent deposition onto extracellular acceptors (pathogen/ECM surfaces) does not constitute stable TM-partner anchoring on a host cell surface \u2014 this is secreted_only territory. C3b opsonization of host cells is transient and washes off; the host PM TM partner story belongs to complement receptors (CR1, CR3), not C3 itself.",
+  "correct": false,
+  "prompt_tokens": 5159,
+  "completion_tokens": 362,
+  "n_web_searches": 0,
+  "cost_usd": 0.020907,
+  "latency_s": 9.216030125040561,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

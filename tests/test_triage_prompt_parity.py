@@ -49,11 +49,12 @@ ALL_VARIANTS = (
     "system_naive.md",
     "system_web.md",
     "system_web_naive.md",
+    "system_pubmed.md",
 )
-RESOLVER_VARIANTS = ("system.md", "system_web.md")
+RESOLVER_VARIANTS = ("system.md", "system_web.md", "system_pubmed.md")
 NO_RESOLVER_VARIANTS = ("system_naive.md", "system_web_naive.md")
 WEB_VARIANTS = ("system_web.md", "system_web_naive.md")
-NON_WEB_VARIANTS = ("system.md", "system_naive.md")
+NON_WEB_VARIANTS = ("system.md", "system_naive.md", "system_pubmed.md")
 
 
 # Each entry is a short fingerprint string that uniquely identifies a
@@ -120,7 +121,7 @@ SHARED_FINGERPRINTS: dict[str, str] = {
     # --- Reason enum: contextual (the most-evolved bucket)
     "enum_cell_state_induced": (
         "translocates to the outer leaflet only under a defined non-baseline "
-        "cellular state. Covers (a) **stress**"
+        "cellular state. Covers [a] **stress**"
     ),
     "enum_cell_state_oncogenic": (
         "**oncogenic transformation** — proteins canonically intracellular "
@@ -204,7 +205,7 @@ SHARED_FINGERPRINTS: dict[str, str] = {
     "probe5_activation": "4. **Activation-induced surface display.**",
     "probe5_dont_defer": (
         "**don't defer to the baseline compartment when a non-baseline "
-        "ecto-pool is documented.**"
+        "ecto-pool is documented for this protein specifically.**"
     ),
     # --- Output contract
     "output_contract_json_shape": (

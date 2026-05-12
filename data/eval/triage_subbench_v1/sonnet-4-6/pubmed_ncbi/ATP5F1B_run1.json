@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATP5F1B",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "ATP5F1B encodes the F1 beta subunit of mitochondrial ATP synthase, canonically located in the mitochondrial matrix-facing catalytic head with no TM domain or GPI anchor. However, there is well-documented 'ectopic' surface display of the ATP synthase beta subunit on the outer leaflet of tumor cells and endothelial cells, where it functions as a receptor for angiostatin and is detected by surface biotinylation and antibody binding on intact live cells. This constitutes cell-state-induced (oncogenic/angiogenic context) outer-leaflet exposure. The canonical compartment is mitochondrial-internal, but the documented tumor/endothelial surface pool qualifies as contextual surface accessibility under cell_state_induced.",
+  "correct": true,
+  "prompt_tokens": 2,
+  "completion_tokens": 634,
+  "n_web_searches": 0,
+  "cost_usd": 0.012747,
+  "latency_s": 13.06740387500031,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Mechanism of PM translocation for ATP5F1B is incompletely understood; surface pool size and generality across tumor types is variable, and some reports may conflate subunits.",
+  "cache_creation_tokens": 408,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

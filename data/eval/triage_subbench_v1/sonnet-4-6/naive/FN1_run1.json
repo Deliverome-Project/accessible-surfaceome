@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "Fibronectin (FN1) is a large extracellular matrix glycoprotein secreted by fibroblasts, hepatocytes, and other cells. It is found in plasma (soluble plasma fibronectin) and deposited into the ECM as insoluble fibrillar networks. While FN1 binds to cell-surface integrins and other receptors non-covalently, this is a reversible receptor-ligand interaction \u2014 fibronectin is the ligand, and the integrin is the surface-anchored entity. FN1 itself has no TM domain, no GPI anchor, no outer-leaflet lipidation, and is not a stable co-trafficked subunit of a TM complex. ECM deposition (matrix fibrils) is covalent cross-linking into stroma, not cell-surface anchoring. Checking all 5 contextual buckets: no documented cell-death/activation-induced ecto-pool for FN1 protein body; no germline/tissue-restricted surface anchor; not a lysosomal TM protein; no documented PM minority pool via cycling; no wash-resistant TM-partner tethering. FN1 is secreted_only \u2014 it exists in equilibrium between soluble plasma pool and matrix deposits, with integrin binding being transient and reversible.",
+  "correct": true,
+  "prompt_tokens": 5160,
+  "completion_tokens": 366,
+  "n_web_searches": 0,
+  "cost_usd": 0.02097,
+  "latency_s": 8.395682625006884,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a secreted plasma glycoprotein with no TM domain, GPI anchor, or outer-leaflet lipidation at any lifecycle stage. Its cleavage product C3b deposits covalently via a reactive thioester onto pathogen/foreign surfaces as an opsonin \u2014 this is deposition onto target surfaces, not stable anchoring to the C3-expressing human cell's own plasma membrane. Anti-C3 therapeutics (e.g., pegcetacoplan) target the circulating/soluble pool, not a cell-surface-resident form. Pre-no checklist: no cell-state-induced ecto-pool on human cells documented; no germline/developmental surface display; not a lysosomal TM protein; no documented PM cycling minority pool on human cells; no wash-resistant TM-partner tethering to a human cell surface. The covalent thioester chemistry deposits C3b onto foreign/target surfaces \u2014 the recruiter is the foreign activating surface, not a human-cell TM partner. Verdict: secreted_only.",
+  "correct": false,
+  "prompt_tokens": 695,
+  "completion_tokens": 857,
+  "n_web_searches": 1,
+  "cost_usd": 0.08114439999999999,
+  "latency_s": 21.131806000019424,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 13808,
+  "cache_read_tokens": 14748,
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "ABCB9 is a lysosomal ABC transporter (TAP-like protein) with a multi-pass transmembrane architecture. Its canonical localization is the lysosomal membrane. However, it has documented surface exposure during lysosomal exocytosis \u2014 a physiological process activated during immune cell degranulation, nutrient stress, and cell-death signaling. The protein body reaches the outer leaflet when lysosomal vesicles fuse with the plasma membrane, transiently exposing lysosomal-resident TM proteins on the cell surface. This qualifies as contextual surface accessibility via lysosomal-exocytosis-triggered PM recruitment.",
+  "correct": false,
+  "prompt_tokens": 5161,
+  "completion_tokens": 270,
+  "n_web_searches": 0,
+  "cost_usd": 0.006511,
+  "latency_s": 5.503592416993342,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Extent and stability of ABCB9 surface residence during exocytosis cycles \u2014 unclear whether the protein is rapidly re-internalized or remains stably accessible long enough for therapeutic engagement. Lysosomal exocytosis is context-dependent and cell-type-restricted.",
+  "error": null,
+  "raw_text": ""
+}

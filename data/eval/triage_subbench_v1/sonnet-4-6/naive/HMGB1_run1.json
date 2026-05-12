@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is canonically a nuclear chromatin-binding protein (HMG-box DNA-binding, transcription facilitation). However, it has well-documented non-classical secretion and cell-surface/extracellular display under multiple non-baseline conditions: (1) During apoptosis, necrosis, and ICD, HMGB1 is released and can bind the outer leaflet of dying/stressed cells (calreticulin co-exposure, PS-flip contexts); (2) In activated macrophages/monocytes and other immune cells, HMGB1 is actively secreted via a non-classical acetylation-dependent pathway and can transiently associate with the cell surface through binding to surface receptors (RAGE, TLR2/4, CD24/Siglec-10, heparan sulfate proteoglycans). Anti-HMGB1 therapeutic antibodies have been developed targeting extracellular/surface-associated HMGB1. The cell-death-induced outer-leaflet exposure and activation-induced secretion/surface association are both gene-specifically documented. Primary verdict reason: cell_state_induced (immune activation, ICD, apoptosis/necrosis-driven surface/extracellular display). The dominant baseline compartment is nuclear, so `yes` is not appropriate.",
+  "correct": false,
+  "prompt_tokens": 5162,
+  "completion_tokens": 356,
+  "n_web_searches": 0,
+  "cost_usd": 0.020826,
+  "latency_s": 8.819498749973718,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

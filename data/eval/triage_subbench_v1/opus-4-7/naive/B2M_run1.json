@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M is the invariant light chain of MHC class I (and MHC-I-like molecules: CD1, HFE, FcRn, MR1). It has a signal peptide, no TM domain of its own, but assembles intracellularly with the MHC-I heavy chain and is co-trafficked to the cell surface as an obligate, stable non-covalent partner. It is broadly displayed on virtually all nucleated cells as part of surface MHC-I, accessible to antibodies on intact cells (clinical anti-B2M antibodies and surface flow cytometry routinely detect it). Soluble shed B2M exists in serum, but the canonical biological form is surface-anchored via the MHC-I heavy chain.",
+  "correct": true,
+  "prompt_tokens": 7275,
+  "completion_tokens": 287,
+  "n_web_searches": 0,
+  "cost_usd": 0.13065,
+  "latency_s": 5.108190416998696,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

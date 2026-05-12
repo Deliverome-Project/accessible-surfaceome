@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "Fibronectin (FN1) is a secreted glycoprotein/ECM component. The NCBI summary explicitly states it exists as a soluble dimeric form in plasma and as dimeric/multimeric forms 'at the cell surface and in extracellular matrix.' However, FN1 has no transmembrane domain, no GPI anchor, and no covalent linkage to a TM scaffold \u2014 it associates with the ECM and cell surface via reversible non-covalent interactions with integrins, heparan sulfate proteoglycans, and other ECM molecules. These interactions are wash-sensitive and FN1 remains in equilibrium with the soluble plasma pool. Pre-no checklist: (1) No cell-surface-directed therapeutic targets FN1 on the outer PM leaflet vs. soluble/matrix pool. (2) Not a TM precursor/sheddase substrate. (3) No wash-resistant covalent TM-partner tethering documented. (4) No documented stable minority PM pool; ECM/surface deposition is matrix-anchored, not PM-anchored. (5) No cancer/cell-death/activation-induced outer-leaflet ecto-pool documented for FN1 protein body itself. ECM deposition is excluded per the recruitment test and stable_surface_attachment exclusion clause. Verdict: secreted_only.",
+  "correct": true,
+  "prompt_tokens": 391,
+  "completion_tokens": 342,
+  "n_web_searches": 0,
+  "cost_usd": 0.008004,
+  "latency_s": 7.685575916024391,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

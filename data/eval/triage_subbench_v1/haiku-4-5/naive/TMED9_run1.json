@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 is a p24-family protein resident in ER/ERGIC/cis-Golgi, involved in anterograde and retrograde intra-secretory-pathway transport. Its single-pass TM domain places N- and C-termini in the luminal face of compartments upstream of the trans-Golgi. No documented PM pool, no cell-state-induced ectodisplay, no narrow-cell-type surface restriction, not a lysosomal protein, no documented PM cycling, and no stable surface-partner tethering. No cell-surface-directed therapeutic programs target this protein.",
+  "correct": true,
+  "prompt_tokens": 5160,
+  "completion_tokens": 908,
+  "n_web_searches": 0,
+  "cost_usd": 0.0097,
+  "latency_s": 9.961345166957472,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

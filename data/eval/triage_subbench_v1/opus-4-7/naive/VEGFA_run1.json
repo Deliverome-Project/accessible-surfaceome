@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "stable_surface_attachment",
+  "verdict_reasoning": "VEGFA is a secreted growth factor, but multiple isoforms (VEGF165, VEGF189, VEGF206) bind heparan sulfate proteoglycans and are retained at the cell surface / ECM in a wash-resistant manner; the membrane-bound vs freely diffusible balance is isoform-dependent. Additionally, VEGFA exists as a disulfide-linked homodimer that is captured on producer and target cells via HSPG tethering before proteolytic release. Clinical anti-VEGFA programs (bevacizumab, ranibizumab) target the soluble pool, but the HSPG-anchored cell/matrix-associated pool is documented. No TM domain in any isoform.",
+  "correct": false,
+  "prompt_tokens": 7277,
+  "completion_tokens": 353,
+  "n_web_searches": 0,
+  "cost_usd": 0.13563,
+  "latency_s": 6.222208124992903,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "HSPG binding is non-covalent and may be reversible enough to fail strict wash-resistance; could alternatively be secreted_only if matrix deposition is treated as ECM rather than surface.",
+  "error": null,
+  "raw_text": ""
+}

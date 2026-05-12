@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 encodes a p24 family transmembrane cargo receptor that resides in the ER and Golgi membranes, cycling between these compartments to facilitate protein trafficking. Its single-pass TM domain anchors it to endomembrane compartments (ER/Golgi/ERGIC), not the plasma membrane. Pre-no checklist: (1) no clinical cell-surface-directed therapeutic program targets this protein on the plasma membrane; (2) it is not a sheddase substrate with a PM-resident precursor stage; (3) no wash-resistant TM-partner tethering to PM documented; (4) no documented minority PM pool \u2014 it cycles within the secretory pathway, not to the plasma membrane; (5) no cell-death/cancer ecto-pool, no germline-restricted PM display, no activation-induced PM translocation, no lysosomal exocytosis documented for TMED9 specifically. The dominant biology is endomembrane-resident trafficking protein. No contextual bucket has gene-specific evidence.",
+  "correct": true,
+  "prompt_tokens": 5798,
+  "completion_tokens": 266,
+  "n_web_searches": 0,
+  "cost_usd": 0.021384,
+  "latency_s": 6.75794916698942,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

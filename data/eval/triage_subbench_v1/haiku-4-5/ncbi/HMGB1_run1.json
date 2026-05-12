@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is canonically a nuclear non-histone DNA-binding protein with no intrinsic membrane anchor. However, it has a well-documented cell-state-induced surface pool: during cell stress (heat shock, ER stress, oxidative stress), infection, and immunogenic cell death (apoptosis, necroptosis, pyroptosis), HMGB1 translocates from the nucleus to the cytoplasm and is released or exposed on the outer leaflet of dying/stressed cells as a danger-associated molecular pattern (DAMP). It also exhibits dual localization with a minority cytoplasmic pool under baseline conditions. Surface-directed therapies (neutralizing antibodies against extracellular HMGB1) exist, targeting the secreted/surface-exposed form during inflammation and cell death. This qualifies as contextual / cell_state_induced and dual_localization rather than baseline surface accessibility.",
+  "correct": false,
+  "prompt_tokens": 5825,
+  "completion_tokens": 372,
+  "n_web_searches": 0,
+  "cost_usd": 0.007685,
+  "latency_s": 5.273743416997604,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Whether the documented stress/death-induced cytoplasmic and extracellular pools constitute stable outer-leaflet exposure (surface-anchored) or transient secretion/release into solution. The protein has no TM domain or GPI anchor, so outer-leaflet presence during cell death is exposure via membrane disruption or membrane blebbing rather than stable anchoring\u2014this borders on secreted_only. However, DAMP-mediated therapeutic targeting and documented surface-accessible pools in stressed/dying cells support contextual over no.",
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 is a p24-family coat protein resident in the ER-Golgi intermediate compartment (ERGIC) and early Golgi. p24 proteins are integral membrane proteins of the secretory pathway with roles in cargo selection and vesicular transport between the ER and Golgi. They are not surface-exposed proteins; their topology places them on the luminal/intra-compartmental face of ER and Golgi membranes, not the outer leaflet of the plasma membrane. No documented cell-state-induced translocation, tissue-restricted surface display, lysosomal exocytosis, dual PM localization, or stable TM-partner surface tethering mechanism exists for TMED9. The protein remains functionally and physically compartmentalized within the secretory pathway.",
+  "correct": true,
+  "prompt_tokens": 5797,
+  "completion_tokens": 231,
+  "n_web_searches": 0,
+  "cost_usd": 0.006952,
+  "latency_s": 3.378388083016034,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

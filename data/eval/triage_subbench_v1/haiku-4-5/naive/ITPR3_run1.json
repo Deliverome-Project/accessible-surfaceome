@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 is a multipass transmembrane inositol-1,4,5-trisphosphate receptor residing exclusively in the endoplasmic reticulum membrane. No documented plasma-membrane isoform, no ectodomain shedding, no covalent/wash-resistant TM-partner tethering, no PM minority pool, no surface-directed therapeutics. Ruled out: cell-state-induced translocation (no cancer/apoptosis/activation surface-display literature); tissue-restricted surface (ER-exclusive in all tissues); lysosomal exocytosis (ER resident, not lysosomal); dual localization (no PM cycling documented); stable surface attachment (not secreted, not tethered to PM partner).",
+  "correct": true,
+  "prompt_tokens": 5160,
+  "completion_tokens": 1253,
+  "n_web_searches": 0,
+  "cost_usd": 0.011425,
+  "latency_s": 12.780155375017785,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

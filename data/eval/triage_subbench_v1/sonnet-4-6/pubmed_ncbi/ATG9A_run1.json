@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is the only multi-spanning TM protein in the ATG family and cycles through the Golgi, endosomes, and plasma membrane as part of its normal trafficking itinerary. PMID 36198086 explicitly states ATG9A 'has been demonstrated to traffic through the plasma membrane,' and PMID 27758042 describes its role in autophagosome biogenesis via plasma membrane contributions. PMID 35180289 and 35468023 document ATG9A-positive vesicles mobilizing to the leading edge during chemotactic stimulation, facilitating lamellipodium expansion. PMID 40335523 shows ATG9A vesicles fusing with the plasma membrane via SNARE complexes for galectin-9 secretion. PMID 40598533 confirms it is a multifunctional transmembrane protein. The PM pool is real but represents a transient trafficking stage and is context-dependent (activation, directed migration, lysosomal exocytosis), so `dual_localization` best captures the cycling between intracellular compartments and the PM.",
+  "correct": false,
+  "prompt_tokens": 1056,
+  "completion_tokens": 308,
+  "n_web_searches": 0,
+  "cost_usd": 0.009489,
+  "latency_s": 5.906442000006791,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

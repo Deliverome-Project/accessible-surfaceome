@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "ATG9A is a multi-pass transmembrane protein (the only integral membrane core autophagy protein) that cycles between the trans-Golgi network, endosomes, and the phagophore assembly site. It is not a canonical plasma membrane receptor, but surface proteomics and cell-biology studies have documented that ATG9A transiently visits the plasma membrane as part of its constitutive vesicular trafficking cycle \u2014 it is retrieved from the PM via clathrin/AP2-mediated endocytosis. This cycling gives it a documented, if minority, PM pool accessible from the extracellular face. The dominant compartment is intracellular (Golgi/endosome/phagophore), qualifying this as dual_localization rather than a stable surface protein. No clinical cell-surface-directed therapeutic programs are known, and no stress- or death-induced outer-leaflet display beyond basal cycling is established.",
+  "correct": false,
+  "prompt_tokens": 5774,
+  "completion_tokens": 288,
+  "n_web_searches": 0,
+  "cost_usd": 0.021642,
+  "latency_s": 8.297974291956052,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "The magnitude and stability of the ATG9A PM pool from constitutive cycling \u2014 whether wash-resistant enough to count as a genuine binder target \u2014 remains uncertain without direct quantitative surface-biotinylation data.",
+  "error": null,
+  "raw_text": ""
+}

@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "VEGFA",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "VEGFA is a secreted heparin-binding homodimeric growth factor of the PDGF/VEGF family with no transmembrane domain or GPI anchor. It signals by binding VEGFR1/2/3 and neuropilins on endothelial cells \u2014 classic recruitment-test failure: the surface receptors are the anchors, VEGFA is in equilibrium with the soluble/heparin-bound pool. Clinical anti-VEGFA antibodies (bevacizumab, ranibizumab) target the circulating ligand, not a cell-surface form. Walking contextual buckets: no cell-state/cancer/cell-death outer-leaflet display of the protein body; no narrow germline/developmental surface lineage; not a lysosomal TM protein; no documented PM minority pool with its own anchor; heparin/HSPG and matrix binding is reversible non-covalent, not wash-resistant covalent TM tethering.",
+  "correct": true,
+  "prompt_tokens": 8258,
+  "completion_tokens": 357,
+  "n_web_searches": 0,
+  "cost_usd": 0.150645,
+  "latency_s": 5.798594082996715,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

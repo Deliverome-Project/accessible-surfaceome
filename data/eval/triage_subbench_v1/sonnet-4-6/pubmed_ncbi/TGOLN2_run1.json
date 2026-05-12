@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 encodes TGN46/TGN51, a type I integral membrane protein that resides constitutively in the trans-Golgi network and cycles between early endosomes and TGN. Its topology places the lumenal/extracellular domain inside the TGN/endosomal lumen, not the extracellular face of the plasma membrane. Pre-no checklist: (1) No cell-surface-directed therapeutic targets this protein body on the outer leaflet. (2) Not an ectodomain-shedding TM precursor with documented surface residency. (3) No wash-resistant TM-partner tethering to the plasma membrane outer leaflet. (4) No documented PM minority pool \u2014 it cycles between TGN and early endosomes, not the cell surface. (5) No cancer/cell-death/activation/developmental outer-leaflet display documented for this protein specifically. It is a canonical endomembrane-resident TM protein with no evidence of outer-leaflet accessibility.",
+  "correct": false,
+  "prompt_tokens": 2,
+  "completion_tokens": 264,
+  "n_web_searches": 0,
+  "cost_usd": 0.0069195,
+  "latency_s": 6.1811092919670045,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 334,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}

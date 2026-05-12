@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "ATG9A",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ATG9A is a multi-pass transmembrane autophagy protein localized to intracellular compartments (Golgi, endosomes, phagophore assembly sites). It cycles between these endomembrane compartments during autophagosome biogenesis but has no documented stable residence on the plasma membrane or extracellular-facing topology. No cell-state-induced, tissue-restricted, lysosomal-exocytosis, dual-localization surface pool, or stable-TM-partner-tethered surface presentation is reported for this protein. The phospholipid-scramblase activity operates on intracellular membrane faces. Not a target of cell-surface-directed therapeutics.",
+  "correct": true,
+  "prompt_tokens": 5773,
+  "completion_tokens": 212,
+  "n_web_searches": 0,
+  "cost_usd": 0.006833,
+  "latency_s": 3.2208118329872377,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

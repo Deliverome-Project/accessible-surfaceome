@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 encodes the type 1 inositol 1,4,5-trisphosphate receptor, a large (~2700 aa) tetrameric calcium-release channel whose six transmembrane helices are embedded exclusively in the ER membrane. The entire ligand-binding and regulatory apparatus faces the cytosol, and Ca2+ is released from the ER lumen to the cytosol upon IP3 binding. There is no plasma membrane topology, GPI anchor, outer-leaflet lipidation, or documented surface pool. Pre-no checklist: no cell-surface-directed therapeutic program targets ITPR1 on the cell surface; it is not a TM proligand subject to ectodomain shedding; no wash-resistant tethering to a PM scaffold is documented; no minority PM pool or trafficking cycling to the PM is reported; no cell-death-, cancer-, activation-, or germline-induced outer-leaflet display has been documented for this protein specifically; it is not a lysosomal TM protein; no dual-localization PM pool is described. All five contextual buckets are ruled out by absence of gene-specific experimental evidence of any outer-leaflet presence.",
+  "correct": true,
+  "prompt_tokens": 704,
+  "completion_tokens": 819,
+  "n_web_searches": 1,
+  "cost_usd": 0.07526139999999999,
+  "latency_s": 18.649170582997613,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 12384,
+  "cache_read_tokens": 14748,
+  "error": null,
+  "raw_text": ""
+}

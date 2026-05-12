@@ -1,0 +1,23 @@
+{
+  "variant": "web_ncbi_reduced",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 is a type I transmembrane protein whose large N-terminal domain faces the ER/Golgi lumen and whose short C-terminal tail is cytosolic, binding COPI/COPII coats. Its dominant steady-state localization is the ER, ERGIC, and cis-Golgi, cycling within the early secretory pathway. The luminal domain is never exposed to the extracellular space. No surface-directed therapeutic program, surface biotinylation data, or flow-cytometry evidence for outer-leaflet TMED9 display was found. Pre-no checklist: (1) cell_state_induced \u2014 no documented cancer/cell-death/activation ecto-pool for TMED9 itself; (2) tissue_restricted_surface \u2014 no narrow developmental/germline outer-leaflet display reported; (3) lysosomal_exocytosis \u2014 TMED9 is not a lysosomal TM protein; (4) dual_localization \u2014 PM references in the literature describe cargo (misfolded GPI-APs) transiting through the PM, not TMED9 residing there; (5) stable_surface_attachment \u2014 no wash-resistant TM-partner tethering to the outer leaflet documented. The protein is an endomembrane-resident trafficking factor with no outer-leaflet biology.",
+  "correct": true,
+  "prompt_tokens": 615,
+  "completion_tokens": 932,
+  "n_web_searches": 1,
+  "cost_usd": 0.08952564999999998,
+  "latency_s": 21.16513662500074,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 15807,
+  "cache_read_tokens": 14748,
+  "error": null,
+  "raw_text": ""
+}

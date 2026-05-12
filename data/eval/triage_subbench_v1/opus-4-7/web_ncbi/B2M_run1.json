@@ -1,0 +1,21 @@
+{
+  "variant": "web_ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "B2M",
+  "replicate": 1,
+  "truth_verdict": "yes",
+  "truth_class": "stable_complex_positive",
+  "predicted_verdict": "yes",
+  "predicted_reason": "stable_complex_partner",
+  "verdict_reasoning": "B2M is the invariant light chain of MHC class I. It has no TM domain of its own but assembles intracellularly with the MHC-I heavy chain (HLA-A/B/C) and is co-trafficked to the plasma membrane as an obligate, stable non-covalent partner. The \u03b22m\u2013heavy-chain\u2013peptide trimer is displayed on the outer leaflet of essentially all nucleated cells, and anti-B2M antibodies bind live cells; B2M is a validated cell-surface therapeutic target (e.g., HLA-restricted antibody and CAR approaches engaging surface B2M). This is the textbook stable_complex_partner case: assembled in ER, trafficked together, surface-resident on intact cells.",
+  "correct": true,
+  "prompt_tokens": 11277,
+  "completion_tokens": 295,
+  "n_web_searches": 0,
+  "cost_usd": 0.19128,
+  "latency_s": 5.150727791013196,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

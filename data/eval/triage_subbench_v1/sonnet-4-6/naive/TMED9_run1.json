@@ -1,0 +1,21 @@
+{
+  "variant": "naive",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TMED9 (transmembrane emp24 domain-containing protein 9, also p24 family member) is a type-I single-pass transmembrane protein that resides in the early secretory pathway \u2014 predominantly ER and Golgi membranes \u2014 where it functions as a cargo receptor/adaptor in COPI- and COPII-mediated vesicle trafficking. Its lumenal p24 domain faces the Golgi/ER lumen (not the extracellular space), and its cytoplasmic tail mediates coat-protein interactions. It does not traffic to the plasma membrane under baseline conditions. Contextual buckets: no documented cancer/stress ecto-pool; no germline/developmental surface display; not a lysosomal TM protein recycled to PM; no documented PM minority pool or cycling; no wash-resistant TM-partner tethering at the cell surface. The transmembrane domain is present but the protein is endomembrane-resident, not surface-accessible.",
+  "correct": true,
+  "prompt_tokens": 5161,
+  "completion_tokens": 325,
+  "n_web_searches": 0,
+  "cost_usd": 0.020358,
+  "latency_s": 8.02438858296955,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

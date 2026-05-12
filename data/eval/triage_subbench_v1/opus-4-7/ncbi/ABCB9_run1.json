@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-opus-4-7",
+  "gene_symbol": "ABCB9",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "lysosomal_exocytosis",
+  "verdict_reasoning": "ABCB9/TAPL is a lysosomal multi-pass ABC transporter that translocates peptides from cytosol into the lysosomal lumen; its baseline residence is the lysosomal/late-endosomal membrane, not the PM. However, lysosomal TM proteins can reach the outer leaflet during lysosomal exocytosis, exposing the luminal-facing loops to the extracellular space. No documented stable PM pool, no cancer/cell-death ecto-display specifically reported, no covalent TM-partner tethering, no narrow germline-lineage surface display, no cycling secretory PM pool. Lysosomal exocytosis is the only plausible route to outer-leaflet exposure.",
+  "correct": false,
+  "prompt_tokens": 8279,
+  "completion_tokens": 345,
+  "n_web_searches": 0,
+  "cost_usd": 0.15006,
+  "latency_s": 7.374743833031971,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "No gene-specific evidence that ABCB9 reaches the PM during lysosomal exocytosis; call rests on class-level lysosomal-TM analogy.",
+  "error": null,
+  "raw_text": ""
+}

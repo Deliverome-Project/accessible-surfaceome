@@ -1,0 +1,21 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "C3",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "surface_attachment_borderline",
+  "predicted_verdict": "secreted_only",
+  "predicted_reason": "secreted_only",
+  "verdict_reasoning": "C3 is a serum complement component synthesized primarily by hepatocytes and secreted into plasma. The mature protein (C3\u03b1/C3\u03b2 dimer) circulates in blood as a soluble protein. Complement activation generates soluble peptide products (C3a anaphylatoxin, C3b, iC3b) via proteolysis in solution or bound transiently to pathogen/cell surfaces during immune responses. C3 itself lacks a transmembrane domain, GPI anchor, or documented outer-leaflet lipidation. While C3b can bind covalently to target surfaces during complement cascade amplification, the C3 protein body is not stably anchored to the plasma membrane of living cells\u2014it is a soluble protein in equilibrium with the plasma/extracellular fluid. The covalent C3b deposition products are fragments resulting from proteolytic cleavage in the extracellular space, not stable anchoring of the intact C3 protein body to a cell-surface TM partner.",
+  "correct": false,
+  "prompt_tokens": 5877,
+  "completion_tokens": 284,
+  "n_web_searches": 0,
+  "cost_usd": 0.007297,
+  "latency_s": 4.046150874986779,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "error": null,
+  "raw_text": ""
+}

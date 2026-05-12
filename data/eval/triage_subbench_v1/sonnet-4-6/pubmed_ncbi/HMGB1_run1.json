@@ -1,0 +1,23 @@
+{
+  "variant": "pubmed_ncbi",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is canonically a nuclear non-histone chromatin-binding protein, but extensive published evidence documents its translocation to the extracellular space \u2014 and transiently to the plasma membrane surface \u2014 under specific non-baseline conditions. Active secretion occurs via unconventional pathways (acetylation-dependent vesicular release, exosomal export [PMID 34363018]) from activated immune cells, and passive release occurs during cell death including pyroptosis [PMID 40128620, PMID 30314759]. Before extracellular release, HMGB1 must transit the plasma membrane or be present on the outer leaflet transiently; multiple studies confirm extracellular HMGB1 engages surface receptors (RAGE, TLR4) as a DAMP/alarmin [PMID 35217834, PMID 32265930, PMID 40308590]. This outer-leaflet exposure is strictly cell-state-induced (inflammation, sepsis, cell death, activation) \u2014 not constitutive. No TM domain or GPI anchor; baseline localization is nuclear. Thus `contextual` / `cell_state_induced` is appropriate.",
+  "correct": false,
+  "prompt_tokens": 1140,
+  "completion_tokens": 328,
+  "n_web_searches": 0,
+  "cost_usd": 0.010041,
+  "latency_s": 7.34694512502756,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 5670,
+  "error": null,
+  "raw_text": ""
+}
