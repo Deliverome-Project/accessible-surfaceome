@@ -51,8 +51,12 @@ This `viewer/` directory is its **own Pages project** — don't mix it
 with the deliverome.org site.
 
 - Project: `surfaceome-viewer`
-- Build command: `cd viewer && npm ci && npm run build`
-- Output directory: `viewer/out`
+- **Root directory: `viewer/`** (set in the Pages project settings —
+  scopes the build to this subtree so Pages does *not* try to
+  `pip install` the parent `pyproject.toml`, which adds ~2 min of
+  unrelated work to every deploy)
+- Build command: `npm ci && npm run build`
+- Output directory: `out`
 - Custom domain: `surfaceome.deliverome.org`
 - Framework preset: Next.js (Static HTML Export)
 - Node version: 20
