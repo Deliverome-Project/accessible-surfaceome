@@ -3,7 +3,6 @@ plus the v0.5.0 sub-record + paralog + contradiction additions."""
 
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import pytest
@@ -337,10 +336,17 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 
 def test_v0_4_records_load_under_v0_5_0() -> None:
     """Every persisted v0.4.0 annotation must parse cleanly under v0.5.0
-    models (additive change — new fields default to empty)."""
+    models (additive change — new fields default to empty).
+
+    `data/annotations/` is gitignored (agent-generated), so on CI the
+    directory is typically empty. The test is a smoke that runs ONLY
+    when the local environment has annotations on disk; CI skips
+    silently rather than failing on missing fixtures.
+    """
     annotations_dir = REPO_ROOT / "data" / "annotations"
     files = sorted(annotations_dir.glob("*.json"))
-    assert files, f"no annotation files found under {annotations_dir}"
+    if not files:
+        pytest.skip(f"no annotations on disk at {annotations_dir} (expected on CI)")
     for path in files:
         record = SurfaceomeRecord.model_validate_json(path.read_text())
         assert record.paralogs == []
@@ -374,12 +380,65 @@ def test_contradiction_flag_consistent_when_both_empty() -> None:
 
 
 def _minimal_record_payload() -> dict:
-    """Load HSPA1A as a v0.5.0-compatible payload base and strip any
-    contradictions/paralogs so callers can re-populate them for tests.
+    """Synthetic minimal v0.5.0-compatible payload that satisfies every
+    required field on :class:`SurfaceomeRecord`. Uses HSPA1A-shaped
+    values (canonical conditional-surface chaperone) so the test
+    intent reads cleanly, but doesn't read from disk — keeps the
+    suite hermetic for CI where ``data/annotations/`` is gitignored.
     """
-    raw = (REPO_ROOT / "data" / "annotations" / "HSPA1A.json").read_text()
-    data = json.loads(raw)
-    data["contradictions"] = []
-    data["paralogs"] = []
-    data["contradiction_flag"] = False
-    return data
+    return {
+        "schema_version": "v0.5.0",
+        "gene": {
+            "hgnc_symbol": "HSPA1A",
+            "hgnc_id": "HGNC:5232",
+            "uniprot_acc": "P0DMV8",
+            "ncbi_gene_id": 3303,
+            "ensembl_gene": "ENSG00000204389",
+        },
+        "canonical_isoform": "P0DMV8-1",
+        "isoform_flattened": True,
+        "targetability": {
+            "tier": "preclinical",
+            "tldr": "HSP70-1A; stress-induced surface exposure on tumor cells.",
+            "cited_evidence_ids": ["evi_001"],
+        },
+        "surface_biology": {
+            "surface_status": "conditional_surface",
+            "topology": "outer_leaflet_peripheral",
+            "anchor_type": "peripheral",
+            "exposure_class": "exposed_ecd",
+            "extracellular_domain": {
+                "size_aa": None,
+                "domains": [],
+                "accessibility": "unknown",
+                "notes": None,
+            },
+            "induced_presentation": [
+                {
+                    "context_kind": "cell_state_stress",
+                    "description": "Heat-shock + proteotoxic stress on tumor cells.",
+                    "cited_evidence_ids": ["evi_001"],
+                }
+            ],
+            "surface_localization_assays": [
+                {
+                    "assay_type": "flow_cytometry",
+                    "species": "human",
+                    "cell_type_or_line": "stressed tumor cells",
+                    "direction": "supports_surface",
+                    "strength": "strong",
+                    "cited_evidence_ids": ["evi_001"],
+                }
+            ],
+            "db_comparison": {"n_sources_voting_surface": 0},
+            "cited_evidence_ids": ["evi_001"],
+        },
+        "confidence": "medium",
+        "confidence_reasoning": "Synthetic test fixture; not an actual call.",
+        "contradiction_flag": False,
+        "rationale": "Synthetic minimal payload for v0.5.0 cross-validator tests.",
+        "model_path": "sonnet_only",
+        "triage_signal": "possibly_accessible",
+        "contradictions": [],
+        "paralogs": [],
+    }

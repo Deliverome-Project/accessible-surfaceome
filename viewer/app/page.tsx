@@ -84,21 +84,11 @@ export default async function HomePage() {
           </p>
           <p className={styles.sourceLine}>
             <span className="label-mono">Source ·</span>{" "}
-            {catalog.source === "api" ? (
-              <>
-                live D1{" "}
-                <code>
-                  {catalog.universe_version ?? "—"}
-                  {catalog.bench_version ? ` · ${catalog.bench_version}` : null}
-                </code>
-              </>
-            ) : (
-              <>
-                committed snapshot (Worker unreachable —{" "}
-                <code>SURFACEOME_API_BASE</code> falls back to local{" "}
-                <code>public/data/catalog.json</code>)
-              </>
-            )}
+            live D1{" "}
+            <code>
+              {catalog.universe_version ?? "—"}
+              {catalog.bench_version ? ` · ${catalog.bench_version}` : null}
+            </code>
           </p>
         </footer>
       </section>

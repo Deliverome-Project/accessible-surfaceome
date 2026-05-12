@@ -37,11 +37,10 @@ jobs:
       - name: typecheck
         run: npm run check
 
-      - name: build (skip Worker fetch, snapshot only)
-        # Force the catalog loader onto the snapshot path so the build
-        # doesn't depend on the public Worker being reachable from
-        # GitHub-hosted runners (the CI runner has no business hitting
-        # `api.deliverome.org` and we want a deterministic build).
-        env:
-          SURFACEOME_API_BASE: local
+      - name: build
+        # Hits the public Worker at SURFACEOME_API_BASE (defaults to
+        # https://api.deliverome.org/surfaceome) to fetch the catalog.
+        # The committed snapshot fallback was dropped — the
+        # `surfaceome-viewer` Pages project depends on the Worker
+        # being live, so CI should validate that path end-to-end.
         run: npm run build
