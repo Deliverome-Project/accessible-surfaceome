@@ -656,16 +656,51 @@ def _uniprot_entry(acc: str, *, http: CachedHTTP) -> dict[str, Any]:
 
 
 def _uniprot_search_by_symbol(symbol: str, *, http: CachedHTTP) -> str | None:
+    """Resolve a gene symbol → reviewed UniProt accession, preferring
+    entries where ``symbol`` is the primary gene name over entries
+    where it is only a synonym.
+
+    UniProt's ``gene_exact:`` operator matches both the primary gene
+    name and any synonym, with no preference between them. Asking for
+    ``size=1`` and trusting the first result silently picks the wrong
+    entry for ~tens of HGNC-canonical symbols that also appear as
+    legacy synonyms in *other* entries. Documented collisions from the
+    2026-05-12 genome-wide sweep:
+
+      - ``gene_exact:CCR4`` → Q9UK39 NOCT (CCR4 is a synonym after the
+        yeast carbon-catabolite-repressor homolog); the real CCR4
+        chemokine receptor is P51679.
+      - ``gene_exact:SMO`` → Q9NWM0 SMOX (SMO is the legacy short
+        symbol for spermine oxidase); the real Smoothened is Q99835.
+
+    Fix: pull the top ``size=25`` candidates, return the first one
+    whose primary ``geneName.value`` equals the query symbol
+    (case-insensitive). Fall back to the first synonym match only when
+    no primary-name match exists — that path preserves resolution for
+    deprecated symbols that no entry currently uses as primary.
+    """
+
     url = "https://rest.uniprot.org/uniprotkb/search"
     params = {
         "query": f"gene_exact:{symbol} AND organism_id:9606 AND reviewed:true",
-        "fields": "accession",
+        "fields": "accession,gene_names",
         "format": "json",
-        "size": "1",
+        "size": "25",
     }
     payload = http.get_json(url, source="uniprot", ttl_days=_TTL["uniprot"], params=params)
     results = (payload or {}).get("results") or []
-    return results[0]["primaryAccession"] if results else None
+    if not results:
+        return None
+
+    target = symbol.upper()
+    synonym_fallback: str | None = None
+    for entry in results:
+        primary = _entry_primary_symbol(entry)
+        if primary and primary.upper() == target:
+            return entry["primaryAccession"]
+        if synonym_fallback is None:
+            synonym_fallback = entry["primaryAccession"]
+    return synonym_fallback
 
 
 def _entry_status(entry: dict[str, Any]) -> tuple[UniProtStatus, str | None]:
