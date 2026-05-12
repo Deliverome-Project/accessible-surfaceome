@@ -9,3 +9,4 @@ data/analysis/** filter=lfs diff=lfs merge=lfs -text
 # for the 19,464-gene sweep; the M1-subtracted view is computed from
 # it. Both well below GitHub's 50 MB soft limit.
 data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv -filter -diff -merge text
+data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.cleaned.tsv -filter -diff -merge text

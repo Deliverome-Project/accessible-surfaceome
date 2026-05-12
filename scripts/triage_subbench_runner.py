@@ -487,6 +487,65 @@ def _run_one(
     )
 
 
+# Error substrings that indicate a transient or retryable failure.
+# When ``_run_one`` returns a record whose ``error`` field matches any
+# of these AND ``predicted_verdict`` is null, the wrapper tries the
+# call once more before giving up. Catches:
+#   * stochastic JSON malformations the parser couldn't recover from
+#   * resolver 404s that the resolver's own symbol-search fallback
+#     might race against an upstream rate-limit window
+#   * generic API errors (rate limits, transient network)
+# Schema-mismatch records (non-null verdict + bad reason) are NOT
+# retried — those are model-correctness issues, not transients.
+_RETRYABLE_ERROR_PATTERNS: tuple[str, ...] = (
+    "could not parse JSON from response",
+    "404 Not Found",
+    "resolver failed:",
+    "messages.create:",
+)
+
+
+def _is_retryable(rec: "RunRecord") -> bool:
+    if rec.predicted_verdict is not None:
+        return False
+    err = rec.error or ""
+    return any(pat in err for pat in _RETRYABLE_ERROR_PATTERNS)
+
+
+def _run_one_with_retry(
+    *,
+    variant: str,
+    model: str,
+    gene_symbol: str,
+    replicate: int,
+    truth_verdict: str,
+    truth_class: str,
+) -> RunRecord:
+    """``_run_one`` with one automatic retry for transient failures.
+
+    Forward-only behavior: records that previously would have been
+    saved with ``error=...`` and ``predicted_verdict=null`` now get
+    a second chance. The retry is cheap (single re-issue, no
+    exponential backoff) because the failures we observe in practice
+    are stochastic — a fresh sample from the same call usually
+    succeeds. If the retry also fails, the second attempt's record
+    is returned (so the persisted ``raw_text`` reflects the most
+    recent attempt).
+    """
+
+    first = _run_one(
+        variant=variant, model=model, gene_symbol=gene_symbol,
+        replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+    )
+    if not _is_retryable(first):
+        return first
+    second = _run_one(
+        variant=variant, model=model, gene_symbol=gene_symbol,
+        replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+    )
+    return second
+
+
 def _model_slug(model: str) -> str:
     return model.replace("claude-", "").replace("anthropic-", "")
 
@@ -726,7 +785,7 @@ def main() -> None:
     with ThreadPoolExecutor(max_workers=args.concurrency) as ex:
         futures = {
             ex.submit(
-                _run_one,
+                _run_one_with_retry,
                 variant=v, model=m, gene_symbol=row["gene_symbol"],
                 replicate=rep, truth_verdict=row["ground_truth_verdict"],
                 truth_class=row["class"],
