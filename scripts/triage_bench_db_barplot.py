@@ -629,11 +629,186 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
     plt.close(fig)
 
 
+CAND_TSV_PATH = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
+
+
+def _b(r: dict, k: str) -> bool:
+    return r.get(k, "0") == "1"
+
+
+def _f(r: dict, k: str) -> float | None:
+    v = r.get(k, "")
+    try:
+        return float(v) if v else None
+    except ValueError:
+        return None
+
+
+# Variants to plot in the supplemental figure: name, evaluator(record→bool),
+# group (which DB-family bar cluster it belongs to). The baseline-5 are
+# repeated here so each cluster has its own "baseline" anchor.
+DB_VARIANTS: list[tuple[str, "callable", str]] = [
+    ("UniProt baseline",                lambda r: _b(r, "uniprot_surface_flag"),                                "UniProt"),
+    ("GO baseline",                     lambda r: _b(r, "go_surface_flag"),                                     "GO"),
+    ("GO drop electronic-only",         lambda r: _b(r, "go_surface_flag") and not (_b(r, "go_has_electronic") and not (_b(r, "go_has_experimental") or _b(r, "go_has_curated"))), "GO"),
+    ("GO drop low-conf",                lambda r: _b(r, "go_surface_flag") and not _b(r, "go_low_confidence_only"), "GO"),
+    ("HPA baseline",                    lambda r: _b(r, "hpa_surface_flag"),                                    "HPA"),
+    ("HPA drop low-conf",               lambda r: _b(r, "hpa_surface_flag") and not _b(r, "hpa_low_confidence_only"), "HPA"),
+    ("SURFY baseline",                  lambda r: _b(r, "surfy_surface_flag"),                                  "SURFY"),
+    ("SURFY score>0.5",                 lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.5,  "SURFY"),
+    ("SURFY score>0.7",                 lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.7,  "SURFY"),
+    ("SURFY score>0.9",                 lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.9,  "SURFY"),
+    ("CSPA baseline",                   lambda r: _b(r, "cspa_surface_flag"),                                   "CSPA"),
+    ("CSPA drop unspecific",            lambda r: _b(r, "cspa_surface_flag") and not _b(r, "cspa_is_unspecific"), "CSPA"),
+    ("DeepTMHMM",                       lambda r: _b(r, "deeptmhmm_surface_flag"),                              "extra"),
+    ("Compartments",                    lambda r: _b(r, "compartments_surface_flag"),                           "extra"),
+    ("Consensus ≥2 sources",            lambda r: int(r.get("n_sources_surface", "0") or 0) >= 2,               "consensus"),
+    ("Consensus ≥3 sources",            lambda r: int(r.get("n_sources_surface", "0") or 0) >= 3,               "consensus"),
+    ("Consensus ≥4 sources",            lambda r: int(r.get("n_sources_surface", "0") or 0) >= 4,               "consensus"),
+]
+
+# Colors per group — keep the brand DB palette for the 5 baselines and
+# distinct shades for variants / extras / consensus.
+_VARIANT_GROUP_PALETTE: dict[str, list[str]] = {
+    "UniProt":   [CATEGORICAL_PALETTE[0]],
+    "GO":        [CATEGORICAL_PALETTE[1], "#5d8a82", "#7aab9f"],   # base + 2 variants
+    "HPA":       [CATEGORICAL_PALETTE[2], "#f6c060"],
+    "SURFY":     [CATEGORICAL_PALETTE[3], "#a895d6", "#bca5dd", "#d4b9e5"],
+    "CSPA":      [CATEGORICAL_PALETTE[4], "#8a3041"],
+    "extra":     ["#6E1428", "#922038"],
+    "consensus": ["#2E7A55", "#5cae84", "#8acfaf"],
+}
+
+
+def _benchmark_with_universe_join() -> list[dict]:
+    """Load benchmark rows joined to candidate_universe by UniProt
+    accession. Returns one dict per benchmark protein found in
+    candidate_universe, each with all DB-flag columns plus
+    ``ground_truth_verdict``. Proteins missing from the universe are
+    dropped — the universe is the input to the DB filters, so if a
+    protein isn't there, no filter can evaluate it."""
+    truth_by_acc: dict[str, str] = {}
+    with BENCH_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            truth_by_acc[r["uniprot_acc"]] = r["ground_truth_verdict"]
+    out: list[dict] = []
+    with CAND_TSV_PATH.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            acc = r["uniprot_accession"]
+            if acc in truth_by_acc:
+                r["ground_truth_verdict"] = truth_by_acc[acc]
+                out.append(r)
+    return out
+
+
+def make_db_variants_plot(out_dir: Path) -> None:
+    """Supplemental figure: per-DB filter variants vs benchmark truth.
+
+    Each bar is one filter variant's overall accuracy on the 147-gene
+    benchmark, color-coded by DB-family group. Bars within a group are
+    ordered by the variant's strictness (baseline → strict). DeepTMHMM
+    and Compartments — surface flags not in the headline 5-DB plot —
+    are shown in a separate "extra" group, and the consensus filters
+    (`n_sources_surface ≥ N`) get their own group on the right.
+
+    The base 5-DB result and the consensus filter are the two pieces
+    worth quoting in any subsequent narrative: baselines are already
+    well-calibrated (strict variants either don't move the needle or
+    overshoot to 0% positive recall), and the only filter that beats
+    every single-DB baseline is `n_sources_surface ≥ 2`.
+    """
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    rows = _benchmark_with_universe_join()
+    n_total = len(rows)
+
+    bars: list[dict] = []
+    for name, fn, group in DB_VARIANTS:
+        n_correct = 0
+        n_pos_correct = n_pos_total = 0
+        n_neg_correct = n_neg_total = 0
+        for r in rows:
+            truth = r["ground_truth_verdict"]
+            vote = bool(fn(r))
+            is_pos = truth in {"yes", "contextual"}
+            if is_pos:
+                n_pos_total += 1
+                if vote:
+                    n_pos_correct += 1
+                    n_correct += 1
+            else:
+                n_neg_total += 1
+                if not vote:
+                    n_neg_correct += 1
+                    n_correct += 1
+        bars.append({
+            "label": name,
+            "group": group,
+            "acc": n_correct / max(n_total, 1),
+            "pos": n_pos_correct / max(n_pos_total, 1),
+            "neg": n_neg_correct / max(n_neg_total, 1),
+        })
+
+    # Color per bar — index within its group.
+    group_counters: dict[str, int] = {}
+    colors: list[str] = []
+    for b in bars:
+        idx = group_counters.get(b["group"], 0)
+        palette = _VARIANT_GROUP_PALETTE.get(b["group"], ["#666666"])
+        colors.append(palette[min(idx, len(palette) - 1)])
+        group_counters[b["group"]] = idx + 1
+
+    fig, ax = plt.subplots(figsize=(15, 6))
+    xs = list(range(len(bars)))
+    accs = [b["acc"] * 100 for b in bars]
+    ax.bar(xs, accs, color=colors, edgecolor="none")
+
+    # Two-line bar annotations: overall %, then pos / neg %.
+    for x, b in zip(xs, bars):
+        ax.text(x, b["acc"] * 100 + 0.6, f"{b['acc']*100:.0f}",
+                ha="center", va="bottom", fontsize=8.5,
+                color=COLORS["dark"])
+        ax.text(x, max(b["acc"] * 100 - 6, 4),
+                f"+{b['pos']*100:.0f}/-{b['neg']*100:.0f}",
+                ha="center", va="bottom", fontsize=7,
+                color="white", fontweight="bold")
+
+    # Group separators — light vertical lines between groups.
+    last_group = bars[0]["group"]
+    for i, b in enumerate(bars[1:], start=1):
+        if b["group"] != last_group:
+            ax.axvline(i - 0.5, color=COLORS["neutral"], linestyle=":", linewidth=0.8, alpha=0.5)
+            last_group = b["group"]
+
+    ax.set_xticks(xs)
+    ax.set_xticklabels([b["label"] for b in bars], rotation=35, ha="right",
+                       rotation_mode="anchor", fontsize=9)
+    ax.set_ylabel("Overall accuracy on 147-gene benchmark (%)")
+    ax.set_ylim(0, 105)
+    ax.set_title(
+        "Supplemental: filter-variant accuracy per surface-source database\n"
+        f"(soft-credit scoring; n={n_total} benchmark proteins in candidate_universe)"
+    )
+    ax.text(
+        0.5, -0.35,
+        "In-bar text: +pos% / -neg% — fraction of yes/contextual-truth and "
+        "no-truth proteins each variant correctly classifies",
+        transform=ax.transAxes, ha="center", va="top", fontsize=9.5,
+        color=COLORS["neutral"],
+    )
+    sns.despine(ax=ax, top=True, right=True)
+    save_figure(
+        fig, filename="db_variants_supplemental",
+        output_dir=str(out_dir), formats=["pdf", "png"],
+    )
+    plt.close(fig)
+
+
 def main() -> None:
     out_dir = ROOT / "data/analysis/triage_bench"
     make_by_class_plot(out_dir)
     make_overall_plot(out_dir)
     make_cost_vs_accuracy_plot(out_dir)
+    make_db_variants_plot(out_dir)
 
 
 if __name__ == "__main__":
