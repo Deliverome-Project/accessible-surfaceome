@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>HSPA1A — surface_annotator deep dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #BC3C4C; --secondary: #3D6B60; --accent: #F4AA28;
+  --bg: #FBF7F2; --bg-warm: #F3ECE5; --ink: #1F1718; --line: #E6DAD4;
+  --neutral: #6F5D5A; --code-bg: #F5EFE8; --code-line: #E6DAD4;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); }
+body { font-family: "Manrope", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15.5px; line-height: 1.6; color: var(--ink); font-weight: 400; }
+header { background: linear-gradient(135deg, #F3ECE5 0%, #FBF7F2 100%);
+  border-bottom: 1px solid var(--line); padding: 36px 48px 28px; }
+header .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--primary); margin: 0 0 8px 0; }
+header h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600;
+  font-size: 38px; letter-spacing: -0.02em; margin: 0 0 12px 0; color: var(--ink); }
+header .tagline { color: var(--neutral); font-size: 14.5px; margin: 0 0 16px 0; max-width: 720px; }
+header .meta-row { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12.5px; }
+header .meta-row .chip { display: inline-flex; align-items: center; gap: 6px;
+  background: white; border: 1px solid var(--line); padding: 4px 12px;
+  border-radius: 999px; color: var(--neutral); font-weight: 500; }
+header .meta-row .chip strong { color: var(--ink); font-weight: 600; }
+nav { position: sticky; top: 0; background: rgba(251, 247, 242, 0.95);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 12px 48px;
+  display: flex; gap: 6px; z-index: 10; flex-wrap: wrap; }
+nav a { color: var(--neutral); text-decoration: none; font-size: 13px;
+  font-weight: 500; padding: 6px 12px; border-radius: 999px; }
+nav a:hover { background: var(--bg-warm); color: var(--primary); }
+main { max-width: 1040px; margin: 0 auto; padding: 36px 48px 96px; }
+section { margin-bottom: 56px; scroll-margin-top: 80px; }
+section h2 { font-family: "Playfair Display", Georgia, serif; font-weight: 600;
+  font-size: 26px; letter-spacing: -0.01em; margin: 0 0 6px 0; color: var(--ink); }
+section h2::after { content: ""; display: block; width: 48px; height: 3px;
+  margin-top: 10px; background: var(--primary); border-radius: 2px; }
+section .lede { color: var(--neutral); font-size: 13.5px; margin: 0 0 20px 0; }
+.kv { display: grid; grid-template-columns: 220px 1fr; gap: 6px 18px;
+  background: white; border: 1px solid var(--line); border-radius: 10px; padding: 18px 24px; }
+.kv dt { color: var(--neutral); font-weight: 500; font-size: 13.5px; }
+.kv dd { margin: 0; color: var(--ink); font-size: 14.5px; }
+.rationale, .reasoning { background: white; border: 1px solid var(--line);
+  border-left: 4px solid var(--primary); border-radius: 8px; padding: 22px 28px;
+  white-space: pre-wrap; font-size: 15px; }
+.reasoning { border-left-color: var(--secondary); }
+.evi { background: white; border: 1px solid var(--line); border-radius: 8px;
+  padding: 16px 22px; margin-bottom: 14px; }
+.evi-head { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.evi-id { font-family: "JetBrains Mono", Menlo, monospace; font-size: 12.5px;
+  color: var(--neutral); font-weight: 600; }
+.evi-claim { font-size: 14.5px; line-height: 1.55; color: var(--ink); }
+.evi-spans { margin-top: 8px; font-size: 12.5px; color: var(--neutral); }
+.evi-spans a { color: var(--secondary); text-decoration: none; font-weight: 500; }
+.evi-spans a:hover { text-decoration: underline; }
+.evi-warnings { margin-top: 10px; padding: 10px 14px; background: #fff4ec;
+  border: 1px solid #f0d0b0; border-radius: 6px; font-size: 12.5px;
+  color: #8a4f1a; }
+.evi-warnings ul { margin: 4px 0 0 0; padding-left: 20px; }
+.chip { display: inline-flex; align-items: center; padding: 2px 10px;
+  border-radius: 999px; font-size: 11px; font-weight: 600;
+  background: var(--bg-warm); color: var(--neutral); border: 1px solid var(--line); }
+.chip-primary { background: #fde8eb; color: var(--primary); border-color: #f4c8cf; }
+.chip-secondary { background: #e3eee9; color: var(--secondary); border-color: #c7ddd1; }
+.chip-supports { background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }
+.chip-refutes { background: #fce8e8; color: #b34646; border-color: #f0c8c8; }
+.chip-concordant { background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }
+.chip-discordant { background: #fce8e8; color: #b34646; border-color: #f0c8c8; }
+.chip-warning { background: #fff4ec; color: #8a4f1a; border-color: #f0d0b0; }
+.chip-verified { background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }
+.chip-neutral { background: #f0ece6; color: var(--neutral); border-color: var(--line); }
+.induced, .assay { background: white; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px 20px; margin-bottom: 12px; }
+.induced p { margin: 6px 0 8px 0; font-size: 14px; }
+.cited { font-size: 12px; color: var(--neutral); font-family: "JetBrains Mono", Menlo, monospace; }
+.nil { color: var(--neutral); font-style: italic; }
+table.searchlog { width: 100%; border-collapse: collapse; background: white;
+  border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 13.5px; }
+table.searchlog th { background: var(--bg-warm); text-align: left; padding: 10px 14px;
+  font-weight: 600; color: var(--neutral); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+table.searchlog td { padding: 8px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+table.searchlog code { font-family: "JetBrains Mono", Menlo, monospace; font-size: 12px;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px; color: var(--ink); }
+details.raw { background: var(--code-bg); border: 1px solid var(--code-line);
+  border-radius: 8px; padding: 0; margin-top: 12px; }
+details.raw summary { cursor: pointer; padding: 12px 18px; font-weight: 600;
+  color: var(--neutral); font-size: 13px; }
+details.raw pre { margin: 0; padding: 16px 22px; max-height: 480px; overflow: auto;
+  font-family: "JetBrains Mono", Menlo, monospace; font-size: 11.5px; line-height: 1.5; }
+footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
+  color: var(--neutral); font-size: 12.5px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <p class="eyebrow">surface_annotator deep dive · v0.5.1</p>
+  <h1>HSPA1A <span style="color: var(--neutral); font-weight: 400; font-size: 24px;">(P0DMV8)</span></h1>
+  <p class="tagline">HSPA1A/HSP70 conditionally localizes to the plasma membrane outer leaflet of tumor and stress-exposed cells via lipid anchoring, absent from normal cell surfaces. Preclinical programs (cmHsp70.1 mAb, TKD peptide-NK cell approach) have validated membrane HSP70 as an oncology target.</p>
+  <div class="meta-row">
+    <span class="chip"><strong>Tier:</strong> preclinical</span>
+    <span class="chip"><strong>Confidence:</strong> medium</span>
+    <span class="chip"><strong>Triage signal:</strong> possibly_accessible</span>
+    <span class="chip"><strong>Model:</strong> sonnet_only</span>
+    <span class="chip"><strong>Evidence:</strong> 9 (6 primary / 3 secondary)</span>
+  </div>
+</header>
+<nav>
+  <a href="#summary">Summary</a>
+  <a href="#rationale">Rationale</a>
+  <a href="#surface">Surface biology</a>
+  <a href="#induced">Induced presentation</a>
+  <a href="#assays">Assays</a>
+  <a href="#features">Protein features</a>
+  <a href="#isoforms">Isoforms</a>
+  <a href="#orthology">Orthology</a>
+  <a href="#risk">Risk flags</a>
+  <a href="#dbcompare">DB comparison</a>
+  <a href="#evidence">Evidence (9)</a>
+  <a href="#search">Search log</a>
+  <a href="#raw">Raw JSON</a>
+</nav>
+<main>
+
+<section id="summary">
+  <h2>Summary</h2>
+  <p class="lede">gene → uniprot → triage signal in one glance.</p>
+  <dl class="kv">
+    <dt>HGNC symbol</dt><dd>HSPA1A (HGNC:5232)</dd>
+    <dt>UniProt accession</dt><dd><a href="https://www.uniprot.org/uniprotkb/P0DMV8" target="_blank" rel="noopener">P0DMV8</a></dd>
+    <dt>NCBI gene ID</dt><dd><a href="https://www.ncbi.nlm.nih.gov/gene/3303" target="_blank" rel="noopener">3303</a></dd>
+    <dt>Ensembl gene</dt><dd>ENSG00000204389</dd>
+    <dt>Canonical isoform</dt><dd>P0DMV8-1</dd>
+    <dt>Surface status</dt><dd>conditional_surface</dd>
+    <dt>Topology</dt><dd>outer_leaflet_peripheral</dd>
+    <dt>Anchor type</dt><dd>peripheral</dd>
+    <dt>Exposure class</dt><dd>exposed_ecd</dd>
+  </dl>
+</section>
+
+<section id="rationale">
+  <h2>Rationale</h2>
+  <p class="lede">Sonnet's synthesis across the evidence pool.</p>
+  <div class="rationale">HSPA1A (HSP70/HSP72, 641 aa) is canonically a cytoplasmic-nuclear molecular chaperone with no TM domain, no signal peptide, and no GPI anchor. All 8 M1 source databases vote false, consistent with its canonical intracellular role. However, a large body of primary evidence — surface biotinylation of intact viable tumor cells (~15-20% of total cellular Hsp70 detected on the plasma membrane), flow cytometry with the tumor-selective cmHsp70.1 mAb on non-permeabilized cells across colorectal, lung, pancreas, and neuronal carcinomas and leukemia, immunofluorescence in heat-shocked cancer cells, and flow cytometry during immunogenic cell death — establishes conditional outer-leaflet surface localization in transformed and stressed cells. Normal cells (except spermatogenic) are strictly surface-negative. Membrane anchorage is lipid-mediated: Gb3 glycosphingolipid in cholesterol-rich microdomains and heat-shock-induced phosphatidylserine accumulation drive peripheral association with the outer leaflet without a classical TM helix. When surface-localized, the full 641 aa protein — including the C-terminal substrate-binding domain confirmed accessible by cmHsp70.1 mAb epitope mapping — is extracellularly exposed. UniProt additionally annotates HSPA1A as Secreted; circulating eHSP70 is documented, representing a soluble decoy pool. Preclinical extracellular-engagement validation includes cmHsp70.1 antibody binding on live tumor cells and the TKD peptide-NK cell therapeutic approach targeting membrane HSP70. Classification: conditional_surface, outer_leaflet_peripheral, peripheral anchor, exposed_ecd.</div>
+  <h3 style="margin: 24px 0 8px 0; font-family: 'Playfair Display'; font-size: 18px;">Confidence reasoning</h3>
+  <div class="reasoning">All 8 M1 database sources vote false — HSPA1A lacks TM domain, signal peptide, and GPI anchor, so canonical surface-prediction pipelines correctly reject it. However, primary experimental literature (surface biotinylation on intact viable tumor cells, flow cytometry with cmHsp70.1 mAb on non-permeabilized cells, and immunofluorescence confocal microscopy) robustly establishes conditional outer-leaflet localization in transformed cells and under heat/ICD stress. Normal cells are consistently surface-negative. The mechanism (peripheral lipid anchoring via Gb3 glycosphingolipid and phosphatidylserine in cholesterol-rich microdomains, non-classical secretory pathway) is well characterized. The conditional nature (strictly absent from normal cells), non-canonical membrane anchor, and substantial circulating soluble pool each reduce confidence relative to a constitutively surface-expressed protein with a canonical TM helix. Medium confidence is appropriate: surface evidence is strong for the oncogenic/stress contexts but not for a baseline surface call.</div>
+</section>
+
+<section id="surface">
+  <h2>Surface biology</h2>
+  <dl class="kv">
+    <dt>Surface status</dt><dd>conditional_surface</dd>
+    <dt>Topology</dt><dd>outer_leaflet_peripheral</dd>
+    <dt>Anchor type</dt><dd>peripheral</dd>
+    <dt>Exposure class</dt><dd>exposed_ecd</dd>
+    <dt>Extracellular domain size (aa)</dt><dd>641</dd>
+    <dt>Accessibility</dt><dd>accessible</dd>
+    <dt>Shedding documented</dt><dd>yes</dd>
+  </dl>
+  <p class="lede" style="margin-top: 16px;">When peripherally surface-anchored, the full protein is extracellular. C-terminal SBD epitope confirmed accessible by cmHsp70.1 mAb binding to intact viable cells.</p>
+</section>
+
+<section id="induced">
+  <h2>Induced presentation</h2>
+  <p class="lede">Context-specific contexts where the protein reaches the cell surface.</p>
+
+        <div class='induced'>
+          <div class='induced-head'><strong>oncogenic_state</strong> <span class='nil'>· cell context: any</span></div>
+          <p>Surface-exposed in many tumor types (colorectal, lung, neuronal, pancreas carcinomas, leukemia) but absent from normal tissues. ~15-20% of total Hsp70 localizes to the plasma membrane of Hsp70-positive tumor sublines. Anchored via Gb3 glycosphingolipid in cholesterol-rich microdomains.</p>
+          <div class='cited'>cited evidence: evi_002, evi_003, evi_004</div>
+        </div>
+
+        <div class='induced'>
+          <div class='induced-head'><strong>cell_state_stress</strong> <span class='nil'>· cell context: any</span></div>
+          <p>Heat shock triggers phosphatidylserine (PS) increase, driving HSPA1A translocation to the plasma membrane. Inhibiting PS synthesis with fendiline or RNAi blocks membrane localization. Distinct from the basal oncogenic surface pool.</p>
+          <div class='cited'>cited evidence: evi_006, evi_007</div>
+        </div>
+
+        <div class='induced'>
+          <div class='induced-head'><strong>immunogenic_cell_death</strong> <span class='nil'>· cell context: any</span></div>
+          <p>ICD inducers (NIR-PIT, anthracyclines) trigger surface exposure of HSP70 alongside calreticulin and HSP90, serving as damage-associated molecular patterns that stimulate anti-tumor immunity.</p>
+          <div class='cited'>cited evidence: evi_008</div>
+        </div>
+</section>
+
+<section id="assays">
+  <h2>Surface-localization assays</h2>
+  <p class="lede">Experimental observations of PM localization.</p>
+
+        <div class='assay'>
+          <div><strong>—</strong> <span class='nil'>· —</span></div>
+          <div>—</div>
+          <div class='cited'>cited evidence: evi_002, evi_003</div>
+        </div>
+
+        <div class='assay'>
+          <div><strong>—</strong> <span class='nil'>· —</span></div>
+          <div>—</div>
+          <div class='cited'>cited evidence: evi_004</div>
+        </div>
+
+        <div class='assay'>
+          <div><strong>—</strong> <span class='nil'>· —</span></div>
+          <div>—</div>
+          <div class='cited'>cited evidence: evi_006</div>
+        </div>
+
+        <div class='assay'>
+          <div><strong>—</strong> <span class='nil'>· —</span></div>
+          <div>—</div>
+          <div class='cited'>cited evidence: evi_008</div>
+        </div>
+</section>
+
+<section id="features">
+  <h2>Protein features</h2>
+  <dl class="kv">
+    <dt>Length (aa)</dt><dd>641</dd>
+    <dt>TM domain count</dt><dd><span class='nil'>—</span></dd>
+    <dt>Signal peptide</dt><dd><span class='nil'>—</span></dd>
+    <dt>Topology string</dt><dd><code><span class='nil'>—</span></code></dd>
+    <dt>UniProt keywords</dt><dd>3D-structure, Acetylation, Alternative splicing, ATP-binding, Chaperone, Complete proteome, Cytoplasm, Direct protein sequencing, Host cell receptor for virus entry, Methylation, Nucleotide-binding, Phosphoprotein, Polymorphism, Receptor, Reference proteome, Stress response</dd>
+    <dt>SURFY ML score</dt><dd><span class='nil'>—</span></dd>
+    <dt>Almén class</dt><dd><span class='nil'>—</span></dd>
+    <dt>CD designation</dt><dd><span class='nil'>—</span></dd>
+  </dl>
+</section>
+
+<section id="isoforms">
+  <h2>Isoform accessibility</h2>
+  <p class="lede">Per-isoform surface call and divergence from canonical.</p>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>1</strong>
+            <span class='chip'>P0DMV8-1</span>
+            <span class='chip'>canonical</span>
+            <span class='chip'>641 aa</span>
+            <span class='chip'>conditional_surface</span>
+            <span class='chip'>exposed_ecd</span>
+
+          </div>
+          <p>Canonical 641 aa isoform. All primary surface expression data (flow cytometry, surface biotinylation, immunofluorescence) refers to this form. No differential surface localization documented for isoform 2.</p>
+          <div class='cited'>cited evidence: —</div>
+        </div>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>2</strong>
+            <span class='chip'>P0DMV8-2</span>
+            <span class='chip'>alternative</span>
+            <span class='chip'>— aa</span>
+            <span class='chip'><span class='nil'>—</span></span>
+            <span class='chip'>unknown</span>
+
+          </div>
+          <p>No isoform-specific subcellular annotation in UniProt and no literature evidence for differential surface localization relative to the canonical form.</p>
+          <div class='cited'>cited evidence: —</div>
+        </div>
+</section>
+
+<section id="orthology">
+  <h2>Orthology</h2>
+  <p class="lede">Cross-species concordance — sanity check on the human call, preclinical-model selector.</p>
+  <p class='nil'>no ortholog records</p>
+</section>
+
+<section id="risk">
+  <h2>Risk flags</h2>
+  <p class="lede">Structured risks (shedding / secreted form) flagged for downstream consumers.</p>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>secreted_form</strong>
+            <span class='chip chip-warning'>medium</span>
+          </div>
+          <p>HSPA1A is actively released into the extracellular space via a non-classical lysosomal-endosomal pathway (UniProt: Secreted). Elevated circulating eHSP70 is documented in cancer, sepsis, and exercise/heat-stress states. This soluble pool may compete with extracellular binders targeting membrane-anchored mHSP70, reducing effective surface engagement.</p>
+          <div class='cited'>cited evidence: evi_001</div>
+        </div>
+</section>
+
+<section id="dbcompare">
+  <h2>DB comparison</h2>
+  <p class="lede">Per-source surface vote from the deep-dive's own re-vote, alongside whether the gene was admitted to the canonical M1 candidate_universe.</p>
+
+    <dl class='kv'>
+      <dt>n_sources_voting_surface</dt><dd>0</dd>
+      <dt>in_candidate_universe</dt><dd><span class='chip chip-refutes'>no</span></dd>
+    </dl>
+    <table class='searchlog' style='margin-top:14px;'>
+      <thead><tr><th>source</th><th>vote</th></tr></thead>
+      <tbody><tr><td>uniprot_query</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>go</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>hpa</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>surfy</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>cspa</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>deeptmhmm</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>compartments</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>patent_handle</td><td><span class='chip chip-refutes'>no</span></td></tr></tbody>
+    </table>
+</section>
+
+<section id="evidence">
+  <h2>Evidence (9)</h2>
+  <p class="lede">Each evidence packet is a claim with at least one supporting source span (UniProt / PubMed / PMC). "Unverified" chip means the agent cited a source but the substring anchor failed — claim is persisted with the warning rather than dropped.</p>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_001</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-ambiguous'>ambiguous</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: moderate</span> <span class='chip chip-warning'>unverified</span>
+          </div>
+          <div class='evi-claim'>UniProt annotates HSPA1A as Secreted in addition to its primary cytoplasmic and nuclear locations, documenting an extracellular released form.</div>
+          <div class='evi-spans nil'>(no anchored sources)</div>
+          <div class='evi-warnings'><strong>Validation warnings:</strong><ul><li>substring not found in normalized UniProt:P0DMV8 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)</li></ul></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_002</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>flow_cytometry</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
+          </div>
+          <div class='evi-claim'>Flow cytometry of viable primary tumor biopsies demonstrates tumor-selective Hsp70 plasma membrane expression across colorectal, lung, neuronal, pancreas carcinomas, and leukemic blasts.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:11189449/' target='_blank' rel='noopener'>pubmed:PMID:11189449</a></div>
+
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_003</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-ambiguous'>ambiguous</span> <span class='chip'>flow_cytometry</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
+          </div>
+          <div class='evi-claim'>Normal tissues and healthy bone marrow do not express Hsp70 on the cell surface, confirming the tumor-selectivity of surface HSP70.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:11189449/' target='_blank' rel='noopener'>pubmed:PMID:11189449</a></div>
+
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_004</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>surface_biotinylation</span> <span class='chip'>conf: strong</span> <span class='chip chip-warning'>unverified</span>
+          </div>
+          <div class='evi-claim'>Surface biotinylation of intact viable tumor cells quantifies ~20% and 15% of total Hsp70 in the plasma membrane of Hsp70-high CX+ colon and Colo+ pancreatic carcinoma sublines respectively.</div>
+          <div class='evi-spans nil'>(no anchored sources)</div>
+          <div class='evi-warnings'><strong>Validation warnings:</strong><ul><li>source_id=PMC:PMC2271151 not in session source store (agent cited a source it didn&#x27;t fetch)</li></ul></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_005</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span> <span class='chip chip-warning'>unverified</span>
+          </div>
+          <div class='evi-claim'>Membrane localization of HSPs is restricted to transformed and virally infected cells; in normal cells (except spermatogenic) Hsp70 is strictly intracellular.</div>
+          <div class='evi-spans nil'>(no anchored sources)</div>
+          <div class='evi-warnings'><strong>Validation warnings:</strong><ul><li>source_id=PMC:PMC2271151 not in session source store (agent cited a source it didn&#x27;t fetch)</li></ul></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_006</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span> <span class='chip chip-warning'>audit failed</span>
+          </div>
+          <div class='evi-claim'>HSPA1A translocates to the plasma membrane of heat-shocked and cancer cells, confirmed by confocal microscopy and PS-specific biosensors.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:40653262/' target='_blank' rel='noopener'>pubmed:PMID:40653262</a></div>
+          <div class='evi-warnings'><strong>Validation warnings:</strong><ul><li>entailment audit: quote does not support the claim in the stated direction</li></ul></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_007</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
+          </div>
+          <div class='evi-claim'>Phosphatidylserine (PS) is a critical lipid regulator of HSPA1A membrane translocation; inhibiting PS synthesis with fendiline or RNAi significantly reduces plasma membrane localization.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:40653262/' target='_blank' rel='noopener'>pubmed:PMID:40653262</a></div>
+
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_008</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>flow_cytometry</span> <span class='chip'>conf: moderate</span> <span class='chip chip-verified'>verified</span>
+          </div>
+          <div class='evi-claim'>Immunogenic cell death (NIR-PIT) induces surface exposure of HSP70 on ovarian cancer cells, detected by flow cytometry alongside calreticulin and HSP90.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:41362788/' target='_blank' rel='noopener'>pubmed:PMID:41362788</a></div>
+
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_009</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: moderate</span> <span class='chip chip-verified'>verified</span>
+          </div>
+          <div class='evi-claim'>Review confirms tumor-selective HSP70 membrane localization and release as a tumor-specific characteristic enabling therapeutic targeting.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:22414085/' target='_blank' rel='noopener'>pubmed:PMID:22414085</a></div>
+
+        </div>
+</section>
+
+<section id="search">
+  <h2>Search log</h2>
+  <p class="lede">Queries the deep-dive agent issued during evidence gathering.</p>
+
+    <table class='searchlog'>
+      <thead><tr><th>tool</th><th>mode</th><th>query</th><th>n_results</th></tr></thead>
+      <tbody><tr><td>gene_lookup</td><td>resolve</td><td><code>symbol_or_acc=HSPA1A</code></td><td>1</td></tr><tr><td>gene_lookup</td><td>db_panel</td><td><code>symbol_or_acc=P0DMV8</code></td><td>1</td></tr><tr><td>gene_lookup</td><td>uniprot_summary</td><td><code>symbol_or_acc=P0DMV8</code></td><td>1</td></tr><tr><td>gene_literature</td><td>gene2pubmed</td><td><code>uniprot_acc=P0DMV8</code></td><td>838</td></tr><tr><td>gene_literature</td><td>topic_search</td><td><code>max_results=15, topic_anchors=[surface_expression, flow_cytometry, surface_biotinylation, mass_spec_surfaceome], uniprot_acc=P0DMV8</code></td><td>33429</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=40653262</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=41362788</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=22414085</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_fulltext</td><td><code>pmcid=PMC12304686</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_fulltext</td><td><code>pmcid=PMC12681927</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=11189449</code></td><td>1</td></tr></tbody>
+    </table>
+</section>
+
+<section id="raw">
+  <h2>Raw JSON</h2>
+  <p class="lede">Full annotation record as emitted by the surface_annotator agent.</p>
+  <details class="raw">
+    <summary>Show / hide (24,140 chars)</summary>
+    <pre>{
+  &quot;schema_version&quot;: &quot;v0.5.1&quot;,
+  &quot;gene&quot;: {
+    &quot;hgnc_symbol&quot;: &quot;HSPA1A&quot;,
+    &quot;hgnc_id&quot;: &quot;HGNC:5232&quot;,
+    &quot;uniprot_acc&quot;: &quot;P0DMV8&quot;,
+    &quot;ncbi_gene_id&quot;: 3303,
+    &quot;ensembl_gene&quot;: &quot;ENSG00000204389&quot;
+  },
+  &quot;canonical_isoform&quot;: &quot;P0DMV8-1&quot;,
+  &quot;isoform_flattened&quot;: false,
+  &quot;in_candidate_universe&quot;: false,
+  &quot;protein_features&quot;: {
+    &quot;protein_length_aa&quot;: 641,
+    &quot;tm_domain_count&quot;: null,
+    &quot;signal_peptide&quot;: null,
+    &quot;topology_string&quot;: null,
+    &quot;topology_source&quot;: &quot;unknown&quot;,
+    &quot;almen_main_class&quot;: null,
+    &quot;almen_sub_class&quot;: null,
+    &quot;cd_designation&quot;: null,
+    &quot;uniprot_keywords&quot;: [
+      &quot;3D-structure&quot;,
+      &quot;Acetylation&quot;,
+      &quot;Alternative splicing&quot;,
+      &quot;ATP-binding&quot;,
+      &quot;Chaperone&quot;,
+      &quot;Complete proteome&quot;,
+      &quot;Cytoplasm&quot;,
+      &quot;Direct protein sequencing&quot;,
+      &quot;Host cell receptor for virus entry&quot;,
+      &quot;Methylation&quot;,
+      &quot;Nucleotide-binding&quot;,
+      &quot;Phosphoprotein&quot;,
+      &quot;Polymorphism&quot;,
+      &quot;Receptor&quot;,
+      &quot;Reference proteome&quot;,
+      &quot;Stress response&quot;
+    ],
+    &quot;pdb_ids&quot;: [],
+    &quot;cspa_peptide_count&quot;: null,
+    &quot;hpa_antibody_available&quot;: false,
+    &quot;drugbank_ids&quot;: [],
+    &quot;surfy_ml_score&quot;: null,
+    &quot;surfy_label_source&quot;: null,
+    &quot;provenance&quot;: &quot;surfy_snapshot&quot;
+  },
+  &quot;targetability&quot;: {
+    &quot;tier&quot;: &quot;preclinical&quot;,
+    &quot;tldr&quot;: &quot;HSPA1A/HSP70 conditionally localizes to the plasma membrane outer leaflet of tumor and stress-exposed cells via lipid anchoring, absent from normal cell surfaces. Preclinical programs (cmHsp70.1 mAb, TKD peptide-NK cell approach) have validated membrane HSP70 as an oncology target.&quot;,
+    &quot;cited_evidence_ids&quot;: [
+      &quot;evi_002&quot;,
+      &quot;evi_004&quot;
+    ]
+  },
+  &quot;surface_biology&quot;: {
+    &quot;surface_status&quot;: &quot;conditional_surface&quot;,
+    &quot;topology&quot;: &quot;outer_leaflet_peripheral&quot;,
+    &quot;anchor_type&quot;: &quot;peripheral&quot;,
+    &quot;exposure_class&quot;: &quot;exposed_ecd&quot;,
+    &quot;extracellular_domain&quot;: {
+      &quot;size_aa&quot;: 641,
+      &quot;domains&quot;: [
+        &quot;NBD (ATPase domain, residues 1-554)&quot;,
+        &quot;SBD (substrate-binding domain, residues 555-641)&quot;
+      ],
+      &quot;accessibility&quot;: &quot;accessible&quot;,
+      &quot;notes&quot;: &quot;When peripherally surface-anchored, the full protein is extracellular. C-terminal SBD epitope confirmed accessible by cmHsp70.1 mAb binding to intact viable cells.&quot;
+    },
+    &quot;induced_presentation&quot;: [
+      {
+        &quot;context_kind&quot;: &quot;oncogenic_state&quot;,
+        &quot;context_kind_other_label&quot;: null,
+        &quot;description&quot;: &quot;Surface-exposed in many tumor types (colorectal, lung, neuronal, pancreas carcinomas, leukemia) but absent from normal tissues. ~15-20% of total Hsp70 localizes to the plasma membrane of Hsp70-positive tumor sublines. Anchored via Gb3 glycosphingolipid in cholesterol-rich microdomains.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_002&quot;,
+          &quot;evi_003&quot;,
+          &quot;evi_004&quot;
+        ]
+      },
+      {
+        &quot;context_kind&quot;: &quot;cell_state_stress&quot;,
+        &quot;context_kind_other_label&quot;: null,
+        &quot;description&quot;: &quot;Heat shock triggers phosphatidylserine (PS) increase, driving HSPA1A translocation to the plasma membrane. Inhibiting PS synthesis with fendiline or RNAi blocks membrane localization. Distinct from the basal oncogenic surface pool.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_006&quot;,
+          &quot;evi_007&quot;
+        ]
+      },
+      {
+        &quot;context_kind&quot;: &quot;immunogenic_cell_death&quot;,
+        &quot;context_kind_other_label&quot;: null,
+        &quot;description&quot;: &quot;ICD inducers (NIR-PIT, anthracyclines) trigger surface exposure of HSP70 alongside calreticulin and HSP90, serving as damage-associated molecular patterns that stimulate anti-tumor immunity.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_008&quot;
+        ]
+      }
+    ],
+    &quot;surface_localization_assays&quot;: [
+      {
+        &quot;assay_type&quot;: &quot;flow_cytometry&quot;,
+        &quot;assay_type_other_label&quot;: null,
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;freshly isolated primary tumor biopsies (colorectal, lung, neuronal, pancreas carcinomas; AML leukemic blasts)&quot;,
+        &quot;direction&quot;: &quot;supports_surface&quot;,
+        &quot;strength&quot;: &quot;strong&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_002&quot;,
+          &quot;evi_003&quot;
+        ]
+      },
+      {
+        &quot;assay_type&quot;: &quot;surface_biotinylation&quot;,
+        &quot;assay_type_other_label&quot;: null,
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;CX+ colon carcinoma and Colo+ pancreatic carcinoma tumor sublines&quot;,
+        &quot;direction&quot;: &quot;supports_surface&quot;,
+        &quot;strength&quot;: &quot;strong&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_004&quot;
+        ]
+      },
+      {
+        &quot;assay_type&quot;: &quot;immunofluorescence_intact_cells&quot;,
+        &quot;assay_type_other_label&quot;: null,
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;heat-shocked cancer cells (confocal microscopy with PS-specific biosensors)&quot;,
+        &quot;direction&quot;: &quot;supports_surface&quot;,
+        &quot;strength&quot;: &quot;moderate&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_006&quot;
+        ]
+      },
+      {
+        &quot;assay_type&quot;: &quot;flow_cytometry&quot;,
+        &quot;assay_type_other_label&quot;: null,
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;ovarian cancer cells (NIR-PIT immunogenic cell death model)&quot;,
+        &quot;direction&quot;: &quot;supports_surface&quot;,
+        &quot;strength&quot;: &quot;moderate&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_008&quot;
+        ]
+      }
+    ],
+    &quot;glycosylation&quot;: null,
+    &quot;shedding_documented&quot;: true,
+    &quot;db_comparison&quot;: {
+      &quot;surfy&quot;: false,
+      &quot;cspa&quot;: false,
+      &quot;uniprot_query&quot;: false,
+      &quot;go&quot;: false,
+      &quot;hpa&quot;: false,
+      &quot;deeptmhmm&quot;: false,
+      &quot;compartments&quot;: false,
+      &quot;patent_handle&quot;: false,
+      &quot;n_sources_voting_surface&quot;: 0
+    },
+    &quot;cited_evidence_ids&quot;: [
+      &quot;evi_002&quot;,
+      &quot;evi_004&quot;,
+      &quot;evi_006&quot;,
+      &quot;evi_008&quot;
+    ]
+  },
+  &quot;surface_engagement_validation&quot;: {
+    &quot;preclinical_evidence&quot;: [
+      {
+        &quot;citation&quot;: &quot;PMID:18382692&quot;,
+        &quot;finding_summary&quot;: &quot;Surface biotinylation of intact viable CX+ and Colo+ tumor cells showed ~20% of total Hsp70 on the plasma membrane. Flow cytometry with cmHsp70.1 mAb (targeting an extracellularly exposed C-terminal SBD epitope) confirmed 73-87% of Hsp70-positive tumor subline cells were surface-positive; normal cells had &lt;3%. Depletion of Gb3 glycosphingolipid with PPMP1 eliminated membrane Hsp70, confirming lipid-anchored extracellular accessibility on intact viable cells.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_004&quot;,
+          &quot;evi_005&quot;
+        ]
+      }
+    ]
+  },
+  &quot;risk_flags&quot;: [
+    {
+      &quot;kind&quot;: &quot;secreted_form&quot;,
+      &quot;kind_other_label&quot;: null,
+      &quot;severity&quot;: &quot;medium&quot;,
+      &quot;description&quot;: &quot;HSPA1A is actively released into the extracellular space via a non-classical lysosomal-endosomal pathway (UniProt: Secreted). Elevated circulating eHSP70 is documented in cancer, sepsis, and exercise/heat-stress states. This soluble pool may compete with extracellular binders targeting membrane-anchored mHSP70, reducing effective surface engagement.&quot;,
+      &quot;cited_evidence_ids&quot;: [
+        &quot;evi_001&quot;
+      ]
+    }
+  ],
+  &quot;isoform_accessibility&quot;: [
+    {
+      &quot;isoform_id&quot;: &quot;P0DMV8-1&quot;,
+      &quot;name&quot;: &quot;1&quot;,
+      &quot;is_canonical&quot;: true,
+      &quot;length_aa&quot;: 641,
+      &quot;surface_status&quot;: &quot;conditional_surface&quot;,
+      &quot;exposure_class&quot;: &quot;exposed_ecd&quot;,
+      &quot;uniprot_isoform_specific_locations&quot;: [
+        &quot;Cytoplasm&quot;,
+        &quot;Nucleus&quot;,
+        &quot;Secreted&quot;
+      ],
+      &quot;differential_from_canonical&quot;: false,
+      &quot;rationale&quot;: &quot;Canonical 641 aa isoform. All primary surface expression data (flow cytometry, surface biotinylation, immunofluorescence) refers to this form. No differential surface localization documented for isoform 2.&quot;,
+      &quot;cited_evidence_ids&quot;: []
+    },
+    {
+      &quot;isoform_id&quot;: &quot;P0DMV8-2&quot;,
+      &quot;name&quot;: &quot;2&quot;,
+      &quot;is_canonical&quot;: false,
+      &quot;length_aa&quot;: null,
+      &quot;surface_status&quot;: null,
+      &quot;exposure_class&quot;: &quot;unknown&quot;,
+      &quot;uniprot_isoform_specific_locations&quot;: [],
+      &quot;differential_from_canonical&quot;: false,
+      &quot;rationale&quot;: &quot;No isoform-specific subcellular annotation in UniProt and no literature evidence for differential surface localization relative to the canonical form.&quot;,
+      &quot;cited_evidence_ids&quot;: []
+    }
+  ],
+  &quot;coreceptor_requirements&quot;: [],
+  &quot;orthology&quot;: [],
+  &quot;evidence&quot;: [
+    {
+      &quot;evidence_id&quot;: &quot;evi_001&quot;,
+      &quot;claim&quot;: &quot;UniProt annotates HSPA1A as Secreted in addition to its primary cytoplasmic and nuclear locations, documenting an extracellular released form.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;ambiguous&quot;,
+      &quot;evidence_type&quot;: &quot;db_annotation&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;moderate&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;unspecified&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [],
+      &quot;entailment_verified&quot;: false,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: [
+        &quot;substring not found in normalized UniProt:P0DMV8 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)&quot;
+      ]
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_002&quot;,
+      &quot;claim&quot;: &quot;Flow cytometry of viable primary tumor biopsies demonstrates tumor-selective Hsp70 plasma membrane expression across colorectal, lung, neuronal, pancreas carcinomas, and leukemic blasts.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;flow_cytometry&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;primary biopsies: colorectal, lung, neuronal, pancreas carcinomas; AML leukemic blasts&quot;,
+        &quot;permeabilized&quot;: false,
+        &quot;fixation&quot;: &quot;live&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:11189449&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/11189449/&quot;,
+            &quot;title&quot;: &quot;Hsp70 plasma membrane expression on primary tumor biopsy material and bone marrow of leukemic patients&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T03:13:46.909118Z&quot;,
+            &quot;content_sha256&quot;: &quot;6f38d4da6f27cc630ec206b43798cb5e724bda912c3124d67d17a751b845d073&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T03:13:46.907472Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;an Hsp70 plasma membrane expression was found on freshly isolated human biopsy material of colorectal, lung, neuronal, and pancreas carcinomas&quot;,
+          &quot;quote_sha256&quot;: &quot;4bb848e7e8a6fb5a18ea996c28ca61bec256513b2f43694dc31dd5ee0ac53936&quot;,
+          &quot;char_offset&quot;: 314,
+          &quot;normalized_source_sha256&quot;: &quot;ca12618a92c01684aac75f80c5f8bd2cd862f72fa30d196af9dc6f5e36b3b30c&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: true,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_003&quot;,
+      &quot;claim&quot;: &quot;Normal tissues and healthy bone marrow do not express Hsp70 on the cell surface, confirming the tumor-selectivity of surface HSP70.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;ambiguous&quot;,
+      &quot;evidence_type&quot;: &quot;flow_cytometry&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;normal tissues and healthy bone marrow (negative controls)&quot;,
+        &quot;permeabilized&quot;: false,
+        &quot;fixation&quot;: &quot;live&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:11189449&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/11189449/&quot;,
+            &quot;title&quot;: &quot;Hsp70 plasma membrane expression on primary tumor biopsy material and bone marrow of leukemic patients&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T03:13:46.909118Z&quot;,
+            &quot;content_sha256&quot;: &quot;6f38d4da6f27cc630ec206b43798cb5e724bda912c3124d67d17a751b845d073&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T03:13:46.907472Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;normal tissues and bone marrow of healthy human individuals do not express Hsp70 on the cell surface&quot;,
+          &quot;quote_sha256&quot;: &quot;a38c3bbe5992cc70238019c4329962965b4eefc7ac7b83227f13309edbfd2205&quot;,
+          &quot;char_offset&quot;: 547,
+          &quot;normalized_source_sha256&quot;: &quot;ca12618a92c01684aac75f80c5f8bd2cd862f72fa30d196af9dc6f5e36b3b30c&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: true,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_004&quot;,
+      &quot;claim&quot;: &quot;Surface biotinylation of intact viable tumor cells quantifies ~20% and 15% of total Hsp70 in the plasma membrane of Hsp70-high CX+ colon and Colo+ pancreatic carcinoma sublines respectively.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;surface_biotinylation&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;CX+ colon carcinoma and Colo+ pancreatic carcinoma sublines&quot;,
+        &quot;permeabilized&quot;: false,
+        &quot;fixation&quot;: &quot;live&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [],
+      &quot;entailment_verified&quot;: false,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: [
+        &quot;source_id=PMC:PMC2271151 not in session source store (agent cited a source it didn&#x27;t fetch)&quot;
+      ]
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_005&quot;,
+      &quot;claim&quot;: &quot;Membrane localization of HSPs is restricted to transformed and virally infected cells; in normal cells (except spermatogenic) Hsp70 is strictly intracellular.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;review_assertion&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;multiple tumor cell lines vs normal cells&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [],
+      &quot;entailment_verified&quot;: false,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: [
+        &quot;source_id=PMC:PMC2271151 not in session source store (agent cited a source it didn&#x27;t fetch)&quot;
+      ]
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_006&quot;,
+      &quot;claim&quot;: &quot;HSPA1A translocates to the plasma membrane of heat-shocked and cancer cells, confirmed by confocal microscopy and PS-specific biosensors.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;immunofluorescence&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;heat-shocked cancer cells&quot;,
+        &quot;permeabilized&quot;: false,
+        &quot;fixation&quot;: &quot;live&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:40653262&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/40653262/&quot;,
+            &quot;title&quot;: &quot;Heat-induced phosphatidylserine changes drive HSPA1A&#x27;s plasma membrane localization&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T03:13:02.527124Z&quot;,
+            &quot;content_sha256&quot;: &quot;aef787e5df47a5310ed7a5ea944f0286d413969833c60544ff3b98f997e8e7dd&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T03:13:02.522361Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;HSPA1A translocates to heat-shocked and cancer cells&#x27; plasma membrane (PM)&quot;,
+          &quot;quote_sha256&quot;: &quot;f5978fa939fad962ad46addc0ceb50fadc01dc8b0de70f088d1edd6530b41557&quot;,
+          &quot;char_offset&quot;: 98,
+          &quot;normalized_source_sha256&quot;: &quot;c96576664252461660cd8532ff93d06c87efbff697b0e722b636bcb303768144&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: false,
+      &quot;validation_warnings&quot;: [
+        &quot;entailment audit: quote does not support the claim in the stated direction&quot;
+      ]
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_007&quot;,
+      &quot;claim&quot;: &quot;Phosphatidylserine (PS) is a critical lipid regulator of HSPA1A membrane translocation; inhibiting PS synthesis with fendiline or RNAi significantly reduces plasma membrane localization.&quot;,
+      &quot;claim_type&quot;: &quot;topology&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;immunofluorescence&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;heat-shocked cancer cells&quot;,
+        &quot;permeabilized&quot;: false,
+        &quot;fixation&quot;: &quot;live&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:40653262&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/40653262/&quot;,
+            &quot;title&quot;: &quot;Heat-induced phosphatidylserine changes drive HSPA1A&#x27;s plasma membrane localization&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T03:13:02.527124Z&quot;,
+            &quot;content_sha256&quot;: &quot;aef787e5df47a5310ed7a5ea944f0286d413969833c60544ff3b98f997e8e7dd&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T03:13:02.522361Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;PS is a crucial regulator of HSPA1A&#x27;s membrane translocation during the heat shock response&quot;,
+          &quot;quote_sha256&quot;: &quot;38b20052a183fa1317e65f05f2f9357e344328c90ab44e4977d9a573d8cdd286&quot;,
+          &quot;char_offset&quot;: 1635,
+          &quot;normalized_source_sha256&quot;: &quot;c96576664252461660cd8532ff93d06c87efbff697b0e722b636bcb303768144&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: true,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_008&quot;,
+      &quot;claim&quot;: &quot;Immunogenic cell death (NIR-PIT) induces surface exposure of HSP70 on ovarian cancer cells, detected by flow cytometry alongside calreticulin and HSP90.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;flow_cytometry&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;moderate&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;ovarian cancer cells (NIR-PIT ICD model)&quot;,
+        &quot;permeabilized&quot;: false,
+        &quot;fixation&quot;: &quot;live&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:41362788&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/41362788/&quot;,
+            &quot;title&quot;: &quot;Near-infrared photoimmunotherapy for effective elimination of ovarian cancer cells by inducing immunogenic cell death&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T03:13:02.527973Z&quot;,
+            &quot;content_sha256&quot;: &quot;0d30c13d3c064c1b2be2df2dc5ffc0402299d5764d0a38ffc566f644196e3c78&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T03:13:02.525892Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;cell surface expression of calreticulin, HSP70, and HSP90 and the extracellular release of ATP and HMGB1&quot;,
+          &quot;quote_sha256&quot;: &quot;0e145c7bb15ff9c3de9a8e7b870fa866fec8a7868763769f0c8a0626c52216cd&quot;,
+          &quot;char_offset&quot;: 1327,
+          &quot;normalized_source_sha256&quot;: &quot;04e2e78faee582ce1bec56555258d908c0e174122964aebfa715a70d8633bd6b&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: true,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_009&quot;,
+      &quot;claim&quot;: &quot;Review confirms tumor-selective HSP70 membrane localization and release as a tumor-specific characteristic enabling therapeutic targeting.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;review_assertion&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;moderate&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;tumor cells (various types)&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:22414085&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/22414085/&quot;,
+            &quot;title&quot;: &quot;Radiation-induced stress proteins - the role of heat shock proteins (HSP) in anti- tumor responses&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T03:12:48.054791Z&quot;,
+            &quot;content_sha256&quot;: &quot;edfc3c4ee2c0af6fd02f456642198d5d216dd4f12ddf521b82b8f49a59334629&quot;,
+            &quot;publication_type&quot;: &quot;review&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T03:12:48.051490Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;HSP that exhibit an unusual cell membrane localization and release mechanism in tumor cells&quot;,
+          &quot;quote_sha256&quot;: &quot;e055e205fee2cf315133c0e6d0386c2f9ff96c04e75fd36ce5eab14ffcad67a6&quot;,
+          &quot;char_offset&quot;: 1092,
+          &quot;normalized_source_sha256&quot;: &quot;b11ae70d9e8a5124352994e707af6137103221804fc85fc66387a5d6594e6d38&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: true,
+      &quot;validation_warnings&quot;: []
+    }
+  ],
+  &quot;primary_evidence_count&quot;: 6,
+  &quot;secondary_evidence_count&quot;: 3,
+  &quot;evidence_count&quot;: 9,
+  &quot;search_log&quot;: [
+    {
+      &quot;tool&quot;: &quot;gene_lookup&quot;,
+      &quot;mode&quot;: &quot;resolve&quot;,
+      &quot;query&quot;: {
+        &quot;symbol_or_acc&quot;: &quot;HSPA1A&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;UniProt:P0DMV8&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305014Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_lookup&quot;,
+      &quot;mode&quot;: &quot;db_panel&quot;,
+      &quot;query&quot;: {
+        &quot;symbol_or_acc&quot;: &quot;P0DMV8&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;UniProt:P0DMV8&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305102Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_lookup&quot;,
+      &quot;mode&quot;: &quot;uniprot_summary&quot;,
+      &quot;query&quot;: {
+        &quot;symbol_or_acc&quot;: &quot;P0DMV8&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;UniProt:P0DMV8&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305130Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;gene2pubmed&quot;,
+      &quot;query&quot;: {
+        &quot;uniprot_acc&quot;: &quot;P0DMV8&quot;
+      },
+      &quot;n_results&quot;: 838,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:16492383&quot;,
+        &quot;PMID:11798084&quot;,
+        &quot;PMID:18839337&quot;,
+        &quot;PMID:21915333&quot;,
+        &quot;PMID:16806014&quot;,
+        &quot;PMID:18845908&quot;,
+        &quot;PMID:29188629&quot;,
+        &quot;PMID:22123078&quot;,
+        &quot;PMID:22198139&quot;,
+        &quot;PMID:24524071&quot;,
+        &quot;PMID:29331340&quot;,
+        &quot;PMID:29395577&quot;,
+        &quot;PMID:12149123&quot;,
+        &quot;PMID:16201310&quot;,
+        &quot;PMID:19405961&quot;,
+        &quot;PMID:22414085&quot;,
+        &quot;PMID:16012946&quot;,
+        &quot;PMID:24085588&quot;,
+        &quot;PMID:16948906&quot;,
+        &quot;PMID:11215307&quot;,
+        &quot;PMID:25058147&quot;,
+        &quot;PMID:28460195&quot;,
+        &quot;PMID:35957827&quot;,
+        &quot;PMID:24919558&quot;,
+        &quot;PMID:24833463&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305270Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_009&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;topic_search&quot;,
+      &quot;query&quot;: {
+        &quot;max_results&quot;: 15,
+        &quot;topic_anchors&quot;: [
+          &quot;surface_expression&quot;,
+          &quot;flow_cytometry&quot;,
+          &quot;surface_biotinylation&quot;,
+          &quot;mass_spec_surfaceome&quot;
+        ],
+        &quot;uniprot_acc&quot;: &quot;P0DMV8&quot;
+      },
+      &quot;n_results&quot;: 33429,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:40843709&quot;,
+        &quot;PMID:41433127&quot;,
+        &quot;PMID:41459335&quot;,
+        &quot;PMID:40653262&quot;,
+        &quot;PMID:40074080&quot;,
+        &quot;PMID:41596691&quot;,
+        &quot;PMID:41565761&quot;,
+        &quot;PMID:41619855&quot;,
+        &quot;PMID:41857425&quot;,
+        &quot;PMID:41422171&quot;,
+        &quot;PMID:38946646&quot;,
+        &quot;PMID:41351863&quot;,
+        &quot;PMID:41372524&quot;,
+        &quot;PMID:41362788&quot;,
+        &quot;PMID:41725010&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305356Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_006&quot;,
+        &quot;evi_007&quot;,
+        &quot;evi_008&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 40653262
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:40653262&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305371Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_006&quot;,
+        &quot;evi_007&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 41362788
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:41362788&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305381Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_008&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 22414085
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:22414085&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305392Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_009&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_fulltext&quot;,
+      &quot;query&quot;: {
+        &quot;pmcid&quot;: &quot;PMC12304686&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305398Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_fulltext&quot;,
+      &quot;query&quot;: {
+        &quot;pmcid&quot;: &quot;PMC12681927&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305402Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 11189449
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:11189449&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T03:42:52.305409Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_002&quot;,
+        &quot;evi_003&quot;
+      ]
+    }
+  ],
+  &quot;confidence&quot;: &quot;medium&quot;,
+  &quot;confidence_reasoning&quot;: &quot;All 8 M1 database sources vote false \u2014 HSPA1A lacks TM domain, signal peptide, and GPI anchor, so canonical surface-prediction pipelines correctly reject it. However, primary experimental literature (surface biotinylation on intact viable tumor cells, flow cytometry with cmHsp70.1 mAb on non-permeabilized cells, and immunofluorescence confocal microscopy) robustly establishes conditional outer-leaflet localization in transformed cells and under heat/ICD stress. Normal cells are consistently surface-negative. The mechanism (peripheral lipid anchoring via Gb3 glycosphingolipid and phosphatidylserine in cholesterol-rich microdomains, non-classical secretory pathway) is well characterized. The conditional nature (strictly absent from normal cells), non-canonical membrane anchor, and substantial circulating soluble pool each reduce confidence relative to a constitutively surface-expressed protein with a canonical TM helix. Medium confidence is appropriate: surface evidence is strong for the oncogenic/stress contexts but not for a baseline surface call.&quot;,
+  &quot;contradiction_flag&quot;: false,
+  &quot;rationale&quot;: &quot;HSPA1A (HSP70/HSP72, 641 aa) is canonically a cytoplasmic-nuclear molecular chaperone with no TM domain, no signal peptide, and no GPI anchor. All 8 M1 source databases vote false, consistent with its canonical intracellular role. However, a large body of primary evidence \u2014 surface biotinylation of intact viable tumor cells (~15-20% of total cellular Hsp70 detected on the plasma membrane), flow cytometry with the tumor-selective cmHsp70.1 mAb on non-permeabilized cells across colorectal, lung, pancreas, and neuronal carcinomas and leukemia, immunofluorescence in heat-shocked cancer cells, and flow cytometry during immunogenic cell death \u2014 establishes conditional outer-leaflet surface localization in transformed and stressed cells. Normal cells (except spermatogenic) are strictly surface-negative. Membrane anchorage is lipid-mediated: Gb3 glycosphingolipid in cholesterol-rich microdomains and heat-shock-induced phosphatidylserine accumulation drive peripheral association with the outer leaflet without a classical TM helix. When surface-localized, the full 641 aa protein \u2014 including the C-terminal substrate-binding domain confirmed accessible by cmHsp70.1 mAb epitope mapping \u2014 is extracellularly exposed. UniProt additionally annotates HSPA1A as Secreted; circulating eHSP70 is documented, representing a soluble decoy pool. Preclinical extracellular-engagement validation includes cmHsp70.1 antibody binding on live tumor cells and the TKD peptide-NK cell therapeutic approach targeting membrane HSP70. Classification: conditional_surface, outer_leaflet_peripheral, peripheral anchor, exposed_ecd.&quot;,
+  &quot;model_path&quot;: &quot;sonnet_only&quot;,
+  &quot;triage_signal&quot;: &quot;possibly_accessible&quot;
+}</pre>
+  </details>
+</section>
+
+</main>
+<footer>
+  Generated from <code>data/annotations/HSPA1A.json</code> · schema v0.5.1 · model sonnet_only
+</footer>
+</body>
+</html>

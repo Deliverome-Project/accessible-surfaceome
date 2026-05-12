@@ -15,6 +15,35 @@ import styles from "./CatalogTable.module.css";
 const ROW_ESTIMATE_PX = 48;
 const ROW_OVERSCAN = 12;
 
+// Single source of truth for column widths shared by:
+//   * the <colgroup> in the <thead> (so the header columns size correctly)
+//   * the per-row absolutely-positioned <colgroup> (each virtualized row
+//     is its own display:table block; without these widths the columns
+//     would silently drift away from the header).
+// Order MUST match the column order rendered below.
+const COL_WIDTHS = [
+  "7.5rem", // symbol
+  "5.5rem", // uniprot
+  "3rem",   // n_sources
+  "1.6rem", // db: uniprot
+  "1.6rem", // db: go
+  "1.6rem", // db: surfy
+  "1.6rem", // db: cspa
+  "1.6rem", // db: hpa
+  "14rem",  // triage
+  "4.5rem", // deep dive
+] as const;
+
+function Cols() {
+  return (
+    <colgroup>
+      {COL_WIDTHS.map((w, i) => (
+        <col key={i} style={{ width: w }} />
+      ))}
+    </colgroup>
+  );
+}
+
 // Five gating DBs. DeepTMHMM + COMPARTMENTS were demoted from the
 // M1 universe gate upstream (kept in the D1 row for fidelity but
 // hidden in the public catalog).
@@ -80,7 +109,11 @@ export function CatalogTable({
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
       if (q) {
-        const hay = `${r.symbol} ${r.uniprot}`.toLowerCase();
+        // Search across symbol, UniProt, the NCBI descriptive name, and
+        // every synonym — so "transferrin" matches TF and "TGN46" matches
+        // TGOLN2 even though neither appears in the canonical symbol.
+        const syn = r.synonyms ? r.synonyms.join(" ") : "";
+        const hay = `${r.symbol} ${r.uniprot} ${r.name ?? ""} ${syn}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       if (quick === "deep_dive" && !r.deep_dive) return false;
@@ -127,12 +160,12 @@ export function CatalogTable({
       <div className={styles.toolbar}>
         <div className={styles.search}>
           <label htmlFor="catalog-search" className="sr-only">
-            Filter by symbol or UniProt
+            Filter by symbol, UniProt, gene name, or synonym
           </label>
           <input
             id="catalog-search"
             className={styles.searchInput}
-            placeholder="Filter by symbol or UniProt…"
+            placeholder="Filter by symbol, UniProt, name, or synonym…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             type="search"
@@ -192,6 +225,7 @@ export function CatalogTable({
 
       <div className={styles.tableScroll} ref={scrollRef}>
         <table className={styles.table}>
+          <Cols />
           <thead>
             <tr>
               <SortableHeader

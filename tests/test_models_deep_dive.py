@@ -96,9 +96,21 @@ def test_ortholog_record_concordance_is_tri_state() -> None:
 def test_ortholog_record_rejects_unknown_species() -> None:
     with pytest.raises(ValidationError):
         # Bypass static type checks: feed an invalid species via model_validate
-        # so the Literal["mouse","cynomolgus"] is enforced at runtime, not
-        # parse time.
-        OrthologRecord.model_validate({"species": "rat"})
+        # so the OrthologSpecies Literal is enforced at runtime, not parse
+        # time. ``rat`` was added in v0.5.1 (TGOLN2's foundational biology
+        # is rat-based TGN38) so the rejection test uses a clearly invalid
+        # value instead.
+        OrthologRecord.model_validate({"species": "armadillo"})
+
+
+def test_ortholog_record_accepts_rat() -> None:
+    """v0.5.1 added rat to OrthologSpecies — TGN38 (rat) is the historically
+    canonical ortholog for characterizing the TGN46/TGOLN2 cycling biology."""
+    rat = OrthologRecord.model_validate(
+        {"species": "rat", "ortholog_uniprot_acc": "Q03430"}
+    )
+    assert rat.species == "rat"
+    assert rat.ortholog_uniprot_acc == "Q03430"
 
 
 # ---------------------------------------------------------------------------
@@ -106,8 +118,8 @@ def test_ortholog_record_rejects_unknown_species() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_schema_version_is_v0_5_0() -> None:
-    assert SCHEMA_VERSION == "v0.5.0"
+def test_schema_version_is_current() -> None:
+    assert SCHEMA_VERSION == "v0.5.1"
 
 
 def test_mass_spec_detail_roundtrip() -> None:

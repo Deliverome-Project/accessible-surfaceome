@@ -61,20 +61,21 @@ You also have built-in `read`, `grep`, `glob`, `web_fetch`, `web_search` for fal
 
 ## The output contract
 
-Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecordDraft` schema (current schema_version: `v0.5.0`).
+Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecordDraft` schema (current schema_version: `v0.5.1`).
 
-### v0.5.0 — required-in-every-emission
+### v0.5.1 — required-in-every-emission
 
-The schema bumped from `v0.4.0` to `v0.5.0`. **Do not fall back to a v0.4.0 shape.** Six things change at every emission:
+The schema bumped from `v0.5.0` to `v0.5.1`. Two structural changes in this point release plus the v0.5.0 carryovers:
 
-1. **`schema_version` MUST be the literal string `"v0.5.0"`.** Not `"v0.4.0"`. Not omitted. Not a fancier label.
-2. **Emit top-level `paralogs: [...]` and `contradictions: [...]` ALWAYS.** Empty arrays are fine when there's no data to fill them, but the keys MUST be present — leaving them out is the v0.4.0 shape. Before settling on `paralogs: []` for a gene, spend one `gene_literature topic_search` query on its family / paralogs (see anchor shopping list below).
-3. **Emit `surface_biology.microdomains: [...]` ALWAYS.** Empty array is OK only if you found no microdomain-resolved evidence; spend one targeted query on lipid raft / apical-basolateral / caveolae / tight junction before concluding empty.
-4. **For every `mass_spec_surfaceome` assay you emit, attach a `mass_spec_detail` sub-record.** At minimum `{"method": "..."}`. If the paper doesn't say, `"method": "other"` with `"method_other_label": "<short label>"` is honest.
-5. **For every flow / IF / IHC / antibody_on_live_cells assay, attach an `antibody` sub-record** with whatever the paper reports. All antibody fields are nullable — capture what's there, leave the rest null. An empty-but-present `{}` is the right answer when the paper genuinely omits reagent details.
-6. **For every shedding / secreted-form RiskFlag, attach a `shedding_context` sub-record** with at least `proteases` (possibly `["unknown"]`) and `regulation`. If the paper documents a serum pool, set `serum_pool_documented: true`.
+1. **`schema_version` MUST be the literal string `"v0.5.1"`.** Not `"v0.5.0"`. Not `"v0.4.0"`. Not omitted.
+2. **Emit top-level `in_candidate_universe: bool | null`.** True iff the gene was admitted to the canonical M1 candidate_universe by ≥1 source flag at the time of deep-dive; False iff universe-missed (deep-dive triggered by triage or manual nomination); null if not checked. The orchestrator pre-injects the universe-membership lookup into `## Pre-loaded protein features` — copy that value through. The `surface_biology.db_comparison` field reports the deep-dive's own re-vote, which can disagree with the universe (e.g. TGOLN2: deep-dive's `n_sources_voting_surface=3` but `in_candidate_universe: false`).
+3. **Emit top-level `paralogs: [...]` and `contradictions: [...]` ALWAYS.** Empty arrays are fine when there's no data; the keys MUST be present. Before settling on `paralogs: []`, spend one `gene_literature topic_search` query on the family / paralogs (see anchor shopping list).
+4. **Emit `surface_biology.microdomains: [...]` ALWAYS.** Empty array is OK only after one targeted query on lipid raft / apical-basolateral / caveolae / tight junction.
+5. **For every `mass_spec_surfaceome` assay, attach a `mass_spec_detail` sub-record.** Minimum `{"method": "..."}`; `"method": "other"` with `"method_other_label": "<label>"` is honest when the paper doesn't say.
+6. **For every flow / IF / IHC / antibody_on_live_cells assay, attach an `antibody` sub-record** with whatever the paper reports. All fields are nullable. Empty-but-present `{}` is the right answer when reagent details are absent. **Look in Methods sections of the cited papers** — clone / catalog / RRID / vendor are usually listed; don't default to all-null without scanning Methods.
+7. **For every shedding / secreted-form RiskFlag, attach a `shedding_context` sub-record** with `proteases` (`["unknown"]` if not characterized) and `regulation`.
 
-These are not optional rendering hints — they are part of the v0.5.0 shape. A v0.4.0-shaped emission validates but produces a degraded record.
+These are not optional rendering hints — they are part of the v0.5.1 shape. A v0.5.0 (or older) shape will fail validation against the bumped schema.
 
 **Critical: don't emit fields that aren't in the schema.** All bucket models use `extra="forbid"` — even fields with `null` values will be rejected if the schema doesn't define them. Two specific traps:
 
@@ -94,7 +95,7 @@ The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Ev
 
 ```json
 {
-  "schema_version": "v0.5.0",
+  "schema_version": "v0.5.1",
   "gene": {"hgnc_symbol": "...", "hgnc_id": "...", "uniprot_acc": "...",
            "ncbi_gene_id": null, "ensembl_gene": null},
   "canonical_isoform": "<UniProt isoform ID>",
@@ -250,7 +251,7 @@ This bucket says where a protein sits on the *translational-precedent* axis — 
   "exposure_class": "exposed_ecd | minimal_ectoloops | embedded_no_ecd | none | unknown",
   "extracellular_domain": {"size_aa": ..., "domains": [...], "accessibility": "accessible | membrane_proximal | buried | unknown", "notes": null},
   "induced_presentation": [
-    {"context_kind": "cell_state_stress | immunogenic_cell_death | infection_induced | oncogenic_state | tissue_subset | trafficking_cycling | other",
+    {"context_kind": "cell_state_stress | immunogenic_cell_death | infection_induced | oncogenic_state | tissue_restricted_surface | dual_localization | lysosomal_exocytosis | other",
      "description": "<= 400 chars",
      "cited_evidence_ids": ["evi_002"],
      "cell_context": {...}    // v0.5.0 — optional, structured cell-type detail
@@ -296,13 +297,19 @@ Conflating `surface_status` and `topology` reproduces the SURFY false-positive p
 
 ### `induced_presentation` — guidance
 
-Add one entry per documented context. Examples of context kinds:
-- `immunogenic_cell_death` — calreticulin (CALR) reaches the surface during anthracycline / radiation-induced ICD; HMGB1 release is correlated. Cite the original ICD characterization papers.
-- `cell_state_stress` — HSP70 / HSP90 surfacing under heat shock or proteotoxic stress on tumor cells. Cite stress-induced flow cytometry or surface biotinylation papers.
-- `infection_induced` — host proteins that surface during viral or intracellular bacterial infection (e.g. ER chaperones during certain viral life cycles).
-- `oncogenic_state` — proteins mislocalized to the outer leaflet specifically in transformed cells (GRP78/BiP is a canonical example).
-- `tissue_subset` — baseline-intracellular but reaches the surface in a specific tissue or cell-type lineage.
-- `trafficking_cycling` — cycles between intracellular vesicles and PM (low steady-state surface fraction but reachable over time).
+Add one entry per documented context. The closed-list values align with the `surface_triage` reason taxonomy so the same gene's triage `reason` and the deep-dive's per-context `context_kind` use the same names:
+
+| `context_kind` | Triage `reason` | What it means |
+|---|---|---|
+| `cell_state_stress` | `cell_state_induced` | Heat shock, ER stress, oxidative stress, proteotoxic-stress-induced surfacing. HSP70 / HSP90 on stressed tumor cells. |
+| `immunogenic_cell_death` | `cell_state_induced` | ICD-induced exposure. Calreticulin (CALR) reaches the surface during anthracycline / radiation-induced ICD; HMGB1 release is correlated. |
+| `infection_induced` | `cell_state_induced` | Host proteins that surface during viral or intracellular-bacterial infection (e.g. ER chaperones during certain viral life cycles). |
+| `oncogenic_state` | `cell_state_induced` | Transformation-driven mislocalization. GRP78 / BiP is a canonical example. |
+| `tissue_restricted_surface` | `tissue_restricted_surface` | Baseline-intracellular but surface-positive in a narrow lineage (germline / reproductive, developmental, single specialized somatic cell type). |
+| `dual_localization` | `dual_localization` | Cycling between intracellular vesicles and PM (low steady-state surface fraction but reachable over time), OR a documented PM pool alongside a dominant non-PM compartment. TGN46 ↔ PM cycling, GLUT4-style trafficking. |
+| `lysosomal_exocytosis` | `lysosomal_exocytosis` | Lysosomal / late-endosomal TM protein reaches the PM via lysosomal exocytosis (LAMP1-class). |
+
+The four stress / ICD / infection / oncogenic variants are the deep-dive granular breakdown of the triage's umbrella `cell_state_induced` — pick the most-specific value the literature supports.
 
 If a context doesn't fit any closed kind, use `context_kind="other"` AND set `context_kind_other_label` to a 2–4-word label.
 

@@ -11,6 +11,7 @@ import { LandscapeCard } from "../../components/surfaceome/LandscapeCard/Landsca
 import { RiskFlagsCard } from "../../components/surfaceome/RiskFlagsCard/RiskFlagsCard";
 import {
   listSurfaceomeGenes,
+  loadGeneName,
   loadSurfaceomeRecord,
   prettyEnum,
 } from "../../lib/surfaceome";
@@ -43,6 +44,7 @@ export default async function GenePage({ params }: PageProps) {
   const { symbol } = await params;
   const rec = loadSurfaceomeRecord(symbol);
   if (!rec) notFound();
+  const geneName = loadGeneName(rec.gene.hgnc_symbol);
 
   // Walk visible sections so the section numbers stay sequential even
   // when a record omits a bucket (v0.4.0 records have no `expression`;
@@ -110,8 +112,18 @@ export default async function GenePage({ params }: PageProps) {
           </span>
         </nav>
 
+        <details className={styles.rawDetails}>
+          <summary className={styles.rawSummary}>
+            Raw deep-dive record
+            <span className={styles.rawSummaryHint}>
+              · {rec.schema_version} · {rec.evidence_count} evidence
+            </span>
+          </summary>
+          <pre className={styles.rawJson}>{JSON.stringify(rec, null, 2)}</pre>
+        </details>
+
         <Reveal>
-          <GeneHeader rec={rec} />
+          <GeneHeader rec={rec} geneName={geneName} />
         </Reveal>
 
         <Reveal as="div" stagger stagger_ms={140}>

@@ -56,6 +56,9 @@ def _render_evidence(evidence_list: list[dict]) -> str:
         tier = ev.get("evidence_tier", "")
         etype = ev.get("evidence_type", "")
         confidence = ev.get("confidence", "")
+        verified = ev.get("entailment_verified")
+        audit_passed = ev.get("entailment_audit_passed")
+        warnings = ev.get("validation_warnings") or []
         spans = ev.get("spans") or []
         chips = [
             f"<span class='chip chip-{tier}'>{_e(tier)}</span>",
@@ -63,11 +66,29 @@ def _render_evidence(evidence_list: list[dict]) -> str:
             f"<span class='chip'>{_e(etype)}</span>",
             f"<span class='chip'>conf: {_e(confidence)}</span>",
         ]
+        # Provenance-status chip — verified / unverified / audit-failed.
+        # Unverified primary evidence (spans empty, agent flagged the
+        # substring miss in validation_warnings) is the case the TGOLN2
+        # record's evi_009 surfaces; treat it as a warning, not a pass.
+        if verified is True and audit_passed is False:
+            chips.append("<span class='chip chip-warning'>audit failed</span>")
+        elif verified is False:
+            chips.append("<span class='chip chip-warning'>unverified</span>")
+        elif verified is True:
+            chips.append("<span class='chip chip-verified'>verified</span>")
         span_links = " · ".join(
             _source_link(sp.get("source") or {})
             for sp in spans
             if (sp.get("source") or {}).get("source_id")
         )
+        warning_html = ""
+        if warnings:
+            warning_html = (
+                "<div class='evi-warnings'>"
+                + "<strong>Validation warnings:</strong><ul>"
+                + "".join(f"<li>{_e(w)}</li>" for w in warnings)
+                + "</ul></div>"
+            )
         parts.append(f"""
         <div class='evi'>
           <div class='evi-head'>
@@ -75,7 +96,8 @@ def _render_evidence(evidence_list: list[dict]) -> str:
             {' '.join(chips)}
           </div>
           <div class='evi-claim'>{_e(claim)}</div>
-          {f"<div class='evi-spans'>Sources: {span_links}</div>" if span_links else ""}
+          {f"<div class='evi-spans'>Sources: {span_links}</div>" if span_links else "<div class='evi-spans nil'>(no anchored sources)</div>"}
+          {warning_html}
         </div>""")
     return "\n".join(parts)
 
@@ -116,18 +138,161 @@ def _render_assays(items: list[dict]) -> str:
     return "\n".join(parts)
 
 
+def _format_query(q: object) -> str:
+    """Pretty-format a search-log `query` field.
+
+    The schema stores `query` as a structured dict (e.g.
+    ``{"symbol_or_acc": "TGOLN2"}`` or ``{"topic_anchors": [...],
+    "uniprot_acc": "O43493"}``); render it as readable `key=value` pairs
+    rather than Python repr. Pass-through any scalar value as-is.
+    """
+    if isinstance(q, dict):
+        return ", ".join(
+            f"{_e(k)}={_e(v) if not isinstance(v, list) else _e('[' + ', '.join(str(x) for x in v) + ']')}"
+            for k, v in q.items()
+        )
+    return _e(q) if q is not None else "—"
+
+
 def _render_search_log(items: list[dict]) -> str:
     if not items:
         return "<p class='nil'>none</p>"
     rows = []
     for it in items:
-        q = it.get("query") or "—"
+        q = it.get("query")
         n = it.get("n_results") if it.get("n_results") is not None else "—"
-        src = it.get("source") or "—"
-        rows.append(f"<tr><td><code>{_e(q)}</code></td><td>{_e(src)}</td><td>{_e(n)}</td></tr>")
+        # `tool` is the SearchEntry contract field
+        # ("gene_lookup" / "gene_literature"). `mode` is the per-tool
+        # sub-mode (e.g. "gene2pubmed", "topic_search"). Both are
+        # cleaner than the no-op `source` column the earlier renderer
+        # dropped in.
+        tool = it.get("tool") or "—"
+        mode = it.get("mode") or "—"
+        rows.append(
+            f"<tr><td>{_e(tool)}</td><td>{_e(mode)}</td>"
+            f"<td><code>{_format_query(q)}</code></td><td>{_e(n)}</td></tr>"
+        )
     return f"""
     <table class='searchlog'>
-      <thead><tr><th>query</th><th>source</th><th>n_results</th></tr></thead>
+      <thead><tr><th>tool</th><th>mode</th><th>query</th><th>n_results</th></tr></thead>
+      <tbody>{''.join(rows)}</tbody>
+    </table>"""
+
+
+def _render_isoforms(items: list[dict]) -> str:
+    if not items:
+        return "<p class='nil'>no isoform-level data</p>"
+    parts = []
+    for it in items:
+        iso_id = it.get("isoform_id", "")
+        name = it.get("name") or ""
+        canonical = "canonical" if it.get("is_canonical") else "alternative"
+        length = it.get("length_aa")
+        surface = it.get("surface_status", "")
+        exposure = it.get("exposure_class", "")
+        diff = it.get("differential_from_canonical")
+        rationale = it.get("rationale") or ""
+        cited = ", ".join(it.get("cited_evidence_ids") or []) or "—"
+        diff_chip = (
+            "<span class='chip chip-warning'>differs from canonical</span>"
+            if diff else ""
+        )
+        parts.append(f"""
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>{_e(name) or _e(iso_id)}</strong>
+            <span class='chip'>{_e(iso_id)}</span>
+            <span class='chip'>{_e(canonical)}</span>
+            <span class='chip'>{_e(length) if length is not None else '—'} aa</span>
+            <span class='chip'>{_e(surface)}</span>
+            <span class='chip'>{_e(exposure)}</span>
+            {diff_chip}
+          </div>
+          <p>{_e(rationale)}</p>
+          <div class='cited'>cited evidence: {_e(cited)}</div>
+        </div>""")
+    return "\n".join(parts)
+
+
+def _render_orthology(items: list[dict]) -> str:
+    if not items:
+        return "<p class='nil'>no ortholog records</p>"
+    parts = []
+    for it in items:
+        species = it.get("species", "")
+        sym = it.get("ortholog_gene_symbol") or "—"
+        acc = it.get("ortholog_uniprot_acc") or "—"
+        pid = it.get("percent_identity")
+        otype = it.get("orthology_type") or "—"
+        concordant = it.get("surface_concordant_with_human")
+        notes = it.get("notes") or ""
+        cited = ", ".join(it.get("cited_evidence_ids") or []) or "—"
+        concordant_label = (
+            "concordant" if concordant is True
+            else "discordant" if concordant is False
+            else "unknown"
+        )
+        parts.append(f"""
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>{_e(species)}</strong>
+            <span class='chip'>{_e(sym)} ({_e(acc)})</span>
+            <span class='chip'>{_e(otype)}</span>
+            <span class='chip'>{_e(pid) if pid is not None else '—'}% id</span>
+            <span class='chip chip-{concordant_label}'>{_e(concordant_label)}</span>
+          </div>
+          <p>{_e(notes)}</p>
+          <div class='cited'>cited evidence: {_e(cited)}</div>
+        </div>""")
+    return "\n".join(parts)
+
+
+def _render_risk_flags(items: list[dict]) -> str:
+    if not items:
+        return "<p class='nil'>no risk flags documented</p>"
+    parts = []
+    for it in items:
+        kind = it.get("kind", "")
+        severity = it.get("severity", "")
+        desc = it.get("description") or ""
+        cited = ", ".join(it.get("cited_evidence_ids") or []) or "—"
+        parts.append(f"""
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>{_e(kind)}</strong>
+            <span class='chip chip-warning'>{_e(severity)}</span>
+          </div>
+          <p>{_e(desc)}</p>
+          <div class='cited'>cited evidence: {_e(cited)}</div>
+        </div>""")
+    return "\n".join(parts)
+
+
+def _render_db_comparison(d: dict, in_universe: object) -> str:
+    rows = []
+    for col in ("uniprot_query", "go", "hpa", "surfy", "cspa", "deeptmhmm",
+                "compartments", "patent_handle"):
+        v = d.get(col)
+        if v is True:
+            cell = "<span class='chip chip-supports'>yes</span>"
+        elif v is False:
+            cell = "<span class='chip chip-refutes'>no</span>"
+        else:
+            cell = "<span class='nil'>—</span>"
+        rows.append(f"<tr><td>{_e(col)}</td><td>{cell}</td></tr>")
+    n_votes = d.get("n_sources_voting_surface")
+    universe_chip = (
+        "<span class='chip chip-supports'>yes</span>" if in_universe is True
+        else "<span class='chip chip-refutes'>no</span>" if in_universe is False
+        else "<span class='nil'>unknown</span>"
+    )
+    return f"""
+    <dl class='kv'>
+      <dt>n_sources_voting_surface</dt><dd>{_e(n_votes)}</dd>
+      <dt>in_candidate_universe</dt><dd>{universe_chip}</dd>
+    </dl>
+    <table class='searchlog' style='margin-top:14px;'>
+      <thead><tr><th>source</th><th>vote</th></tr></thead>
       <tbody>{''.join(rows)}</tbody>
     </table>"""
 
@@ -192,6 +357,10 @@ section .lede {{ color: var(--neutral); font-size: 13.5px; margin: 0 0 20px 0; }
 .evi-spans {{ margin-top: 8px; font-size: 12.5px; color: var(--neutral); }}
 .evi-spans a {{ color: var(--secondary); text-decoration: none; font-weight: 500; }}
 .evi-spans a:hover {{ text-decoration: underline; }}
+.evi-warnings {{ margin-top: 10px; padding: 10px 14px; background: #fff4ec;
+  border: 1px solid #f0d0b0; border-radius: 6px; font-size: 12.5px;
+  color: #8a4f1a; }}
+.evi-warnings ul {{ margin: 4px 0 0 0; padding-left: 20px; }}
 .chip {{ display: inline-flex; align-items: center; padding: 2px 10px;
   border-radius: 999px; font-size: 11px; font-weight: 600;
   background: var(--bg-warm); color: var(--neutral); border: 1px solid var(--line); }}
@@ -199,6 +368,10 @@ section .lede {{ color: var(--neutral); font-size: 13.5px; margin: 0 0 20px 0; }
 .chip-secondary {{ background: #e3eee9; color: var(--secondary); border-color: #c7ddd1; }}
 .chip-supports {{ background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }}
 .chip-refutes {{ background: #fce8e8; color: #b34646; border-color: #f0c8c8; }}
+.chip-concordant {{ background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }}
+.chip-discordant {{ background: #fce8e8; color: #b34646; border-color: #f0c8c8; }}
+.chip-warning {{ background: #fff4ec; color: #8a4f1a; border-color: #f0d0b0; }}
+.chip-verified {{ background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }}
 .chip-neutral {{ background: #f0ece6; color: var(--neutral); border-color: var(--line); }}
 .induced, .assay {{ background: white; border: 1px solid var(--line); border-radius: 8px;
   padding: 14px 20px; margin-bottom: 12px; }}
@@ -242,6 +415,10 @@ footer {{ max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   <a href="#induced">Induced presentation</a>
   <a href="#assays">Assays</a>
   <a href="#features">Protein features</a>
+  <a href="#isoforms">Isoforms</a>
+  <a href="#orthology">Orthology</a>
+  <a href="#risk">Risk flags</a>
+  <a href="#dbcompare">DB comparison</a>
   <a href="#evidence">Evidence ({n_evi})</a>
   <a href="#search">Search log</a>
   <a href="#raw">Raw JSON</a>
@@ -312,9 +489,33 @@ footer {{ max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   </dl>
 </section>
 
+<section id="isoforms">
+  <h2>Isoform accessibility</h2>
+  <p class="lede">Per-isoform surface call and divergence from canonical.</p>
+  {isoforms_html}
+</section>
+
+<section id="orthology">
+  <h2>Orthology</h2>
+  <p class="lede">Cross-species concordance — sanity check on the human call, preclinical-model selector.</p>
+  {orthology_html}
+</section>
+
+<section id="risk">
+  <h2>Risk flags</h2>
+  <p class="lede">Structured risks (shedding / secreted form) flagged for downstream consumers.</p>
+  {risk_html}
+</section>
+
+<section id="dbcompare">
+  <h2>DB comparison</h2>
+  <p class="lede">Per-source surface vote from the deep-dive's own re-vote, alongside whether the gene was admitted to the canonical M1 candidate_universe.</p>
+  {db_compare_html}
+</section>
+
 <section id="evidence">
   <h2>Evidence ({n_evi})</h2>
-  <p class="lede">Each evidence packet is a claim with at least one supporting source span (UniProt / PubMed / PMC).</p>
+  <p class="lede">Each evidence packet is a claim with at least one supporting source span (UniProt / PubMed / PMC). "Unverified" chip means the agent cited a source but the substring anchor failed — claim is persisted with the warning rather than dropped.</p>
   {evidence_html}
 </section>
 
@@ -392,6 +593,12 @@ def render(symbol: str) -> str:
         cd_designation=_e(pf.get("cd_designation")),
         evidence_html=_render_evidence(d.get("evidence") or []),
         search_html=_render_search_log(d.get("search_log") or []),
+        isoforms_html=_render_isoforms(d.get("isoform_accessibility") or []),
+        orthology_html=_render_orthology(d.get("orthology") or []),
+        risk_html=_render_risk_flags(d.get("risk_flags") or []),
+        db_compare_html=_render_db_comparison(
+            sb.get("db_comparison") or {}, d.get("in_candidate_universe"),
+        ),
         raw_json=_e(json.dumps(d, indent=2)),
         n_chars=len(json.dumps(d)),
     )
@@ -406,7 +613,11 @@ def main() -> None:
 
     out = args.output or (ROOT / "docs" / "eval" / f"deep_dive_{args.symbol.lower()}.html")
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(render(args.symbol))
+    # Strip trailing whitespace per-line to satisfy the pre-commit
+    # trailing-whitespace hook — easier than chasing every f-string
+    # interpolation that leaves a stray space at end-of-line.
+    rendered = "\n".join(line.rstrip() for line in render(args.symbol).splitlines()) + "\n"
+    out.write_text(rendered)
     print(f"wrote {out}")
 
 

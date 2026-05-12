@@ -692,7 +692,7 @@ class SearchEntry(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.5.0"
+SCHEMA_VERSION = "v0.5.1"
 
 
 # ---- shared enums (closed) ------------------------------------------------
@@ -894,13 +894,20 @@ ExposureClass = Literal[
 
 # Why a protein that is intracellular at baseline reaches the outer leaflet.
 # Backs ``SurfaceStatus="conditional_surface"`` calls.
+#
+# Enum names align with the ``TriageVerdictReason`` taxonomy in
+# ``surface_triage`` (system.md) so the deep-dive's per-context labels
+# map 1:1 onto the triage's verdict-reason buckets. The four
+# stress / ICD / infection / oncogenic variants are the deep-dive
+# granular breakdown of triage's umbrella ``cell_state_induced``.
 InducedContextKind = Literal[
-    "cell_state_stress",  # heat shock, ER stress, oxidative stress, etc.
-    "immunogenic_cell_death",  # ICD-induced exposure (e.g. calreticulin)
-    "infection_induced",  # viral or bacterial infection drives surfacing
-    "oncogenic_state",  # transformation-driven mislocalization
-    "tissue_subset",  # baseline-intracellular but surface-positive in a specific tissue/cell type
-    "trafficking_cycling",  # cycles between intracellular vesicles and PM (low steady-state surface)
+    "cell_state_stress",  # heat shock, ER stress, oxidative stress — triage: cell_state_induced
+    "immunogenic_cell_death",  # ICD-induced exposure (e.g. CALR) — triage: cell_state_induced
+    "infection_induced",  # viral or bacterial infection drives surfacing — triage: cell_state_induced
+    "oncogenic_state",  # transformation-driven mislocalization — triage: cell_state_induced
+    "tissue_restricted_surface",  # surface only in a narrow lineage — triage: tissue_restricted_surface
+    "dual_localization",  # cycling / partial-PM-residence — triage: dual_localization
+    "lysosomal_exocytosis",  # lysosomal TM protein reaches PM via exocytosis — triage: lysosomal_exocytosis
     "other",
 ]
 
@@ -1314,7 +1321,7 @@ class SurfaceEngagementValidation(BaseModel):
 # ---- deep-dive: isoforms, co-receptors, orthology -------------------------
 
 
-OrthologSpecies = Literal["mouse", "cynomolgus"]
+OrthologSpecies = Literal["mouse", "rat", "cynomolgus"]
 OrthologyType = Literal[
     "one_to_one",
     "one_to_many",
@@ -1574,6 +1581,17 @@ class SurfaceomeRecord(BaseModel):
     canonical_isoform: str
     isoform_flattened: bool
 
+    # v0.5.1: was this gene in the canonical M1 candidate_universe at the
+    # time of deep-dive? Tri-state — ``True`` (admitted by ≥1 source
+    # flag), ``False`` (universe-missed; deep-dive was triggered by
+    # triage or manual nomination), ``None`` (unknown / not checked).
+    # ``DBComparison`` reports the deep-dive's own re-vote, which can
+    # disagree with the merged universe (e.g. TGOLN2: 3 sources vote
+    # surface in the deep-dive's DBComparison but the protein is NOT in
+    # candidate_universe because the universe filter requires alignment
+    # with the merge-time canonical rules).
+    in_candidate_universe: bool | None = None
+
     # Pre-injected protein features (SURFY snapshot + UniProt) — populated
     # by the orchestrator before the LLM call, not by the agent.
     protein_features: ProteinFeatures = Field(default_factory=ProteinFeatures)
@@ -1663,6 +1681,17 @@ class SurfaceomeRecordDraft(BaseModel):
     gene: GeneIdentifier
     canonical_isoform: str
     isoform_flattened: bool
+
+    # v0.5.1: was this gene in the canonical M1 candidate_universe at the
+    # time of deep-dive? Tri-state — ``True`` (admitted by ≥1 source
+    # flag), ``False`` (universe-missed; deep-dive was triggered by
+    # triage or manual nomination), ``None`` (unknown / not checked).
+    # ``DBComparison`` reports the deep-dive's own re-vote, which can
+    # disagree with the merged universe (e.g. TGOLN2: 3 sources vote
+    # surface in the deep-dive's DBComparison but the protein is NOT in
+    # candidate_universe because the universe filter requires alignment
+    # with the merge-time canonical rules).
+    in_candidate_universe: bool | None = None
 
     # Pre-injected protein features (SURFY snapshot + UniProt) — populated
     # by the orchestrator before the LLM call, not by the agent.

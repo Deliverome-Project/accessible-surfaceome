@@ -228,22 +228,32 @@ async function handleCatalog(env) {
   // genes (e.g. HSPA1A — conditional surface, doesn't pass the
   // universe gate) at the bottom.
   const covered = new Set();
+  // Encode the 5 surface flags as a single 5-bit integer to keep the
+  // response under Next.js's 2 MB data-cache ceiling. Bit layout
+  // (LSB → MSB) matches the order the viewer renders columns in:
+  //   bit 0 = uniprot, 1 = go, 2 = surfy, 3 = cspa, 4 = hpa.
+  // Decoded in viewer/lib/surfaceome.ts; see DB_BIT_KEYS there.
   const rows = universeRows.results.map((u) => {
     covered.add(u.gene_symbol);
-    return {
+    const db =
+      (u.uniprot_surface_flag ? 1 : 0) |
+      (u.go_surface_flag ? 2 : 0) |
+      (u.surfy_surface_flag ? 4 : 0) |
+      (u.cspa_surface_flag ? 8 : 0) |
+      (u.hpa_surface_flag ? 16 : 0);
+    const row = {
       symbol: u.gene_symbol,
-      uniprot: u.uniprot_acc,
       n_sources: u.n_sources_surface,
-      db: {
-        uniprot: u.uniprot_surface_flag ? 1 : 0,
-        go: u.go_surface_flag ? 1 : 0,
-        surfy: u.surfy_surface_flag ? 1 : 0,
-        cspa: u.cspa_surface_flag ? 1 : 0,
-        hpa: u.hpa_surface_flag ? 1 : 0,
-      },
-      triage: triageMap.get(u.gene_symbol) ?? null,
-      deep_dive: deepSet.has(u.gene_symbol),
+      db,
     };
+    // Drop empty / falsy fields to compact the wire payload further —
+    // most rows have no uniprot accession and no triage / deep-dive
+    // flag.
+    if (u.uniprot_acc) row.uniprot = u.uniprot_acc;
+    const t = triageMap.get(u.gene_symbol);
+    if (t) row.triage = t;
+    if (deepSet.has(u.gene_symbol)) row.deep_dive = true;
+    return row;
   });
 
   // Append deep-dive-only genes (missing from the universe row set).
@@ -251,19 +261,18 @@ async function handleCatalog(env) {
   // the strongest accessibility data we have.
   for (const sym of deepSet) {
     if (covered.has(sym)) continue;
-    rows.push({
-      symbol: sym,
-      uniprot: "",
-      n_sources: 0,
-      db: { uniprot: 0, go: 0, surfy: 0, cspa: 0, hpa: 0 },
-      triage: triageMap.get(sym) ?? null,
-      deep_dive: true,
-    });
+    const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
+    const t = triageMap.get(sym);
+    if (t) row.triage = t;
+    rows.push(row);
   }
 
   // Stable sort: deep-dive first, then DB-vote desc, then symbol asc.
+  // (deep_dive is now optional — undefined sorts AFTER true.)
   rows.sort((a, b) => {
-    if (a.deep_dive !== b.deep_dive) return a.deep_dive ? -1 : 1;
+    const da = a.deep_dive ? 1 : 0;
+    const db = b.deep_dive ? 1 : 0;
+    if (da !== db) return db - da;
     if (a.n_sources !== b.n_sources) return b.n_sources - a.n_sources;
     return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
   });
@@ -275,6 +284,10 @@ async function handleCatalog(env) {
       n_rows: rows.length,
       n_with_triage: rows.filter((r) => r.triage).length,
       n_with_deep_dive: rows.filter((r) => r.deep_dive).length,
+      // Schema version of the row encoding. Bumped when the shape
+      // changes; viewer/lib/surfaceome.ts checks this and decodes
+      // accordingly.
+      row_schema: 2,
       rows,
     },
     { ttl: CACHE_TTL_SHORT },
@@ -312,7 +325,18 @@ export default {
       return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
     }
     const url = new URL(request.url);
-    const path = url.pathname.replace(/\/+$/, "");
+    // Strip the `/surfaceome` route prefix when present so the
+    // same router handles both production
+    // (`api.deliverome.org/surfaceome/v1/...`) and the workers.dev
+    // fallback (`surfaceome-api.<sub>.workers.dev/v1/...`). Trailing
+    // slashes are normalized so `/v1/health/` and `/v1/health` both
+    // resolve.
+    let path = url.pathname.replace(/\/+$/, "");
+    if (path.startsWith("/surfaceome/")) {
+      path = path.slice("/surfaceome".length);
+    } else if (path === "/surfaceome") {
+      path = "";
+    }
 
     if (path === "/v1/health") return handleHealth(env);
     if (path === "/v1/genes") return handleGeneList(env);

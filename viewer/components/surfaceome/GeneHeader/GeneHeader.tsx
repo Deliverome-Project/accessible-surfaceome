@@ -5,6 +5,11 @@ import styles from "./GeneHeader.module.css";
 
 interface GeneHeaderProps {
   rec: SurfaceomeRecord;
+  /** Descriptive gene name + synonyms from NCBI gene_info. The record
+   *  itself doesn't carry the field; the page loads it server-side via
+   *  ``loadGeneName(symbol)`` and passes it down. ``null`` when no
+   *  entry exists for the symbol. */
+  geneName?: { name: string; synonyms: string[] } | null;
 }
 
 /**
@@ -13,7 +18,7 @@ interface GeneHeaderProps {
  * the reader gets a one-glance picture of the record before any
  * section card.
  */
-export function GeneHeader({ rec }: GeneHeaderProps) {
+export function GeneHeader({ rec, geneName }: GeneHeaderProps) {
   const g = rec.gene;
   const ids = [
     {
@@ -50,6 +55,20 @@ export function GeneHeader({ rec }: GeneHeaderProps) {
         Surfaceome record · {rec.schema_version}
       </p>
       <h1 className={`h-display ${styles.symbol}`}>{g.hgnc_symbol}</h1>
+      {geneName?.name ? (
+        <p className={styles.geneName}>
+          {geneName.name}
+          {geneName.synonyms.length > 0 ? (
+            <span className={styles.geneSynonyms}>
+              {" · also known as "}
+              {geneName.synonyms.slice(0, 4).join(", ")}
+              {geneName.synonyms.length > 4
+                ? `, +${geneName.synonyms.length - 4}`
+                : ""}
+            </span>
+          ) : null}
+        </p>
+      ) : null}
       <p className={`lede ${styles.tldr}`}>{rec.targetability.tldr}</p>
 
       <ul className={styles.ids} aria-label="External identifiers">

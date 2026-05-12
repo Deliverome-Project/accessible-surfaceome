@@ -20,6 +20,7 @@ import type { SurfaceomeRecord } from "./surfaceome-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
 const CATALOG_PATH = path.join(process.cwd(), "public", "data", "catalog.json");
+const GENE_NAMES_PATH = path.join(process.cwd(), "public", "data", "gene_names.json");
 
 /**
  * One row of the genome-wide catalog the index table renders. Sourced
@@ -32,6 +33,15 @@ const CATALOG_PATH = path.join(process.cwd(), "public", "data", "catalog.json");
 export interface CatalogRow {
   symbol: string;
   uniprot: string;
+  /** Descriptive gene name from NCBI gene_info (e.g. ``transferrin``).
+   *  Merged in by ``loadCatalog`` from
+   *  ``public/data/gene_names.json``; empty / missing when the symbol
+   *  isn't in the NCBI snapshot. */
+  name?: string;
+  /** Pipe-separated synonyms from NCBI gene_info (e.g.
+   *  ``["HEL-S-71p", "PRO1557", ...]`` for TF). Same provenance as
+   *  ``name``. */
+  synonyms?: string[];
   n_sources: number;
   // Five gating DBs (uniprot, go, surfy, cspa, hpa). DeepTMHMM +
   // COMPARTMENTS are demoted to auxiliary signals upstream
@@ -73,7 +83,53 @@ const FETCH_TIMEOUT_MS = 8_000;
  * entirely and read straight from the snapshot — useful in CI where
  * outbound HTTP is sandboxed.
  */
+interface GeneNameEntry {
+  name: string;
+  synonyms: string[];
+}
+
+interface GeneNamesFile {
+  generated_at: string;
+  n_genes: number;
+  source: string;
+  names: Record<string, GeneNameEntry>;
+}
+
+function loadGeneNamesMap(): Record<string, GeneNameEntry> {
+  try {
+    const raw = readFileSync(GENE_NAMES_PATH, "utf-8");
+    return (JSON.parse(raw) as GeneNamesFile).names;
+  } catch {
+    return {};
+  }
+}
+
+function enrichRowsWithNames(
+  rows: CatalogRow[],
+  names: Record<string, GeneNameEntry>,
+): CatalogRow[] {
+  if (Object.keys(names).length === 0) return rows;
+  return rows.map((r) => {
+    const entry = names[r.symbol];
+    if (!entry) return r;
+    return { ...r, name: entry.name, synonyms: entry.synonyms };
+  });
+}
+
+/** Look up the descriptive gene name for a symbol. Used by the gene
+ *  viewer page header so the page renders e.g. ``transferrin`` under
+ *  ``TF``. Returns ``null`` when the symbol isn't in the lookup. */
+export function loadGeneName(
+  symbol: string,
+): { name: string; synonyms: string[] } | null {
+  const names = loadGeneNamesMap();
+  const entry = names[symbol];
+  if (!entry) return null;
+  return entry;
+}
+
 export async function loadCatalog(): Promise<Catalog> {
+  const names = loadGeneNamesMap();
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
   if (base && base !== "local") {
     try {
@@ -96,7 +152,11 @@ export async function loadCatalog(): Promise<Catalog> {
       if (!payload.rows || payload.rows.length === 0) {
         throw new Error("empty catalog payload");
       }
-      return { source: "api", ...payload };
+      return {
+        source: "api",
+        ...payload,
+        rows: enrichRowsWithNames(payload.rows, names),
+      };
     } catch (err) {
       console.warn(
         `[surfaceome] /v1/catalog fetch failed (${(err as Error).message}); ` +
@@ -108,7 +168,7 @@ export async function loadCatalog(): Promise<Catalog> {
   // Snapshot fallback.
   const raw = readFileSync(CATALOG_PATH, "utf-8");
   const snap = JSON.parse(raw) as Omit<Catalog, "source">;
-  return { source: "snapshot", ...snap };
+  return { source: "snapshot", ...snap, rows: enrichRowsWithNames(snap.rows, names) };
 }
 
 export function listSurfaceomeGenes(): string[] {

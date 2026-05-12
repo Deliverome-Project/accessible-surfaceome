@@ -22,6 +22,12 @@ name = "surfaceome-api"
 main = "src/index.js"
 compatibility_date = "2026-05-01"
 
+# `workers_dev = true` keeps the unbranded `<worker>.<subdomain>.workers.dev`
+# URL alive as a fallback. Once the `api.deliverome.org/surfaceome/*` route is
+# verified working, flip to `workers_dev = false` so the only public URL is
+# the branded one.
+workers_dev = true
+
 # Read-only binding to the public D1 mirror. The Worker code reads
 # `env.DB` and runs SQL against it. `wrangler deploy` parses
 # `database_id` literally — there's no env-var interpolation for D1
@@ -36,15 +42,25 @@ database_id = "REPLACE_WITH_PUBLIC_D1_UUID"
 [observability]
 enabled = true
 
-# Routes — pick one of these strategies after deciding subdomain vs path:
+# Public route: path-routed under api.deliverome.org/surfaceome/*.
+# `zone_name` is the *parent* Cloudflare zone (`deliverome.org`),
+# NOT the route hostname — there is no separate Cloudflare zone for
+# `api.deliverome.org`; it's a subdomain managed under the
+# deliverome.org zone. (Wrangler's error message on this misnames
+# the zone after the hostname; ignore that and use the parent.)
 #
-# 1. As a route on api.deliverome.org (recommended once the apex zone is set up):
-#      routes = [{ pattern = "api.deliverome.org/surfaceome/*", zone_name = "deliverome.org" }]
+# The deploying API token needs `Zone → Workers Routes → Edit` on
+# the deliverome.org zone; the account-level `Workers Scripts →
+# Edit` (used for the upload above) does NOT cover zone-scoped
+# route bindings. If the deploy errors with "does not have
+# permission to access the zone ...", either grant that scope on
+# the token or add the route once in the dashboard:
+#   Workers & Pages → surfaceome-api → Settings → Triggers →
+#   Routes → Add → "api.deliverome.org/surfaceome/*".
 #
-# 2. As an attached Worker to the Pages project (slot the binding into the
-#    existing Pages wrangler instead of standalone — see cloudflare/workers/
-#    surfaceome_api/README.md for the integration pattern).
-#
-# 3. Plain workers.dev (default, no custom routing): the Worker is
-#    reachable at surfaceome-api.<your-subdomain>.workers.dev — fine for
-#    development; rebind to a custom route before publicising the URL.
+# `[[routes]]` (array-of-tables) rather than `routes = [...]` so
+# linters that reflow inline arrays don't accidentally nest the key
+# under a preceding `[section]` header.
+[[routes]]
+pattern = "api.deliverome.org/surfaceome/*"
+zone_name = "deliverome.org"

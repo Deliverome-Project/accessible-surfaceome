@@ -58,6 +58,10 @@ section .lede { color: var(--neutral); font-size: 13.5px; margin: 0 0 20px 0; }
 .evi-spans { margin-top: 8px; font-size: 12.5px; color: var(--neutral); }
 .evi-spans a { color: var(--secondary); text-decoration: none; font-weight: 500; }
 .evi-spans a:hover { text-decoration: underline; }
+.evi-warnings { margin-top: 10px; padding: 10px 14px; background: #fff4ec;
+  border: 1px solid #f0d0b0; border-radius: 6px; font-size: 12.5px;
+  color: #8a4f1a; }
+.evi-warnings ul { margin: 4px 0 0 0; padding-left: 20px; }
 .chip { display: inline-flex; align-items: center; padding: 2px 10px;
   border-radius: 999px; font-size: 11px; font-weight: 600;
   background: var(--bg-warm); color: var(--neutral); border: 1px solid var(--line); }
@@ -65,6 +69,10 @@ section .lede { color: var(--neutral); font-size: 13.5px; margin: 0 0 20px 0; }
 .chip-secondary { background: #e3eee9; color: var(--secondary); border-color: #c7ddd1; }
 .chip-supports { background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }
 .chip-refutes { background: #fce8e8; color: #b34646; border-color: #f0c8c8; }
+.chip-concordant { background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }
+.chip-discordant { background: #fce8e8; color: #b34646; border-color: #f0c8c8; }
+.chip-warning { background: #fff4ec; color: #8a4f1a; border-color: #f0d0b0; }
+.chip-verified { background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }
 .chip-neutral { background: #f0ece6; color: var(--neutral); border-color: var(--line); }
 .induced, .assay { background: white; border: 1px solid var(--line); border-radius: 8px;
   padding: 14px 20px; margin-bottom: 12px; }
@@ -90,7 +98,7 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
 </head>
 <body>
 <header>
-  <p class="eyebrow">surface_annotator deep dive · v0.5.0</p>
+  <p class="eyebrow">surface_annotator deep dive · v0.5.1</p>
   <h1>TGOLN2 <span style="color: var(--neutral); font-weight: 400; font-size: 24px;">(O43493)</span></h1>
   <p class="tagline">TGOLN2 (TGN46) is a TGN-resident cycling protein with a large ~360 aa extracellular lumenal domain transiently exposed at the PM during constitutive TGN↔PM cycling. No therapeutic programs documented. Very low steady-state PM fraction limits practical extracellular engagement.</p>
   <div class="meta-row">
@@ -108,6 +116,10 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   <a href="#induced">Induced presentation</a>
   <a href="#assays">Assays</a>
   <a href="#features">Protein features</a>
+  <a href="#isoforms">Isoforms</a>
+  <a href="#orthology">Orthology</a>
+  <a href="#risk">Risk flags</a>
+  <a href="#dbcompare">DB comparison</a>
   <a href="#evidence">Evidence (12)</a>
   <a href="#search">Search log</a>
   <a href="#raw">Raw JSON</a>
@@ -157,7 +169,7 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   <p class="lede">Context-specific contexts where the protein reaches the cell surface.</p>
 
         <div class='induced'>
-          <div class='induced-head'><strong>trafficking_cycling</strong> <span class='nil'>· cell context: any</span></div>
+          <div class='induced-head'><strong>dual_localization</strong> <span class='nil'>· cell context: any</span></div>
           <p>TGOLN2 constitutively cycles from TGN to PM via PKD-dependent CARTS carriers, transiently inserting its ~360 aa lumenal domain into the extracellular space. It returns to TGN via AP2/clathrin internalization (YQRL motif) and retromer-dependent retrograde endosomal transport. Steady-state PM fraction is low.</p>
           <div class='cited'>cited evidence: evi_004, evi_005, evi_009</div>
         </div>
@@ -194,116 +206,224 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   </dl>
 </section>
 
+<section id="isoforms">
+  <h2>Isoform accessibility</h2>
+  <p class="lede">Per-isoform surface call and divergence from canonical.</p>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>TGN46</strong>
+            <span class='chip'>O43493-2</span>
+            <span class='chip'>canonical</span>
+            <span class='chip'>437 aa</span>
+            <span class='chip'>conditional_surface</span>
+            <span class='chip'>exposed_ecd</span>
+
+          </div>
+          <p>Canonical widely-expressed isoform. Primarily TGN-resident; cycles constitutively to PM. YQRL motif mediates AP2-dependent PM internalization and TGN retrieval; without this motif, protein accumulates at PM.</p>
+          <div class='cited'>cited evidence: evi_004, evi_005, evi_009, evi_011</div>
+        </div>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>TGN51</strong>
+            <span class='chip'>O43493-7</span>
+            <span class='chip'>alternative</span>
+            <span class='chip'>— aa</span>
+            <span class='chip'>conditional_surface</span>
+            <span class='chip'>exposed_ecd</span>
+            <span class='chip chip-warning'>differs from canonical</span>
+          </div>
+          <p>TGN51 has two additional tyrosine-containing motifs beyond the YQRL shared by all isoforms. When YQRL is mutated, TGN51 is retained at TGN (unlike TGN46/48 which go to PM). TGN51 may have enhanced TGN retention and distinct surface-cycling dynamics.</p>
+          <div class='cited'>cited evidence: evi_010</div>
+        </div>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>TGN48</strong>
+            <span class='chip'>O43493-3</span>
+            <span class='chip'>alternative</span>
+            <span class='chip'>— aa</span>
+            <span class='chip'>conditional_surface</span>
+            <span class='chip'>exposed_ecd</span>
+
+          </div>
+          <p>TGN48 carries one additional tyrosine motif vs TGN46. Barely expressed in embryonic kidney and promyelocytic cells (UniProt). Cycling behavior similar to canonical TGN46; YQRL mutation leads to PM accumulation.</p>
+          <div class='cited'>cited evidence: evi_008, evi_010</div>
+        </div>
+</section>
+
+<section id="orthology">
+  <h2>Orthology</h2>
+  <p class="lede">Cross-species concordance — sanity check on the human call, preclinical-model selector.</p>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>rat</strong>
+            <span class='chip'>Tgoln1 (Q03430)</span>
+            <span class='chip'>one_to_one</span>
+            <span class='chip'>—% id</span>
+            <span class='chip chip-concordant'>concordant</span>
+          </div>
+          <p>Rat TGN38 (Q03430) — the historically canonical paralog used to characterize this protein family. TGN38 surface cycling (Ponnambalam 1996, Stephens &amp; Banting 1999) is the foundational biology cited in evi_005 and evi_006. Concordant cycling behavior with human TGN46.</p>
+          <div class='cited'>cited evidence: evi_005, evi_006</div>
+        </div>
+
+        <div class='induced'>
+          <div class='induced-head'>
+            <strong>cynomolgus</strong>
+            <span class='chip'>TGOLN2 (—)</span>
+            <span class='chip'>one_to_one</span>
+            <span class='chip'>81.01% id</span>
+            <span class='chip chip-unknown'>unknown</span>
+          </div>
+          <p>One-to-one high-confidence Compara ortholog at 81.01% identity. No UniProt accession in Compara pack; cyno surface status not independently assessed. Conservation of TM domain and YQRL-containing cytoplasmic tail makes concordant cycling behavior likely.</p>
+          <div class='cited'>cited evidence: —</div>
+        </div>
+</section>
+
+<section id="risk">
+  <h2>Risk flags</h2>
+  <p class="lede">Structured risks (shedding / secreted form) flagged for downstream consumers.</p>
+  <p class='nil'>no risk flags documented</p>
+</section>
+
+<section id="dbcompare">
+  <h2>DB comparison</h2>
+  <p class="lede">Per-source surface vote from the deep-dive's own re-vote, alongside whether the gene was admitted to the canonical M1 candidate_universe.</p>
+
+    <dl class='kv'>
+      <dt>n_sources_voting_surface</dt><dd>3</dd>
+      <dt>in_candidate_universe</dt><dd><span class='chip chip-refutes'>no</span></dd>
+    </dl>
+    <table class='searchlog' style='margin-top:14px;'>
+      <thead><tr><th>source</th><th>vote</th></tr></thead>
+      <tbody><tr><td>uniprot_query</td><td><span class='chip chip-supports'>yes</span></td></tr><tr><td>go</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>hpa</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>surfy</td><td><span class='chip chip-supports'>yes</span></td></tr><tr><td>cspa</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>deeptmhmm</td><td><span class='chip chip-supports'>yes</span></td></tr><tr><td>compartments</td><td><span class='chip chip-refutes'>no</span></td></tr><tr><td>patent_handle</td><td><span class='chip chip-refutes'>no</span></td></tr></tbody>
+    </table>
+</section>
+
 <section id="evidence">
   <h2>Evidence (12)</h2>
-  <p class="lede">Each evidence packet is a claim with at least one supporting source span (UniProt / PubMed / PMC).</p>
+  <p class="lede">Each evidence packet is a claim with at least one supporting source span (UniProt / PubMed / PMC). "Unverified" chip means the agent cited a source but the substring anchor failed — claim is persisted with the warning rather than dropped.</p>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_001</span>
-            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>UniProt annotates TGOLN2 (O43493) subcellular locations as Cell membrane and Golgi apparatus trans-Golgi network membrane.</div>
           <div class='evi-spans'>Sources: <a href='https://www.uniprot.org/uniprotkb/UniProt:O43493' target='_blank' rel='noopener'>uniprot:UniProt:O43493</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_002</span>
-            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>UniProt topology for TGOLN2 shows a single transmembrane helix at residues 382-402.</div>
           <div class='evi-spans'>Sources: <a href='https://www.uniprot.org/uniprotkb/UniProt:O43493' target='_blank' rel='noopener'>uniprot:UniProt:O43493</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_003</span>
-            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>UniProt functional annotation positions TGOLN2 as a regulator of membrane traffic to and from the trans-Golgi network.</div>
           <div class='evi-spans'>Sources: <a href='https://www.uniprot.org/uniprotkb/UniProt:O43493' target='_blank' rel='noopener'>uniprot:UniProt:O43493</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_004</span>
-            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>Human TGN46 is present on the cell surface and returns to the TGN via endosomes, demonstrating constitutive TGN-to-PM cycling.</div>
           <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:8907712/' target='_blank' rel='noopener'>pubmed:PMID:8907712</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_005</span>
-            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>TGN38 (rat ortholog of human TGN46/TGOLN2) constitutively cycles between TGN and plasma membrane as a type-I integral membrane protein.</div>
           <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:10514494/' target='_blank' rel='noopener'>pubmed:PMID:10514494</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_006</span>
-            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>The cytoplasmic SDYQRL tyrosine motif of TGN38/TGN46 mediates AP2 clathrin adaptor binding to drive PM internalization and TGN retrieval.</div>
           <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:10514494/' target='_blank' rel='noopener'>pubmed:PMID:10514494</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_007</span>
-            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>Human TGN46 (TGOLN2) is a type-I single-pass TM protein that cycles between TGN and PM, consistent with a cargo receptor role.</div>
           <div class='evi-spans'>Sources: <a href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC:PMC10928510/' target='_blank' rel='noopener'>pmc:PMC:PMC10928510</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_008</span>
-            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>Human TGN46 has an N-terminal lumenal domain spanning residues 22-381, which faces the extracellular space when the protein is at the PM.</div>
           <div class='evi-spans'>Sources: <a href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC:PMC10928510/' target='_blank' rel='noopener'>pmc:PMC:PMC10928510</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_009</span>
-            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span> <span class='chip chip-warning'>unverified</span>
           </div>
           <div class='evi-claim'>GFP-TGN46 lacking its cytoplasmic retrieval tail partially accumulates at the PM, confirming constitutive TGN-to-PM delivery of the protein.</div>
-
+          <div class='evi-spans nil'>(no anchored sources)</div>
+          <div class='evi-warnings'><strong>Validation warnings:</strong><ul><li>substring not found in normalized PMC:PMC10928510 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)</li></ul></div>
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_010</span>
-            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: moderate</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: moderate</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>TGOLN2 isoform TGN51 has a unique function in shuttling between the cell surface and TGN, supported by additional tyrosine-containing cytoplasmic motifs.</div>
           <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:9422759/' target='_blank' rel='noopener'>pubmed:PMID:9422759</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_011</span>
-            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>TGN46 is a well-established retrograde cargo cycling between early endosomes and the TGN via retromer; KO of retromer/retriever causes endosomal accumulation.</div>
           <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:40439270/' target='_blank' rel='noopener'>pubmed:PMID:40439270</a></div>
+
         </div>
 
         <div class='evi'>
           <div class='evi-head'>
             <span class='evi-id'>evi_012</span>
-            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span> <span class='chip chip-verified'>verified</span>
           </div>
           <div class='evi-claim'>Volume CLEM directly visualized TGN46-positive transport carriers actively trafficking from the trans-Golgi network to the plasma membrane.</div>
           <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:40931193/' target='_blank' rel='noopener'>pubmed:PMID:40931193</a></div>
+
         </div>
 </section>
 
@@ -312,8 +432,8 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   <p class="lede">Queries the deep-dive agent issued during evidence gathering.</p>
 
     <table class='searchlog'>
-      <thead><tr><th>query</th><th>source</th><th>n_results</th></tr></thead>
-      <tbody><tr><td><code>{&#x27;symbol_or_acc&#x27;: &#x27;TGOLN2&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;symbol_or_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;symbol_or_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;uniprot_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>62</td></tr><tr><td><code>{&#x27;pmid&#x27;: 8907712}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 10514494}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 38466628}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;topic_anchors&#x27;: [&#x27;shedding&#x27;, &#x27;surface_biotinylation&#x27;, &#x27;mass_spec_surfaceome&#x27;], &#x27;uniprot_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>543</td></tr><tr><td><code>{&#x27;topic_anchors&#x27;: [&#x27;surface_expression&#x27;, &#x27;flow_cytometry&#x27;], &#x27;uniprot_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>2915</td></tr><tr><td><code>{&#x27;pmcid&#x27;: &#x27;PMC10928510&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 14743217}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 40439270}</code></td><td>—</td><td>1</td></tr></tbody>
+      <thead><tr><th>tool</th><th>mode</th><th>query</th><th>n_results</th></tr></thead>
+      <tbody><tr><td>gene_lookup</td><td>resolve</td><td><code>symbol_or_acc=TGOLN2</code></td><td>1</td></tr><tr><td>gene_lookup</td><td>db_panel</td><td><code>symbol_or_acc=O43493</code></td><td>1</td></tr><tr><td>gene_lookup</td><td>uniprot_summary</td><td><code>symbol_or_acc=O43493</code></td><td>1</td></tr><tr><td>gene_literature</td><td>gene2pubmed</td><td><code>uniprot_acc=O43493</code></td><td>62</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=8907712</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=10514494</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=38466628</code></td><td>1</td></tr><tr><td>gene_literature</td><td>topic_search</td><td><code>topic_anchors=[shedding, surface_biotinylation, mass_spec_surfaceome], uniprot_acc=O43493</code></td><td>543</td></tr><tr><td>gene_literature</td><td>topic_search</td><td><code>topic_anchors=[surface_expression, flow_cytometry], uniprot_acc=O43493</code></td><td>2915</td></tr><tr><td>gene_literature</td><td>fetch_fulltext</td><td><code>pmcid=PMC10928510</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=14743217</code></td><td>1</td></tr><tr><td>gene_literature</td><td>fetch_abstract</td><td><code>pmid=40439270</code></td><td>1</td></tr></tbody>
     </table>
 </section>
 
@@ -321,9 +441,9 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   <h2>Raw JSON</h2>
   <p class="lede">Full annotation record as emitted by the surface_annotator agent.</p>
   <details class="raw">
-    <summary>Show / hide (30,940 chars)</summary>
+    <summary>Show / hide (31,614 chars)</summary>
     <pre>{
-  &quot;schema_version&quot;: &quot;v0.5.0&quot;,
+  &quot;schema_version&quot;: &quot;v0.5.1&quot;,
   &quot;gene&quot;: {
     &quot;hgnc_symbol&quot;: &quot;TGOLN2&quot;,
     &quot;hgnc_id&quot;: &quot;HGNC:15450&quot;,
@@ -333,6 +453,7 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
   },
   &quot;canonical_isoform&quot;: &quot;O43493-2&quot;,
   &quot;isoform_flattened&quot;: false,
+  &quot;in_candidate_universe&quot;: false,
   &quot;protein_features&quot;: {
     &quot;protein_length_aa&quot;: 480,
     &quot;tm_domain_count&quot;: 1,
@@ -389,7 +510,7 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
     },
     &quot;induced_presentation&quot;: [
       {
-        &quot;context_kind&quot;: &quot;trafficking_cycling&quot;,
+        &quot;context_kind&quot;: &quot;dual_localization&quot;,
         &quot;context_kind_other_label&quot;: null,
         &quot;description&quot;: &quot;TGOLN2 constitutively cycles from TGN to PM via PKD-dependent CARTS carriers, transiently inserting its ~360 aa lumenal domain into the extracellular space. It returns to TGN via AP2/clathrin internalization (YQRL motif) and retromer-dependent retrograde endosomal transport. Steady-state PM fraction is low.&quot;,
         &quot;cited_evidence_ids&quot;: [
@@ -518,7 +639,12 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
       ],
       &quot;differential_from_canonical&quot;: false,
       &quot;rationale&quot;: &quot;Canonical widely-expressed isoform. Primarily TGN-resident; cycles constitutively to PM. YQRL motif mediates AP2-dependent PM internalization and TGN retrieval; without this motif, protein accumulates at PM.&quot;,
-      &quot;cited_evidence_ids&quot;: []
+      &quot;cited_evidence_ids&quot;: [
+        &quot;evi_004&quot;,
+        &quot;evi_005&quot;,
+        &quot;evi_009&quot;,
+        &quot;evi_011&quot;
+      ]
     },
     {
       &quot;isoform_id&quot;: &quot;O43493-7&quot;,
@@ -550,11 +676,29 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
       ],
       &quot;differential_from_canonical&quot;: false,
       &quot;rationale&quot;: &quot;TGN48 carries one additional tyrosine motif vs TGN46. Barely expressed in embryonic kidney and promyelocytic cells (UniProt). Cycling behavior similar to canonical TGN46; YQRL mutation leads to PM accumulation.&quot;,
-      &quot;cited_evidence_ids&quot;: []
+      &quot;cited_evidence_ids&quot;: [
+        &quot;evi_008&quot;,
+        &quot;evi_010&quot;
+      ]
     }
   ],
   &quot;coreceptor_requirements&quot;: [],
   &quot;orthology&quot;: [
+    {
+      &quot;species&quot;: &quot;rat&quot;,
+      &quot;ortholog_uniprot_acc&quot;: &quot;Q03430&quot;,
+      &quot;ortholog_gene_symbol&quot;: &quot;Tgoln1&quot;,
+      &quot;ensembl_gene_id&quot;: null,
+      &quot;orthology_type&quot;: &quot;one_to_one&quot;,
+      &quot;percent_identity&quot;: null,
+      &quot;surface_status&quot;: &quot;conditional_surface&quot;,
+      &quot;surface_concordant_with_human&quot;: true,
+      &quot;notes&quot;: &quot;Rat TGN38 (Q03430) \u2014 the historically canonical paralog used to characterize this protein family. TGN38 surface cycling (Ponnambalam 1996, Stephens &amp; Banting 1999) is the foundational biology cited in evi_005 and evi_006. Concordant cycling behavior with human TGN46.&quot;,
+      &quot;cited_evidence_ids&quot;: [
+        &quot;evi_005&quot;,
+        &quot;evi_006&quot;
+      ]
+    },
     {
       &quot;species&quot;: &quot;cynomolgus&quot;,
       &quot;ortholog_uniprot_acc&quot;: null,
@@ -1352,7 +1496,7 @@ footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
 
 </main>
 <footer>
-  Generated from <code>data/annotations/TGOLN2.json</code> · schema v0.5.0 · model sonnet_only
+  Generated from <code>data/annotations/TGOLN2.json</code> · schema v0.5.1 · model sonnet_only
 </footer>
 </body>
 </html>
