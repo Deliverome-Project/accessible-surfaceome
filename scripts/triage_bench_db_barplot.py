@@ -213,13 +213,27 @@ def load_benchmark_with_votes() -> list[dict[str, object]]:
             votes_by_acc[acc] = {flag: (r.get(flag, "0") == "1") for flag, _ in DB_FLAGS_5}
 
     # Optionally override UniProt + CSPA flags with the audit's
-    # optimized cutoffs (TM+signal and HC-only respectively).
+    # optimized cutoffs (TM+signal and HC-only respectively). The
+    # optimized UniProt rule (TM+signal) is LOOSER than canonical, so
+    # it admits proteins that aren't currently in candidate_universe —
+    # we synthesize a vote-row for them so the by-class plot reflects
+    # the hypothetical optimized universe, not the canonical one
+    # constrained to existing universe rows. CSPA HC-only is stricter,
+    # so no new rows need to be added on its behalf.
     if _USE_OPTIMIZED_CUTOFFS:
         opt_up = _optimized_uniprot_accs()
         opt_cspa = _optimized_cspa_accs()
         for acc, votes in votes_by_acc.items():
             votes["uniprot_surface_flag"] = acc in opt_up
             votes["cspa_surface_flag"] = acc in opt_cspa
+        # Add stub rows for benchmark accessions that AREN'T in the
+        # canonical universe but ARE admitted by optimized UniProt.
+        # Without this the by-class plot under-counts UniProt by 1
+        # for each TM+signal-rescued benchmark positive (STEAP1, STEAP2).
+        bench_accs = {r["uniprot_acc"] for r in bench}
+        for acc in (bench_accs & opt_up) - set(votes_by_acc):
+            votes_by_acc[acc] = {flag: False for flag, _ in DB_FLAGS_5}
+            votes_by_acc[acc]["uniprot_surface_flag"] = True
 
     llm_runs_by_cell = {
         vote_key: _load_llm_predictions(model, variant)
