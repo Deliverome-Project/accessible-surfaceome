@@ -119,7 +119,10 @@ def _backup_and_delete(affected: list[dict[str, str]], *, execute: bool) -> int:
         for i in range(0, len(symbols), CHUNK):
             chunk = symbols[i:i + CHUNK]
             placeholders = ",".join("?" * len(chunk))
-            d1.execute(
+            # D1Client.query() handles both reads and writes — write returns
+            # an empty result set, which we discard. There is no separate
+            # execute() method.
+            d1.query(
                 f"DELETE FROM triage_run "
                 f"WHERE run_id = ? AND gene_symbol IN ({placeholders});",
                 [CANONICAL_RUN_ID, *chunk],
