@@ -502,6 +502,14 @@ _RETRYABLE_ERROR_PATTERNS: tuple[str, ...] = (
     "messages.create:",
 )
 
+# Resolver-LookupError sub-pattern: when the resolver raises with
+# "out of study scope", the gene symbol fundamentally has no human
+# reviewed UniProt entry (deprecated HGNC symbol, withdrawn entry,
+# etc.). These are NOT transient — retrying just wastes UniProt
+# round-trips. Carve this out of the generic ``resolver failed:``
+# bucket so the wrapper short-circuits to a NULL D1 row in one shot.
+_RESOLVER_NONRETRYABLE_PATTERN = "out of study scope"
+
 # Schema validity: each verdict literal allows a small set of `reason`
 # literals. Mirrors ``_REASONS_BY_VERDICT`` in
 # accessible_surfaceome.tools._shared.models.TriageRecordDraft —
@@ -560,6 +568,11 @@ def _is_retryable(rec: "RunRecord") -> bool:
     # Null verdict: only retry on known transient error patterns.
     if rec.predicted_verdict is None:
         err = rec.error or ""
+        # Resolver-out-of-study-scope is a stable, structural miss —
+        # the symbol has no reviewed human UniProt entry and never
+        # will under the current resolver. Don't burn retries on it.
+        if _RESOLVER_NONRETRYABLE_PATTERN in err:
+            return False
         if any(pat in err for pat in _RETRYABLE_ERROR_PATTERNS):
             return True
 

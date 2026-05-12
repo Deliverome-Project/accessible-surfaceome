@@ -67,11 +67,24 @@ def main() -> int:
             "  AND api_stop_reason IS NULL;",  # exclude refusals (handled via naive fallback)
             [SONNET_RUN_ID],
         )
+        # Full set of catalog symbols the canonical run touched (valid +
+        # null, refusal + recoverable). Used as the safety net below to
+        # detect "silent drops" — catalog symbols the runner never wrote
+        # a row for (no NULL placeholder, no verdict). These are bugs the
+        # runner *should* have prevented by writing a NULL row with an
+        # error message, but pre-existing data may have gaps that we
+        # still want to subtract from the triageable input.
+        touched_rows = d1.query(
+            "SELECT DISTINCT gene_symbol FROM triage_run WHERE run_id = ?;",
+            [SONNET_RUN_ID],
+        )
     unrecoverable = {r["gene_symbol"] for r in null_rows}
+    touched = {r["gene_symbol"] for r in touched_rows}
 
     kept = 0
     dropped = 0
     renamed = 0
+    silent_drops: list[str] = []
     with CATALOG_IN.open() as fin, CATALOG_OUT.open("w", newline="") as fout:
         reader = csv.DictReader(fin, delimiter="\t")
         writer = csv.DictWriter(
@@ -80,13 +93,25 @@ def main() -> int:
         )
         writer.writeheader()
         for r in reader:
-            if r["gene_symbol"] in unrecoverable:
+            sym = r["gene_symbol"]
+            if sym in unrecoverable:
                 dropped += 1
                 continue
-            canonical = CATALOG_TO_CANONICAL_RENAMES.get(r["gene_symbol"])
+            canonical = CATALOG_TO_CANONICAL_RENAMES.get(sym)
             if canonical is not None:
                 r["gene_symbol"] = canonical
                 renamed += 1
+                writer.writerow(r)
+                kept += 1
+                continue
+            # Safety net: catalog symbol must exist in D1 (any verdict)
+            # under the canonical run. If it doesn't, the runner silently
+            # dropped it during the sweep — drop from triageable too so
+            # the cell count + downstream cost projections stay accurate.
+            if sym not in touched:
+                silent_drops.append(sym)
+                dropped += 1
+                continue
             writer.writerow(r)
             kept += 1
 
@@ -94,6 +119,10 @@ def main() -> int:
     print(f"  output : {kept:>6,} rows  ({CATALOG_OUT.name})")
     print(f"  dropped: {dropped:>6,}  (catalog-artifact symbols, pulled from D1)")
     print(f"  renamed: {renamed:>6,}  (catalog → canonical HGNC symbol)")
+    if silent_drops:
+        print(f"  silent : {len(silent_drops):>6,}  (catalog symbols with no D1 row — runner gaps)")
+        for s in silent_drops:
+            print(f"             - {s}")
     print()
     print(f"Expected Sonnet/ncbi sweep cost: "
           f"{kept:,} × ${MEAN_COST_PER_CALL} = ${kept * MEAN_COST_PER_CALL:.2f}")
