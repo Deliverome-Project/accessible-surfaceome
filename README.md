@@ -22,10 +22,14 @@ The project has three production layers, all in this repo:
    (`yes`/`contextual`/`no`) with confidence + key_uncertainty. Pure-model
    inference, no tools. `src/accessible_surfaceome/agents/surface_triage/`.
 3. **Surface annotator agent (deep dive)** — per-protein
-   `SurfaceomeRecord` v0.4.0 with surface_biology, isoform_accessibility,
-   coreceptor_requirements, orthology, surface_engagement_validation,
-   and a full Evidence chain anchored to verbatim quotes from cached
-   sources. Runs Sonnet 4.6. `src/accessible_surfaceome/agents/surface_annotator/`.
+   `SurfaceomeRecord` v0.5.0 with surface_biology (+ membrane
+   microdomains), isoform_accessibility, coreceptor_requirements,
+   orthology, paralogs, surface_engagement_validation, structured
+   contradiction adjudication, and a full Evidence chain anchored to
+   verbatim quotes from cached sources. Surface-localization assays
+   carry assay-type-specific detail (mass-spec method, antibody
+   identity, cell-type context). Runs Sonnet 4.6.
+   `src/accessible_surfaceome/agents/surface_annotator/`.
 
 ## Cloud / public data
 
@@ -61,7 +65,7 @@ Deploy: `cd cloudflare/workers/surfaceome_api && npx wrangler deploy`.
 The `viewer/` directory is a Vite + React + TypeScript SPA that renders
 `SurfaceomeRecord` JSONs. Today it reads static files from
 `viewer/public/data/genes/*.json` (committed snapshots — currently
-HSPA1A and TGOLN2 as v0.4.0 reference records). The eventual path is
+HSPA1A and TGOLN2 as v0.5.0 reference records). The eventual path is
 for the viewer to read from the public Worker API instead.
 
 Plan: deploy at `surfaceome.deliverome.org` via a Cloudflare Pages

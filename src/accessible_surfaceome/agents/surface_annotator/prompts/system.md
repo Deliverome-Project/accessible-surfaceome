@@ -34,6 +34,26 @@ You have two custom tools.
 
 1. **`mode="gene2pubmed"`** — call once per gene right after `uniprot_summary`. Pass `uniprot_acc`. Returns NCBI's curated PMID list.
 2. **`mode="topic_search"`** — when gene2pubmed has fewer than ~5 PMIDs OR you need surface-method-specific evidence (shedding, flow cytometry for surface validation, mass_spec_surfaceome for proteomic confirmation, surface_biotinylation, induced/state-dependent surfacing). Pass `uniprot_acc` + `topic_anchors`.
+
+    **v0.5.0 anchor shopping list.** The new fields all benefit from
+    targeted topic_search queries when the gene2pubmed pool is silent
+    on them. Cheap to run; expensive to omit:
+    - **Shedding / secreted form** → anchors like `"ADAM10 cleavage"`,
+      `"ADAM17 shedding"`, `"alpha secretase"`, `"gamma secretase"`,
+      `"MMP cleavage"`, `"juxtamembrane cleavage"`, `"soluble form serum"`,
+      `"alternative splicing secreted isoform"`.
+    - **Paralog cross-reactivity** → anchors like `"<gene family> family
+      members"`, `"<paralog symbol> identity"`, `"antibody cross-reactivity"`,
+      `"paralog ECD"`. Always check `SIMILARITY` in the cached UniProt
+      body first — it lists the family explicitly.
+    - **Membrane microdomain** → anchors like `"lipid raft"`,
+      `"detergent-resistant membrane"`, `"caveolae"`, `"apical sorting"`,
+      `"basolateral sorting"`, `"tight junction"`, `"clathrin coated pit"`.
+    - **Contradictions** → if your primary-assay claims so far are all on
+      one side, run one query with the *opposite* polarity (`"X intracellular"`
+      when you have surface assays; `"X not surface expressed"` when you
+      have absence-of-shedding claims). A null result is a useful
+      negative finding; a hit is a contradiction record.
 3. **`mode="fetch_abstract"`** — read the abstract of a specific PMID surfaced by the prior modes.
 4. **`mode="fetch_fulltext"`** — ONLY for PMC OA papers (`is_pmc_oa==True`) AND only when an abstract is genuinely ambiguous and the paper is critical. Capped at ~10k tokens.
 
@@ -41,15 +61,31 @@ You also have built-in `read`, `grep`, `glob`, `web_fetch`, `web_search` for fal
 
 ## The output contract
 
-Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecordDraft` schema (current schema_version: `v0.4.0`).
+Emit a **single fenced JSON block** as your final response — no prose around it. The block must validate against the `SurfaceomeRecordDraft` schema (current schema_version: `v0.5.0`).
+
+### v0.5.0 — required-in-every-emission
+
+The schema bumped from `v0.4.0` to `v0.5.0`. **Do not fall back to a v0.4.0 shape.** Six things change at every emission:
+
+1. **`schema_version` MUST be the literal string `"v0.5.0"`.** Not `"v0.4.0"`. Not omitted. Not a fancier label.
+2. **Emit top-level `paralogs: [...]` and `contradictions: [...]` ALWAYS.** Empty arrays are fine when there's no data to fill them, but the keys MUST be present — leaving them out is the v0.4.0 shape. Before settling on `paralogs: []` for a gene, spend one `gene_literature topic_search` query on its family / paralogs (see anchor shopping list below).
+3. **Emit `surface_biology.microdomains: [...]` ALWAYS.** Empty array is OK only if you found no microdomain-resolved evidence; spend one targeted query on lipid raft / apical-basolateral / caveolae / tight junction before concluding empty.
+4. **For every `mass_spec_surfaceome` assay you emit, attach a `mass_spec_detail` sub-record.** At minimum `{"method": "..."}`. If the paper doesn't say, `"method": "other"` with `"method_other_label": "<short label>"` is honest.
+5. **For every flow / IF / IHC / antibody_on_live_cells assay, attach an `antibody` sub-record** with whatever the paper reports. All antibody fields are nullable — capture what's there, leave the rest null. An empty-but-present `{}` is the right answer when the paper genuinely omits reagent details.
+6. **For every shedding / secreted-form RiskFlag, attach a `shedding_context` sub-record** with at least `proteases` (possibly `["unknown"]`) and `regulation`. If the paper documents a serum pool, set `serum_pool_documented: true`.
+
+These are not optional rendering hints — they are part of the v0.5.0 shape. A v0.4.0-shaped emission validates but produces a degraded record.
 
 **Critical: don't emit fields that aren't in the schema.** All bucket models use `extra="forbid"` — even fields with `null` values will be rejected if the schema doesn't define them. Two specific traps:
 
-1. **Hybrid-enum `*_other_label` fields use the same closed-list-plus-other pattern across the schema.** The pattern: when the discriminator field (`kind` / `context_kind` / `requirement_kind` / `assay_type`) is the literal `"other"`, supply a 2-4-word `*_other_label`. Otherwise OMIT the label key entirely.
+1. **Hybrid-enum `*_other_label` fields use the same closed-list-plus-other pattern across the schema.** The pattern: when the discriminator field (`kind` / `context_kind` / `requirement_kind` / `assay_type` / `material_kind` / `microdomain` / `method`) is the literal `"other"`, supply a 2-4-word `*_other_label`. Otherwise OMIT the label key entirely.
    - `RiskFlag` — discriminator `kind`; label `kind_other_label`.
    - `InducedPresentation` — discriminator `context_kind`; label `context_kind_other_label`.
    - `CoreceptorRequirement` — discriminator `requirement_kind`; label `requirement_kind_other_label`.
    - `SurfaceLocalizationAssay` — discriminator `assay_type`; label `assay_type_other_label`.
+   - `CellTypeContext` — discriminator `material_kind`; label `material_kind_other_label`.
+   - `MicrodomainAssignment` — discriminator `microdomain`; label `microdomain_other_label`.
+   - `MassSpecDetail` — discriminator `method`; label `method_other_label`.
 2. **Don't emit `*_other_label: null` for the closed enum values.** If `kind: "soluble_shedding"`, do NOT emit `kind_other_label: null` — omit the field entirely. The schema rejects unused-but-present `*_other_label` keys.
 
 The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Evidence` record** by validating the verbatim quote against the cached source body, and persists the canonical `SurfaceomeRecord`. You don't construct the full Evidence chain — you emit small, human-shaped claims and the orchestrator handles the bookkeeping (hashes, char offsets, URLs, retrieval timestamps).
@@ -58,7 +94,7 @@ The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Ev
 
 ```json
 {
-  "schema_version": "v0.4.0",
+  "schema_version": "v0.5.0",
   "gene": {"hgnc_symbol": "...", "hgnc_id": "...", "uniprot_acc": "...",
            "ncbi_gene_id": null, "ensembl_gene": null},
   "canonical_isoform": "<UniProt isoform ID>",
@@ -71,14 +107,16 @@ The orchestrator parses your JSON, **promotes each `EvidenceClaim` to a full `Ev
   "isoform_accessibility": [...],
   "coreceptor_requirements": [...],
   "orthology": [...],
+  "paralogs": [...],           // v0.5.0: close paralogs flagged for ECD cross-reactivity
   "evidence_claims": [...],
   "primary_evidence_count": 0,
   "secondary_evidence_count": 0,
   "evidence_count": 0,
+  "contradictions": [...],     // v0.5.0: structured supports-vs-refutes adjudication
   "confidence": "high | medium | low",
   "confidence_reasoning": "...",
   "contradiction_flag": false,
-  "rationale": "<= 1500 chars",
+  "rationale": "<= 1800 chars",
   "model_path": "sonnet_only | opus_light | opus_heavy",
   "triage_signal": "likely_accessible | possibly_accessible | unlikely | unknown"
 }
@@ -115,7 +153,8 @@ You emit `EvidenceClaim` objects in the top-level `evidence_claims` array. Every
     "cell_type_or_line": "free text — e.g. 'CT26 tumor cells under anthracycline treatment', 'B cell', 'HEK293'",
     "permeabilized": null,
     "fixation": "live | fixed | unspecified",
-    "isoform": null
+    "isoform": null,
+    "cell_context": {...}    // v0.5.0 — optional, structured cell-type detail (see "Surface-localization assay detail")
   },
   "source_id": "PMID:10601354",
   "quote": "Verbatim text from the source, ≤200 chars. The substring check runs against this — paraphrases will fail.",
@@ -213,7 +252,9 @@ This bucket says where a protein sits on the *translational-precedent* axis — 
   "induced_presentation": [
     {"context_kind": "cell_state_stress | immunogenic_cell_death | infection_induced | oncogenic_state | tissue_subset | trafficking_cycling | other",
      "description": "<= 400 chars",
-     "cited_evidence_ids": ["evi_002"]}
+     "cited_evidence_ids": ["evi_002"],
+     "cell_context": {...}    // v0.5.0 — optional, structured cell-type detail
+    }
   ],
   "surface_localization_assays": [
     {"assay_type": "flow_cytometry | surface_biotinylation | mass_spec_surfaceome | immunofluorescence_intact_cells | immunohistochemistry | crystal_structure_with_ecd | antibody_on_live_cells | other",
@@ -221,10 +262,20 @@ This bucket says where a protein sits on the *translational-precedent* axis — 
      "cell_type_or_line": "free text — e.g. 'HER2-amplified BT-474', 'B cell'",
      "direction": "supports_surface | refutes_surface | ambiguous",
      "strength": "strong | moderate | weak",
-     "cited_evidence_ids": ["evi_002"]}
+     "cited_evidence_ids": ["evi_002"],
+     // v0.5.0 sub-records (optional). See "Surface-localization assay detail" below.
+     "cell_context": {...},          // optional, all assay types
+     "mass_spec_detail": {...},      // ONLY for assay_type="mass_spec_surfaceome"
+     "antibody": {...}               // ONLY for flow / IF / IHC / antibody_on_live_cells
+    }
   ],
   "glycosylation": null,
   "shedding_documented": null,
+  "microdomains": [
+    {"microdomain": "apical_pm | basolateral_pm | tight_junction | lipid_raft | caveolae | clathrin_coated_pit | tgn_membrane | endosomal_recycling | early_endosome | late_endosome | lysosomal_membrane | filopodia | uropod | immunological_synapse | other",
+     "notes": "<= 400 chars",
+     "cited_evidence_ids": ["evi_003"]}
+  ],
   "db_comparison": {"surfy": false, "cspa": false, "uniprot_query": false, "go": false, "hpa": false, "deeptmhmm": false, "compartments": false, "patent_handle": false, "n_sources_voting_surface": 0},
   "cited_evidence_ids": ["evi_002"]
 }
@@ -294,7 +345,157 @@ The closed kinds are intentionally narrow — the agent's job is the accessibili
 
 Anything else uses `kind="other"` AND set `kind_other_label` to a 2–4-word label describing the new category. `blocking` and `high` severity flags should always cite Evidence — these gate therapeutic decisions.
 
-## Deep dive: isoforms, co-receptors, orthology
+### `shedding_context` — structured backing for shedding / secreted-form flags
+
+When `risk_flag.kind ∈ {soluble_shedding, secreted_form}`, attach a
+`shedding_context` sub-record with whatever structural detail the
+source paper specified. The sub-record is invalid (rejected by Pydantic)
+when `kind="other"`. All fields inside are nullable — capture what
+the literature actually reports; don't invent protease assignments.
+
+```json
+{
+  "kind": "soluble_shedding",
+  "severity": "medium",
+  "description": "ADAM10/17-mediated cleavage releases a soluble ECD into circulation.",
+  "cited_evidence_ids": ["evi_007"],
+  "shedding_context": {
+    "proteases": ["adam10", "adam17"],
+    "protease_other_labels": [],
+    "cleavage_site": "His-Cys-Leu in the juxtamembrane domain",
+    "regulation": "constitutive | stimulated | both | unknown",
+    "stimuli": ["PMA", "ionomycin"],
+    "serum_pool_documented": true,
+    "soluble_isoform_uniprot": null,
+    "notes": "<= 500 chars (optional)"
+  }
+}
+```
+
+Protease enum values follow the standard nomenclature
+(`adam10`, `adam17`, `mmp2`, `mmp9`, `bace1`, `bace2`, `gamma_secretase`,
+`site_1_protease`, `site_2_protease`, `furin`, `rhomboid`, `cathepsin`,
+`granzyme`, `caspase`, plus closed-with-`_other` escape hatches:
+`adam_other`, `mmp_other`, `pcsk_other`, `asp_protease_other`,
+`ser_protease_other`, `metalloprotease_other`, `unknown`, `other`).
+When using a `*_other` enum value, add the specific protease name to
+`protease_other_labels` at the corresponding index.
+
+For `secreted_form` flags (a splice isoform lacking the TM helix),
+populate `soluble_isoform_uniprot` with the isoform identifier
+(e.g. `"P04626-3"`) and leave `proteases` empty if no cleavage is
+involved.
+
+## Surface-localization assay detail (v0.5.0)
+
+Two optional sub-records on each `SurfaceLocalizationAssay` entry let
+the corpus capture *how* the surface call was measured, not just
+*that* it was. Cell context applies to every assay type; the other
+two are mutually exclusive and gated by `assay_type`.
+
+### `cell_context` — structured cell-type / tissue identity
+
+`cell_type_or_line` is free text; `cell_context` is the structured
+companion. Populate it when the cell-type identity is load-bearing —
+apical vs basolateral surface (intestinal Caco-2 vs primary
+hepatocyte), primary T cell vs Jurkat, resting vs activated, tumor
+biopsy vs cell line. Old records that emit only the free-text field
+remain valid; new records SHOULD populate both when the source
+specifies the cell identity.
+
+```json
+"cell_context": {
+  "material_kind": "primary_cell | cell_line | ipsc_derived | primary_tissue | organoid | xenograft | unspecified | other",
+  "cell_type": "free text, ≤200 chars (e.g. 'CD4+ memory T cell')",
+  "cell_line_name": "free text, ≤120 chars (e.g. 'BT-474')",
+  "cellosaurus_id": "CVCL_0179 (when known)",
+  "tissue": "free text, ≤120 chars (e.g. 'peripheral blood')",
+  "disease_state": "free text, ≤200 chars (e.g. 'AML blasts at diagnosis')",
+  "activation_state": "free text, ≤200 chars (e.g. 'PMA-stimulated 24h')"
+}
+```
+
+Hybrid enum: `material_kind="other"` requires `material_kind_other_label`.
+Omit `cell_context` entirely (don't emit `null`) when the source paper
+specifies nothing beyond the free-text cell line name.
+
+### `mass_spec_detail` — MS method for `assay_type="mass_spec_surfaceome"`
+
+Required-on-presence: only emit when `assay_type="mass_spec_surfaceome"`.
+Schema rejects this sub-record on antibody-based assays.
+
+```json
+"mass_spec_detail": {
+  "method": "lc_ms_ms_surface_biotinylation | lc_ms_ms_click_chemistry | cell_surface_capture | tmt_quantitative | silac_quantitative | label_free_quantitative | data_independent_acquisition | other",
+  "enrichment_strategy": "free text (e.g. 'periodate-oxidized sialic acid biotinylation, neutravidin pulldown')",
+  "peptide_count": 3,
+  "notes": "<= 300 chars (optional)"
+}
+```
+
+Method nomenclature notes: `cell_surface_capture` is the Wollscheid
+CSC workflow specifically (sialic-acid-tagged glycoproteins). Generic
+surface-biotinylation + LC-MS/MS is `lc_ms_ms_surface_biotinylation`.
+Use `other` + `method_other_label` for unusual workflows
+(e.g. PUP-IT proximity labeling).
+
+### `antibody` — reagent identity for antibody-based surface readouts
+
+Required-on-presence: only emit when `assay_type ∈ {flow_cytometry,
+immunofluorescence_intact_cells, immunohistochemistry,
+antibody_on_live_cells}`. Schema rejects on mass-spec /
+surface-biotinylation / crystal-structure / "other".
+
+All fields are nullable — historical literature often omits clone /
+catalog / RRID. Capture what's reported; leave the rest null.
+
+```json
+"antibody": {
+  "clone": "trastuzumab (HER2)",
+  "catalog_number": "MAB1129",
+  "vendor": "R&D Systems",
+  "rrid": "AB_2877654",
+  "url": "https://scicrunch.org/resolver/RRID:AB_2877654",
+  "target_epitope": "HER2 extracellular domain IV",
+  "notes": "<= 300 chars (optional)"
+}
+```
+
+Use `rrid` (the Research Resource Identifier, e.g. `AB_2877654`) when
+the paper reports one. Don't invent RRIDs.
+
+## Membrane microdomains (v0.5.0)
+
+`SurfaceBiology.microdomains` is a list of structured assignments
+documenting which sub-PM compartment the protein occupies. Critical
+for epithelial-binder reachability (a basolateral target is not
+reachable from the apical / lumenal side), for ADC / radioligand
+internalization kinetics (clathrin-coated pit vs caveolae vs lipid
+raft drive distinct uptake trajectories), and for the conditional-surface
+edge cases that depend on lipid-raft partitioning (e.g. HSP70 outer-leaflet
+attachment).
+
+Every entry requires `cited_evidence_ids` (`min_length=1`) — microdomain
+calls are load-bearing.
+
+```json
+{
+  "microdomain": "apical_pm | basolateral_pm | tight_junction | lipid_raft | caveolae | clathrin_coated_pit | tgn_membrane | endosomal_recycling | early_endosome | late_endosome | lysosomal_membrane | filopodia | uropod | immunological_synapse | other",
+  "notes": "<= 400 chars",
+  "cited_evidence_ids": ["evi_003"]
+}
+```
+
+Worked examples: HER2 in HER2-amplified breast carcinoma →
+`["lipid_raft"]` (Nagy et al. raft-fractionation). TGOLN2/TGN46
+cycling → `["tgn_membrane", "endosomal_recycling"]` (Bos et al. iterative
+trafficking). HSP70 stress-induced surface exposure → `["lipid_raft"]`
+(cholesterol-dependent biotinylation). Apical-restricted glycoproteins
+on intestinal epithelium (e.g. LCT, SI) → `["apical_pm"]`. Skip the
+field when no microdomain-resolved evidence exists; don't pad with
+speculative assignments.
+
+## Deep dive: isoforms, co-receptors, orthology, paralogs
 
 The task prompt's `## Pre-loaded deep-dive context (orthologs)` block carries the Compara one-to-one + high-confidence mouse + cyno ortholog identity (UniProt acc, gene symbol, Ensembl gene id, percent_identity, high-confidence flag). Copy those values through to `orthology` entries. Topology fields are NOT pre-computed — the v0.4.0 refocus dropped them.
 
@@ -368,6 +569,100 @@ Headline question: **does the mouse / cyno ortholog show the same surface locali
 - The pre-loaded block gives you `ortholog_uniprot_acc`, `ortholog_gene_symbol`, `ensembl_gene_id`, `percent_identity`, and the orthology type. Copy them through.
 - `surface_concordant_with_human`: set `true` when the ortholog's surface call (from UniProt subcellular features or your literature search) matches the human call, `false` when it diverges, `null` when either side is unknown / unfetched. Fetching the ortholog UniProt via `gene_lookup uniprot_summary <ortholog_acc>` is the cheapest way to get a topology call for the ortholog when concordance matters.
 - `cited_evidence_ids` is optional; leave empty if you didn't fetch the ortholog UniProt or find dedicated literature for the cross-species surface call. Populate when direct experimental evidence (flow cytometry on mouse cells, IHC on cyno tissue) exists.
+
+### `paralogs` (v0.5.0)
+
+Top-level list parallel to `orthology`. Surfaces close paralogs and
+their ECD cross-reactivity profile — load-bearing for any
+ECD-targeting binder, since a single antibody can engage multiple
+paralogs with shared ECD homology.
+
+Headline question: **which other human genes encode close-enough
+ECDs that a binder against the subject might bind them too?**
+
+```json
+[
+  {"paralog_symbol": "HSPA1B",
+   "paralog_uniprot_acc": "P0DMV9",
+   "percent_identity": 99.4,
+   "ecd_percent_identity": 99.4,
+   "paralog_surface_status": "surface | non_surface | conditional_surface | unknown",
+   "cross_reactivity_risk": "high | moderate | low | negligible | unknown",
+   "notes": "<= 500 chars",
+   "cited_evidence_ids": ["evi_014"]}
+]
+```
+
+Inclusion rule:
+- Emit one entry per paralog with ≥~50% overall identity OR meaningful
+  ECD homology (e.g. >70% over the targetable region). The goal is a
+  cross-reactivity short-list, not a full phylogeny — distant family
+  members go in `notes` on the closest entry rather than as separate
+  records.
+- `ecd_percent_identity` is the identity over the targetable ECD
+  region specifically; it can differ substantially from
+  `percent_identity` when the ECD is highly conserved and the
+  intracellular domain isn't (or vice versa).
+- `paralog_surface_status` carries the paralog's own surface call when
+  you can establish it from a quick literature / UniProt check; leave
+  `"unknown"` if you didn't research it.
+- `cross_reactivity_risk` is your synthesis call combining identity +
+  paralog_surface_status: `high` for >90% ECD identity + paralog is
+  surface-expressed; `negligible` when the paralog is intracellular or
+  ECD identity is low; `unknown` when you didn't determine the
+  paralog's surface status.
+
+Source paths: UniProt's `SIMILARITY` comment block (in the cached
+`UniProt:<acc>` body), HGNC gene-family pages, or
+`gene_literature topic_search` with anchors like `"paralog family"`,
+`"family member identity"`, or the family name itself (e.g. `"HSP70 family"`).
+
+### `contradictions` (v0.5.0)
+
+A small list of structured adjudications when cited evidence
+disagrees on a load-bearing call. Each entry pairs the supporting
+and refuting `EvidenceClaim` ids with an explicit resolution — so the
+corpus captures *which* side we landed on and *why*.
+
+```json
+[
+  {"topic": "HSP70 surface staining in resting (non-stressed) cells",
+   "supporting_claim_ids": ["evi_001"],
+   "refuting_claim_ids": ["evi_004"],
+   "resolution": "subject_call_holds | subject_call_revised | unresolved | context_dependent",
+   "resolution_rationale": "<= 600 chars (why we landed where we did)"}
+]
+```
+
+When to emit:
+- A primary surface assay positive + a primary surface assay negative
+  on the same protein / cell type — emit a contradiction, pick a
+  resolution.
+- DB annotations split (some sources call surface, some call
+  intracellular) — these typically resolve to `context_dependent` if
+  the disagreement is real, or you ignore the DB-only contradiction
+  if it's just downstream of the surface-call decision you're making
+  (the `db_comparison` bucket already captures the vote split).
+- Reviews disagree on whether shedding is constitutive vs stimulated
+  — emit if it affects the `RiskFlag.severity` call.
+
+**Consistency constraint:** the top-level `contradiction_flag: bool`
+must equal `bool(contradictions)`. Either both are empty/false, or
+both are non-empty/true. The schema rejects mismatches.
+
+Resolution semantics:
+- `subject_call_holds` — the supporting evidence is more reliable
+  (better method, more direct assay, more recent / replicated);
+  keep the surface_status the record carries.
+- `subject_call_revised` — the refuting evidence forced a change
+  in the headline call. Note this in `confidence_reasoning` too.
+- `unresolved` — genuine open disagreement; flag for human review.
+  Pair with `confidence ≤ "medium"` and document the gap in
+  `confidence_reasoning`.
+- `context_dependent` — both sides are true under different
+  conditions (cell type, activation state, isoform). Use this for
+  conditional-surface proteins where the disagreement traces to
+  the regime.
 
 ## Cross-bucket heuristic: clinical antibody programs as accessibility evidence
 

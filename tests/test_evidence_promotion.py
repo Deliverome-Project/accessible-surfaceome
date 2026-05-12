@@ -473,3 +473,100 @@ def test_persist_annotation_unverified_claim_persists(
     assert evi.entailment_verified is False
     assert evi.spans == []
     assert evi.validation_warnings
+
+
+def test_persist_annotation_passes_paralogs_and_contradictions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """v0.5.0 regression: the orchestrator must propagate draft.paralogs and
+    draft.contradictions into the persisted SurfaceomeRecord.
+
+    Earlier versions of ``_persist_annotation`` enumerated each field on the
+    SurfaceomeRecord constructor and silently dropped any field not in the
+    enumeration. Without explicit coverage here, adding a new top-level
+    list to the schema is a silent data-loss bug — the draft validates,
+    but the persisted record on disk is missing the field.
+    """
+
+    monkeypatch.setattr(
+        "accessible_surfaceome.agents.surface_annotator.orchestrator.DATA_DIR",
+        tmp_path / "data",
+    )
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    (run_dir / "events.jsonl").write_text("")
+
+    store = SourceTextStore()
+    store.put(_make_source())
+
+    draft = _draft_dict(
+        evidence_claims=[
+            {
+                "evidence_id": "evi_001",
+                "claim": "KAAG1 is expressed on kidney proximal tubule cells",
+                "claim_type": "surface_expression",
+                "direction": "supports",
+                "evidence_type": "immunohistochemistry",
+                "evidence_tier": "primary",
+                "confidence": "strong",
+                "assay_context": {"species": "human"},
+                "source_id": "PMID:10601354",
+                "quote": "proximal tubule cells",
+                "section": "results",
+            },
+            {
+                "evidence_id": "evi_002",
+                "claim": "alternative reading of the same data",
+                "claim_type": "contradictory",
+                "direction": "refutes",
+                "evidence_type": "immunohistochemistry",
+                "evidence_tier": "primary",
+                "confidence": "weak",
+                "assay_context": {"species": "human"},
+                "source_id": "PMID:10601354",
+                "quote": "proximal tubule cells",
+                "section": "results",
+            },
+        ]
+    )
+    draft["paralogs"] = [
+        {
+            "paralog_symbol": "KAAG2",
+            "paralog_uniprot_acc": None,
+            "percent_identity": 88.0,
+            "ecd_percent_identity": 92.0,
+            "paralog_surface_status": "unknown",
+            "cross_reactivity_risk": "high",
+            "notes": "Hypothetical paralog used to exercise the persist path.",
+            "cited_evidence_ids": [],
+        }
+    ]
+    draft["contradictions"] = [
+        {
+            "topic": "KAAG1 surface staining on RCC tissue",
+            "supporting_claim_ids": ["evi_001"],
+            "refuting_claim_ids": ["evi_002"],
+            "resolution": "subject_call_holds",
+            "resolution_rationale": (
+                "Supporting evidence is from the founding RCC paper; the "
+                "refuting fragment is the same source under an alternative "
+                "reading and does not displace the original conclusion."
+            ),
+        }
+    ]
+    draft["contradiction_flag"] = True
+
+    annotation_path, _invalid, status, _errors = _persist_annotation(
+        gene="KAAG1",
+        annotation_json=draft,
+        run_dir=run_dir,
+        source_store=store,
+    )
+    assert status == "valid", f"errors={_errors}"
+    assert annotation_path is not None
+    record = SurfaceomeRecord.model_validate_json(annotation_path.read_text())
+    assert len(record.paralogs) == 1
+    assert record.paralogs[0].paralog_symbol == "KAAG2"
+    assert len(record.contradictions) == 1
+    assert record.contradictions[0].resolution == "subject_call_holds"
+    assert record.contradiction_flag is True

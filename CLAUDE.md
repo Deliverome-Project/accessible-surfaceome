@@ -42,6 +42,22 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 - `bash scripts/check-py.sh` runs ruff + ty + compile + pytest.
 - Use `uv run pre-commit run --all-files --config .pre-commit-config.yaml` before PR.
 
+## Managed Agents — push prompt + schema edits before annotating
+
+The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time. Editing a file under `src/accessible_surfaceome/agents/<name>/prompts/system.md` does **NOT** push the change; `annotate` and `triage` will keep running against the previously-registered prompt.
+
+**Always run `uv run accessible-surfaceome agents sync` after editing:**
+
+- any `src/accessible_surfaceome/agents/*/prompts/*.md`
+- the agent payload in `src/accessible_surfaceome/agents/*/agent.py` (model, tool list, etc.)
+- the SurfaceomeRecord / SurfaceomeRecordDraft schema in `src/accessible_surfaceome/tools/_shared/models.py` if the prompt references the new shape
+
+`agents sync` is cheap (one metadata round-trip per agent, no model call) and idempotent — it diffs the local `system.md` sha256 against `.runs/agents-registry.json` and `PATCH`es the agent only when the sha changed. The registry is local (per-worktree, gitignored under `.runs/`) so each worktree tracks its own remote agent version.
+
+If you skip sync, the orchestrator now logs a loud `PROMPT DRIFT` warning at the start of every run, naming the stale sha and pointing at the sync command. It does not fail the run — but the run will use the **stale** prompt and may emit a degraded (older-schema-shape) record, wasting model spend.
+
+**Why this matters:** the surface_annotator run is ~$0.30–0.50 on Sonnet 4.6. Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
+
 ## Agent Command Allowlist
 
 - Agents may run `uv run python ...` commands for repository modules/scripts.

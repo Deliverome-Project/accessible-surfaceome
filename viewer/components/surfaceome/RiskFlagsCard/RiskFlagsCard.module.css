@@ -43,3 +43,7 @@
   color: var(--ink-soft);
   max-width: 64ch;
 }
+
+.subtle {
+  color: var(--muted);
+}

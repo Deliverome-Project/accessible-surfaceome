@@ -66,6 +66,39 @@ export interface DBComparison {
   n_sources_voting_surface: number;
 }
 
+// v0.5.0: structured cell-type / tissue identity, loadable on AssayContext,
+// SurfaceLocalizationAssay, and InducedPresentation.
+export interface CellTypeContext {
+  material_kind: string;
+  material_kind_other_label?: string | null;
+  cell_type?: string | null;
+  cell_line_name?: string | null;
+  cellosaurus_id?: string | null;
+  tissue?: string | null;
+  disease_state?: string | null;
+  activation_state?: string | null;
+}
+
+// v0.5.0: method-specific detail for mass_spec_surfaceome assay entries.
+export interface MassSpecDetail {
+  method: string;
+  method_other_label?: string | null;
+  enrichment_strategy?: string | null;
+  peptide_count?: number | null;
+  notes?: string | null;
+}
+
+// v0.5.0: reagent identity for antibody-based surface assays.
+export interface AntibodyReference {
+  clone?: string | null;
+  catalog_number?: string | null;
+  vendor?: string | null;
+  rrid?: string | null;
+  url?: string | null;
+  target_epitope?: string | null;
+  notes?: string | null;
+}
+
 export interface SurfaceLocalizationAssay {
   assay_type: string;
   assay_type_other_label?: string | null;
@@ -74,12 +107,27 @@ export interface SurfaceLocalizationAssay {
   direction: "supports_surface" | "refutes_surface" | "ambiguous";
   strength: "strong" | "moderate" | "weak";
   cited_evidence_ids: string[];
+  // v0.5.0 sub-records (optional; gated by assay_type for the
+  // mass-spec / antibody fields).
+  cell_context?: CellTypeContext | null;
+  mass_spec_detail?: MassSpecDetail | null;
+  antibody?: AntibodyReference | null;
 }
 
 export interface InducedPresentation {
   context_kind: string;
   context_kind_other_label?: string | null;
   description: string;
+  cited_evidence_ids: string[];
+  // v0.5.0
+  cell_context?: CellTypeContext | null;
+}
+
+// v0.5.0: membrane microdomain / sub-PM compartment assignments.
+export interface MicrodomainAssignment {
+  microdomain: string;
+  microdomain_other_label?: string | null;
+  notes?: string;
   cited_evidence_ids: string[];
 }
 
@@ -98,6 +146,8 @@ export interface SurfaceBiology {
   surface_localization_assays?: SurfaceLocalizationAssay[];
   glycosylation?: unknown;
   shedding_documented?: unknown;
+  // v0.5.0
+  microdomains?: MicrodomainAssignment[];
   db_comparison: DBComparison;
   cited_evidence_ids: string[];
 }
@@ -195,12 +245,51 @@ export interface TherapeuticLandscape {
   preclinical_evidence?: PreclinicalEvidence[];
 }
 
+// v0.5.0: structured backing for shedding / secreted-form RiskFlag entries.
+export interface SheddingContext {
+  proteases?: string[];
+  protease_other_labels?: string[];
+  cleavage_site?: string | null;
+  regulation?: "constitutive" | "stimulated" | "both" | "unknown";
+  stimuli?: string[];
+  serum_pool_documented?: boolean | null;
+  soluble_isoform_uniprot?: string | null;
+  notes?: string | null;
+}
+
 export interface RiskFlag {
   kind: string;
   kind_other_label: string | null;
   severity: Severity;
   description: string;
   cited_evidence_ids: string[];
+  // v0.5.0 — populated only when kind ∈ {soluble_shedding, secreted_form}.
+  shedding_context?: SheddingContext | null;
+}
+
+// v0.5.0: close paralog with ECD cross-reactivity assessment.
+export interface ParalogRecord {
+  paralog_symbol: string;
+  paralog_uniprot_acc?: string | null;
+  percent_identity?: number | null;
+  ecd_percent_identity?: number | null;
+  paralog_surface_status?: string;
+  cross_reactivity_risk?: string;
+  notes?: string;
+  cited_evidence_ids?: string[];
+}
+
+// v0.5.0: documented disagreement between cited evidence on a load-bearing call.
+export interface ContradictionRecord {
+  topic: string;
+  supporting_claim_ids: string[];
+  refuting_claim_ids: string[];
+  resolution:
+    | "subject_call_holds"
+    | "subject_call_revised"
+    | "unresolved"
+    | "context_dependent";
+  resolution_rationale: string;
 }
 
 export interface SurfaceomeRecord {
@@ -236,6 +325,10 @@ export interface SurfaceomeRecord {
   coreceptor_requirements?: CoreceptorRequirement[];
   orthology?: OrthologRecord[];
   triage_signal?: TriageSignal;
+
+  // v0.5.0 — optional so v0.4.0 records still parse.
+  paralogs?: ParalogRecord[];
+  contradictions?: ContradictionRecord[];
 
   evidence?: unknown[];
 }

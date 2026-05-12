@@ -162,6 +162,24 @@ def _annotate_one(
     agent_entry = reg.agents[_agent.AGENT_NAME]
     env_entry = reg.environments[_environment.ENVIRONMENT_NAME]
 
+    # Drift check: the Managed Agent on Anthropic's side keeps its own
+    # snapshot of the system prompt; ``accessible-surfaceome agents sync``
+    # pushes local edits. If the registry's sha doesn't match the prompt
+    # on disk, the run will use the STALE prompt and silently emit a
+    # degraded record — every ~$0.30–0.50 burnt on an outdated shape.
+    # Loud warning so the operator notices before a batch run.
+    current_prompt_sha = _registry.sha256(_agent.read_system_prompt())
+    if agent_entry.system_prompt_sha256 != current_prompt_sha:
+        logger.warning(
+            "PROMPT DRIFT: local system.md sha256=%s does not match registered "
+            "agent (version=%s, registered sha256=%s). The agent is running with "
+            "a STALE prompt. Run `accessible-surfaceome agents sync` to push the "
+            "current prompt before annotating.",
+            current_prompt_sha,
+            agent_entry.version,
+            agent_entry.system_prompt_sha256,
+        )
+
     source_store = SourceTextStore()
     retraction_index = _retraction_watch.from_http(http)
     logger.info(
@@ -583,10 +601,12 @@ def _persist_annotation(
             isoform_accessibility=draft.isoform_accessibility,
             coreceptor_requirements=draft.coreceptor_requirements,
             orthology=draft.orthology,
+            paralogs=draft.paralogs,
             evidence=evidence,
             primary_evidence_count=primary,
             secondary_evidence_count=secondary,
             evidence_count=len(evidence),
+            contradictions=draft.contradictions,
             search_log=search_log,
             confidence=draft.confidence,
             confidence_reasoning=draft.confidence_reasoning,

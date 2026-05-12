@@ -28,6 +28,18 @@ Concise contributor guide for `accessible-surfaceome`.
 - Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export)
 - Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
 
+## Managed Agents — push prompt + schema edits before annotating
+The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. That remote snapshot is the source of truth at run time. Editing a file under `src/accessible_surfaceome/agents/<name>/prompts/system.md` does **NOT** push the change; `annotate` and `triage` will keep running against the previously-registered prompt.
+
+**Always run `uv run accessible-surfaceome agents sync` after editing:**
+- any `src/accessible_surfaceome/agents/*/prompts/*.md`
+- the agent payload in `src/accessible_surfaceome/agents/*/agent.py` (model, tool list, etc.)
+- the SurfaceomeRecord / SurfaceomeRecordDraft schema in `src/accessible_surfaceome/tools/_shared/models.py` if the prompt references the new shape
+
+`agents sync` is cheap (one metadata round-trip per agent, no model call) and idempotent — it diffs the local `system.md` sha256 against `.runs/agents-registry.json` and `PATCH`es the agent only when the sha changed. The registry is local (per-worktree, gitignored under `.runs/`) so each worktree tracks its own remote agent version.
+
+If you skip sync, the orchestrator logs a loud `PROMPT DRIFT` warning at the start of every run, naming the stale sha and pointing at the sync command. It does not fail the run — but the run will use the **stale** prompt and may emit a degraded (older-schema-shape) record, wasting model spend. The annotator run is ~$0.30–0.50 on Sonnet 4.6 per gene, so burning a sweep on a stale prompt is expensive.
+
 ## Agent Command Allowlist
 - Codex and Claude agents may run `uv run python <module-or-script> [args...]` for repo analyses and processing.
 - Prefer `uv run ...` over bare `python ...`.

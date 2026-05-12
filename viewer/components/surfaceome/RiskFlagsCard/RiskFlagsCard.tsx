@@ -27,20 +27,42 @@ export function RiskFlagsCard({ rec, n }: RiskFlagsCardProps) {
       meta={`${rec.risk_flags.length} flag${rec.risk_flags.length === 1 ? "" : "s"}`}
     >
       <ol className={styles.list}>
-        {rec.risk_flags.map((r, i) => (
-          <li key={i} className={styles.item}>
-            <div className={styles.head}>
-              <StatusPill tone={SEVERITY_TONE[r.severity]} size="sm">
-                {r.severity}
-              </StatusPill>
-              <h3 className={styles.kind}>
-                {r.kind_other_label || titleCase(r.kind)}
-              </h3>
-              <CiteCount ids={r.cited_evidence_ids} label={r.kind} />
-            </div>
-            <p className={styles.prose}>{r.description}</p>
-          </li>
-        ))}
+        {rec.risk_flags.map((r, i) => {
+          const sc = r.shedding_context;
+          const protList =
+            sc && sc.proteases && sc.proteases.length > 0
+              ? sc.proteases.join(", ")
+              : null;
+          return (
+            <li key={i} className={styles.item}>
+              <div className={styles.head}>
+                <StatusPill tone={SEVERITY_TONE[r.severity]} size="sm">
+                  {r.severity}
+                </StatusPill>
+                <h3 className={styles.kind}>
+                  {r.kind_other_label || titleCase(r.kind)}
+                </h3>
+                <CiteCount ids={r.cited_evidence_ids} label={r.kind} />
+              </div>
+              <p className={styles.prose}>{r.description}</p>
+              {sc ? (
+                <p className={styles.prose}>
+                  <span className={styles.subtle}>protease(s) · </span>
+                  {protList ?? "(unspecified)"}
+                  {sc.regulation && sc.regulation !== "unknown" ? (
+                    <span className={styles.subtle}> · {titleCase(sc.regulation)}</span>
+                  ) : null}
+                  {sc.cleavage_site ? (
+                    <span className={styles.subtle}> · cleavage at {sc.cleavage_site}</span>
+                  ) : null}
+                  {sc.serum_pool_documented === true ? (
+                    <span className={styles.subtle}> · serum pool documented</span>
+                  ) : null}
+                </p>
+              ) : null}
+            </li>
+          );
+        })}
       </ol>
     </SectionCard>
   );

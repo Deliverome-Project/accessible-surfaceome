@@ -16,12 +16,21 @@ function concordancePill(value: boolean | null | undefined) {
   return <StatusPill tone="neutral" size="sm">unknown</StatusPill>;
 }
 
+function paralogRiskTone(risk: string | undefined) {
+  if (risk === "high") return "danger" as const;
+  if (risk === "moderate") return "amber" as const;
+  if (risk === "low" || risk === "negligible") return "success" as const;
+  return "neutral" as const;
+}
+
 export function DeepDiveCard({ rec, n }: DeepDiveCardProps) {
   const isoforms = rec.isoform_accessibility ?? [];
   const coreceptors = rec.coreceptor_requirements ?? [];
   const orthologs = rec.orthology ?? [];
+  const paralogs = rec.paralogs ?? [];
 
-  if (!isoforms.length && !coreceptors.length && !orthologs.length) return null;
+  if (!isoforms.length && !coreceptors.length && !orthologs.length && !paralogs.length)
+    return null;
 
   return (
     <SectionCard
@@ -197,6 +206,66 @@ export function DeepDiveCard({ rec, n }: DeepDiveCardProps) {
                 </div>
               ) : null}
               {o.notes ? <p className={styles.prose}>{o.notes}</p> : null}
+            </FieldRow>
+          ))}
+        </div>
+      ) : null}
+
+      {paralogs.length > 0 ? (
+        <div className={styles.subsection}>
+          <h3 className={`label-mono ${styles.subhead}`}>Close paralogs</h3>
+          <p className={styles.subnote}>
+            Other human genes whose ECD homology raises cross-reactivity
+            risk for an extracellular binder.
+          </p>
+          {paralogs.map((p, i) => (
+            <FieldRow
+              key={`${p.paralog_symbol}-${i}`}
+              k={
+                <span className={styles.isoKey}>
+                  <a
+                    className={styles.partnerLink}
+                    href={
+                      p.paralog_uniprot_acc
+                        ? `https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}`
+                        : `https://www.genenames.org/tools/search/#!/?query=${p.paralog_symbol}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {p.paralog_symbol}
+                  </a>
+                  {p.paralog_uniprot_acc ? (
+                    <span className={styles.subtle}>{p.paralog_uniprot_acc}</span>
+                  ) : null}
+                </span>
+              }
+              ariaLabel={p.paralog_symbol}
+              ids={p.cited_evidence_ids ?? []}
+            >
+              <div className={styles.row}>
+                {p.cross_reactivity_risk && p.cross_reactivity_risk !== "unknown" ? (
+                  <StatusPill tone={paralogRiskTone(p.cross_reactivity_risk)} size="sm">
+                    {prettyEnum(p.cross_reactivity_risk)} risk
+                  </StatusPill>
+                ) : null}
+                {p.paralog_surface_status && p.paralog_surface_status !== "unknown" ? (
+                  <StatusPill tone="teal" size="sm">
+                    {prettyEnum(p.paralog_surface_status)}
+                  </StatusPill>
+                ) : null}
+                {p.percent_identity != null ? (
+                  <span className={styles.mono}>
+                    {p.percent_identity.toFixed(1)}% overall
+                  </span>
+                ) : null}
+                {p.ecd_percent_identity != null ? (
+                  <span className={styles.mono}>
+                    {p.ecd_percent_identity.toFixed(1)}% ECD
+                  </span>
+                ) : null}
+              </div>
+              {p.notes ? <p className={styles.prose}>{p.notes}</p> : null}
             </FieldRow>
           ))}
         </div>
