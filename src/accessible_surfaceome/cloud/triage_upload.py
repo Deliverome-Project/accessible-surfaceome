@@ -150,8 +150,9 @@ def _insert_run(
         " prompt_sha, schema_version, replicate, predicted_verdict, predicted_reason,"
         " verdict_reasoning, predicted_confidence, predicted_key_uncertainty,"
         " truth_verdict, truth_class, correct, prompt_tokens,"
-        " completion_tokens, n_web_searches, cost_usd, latency_s, error, raw_text"
-        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+        " completion_tokens, cache_creation_tokens, cache_read_tokens,"
+        " n_web_searches, cost_usd, latency_s, error, raw_text"
+        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
         [
             run_id,
             record["gene_symbol"],
@@ -172,6 +173,8 @@ def _insert_run(
             1 if record.get("correct") else 0,
             int(record.get("prompt_tokens") or 0),
             int(record.get("completion_tokens") or 0),
+            int(record.get("cache_creation_tokens") or 0),
+            int(record.get("cache_read_tokens") or 0),
             int(record.get("n_web_searches") or 0),
             float(record.get("cost_usd") or 0.0),
             float(record.get("latency_s") or 0.0),

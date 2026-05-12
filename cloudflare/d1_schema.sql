@@ -93,11 +93,13 @@ CREATE TABLE IF NOT EXISTS triage_run (
     correct             INTEGER NOT NULL,           -- 0|1
 
     -- telemetry
-    prompt_tokens       INTEGER NOT NULL DEFAULT 0,
-    completion_tokens   INTEGER NOT NULL DEFAULT 0,
-    n_web_searches      INTEGER NOT NULL DEFAULT 0,
-    cost_usd            REAL NOT NULL DEFAULT 0.0,
-    latency_s           REAL NOT NULL DEFAULT 0.0,
+    prompt_tokens             INTEGER NOT NULL DEFAULT 0,
+    completion_tokens         INTEGER NOT NULL DEFAULT 0,
+    cache_creation_tokens     INTEGER NOT NULL DEFAULT 0,   -- system-prompt-cache writes (1.25× input rate)
+    cache_read_tokens         INTEGER NOT NULL DEFAULT 0,   -- cache hits (0.10× input rate); 5-min TTL
+    n_web_searches            INTEGER NOT NULL DEFAULT 0,
+    cost_usd                  REAL NOT NULL DEFAULT 0.0,
+    latency_s                 REAL NOT NULL DEFAULT 0.0,
 
     -- failure / debug
     error               TEXT,                       -- nullable
@@ -128,6 +130,15 @@ SELECT
     SUM(cost_usd)                  AS total_cost_usd,
     AVG(latency_s)                 AS mean_latency_s,
     AVG(n_web_searches)            AS mean_web_searches,
+    SUM(prompt_tokens)             AS total_prompt_tokens,
+    SUM(completion_tokens)         AS total_completion_tokens,
+    SUM(cache_creation_tokens)     AS total_cache_creation_tokens,
+    SUM(cache_read_tokens)         AS total_cache_read_tokens,
+    -- Cache-hit rate: cache reads ÷ (cache reads + cache writes). Goes
+    -- ↑ within a 5-min TTL window as more calls share one warm prefix.
+    CAST(SUM(cache_read_tokens) AS REAL)
+        / NULLIF(SUM(cache_read_tokens) + SUM(cache_creation_tokens), 0)
+        AS cache_hit_rate,
     MIN(created_at)                AS first_run_at,
     MAX(created_at)                AS last_run_at
 FROM triage_run

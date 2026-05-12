@@ -109,6 +109,8 @@ class RunRecord:
     latency_s: float
     predicted_confidence: str | None = None
     predicted_key_uncertainty: str | None = None
+    cache_creation_tokens: int = 0
+    cache_read_tokens: int = 0
     error: str | None = None
     raw_text: str = ""
 
@@ -344,6 +346,8 @@ def _run_one(
         verdict_reasoning=reasoning,
         correct=correct, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
         n_web_searches=n_searches, cost_usd=cost, latency_s=latency,
+        cache_creation_tokens=cache_creation_tokens,
+        cache_read_tokens=cache_read_tokens,
     )
 
 
