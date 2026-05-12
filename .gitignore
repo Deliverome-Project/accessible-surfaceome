@@ -37,6 +37,12 @@ data/triage/
 # lives at data/eval/triage_benchmark_v1.tsv and is committed.
 data/eval/triage_bench_v1/
 
+# `--smoke` runs of the sub-bench runner land here so a wiring test
+# can't clobber canonical artifacts (see triage_subbench_runner.py's
+# _smoke_routing). Throwaway by design — nuke with `rm -rf
+# data/eval/_smoke/`.
+data/eval/_smoke/
+
 # Per-source corpus written by the orchestrator (raw + normalized text +
 # citation metadata for every PMID/PMC/UniProt/WO the agent has fetched).
 # Reproducible from the upstream sources; commit a curated baseline later.

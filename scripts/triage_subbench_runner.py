@@ -37,6 +37,7 @@ import json
 import logging
 import threading
 import time
+import uuid as _uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -442,6 +443,27 @@ def _commit_record(rec: RunRecord, sink: Any | None) -> str:
     return "  d1=✗(local-fallback)"
 
 
+def _smoke_routing(*, bench: str, gene_list: str | None) -> tuple[Path, str]:
+    """Compute ``(out_root, run_id)`` for a ``--smoke`` invocation.
+
+    The point of ``--smoke`` is operator-error prevention: when set, the
+    runner writes per-cell JSON into ``data/eval/_smoke/...`` and tags
+    the D1 ``run_id`` with the ``smoke_`` prefix, so a test invocation
+    can't overwrite canonical artifacts the way today's HSPA1A loss did.
+
+    Both paths are derived from a single timestamp (UTC, second-grained)
+    so a sweep that finishes inside one second still gets a distinct
+    directory thanks to the uuid8 suffix on ``run_id``. The
+    ``data/eval/_smoke/`` prefix is gitignored.
+    """
+
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    stem = Path(gene_list).stem if gene_list else bench
+    smoke_dir = ROOT / "data" / "eval" / "_smoke" / f"{stem}_{timestamp}"
+    run_id = f"smoke_{timestamp}_{_uuid.uuid4().hex[:8]}"
+    return smoke_dir, run_id
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--model", nargs="+", default=["claude-haiku-4-5"],
@@ -484,7 +506,33 @@ def main() -> None:
     ap.add_argument("--run-id", default=None,
                     help="Tag for this sweep in D1's triage_run.run_id column. "
                          "Default: a fresh uuid. Only meaningful with --d1.")
+    ap.add_argument("--smoke", action="store_true",
+                    help="Sandbox mode. Routes --out-root to "
+                         "data/eval/_smoke/<bench-or-list>_<timestamp>/ "
+                         "and --run-id to smoke_<timestamp>_<uuid8> so a "
+                         "smoke test can't clobber canonical run artifacts "
+                         "(today's HSPA1A loss exhibit A). Mutually "
+                         "exclusive with explicit --out-root.")
     args = ap.parse_args()
+
+    # Resolve --smoke routing BEFORE the per-bench --out-root defaulting
+    # below, so the smoke path wins. Explicit --out-root is mutually
+    # exclusive with --smoke (the flag's whole point is to refuse the
+    # foot-gun, not enable a creative version of it).
+    if args.smoke:
+        if args.out_root:
+            raise SystemExit(
+                "--smoke and --out-root are mutually exclusive; --smoke "
+                "pins out-root to data/eval/_smoke/... by design."
+            )
+        smoke_dir, smoke_run_id = _smoke_routing(
+            bench=args.bench, gene_list=args.gene_list,
+        )
+        args.out_root = str(smoke_dir)
+        if not args.run_id:
+            args.run_id = smoke_run_id
+        print(f"🔒 SMOKE MODE — out_root={smoke_dir.relative_to(ROOT)}  run_id={args.run_id}")
+        print()
 
     global SUBBENCH_TSV, OUT_ROOT
     if args.gene_list:
