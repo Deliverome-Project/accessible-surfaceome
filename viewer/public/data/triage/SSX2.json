@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "pmhc_presented_peptide",
+  "verdict_reasoning": "SSX2 is a KRAB-domain transcriptional repressor with nuclear/intracellular localization and no membrane anchor of its own. However, the aliases include 'CT5.2a' and 'CT5.2' (cancer-testis antigen nomenclature), and the summary explicitly states the protein elicits spontaneous humoral and cellular immune responses in cancer patients and is a useful target for cancer vaccine-based immunotherapy. This establishes documented MHC presentation of SSX2-derived peptides as a clinically engaged antigen.",
+  "uniprot_acc": "Q16385",
+  "hgnc_id": "HGNC:11336",
+  "model_path": "haiku_only"
+}

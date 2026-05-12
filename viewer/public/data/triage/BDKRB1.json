@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "BDKRB1 is a canonical G-protein coupled receptor (GPCR) belonging to the bradykinin-receptor family. GPCRs are constitutively membrane-integrated proteins with 7 transmembrane helices, an extracellular N-terminus, and three extracellular loops. The receptor's ligand-binding site for bradykinin (a 9 aa extracellular peptide) is formed by extracellular loops and upper transmembrane regions. The protein body is stably present on the outer face of the plasma membrane via its transmembrane topology.",
+  "uniprot_acc": "P46663",
+  "hgnc_id": "HGNC:1029",
+  "model_path": "haiku_only"
+}

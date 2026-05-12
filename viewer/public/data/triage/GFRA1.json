@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "gpi_anchored",
+  "verdict_reasoning": "GFRA1 is a GPI-linked cell surface receptor for GDNF and NTN. GPI anchors stably anchor proteins to the outer leaflet of the plasma membrane via their own lipidation mechanism, conferring constitutive surface accessibility.",
+  "uniprot_acc": "P56159",
+  "hgnc_id": "HGNC:4243",
+  "model_path": "haiku_only"
+}

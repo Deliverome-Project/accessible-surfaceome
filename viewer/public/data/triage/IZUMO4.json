@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "nuclear",
+  "verdict_reasoning": "IZUMO4 is explicitly localized to the nucleus per the NCBI summary. No TM domain, GPI anchor, membrane association, or surface pool is documented. Although a member of the IZUMO family (whose canonical member IZUMO1 is a sperm-surface protein), IZUMO4 itself is nuclear-resident with no reported surface isoform or trafficking to the plasma membrane.",
+  "uniprot_acc": "Q1ZYL8",
+  "hgnc_id": "HGNC:26950",
+  "model_path": "haiku_only"
+}

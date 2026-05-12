@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "secreted_only",
+  "verdict_reasoning": "TGFB2 is a secreted ligand of the TGF-beta superfamily. It lacks a transmembrane domain, GPI anchor, or direct membrane-anchoring mechanism. Although the latent TGF-beta complex (TGFB2 + LAP + LTBP) can associate with cell surfaces and extracellular matrix through LTBP interactions with integrins and ECM components, TGFB2 itself is recruited there only transiently via non-covalent binding to LTBP and indirect ECM sequestration, not via its own mechanism. The active form is soluble. No evidence of stable direct membrane anchoring or MHC presentation as a clinically engaged tumor antigen.",
+  "uniprot_acc": "P61812",
+  "hgnc_id": "HGNC:11768",
+  "model_path": "haiku_only"
+}

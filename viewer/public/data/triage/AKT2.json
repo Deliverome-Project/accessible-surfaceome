@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "AKT2 is a cytoplasmic and nuclear serine/threonine kinase. Although its PH domain allows transient, reversible recruitment to the plasma membrane via phosphoinositide binding during signaling (a key regulatory step), this is a signal-dependent interaction in equilibrium with the soluble cytoplasmic pool\u2014not stable surface anchoring. The protein body has no transmembrane domain, GPI anchor, or constitutive membrane anchor, and would dissociate from the PM upon washing or signal cessation.",
+  "uniprot_acc": "P31751",
+  "hgnc_id": "HGNC:392",
+  "model_path": "haiku_only"
+}

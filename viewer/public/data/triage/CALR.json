@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "cell_state_induced",
+  "verdict_reasoning": "Calreticulin is primarily an ER-resident chaperone, but it translocates to the outer plasma membrane during immunogenic cell death (ICD) and apoptosis as a canonical 'eat me' signal (DAMP). Surface-exposed calreticulin is recognized by C1q and integrins on immune cells. This surface pool is stress/cell-state-induced rather than basal, qualifying as contextual via induced cell-death ecto-translocation.",
+  "uniprot_acc": "P27797",
+  "hgnc_id": "HGNC:1455",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 is a canonical intracellular inositol 1,4,5-trisphosphate receptor and calcium-release channel resident in the endoplasmic reticulum membrane. The NCBI summary explicitly identifies it as an intracellular receptor that mediates calcium release from the ER. HGNC gene-group membership (Inositol 1,4,5-triphosphate receptors) confirms ER localization. No documented PM pool, surface isoforms, or trafficking to the cell surface; no cell-surface-directed therapeutic programs. Intracellular drug targets (e.g., IP3R modulators) do not establish surface accessibility.",
+  "uniprot_acc": "Q14643",
+  "hgnc_id": "HGNC:6180",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "SYK is a non-receptor protein tyrosine kinase \u2014 a soluble cytoplasmic signaling molecule with no transmembrane domain, GPI anchor, or membrane-anchoring mechanism. Although it is recruited transiently to activated immunoreceptors (BCR, Fc\u03b5RI) via SH2-domain binding to ITAMs, this is a reversible non-covalent association that equilibrates with the cytoplasmic pool and washes off. The protein body has no stable membrane anchor of its own and does not remain surface-bound; it is the activated receptor (the recruiter) that is surface-accessible, not SYK.",
+  "uniprot_acc": "P43405",
+  "hgnc_id": "HGNC:11491",
+  "model_path": "haiku_only"
+}

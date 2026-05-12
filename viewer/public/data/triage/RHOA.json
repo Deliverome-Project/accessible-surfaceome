@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "RhoA is a small GTPase and soluble cytoplasmic signaling protein that cycles between GDP- and GTP-bound states to regulate intracellular actin dynamics and cell motility. It has no transmembrane domain, GPI anchor, or stable membrane-anchoring mechanism. While RhoA associates transiently with intracellular membranes and signaling partners during downstream effector coupling, it does not reach the outer face of the plasma membrane via its own mechanism and is not known to be MHC-presented or secreted in a surface-tethered form.",
+  "uniprot_acc": "P61586",
+  "hgnc_id": "HGNC:667",
+  "model_path": "haiku_only"
+}

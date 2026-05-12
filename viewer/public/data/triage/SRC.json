@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "SRC is a non-receptor tyrosine kinase and prototypical cytoplasmic signaling protein. It lacks a transmembrane domain, GPI anchor, or any membrane-anchoring mechanism. Although SRC associates transiently with membrane-bound surface receptors (RTKs, integrins) during signal transduction via protein-protein interactions, these are reversible recruitment events that do not establish stable surface accessibility of the protein body. SRC remains in equilibrium with the cytoplasmic pool and does not pass the recruitment test \u2014 it is held to membranes by other proteins, not by its own mechanism.",
+  "uniprot_acc": "P12931",
+  "hgnc_id": "HGNC:11283",
+  "model_path": "haiku_only"
+}

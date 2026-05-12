@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "GNAQ is a soluble cytoplasmic G protein alpha subunit coupled to 7TM receptor signaling. It associates with the cytoplasmic (inner) face of the plasma membrane via N-terminal lipidation (myristoylation) and transient interactions with receptor and effector complexes on the intracellular side. It lacks a transmembrane domain, GPI anchor, or any other mechanism to reach the outer leaflet. The 7TM receptors it couples to are the surface proteins; GNAQ itself remains intracellular and inaccessible from outside the cell.",
+  "uniprot_acc": "P50148",
+  "hgnc_id": "HGNC:4390",
+  "model_path": "haiku_only"
+}

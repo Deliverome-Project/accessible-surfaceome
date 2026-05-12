@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "ROR2 is explicitly described as a type I transmembrane protein and member of the ROR subfamily of cell surface receptors. As a receptor tyrosine kinase with a transmembrane anchor, it stably presents its extracellular domain on the plasma membrane via its own TM mechanism.",
+  "uniprot_acc": "Q01974",
+  "hgnc_id": "HGNC:10257",
+  "model_path": "haiku_only"
+}

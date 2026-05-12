@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "STEAP1 is explicitly described as a six-transmembrane protein and a cell surface antigen significantly expressed at cell-cell junctions. Multi-pass TM topology with extracellular loops provides stable outer-face accessibility.",
+  "uniprot_acc": "Q9UHE8",
+  "hgnc_id": "HGNC:11378",
+  "model_path": "haiku_only"
+}

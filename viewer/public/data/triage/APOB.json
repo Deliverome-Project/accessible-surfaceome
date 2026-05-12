@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "secreted_only",
+  "verdict_reasoning": "APOB is a secreted apolipoprotein synthesized in liver and intestine, incorporated into circulating lipoproteins (VLDL, LDL, chylomicrons), and released into the bloodstream. It lacks a transmembrane domain, GPI anchor, or other membrane-anchoring mechanism. While present in the extracellular milieu, it does not stably associate with the cell surface; it circulates freely in plasma as a component of lipoprotein particles. Washing cells would remove APOB, indicating no stable physical link to the cell membrane.",
+  "uniprot_acc": "P04114",
+  "hgnc_id": "HGNC:603",
+  "model_path": "haiku_only"
+}

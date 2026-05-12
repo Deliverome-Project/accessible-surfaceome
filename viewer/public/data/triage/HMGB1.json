@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "nuclear",
+  "verdict_reasoning": "HMGB1 is a canonical high-mobility-group protein and a non-histone, nuclear DNA-binding factor. It localizes to the nucleus where it regulates transcription and DNA organization. While HMGB1 is released extracellularly upon cell damage or active secretion (acting as a DAMP in inflammation), it has no membrane-anchoring mechanism\u2014no transmembrane domain, GPI anchor, or stable surface tethering\u2014and is not surface-accessible on the living cell per se. The extracellular pool is not anchored to the cell surface via its own mechanism.",
+  "uniprot_acc": "P09429",
+  "hgnc_id": "HGNC:4983",
+  "model_path": "haiku_only"
+}

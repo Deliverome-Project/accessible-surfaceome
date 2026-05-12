@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "KRAS is a small GTPase with C-terminal lipidation (farnesylation and/or palmitoylation) that anchors it to the inner leaflet of the plasma membrane and intracellular membranes (ER, Golgi, mitochondrial outer membrane). It lacks a transmembrane domain, GPI anchor, or any mechanism to reach the outer face of the plasma membrane. The protein functions in the cytoplasm and at the inner PM face as a signaling node. Intracellular small-molecule inhibitors (e.g., KRAS G12C drugs) access it from inside the cell, not from the extracellular space.",
+  "uniprot_acc": "P01116",
+  "hgnc_id": "HGNC:6407",
+  "model_path": "haiku_only"
+}

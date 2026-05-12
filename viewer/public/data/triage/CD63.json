@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "dual_localization",
+  "verdict_reasoning": "CD63 is a tetraspanin with four transmembrane domains. Although predominantly resident in late endosomal and lysosomal compartments, it is well-documented to traffic to the plasma membrane via exocytosis (especially during platelet activation) and shows baseline surface expression on many cell types. This dual localization with its own membrane-anchor mechanism qualifies it as contextual surface-accessible.",
+  "uniprot_acc": "P08962",
+  "hgnc_id": "HGNC:1692",
+  "model_path": "haiku_only"
+}

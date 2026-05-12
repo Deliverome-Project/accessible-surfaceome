@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "secreted_only",
+  "verdict_reasoning": "AFP is a classical serum protein secreted from hepatocytes and yolk sac cells during fetal development. It circulates as a soluble plasma protein with no transmembrane domain, GPI anchor, or evidence of stable post-translational surface anchoring to a cell-surface partner. While AFP-targeting antibodies exist, they engage the circulating form, not a membrane-resident pool. No isoform is membrane-anchored, and the Albuminoid family (albumin-like proteins) classification confirms secreted serum-protein biology.",
+  "uniprot_acc": "P02771",
+  "hgnc_id": "HGNC:317",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "NRAS is a RAS-family GTPase anchored to the cytoplasmic (inner) leaflet of the plasma membrane via palmitoylation and farnesylation. Although it shuttles between the Golgi and PM, it associates with the inner aspect of the lipid bilayer, not the outer face. The protein body is not accessible from the extracellular space and cannot be engaged by cell-surface-directed binders.",
+  "uniprot_acc": "P01111",
+  "hgnc_id": "HGNC:7989",
+  "model_path": "haiku_only"
+}

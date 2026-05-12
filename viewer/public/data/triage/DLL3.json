@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "DLL3 is a canonical Notch ligand with an explicit transmembrane domain and extracellular DSL-domain/EGF-repeat architecture. Notch ligands are classical single-pass cell-surface proteins anchored to the plasma membrane via their own transmembrane span, with the ligand-binding domain positioned on the outer face for cell-cell contact and Notch receptor engagement.",
+  "uniprot_acc": "Q9NYJ7",
+  "hgnc_id": "HGNC:2909",
+  "model_path": "haiku_only"
+}

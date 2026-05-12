@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "secreted_only",
+  "verdict_reasoning": "KLK2 is a secreted serine protease lacking a transmembrane domain, GPI anchor, or documented stable surface anchoring to a TM partner. It is released via the classical secretory pathway into the extracellular space and circulates in body fluids and serum, but does not remain stably bound to the cell surface. After washing, it would dissociate into the soluble pool.",
+  "uniprot_acc": "P20151",
+  "hgnc_id": "HGNC:6363",
+  "model_path": "haiku_only"
+}

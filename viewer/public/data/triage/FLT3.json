@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "FLT3 (CD135) is a class III receptor tyrosine kinase with a single transmembrane domain and extracellular immunoglobulin-like domain that binds FLT3 ligand. The NCBI summary explicitly describes ligand binding to the extracellular domain and homodimer formation at the plasma membrane, the canonical mechanism of surface RTK activation.",
+  "uniprot_acc": "P36888",
+  "hgnc_id": "HGNC:3765",
+  "model_path": "haiku_only"
+}

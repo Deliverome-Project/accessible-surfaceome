@@ -19,6 +19,44 @@ import path from "node:path";
 import type { SurfaceomeRecord } from "./surfaceome-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
+const CATALOG_PATH = path.join(process.cwd(), "public", "data", "catalog.json");
+
+/**
+ * One row of the genome-wide catalog the index table renders. Generated
+ * by `scripts/build_viewer_catalog.py` in the upstream repo by joining
+ * the candidate-universe TSV with `data/triage/` and the deep-dive
+ * record set. Catalog is the deploy artifact; the script is the source
+ * of truth.
+ */
+export interface CatalogRow {
+  symbol: string;
+  uniprot: string;
+  n_sources: number;
+  db: {
+    uniprot: number;
+    go: number;
+    surfy: number;
+    cspa: number;
+    hpa: number;
+    deeptmhmm: number;
+    compartments: number;
+  };
+  triage: { verdict: string; reason: string | null } | null;
+  deep_dive: boolean;
+}
+
+export interface Catalog {
+  generated_at: string;
+  n_rows: number;
+  n_with_triage: number;
+  n_with_deep_dive: number;
+  rows: CatalogRow[];
+}
+
+export function loadCatalog(): Catalog {
+  const raw = readFileSync(CATALOG_PATH, "utf-8");
+  return JSON.parse(raw) as Catalog;
+}
 
 export function listSurfaceomeGenes(): string[] {
   let entries: string[];

@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "CD74 is a type II transmembrane protein with an extracellular domain that serves as a cell surface receptor for MIF (macrophage migration inhibitory factor). It is a canonical MHC class II-associated surface protein that reaches the outer face of the plasma membrane via its own transmembrane anchor and is engaged by multiple cell-surface-directed therapeutics.",
+  "uniprot_acc": "P04233",
+  "hgnc_id": "HGNC:1697",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "other",
+  "verdict_reasoning": "EREG is an EGF-family member synthesized as a transmembrane-anchored precursor that undergoes ectodomain shedding via ADAM/MMP proteolysis to release the mature soluble ligand. The precursor form transiently presents on the cell surface before cleavage. Although the bioactive circulating form is secreted, the gene encodes a TM isoform that is membrane-anchored during its lifecycle, qualifying it as contextual rather than secreted-only.",
+  "uniprot_acc": "O14944",
+  "hgnc_id": "HGNC:3443",
+  "model_path": "haiku_only"
+}

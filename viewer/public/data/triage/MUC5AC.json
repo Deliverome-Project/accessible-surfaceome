@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": null,
+  "verdict_reasoning": "MUC5AC is a 5654-aa secreted gel-forming glycoprotein (UniProt subcellular location: Secreted). Topology: signal peptide aa1-27 only; no transmembrane domains, no GPI anchor, no membrane-tethering mechanism. 0/6 db_panel sources vote surface. Found in extracellular mucus layer rather than anchored to the plasma membrane outer leaflet. Carcinoma overexpression confers biomarker value but not cell-surface targetability; soluble decoy burden precludes ADC/CAR-T utility. M1 exclusion is correct. Deep dive not warranted.",
+  "uniprot_acc": "P98088",
+  "hgnc_id": "HGNC:7515",
+  "model_path": "sonnet_only"
+}

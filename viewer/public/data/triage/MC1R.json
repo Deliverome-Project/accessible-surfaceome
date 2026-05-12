@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "MC1R is a canonical seven-transmembrane GPCR belonging to the melanocortin receptor gene family. GPCRs are classical plasma-membrane-integrated signaling receptors with extracellular loop regions and an outer-leaflet-facing N-terminus required for ligand (MSH) engagement and signal transduction. No subcellular localization data contradicts constitutive surface residency.",
+  "uniprot_acc": "Q01726",
+  "hgnc_id": "HGNC:6929",
+  "model_path": "haiku_only"
+}

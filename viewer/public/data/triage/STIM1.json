@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "endomembrane_resident",
+  "verdict_reasoning": "STIM1 is a type I transmembrane protein resident in the endoplasmic reticulum (ER) membrane. Upon Ca\u00b2\u207a store depletion, it translocates to ER-plasma membrane junctional contacts where it recruits and gates Orai1 channels, but it remains anchored in the ER membrane, not the plasma membrane. The protein body is not stably integrated into or accessible from the outer face of the plasma membrane; ER-PM junctional localization is intracellular contact-site biology, not surface exposure.",
+  "uniprot_acc": "Q13586",
+  "hgnc_id": "HGNC:11386",
+  "model_path": "haiku_only"
+}

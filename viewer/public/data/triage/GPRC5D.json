@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "GPRC5D is a Class C G protein-coupled receptor (GPCR). GPCRs are 7-transmembrane proteins with extracellular N-terminus, 3 extracellular loops, and 3 intracellular loops. The multipass transmembrane architecture guarantees stable outer-leaflet exposure and is the canonical substrate for extracellular binder engagement (antibodies, small molecules, peptides). Membership in the GPCR family establishes surface accessibility regardless of functional annotation status.",
+  "uniprot_acc": "Q9NZD1",
+  "hgnc_id": "HGNC:13310",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "extracellular_face_protein",
+  "verdict_reasoning": "SEZ6 is a type I transmembrane protein containing a signal peptide, multiple extracellular sushi (CCP) and CUB domains, a transmembrane domain, and a cytoplasmic tail. The HGNC gene-group membership 'Sushi domain containing' corroborates a surface topology. Sushi and CUB domains are canonical extracellular motifs found in complement-related and cell-adhesion protein families; their presence in this protein strongly indicates a classical single-pass surface receptor architecture with substantial extracellular domain exposure.",
+  "uniprot_acc": "Q53EL9",
+  "hgnc_id": "HGNC:15955",
+  "model_path": "haiku_only"
+}

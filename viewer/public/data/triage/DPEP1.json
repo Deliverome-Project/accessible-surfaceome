@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "extracellular_face_protein",
+  "verdict_reasoning": "DPEP1 is a kidney membrane enzyme and member of the M19 metallopeptidase family. It is a single-pass transmembrane protein with an extracellular catalytic domain. Its documented function \u2014 processing extracellular substrates including leukotrienes (LTD4 to LTE4) and glutathione \u2014 requires access from the outer face of the plasma membrane. The protein reaches the surface via its own TM anchor.",
+  "uniprot_acc": "P16444",
+  "hgnc_id": "HGNC:3002",
+  "model_path": "haiku_only"
+}

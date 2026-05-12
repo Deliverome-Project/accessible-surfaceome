@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "secreted_only",
+  "verdict_reasoning": "IL6 is a classical secreted interleukin cytokine with no transmembrane domain, GPI anchor, or lipidation. It is produced at sites of inflammation and secreted into serum where it circulates in equilibrium with the soluble pool. Although it engages surface-expressed IL6R and gp130 receptors as a ligand, IL6 itself lacks any intrinsic membrane anchor or stable covalent / wash-resistant tethering to a TM partner. The surface targets are the receptors, not the IL6 protein body.",
+  "uniprot_acc": "P05231",
+  "hgnc_id": "HGNC:6018",
+  "model_path": "haiku_only"
+}

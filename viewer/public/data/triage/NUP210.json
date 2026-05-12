@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "nuclear_envelope",
+  "verdict_reasoning": "NUP210 is a core structural glycoprotein of the nuclear pore complex, embedded in the nuclear envelope (a double membrane separating nucleus from cytoplasm). It is not exposed on the outer leaflet of the plasma membrane and is not accessible from the extracellular space.",
+  "uniprot_acc": "Q8TEM1",
+  "hgnc_id": "HGNC:30052",
+  "model_path": "haiku_only"
+}

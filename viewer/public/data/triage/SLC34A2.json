@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "SLC34A2 is a multi-pass transmembrane sodium-phosphate cotransporter belonging to the solute-carrier family. As a functional transporter at the plasma membrane (especially the apical membrane of lung and kidney epithelial cells), it requires embedding in the lipid bilayer with extracellular and intracellular loops. Its transporter function and localization to polarized epithelial cell apical surfaces establish it as stably surface-resident with exposed external-facing domains.",
+  "uniprot_acc": "O95436",
+  "hgnc_id": "HGNC:11020",
+  "model_path": "haiku_only"
+}

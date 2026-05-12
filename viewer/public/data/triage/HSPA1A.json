@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "pmhc_presented_peptide",
+  "verdict_reasoning": "HSPA1A is a canonical cytosolic/mitochondrial chaperone (member of TIM23 complex, involved in protein folding in the cytosol and organelles) with no transmembrane domain or membrane-anchoring mechanism. However, Hsp70-derived peptides are well-documented MHC-presented antigens recognized by tumor-reactive T cells and are engaged by therapeutic vaccine and TCR-targeting programs, qualifying the protein as clinically accessible via pMHC.",
+  "uniprot_acc": "P0DMV8",
+  "hgnc_id": "HGNC:5232",
+  "model_path": "haiku_only"
+}

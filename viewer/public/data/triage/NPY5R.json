@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "NPY5R is a neuropeptide Y receptor belonging to the GPCR superfamily (seven-transmembrane G-protein-coupled receptor). It has its own intrinsic membrane anchoring via multiple TM domains and exposes extracellular loops and N-terminus on the outer face of the plasma membrane. It binds NPY and PYY from the extracellular side and is a canonical surface receptor.",
+  "uniprot_acc": "Q15761",
+  "hgnc_id": "HGNC:7958",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "BST2/CD317 carries a formal CD nomenclature designation and HGNC membership in 'CD molecules' \u2014 both definitive surface signals. The protein is a type II transmembrane protein with an extracellular ectodomain, known to function as an interferon-inducible antiviral factor that physically tethers budding viral particles at the cell surface, establishing robust surface accessibility.",
+  "uniprot_acc": "Q10589",
+  "hgnc_id": "HGNC:1119",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "SH2D2A is a soluble cytoplasmic adaptor protein containing SH2 domains. It functions in T-cell signal transduction and downstream signaling cascades entirely within the cytoplasm. It lacks a transmembrane domain, GPI anchor, or any documented membrane-anchoring mechanism. While it participates in intracellular signaling networks downstream of surface receptors, the protein body itself does not reach or remain stably associated with the plasma membrane.",
+  "uniprot_acc": "Q9NP31",
+  "hgnc_id": "HGNC:10821",
+  "model_path": "haiku_only"
+}

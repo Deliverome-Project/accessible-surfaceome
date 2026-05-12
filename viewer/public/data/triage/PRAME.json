@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "pmhc_only_intracellular",
+  "verdict_reasoning": "PRAME is a nuclear receptor transcriptional regulator with exclusively intracellular (nuclear) localization. Its recognition by cytolytic T lymphocytes occurs via MHC-I presentation of derived peptides, not via surface accessibility of the protein body itself. This is a classic cancer-testis antigen with pMHC-only surface involvement; the protein body does not reach the outer leaflet of the plasma membrane.",
+  "uniprot_acc": "P78395",
+  "hgnc_id": "HGNC:9336",
+  "model_path": "haiku_only"
+}

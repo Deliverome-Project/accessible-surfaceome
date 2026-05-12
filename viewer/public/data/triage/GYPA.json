@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "GYPA is a classical single-pass transmembrane sialoglycoprotein of the erythrocyte membrane with a heavily O-glycosylated extracellular N-terminal domain bearing MN and Ss blood group antigens. CD235a designation and HGNC gene-group membership in 'Blood group antigens' and 'CD molecules' confirm cell-surface localization. Blood group antigen function \u2014 recognized by alloimmune antibodies and determining transfusion compatibility \u2014 is only possible if the protein is stably surface-accessible via its own transmembrane anchor.",
+  "uniprot_acc": "P02724",
+  "hgnc_id": "HGNC:4702",
+  "model_path": "haiku_only"
+}

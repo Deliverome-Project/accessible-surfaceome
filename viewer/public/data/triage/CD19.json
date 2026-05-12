@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "CD19 is a classical single-pass transmembrane receptor with N-terminal extracellular immunoglobulin-like domains, a transmembrane domain, and a cytoplasmic tail. It is constitutively expressed on B cell lymphocytes as a canonical cell-surface marker and co-receptor for immune complex signaling, forming stable complexes with CD21 and CD81.",
+  "uniprot_acc": "P15391",
+  "hgnc_id": "HGNC:1633",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "GIPR is a G-protein coupled receptor (GPCR) and member of the glucagon receptor family. As a GPCR, it comprises seven transmembrane helices with an extracellular N-terminal domain and three extracellular loops. The receptor is stably anchored to the plasma membrane via its own transmembrane topology and mediates ligand binding (GIP) from the extracellular space. This is the canonical surface architecture of a functional GPCR.",
+  "uniprot_acc": "P48546",
+  "hgnc_id": "HGNC:4271",
+  "model_path": "haiku_only"
+}

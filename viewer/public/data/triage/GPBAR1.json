@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "GPBAR1 is a classical 7-transmembrane G protein-coupled receptor (GPCR) with documented cell-surface receptor function for bile acids. The NCBI summary explicitly states it 'functions as a cell surface receptor for bile acids' and that ligand binding triggers intracellular signaling and receptor internalization. GPCRs inherently possess extracellular N-terminal and loop regions; GPBAR1's multipass transmembrane topology anchors the protein body stably to the plasma membrane with extracellular loops and binding surfaces accessible from outside the cell.",
+  "uniprot_acc": "Q8TDU6",
+  "hgnc_id": "HGNC:19680",
+  "model_path": "haiku_only"
+}

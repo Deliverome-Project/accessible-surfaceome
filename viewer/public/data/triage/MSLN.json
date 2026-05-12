@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "gpi_anchored",
+  "verdict_reasoning": "Mesothelin, the mature product of MSLN proteolytic processing, is explicitly a GPI-anchored cell-surface protein stably anchored to the outer leaflet of the plasma membrane. GPI anchoring is a canonical mechanism for constitutive surface localization and accessibility. The protein is a well-characterized surface antigen overexpressed in multiple cancers.",
+  "uniprot_acc": "Q13421",
+  "hgnc_id": "HGNC:7371",
+  "model_path": "haiku_only"
+}

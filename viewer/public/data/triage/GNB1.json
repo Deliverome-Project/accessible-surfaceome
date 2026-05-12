@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "GNB1 encodes a G protein beta subunit, a canonical cytoplasmic signaling protein. G\u03b2 forms an inseparable complex with the prenylated G\u03b3 subunit and associates with the inner leaflet of the plasma membrane via G\u03b3 lipidation. GNB1 itself carries no transmembrane domain, no outer-leaflet anchor, and no mechanism to reach the outer face of the plasma membrane. It remains strictly on the cytoplasmic side and is inaccessible from the extracellular space.",
+  "uniprot_acc": "P62873",
+  "hgnc_id": "HGNC:4396",
+  "model_path": "haiku_only"
+}

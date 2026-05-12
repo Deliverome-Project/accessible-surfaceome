@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "cell_state_induced",
+  "verdict_reasoning": "HSPA5 (BiP) is a canonical ER-lumen HSP70 chaperone. However, it has documented cell-surface appearance under cellular stress conditions (hypoxia, ER stress, oncogenic transformation), where it is recognized as a damage-associated molecular pattern (DAMP) by pattern recognition receptors and is engaged by surface-directed therapeutic antibodies in tumor models. This cell-state-induced surface trafficking qualifies for contextual accessibility.",
+  "uniprot_acc": "P11021",
+  "hgnc_id": "HGNC:5238",
+  "model_path": "haiku_only"
+}

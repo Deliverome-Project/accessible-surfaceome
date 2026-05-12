@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB3 is a secreted ligand that circulates primarily in a latent complex (mature peptide dimer + LAP + latent TGF-beta binding protein), where it is sequestered via disulfide bonds. The latent complex can be covalently tethered to the extracellular matrix and cell surfaces via LTBP crosslinking and integrin recognition. While TGFB3 lacks its own membrane anchor, the latent complex presents TGFB3 in a cell-surface and ECM-proximal form, especially in activated/disease states.",
+  "uniprot_acc": "P10600",
+  "hgnc_id": "HGNC:11769",
+  "model_path": "haiku_only"
+}

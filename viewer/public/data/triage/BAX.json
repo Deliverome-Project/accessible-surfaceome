@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "BAX is a pro-apoptotic BCL2 family member that localizes to the cytosol in healthy cells and translocates to the mitochondrial outer membrane during apoptosis. Its entire function is intracellular \u2014 mediating mitochondrial outer-membrane permeabilization and cytochrome c release. BAX is not membrane-anchored, not secreted, and has no documented plasma-membrane localization or surface-accessibility mechanism.",
+  "uniprot_acc": "Q07812",
+  "hgnc_id": "HGNC:959",
+  "model_path": "haiku_only"
+}

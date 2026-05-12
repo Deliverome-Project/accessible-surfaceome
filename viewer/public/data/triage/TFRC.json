@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "TFRC (CD71) is a classical single-pass transferrin receptor with an extracellular ligand-binding ectodomain and cytoplasmic iron-uptake signaling domain. The NCBI summary explicitly identifies it as a 'cell surface receptor' required for receptor-mediated endocytosis of transferrin. CD71 designation confirms canonical surface display.",
+  "uniprot_acc": "P02786",
+  "hgnc_id": "HGNC:11763",
+  "model_path": "haiku_only"
+}

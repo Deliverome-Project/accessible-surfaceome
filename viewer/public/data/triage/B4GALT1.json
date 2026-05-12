@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "endomembrane_resident",
+  "verdict_reasoning": "B4GALT1 is a type II membrane-bound glycosyltransferase with an N-terminal uncleaved hydrophobic signal sequence that anchors it to the Golgi apparatus. As a resident Golgi enzyme catalyzing glycoconjugate biosynthesis, it is strictly compartmentalized to the secretory pathway and does not reach the plasma membrane.",
+  "uniprot_acc": "P15291",
+  "hgnc_id": "HGNC:924",
+  "model_path": "haiku_only"
+}

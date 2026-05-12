@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "DSG4 is a desmosomal cadherin (HGNC gene-group membership), a classical single-pass transmembrane protein with a substantial extracellular domain mediating cell-cell adhesion in epithelial desmosomes. The NCBI summary explicitly identifies it as 'a transmembrane component of desmosomes,' confirming surface localization at cell-cell junctions. Disease mutations cause epithelial adhesion defects (hypotrichosis, monilethrix), consistent with keratinocyte-desmosomal dysfunction.",
+  "uniprot_acc": "Q86SJ6",
+  "hgnc_id": "HGNC:21307",
+  "model_path": "haiku_only"
+}

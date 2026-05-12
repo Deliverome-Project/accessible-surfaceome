@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "MAP2K2 is a cytoplasmic serine/threonine kinase functioning in the intracellular Ras-MAPK signaling cascade. It lacks any membrane anchor (no transmembrane domain, GPI anchor, or lipidation signal) and is not secreted. Although it may transiently associate with membrane-proximal signaling scaffolds during activation, it remains a soluble cytoplasmic protein with no stable mechanism for reaching the outer leaflet of the plasma membrane.",
+  "uniprot_acc": "P36507",
+  "hgnc_id": "HGNC:6842",
+  "model_path": "haiku_only"
+}

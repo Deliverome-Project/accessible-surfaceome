@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "GCGR is a class B GPCR (seven-pass transmembrane receptor) with extracellular N-terminal domain and extracellular loops. As a member of the secretin receptor family, it is a canonical surface-anchored receptor whose ligand (glucagon hormone) engages its extracellularly-exposed binding surface. Binders including antibodies, small molecules, and peptide agonists/antagonists access the receptor from the extracellular face.",
+  "uniprot_acc": "P47871",
+  "hgnc_id": "HGNC:4192",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "gpi_anchored",
+  "verdict_reasoning": "PRNP is a GPI-anchored glycoprotein, as explicitly stated in the NCBI summary. GPI anchors tether proteins stably to the outer leaflet of the plasma membrane. The CD230 designation and classification as a blood group antigen (Kanno) independently confirm surface localization. GPI-anchored proteins are among the most canonical surface architectures.",
+  "uniprot_acc": "P04156",
+  "hgnc_id": "HGNC:9449",
+  "model_path": "haiku_only"
+}

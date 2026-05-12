@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "inner_leaflet_anchored",
+  "verdict_reasoning": "HCK is a Src family non-receptor tyrosine kinase with N-terminal myristoylation and palmitoylation. This lipidation anchors it to the inner leaflet of the plasma membrane and intracellular membranes; it is not exposed on the outer face. Although HCK associates with activated surface receptors (e.g., Fc receptors) as a cytoplasmic signaling partner, the surface receptors themselves are the membrane anchors, not HCK. HCK lacks a transmembrane domain or GPI anchor and cannot be engaged by an extracellular binder from outside the cell.",
+  "uniprot_acc": "P08631",
+  "hgnc_id": "HGNC:4840",
+  "model_path": "haiku_only"
+}

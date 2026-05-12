@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "BRAF is a cytoplasmic serine/threonine kinase of the RAF family. It acts as a soluble intracellular effector in the MAPK/ERK signaling cascade. While BRAF transiently associates with the plasma membrane via interaction with membrane-anchored RAS during signal transduction, it lacks its own membrane anchor\u2014no transmembrane domain, GPI anchor, or stable lipidation. Per the cardinal recruitment test, transient non-covalent recruitment to another surface protein does not qualify as BRAF's own mechanism for reaching the outer leaflet.",
+  "uniprot_acc": "P15056",
+  "hgnc_id": "HGNC:1097",
+  "model_path": "haiku_only"
+}

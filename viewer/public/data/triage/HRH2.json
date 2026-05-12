@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "HRH2 is a classical G protein-coupled receptor (GPCR) with 7 transmembrane domains. The NCBI summary explicitly states it is an 'integral membrane protein.' GPCRs have multiple extracellular loops and an N-terminal extracellular domain exposed on the outer face of the plasma membrane. HRH2 is the well-characterized target of small-molecule histamine antagonists (cimetidine, ranitidine, famotidine) that bind the receptor from the extracellular space, directly confirming surface accessibility and druggability.",
+  "uniprot_acc": "P25021",
+  "hgnc_id": "HGNC:5183",
+  "model_path": "haiku_only"
+}

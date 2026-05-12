@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "Type I membrane protein with 20 leucine-rich repeats in the extracellular domain. Single-pass TM architecture anchors the protein stably to the plasma membrane. The LRR repeats are characteristic extracellular recognition modules. Previous symbol GARP refers to a well-characterized surface glycoprotein expressed on immune cells, particularly T regulatory cells.",
+  "uniprot_acc": "Q14392",
+  "hgnc_id": "HGNC:4161",
+  "model_path": "haiku_only"
+}

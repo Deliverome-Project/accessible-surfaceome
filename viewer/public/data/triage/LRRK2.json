@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "LRRK2 is a large cytoplasmic serine/threonine kinase with a mitochondrial outer membrane association. It lacks a transmembrane domain, GPI anchor, or any documented plasma membrane pool. Its localization is explicitly cytoplasmic and organellar (mitochondrial), and its function is intracellular kinase signaling and autophagy regulation. No surface-directed therapeutic targeting or stable plasma membrane anchoring is established.",
+  "uniprot_acc": "Q5S007",
+  "hgnc_id": "HGNC:18618",
+  "model_path": "haiku_only"
+}

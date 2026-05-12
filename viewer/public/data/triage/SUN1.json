@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "nuclear_envelope",
+  "verdict_reasoning": "SUN1 is an inner/outer nuclear envelope protein with a transmembrane domain spanning the nuclear membranes. As a member of the SUN family, it anchors the nuclear lamina to perinuclear cytoskeletal networks via the LINC complex. Its topology positions it in the perinuclear space (inter-membrane), not accessible from the extracellular face of the plasma membrane.",
+  "uniprot_acc": "O94901",
+  "hgnc_id": "HGNC:18587",
+  "model_path": "haiku_only"
+}

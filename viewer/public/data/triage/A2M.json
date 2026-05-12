@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "secreted_only",
+  "verdict_reasoning": "A2M is a large secreted protease inhibitor (~720 kDa) that circulates in plasma. While it transiently binds cell-surface receptors and proteoglycans via reversible non-covalent interactions and can be internalized via endocytosis, it lacks a membrane anchor (TM domain, GPI anchor, or lipidation) and is not stably tethered to a TM partner. The protein remains in equilibrium with the soluble pool and would wash away; it is not stably surface-anchored via its own mechanism.",
+  "uniprot_acc": "P01023",
+  "hgnc_id": "HGNC:7",
+  "model_path": "haiku_only"
+}

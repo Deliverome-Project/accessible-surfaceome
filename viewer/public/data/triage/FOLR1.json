@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "gpi_anchored",
+  "verdict_reasoning": "FOLR1 encodes folate receptor alpha, a GPI-anchored cell surface receptor. The NCBI summary explicitly states the protein 'anchors to membranes via a glycosyl-phosphatidylinositol linkage.' GPI anchors stably tether proteins to the outer leaflet of the plasma membrane via their own lipid-attachment mechanism, making the protein body accessible from the extracellular face. Soluble isoforms may also exist but do not alter the surface accessibility of the anchored form.",
+  "uniprot_acc": "P15328",
+  "hgnc_id": "HGNC:3791",
+  "model_path": "haiku_only"
+}

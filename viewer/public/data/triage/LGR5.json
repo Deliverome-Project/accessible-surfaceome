@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "LGR5 is a 7-transmembrane G protein-coupled receptor with extracellular N-terminus and loops bearing leucine-rich repeat domains that bind extracellular R-spondins. Classic GPCR architecture with stable TM anchoring and exposed extracellular binding surfaces. Established as a cell-surface stem cell marker and target in therapeutic development.",
+  "uniprot_acc": "O75473",
+  "hgnc_id": "HGNC:4504",
+  "model_path": "haiku_only"
+}

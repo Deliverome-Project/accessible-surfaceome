@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "multipass_with_exposed_loops",
+  "verdict_reasoning": "OR1A1 is a 7-transmembrane GPCR (olfactory receptor) with classical multipass TM topology: extracellular N-terminus, 7 transmembrane helices, and three extracellular loops. As a functional odorant receptor, it is stably integrated into the plasma membrane with exposed extracellular loops that interact with odorant molecules in the extracellular space.",
+  "uniprot_acc": "Q9P1Q5",
+  "hgnc_id": "HGNC:8179",
+  "model_path": "haiku_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "nuclear_envelope",
+  "verdict_reasoning": "SYNE1 (Nesprin-1) is a KASH domain-containing spectrin-repeat protein resident in the nuclear envelope as part of the LINC (Linker of Nucleoskeleton and Cytoskeleton) complex. It anchors the nuclear lamina to the cytoskeleton via a transmembrane domain in the NE, not the plasma membrane. No documented surface trafficking, secretion, shedding, or alternative surface-localized isoforms exist.",
+  "uniprot_acc": "Q8NF91",
+  "hgnc_id": "HGNC:17089",
+  "model_path": "haiku_only"
+}

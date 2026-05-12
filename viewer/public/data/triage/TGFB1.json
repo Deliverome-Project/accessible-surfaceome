@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "stable_surface_attachment",
+  "verdict_reasoning": "TGFB1 is secreted, but its latent pro-form (LAP-TGF\u03b21 complex) is covalently disulfide-tethered to the transmembrane partners GARP (LRRC32) on Tregs/platelets and LRRC33 (NRROS) on myeloid cells, presenting latent TGF\u03b21 on the outer leaflet. This surface-tethered latent complex is a validated immuno-oncology antigen (e.g., GARP:TGF\u03b21 antibodies like livmoniplimab), satisfying covalent post-translational anchoring to a TM scaffold rather than mere transient recruitment.",
+  "uniprot_acc": "P01137",
+  "hgnc_id": "HGNC:11766",
+  "model_path": "opus_only"
+}

@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "IKBKB is a cytoplasmic serine/threonine kinase component of the IKK signalosome complex, functioning exclusively in NF-\u03baB signal transduction. It lacks any transmembrane domain, GPI anchor, lipidation, or membrane-association mechanism. No documented surface localization, PM trafficking, or extracellular accessibility exists.",
+  "uniprot_acc": "O14920",
+  "hgnc_id": "HGNC:5960",
+  "model_path": "haiku_only"
+}

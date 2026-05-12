@@ -1,0 +1,8 @@
+{
+  "verdict": "contextual",
+  "reason": "pmhc_presented_peptide",
+  "verdict_reasoning": "PMEL is a type I transmembrane glycoprotein predominantly localized to melanosomes (intracellular melanin-producing organelles), not the plasma membrane. The protein body is not surface-accessible under baseline conditions. However, PMEL is a well-established tumor-associated antigen; PMEL-derived peptides (notably gp100) are MHC-I-presented and clinically engaged by TCR-engineered T cells, CAR-T therapies, and melanoma vaccines. Accessibility is via pMHC presentation, not protein body surface anchoring.",
+  "uniprot_acc": "P40967",
+  "hgnc_id": "HGNC:10880",
+  "model_path": "haiku_only"
+}

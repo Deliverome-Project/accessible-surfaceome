@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "cytoplasmic",
+  "verdict_reasoning": "HDAC6 is a cytoplasmic histone deacetylase and ring finger protein with no transmembrane domain, GPI anchor, or other membrane-anchoring mechanism. It functions as a soluble cytoplasmic enzyme deacetylating tubulin and other non-histone substrates. No isoform is membrane-anchored, no surface-directed therapeutic programs engage it on the cell surface, and no documented mechanism mediates transit to the outer face of the plasma membrane.",
+  "uniprot_acc": "Q9UBN7",
+  "hgnc_id": "HGNC:14064",
+  "model_path": "haiku_only"
+}

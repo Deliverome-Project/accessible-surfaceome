@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "GUCY2C is a transmembrane guanylate cyclase\u2014a single-pass TM receptor with an extracellular peptide-binding domain. The HGNC gene-group membership ('Transmembrane guanylate cyclases') and NCBI summary confirm canonical surface receptor architecture. It binds endogenous peptide ligands (guanylin, uroguanylin) and bacterial enterotoxin, establishing clear extracellular accessibility. Clinical phenotype (familial diarrhea, meconium ileus) reflects intestinal epithelial surface expression.",
+  "uniprot_acc": "P25092",
+  "hgnc_id": "HGNC:4688",
+  "model_path": "haiku_only"
+}

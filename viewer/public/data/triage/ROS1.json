@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "ROS1 is explicitly described as a type I integral membrane protein with tyrosine kinase activity. It belongs to the receptor tyrosine kinase (RTK) family and contains fibronectin type III domains. This architecture \u2014 a single-pass transmembrane protein with an extracellular domain \u2014 is the canonical surface-receptor topology. RTKs are ligand-binding surface proteins.",
+  "uniprot_acc": "P08922",
+  "hgnc_id": "HGNC:10261",
+  "model_path": "haiku_only"
+}

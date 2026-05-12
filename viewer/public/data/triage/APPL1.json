@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "endomembrane_resident",
+  "verdict_reasoning": "APPL1 is a BAR-PH domain adaptor protein with documented localization to endosomal membranes and signal-induced nuclear translocation. The NCBI summary places it on intracellular endosomal compartments, not the plasma membrane outer leaflet. No transmembrane domain, GPI anchor, or stable surface-anchoring mechanism is described. No documented PM pool or surface-accessible isoform.",
+  "uniprot_acc": "Q9UKG1",
+  "hgnc_id": "HGNC:24035",
+  "model_path": "haiku_only"
+}

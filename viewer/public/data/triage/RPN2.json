@@ -1,0 +1,8 @@
+{
+  "verdict": "no",
+  "reason": "endomembrane_resident",
+  "verdict_reasoning": "RPN2 is a type I integral membrane protein of the N-oligosaccharyltransferase complex, localized exclusively to the rough endoplasmic reticulum as stated in the NCBI summary. While it has a transmembrane domain, this inserts into the ER membrane during synthesis and anchors the protein to ER-ribosome binding sites for its function in co-translational N-glycosylation of nascent polypeptides. No surface trafficking, PM cycling, or cell-state-induced relocalization is documented. It is an intracellular biosynthetic enzyme resident on endomembranes only.",
+  "uniprot_acc": "P04844",
+  "hgnc_id": "HGNC:10382",
+  "model_path": "haiku_only"
+}

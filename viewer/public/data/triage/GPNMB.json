@@ -1,0 +1,8 @@
+{
+  "verdict": "yes",
+  "reason": "classical_surface_receptor",
+  "verdict_reasoning": "GPNMB is explicitly described as a type I transmembrane glycoprotein in the NCBI summary. Type I TM architecture \u2014 with an N-terminal extracellular domain, single transmembrane domain, and cytoplasmic C-terminus \u2014 places the protein body stably on the outer face of the plasma membrane via its own transmembrane anchor.",
+  "uniprot_acc": "Q14956",
+  "hgnc_id": "HGNC:4462",
+  "model_path": "haiku_only"
+}
