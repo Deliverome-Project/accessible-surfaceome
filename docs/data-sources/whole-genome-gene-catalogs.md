@@ -1,11 +1,11 @@
 # Whole-genome gene catalogs (NCBI + HGNC)
 
-The subbench cost extrapolation in
-[`scripts/triage_subbench_summary.py`](../../scripts/triage_subbench_summary.py)
-needs a single number — `WHOLE_GENOME_N` — to project the cost of running
-the triage agent over every human protein-coding gene. That number depends
-on which authority you ask, and on how aggressively you trim. This doc
-records what we use, why, and how to refresh.
+Genome-wide cost projections for the triage agent (e.g.
+[`scripts/build_triageable_catalog.py`](../../scripts/build_triageable_catalog.py))
+need a single denominator — the count of protein-coding human genes the
+agent could be asked about. That number depends on which authority you
+ask, and on how aggressively you trim. This doc records what we use,
+why, and how to refresh.
 
 ## Sources
 

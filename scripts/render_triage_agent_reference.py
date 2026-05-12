@@ -33,7 +33,12 @@ MODELS_PATH = REPO_ROOT / "src" / "accessible_surfaceome" / "tools" / "_shared" 
 EXAMPLE_PATH = REPO_ROOT / "data" / "triage" / "B2M.json"
 BENCHMARK_PATH = REPO_ROOT / "data" / "eval" / "triage_benchmark_v1.tsv"
 SUBBENCH_PATH = REPO_ROOT / "data" / "eval" / "triage_subbench_v1.tsv"
-SUBBENCH_RUNS_DIR = REPO_ROOT / "data" / "eval" / "triage_subbench_v1"
+# Sub-bench per-cell records are read from D1's ``triage_run`` table
+# under this run_id (uploaded by ``scripts/upload_triage_runs_to_d1.py
+# --run-id subbench_canonical_v1``). The on-disk JSON tree that used
+# to live at ``data/eval/triage_subbench_v1/<model>/<variant>/`` was
+# dropped from the repo — D1 is the canonical source.
+SUBBENCH_D1_RUN_ID = "subbench_canonical_v1"
 OUTPUT_HTML = REPO_ROOT / "docs" / "eval" / "triage_agent_reference.html"
 
 SUBBENCH_MODELS: list[str] = ["haiku-4-5", "sonnet-4-6", "opus-4-7"]
@@ -206,14 +211,22 @@ def _load_subbench() -> list[dict[str, str]]:
 
 
 def _score_subbench(subbench_rows: list[dict[str, str]]) -> dict:
-    """Walk data/eval/triage_subbench_v1/<model>/<variant>/<gene>_run*.json and
-    score each model x variant combination against ground_truth_verdict /
-    ground_truth_reason. Returns a nested dict suitable for rendering.
+    """Read per-cell sub-bench records from D1 (run_id=subbench_canonical_v1)
+    and score each ``(model, variant)`` combination against
+    ``ground_truth_verdict`` / ``ground_truth_reason``. Returns a nested
+    dict suitable for rendering.
 
     A run is correct on verdict if predicted_verdict == ground_truth_verdict;
     correct on reason if (verdict-correct AND predicted_reason ==
-    ground_truth_reason). Missing runs are skipped silently.
+    ground_truth_reason). Missing cells render as zero-score (table still
+    appears so downstream JS doesn't crash).
     """
+    from collections import defaultdict
+
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.env import load_env
+
+    load_env()
     truth_by_gene: dict[str, tuple[str, str]] = {
         r["gene_symbol"]: (
             r["ground_truth_verdict"],
@@ -222,13 +235,26 @@ def _score_subbench(subbench_rows: list[dict[str, str]]) -> dict:
         for r in subbench_rows
     }
 
+    # One round-trip pulls every (model, variant, gene) cell under the
+    # canonical run_id; bucket them locally.
+    with D1Client() as d1:
+        rows = d1.query(
+            "SELECT gene_symbol, model, prompt_variant AS variant, replicate, "
+            "       predicted_verdict, predicted_reason "
+            "FROM triage_run WHERE run_id = ?;",
+            [SUBBENCH_D1_RUN_ID],
+        )
+    by_cell: dict[tuple[str, str], list[dict]] = defaultdict(list)
+    for r in rows:
+        by_cell[(r["model"], r["variant"])].append(r)
+
     grid: dict[str, dict[str, dict[str, object]]] = {}
     per_gene: dict[str, dict[str, dict[str, object]]] = {}
     for model in SUBBENCH_MODELS:
         grid[model] = {}
         for variant in SUBBENCH_VARIANTS:
-            run_dir = SUBBENCH_RUNS_DIR / model / variant
-            if not run_dir.exists():
+            cell_rows = by_cell.get((model, variant), [])
+            if not cell_rows:
                 grid[model][variant] = {
                     "n_runs": 0,
                     "n_verdict_correct": 0,
@@ -238,20 +264,13 @@ def _score_subbench(subbench_rows: list[dict[str, str]]) -> dict:
             n_runs = 0
             n_v = 0
             n_r = 0
-            for path in sorted(run_dir.glob("*.json")):
-                try:
-                    data = json.loads(path.read_text())
-                except json.JSONDecodeError:
-                    continue
-                gene = (
-                    data.get("gene_symbol")
-                    or path.stem.split("_run")[0]
-                )
+            for data in cell_rows:
+                gene = data.get("gene_symbol")
                 tv, tr = truth_by_gene.get(gene, (None, None))
                 if tv is None:
                     continue
-                pv = data.get("predicted_verdict") or data.get("verdict")
-                pr = data.get("predicted_reason") or data.get("reason")
+                pv = data.get("predicted_verdict")
+                pr = data.get("predicted_reason")
                 n_runs += 1
                 # yes/contextual are interchangeable for verdict accuracy
                 # (mirrors the runner's correctness rule); reason match is
@@ -266,7 +285,7 @@ def _score_subbench(subbench_rows: list[dict[str, str]]) -> dict:
                     variant, {"runs": [], "n_v": 0, "n_r": 0}
                 )
                 bucket["runs"].append({
-                    "run_id": path.stem,
+                    "run_id": f"{gene}_run{data.get('replicate') or 1}",
                     "predicted_verdict": pv,
                     "predicted_reason": pr,
                     "verdict_correct": v_ok,

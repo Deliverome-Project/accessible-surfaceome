@@ -1,8 +1,10 @@
 """Fetch the canonical NCBI human gene catalog and filter to protein-coding.
 
 Source: ``https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz``
-— the authoritative whole-genome enumeration that drives the
-``WHOLE_GENOME_N`` constant in ``scripts/triage_subbench_summary.py``.
+— the authoritative whole-genome enumeration. The protein-coding
+∩ HGNC subset (~19,464 genes) is the canonical genome-wide
+denominator referenced by the triage runner and downstream cost
+projections.
 
 Writes four artifacts under ``data/external/ncbi_gene_info/``:
 

@@ -104,21 +104,26 @@ class D1Client:
         return _unwrap(resp)
 
     def batch(self, statements: list[tuple[str, list[Any]]]) -> list[list[dict[str, Any]]]:
-        """Execute several statements in one round-trip.
+        """Execute several statements sequentially via the single-statement
+        ``/query`` endpoint.
 
-        Cloudflare's D1 query endpoint accepts a JSON array of {sql, params}
-        objects when invoked with ``raw=false`` (the default). Each statement
-        executes in its own implicit transaction; this is *not* atomic across
-        the batch — for atomicity use a single multi-statement ``sql`` with
-        ``BEGIN/COMMIT``.
+        Originally this method sent the whole list as a top-level JSON array
+        to a single ``/query`` POST, but the D1 HTTP API tightened its input
+        validation and now rejects the array shape with
+        ``"Expected object, received array"``. Cloudflare's Workers binding
+        still exposes a real ``.batch()`` op but the public HTTP API only
+        accepts one ``{sql, params}`` object per request.
+
+        We keep the ``batch`` signature for callers (so callers don't have to
+        manage their own loop and unwrap) but unroll into N sequential
+        ``query`` calls. Same atomicity story as before — *not* atomic across
+        statements — and the only meaningful difference is latency (N
+        round-trips instead of 1). The fastpath for atomic multi-statement
+        execution is a single semicolon-joined ``sql`` via :meth:`query`.
         """
         if not statements:
             return []
-        payload = [
-            {"sql": sql, "params": list(params)} for sql, params in statements
-        ]
-        resp = self._client.post(self._url, content=json.dumps(payload))
-        return [_unwrap_one(r) for r in _unwrap_envelope(resp)]
+        return [[*self.query(sql, list(params))] for sql, params in statements]
 
 
 # ---------------------------------------------------------------------------
