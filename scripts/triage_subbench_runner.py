@@ -495,8 +495,6 @@ def _run_one(
 #   * resolver 404s that the resolver's own symbol-search fallback
 #     might race against an upstream rate-limit window
 #   * generic API errors (rate limits, transient network)
-# Schema-mismatch records (non-null verdict + bad reason) are NOT
-# retried — those are model-correctness issues, not transients.
 _RETRYABLE_ERROR_PATTERNS: tuple[str, ...] = (
     "could not parse JSON from response",
     "404 Not Found",
@@ -504,12 +502,68 @@ _RETRYABLE_ERROR_PATTERNS: tuple[str, ...] = (
     "messages.create:",
 )
 
+# Schema validity: each verdict literal allows a small set of `reason`
+# literals. Mirrors ``_REASONS_BY_VERDICT`` in
+# accessible_surfaceome.tools._shared.models.TriageRecordDraft —
+# duplicated here so the runner can reject mismatched emissions before
+# they reach D1, and trigger an automatic retry. Keep in sync with the
+# Pydantic schema; the prompt-parity test catches the most common
+# drift by fingerprinting each reason enum line.
+_VALID_VERDICTS: frozenset[str] = frozenset({"yes", "contextual", "no"})
+_REASONS_BY_VERDICT: dict[str, frozenset[str]] = {
+    "yes": frozenset({
+        "classical_surface_receptor", "gpi_anchored",
+        "multipass_with_exposed_loops", "extracellular_face_protein",
+        "stable_complex_partner", "other",
+    }),
+    "contextual": frozenset({
+        "cell_state_induced", "tissue_restricted_surface",
+        "lysosomal_exocytosis", "dual_localization",
+        "stable_surface_attachment", "other",
+    }),
+    "no": frozenset({
+        "cytoplasmic", "nuclear", "mitochondrial_internal",
+        "endomembrane_resident", "nuclear_envelope",
+        "inner_leaflet_anchored", "secreted_only",
+        "pmhc_only_intracellular", "other",
+    }),
+}
+
+
+def _is_schema_valid(verdict: str | None, reason: str | None) -> bool:
+    """Mirror of TriageRecordDraft._check_reason_matches_verdict."""
+    if verdict not in _VALID_VERDICTS:
+        return False
+    return reason in _REASONS_BY_VERDICT[verdict]
+
 
 def _is_retryable(rec: "RunRecord") -> bool:
-    if rec.predicted_verdict is not None:
-        return False
-    err = rec.error or ""
-    return any(pat in err for pat in _RETRYABLE_ERROR_PATTERNS)
+    """A record is retryable if:
+      (a) ``predicted_verdict`` is null AND ``error`` matches a known
+          transient pattern (parse failure, resolver 404, API error), OR
+      (b) ``predicted_verdict`` is set but the ``(verdict, reason)``
+          combo violates the Pydantic schema's per-verdict reason
+          enumeration. A fresh model sample often emits a self-
+          consistent combo on the second try.
+
+    Refusal-stop-reason records are NOT retried — those are stable
+    safety-classifier blocks (see CTXN1/FBRS on
+    genome_full_sonnet_ncbi_v1) and another sample just refuses again.
+    """
+    # Schema mismatch: model emitted a valid-looking record that
+    # violates the Pydantic verdict↔reason constraint.
+    if rec.predicted_verdict is not None and not _is_schema_valid(
+        rec.predicted_verdict, rec.predicted_reason
+    ):
+        return True
+
+    # Null verdict: only retry on known transient error patterns.
+    if rec.predicted_verdict is None:
+        err = rec.error or ""
+        if any(pat in err for pat in _RETRYABLE_ERROR_PATTERNS):
+            return True
+
+    return False
 
 
 def _run_one_with_retry(
@@ -521,16 +575,22 @@ def _run_one_with_retry(
     truth_verdict: str,
     truth_class: str,
 ) -> RunRecord:
-    """``_run_one`` with one automatic retry for transient failures.
+    """``_run_one`` with one automatic retry for transient failures
+    or schema-mismatch emissions.
 
-    Forward-only behavior: records that previously would have been
-    saved with ``error=...`` and ``predicted_verdict=null`` now get
-    a second chance. The retry is cheap (single re-issue, no
-    exponential backoff) because the failures we observe in practice
-    are stochastic — a fresh sample from the same call usually
-    succeeds. If the retry also fails, the second attempt's record
-    is returned (so the persisted ``raw_text`` reflects the most
-    recent attempt).
+    Two retry triggers (see :func:`_is_retryable`):
+      * Null verdict with a known-transient error (parse failure,
+        resolver 404, generic API error).
+      * Non-null verdict that violates the Pydantic schema's
+        verdict↔reason constraint (e.g. ``no + multipass_with_exposed_loops``,
+        which is internally inconsistent — multipass is a yes-only
+        reason). A fresh sample often emits a self-consistent combo.
+
+    The retry is cheap (single re-issue, no exponential backoff).
+    If the retry also fails, the second attempt's record is returned
+    (so the persisted ``raw_text`` reflects the most recent attempt).
+    Refusals are not retried — those are stable safety-classifier
+    blocks.
     """
 
     first = _run_one(
