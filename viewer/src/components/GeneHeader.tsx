@@ -12,7 +12,15 @@ export function GeneHeader({ rec }: { rec: SurfaceomeRecord }) {
   const tier = rec.targetability.tier;
   const blocking = rec.risk_flags.filter((r) => r.severity === "blocking").length;
   const highRisks = rec.risk_flags.filter((r) => r.severity === "high").length;
-  const indications = rec.expression.tumor_indications;
+  // v0.4.0 dropped the `expression` bucket; fall back to "—" tumor counts.
+  const indications = rec.expression?.tumor_indications ?? [];
+  // v0.4.0 dropped targetability.recommended_modalities; fall back to triage_signal
+  // or surface_status as the secondary signal under the tier badge.
+  const tierSub =
+    rec.targetability.recommended_modalities?.[0]?.kind
+    ?? rec.triage_signal
+    ?? rec.surface_biology.surface_status
+    ?? "—";
   return (
     <header className="gene-header">
       <div className="gene-id-block">
@@ -38,7 +46,7 @@ export function GeneHeader({ rec }: { rec: SurfaceomeRecord }) {
           <div className={"vital vital-tier tier-" + tier}>
             <span className="k">Targetability</span>
             <span className="v">{prettyEnum(tier)}</span>
-            <span className="sub">{prettyEnum(rec.targetability.recommended_modalities[0]?.kind || "—")}</span>
+            <span className="sub">{prettyEnum(tierSub)}</span>
           </div>
           <div className="vital">
             <span className="k">Confidence</span>

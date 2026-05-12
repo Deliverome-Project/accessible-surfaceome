@@ -88,14 +88,17 @@ export function recordToMarkdown(
   lines.push("");
   lines.push(rec.targetability.tldr + citeList(rec.targetability.cited_evidence_ids, evidenceById, all));
   lines.push("");
-  lines.push("**Recommended modalities**");
-  lines.push("");
-  rec.targetability.recommended_modalities.forEach((m, i) => {
-    const name = m.kind_other_label ? pretty(m.kind_other_label) : pretty(m.kind);
-    const flag = m.kind === "not_recommended" ? "Not viable" : i === 0 ? "Primary" : "Alternate";
-    lines.push(`${i + 1}. **${name}** _(${flag})_ — ${m.rationale}`);
-  });
-  lines.push("");
+  // v0.3.2 carried `recommended_modalities`; v0.4.0 dropped it.
+  if (rec.targetability.recommended_modalities?.length) {
+    lines.push("**Recommended modalities**");
+    lines.push("");
+    rec.targetability.recommended_modalities.forEach((m, i) => {
+      const name = m.kind_other_label ? pretty(m.kind_other_label) : pretty(m.kind);
+      const flag = m.kind === "not_recommended" ? "Not viable" : i === 0 ? "Primary" : "Alternate";
+      lines.push(`${i + 1}. **${name}** _(${flag})_ — ${m.rationale}`);
+    });
+    lines.push("");
+  }
 
   const sb = rec.surface_biology;
   lines.push("## Surface biology");
@@ -117,39 +120,57 @@ export function recordToMarkdown(
   lines.push(`| **Total** | **${sb.db_comparison.n_sources_voting_surface} / 8** |`);
   lines.push("");
 
+  // v0.3.2 had an `expression` bucket; v0.4.0 dropped it.
   const ex = rec.expression;
-  lines.push("## Expression");
-  lines.push("");
-  lines.push(`- **Tumor specificity:** ${pretty(ex.tumor_specificity)}`);
-  lines.push(`- **Tumor indications:** ${ex.tumor_indications.map(titleCase).join(", ") || "—"}`);
-  lines.push(`- **Top normal tissues:** ${ex.normal_tissue_top.map(titleCase).join(", ") || "—"}`);
-  lines.push(`- **Concerns:** ${ex.normal_tissue_concerns.map(titleCase).join(", ") || "—"}`);
-  lines.push("");
-  lines.push(ex.summary + citeList(ex.cited_evidence_ids, evidenceById, all));
-  lines.push("");
-
-  const tl = rec.therapeutic_landscape;
-  lines.push("## Therapeutic landscape");
-  lines.push("");
-  if (tl.patent_disclosures.length) {
-    lines.push("### Patent disclosures");
+  if (ex) {
+    lines.push("## Expression");
     lines.push("");
-    tl.patent_disclosures.forEach((p) => {
-      lines.push(`**${p.wo_number} — ${p.title}**  `);
-      lines.push(`${p.applicant} · priority ${p.priority_year} · ${pretty(p.modality)}`);
-      lines.push("");
-      lines.push(p.summary + citeList(p.cited_evidence_ids, evidenceById, all));
-      lines.push("");
-    });
+    lines.push(`- **Tumor specificity:** ${pretty(ex.tumor_specificity)}`);
+    lines.push(`- **Tumor indications:** ${ex.tumor_indications.map(titleCase).join(", ") || "—"}`);
+    lines.push(`- **Top normal tissues:** ${ex.normal_tissue_top.map(titleCase).join(", ") || "—"}`);
+    lines.push(`- **Concerns:** ${ex.normal_tissue_concerns.map(titleCase).join(", ") || "—"}`);
+    lines.push("");
+    lines.push(ex.summary + citeList(ex.cited_evidence_ids, evidenceById, all));
+    lines.push("");
   }
-  if (tl.preclinical_evidence.length) {
-    lines.push("### Preclinical evidence");
+
+  // v0.4.0: surface_engagement_validation replaces therapeutic_landscape.
+  // Legacy records still expose therapeutic_landscape.{patent_disclosures,
+  // preclinical_evidence}.
+  const sev = rec.surface_engagement_validation?.preclinical_evidence ?? [];
+  const tl = rec.therapeutic_landscape;
+  const legacyPatents = tl?.patent_disclosures ?? [];
+  const legacyPreclinical = tl?.preclinical_evidence ?? [];
+  if (sev.length || legacyPatents.length || legacyPreclinical.length) {
+    lines.push("## Surface engagement validation");
     lines.push("");
-    tl.preclinical_evidence.forEach((p) => {
-      lines.push(`**${p.citation}** — _${pretty(p.modality)}_  `);
-      lines.push(p.finding_summary + citeList(p.cited_evidence_ids, evidenceById, all));
+    if (sev.length) {
+      sev.forEach((p) => {
+        lines.push(`**${p.citation}**  `);
+        lines.push(p.finding_summary + citeList(p.cited_evidence_ids, evidenceById, all));
+        lines.push("");
+      });
+    }
+    if (legacyPatents.length) {
+      lines.push("### Patent disclosures (legacy v0.3.2)");
       lines.push("");
-    });
+      legacyPatents.forEach((p) => {
+        lines.push(`**${p.wo_number} — ${p.title}**  `);
+        lines.push(`${p.applicant} · priority ${p.priority_year} · ${pretty(p.modality)}`);
+        lines.push("");
+        lines.push(p.summary + citeList(p.cited_evidence_ids, evidenceById, all));
+        lines.push("");
+      });
+    }
+    if (legacyPreclinical.length) {
+      lines.push("### Preclinical evidence (legacy v0.3.2)");
+      lines.push("");
+      legacyPreclinical.forEach((p) => {
+        lines.push(`**${p.citation}**${p.modality ? ` — _${pretty(p.modality)}_` : ""}  `);
+        lines.push(p.finding_summary + citeList(p.cited_evidence_ids, evidenceById, all));
+        lines.push("");
+      });
+    }
   }
 
   lines.push("## Risk flags");

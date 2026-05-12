@@ -65,10 +65,18 @@ export default function Detail() {
 
   const tabs: { id: TabId; label: string; count?: number }[] = useMemo(() => {
     if (!rec) return [];
+    // v0.4.0 dropped therapeutic_landscape; the new bucket
+    // surface_engagement_validation only carries preclinical_evidence.
+    // Legacy v0.3.2 records still expose therapeutic_landscape with
+    // patent_disclosures + preclinical_evidence + clinical_trials.
+    const legacyPatents = rec.therapeutic_landscape?.patent_disclosures?.length ?? 0;
+    const legacyPreclinical = rec.therapeutic_landscape?.preclinical_evidence?.length ?? 0;
+    const newPreclinical = rec.surface_engagement_validation?.preclinical_evidence?.length ?? 0;
+    const landscapeCount = legacyPatents + legacyPreclinical + newPreclinical;
     return [
       { id: "biology", label: "Surface biology" },
       { id: "expression", label: "Expression" },
-      { id: "landscape", label: "Therapeutic landscape", count: rec.therapeutic_landscape.patent_disclosures.length + rec.therapeutic_landscape.preclinical_evidence.length },
+      { id: "landscape", label: "Therapeutic landscape", count: landscapeCount },
       { id: "risks", label: "Risk flags", count: rec.risk_flags.length },
       { id: "raw", label: "Raw record" },
     ];
@@ -129,7 +137,7 @@ export default function Detail() {
         >
           <div className="field-prose">{rec!.targetability.tldr}</div>
         </FieldRow>
-        <Modalities list={rec!.targetability.recommended_modalities} />
+        <Modalities list={rec!.targetability.recommended_modalities ?? []} />
       </div>
 
       <div className="tabs" role="tablist">
