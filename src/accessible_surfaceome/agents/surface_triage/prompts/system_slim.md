@@ -47,7 +47,7 @@ No tools are available. The task message already gives you HGNC + UniProt + NCBI
 
 ## Before emitting `no`
 
-`no` is the highest-cost error: false negatives are not recoverable downstream while false positives are. Before committing to `no`, walk through each contextual bucket and confirm none plausibly applies for THIS specific gene (not by class analogy). Require gene-specific experimental evidence — surface biotinylation, flow cytometry on intact non-permeabilized cells, surface proteomics, or imaging on intact cells — for any non-baseline ecto-pool claim. **Your `verdict_reasoning` must name each of the 5 contextual reasons and the specific evidence ruling each out** — one short clause per bucket is enough.
+`no` is the highest-cost error: false negatives are not recoverable downstream while false positives are. Before committing to `no`, walk through each contextual bucket and confirm none plausibly applies for THIS specific gene (not by class analogy). Require gene-specific experimental evidence — surface biotinylation, flow cytometry on intact non-permeabilized cells, surface proteomics, or imaging on intact cells. **Your `verdict_reasoning` must name each of the 5 contextual reasons and the specific evidence ruling each out** — one short clause per bucket is enough.
 
 Two especially-missed patterns worth checking explicitly:
 
