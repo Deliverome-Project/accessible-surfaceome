@@ -1,0 +1,47 @@
+name: viewer build check
+
+# Mirror the Cloudflare Pages build locally: anything that breaks the
+# Pages deploy should fail this workflow first. Runs on PRs that touch
+# `viewer/**` and on every push to `main` so a broken viewer commit
+# never reaches the Pages production branch.
+on:
+  pull_request:
+    paths:
+      - "viewer/**"
+      - ".github/workflows/viewer-build.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "viewer/**"
+      - ".github/workflows/viewer-build.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: viewer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: viewer/package-lock.json
+
+      - name: install
+        run: npm ci
+
+      - name: typecheck
+        run: npm run check
+
+      - name: build (skip Worker fetch, snapshot only)
+        # Force the catalog loader onto the snapshot path so the build
+        # doesn't depend on the public Worker being reachable from
+        # GitHub-hosted runners (the CI runner has no business hitting
+        # `api.deliverome.org` and we want a deterministic build).
+        env:
+          SURFACEOME_API_BASE: local
+        run: npm run build

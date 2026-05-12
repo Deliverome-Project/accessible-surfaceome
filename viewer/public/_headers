@@ -1,0 +1,36 @@
+# Cloudflare Pages _headers — applied per response by the Pages edge.
+# Docs: https://developers.cloudflare.com/pages/configuration/headers/
+
+# Per-gene SurfaceomeRecord JSONs. Agents and curl hit these from any
+# origin, so allow cross-origin reads; cache for 1 h at the browser
+# and 1 d at the edge (curators bust by re-deploying after a
+# data sync, which invalidates the edge cache).
+/data/surfaceome/*
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Cache-Control: public, max-age=3600, s-maxage=86400
+  Content-Type: application/json; charset=utf-8
+
+# Catalog table source + gene-name lookup. Same access policy; these
+# rebuild on every Pages deploy from the committed snapshots /
+# Worker / D1.
+/data/catalog.json
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Cache-Control: public, max-age=3600, s-maxage=86400
+  Content-Type: application/json; charset=utf-8
+
+/data/gene_names.json
+  Access-Control-Allow-Origin: *
+  Access-Control-Allow-Methods: GET, OPTIONS
+  Cache-Control: public, max-age=3600, s-maxage=86400
+  Content-Type: application/json; charset=utf-8
+
+# HTML pages — short browser cache, edge revalidation on each deploy.
+/*.html
+  Cache-Control: public, max-age=300, s-maxage=3600
+
+# Next.js hashed assets (filenames carry the content hash); safe to
+# cache aggressively + immutable for a year.
+/_next/static/*
+  Cache-Control: public, max-age=31536000, immutable
