@@ -169,8 +169,11 @@ async function handleCatalog(env) {
   }
   const universe = releaseRow.universe_version;
 
-  // Latest bench_version drives which triage_run_public rows are
-  // "live" — only those count for the per-gene latest verdict.
+  // (Bench version surfaced for response metadata only — the triage
+  // lookup below no longer FILTERS by latest bench_version. Older
+  // verdicts still represent the project's freshest read on each
+  // gene; hiding them just because the bench_version label rolled
+  // forward leaves the catalog mostly empty.)
   const benchRow = await env.DB.prepare(
     `SELECT bench_version FROM benchmark_version
       ORDER BY bench_version DESC LIMIT 1`
@@ -192,29 +195,33 @@ async function handleCatalog(env) {
       ORDER BY gene_symbol`
   ).bind(universe).all();
 
-  // Latest triage verdict per gene, scoped to the active bench_version
-  // (verdicts churn fast — we want the freshest, not historical noise).
-  // Use a subquery to pick the max(created_at) row per (gene, model);
-  // gene-level rollup picks the haiku_only / first row.
+  // Latest triage verdict per gene, regardless of bench_version. The
+  // earlier query strict-filtered to the latest bench, which left the
+  // catalog mostly empty: most triage runs are genome-wide sweeps
+  // (~19k genes) that aren't anchored to a benchmark at all, so
+  // their bench_version is either NULL or whatever was current
+  // months ago — not useful as a "freshness" filter. Take
+  // max(created_at) across all benches; surface `bench_version`
+  // (possibly null) + `created_at` per row so consumers can tell
+  // *which* run each verdict came from.
   const triageMap = new Map();
-  if (benchVersion) {
-    const triageRows = await env.DB.prepare(
-      `SELECT gene_symbol, predicted_verdict, predicted_reason
-         FROM triage_run_public t
-        WHERE bench_version = ?
-          AND created_at = (
-            SELECT MAX(created_at) FROM triage_run_public
-             WHERE gene_symbol = t.gene_symbol
-               AND bench_version = ?
-          )`
-    ).bind(benchVersion, benchVersion).all();
-    for (const r of triageRows.results) {
-      if (!triageMap.has(r.gene_symbol)) {
-        triageMap.set(r.gene_symbol, {
-          verdict: r.predicted_verdict,
-          reason: r.predicted_reason,
-        });
-      }
+  const triageRows = await env.DB.prepare(
+    `SELECT gene_symbol, predicted_verdict, predicted_reason,
+            bench_version, created_at
+       FROM triage_run_public t
+      WHERE created_at = (
+        SELECT MAX(created_at) FROM triage_run_public
+         WHERE gene_symbol = t.gene_symbol
+      )`
+  ).all();
+  for (const r of triageRows.results) {
+    if (!triageMap.has(r.gene_symbol)) {
+      triageMap.set(r.gene_symbol, {
+        verdict: r.predicted_verdict,
+        reason: r.predicted_reason,
+        bench_version: r.bench_version,
+        created_at: r.created_at,
+      });
     }
   }
 

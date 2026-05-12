@@ -3,6 +3,13 @@
  * Filter / sort client-side over 5k+ rows; rows with a deep-dive
  * record link into /[symbol]/, everything else is read-only.
  *
+ * Layout: CSS Grid with a shared `--catalog-cols` template applied to
+ * the header row AND every body row. This is the structural fix for
+ * the "thead and tbody column widths drift" problem virtualized HTML
+ * tables suffer from — both the header and the absolutely-positioned
+ * virtual rows use the SAME grid template, so columns are guaranteed
+ * to align without any proportional-fill rounding.
+ *
  * Keeps the editorial frame (Playfair display, Manrope sans, Rosy
  * Maroon accent) but uses a dense data-grid in the body — clinical
  * scan more than narrative reveal. No row-level borders; alternating
@@ -119,81 +126,90 @@
 }
 
 /* ============================================================
- * Table
+ * Table (CSS Grid)
  * ============================================================ */
 
 .tableScroll {
-  /* Element-scroll for the virtualized body: the table itself owns
-   * the scrollbar, the page above (hero / toolbar / footnotes) stays
-   * visible without jumping. Height clamped to viewport so 19k rows
-   * never push the document scroll to absurd lengths. */
+  /* Element-scroll for the virtualized body: this container owns the
+   * scrollbar, the page above (hero / toolbar) stays put. Height
+   * clamped to viewport so 19k rows never push the document scroll
+   * to absurd lengths. */
   overflow: auto;
   max-height: min(80vh, 800px);
   border-top: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
   position: relative;
+  /* The wrap supplies --catalog-cols via inline style; expose a
+   * fallback here so styles still work if it's not set. */
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
+/* The shared row template — applied to both the header row and every
+ * body row. Columns: symbol | uniprot | sources | 5 db dots |
+ * triage | deep-dive. Triage uses `minmax(14rem, 1fr)` so it absorbs
+ * any leftover horizontal space; the other columns stay at their
+ * intrinsic rem widths. */
+.row {
+  display: grid;
+  grid-template-columns: var(--catalog-cols,
+    7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
+  align-items: center;
   font-family: var(--font-sans);
   font-size: 0.88rem;
-  table-layout: fixed;
+  border-bottom: 1px solid var(--line-soft);
+  min-height: 2.4rem;
 }
 
-.table thead {
+/* Sticky header — same grid template as every body row guarantees
+ * column alignment. */
+.headerRow {
   position: sticky;
   top: 0;
   z-index: 1;
   background: var(--bg);
-  /* Stickiness against the .tableScroll container — thead floats over
-   * the absolutely-positioned virtualized rows below. */
+  border-bottom: 1px solid var(--line);
+  min-height: 2.6rem;
 }
 
-/* When the virtualizer mounts, the tbody becomes a positioning
- * context (display:block + height = totalSize) so absolutely-
- * positioned rows scroll naturally inside .tableScroll. */
-.table tbody {
-  position: relative;
+/* Body wrapper — the virtualizer sizes this to its totalSize and
+ * absolutely positions each row inside it. */
+.body {
+  display: block;
 }
 
-.table th,
-.table td {
-  padding: 0.4rem 0.6rem;
-  text-align: left;
-  vertical-align: middle;
-  border-bottom: 1px solid var(--line-soft);
+.row[data-deep-dive] {
+  /* Subtle accent so deep-dive rows are scannable in a dense list. */
 }
 
-.table tbody tr:nth-child(2n) {
+.row:nth-child(2n + 1):not(.headerRow):not(.loadingRow):not(.empty) {
   background: rgba(146, 32, 56, 0.022);
 }
 
-.table tbody tr:hover {
+.row:hover:not(.headerRow):not(.loadingRow):not(.empty) {
   background: var(--maroon-soft);
 }
 
 /* ============================================================
- * Headers
+ * Cells
  * ============================================================ */
 
-.th {
-  padding: 0.5rem 0.6rem !important;
-  border-bottom: 1px solid var(--line) !important;
+.headerCell {
+  padding: 0.5rem 0.6rem;
   font-family: var(--font-sans);
   font-size: 0.72rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--muted);
+  display: flex;
+  align-items: center;
 }
 
-.thCenter {
+.headerCenter {
+  justify-content: center;
   text-align: center;
 }
 
-.thMono {
+.headerMono {
   font-family: var(--font-mono);
   letter-spacing: 0.06em;
 }
@@ -228,24 +244,27 @@
   text-align: center;
 }
 
-.dbCol {
-  width: 1.6rem;
-  text-align: center !important;
+.headerDbCell {
+  justify-content: center;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
   color: var(--muted);
   text-transform: none;
-  padding: 0.5rem 0.3rem !important;
+  padding: 0.5rem 0.3rem;
+}
+
+.cell {
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 /* ============================================================
- * Body cells
+ * Cell content (overrides only — column widths come from grid
+ * template, so no `width` here)
  * ============================================================ */
-
-.symbolCell {
-  width: 7.5rem;
-}
 
 .symbolLink {
   font-family: var(--font-display);
@@ -269,15 +288,13 @@
 }
 
 .uniprotCell {
-  width: 5.5rem;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: var(--muted);
 }
 
 .nCell {
-  width: 3rem;
-  text-align: center;
+  justify-content: center;
 }
 
 .nBubble {
@@ -311,9 +328,8 @@
 }
 
 .dbCell {
-  width: 1.6rem;
-  text-align: center;
-  padding: 0.4rem 0.3rem !important;
+  justify-content: center;
+  padding: 0.4rem 0.3rem;
 }
 
 .dbDot {
@@ -331,7 +347,8 @@
 }
 
 .triageCell {
-  width: 14rem;
+  /* Triage absorbs slack via the grid template (minmax(14rem, 1fr)) —
+   * so no width here, just content rules. */
 }
 
 .verdict {
@@ -379,8 +396,7 @@
 }
 
 .deepCell {
-  width: 4.5rem;
-  text-align: center;
+  justify-content: center;
 }
 
 .deepBadge {
@@ -412,30 +428,34 @@
   font-size: 0.9rem;
 }
 
-.empty {
+/* ============================================================
+ * Empty / loading rows — span the full grid row, not the columns.
+ * ============================================================ */
+
+.empty,
+.loadingRow {
+  display: block;
   text-align: center;
-  padding: var(--space-12) !important;
+  padding: var(--space-12);
   color: var(--muted);
+  border-bottom: 1px solid var(--line-soft);
 }
 
-/* Placeholder row shown during SSR / before the virtualizer mounts
- * client-side. Same vertical footprint as the .empty cell so the
- * pre-hydration table has presence and the page doesn't visibly jump
- * once the rows fill in. */
 .loadingRow {
-  text-align: center;
-  padding: var(--space-12) !important;
-  color: var(--muted);
   font-style: italic;
 }
 
 /* ============================================================
- * Responsive: hide some columns on narrow viewports
+ * Responsive: hide UniProt column on narrow viewports
  * ============================================================ */
 
 @media (max-width: 720px) {
+  .row {
+    grid-template-columns:
+      7.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem;
+  }
   .uniprotCell,
-  .table thead th:nth-child(2) {
+  .headerRow .headerCell:nth-child(2) {
     display: none;
   }
 }
