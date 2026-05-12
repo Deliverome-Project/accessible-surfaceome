@@ -319,7 +319,6 @@ def _draft_dict(*, evidence_claims: list[dict]) -> dict:
         "isoform_flattened": True,
         "targetability": {
             "tier": "edge_case",
-            "recommended_modalities": [],
             "tldr": "MHC-presented peptide; targetable via TCR-mimic mAb.",
             "cited_evidence_ids": ["evi_001"],
         },
@@ -335,15 +334,22 @@ def _draft_dict(*, evidence_claims: list[dict]) -> dict:
                 "notes": None,
             },
             "induced_presentation": [],
+            "surface_localization_assays": [
+                {
+                    "assay_type": "immunohistochemistry",
+                    "species": "human",
+                    "cell_type_or_line": "renal proximal tubule + RCC tissue",
+                    "direction": "supports_surface",
+                    "strength": "moderate",
+                    "cited_evidence_ids": ["evi_001"],
+                }
+            ],
             "db_comparison": {
                 "n_sources_voting_surface": 0,
             },
             "cited_evidence_ids": ["evi_001"],
         },
-        "therapeutic_landscape": {
-            "approved_drugs": [],
-            "clinical_trials": [],
-            "patent_disclosures": [],
+        "surface_engagement_validation": {
             "preclinical_evidence": [],
         },
         "risk_flags": [],
@@ -353,6 +359,7 @@ def _draft_dict(*, evidence_claims: list[dict]) -> dict:
         "contradiction_flag": False,
         "rationale": "KAAG1 was first described as a kidney-restricted antigen presented as pMHC.",
         "model_path": "opus_light",
+        "triage_signal": "possibly_accessible",
     }
 
 

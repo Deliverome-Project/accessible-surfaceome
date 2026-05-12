@@ -355,10 +355,14 @@ def _persist_annotation(
             gene=draft.gene,
             canonical_isoform=draft.canonical_isoform,
             isoform_flattened=draft.isoform_flattened,
+            protein_features=draft.protein_features,
             targetability=draft.targetability,
             surface_biology=draft.surface_biology,
-            therapeutic_landscape=draft.therapeutic_landscape,
+            surface_engagement_validation=draft.surface_engagement_validation,
             risk_flags=draft.risk_flags,
+            isoform_accessibility=draft.isoform_accessibility,
+            coreceptor_requirements=draft.coreceptor_requirements,
+            orthology=draft.orthology,
             evidence=evidence,
             primary_evidence_count=primary,
             secondary_evidence_count=secondary,
@@ -369,6 +373,7 @@ def _persist_annotation(
             contradiction_flag=draft.contradiction_flag,
             rationale=draft.rationale,
             model_path=draft.model_path,
+            triage_signal=draft.triage_signal,
         )
     except ValidationError as exc:
         invalid_path = _write_invalid(annotation_json, gene=gene, run_dir=run_dir)

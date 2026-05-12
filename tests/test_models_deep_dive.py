@@ -68,9 +68,6 @@ def test_ortholog_record_concordance_is_tri_state() -> None:
         ensembl_gene_id="ENSMUSG00000062312",
         orthology_type="one_to_one",
         percent_identity=94.5,
-        deeptmhmm_label="TM",
-        tm_helix_count=1,
-        has_signal_peptide=True,
         surface_concordant_with_human=True,
     )
     assert ortho.surface_concordant_with_human is True

@@ -689,49 +689,6 @@ TargetabilityTier = Literal[
 
 # ---- hybrid enums (closed list + "other") ---------------------------------
 
-ModalityKind = Literal[
-    "small_molecule",  # any small-molecule agent engaging the protein at an extracellularly-accessed pocket
-    "adc",
-    "naked_mab",
-    "bispecific",
-    "car_t",  # CAR-T: antibody-derived ECD-binding receptor; targets full-length surface protein.
-    "tcr_t",  # TCR-T: TCR-engineered T cells recognizing pMHC; for MHC-presented peptide antigens.
-    "tcr_mimic",  # mAb that recognizes a peptide-MHC complex like a TCR.
-    "radioligand",
-    "lnp_cargo",
-    "peptide_drug_conjugate",
-    "bicycles",
-    "oligo_conjugate",
-    "not_recommended",
-    "other",
-]
-
-
-class ModalityRecommendation(BaseModel):
-    """One recommended therapeutic modality.
-
-    Hybrid enum: ``kind`` is closed except for ``"other"`` which requires a
-    ``kind_other_label``. The ``other`` entries are inputs to ontology review;
-    treat their accumulation as a signal to add a new modality literal.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    kind: ModalityKind
-    kind_other_label: str | None = None
-    rationale: str | None = Field(default=None, max_length=300)
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> ModalityRecommendation:
-        if self.kind == "other" and not self.kind_other_label:
-            raise ValueError("ModalityRecommendation.kind='other' requires kind_other_label")
-        if self.kind != "other" and self.kind_other_label is not None:
-            raise ValueError(
-                f"ModalityRecommendation.kind_other_label must be None when kind={self.kind!r}"
-            )
-        return self
-
-
 RiskFlagKind = Literal[
     "soluble_shedding",  # cleavage/shedding releases a soluble pool of antigen
     "secreted_form",  # alternative isoform/variant generates a secreted form (no shedding required)
@@ -750,8 +707,8 @@ class RiskFlag(BaseModel):
     secreted form competes for binders). Anything else uses ``"other"`` with
     a ``kind_other_label`` so the corpus can surface emerging categories.
 
-    Hybrid enum: same pattern as ``ModalityRecommendation``. ``other`` requires
-    a ``kind_other_label``.
+    Hybrid enum: ``other`` requires a ``kind_other_label`` so the
+    corpus can surface emerging categories without an immediate schema bump.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -775,12 +732,17 @@ class RiskFlag(BaseModel):
 
 
 class TargetabilityVerdict(BaseModel):
-    """Top-of-page summary: is this a target, and how would you go after it?"""
+    """Top-of-page summary: where does this protein sit on the
+    translational-precedent axis?
+
+    Carries only the precedent tier + a tight one-line tldr; modality
+    recommendations were dropped in the v0.4.0 refocus — modality choice
+    belongs to downstream curator work, not basic-biology classification.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     tier: TargetabilityTier
-    recommended_modalities: list[ModalityRecommendation] = Field(default_factory=list)
     tldr: str = Field(..., max_length=400)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
@@ -831,7 +793,10 @@ class InducedPresentation(BaseModel):
     context_kind: InducedContextKind
     context_kind_other_label: str | None = None
     description: str = Field(..., max_length=400)
-    cited_evidence_ids: list[str] = Field(default_factory=list)
+    # v0.4.0 refocus: every induced-presentation entry MUST cite at least
+    # one EvidenceClaim. A conditional-surface call without citation is
+    # speculation; require evidence to land it in the record.
+    cited_evidence_ids: list[str] = Field(..., min_length=1)
 
     @model_validator(mode="after")
     def _check_other_label(self) -> InducedPresentation:
@@ -879,6 +844,60 @@ class DBComparison(BaseModel):
     n_sources_voting_surface: int
 
 
+# Primary surface-localization assay types. The deep-dive agent uses these
+# to emit ``SurfaceLocalizationAssay`` entries that index into the
+# ``evidence_claims`` array, so the surface call can be scanned at a glance
+# without walking the full evidence list.
+SurfaceAssayType = Literal[
+    "flow_cytometry",
+    "surface_biotinylation",
+    "mass_spec_surfaceome",
+    "immunofluorescence_intact_cells",
+    "immunohistochemistry",
+    "crystal_structure_with_ecd",
+    "antibody_on_live_cells",
+    "other",
+]
+AssayDirection = Literal["supports_surface", "refutes_surface", "ambiguous"]
+AssayStrength = Literal["strong", "moderate", "weak"]
+
+
+class SurfaceLocalizationAssay(BaseModel):
+    """One empirical assay observation of surface localization.
+
+    Indexes into ``evidence_claims`` — every entry here MUST cite at
+    least one EvidenceClaim. Not a duplicate of evidence_claims but a
+    typed view: it lets a reader see "this surface call rests on
+    {N} primary assays of these types" without parsing every claim.
+
+    Hybrid enum: ``assay_type="other"`` requires ``assay_type_other_label``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    assay_type: SurfaceAssayType
+    assay_type_other_label: str | None = Field(default=None, max_length=80)
+    species: Literal[
+        "human", "mouse", "rat", "macaque", "dog", "other", "unspecified"
+    ]
+    cell_type_or_line: str = Field(..., max_length=200)
+    direction: AssayDirection
+    strength: AssayStrength
+    cited_evidence_ids: list[str] = Field(..., min_length=1)
+
+    @model_validator(mode="after")
+    def _check_other_label(self) -> SurfaceLocalizationAssay:
+        if self.assay_type == "other" and not self.assay_type_other_label:
+            raise ValueError(
+                "SurfaceLocalizationAssay.assay_type='other' requires assay_type_other_label"
+            )
+        if self.assay_type != "other" and self.assay_type_other_label is not None:
+            raise ValueError(
+                "SurfaceLocalizationAssay.assay_type_other_label only valid when assay_type='other'"
+            )
+        return self
+
+
 class SurfaceBiology(BaseModel):
     """The reconciled accessibility call + supporting biology.
 
@@ -898,6 +917,11 @@ class SurfaceBiology(BaseModel):
     ``induced_presentation`` carries the context list backing a
     ``conditional_surface`` call (or capturing tissue-subset / trafficking
     nuance even when the headline is ``rare_surface`` or stronger).
+
+    ``surface_localization_assays`` is a denormalized view of the primary
+    surface-assay citations that back the call — flow cytometry on intact
+    cells, surface biotinylation, mass-spec surfaceomes, etc. Required
+    (≥1 entry) whenever ``surface_status`` is not ``absent``.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -908,6 +932,7 @@ class SurfaceBiology(BaseModel):
     exposure_class: ExposureClass = "unknown"
     extracellular_domain: ExtracellularDomainSummary
     induced_presentation: list[InducedPresentation] = Field(default_factory=list)
+    surface_localization_assays: list[SurfaceLocalizationAssay] = Field(default_factory=list)
     # ``bool`` is the canonical "yes/no glycosylated" flag, but for densely-
     # glycosylated targets (HER2's seven N-linked sites, MUC1's tandem-repeat
     # O-glycans) the agent has informative prose to share — N-site positions,
@@ -920,127 +945,76 @@ class SurfaceBiology(BaseModel):
     db_comparison: DBComparison
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
-
-# ---- bucket: therapeutic landscape ---------------------------------------
-
-
-class ApprovedDrug(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    name: str  # generic + brand if known
-    modality: ModalityKind
-    modality_other_label: str | None = None
-    indication: str
-    sponsor: str | None = None
-    approval_year: int | None = None
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
     @model_validator(mode="after")
-    def _check_other_label(self) -> ApprovedDrug:
-        if self.modality == "other" and not self.modality_other_label:
-            raise ValueError("ApprovedDrug.modality='other' requires modality_other_label")
-        if self.modality != "other" and self.modality_other_label is not None:
-            raise ValueError("ApprovedDrug.modality_other_label only valid when modality='other'")
+    def _check_surface_evidence(self) -> SurfaceBiology:
+        # Strong evidence requirement (v0.4.0 refocus): every non-absent
+        # surface_status MUST cite at least one EvidenceClaim AND emit
+        # at least one SurfaceLocalizationAssay entry. DB annotations
+        # alone don't qualify; the load-bearing call needs primary-assay
+        # backing.
+        if self.surface_status != "absent":
+            if not self.cited_evidence_ids:
+                raise ValueError(
+                    f"SurfaceBiology.surface_status={self.surface_status!r} requires "
+                    "at least one cited_evidence_ids entry (primary-assay backing)"
+                )
+            if not self.surface_localization_assays:
+                raise ValueError(
+                    f"SurfaceBiology.surface_status={self.surface_status!r} requires "
+                    "at least one surface_localization_assays entry"
+                )
         return self
 
 
-ClinicalPhase = Literal["preclinical", "phase_1", "phase_1_2", "phase_2", "phase_2_3", "phase_3", "approved", "discontinued", "unknown"]
-
-
-class ClinicalTrial(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-
-    nct_id: str | None = None
-    title: str | None = None
-    modality: ModalityKind
-    modality_other_label: str | None = None
-    phase: ClinicalPhase = "unknown"
-    indication: str | None = None
-    sponsor: str | None = None
-    status: str | None = None  # free text — recruiting / completed / terminated
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> ClinicalTrial:
-        if self.modality == "other" and not self.modality_other_label:
-            raise ValueError("ClinicalTrial.modality='other' requires modality_other_label")
-        if self.modality != "other" and self.modality_other_label is not None:
-            raise ValueError("ClinicalTrial.modality_other_label only valid when modality='other'")
-        return self
-
-
-class PatentDisclosure(BaseModel):
-    """A patent that claims this protein as a delivery / antibody target."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    wo_number: str  # WO/EP/US patent number — the canonical identifier
-    title: str | None = None
-    applicant: str | None = None
-    modality: ModalityKind
-    modality_other_label: str | None = None
-    priority_year: int | None = None
-    summary: str = Field(..., max_length=1000)
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> PatentDisclosure:
-        if self.modality == "other" and not self.modality_other_label:
-            raise ValueError("PatentDisclosure.modality='other' requires modality_other_label")
-        if self.modality != "other" and self.modality_other_label is not None:
-            raise ValueError(
-                "PatentDisclosure.modality_other_label only valid when modality='other'"
-            )
-        return self
+# ---- bucket: surface engagement validation -------------------------------
+#
+# v0.4.0 refocus: dropped ApprovedDrug, ClinicalTrial, and PatentDisclosure.
+# Modality-aware therapeutic precedent is downstream curator work, not
+# basic-biology classification. What remains is one array of
+# preclinical studies that demonstrate the protein is engaged by an
+# *extracellular* binder on live cells — these are
+# surface-accessibility evidence, not commercial precedent. Patents
+# are also gone (hype-prone, low signal); the agent no longer calls
+# patent_lookup.
 
 
 class PreclinicalEvidence(BaseModel):
-    """A published preclinical characterization of a binder/agent against this protein.
+    """One published study demonstrating extracellular engagement.
 
-    Modality-agnostic: small-molecule, naked mAb, ADC, bispecific, CAR-T,
-    TCR-T, TCR-mimic, radioligand, peptide-drug conjugate, oligo-conjugate,
-    or anything else captured by ``ModalityKind``.
+    Counts as evidence FOR surface accessibility only when the binder
+    is shown to engage the protein on live cells: flow cytometry on
+    intact cells, surface biotinylation, surface-pulldown mass-spec,
+    in-cell-membrane structural studies, antibody-binding-to-live-cells
+    assays. Studies of intracellular pockets, soluble-form binding, or
+    purely structural in vitro work don't qualify here — they live in
+    ``evidence_claims`` instead.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     citation: str  # PMID:..., DOI:..., or PMC:...
-    modality: ModalityKind
-    modality_other_label: str | None = None
     finding_summary: str = Field(..., max_length=1000)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
-    @model_validator(mode="after")
-    def _check_other_label(self) -> PreclinicalEvidence:
-        if self.modality == "other" and not self.modality_other_label:
-            raise ValueError("PreclinicalEvidence.modality='other' requires modality_other_label")
-        if self.modality != "other" and self.modality_other_label is not None:
-            raise ValueError(
-                "PreclinicalEvidence.modality_other_label only valid when modality='other'"
-            )
-        return self
 
+class SurfaceEngagementValidation(BaseModel):
+    """Pre-clinical / clinical studies that demonstrate the protein is
+    engaged by an extracellular binder on live cells.
 
-class TherapeuticLandscape(BaseModel):
-    """What's been tried — by whom, in what modality, with what outcome.
-
-    Sparse for novel candidates; rich for proteins with validated targeting
-    precedent (approved drugs, active clinical programs, or dense patent
-    activity) across any modality.
+    Reframed from the v0.3.x ``TherapeuticLandscape``: not a
+    therapeutic-precedent catalog, but a surface-accessibility evidence
+    catalog. Sparse for novel candidates; rich for proteins with
+    documented extracellular-binder studies.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    approved_drugs: list[ApprovedDrug] = Field(default_factory=list)
-    clinical_trials: list[ClinicalTrial] = Field(default_factory=list)
-    patent_disclosures: list[PatentDisclosure] = Field(default_factory=list)
     preclinical_evidence: list[PreclinicalEvidence] = Field(default_factory=list)
 
 
 # ---- deep-dive: isoforms, co-receptors, orthology -------------------------
 
 
-DeepTMHMMLabel = Literal["TM", "SP", "SP+TM", "BETA", "GLOB"]
 OrthologSpecies = Literal["mouse", "cynomolgus"]
 OrthologyType = Literal[
     "one_to_one",
@@ -1078,12 +1052,6 @@ class IsoformAccessibility(BaseModel):
 
     surface_status: SurfaceStatus | None = None
     exposure_class: ExposureClass = "unknown"
-
-    # Precomputed DeepTMHMM topology (from data/processed/deeptmhmm/deeptmhmm_human_isoforms.tsv).
-    # Null when the isoform isn't in the cohort (e.g. wasn't an AFDB-resolved isoform).
-    deeptmhmm_label: DeepTMHMMLabel | None = None
-    tm_helix_count: int | None = None
-    has_signal_peptide: bool | None = None
 
     # UniProt SUBCELLULAR LOCATION comments tagged "[Isoform N]" matching this isoform.
     # Pulled from UniProtSummary.subcellular_locations where is_isoform_specific=True.
@@ -1128,13 +1096,18 @@ class CoreceptorRequirement(BaseModel):
 
 
 class OrthologRecord(BaseModel):
-    """Mouse or cynomolgus ortholog with surface-localization evidence.
+    """Mouse or cynomolgus ortholog identity + surface-concordance call.
 
-    Cross-species concordance is a sanity check on the human surface call and
-    a preclinical-model selector. The precomputed pack provides Ensembl
-    Compara identity + DeepTMHMM topology; the agent contributes the
-    surface-status interpretation (and any literature evidence) plus the
-    concordance call.
+    Cross-species concordance is a sanity check on the human surface call
+    and a preclinical-model selector. The precomputed pack supplies
+    Ensembl Compara one-to-one + high-confidence identity (UniProt acc,
+    gene symbol, Ensembl gene id, percent_identity); the agent
+    contributes the surface-status interpretation (when literature
+    supports a call for the ortholog) plus the concordance flag.
+
+    v0.4.0 refocus dropped the precomputed DeepTMHMM topology fields
+    (label / helix count / signal peptide) — they added a third source
+    of topology calls without clarifying the human accessibility call.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -1146,17 +1119,72 @@ class OrthologRecord(BaseModel):
     orthology_type: OrthologyType = "unknown"
     percent_identity: float | None = None
 
-    # Precomputed topology (from data/processed/deeptmhmm/deeptmhmm_{mouse,cyno}_ortholog.tsv).
-    deeptmhmm_label: DeepTMHMMLabel | None = None
-    tm_helix_count: int | None = None
-    has_signal_peptide: bool | None = None
-
     surface_status: SurfaceStatus | None = None
     # Tri-state: True iff the ortholog's topology + status agrees with the human call,
     # False iff it diverges, None when either side is unknown.
     surface_concordant_with_human: bool | None = None
     notes: str = Field(default="", max_length=500)
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+# ---- protein features (pre-injected static context) -----------------------
+#
+# The orchestrator populates this bucket from the SURFY snapshot
+# (data/processed/surfy/surfy_human_snapshot.tsv) BEFORE the LLM call,
+# so the agent receives basic-biology + engineerability features as
+# static context without spending tool calls on them. The agent quotes
+# from these only when they're load-bearing.
+#
+# Provenance TODO (tracked in docs/decisions/protein-features-provenance.md):
+# some of these fields are SURFY-curated, others are upstream-sourced
+# (UniProt, PDB, CSPA, HPA, HGNC) and just cached by SURFY. Future work
+# should source the upstream-cached fields directly from their primary
+# sources; SURFY's own curated outputs stay as the source for the
+# SURFY-only fields. Until that audit completes, every record stamps
+# ``_provenance`` so we can tell snapshot-fed records apart later.
+
+
+class ProteinFeatures(BaseModel):
+    """Static structured biology features pre-injected from the SURFY
+    snapshot + UniProt. Populated by the orchestrator pre-LLM; the
+    agent does not modify these fields, only quotes them when
+    load-bearing.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    protein_length_aa: int | None = None
+    tm_domain_count: int | None = None
+    signal_peptide: bool | None = None
+    topology_string: str | None = None  # e.g. "NC:1-145;TM:146-171;CY:172-178"
+    topology_source: Literal[
+        "uniprot", "phobius", "deeptmhmm", "literature", "unknown"
+    ] = "unknown"
+    almen_main_class: str | None = None
+    almen_sub_class: str | None = None
+    cd_designation: str | None = None
+    uniprot_keywords: list[str] = Field(default_factory=list)
+    pdb_ids: list[str] = Field(default_factory=list)
+    cspa_peptide_count: int | None = None
+    hpa_antibody_available: bool | None = None
+    drugbank_ids: list[str] = Field(default_factory=list)
+    surfy_ml_score: float | None = None
+    surfy_label_source: str | None = None
+    # Stamped by the orchestrator so we can identify records built from
+    # snapshot-cached values vs. records built from direct primary
+    # sources after the provenance audit lands.
+    provenance: str | None = Field(default=None, max_length=120)
+
+
+# ---- triage signal cross-reference ----------------------------------------
+#
+# A one-field summary that mirrors the surface_triage agent's
+# `signal` field (likely_accessible | possibly_accessible | unlikely |
+# unknown). Provides a cross-validation check between the deep-dive's
+# surface_status and the triage-style signal: if the two disagree, the
+# record is internally inconsistent and the cross-validator rejects it.
+
+TriageSignal = Literal["likely_accessible", "possibly_accessible", "unlikely", "unknown"]
 
 
 # ---- top-level record -----------------------------------------------------
@@ -1182,10 +1210,16 @@ class SurfaceomeRecord(BaseModel):
     canonical_isoform: str
     isoform_flattened: bool
 
+    # Pre-injected protein features (SURFY snapshot + UniProt) — populated
+    # by the orchestrator before the LLM call, not by the agent.
+    protein_features: ProteinFeatures = Field(default_factory=ProteinFeatures)
+
     # Headline + supporting buckets
     targetability: TargetabilityVerdict
     surface_biology: SurfaceBiology
-    therapeutic_landscape: TherapeuticLandscape
+    surface_engagement_validation: SurfaceEngagementValidation = Field(
+        default_factory=SurfaceEngagementValidation
+    )
     risk_flags: list[RiskFlag] = Field(default_factory=list)
 
     # Deep-dive: per-isoform accessibility (when isoforms differ),
@@ -1215,6 +1249,12 @@ class SurfaceomeRecord(BaseModel):
     contradiction_flag: bool
     rationale: str = Field(..., max_length=1500)
     model_path: ModelPath
+    triage_signal: TriageSignal = "unknown"
+
+    @model_validator(mode="after")
+    def _check_triage_signal_consistency(self) -> SurfaceomeRecord:
+        _validate_triage_signal(self.triage_signal, self.surface_biology.surface_status)
+        return self
 
 
 class SurfaceomeRecordDraft(BaseModel):
@@ -1244,10 +1284,16 @@ class SurfaceomeRecordDraft(BaseModel):
     canonical_isoform: str
     isoform_flattened: bool
 
+    # Pre-injected protein features (SURFY snapshot + UniProt) — populated
+    # by the orchestrator before the LLM call, not by the agent.
+    protein_features: ProteinFeatures = Field(default_factory=ProteinFeatures)
+
     # Headline + supporting buckets — same shapes as SurfaceomeRecord
     targetability: TargetabilityVerdict
     surface_biology: SurfaceBiology
-    therapeutic_landscape: TherapeuticLandscape
+    surface_engagement_validation: SurfaceEngagementValidation = Field(
+        default_factory=SurfaceEngagementValidation
+    )
     risk_flags: list[RiskFlag] = Field(default_factory=list)
 
     # Deep-dive: per-isoform accessibility (when isoforms differ),
@@ -1268,6 +1314,43 @@ class SurfaceomeRecordDraft(BaseModel):
     contradiction_flag: bool
     rationale: str = Field(..., max_length=1500)
     model_path: ModelPath
+    triage_signal: TriageSignal = "unknown"
+
+    @model_validator(mode="after")
+    def _check_triage_signal_consistency(self) -> SurfaceomeRecordDraft:
+        _validate_triage_signal(self.triage_signal, self.surface_biology.surface_status)
+        return self
+
+
+def _validate_triage_signal(
+    signal: TriageSignal, status: SurfaceStatus | None
+) -> None:
+    """Shared cross-validator: ``triage_signal`` must be consistent with
+    ``surface_status``. Used by both SurfaceomeRecord and
+    SurfaceomeRecordDraft.
+
+    Rules:
+      * ``likely_accessible`` → ``strong_surface`` | ``moderate_surface``
+      * ``possibly_accessible`` → ``weak_surface`` | ``rare_surface`` |
+        ``conditional_surface``
+      * ``unlikely`` → ``absent``
+      * ``unknown`` → any (no constraint)
+    """
+    if signal == "unknown":
+        return
+    expected: dict[str, set[str]] = {
+        "likely_accessible": {"strong_surface", "moderate_surface"},
+        "possibly_accessible": {
+            "weak_surface", "rare_surface", "conditional_surface"
+        },
+        "unlikely": {"absent"},
+    }
+    allowed = expected.get(signal, set())
+    if allowed and status not in allowed:
+        raise ValueError(
+            f"triage_signal={signal!r} requires surface_status in {sorted(allowed)!r}; "
+            f"got surface_status={status!r}"
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -1585,8 +1668,6 @@ __all__ = [
     "SurfaceomeRecordDraft",
     "TargetabilityVerdict",
     "TargetabilityTier",
-    "ModalityKind",
-    "ModalityRecommendation",
     "SurfaceBiology",
     "AnchorType",
     "ExposureClass",
@@ -1595,11 +1676,13 @@ __all__ = [
     "ExtracellularDomainSummary",
     "ECDAccessibility",
     "DBComparison",
-    "TherapeuticLandscape",
-    "ApprovedDrug",
-    "ClinicalTrial",
-    "ClinicalPhase",
-    "PatentDisclosure",
+    "SurfaceLocalizationAssay",
+    "SurfaceAssayType",
+    "AssayDirection",
+    "AssayStrength",
+    "ProteinFeatures",
+    "TriageSignal",
+    "SurfaceEngagementValidation",
     "PreclinicalEvidence",
     "RiskFlag",
     "RiskFlagKind",
@@ -1615,7 +1698,6 @@ __all__ = [
     "OrthologRecord",
     "OrthologSpecies",
     "OrthologyType",
-    "DeepTMHMMLabel",
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",
     "TriageRecord",

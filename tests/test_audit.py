@@ -218,7 +218,6 @@ def _build_record_from(evi: Evidence) -> SurfaceomeRecord:
             "isoform_flattened": True,
             "targetability": {
                 "tier": "edge_case",
-                "recommended_modalities": [],
                 "tldr": "tldr",
                 "cited_evidence_ids": [evi.evidence_id],
             },
@@ -234,10 +233,20 @@ def _build_record_from(evi: Evidence) -> SurfaceomeRecord:
                     "notes": None,
                 },
                 "induced_presentation": [],
+                "surface_localization_assays": [
+                    {
+                        "assay_type": "immunohistochemistry",
+                        "species": "human",
+                        "cell_type_or_line": "renal proximal tubule",
+                        "direction": "supports_surface",
+                        "strength": "moderate",
+                        "cited_evidence_ids": [evi.evidence_id],
+                    }
+                ],
                 "db_comparison": {"n_sources_voting_surface": 0},
                 "cited_evidence_ids": [evi.evidence_id],
             },
-            "therapeutic_landscape": {},
+            "surface_engagement_validation": {},
             "risk_flags": [],
             "evidence": [evi.model_dump()],
             "primary_evidence_count": 1,
@@ -249,6 +258,7 @@ def _build_record_from(evi: Evidence) -> SurfaceomeRecord:
             "contradiction_flag": False,
             "rationale": "test",
             "model_path": "opus_light",
+            "triage_signal": "possibly_accessible",
         }
     )
 
