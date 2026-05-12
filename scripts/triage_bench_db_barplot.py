@@ -671,6 +671,7 @@ CAND_TSV_PATH = ROOT / "data/processed/candidate_universe/candidate_universe.tsv
 # can't be reconstructed from the post-filter candidate_universe TSV.
 UNIPROT_RAW_TSV = ROOT / "data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.tsv"
 GO_RAW_TSV = ROOT / "data/external/go_human_surface_annotations/go_human_surface_annotations_by_gene_product.tsv"
+HPA_RAW_TSV = ROOT / "data/external/hpa_subcellular_location/subcellular_location.tsv"
 
 
 def _b(r: dict, k: str) -> bool:
@@ -760,6 +761,34 @@ def _go_evidence_count(r: dict) -> int:
                ("has_experimental", "has_curated", "has_sequence", "has_electronic"))
 
 
+def _load_raw_hpa() -> dict[str, dict]:
+    """Load raw HPA subcellular_location.tsv keyed by Gene name (upper).
+
+    Bypasses the surface-candidate pool filter applied at
+    ``src/accessible_surfaceome/sources/hpa.py`` build time so that HPA
+    can still be scored on proteins it imaged but didn't see at PM
+    (KRAS, ABCB9, ATG9A, etc.). The pool filter is correct for
+    universe-feeding but artificially shrinks HPA's negative-call
+    surface in benchmark scoring.
+    """
+    if not HPA_RAW_TSV.exists():
+        return {}
+    out: dict[str, dict] = {}
+    with HPA_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            sym = (r.get("Gene name") or "").strip().upper()
+            if sym:
+                out[sym] = r
+    return out
+
+
+def _hpa_pm_flag(r: dict) -> bool:
+    """Raw HPA PM call — Plasma membrane in Main or Additional location."""
+    main = (r.get("Main location") or "").lower()
+    addl = (r.get("Additional location") or "").lower()
+    return "plasma membrane" in main or "plasma membrane" in addl
+
+
 # UniProt's `subcellular_locations` field is pipe-delimited. Cell-membrane
 # terms eligible for the permissive variant — broader than the strict
 # set used by the existing baseline loader.
@@ -769,15 +798,20 @@ _UNIPROT_PERMISSIVE_TERMS = (
 )
 
 
-def _inject_raw_source_flags(rows: list[dict]) -> None:
+def _inject_raw_source_flags(rows: list[dict], bench_symbols: dict[str, str]) -> None:
     """Look up each benchmark row's UniProt accession in the raw
-    upstream UniProt and GO TSVs, and inject extra boolean fields
+    upstream UniProt, GO, and HPA TSVs and inject extra boolean fields
     that the DB_VARIANTS lambdas consume.
 
-    These fields can't be reconstructed from candidate_universe.tsv
-    because the per-source loaders pre-filter rows before merging."""
+    For HPA in particular this bypasses the surface-candidate pool
+    filter so HPA can score on proteins it imaged but didn't see at
+    PM. ``bench_symbols`` maps uniprot_accession → gene_symbol so the
+    HPA gene-symbol lookup works for rows where candidate_universe
+    didn't carry the symbol through.
+    """
     raw_uniprot = _load_raw_uniprot()
     raw_go = _load_raw_go()
+    raw_hpa = _load_raw_hpa()
     for r in rows:
         acc = r.get("uniprot_accession") or ""
         u = raw_uniprot.get(acc, {})
@@ -794,6 +828,13 @@ def _inject_raw_source_flags(rows: list[dict]) -> None:
         )
         g = raw_go.get(acc, {})
         r["_go_permissive"] = _go_evidence_count(g) > 0
+        # Raw HPA — by symbol. _hpa_in_raw distinguishes "HPA imaged
+        # this protein" from "no antibody". _hpa_pm_raw is HPA's PM
+        # call when present.
+        sym = (bench_symbols.get(acc) or "").upper()
+        hpa_rec = raw_hpa.get(sym) if sym else None
+        r["_hpa_in_raw"] = hpa_rec is not None
+        r["_hpa_pm_raw"] = bool(hpa_rec and _hpa_pm_flag(hpa_rec))
 
 
 DB_VARIANTS: list[tuple[str, "callable", str]] = [
@@ -815,9 +856,13 @@ DB_VARIANTS: list[tuple[str, "callable", str]] = [
     ("GO permissive\n(incl. IEA-only)",
         lambda r: bool(r.get("_go_permissive")),
         "GO"),
-    # HPA, SURFY, CSPA — baseline only (no meaningful variants found)
+    # HPA, SURFY, CSPA — baseline only (no meaningful variants found).
+    # HPA reads from the raw subcellular_location TSV (bypassing the
+    # surface-pool filter at source-build time) so it can vote
+    # "not surface" on proteins it imaged but didn't see at PM
+    # (KRAS, ABCB9, vesicle-resident, etc.).
     ("HPA baseline",
-        lambda r: _b(r, "hpa_surface_flag"),
+        lambda r: bool(r.get("_hpa_pm_raw")),
         "HPA"),
     ("SURFY baseline",
         lambda r: _b(r, "surfy_surface_flag"),
@@ -853,56 +898,57 @@ _VARIANT_GROUP_PALETTE: dict[str, list[str]] = {
 }
 
 
-# Per-group "is the protein covered by this source" predicates. A
-# benchmark protein missing from a source's input data is not counted
-# against that source — DBs are scored on the subset they actually
-# cover, so the accuracies reflect signal quality rather than catalog
-# coverage. Consensus filters apply to all rows (the consensus count
-# is meaningful regardless of which sources contribute).
-def _has_uniprot(r: dict) -> bool:
-    return bool(r.get("uniprot_entry_name"))
-
-
-def _has_go(r: dict) -> bool:
-    try:
-        return int(r.get("go_n_go_ids") or 0) > 0
-    except (TypeError, ValueError):
-        return False
-
-
-def _has_hpa(r: dict) -> bool:
-    return bool(r.get("hpa_reliability"))
-
-
-def _has_surfy(r: dict) -> bool:
-    return bool(r.get("surfy_label"))
-
-
-def _has_cspa(r: dict) -> bool:
-    return bool(r.get("cspa_category"))
+# Per-source missing-handling rule for benchmark scoring. Different
+# sources have different relationships between "absence" and "negative
+# signal" (empirically validated; see README of this plot):
+#
+#   * UniProt, GO CC, SURFY, CSPA — missing-from-source = predict "no".
+#     For UniProt and SURFY this is empirically informative (negatives
+#     are 89-96% missing from the surface-extract; absence is curated /
+#     ML-design intent). For GO and CSPA, catalog absence isn't strong
+#     negative signal, but treating it as a predict-no vote matches the
+#     decision-use case of "if I used this filter as the gate, what
+#     would the universe look like".
+#   * HPA — missing = abstain. HPA's coverage gap is antibody-driven,
+#     and missing-rates are flat or yes-enriched across truth labels
+#     (no antibody → no information). HPA still gets scored on the
+#     ~98/147 proteins it actually imaged.
+#
+# A "covered" predicate returns True iff the source's data is loaded
+# for the row. Only HPA filters rows by this predicate; all other
+# sources include all rows and treat missing data as a predict-no.
+def _has_hpa_raw(r: dict) -> bool:
+    """HPA covered if the raw subcellular TSV has any record for the
+    benchmark protein's gene symbol — independent of whether HPA's
+    pool filter would have admitted it."""
+    return bool(r.get("_hpa_in_raw"))
 
 
 GROUP_COVERAGE_FN: dict[str, "callable"] = {
-    "UniProt":   _has_uniprot,
-    "GO":        _has_go,
-    "HPA":       _has_hpa,
-    "SURFY":     _has_surfy,
-    "CSPA":      _has_cspa,
+    "UniProt":   lambda r: True,   # missing → predict no
+    "GO":        lambda r: True,   # missing → predict no
+    "HPA":       _has_hpa_raw,      # missing → abstain
+    "SURFY":     lambda r: True,   # missing → predict no
+    "CSPA":      lambda r: True,   # missing → predict no
     "consensus": lambda r: True,
 }
 
 
-def _benchmark_with_universe_join() -> list[dict]:
+def _benchmark_with_universe_join() -> tuple[list[dict], dict[str, str]]:
     """Load benchmark rows joined to candidate_universe by UniProt
-    accession. Returns one dict per benchmark protein found in
-    candidate_universe, each with all DB-flag columns plus
-    ``ground_truth_verdict``. Proteins missing from the universe are
-    dropped — the universe is the input to the DB filters, so if a
-    protein isn't there, no filter can evaluate it."""
+    accession. Returns ``(rows, symbols)`` — one dict per benchmark
+    protein found in candidate_universe, plus a mapping
+    ``uniprot_accession → gene_symbol`` for all benchmark rows
+    (including those dropped from the universe join). Proteins missing
+    from the universe are dropped from ``rows`` but kept in
+    ``symbols`` so HPA's raw-by-symbol lookup can still recover them.
+    """
     truth_by_acc: dict[str, str] = {}
+    symbols: dict[str, str] = {}
     with BENCH_TSV.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
             truth_by_acc[r["uniprot_acc"]] = r["ground_truth_verdict"]
+            symbols[r["uniprot_acc"]] = r["gene_symbol"]
     out: list[dict] = []
     with CAND_TSV_PATH.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
@@ -910,34 +956,24 @@ def _benchmark_with_universe_join() -> list[dict]:
             if acc in truth_by_acc:
                 r["ground_truth_verdict"] = truth_by_acc[acc]
                 out.append(r)
-    return out
+    return out, symbols
 
 
 def make_db_variants_plot(out_dir: Path) -> None:
     """Supplemental figure: per-DB filter variants vs benchmark truth.
 
-    Each bar is one filter variant's accuracy on the subset of
-    benchmark proteins that source actually covers — proteins missing
-    from a source's input data are not counted against the source.
-    This separates signal quality from catalog coverage.
-
-    Key takeaways under coverage-aware scoring:
-      * UniProt's strict subcellular_locations baseline is already
-        excellent (97% on n=78 covered) — the permissive and
-        TM-or-signal variants don't add accuracy, they only widen
-        coverage to proteins UniProt didn't annotate as surface.
-      * GO permissive (incl. IEA) extends GO coverage from n=89 to
-        n=125 while boosting accuracy from 55% → 64% on covered.
-      * HPA is the weakest single-DB signal even on its own coverage.
-      * SURFY baseline is the strongest broad-coverage signal
-        (93% on n=124).
-      * Consensus ≥2 (86% on n=141) is the only filter scored on
-        every benchmark protein, and roughly trades a few points of
-        per-protein accuracy for full coverage.
+    Per-source missing-handling: UniProt / GO / SURFY / CSPA score
+    missing-from-source as predict-no (since for UniProt and SURFY
+    that absence is curated negative evidence, and for GO / CSPA
+    treating it as predict-no matches the universe-gating use case).
+    HPA scores missing-from-source as abstain (antibody coverage gap;
+    miss-rate empirically flat across truth labels). HPA also reads
+    the raw subcellular_location TSV so it can vote on proteins
+    imaged-but-not-PM that the source builder's surface pool drops.
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
-    rows = _benchmark_with_universe_join()
-    _inject_raw_source_flags(rows)
+    rows, bench_symbols = _benchmark_with_universe_join()
+    _inject_raw_source_flags(rows, bench_symbols)
     n_total = len(rows)
 
     bars: list[dict] = []
@@ -1032,6 +1068,262 @@ def make_db_variants_plot(out_dir: Path) -> None:
     plt.close(fig)
 
 
+SURFY_TSV = ROOT / "data/processed/surfy/surfy_human_snapshot.tsv"
+CSPA_TSV = ROOT / "data/processed/cspa/cspa_human_snapshot.tsv"
+
+
+def _universe_size_per_variant() -> dict[str, int]:
+    """For each DB_VARIANTS entry, compute how many human proteins
+    the filter would admit if used as a universe gate. The size is the
+    decision cost — more proteins admitted = more downstream agent
+    triage work and more potential false positives in the universe.
+    """
+    sizes: dict[str, int] = {}
+
+    # UniProt — count rows in raw UniProt TSV matching each criterion.
+    n_strict = n_perm = n_tm = 0
+    with UNIPROT_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            locs = r.get("subcellular_locations") or ""
+            parts = set(locs.split("|")) if locs else set()
+            strict = _uniprot_has_strict_term(locs)
+            perm = strict or "Cell membrane" in parts \
+                or _uniprot_feat_int(r, "feature_topo_extracellular_count") > 0
+            tm = (_uniprot_feat_int(r, "feature_transmembrane_count") > 0
+                  or _uniprot_feat_int(r, "feature_signal_count") > 0
+                  or strict)
+            if strict:
+                n_strict += 1
+            if perm:
+                n_perm += 1
+            if tm:
+                n_tm += 1
+    sizes["UniProt baseline"] = n_strict
+    sizes["UniProt permissive\n(incl. plain Cell membrane)"] = n_perm
+    sizes["UniProt TM-or-signal-or-surface\n(topology proxy)"] = n_tm
+
+    # GO — count raw GO rows by evidence tier.
+    n_go_base = n_go_perm = 0
+    with GO_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            exp = (int(r.get("has_experimental") or 0)
+                   + int(r.get("has_curated") or 0)
+                   + int(r.get("has_sequence") or 0))
+            ele = int(r.get("has_electronic") or 0)
+            if exp > 0:
+                n_go_base += 1
+            if exp + ele > 0:
+                n_go_perm += 1
+    sizes["GO baseline"] = n_go_base
+    sizes["GO permissive\n(incl. IEA-only)"] = n_go_perm
+
+    # HPA — raw PM-annotated count.
+    n_hpa = 0
+    with HPA_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            if _hpa_pm_flag(r):
+                n_hpa += 1
+    sizes["HPA baseline"] = n_hpa
+
+    # SURFY — surface-labeled, optionally score-thresholded.
+    n_s = n_s05 = n_s07 = 0
+    with SURFY_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            if (r.get("surfy_label") or "").strip() == "surface":
+                n_s += 1
+                try:
+                    score = float(r.get("surfy_ml_score") or 0)
+                except ValueError:
+                    score = 0.0
+                if score > 0.5:
+                    n_s05 += 1
+                if score > 0.7:
+                    n_s07 += 1
+    sizes["SURFY baseline"] = n_s
+    sizes["SURFY score>0.5"] = n_s05
+    sizes["SURFY score>0.7"] = n_s07
+
+    # CSPA — high-conf OR putative.
+    n_c = 0
+    with CSPA_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            hc = (r.get("cspa_is_high_confidence") or "").strip() == "1"
+            pu = (r.get("cspa_is_putative") or "").strip() == "1"
+            if hc or pu:
+                n_c += 1
+    sizes["CSPA baseline"] = n_c
+
+    # Consensus — count proteins in candidate_universe meeting threshold.
+    n_c2 = n_c3 = 0
+    with CAND_TSV_PATH.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            try:
+                n = int(r.get("n_sources_surface") or 0)
+            except (TypeError, ValueError):
+                continue
+            if n >= 2:
+                n_c2 += 1
+            if n >= 3:
+                n_c3 += 1
+    sizes["Consensus\n≥2 sources"] = n_c2
+    sizes["Consensus\n≥3 sources"] = n_c3
+
+    return sizes
+
+
+def make_db_tradeoff_plot(out_dir: Path) -> None:
+    """Cutoff-strictness trade-off: universe size vs benchmark accuracy.
+
+    X-axis = N human proteins the filter would admit if used as the
+    universe gate (the cost of looser cutoffs — more candidates to
+    triage downstream, more false-positives to filter).
+    Y-axis = filter accuracy on the 147-gene benchmark under the
+    per-source scoring rule (see ``make_db_variants_plot`` docstring).
+
+    Within each DB group, variants are connected by a line ordered
+    from strict-and-small to loose-and-large so the trade-off curve
+    is visually obvious. The annotation on each marker lists the
+    pos%/neg% recall split, which is what changes most as you loosen
+    a filter (loose → recall pos at the cost of admitting more no's).
+    """
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    rows, bench_symbols = _benchmark_with_universe_join()
+    _inject_raw_source_flags(rows, bench_symbols)
+
+    sizes = _universe_size_per_variant()
+
+    # Compute accuracy per variant under the same per-source rules as
+    # the bar plot.
+    points: list[dict] = []
+    for name, fn, group in DB_VARIANTS:
+        cov = GROUP_COVERAGE_FN.get(group, lambda r: True)
+        n_correct = n_pos_correct = n_pos_total = n_neg_correct = n_neg_total = 0
+        n_scored = 0
+        for r in rows:
+            if not cov(r):
+                continue
+            n_scored += 1
+            vote = bool(fn(r))
+            is_pos = r["ground_truth_verdict"] in {"yes", "contextual"}
+            if is_pos:
+                n_pos_total += 1
+                if vote:
+                    n_pos_correct += 1
+                    n_correct += 1
+            else:
+                n_neg_total += 1
+                if not vote:
+                    n_neg_correct += 1
+                    n_correct += 1
+        points.append({
+            "label": name,
+            "group": group,
+            "size": sizes.get(name, 0),
+            "acc": n_correct / max(n_scored, 1),
+            "pos": n_pos_correct / max(n_pos_total, 1),
+            "neg": n_neg_correct / max(n_neg_total, 1),
+        })
+
+    # Shorter labels for legibility in the scatter.
+    short_label = {
+        "UniProt baseline": "UniProt strict",
+        "UniProt permissive\n(incl. plain Cell membrane)": "UniProt permissive",
+        "UniProt TM-or-signal-or-surface\n(topology proxy)": "UniProt TM+signal",
+        "GO baseline": "GO strict",
+        "GO permissive\n(incl. IEA-only)": "GO permissive (+IEA)",
+        "HPA baseline": "HPA",
+        "SURFY baseline": "SURFY base",
+        "SURFY score>0.5": "SURFY >0.5",
+        "SURFY score>0.7": "SURFY >0.7",
+        "CSPA baseline": "CSPA",
+        "Consensus\n≥2 sources": "Consensus ≥2",
+        "Consensus\n≥3 sources": "Consensus ≥3",
+    }
+    # Manual (dx, dy) offsets in display-points to keep labels from
+    # overlapping in the dense upper-right cluster.
+    offsets = {
+        "UniProt strict":         (10, 4),
+        "UniProt permissive":     (10, -22),
+        "UniProt TM+signal":      (-20, 12),
+        "GO strict":              (10, -16),
+        "GO permissive (+IEA)":   (10, 8),
+        "HPA":                    (-50, -16),
+        "SURFY base":             (-110, 8),
+        "SURFY >0.5":             (8, -4),
+        "SURFY >0.7":             (-90, -8),
+        "CSPA":                   (-50, -16),
+        "Consensus ≥2":           (10, 6),
+        "Consensus ≥3":           (10, 4),
+    }
+
+    fig, ax = plt.subplots(figsize=(13.5, 7.5))
+
+    # Draw per-group connecting lines (sorted by size).
+    group_to_pts: dict[str, list[dict]] = defaultdict(list)
+    for p in points:
+        group_to_pts[p["group"]].append(p)
+
+    for g, pts in group_to_pts.items():
+        if len(pts) < 2:
+            continue
+        s = sorted(pts, key=lambda p: p["size"])
+        palette = _VARIANT_GROUP_PALETTE.get(g, ["#666666"])
+        line_color = palette[0]
+        ax.plot([p["size"] for p in s], [p["acc"] * 100 for p in s],
+                color=line_color, linewidth=1.4, alpha=0.55, zorder=2)
+
+    # Draw all points + labels.
+    for p in points:
+        palette = _VARIANT_GROUP_PALETTE.get(p["group"], ["#666666"])
+        idx = sorted(group_to_pts[p["group"]], key=lambda q: q["size"]).index(p)
+        color = palette[min(idx, len(palette) - 1)]
+        ax.scatter(p["size"], p["acc"] * 100,
+                   s=140, color=color, edgecolor="white",
+                   linewidth=1.6, zorder=3)
+        short = short_label.get(p["label"], p["label"])
+        dx, dy = offsets.get(short, (10, 6))
+        ax.annotate(
+            f"{short}\n+{p['pos']*100:.0f}/-{p['neg']*100:.0f}",
+            xy=(p["size"], p["acc"] * 100),
+            xytext=(dx, dy), textcoords="offset points",
+            fontsize=8, color=COLORS["dark"],
+            bbox={"boxstyle": "round,pad=0.3", "fc": "white",
+                  "ec": color, "lw": 0.7, "alpha": 0.92},
+        )
+
+    # Legend — one entry per group.
+    seen = set()
+    handles = []
+    for p in points:
+        if p["group"] in seen:
+            continue
+        seen.add(p["group"])
+        palette = _VARIANT_GROUP_PALETTE.get(p["group"], ["#666666"])
+        handles.append(plt.Line2D([], [], marker="o", linestyle="-",
+                                   color=palette[0], markersize=9,
+                                   label=p["group"]))
+    ax.legend(handles=handles, loc="lower right", fontsize=9,
+              frameon=True, framealpha=0.9, title="DB family")
+
+    ax.set_xscale("log")
+    ax.set_xlabel("Universe size — proteins this filter would admit "
+                  "(log scale; lower = stricter / fewer downstream candidates)")
+    ax.set_ylabel("Accuracy on 147-gene benchmark (%)")
+    ax.set_ylim(35, 100)
+    ax.set_xlim(200, 6000)
+    ax.set_title(
+        "Filter cutoff trade-off — strictness vs accuracy\n"
+        "Annotation: variant • +pos/-neg recall (per-source missing rule: "
+        "UniProt/GO/SURFY/CSPA absence→no-vote; HPA absence→abstain)"
+    )
+    sns.despine(ax=ax, top=True, right=True)
+    save_figure(
+        fig, filename="db_cutoff_tradeoff",
+        output_dir=str(out_dir), formats=["pdf", "png"],
+    )
+    plt.close(fig)
+
+
 def main() -> None:
     # Output dir overridable via DB_BARPLOT_OUT_DIR env var so the same
     # script can render into staging vs the "final" rendering folder
@@ -1044,6 +1336,7 @@ def main() -> None:
     make_overall_plot(out_dir)
     make_cost_vs_accuracy_plot(out_dir)
     make_db_variants_plot(out_dir)
+    make_db_tradeoff_plot(out_dir)
 
 
 if __name__ == "__main__":
