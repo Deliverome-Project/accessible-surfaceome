@@ -87,14 +87,26 @@ VARIANTS = {
     "ncbi":      {"prompt": "system.md",            "resolver": True,  "web_search": False},
     "web_naive": {"prompt": "system_web_naive.md", "resolver": False, "web_search": True},
     "web_ncbi":  {"prompt": "system_web.md",        "resolver": True,  "web_search": True},
-    # Cost-reduced variant of web_ncbi: shorter system prompt, capped at
-    # 1 web search via the prompt, halved max_tokens (model output is
-    # capped per-turn; halving it cuts the dominant output-token cost),
-    # and max_uses=2 in the web_search tool block as a hard ceiling.
+    # Cost-reduced variant of web_ncbi. Same prompt (system_web.md) as
+    # web_ncbi — only API-level knobs change:
+    #   * max_uses=2 on the web_search tool (hard cap, was 4).
+    #   * max_tokens=2048 per turn (was 4096) to bound runaway output.
+    # Prompt is intentionally unmodified so the comparison isolates the
+    # effect of the API caps alone.
     "web_ncbi_reduced": {
-        "prompt": "system_web_reduced.md",
+        "prompt": "system_web.md",
         "resolver": True, "web_search": True,
         "max_tokens": 2048, "web_max_uses": 2,
+    },
+    # PubMed evidence variant: NCBI resolver + relevance-ranked PubMed
+    # esearch (gene × surface terms) + efetch abstracts, sentence-filtered
+    # to those mentioning both the gene and a surface keyword. No
+    # web_search tool — all literature evidence is pre-fetched and
+    # injected into the task message before the LLM call.
+    "pubmed_ncbi": {
+        "prompt": "system_pubmed.md",
+        "resolver": True, "web_search": False,
+        "pubmed_evidence": True,
     },
 }
 
@@ -260,6 +272,24 @@ def _run_one(
             f"Reason from {'web evidence + your trained knowledge' if cfg['web_search'] else 'your trained knowledge'} "
             f"of this protein's biology."
         )
+
+    # Pre-fetch and inject surface-context literature evidence for the
+    # `pubmed_ncbi` variant. Quiet on failure — the agent still has the
+    # resolver context and its trained knowledge to fall back on.
+    if cfg.get("pubmed_evidence"):
+        from accessible_surfaceome.tools.pubmed_lookup import (
+            get_surface_evidence, render_evidence_block,
+        )
+        try:
+            records = get_surface_evidence(gene_symbol, max_results=8)
+            if records:
+                user_message = (
+                    user_message.rstrip()
+                    + "\n\n"
+                    + render_evidence_block(records)
+                )
+        except Exception as exc:  # noqa: BLE001
+            logging.warning("pubmed evidence fetch failed for %s: %s", gene_symbol, exc)
 
     started = time.monotonic()
     # Build kwargs; omit `tools` entirely for no-tool variants — the API

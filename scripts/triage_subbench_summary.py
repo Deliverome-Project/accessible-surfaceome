@@ -120,6 +120,92 @@ PROMPT_FRESH_MODELS: frozenset[str] = frozenset()
 POSITIVE_VERDICTS: frozenset[str] = frozenset({"yes", "contextual"})
 
 
+# --- Prompt-cache pricing model -------------------------------------------
+# Old run records (pre-2026-05) don't carry cache_creation_tokens or
+# cache_read_tokens because the runner didn't extract them from the API
+# response. We can still RETROACTIVELY estimate what a cached run would
+# have cost by modeling amortized caching across the cell's session.
+#
+# Anthropic pricing for ephemeral cache:
+#   * cache_creation: 1.25 × base input price (paid once per cache entry)
+#   * cache_read:     0.10 × base input price (paid every reuse)
+# Amortized across N calls in a session:
+#   avg multiplier = (1.25 + (N-1) × 0.10) / N
+#   N=17 → 0.168 ; N=18 → 0.163 ; N=51 → 0.118 ; N=147 → 0.108
+#
+# Token estimates per variant (system prompt only — cache_control is set
+# on the system block, not on the web_search tool schema). Calibrated to
+# observed cache_read values from new web_ncbi_reduced runs (≈14.7K).
+# Per-variant fallbacks scale by prompt-file char count.
+CACHEABLE_TOKENS_BY_VARIANT: dict[str, int] = {
+    "naive":             13_000,
+    "ncbi":              14_000,
+    "web_naive":         13_200,
+    "web_ncbi":          14_000,
+    "web_ncbi_reduced":  14_000,
+    "pubmed_ncbi":       14_500,
+}
+CACHE_CREATION_MULT: float = 1.25
+CACHE_READ_MULT:     float = 0.10
+_MODEL_INPUT_PRICE_PER_MTOK: dict[str, float] = {
+    "claude-haiku-4-5":  1.0,
+    "claude-sonnet-4-6": 3.0,
+    "claude-opus-4-7":   15.0,
+}
+_MODEL_OUTPUT_PRICE_PER_MTOK: dict[str, float] = {
+    "claude-haiku-4-5":  5.0,
+    "claude-sonnet-4-6": 15.0,
+    "claude-opus-4-7":   75.0,
+}
+WEB_SEARCH_USD_PER_QUERY: float = 0.01
+
+
+def _effective_cost_with_caching(
+    record: dict, *, session_size: int,
+) -> float:
+    """USD cost for one persisted call, with prompt caching active.
+
+    If the record carries explicit cache_creation_tokens /
+    cache_read_tokens (post-2026-05 runner), uses them directly. Else
+    (legacy record) models amortized caching across ``session_size`` —
+    the number of calls in the cell that share the same system prompt.
+    """
+    model = record["model"]
+    variant = record["variant"]
+    in_price = _MODEL_INPUT_PRICE_PER_MTOK.get(model, 0.0)
+    out_price = _MODEL_OUTPUT_PRICE_PER_MTOK.get(model, 0.0)
+    prompt_tokens = int(record.get("prompt_tokens") or 0)
+    completion_tokens = int(record.get("completion_tokens") or 0)
+    n_web = int(record.get("n_web_searches") or 0)
+
+    output_cost = completion_tokens * out_price / 1_000_000
+    web_cost = n_web * WEB_SEARCH_USD_PER_QUERY
+
+    cc = int(record.get("cache_creation_tokens") or 0)
+    cr = int(record.get("cache_read_tokens") or 0)
+    if cc > 0 or cr > 0:
+        # Explicit cache accounting — trust the recorded breakdown.
+        input_cost = (
+            prompt_tokens
+            + cc * CACHE_CREATION_MULT
+            + cr * CACHE_READ_MULT
+        ) * in_price / 1_000_000
+        return input_cost + output_cost + web_cost
+
+    # Legacy record: amortize.
+    cacheable = min(
+        CACHEABLE_TOKENS_BY_VARIANT.get(variant, 0),
+        prompt_tokens,
+    )
+    user_tokens = max(prompt_tokens - cacheable, 0)
+    n = max(session_size, 1)
+    avg_mult = (CACHE_CREATION_MULT + (n - 1) * CACHE_READ_MULT) / n
+    input_cost = (
+        cacheable * avg_mult + user_tokens
+    ) * in_price / 1_000_000
+    return input_cost + output_cost + web_cost
+
+
 def _verdict_match(pred: str | None, truth: str | None) -> bool:
     """Return True if prediction is acceptable under the
     yes≡contextual equivalence rule."""
@@ -170,6 +256,11 @@ def _build_dataframe() -> pd.DataFrame:
     """
     truth = _load_ground_truth()
     runs = _load_runs()
+    # Group by cell so we know the session size for retroactive caching.
+    from collections import Counter
+    cell_session_size: dict[tuple[str, str], int] = Counter(
+        (r["model"], r["variant"]) for r in runs
+    )
     rows = []
     for r in runs:
         gene = r["gene_symbol"]
@@ -177,6 +268,12 @@ def _build_dataframe() -> pd.DataFrame:
         if FILTER_TO_FRESH and cell not in FRESH_CELLS:
             continue
         current_truth = (truth.get(gene) or {}).get("ground_truth_verdict") or r["truth_verdict"]
+        # cost_usd as persisted = uncached pricing for legacy records.
+        # cost_usd_cached = retroactively-amortized pricing assuming
+        # prompt-caching is active over the cell's session.
+        cost_cached = _effective_cost_with_caching(
+            r, session_size=cell_session_size[cell],
+        )
         rows.append({
             "variant": r["variant"],
             "model": r["model"],
@@ -188,7 +285,12 @@ def _build_dataframe() -> pd.DataFrame:
             "predicted_confidence": r.get("predicted_confidence"),
             "predicted_key_uncertainty": r.get("predicted_key_uncertainty"),
             "correct": _verdict_match(r["predicted_verdict"], current_truth),
-            "cost_usd": r["cost_usd"],
+            # cost_usd is the canonical cost number used by all
+            # downstream code (plots, strategy sweeps). It now reflects
+            # prompt-caching: explicit cache fields when present (new
+            # runs), amortized estimate otherwise (legacy runs).
+            "cost_usd": cost_cached,
+            "cost_usd_uncached": r["cost_usd"],
             "latency_s": r["latency_s"],
             "n_web_searches": r["n_web_searches"],
         })
