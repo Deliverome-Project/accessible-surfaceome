@@ -798,7 +798,16 @@ HPA_RAW_TSV = ROOT / "data/external/hpa_subcellular_location/subcellular_locatio
 
 
 def _b(r: dict, k: str) -> bool:
-    return r.get(k, "0") == "1"
+    """Truthiness of a flag column. Accepts integer-formatted ('1') AND
+    float-formatted ('1.0') — pandas float coercion serializes some
+    candidate_universe boolean columns as '1.0' (e.g. go_has_*)."""
+    v = r.get(k)
+    if not v:
+        return False
+    try:
+        return float(v) >= 1.0
+    except (TypeError, ValueError):
+        return False
 
 
 def _f(r: dict, k: str) -> float | None:
@@ -938,6 +947,11 @@ _UNIPROT_PERMISSIVE_TERMS = (
 )
 
 
+def _hpa_pm_in_tier(r: dict, tier: str) -> bool:
+    v = (r.get(tier) or "").lower()
+    return "plasma membrane" in v or "cell junctions" in v
+
+
 def _inject_raw_source_flags(rows: list[dict], bench_symbols: dict[str, str]) -> None:
     """Look up each benchmark row's UniProt accession in the raw
     upstream UniProt, GO, and HPA TSVs and inject extra boolean fields
@@ -957,6 +971,7 @@ def _inject_raw_source_flags(rows: list[dict], bench_symbols: dict[str, str]) ->
         u = raw_uniprot.get(acc, {})
         locs = u.get("subcellular_locations") or ""
         loc_parts = set(locs.split("|")) if locs else set()
+        r["_uniprot_strict_only"] = _uniprot_has_strict_term(locs)
         r["_uniprot_permissive"] = (
             any(t in loc_parts for t in _UNIPROT_PERMISSIVE_TERMS)
             or _uniprot_feat_int(u, "feature_topo_extracellular_count") > 0
@@ -970,53 +985,85 @@ def _inject_raw_source_flags(rows: list[dict], bench_symbols: dict[str, str]) ->
         r["_go_permissive"] = _go_evidence_count(g) > 0
         # Raw HPA — by symbol. _hpa_in_raw distinguishes "HPA imaged
         # this protein" from "no antibody". _hpa_pm_raw is HPA's PM
-        # call when present.
+        # call when present (canonical = high tier PM/CJ).
         sym = (bench_symbols.get(acc) or "").upper()
         hpa_rec = raw_hpa.get(sym) if sym else None
         r["_hpa_in_raw"] = hpa_rec is not None
         r["_hpa_pm_raw"] = bool(hpa_rec and _hpa_pm_flag(hpa_rec))
+        r["_hpa_enhanced_only"] = bool(
+            hpa_rec and _hpa_pm_in_tier(hpa_rec, "Enhanced")
+        )
+        r["_hpa_with_uncertain"] = bool(hpa_rec and (
+            _hpa_pm_flag(hpa_rec)
+            or _hpa_pm_in_tier(hpa_rec, "Uncertain")
+        ))
 
 
 DB_VARIANTS: list[tuple[str, "callable", str]] = [
-    # UniProt baselines + raw-source variants. Lambdas take a dict
-    # with `_raw_uniprot`/`_raw_go` injected by _build_db_variants.
+    # UniProt — strict → canonical → TM+signal → permissive ladder.
+    ("UniProt strict-only\n(4 subcell terms)",
+        lambda r: bool(r.get("_uniprot_strict_only")),
+        "UniProt"),
     ("UniProt baseline",
         lambda r: _b(r, "uniprot_surface_flag"),
-        "UniProt"),
-    ("UniProt permissive\n(incl. plain Cell membrane)",
-        lambda r: bool(r.get("_uniprot_permissive")),
         "UniProt"),
     ("UniProt TM-or-signal-or-surface\n(topology proxy)",
         lambda r: bool(r.get("_uniprot_tm_or_signal_or_surface")),
         "UniProt"),
-    # GO baseline + permissive (incl. IEA)
+    ("UniProt permissive\n(incl. plain Cell membrane)",
+        lambda r: bool(r.get("_uniprot_permissive")),
+        "UniProt"),
+    # GO — experimental+curated → canonical (+sequence) → permissive (+IEA).
+    ("GO experimental+curated",
+        lambda r: _b(r, "go_has_experimental") or _b(r, "go_has_curated"),
+        "GO"),
     ("GO baseline",
         lambda r: _b(r, "go_surface_flag"),
         "GO"),
     ("GO permissive\n(incl. IEA-only)",
         lambda r: bool(r.get("_go_permissive")),
         "GO"),
-    # HPA, SURFY, CSPA — baseline only (no meaningful variants found).
+    # HPA — Enhanced-only → canonical → canonical+Uncertain.
     # HPA reads from the raw subcellular_location TSV (bypassing the
     # surface-pool filter at source-build time) so it can vote
     # "not surface" on proteins it imaged but didn't see at PM
     # (KRAS, ABCB9, vesicle-resident, etc.).
+    ("HPA Enhanced-only\n(strictest tier)",
+        lambda r: bool(r.get("_hpa_enhanced_only")),
+        "HPA"),
     ("HPA baseline",
         lambda r: bool(r.get("_hpa_pm_raw")),
         "HPA"),
-    ("SURFY baseline",
-        lambda r: _b(r, "surfy_surface_flag"),
-        "SURFY"),
-    ("SURFY score>0.5",
-        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.5,
+    ("HPA + Uncertain tier",
+        lambda r: bool(r.get("_hpa_with_uncertain")),
+        "HPA"),
+    # SURFY — score>0.9 → score>0.7 → score>0.5 → canonical (any surface label).
+    ("SURFY score>0.9",
+        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.9,
         "SURFY"),
     ("SURFY score>0.7",
         lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.7,
         "SURFY"),
+    ("SURFY score>0.5",
+        lambda r: _b(r, "surfy_surface_flag") and (_f(r, "surfy_ml_score") or 0) > 0.5,
+        "SURFY"),
+    ("SURFY baseline",
+        lambda r: _b(r, "surfy_surface_flag"),
+        "SURFY"),
+    # CSPA — high-conf only → canonical (HC+putative) → + unspecific.
+    ("CSPA high-conf only",
+        lambda r: _b(r, "cspa_is_high_confidence"),
+        "CSPA"),
     ("CSPA baseline",
         lambda r: _b(r, "cspa_surface_flag"),
         "CSPA"),
-    # Consensus filters (cross-source agreement)
+    ("CSPA + unspecific",
+        lambda r: _b(r, "cspa_surface_flag") or _b(r, "cspa_is_unspecific"),
+        "CSPA"),
+    # Consensus — ≥1 (= the universe itself) → ≥2 → ≥3.
+    ("Consensus\n≥1 source (= universe)",
+        lambda r: int(r.get("n_sources_surface", "0") or 0) >= 1,
+        "consensus"),
     ("Consensus\n≥2 sources",
         lambda r: int(r.get("n_sources_surface", "0") or 0) >= 2,
         "consensus"),
@@ -1026,15 +1073,22 @@ DB_VARIANTS: list[tuple[str, "callable", str]] = [
 ]
 
 # Colors per group — brand palette for the 5 baselines; consensus gets
-# the success-green family. Within UniProt and GO the baseline anchors
-# the brand color and variants step toward darker shades.
+# the success-green family. Within each group the palette is sequenced
+# strict→loose (strict = darkest). Index in palette = within-group
+# strictness rank (0 = strictest).
 _VARIANT_GROUP_PALETTE: dict[str, list[str]] = {
-    "UniProt":   [CATEGORICAL_PALETTE[0], "#a82e3d", "#7a1f2a"],
-    "GO":        [CATEGORICAL_PALETTE[1], "#2c5048"],
-    "HPA":       [CATEGORICAL_PALETTE[2]],
-    "SURFY":     [CATEGORICAL_PALETTE[3], "#a895d6", "#d4b9e5"],
-    "CSPA":      [CATEGORICAL_PALETTE[4]],
-    "consensus": ["#2E7A55", "#5cae84"],
+    # strict → canonical → TM+signal → permissive
+    "UniProt":   ["#7a1f2a", "#a82e3d", CATEGORICAL_PALETTE[0], "#e08896"],
+    # exp+curated → canonical → permissive
+    "GO":        ["#1e3a32", "#2c5048", CATEGORICAL_PALETTE[1]],
+    # Enhanced → canonical → +Uncertain
+    "HPA":       ["#9a6803", CATEGORICAL_PALETTE[2], "#f1c168"],
+    # score>0.9 → >0.7 → >0.5 → canonical
+    "SURFY":     ["#5c4585", "#7a5da8", CATEGORICAL_PALETTE[3], "#c5a8e0"],
+    # HC-only → canonical → +unspecific
+    "CSPA":      ["#5a1a25", CATEGORICAL_PALETTE[4], "#c97a8a"],
+    # ≥1 → ≥2 → ≥3 (loose to strict; reverse the visual)
+    "consensus": ["#a8d4bd", "#5cae84", "#2E7A55"],
 }
 
 
@@ -1220,11 +1274,8 @@ def _universe_size_per_variant() -> dict[str, int]:
     """
     sizes: dict[str, int] = {}
 
-    # UniProt — count rows in raw UniProt TSV matching each criterion.
-    # The CANONICAL flag (merge/loaders.py:117) is `strict OR
-    # feature_topo_extracellular > 0` — strict alone gives 415 which
-    # is NOT the current uniprot_surface_flag set (3175).
-    n_canonical = n_perm = n_tm = 0
+    # UniProt — strict / canonical / TM+signal / permissive ladder.
+    n_strict_only = n_canonical = n_perm = n_tm = 0
     with UNIPROT_RAW_TSV.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
             locs = r.get("subcellular_locations") or ""
@@ -1236,41 +1287,55 @@ def _universe_size_per_variant() -> dict[str, int]:
             tm = (_uniprot_feat_int(r, "feature_transmembrane_count") > 0
                   or _uniprot_feat_int(r, "feature_signal_count") > 0
                   or strict)
+            if strict:
+                n_strict_only += 1
             if canonical:
                 n_canonical += 1
             if perm:
                 n_perm += 1
             if tm:
                 n_tm += 1
+    sizes["UniProt strict-only\n(4 subcell terms)"] = n_strict_only
     sizes["UniProt baseline"] = n_canonical
-    sizes["UniProt permissive\n(incl. plain Cell membrane)"] = n_perm
     sizes["UniProt TM-or-signal-or-surface\n(topology proxy)"] = n_tm
+    sizes["UniProt permissive\n(incl. plain Cell membrane)"] = n_perm
 
-    # GO — count raw GO rows by evidence tier.
-    n_go_base = n_go_perm = 0
+    # GO — exp+curated / canonical (+sequence) / permissive (+IEA).
+    n_go_strict = n_go_base = n_go_perm = 0
     with GO_RAW_TSV.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
-            exp = (int(r.get("has_experimental") or 0)
-                   + int(r.get("has_curated") or 0)
-                   + int(r.get("has_sequence") or 0))
+            exp_only = int(r.get("has_experimental") or 0) + int(r.get("has_curated") or 0)
+            seq = int(r.get("has_sequence") or 0)
             ele = int(r.get("has_electronic") or 0)
-            if exp > 0:
+            if exp_only > 0:
+                n_go_strict += 1
+            if exp_only + seq > 0:
                 n_go_base += 1
-            if exp + ele > 0:
+            if exp_only + seq + ele > 0:
                 n_go_perm += 1
+    sizes["GO experimental+curated"] = n_go_strict
     sizes["GO baseline"] = n_go_base
     sizes["GO permissive\n(incl. IEA-only)"] = n_go_perm
 
-    # HPA — raw PM-annotated count.
-    n_hpa = 0
+    # HPA — Enhanced / canonical (E+S+A) / + Uncertain.
+    n_hpa_enh = n_hpa = n_hpa_unc = 0
     with HPA_RAW_TSV.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
-            if _hpa_pm_flag(r):
+            in_enh = _hpa_pm_in_tier(r, "Enhanced")
+            in_canon = _hpa_pm_flag(r)
+            in_unc = in_canon or _hpa_pm_in_tier(r, "Uncertain")
+            if in_enh:
+                n_hpa_enh += 1
+            if in_canon:
                 n_hpa += 1
+            if in_unc:
+                n_hpa_unc += 1
+    sizes["HPA Enhanced-only\n(strictest tier)"] = n_hpa_enh
     sizes["HPA baseline"] = n_hpa
+    sizes["HPA + Uncertain tier"] = n_hpa_unc
 
-    # SURFY — surface-labeled, optionally score-thresholded.
-    n_s = n_s05 = n_s07 = 0
+    # SURFY — score>0.9 / >0.7 / >0.5 / canonical.
+    n_s = n_s05 = n_s07 = n_s09 = 0
     with SURFY_TSV.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
             if (r.get("surfy_label") or "").strip() == "surface":
@@ -1283,32 +1348,45 @@ def _universe_size_per_variant() -> dict[str, int]:
                     n_s05 += 1
                 if score > 0.7:
                     n_s07 += 1
-    sizes["SURFY baseline"] = n_s
-    sizes["SURFY score>0.5"] = n_s05
+                if score > 0.9:
+                    n_s09 += 1
+    sizes["SURFY score>0.9"] = n_s09
     sizes["SURFY score>0.7"] = n_s07
+    sizes["SURFY score>0.5"] = n_s05
+    sizes["SURFY baseline"] = n_s
 
-    # CSPA — high-conf OR putative.
-    n_c = 0
+    # CSPA — HC-only / canonical / + unspecific.
+    n_c_hc = n_c = n_c_uns = 0
     with CSPA_TSV.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
             hc = (r.get("cspa_is_high_confidence") or "").strip() == "1"
             pu = (r.get("cspa_is_putative") or "").strip() == "1"
+            un = (r.get("cspa_is_unspecific") or "").strip() == "1"
+            if hc:
+                n_c_hc += 1
             if hc or pu:
                 n_c += 1
+            if hc or pu or un:
+                n_c_uns += 1
+    sizes["CSPA high-conf only"] = n_c_hc
     sizes["CSPA baseline"] = n_c
+    sizes["CSPA + unspecific"] = n_c_uns
 
-    # Consensus — count proteins in candidate_universe meeting threshold.
-    n_c2 = n_c3 = 0
+    # Consensus — ≥1 / ≥2 / ≥3 over candidate_universe.
+    n_c1 = n_c2 = n_c3 = 0
     with CAND_TSV_PATH.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
             try:
                 n = int(r.get("n_sources_surface") or 0)
             except (TypeError, ValueError):
                 continue
+            if n >= 1:
+                n_c1 += 1
             if n >= 2:
                 n_c2 += 1
             if n >= 3:
                 n_c3 += 1
+    sizes["Consensus\n≥1 source (= universe)"] = n_c1
     sizes["Consensus\n≥2 sources"] = n_c2
     sizes["Consensus\n≥3 sources"] = n_c3
 
@@ -1421,34 +1499,37 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
 
     # Shorter labels for legibility in the scatter.
     short_label = {
-        "UniProt baseline": "UniProt strict",
-        "UniProt permissive\n(incl. plain Cell membrane)": "UniProt permissive",
-        "UniProt TM-or-signal-or-surface\n(topology proxy)": "UniProt TM+signal",
-        "GO baseline": "GO strict",
-        "GO permissive\n(incl. IEA-only)": "GO permissive (+IEA)",
-        "HPA baseline": "HPA",
-        "SURFY baseline": "SURFY base",
-        "SURFY score>0.5": "SURFY >0.5",
-        "SURFY score>0.7": "SURFY >0.7",
-        "CSPA baseline": "CSPA",
-        "Consensus\n≥2 sources": "Consensus ≥2",
-        "Consensus\n≥3 sources": "Consensus ≥3",
+        "UniProt strict-only\n(4 subcell terms)":              "UniProt strict-4",
+        "UniProt baseline":                                    "UniProt canonical",
+        "UniProt TM-or-signal-or-surface\n(topology proxy)":   "UniProt TM+signal",
+        "UniProt permissive\n(incl. plain Cell membrane)":     "UniProt permissive",
+        "GO experimental+curated":                             "GO exp+curated",
+        "GO baseline":                                         "GO canonical",
+        "GO permissive\n(incl. IEA-only)":                     "GO + IEA",
+        "HPA Enhanced-only\n(strictest tier)":                 "HPA Enhanced",
+        "HPA baseline":                                        "HPA canonical",
+        "HPA + Uncertain tier":                                "HPA + Uncertain",
+        "SURFY score>0.9":                                     "SURFY >0.9",
+        "SURFY score>0.7":                                     "SURFY >0.7",
+        "SURFY score>0.5":                                     "SURFY >0.5",
+        "SURFY baseline":                                      "SURFY canonical",
+        "CSPA high-conf only":                                 "CSPA HC-only",
+        "CSPA baseline":                                       "CSPA canonical",
+        "CSPA + unspecific":                                   "CSPA + unspecific",
+        "Consensus\n≥1 source (= universe)":                   "Cons ≥1 (universe)",
+        "Consensus\n≥2 sources":                               "Cons ≥2",
+        "Consensus\n≥3 sources":                               "Cons ≥3",
     }
-    # Manual (dx, dy) offsets in display-points to keep labels from
-    # overlapping in the dense upper-right cluster.
-    offsets = {
-        "UniProt strict":         (10, 4),
-        "UniProt permissive":     (10, -22),
-        "UniProt TM+signal":      (-20, 12),
-        "GO strict":              (10, -16),
-        "GO permissive (+IEA)":   (10, 8),
-        "HPA":                    (-50, -16),
-        "SURFY base":             (-110, 8),
-        "SURFY >0.5":             (8, -4),
-        "SURFY >0.7":             (-90, -8),
-        "CSPA":                   (-50, -16),
-        "Consensus ≥2":           (10, 6),
-        "Consensus ≥3":           (10, 4),
+    # Auto-fan-out offsets: pick a side per group so each group's
+    # labels don't collide with others. The strict-side label sits
+    # left of its point; loose-side sits right; middle goes up.
+    SIDE_OFFSETS = {
+        "UniProt":   [(-100, 8), (-100, -16), (10, 12), (10, -16)],
+        "GO":        [(-90, 8), (10, -18), (10, 8)],
+        "HPA":       [(-80, 6), (10, -18), (10, 8)],
+        "SURFY":     [(-90, -16), (-90, 8), (10, -18), (10, 8)],
+        "CSPA":      [(-80, 8), (10, -18), (10, 8)],
+        "consensus": [(10, -16), (10, 12), (-50, -16)],
     }
 
     fig, ax = plt.subplots(figsize=(13.5, 7.5))
@@ -1467,23 +1548,28 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
         ax.plot([p["size"] for p in s], [p["acc"] * 100 for p in s],
                 color=line_color, linewidth=1.4, alpha=0.55, zorder=2)
 
-    # Draw all points + labels.
+    # Draw all points + labels. Within each group, the points are
+    # ordered by SIZE (smallest = strictest) — palette index 0 is the
+    # strictest, which produces the darkest color. SIDE_OFFSETS gives
+    # one (dx, dy) per within-group rank to fan labels out.
     for p in points:
         palette = _VARIANT_GROUP_PALETTE.get(p["group"], ["#666666"])
-        idx = sorted(group_to_pts[p["group"]], key=lambda q: q["size"]).index(p)
+        sorted_in_group = sorted(group_to_pts[p["group"]], key=lambda q: q["size"])
+        idx = sorted_in_group.index(p)
         color = palette[min(idx, len(palette) - 1)]
         ax.scatter(p["size"], p["acc"] * 100,
-                   s=140, color=color, edgecolor="white",
-                   linewidth=1.6, zorder=3)
+                   s=130, color=color, edgecolor="white",
+                   linewidth=1.4, zorder=3)
         short = short_label.get(p["label"], p["label"])
-        dx, dy = offsets.get(short, (10, 6))
+        group_offsets = SIDE_OFFSETS.get(p["group"], [(10, 6)])
+        dx, dy = group_offsets[min(idx, len(group_offsets) - 1)]
         ax.annotate(
             f"{short}\n+{p['pos']*100:.0f}/-{p['neg']*100:.0f}",
             xy=(p["size"], p["acc"] * 100),
             xytext=(dx, dy), textcoords="offset points",
-            fontsize=8, color=COLORS["dark"],
-            bbox={"boxstyle": "round,pad=0.3", "fc": "white",
-                  "ec": color, "lw": 0.7, "alpha": 0.92},
+            fontsize=7.5, color=COLORS["dark"],
+            bbox={"boxstyle": "round,pad=0.25", "fc": "white",
+                  "ec": color, "lw": 0.6, "alpha": 0.9},
         )
 
     # Legend — one entry per group.
@@ -1505,7 +1591,7 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
                   "(log scale; lower = stricter / fewer downstream candidates)")
     ax.set_ylabel("Accuracy on 147-gene benchmark (%)")
     ax.set_ylim(35, 100)
-    ax.set_xlim(200, 6000)
+    ax.set_xlim(80, 7500)
     ax.set_title(
         "Filter cutoff trade-off — strictness vs accuracy\n"
         "Annotation: variant • +pos/-neg recall (per-source missing rule: "
