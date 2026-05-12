@@ -1,0 +1,27 @@
+{
+  "variant": "naive",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "HSPA1A is a canonical intracellular cytoplasmic chaperone with no transmembrane domain, GPI anchor, or other membrane-anchoring mechanism. Baseline localization is cytoplasm and nucleus. While ER stress or heat shock can trigger exosomal release or extracellular secretion of HSP70, this release is of soluble protein or EV cargo, not stable surface anchoring. Extracellular HSP70 acts as a ligand for surface receptors (TLRs, CD91) but the protein itself is not anchored to the PM and washes off. No cell-surface-directed therapeutic programs target HSPA1A on the surface. No documented PM minority pool, dual localization, or cell-state-induced outer-leaflet display.",
+  "correct": false,
+  "prompt_tokens": 5161,
+  "completion_tokens": 1456,
+  "n_web_searches": 0,
+  "cost_usd": 0.012441,
+  "latency_s": 16.507870749977883,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": "",
+  "_restored_from_d1": {
+    "run_id": "2026-05-11_full_bench_v0.9.0",
+    "created_at": "2026-05-11 22:53:32"
+  }
+}

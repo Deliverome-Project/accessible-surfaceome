@@ -1,0 +1,27 @@
+{
+  "variant": "ncbi",
+  "model": "claude-haiku-4-5",
+  "gene_symbol": "HSPA1A",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "cytoplasmic",
+  "verdict_reasoning": "HSPA1A is a canonical cytoplasmic heat shock protein (Hsp70). It stabilizes proteins against aggregation and mediates protein folding in the cytosol and organelles; it is also a component of the TIM23 complex (translocase of inner mitochondrial membrane). No TM domain, GPI anchor, or outer-leaflet lipidation. No documented cell-state-induced ecto-translocation (stress-response Hsp70 upregulation is intracellular, not surface-externalizing); no tissue-restricted surface display; not a lysosomal TM protein; no documented PM minority pool from vesicular cycling; no wash-resistant TM-partner tethering. Intracellular chaperone function is the canonical biology. Cytoplasmic resident.",
+  "correct": false,
+  "prompt_tokens": 5902,
+  "completion_tokens": 235,
+  "n_web_searches": 0,
+  "cost_usd": 0.007077,
+  "latency_s": 3.9777894589933567,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": "",
+  "_restored_from_d1": {
+    "run_id": "2026-05-11_full_bench_v0.9.0",
+    "created_at": "2026-05-11 22:53:45"
+  }
+}
