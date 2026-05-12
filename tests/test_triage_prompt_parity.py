@@ -56,6 +56,16 @@ NO_RESOLVER_VARIANTS = ("system_naive.md", "system_web_naive.md")
 WEB_VARIANTS = ("system_web.md", "system_web_naive.md")
 NON_WEB_VARIANTS = ("system.md", "system_naive.md", "system_pubmed.md")
 
+# Deliberately-divergent prompts. ``system_slim.md`` is a streamlined
+# rewrite of ``system.md`` that drops the cardinal-rule section, merges
+# its logic into the enum definitions, and collapses the 8-probe
+# checklist — by design it cannot satisfy the SHARED_FINGERPRINTS that
+# pin the original phrasing, so it is NOT in ALL_VARIANTS. It IS in
+# ALL_PROMPTS so the gene-name / family-name leakage tests still run
+# on it.
+DIVERGENT_VARIANTS = ("system_slim.md",)
+ALL_PROMPTS = ALL_VARIANTS + DIVERGENT_VARIANTS
+
 
 # Each entry is a short fingerprint string that uniquely identifies a
 # substantive block. Keys are human-readable IDs; the strings themselves
@@ -305,7 +315,10 @@ def _load(variant: str) -> str:
 
 @pytest.fixture(scope="module")
 def variant_texts() -> dict[str, str]:
-    return {v: _load(v) for v in ALL_VARIANTS}
+    # Loads every prompt including divergent ones — the parity tests
+    # only iterate over ALL_VARIANTS, but the leakage tests cover
+    # ALL_PROMPTS, so the fixture has to know about both.
+    return {v: _load(v) for v in ALL_PROMPTS}
 
 
 # --- Shared-block parity ---------------------------------------------------
@@ -397,7 +410,7 @@ _FORBIDDEN_GENE_SYMBOLS = (
 )
 
 
-@pytest.mark.parametrize("variant", ALL_VARIANTS)
+@pytest.mark.parametrize("variant", ALL_PROMPTS)
 def test_no_specific_gene_names_in_prompt(
     variant_texts: dict[str, str], variant: str
 ) -> None:
@@ -443,7 +456,7 @@ _FORBIDDEN_FAMILY_NAMES = (
 )
 
 
-@pytest.mark.parametrize("variant", ALL_VARIANTS)
+@pytest.mark.parametrize("variant", ALL_PROMPTS)
 def test_no_specific_family_names_in_prompt(
     variant_texts: dict[str, str], variant: str
 ) -> None:

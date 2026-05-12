@@ -86,6 +86,15 @@ WEB_SEARCH_TOOL: dict[str, Any] = {
 VARIANTS = {
     "naive":     {"prompt": "system_naive.md",     "resolver": False, "web_search": False},
     "ncbi":      {"prompt": "system.md",            "resolver": True,  "web_search": False},
+    # Streamlined sibling of `ncbi`. Same resolver context, same task
+    # message; system prompt is 63% shorter (5,506 → 2,017 tokens)
+    # via merging the recruitment-test logic into the enum definitions,
+    # consolidating the contextual subtype prose, dropping repeated
+    # pMHC framing (the `pmhc_only_intracellular` enum already covers
+    # it), and collapsing the 8-probe Pre-`no` checklist to 2 explicit
+    # patterns. Drops probes that re-tell the agent to use the
+    # resolver context — the resolver-injected task message is enough.
+    "slim":      {"prompt": "system_slim.md",      "resolver": True,  "web_search": False},
     "web_naive": {"prompt": "system_web_naive.md", "resolver": False, "web_search": True},
     "web_ncbi":  {"prompt": "system_web.md",        "resolver": True,  "web_search": True},
     # Cost-reduced variant of web_ncbi. Same prompt (system_web.md) as

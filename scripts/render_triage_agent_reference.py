@@ -67,6 +67,12 @@ PROMPT_VARIANTS = [
         "Web search alone (no resolver)",
         "`web_search` tool with no resolver context — agent builds its own context from the web given just the gene symbol. Measures whether the resolver injection or the web tool dominates.",
     ),
+    (
+        "slim",
+        "system_slim.md",
+        "Slim (NCBI + HGNC resolver, streamlined)",
+        "Streamlined sibling of the default. Same resolver context and task message; system prompt is 63% shorter (5,506 → 2,017 tokens) — recruitment-test logic merged into the enum definitions, contextual subtype prose consolidated, opening pMHC framing removed (the `pmhc_only_intracellular` enum already covers it), and the 8-probe `Pre-no` checklist collapsed to 2 explicit patterns. Drops probes that re-tell the agent to use resolver context. See the diff section below.",
+    ),
 ]
 
 
@@ -180,6 +186,68 @@ def _load_prompt_variants() -> list[dict]:
             "source": text,
         })
     return out
+
+
+def _render_slim_diff_html() -> str:
+    """Render a unified diff of system.md → system_slim.md as inline HTML.
+
+    Pre-escapes ``<`` / ``>`` / ``&`` and wraps each line in a ``<span>``
+    with a class that the dedicated CSS colours according to whether the
+    line is added (``+``), removed (``-``), context (` `), or a hunk
+    header (``@@``). Skips the leading ``---`` / ``+++`` file headers
+    since the section heading already says which two files are being
+    compared.
+    """
+    import difflib
+    import html as _html
+
+    old_path = PROMPTS_DIR / "system.md"
+    new_path = PROMPTS_DIR / "system_slim.md"
+    if not (old_path.exists() and new_path.exists()):
+        return "<p><em>Slim variant not present; diff section omitted.</em></p>"
+
+    old_lines = old_path.read_text().splitlines(keepends=False)
+    new_lines = new_path.read_text().splitlines(keepends=False)
+
+    diff = difflib.unified_diff(
+        old_lines, new_lines,
+        fromfile="system.md", tofile="system_slim.md",
+        lineterm="", n=3,
+    )
+
+    parts: list[str] = ["<pre class=\"diff\"><code>"]
+    n_add = n_del = 0
+    for raw in diff:
+        if raw.startswith("---") or raw.startswith("+++"):
+            continue
+        if raw.startswith("@@"):
+            cls = "hunk"
+        elif raw.startswith("+"):
+            cls = "add"
+            n_add += 1
+        elif raw.startswith("-"):
+            cls = "del"
+            n_del += 1
+        else:
+            cls = "ctx"
+        # difflib emits each diff line WITHOUT a trailing newline. Render
+        # one <span> per line; the ``white-space: pre`` on the parent
+        # preserves indentation.
+        parts.append(
+            f'<span class="diff-line diff-{cls}">'
+            f'{_html.escape(raw)}'
+            f'</span>\n'
+        )
+    parts.append("</code></pre>")
+    summary = (
+        f'<p class="diff-stats"><span class="diff-add-pill">+{n_add}</span>'
+        f' <span class="diff-del-pill">−{n_del}</span> '
+        f'<span class="diff-meta">'
+        f'{len(old_lines):,} → {len(new_lines):,} lines · '
+        f'{old_path.stat().st_size:,} → {new_path.stat().st_size:,} bytes'
+        f'</span></p>'
+    )
+    return summary + "".join(parts)
 
 
 def _load_benchmark() -> list[dict[str, str]]:
@@ -364,6 +432,27 @@ details[open] summary { margin-bottom: 12px; }
 .tab-blurb { color: var(--neutral); font-size: 14px; font-style: italic;
   margin: 0 0 16px 4px; }
 
+/* system.md → system_slim.md unified diff */
+.diff { background: var(--code-bg); border: 1px solid var(--code-line);
+  border-radius: 8px; padding: 14px 16px; overflow-x: auto;
+  font-family: "JetBrains Mono", Menlo, Consolas, monospace; font-size: 12.5px;
+  line-height: 1.55; color: var(--ink); }
+.diff code { background: transparent; border: none; padding: 0; }
+.diff-line { display: block; white-space: pre; padding: 0 4px;
+  border-left: 3px solid transparent; }
+.diff-add { background: #ecfdf5; color: #065f46; border-left-color: #10b981; }
+.diff-del { background: #fef2f2; color: #991b1b; border-left-color: #ef4444; }
+.diff-hunk { background: #f3f4f6; color: var(--neutral); font-style: italic;
+  margin: 6px 0; padding: 2px 4px; border-left-color: var(--neutral); }
+.diff-ctx { color: var(--neutral); }
+.diff-stats { font-size: 13px; color: var(--neutral); margin: 0 0 12px 0;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.diff-add-pill { background: #ecfdf5; color: #065f46; padding: 2px 10px;
+  border-radius: 999px; font-weight: 700; font-family: "JetBrains Mono", monospace; }
+.diff-del-pill { background: #fef2f2; color: #991b1b; padding: 2px 10px;
+  border-radius: 999px; font-weight: 700; font-family: "JetBrains Mono", monospace; }
+.diff-meta { font-family: "JetBrains Mono", monospace; }
+
 /* Benchmark table */
 .benchmark-controls { display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
   margin-bottom: 18px; }
@@ -434,6 +523,7 @@ details[open] summary { margin-bottom: 12px; }
 
 <nav>
   <a href="#prompt-variants">Prompt variants</a>
+  <a href="#slim-diff">Slim diff</a>
   <a href="#task-context">Task context</a>
   <a href="#pydantic">Pydantic schema</a>
   <a href="#jsonschema">JSON schema</a>
@@ -449,6 +539,12 @@ details[open] summary { margin-bottom: 12px; }
   <p class="lede">Four prompt variants for A/B comparison. The <em>Default</em> is the active production prompt. The others measure ablations: removing the resolver context, adding web search, or both.</p>
   <div class="tabs" id="prompt-tabs"></div>
   <div id="prompt-tab-contents"></div>
+</section>
+
+<section id="slim-diff">
+  <h2>Slim diff <span class="pill">system.md → system_slim.md</span></h2>
+  <p class="lede">Unified diff of the streamlined sibling variant. The slim prompt trades 3,489 tokens (63%) for a tighter call: cardinal-rule logic absorbed into the <code>secreted_only</code> / <code>stable_surface_attachment</code> enum definitions; contextual subtype prose consolidated; opening pMHC framing removed (the <code>pmhc_only_intracellular</code> enum already covers it); the 8-probe <code>Pre-no</code> checklist collapsed to 2 patterns; probes that re-tell the agent to use HGNC / NCBI resolver context dropped (the task message already carries it). Same accuracy story to be measured.</p>
+  __SLIM_DIFF_HTML__
 </section>
 
 <section id="task-context">
@@ -714,12 +810,15 @@ def main() -> None:
         f'<th colspan="2">{v.replace("_", " ")}</th>' for v in SUBBENCH_VARIANTS
     )
 
+    slim_diff_html = _render_slim_diff_html()
+
     rendered = (
         HTML_TEMPLATE.replace("__SCHEMA_VERSION__", schema_version)
         .replace("__N_VARIANTS__", str(len(variants)))
         .replace("__BENCH_N__", str(len(benchmark)))
         .replace("__SUBBENCH_N__", str(len(subbench)))
         .replace("__SUBBENCH_VARIANT_HEADERS__", subbench_variant_headers)
+        .replace("__SLIM_DIFF_HTML__", slim_diff_html)
         .replace("__PROMPT_VARIANTS_JSON__", json.dumps(variants))
         .replace("__TASK_JSON__", json.dumps(SAMPLE_TASK))
         .replace("__PYDANTIC_JSON__", json.dumps(pydantic_src))
