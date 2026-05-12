@@ -592,6 +592,25 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
 
     fig, ax = plt.subplots(figsize=(10.5, 5.5))
 
+    # Per-cell label offsets (pixels) to deconflict dense clusters
+    # (Sonnet naive/ncbi/PubMed all sit around 92-95% / $200-265 and
+    # would stack with a single fixed offset). Calibrated to the
+    # post-2026-05 final-canonical layout — re-tune if cells move.
+    # When abs(dy) >= 16 we draw a short leader line so the
+    # label → point mapping stays unambiguous.
+    label_offsets: dict[str, tuple[int, int]] = {
+        "_llm_haiku_naive":        (  7,   6),
+        "_llm_haiku_ncbi":         (  7,  10),
+        "_llm_haiku_pubmed_ncbi":  (  7, -18),
+        "_llm_haiku_web_ncbi":     (  7,   6),
+        "_llm_sonnet_naive":       (  7, -18),
+        "_llm_sonnet_ncbi":        (  7,  10),
+        "_llm_sonnet_pubmed_ncbi": (  7, -20),
+        "_llm_sonnet_web_ncbi":    (  7,   6),
+        "_llm_opus_naive":         (  7, -18),
+        "_llm_opus_ncbi":          (  7,  10),
+    }
+
     # LLM cells as scatter — x is $/whole-genome at 1 rep, y is overall accuracy.
     for vote_key, _, _ in LLM_CELLS:
         label = LLM_LABEL[vote_key]
@@ -600,9 +619,18 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
         color = LLM_PALETTE[vote_key]
         ax.scatter(x, y, s=180, c=color, edgecolor=COLORS["dark"],
                    linewidth=0.8, zorder=5)
-        # Offset annotation slightly so points and labels don't overlap.
-        ax.annotate(label, (x, y), xytext=(7, 6), textcoords="offset points",
-                    fontsize=10, color=COLORS["dark"])
+        dx, dy = label_offsets.get(vote_key, (7, 6))
+        arrowprops = (
+            dict(arrowstyle="-", color=COLORS["neutral"],
+                 linewidth=0.6, alpha=0.7, shrinkA=0, shrinkB=4)
+            if abs(dy) >= 16 else None
+        )
+        ax.annotate(
+            label, (x, y),
+            xytext=(dx, dy), textcoords="offset points",
+            fontsize=10, color=COLORS["dark"],
+            arrowprops=arrowprops,
+        )
 
     # M1 DBs as horizontal reference lines (cost = $0; not on a $-axis log
     # scale, so depict them as accuracy thresholds the LLMs must beat).
