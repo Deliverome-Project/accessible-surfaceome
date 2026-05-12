@@ -39,7 +39,7 @@ import threading
 import time
 import uuid as _uuid
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -140,6 +140,22 @@ class RunRecord:
     cache_read_tokens: int = 0
     error: str | None = None
     raw_text: str = ""
+    # Provenance — full inputs the agent saw. SHA-versioning happens at
+    # upload time (see triage_upload._intern_resolver_context).
+    user_message: str = ""
+    # Decoding params — record explicitly so a future runner-default
+    # tweak doesn't silently change historical comparability.
+    temperature: float | None = None
+    top_p: float | None = None
+    max_tokens: int | None = None
+    # Anthropic API response metadata.
+    api_response_id: str | None = None
+    api_stop_reason: str | None = None
+    api_model: str | None = None
+    # One entry per tool call (web_search / pubmed_lookup / etc.):
+    # {"step_index": int, "tool": str, "query": str|None,
+    #  "n_results": int|None, "top_results": list[dict]|None}
+    search_log: list[dict] = field(default_factory=list)
 
 
 _thread_local = threading.local()
@@ -200,21 +216,67 @@ def _parse_json_response(text: str) -> dict[str, Any] | None:
     return None
 
 
-def _extract_text(response: Any) -> tuple[str, int]:
-    """Collect all text content from a non-tool-use response, plus
-    count web_search tool uses in the message history."""
+def _extract_text(response: Any) -> tuple[str, int, list[dict]]:
+    """Collect text content, count web_search tool uses, AND assemble a
+    structured search log from interleaved server_tool_use and
+    web_search_tool_result blocks.
+
+    Anthropic streams these as a paired sequence:
+
+        ... server_tool_use(name=web_search, input={"query": ...}) ...
+        ... web_search_tool_result(content=[{title, url, page_age, ...}, ...]) ...
+
+    We collect them in order and pair adjacent (use, result) blocks.
+    The result content is truncated per-entry to keep persisted records
+    compact (~1KB per entry: title + URL + 240-char snippet).
+    """
     parts: list[str] = []
     n_searches = 0
+    search_uses: list[dict] = []
+    last_use_idx: int | None = None
+
     for block in getattr(response, "content", []) or []:
-        if getattr(block, "type", None) == "text":
+        btype = getattr(block, "type", None)
+        if btype == "text":
             txt = getattr(block, "text", None)
             if isinstance(txt, str):
                 parts.append(txt)
-        elif getattr(block, "type", None) == "server_tool_use":
-            # Anthropic's web_search is a server_tool_use; counts as one search.
-            if getattr(block, "name", "") == "web_search":
+        elif btype == "server_tool_use":
+            tool_name = getattr(block, "name", "") or ""
+            if tool_name == "web_search":
                 n_searches += 1
-    return "\n".join(parts), n_searches
+                inp = getattr(block, "input", None) or {}
+                if not isinstance(inp, dict):
+                    inp = {}
+                search_uses.append({
+                    "step_index": len(search_uses),
+                    "tool": "web_search",
+                    "query": inp.get("query"),
+                    "n_results": None,
+                    "top_results": None,
+                })
+                last_use_idx = len(search_uses) - 1
+        elif btype == "web_search_tool_result" and last_use_idx is not None:
+            results = getattr(block, "content", []) or []
+            normed: list[dict] = []
+            try:
+                iterable = results if isinstance(results, list) else []
+            except Exception:  # noqa: BLE001
+                iterable = []
+            for r in iterable[:5]:  # cap at 5 results / search to bound row size
+                title = getattr(r, "title", None) or (r.get("title") if isinstance(r, dict) else None)
+                url = getattr(r, "url", None) or (r.get("url") if isinstance(r, dict) else None)
+                text = getattr(r, "encrypted_content", None) or getattr(r, "snippet", None)
+                if text is None and isinstance(r, dict):
+                    text = r.get("snippet") or r.get("encrypted_content")
+                if isinstance(text, str) and len(text) > 240:
+                    text = text[:240] + "…"
+                normed.append({"title": title, "url": url, "snippet": text})
+            search_uses[last_use_idx]["n_results"] = len(normed)
+            search_uses[last_use_idx]["top_results"] = normed
+            last_use_idx = None
+
+    return "\n".join(parts), n_searches, search_uses
 
 
 def _cost(
@@ -333,6 +395,13 @@ def _run_one(
         if "web_max_uses" in cfg:
             web_tool["max_uses"] = cfg["web_max_uses"]
         create_kwargs["tools"] = [web_tool]
+    # Snapshot the decoding params we'll send so they land in the
+    # persisted record even on the error path below.
+    decode_params = {
+        "temperature": create_kwargs.get("temperature"),
+        "top_p": create_kwargs.get("top_p"),
+        "max_tokens": create_kwargs.get("max_tokens"),
+    }
     try:
         response = _client().messages.create(**create_kwargs)
     except Exception as exc:  # noqa: BLE001
@@ -343,10 +412,11 @@ def _run_one(
             predicted_verdict=None, predicted_reason=None, verdict_reasoning="",
             correct=False, prompt_tokens=0, completion_tokens=0, n_web_searches=0,
             cost_usd=0.0, latency_s=latency, error=f"messages.create: {exc}",
+            user_message=user_message, **decode_params,
         )
     latency = time.monotonic() - started
 
-    raw_text, n_searches = _extract_text(response)
+    raw_text, n_searches, search_log = _extract_text(response)
     usage = getattr(response, "usage", None)
     prompt_tokens = getattr(usage, "input_tokens", 0) or 0
     completion_tokens = getattr(usage, "output_tokens", 0) or 0
@@ -361,6 +431,13 @@ def _run_one(
         cache_read_tokens=cache_read_tokens,
     )
 
+    # Anthropic response metadata — small, durable, joinable.
+    api_meta = {
+        "api_response_id": getattr(response, "id", None),
+        "api_stop_reason": getattr(response, "stop_reason", None),
+        "api_model":       getattr(response, "model", None),
+    }
+
     parsed = _parse_json_response(raw_text)
     if parsed is None:
         return RunRecord(
@@ -370,6 +447,10 @@ def _run_one(
             correct=False, prompt_tokens=prompt_tokens, completion_tokens=completion_tokens,
             n_web_searches=n_searches, cost_usd=cost, latency_s=latency,
             error="could not parse JSON from response", raw_text=raw_text[:1000],
+            user_message=user_message, search_log=search_log,
+            cache_creation_tokens=cache_creation_tokens,
+            cache_read_tokens=cache_read_tokens,
+            **decode_params, **api_meta,
         )
     pred_v = parsed.get("verdict")
     pred_r = parsed.get("reason")
@@ -401,6 +482,8 @@ def _run_one(
         n_web_searches=n_searches, cost_usd=cost, latency_s=latency,
         cache_creation_tokens=cache_creation_tokens,
         cache_read_tokens=cache_read_tokens,
+        user_message=user_message, search_log=search_log,
+        **decode_params, **api_meta,
     )
 
 
