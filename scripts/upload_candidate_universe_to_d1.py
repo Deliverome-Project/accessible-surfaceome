@@ -24,7 +24,9 @@ Usage::
 
 Requires the standard Cloudflare env vars (CLOUDFLARE_ACCOUNT_ID,
 CLOUDFLARE_API_TOKEN) plus ``CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID``
-pointing at the public mirror DB.
+pointing at the public mirror DB. See ``.env.example`` for the full
+set and ``cloudflare/workers/surfaceome_api/wrangler.toml.example``
+for where the Worker reads the same UUID from.
 """
 
 from __future__ import annotations
@@ -43,11 +45,6 @@ import httpx
 from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
-
-# UUID of the public D1 (also hardcoded in cloudflare/d1_public_schema.sql
-# and scripts/sync_public_d1.py). Kept inline rather than read-only-from-env
-# so an operator without the env var still hits the right database.
-PUBLIC_DB_UUID = "257f5fc6-1211-492f-8bcb-d36b8c33eca5"
 
 # Cloudflare D1 caps SQL placeholders per statement at ~100. Each row has
 # 11 cols, so 8 rows per batch (88 placeholders) is the safe ceiling.
@@ -82,19 +79,21 @@ class D1:
 
 
 def _from_env() -> D1:
+    missing: list[str] = []
     acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
     token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
-    db = (
-        os.environ.get("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", "").strip()
-        or PUBLIC_DB_UUID
-    )
-    missing: list[str] = []
+    db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", "").strip()
     if not acct:
         missing.append("CLOUDFLARE_ACCOUNT_ID")
     if not token:
         missing.append("CLOUDFLARE_API_TOKEN")
+    if not db:
+        missing.append("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID")
     if missing:
-        raise SystemExit("Missing env vars: " + ", ".join(missing))
+        raise SystemExit(
+            "Missing env vars: " + ", ".join(missing)
+            + ". Add them to your .env; see .env.example for the full list."
+        )
     return D1(account_id=acct, database_id=db, api_token=token)
 
 

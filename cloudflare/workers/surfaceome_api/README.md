@@ -12,6 +12,7 @@ Read-only public API serving the `surfaceome_public` D1 mirror.
 | `GET` | `/v1/orthologs/:symbol` | Mouse + cyno ortholog identity from latest Compara release |
 | `GET` | `/v1/benchmark` | Full benchmark truth labels (latest bench_version) |
 | `GET` | `/v1/benchmark/:symbol` | Single gene's truth label |
+| `GET` | `/v1/catalog` | Genome-wide table — candidate-universe rows × DB flags × latest triage × deep-dive flag (drives the viewer's index) |
 | `GET` | `/v1/triage/:symbol` | Triage agent verdicts across (model × variant × replicate) — no costs |
 
 All responses are JSON. CORS open (`*`). Cache-Control: `public, max-age=60` on list endpoints, `public, max-age=86400` on per-gene records.
@@ -20,14 +21,29 @@ All responses are JSON. CORS open (`*`). Cache-Control: `public, max-age=60` on 
 
 Pre-reqs (one-time):
 
-1. The `surfaceome_public` D1 already exists (UUID in `wrangler.toml`).
-2. Schema applied: `cloudflare/d1_public_schema.sql` has been executed against it.
-3. Wrangler CLI installed locally: `npm i -g wrangler`, or use `npx wrangler ...`.
+1. The `surfaceome_public` D1 exists on the account. Its UUID lives in
+   your `.env` as `CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID` — **not** in the
+   repo. The committed `wrangler.toml.example` is a template with a
+   placeholder.
+2. Schema applied: `cloudflare/d1_public_schema.sql` has been executed
+   against it.
+3. Wrangler CLI installed locally: `npm i -g wrangler`, or use `npx
+   wrangler ...`.
+
+Bootstrap the local `wrangler.toml` from the template (gitignored):
+
+```bash
+cd cloudflare/workers/surfaceome_api
+
+# pull the UUID out of the repo-root .env
+set -a; source ../../../.env; set +a
+sed "s/REPLACE_WITH_PUBLIC_D1_UUID/${CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID}/" \
+  wrangler.toml.example > wrangler.toml
+```
 
 Deploy:
 
 ```bash
-cd cloudflare/workers/surfaceome_api
 npx wrangler deploy
 ```
 

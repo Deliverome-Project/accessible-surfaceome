@@ -20,6 +20,12 @@ __pycache__/
 .env
 *.log
 
+# Wrangler.toml for the public Worker carries the surfaceome_public D1 UUID
+# inline (wrangler doesn't interpolate env vars into D1 bindings), so the
+# real file is generated from wrangler.toml.example and gitignored. See
+# cloudflare/workers/surfaceome_api/README.md.
+cloudflare/workers/surfaceome_api/wrangler.toml
+
 # Managed Agents run logs and tool cache (gitignored — contain timestamps,
 # session IDs, and possibly upstream API responses)
 .runs/

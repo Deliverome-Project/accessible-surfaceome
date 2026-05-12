@@ -1,23 +1,35 @@
 # Cloudflare Worker that serves the public read-only Surfaceome API.
 #
-# Reads from the `surfaceome_public` D1 database (the public mirror of
-# `surfaceome_agents`). Designed to live under `api.deliverome.org/surfaceome/*`
-# or as a Workers-route on the existing Pages project.
+# Template — copy to `wrangler.toml` and fill in `database_id` below.
+# The real `wrangler.toml` is gitignored so the public D1 UUID stays
+# out of the public repo. Bootstrap one of two ways:
 #
-# This file is committed to the public repo. The D1 database ID below is
-# not a secret — it's just an identifier; access is gated by the D1
-# binding mechanism on the Cloudflare account.
+#   # 1. Manual:
+#   cp wrangler.toml.example wrangler.toml
+#   # then edit database_id to your CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID
+#
+#   # 2. From your .env (loads CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID):
+#   set -a; source ../../../.env; set +a
+#   sed "s/REPLACE_WITH_PUBLIC_D1_UUID/${CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID}/" \
+#     wrangler.toml.example > wrangler.toml
+#
+# Reads from the `surfaceome_public` D1 database (the public mirror of
+# `surfaceome_agents`). Designed to live under
+# `api.deliverome.org/surfaceome/*` or as a Workers-route on the existing
+# Pages project.
 
 name = "surfaceome-api"
 main = "src/index.js"
 compatibility_date = "2026-05-01"
 
 # Read-only binding to the public D1 mirror. The Worker code reads
-# `env.DB` and runs SQL against it.
+# `env.DB` and runs SQL against it. `wrangler deploy` parses
+# `database_id` literally — there's no env-var interpolation for D1
+# bindings, so the value must be substituted locally before deploy.
 [[d1_databases]]
 binding = "DB"
 database_name = "surfaceome_public"
-database_id = "257f5fc6-1211-492f-8bcb-d36b8c33eca5"
+database_id = "REPLACE_WITH_PUBLIC_D1_UUID"
 
 # Per-Worker observability: keep tail logs on so we can debug
 # production cache misses / 5xx without re-deploying with a verbose flag.

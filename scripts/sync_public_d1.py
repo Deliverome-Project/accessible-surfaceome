@@ -33,10 +33,12 @@ Usage::
     # Dry-run: print what would be written but don't write
     uv run python scripts/sync_public_d1.py --dry-run
 
-Requires the same Cloudflare env vars as the other D1 scripts. The
-public D1's UUID is hardcoded for visibility in the wrangler.toml; if
-you create a new public DB, update both this file and the
-wrangler.toml in lockstep.
+Requires the standard Cloudflare env vars (CLOUDFLARE_ACCOUNT_ID,
+CLOUDFLARE_API_TOKEN) plus CLOUDFLARE_D1_SURFACEOME_AGENTS_ID
+(source) and CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID (destination). The
+public mirror's UUID lives only in your `.env`; the Worker reads it
+from a local `wrangler.toml` generated from
+`cloudflare/workers/surfaceome_api/wrangler.toml.example`.
 """
 
 from __future__ import annotations
@@ -55,12 +57,6 @@ import httpx
 from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
-
-# IDs of the two D1 databases on the deliverome Cloudflare account. The
-# "private" one is the existing agent-runs DB; the "public" one is the
-# mirror created via the management API. Both are visible in
-# cloudflare/d1_*_schema.sql.
-PUBLIC_DB_UUID = "257f5fc6-1211-492f-8bcb-d36b8c33eca5"  # surfaceome_public
 
 # Batch size: Cloudflare D1 caps SQL parameters per statement around ~100,
 # so chunk multi-row INSERTs accordingly. compara_ortholog has 11 cols → 8 rows;
@@ -87,13 +83,21 @@ class D1:
         return f"{API_ROOT}/accounts/{self.account_id}/d1/database/{self.database_id}/query"
 
 
-def _from_env(db_uuid_env: str, fallback_uuid: str | None = None) -> D1:
-    acct = os.environ["CLOUDFLARE_ACCOUNT_ID"]
-    token = os.environ["CLOUDFLARE_API_TOKEN"]
-    db = os.environ.get(db_uuid_env) or fallback_uuid
+def _from_env(db_uuid_env: str) -> D1:
+    missing: list[str] = []
+    acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+    db = os.environ.get(db_uuid_env, "").strip()
+    if not acct:
+        missing.append("CLOUDFLARE_ACCOUNT_ID")
+    if not token:
+        missing.append("CLOUDFLARE_API_TOKEN")
     if not db:
+        missing.append(db_uuid_env)
+    if missing:
         raise SystemExit(
-            f"Missing env var {db_uuid_env} (and no fallback hardcoded)."
+            "Missing env vars: " + ", ".join(missing)
+            + ". Add them to your .env; see .env.example for the full list."
         )
     return D1(account_id=acct, database_id=db, api_token=token)
 
@@ -295,7 +299,7 @@ def main() -> int:
     args = ap.parse_args()
 
     priv = _from_env("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID")
-    pub = _from_env("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", fallback_uuid=PUBLIC_DB_UUID)
+    pub = _from_env("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID")
     logger.info("private DB: %s", priv.database_id)
     logger.info("public  DB: %s", pub.database_id)
 
