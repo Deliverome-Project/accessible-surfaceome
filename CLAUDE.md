@@ -42,21 +42,23 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 - `bash scripts/check-py.sh` runs ruff + ty + compile + pytest.
 - Use `uv run pre-commit run --all-files --config .pre-commit-config.yaml` before PR.
 
-## Managed Agents — push prompt + schema edits before annotating
+## Managed Agents — auto-sync on drift
 
-The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time. Editing a file under `src/accessible_surfaceome/agents/<name>/prompts/system.md` does **NOT** push the change; `annotate` and `triage` will keep running against the previously-registered prompt.
+The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
 
-**Always run `uv run accessible-surfaceome agents sync` after editing:**
+**Auto-sync is wired into the annotator orchestrator.** When `annotate` runs, it sha-checks the local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. The sync is a single idempotent metadata round-trip (no model call, no extra spend). You no longer need to remember `agents sync` after editing:
 
-- any `src/accessible_surfaceome/agents/*/prompts/*.md`
-- the agent payload in `src/accessible_surfaceome/agents/*/agent.py` (model, tool list, etc.)
-- the SurfaceomeRecord / SurfaceomeRecordDraft schema in `src/accessible_surfaceome/tools/_shared/models.py` if the prompt references the new shape
+- any `src/accessible_surfaceome/agents/surface_annotator/prompts/*.md`
+- the agent payload in `src/accessible_surfaceome/agents/surface_annotator/agent.py`
+- the `SurfaceomeRecord` / `SurfaceomeRecordDraft` schema in `src/accessible_surfaceome/tools/_shared/models.py` (when the prompt references the new shape)
 
-`agents sync` is cheap (one metadata round-trip per agent, no model call) and idempotent — it diffs the local `system.md` sha256 against `.runs/agents-registry.json` and `PATCH`es the agent only when the sha changed. The registry is local (per-worktree, gitignored under `.runs/`) so each worktree tracks its own remote agent version.
+`uv run accessible-surfaceome agents sync` still works as a manual command for cases where you want to push prompt changes without triggering a full annotate run (CI, schema-only edits, dry-run verification).
 
-If you skip sync, the orchestrator now logs a loud `PROMPT DRIFT` warning at the start of every run, naming the stale sha and pointing at the sync command. It does not fail the run — but the run will use the **stale** prompt and may emit a degraded (older-schema-shape) record, wasting model spend.
+**Escape hatch.** Set `ANNOTATE_NO_AUTO_SYNC=1` in the environment to disable auto-sync — the orchestrator falls back to the historical loud `PROMPT DRIFT` warning and runs against the stale remote prompt. Use this on experimental branches that should NOT push their prompt to the production-registered managed agent.
 
-**Why this matters:** the surface_annotator run is ~$0.30–0.50 on Sonnet 4.6. Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
+The registry is local (per-worktree, gitignored under `.runs/`) so each worktree tracks its own remote agent version. surface_triage runs through a different code path and doesn't use the Managed Agent registry, so it's not part of the auto-sync.
+
+**Why auto-sync matters:** the surface_annotator run is ~$0.30–0.50 on Sonnet 4.6. Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
 
 ## Agent Command Allowlist
 

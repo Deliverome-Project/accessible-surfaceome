@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -162,23 +163,55 @@ def _annotate_one(
     agent_entry = reg.agents[_agent.AGENT_NAME]
     env_entry = reg.environments[_environment.ENVIRONMENT_NAME]
 
-    # Drift check: the Managed Agent on Anthropic's side keeps its own
-    # snapshot of the system prompt; ``accessible-surfaceome agents sync``
-    # pushes local edits. If the registry's sha doesn't match the prompt
-    # on disk, the run will use the STALE prompt and silently emit a
-    # degraded record — every ~$0.30–0.50 burnt on an outdated shape.
-    # Loud warning so the operator notices before a batch run.
+    # Drift check + auto-sync: the Managed Agent on Anthropic's side
+    # keeps its own snapshot of the system prompt;
+    # ``accessible-surfaceome agents sync`` pushes local edits. If the
+    # registry's sha doesn't match the prompt on disk, the run would
+    # use the STALE prompt and silently emit a degraded record (every
+    # ~$0.30–0.50 burnt on an outdated shape). To eliminate the
+    # "forgot to sync" failure mode, auto-sync inline at the start of
+    # every run when drift is detected. The sync is a single idempotent
+    # metadata round-trip — no model call, no extra spend.
+    #
+    # Disable via ANNOTATE_NO_AUTO_SYNC=1 in environments where the
+    # local prompt should NOT be pushed to the managed agent (e.g.
+    # experimental branches that should not affect the registered
+    # production prompt). When disabled, the operator gets the
+    # historical loud warning and the run proceeds against the stale
+    # remote prompt.
     current_prompt_sha = _registry.sha256(_agent.read_system_prompt())
     if agent_entry.system_prompt_sha256 != current_prompt_sha:
-        logger.warning(
-            "PROMPT DRIFT: local system.md sha256=%s does not match registered "
-            "agent (version=%s, registered sha256=%s). The agent is running with "
-            "a STALE prompt. Run `accessible-surfaceome agents sync` to push the "
-            "current prompt before annotating.",
-            current_prompt_sha,
-            agent_entry.version,
-            agent_entry.system_prompt_sha256,
-        )
+        auto_sync = os.environ.get("ANNOTATE_NO_AUTO_SYNC") != "1"
+        if auto_sync:
+            logger.info(
+                "PROMPT DRIFT: local system.md sha256=%s does not match registered "
+                "agent (version=%s, registered sha256=%s). Auto-syncing now.",
+                current_prompt_sha,
+                agent_entry.version,
+                agent_entry.system_prompt_sha256,
+            )
+            sync_result = sync_agent_and_environment(client)
+            logger.info(
+                "Auto-sync complete: agent_id=%s, version=%s, agent_changed=%s, "
+                "environment_changed=%s",
+                sync_result.agent_id,
+                sync_result.agent_version,
+                sync_result.agent_changed,
+                sync_result.environment_changed,
+            )
+            # Reload registry so the rest of this run sees the new sha.
+            reg = _registry.load()
+            agent_entry = reg.agents[_agent.AGENT_NAME]
+        else:
+            logger.warning(
+                "PROMPT DRIFT (ANNOTATE_NO_AUTO_SYNC=1): local system.md sha256=%s "
+                "does not match registered agent (version=%s, registered sha256=%s). "
+                "Run `accessible-surfaceome agents sync` manually to push the prompt; "
+                "this run will use the STALE remote prompt.",
+                current_prompt_sha,
+                agent_entry.version,
+                agent_entry.system_prompt_sha256,
+            )
 
     source_store = SourceTextStore()
     retraction_index = _retraction_watch.from_http(http)
