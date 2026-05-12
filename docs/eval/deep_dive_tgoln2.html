@@ -1,0 +1,1358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TGOLN2 — surface_annotator deep dive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..700;1,400..600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #BC3C4C; --secondary: #3D6B60; --accent: #F4AA28;
+  --bg: #FBF7F2; --bg-warm: #F3ECE5; --ink: #1F1718; --line: #E6DAD4;
+  --neutral: #6F5D5A; --code-bg: #F5EFE8; --code-line: #E6DAD4;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); }
+body { font-family: "Manrope", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  font-size: 15.5px; line-height: 1.6; color: var(--ink); font-weight: 400; }
+header { background: linear-gradient(135deg, #F3ECE5 0%, #FBF7F2 100%);
+  border-bottom: 1px solid var(--line); padding: 36px 48px 28px; }
+header .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--primary); margin: 0 0 8px 0; }
+header h1 { font-family: "Playfair Display", Georgia, serif; font-weight: 600;
+  font-size: 38px; letter-spacing: -0.02em; margin: 0 0 12px 0; color: var(--ink); }
+header .tagline { color: var(--neutral); font-size: 14.5px; margin: 0 0 16px 0; max-width: 720px; }
+header .meta-row { display: flex; flex-wrap: wrap; gap: 8px; font-size: 12.5px; }
+header .meta-row .chip { display: inline-flex; align-items: center; gap: 6px;
+  background: white; border: 1px solid var(--line); padding: 4px 12px;
+  border-radius: 999px; color: var(--neutral); font-weight: 500; }
+header .meta-row .chip strong { color: var(--ink); font-weight: 600; }
+nav { position: sticky; top: 0; background: rgba(251, 247, 242, 0.95);
+  backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); padding: 12px 48px;
+  display: flex; gap: 6px; z-index: 10; flex-wrap: wrap; }
+nav a { color: var(--neutral); text-decoration: none; font-size: 13px;
+  font-weight: 500; padding: 6px 12px; border-radius: 999px; }
+nav a:hover { background: var(--bg-warm); color: var(--primary); }
+main { max-width: 1040px; margin: 0 auto; padding: 36px 48px 96px; }
+section { margin-bottom: 56px; scroll-margin-top: 80px; }
+section h2 { font-family: "Playfair Display", Georgia, serif; font-weight: 600;
+  font-size: 26px; letter-spacing: -0.01em; margin: 0 0 6px 0; color: var(--ink); }
+section h2::after { content: ""; display: block; width: 48px; height: 3px;
+  margin-top: 10px; background: var(--primary); border-radius: 2px; }
+section .lede { color: var(--neutral); font-size: 13.5px; margin: 0 0 20px 0; }
+.kv { display: grid; grid-template-columns: 220px 1fr; gap: 6px 18px;
+  background: white; border: 1px solid var(--line); border-radius: 10px; padding: 18px 24px; }
+.kv dt { color: var(--neutral); font-weight: 500; font-size: 13.5px; }
+.kv dd { margin: 0; color: var(--ink); font-size: 14.5px; }
+.rationale, .reasoning { background: white; border: 1px solid var(--line);
+  border-left: 4px solid var(--primary); border-radius: 8px; padding: 22px 28px;
+  white-space: pre-wrap; font-size: 15px; }
+.reasoning { border-left-color: var(--secondary); }
+.evi { background: white; border: 1px solid var(--line); border-radius: 8px;
+  padding: 16px 22px; margin-bottom: 14px; }
+.evi-head { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 8px; }
+.evi-id { font-family: "JetBrains Mono", Menlo, monospace; font-size: 12.5px;
+  color: var(--neutral); font-weight: 600; }
+.evi-claim { font-size: 14.5px; line-height: 1.55; color: var(--ink); }
+.evi-spans { margin-top: 8px; font-size: 12.5px; color: var(--neutral); }
+.evi-spans a { color: var(--secondary); text-decoration: none; font-weight: 500; }
+.evi-spans a:hover { text-decoration: underline; }
+.chip { display: inline-flex; align-items: center; padding: 2px 10px;
+  border-radius: 999px; font-size: 11px; font-weight: 600;
+  background: var(--bg-warm); color: var(--neutral); border: 1px solid var(--line); }
+.chip-primary { background: #fde8eb; color: var(--primary); border-color: #f4c8cf; }
+.chip-secondary { background: #e3eee9; color: var(--secondary); border-color: #c7ddd1; }
+.chip-supports { background: #e8f0e3; color: #4a7c3a; border-color: #cfdfc4; }
+.chip-refutes { background: #fce8e8; color: #b34646; border-color: #f0c8c8; }
+.chip-neutral { background: #f0ece6; color: var(--neutral); border-color: var(--line); }
+.induced, .assay { background: white; border: 1px solid var(--line); border-radius: 8px;
+  padding: 14px 20px; margin-bottom: 12px; }
+.induced p { margin: 6px 0 8px 0; font-size: 14px; }
+.cited { font-size: 12px; color: var(--neutral); font-family: "JetBrains Mono", Menlo, monospace; }
+.nil { color: var(--neutral); font-style: italic; }
+table.searchlog { width: 100%; border-collapse: collapse; background: white;
+  border: 1px solid var(--line); border-radius: 8px; overflow: hidden; font-size: 13.5px; }
+table.searchlog th { background: var(--bg-warm); text-align: left; padding: 10px 14px;
+  font-weight: 600; color: var(--neutral); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+table.searchlog td { padding: 8px 14px; border-top: 1px solid var(--line); vertical-align: top; }
+table.searchlog code { font-family: "JetBrains Mono", Menlo, monospace; font-size: 12px;
+  background: var(--code-bg); padding: 1px 6px; border-radius: 4px; color: var(--ink); }
+details.raw { background: var(--code-bg); border: 1px solid var(--code-line);
+  border-radius: 8px; padding: 0; margin-top: 12px; }
+details.raw summary { cursor: pointer; padding: 12px 18px; font-weight: 600;
+  color: var(--neutral); font-size: 13px; }
+details.raw pre { margin: 0; padding: 16px 22px; max-height: 480px; overflow: auto;
+  font-family: "JetBrains Mono", Menlo, monospace; font-size: 11.5px; line-height: 1.5; }
+footer { max-width: 1040px; margin: 0 auto; padding: 24px 48px 64px;
+  color: var(--neutral); font-size: 12.5px; border-top: 1px solid var(--line); }
+</style>
+</head>
+<body>
+<header>
+  <p class="eyebrow">surface_annotator deep dive · v0.5.0</p>
+  <h1>TGOLN2 <span style="color: var(--neutral); font-weight: 400; font-size: 24px;">(O43493)</span></h1>
+  <p class="tagline">TGOLN2 (TGN46) is a TGN-resident cycling protein with a large ~360 aa extracellular lumenal domain transiently exposed at the PM during constitutive TGN↔PM cycling. No therapeutic programs documented. Very low steady-state PM fraction limits practical extracellular engagement.</p>
+  <div class="meta-row">
+    <span class="chip"><strong>Tier:</strong> novel_candidate</span>
+    <span class="chip"><strong>Confidence:</strong> high</span>
+    <span class="chip"><strong>Triage signal:</strong> possibly_accessible</span>
+    <span class="chip"><strong>Model:</strong> sonnet_only</span>
+    <span class="chip"><strong>Evidence:</strong> 12 (5 primary / 7 secondary)</span>
+  </div>
+</header>
+<nav>
+  <a href="#summary">Summary</a>
+  <a href="#rationale">Rationale</a>
+  <a href="#surface">Surface biology</a>
+  <a href="#induced">Induced presentation</a>
+  <a href="#assays">Assays</a>
+  <a href="#features">Protein features</a>
+  <a href="#evidence">Evidence (12)</a>
+  <a href="#search">Search log</a>
+  <a href="#raw">Raw JSON</a>
+</nav>
+<main>
+
+<section id="summary">
+  <h2>Summary</h2>
+  <p class="lede">gene → uniprot → triage signal in one glance.</p>
+  <dl class="kv">
+    <dt>HGNC symbol</dt><dd>TGOLN2 (HGNC:15450)</dd>
+    <dt>UniProt accession</dt><dd><a href="https://www.uniprot.org/uniprotkb/O43493" target="_blank" rel="noopener">O43493</a></dd>
+    <dt>NCBI gene ID</dt><dd><a href="https://www.ncbi.nlm.nih.gov/gene/10618" target="_blank" rel="noopener">10618</a></dd>
+    <dt>Ensembl gene</dt><dd>ENSG00000152291</dd>
+    <dt>Canonical isoform</dt><dd>O43493-2</dd>
+    <dt>Surface status</dt><dd>conditional_surface</dd>
+    <dt>Topology</dt><dd>transmembrane_single_pass</dd>
+    <dt>Anchor type</dt><dd>transmembrane_single</dd>
+    <dt>Exposure class</dt><dd>exposed_ecd</dd>
+  </dl>
+</section>
+
+<section id="rationale">
+  <h2>Rationale</h2>
+  <p class="lede">Sonnet's synthesis across the evidence pool.</p>
+  <div class="rationale">TGOLN2 (TGN46/TGN51) is a type-I single-pass TM glycoprotein residing primarily in the trans-Golgi network but constitutively cycling to the plasma membrane via PKD-dependent CARTS carriers. UniProt O43493-2 canonical topology: signal peptide (aa 1-21), N-terminal lumenal domain (aa 22-381, ~360 aa), single TM helix (aa 382-402), cytoplasmic tail with YQRL motif (aa 403-437). When at the PM, the ~360 aa lumenal domain carrying 9 N-linked glycosylation sites and mucin-like repeats is fully extracellular, making this an exposed_ecd protein at the surface. The YQRL tyrosine-based motif recruits AP2 clathrin adaptors for rapid PM internalization; retromer/retriever complexes drive retrograde transport from early endosomes back to TGN, keeping steady-state PM fraction low. Three named isoforms (TGN46, TGN48, TGN51) differ in cytoplasmic tyrosine motif complement: TGN51 uniquely retained at TGN even with mutated YQRL due to additional motifs. DB panel: 3/8 sources vote surface (SURFY ML, UniProt query, DeepTMHMM); CSPA absent (PM fraction too low for MS detection); no HPA antibody. No shedding documented; no close human paralogs (Pfam PF17818 unique to TGOLN2); no therapeutic programs reported. Cynomolgus one-to-one ortholog at 81.01% identity; concordant surface behavior likely but not independently verified.</div>
+  <h3 style="margin: 24px 0 8px 0; font-family: 'Playfair Display'; font-size: 18px;">Confidence reasoning</h3>
+  <div class="reasoning">Multiple independent lines of evidence establish constitutive TGN↔PM cycling for human TGN46 (TGOLN2): Ponnambalam 1996 directly demonstrates cell-surface presence and endosomal return; Lujan 2024 (eLife) characterizes human TGN46 as a type-I single-pass TM protein cycling TGN↔PM in CARTS; Stephens &amp; Banting 1999 documents constitutive cycling via AP2/YQRL; CLEM (Krentzel 2025) directly visualizes TGN46+ carriers en route to PM; Li 2025 confirms retromer-dependent endosomal return. UniProt annotates both Cell membrane and TGN membrane. The ~360 aa extracellular domain is large, N-glycosylated, and fully exposed when at PM. Conditional_surface/trafficking_cycling is explicitly cited as canonical in the task schema for TGN46. DB split (3/8) reflects predominantly TGN localization; absence from CSPA is expected given very low steady-state PM fraction. No human paralogs identified (Pfam PF17818 unique to TGOLN2 in human). No shedding documented. Confidence is high on mechanism; the low steady-state PM fraction is a practical but not theoretical limitation.</div>
+</section>
+
+<section id="surface">
+  <h2>Surface biology</h2>
+  <dl class="kv">
+    <dt>Surface status</dt><dd>conditional_surface</dd>
+    <dt>Topology</dt><dd>transmembrane_single_pass</dd>
+    <dt>Anchor type</dt><dd>transmembrane_single</dd>
+    <dt>Exposure class</dt><dd>exposed_ecd</dd>
+    <dt>Extracellular domain size (aa)</dt><dd>360</dd>
+    <dt>Accessibility</dt><dd>accessible</dd>
+    <dt>Shedding documented</dt><dd>no</dd>
+  </dl>
+  <p class="lede" style="margin-top: 16px;">~360 aa lumenal domain (aa 22–381, post signal-peptide cleavage) with 9 N-linked glycosylation sites and mucin-like repeats; fully extracellular when protein reaches PM during trafficking cycle</p>
+</section>
+
+<section id="induced">
+  <h2>Induced presentation</h2>
+  <p class="lede">Context-specific contexts where the protein reaches the cell surface.</p>
+
+        <div class='induced'>
+          <div class='induced-head'><strong>trafficking_cycling</strong> <span class='nil'>· cell context: any</span></div>
+          <p>TGOLN2 constitutively cycles from TGN to PM via PKD-dependent CARTS carriers, transiently inserting its ~360 aa lumenal domain into the extracellular space. It returns to TGN via AP2/clathrin internalization (YQRL motif) and retromer-dependent retrograde endosomal transport. Steady-state PM fraction is low.</p>
+          <div class='cited'>cited evidence: evi_004, evi_005, evi_009</div>
+        </div>
+</section>
+
+<section id="assays">
+  <h2>Surface-localization assays</h2>
+  <p class="lede">Experimental observations of PM localization.</p>
+
+        <div class='assay'>
+          <div><strong>—</strong> <span class='nil'>· —</span></div>
+          <div>—</div>
+          <div class='cited'>cited evidence: evi_004</div>
+        </div>
+
+        <div class='assay'>
+          <div><strong>—</strong> <span class='nil'>· —</span></div>
+          <div>—</div>
+          <div class='cited'>cited evidence: evi_009</div>
+        </div>
+</section>
+
+<section id="features">
+  <h2>Protein features</h2>
+  <dl class="kv">
+    <dt>Length (aa)</dt><dd>480</dd>
+    <dt>TM domain count</dt><dd>1</dd>
+    <dt>Signal peptide</dt><dd>no</dd>
+    <dt>Topology string</dt><dd><code>SP:1-22;NC:23-384;TM:385-402;CY:403-480</code></dd>
+    <dt>UniProt keywords</dt><dd>Alternative splicing, Cell membrane, Complete proteome, Glycoprotein, Golgi apparatus, Membrane, Phosphoprotein, Polymorphism, Reference proteome, Repeat, Signal, Transmembrane, Transmembrane helix</dd>
+    <dt>SURFY ML score</dt><dd>0.5928</dd>
+    <dt>Almén class</dt><dd>Unclassified</dd>
+    <dt>CD designation</dt><dd><span class='nil'>—</span></dd>
+  </dl>
+</section>
+
+<section id="evidence">
+  <h2>Evidence (12)</h2>
+  <p class="lede">Each evidence packet is a claim with at least one supporting source span (UniProt / PubMed / PMC).</p>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_001</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>UniProt annotates TGOLN2 (O43493) subcellular locations as Cell membrane and Golgi apparatus trans-Golgi network membrane.</div>
+          <div class='evi-spans'>Sources: <a href='https://www.uniprot.org/uniprotkb/UniProt:O43493' target='_blank' rel='noopener'>uniprot:UniProt:O43493</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_002</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>UniProt topology for TGOLN2 shows a single transmembrane helix at residues 382-402.</div>
+          <div class='evi-spans'>Sources: <a href='https://www.uniprot.org/uniprotkb/UniProt:O43493' target='_blank' rel='noopener'>uniprot:UniProt:O43493</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_003</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>db_annotation</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>UniProt functional annotation positions TGOLN2 as a regulator of membrane traffic to and from the trans-Golgi network.</div>
+          <div class='evi-spans'>Sources: <a href='https://www.uniprot.org/uniprotkb/UniProt:O43493' target='_blank' rel='noopener'>uniprot:UniProt:O43493</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_004</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>Human TGN46 is present on the cell surface and returns to the TGN via endosomes, demonstrating constitutive TGN-to-PM cycling.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:8907712/' target='_blank' rel='noopener'>pubmed:PMID:8907712</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_005</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>TGN38 (rat ortholog of human TGN46/TGOLN2) constitutively cycles between TGN and plasma membrane as a type-I integral membrane protein.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:10514494/' target='_blank' rel='noopener'>pubmed:PMID:10514494</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_006</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>The cytoplasmic SDYQRL tyrosine motif of TGN38/TGN46 mediates AP2 clathrin adaptor binding to drive PM internalization and TGN retrieval.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:10514494/' target='_blank' rel='noopener'>pubmed:PMID:10514494</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_007</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>Human TGN46 (TGOLN2) is a type-I single-pass TM protein that cycles between TGN and PM, consistent with a cargo receptor role.</div>
+          <div class='evi-spans'>Sources: <a href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC:PMC10928510/' target='_blank' rel='noopener'>pmc:PMC:PMC10928510</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_008</span>
+            <span class='chip chip-secondary'>secondary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>review_assertion</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>Human TGN46 has an N-terminal lumenal domain spanning residues 22-381, which faces the extracellular space when the protein is at the PM.</div>
+          <div class='evi-spans'>Sources: <a href='https://www.ncbi.nlm.nih.gov/pmc/articles/PMC:PMC10928510/' target='_blank' rel='noopener'>pmc:PMC:PMC10928510</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_009</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>GFP-TGN46 lacking its cytoplasmic retrieval tail partially accumulates at the PM, confirming constitutive TGN-to-PM delivery of the protein.</div>
+
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_010</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: moderate</span>
+          </div>
+          <div class='evi-claim'>TGOLN2 isoform TGN51 has a unique function in shuttling between the cell surface and TGN, supported by additional tyrosine-containing cytoplasmic motifs.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:9422759/' target='_blank' rel='noopener'>pubmed:PMID:9422759</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_011</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>TGN46 is a well-established retrograde cargo cycling between early endosomes and the TGN via retromer; KO of retromer/retriever causes endosomal accumulation.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:40439270/' target='_blank' rel='noopener'>pubmed:PMID:40439270</a></div>
+        </div>
+
+        <div class='evi'>
+          <div class='evi-head'>
+            <span class='evi-id'>evi_012</span>
+            <span class='chip chip-primary'>primary</span> <span class='chip chip-supports'>supports</span> <span class='chip'>immunofluorescence</span> <span class='chip'>conf: strong</span>
+          </div>
+          <div class='evi-claim'>Volume CLEM directly visualized TGN46-positive transport carriers actively trafficking from the trans-Golgi network to the plasma membrane.</div>
+          <div class='evi-spans'>Sources: <a href='https://pubmed.ncbi.nlm.nih.gov/PMID:40931193/' target='_blank' rel='noopener'>pubmed:PMID:40931193</a></div>
+        </div>
+</section>
+
+<section id="search">
+  <h2>Search log</h2>
+  <p class="lede">Queries the deep-dive agent issued during evidence gathering.</p>
+
+    <table class='searchlog'>
+      <thead><tr><th>query</th><th>source</th><th>n_results</th></tr></thead>
+      <tbody><tr><td><code>{&#x27;symbol_or_acc&#x27;: &#x27;TGOLN2&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;symbol_or_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;symbol_or_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;uniprot_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>62</td></tr><tr><td><code>{&#x27;pmid&#x27;: 8907712}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 10514494}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 38466628}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;topic_anchors&#x27;: [&#x27;shedding&#x27;, &#x27;surface_biotinylation&#x27;, &#x27;mass_spec_surfaceome&#x27;], &#x27;uniprot_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>543</td></tr><tr><td><code>{&#x27;topic_anchors&#x27;: [&#x27;surface_expression&#x27;, &#x27;flow_cytometry&#x27;], &#x27;uniprot_acc&#x27;: &#x27;O43493&#x27;}</code></td><td>—</td><td>2915</td></tr><tr><td><code>{&#x27;pmcid&#x27;: &#x27;PMC10928510&#x27;}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 14743217}</code></td><td>—</td><td>1</td></tr><tr><td><code>{&#x27;pmid&#x27;: 40439270}</code></td><td>—</td><td>1</td></tr></tbody>
+    </table>
+</section>
+
+<section id="raw">
+  <h2>Raw JSON</h2>
+  <p class="lede">Full annotation record as emitted by the surface_annotator agent.</p>
+  <details class="raw">
+    <summary>Show / hide (30,940 chars)</summary>
+    <pre>{
+  &quot;schema_version&quot;: &quot;v0.5.0&quot;,
+  &quot;gene&quot;: {
+    &quot;hgnc_symbol&quot;: &quot;TGOLN2&quot;,
+    &quot;hgnc_id&quot;: &quot;HGNC:15450&quot;,
+    &quot;uniprot_acc&quot;: &quot;O43493&quot;,
+    &quot;ncbi_gene_id&quot;: 10618,
+    &quot;ensembl_gene&quot;: &quot;ENSG00000152291&quot;
+  },
+  &quot;canonical_isoform&quot;: &quot;O43493-2&quot;,
+  &quot;isoform_flattened&quot;: false,
+  &quot;protein_features&quot;: {
+    &quot;protein_length_aa&quot;: 480,
+    &quot;tm_domain_count&quot;: 1,
+    &quot;signal_peptide&quot;: false,
+    &quot;topology_string&quot;: &quot;SP:1-22;NC:23-384;TM:385-402;CY:403-480&quot;,
+    &quot;topology_source&quot;: &quot;uniprot&quot;,
+    &quot;almen_main_class&quot;: &quot;Unclassified&quot;,
+    &quot;almen_sub_class&quot;: &quot;Unclassified&quot;,
+    &quot;cd_designation&quot;: null,
+    &quot;uniprot_keywords&quot;: [
+      &quot;Alternative splicing&quot;,
+      &quot;Cell membrane&quot;,
+      &quot;Complete proteome&quot;,
+      &quot;Glycoprotein&quot;,
+      &quot;Golgi apparatus&quot;,
+      &quot;Membrane&quot;,
+      &quot;Phosphoprotein&quot;,
+      &quot;Polymorphism&quot;,
+      &quot;Reference proteome&quot;,
+      &quot;Repeat&quot;,
+      &quot;Signal&quot;,
+      &quot;Transmembrane&quot;,
+      &quot;Transmembrane helix&quot;
+    ],
+    &quot;pdb_ids&quot;: [],
+    &quot;cspa_peptide_count&quot;: null,
+    &quot;hpa_antibody_available&quot;: false,
+    &quot;drugbank_ids&quot;: [],
+    &quot;surfy_ml_score&quot;: 0.5928,
+    &quot;surfy_label_source&quot;: &quot;machine learning&quot;,
+    &quot;provenance&quot;: &quot;surfy_snapshot&quot;
+  },
+  &quot;targetability&quot;: {
+    &quot;tier&quot;: &quot;novel_candidate&quot;,
+    &quot;tldr&quot;: &quot;TGOLN2 (TGN46) is a TGN-resident cycling protein with a large ~360 aa extracellular lumenal domain transiently exposed at the PM during constitutive TGN\u2194PM cycling. No therapeutic programs documented. Very low steady-state PM fraction limits practical extracellular engagement.&quot;,
+    &quot;cited_evidence_ids&quot;: [
+      &quot;evi_004&quot;,
+      &quot;evi_007&quot;
+    ]
+  },
+  &quot;surface_biology&quot;: {
+    &quot;surface_status&quot;: &quot;conditional_surface&quot;,
+    &quot;topology&quot;: &quot;transmembrane_single_pass&quot;,
+    &quot;anchor_type&quot;: &quot;transmembrane_single&quot;,
+    &quot;exposure_class&quot;: &quot;exposed_ecd&quot;,
+    &quot;extracellular_domain&quot;: {
+      &quot;size_aa&quot;: 360,
+      &quot;domains&quot;: [
+        &quot;mucin-like tandem repeat region&quot;,
+        &quot;N-glycosylated lumenal domain&quot;
+      ],
+      &quot;accessibility&quot;: &quot;accessible&quot;,
+      &quot;notes&quot;: &quot;~360 aa lumenal domain (aa 22\u2013381, post signal-peptide cleavage) with 9 N-linked glycosylation sites and mucin-like repeats; fully extracellular when protein reaches PM during trafficking cycle&quot;
+    },
+    &quot;induced_presentation&quot;: [
+      {
+        &quot;context_kind&quot;: &quot;trafficking_cycling&quot;,
+        &quot;context_kind_other_label&quot;: null,
+        &quot;description&quot;: &quot;TGOLN2 constitutively cycles from TGN to PM via PKD-dependent CARTS carriers, transiently inserting its ~360 aa lumenal domain into the extracellular space. It returns to TGN via AP2/clathrin internalization (YQRL motif) and retromer-dependent retrograde endosomal transport. Steady-state PM fraction is low.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_004&quot;,
+          &quot;evi_005&quot;,
+          &quot;evi_009&quot;
+        ],
+        &quot;cell_context&quot;: null
+      }
+    ],
+    &quot;surface_localization_assays&quot;: [
+      {
+        &quot;assay_type&quot;: &quot;immunofluorescence_intact_cells&quot;,
+        &quot;assay_type_other_label&quot;: null,
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;transfected HeLa and primate cell lines&quot;,
+        &quot;direction&quot;: &quot;supports_surface&quot;,
+        &quot;strength&quot;: &quot;moderate&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_004&quot;
+        ],
+        &quot;cell_context&quot;: null,
+        &quot;mass_spec_detail&quot;: null,
+        &quot;antibody&quot;: {
+          &quot;clone&quot;: null,
+          &quot;catalog_number&quot;: null,
+          &quot;vendor&quot;: null,
+          &quot;rrid&quot;: null,
+          &quot;url&quot;: null,
+          &quot;target_epitope&quot;: &quot;TGN46/TGN38 lumenal domain&quot;,
+          &quot;notes&quot;: &quot;Anti-TGN46/TGN38 antibody used to demonstrate cell-surface presence and endosomal return in Ponnambalam et al. 1996&quot;
+        }
+      },
+      {
+        &quot;assay_type&quot;: &quot;immunofluorescence_intact_cells&quot;,
+        &quot;assay_type_other_label&quot;: null,
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;HeLa&quot;,
+        &quot;direction&quot;: &quot;supports_surface&quot;,
+        &quot;strength&quot;: &quot;moderate&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_009&quot;
+        ],
+        &quot;cell_context&quot;: {
+          &quot;material_kind&quot;: &quot;cell_line&quot;,
+          &quot;material_kind_other_label&quot;: null,
+          &quot;cell_type&quot;: &quot;HeLa cervical carcinoma&quot;,
+          &quot;cell_line_name&quot;: &quot;HeLa&quot;,
+          &quot;cellosaurus_id&quot;: &quot;CVCL_0030&quot;,
+          &quot;tissue&quot;: null,
+          &quot;disease_state&quot;: null,
+          &quot;activation_state&quot;: null
+        },
+        &quot;mass_spec_detail&quot;: null,
+        &quot;antibody&quot;: {
+          &quot;clone&quot;: null,
+          &quot;catalog_number&quot;: null,
+          &quot;vendor&quot;: &quot;AbD Serotec&quot;,
+          &quot;rrid&quot;: null,
+          &quot;url&quot;: null,
+          &quot;target_epitope&quot;: &quot;TGN46 lumenal/extracellular domain&quot;,
+          &quot;notes&quot;: &quot;Sheep anti-human TGN46 (AbD Serotec); GFP-TGN46-\u0394cyt PM accumulation observed by fluorescence microscopy in Lujan et al. 2024&quot;
+        }
+      }
+    ],
+    &quot;glycosylation&quot;: true,
+    &quot;shedding_documented&quot;: false,
+    &quot;microdomains&quot;: [
+      {
+        &quot;microdomain&quot;: &quot;tgn_membrane&quot;,
+        &quot;microdomain_other_label&quot;: null,
+        &quot;notes&quot;: &quot;Primary steady-state localization; TGOLN2 is predominantly TGN-resident, functioning in cargo sorting into CARTS transport carriers for TGN-to-PM export.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_003&quot;,
+          &quot;evi_007&quot;
+        ]
+      },
+      {
+        &quot;microdomain&quot;: &quot;clathrin_coated_pit&quot;,
+        &quot;microdomain_other_label&quot;: null,
+        &quot;notes&quot;: &quot;AP2 clathrin adaptor complex recognizes the YQRL tyrosine-based motif in the cytoplasmic tail to mediate rapid PM internalization and TGN retrieval.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_006&quot;
+        ]
+      },
+      {
+        &quot;microdomain&quot;: &quot;endosomal_recycling&quot;,
+        &quot;microdomain_other_label&quot;: null,
+        &quot;notes&quot;: &quot;After PM internalization, TGOLN2 undergoes retromer-dependent retrograde transport from early endosomes back to TGN; retromer/retriever KO causes early-endosome accumulation.&quot;,
+        &quot;cited_evidence_ids&quot;: [
+          &quot;evi_011&quot;
+        ]
+      }
+    ],
+    &quot;db_comparison&quot;: {
+      &quot;surfy&quot;: true,
+      &quot;cspa&quot;: false,
+      &quot;uniprot_query&quot;: true,
+      &quot;go&quot;: false,
+      &quot;hpa&quot;: false,
+      &quot;deeptmhmm&quot;: true,
+      &quot;compartments&quot;: false,
+      &quot;patent_handle&quot;: false,
+      &quot;n_sources_voting_surface&quot;: 3
+    },
+    &quot;cited_evidence_ids&quot;: [
+      &quot;evi_004&quot;,
+      &quot;evi_009&quot;
+    ]
+  },
+  &quot;surface_engagement_validation&quot;: {
+    &quot;preclinical_evidence&quot;: []
+  },
+  &quot;risk_flags&quot;: [],
+  &quot;isoform_accessibility&quot;: [
+    {
+      &quot;isoform_id&quot;: &quot;O43493-2&quot;,
+      &quot;name&quot;: &quot;TGN46&quot;,
+      &quot;is_canonical&quot;: true,
+      &quot;length_aa&quot;: 437,
+      &quot;surface_status&quot;: &quot;conditional_surface&quot;,
+      &quot;exposure_class&quot;: &quot;exposed_ecd&quot;,
+      &quot;uniprot_isoform_specific_locations&quot;: [
+        &quot;Golgi apparatus, trans-Golgi network membrane&quot;,
+        &quot;Cell membrane&quot;
+      ],
+      &quot;differential_from_canonical&quot;: false,
+      &quot;rationale&quot;: &quot;Canonical widely-expressed isoform. Primarily TGN-resident; cycles constitutively to PM. YQRL motif mediates AP2-dependent PM internalization and TGN retrieval; without this motif, protein accumulates at PM.&quot;,
+      &quot;cited_evidence_ids&quot;: []
+    },
+    {
+      &quot;isoform_id&quot;: &quot;O43493-7&quot;,
+      &quot;name&quot;: &quot;TGN51&quot;,
+      &quot;is_canonical&quot;: false,
+      &quot;length_aa&quot;: null,
+      &quot;surface_status&quot;: &quot;conditional_surface&quot;,
+      &quot;exposure_class&quot;: &quot;exposed_ecd&quot;,
+      &quot;uniprot_isoform_specific_locations&quot;: [
+        &quot;Golgi apparatus, trans-Golgi network membrane&quot;,
+        &quot;Cell membrane&quot;
+      ],
+      &quot;differential_from_canonical&quot;: true,
+      &quot;rationale&quot;: &quot;TGN51 has two additional tyrosine-containing motifs beyond the YQRL shared by all isoforms. When YQRL is mutated, TGN51 is retained at TGN (unlike TGN46/48 which go to PM). TGN51 may have enhanced TGN retention and distinct surface-cycling dynamics.&quot;,
+      &quot;cited_evidence_ids&quot;: [
+        &quot;evi_010&quot;
+      ]
+    },
+    {
+      &quot;isoform_id&quot;: &quot;O43493-3&quot;,
+      &quot;name&quot;: &quot;TGN48&quot;,
+      &quot;is_canonical&quot;: false,
+      &quot;length_aa&quot;: null,
+      &quot;surface_status&quot;: &quot;conditional_surface&quot;,
+      &quot;exposure_class&quot;: &quot;exposed_ecd&quot;,
+      &quot;uniprot_isoform_specific_locations&quot;: [
+        &quot;Golgi apparatus, trans-Golgi network membrane&quot;,
+        &quot;Cell membrane&quot;
+      ],
+      &quot;differential_from_canonical&quot;: false,
+      &quot;rationale&quot;: &quot;TGN48 carries one additional tyrosine motif vs TGN46. Barely expressed in embryonic kidney and promyelocytic cells (UniProt). Cycling behavior similar to canonical TGN46; YQRL mutation leads to PM accumulation.&quot;,
+      &quot;cited_evidence_ids&quot;: []
+    }
+  ],
+  &quot;coreceptor_requirements&quot;: [],
+  &quot;orthology&quot;: [
+    {
+      &quot;species&quot;: &quot;cynomolgus&quot;,
+      &quot;ortholog_uniprot_acc&quot;: null,
+      &quot;ortholog_gene_symbol&quot;: &quot;TGOLN2&quot;,
+      &quot;ensembl_gene_id&quot;: &quot;ENSMFAG00000002786&quot;,
+      &quot;orthology_type&quot;: &quot;one_to_one&quot;,
+      &quot;percent_identity&quot;: 81.01,
+      &quot;surface_status&quot;: null,
+      &quot;surface_concordant_with_human&quot;: null,
+      &quot;notes&quot;: &quot;One-to-one high-confidence Compara ortholog at 81.01% identity. No UniProt accession in Compara pack; cyno surface status not independently assessed. Conservation of TM domain and YQRL-containing cytoplasmic tail makes concordant cycling behavior likely.&quot;,
+      &quot;cited_evidence_ids&quot;: []
+    }
+  ],
+  &quot;paralogs&quot;: [],
+  &quot;evidence&quot;: [
+    {
+      &quot;evidence_id&quot;: &quot;evi_001&quot;,
+      &quot;claim&quot;: &quot;UniProt annotates TGOLN2 (O43493) subcellular locations as Cell membrane and Golgi apparatus trans-Golgi network membrane.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;db_annotation&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: null,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: null,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;uniprot&quot;,
+            &quot;source_id&quot;: &quot;UniProt:O43493&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://rest.uniprot.org/uniprotkb/O43493.json&quot;,
+            &quot;title&quot;: &quot;Trans-Golgi network integral membrane protein 2&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:44:48.714190Z&quot;,
+            &quot;content_sha256&quot;: &quot;87c510d5069f7c0a8833fb806aa4b9764b857917a938f5f39d9b6a497488f565&quot;,
+            &quot;publication_type&quot;: &quot;db_entry&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:44:48.714190Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;other&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;Cell membrane&quot;,
+          &quot;quote_sha256&quot;: &quot;bc2a746f6b2203e33bc87fdc45bfb93d8a0c8ffa1154c2dc19e260f1cba48fb0&quot;,
+          &quot;char_offset&quot;: 359,
+          &quot;normalized_source_sha256&quot;: &quot;5eb7b44eba8a4e2093edc88296d63dec27a24caa32081572943fb0838506c70e&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_002&quot;,
+      &quot;claim&quot;: &quot;UniProt topology for TGOLN2 shows a single transmembrane helix at residues 382-402.&quot;,
+      &quot;claim_type&quot;: &quot;topology&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;db_annotation&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: null,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: &quot;O43493-2&quot;,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;uniprot&quot;,
+            &quot;source_id&quot;: &quot;UniProt:O43493&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://rest.uniprot.org/uniprotkb/O43493.json&quot;,
+            &quot;title&quot;: &quot;Trans-Golgi network integral membrane protein 2&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:44:48.714190Z&quot;,
+            &quot;content_sha256&quot;: &quot;87c510d5069f7c0a8833fb806aa4b9764b857917a938f5f39d9b6a497488f565&quot;,
+            &quot;publication_type&quot;: &quot;db_entry&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:44:48.714190Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;other&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;transmembrane:382-402 (Helical)&quot;,
+          &quot;quote_sha256&quot;: &quot;5099ccf36679df353cdf3c07242bdb4c1dffd1318663d623e9fd272109bc1886&quot;,
+          &quot;char_offset&quot;: 494,
+          &quot;normalized_source_sha256&quot;: &quot;5eb7b44eba8a4e2093edc88296d63dec27a24caa32081572943fb0838506c70e&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_003&quot;,
+      &quot;claim&quot;: &quot;UniProt functional annotation positions TGOLN2 as a regulator of membrane traffic to and from the trans-Golgi network.&quot;,
+      &quot;claim_type&quot;: &quot;topology&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;db_annotation&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: null,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: null,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;uniprot&quot;,
+            &quot;source_id&quot;: &quot;UniProt:O43493&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://rest.uniprot.org/uniprotkb/O43493.json&quot;,
+            &quot;title&quot;: &quot;Trans-Golgi network integral membrane protein 2&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:44:48.714190Z&quot;,
+            &quot;content_sha256&quot;: &quot;87c510d5069f7c0a8833fb806aa4b9764b857917a938f5f39d9b6a497488f565&quot;,
+            &quot;publication_type&quot;: &quot;db_entry&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:44:48.714190Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;other&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;May be involved in regulating membrane traffic to and from trans-Golgi network&quot;,
+          &quot;quote_sha256&quot;: &quot;4f627dd8f80258fa2f979dff263be2432fc9fb73404d59a8fb28a7fe8bafd19b&quot;,
+          &quot;char_offset&quot;: 67,
+          &quot;normalized_source_sha256&quot;: &quot;5eb7b44eba8a4e2093edc88296d63dec27a24caa32081572943fb0838506c70e&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_004&quot;,
+      &quot;claim&quot;: &quot;Human TGN46 is present on the cell surface and returns to the TGN via endosomes, demonstrating constitutive TGN-to-PM cycling.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;immunofluorescence&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;HeLa and primate cell lines&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;fixed&quot;,
+        &quot;isoform&quot;: &quot;O43493-2&quot;,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:8907712&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/8907712/&quot;,
+            &quot;title&quot;: &quot;Primate homologues of rat TGN38: primary structure, expression and functional implications&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:44:57.354954Z&quot;,
+            &quot;content_sha256&quot;: &quot;a7d6ee7fa3159b56acde1b53e0ae355233c49e7ce08de1fd7799b37f05c779f5&quot;,
+            &quot;publication_type&quot;: &quot;other&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:44:57.352367Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;localised primarily to the TGN but is present on the cell surface and returns via endosomes&quot;,
+          &quot;quote_sha256&quot;: &quot;7479becec317e34dc742407f3a4236952f48e28c63d70ae923e1dbba5b530aaf&quot;,
+          &quot;char_offset&quot;: 526,
+          &quot;normalized_source_sha256&quot;: &quot;1285658066d0d6e820aa5c1bda17645d180d444310c910ab0d3b2e43e996ea0f&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_005&quot;,
+      &quot;claim&quot;: &quot;TGN38 (rat ortholog of human TGN46/TGOLN2) constitutively cycles between TGN and plasma membrane as a type-I integral membrane protein.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;review_assertion&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;rat&quot;,
+        &quot;cell_type_or_line&quot;: &quot;PC12 cells&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: null,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:10514494&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/10514494/&quot;,
+            &quot;title&quot;: &quot;Direct interaction of the trans-Golgi network membrane protein, TGN38, with the F-actin binding protein, neurabin&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:44:57.356070Z&quot;,
+            &quot;content_sha256&quot;: &quot;4a612db32e5d78bf6256c04f7a9f127f9f7e2342169aa40399aa41e7d824dac0&quot;,
+            &quot;publication_type&quot;: &quot;other&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:44:57.352202Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;TGN38 is a type I integral membrane protein that constitutively cycles between the trans-Golgi network (TGN) and plasma membrane&quot;,
+          &quot;quote_sha256&quot;: &quot;ab86b53a944aa6114ba402a0711a6a34d011dbdc9daef3bfef81a27a0b30c065&quot;,
+          &quot;char_offset&quot;: 0,
+          &quot;normalized_source_sha256&quot;: &quot;3c66407339d2963d221ea2eb9bc0ec53913163801728651b26c1acd360066eef&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_006&quot;,
+      &quot;claim&quot;: &quot;The cytoplasmic SDYQRL tyrosine motif of TGN38/TGN46 mediates AP2 clathrin adaptor binding to drive PM internalization and TGN retrieval.&quot;,
+      &quot;claim_type&quot;: &quot;topology&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;review_assertion&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;rat&quot;,
+        &quot;cell_type_or_line&quot;: &quot;PC12 cells&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: null,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:10514494&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/10514494/&quot;,
+            &quot;title&quot;: &quot;Direct interaction of the trans-Golgi network membrane protein, TGN38, with the F-actin binding protein, neurabin&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:44:57.356070Z&quot;,
+            &quot;content_sha256&quot;: &quot;4a612db32e5d78bf6256c04f7a9f127f9f7e2342169aa40399aa41e7d824dac0&quot;,
+            &quot;publication_type&quot;: &quot;other&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:44:57.352202Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;cytosolic domain of TGN38 interacts with AP2 clathrin adaptor complexes via the tyrosine-containing motif (-SDYQRL-) to direct internalization from the plasma membrane&quot;,
+          &quot;quote_sha256&quot;: &quot;47240953da78108266c089c8d5673cfea57f717fd922d04e1969effc7c7d7813&quot;,
+          &quot;char_offset&quot;: 134,
+          &quot;normalized_source_sha256&quot;: &quot;3c66407339d2963d221ea2eb9bc0ec53913163801728651b26c1acd360066eef&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_007&quot;,
+      &quot;claim&quot;: &quot;Human TGN46 (TGOLN2) is a type-I single-pass TM protein that cycles between TGN and PM, consistent with a cargo receptor role.&quot;,
+      &quot;claim_type&quot;: &quot;topology&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;review_assertion&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;HeLa&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: &quot;O43493-2&quot;,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pmc&quot;,
+            &quot;source_id&quot;: &quot;PMC:PMC10928510&quot;,
+            &quot;pmc_id&quot;: &quot;PMC10928510&quot;,
+            &quot;url&quot;: &quot;https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10928510/&quot;,
+            &quot;title&quot;: &quot;Sorting of secretory proteins at the &lt;i&gt;trans&lt;/i&gt;-Golgi network by human TGN46&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:46:52.682709Z&quot;,
+            &quot;content_sha256&quot;: &quot;2795fef50629ff1569bb8b3f950dcecc35c2918e78797106468a86ef5f9f6c4b&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:46:51.581021Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;discussion&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;it is a type-I single-pass TM protein that cycles between the TGN and the PM&quot;,
+          &quot;quote_sha256&quot;: &quot;572a327a5277dbe3b1eccc6df653959680278d381375b1b7414fd9ec471cdae4&quot;,
+          &quot;char_offset&quot;: 27842,
+          &quot;normalized_source_sha256&quot;: &quot;a94189b61e2cf234d28e1848bd4c80407a9fadb31312647882b50fcbea3131b3&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_008&quot;,
+      &quot;claim&quot;: &quot;Human TGN46 has an N-terminal lumenal domain spanning residues 22-381, which faces the extracellular space when the protein is at the PM.&quot;,
+      &quot;claim_type&quot;: &quot;topology&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;review_assertion&quot;,
+      &quot;evidence_tier&quot;: &quot;secondary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;HeLa&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;unspecified&quot;,
+        &quot;isoform&quot;: &quot;O43493-2&quot;,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pmc&quot;,
+            &quot;source_id&quot;: &quot;PMC:PMC10928510&quot;,
+            &quot;pmc_id&quot;: &quot;PMC10928510&quot;,
+            &quot;url&quot;: &quot;https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10928510/&quot;,
+            &quot;title&quot;: &quot;Sorting of secretory proteins at the &lt;i&gt;trans&lt;/i&gt;-Golgi network by human TGN46&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:46:52.682709Z&quot;,
+            &quot;content_sha256&quot;: &quot;2795fef50629ff1569bb8b3f950dcecc35c2918e78797106468a86ef5f9f6c4b&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:46:51.581021Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;results&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;the N-terminal lumenal domain (amino acids 22\u2013381)&quot;,
+          &quot;quote_sha256&quot;: &quot;74a72b33eccb494ed9479e5e3a18372845978369cba0193f08f22e2bfb32b697&quot;,
+          &quot;char_offset&quot;: 20454,
+          &quot;normalized_source_sha256&quot;: &quot;a94189b61e2cf234d28e1848bd4c80407a9fadb31312647882b50fcbea3131b3&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_009&quot;,
+      &quot;claim&quot;: &quot;GFP-TGN46 lacking its cytoplasmic retrieval tail partially accumulates at the PM, confirming constitutive TGN-to-PM delivery of the protein.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;immunofluorescence&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;HeLa&quot;,
+        &quot;permeabilized&quot;: false,
+        &quot;fixation&quot;: &quot;fixed&quot;,
+        &quot;isoform&quot;: &quot;O43493-2&quot;,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [],
+      &quot;entailment_verified&quot;: false,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: [
+        &quot;substring not found in normalized PMC:PMC10928510 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)&quot;
+      ]
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_010&quot;,
+      &quot;claim&quot;: &quot;TGOLN2 isoform TGN51 has a unique function in shuttling between the cell surface and TGN, supported by additional tyrosine-containing cytoplasmic motifs.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;immunofluorescence&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;moderate&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;other&quot;,
+        &quot;cell_type_or_line&quot;: &quot;Chinese hamster ovary (CHO) cells&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;fixed&quot;,
+        &quot;isoform&quot;: &quot;O43493-7&quot;,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:9422759&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/9422759/&quot;,
+            &quot;title&quot;: &quot;Molecular cloning and expression of a novel human trans-Golgi network glycoprotein, TGN51, that contains multiple tyrosine-containing motifs&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:44:57.353890Z&quot;,
+            &quot;content_sha256&quot;: &quot;a784f40916b3d3954eeda61adf2bcb46d5942b9588116efd9352cc22b6f47cc8&quot;,
+            &quot;publication_type&quot;: &quot;other&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:44:57.352320Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;hTGN51 may have a unique function compared with hTGN46 or hTGN48 in shuttling between the cell surface and the TGN&quot;,
+          &quot;quote_sha256&quot;: &quot;a8cd474926d7052d67b3ac0257c6cc2f893c0637d2e0394648fbc33c5a700004&quot;,
+          &quot;char_offset&quot;: 1379,
+          &quot;normalized_source_sha256&quot;: &quot;b1734ebea87b0c0eaebd7deaf70fa7556a7f2de4ef5d275ccfafec0c8591cc0a&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_011&quot;,
+      &quot;claim&quot;: &quot;TGN46 is a well-established retrograde cargo cycling between early endosomes and the TGN via retromer; KO of retromer/retriever causes endosomal accumulation.&quot;,
+      &quot;claim_type&quot;: &quot;topology&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;immunofluorescence&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;A549 lung carcinoma&quot;,
+        &quot;permeabilized&quot;: true,
+        &quot;fixation&quot;: &quot;fixed&quot;,
+        &quot;isoform&quot;: null,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:40439270&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/40439270/&quot;,
+            &quot;title&quot;: &quot;Disruption of Retriever Function Impacts Retrograde Trafficking From Endosomes&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:45:28.549675Z&quot;,
+            &quot;content_sha256&quot;: &quot;702d55c1b4abe1e046b614f3eb830f3475c5766159dd690148a023bec7527246&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:45:28.545569Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;Cation-independent mannose 6-phosphate receptor and TGN46, two well-established retrograde cargos showed a redistribution from the TGN to early endosomes&quot;,
+          &quot;quote_sha256&quot;: &quot;9c5b5dbf65dc3543901faf356539981b4e33d7926294fce09624f6101803a67b&quot;,
+          &quot;char_offset&quot;: 859,
+          &quot;normalized_source_sha256&quot;: &quot;f41905b043796af02b470f26c4d49e535f5e6fc946d707c9960072da10f8bdd0&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    },
+    {
+      &quot;evidence_id&quot;: &quot;evi_012&quot;,
+      &quot;claim&quot;: &quot;Volume CLEM directly visualized TGN46-positive transport carriers actively trafficking from the trans-Golgi network to the plasma membrane.&quot;,
+      &quot;claim_type&quot;: &quot;surface_expression&quot;,
+      &quot;direction&quot;: &quot;supports&quot;,
+      &quot;evidence_type&quot;: &quot;immunofluorescence&quot;,
+      &quot;evidence_tier&quot;: &quot;primary&quot;,
+      &quot;confidence&quot;: &quot;strong&quot;,
+      &quot;assay_context&quot;: {
+        &quot;species&quot;: &quot;human&quot;,
+        &quot;cell_type_or_line&quot;: &quot;unspecified cultured cells&quot;,
+        &quot;permeabilized&quot;: null,
+        &quot;fixation&quot;: &quot;fixed&quot;,
+        &quot;isoform&quot;: null,
+        &quot;cell_context&quot;: null
+      },
+      &quot;spans&quot;: [
+        {
+          &quot;source&quot;: {
+            &quot;source_type&quot;: &quot;pubmed&quot;,
+            &quot;source_id&quot;: &quot;PMID:40931193&quot;,
+            &quot;pmc_id&quot;: null,
+            &quot;url&quot;: &quot;https://pubmed.ncbi.nlm.nih.gov/40931193/&quot;,
+            &quot;title&quot;: &quot;CLEM-Reg: an automated point cloud-based registration algorithm for volume correlative light and electron microscopy&quot;,
+            &quot;retrieved_at&quot;: &quot;2026-05-12T12:45:28.552199Z&quot;,
+            &quot;content_sha256&quot;: &quot;46bc084041cd8101a83a71a1f4b5046484f8ad8ebe82b9292e58507bf412b4a6&quot;,
+            &quot;publication_type&quot;: &quot;primary_research&quot;,
+            &quot;is_retracted&quot;: false,
+            &quot;retraction_checked_at&quot;: &quot;2026-05-12T12:45:28.548810Z&quot;,
+            &quot;license&quot;: &quot;unknown&quot;
+          },
+          &quot;section&quot;: &quot;abstract&quot;,
+          &quot;figure_or_table_id&quot;: null,
+          &quot;quote&quot;: &quot;unambiguously identify TGN46-positive transport carriers involved in protein trafficking between the trans-Golgi network and plasma membrane&quot;,
+          &quot;quote_sha256&quot;: &quot;fd6454e84d87a31ccc5c76c710d452ad38a633e3e0fa00b1901c5023a02b9a2e&quot;,
+          &quot;char_offset&quot;: 882,
+          &quot;normalized_source_sha256&quot;: &quot;fcfc64cf31a324df006fd35a5d40f44b5c8e6f40202cd895032146acd5cd0b90&quot;
+        }
+      ],
+      &quot;entailment_verified&quot;: true,
+      &quot;entailment_audit_passed&quot;: null,
+      &quot;validation_warnings&quot;: []
+    }
+  ],
+  &quot;primary_evidence_count&quot;: 5,
+  &quot;secondary_evidence_count&quot;: 7,
+  &quot;evidence_count&quot;: 12,
+  &quot;contradictions&quot;: [],
+  &quot;search_log&quot;: [
+    {
+      &quot;tool&quot;: &quot;gene_lookup&quot;,
+      &quot;mode&quot;: &quot;resolve&quot;,
+      &quot;query&quot;: {
+        &quot;symbol_or_acc&quot;: &quot;TGOLN2&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;UniProt:O43493&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.389067Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_001&quot;,
+        &quot;evi_002&quot;,
+        &quot;evi_003&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_lookup&quot;,
+      &quot;mode&quot;: &quot;db_panel&quot;,
+      &quot;query&quot;: {
+        &quot;symbol_or_acc&quot;: &quot;O43493&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;UniProt:O43493&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.389388Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_001&quot;,
+        &quot;evi_002&quot;,
+        &quot;evi_003&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_lookup&quot;,
+      &quot;mode&quot;: &quot;uniprot_summary&quot;,
+      &quot;query&quot;: {
+        &quot;symbol_or_acc&quot;: &quot;O43493&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;UniProt:O43493&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.389650Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_001&quot;,
+        &quot;evi_002&quot;,
+        &quot;evi_003&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;gene2pubmed&quot;,
+      &quot;query&quot;: {
+        &quot;uniprot_acc&quot;: &quot;O43493&quot;
+      },
+      &quot;n_results&quot;: 62,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:38670394&quot;,
+        &quot;PMID:9422759&quot;,
+        &quot;PMID:38466628&quot;,
+        &quot;PMID:20468057&quot;,
+        &quot;PMID:24221250&quot;,
+        &quot;PMID:21994457&quot;,
+        &quot;PMID:8907712&quot;,
+        &quot;PMID:11208159&quot;,
+        &quot;PMID:15916959&quot;,
+        &quot;PMID:20926557&quot;,
+        &quot;PMID:20386718&quot;,
+        &quot;PMID:20138391&quot;,
+        &quot;PMID:21563830&quot;,
+        &quot;PMID:34244781&quot;,
+        &quot;PMID:14743217&quot;,
+        &quot;PMID:21607084&quot;,
+        &quot;PMID:21900423&quot;,
+        &quot;PMID:9794796&quot;,
+        &quot;PMID:24910430&quot;,
+        &quot;PMID:7569928&quot;,
+        &quot;PMID:20086247&quot;,
+        &quot;PMID:10814565&quot;,
+        &quot;PMID:15254094&quot;,
+        &quot;PMID:10514494&quot;,
+        &quot;PMID:18166528&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401429Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_004&quot;,
+        &quot;evi_005&quot;,
+        &quot;evi_006&quot;,
+        &quot;evi_010&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 8907712
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:8907712&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401478Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_004&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 10514494
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:10514494&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401489Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_005&quot;,
+        &quot;evi_006&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 38466628
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:38466628&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401499Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;topic_search&quot;,
+      &quot;query&quot;: {
+        &quot;topic_anchors&quot;: [
+          &quot;shedding&quot;,
+          &quot;surface_biotinylation&quot;,
+          &quot;mass_spec_surfaceome&quot;
+        ],
+        &quot;uniprot_acc&quot;: &quot;O43493&quot;
+      },
+      &quot;n_results&quot;: 543,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:41516432&quot;,
+        &quot;PMID:40540531&quot;,
+        &quot;PMID:37048152&quot;,
+        &quot;PMID:39947179&quot;,
+        &quot;PMID:40968259&quot;,
+        &quot;PMID:41171096&quot;,
+        &quot;PMID:37956981&quot;,
+        &quot;PMID:39325073&quot;,
+        &quot;PMID:41785320&quot;,
+        &quot;PMID:39031635&quot;,
+        &quot;PMID:37958830&quot;,
+        &quot;PMID:41654130&quot;,
+        &quot;PMID:34948259&quot;,
+        &quot;PMID:39514288&quot;,
+        &quot;PMID:41565640&quot;,
+        &quot;PMID:40715079&quot;,
+        &quot;PMID:38679330&quot;,
+        &quot;PMID:40811510&quot;,
+        &quot;PMID:40649939&quot;,
+        &quot;PMID:29611543&quot;,
+        &quot;PMID:33997694&quot;,
+        &quot;PMID:36810097&quot;,
+        &quot;PMID:41875418&quot;,
+        &quot;PMID:33571422&quot;,
+        &quot;PMID:41252368&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401668Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;topic_search&quot;,
+      &quot;query&quot;: {
+        &quot;topic_anchors&quot;: [
+          &quot;surface_expression&quot;,
+          &quot;flow_cytometry&quot;
+        ],
+        &quot;uniprot_acc&quot;: &quot;O43493&quot;
+      },
+      &quot;n_results&quot;: 2915,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:41785320&quot;,
+        &quot;PMID:42017793&quot;,
+        &quot;PMID:40911682&quot;,
+        &quot;PMID:40439270&quot;,
+        &quot;PMID:39955774&quot;,
+        &quot;PMID:40623997&quot;,
+        &quot;PMID:39557836&quot;,
+        &quot;PMID:41875418&quot;,
+        &quot;PMID:40540531&quot;,
+        &quot;PMID:41516432&quot;,
+        &quot;PMID:40980015&quot;,
+        &quot;PMID:41654130&quot;,
+        &quot;PMID:40183375&quot;,
+        &quot;PMID:41891494&quot;,
+        &quot;PMID:39561185&quot;,
+        &quot;PMID:41696445&quot;,
+        &quot;PMID:40902878&quot;,
+        &quot;PMID:38466628&quot;,
+        &quot;PMID:40284965&quot;,
+        &quot;PMID:41017400&quot;,
+        &quot;PMID:40234049&quot;,
+        &quot;PMID:41790259&quot;,
+        &quot;PMID:40143438&quot;,
+        &quot;PMID:40229277&quot;,
+        &quot;PMID:40931193&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401830Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_011&quot;,
+        &quot;evi_012&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_fulltext&quot;,
+      &quot;query&quot;: {
+        &quot;pmcid&quot;: &quot;PMC10928510&quot;
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMC:PMC10928510&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401924Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_007&quot;,
+        &quot;evi_008&quot;
+      ]
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 14743217
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:14743217&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401936Z&quot;,
+      &quot;contributed_evidence_ids&quot;: []
+    },
+    {
+      &quot;tool&quot;: &quot;gene_literature&quot;,
+      &quot;mode&quot;: &quot;fetch_abstract&quot;,
+      &quot;query&quot;: {
+        &quot;pmid&quot;: 40439270
+      },
+      &quot;n_results&quot;: 1,
+      &quot;sources_seen&quot;: [
+        &quot;PMID:40439270&quot;
+      ],
+      &quot;retrieved_at&quot;: &quot;2026-05-12T12:53:24.401949Z&quot;,
+      &quot;contributed_evidence_ids&quot;: [
+        &quot;evi_011&quot;
+      ]
+    }
+  ],
+  &quot;confidence&quot;: &quot;high&quot;,
+  &quot;confidence_reasoning&quot;: &quot;Multiple independent lines of evidence establish constitutive TGN\u2194PM cycling for human TGN46 (TGOLN2): Ponnambalam 1996 directly demonstrates cell-surface presence and endosomal return; Lujan 2024 (eLife) characterizes human TGN46 as a type-I single-pass TM protein cycling TGN\u2194PM in CARTS; Stephens &amp; Banting 1999 documents constitutive cycling via AP2/YQRL; CLEM (Krentzel 2025) directly visualizes TGN46+ carriers en route to PM; Li 2025 confirms retromer-dependent endosomal return. UniProt annotates both Cell membrane and TGN membrane. The ~360 aa extracellular domain is large, N-glycosylated, and fully exposed when at PM. Conditional_surface/trafficking_cycling is explicitly cited as canonical in the task schema for TGN46. DB split (3/8) reflects predominantly TGN localization; absence from CSPA is expected given very low steady-state PM fraction. No human paralogs identified (Pfam PF17818 unique to TGOLN2 in human). No shedding documented. Confidence is high on mechanism; the low steady-state PM fraction is a practical but not theoretical limitation.&quot;,
+  &quot;contradiction_flag&quot;: false,
+  &quot;rationale&quot;: &quot;TGOLN2 (TGN46/TGN51) is a type-I single-pass TM glycoprotein residing primarily in the trans-Golgi network but constitutively cycling to the plasma membrane via PKD-dependent CARTS carriers. UniProt O43493-2 canonical topology: signal peptide (aa 1-21), N-terminal lumenal domain (aa 22-381, ~360 aa), single TM helix (aa 382-402), cytoplasmic tail with YQRL motif (aa 403-437). When at the PM, the ~360 aa lumenal domain carrying 9 N-linked glycosylation sites and mucin-like repeats is fully extracellular, making this an exposed_ecd protein at the surface. The YQRL tyrosine-based motif recruits AP2 clathrin adaptors for rapid PM internalization; retromer/retriever complexes drive retrograde transport from early endosomes back to TGN, keeping steady-state PM fraction low. Three named isoforms (TGN46, TGN48, TGN51) differ in cytoplasmic tyrosine motif complement: TGN51 uniquely retained at TGN even with mutated YQRL due to additional motifs. DB panel: 3/8 sources vote surface (SURFY ML, UniProt query, DeepTMHMM); CSPA absent (PM fraction too low for MS detection); no HPA antibody. No shedding documented; no close human paralogs (Pfam PF17818 unique to TGOLN2); no therapeutic programs reported. Cynomolgus one-to-one ortholog at 81.01% identity; concordant surface behavior likely but not independently verified.&quot;,
+  &quot;model_path&quot;: &quot;sonnet_only&quot;,
+  &quot;triage_signal&quot;: &quot;possibly_accessible&quot;
+}</pre>
+  </details>
+</section>
+
+</main>
+<footer>
+  Generated from <code>data/annotations/TGOLN2.json</code> · schema v0.5.0 · model sonnet_only
+</footer>
+</body>
+</html>
