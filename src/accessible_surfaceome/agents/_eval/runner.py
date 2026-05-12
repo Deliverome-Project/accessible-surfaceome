@@ -155,6 +155,8 @@ def _run_one_variant_a(*, cell: CellSpec, row: BenchmarkRow, started: float) -> 
         latency_s=telemetry.latency_s,
         prompt_tokens=telemetry.prompt_tokens,
         completion_tokens=telemetry.completion_tokens,
+        cache_creation_tokens=telemetry.cache_creation_tokens,
+        cache_read_tokens=telemetry.cache_read_tokens,
         n_tool_calls=0,
     )
     record["raw_response"] = telemetry.raw_response
@@ -198,6 +200,8 @@ def _envelope(
     prompt_tokens: int,
     completion_tokens: int,
     n_tool_calls: int,
+    cache_creation_tokens: int = 0,
+    cache_read_tokens: int = 0,
 ) -> dict[str, Any]:
     """Standard per-run record shape — same fields across all variants."""
 
@@ -219,12 +223,25 @@ def _envelope(
         "ground_truth_signal": row.ground_truth_signal,
         "emitted_verdict": verdict,
         "emitted_signal": signal,
-        "correct_verdict": verdict == row.ground_truth_verdict if verdict else False,
+        # yes/contextual are interchangeable for correctness — a
+        # tissue/state-restricted hit is operationally the same as a
+        # ubiquitous one. `no` is only correct against `no`. A missing
+        # prediction is never correct, even against a None ground truth.
+        "correct_verdict": (
+            verdict is not None
+            and row.ground_truth_verdict is not None
+            and (
+                verdict == row.ground_truth_verdict
+                or (verdict in ("yes", "contextual") and row.ground_truth_verdict in ("yes", "contextual"))
+            )
+        ),
         "correct_signal": signal == row.ground_truth_signal if signal else False,
         "cost_usd": cost_usd,
         "latency_s": latency_s,
         "prompt_tokens": prompt_tokens,
         "completion_tokens": completion_tokens,
+        "cache_creation_tokens": cache_creation_tokens,
+        "cache_read_tokens": cache_read_tokens,
         "n_tool_calls": n_tool_calls,
         "triage_draft": draft,
     }

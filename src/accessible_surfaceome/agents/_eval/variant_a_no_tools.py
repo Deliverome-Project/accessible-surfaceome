@@ -42,6 +42,8 @@ class PureModelResult:
     cost_usd: float
     latency_s: float
     raw_response: str
+    cache_creation_tokens: int = 0
+    cache_read_tokens: int = 0
 
 
 def run_variant_a(
@@ -56,6 +58,11 @@ def run_variant_a(
 
     Returns ``(triage_draft_dict | None, telemetry)``. ``None`` when the
     model didn't emit a JSON-fenced block we could parse.
+
+    The system prompt is marked ``cache_control: ephemeral`` so a
+    consecutive sweep over many genes pays the system-prompt input cost
+    once per 5-minute window (~70% cost reduction at scale; harmless
+    for one-shot use).
     """
 
     user_message = (
@@ -69,7 +76,13 @@ def run_variant_a(
     response = client.messages.create(
         model=model,
         max_tokens=max_tokens,
-        system=system_prompt,
+        system=[
+            {
+                "type": "text",
+                "text": system_prompt,
+                "cache_control": {"type": "ephemeral"},
+            }
+        ],
         messages=[{"role": "user", "content": user_message}],
     )
     latency = time.monotonic() - started
@@ -80,13 +93,23 @@ def run_variant_a(
     usage = getattr(response, "usage", None)
     prompt_tokens = getattr(usage, "input_tokens", 0) or 0
     completion_tokens = getattr(usage, "output_tokens", 0) or 0
-    cost = _estimate_cost(model=model, in_tok=prompt_tokens, out_tok=completion_tokens)
+    cache_creation_tokens = getattr(usage, "cache_creation_input_tokens", 0) or 0
+    cache_read_tokens = getattr(usage, "cache_read_input_tokens", 0) or 0
+    cost = _estimate_cost(
+        model=model,
+        in_tok=prompt_tokens,
+        out_tok=completion_tokens,
+        cache_creation_tok=cache_creation_tokens,
+        cache_read_tok=cache_read_tokens,
+    )
 
     return parsed, PureModelResult(
         gene_symbol=gene_symbol,
         model=model,
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,
+        cache_creation_tokens=cache_creation_tokens,
+        cache_read_tokens=cache_read_tokens,
         cost_usd=cost,
         latency_s=latency,
         raw_response=raw,
@@ -114,9 +137,27 @@ def _parse_triage_json(raw: str) -> dict[str, Any] | None:
     return None
 
 
-def _estimate_cost(*, model: str, in_tok: int, out_tok: int) -> float:
+def _estimate_cost(
+    *,
+    model: str,
+    in_tok: int,
+    out_tok: int,
+    cache_creation_tok: int = 0,
+    cache_read_tok: int = 0,
+) -> float:
+    """Total $ cost. Mirrors the runner's pricing model.
+
+    Anthropic prompt-caching tiers (as of 2026-Q1):
+      * ``cache_creation_input_tokens`` billed at 1.25× the base input rate.
+      * ``cache_read_input_tokens``     billed at 0.10× the base input rate.
+      * ``input_tokens`` excludes both — add them separately.
+    """
     in_price, out_price = MODEL_PRICING.get(model, (0.0, 0.0))
-    return (in_tok * in_price + out_tok * out_price) / 1_000_000
+    uncached_in = in_tok * in_price
+    cache_write = cache_creation_tok * in_price * 1.25
+    cache_read = cache_read_tok * in_price * 0.10
+    output = out_tok * out_price
+    return (uncached_in + cache_write + cache_read + output) / 1_000_000
 
 
 def load_triage_system_prompt() -> str:
