@@ -6,7 +6,7 @@ selection quality — the agent picks tools by description), and (c) the
 host-side handler the orchestrator dispatches when the agent emits an
 ``agent.custom_tool_use`` event.
 
-Today: ``gene_lookup`` only. ``gene_literature`` and ``patent_lookup`` slot in
+Today: ``gene_lookup`` and ``gene_literature``. ``patent_lookup`` was retired in the v0.4.0 refocus. Future tools slot in
 here when they're built.
 """
 
@@ -20,7 +20,6 @@ from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
 from accessible_surfaceome.tools._shared.source_text import SourceTextStore
 from accessible_surfaceome.tools.gene_literature import gene_literature
 from accessible_surfaceome.tools.gene_lookup import gene_lookup
-from accessible_surfaceome.tools.patent_lookup import patent_lookup
 
 from .source_registration import register_from_tool_return
 
@@ -104,47 +103,6 @@ def _make_gene_lookup_handler(ctx: HandlerContext) -> Callable[[dict[str, Any]],
         if ctx.source_store is not None:
             register_from_tool_return(
                 tool="gene_lookup", result=result, store=ctx.source_store
-            )
-        return result
-
-    return _call
-
-
-PATENT_LOOKUP_DESCRIPTION = (
-    "Look up a patent disclosure on Google Patents. Use this whenever a gene's "
-    "db_panel shows patent_handle.vote=true (or miss_diagnosis surfaces a "
-    "patent_handle candidate_lane), or when conventional sources return no "
-    "surface evidence but the gene appears in our patent-delivery-handle "
-    "controls panel. Returns the patent's title, applicant, priority and "
-    "publication dates, and a short claims_summary derived from the abstract. "
-    "Use the WO numbers returned by db_panel's patent_handle.evidence as input. "
-    "Patent claims are NOT peer-reviewed primary evidence — the returned record "
-    "carries evidence_provenance='patent' and the surfaceome record's evidence "
-    "tier should respect this when grading. Do not use this tool for scientific "
-    "literature; for that, use gene_literature (when available)."
-)
-
-PATENT_LOOKUP_INPUT_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "wo_number": {
-            "type": "string",
-            "description": (
-                "Patent number with WO/EP/US prefix (e.g. 'WO2024036333A2'). Take "
-                "this directly from db_panel patent_handle.evidence.wo_numbers."
-            ),
-        },
-    },
-    "required": ["wo_number"],
-}
-
-
-def _make_patent_lookup_handler(ctx: HandlerContext) -> Callable[[dict[str, Any]], Any]:
-    def _call(payload: dict[str, Any]) -> Any:
-        result = patent_lookup(wo_number=payload["wo_number"], http=ctx.http)
-        if ctx.source_store is not None:
-            register_from_tool_return(
-                tool="patent_lookup", result=result, store=ctx.source_store
             )
         return result
 
@@ -259,12 +217,6 @@ SPECS: list[ToolSpec] = [
         description=GENE_LOOKUP_DESCRIPTION,
         input_schema=GENE_LOOKUP_INPUT_SCHEMA,
         handler_factory=_make_gene_lookup_handler,
-    ),
-    ToolSpec(
-        name="patent_lookup",
-        description=PATENT_LOOKUP_DESCRIPTION,
-        input_schema=PATENT_LOOKUP_INPUT_SCHEMA,
-        handler_factory=_make_patent_lookup_handler,
     ),
     ToolSpec(
         name="gene_literature",

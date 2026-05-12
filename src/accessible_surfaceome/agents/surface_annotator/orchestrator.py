@@ -20,7 +20,7 @@ import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from anthropic import Anthropic
 
@@ -31,6 +31,7 @@ from accessible_surfaceome.tools._shared import retraction_watch as _retraction_
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
     Evidence,
+    ProteinFeatures,
     SurfaceomeRecord,
     SurfaceomeRecordDraft,
 )
@@ -180,7 +181,34 @@ def _annotate_one(
         # Pack is best-effort context; never fail the run on a missing TSV.
         logger.warning("deep_dive_pack render failed for %s: %s", gene, exc)
         deep_dive_block = ""
-    task_text = _render_task(gene, deep_dive_block=deep_dive_block)
+
+    # Pre-inject SURFY snapshot features so the agent doesn't burn tool
+    # calls on basic structural facts (TM count, signal peptide, Almen
+    # class, UniProt keywords). Empty block when the gene isn't in the
+    # snapshot — the agent falls back to its own gene_lookup cascade.
+    try:
+        protein_features = _load_surfy_features(gene)
+        protein_features_block = _render_protein_features_block(protein_features)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("SURFY feature load failed for %s: %s", gene, exc)
+        protein_features_block = ""
+
+    # If the triage agent already ran on this gene, inject its
+    # ``key_uncertainty`` as a focal directive for the deep-dive. Empty
+    # block when no triage record exists.
+    try:
+        triage_uncertainty = _load_triage_key_uncertainty(gene)
+        triage_uncertainty_block = _render_triage_uncertainty_block(triage_uncertainty)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("triage key_uncertainty load failed for %s: %s", gene, exc)
+        triage_uncertainty_block = ""
+
+    task_text = _render_task(
+        gene,
+        deep_dive_block=deep_dive_block,
+        protein_features_block=protein_features_block,
+        triage_uncertainty_block=triage_uncertainty_block,
+    )
 
     session = client.beta.sessions.create(
         agent={"type": "agent", "id": agent_entry.id, "version": agent_entry.version}
@@ -279,9 +307,190 @@ def _annotate_one(
 # ---------------------------------------------------------------------------
 
 
-def _render_task(gene: str, *, deep_dive_block: str = "") -> str:
+def _load_triage_key_uncertainty(gene: str) -> str | None:
+    """If a triage record exists for this gene at
+    ``data/triage/{gene}.json``, return its ``key_uncertainty`` text;
+    otherwise return None.
+
+    The triage agent emits a one-sentence ``key_uncertainty`` per gene
+    pointing at whatever ambiguity it couldn't resolve. The deep-dive
+    consumes that as a focal point for its own investigation.
+    """
+    triage_path = DATA_DIR / "triage" / f"{gene}.json"
+    if not triage_path.exists():
+        return None
+    try:
+        record = json.loads(triage_path.read_text())
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.warning(
+            "triage record at %s failed to parse: %s — skipping key_uncertainty injection",
+            triage_path, exc,
+        )
+        return None
+    text = record.get("key_uncertainty") or record.get("predicted_key_uncertainty")
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+    return None
+
+
+def _render_triage_uncertainty_block(text: str | None) -> str:
+    if not text:
+        return ""
+    return (
+        "## Triage flag\n\n"
+        f"The triage agent flagged the following key uncertainty for this gene: "
+        f"*{text}*\n\n"
+        "Treat this as the focal question for your investigation. Your "
+        "`confidence_reasoning` should explicitly address whether your record "
+        "resolves or sustains this uncertainty.\n"
+    )
+
+
+_SURFY_SNAPSHOT_PATH = DATA_DIR / "processed" / "surfy" / "surfy_human_snapshot.tsv"
+
+
+def _load_surfy_features(gene_symbol: str) -> ProteinFeatures:
+    """Look up a gene in the SURFY snapshot and return a populated
+    :class:`ProteinFeatures`. Returns an empty (default) instance if
+    the snapshot file is missing or the gene isn't present.
+
+    The orchestrator calls this once per ``annotate_gene`` invocation
+    and injects the rendered block into the task prompt before the
+    LLM runs. The agent does not modify these fields.
+
+    Provenance: stamped with ``provenance="surfy_snapshot"`` so we can
+    distinguish snapshot-fed records from records built from direct
+    primary sources later (see plan: protein-features-provenance audit).
+    """
+    if not _SURFY_SNAPSHOT_PATH.exists():
+        logger.warning(
+            "SURFY snapshot not found at %s; protein_features will be empty",
+            _SURFY_SNAPSHOT_PATH,
+        )
+        return ProteinFeatures()
+
+    def _opt(row: dict[str, str], key: str) -> str | None:
+        v = (row.get(key) or "").strip()
+        return v or None
+
+    def _int(row: dict[str, str], key: str) -> int | None:
+        v = _opt(row, key)
+        try:
+            return int(float(v)) if v is not None else None
+        except ValueError:
+            return None
+
+    def _float(row: dict[str, str], key: str) -> float | None:
+        v = _opt(row, key)
+        try:
+            return float(v) if v is not None else None
+        except ValueError:
+            return None
+
+    def _bool(row: dict[str, str], key: str) -> bool | None:
+        v = _opt(row, key)
+        if v is None:
+            return None
+        return v.lower() in {"1", "true", "yes", "y", "t"}
+
+    def _list(row: dict[str, str], key: str) -> list[str]:
+        v = _opt(row, key)
+        if v is None:
+            return []
+        # SURFY uses ';' as the in-cell list separator for keywords / xrefs
+        return [tok.strip() for tok in v.split(";") if tok.strip()]
+
+    import csv as _csv  # local alias; csv is imported at module top
+    target = gene_symbol.strip().upper()
+    with _SURFY_SNAPSHOT_PATH.open() as fh:
+        for row in _csv.DictReader(fh, delimiter="\t"):
+            if (row.get("gene_symbol") or "").strip().upper() == target:
+                # Cast SURFY's surface-call flag into the topology_source slot
+                # only when SURFY explicitly cites one (most rows leave it blank).
+                raw_source = _opt(row, "topology_source") or "unknown"
+                if raw_source not in (
+                    "uniprot", "phobius", "deeptmhmm", "literature", "unknown",
+                ):
+                    raw_source = "unknown"
+                topology_source = cast(
+                    Literal["uniprot", "phobius", "deeptmhmm", "literature", "unknown"],
+                    raw_source,
+                )
+                return ProteinFeatures(
+                    protein_length_aa=_int(row, "protein_length"),
+                    tm_domain_count=_int(row, "tm_domain_count"),
+                    signal_peptide=_bool(row, "signal_peptide"),
+                    topology_string=_opt(row, "topology_string"),
+                    topology_source=topology_source,
+                    almen_main_class=_opt(row, "almen_main_class"),
+                    almen_sub_class=_opt(row, "almen_sub_class"),
+                    cd_designation=_opt(row, "cd_number"),
+                    uniprot_keywords=_list(row, "uniprot_keywords"),
+                    pdb_ids=[],  # not in SURFY snapshot; left empty
+                    cspa_peptide_count=_int(row, "cspa_peptide_count"),
+                    hpa_antibody_available=_bool(row, "hpa_antibody"),
+                    drugbank_ids=_list(row, "drugbank_ids"),
+                    surfy_ml_score=_float(row, "surfy_ml_score"),
+                    surfy_label_source=_opt(row, "surfy_label_source"),
+                    provenance="surfy_snapshot",
+                )
+    logger.info("gene %s not present in SURFY snapshot; protein_features empty", gene_symbol)
+    return ProteinFeatures()
+
+
+def _render_protein_features_block(features: ProteinFeatures) -> str:
+    """Render the pre-loaded ProteinFeatures bucket as the markdown block
+    injected into the task prompt. Returns empty when no field is populated."""
+    if features == ProteinFeatures():
+        return ""
+    lines: list[str] = ["## Pre-loaded protein features (SURFY snapshot + UniProt)\n"]
+    # Compact key:value lines for the populated fields only.
+    def _line(label: str, value: object) -> None:
+        if value is None or value == "" or value == []:
+            return
+        lines.append(f"- **{label}:** {value}")
+
+    _line("Protein length (aa)", features.protein_length_aa)
+    _line("TM domain count", features.tm_domain_count)
+    _line("Signal peptide", features.signal_peptide)
+    _line("Topology string", features.topology_string)
+    if features.topology_source not in {"unknown", None}:
+        _line("Topology source", features.topology_source)
+    _line("Almen main class", features.almen_main_class)
+    _line("Almen sub class", features.almen_sub_class)
+    _line("CD designation", features.cd_designation)
+    if features.uniprot_keywords:
+        _line("UniProt keywords", ", ".join(features.uniprot_keywords))
+    if features.pdb_ids:
+        _line("PDB ids", ", ".join(features.pdb_ids))
+    _line("CSPA peptide count", features.cspa_peptide_count)
+    _line("HPA antibody available", features.hpa_antibody_available)
+    if features.drugbank_ids:
+        _line("DrugBank ids", ", ".join(features.drugbank_ids))
+    if features.surfy_ml_score is not None:
+        _line("SURFY ML surface score", f"{features.surfy_ml_score:.3f}")
+    _line("SURFY label source", features.surfy_label_source)
+    lines.append(
+        "\nThese fields are pre-loaded; quote them when load-bearing. The "
+        "orchestrator stamped `provenance` on this bucket; do not overwrite it.\n"
+    )
+    return "\n".join(lines)
+
+
+def _render_task(
+    gene: str,
+    *,
+    deep_dive_block: str = "",
+    protein_features_block: str = "",
+    triage_uncertainty_block: str = "",
+) -> str:
     template = (Path(__file__).parent / "prompts" / "task_template.md").read_text()
-    return template.replace("{gene}", gene).replace("{deep_dive_block}", deep_dive_block)
+    return (
+        template.replace("{gene}", gene)
+        .replace("{deep_dive_block}", deep_dive_block)
+        .replace("{protein_features_block}", protein_features_block)
+        .replace("{triage_key_uncertainty_block}", triage_uncertainty_block)
+    )
 
 
 _FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)

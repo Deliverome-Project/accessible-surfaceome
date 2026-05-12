@@ -20,7 +20,11 @@ PROMPTS_DIR = Path(__file__).parent / "prompts"
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "system.md"
 
 AGENT_NAME = "Surface Proteome Annotator"
-AGENT_MODEL = "claude-opus-4-7"
+# v0.4.0 refocus: default to Sonnet 4.6 (was Opus 4.7). The refocused
+# schema is small enough that a single Sonnet agent should handle it,
+# at ~5x lower cost per gene. Override via the orchestrator if Opus is
+# wanted for a specific run.
+AGENT_MODEL = "claude-sonnet-4-6"
 
 
 def read_system_prompt() -> str:
