@@ -162,3 +162,52 @@ CREATE INDEX IF NOT EXISTS idx_surface_annotation_uniprot
     ON surface_annotation (uniprot_acc);
 CREATE INDEX IF NOT EXISTS idx_surface_annotation_surface_status
     ON surface_annotation (surface_status);
+
+
+-- ---------------------------------------------------------------------------
+-- candidate_universe_public — genome-wide DB-vote table the viewer's
+-- catalogue index renders. One row per (universe_version, gene, UniProt);
+-- carries the seven per-source surface flags + the union count.
+--
+-- Loaded from `data/processed/candidate_universe/candidate_universe.tsv`
+-- (a build artifact, NOT in the private agents DB) by
+-- scripts/upload_candidate_universe_to_d1.py. Each merge run bumps
+-- universe_version so historical universes stay queryable; the Worker
+-- always serves the latest.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS candidate_universe_public (
+    universe_version            TEXT NOT NULL,    -- e.g. 'cu_2026_05_12'
+    gene_symbol                 TEXT NOT NULL,    -- gene_symbol_resolved from the TSV
+    uniprot_acc                 TEXT NOT NULL,    -- uniprot_accession
+    n_sources_surface           INTEGER NOT NULL,
+    uniprot_surface_flag        INTEGER NOT NULL,
+    go_surface_flag             INTEGER NOT NULL,
+    surfy_surface_flag          INTEGER NOT NULL,
+    cspa_surface_flag           INTEGER NOT NULL,
+    hpa_surface_flag            INTEGER NOT NULL,
+    deeptmhmm_surface_flag      INTEGER NOT NULL,
+    compartments_surface_flag   INTEGER NOT NULL,
+    synced_at                   TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (universe_version, gene_symbol, uniprot_acc)
+);
+
+CREATE INDEX IF NOT EXISTS idx_candidate_universe_public_gene
+    ON candidate_universe_public (gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_candidate_universe_public_version
+    ON candidate_universe_public (universe_version);
+
+
+-- ---------------------------------------------------------------------------
+-- candidate_universe_release — pointer to the active universe_version so
+-- the Worker doesn't have to MAX() across every row to find "latest". One
+-- row per universe; the uploader inserts on each fresh load.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS candidate_universe_release (
+    universe_version    TEXT PRIMARY KEY,
+    n_rows              INTEGER NOT NULL,
+    loaded_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    source_path         TEXT,                       -- relative path of source TSV
+    notes               TEXT
+);

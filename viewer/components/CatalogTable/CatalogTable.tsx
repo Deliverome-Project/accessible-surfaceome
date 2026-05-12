@@ -28,7 +28,10 @@ function verdictTone(v: string | null | undefined): string {
 
 interface CatalogTableProps {
   rows: CatalogRow[];
-  generated_at: string;
+  /** When sourcing from the snapshot, the timestamp at which it was
+   *  built. The API path omits it; the toolbar drops the timestamp
+   *  chip when undefined. */
+  generated_at?: string;
   n_rows: number;
   n_with_triage: number;
   n_with_deep_dive: number;
@@ -140,10 +143,14 @@ export function CatalogTable({
         {sorted.length === rows.length
           ? `${sorted.length.toLocaleString()} genes`
           : `${sorted.length.toLocaleString()} of ${rows.length.toLocaleString()} genes`}
-        <span className={styles.dot} aria-hidden="true">
-          ·
-        </span>
-        <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
+        {generated_at ? (
+          <>
+            <span className={styles.dot} aria-hidden="true">
+              ·
+            </span>
+            <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
+          </>
+        ) : null}
       </p>
 
       <div className={styles.tableScroll}>

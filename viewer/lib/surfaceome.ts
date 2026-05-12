@@ -22,11 +22,12 @@ const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
 const CATALOG_PATH = path.join(process.cwd(), "public", "data", "catalog.json");
 
 /**
- * One row of the genome-wide catalog the index table renders. Generated
- * by `scripts/build_viewer_catalog.py` in the upstream repo by joining
- * the candidate-universe TSV with `data/triage/` and the deep-dive
- * record set. Catalog is the deploy artifact; the script is the source
- * of truth.
+ * One row of the genome-wide catalog the index table renders. Sourced
+ * from the public Worker's `/v1/catalog` endpoint (which joins
+ * `candidate_universe_public` + `triage_run_public` + `surface_annotation`
+ * in the `surfaceome_public` D1 mirror). The committed
+ * `public/data/catalog.json` is a snapshot fallback used when the API
+ * is unreachable (offline dev, Worker not yet deployed, etc.).
  */
 export interface CatalogRow {
   symbol: string;
@@ -46,16 +47,65 @@ export interface CatalogRow {
 }
 
 export interface Catalog {
-  generated_at: string;
+  source: "api" | "snapshot";
+  generated_at?: string;
+  universe_version?: string;
+  bench_version?: string | null;
   n_rows: number;
   n_with_triage: number;
   n_with_deep_dive: number;
   rows: CatalogRow[];
 }
 
-export function loadCatalog(): Catalog {
+const DEFAULT_API_BASE = "https://api.deliverome.org/surfaceome";
+const FETCH_TIMEOUT_MS = 8_000;
+
+/**
+ * Build-time catalog fetch. Tries the public Worker first; falls back
+ * to the committed snapshot so an offline build (or a build before the
+ * Worker is deployed) still produces a working page.
+ *
+ * The base URL is overridable via `SURFACEOME_API_BASE` for staging
+ * environments. Set `SURFACEOME_API_BASE=local` to skip the fetch
+ * entirely and read straight from the snapshot — useful in CI where
+ * outbound HTTP is sandboxed.
+ */
+export async function loadCatalog(): Promise<Catalog> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  if (base && base !== "local") {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      const res = await fetch(`${base}/v1/catalog`, {
+        // `force-cache` makes the response part of the static build
+        // artifact under `output: "export"`. A re-deploy of the Worker
+        // surfaces in the viewer on the next `npm run build` — exactly
+        // the SSG lifecycle we want for a research catalogue (no
+        // per-page-load D1 hits in production).
+        cache: "force-cache",
+        signal: controller.signal,
+      }).finally(() => clearTimeout(timer));
+      if (!res.ok) throw new Error(`status ${res.status}`);
+      const payload = (await res.json()) as Omit<Catalog, "source">;
+      // Treat an empty payload (Worker reachable but no universe loaded
+      // yet) as a soft miss — fall through to the snapshot so the page
+      // isn't blank during initial bring-up.
+      if (!payload.rows || payload.rows.length === 0) {
+        throw new Error("empty catalog payload");
+      }
+      return { source: "api", ...payload };
+    } catch (err) {
+      console.warn(
+        `[surfaceome] /v1/catalog fetch failed (${(err as Error).message}); ` +
+          `falling back to public/data/catalog.json snapshot`,
+      );
+    }
+  }
+
+  // Snapshot fallback.
   const raw = readFileSync(CATALOG_PATH, "utf-8");
-  return JSON.parse(raw) as Catalog;
+  const snap = JSON.parse(raw) as Omit<Catalog, "source">;
+  return { source: "snapshot", ...snap };
 }
 
 export function listSurfaceomeGenes(): string[] {

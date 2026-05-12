@@ -5,14 +5,15 @@ import { loadCatalog } from "../lib/surfaceome";
 import styles from "./page.module.css";
 
 /**
- * Genome-wide index for `surfaceome.deliverome.org`. Reads the
- * pre-built catalog.json at build time (5k+ rows from the
- * candidate-universe TSV unioned with triage verdicts and the
- * deep-dive record set) and ships them straight into the client
- * table component for filter / sort.
+ * Genome-wide index for `surfaceome.deliverome.org`. Pulls the
+ * catalog from the public Worker's `/v1/catalog` endpoint at build
+ * time (5k+ rows joining candidate_universe_public + triage_run_public
+ * + surface_annotation in the `surfaceome_public` D1) and ships them
+ * straight into the client table component for filter / sort. Falls
+ * back to a committed snapshot when the API is unreachable.
  */
-export default function HomePage() {
-  const catalog = loadCatalog();
+export default async function HomePage() {
+  const catalog = await loadCatalog();
 
   return (
     <Shell>
@@ -74,8 +75,28 @@ export default function HomePage() {
           </p>
           <p>
             <span className="label-mono">API ·</span>{" "}
-            <code>GET api.deliverome.org/surfaceome/v1/genes/&#123;SYMBOL&#125;</code>{" "}
-            ships the same data as JSON.
+            <code>GET api.deliverome.org/surfaceome/v1/catalog</code> ships the
+            same table as JSON;{" "}
+            <code>/v1/genes/&#123;SYMBOL&#125;</code> ships a single
+            deep-dive record.
+          </p>
+          <p className={styles.sourceLine}>
+            <span className="label-mono">Source ·</span>{" "}
+            {catalog.source === "api" ? (
+              <>
+                live D1{" "}
+                <code>
+                  {catalog.universe_version ?? "—"}
+                  {catalog.bench_version ? ` · ${catalog.bench_version}` : null}
+                </code>
+              </>
+            ) : (
+              <>
+                committed snapshot (Worker unreachable —{" "}
+                <code>SURFACEOME_API_BASE</code> falls back to local{" "}
+                <code>public/data/catalog.json</code>)
+              </>
+            )}
           </p>
         </footer>
       </section>

@@ -7,6 +7,8 @@
 //   GET /v1/health
 //   GET /v1/genes               — list of annotated genes
 //   GET /v1/genes/:symbol       — full SurfaceomeRecord
+//   GET /v1/catalog             — genome-wide candidate-universe table
+//                                  (DB votes + latest triage + deep-dive flag)
 //   GET /v1/orthologs/:symbol   — ortholog table for a gene
 //   GET /v1/benchmark           — full benchmark truth labels (latest version)
 //   GET /v1/benchmark/:symbol   — single gene's truth label
@@ -150,6 +152,133 @@ async function handleBenchmarkOne(env, symbol) {
   return json(row, { ttl: CACHE_TTL_LONG });
 }
 
+async function handleCatalog(env) {
+  // Pull the latest universe_version pointer. If no universe has been
+  // loaded yet (cold DB), bail with an empty payload — the viewer
+  // falls back to its committed snapshot in that case.
+  const releaseRow = await env.DB.prepare(
+    `SELECT universe_version, n_rows, loaded_at
+       FROM candidate_universe_release
+       ORDER BY loaded_at DESC LIMIT 1`
+  ).first();
+  if (!releaseRow) {
+    return json(
+      { universe_version: null, n_rows: 0, n_with_triage: 0, n_with_deep_dive: 0, rows: [] },
+      { ttl: CACHE_TTL_SHORT },
+    );
+  }
+  const universe = releaseRow.universe_version;
+
+  // Latest bench_version drives which triage_run_public rows are
+  // "live" — only those count for the per-gene latest verdict.
+  const benchRow = await env.DB.prepare(
+    `SELECT bench_version FROM benchmark_version
+      ORDER BY bench_version DESC LIMIT 1`
+  ).first();
+  const benchVersion = benchRow?.bench_version ?? null;
+
+  // Universe rows are the spine of the catalog: one per (gene, UniProt).
+  const universeRows = await env.DB.prepare(
+    `SELECT gene_symbol, uniprot_acc, n_sources_surface,
+            uniprot_surface_flag, go_surface_flag, surfy_surface_flag,
+            cspa_surface_flag, hpa_surface_flag, deeptmhmm_surface_flag,
+            compartments_surface_flag
+       FROM candidate_universe_public
+      WHERE universe_version = ?
+      ORDER BY gene_symbol`
+  ).bind(universe).all();
+
+  // Latest triage verdict per gene, scoped to the active bench_version
+  // (verdicts churn fast — we want the freshest, not historical noise).
+  // Use a subquery to pick the max(created_at) row per (gene, model);
+  // gene-level rollup picks the haiku_only / first row.
+  const triageMap = new Map();
+  if (benchVersion) {
+    const triageRows = await env.DB.prepare(
+      `SELECT gene_symbol, predicted_verdict, predicted_reason
+         FROM triage_run_public t
+        WHERE bench_version = ?
+          AND created_at = (
+            SELECT MAX(created_at) FROM triage_run_public
+             WHERE gene_symbol = t.gene_symbol
+               AND bench_version = ?
+          )`
+    ).bind(benchVersion, benchVersion).all();
+    for (const r of triageRows.results) {
+      if (!triageMap.has(r.gene_symbol)) {
+        triageMap.set(r.gene_symbol, {
+          verdict: r.predicted_verdict,
+          reason: r.predicted_reason,
+        });
+      }
+    }
+  }
+
+  // Genes with a published deep-dive SurfaceomeRecord (whatever schema_version).
+  const deepRows = await env.DB.prepare(
+    `SELECT DISTINCT gene_symbol FROM surface_annotation`
+  ).all();
+  const deepSet = new Set(deepRows.results.map((r) => r.gene_symbol));
+
+  // Track which genes we've emitted so we can append deep-dive-only
+  // genes (e.g. HSPA1A — conditional surface, doesn't pass the
+  // universe gate) at the bottom.
+  const covered = new Set();
+  const rows = universeRows.results.map((u) => {
+    covered.add(u.gene_symbol);
+    return {
+      symbol: u.gene_symbol,
+      uniprot: u.uniprot_acc,
+      n_sources: u.n_sources_surface,
+      db: {
+        uniprot: u.uniprot_surface_flag ? 1 : 0,
+        go: u.go_surface_flag ? 1 : 0,
+        surfy: u.surfy_surface_flag ? 1 : 0,
+        cspa: u.cspa_surface_flag ? 1 : 0,
+        hpa: u.hpa_surface_flag ? 1 : 0,
+        deeptmhmm: u.deeptmhmm_surface_flag ? 1 : 0,
+        compartments: u.compartments_surface_flag ? 1 : 0,
+      },
+      triage: triageMap.get(u.gene_symbol) ?? null,
+      deep_dive: deepSet.has(u.gene_symbol),
+    };
+  });
+
+  // Append deep-dive-only genes (missing from the universe row set).
+  // Without this the index page loses these records entirely; they're
+  // the strongest accessibility data we have.
+  for (const sym of deepSet) {
+    if (covered.has(sym)) continue;
+    rows.push({
+      symbol: sym,
+      uniprot: "",
+      n_sources: 0,
+      db: { uniprot: 0, go: 0, surfy: 0, cspa: 0, hpa: 0, deeptmhmm: 0, compartments: 0 },
+      triage: triageMap.get(sym) ?? null,
+      deep_dive: true,
+    });
+  }
+
+  // Stable sort: deep-dive first, then DB-vote desc, then symbol asc.
+  rows.sort((a, b) => {
+    if (a.deep_dive !== b.deep_dive) return a.deep_dive ? -1 : 1;
+    if (a.n_sources !== b.n_sources) return b.n_sources - a.n_sources;
+    return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
+  });
+
+  return json(
+    {
+      universe_version: universe,
+      bench_version: benchVersion,
+      n_rows: rows.length,
+      n_with_triage: rows.filter((r) => r.triage).length,
+      n_with_deep_dive: rows.filter((r) => r.deep_dive).length,
+      rows,
+    },
+    { ttl: CACHE_TTL_SHORT },
+  );
+}
+
 async function handleTriage(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -185,6 +314,7 @@ export default {
 
     if (path === "/v1/health") return handleHealth(env);
     if (path === "/v1/genes") return handleGeneList(env);
+    if (path === "/v1/catalog") return handleCatalog(env);
     if (path === "/v1/benchmark") return handleBenchmarkList(env);
 
     let m;
