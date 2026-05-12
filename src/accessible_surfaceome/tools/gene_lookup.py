@@ -181,9 +181,20 @@ def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
     else:
         uniprot_acc = _uniprot_search_by_symbol(raw, http=http)
         if uniprot_acc is None:
-            raise LookupError(
-                f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — out of study scope"
-            )
+            # UniProt's symbol search misses newly-registered HGNC
+            # entries whose gene_name field hasn't propagated to
+            # UniProt's index yet (SACK1A-H series, MIMS1/2, MISO1,
+            # ZBED8L/11, etc. — confirmed against HGNC 2026-05). HGNC
+            # carries an explicit ``uniprot_ids`` cross-reference for
+            # these; consult it before giving up.
+            hgnc_xref = _hgnc_record(raw, http=http) or {}
+            xref_ids = hgnc_xref.get("uniprot_ids") or []
+            if xref_ids:
+                uniprot_acc = xref_ids[0]
+            else:
+                raise LookupError(
+                    f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — out of study scope"
+                )
         entry = _uniprot_entry(uniprot_acc, http=http)
     status, merged_into = _entry_status(entry)
 
