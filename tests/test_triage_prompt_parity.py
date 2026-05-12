@@ -1,32 +1,33 @@
 """Enforce cross-variant parity for the surface_triage system prompts.
 
-We run four prompt variants (system.md, system_naive.md, system_web.md,
-system_web_naive.md) in a single comparative benchmark, so any drift in
-**substantive** guidance silently confounds the (model × variant) accuracy
-comparison. This test pins the shared substantive blocks: a fingerprint
-string drawn from each block must appear byte-identically in every variant
-where the block belongs.
+The 5 variants (system.md, system_naive.md, system_web.md,
+system_web_naive.md, system_pubmed.md) are evaluated head-to-head, so
+any drift in **substantive** guidance silently confounds the
+(model × variant) accuracy comparison. The fingerprints below pin
+shared substantive blocks: each string must appear byte-identically in
+every variant where the block belongs.
 
-Three categories of content:
+After the 2026-05-11 slim canonicalization, every variant carries the
+same ~1,700-token slim body — verdict + reason-enum + before-emitting-
+no + output-contract — and differs only in the per-variant
+tools/context paragraph at the top.
 
-1. **Shared everywhere** — verdict definitions, cardinal-rule logic, full
-   reason-enum descriptions, probes 1–6 of the Pre-`no` checklist, the
-   "don't defer" closing emphasis. These MUST be identical across all four
-   variants. Fingerprints in ``SHARED_FINGERPRINTS`` enforce this.
+Categories:
 
-2. **Resolver-only** — probes 7 (HGNC gene-group / CD designation) and 8
-   (NCBI summary signal) plus the resolver-context preamble. Only the two
-   resolver variants (system.md, system_web.md) carry these. Fingerprints
-   in ``RESOLVER_ONLY_FINGERPRINTS`` enforce presence in those two AND
-   absence in the other two.
+1. **Shared everywhere** — verdict definitions, every reason enum
+   entry, the "Before emitting `no`" framing, and the output-contract
+   shape. Identical across all 5. Pinned by ``SHARED_FINGERPRINTS``.
 
-3. **Tool-only / variant-specific** — Tools section mentioning
-   ``web_search`` (only in the two web variants). Naming variations across
-   variants are expected here; the test doesn't pin exact wording for
-   these tool-availability mentions.
+2. **Resolver-only** — the resolver-context phrase
+   ("HGNC + UniProt + NCBI + gene-group + CD designation context").
+   Present in resolver variants, absent in no-resolver variants. Pinned
+   by ``RESOLVER_ONLY_FINGERPRINTS``.
 
-If you need to change a shared block, change every variant in the same
-commit. The test catches you next run if you forgot.
+3. **Tool / variant-specific** — ``web_search`` only in web variants,
+   ``PubMed`` only in the pubmed variant. Pinned by ``TOOL_FINGERPRINTS``.
+
+If you change a shared block, change every variant in the same commit.
+The test catches you next run if you forgot.
 """
 
 from __future__ import annotations
@@ -55,254 +56,146 @@ RESOLVER_VARIANTS = ("system.md", "system_web.md", "system_pubmed.md")
 NO_RESOLVER_VARIANTS = ("system_naive.md", "system_web_naive.md")
 WEB_VARIANTS = ("system_web.md", "system_web_naive.md")
 NON_WEB_VARIANTS = ("system.md", "system_naive.md", "system_pubmed.md")
-
-# Deliberately-divergent prompts. ``system_slim.md`` is a streamlined
-# rewrite of ``system.md`` that drops the cardinal-rule section, merges
-# its logic into the enum definitions, and collapses the 8-probe
-# checklist — by design it cannot satisfy the SHARED_FINGERPRINTS that
-# pin the original phrasing, so it is NOT in ALL_VARIANTS. It IS in
-# ALL_PROMPTS so the gene-name / family-name leakage tests still run
-# on it.
-DIVERGENT_VARIANTS = ("system_slim.md",)
-ALL_PROMPTS = ALL_VARIANTS + DIVERGENT_VARIANTS
+PUBMED_VARIANTS = ("system_pubmed.md",)
+NON_PUBMED_VARIANTS = tuple(v for v in ALL_VARIANTS if v not in PUBMED_VARIANTS)
 
 
-# Each entry is a short fingerprint string that uniquely identifies a
-# substantive block. Keys are human-readable IDs; the strings themselves
-# must appear verbatim in every variant the block belongs to.
+# Each entry is a short fingerprint string from a substantive block that
+# all 5 slim-style prompts MUST carry byte-identically. The body of the
+# prompts is generated from a single template, so drift in any of these
+# means someone hand-edited one file without propagating.
 SHARED_FINGERPRINTS: dict[str, str] = {
-    # --- Verdict definitions
+    # --- Opening (PM defined, scope sentence)
+    "opening_pm_definition": (
+        "reach the protein body from the **extracellular face** of the "
+        "plasma membrane (PM)."
+    ),
+    # --- Verdict — pick one
+    "verdict_pick_one_header": "## Verdict — pick one",
     "verdict_yes": (
-        "the protein body is stably present on the outer face of the PM "
-        "under its baseline localization, via its own mechanism (TM domain, "
-        "GPI anchor, other outer-leaflet lipidation, direct outer-leaflet "
-        "lipid binding, pore assembly, or stable non-covalent partner of "
-        "an anchored protein co-trafficked as a complex). See the `reason` "
-        "enum below for the specific mechanism categories."
+        "protein body is stably on the outer leaflet under baseline "
+        "localization via its own mechanism."
     ),
     "verdict_contextual": (
-        "the protein body reaches the outer face only under specific, "
-        "documented conditions (cell state, tissue / cell type, trafficking "
-        "cycling, dual localization, stable post-translational TM-partner "
-        "anchoring). *Transient* recruitment to other surface receptors "
-        "does NOT count."
+        "protein body reaches the outer leaflet only under documented "
+        "conditions. *Transient* reversible recruitment to a surface "
+        "receptor does NOT count."
     ),
-    "verdict_no": (
-        "the protein body is not accessible from outside the cell: "
-        "cytoplasmic, nuclear, mitochondrial-internal, endomembrane-resident, "
-        "nuclear-envelope, inner-leaflet-anchored, secreted-only, or "
-        "pMHC-only-intracellular."
+    "verdict_no": "not accessible from outside the cell.",
+    # --- Reason enum: verdict = yes
+    "yes_classical_surface_receptor": (
+        "`classical_surface_receptor` — single-pass TM with substantial "
+        "extracellular domain."
     ),
-    # --- Cardinal rule
-    "cardinal_lead": (
-        "The distinction that drives most borderline calls: **does this "
-        "protein reach the outer leaflet by its own mechanism, or only "
-        "because something else on the surface holds it there?**"
+    "yes_gpi_anchored": "`gpi_anchored` — GPI anchor on the outer leaflet.",
+    "yes_multipass": (
+        "`multipass_with_exposed_loops` — multi-pass TM (GPCR, "
+        "transporter, channel) with extracellular loops."
     ),
-    "cardinal_recruiter": (
-        "the **recruiter** is the surface target, not the recruited protein. "
-        "The same exclusion applies to vesicle cargo and to covalent "
-        "deposition into the extracellular matrix or stroma."
+    "yes_stable_complex_partner": (
+        "`stable_complex_partner` — no membrane anchor of its own, but a "
+        "stable non-covalent partner of an anchored surface protein, "
+        "assembled intracellularly and co-trafficked."
     ),
-    "cardinal_wash_test": (
-        "When in doubt, ask: *if you wash the cells, does the protein stay "
-        "on the surface via a stable physical link to the membrane or a TM "
-        "partner?* If yes, it's at least `contextual`. If it leaves with "
-        "the wash, it's `no`."
+    # --- Reason enum: verdict = contextual
+    "contextual_cell_state_induced": (
+        "`cell_state_induced` — surfaces only under stress, oncogenic "
+        "transformation, immunogenic / programmed cell death, infection, "
+        "or activation-induced display."
     ),
-    "cardinal_apply_recruitment_test": (
-        "Apply the recruitment test before defaulting to `secreted_only`."
+    "contextual_tissue_restricted": (
+        "`tissue_restricted_surface` — surface display restricted to a "
+        "narrow lineage (germline / reproductive, developmental, or a "
+        "single specialized somatic cell type) — use this over `yes` "
+        "even when the anchor type is unambiguous."
     ),
-    "preamble_treat_no_as_highest_cost": (
-        "Treat `no` as the highest-cost error: false negatives are not "
+    "contextual_lysosomal_exocytosis": (
+        "`lysosomal_exocytosis` — lysosomal / late-endosomal TM protein "
+        "reaches the PM via lysosomal exocytosis."
+    ),
+    "contextual_dual_localization": (
+        "`dual_localization` — documented PM pool alongside a dominant "
+        "non-PM compartment, via active cycling or steady-state partial "
+        "residence. Also covers TM proligands whose shed ectodomain is "
+        "the dominant biological actor."
+    ),
+    "contextual_stable_surface_attachment": (
+        "`stable_surface_attachment` — secreted protein **wash-"
+        "resistantly anchored** to a TM partner post-translationally"
+    ),
+    # --- Reason enum: verdict = no
+    "no_secreted_only": (
+        "`secreted_only` — secreted with no wash-resistant surface "
+        "anchoring."
+    ),
+    "no_pmhc_only_intracellular": (
+        "`pmhc_only_intracellular` — strictly intracellular; only "
+        '"surface" story is MHC-presented peptides.'
+    ),
+    "no_cytoplasmic": (
+        "`cytoplasmic` — soluble cytoplasmic, no membrane association."
+    ),
+    "no_inner_leaflet": (
+        "`inner_leaflet_anchored` — lipidated or peripheral on the "
+        "cytoplasmic face of the PM."
+    ),
+    # --- Before emitting `no` framing
+    "before_no_header": "## Before emitting `no`",
+    "before_no_highest_cost_error": (
+        "`no` is the highest-cost error: false negatives are not "
         "recoverable downstream while false positives are."
     ),
-    "closing_do_not_emit_no_with_membrane_association": (
+    "before_no_name_5_buckets": (
+        "**Your `verdict_reasoning` must name each of the 5 contextual "
+        "reasons and the specific evidence ruling each out**"
+    ),
+    "before_no_surface_directed_therapeutic": (
+        "**Cell-surface-directed therapeutic.**"
+    ),
+    "before_no_ectodomain_shedding": (
+        "**Ectodomain shedding / TM precursor.**"
+    ),
+    "before_no_stable_tm_arrow": (
+        "**Stable TM precursor → `yes` / `classical_surface_receptor`**"
+    ),
+    "before_no_transient_tm_arrow": (
+        "**transient TM precursor of a shed-ligand-dominant gene → "
+        "`contextual` / `dual_localization`**"
+    ),
+    "before_no_closing_membrane_association": (
         "Do not emit `no` for any protein with documented membrane "
         "association at any stage of its lifecycle."
     ),
-    "probe6_treat_naming_as_hint": (
-        "Treat activation- or stress-state naming as a hint toward "
-        "cell-state induction"
-    ),
-    "probe6_treat_latent_as_hint": (
-        "as hints toward "
-    ),  # both variants use "as hints toward TM-partner tethering" or "...covalent / wash-resistant TM-partner tethering"
-    # --- Reason enum: contextual (the most-evolved bucket)
-    "enum_cell_state_induced": (
-        "translocates to the outer leaflet only under a defined non-baseline "
-        "cellular state. Covers [a] **stress**"
-    ),
-    "enum_cell_state_oncogenic": (
-        "**oncogenic transformation** — proteins canonically intracellular "
-        "at baseline that are displayed on the outer leaflet of tumor cells"
-    ),
-    "enum_tissue_restricted_germline": (
-        "**Germline / gamete-restricted display with its own anchor (TM, GPI, "
-        "or outer-leaflet lipidation) still goes here**"
-    ),
-    "enum_dual_localization_equivalent": (
-        "Treat vesicular cycling and steady-state dual home equivalently "
-        "for accessibility"
-    ),
-    "enum_dual_localization_tm_proligands": (
-        "Also covers single-pass TM proligands whose ectodomain is released "
-        "by regulated proteolysis, where the **TM precursor stage is "
-        "transient** and the **soluble shed form is the dominant "
-        "biological actor**"
-    ),
-    "enum_stable_surface_attachment_covalent_chemistry": (
-        "covalently (e.g. disulfide tethering to a TM scaffold, "
-        "thioester-mediated covalent attachment to a cell-surface acceptor, "
-        "transamidase / transglutaminase cross-linking, or similar "
-        "wash-resistant covalent chemistry)"
-    ),
-    "enum_pmhc_only_intracellular": (
-        "pMHC presentation is NOT credited for surface accessibility — every "
-        "intracellular protein has potentially MHC-presentable peptides, so "
-        "it is not a discriminating signal."
-    ),
-    # --- Pre-`no` checklist probes 1-6
-    "probe1_anti_soluble_exception": (
-        "anti-cytokine, anti-growth-factor, or anti-complement programs "
-        "targeting the secreted form don't establish surface accessibility "
-        "on cells"
-    ),
-    "probe1_pmhc_exception": (
-        "TCR-T / TCR-mimic / bispecifics that engage an MHC-presented peptide "
-        "do not establish surface accessibility for the protein body"
-    ),
-    "probe2_shedding_header": (
-        "Is the protein an ectodomain-shedding target — a single-pass TM "
-        "precursor whose soluble form is the released ectodomain?"
-    ),
-    "probe2_stable_tm": (
-        "**Stable TM precursor → `yes` / `classical_surface_receptor`.**"
-    ),
-    "probe2_transient_tm": (
-        "**Transient TM precursor of a shed-ligand-dominant gene → "
-        "`contextual` / `dual_localization`.**"
-    ),
-    "probe2_alt_splicing": (
-        "**TM-and-secreted alternative splicing.** When the gene encodes "
-        "both a TM and a soluble-decoy isoform"
-    ),
-    "probe3_latent_hints": (
-        'Naming hints like "latent" / "pro-protein" / "propeptide" / '
-        '"pre-pro" point here.'
-    ),
-    "probe3_secretory_compartment": (
-        "stably deposited onto a cell surface during transit through a "
-        "specialized secretory compartment"
-    ),
-    "probe3_covalent_chemistry_list": (
-        "covalent linkage (disulfide, thioester, transamidase / transglutaminase) "
-        "or by wash-resistant non-covalent association"
-    ),
-    "probe4_minority_pm_pool": (
-        "**Do not gate `contextual` on the surface pool being the dominant "
-        "compartment.**"
-    ),
-    "probe5_header": (
-        "Is there a documented non-baseline surface pool in any of these "
-        "four contexts?"
-    ),
-    "probe5_cancer": "1. **Cancer / oncogenic-state ecto-presentation.**",
-    "probe5_cell_death": "2. **Cell-death-induced surface display.**",
-    "probe5_developmental": (
-        "3. **Developmental / germline-restricted surface display.**"
-    ),
-    "probe5_activation": "4. **Activation-induced surface display.**",
-    "probe5_dont_defer": (
-        "**don't defer to the baseline compartment when a non-baseline "
-        "ecto-pool is documented for this protein specifically.**"
-    ),
     # --- Output contract
-    "output_contract_json_shape": (
-        '"verdict": "yes" | "contextual" | "no"'
-    ),
+    "output_contract_json_shape": '"verdict": "yes" | "contextual" | "no"',
     "output_contract_reasoning": (
         '"verdict_reasoning": "<= 800 chars explaining the call"'
     ),
-    "output_contract_confidence": (
-        '"confidence": "low" | "medium" | "high"'
-    ),
+    "output_contract_confidence": '"confidence": "low" | "medium" | "high"',
     "output_contract_key_uncertainty": (
         '"key_uncertainty": "<= 200 chars naming the unresolved ambiguity, or null"'
     ),
     "confidence_high_criterion": (
-        "emit `high` only when the verdict rests on explicit, unambiguous evidence"
+        "`high` only when the verdict rests on explicit, unambiguous evidence"
     ),
-    "confidence_low_criterion": (
-        "Emit `low` when at least one contextual bucket has a plausible "
-        "argument you couldn't conclusively rule out"
-    ),
-    "key_uncertainty_when_not_high": (
-        "when `confidence != \"high\"`, name the specific unresolved "
-        "bucket or mechanism in ≤200 chars"
-    ),
-    "preamble_must_enumerate_contextual": (
-        "When you emit `no`, your `verdict_reasoning` must explicitly name "
-        "each of the 5 contextual reasons and state the specific evidence "
-        "that rules each one out"
-    ),
-    "preamble_do_not_skip": (
-        "Do not skip any of the 5 buckets; do not anchor on a single "
-        "dominant compartment from the NCBI summary, gene-group lineage, "
-        "or your trained knowledge."
-    ),
+    "single_best_reason": "Pick the **single best** reason.",
 }
 
 
-# Probes / preamble that should appear ONLY in the resolver variants.
-# Listed (fingerprint, expected_variants_set) — the test enforces both
-# presence in the expected set and absence in the complement.
+# Resolver-context phrase. Present in resolver variants, absent in
+# no-resolver variants.
 RESOLVER_ONLY_FINGERPRINTS: dict[str, str] = {
-    "preamble_resolver_inputs": (
-        "Treat the task-context inputs — HGNC gene-group memberships, CD "
-        "designation, NCBI subcellular summary, aliases, previous symbols"
-    ),
-    "probe7_hgnc_gene_group": (
-        "Do the HGNC gene-group memberships or a CD designation imply "
-        "surface biology?"
-    ),
-    "probe7_body_registry_curated": (
-        "The task context lists each protein's HGNC gene-group families "
-        "(registry-curated lineages — chemokine receptors, solute carriers, "
-        "claudins, tetraspanins, GPCRs, etc.) and its CD nomenclature "
-        "designation when assigned."
-    ),
-    "probe7_treat_family_as_signal": (
-        "Treat membership in a canonical surface-protein gene-family — or "
-        "possession of a CD number at all — as a strong surface signal"
-    ),
-    "ncbi_caveat_not_authoritative": (
-        "Do not treat the NCBI subcellular call as authoritative — those "
-        "notes are often terse, occasionally outdated, and sometimes refer "
-        "to a single experimental context."
-    ),
-    "probe7_weight_registry_heavier": (
-        "When the HGNC gene-group family lineage and the NCBI summary "
-        "disagree, weight the registry-curated family lineage more heavily"
-    ),
-    "probe8_ncbi_summary": (
-        "Does the NCBI summary suggest non-classical surface biology?"
-    ),
-    "probe8_body_resolver_signals": (
-        "If the resolver context mentions latent complex, activation-induced "
-        "expression, ectodomain shedding, dual localization, or any "
-        "surface-relevant biology beyond the dominant subcellular call — "
-        "pause and consider the relevant contextual reason."
+    "resolver_context_phrase": (
+        "HGNC + UniProt + NCBI + gene-group + CD designation context"
     ),
 }
 
 
-# Tool-availability fingerprints. These ARE expected to differ between
-# web vs non-web variants — we just sanity-check that web_search is
-# mentioned only in the web variants.
+# Tool / variant-specific fingerprints. Each maps to the set of variants
+# where the fingerprint must appear; the complement must NOT contain it.
 TOOL_FINGERPRINTS: dict[str, tuple[str, ...]] = {
-    "web_search_tool": WEB_VARIANTS,
-    "no tools": NON_WEB_VARIANTS,
+    "web_search":  WEB_VARIANTS,
+    "PubMed":      PUBMED_VARIANTS,
 }
 
 
@@ -315,10 +208,7 @@ def _load(variant: str) -> str:
 
 @pytest.fixture(scope="module")
 def variant_texts() -> dict[str, str]:
-    # Loads every prompt including divergent ones — the parity tests
-    # only iterate over ALL_VARIANTS, but the leakage tests cover
-    # ALL_PROMPTS, so the fixture has to know about both.
-    return {v: _load(v) for v in ALL_PROMPTS}
+    return {v: _load(v) for v in ALL_VARIANTS}
 
 
 # --- Shared-block parity ---------------------------------------------------
@@ -333,8 +223,10 @@ def test_shared_block_present_in_all_variants(
     assert not missing, (
         f"Shared block {block_id!r} missing from: {missing}.\n"
         f"Expected fingerprint:\n  {fingerprint!r}\n"
-        "If you intentionally changed this block, update it in all four "
-        "variants in the same commit (and update this test's fingerprint)."
+        "If you intentionally changed this block, update it in all "
+        "variants in the same commit (the body is regenerated from a "
+        "shared template — see git history of system_slim.md "
+        "canonicalization)."
     )
 
 
@@ -347,7 +239,7 @@ def test_shared_block_present_in_all_variants(
 def test_resolver_only_block_in_resolver_variants(
     variant_texts: dict[str, str], block_id: str, fingerprint: str
 ) -> None:
-    """Resolver-dependent blocks must be present in the 2 resolver variants
+    """Resolver-dependent blocks must be present in the 3 resolver variants
     and absent from the 2 no-resolver variants."""
     missing_in_resolver = [
         v for v in RESOLVER_VARIANTS if fingerprint not in variant_texts[v]
@@ -368,27 +260,36 @@ def test_resolver_only_block_in_resolver_variants(
 # --- Tool mention sanity ---------------------------------------------------
 
 
-def test_web_search_mention_only_in_web_variants(
+@pytest.mark.parametrize(
+    "fingerprint,expected_variants",
+    sorted(TOOL_FINGERPRINTS.items()),
+)
+def test_tool_mention_only_in_expected_variants(
+    variant_texts: dict[str, str],
+    fingerprint: str,
+    expected_variants: tuple[str, ...],
+) -> None:
+    """Tool-mention strings must be in the expected variants only."""
+    for v in expected_variants:
+        assert fingerprint in variant_texts[v], (
+            f"{v} should mention {fingerprint!r}"
+        )
+    for v in ALL_VARIANTS:
+        if v in expected_variants:
+            continue
+        assert fingerprint not in variant_texts[v], (
+            f"{v} should NOT mention {fingerprint!r}"
+        )
+
+
+def test_no_tools_phrase_in_no_tool_variants(
     variant_texts: dict[str, str],
 ) -> None:
-    """web_search should be mentioned in the 2 web variants only."""
-    for v in WEB_VARIANTS:
-        assert "web_search" in variant_texts[v], (
-            f"{v} should mention web_search"
-        )
+    """All non-web variants explicitly state they have no tools."""
     for v in NON_WEB_VARIANTS:
-        assert "web_search" not in variant_texts[v], (
-            f"{v} should NOT mention web_search"
+        assert "No tools available" in variant_texts[v], (
+            f"{v} should state 'No tools available'"
         )
-
-
-def test_no_tools_phrase_only_in_naive_variant(
-    variant_texts: dict[str, str],
-) -> None:
-    """system_naive.md should explicitly state no tools are available."""
-    assert "no tools" in variant_texts["system_naive.md"].lower(), (
-        "system_naive.md should explicitly say it has no tools available"
-    )
 
 
 # --- Gene-name leakage -----------------------------------------------------
@@ -410,7 +311,7 @@ _FORBIDDEN_GENE_SYMBOLS = (
 )
 
 
-@pytest.mark.parametrize("variant", ALL_PROMPTS)
+@pytest.mark.parametrize("variant", ALL_VARIANTS)
 def test_no_specific_gene_names_in_prompt(
     variant_texts: dict[str, str], variant: str
 ) -> None:
@@ -456,7 +357,7 @@ _FORBIDDEN_FAMILY_NAMES = (
 )
 
 
-@pytest.mark.parametrize("variant", ALL_PROMPTS)
+@pytest.mark.parametrize("variant", ALL_VARIANTS)
 def test_no_specific_family_names_in_prompt(
     variant_texts: dict[str, str], variant: str
 ) -> None:

@@ -42,12 +42,17 @@ SUBBENCH_MODELS: list[str] = ["haiku-4-5", "sonnet-4-6", "opus-4-7"]
 SUBBENCH_VARIANTS = ["naive", "ncbi", "web_naive", "web_ncbi"]
 
 # (slug, filename, display label, blurb)
+#
+# Slim canonicalization (2026-05-11): all 5 prompts now share the same
+# slim-style body (~1,700-1,800 tokens each) derived from a single
+# template; they differ only in the per-variant tools/context paragraph
+# at the top. Parity is enforced by tests/test_triage_prompt_parity.py.
 PROMPT_VARIANTS = [
     (
         "default",
         "system.md",
         "Default (NCBI + HGNC resolver, no web)",
-        "Active production prompt. Orchestrator pre-resolves HGNC + UniProt + NCBI + gene-group + CD designation and injects them into the task message. No tools.",
+        "Active production prompt. Orchestrator pre-resolves HGNC + UniProt + NCBI + gene-group + CD designation and injects them into the task message. No tools. ~1,710 tokens (canonical slim body).",
     ),
     (
         "naive",
@@ -59,7 +64,7 @@ PROMPT_VARIANTS = [
         "web_ncbi",
         "system_web.md",
         "Web search + NCBI resolver",
-        "Adds the `web_search` builtin tool on top of the default prompt. Agent uses the resolver context as a baseline and queries the web for proteins where its trained knowledge is uncertain.",
+        "Adds the `web_search` builtin tool on top of the default prompt. Agent uses the resolver context as a baseline and queries the web for proteins where its trained knowledge is uncertain. One to three queries is typical.",
     ),
     (
         "web_naive",
@@ -68,10 +73,10 @@ PROMPT_VARIANTS = [
         "`web_search` tool with no resolver context — agent builds its own context from the web given just the gene symbol. Measures whether the resolver injection or the web tool dominates.",
     ),
     (
-        "slim",
-        "system_slim.md",
-        "Slim (NCBI + HGNC resolver, streamlined)",
-        "Streamlined sibling of the default. Same resolver context and task message; system prompt is ~69% shorter (5,506 → 1,730 tokens) — recruitment-test logic merged into the enum definitions, contextual subtype prose consolidated to ~200-char-per-definition budget, opening pMHC framing removed (the `pmhc_only_intracellular` enum already covers it), the 8-probe `Pre-no` checklist collapsed to 2 explicit patterns, and the rarely-used `extracellular_face_protein` reason retired (only 2 emissions across all D1 history; `other` already covers the edge case). See the diff section below.",
+        "pubmed",
+        "system_pubmed.md",
+        "PubMed evidence (NCBI + HGNC resolver, no web)",
+        "Resolver context plus a pre-fetched bag of PubMed surface-context literature evidence — esearch ranked for 'this gene + surface terms', abstracts efetched and sentence-filtered. Agent cites PMIDs inline when relying on a specific record.",
     ),
 ]
 
@@ -186,68 +191,6 @@ def _load_prompt_variants() -> list[dict]:
             "source": text,
         })
     return out
-
-
-def _render_slim_diff_html() -> str:
-    """Render a unified diff of system.md → system_slim.md as inline HTML.
-
-    Pre-escapes ``<`` / ``>`` / ``&`` and wraps each line in a ``<span>``
-    with a class that the dedicated CSS colours according to whether the
-    line is added (``+``), removed (``-``), context (` `), or a hunk
-    header (``@@``). Skips the leading ``---`` / ``+++`` file headers
-    since the section heading already says which two files are being
-    compared.
-    """
-    import difflib
-    import html as _html
-
-    old_path = PROMPTS_DIR / "system.md"
-    new_path = PROMPTS_DIR / "system_slim.md"
-    if not (old_path.exists() and new_path.exists()):
-        return "<p><em>Slim variant not present; diff section omitted.</em></p>"
-
-    old_lines = old_path.read_text().splitlines(keepends=False)
-    new_lines = new_path.read_text().splitlines(keepends=False)
-
-    diff = difflib.unified_diff(
-        old_lines, new_lines,
-        fromfile="system.md", tofile="system_slim.md",
-        lineterm="", n=3,
-    )
-
-    parts: list[str] = ["<pre class=\"diff\"><code>"]
-    n_add = n_del = 0
-    for raw in diff:
-        if raw.startswith("---") or raw.startswith("+++"):
-            continue
-        if raw.startswith("@@"):
-            cls = "hunk"
-        elif raw.startswith("+"):
-            cls = "add"
-            n_add += 1
-        elif raw.startswith("-"):
-            cls = "del"
-            n_del += 1
-        else:
-            cls = "ctx"
-        # difflib emits each diff line WITHOUT a trailing newline. Render
-        # one <span> per line; the ``white-space: pre`` on the parent
-        # preserves indentation.
-        parts.append(
-            f'<span class="diff-line diff-{cls}">'
-            f'{_html.escape(raw)}'
-            f'</span>\n'
-        )
-    parts.append("</code></pre>")
-    summary = (
-        f'<p class="diff-stats"><span class="diff-add-pill">+{n_add}</span>'
-        f' <span class="diff-del-pill">−{n_del}</span> '
-        f'<span class="diff-meta">'
-        f'{len(old_lines):,} → {len(new_lines):,} lines · '
-        f'{old_path.stat().st_size:,} → {new_path.stat().st_size:,} bytes'
-        f'</span></p>'
-    )
-    return summary + "".join(parts)
 
 
 def _load_benchmark() -> list[dict[str, str]]:
@@ -523,7 +466,6 @@ details[open] summary { margin-bottom: 12px; }
 
 <nav>
   <a href="#prompt-variants">Prompt variants</a>
-  <a href="#slim-diff">Slim diff</a>
   <a href="#task-context">Task context</a>
   <a href="#pydantic">Pydantic schema</a>
   <a href="#jsonschema">JSON schema</a>
@@ -536,15 +478,9 @@ details[open] summary { margin-bottom: 12px; }
 
 <section id="prompt-variants">
   <h2>Prompt variants <span class="pill">__N_VARIANTS__ versions</span></h2>
-  <p class="lede">Four prompt variants for A/B comparison. The <em>Default</em> is the active production prompt. The others measure ablations: removing the resolver context, adding web search, or both.</p>
+  <p class="lede">Five prompt variants for A/B comparison. The <em>Default</em> is the active production prompt — slim-canonical (~1,710 tokens); all variants share the same body and differ only in the per-variant tools/context paragraph. The others measure ablations: removing the resolver context, adding web search, swapping to PubMed-evidence injection.</p>
   <div class="tabs" id="prompt-tabs"></div>
   <div id="prompt-tab-contents"></div>
-</section>
-
-<section id="slim-diff">
-  <h2>Slim diff <span class="pill">system.md → system_slim.md</span></h2>
-  <p class="lede">Unified diff of the streamlined sibling variant. The slim prompt trades ~3,780 tokens (~69%) for a tighter call: cardinal-rule logic absorbed into the <code>secreted_only</code> / <code>stable_surface_attachment</code> enum definitions; every reason definition fits a ~200-char budget; opening pMHC framing removed (the <code>pmhc_only_intracellular</code> enum already covers it); the 8-probe <code>Pre-no</code> checklist collapsed to 2 patterns; probes that re-tell the agent to use HGNC / NCBI resolver context dropped (the task message already carries it); per-verdict mechanism examples deferred to the <code>reason</code> enum; the rarely-used <code>extracellular_face_protein</code> reason retired (2 emissions across all D1 history; <code>other</code> already covers the edge case); the clinical-drug aside removed; <strong>PM</strong> defined as plasma membrane on first mention; register pared down for a sophisticated audience. Same accuracy story to be measured.</p>
-  __SLIM_DIFF_HTML__
 </section>
 
 <section id="task-context">
@@ -810,15 +746,12 @@ def main() -> None:
         f'<th colspan="2">{v.replace("_", " ")}</th>' for v in SUBBENCH_VARIANTS
     )
 
-    slim_diff_html = _render_slim_diff_html()
-
     rendered = (
         HTML_TEMPLATE.replace("__SCHEMA_VERSION__", schema_version)
         .replace("__N_VARIANTS__", str(len(variants)))
         .replace("__BENCH_N__", str(len(benchmark)))
         .replace("__SUBBENCH_N__", str(len(subbench)))
         .replace("__SUBBENCH_VARIANT_HEADERS__", subbench_variant_headers)
-        .replace("__SLIM_DIFF_HTML__", slim_diff_html)
         .replace("__PROMPT_VARIANTS_JSON__", json.dumps(variants))
         .replace("__TASK_JSON__", json.dumps(SAMPLE_TASK))
         .replace("__PYDANTIC_JSON__", json.dumps(pydantic_src))

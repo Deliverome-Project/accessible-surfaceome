@@ -57,23 +57,18 @@ GENOME_SCALE = WHOLE_GENOME_N / SUBBENCH_GENE_N  # ~1213x
 
 # Variant order = "amount of context" axis. Each variant gets a darker
 # shade of Claude orange as the context augmentation increases.
-VARIANT_ORDER = ["naive", "ncbi", "slim", "web_naive", "web_ncbi"]
+VARIANT_ORDER = ["naive", "ncbi", "web_naive", "web_ncbi"]
 VARIANT_LABEL = {
     "naive":     "naive\n(no resolver, no web)",
     "ncbi":      "NCBI gene\n(resolver, no web)",
-    "slim":      "slim\n(resolver, ~1.7k-tok prompt)",
     "web_naive": "web only\n(no resolver)",
     "web_ncbi":  "web + NCBI\n(both)",
 }
 # Sequential Claude-orange shades — lightest to darkest. Base Claude
-# orange is #d87851; the 4 shades step around it in luminance. `slim`
-# sits as a sibling of `ncbi` (same resolver, different prompt size)
-# and gets a teal accent to mark the "different axis" — context is
-# identical, only the system-prompt size differs.
+# orange is #d87851; the 4 shades step around it in luminance.
 CLAUDE_ORANGE_SHADES = {
     "naive":     "#f1c4ab",  # tint 50%
     "ncbi":      "#d87851",  # base — matches the main barplot
-    "slim":      "#5b8aa3",  # teal accent — same context as ncbi, shorter prompt
     "web_naive": "#a85b3f",  # shade 25%
     "web_ncbi":  "#7a3b25",  # shade 50%
 }
@@ -104,7 +99,6 @@ FRESH_CELLS: frozenset[tuple[str, str]] = frozenset({
     ("claude-haiku-4-5", "web_ncbi"),
     ("claude-sonnet-4-6", "naive"),
     ("claude-sonnet-4-6", "ncbi"),
-    ("claude-sonnet-4-6", "slim"),
     ("claude-sonnet-4-6", "web_naive"),
     ("claude-sonnet-4-6", "web_ncbi"),
     ("claude-opus-4-7", "naive"),
@@ -144,18 +138,21 @@ POSITIVE_VERDICTS: frozenset[str] = frozenset({"yes", "contextual"})
 # observed cache_read values from new web_ncbi_reduced runs (≈14.7K).
 # Per-variant fallbacks scale by prompt-file char count.
 CACHEABLE_TOKENS_BY_VARIANT: dict[str, int] = {
-    "naive":             13_000,
-    "ncbi":              14_000,
-    # slim system prompt is ~1,720 tokens — empirically BELOW the Sonnet
-    # 4.6 ephemeral-cache floor (observed 0/0 cache_creation/cache_read
-    # across all 147 slim cells on the full benchmark). Setting this to
-    # 0 makes the retroactive cost model report uncached pricing, which
-    # matches the observed behavior.
-    "slim":              0,
-    "web_naive":         13_200,
-    "web_ncbi":          14_000,
-    "web_ncbi_reduced":  14_000,
-    "pubmed_ncbi":       14_500,
+    # NB: after the 2026-05-11 slim canonicalization, every prompt is
+    # ~1,700-1,800 tokens — empirically BELOW Sonnet 4.6's ephemeral-
+    # cache floor (observed 0/0 cache_creation/cache_read across all
+    # 147 slim cells of sonnet/ncbi on the full benchmark). Setting
+    # these values to 0 makes the retroactive cost model report
+    # uncached pricing, matching observed behavior on post-promotion
+    # runs. The OLD pre-promotion runs (~5,500-token prompts) cached
+    # fine; their records carry explicit cache_creation/cache_read
+    # tokens so _effective_cost_with_caching skips this fallback table.
+    "naive":             0,
+    "ncbi":              0,
+    "web_naive":         0,
+    "web_ncbi":          0,
+    "web_ncbi_reduced":  0,
+    "pubmed_ncbi":       0,
 }
 CACHE_CREATION_MULT: float = 1.25
 CACHE_READ_MULT:     float = 0.10
