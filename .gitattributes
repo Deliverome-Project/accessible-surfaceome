@@ -24,3 +24,8 @@ data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge
 # candidate-universe TSVs above: drives gist-style reproduction
 # scripts under data/analysis/figures/. ~160 KB.
 data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
+
+# DB cutoff-tradeoff precomputed points dumped by
+# scripts/triage_bench_db_barplot.py::_dump_db_cutoff_tradeoff_points.
+# Tiny (~1.5 KB); raw-fetched by the figures-folder gist script.
+data/processed/triage_bench/db_cutoff_tradeoff_points.tsv -filter -diff -merge text

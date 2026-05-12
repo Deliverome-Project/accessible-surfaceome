@@ -1627,6 +1627,43 @@ _RECOMMENDED_VARIANT = {
 }
 
 
+def _dump_db_cutoff_tradeoff_points(
+    points_by_group: dict[str, list[dict]],
+) -> None:
+    """Write the cutoff-trade-off precomputed points to a flat TSV.
+
+    Path: ``data/processed/triage_bench/db_cutoff_tradeoff_points.tsv``.
+    The figures-folder gist script reads this so a reader can
+    reproduce the plot without re-loading the raw DB sources.
+    """
+    out_tsv = (
+        ROOT / "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv"
+    )
+    out_tsv.parent.mkdir(parents=True, exist_ok=True)
+    rows: list[dict] = []
+    for group, pts in points_by_group.items():
+        for p in pts:
+            rows.append({
+                "group":     group,
+                "label":     p["label"],
+                "size":      p["size"],
+                "acc":       p["acc"],
+                "pos":       p["pos"],
+                "neg":       p["neg"],
+                "canonical": int(p["label"] == _CANONICAL_VARIANT.get(group)),
+                "recommended": int(p["label"] == _RECOMMENDED_VARIANT.get(group)),
+            })
+    with out_tsv.open("w", newline="") as fh:
+        w = csv.DictWriter(
+            fh,
+            fieldnames=["group", "label", "size", "acc", "pos", "neg",
+                        "canonical", "recommended"],
+            delimiter="\t",
+        )
+        w.writeheader()
+        w.writerows(rows)
+
+
 def make_db_tradeoff_plot(out_dir: Path) -> None:
     """Cutoff-strictness trade-off as five per-source subplots.
 
@@ -1686,6 +1723,12 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
             "pos": n_pos_correct / max(n_pos_total, 1),
             "neg": n_neg_correct / max(n_neg_total, 1),
         })
+
+    # Dump the precomputed points to a flat TSV so the
+    # ``data/analysis/figures/`` gist script can reproduce the plot
+    # without re-loading the raw DB sources. Keep this side-effect
+    # local to the tradeoff plot — none of the other figures use it.
+    _dump_db_cutoff_tradeoff_points(points_by_group)
 
     group_order = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
     fig, axes = plt.subplots(2, 3, figsize=(14, 8.5), sharey=True)
