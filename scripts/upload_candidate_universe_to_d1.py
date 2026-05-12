@@ -1,7 +1,7 @@
 """Upload the genome-wide triageable gene catalog to the `surfaceome_public` D1 mirror.
 
 The triageable set is every protein-coding human gene the triage
-agent could be asked about — 19,325 rows from
+agent could be asked about — 19,324 rows from
 ``data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.tsv``.
 For each, we LEFT JOIN the candidate-universe merge artifact
 (``data/processed/candidate_universe/candidate_universe.tsv``) on
@@ -20,7 +20,7 @@ choice — it returns only the 5 gating columns to the viewer.
 
 Resulting public table:
     candidate_universe_public(universe_version, gene_symbol, uniprot_acc)
-      → 19,325 rows per release; the Worker's catalog endpoint joins
+      → 19,324 rows per release; the Worker's catalog endpoint joins
         these with triage_run_public + surface_annotation.
 
 Idempotent on (universe_version, gene_symbol, uniprot_acc): existing

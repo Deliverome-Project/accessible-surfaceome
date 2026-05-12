@@ -11,7 +11,7 @@ Worker.
 Inputs (canonical, same as the uploader):
 
     1. data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.tsv
-       — 19,325 protein-coding genes (one row per gene_symbol).
+       — 19,324 protein-coding genes (one row per gene_symbol).
     2. data/processed/candidate_universe/candidate_universe.tsv
        — per-gene surface-flag table (7 *_surface_flag columns).
        LEFT-joined onto (1) on gene_symbol_resolved; genes absent
