@@ -1,0 +1,23 @@
+{
+  "variant": "slim",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR3",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR3 (IP3R3) is a Ca2+-release channel resident in the endoplasmic reticulum (ER) membrane. Its six transmembrane domains face the ER lumen and the cytoplasm; the large N-terminal ligand-binding domain and the C-terminal channel domain are both cytoplasmic/ER-luminal, never reaching the extracellular space. Cell-state induction: no published evidence of PM surface display under any stress or activation state. Tissue-restricted surface: not documented in any lineage. Lysosomal exocytosis: not an endolysosomal protein. Dual localization: some MAM/mitochondria-associated membrane localisation reported, but no plasma membrane pool in surface proteomics or flow cytometry studies on intact cells. Stable surface attachment: no secreted or shed ectodomain \u2014 the protein has no signal peptide and is not trafficked through the secretory pathway to the PM. No therapeutic program targets it at the cell surface. The protein body is therefore inaccessible from the extracellular face.",
+  "correct": true,
+  "prompt_tokens": 2096,
+  "completion_tokens": 277,
+  "n_web_searches": 0,
+  "cost_usd": 0.010443,
+  "latency_s": 7.24340029101586,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

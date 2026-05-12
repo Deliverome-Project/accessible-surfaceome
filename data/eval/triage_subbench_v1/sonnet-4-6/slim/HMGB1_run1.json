@@ -1,0 +1,23 @@
+{
+  "variant": "slim",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "HMGB1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "nuclear_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is primarily a nuclear chromatin-binding protein that also has documented cytoplasmic and extracellular roles. Under inflammatory activation, oxidative stress, necrosis, or pyroptosis, HMGB1 is actively secreted or passively released and can bind wash-resistantly to the cell surface via interaction with surface receptors (RAGE, TLR4, TLR2, syndecan-1) on neighboring or the same cells. Multiple flow cytometry and surface proteomics studies on intact non-permeabilized immune and tumor cells confirm surface HMGB1 under these conditions. Therapeutic antibodies and anti-HMGB1 programs targeting its extracellular/surface form exist. Cell-state-induced: yes\u2014secretion/release requires activation or cell death stress. Tissue-restricted: no\u2014broad cell types. Lysosomal exocytosis: not the primary mechanism. Dual localization: nuclear dominant but surface pool documented. Stable surface attachment: binds surface RAGE/TLRs; wash-resistance is partial. Overall best fit is cell_state_induced surface display.",
+  "correct": false,
+  "prompt_tokens": 2039,
+  "completion_tokens": 342,
+  "n_web_searches": 0,
+  "cost_usd": 0.011247,
+  "latency_s": 9.11650062497938,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Degree of wash-resistant surface anchoring vs. soluble secreted pool is debated; surface display may be transient receptor-binding rather than stable co-trafficking.",
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

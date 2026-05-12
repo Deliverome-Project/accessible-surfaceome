@@ -1,0 +1,23 @@
+{
+  "variant": "slim",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "FN1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "secreted_negative",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "Fibronectin exists in two major forms: a soluble plasma form (pFN, dimeric, secreted into circulation) and a cellular/matrix form (cFN, multimeric) assembled at the cell surface and incorporated into ECM fibrils. The NCBI summary explicitly states it is 'present in a dimeric or multimeric form at the cell surface and in extracellular matrix.' Cell-surface fibronectin is detected by surface biotinylation and flow cytometry on intact, non-permeabilized cells, where it is anchored via integrin interactions and fibronectin-fibronectin self-assembly rather than a transmembrane domain or GPI anchor. Because the dominant pool is secreted/matrix-deposited and surface display depends on cell-type context (fibroblasts, endothelial cells, tumor cells) and assembly state, this best fits 'dual_localization' \u2014 a documented PM-associated pool alongside a dominant non-PM (secreted/circulating/ECM) compartment. Anti-FN antibodies and FN-targeting therapeutics (e.g., targeting the ED-B isoform in tumor vasculature with antibody-drug conjugates and radioligand therapies) exploit the cell-surface/matrix-associated pool, confirming surface accessibility in relevant contexts.",
+  "correct": false,
+  "prompt_tokens": 2105,
+  "completion_tokens": 345,
+  "n_web_searches": 0,
+  "cost_usd": 0.01149,
+  "latency_s": 7.367244041990489,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

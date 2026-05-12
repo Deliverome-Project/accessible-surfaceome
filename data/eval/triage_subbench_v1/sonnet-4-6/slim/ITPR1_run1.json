@@ -1,0 +1,23 @@
+{
+  "variant": "slim",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "ITPR1",
+  "replicate": 1,
+  "truth_verdict": "no",
+  "truth_class": "wrong_compartment_negative",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ITPR1 encodes the type 1 IP3 receptor, a large homotetrameric calcium-release channel resident on the endoplasmic reticulum (and to a lesser extent the nuclear envelope). Its membrane topology places all functional domains\u2014ligand-binding, regulatory, and channel-forming\u2014on the cytoplasmic/ER-lumenal face, with no extracellular exposure at the plasma membrane. Checking each contextual bucket: (1) cell_state_induced \u2014 no evidence of stress/activation-induced PM surface display; (2) tissue_restricted_surface \u2014 ER resident across all tissues, not a PM protein in any lineage; (3) lysosomal_exocytosis \u2014 not a lysosomal protein; (4) dual_localization \u2014 no documented stable PM pool detectable by surface biotinylation or flow on intact cells; (5) stable_surface_attachment \u2014 not secreted and no reported wash-resistant PM tethering. No therapeutic antibody/ADC/CAR-T program targets it at the cell surface. It is a canonical ER-resident intracellular channel; no isoform is membrane-anchored at the plasma membrane outer leaflet.",
+  "correct": true,
+  "prompt_tokens": 2100,
+  "completion_tokens": 302,
+  "n_web_searches": 0,
+  "cost_usd": 0.01083,
+  "latency_s": 7.142598916019779,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

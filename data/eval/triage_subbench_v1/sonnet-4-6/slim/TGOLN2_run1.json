@@ -1,0 +1,23 @@
+{
+  "variant": "slim",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TGOLN2",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "induced_borderline",
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "TGOLN2 (TGN46/TGN51) encodes a type I integral membrane protein that cycles constitutively between the trans-Golgi network and early/recycling endosomes, with the overwhelming steady-state pool residing in the TGN. Its lumenal/extracellular domain faces the Golgi lumen and endosomal interior \u2014 both topologically equivalent to extracellular space \u2014 but is never stably present at the plasma membrane outer leaflet. Checking every contextual bucket: (1) cell_state_induced \u2014 no documented stress/activation-induced PM surface display; (2) tissue_restricted_surface \u2014 no lineage-specific PM expression reported; (3) lysosomal_exocytosis \u2014 cycles to early endosomes, not lysosomes, and no lysosomal exocytosis to PM documented; (4) dual_localization \u2014 transient PM passage during recycling is a minor intermediate, not a stable PM pool; surface biotinylation/flow studies on intact cells show negligible steady-state PM signal; (5) stable_surface_attachment \u2014 not a secreted protein. No therapeutic programs target it on the cell surface. The protein is an endomembrane resident by function and localization.",
+  "correct": false,
+  "prompt_tokens": 2050,
+  "completion_tokens": 312,
+  "n_web_searches": 0,
+  "cost_usd": 0.01083,
+  "latency_s": 7.532655916991644,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}

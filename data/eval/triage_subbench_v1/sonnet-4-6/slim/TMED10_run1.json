@@ -1,0 +1,23 @@
+{
+  "variant": "slim",
+  "model": "claude-sonnet-4-6",
+  "gene_symbol": "TMED10",
+  "replicate": 1,
+  "truth_verdict": "contextual",
+  "truth_class": "dual_localization_borderline",
+  "predicted_verdict": "contextual",
+  "predicted_reason": "dual_localization",
+  "verdict_reasoning": "TMED10 (TMP21/p24delta1) is a type I single-pass transmembrane protein of the p24 family primarily resident in the Golgi/ERGIC and cycling through the secretory pathway. The NCBI summary explicitly notes localization to both the plasma membrane and Golgi cisternae, indicating a documented PM pool alongside a dominant endomembrane compartment \u2014 a dual_localization pattern. It traffics between Golgi and PM via vesicular cycling, so surface display is real but not the dominant steady-state localization. Contextual buckets checked: cell_state_induced \u2014 not the documented mechanism; tissue_restricted_surface \u2014 ubiquitously expressed; lysosomal_exocytosis \u2014 not documented; dual_localization \u2014 YES, fits: PM pool confirmed alongside dominant Golgi residence; stable_surface_attachment \u2014 not applicable (it is a TM protein, not secreted). Therefore dual_localization is the best fit for contextual verdict.",
+  "correct": true,
+  "prompt_tokens": 2090,
+  "completion_tokens": 305,
+  "n_web_searches": 0,
+  "cost_usd": 0.010845,
+  "latency_s": 7.389335041982122,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Quantitative fraction at PM vs. Golgi under baseline conditions is not precisely defined; some studies treat it primarily as Golgi-resident with minor PM cycling.",
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 0,
+  "error": null,
+  "raw_text": ""
+}
