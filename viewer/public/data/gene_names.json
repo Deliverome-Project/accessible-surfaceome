@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-05-12T14:56:45.778781+00:00",
-  "n_genes": 19325,
+  "generated_at": "2026-05-12T16:53:35.044978+00:00",
+  "n_genes": 19324,
   "source": "data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.tsv",
   "names": {
     "A1BG": {
@@ -38581,10 +38581,6 @@
         "SDH4",
         "cybS"
       ]
-    },
-    "SEA": {
-      "name": "S13 erythroblastosis (avian) oncogene homolog",
-      "synonyms": []
     },
     "SEC13": {
       "name": "SEC13 homolog, nuclear pore and COPII component",

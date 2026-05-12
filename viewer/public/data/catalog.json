@@ -1,8 +1,8 @@
 {
-"generated_at": "2026-05-12T15:27:13+00:00",
+"generated_at": "2026-05-12T16:53:35+00:00",
 "universe_version": "snapshot_local",
 "bench_version": null,
-"n_rows": 19325,
+"n_rows": 19324,
 "n_with_triage": 132,
 "n_with_deep_dive": 2,
 "rows": [
@@ -221726,20 +221726,6 @@
 },
 {
 "symbol": "SDSL",
-"uniprot": "",
-"n_sources": 0,
-"db": {
-"uniprot": 0,
-"go": 0,
-"surfy": 0,
-"cspa": 0,
-"hpa": 0
-},
-"triage": null,
-"deep_dive": false
-},
-{
-"symbol": "SEA",
 "uniprot": "",
 "n_sources": 0,
 "db": {
