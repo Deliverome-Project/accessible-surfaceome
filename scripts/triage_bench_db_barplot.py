@@ -32,7 +32,6 @@ Outputs (PDF + PNG via the brand plotting config):
 from __future__ import annotations
 
 import csv
-import json
 import os
 from collections import defaultdict
 from pathlib import Path
@@ -127,7 +126,14 @@ VERDICT_LABEL = {
 ROOT = Path(__file__).resolve().parents[1]
 BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
 CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
-LLM_RUNS_DIR = ROOT / "data/eval/triage_bench_v1"
+# Per-cell LLM predictions used to come from the JSON tree at
+# data/eval/triage_bench_v1/<model>/<variant>/<gene>_run1.json. Those
+# files are now sourced from D1 — uploaded by
+# ``scripts/upload_triage_runs_to_d1.py --run-id mainbench_canonical_v1
+# --bench-tsv data/eval/triage_benchmark_v1.tsv --runs-root
+# data/eval/triage_bench_v1``. Update this constant + re-upload if the
+# bench is re-run with a different prompt.
+MAINBENCH_D1_RUN_ID = "mainbench_canonical_v1"
 
 # When True, ``load_benchmark_with_votes`` rewrites the per-benchmark
 # UniProt and CSPA flags using the optimized cutoffs surfaced by the
@@ -164,20 +170,57 @@ def _optimized_cspa_accs() -> set[str]:
     return accs
 
 
+def _load_all_mainbench_records() -> list[dict]:
+    """Pull every per-cell main-bench record from D1 in a single round-trip.
+
+    Lazy-cached via ``functools.cache`` so repeated calls within one
+    script run share one D1 query (we hit it from ``_load_llm_predictions``
+    once per LLM cell + ``_cell_cost_per_call`` once per cell, ~21 calls
+    total without the cache).
+    """
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.env import load_env
+    load_env()
+    with D1Client() as d1:
+        return d1.query(
+            "SELECT gene_symbol, model, prompt_variant, replicate, "
+            "       predicted_verdict, predicted_reason, "
+            "       predicted_confidence, predicted_key_uncertainty, "
+            "       verdict_reasoning, "
+            "       prompt_tokens, completion_tokens, "
+            "       cache_creation_tokens, cache_read_tokens, "
+            "       n_web_searches, cost_usd, latency_s "
+            "FROM triage_run WHERE run_id = ? AND replicate = 1;",
+            [MAINBENCH_D1_RUN_ID],
+        )
+
+
+_MAINBENCH_CACHE: list[dict] | None = None
+
+
+def _mainbench_records() -> list[dict]:
+    """Memoised wrapper around ``_load_all_mainbench_records``."""
+    global _MAINBENCH_CACHE
+    if _MAINBENCH_CACHE is None:
+        _MAINBENCH_CACHE = _load_all_mainbench_records()
+    return _MAINBENCH_CACHE
+
+
 def _load_llm_predictions(model: str, variant: str) -> dict[str, dict]:
-    """Return {gene_symbol: run_record_dict} for one cell."""
-    out: dict[str, dict] = {}
-    run_dir = LLM_RUNS_DIR / model / variant
-    if not run_dir.exists():
-        return out
-    for path in run_dir.glob("*_run1.json"):
-        try:
-            data = json.loads(path.read_text())
-        except json.JSONDecodeError:
-            continue
-        gene = data.get("gene_symbol") or path.stem.split("_run")[0]
-        out[gene] = data
-    return out
+    """Return ``{gene_symbol: run_record_dict}`` for one (model, variant) cell.
+
+    Reads from D1 (run_id=mainbench_canonical_v1) rather than the legacy
+    ``data/eval/triage_bench_v1/<model>/<variant>/<gene>_run1.json`` tree.
+    Records carry the same shape as the legacy JSONs for the fields the
+    plot script consumes (``predicted_verdict``, ``predicted_confidence``,
+    token counts, costs).
+    """
+    model_full = f"claude-{model}"
+    return {
+        r["gene_symbol"]: r
+        for r in _mainbench_records()
+        if r["model"] == model_full and r["prompt_variant"] == variant
+    }
 
 
 def _surface_vote(verdict: str | None) -> bool:
@@ -724,21 +767,20 @@ def _llm_cost_per_call() -> dict[str, float]:
 
 
 def _cell_cost_per_call(model: str, variant: str) -> float:
-    files = sorted((LLM_RUNS_DIR / model / variant).glob("*_run1.json"))
-    if not files:
+    # Read the cell's per-record telemetry from D1 (uploaded under
+    # MAINBENCH_D1_RUN_ID) — same fields the legacy JSON tree carried.
+    cell_records = _load_llm_predictions(model, variant)
+    records = list(cell_records.values())
+    if not records:
         return 0.0
     pt_total = cr_total = cw_total = ot_total = ws_total = 0
-    for f in files:
-        try:
-            d = json.loads(f.read_text())
-        except json.JSONDecodeError:
-            continue
+    for d in records:
         pt_total += int(d.get("prompt_tokens") or 0)
         cr_total += int(d.get("cache_read_tokens") or 0)
         cw_total += int(d.get("cache_creation_tokens") or 0)
         ot_total += int(d.get("completion_tokens") or 0)
         ws_total += int(d.get("n_web_searches") or 0)
-    n = len(files)
+    n = len(records)
     pt = pt_total / n
     cr = cr_total / n
     cw = cw_total / n
