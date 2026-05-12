@@ -123,9 +123,15 @@
  * ============================================================ */
 
 .tableScroll {
-  overflow-x: auto;
+  /* Element-scroll for the virtualized body: the table itself owns
+   * the scrollbar, the page above (hero / toolbar / footnotes) stays
+   * visible without jumping. Height clamped to viewport so 19k rows
+   * never push the document scroll to absurd lengths. */
+  overflow: auto;
+  max-height: min(80vh, 800px);
   border-top: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
+  position: relative;
 }
 
 .table {
@@ -141,6 +147,15 @@
   top: 0;
   z-index: 1;
   background: var(--bg);
+  /* Stickiness against the .tableScroll container — thead floats over
+   * the absolutely-positioned virtualized rows below. */
+}
+
+/* When the virtualizer mounts, the tbody becomes a positioning
+ * context (display:block + height = totalSize) so absolutely-
+ * positioned rows scroll naturally inside .tableScroll. */
+.table tbody {
+  position: relative;
 }
 
 .table th,
@@ -401,6 +416,17 @@
   text-align: center;
   padding: var(--space-12) !important;
   color: var(--muted);
+}
+
+/* Placeholder row shown during SSR / before the virtualizer mounts
+ * client-side. Same vertical footprint as the .empty cell so the
+ * pre-hydration table has presence and the page doesn't visibly jump
+ * once the rows fill in. */
+.loadingRow {
+  text-align: center;
+  padding: var(--space-12) !important;
+  color: var(--muted);
+  font-style: italic;
 }
 
 /* ============================================================

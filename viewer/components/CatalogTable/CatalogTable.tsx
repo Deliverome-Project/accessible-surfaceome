@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CatalogRow } from "../../lib/surfaceome";
 import styles from "./CatalogTable.module.css";
+
+// Per-row height estimate fed to @tanstack/react-virtual. Rows with
+// a triage verdict are taller (two lines — verdict pill above, reason
+// underneath) so we keep the estimate slightly above the no-triage
+// height. The virtualizer dynamically re-measures as rows enter the
+// viewport, so this only needs to be in the right ballpark for the
+// initial scroll-height calc and overscan window.
+const ROW_ESTIMATE_PX = 48;
+const ROW_OVERSCAN = 12;
 
 // Five gating DBs. DeepTMHMM + COMPARTMENTS were demoted from the
 // M1 universe gate upstream (kept in the D1 row for fidelity but
@@ -50,6 +60,22 @@ export function CatalogTable({
   const [sortKey, setSortKey] = useState<SortKey>("deep_dive");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
+  // `mounted` gates the virtualized body so the SSR pass renders an
+  // empty tbody — the table header, toolbar, and footnotes still
+  // hydrate from server HTML for snappy first paint, and the rows
+  // appear on the next client tick. This keeps the static-export
+  // HTML tiny (was 22 MB of <tr>; now ~50 KB) and trades a brief
+  // empty-table flash for a fast initial paint + interactive load.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // The table is the scroll container (overflow-y: auto in CSS), so
+  // rows can scroll under the sticky header without dragging the
+  // whole page around. Element-scroll virtualization is more
+  // predictable than window-scroll on first paint — no need to
+  // measure tbody.offsetTop against window scroll.
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return rows.filter((r) => {
@@ -76,6 +102,16 @@ export function CatalogTable({
     });
     return copy;
   }, [filtered, sortKey, sortDir]);
+
+  const virtualizer = useVirtualizer({
+    count: sorted.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_ESTIMATE_PX,
+    overscan: ROW_OVERSCAN,
+  });
+
+  const virtualItems = virtualizer.getVirtualItems();
+  const totalSize = virtualizer.getTotalSize();
 
   function setSort(k: SortKey) {
     if (k === sortKey) {
@@ -154,7 +190,7 @@ export function CatalogTable({
         ) : null}
       </p>
 
-      <div className={styles.tableScroll}>
+      <div className={styles.tableScroll} ref={scrollRef}>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -213,11 +249,46 @@ export function CatalogTable({
               />
             </tr>
           </thead>
-          <tbody>
-            {sorted.map((r) => (
-              <CatalogRowView key={`${r.symbol}-${r.uniprot}`} row={r} />
-            ))}
-            {sorted.length === 0 ? (
+          <tbody
+            style={
+              mounted && sorted.length > 0
+                ? { height: totalSize, position: "relative", display: "block" }
+                : undefined
+            }
+          >
+            {/* SSR / pre-hydration: a single loading row keeps the
+                table footprint stable and tells the reader the data
+                is on its way. */}
+            {!mounted ? (
+              <tr aria-hidden="true">
+                <td
+                  colSpan={5 + DB_KEYS.length}
+                  className={styles.loadingRow}
+                >
+                  Loading {sorted.length.toLocaleString()} rows…
+                </td>
+              </tr>
+            ) : null}
+            {/* Post-hydration: only the visible window of rows
+                renders. Each row is absolutely positioned inside the
+                tbody (height set above to totalSize) so the
+                browser's scroll container reserves the right amount
+                of room without us having to ship 19k <tr>s. */}
+            {mounted && sorted.length > 0
+              ? virtualItems.map((item) => {
+                  const r = sorted[item.index];
+                  return (
+                    <CatalogRowView
+                      key={`${r.symbol}-${r.uniprot}`}
+                      row={r}
+                      measureRef={virtualizer.measureElement}
+                      dataIndex={item.index}
+                      virtualStart={item.start}
+                    />
+                  );
+                })
+              : null}
+            {mounted && sorted.length === 0 ? (
               <tr>
                 <td colSpan={5 + DB_KEYS.length} className={styles.empty}>
                   No rows match these filters.
@@ -288,7 +359,17 @@ function SortableHeader({
   );
 }
 
-function CatalogRowView({ row }: { row: CatalogRow }) {
+function CatalogRowView({
+  row,
+  measureRef,
+  dataIndex,
+  virtualStart,
+}: {
+  row: CatalogRow;
+  measureRef?: (el: HTMLTableRowElement | null) => void;
+  dataIndex?: number;
+  virtualStart?: number;
+}) {
   const symbolCell = row.deep_dive ? (
     <Link href={`/${row.symbol}/`} className={styles.symbolLink}>
       {row.symbol}
@@ -296,8 +377,30 @@ function CatalogRowView({ row }: { row: CatalogRow }) {
   ) : (
     <span className={styles.symbolText}>{row.symbol}</span>
   );
+  // When virtualStart is set we position the row absolutely inside
+  // the (display:block) tbody. The tbody's height is set to the
+  // virtualizer's totalSize so the scrollbar reflects the full row
+  // count even though only the visible window is in the DOM.
+  const style: React.CSSProperties | undefined =
+    virtualStart != null
+      ? {
+          position: "absolute",
+          top: 0,
+          left: 0,
+          transform: `translateY(${virtualStart}px)`,
+          display: "table",
+          width: "100%",
+          tableLayout: "fixed",
+        }
+      : undefined;
   return (
-    <tr className={styles.row} data-deep-dive={row.deep_dive || undefined}>
+    <tr
+      ref={measureRef}
+      data-index={dataIndex}
+      className={styles.row}
+      data-deep-dive={row.deep_dive || undefined}
+      style={style}
+    >
       <td className={styles.symbolCell}>{symbolCell}</td>
       <td className={styles.uniprotCell}>{row.uniprot}</td>
       <td className={styles.nCell}>
