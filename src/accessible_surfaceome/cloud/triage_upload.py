@@ -193,7 +193,9 @@ def _insert_run(
             ncbi_summary=record.get("resolver_ncbi_summary"),
         )
 
-    d1.query(
+    # SQLite RETURNING is supported on D1 (SQLite 3.35+). We need the new
+    # row's id to write child rows in triage_search_log.
+    rows = d1.query(
         "INSERT INTO triage_run ("
         " run_id, gene_symbol, uniprot_acc, bench_version, model, prompt_variant,"
         " prompt_sha, schema_version, replicate, predicted_verdict, predicted_reason,"
@@ -203,7 +205,8 @@ def _insert_run(
         " n_web_searches, cost_usd, latency_s, error, raw_text,"
         " resolver_context_sha, temperature, top_p, max_tokens,"
         " api_response_id, api_stop_reason, api_model"
-        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        " RETURNING id;",
         [
             run_id,
             record["gene_symbol"],
@@ -240,6 +243,45 @@ def _insert_run(
             record.get("api_model"),
         ],
     )
+
+    # Persist any tool-call traces the runner captured. Each entry is
+    # {step_index, tool, query, n_results, top_results: [{title, url, snippet}, ...]}.
+    # No-op for naive/ncbi/pubmed_ncbi variants (search_log stays empty there).
+    search_log = record.get("search_log") or []
+    if rows and search_log:
+        triage_run_id = rows[0].get("id")
+        if triage_run_id is not None:
+            _insert_search_log_rows(d1, triage_run_id, search_log)
+
+
+def _insert_search_log_rows(
+    d1: D1Client,
+    triage_run_id: int,
+    search_log: list[dict[str, Any]],
+) -> None:
+    """Batch-insert one triage_search_log row per tool call."""
+    statements: list[tuple[str, list[Any]]] = []
+    for entry in search_log:
+        top_results = entry.get("top_results")
+        # Skip rows that didn't pair with a result block (None top_results
+        # would mean the runner saw a server_tool_use without a matching
+        # web_search_tool_result — recording with NULL is still useful).
+        results_json = json.dumps(top_results) if top_results is not None else None
+        statements.append((
+            "INSERT INTO triage_search_log "
+            "(triage_run_id, step_index, tool, query, n_results, top_results_json) "
+            "VALUES (?, ?, ?, ?, ?, ?);",
+            [
+                triage_run_id,
+                int(entry.get("step_index") or 0),
+                str(entry.get("tool") or "unknown"),
+                entry.get("query"),
+                _maybe_int(entry.get("n_results")),
+                results_json,
+            ],
+        ))
+    if statements:
+        d1.batch(statements)
 
 
 def _maybe_float(v: Any) -> float | None:
