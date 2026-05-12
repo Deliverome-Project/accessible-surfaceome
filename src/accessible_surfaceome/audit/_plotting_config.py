@@ -125,15 +125,24 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'figure.facecolor': 'none',
         'savefig.facecolor': 'none',
 
-        # Font
+        # Font (project convention is +30% from matplotlib defaults so
+        # exported figures stay readable when embedded in slides / PDFs)
         'font.family': 'sans-serif',
         'font.sans-serif': ['Manrope', 'Outfit', 'DejaVu Sans', 'Liberation Sans', 'Arial'],
         'font.serif': ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
-        'font.size': 11,
+        'font.size': 14,
 
         # Axes
-        'axes.labelsize': 12,
-        'axes.titlesize': 14,
+        'axes.labelsize': 16,
+        # Titles are suppressed by config (project convention is to
+        # caption figures rather than title them). Existing
+        # ``ax.set_title(...)`` calls become visual no-ops without
+        # raising — titlesize=0 + zero padding means no space is
+        # reserved either. To re-enable for a one-off plot, set
+        # ``axes.titlesize`` back to e.g. 16 via plt.rcParams after
+        # calling setup_plotting_style.
+        'axes.titlesize': 0,
+        'axes.titlepad': 0,
         'axes.titleweight': 'medium',
         'axes.labelweight': 'normal',
         'axes.spines.top': False,
@@ -152,8 +161,8 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'grid.color': COLORS['line'],
 
         # Ticks
-        'xtick.labelsize': 10,
-        'ytick.labelsize': 10,
+        'xtick.labelsize': 13,
+        'ytick.labelsize': 13,
         'xtick.color': COLORS['dark'],
         'ytick.color': COLORS['dark'],
 
@@ -161,7 +170,8 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'legend.frameon': True,
         'legend.framealpha': 0.9,
         'legend.fancybox': True,
-        'legend.fontsize': 10,
+        'legend.fontsize': 13,
+        'legend.title_fontsize': 14,
 
         # Lines
         'lines.linewidth': 2,
@@ -174,6 +184,37 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
 
     # Default despine to top/right for a clean look.
     sns.despine(top=True, right=True)
+
+    # Project convention: figures don't carry titles or suptitles — they
+    # get explanatory captions in the document around them instead. The
+    # rcParams above zero out axes titles; this also patches Figure.suptitle
+    # and Axes.set_title to be visual no-ops so existing call sites stop
+    # rendering text without needing a sweep of edits. Both originals are
+    # preserved at attribute names below for callers that need to opt back
+    # in (e.g. a one-off interactive plot in a notebook).
+    _disable_titles_globally()
+
+
+# Originals are stashed once at module import time so this is idempotent —
+# repeated setup_plotting_style() calls don't re-wrap an already-wrapped
+# function.
+_ORIGINAL_AXES_SET_TITLE = plt.Axes.set_title
+_ORIGINAL_FIGURE_SUPTITLE = plt.Figure.suptitle
+
+
+def _disable_titles_globally() -> None:
+    """Replace Axes.set_title and Figure.suptitle with no-ops.
+
+    Callers that want a title back can call ``set_title`` /  ``suptitle``
+    via the ``_ORIGINAL_*`` references on this module, or set the
+    rcParam ``axes.titlesize`` to a positive value and re-import.
+    """
+
+    def _no_title(self, *_args, **_kwargs):
+        return None
+
+    plt.Axes.set_title = _no_title  # type: ignore[assignment]
+    plt.Figure.suptitle = _no_title  # type: ignore[assignment]
 
 def save_figure(fig, filename, output_dir='figures', formats=('pdf', 'png')):
     """
