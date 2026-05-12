@@ -906,10 +906,27 @@ def _load_raw_hpa() -> dict[str, dict]:
 
 
 def _hpa_pm_flag(r: dict) -> bool:
-    """Raw HPA PM call — Plasma membrane in Main or Additional location."""
-    main = (r.get("Main location") or "").lower()
-    addl = (r.get("Additional location") or "").lower()
-    return "plasma membrane" in main or "plasma membrane" in addl
+    """Canonical HPA surface flag — mirrors the loader at
+    ``src/accessible_surfaceome/sources/hpa.py:276-278``:
+
+        hpa_surface_flag = (hpa_pm_accessible == 1) | (hpa_junctional == 1)
+
+    where ``hpa_pm_accessible`` = Plasma membrane appears in Enhanced /
+    Supported / Approved tier (NOT Uncertain), and ``hpa_junctional``
+    = Cell Junctions in those same tiers.
+
+    Earlier versions of this helper used "Plasma membrane in Main or
+    Additional location", which is BOTH looser (includes Uncertain-tier
+    PM rows the loader drops, +329 proteins) AND tighter (misses 173
+    Cell-Junctions rows the loader counts as surface). Stay aligned to
+    the loader rule — when in doubt cross-check via
+    ``_assert_canonical_sizes_match_universe`` below.
+    """
+    for tier_col in ("Enhanced", "Supported", "Approved"):
+        v = (r.get(tier_col) or "").lower()
+        if "plasma membrane" in v or "cell junctions" in v:
+            return True
+    return False
 
 
 # UniProt's `subcellular_locations` field is pipe-delimited. Cell-membrane
@@ -1204,24 +1221,28 @@ def _universe_size_per_variant() -> dict[str, int]:
     sizes: dict[str, int] = {}
 
     # UniProt — count rows in raw UniProt TSV matching each criterion.
-    n_strict = n_perm = n_tm = 0
+    # The CANONICAL flag (merge/loaders.py:117) is `strict OR
+    # feature_topo_extracellular > 0` — strict alone gives 415 which
+    # is NOT the current uniprot_surface_flag set (3175).
+    n_canonical = n_perm = n_tm = 0
     with UNIPROT_RAW_TSV.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
             locs = r.get("subcellular_locations") or ""
             parts = set(locs.split("|")) if locs else set()
             strict = _uniprot_has_strict_term(locs)
-            perm = strict or "Cell membrane" in parts \
-                or _uniprot_feat_int(r, "feature_topo_extracellular_count") > 0
+            topo = _uniprot_feat_int(r, "feature_topo_extracellular_count") > 0
+            canonical = strict or topo
+            perm = canonical or "Cell membrane" in parts
             tm = (_uniprot_feat_int(r, "feature_transmembrane_count") > 0
                   or _uniprot_feat_int(r, "feature_signal_count") > 0
                   or strict)
-            if strict:
-                n_strict += 1
+            if canonical:
+                n_canonical += 1
             if perm:
                 n_perm += 1
             if tm:
                 n_tm += 1
-    sizes["UniProt baseline"] = n_strict
+    sizes["UniProt baseline"] = n_canonical
     sizes["UniProt permissive\n(incl. plain Cell membrane)"] = n_perm
     sizes["UniProt TM-or-signal-or-surface\n(topology proxy)"] = n_tm
 
@@ -1294,6 +1315,55 @@ def _universe_size_per_variant() -> dict[str, int]:
     return sizes
 
 
+# Canonical baselines should reproduce candidate_universe.tsv flag counts
+# within a small tolerance. The merge step drops some raw-source positives
+# (split-mapping ambiguous, unmappable to UniProt anchor) so a perfect
+# match isn't expected — but a >15% drift means the recomputed rule has
+# diverged from the loader (the UniProt 415-vs-3175 bug class).
+_CANONICAL_FLAG_COL = {
+    "UniProt baseline": "uniprot_surface_flag",
+    "GO baseline":      "go_surface_flag",
+    "HPA baseline":     "hpa_surface_flag",
+    "SURFY baseline":   "surfy_surface_flag",
+    "CSPA baseline":    "cspa_surface_flag",
+}
+
+
+def _assert_canonical_sizes_match_universe(sizes: dict[str, int],
+                                            tol: float = 0.15) -> None:
+    """Fail loud if a canonical recompute drifts from the universe flag
+    count by more than ``tol`` (default 15%). Catches the class of bug
+    where the analysis re-implements a loader rule incorrectly."""
+    univ_counts: dict[str, int] = dict.fromkeys(_CANONICAL_FLAG_COL.values(), 0)
+    with CAND_TSV_PATH.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            for col in univ_counts:
+                if r.get(col) == "1":
+                    univ_counts[col] += 1
+
+    drifts: list[str] = []
+    for variant_name, flag_col in _CANONICAL_FLAG_COL.items():
+        recomputed = sizes.get(variant_name, 0)
+        universe = univ_counts[flag_col]
+        if universe == 0:
+            continue
+        drift = abs(recomputed - universe) / universe
+        marker = "OK" if drift <= tol else "DRIFT"
+        print(f"  [{marker}] {variant_name:<18s}  recompute={recomputed:5d}  "
+              f"universe={universe:5d}  drift={drift*100:.1f}%")
+        if drift > tol:
+            drifts.append(
+                f"{variant_name}: recompute={recomputed}, universe={universe} "
+                f"(drift={drift*100:.1f}% > tol={tol*100:.0f}%)"
+            )
+    if drifts:
+        raise AssertionError(
+            "Canonical filter sizes diverge from candidate_universe.tsv — "
+            "the analysis rule has drifted from the loader. Fix:\n  - "
+            + "\n  - ".join(drifts)
+        )
+
+
 def make_db_tradeoff_plot(out_dir: Path) -> None:
     """Cutoff-strictness trade-off: universe size vs benchmark accuracy.
 
@@ -1314,6 +1384,8 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
     _inject_raw_source_flags(rows, bench_symbols)
 
     sizes = _universe_size_per_variant()
+    print("Canonical baseline sanity check (raw recompute vs universe flags):")
+    _assert_canonical_sizes_match_universe(sizes)
 
     # Compute accuracy per variant under the same per-source rules as
     # the bar plot.
