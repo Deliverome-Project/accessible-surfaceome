@@ -2,3 +2,10 @@ data/raw/** filter=lfs diff=lfs merge=lfs -text
 data/external/** filter=lfs diff=lfs merge=lfs -text
 data/processed/** filter=lfs diff=lfs merge=lfs -text
 data/analysis/** filter=lfs diff=lfs merge=lfs -text
+
+# Small reference TSVs that ship as plain git so a fresh `git clone`
+# can run the genome-wide sweeps without an LFS-hydration step. The
+# 3.4 MB upstream NCBI protein-coding catalog is the canonical input
+# for the 19,464-gene sweep; the M1-subtracted view is computed from
+# it. Both well below GitHub's 50 MB soft limit.
+data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv -filter -diff -merge text

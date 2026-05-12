@@ -1193,14 +1193,22 @@ GROUP_COVERAGE_FN: dict[str, "callable"] = {
 }
 
 
-def _benchmark_with_universe_join() -> tuple[list[dict], dict[str, str]]:
+def _benchmark_with_universe_join(
+    *, include_outside_universe: bool = False,
+) -> tuple[list[dict], dict[str, str]]:
     """Load benchmark rows joined to candidate_universe by UniProt
     accession. Returns ``(rows, symbols)`` — one dict per benchmark
     protein found in candidate_universe, plus a mapping
-    ``uniprot_accession → gene_symbol`` for all benchmark rows
-    (including those dropped from the universe join). Proteins missing
-    from the universe are dropped from ``rows`` but kept in
-    ``symbols`` so HPA's raw-by-symbol lookup can still recover them.
+    ``uniprot_accession → gene_symbol`` for all 147 benchmark rows
+    (including those dropped from the universe join).
+
+    When ``include_outside_universe=True`` (used by the cutoff trade-off
+    plot to make its denominator match the by-class plot), additional
+    stub rows are emitted for benchmark proteins NOT in
+    candidate_universe — all `*_surface_flag` columns default to "0",
+    so canonical lambdas vote False, but the raw-source injection step
+    can still set `_uniprot_tm_or_signal_or_surface`, `_hpa_pm_raw`,
+    etc. by pulling from upstream TSVs.
     """
     truth_by_acc: dict[str, str] = {}
     symbols: dict[str, str] = {}
@@ -1209,12 +1217,39 @@ def _benchmark_with_universe_join() -> tuple[list[dict], dict[str, str]]:
             truth_by_acc[r["uniprot_acc"]] = r["ground_truth_verdict"]
             symbols[r["uniprot_acc"]] = r["gene_symbol"]
     out: list[dict] = []
+    seen: set[str] = set()
     with CAND_TSV_PATH.open() as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
             acc = r["uniprot_accession"]
             if acc in truth_by_acc:
                 r["ground_truth_verdict"] = truth_by_acc[acc]
                 out.append(r)
+                seen.add(acc)
+    if include_outside_universe:
+        # Stub-row template — every column referenced by a variant
+        # lambda defaults to a falsy string. The raw-source injection
+        # step still runs and can flip these via injected `_*` keys.
+        for acc, truth in truth_by_acc.items():
+            if acc in seen:
+                continue
+            out.append({
+                "uniprot_accession": acc,
+                "ground_truth_verdict": truth,
+                "uniprot_surface_flag": "0",
+                "go_surface_flag": "0",
+                "hpa_surface_flag": "0",
+                "surfy_surface_flag": "0",
+                "cspa_surface_flag": "0",
+                "go_has_experimental": "0",
+                "go_has_curated": "0",
+                "go_has_sequence": "0",
+                "go_has_electronic": "0",
+                "cspa_is_high_confidence": "0",
+                "cspa_is_putative": "0",
+                "cspa_is_unspecific": "0",
+                "n_sources_surface": "0",
+                "surfy_ml_score": "",
+            })
     return out, symbols
 
 
@@ -1566,7 +1601,12 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
         different from canonical. Annotated on UniProt and CSPA only.
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
-    rows, bench_symbols = _benchmark_with_universe_join()
+    # Score on ALL 147 benchmark proteins (include the 6 that aren't
+    # in candidate_universe) so the denominator matches the by-class
+    # final plot. Stub rows default to flag="0"; raw-source injection
+    # can still rescue them via _uniprot_tm_or_signal_or_surface,
+    # _hpa_pm_raw, etc.
+    rows, bench_symbols = _benchmark_with_universe_join(include_outside_universe=True)
     _inject_raw_source_flags(rows, bench_symbols)
 
     sizes = _universe_size_per_variant()
