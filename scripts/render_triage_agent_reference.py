@@ -36,7 +36,9 @@ SUBBENCH_PATH = REPO_ROOT / "data" / "eval" / "triage_subbench_v1.tsv"
 SUBBENCH_RUNS_DIR = REPO_ROOT / "data" / "eval" / "triage_subbench_v1"
 OUTPUT_HTML = REPO_ROOT / "docs" / "eval" / "triage_agent_reference.html"
 
-SUBBENCH_MODELS: list[str] = []  # haiku/sonnet runs stale under v0.9.0 prompts; regenerate before re-listing
+SUBBENCH_MODELS: list[str] = ["haiku-4-5", "sonnet-4-6", "opus-4-7"]
+# All 4 variants the runner exposes. Cells without run data render as
+# 0/0 (the grid builder degrades gracefully on missing directories).
 SUBBENCH_VARIANTS = ["naive", "ncbi", "web_naive", "web_ncbi"]
 
 # (slug, filename, display label, blurb)
@@ -240,7 +242,12 @@ def _score_subbench(subbench_rows: list[dict[str, str]]) -> dict:
                 pv = data.get("predicted_verdict") or data.get("verdict")
                 pr = data.get("predicted_reason") or data.get("reason")
                 n_runs += 1
-                v_ok = pv == tv
+                # yes/contextual are interchangeable for verdict accuracy
+                # (mirrors the runner's correctness rule); reason match is
+                # still strict.
+                v_ok = pv is not None and (
+                    pv == tv or (pv in ("yes", "contextual") and tv in ("yes", "contextual"))
+                )
                 r_ok = v_ok and pr == tr
                 n_v += int(v_ok)
                 n_r += int(r_ok)
@@ -499,7 +506,7 @@ details[open] summary { margin-bottom: 12px; }
 
 <section id="subbench">
   <h2>17-gene subbench <span class="pill">__SUBBENCH_N__ genes</span></h2>
-  <p class="lede">Persistent-error subset at <code>data/eval/triage_subbench_v1.tsv</code> — every entry has been a stable source of FN / FP across iterations. Used for rapid prompt-iteration cycles. Per-gene definitions below; the score grid is omitted until runs are regenerated under the current v0.9.0 prompts (prior haiku/sonnet results were stale).</p>
+  <p class="lede">Persistent-error subset at <code>data/eval/triage_subbench_v1.tsv</code> — every entry was missed at least once by a non-Haiku cell, or twice across the two Haiku cells, on the most recent full-benchmark sweep. Used for rapid prompt-iteration cycles. Score grid below shows verdict accuracy (V) and verdict+reason accuracy (R) for each (model, prompt-variant) pair.</p>
 
   <table class="subbench-grid" id="subbench-grid-table" hidden>
     <thead>
