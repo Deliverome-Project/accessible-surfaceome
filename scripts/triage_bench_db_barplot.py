@@ -1442,20 +1442,63 @@ def _assert_canonical_sizes_match_universe(sizes: dict[str, int],
         )
 
 
+# Variant labels (long → short) for the cutoff trade-off scatter.
+_VARIANT_SHORT_LABEL = {
+    "UniProt strict-only\n(4 subcell terms)":              "strict-4",
+    "UniProt baseline":                                    "canonical",
+    "UniProt TM-or-signal-or-surface\n(topology proxy)":   "TM+signal",
+    "UniProt permissive\n(incl. plain Cell membrane)":     "permissive",
+    "GO experimental+curated":                             "exp+curated",
+    "GO baseline":                                         "canonical",
+    "GO permissive\n(incl. IEA-only)":                     "+ IEA",
+    "HPA Enhanced-only\n(strictest tier)":                 "Enhanced",
+    "HPA baseline":                                        "canonical",
+    "HPA + Uncertain tier":                                "+ Uncertain",
+    "SURFY score>0.9":                                     ">0.9",
+    "SURFY score>0.7":                                     ">0.7",
+    "SURFY score>0.5":                                     ">0.5",
+    "SURFY baseline":                                      "canonical",
+    "CSPA high-conf only":                                 "HC-only",
+    "CSPA baseline":                                       "canonical",
+    "CSPA + unspecific":                                   "+ unspecific",
+}
+
+# Which variant in each group counts as "canonical" — gets the diamond
+# marker. Mirrors the rules audited against candidate_universe.tsv.
+_CANONICAL_VARIANT = {
+    "UniProt": "UniProt baseline",
+    "GO":      "GO baseline",
+    "HPA":     "HPA baseline",
+    "SURFY":   "SURFY baseline",
+    "CSPA":    "CSPA baseline",
+}
+
+# Recommended-after-trade-off variant per source (star marker). Only
+# set when the trade-off analysis prefers a non-canonical cutoff —
+# leave None when canonical is the right call.
+_RECOMMENDED_VARIANT = {
+    "UniProt": "UniProt TM-or-signal-or-surface\n(topology proxy)",
+    "GO":      None,
+    "HPA":     None,
+    "SURFY":   None,
+    "CSPA":    "CSPA high-conf only",
+}
+
+
 def make_db_tradeoff_plot(out_dir: Path) -> None:
-    """Cutoff-strictness trade-off: universe size vs benchmark accuracy.
+    """Cutoff-strictness trade-off as five per-source subplots.
 
-    X-axis = N human proteins the filter would admit if used as the
-    universe gate (the cost of looser cutoffs — more candidates to
-    triage downstream, more false-positives to filter).
-    Y-axis = filter accuracy on the 147-gene benchmark under the
-    per-source scoring rule (see ``make_db_variants_plot`` docstring).
+    One subplot per surface DB (consensus skipped — it isn't a per-source
+    cutoff knob). X-axis is the universe size that filter would admit
+    (log scale, cost of looser cutoffs); Y-axis is benchmark accuracy.
 
-    Within each DB group, variants are connected by a line ordered
-    from strict-and-small to loose-and-large so the trade-off curve
-    is visually obvious. The annotation on each marker lists the
-    pos%/neg% recall split, which is what changes most as you loosen
-    a filter (loose → recall pos at the cost of admitting more no's).
+    Markers encode the decision status:
+      * Circle ('o') — alternative cutoff option, not currently used.
+      * Diamond ('D') — the canonical baseline as currently configured
+        in the merge loaders. Cross-checked against
+        ``candidate_universe.tsv`` flag counts.
+      * Star ('*') — recommended cutoff after the trade-off audit, IF
+        different from canonical. Annotated on UniProt and CSPA only.
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     rows, bench_symbols = _benchmark_with_universe_join()
@@ -1465,10 +1508,11 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
     print("Canonical baseline sanity check (raw recompute vs universe flags):")
     _assert_canonical_sizes_match_universe(sizes)
 
-    # Compute accuracy per variant under the same per-source rules as
-    # the bar plot.
-    points: list[dict] = []
+    # Compute accuracy per variant.
+    points_by_group: dict[str, list[dict]] = defaultdict(list)
     for name, fn, group in DB_VARIANTS:
+        if group == "consensus":
+            continue   # consensus isn't a per-source cutoff knob
         cov = GROUP_COVERAGE_FN.get(group, lambda r: True)
         n_correct = n_pos_correct = n_pos_total = n_neg_correct = n_neg_total = 0
         n_scored = 0
@@ -1488,116 +1532,142 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
                 if not vote:
                     n_neg_correct += 1
                     n_correct += 1
-        points.append({
+        points_by_group[group].append({
             "label": name,
-            "group": group,
             "size": sizes.get(name, 0),
             "acc": n_correct / max(n_scored, 1),
             "pos": n_pos_correct / max(n_pos_total, 1),
             "neg": n_neg_correct / max(n_neg_total, 1),
         })
 
-    # Shorter labels for legibility in the scatter.
-    short_label = {
-        "UniProt strict-only\n(4 subcell terms)":              "UniProt strict-4",
-        "UniProt baseline":                                    "UniProt canonical",
-        "UniProt TM-or-signal-or-surface\n(topology proxy)":   "UniProt TM+signal",
-        "UniProt permissive\n(incl. plain Cell membrane)":     "UniProt permissive",
-        "GO experimental+curated":                             "GO exp+curated",
-        "GO baseline":                                         "GO canonical",
-        "GO permissive\n(incl. IEA-only)":                     "GO + IEA",
-        "HPA Enhanced-only\n(strictest tier)":                 "HPA Enhanced",
-        "HPA baseline":                                        "HPA canonical",
-        "HPA + Uncertain tier":                                "HPA + Uncertain",
-        "SURFY score>0.9":                                     "SURFY >0.9",
-        "SURFY score>0.7":                                     "SURFY >0.7",
-        "SURFY score>0.5":                                     "SURFY >0.5",
-        "SURFY baseline":                                      "SURFY canonical",
-        "CSPA high-conf only":                                 "CSPA HC-only",
-        "CSPA baseline":                                       "CSPA canonical",
-        "CSPA + unspecific":                                   "CSPA + unspecific",
-        "Consensus\n≥1 source (= universe)":                   "Cons ≥1 (universe)",
-        "Consensus\n≥2 sources":                               "Cons ≥2",
-        "Consensus\n≥3 sources":                               "Cons ≥3",
+    group_order = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8.5), sharey=True)
+    axes = axes.flatten()
+
+    # Within-subplot label-side preferences: index in size-sorted order
+    # → (ha, dx_pts, dy_pts). Tweaked per source so labels of nearby
+    # points fan out instead of stacking.
+    LABEL_LAYOUT = {
+        "UniProt": [
+            ("left",  10, 0),    # strict-4 (far left, label right)
+            ("right", -10, -28), # canonical (cluster; label below-left)
+            ("left",  12, 18),   # TM+signal (cluster; label above-right)
+            ("left",  12, -22),  # permissive (cluster; label below-right)
+        ],
+        "GO": [
+            ("right", -10, 18),  # exp+curated → label up-left
+            ("center", 0, -28),  # canonical → label below-center
+            ("left",  10, 18),   # + IEA → label up-right
+        ],
+        "HPA": [
+            ("left",  10, 0),    # Enhanced (far left)
+            ("right", -10, 18),  # canonical
+            ("left",  10, -22),  # + Uncertain
+        ],
+        "SURFY": [
+            ("left",  10, 0),    # >0.9 (far left)
+            ("center", 0, -28),  # >0.7
+            ("right", -10, 22),  # >0.5 (near canonical)
+            ("left",  12, -22),  # canonical
+        ],
+        "CSPA": [
+            ("center", 0, 22),   # HC-only
+            ("center", 0, -28),  # canonical
+            ("left",  12, 0),    # + unspecific
+        ],
     }
-    # Auto-fan-out offsets: pick a side per group so each group's
-    # labels don't collide with others. The strict-side label sits
-    # left of its point; loose-side sits right; middle goes up.
-    SIDE_OFFSETS = {
-        "UniProt":   [(-100, 8), (-100, -16), (10, 12), (10, -16)],
-        "GO":        [(-90, 8), (10, -18), (10, 8)],
-        "HPA":       [(-80, 6), (10, -18), (10, 8)],
-        "SURFY":     [(-90, -16), (-90, 8), (10, -18), (10, 8)],
-        "CSPA":      [(-80, 8), (10, -18), (10, 8)],
-        "consensus": [(10, -16), (10, 12), (-50, -16)],
-    }
 
-    fig, ax = plt.subplots(figsize=(13.5, 7.5))
+    for gi, group in enumerate(group_order):
+        ax = axes[gi]
+        pts = sorted(points_by_group[group], key=lambda p: p["size"])
+        palette = _VARIANT_GROUP_PALETTE.get(group, ["#666666"])
 
-    # Draw per-group connecting lines (sorted by size).
-    group_to_pts: dict[str, list[dict]] = defaultdict(list)
-    for p in points:
-        group_to_pts[p["group"]].append(p)
+        # Strictness-ladder line.
+        ax.plot([p["size"] for p in pts], [p["acc"] * 100 for p in pts],
+                color=palette[0], linewidth=1.6, alpha=0.5, zorder=2)
 
-    for g, pts in group_to_pts.items():
-        if len(pts) < 2:
-            continue
-        s = sorted(pts, key=lambda p: p["size"])
-        palette = _VARIANT_GROUP_PALETTE.get(g, ["#666666"])
-        line_color = palette[0]
-        ax.plot([p["size"] for p in s], [p["acc"] * 100 for p in s],
-                color=line_color, linewidth=1.4, alpha=0.55, zorder=2)
+        canonical_name = _CANONICAL_VARIANT.get(group)
+        recommended_name = _RECOMMENDED_VARIANT.get(group)
+        layout = LABEL_LAYOUT.get(group, [("center", 0, 18)] * len(pts))
 
-    # Draw all points + labels. Within each group, the points are
-    # ordered by SIZE (smallest = strictest) — palette index 0 is the
-    # strictest, which produces the darkest color. SIDE_OFFSETS gives
-    # one (dx, dy) per within-group rank to fan labels out.
-    for p in points:
-        palette = _VARIANT_GROUP_PALETTE.get(p["group"], ["#666666"])
-        sorted_in_group = sorted(group_to_pts[p["group"]], key=lambda q: q["size"])
-        idx = sorted_in_group.index(p)
-        color = palette[min(idx, len(palette) - 1)]
-        ax.scatter(p["size"], p["acc"] * 100,
-                   s=130, color=color, edgecolor="white",
-                   linewidth=1.4, zorder=3)
-        short = short_label.get(p["label"], p["label"])
-        group_offsets = SIDE_OFFSETS.get(p["group"], [(10, 6)])
-        dx, dy = group_offsets[min(idx, len(group_offsets) - 1)]
-        ax.annotate(
-            f"{short}\n+{p['pos']*100:.0f}/-{p['neg']*100:.0f}",
-            xy=(p["size"], p["acc"] * 100),
-            xytext=(dx, dy), textcoords="offset points",
-            fontsize=7.5, color=COLORS["dark"],
-            bbox={"boxstyle": "round,pad=0.25", "fc": "white",
-                  "ec": color, "lw": 0.6, "alpha": 0.9},
+        for idx, p in enumerate(pts):
+            color = palette[min(idx, len(palette) - 1)]
+            is_canonical = (p["label"] == canonical_name)
+            is_recommended = (p["label"] == recommended_name)
+            if is_recommended:
+                marker, msize, edge = "*", 420, "#1c4d2e"
+            elif is_canonical:
+                marker, msize, edge = "D", 180, "#222222"
+            else:
+                marker, msize, edge = "o", 110, "white"
+            ax.scatter(p["size"], p["acc"] * 100,
+                       marker=marker, s=msize, color=color,
+                       edgecolor=edge, linewidth=1.6, zorder=4)
+
+            short = _VARIANT_SHORT_LABEL.get(p["label"], p["label"])
+            ha, dx, dy = layout[min(idx, len(layout) - 1)]
+            ax.annotate(
+                f"{short}\nn={p['size']:,} • +{p['pos']*100:.0f}/-{p['neg']*100:.0f}",
+                xy=(p["size"], p["acc"] * 100),
+                xytext=(dx, dy), textcoords="offset points",
+                ha=ha, va="center",
+                fontsize=8, color=COLORS["dark"],
+                bbox={"boxstyle": "round,pad=0.3", "fc": "white",
+                      "ec": color, "lw": 0.7, "alpha": 0.94},
+            )
+
+        ax.set_xscale("log")
+        # ax.set_title is suppressed by the project no-titles policy
+        # (see audit/_plotting_config.setup_plotting_style); use an
+        # in-axes text annotation instead.
+        ax.text(
+            0.02, 0.97, group,
+            transform=ax.transAxes, ha="left", va="top",
+            fontsize=14, fontweight="bold", color=palette[0],
         )
+        ax.set_ylim(25, 102)
+        # Per-source X span: extend slightly past data range so labels
+        # don't fall off the panel edges.
+        xs = [p["size"] for p in pts]
+        x_lo = max(40, min(xs) / 1.8)
+        x_hi = max(xs) * 1.8
+        ax.set_xlim(x_lo, x_hi)
+        ax.grid(True, which="major", alpha=0.25)
+        sns.despine(ax=ax, top=True, right=True)
 
-    # Legend — one entry per group.
-    seen = set()
-    handles = []
-    for p in points:
-        if p["group"] in seen:
-            continue
-        seen.add(p["group"])
-        palette = _VARIANT_GROUP_PALETTE.get(p["group"], ["#666666"])
-        handles.append(plt.Line2D([], [], marker="o", linestyle="-",
-                                   color=palette[0], markersize=9,
-                                   label=p["group"]))
-    ax.legend(handles=handles, loc="lower right", fontsize=9,
-              frameon=True, framealpha=0.9, title="DB family")
-
-    ax.set_xscale("log")
-    ax.set_xlabel("Universe size — proteins this filter would admit "
-                  "(log scale; lower = stricter / fewer downstream candidates)")
-    ax.set_ylabel("Accuracy on 147-gene benchmark (%)")
-    ax.set_ylim(35, 100)
-    ax.set_xlim(80, 7500)
-    ax.set_title(
-        "Filter cutoff trade-off — strictness vs accuracy\n"
-        "Annotation: variant • +pos/-neg recall (per-source missing rule: "
-        "UniProt/GO/SURFY/CSPA absence→no-vote; HPA absence→abstain)"
+    # Shared axis labels via the sixth (empty) cell — also hosts a
+    # marker-legend so the diamond/star meanings are obvious.
+    legend_ax = axes[5]
+    legend_ax.axis("off")
+    legend_handles = [
+        plt.Line2D([], [], marker="o", linestyle="", color="#8a8a8a",
+                   markersize=10, markeredgecolor="white", markeredgewidth=1.4,
+                   label="Alternative cutoff (not used)"),
+        plt.Line2D([], [], marker="D", linestyle="", color="#8a8a8a",
+                   markersize=11, markeredgecolor="#222222", markeredgewidth=1.4,
+                   label="Canonical (current merge rule)"),
+        plt.Line2D([], [], marker="*", linestyle="", color="#8a8a8a",
+                   markersize=18, markeredgecolor="#1c4d2e", markeredgewidth=1.4,
+                   label="Recommended after trade-off audit"),
+    ]
+    legend_ax.legend(handles=legend_handles, loc="center", fontsize=11,
+                     frameon=True, framealpha=0.95, title="Marker shape",
+                     title_fontsize=12)
+    legend_ax.text(
+        0.5, 0.05,
+        "Annotation per point: variant • universe size • +pos%/-neg% recall.\n"
+        "Per-source missing rule: UniProt/GO/SURFY/CSPA absence → predict 'no'; "
+        "HPA absence → abstain.",
+        transform=legend_ax.transAxes, ha="center", va="bottom",
+        fontsize=9, color=COLORS["neutral"],
     )
-    sns.despine(ax=ax, top=True, right=True)
+
+    # Shared axis labels — use the figure-level supxlabel/supylabel.
+    fig.supxlabel("Universe size — proteins this filter would admit "
+                  "(log scale; lower = stricter)", fontsize=11, y=0.02)
+    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=11, x=0.005)
+    # No fig-level title (per project no-titles plotting policy).
+    plt.tight_layout(rect=[0.015, 0.03, 1, 0.985])
     save_figure(
         fig, filename="db_cutoff_tradeoff",
         output_dir=str(out_dir), formats=["pdf", "png"],
