@@ -25,6 +25,7 @@ import re
 from pathlib import Path
 from typing import Any, Literal
 
+import httpx
 import pandas as pd
 
 from accessible_surfaceome.paths import DATA_PROCESSED_DIR
@@ -155,16 +156,35 @@ def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
     rather than a record with a null acc.
     """
 
-    if looks_like_uniprot_acc(symbol_or_acc):
-        uniprot_acc = symbol_or_acc.strip().upper()
+    # The UniProt-accession regex is structurally permissive — it accepts
+    # any string of the right shape, so gene symbols that happen to match
+    # the pattern (P2RY10-14, B3GNT3-9, H2BC12, etc.) get misrouted to the
+    # accession path and 404 on UniProt. When the accession lookup 404s,
+    # fall back to the symbol search before giving up.
+    raw = symbol_or_acc.strip()
+    if looks_like_uniprot_acc(raw):
+        uniprot_acc = raw.upper()
+        try:
+            entry = _uniprot_entry(uniprot_acc, http=http)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code != 404:
+                raise
+            # Coincidental regex match — try symbol search instead.
+            uniprot_acc = _uniprot_search_by_symbol(raw, http=http)
+            if uniprot_acc is None:
+                raise LookupError(
+                    f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — "
+                    "out of study scope (initial accession-shape lookup 404'd, "
+                    "symbol search also failed)"
+                )
+            entry = _uniprot_entry(uniprot_acc, http=http)
     else:
-        uniprot_acc = _uniprot_search_by_symbol(symbol_or_acc.strip(), http=http)
+        uniprot_acc = _uniprot_search_by_symbol(raw, http=http)
         if uniprot_acc is None:
             raise LookupError(
                 f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — out of study scope"
             )
-
-    entry = _uniprot_entry(uniprot_acc, http=http)
+        entry = _uniprot_entry(uniprot_acc, http=http)
     status, merged_into = _entry_status(entry)
 
     primary_symbol = _entry_primary_symbol(entry) or symbol_or_acc.strip()
