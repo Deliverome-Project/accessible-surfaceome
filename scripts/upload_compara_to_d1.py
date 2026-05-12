@@ -31,9 +31,10 @@ from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
 
-# Batch size for D1 inserts. D1's HTTP API caps single requests at ~100 KB;
-# 200 ortholog rows × ~150 chars/row = ~30 KB, comfortably under the limit.
-BATCH_SIZE = 200
+# Batch size for D1 inserts. Cloudflare D1 caps placeholders at ~100 per
+# statement (tighter than SQLite's default 999); 11 columns/row × 8 rows
+# = 88 placeholders stays under that ceiling.
+BATCH_SIZE = 8
 
 
 def _intern_release(
@@ -54,33 +55,72 @@ def _intern_release(
     )
 
 
+def _opt(row: dict[str, str], name: str) -> str | None:
+    v = (row.get(name) or "").strip()
+    return v or None
+
+
+def _float(row: dict[str, str], name: str) -> float | None:
+    v = _opt(row, name)
+    try:
+        return float(v) if v is not None else None
+    except ValueError:
+        return None
+
+
 def _row_params(row: dict[str, str], release_version: str) -> list[object]:
-    """Map a CSV row to the compara_ortholog INSERT parameter list."""
-    def _opt(name: str) -> str | None:
-        v = (row.get(name) or "").strip()
-        return v or None
-
-    def _float(name: str) -> float | None:
-        v = _opt(name)
-        try:
-            return float(v) if v is not None else None
-        except ValueError:
-            return None
-
+    """Map one LONG-format CSV row to the compara_ortholog INSERT params."""
     is_high_conf = 1 if (row.get("is_high_confidence") or "").strip() in {"1", "true", "True"} else 0
     return [
         release_version,
-        _opt("human_ensembl_gene") or "",
-        _opt("human_uniprot_acc"),
-        _opt("human_gene_symbol"),
-        _opt("species") or "unknown",
-        _opt("ortholog_ensembl_gene") or "",
-        _opt("ortholog_uniprot_acc"),
-        _opt("ortholog_gene_symbol"),
-        _opt("orthology_type") or "unknown",
-        _float("percent_identity"),
+        _opt(row, "human_ensembl_gene") or "",
+        _opt(row, "human_uniprot_acc"),
+        _opt(row, "human_gene_symbol"),
+        _opt(row, "species") or "unknown",
+        _opt(row, "ortholog_ensembl_gene") or "",
+        _opt(row, "ortholog_uniprot_acc"),
+        _opt(row, "ortholog_gene_symbol"),
+        _opt(row, "orthology_type") or "unknown",
+        _float(row, "percent_identity"),
         is_high_conf,
     ]
+
+
+def _wide_to_long(rows: list[dict[str, str]]) -> list[dict[str, str]]:
+    """Convert the producer's WIDE CSV (one row per human gene with both
+    mouse and cyno columns inline) into LONG rows the D1 schema expects.
+
+    Yields one row per (human_ensembl_gene, species, ortholog) when the
+    species pair was flagged high-confidence. Missing species are skipped.
+    """
+    out: list[dict[str, str]] = []
+    for row in rows:
+        human_eng = (row.get("query_ensembl_gene_id") or "").strip()
+        if not human_eng:
+            continue
+        # Pick the first symbol from the semicolon-joined alias list.
+        sym_field = (row.get("query_input_gene_symbols") or "").strip()
+        human_sym = sym_field.split(";")[0].strip() if sym_field else ""
+        for prefix, canonical in (("mouse", "mouse"), ("cyno", "cynomolgus")):
+            has_hc = (row.get(f"{prefix}_has_one2one_high_confidence") or "").strip().lower()
+            if has_hc not in {"1", "true", "yes", "y", "t"}:
+                continue
+            ortho_eng = (row.get(f"{prefix}_target_ensembl_gene_id") or "").strip()
+            if not ortho_eng:
+                continue
+            out.append({
+                "human_ensembl_gene": human_eng,
+                "human_uniprot_acc": "",  # producer doesn't emit this
+                "human_gene_symbol": human_sym,
+                "species": canonical,
+                "ortholog_ensembl_gene": ortho_eng,
+                "ortholog_uniprot_acc": "",
+                "ortholog_gene_symbol": (row.get(f"{prefix}_target_gene_symbol") or "").strip(),
+                "orthology_type": (row.get(f"{prefix}_orthology_type") or "unknown").strip() or "unknown",
+                "percent_identity": (row.get(f"{prefix}_target_percent_identity") or "").strip(),
+                "is_high_confidence": "1",
+            })
+    return out
 
 
 def upload(
@@ -92,11 +132,18 @@ def upload(
     if not csv_path.exists():
         raise FileNotFoundError(f"Compara CSV not found: {csv_path}")
 
-    rows: list[list[object]] = []
     with csv_path.open() as fh:
         reader = csv.DictReader(fh)
-        for row in reader:
-            rows.append(_row_params(row, release_version))
+        raw = list(reader)
+    if not raw:
+        logger.warning("Empty CSV at %s — nothing to upload", csv_path)
+        return 0
+    # Detect wide vs long format by sniffing for the producer's species-prefixed columns.
+    is_wide = "mouse_target_ensembl_gene_id" in raw[0]
+    long_rows = _wide_to_long(raw) if is_wide else raw
+    if is_wide:
+        logger.info("Converted %d wide CSV rows → %d long ortholog rows", len(raw), len(long_rows))
+    rows = [_row_params(r, release_version) for r in long_rows]
     n = len(rows)
     logger.info("Loaded %d ortholog rows from %s", n, csv_path)
 
@@ -104,23 +151,28 @@ def upload(
         logger.info("Dry run — not uploading. Would insert %d rows under release_version=%r", n, release_version)
         return n
 
-    insert_sql = """
-        INSERT OR IGNORE INTO compara_ortholog (
-            release_version, human_ensembl_gene, human_uniprot_acc,
-            human_gene_symbol, species, ortholog_ensembl_gene,
-            ortholog_uniprot_acc, ortholog_gene_symbol, orthology_type,
-            percent_identity, is_high_confidence
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """
+    cols = (
+        "release_version, human_ensembl_gene, human_uniprot_acc, "
+        "human_gene_symbol, species, ortholog_ensembl_gene, "
+        "ortholog_uniprot_acc, ortholog_gene_symbol, orthology_type, "
+        "percent_identity, is_high_confidence"
+    )
+    one_row_placeholders = "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     with D1Client() as client:
         _intern_release(
             client, release_version=release_version, n_pairs=n,
             source_url=source_url, notes=notes,
         )
+        # D1 rejected the batch-array endpoint variant we used previously;
+        # use multi-row INSERT statements (one SQL per chunk, parameters
+        # spliced in line). Each chunk gets one round-trip.
         for start in range(0, n, BATCH_SIZE):
             chunk = rows[start : start + BATCH_SIZE]
-            client.batch([(insert_sql, params) for params in chunk])
+            placeholders = ", ".join(one_row_placeholders for _ in chunk)
+            sql = f"INSERT OR IGNORE INTO compara_ortholog ({cols}) VALUES {placeholders}"
+            flat_params: list[object] = [v for params in chunk for v in params]
+            client.query(sql, flat_params)
             logger.info("Uploaded rows %d..%d", start, start + len(chunk) - 1)
     return n
 

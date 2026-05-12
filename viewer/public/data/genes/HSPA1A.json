@@ -279,7 +279,7 @@
         }
       ],
       "entailment_verified": true,
-      "entailment_audit_passed": null,
+      "entailment_audit_passed": true,
       "validation_warnings": []
     },
     {
@@ -321,7 +321,7 @@
         }
       ],
       "entailment_verified": true,
-      "entailment_audit_passed": null,
+      "entailment_audit_passed": true,
       "validation_warnings": []
     },
     {
@@ -407,8 +407,10 @@
         }
       ],
       "entailment_verified": true,
-      "entailment_audit_passed": null,
-      "validation_warnings": []
+      "entailment_audit_passed": false,
+      "validation_warnings": [
+        "entailment audit: quote does not support the claim in the stated direction"
+      ]
     },
     {
       "evidence_id": "evi_007",
@@ -449,7 +451,7 @@
         }
       ],
       "entailment_verified": true,
-      "entailment_audit_passed": null,
+      "entailment_audit_passed": true,
       "validation_warnings": []
     },
     {
@@ -491,7 +493,7 @@
         }
       ],
       "entailment_verified": true,
-      "entailment_audit_passed": null,
+      "entailment_audit_passed": true,
       "validation_warnings": []
     },
     {
@@ -533,7 +535,7 @@
         }
       ],
       "entailment_verified": true,
-      "entailment_audit_passed": null,
+      "entailment_audit_passed": true,
       "validation_warnings": []
     }
   ],
@@ -551,7 +553,7 @@
       "sources_seen": [
         "UniProt:P0DMV8"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.844436Z",
+      "retrieved_at": "2026-05-12T03:42:52.305014Z",
       "contributed_evidence_ids": []
     },
     {
@@ -564,7 +566,7 @@
       "sources_seen": [
         "UniProt:P0DMV8"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.844687Z",
+      "retrieved_at": "2026-05-12T03:42:52.305102Z",
       "contributed_evidence_ids": []
     },
     {
@@ -577,7 +579,7 @@
       "sources_seen": [
         "UniProt:P0DMV8"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.844720Z",
+      "retrieved_at": "2026-05-12T03:42:52.305130Z",
       "contributed_evidence_ids": []
     },
     {
@@ -614,7 +616,7 @@
         "PMID:24919558",
         "PMID:24833463"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.844874Z",
+      "retrieved_at": "2026-05-12T03:42:52.305270Z",
       "contributed_evidence_ids": [
         "evi_009"
       ]
@@ -650,7 +652,7 @@
         "PMID:41362788",
         "PMID:41725010"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.844977Z",
+      "retrieved_at": "2026-05-12T03:42:52.305356Z",
       "contributed_evidence_ids": [
         "evi_006",
         "evi_007",
@@ -667,7 +669,7 @@
       "sources_seen": [
         "PMID:40653262"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.844994Z",
+      "retrieved_at": "2026-05-12T03:42:52.305371Z",
       "contributed_evidence_ids": [
         "evi_006",
         "evi_007"
@@ -683,7 +685,7 @@
       "sources_seen": [
         "PMID:41362788"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.845006Z",
+      "retrieved_at": "2026-05-12T03:42:52.305381Z",
       "contributed_evidence_ids": [
         "evi_008"
       ]
@@ -698,7 +700,7 @@
       "sources_seen": [
         "PMID:22414085"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.845017Z",
+      "retrieved_at": "2026-05-12T03:42:52.305392Z",
       "contributed_evidence_ids": [
         "evi_009"
       ]
@@ -711,7 +713,7 @@
       },
       "n_results": 1,
       "sources_seen": [],
-      "retrieved_at": "2026-05-12T03:26:01.845022Z",
+      "retrieved_at": "2026-05-12T03:42:52.305398Z",
       "contributed_evidence_ids": []
     },
     {
@@ -722,7 +724,7 @@
       },
       "n_results": 1,
       "sources_seen": [],
-      "retrieved_at": "2026-05-12T03:26:01.845027Z",
+      "retrieved_at": "2026-05-12T03:42:52.305402Z",
       "contributed_evidence_ids": []
     },
     {
@@ -735,7 +737,7 @@
       "sources_seen": [
         "PMID:11189449"
       ],
-      "retrieved_at": "2026-05-12T03:26:01.845034Z",
+      "retrieved_at": "2026-05-12T03:42:52.305409Z",
       "contributed_evidence_ids": [
         "evi_002",
         "evi_003"

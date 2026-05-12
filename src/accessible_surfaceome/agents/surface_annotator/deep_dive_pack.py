@@ -85,6 +85,7 @@ def _read_dict_rows(path: Path) -> list[dict[str, str]]:
 
 
 def _ortholog_from_row(row: dict[str, str]) -> OrthologIdentity | None:
+    """Parse a long-format ortholog row (one (human, species, ortholog) tuple)."""
     species = (row.get("species") or "").strip().lower()
     if species not in {"mouse", "cynomolgus"}:
         return None
@@ -106,6 +107,40 @@ def _ortholog_from_row(row: dict[str, str]) -> OrthologIdentity | None:
         orthology_type=(row.get("orthology_type") or "unknown").strip() or "unknown",
         percent_identity=pid,
         is_high_confidence=is_hc,
+    )
+
+
+def _ortholog_from_wide_row(
+    row: dict[str, str], species: str,
+) -> OrthologIdentity | None:
+    """Parse one species's ortholog out of the producer's WIDE CSV row.
+
+    The producer at ``src/accessible_surfaceome/sources/ensembl_compara.py``
+    emits one row per human gene with both mouse and cyno columns inline:
+    ``mouse_target_*`` and ``cyno_target_*``. Convert one species column-set
+    into an ``OrthologIdentity`` (or None if no high-confidence pair exists).
+    """
+    prefix = species  # "mouse" or "cyno" — matches the producer's column prefix
+    canonical = "cynomolgus" if prefix == "cyno" else "mouse"
+    has_hc = (row.get(f"{prefix}_has_one2one_high_confidence") or "").strip().lower()
+    if has_hc not in {"1", "true", "yes", "y", "t"}:
+        return None
+    ensembl = (row.get(f"{prefix}_target_ensembl_gene_id") or "").strip()
+    if not ensembl:
+        return None
+    try:
+        pid_str = (row.get(f"{prefix}_target_percent_identity") or "").strip()
+        pid: float | None = float(pid_str) if pid_str else None
+    except ValueError:
+        pid = None
+    return OrthologIdentity(
+        species=canonical,
+        ortholog_uniprot_acc=None,  # producer doesn't emit UniProt acc — orchestrator can fetch if needed
+        ortholog_gene_symbol=(row.get(f"{prefix}_target_gene_symbol") or "").strip() or None,
+        ortholog_ensembl_gene_id=ensembl,
+        orthology_type=(row.get(f"{prefix}_orthology_type") or "unknown").strip() or "unknown",
+        percent_identity=pid,
+        is_high_confidence=True,  # only emitted when high-confidence flag was True
     )
 
 
@@ -190,14 +225,34 @@ def _from_d1(
 def _from_csv(
     *, hgnc_symbol: str, uniprot_acc: str | None,
 ) -> tuple[OrthologIdentity | None, OrthologIdentity | None]:
-    """Read the local Compara CSV for this gene's orthologs."""
+    """Read the local Compara CSV for this gene's orthologs.
+
+    Supports both the producer's WIDE schema (one row per human gene,
+    ``mouse_target_*`` + ``cyno_target_*`` columns) and the LONG schema
+    (one row per (human, species, ortholog) tuple) that D1 stores.
+    Detects the format by checking which columns are present.
+    """
     rows = _read_dict_rows(COMPARA_QUERY_CSV)
     if not rows:
         return None, None
-    mouse: OrthologIdentity | None = None
-    cyno: OrthologIdentity | None = None
+    is_wide = "mouse_target_ensembl_gene_id" in rows[0]
     target_acc = (uniprot_acc or "").strip()
     target_sym = hgnc_symbol.strip().upper()
+
+    if is_wide:
+        sym_col = "query_input_gene_symbols"
+        for row in rows:
+            sym_field = (row.get(sym_col) or "").strip().upper()
+            # The producer emits semicolon-joined alias lists in this cell.
+            if target_sym not in {s.strip() for s in sym_field.split(";") if s.strip()}:
+                continue
+            mouse = _ortholog_from_wide_row(row, "mouse")
+            cyno = _ortholog_from_wide_row(row, "cyno")
+            return mouse, cyno
+        return None, None
+
+    mouse: OrthologIdentity | None = None
+    cyno: OrthologIdentity | None = None
     for row in rows:
         row_acc = (row.get("human_uniprot_acc") or "").strip()
         row_sym = (row.get("human_gene_symbol") or "").strip().upper()

@@ -71,21 +71,46 @@ either way — HSP70's outer-leaflet attachment runs through Gb3
 glycosphingolipid and phosphatidylserine in cholesterol-rich microdomains,
 which sits on the boundary of those two enum values.
 
-## Evidence verification
+## Evidence verification (post-audit)
 
-| Status | Count |
-|---|---:|
-| Evidence claims emitted | 9 |
-| Evidence with anchored spans | **6** |
-| Anchored spans entailment-verified | 0 (audit not run on this pass) |
-| Unanchored claims | 3 (`evi_001`, `evi_004`, `evi_005` — source_id not in the cached store or quote substring miss) |
+Sonnet entailment audit run on 2026-05-11 (~$0.10):
 
-The Sonnet entailment audit was deliberately skipped to keep the
-first pass deterministic + free. Audit pass (~$0.10):
+| Evidence | Verified | Audit | Notes |
+|---|:---:|:---:|---|
+| evi_001 | ❌ | — | UniProt:P0DMV8 substring miss — agent rewrote `;` as `,` in the subcellular-location list (canonical UniProt uses `Cytoplasm; Nucleus; …; Secreted`; the agent emitted comma-separated, which the substring check correctly rejected) |
+| evi_002 | ✓ | ✓ | flow_cytometry, PMID:11189449 |
+| evi_003 | ✓ | ✓ | flow_cytometry, PMID:11189449 |
+| evi_004 | ❌ | — | source_id=PMC:PMC2271151 not in session source store — agent cited a paper it never fetched (the agent's fetch_fulltext call hit a 404 during the run) |
+| evi_005 | ❌ | — | same PMC body as evi_004 |
+| **evi_006** | ✓ | **❌** | Sonnet audit rejected — claim adds "confirmed by confocal microscopy and PS-specific biosensors" which the quote ("HSPA1A translocates to heat-shocked and cancer cells' plasma membrane (PM)") doesn't support. Real audit catch; agent should have either shortened the claim or cited a second quote. |
+| evi_007 | ✓ | ✓ | immunofluorescence, PMID:40653262 |
+| evi_008 | ✓ | ✓ | flow_cytometry, PMID:41362788 |
+| evi_009 | ✓ | ✓ | review_assertion, PMID:22414085 |
 
-```bash
-uv run accessible-surfaceome agents audit-corpus --gene HSPA1A
-```
+**5 / 9 evidence fully validated** (verified + audit-passed). The
+three substring failures and one audit rejection are the system
+working as designed — the validation pipeline caught each issue and
+recorded a useful warning on the persisted Evidence record.
+
+The failure modes break down into three distinct classes:
+
+1. **Punctuation paraphrasing** (`evi_001`): the agent rewrote the
+   source's `;` separators as `,`. System prompt's "anti-patterns"
+   section already lists this; the agent ignored it on a structured
+   field. Possible mitigation: bullet the rule with a worked example
+   for UniProt subcellular-location lists specifically.
+2. **Citing un-fetched sources** (`evi_004`, `evi_005`): the agent
+   cited PMC:PMC2271151 but `fetch_fulltext` hit a 404 mid-run
+   (recorded in `events.jsonl`). The orchestrator already warns
+   ("source_id=… not in session source store") but the agent
+   doesn't see that warning. Mitigation: surface a tool-output flag
+   when a fetch fails so the agent can drop the citation instead of
+   carrying it.
+3. **Overreach in the claim text** (`evi_006`): the agent appended
+   methodology details to the claim that aren't in the quote. The
+   audit correctly flagged this. Mitigation: prompt rule reminding
+   the agent that the claim must be entailed by the quote (not just
+   the gist).
 
 ## Two validation issues caught + fixed mid-run
 
