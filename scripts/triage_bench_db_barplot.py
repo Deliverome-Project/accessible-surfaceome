@@ -878,31 +878,21 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
             arrowprops=arrowprops,
         )
 
-    # M1 DBs as horizontal reference lines (cost = $0; not on a $-axis log
-    # scale, so depict them as accuracy thresholds the LLMs must beat).
-    db_overall_sorted = sorted(
-        ((label, overall[label]) for _, label in DB_FLAGS_5),
-        key=lambda kv: -kv[1],
-    )
-    for label, acc in db_overall_sorted:
-        color = DB_PALETTE[label]
-        ax.axhline(acc * 100, linestyle="--", linewidth=1.2,
-                   color=color, alpha=0.75, zorder=2)
-        # Label at the right edge of the plot.
-        ax.text(0.985, acc * 100, f"{label} {acc:.0%}",
-                transform=ax.get_yaxis_transform(),
-                ha="right", va="center", fontsize=8.5,
-                color=color, zorder=3,
-                bbox=dict(boxstyle="round,pad=0.18", fc="white",
-                          ec="none", alpha=0.85))
+    # NOTE: M1 DB baselines used to be drawn here as horizontal reference
+    # lines. Dropped 2026-05-12 — they compress the LLM-cell range against
+    # the bottom 40-50% of the chart, making cost/accuracy differences
+    # between Claude variants hard to read. The DB→LLM comparison lives
+    # in db_correctness_overall and db_correctness_by_class instead.
 
     ax.set_xscale("log")
     ax.set_xlabel(f"Cost per whole-genome pass at 1 rep  ($, log scale; ×{WHOLE_GENOME_N:,} genes)")
     ax.set_ylabel("Overall accuracy on 147-gene benchmark (%)")
-    ax.set_title("Cost vs accuracy — Claude cells vs M1 surface-database baselines")
-    # Headroom on the y axis so labels don't clip.
-    ymin = min(overall[lbl] for _, lbl in _all_callers()) * 100
-    ax.set_ylim(max(35, ymin - 6), 100)
+    # Zoom in on the LLM range — DB baselines (40-82%) are gone so we
+    # no longer need to keep them in frame. Floor at min(LLM) - 2 to
+    # leave a little headroom under the lowest cell.
+    llm_only_keys = [k for k in overall if k.startswith("_llm_")]
+    ymin = min(overall[k] for k in llm_only_keys) * 100 if llm_only_keys else 80.0
+    ax.set_ylim(max(78, ymin - 2), 100)
 
     sns.despine(ax=ax, top=True, right=True)
     save_figure(
@@ -1643,6 +1633,29 @@ _RECOMMENDED_VARIANT = {
 }
 
 
+def _dump_optimized_db_accs() -> None:
+    """Dump the optimized-cutoff accession sets to two small TSVs so the
+    figures-folder gist for db_correctness_by_class can apply the same
+    cutoffs without re-loading the raw UniProt + CSPA dumps.
+
+    Paths:
+      data/processed/triage_bench/uniprot_tm_signal_accs.tsv
+      data/processed/triage_bench/cspa_hc_only_accs.tsv
+
+    Each file is a single-column TSV (header ``uniprot_acc``).
+    """
+    out_dir = ROOT / "data/processed/triage_bench"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    up_accs = sorted(_optimized_uniprot_accs())
+    cspa_accs = sorted(_optimized_cspa_accs())
+    (out_dir / "uniprot_tm_signal_accs.tsv").write_text(
+        "uniprot_acc\n" + "\n".join(up_accs) + "\n"
+    )
+    (out_dir / "cspa_hc_only_accs.tsv").write_text(
+        "uniprot_acc\n" + "\n".join(cspa_accs) + "\n"
+    )
+
+
 def _dump_db_cutoff_tradeoff_points(
     points_by_group: dict[str, list[dict]],
 ) -> None:
@@ -1902,6 +1915,10 @@ def main() -> None:
     global _USE_OPTIMIZED_CUTOFFS
     _USE_OPTIMIZED_CUTOFFS = True
     try:
+        # Side-effect: dump the optimized accession sets so the
+        # figures/ gist for db_correctness_by_class can apply the same
+        # cutoffs without re-loading the raw UniProt + CSPA dumps.
+        _dump_optimized_db_accs()
         make_by_class_plot(
             out_dir, filename="db_correctness_by_class_optimized_cutoffs",
         )
