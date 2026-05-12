@@ -34,12 +34,21 @@ SUBBENCH_TSV = DATA_DIR / "eval" / "triage_subbench_v1.tsv"
 SUBBENCH_RUNS = DATA_DIR / "eval" / "triage_subbench_v1"
 
 # Maps the runner's variant slug → prompt filename. Keep in sync with
-# scripts/triage_subbench_runner.py:VARIANTS.
+# scripts/triage_subbench_runner.py:VARIANTS. Missing-variant entries
+# cause D1RunSink to silently skip cells under that variant — the
+# 2026-05-11 slim sweep was lost to D1 because this map was stale; the
+# log shows "D1RunSink: unknown variant 'slim'; skipping" repeated 147x.
 VARIANT_TO_PROMPT = {
-    "naive":     "system_naive.md",
-    "ncbi":      "system.md",
-    "web_naive": "system_web_naive.md",
-    "web_ncbi":  "system_web.md",
+    "naive":             "system_naive.md",
+    "ncbi":              "system.md",
+    "slim":              "system_slim.md",
+    "web_naive":         "system_web_naive.md",
+    "web_ncbi":          "system_web.md",
+    # Variants that share a prompt with another variant but vary the
+    # tool-call envelope (max_tokens, max_uses). Same prompt content,
+    # so they share the prompt_sha row in prompt_version.
+    "web_ncbi_reduced":  "system_web.md",
+    "pubmed_ncbi":       "system_pubmed.md",
 }
 
 
