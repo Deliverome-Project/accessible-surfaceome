@@ -5,17 +5,68 @@
   "replicate": 1,
   "truth_verdict": "contextual",
   "truth_class": "induced_borderline",
-  "predicted_verdict": "contextual",
-  "predicted_reason": "dual_localization",
-  "verdict_reasoning": "TGOLN2 is a type I integral membrane protein that cycles between the trans-Golgi network and the plasma membrane via clathrin-coated vesicles and endosomes. While primarily localized to the TGN at steady state, it has a documented plasma membrane pool reached through its own trafficking mechanism (CARTS carriers), not through transient recruitment. The protein anchors itself via its transmembrane domain throughout this cycle. This constitutive cycling pattern qualifies as dual localization with the PM being a functional minority compartment.",
+  "predicted_verdict": "yes",
+  "predicted_reason": "classical_surface_receptor",
+  "verdict_reasoning": "TGOLN2 is a type I single-pass transmembrane protein that constitutively and rapidly cycles between the trans-Golgi network and the plasma membrane, returning via endosomes. Despite steady-state TGN localization, documented evidence shows it reaches the PM via CARTS (carriers of the TGN to the cell surface) carriers. The lumenal domain is thus exposed to the extracellular space during this trafficking cycle, making the protein body surface-accessible.",
   "correct": true,
-  "prompt_tokens": 41184,
-  "completion_tokens": 996,
+  "prompt_tokens": 4289,
+  "completion_tokens": 735,
   "n_web_searches": 2,
-  "cost_usd": 0.066164,
-  "latency_s": 12.06322754197754,
+  "cost_usd": 0.06317275,
+  "latency_s": 8.558278458018322,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 28167,
+  "cache_read_tokens": 0,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **TGOLN2**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: trans-golgi network protein 2\n- HGNC symbol: TGOLN2\n- UniProt accession: O43493\n- Aliases: TGN51, TGN46, TGN48, TGN38, TTGN2, hTGN46, hTGN48, hTGN51\n- Previous symbols: (none)\n- HGNC gene-group memberships: (none assigned)\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene encodes a type I integral membrane protein that is localized to the trans-Golgi network, a major sorting station for secretory and membrane proteins. The encoded protein cycles between early endosomes and the trans-Golgi network, and may play a role in exocytic vesicle formation. Alternatively spliced transcript variants encoding multiple isoforms have been observed for this gene. [provided by RefSeq, Oct 2011]\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01971RgB7bggZX7MGBmDsxi4",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-haiku-4-5-20251001",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "TGOLN2 trans-Golgi network protein localization trafficking",
+      "n_results": null,
+      "top_results": null
+    },
+    {
+      "step_index": 1,
+      "tool": "web_search",
+      "query": "TGOLN2 plasma membrane surface cell surface expression",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "Reactome | Retrograde transport at the Trans-Golgi-Network",
+          "url": "https://reactome.org/content/detail/R-HSA-6811440",
+          "snippet": "Eo0SCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDOsaIP6bq0bN4600ABoMhpd4Nrt9Z7iWE960IjDvSVRXsWYQFS8EDie9/2tMZYA1n9BHa4mUC82yM1xoBSyjZl3ocRWgWkSJRJzzONQqkBFnC4aVef3btlg/uY9Ukq4IDAV5mACu0v8K9z3nOcy6TICckile8BRDD/yuK0vnGE2DWook\u2026"
+        },
+        {
+          "title": "TGOLN2 Gene - Trans-Golgi Network Protein 2",
+          "url": "https://www.genecards.org/cgi-bin/carddisp.pl?gene=TGOLN2",
+          "snippet": "EpwZCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDKwZKRZHccfwtAVmkhoMDY/p4tT2U4tG0U/9IjBooJJTcwISg0PomxKh8AENFjNSqsTYKQk/C7cRdpyMaH6dGLSC8RK7h3531rA0VwwqnxjP84FbE91+BUH7RwmbsYAO0sBNqTlrWBYetzCnOV9Klus8I9tKl7p2Vd8sc9IQ6UopVB5+\u2026"
+        },
+        {
+          "title": "WikiGenes - TGOLN2 - trans-golgi network protein 2",
+          "url": "https://www.wikigenes.org/e/gene/e/10618.html",
+          "snippet": "EqIhCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDPIzBU5ICAyy7WFJnRoMr9Yk/dEs/g59PQ9SIjC1R3vyLbjwVf/bFSyMj9Z1F9rejLbcLfhBhA9yVqawGt6OuIdJikfx7rXI0UUeGFEqpSCG5cGbTQPZER6lmnRwS9bUYYoepWWkcVrUEboiPVDMNd2A/IyRjtnGRsj29+5GNBOHgWP1\u2026"
+        },
+        {
+          "title": "Entry - *603062 - TRANS-GOLGI NETWORK PROTEIN 2; TGOLN2 - OMIM - (OMIM.ORG)",
+          "url": "https://omim.org/entry/603062",
+          "snippet": "EpklCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDEsbmhvpTeahs+SvYxoM7mWcQqK5kgLodcXGIjBIb8582HWErYwagMnC8sf7e5MOkqLE1/zMQhgDD8GzHqClEPUi0HpveCl2JIDMtFcqnCR8YAtzaHX7LG4Lp2UaXU2xhOaQZCHAFAd4cxrn2B96mUavqw7daacVDgaO0w3LBaPwcIDA\u2026"
+        },
+        {
+          "title": "TGOLN2 (trans-golgi network protein 2)",
+          "url": "https://atlasgeneticsoncology.org/gene/74663/tgoln2-(trans-golgi-network-protein-2)",
+          "snippet": "EpQDCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDOuaRApBQ1E+YlssWxoM/5Cj+Icbu5zQIGA2IjBBvMriyoN8QQLnbX/qwX3BBf6CAv5tFF18oetkZZL8F4s+kxi4VRKmpIlWY1kjMYEqlwJCRsARjditsJt3+tX/chO3/Zz7qtNjTvJhXuYaLTZfcihcH9H3/j7JCENk3W8tWlJQSVY0\u2026"
+        }
+      ]
+    }
+  ]
 }

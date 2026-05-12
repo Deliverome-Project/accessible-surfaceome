@@ -7,15 +7,59 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is canonically a cytosolic chaperone with no transmembrane domain, GPI anchor, or classical surface-targeting signal. However, extensive published evidence documents tumor-cell-specific plasma membrane display: (1) screening of ~1,000 primary human tumor biopsies showed carcinomas, but not normal tissues, present HSP70 on their surface; (2) flow cytometry on intact viable tumor cells with the cmHsp70.1 mAb \u2014 which recognises the extracellular-exposed C-terminal TKD epitope \u2014 confirms outer-leaflet accessibility in multiple tumor lines; (3) surface iodination and global plasma-membrane proteomics independently detect HSPA1A on tumor cell surfaces; (4) the membrane anchor appears to be interaction with tumor-specific sphingoglycolipids/phosphatidylserine in cholesterol-rich microdomains. This surface display is absent on normal (non-transformed) tissues and is a tumor-state (oncogenic transformation/stress) phenomenon. Additionally, stress-induced (heat, infection, hypoxia) upregulation and active secretion contribute to extracellular pools. The surface form is thus cell_state_induced (oncogenic transformation), qualifying as contextual. Pre-no checklist: not lysosomal-TM cycling; no germline/tissue-restricted anchor; the PM pool is documented by direct flow/biotinylation evidence specifically for HSPA1A in tumor/stress state, ruling out secreted_only.",
+  "verdict_reasoning": "HSPA1A (HSP70/HSP72) is canonically a cytosolic chaperone with no TM domain, GPI anchor, or conventional secretory signal. However, extensive experimental evidence confirms tumor-selective plasma membrane surface display: (1) flow cytometry on viable, non-permeabilized tumor cells using cmHsp70.1 mAb directed against an extracellularly exposed C-terminal epitope detects mHsp70 on a large variety of human and mouse tumor lines; (2) surface proteomics confirms PM abundance in tumor cells; (3) immunofluorescence shows dotted PM staining on intact cells. The mechanism involves high-affinity insertion into cholesterol-rich, negatively charged phosphatidylserine-containing lipid microdomains (Gb3), not a conventional TM anchor. Normal/non-stressed cells do NOT display surface HSP70. Stress/oncogenic transformation is required. Ruling out other contextual buckets: tissue-restricted \u2014 no (tumor-broad, not lineage-restricted); lysosomal exocytosis \u2014 not the documented mechanism; dual_localization \u2014 does not fit as the dominant PM pool is transformation-induced rather than a constitutive cycling pool; stable_surface_attachment \u2014 no covalent or wash-resistant TM partner. Best fit is cell_state_induced: surface display is gated on oncogenic transformation or stress, and multiple therapeutic programs (cmHsp70.1 ADCC, NK-cell-activating strategies) target this surface pool.",
   "correct": true,
-  "prompt_tokens": 34057,
+  "prompt_tokens": 720,
   "completion_tokens": 447,
   "n_web_searches": 1,
-  "cost_usd": 0.118876,
-  "latency_s": 14.589210583013482,
+  "cost_usd": 0.0897361,
+  "latency_s": 13.580978040990885,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 18318,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **HSPA1A**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: heat shock protein family A (Hsp70) member 1A\n- HGNC symbol: HSPA1A\n- UniProt accession: P0DMV8\n- Aliases: HSP70-1, HEL-S-103, HSP70, HSP70-1A, HSP70-2, HSP70.1, HSP70.2, HSP70I, HSP72\n- Previous symbols: HSPA1\n- HGNC gene-group memberships: Heat shock 70kDa proteins, TIM23 complex\n- CD nomenclature: (none assigned)\n- NCBI summary: This intronless gene encodes a 70kDa heat shock protein which is a member of the heat shock protein 70 family. In conjuction with other heat shock proteins, this protein stabilizes existing proteins against aggregation and mediates the folding of newly translated proteins in the cytosol and in organelles. It is also involved in the ubiquitin-proteasome pathway through interaction with the AU-rich element RNA-binding protein 1. The gene is located in the major histocompatibility complex class III region, in a cluster with two closely related genes which encode similar proteins. [provided by Re\u2026\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01EB3k6p3rVYqgycD2dY9jvC",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "HSPA1A HSP70 cell surface expression flow cytometry extracellular",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "Membrane Hsp70-supported cell-to-cell connections via tunneling nanotubes revealed by live-cell STED nanoscopy - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6363613/",
+          "snippet": "EucfCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDICYxSk7IKgXEKPd/RoM8+CP8ATxcMmj3YkYIjC9iKVxuCL2N6Uo0a89cQVUUmVf5Hj+FfIPcq/sSSsVRW/UZNbjgq6FPsMK+PTsAF4q6h5bDQkukIkIpmbZgVKbUKNX1hOT50d8zCk1SiGwi0Jvp0prftfj58DxPptCcL5YosY8GTCv\u2026"
+        },
+        {
+          "title": "Flow cytometry is a rapid and reliable method for evaluating heat shock protein 70 expression in human monocytes - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/9764757/",
+          "snippet": "EoMjCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDDbu1MWALFyBOer3vxoMqnpmU0Vs/tJDFHhgIjALWfTTct1gWa9uprHVmsEoEjvS4C5IidVUtF8gPGCTQ0RQcA5LO+Gsdu+NrMooSI4qhiLxxagvwz68bEfMVoP9Js55yNXy5HnuxCLrOc995h2kF++YN0cXlw6Tep81E5a4ol4SP3xG\u2026"
+        },
+        {
+          "title": "Hsp70-containing extracellular vesicles are capable of activating of adaptive immunity in models of mouse melanoma and colon carcinoma | Scientific Reports",
+          "url": "https://www.nature.com/articles/s41598-021-00734-4",
+          "snippet": "ErAaCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDIyKqHecyGkcOFYGpBoMfmJMB9uANFA5sTWsIjDHeOJWCuAZsDYkTgxzvE3bD2eHUHv45h74xzxoekyeRUN0Azd0hOY1l/zMri4kzugqsxlRSGaGN9t/Dp+U95jGXl4/lS87qb/65CgWYx+OEuIKmmyrAywv0gPz47lJXMtZEdFsJu9P\u2026"
+        },
+        {
+          "title": "Frontiers | Diversity of extracellular HSP70 in cancer: advancing from a molecular biomarker to a novel therapeutic target",
+          "url": "https://www.frontiersin.org/journals/oncology/articles/10.3389/fonc.2024.1388999/full",
+          "snippet": "EtIeCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDDSzAqu4VP+qRy/1rxoMc5bXu8ak75+9hUkiIjCAX4xqFMuuog4UcT3rhuWzyWYs9tLeHagYRdjoER54QneYGmz94RSwmeteJnriV08q1R05QYBOYpZj4z+p6XnOKZ6bEZMOqXuIjUgtkgeSCn0cVY+OdUybk1Ya2U0wHHq5DVqxJ20j\u2026"
+        },
+        {
+          "title": "Overexpression of cytosolic, plasma membrane bound and extracellular heat shock protein 70 (Hsp70) in primary glioblastomas | Journal of Neuro-Oncology | Springer Nature Link",
+          "url": "https://link.springer.com/article/10.1007/s11060-017-2600-z",
+          "snippet": "Er8ZCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDDAwLCJJUK+Rik/tPhoMa/tOSh88jLwsI8R8IjDfchaMl2Au9sOmLBCf583N/F5QxdPNPkmEwoji1+dl+twOtx2/kLx2eiqRf49lk80qwhhSw3XS7QszNpNg3I2O00NXKOXosVS3+pTxT9g4+eHuIEAkOeEXYsngHfG8BHDHRXLZS6oE\u2026"
+        }
+      ]
+    }
+  ]
 }

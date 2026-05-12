@@ -7,15 +7,59 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "ATP5F1B (ATP synthase \u03b2 subunit) is canonically a mitochondrial matrix-facing subunit of the F1 catalytic core, with no intrinsic transmembrane domain or GPI anchor. Its baseline localization is the inner mitochondrial membrane/matrix. However, multiple independent lines of published experimental evidence document ectopic surface expression (ecto-ATP5B) on the outer leaflet of the plasma membrane in tumor cells (NSCLC, prostate cancer, AML, breast cancer), endothelial cells, and neuronal cells \u2014 confirmed by flow cytometry on non-permeabilized cells, surface biotinylation, aptamer binding to live cells, and functional antibody studies. A 2023 mechanistic study showed the complex is assembled in mitochondria and transported to the cell surface via microtubule-mediated mitochondrial membrane fusion with the PM, providing an anchoring mechanism. This surface display is documented in oncogenic/tumor states and in endothelial cells, qualifying as cell_state_induced contextual surface accessibility. The protein is absent from the outer leaflet of normal non-endothelial cells at baseline.",
+  "verdict_reasoning": "ATP5F1B (ATP5B) is canonically a soluble F1 subunit of the mitochondrial inner membrane ATP synthase complex, with no transmembrane domain or classical surface-targeting signal. However, there is extensive experimental evidence that it reaches the outer leaflet of the plasma membrane via an 'ectopic' translocation mechanism: (1) flow cytometry on intact non-permeabilized cancer cell lines (A549 NSCLC, NB4/HL-60 leukemia, PC-3M prostate) directly demonstrates surface exposure; (2) it functions as an apolipoprotein A-I receptor on hepatocytes and an angiostatin receptor on endothelial cells; (3) a 2023 Comm Biology study showed the assembled ATP synthase complex travels from mitochondria to PM via microtubule/DRP1/KIF5B-mediated membrane fusion, with the F1 domain (including beta) directed extracellularly. Surface display is documented in cancer cells, endothelial cells, hepatocytes, adipocytes, and keratinocytes, but is not the baseline localization for most cell types \u2014 the dominant pool is mitochondrial. This fits 'cell_state_induced' (cancer/oncogenic transformation) and partial normal-cell display, best captured as contextual/cell_state_induced.",
   "correct": true,
-  "prompt_tokens": 25853,
-  "completion_tokens": 374,
+  "prompt_tokens": 728,
+  "completion_tokens": 409,
   "n_web_searches": 1,
-  "cost_usd": 0.093169,
-  "latency_s": 9.937850999995135,
+  "cost_usd": 0.06814885,
+  "latency_s": 12.56699658301659,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 12707,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **ATP5F1B**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: ATP synthase F1 subunit beta\n- HGNC symbol: ATP5F1B\n- UniProt accession: P06576\n- Aliases: ATPMB, DYT38, HEL-S-271, HUMOP2\n- Previous symbols: ATPSB, ATP5B\n- HGNC gene-group memberships: Mitochondrial complex V: ATP synthase subunits, Small nucleolar RNA protein coding host genes, ATPase F1/V1 alpha/A and beta/B subunit family\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene encodes a subunit of mitochondrial ATP synthase. Mitochondrial ATP synthase catalyzes ATP synthesis, utilizing an electrochemical gradient of protons across the inner membrane during oxidative phosphorylation. ATP synthase is composed of two linked multi-subunit complexes: the soluble catalytic core, F1, and the membrane-spanning component, Fo, comprising the proton channel. The catalytic portion of mitochondrial ATP synthase consists of 5 different subunits (alpha, beta, gamma, delta, and epsilon) assembled with a stoichiometry of 3 alpha, 3 beta, and a single representative of the\u2026\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01CMuAcW6WRR3Z4eP8JiaZct",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "ATP5F1B ATP synthase beta subunit cell surface expression ectopic",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "Ectopic expression of the ATP synthase \u03b2 subunit on the membrane of PC-3M cells supports its potential role in prostate cancer metastasis - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/28259978/",
+          "snippet": "EokDCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDAmhGUINPBBEIg0bfBoMtMVLYzL2Xe+yxfZTIjA00zaPWDJgtXN2vJy99kPZZWyGFMlwiWmJz4IhJm1FCn3Drs6aFtcTSvOoO8qWW+0qjAL5d0NQar5RmcrG1TGUjgusALWxzWss8wU4pKR5/DgQqquwLC6T1+GfzXfEqRtZUMvtPiHc\u2026"
+        },
+        {
+          "title": "Spatial and temporal dynamics of ATP synthase from mitochondria toward the cell surface | Communications Biology",
+          "url": "https://www.nature.com/articles/s42003-023-04785-3",
+          "snippet": "EvkaCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDM2VytQ9iskAWcw1pRoMIrZN/tjbQzch7hooIjBruHkZ2Hpp8JSaMct4QJ4YsB0gxwG6oNXYP4mAGqQWJ7YHhKJUi2StWM7u0B7sTRcq/BkbOqm6q+NpXt/CeUgM4yiLBIpV544hlMSEuE1qlSSpNSelaV1NkOqY9ps0jt2meGWtaspu\u2026"
+        },
+        {
+          "title": "Identification of ATP synthase beta subunit (ATPB) on the cell surface as a non-small cell lung cancer (NSCLC) associated antigen - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19144153/",
+          "snippet": "EscKCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDLdW+/8/DjhjPKKhQxoMuZFJFeaOy/T2myK1IjDnvdBrrKLKuizbQNrWNJVnzTelKMJi9iURNUp35NHqGhCBjkWVcz7ymdC/pUgFrYoqygmvmvnbm70HK47Xso56sf4vY9M6A1zPAp+hK6G1ckAxsP0nxVNMpSyIl0WaZt4GmyxP0BI1\u2026"
+        },
+        {
+          "title": "Ectopic ATP synthase \u03b2 subunit proteins on human leukemia cell surface interact with platelets by binding glycoprotein IIb - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/30733262/",
+          "snippet": "ErAWCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDL/H3nFzf7tVsazpfRoMliHFe1bxvDuvo0LCIjBgRlD6V40njsnNJD8lwGrw0oJ769yzzXZ6VgXbWX1TCl8TLC3BDYTKbEG8E/Z1r/EqsxUDQ96LTsA9Ahh3IVTtVAkfr6Yr0Lo8vWivxcebtEp7tO2jGoFq3btLS3XujrtsJPtfZep5\u2026"
+        },
+        {
+          "title": "Ectopic expression of the ATP synthase \u03b2 subunit on ...",
+          "url": "https://www.spandidos-publications.com/10.3892/ijo.2017.3878",
+          "snippet": "Eq0jCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDB8QCR2hXJsbEuS4/hoMr5c/r4adLXYQ/JzJIjAXBnZ1TPJt7KS3ypBXaxjXB782zjhEubyeKJiMxwc7xpdFIAoAoGw02BRK74YmfOQqsCLeVRCvXCCtx3rcyr9uYu9Iy1Z1ARpFRXGcV0kwg75EcnvXDbGCr/cRaU22ixqPxUx+cy7X\u2026"
+        }
+      ]
+    }
+  ]
 }

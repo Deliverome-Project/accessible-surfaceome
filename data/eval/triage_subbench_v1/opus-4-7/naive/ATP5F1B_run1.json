@@ -5,17 +5,23 @@
   "replicate": 1,
   "truth_verdict": "contextual",
   "truth_class": "dual_localization_borderline",
-  "predicted_verdict": "contextual",
-  "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "ATP5F1B (ATP synthase F1 beta subunit) is canonically a mitochondrial inner-membrane matrix-facing protein, part of the F1 catalytic head of ATP synthase. However, ectopic surface expression of ATP synthase components (including the beta subunit) on the plasma membrane of hepatocytes, endothelial cells, adipocytes, and notably tumor cells has been documented by surface biotinylation, flow cytometry on intact cells, and antibody binding studies. Ecto-F1-ATPase serves as a receptor for apoA-I, angiostatin, and coupling factor 6, and anti-beta-subunit antibodies (e.g., HUVEC-binding) have been developed as antiangiogenic/antitumor agents. This places it in cell_state_induced contextual surfacing.",
-  "correct": true,
-  "prompt_tokens": 7279,
-  "completion_tokens": 405,
+  "predicted_verdict": "no",
+  "predicted_reason": "mitochondrial_internal",
+  "verdict_reasoning": "ATP5F1B encodes the beta subunit of mitochondrial ATP synthase (F1 complex), localized to the inner mitochondrial membrane facing the matrix. While ectopic surface ATP synthase has been reported on some cancer/endothelial cells as a contextual phenomenon, this is debated and not a robust gene-specific surface display mechanism. Checking contextual buckets: cell_state_induced \u2014 no robust validated surface induction; tissue_restricted_surface \u2014 not lineage-restricted to surface; lysosomal_exocytosis \u2014 not lysosomal; dual_localization \u2014 ectopic surface ATP synthase reports exist but mechanism unclear and contested; stable_surface_attachment \u2014 not secreted. Dominant biology is mitochondrial internal.",
+  "correct": false,
+  "prompt_tokens": 75,
+  "completion_tokens": 378,
   "n_web_searches": 0,
-  "cost_usd": 0.13956,
-  "latency_s": 7.133726958010811,
+  "cost_usd": 0.033042,
+  "latency_s": 5.651804750028532,
   "predicted_confidence": "low",
-  "predicted_key_uncertainty": "Mechanism of mitochondrial-to-PM trafficking of ecto-F1-ATPase remains unclear; uncertain if surface pool is robust enough for therapeutic targeting vs. tissue_restricted_surface.",
+  "predicted_key_uncertainty": "Ectopic cell-surface ATP synthase (including beta subunit) has been reported on tumor/endothelial cells as angiostatin/apoA-I receptor \u2014 could justify contextual/dual_localization.",
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 2378,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "_synced_from_d1": {
+    "run_id": "final_slim_canonical_v1",
+    "created_at": "2026-05-12 03:23:18"
+  }
 }

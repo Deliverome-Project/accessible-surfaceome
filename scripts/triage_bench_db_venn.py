@@ -17,6 +17,7 @@ Outputs (PDF + PNG):
 from __future__ import annotations
 
 import csv
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -107,7 +108,13 @@ def make_plot(out_dir: Path) -> None:
 
 
 def main() -> None:
-    make_plot(Path("data/analysis/triage_bench"))
+    # Default output dir tracks the "final" rendering folder so a venn
+    # regenerate doesn't drift back into the staging dir. Override via
+    # the VENN_OUT_DIR env var.
+    out_dir = Path(os.environ.get(
+        "VENN_OUT_DIR", "data/analysis/triage_bench_final"
+    ))
+    make_plot(out_dir)
 
 
 if __name__ == "__main__":

@@ -7,15 +7,59 @@
   "truth_class": "wrong_side_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "inner_leaflet_anchored",
-  "verdict_reasoning": "LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via dual N-terminal lipid modifications: co-translational myristoylation at Gly-2 and post-translational palmitoylation at Cys-3. All functional domains (SH4, SH3, SH2, kinase) face the cytosol. Mutation of both acylation sites delocalizes Lyn to the cytoplasm, confirming that membrane association is entirely inner-leaflet. No TM domain, no GPI anchor, and no extracellular domain exist. Pre-no checklist: (1) no documented outer-leaflet/ecto-pool in cancer or oncogenic transformation; (2) caspase cleavage during apoptosis removes the lipid anchor and releases a cytosolic fragment \u2014 not an ecto-pool; (3) no germline/developmental outer-leaflet display; (4) activation-induced signaling occurs at the cytoplasmic face, not ecto-face; (5) not a lysosomal TM protein; (6) minor nuclear and Golgi pools are cytoplasm-facing; (7) no wash-resistant TM-partner tethering to extracellular face. No cell-surface-directed therapeutic (antibody/ADC/CAR-T) targets the LYN protein body from outside the cell.",
+  "verdict_reasoning": "LYN (P07948) is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via N-myristoylation at Gly-2 and S-palmitoylation at Cys-3. All structural and functional domains face the cytoplasm; there is no extracellular segment, no transmembrane domain, and no GPI anchor. Checking each contextual bucket: (1) cell_state_induced \u2013 no evidence LYN displays any extracellular-facing epitope under any cell state; its inner-leaflet anchor is constitutive. (2) tissue_restricted_surface \u2013 irrelevant; LYN is widely expressed but always inner-leaflet. (3) lysosomal_exocytosis \u2013 no documentation of LYN reaching the outer leaflet via this route. (4) dual_localization \u2013 LYN does partition between PM and Golgi/endomembranes and even the nucleus, but none of these pools exposes the protein body to the extracellular space. (5) stable_surface_attachment \u2013 LYN is not secreted and not known to associate wash-resistantly with any extracellular-facing partner. No antibody/ADC/CAR-T program targets LYN on the outer surface. The definitive localization is inner_leaflet_anchored.",
   "correct": false,
-  "prompt_tokens": 34472,
-  "completion_tokens": 714,
+  "prompt_tokens": 615,
+  "completion_tokens": 425,
   "n_web_searches": 1,
-  "cost_usd": 0.124126,
-  "latency_s": 16.086032999970485,
+  "cost_usd": 0.09068485,
+  "latency_s": 11.807085666980129,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 18743,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **LYN**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: LYN proto-oncogene, Src family tyrosine kinase\n- HGNC symbol: LYN\n- UniProt accession: P07948\n- Aliases: JTK8, SAIDV, p53Lyn, p56Lyn\n- Previous symbols: (none)\n- HGNC gene-group memberships: SH2 domain containing, Src family tyrosine kinases\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene encodes a tyrosine protein kinase, which maybe involved in the regulation of mast cell degranulation, and erythroid differentiation. Alternatively spliced transcript variants encoding different isoforms have been found for this gene. [provided by RefSeq, Jul 2011]\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01UJ4iwviuNbM82PQBsGQv3G",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "LYN kinase membrane localization myristoylation inner leaflet plasma membrane",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "Structure-Function Analysis of Lyn Kinase Association with Lipid Rafts and Initiation of Early Signaling Events after Fc\u025b Receptor I Aggregation - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC99996/",
+          "snippet": "EqUhCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDATxZBhPYYwEs2BO5hoMOXYM3H9wA7nvVVBuIjDs9+yi9Yf68dpHxaNika3iCPU19E0DFNOv7gZn3YXx2mlDYjOCIss8lu7tC7lgDjQqqCDXA6n1Xjmm5mUpJqnXTDO7wuX1ru/k5xmBd20DEQEDxKnYBuoL3fK9cNudiFcE4Bl/Qofd\u2026"
+        },
+        {
+          "title": "Protein-N-myristoylation-dependent phosphorylation of serine 13 of tyrosine kinase Lyn by casein kinase 1\u03b3 at the Golgi during intracellular protein traffic | Scientific Reports",
+          "url": "https://www.nature.com/articles/s41598-020-73248-0",
+          "snippet": "EqIlCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDLWY0Qg9YreKAKlmKBoM78IN1SdxpSd43vqAIjDyTvacEgqGh6+VV/CFGG/Y+xFZKN7L4eJG3ADXWrXcTHsRH4BQY7w8qeSSTFdmceUqpSR1I9MsH3SpuhSgosUzFUvaUKSqve/PrrwgNQVmtCLu1VlqhCuClLHneE/OleMZ9mXeVuV3\u2026"
+        },
+        {
+          "title": "Protective role for lipid modifications of Src-family kinases against chromosome missegregation | Scientific Reports",
+          "url": "https://www.nature.com/articles/srep38751",
+          "snippet": "EpAmCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDFz03ysZMedM2DPKgRoMazSpzj9FEiseeFl4IjCM9f6B/grRRj3L+52yf9VDswQlK412soJryqn3g60WmYJnTNNNubDG27cPhMw9lzYqkyWWP8MsHmRuTQjmrimJuoSx1AZPDNAXBHHU6QeNAYrY403kDC81ggYuZm+6esSiS3qWybN9\u2026"
+        },
+        {
+          "title": "Recruitment of Lyn from endomembranes to the plasma membrane through calcium-dependent cell-cell interactions upon polarization of inducible Lyn-expressing MDCK cells | Scientific Reports",
+          "url": "https://www.nature.com/articles/s41598-017-00538-5",
+          "snippet": "EtAlCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDGodc4ZZxP9z4efocxoMGsQLNRk2vy7/5RtyIjDKBfGWFRgzWB3w8aHuETCtP053xL+yVk2gVBbH/45ONcbJbk2+UuDG5CXcw1dlgq8q0yQwUHNQAd4firPIzc/PR2vnK16SpLyLHyej3QFNUBWpx4oZJgQHztKjmph6nI6yesNQysP1\u2026"
+        },
+        {
+          "title": "Differential trafficking of Src, Lyn, Yes and Fyn is specified by the state of palmitoylation in the SH4 domain | Journal of Cell Science | The Company of Biologists",
+          "url": "https://journals.biologists.com/jcs/article/122/7/965/30969/Differential-trafficking-of-Src-Lyn-Yes-and-Fyn-is",
+          "snippet": "EuclCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDOVGa479xGU6jNFJmBoM2Qm03tHcmLr5ih7YIjAd1Ajjizkogagl4SoSCSqTCoh0Fz9QS+/fdwOOAH4hQmk+AbbXx9S84XUajP/cUNYq6iQ0Zk7hpGVMbueeUrbrfQ6hj0rX0Q5oORXdfUnREXsjMRlQbIWBg+qZ+uymkPhwdnaquFu8\u2026"
+        }
+      ]
+    }
+  ]
 }

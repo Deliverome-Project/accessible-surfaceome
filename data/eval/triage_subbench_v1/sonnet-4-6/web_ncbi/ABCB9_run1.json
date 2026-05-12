@@ -5,17 +5,61 @@
   "replicate": 1,
   "truth_verdict": "no",
   "truth_class": "wrong_compartment_negative",
-  "predicted_verdict": "contextual",
-  "predicted_reason": "lysosomal_exocytosis",
-  "verdict_reasoning": "ABCB9/TAPL is a multi-pass transmembrane protein that resides on the limiting membrane of lysosomes, where it transports peptides from the cytosol into the lysosomal lumen. Its lysosomal targeting is mediated by its N-terminal transmembrane domain (TMD0), and full-length ABCB9 traffics exclusively to lysosomes via ER\u2192Golgi\u2192endosome\u2192lysosome. As a lysosomal TM protein, it can transiently appear at the plasma membrane during lysosomal exocytosis, the well-documented mechanism by which lysosomal membrane fusion with the PM exposes lysosomal membrane constituents on the cell surface. No stable, constitutive plasma membrane pool is documented for the full-length protein (truncated core domain without TMD0 mislocalizes to PM, but this is an artifact). No evidence of cell-surface-directed therapeutics, ectodomain shedding, secreted form, or stable extracellular-face anchoring. Verdict is contextual/lysosomal_exocytosis because the protein is a bona fide lysosomal TM protein subject to the universal lysosomal exocytosis mechanism.",
-  "correct": false,
-  "prompt_tokens": 31000,
-  "completion_tokens": 1442,
+  "predicted_verdict": "no",
+  "predicted_reason": "endomembrane_resident",
+  "verdict_reasoning": "ABCB9/TAPL is a multi-pass ABC transporter that resides exclusively on lysosomal membranes. Its function is to translocate cytosolic peptides into the lysosomal lumen, powered by ATP hydrolysis. The TMD0 N-terminal domain encodes a lysosomal targeting signal; full-length TAPL traffics directly from ER\u2192Golgi\u2192lysosomes and colocalizes essentially 100% with LAMP markers. The nucleotide-binding domains face the cytosol. No extracellular-facing loops are exposed to the cell exterior. Contextual buckets: (1) cell_state_induced \u2014 no evidence of stress- or activation-induced PM display for full-length TAPL; (2) tissue_restricted_surface \u2014 not applicable, localization is lysosomal not PM in any lineage; (3) lysosomal_exocytosis \u2014 no published evidence of TAPL reaching the plasma membrane via lysosomal exocytosis; (4) dual_localization \u2014 only a truncated core construct lacking TMD0 mislocalizes partly to the PM; full-length wt-TAPL traffics exclusively to lysosomes; (5) stable_surface_attachment \u2014 TAPL is not secreted and not known to attach to any PM partner extracellularly. No antibody/ADC/CAR-T therapeutic programs targeting TAPL on the cell surface are documented. Verdict: lysosomal membrane resident, no extracellular face accessible.",
+  "correct": true,
+  "prompt_tokens": 678,
+  "completion_tokens": 452,
   "n_web_searches": 1,
-  "cost_usd": 0.12462999999999999,
-  "latency_s": 31.06092154199723,
-  "predicted_confidence": "medium",
-  "predicted_key_uncertainty": "No gene-specific experimental documentation of ABCB9 appearing at the plasma membrane during lysosomal exocytosis; call rests on the class-level mechanism applicable to all lysosomal TM proteins.",
+  "cost_usd": 0.0847801,
+  "latency_s": 12.794723999977577,
+  "predicted_confidence": "high",
+  "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 17010,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **ABCB9**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: ATP binding cassette subfamily B member 9\n- HGNC symbol: ABCB9\n- UniProt accession: Q9NP78\n- Aliases: EST122234, TAPL\n- Previous symbols: (none)\n- HGNC gene-group memberships: ATP binding cassette subfamily B\n- CD nomenclature: (none assigned)\n- NCBI summary: The membrane-associated protein encoded by this gene is a member of the superfamily of ATP-binding cassette (ABC) transporters. ABC proteins transport various molecules across extra- and intra-cellular membranes. ABC genes are divided into seven distinct subfamilies (ABC1, MDR/TAP, MRP, ALD, OABP, GCN20, White). This protein is a member of the MDR/TAP subfamily. Members of the MDR/TAP subfamily are involved in multidrug resistance as well as antigen presentation. This family member functions in the translocation of peptides from the cytosol into the lysosomal lumen. Alternative splicing of th\u2026\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01RM8WzDLq9Ecvrc8kuqJmor",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "ABCB9 TAPL lysosomal membrane localization cell surface",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "Lysosomal targeting of the ABC transporter TAPL is determined by membrane-localized charged residues - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6509505/",
+          "snippet": "Eo4gCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDGfzcHIb8EYFmrJQoxoMyHPuVuxLmj/xtcOfIjBq3eg86Y2c/NtNWcSf5JtyTUO9BNHJWfZqQ/MZHgNqPQPGb6c+FfI/9cZhdpCKB7kqkR8EnRRv5l9fuJKEqYlGjB0vapQREfI1BIaiW1AfxYjWF3WX91+a/jdLBK3+2ADcERJxqL33\u2026"
+        },
+        {
+          "title": "Transporter associated with antigen processing-like (ABCB9) stably expressed in Chinese hamster ovary-K1 cells is sorted to the microdomains of lysosomal membranes - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+          "snippet": "EooMCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDF9HmViQAntnoEMwfBoMTnLepzPrP2oGyUJbIjBflp25qxe03b7nFqT5sIOEZCx/NRcrpG/R8Xbf87e/7j20j1HPBwa8+C5jint4lWoqjQuyG46nEa2fGrLKthbtRd7DBKkcL96LsYjKTXafrrhPDuUecKna9rK/hmMlUqjkLKa5+EKN\u2026"
+        },
+        {
+          "title": "Lysosomal targeting of the ABC transporter TAPL is determined by membrane-localized charged residues - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/30877195/",
+          "snippet": "EqkeCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDINFXegvYeeFw0w5YBoM1AXRqgaVeR0B1b3sIjC0o9qxmZvhsVlxNb0mlbARju8UcEU7ByCUk5OP0cXaRqlPVcocQNbzhuc5jXf2R24qrB2ibs+BdM4pPnH1jbgaOVqbVnsGM21JkO24IJ/RPgYQFKPL/ETX/LfyJzqGXnkkZxNUziJC\u2026"
+        },
+        {
+          "title": "Lysosomal targeting of the ABC transporter TAPL is determined by membrane-localized charged residues - ScienceDirect",
+          "url": "https://www.sciencedirect.com/science/article/pii/S0021925820368083",
+          "snippet": "EpwRCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDA5H9+ZW2uHhXHP+exoMt/SKxz5Zp+EQ5Ua9IjDZ1jR2UcoRpIpm/uSdrT7c0xRsp9fD8kUsTEO1Q5AoABFLZ19L9X2Cn6hF9RS/wpoqnxBvPJEWcEjyckMhsxn0Yg8lzUizFwXqTvCZKuYwu5NSjKCkCNjrmHgzI3g2fEEtWOdSJkGq\u2026"
+        },
+        {
+          "title": "Peptide specificity and lipid activation of the lysosomal transport complex ABCB9 (TAPL) - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/18434309/",
+          "snippet": "EoMfCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDLlefTU2+wEiDHsp2BoMjfEsqO7kzVDzCp7yIjB2Dlz2Iq6+syiq/6P7Bcio96zC8nYYHVDqcrSIXkp7gQgH10L/bap14XUZuQkz8Kwqhh47H0zdqZXiZ+v1Ijyok20d4/WO7WkXFZB2ET6MaHV8jRdjtyaP6hChS8xp6DKlkjnK+n4p\u2026"
+        }
+      ]
+    }
+  ]
 }

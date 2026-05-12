@@ -7,15 +7,59 @@
   "truth_class": "surface_attachment_borderline",
   "predicted_verdict": "no",
   "predicted_reason": "secreted_only",
-  "verdict_reasoning": "C3 (complement C3) is a secreted plasma protein produced primarily by the liver. It has no transmembrane domain, no GPI anchor, and no other membrane-anchoring mechanism of its own. The mature protein circulates in blood and extracellular fluids as a soluble precursor. Upon complement activation, the cleavage fragment C3b contains a reactive thioester domain that allows it to covalently attach to pathogen surfaces or immune complexes \u2014 but this is deposition onto foreign/microbial surfaces (or opsonization of immune complexes), not stable anchoring to the outer leaflet of human cell plasma membranes. Pre-checklist: (1) No cell-surface-directed antibody/ADC/CAR-T targets C3 on the host cell surface \u2014 therapeutic anti-C3 programs (e.g., pegcetacoplan) target the soluble circulating pool. (2) Not an ectodomain-shedding TM precursor \u2014 C3 has no TM domain at any isoform stage. (3) No covalent/wash-resistant tethering to a host TM partner \u2014 C3b thioester covalently deposits onto pathogen/target surfaces but this is opsonization of foreign particles, not stable host-cell surface anchoring (and is immediately regulated/removed on host cells). (4) No documented PM minority pool on human cells \u2014 host-cell regulatory proteins (CD46, CD55, CD59) actively prevent C3b retention. (5) No documented cell-death-induced, oncogenic, activation-induced, germline-restricted, or lysosomal-exocytosis ecto-display. No dual localization or cycling pool to the plasma membrane outer leaflet. C3 is a secreted protein with no stable surface-anchoring mechanism on human cells.",
+  "verdict_reasoning": "C3 (complement C3, UniProt P01024) is a secreted plasma protein. It is synthesised mainly by the liver and secreted into the bloodstream as a soluble heterodimer (alpha+beta chains). It has no transmembrane domain and no GPI anchor. Its biological action occurs in the fluid phase or after covalent deposition of its cleavage fragment C3b onto pathogen/target surfaces via a reactive thioester \u2014 but the intact C3 molecule itself has no stable attachment to any host cell plasma membrane. Contextual buckets ruled out: (1) cell_state_induced \u2014 C3b deposition occurs on pathogens/apoptotic cells, not stably on host PM under any cell state; (2) tissue_restricted_surface \u2014 no lineage-restricted surface display documented; (3) lysosomal_exocytosis \u2014 C3 is not a lysosomal TM protein; (4) dual_localization \u2014 no PM pool documented; C3 is a secreted protein with no TM isoform; (5) stable_surface_attachment \u2014 covalent C3b deposition is onto pathogen/foreign surfaces, not host-cell PM in a wash-resistant manner. No antibody/CAR-T/ADC program targets C3 on the surface of host cells. Anti-C3 therapeutics (e.g. pegcetacoplan) target the soluble circulating pool. Verdict is secreted_only.",
   "correct": false,
-  "prompt_tokens": 30875,
-  "completion_tokens": 507,
+  "prompt_tokens": 695,
+  "completion_tokens": 427,
   "n_web_searches": 1,
-  "cost_usd": 0.11023,
-  "latency_s": 16.055125915969256,
+  "cost_usd": 0.0701311,
+  "latency_s": 12.924033540999517,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 13190,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **C3**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: complement C3\n- HGNC symbol: C3\n- UniProt accession: P01024\n- Aliases: CPAMD1, ARMD9, C3a, C3b, AHUS5, ASP, HEL-S-62p\n- Previous symbols: (none)\n- HGNC gene-group memberships: Receptor ligands, C3 and PZP like, alpha-2-macroglobulin domain containing, Complement system activation components\n- CD nomenclature: (none assigned)\n- NCBI summary: Complement component C3 plays a central role in the activation of complement system. Its activation is required for both classical and alternative complement activation pathways. The encoded preproprotein is proteolytically processed to generate alpha and beta subunits that form the mature protein, which is then further processed to generate numerous peptide products. The C3a peptide, also known as the C3a anaphylatoxin, modulates inflammation and possesses antimicrobial activity. Mutations in this gene are associated with atypical hemolytic uremic syndrome and age-related macular degeneratio\u2026\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01KG1GLRhCRQ9q8C1cug4ZQf",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "complement C3 cell surface binding opsonization surface accessible",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "C3b - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/C3b",
+          "snippet": "EucfCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDGO/XwQNkgXl8oMRQxoMrnLYTmjfwcftF2fxIjCTQ08GWXc0+JkfC8R5Ws3glOpX50iAOHCktkjakHZc/XvdFP7v6OqHIu1Ii4mnnIgq6h5Po9cwSU3objzfiWIM/j5tphSO1vKxtajUJMzKkkpwnQmSbaE7CAbcDOwxFmYbhlVVjpLX\u2026"
+        },
+        {
+          "title": "The complement system and innate immunity - Immunobiology - NCBI Bookshelf",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK27100/",
+          "snippet": "EpIhCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDKAqCWApZicki5J2UhoMD74Ih3RRQBOM3l6VIjAQ0BFKBVCq5soIwTbHtKN9OfDbJejGYQgOySZaYvSqbYk/0m60zojdRB0NXnjFIMcqlSD0TDD7qjAX5fzh3cha53fTdkh6JwYSPJbNfFRcJjE6SoKZvrrqz36dBq7w09zpJQOaOxs2\u2026"
+        },
+        {
+          "title": "Opsonization - an overview | ScienceDirect Topics",
+          "url": "https://www.sciencedirect.com/topics/immunology-and-microbiology/opsonization",
+          "snippet": "EuIfCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDAqaFKXngQ8IFihDkxoMF1WovFRmigNwl3N8IjBJNRCZl6mVcGzihKrUsBy/+DInZ51vc8gtosJi/JB6HNKoQuzAqLQFs5j7QNsNegIq5R7W8e9EZN5UW8y/yAvtQpHovbwnvhf20vgjEZJyJPiZGGaETfOWEx0ZHOKE5mQC8IANHcaI\u2026"
+        },
+        {
+          "title": "Structural insight on the recognition of surface-bound opsonins by the integrin I domain of complement receptor 3 | PNAS",
+          "url": "https://www.pnas.org/doi/10.1073/pnas.1311261110",
+          "snippet": "EtcfCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDOkD7S079GTCewGpiRoMqan0qK1adl4FXIuXIjC1KmsXqSBJ/xtQ4sDmiUO73vjmEYUCdRAl0DZk3VrwQaPDJ8oXjZMyII0JzWhmzOAq2h6ABcomwv/qa1D+iUQpk3pAvoIq/NuN3ioL3BGTCOP7f06VxRnyEYloyd8UiZgWNWBXlw2N\u2026"
+        },
+        {
+          "title": "Purified complement C3b triggers phagocytosis and activation of human neutrophils via complement receptor 1 | Scientific Reports",
+          "url": "https://www.nature.com/articles/s41598-022-27279-4",
+          "snippet": "EvMfCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDNXyUb/06l7dqJGRlhoM4tDEHOoRoxkuhpq+IjBwmd87XHHHDZkFABockMrWao6keXhmVi/05OHpF8gFob7jN9EoemDBvIlKkcGJLsgq9h4TXM+/03NBDmVpAq21f3wjqb1goYTHV6mU5/E7qJ5kkKFvdQhqFJBJZqNcLqgj1FqsrmH4\u2026"
+        }
+      ]
+    }
+  ]
 }

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -39,7 +40,13 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path("/Users/rebeccacarlson/Git/accessible-surfaceome/.claude/worktrees/optimistic-goldwasser-ea19aa")
 SUBBENCH_TSV = ROOT / "data/eval/triage_subbench_v1.tsv"
 RUNS_DIR = ROOT / "data/eval/triage_subbench_v1"
-OUT_DIR = ROOT / "data/analysis/triage_bench"
+# Output directory is overridable via SUBBENCH_OUT_DIR env var — used to
+# route a one-off "final" rendering into data/analysis/triage_bench_final/
+# without nuking the in-progress plots under data/analysis/triage_bench/.
+OUT_DIR = Path(os.environ.get(
+    "SUBBENCH_OUT_DIR",
+    str(ROOT / "data/analysis/triage_bench"),
+))
 
 # Extrapolate per-cell subbench costs to a whole-genome triage pass.
 # All cost annotations on the plots are reported as $/whole-genome at 1
@@ -57,20 +64,21 @@ GENOME_SCALE = WHOLE_GENOME_N / SUBBENCH_GENE_N  # ~1213x
 
 # Variant order = "amount of context" axis. Each variant gets a darker
 # shade of Claude orange as the context augmentation increases.
-VARIANT_ORDER = ["naive", "ncbi", "web_naive", "web_ncbi"]
+VARIANT_ORDER = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"]
 VARIANT_LABEL = {
-    "naive":     "naive\n(no resolver, no web)",
-    "ncbi":      "NCBI gene\n(resolver, no web)",
-    "web_naive": "web only\n(no resolver)",
-    "web_ncbi":  "web + NCBI\n(both)",
+    "naive":        "naive\n(no resolver, no web)",
+    "ncbi":         "NCBI gene\n(resolver, no web)",
+    "web_ncbi":     "web + NCBI\n(resolver + web)",
+    "pubmed_ncbi":  "PubMed + NCBI\n(resolver + lit)",
 }
-# Sequential Claude-orange shades — lightest to darkest. Base Claude
-# orange is #d87851; the 4 shades step around it in luminance.
+# Sequential Claude-orange shades for the three orange-axis cells +
+# a green accent for the pubmed-evidence variant (different axis —
+# adds pre-fetched literature evidence to the same resolver context).
 CLAUDE_ORANGE_SHADES = {
-    "naive":     "#f1c4ab",  # tint 50%
-    "ncbi":      "#d87851",  # base — matches the main barplot
-    "web_naive": "#a85b3f",  # shade 25%
-    "web_ncbi":  "#7a3b25",  # shade 50%
+    "naive":        "#f1c4ab",  # tint 50%
+    "ncbi":         "#d87851",  # base — matches the main barplot
+    "web_ncbi":     "#7a3b25",  # shade 50%
+    "pubmed_ncbi":  "#557b69",  # muted forest green — literature axis
 }
 
 MODEL_ORDER = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"]
@@ -93,14 +101,16 @@ MODEL_MARKER = {
 # overwrites the JSONs in-place; add the (model, variant) tuple here
 # afterward to mark it fresh.
 FRESH_CELLS: frozenset[tuple[str, str]] = frozenset({
+    # The 10 cells captured under run_id=final_slim_canonical_v1
+    # (slim-canonical prompts, 2026-05-11):
     ("claude-haiku-4-5", "naive"),
     ("claude-haiku-4-5", "ncbi"),
-    ("claude-haiku-4-5", "web_naive"),
     ("claude-haiku-4-5", "web_ncbi"),
+    ("claude-haiku-4-5", "pubmed_ncbi"),
     ("claude-sonnet-4-6", "naive"),
     ("claude-sonnet-4-6", "ncbi"),
-    ("claude-sonnet-4-6", "web_naive"),
     ("claude-sonnet-4-6", "web_ncbi"),
+    ("claude-sonnet-4-6", "pubmed_ncbi"),
     ("claude-opus-4-7", "naive"),
     ("claude-opus-4-7", "ncbi"),
 })

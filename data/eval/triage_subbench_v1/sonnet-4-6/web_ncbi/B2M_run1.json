@@ -7,15 +7,59 @@
   "truth_class": "stable_complex_positive",
   "predicted_verdict": "yes",
   "predicted_reason": "stable_complex_partner",
-  "verdict_reasoning": "B2M (beta-2-microglobulin) is a stable, non-covalent partner of the MHC class I heavy chain (a type I transmembrane protein). Although B2M itself has no transmembrane domain, it is assembled intracellularly with the HLA alpha-chain and co-trafficked as a constitutive surface complex to the outer leaflet of the plasma membrane on virtually all nucleated cells. B2M lies on the extracellular face beside the alpha-3 domain, fully accessible from outside the cell. This is a textbook stable_complex_partner topology; the dissociation into soluble serum B2M is a downstream consequence of complex turnover, not evidence against surface residency. The pMHC scope exclusion does not apply here \u2014 it covers intracellular proteins whose only surface story is peptide MHC-presentation; B2M is itself an extracellular structural subunit of the MHC I complex. Anti-B2M therapeutic programs (e.g., in multiple myeloma) confirm cell-surface targeting.",
+  "verdict_reasoning": "B2M (beta-2-microglobulin) is a non-TM subunit that lacks its own transmembrane or GPI anchor, but it is a constitutive, obligate structural component of MHC class I heterotrimers (\u03b1-chain + B2M + peptide) that are stably expressed on the outer leaflet of the plasma membrane of virtually all nucleated cells. The complex is assembled intracellularly and co-trafficked to the surface. B2M occupies the extracellular face (lying beside the \u03b13 chain on the outer leaflet), making it fully accessible to binders from outside the cell. This is the baseline, constitutive surface topology\u2014not conditional on cell state, stress, or activation. The MHC-I \u03b1-chain carries the TM anchor; B2M is the canonical stable_complex_partner. Multiple anti-B2M antibody and CAR-T programs exploit this surface accessibility. The serum-soluble pool of free B2M exists but the surface-displayed pool is the therapeutically targeted form and is wash-resistant as part of the MHC-I complex.",
   "correct": true,
-  "prompt_tokens": 29814,
-  "completion_tokens": 961,
+  "prompt_tokens": 645,
+  "completion_tokens": 358,
   "n_web_searches": 1,
-  "cost_usd": 0.113857,
-  "latency_s": 20.934029958036263,
+  "cost_usd": 0.0794986,
+  "latency_s": 11.07370708300732,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 16004,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **B2M**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: beta-2-microglobulin\n- HGNC symbol: B2M\n- UniProt accession: P61769\n- Aliases: AMYLD6, IMD43, MHC1D4\n- Previous symbols: (none)\n- HGNC gene-group memberships: C1-set domain containing\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene encodes a serum protein found in association with the major histocompatibility complex (MHC) class I heavy chain on the surface of nearly all nucleated cells. The protein has a predominantly beta-pleated sheet structure that can form amyloid fibrils in some pathological conditions. The encoded antimicrobial protein displays antibacterial activity in amniotic fluid. A mutation in this gene has been shown to result in hypercatabolic hypoproteinemia.[provided by RefSeq, Aug 2014]\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01T2u64jUv6fD3ts4DP9QPfS",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "B2M beta-2-microglobulin cell surface MHC class I complex surface accessibility",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "Beta-2 microglobulin - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Beta-2_microglobulin",
+          "snippet": "EssbCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDCGaCfYe6fcXOuZIQRoMh4lf5IJZE2dykVqKIjDOrL9UxWbdkZnhWMpYHIr5yxgjq3bvE425JXjkaEdrWYiVtNODBV9ZtCgrue1tMh8qzhojoyNGHd7ip6JHD4frLvJS+ZStRTuR4WE/1q7Hkx+BTeed3AEgbfGWTYshQRHsmdwUAeEL\u2026"
+        },
+        {
+          "title": "Beta 2-microglobulin from serum associates with MHC class I antigens on the surface of cultured cells - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/6369147/",
+          "snippet": "EsYICioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDJiwffvBTTYUtvCfhhoMr2kvfyKB+Hx4/6CKIjDTBQ6EARZcTr5v4UDQf+87I2iWvFqM4ODqmCfQ8iVFd11ogYy3TwwnfHzF1uunPtUqyQfRriOZwXKZUGygNNWCR1KWqDwyFtzMUaLw17yL6GYrFlNH3QvzLvjR0XDc0EYVlcQHiHK2\u2026"
+        },
+        {
+          "title": "B2M Gene - Beta-2-Microglobulin",
+          "url": "https://www.genecards.org/cgi-bin/carddisp.pl?gene=B2M",
+          "snippet": "EqolCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDHd8OIBATuGGDscc1hoM6ZIvNISvK2gZ4pG6IjD80F3FKtWCI4G5kg10x6VY01FR7jsp8KZ53GCKtnWKqgHj5ppQmHty1ie9QV82onEqrSQtqGToNgr8Bu2r77jCYiqM7OWggNKSRUABEuAWJ8eUKXt2TU1PoO7t4G5tWyIKEdHbCq4h\u2026"
+        },
+        {
+          "title": "p61769 \u00b7 b2mg_human",
+          "url": "https://www.uniprot.org/uniprotkb/P61769/entry",
+          "snippet": "Ep4CCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDB5h+//u/VswII6FIBoMHBjIcNq2sK0rbU+DIjCftYbA+W3kHCvdi7VjJ4afWppb32LnX8u+5TQ5LJmWFGt8mMI9BFuhocMzfhBTj5QqoQGLpvO/DoxoKroG7yoTT7fDHi6Tb/uJayV+GiCgrXjErD9BaSJCdwtoHmrwVYxzkk9r4UEb\u2026"
+        },
+        {
+          "title": "The Implication and Significance of Beta 2 Microglobulin: A Conservative Multifunctional Regulator - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4800846/",
+          "snippet": "Ep8lCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDNudUmx94AmaRppCMRoM0sWbx9xjLCzZ1j/VIjCRN6qKj/tDy4o5rlP+4Vg/bGrvB0MF6QfmeO2IllmNaF/oMaYC/fkVF5RDRDniaSUqoiRB+I7MiGqNeK2CAiW64gP2A29dOUV8Ah9iOznLtsprqELwpp9+SuK0CUXHIQ/ucqjdazeV\u2026"
+        }
+      ]
+    }
+  ]
 }

@@ -7,15 +7,21 @@
   "truth_class": "nuclear_negative",
   "predicted_verdict": "contextual",
   "predicted_reason": "cell_state_induced",
-  "verdict_reasoning": "HMGB1 is canonically a nuclear DNA-binding protein (chromatin architectural factor). However, it has well-documented non-baseline outer-leaflet/extracellular display: actively secreted by activated immune cells (monocytes/macrophages) via non-classical secretion, and passively released during necrosis, pyroptosis, and immunogenic cell death where it appears on the outer face of dying cells before full release. It acts as a prototypical DAMP engaging RAGE/TLR4 on target cells. Anti-HMGB1 antibody programs target the released extracellular pool. The surface-displayed/externalized stage during cell death and activation-induced secretion qualifies as cell-state-induced contextual surface exposure.",
+  "verdict_reasoning": "HMGB1 is canonically a nuclear DNA-binding protein (HMG-box architectural factor). However, it is actively secreted by activated immune cells and passively released from necrotic/pyroptotic cells, after which it acts as a prototypical DAMP/alarmin. Extracellular HMGB1 engages surface receptors (RAGE, TLR2/4, CXCR4) and is the target of therapeutic neutralizing antibodies \u2014 but the relevant pool is soluble extracellular ligand, not a wash-resistant surface-anchored form. Cell-state-induced release during stress/cell death/immune activation, with no intrinsic membrane anchor, fits cell_state_induced contextual display of the protein in the extracellular milieu (though access to the protein body via the cell surface is limited to its transient receptor-bound state).",
   "correct": false,
-  "prompt_tokens": 7277,
-  "completion_tokens": 355,
+  "prompt_tokens": 73,
+  "completion_tokens": 399,
   "n_web_searches": 0,
-  "cost_usd": 0.13578,
-  "latency_s": 7.275812084029894,
-  "predicted_confidence": "medium",
-  "predicted_key_uncertainty": "Most extracellular HMGB1 is fully released/soluble rather than stably surface-anchored; outer-leaflet display on dying cells is transient and may better fit secreted_only.",
+  "cost_usd": 0.034587,
+  "latency_s": 6.1557196250068955,
+  "predicted_confidence": "low",
+  "predicted_key_uncertainty": "Borderline with secreted_only: extracellular HMGB1 is largely soluble DAMP; surface presence is via transient receptor binding rather than stable anchoring.",
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 2378,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "_synced_from_d1": {
+    "run_id": "final_slim_canonical_v1",
+    "created_at": "2026-05-12 03:23:16"
+  }
 }

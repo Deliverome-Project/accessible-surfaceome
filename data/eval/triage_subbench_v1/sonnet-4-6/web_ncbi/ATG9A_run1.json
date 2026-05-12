@@ -7,15 +7,59 @@
   "truth_class": "wrong_compartment_negative",
   "predicted_verdict": "contextual",
   "predicted_reason": "dual_localization",
-  "verdict_reasoning": "ATG9A is a multi-pass transmembrane protein (4 TM helices; the only TM protein of the core autophagy machinery) that resides predominantly in intracellular compartments: trans-Golgi network, recycling endosomes, early endosomes, phagophore assembly sites, and autophagosomes. Its dominant compartment is therefore endomembrane. However, multiple independent lines of evidence confirm a genuine plasma-membrane pool: (1) AP-2 sorting-signal mutants accumulate at the plasma membrane (cell-surface biotinylation + immunogold-EM), (2) ATG9A is recycled into the TGN from the plasma membrane via clathrin-coated structures under basal conditions, (3) a published PubMed study explicitly states 'ATG9A displays a broad intracellular distribution and is present in numerous compartments, including the plasma membrane,' and (4) plasma-membrane damage induces rapid translocation of ATG9A to the PM (TIRF, surface biotinylation) where it recruits ESCRT machinery for membrane repair. The topology of the TM domain (multi-pass, cytoplasmic N/C termini, extracellular-facing loops present) is consistent with outer-leaflet loop accessibility. The PM pool is real but minority and partially inducible, placing the verdict at contextual/dual_localization rather than yes.",
+  "verdict_reasoning": "ATG9A is a multi-pass transmembrane protein (4 TM helices, homotrimeric) that predominantly resides intracellularly\u2014cycling between the trans-Golgi network, endosomes, and phagophore assembly sites under basal conditions. However, there is robust, gene-specific evidence of a genuine plasma membrane (PM) pool: (1) super-resolution TIRF microscopy directly images FLAG-ATG9A at the PM in HeLa cells; (2) surface biotinylation assays biochemically confirm ATG9A at the cell surface; (3) APEX2-ATG9A EM shows DAB deposits at the PM. Critically, this PM pool increases substantially upon PM damage (gasdermin, MLKL, digitonin) or EGF stimulation, indicating the dominant surface-accessible fraction is condition-induced. Under basal conditions only a minority fraction traffics through the PM as part of its endocytic recycling itinerary (plasma membrane \u2192 early endosome \u2192 recycling endosome \u2192 TGN). The predominant compartment is intracellular (TGN/endosomes), making a 'yes' verdict inappropriate. The best fit is 'dual_localization': documented PM pool alongside a dominant endomembrane compartment, with active cycling. No therapeutic antibody/ADC program targeting the extracellular face is on record, and no GPI anchor or stable ectodomain is present\u2014all loops are small given the 4-TM architecture with no large extracellular domain.",
   "correct": false,
-  "prompt_tokens": 31401,
-  "completion_tokens": 419,
+  "prompt_tokens": 591,
+  "completion_tokens": 504,
   "n_web_searches": 1,
-  "cost_usd": 0.11048799999999999,
-  "latency_s": 11.87818820803659,
-  "predicted_confidence": "high",
-  "predicted_key_uncertainty": null,
+  "cost_usd": 0.0797341,
+  "latency_s": 14.115631207998376,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "The extent and orientation of extracellular loops in the 4-TM topology is not fully defined; if loops are entirely intraluminal/cytoplasmic, a binder from the extracellular face may not engage the protein body even when it is at the PM.",
+  "cache_creation_tokens": 15526,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **ATG9A**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: autophagy related 9A\n- HGNC symbol: ATG9A\n- UniProt accession: Q7Z3C6\n- Aliases: FLJ22169, MGD3208, mATG9\n- Previous symbols: APG9L1\n- HGNC gene-group memberships: Autophagy related\n- CD nomenclature: (none assigned)\n- NCBI summary: Enables phospholipid scramblase activity. Involved in autophagosome assembly. Located in several cellular components, including Golgi apparatus; endosome; and phagophore assembly site. [provided by Alliance of Genome Resources, Jul 2025]\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01MjMmUZoJVD5Nj86GUZwp29",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "ATG9A cell surface plasma membrane localization",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "ATG9A protects the plasma membrane from programmed and incidental permeabilization | Nature Cell Biology",
+          "url": "https://www.nature.com/articles/s41556-021-00706-w",
+          "snippet": "EvofCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDA6rFkYMqoABta3znhoMoitUNUpKg1N5QoRIIjB2su2PmscAkyXGJXwj3t6i0luQHXGKd28UyXFFHuU7VpktaHLfc4eRNYykBOPR6oIq/R6Wg3o1hUU+SxZcee6v5c5i+26clPVWdiCFpk8XECZPpkAhRlAiZki8EvobK9buIaVtq4Wr\u2026"
+        },
+        {
+          "title": "ATG9A protects the plasma membrane from programmed and incidental permeabilization - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/34257406/",
+          "snippet": "Et8gCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDAgHLRKnvutns33v4xoMDdevEJIpgJNLJ0gNIjDLfoIvq5nJ/DMhY7ztpjIKNbyJPq7Vm2TJf4r6tZpjY9aaVtSgA577SHaSz2XEuq8q4h863C5PXBmdijQpLc/PsuiHtDHguG8qIv+O4tS5GQjuTQPbFmHhILHlEl0rmJlZO+CIMZBH\u2026"
+        },
+        {
+          "title": "Autophagic membrane delivery through ATG9 | Cell Research",
+          "url": "https://www.nature.com/articles/cr20174",
+          "snippet": "Ep4iCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDC0RI5g6oLYETk7U0hoM2W40Sn5ebINnFwhVIjC3ZJ8s+P20R18pw9yY9WV6lc+sB9CVkM4s3X/K75yrQUB0wB0Ds4mj/wJztltOYZcqoSFRjsuW3jZ7VQ60o0Brdf9w1MgzaS5rLYQc29u2jbd9LzsfMJD9JAJVBz5ID8o24lMvMZXp\u2026"
+        },
+        {
+          "title": "Structure of Human ATG9A, the Only Transmembrane Protein of the Core Autophagy Machinery - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7388177/",
+          "snippet": "EuckCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDIorek7QCB0LnbteKRoMrLjToQOSrg1plTX7IjDr3e9axyjoTBqXRpAVjVtZ7mwHIhIzkUAS5Mi7eJvzrmN5sdn6MQsYeHDHpQNjItUq6iNv/eq1xJ8xUFahOPXVzzXJO+egzlM1R6OJZeuaOjo+8amrUAKNt+BIFqTapa2iiOYrzRaz\u2026"
+        },
+        {
+          "title": "Progress on multifunctional transmembrane protein ATG9A - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12211571/",
+          "snippet": "EtAiCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDPzK2sVORgm2jdCF9hoMe4wfLTMMAbbQ9qzpIjDgfvlh/cEa0s4JC99R4YrTs3XdMLoUPzJYQyLbr/BqKzWJ8njfWcfgqSIbfE62CAsq0yFukG8lpTp2e6tOZMlKgVmJsIXLHYtrlkdOifScpzQnr2efGwB6tH+t7HWMGfRVpxXDV1JU\u2026"
+        }
+      ]
+    }
+  ]
 }

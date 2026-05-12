@@ -7,15 +7,66 @@
   "truth_class": "dual_localization_borderline",
   "predicted_verdict": "yes",
   "predicted_reason": "classical_surface_receptor",
-  "verdict_reasoning": "TMED10 is a type I single-pass transmembrane protein with documented localization to the plasma membrane. The luminal GOLD domain and coiled-coil region mediate its surface targeting, partially overriding ER retention. The protein constitutively cycles through the secretory pathway (ER, ERGIC, Golgi) and the PM as part of its cargo-receptor function. It reaches the outer leaflet via its own TM mechanism, not recruitment by another surface protein. Cell-type-specific surface presence documented in pancreatic \u03b2-cells. Dual localization with a documented PM pool is confirmed.",
+  "verdict_reasoning": "TMED10 is a type I transmembrane protein with documented stable localization to the plasma membrane as part of its normal cellular trafficking cycle. Multiple independent studies demonstrate PM residence via ER-Golgi-PM cycling, independent of stress or activation. The extracellular domain mediates PM retention. PM localization is observed in diverse cell types (\u03b2 cells, neurons, HeLa cells) and is required for documented biological functions (insulin quality control, GPI-anchored protein trafficking). The protein cycles through PM under baseline conditions via its intrinsic topogenic signal.",
   "correct": true,
-  "prompt_tokens": 43007,
-  "completion_tokens": 1093,
+  "prompt_tokens": 4329,
+  "completion_tokens": 782,
   "n_web_searches": 2,
-  "cost_usd": 0.068472,
-  "latency_s": 15.746076833049301,
+  "cost_usd": 0.06838775,
+  "latency_s": 9.712430667015724,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 32119,
+  "cache_read_tokens": 0,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **TMED10**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: transmembrane p24 trafficking protein 10\n- HGNC symbol: TMED10\n- UniProt accession: P49755\n- Aliases: TMP21, P24(DELTA), p24d1, p24delta1, p23, S31I125, S31III125, Tmp-21-I\n- Previous symbols: (none)\n- HGNC gene-group memberships: Transmembrane p24 trafficking proteins\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene is a member of the EMP24/GP25L/p24 family and encodes a protein with a GOLD domain. This type I membrane protein is localized to the plasma membrane and golgi cisternae and is involved in vesicular protein trafficking. The protein is also a member of a heteromeric secretase complex and regulates the complex's gamma-secretase activity without affecting its epsilon-secretase activity. Mutations in this gene have been associated with early-onset familial Alzheimer's disease. This gene has a pseudogene on chromosome 8. [provided by RefSeq, Jul 2008]\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01G5rYvrG2Gv8a1vrecFLqi6",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-haiku-4-5-20251001",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "TMED10 TMP21 membrane trafficking surface localization",
+      "n_results": null,
+      "top_results": null
+    },
+    {
+      "step_index": 1,
+      "tool": "web_search",
+      "query": "TMED10 plasma membrane cell surface accessibility",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "TMED10 Gene - Transmembrane P24 Trafficking Protein 10",
+          "url": "https://www.genecards.org/cgi-bin/carddisp.pl?gene=TMED10",
+          "snippet": "EpcgCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDIEjKH7XSNH4XSq1/BoMNYgbXfcHh3aqNG6xIjArRl5BXNljslA0/z15xbtG/ftIGQ7pCNkJxi3uBXdVaTNMKO63D/wMlZIj1ThTSREqmh90/V5/qiHlROKYfmmwTvn+GqALIORNdDqGeR883FfOsTYHnomzw9RvJZ4Uw7Zo3Bw9WuWT\u2026"
+        },
+        {
+          "title": "RAB21 interacts with TMED10 and modulates its localization and abundance - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/31455601/",
+          "snippet": "Eq0aCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDOf2rp+mLKTgYV695xoMad80I1mikopAVpepIjBg50viHUq2EAQ8q78lA+jcpqIDLILK98FhZo3J+3bK5hUtdSnuO8afAuB1v/XSEqEqsBnolghfhSVx9MgQlkC45SPJsfcg23lTFyJV+CggTpBEBQJnFPSobicSJdmsffpXAQH5XZ4V\u2026"
+        },
+        {
+          "title": "Localization and regional distribution of p23/TMP21 in the brain | Request PDF",
+          "url": "https://www.researchgate.net/publication/51426331_Localization_and_regional_distribution_of_p23TMP21_in_the_brain",
+          "snippet": "EqIbCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDP+mVsFxOFDu6lZE7BoMiwSeILsCEXFQ2B5bIjDuDyZlC1sTbavk+wb8zEq082TncKwlc/MVN5Yg7YFUavGVVNGmV0oggsoE1B8hAeUqpRoar/tkftzxGHU4Xr6SJhjxlLojThFW4Uq0lkfAkRRWDjpnliuU511dycu0lcnJRn0KEQ+D\u2026"
+        },
+        {
+          "title": "TMEDs Mediate Versatile Cargo Transport in Vesicle-dependent Unconventional Secretion | bioRxiv",
+          "url": "https://www.biorxiv.org/content/10.1101/2025.05.04.652080v1.full",
+          "snippet": "EsIZCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDP4b/cBobdAP8R/BhRoMIghpk7JyfdN6JruIIjBa9vls6WVBiifEVSkCJp+t0/zdb29ez6VP3roe9TkrrqL6cyK5dk+tuSYDMKDPp7gqxRhRAVoLuQh+CsiWGjSQ5v+n35VToW31zQJyifq3o6XJDmbB9ORqxICcHjfbRqx6v2VY3GUI\u2026"
+        },
+        {
+          "title": "A Genome-Wide Haploid Genetic Screen Identifies Heparan Sulfate-Associated Genes and the Macropinocytosis Modulator TMED10 as Factors Supporting Vaccinia Virus Infection | Journal of Virology",
+          "url": "https://journals.asm.org/doi/10.1128/jvi.02160-18",
+          "snippet": "EroVCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDBZ1Oq1XuZM8no8sIRoMs5h5FkTt01vV38aDIjDDA62G6A2DOA9oD8HhJXqmi2D3aELyVgxlcxuMP1wW/FTdO/W/NboRiSmkU1DiOKsqvRR0kxU/4Zd1MjDEEV66nOObiK6CQlSU/KHL0C46zVrkEAMv2KBtU9gdSQve7D8mwo4Z1KmN\u2026"
+        }
+      ]
+    }
+  ]
 }

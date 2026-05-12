@@ -5,17 +5,61 @@
   "replicate": 1,
   "truth_verdict": "no",
   "truth_class": "nuclear_negative",
-  "predicted_verdict": "no",
-  "predicted_reason": "secreted_only",
-  "verdict_reasoning": "HMGB1 is a canonical non-histone nuclear chromatin-binding protein with no transmembrane domain, GPI anchor, or outer-leaflet lipidation. Its dominant localization is nuclear (DNA chaperone) with a cytoplasmic pool under stress. It is released extracellularly via two routes: passive leakage during necrosis/lytic cell death and active secretion via a leaderless, lysosome-mediated pathway in activated immune cells. Once released, it acts as a soluble DAMP/cytokine that binds surface receptors (RAGE, TLR2, TLR4) on OTHER cells \u2014 the recruiter is RAGE/TLR on the receiving cell, not a stable physical link anchoring HMGB1 to the secreting cell's outer leaflet. Pre-'no' checklist: (1) Cell-surface-directed therapeutics: anti-HMGB1 antibodies target the soluble extracellular pool, not a stable cell-surface-anchored form \u2014 this is the anti-soluble-ligand pattern, not a surface-cell-directed program. (2) Ectodomain shedding: HMGB1 has no TM domain; no sheddase precursor biology. (3) Wash-resistant TM-partner tethering: no documented covalent or wash-resistant non-covalent anchoring to any TM protein. (4) PM minority pool/dual localization: secretory lysosome exocytosis releases HMGB1 into the medium \u2014 there is no documented stable cell-surface pool on the secreting cell detectable by flow cytometry or surface biotinylation of intact cells; the protein disperses into the extracellular space. (5) Cell-state/cancer/cell-death surface display: ICD releases HMGB1 into the extracellular milieu (passive release with membrane permeabilization), not outer-leaflet display on the dying cell surface \u2014 this is release, not surface anchoring. No gene-specific evidence of outer-leaflet display on intact viable or dying cells via surface biotinylation or flow cytometry on non-permeabilized cells. All five contextual buckets are ruled out.",
-  "correct": true,
-  "prompt_tokens": 73112,
-  "completion_tokens": 675,
-  "n_web_searches": 2,
-  "cost_usd": 0.249461,
-  "latency_s": 19.947684999962803,
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "HMGB1 is canonically a nuclear non-histone chromatin-binding protein with no transmembrane domain, GPI anchor, or signal peptide. Its dominant baseline localization is nuclear/cytoplasmic. Surface accessibility is context-dependent: (1) cell_state_induced \u2014 upon inflammatory stimulation (LPS, TNF-\u03b1, IL-2, infection mimetics), HMGB1 undergoes acetylation-driven nuclear-to-cytoplasm translocation and is secreted via a lysosomal route or released passively from necrotic/pyroptotic cells; flow cytometry on intact non-permeabilized cells confirms upregulated surface expression on myeloid dendritic cell precursors and lymphocytes specifically after activation. (2) tissue_restricted_surface \u2014 baseline surface expression is low and cell-type-restricted (myeloid DCs, platelets). (3) lysosomal_exocytosis \u2014 active secretion involves lysosomal routing. (4) dual_localization \u2014 a documented surface pool exists alongside dominant nuclear compartment under inflammatory conditions. (5) stable_surface_attachment \u2014 no evidence of wash-resistant anchoring to a TM partner. No TM precursor biology; secreted/released HMGB1 is largely soluble DAMP acting on RAGE/TLR4. Surface body exposure is real but strictly conditional on cell activation/death, placing this firmly in contextual/cell_state_induced.",
+  "correct": false,
+  "prompt_tokens": 643,
+  "completion_tokens": 432,
+  "n_web_searches": 1,
+  "cost_usd": 0.0801376,
+  "latency_s": 12.684596791979857,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 15880,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **HMGB1**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: high mobility group box 1\n- HGNC symbol: HMGB1\n- UniProt accession: P09429\n- Aliases: HMG3, SBP-1, DKFZp686A04236, HMG-1\n- Previous symbols: HMG1\n- HGNC gene-group memberships: Canonical high mobility group\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene encodes a protein that belongs to the High Mobility Group-box superfamily. The encoded non-histone, nuclear DNA-binding protein regulates transcription, and is involved in organization of DNA. This protein plays a role in several cellular processes, including inflammation, cell differentiation and tumor cell migration. Multiple pseudogenes of this gene have been identified. Alternative splicing results in multiple transcript variants that encode the same protein. [provided by RefSeq, Sep 2015]\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01HBCrodaYVWiXpogq4UAvvz",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "HMGB1 cell surface expression extracellular secretion flow cytometry",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "HMGB1 and Cord Blood: Its Role as Immuno-Adjuvant Factor in Innate Immunity - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3161821/",
+          "snippet": "EowgCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDO/FWCevSY9NRf4GiRoMS/Dhn50s9vh6tfnLIjAjPJOqYaxIXwO+Tqfpfl8UCqsVtV8k4risUxyPYGKvGlroHfbpofeepCMxtQN/vqcqjx+u1b2OaMXtJWA2lg+f3P6GcxYrWv6UMrMQZnMw/Md6qTNGnTETcOLq+N9y6dRYURANDKML\u2026"
+        },
+        {
+          "title": "HMGB1 and cord blood: its role as immuno-adjuvant factor in innate immunity - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21915243/",
+          "snippet": "EuYfCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDCH5awLlgehUWbd6sxoM/roIs7HM0vNYAGhRIjAXiDEKkd6asdrAa6eNAD6TaWnnwQDRGWzwkQHy8gwW0UDViPz4zzcx7bc8uUDA2GIq6R6Ney0dC0LWt883n2GstYaxF3T3dBU8xTR+WcYXGlD9L7IQOg+IshpTzb4Ci29ekQT85EWn\u2026"
+        },
+        {
+          "title": "The Expression of HMGB1 on Microparticles Released during Cell Activation and Cell Death In Vitro and In Vivo - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4002850/",
+          "snippet": "EuYgCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDGbZDfsX7CkSz2+PKxoMO0U2iDNDg2WcD/slIjCxsMgG6tBBXIHlomeUYCgNtW/b4UbI3u2bLtbDw4DVFt1wp7mfa9fuJZd5RZQTuSYq6R8tWo0HqKdjwblCp9o6j4OLAvYjSmGy7i/q3Ql631Iix/GD7r2iNxsRfuTqWKLCyJIxNnGs\u2026"
+        },
+        {
+          "title": "Effects of mimicked acetylated HMGB1 on macrophages and dendritic cells - PMC",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC6236298/",
+          "snippet": "ErQbCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDGl+4iaWX1NFj39YARoMNyXS5HsmE9eY37/6IjClHjGQ1C9UIoTuJxx3bPPKC86iKdXeC9Y7IDLvmfv03ifJcRW758wp5gOHe99HGWoqtxpw+JAARWBEjjeB9W1x5XJ3EEDPJ9UninR0wIgCTwhlKeHYhIeEKsReUBq8NoGEFNokZA5n\u2026"
+        },
+        {
+          "title": "Extracellular HMGB-1 activates inflammatory signaling in tendon cells and tissues - PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/32963751/",
+          "snippet": "EowPCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDBJ3wZAEjAcqwV+f+BoM2GOtVKDtoYwhqLNEIjD4uITsvl1OAISARmF/BgAq31Ef9X8tT5gFxEi1S94AKAO99DpG/xpx/akkhKjAGooqjw4MZYhzXaPsio6BOzQ8hy8JngL9UpoWKkSxo/vwwQcSQVMxgGR4NG/1dUumzK0Syh3usVAE\u2026"
+        }
+      ]
+    }
+  ]
 }

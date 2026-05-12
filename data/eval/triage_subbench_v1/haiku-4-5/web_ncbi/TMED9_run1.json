@@ -5,17 +5,68 @@
   "replicate": 1,
   "truth_verdict": "no",
   "truth_class": "wrong_compartment_negative",
-  "predicted_verdict": "no",
-  "predicted_reason": "endomembrane_resident",
-  "verdict_reasoning": "TMED9 is a type I transmembrane protein exclusively localized to intracellular endomembrane compartments (ER, ERGIC, Golgi, post-Golgi secretory vesicles). Its role is in COPI/COPII-mediated vesicular transport and cargo recognition within the early secretory pathway. No documented cancer-state ecto-display, cell-death-induced externalization, tissue-restricted surface display, PM cycling, lysosomal exocytosis to PM, or stable surface-partner tethering. The protein body does not reach the outer leaflet of the plasma membrane.",
-  "correct": true,
-  "prompt_tokens": 53519,
-  "completion_tokens": 797,
+  "predicted_verdict": "contextual",
+  "predicted_reason": "cell_state_induced",
+  "verdict_reasoning": "TMED9 is a type I transmembrane protein that transits through the secretory pathway including post-Golgi vesicles and reaches the plasma membrane in the context of unconventional protein secretion (UPS) under ER stress. Under baseline conditions, TMED9 is predominantly localized to the ER and ERGIC. Its steady-state accessibility on the plasma membrane outer leaflet is limited; surface display occurs primarily under stress conditions (ARF1-Q71L blocks ER-to-Golgi, triggering UPS). Cell-state_induced surface display under stress qualifies as contextual, not baseline yes.",
+  "correct": false,
+  "prompt_tokens": 4250,
+  "completion_tokens": 967,
   "n_web_searches": 2,
-  "cost_usd": 0.077504,
-  "latency_s": 9.941907875007018,
-  "predicted_confidence": "high",
-  "predicted_key_uncertainty": null,
+  "cost_usd": 0.0739075,
+  "latency_s": 12.231494040985126,
+  "predicted_confidence": "medium",
+  "predicted_key_uncertainty": "Whether TMED9 maintains a small steady-state pool on the plasma membrane under baseline conditions, or only surfaces upon ER stress. Literature emphasizes ER/ERGIC residence as primary; stress-induced UPS is documented but conditional.",
+  "cache_creation_tokens": 35858,
+  "cache_read_tokens": 0,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **TMED9**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: transmembrane p24 trafficking protein 9\n- HGNC symbol: TMED9\n- UniProt accession: Q9BVK6\n- Aliases: HSGP25L2G, p24alpha2, p24a2, GMP25, p25\n- Previous symbols: (none)\n- HGNC gene-group memberships: Transmembrane p24 trafficking proteins\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene is a member of a family of genes encoding transport proteins located in the endoplasmic reticulum and the Golgi. A similar gene in mouse is the target of microRNA miR-296, which is part of an imprinted cluster. [provided by RefSeq, Jul 2016]\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01NqTuHYZ4totw31fwERGrvG",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-haiku-4-5-20251001",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "TMED9 transmembrane p24 trafficking protein localization",
+      "n_results": null,
+      "top_results": null
+    },
+    {
+      "step_index": 1,
+      "tool": "web_search",
+      "query": "TMED9 surface accessibility plasma membrane",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "TMED9 Gene - Transmembrane P24 Trafficking Protein 9",
+          "url": "https://www.genecards.org/cgi-bin/carddisp.pl?gene=TMED9",
+          "snippet": "ErYTCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDNg/gT0FHPnisb6qbhoM1leK9qLzKYprGTdAIjBNajNGBsBjyOWqj+lh7Jq1PCz2EcPoYz13rMpEHphYixd/RCpeGBh5D6C2tRFqBGEquRJDtZF8vVaKwARcfx6L8Z3+Bmde6NAUR9wpOlvQ6jMuM0ZC7Ppm9pK7F54QHS4vwePdhWiK\u2026"
+        },
+        {
+          "title": "TMED9 transmembrane p24 trafficking protein 9 - NIH Genetic Testing Registry (GTR) - NCBI",
+          "url": "https://www.ncbi.nlm.nih.gov/gtr/genes/54732/",
+          "snippet": "EvUVCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDOILfYMv+M1toZccPhoMt0OpBOLNixoG0342IjD9TTiKPWuCBkLwEgP4tVpqRRKqdJBYALV9hfJJO63/2+2QNrYsB2uQZEzquJzUZnYq+BSKje5j0WsnBzuCYytH6O++5YhNkVQ2ixDJkfOx9uVv9H+GD4hpe7vzVjRZBpzhOv4Q+ii0\u2026"
+        },
+        {
+          "title": "Tmed9 MGI Mouse Gene Detail - MGI:1914761 - transmembrane p24 trafficking protein 9",
+          "url": "https://www.informatics.jax.org/marker/MGI:1914761",
+          "snippet": "EpEPCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDACeGMgZpkqoDQxkzBoMX2g0/2gRVplSKbITIjB9qDDtzf4aVeSQvEvV2J3LMRYjJff89tHK0b7FflHDPi7aIgVSSKvm0p+8F3cMqkgqlA6t8i20pakOZ7eaAGRnY8fcfV1B3MnkTDzIGQJehAGUX3HkKQwBgK1jnMnZrAX1XrF7ItAE\u2026"
+        },
+        {
+          "title": "Entry - *620436 - TRANSMEMBRANE p24 TRAFFICKING PROTEIN 9; TMED9 - OMIM - (OMIM.ORG)",
+          "url": "https://www.omim.org/entry/620436",
+          "snippet": "Eu0YCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDG4YzF66FWoMxQQ2zxoM0mjeMCmeaM9gA2O0IjCkGy4OZkqWIm+t+tyRm/FJfNi/LY7AKP8onF0aNXKQ/cf3T7vZeHMfoZLEDI/KV+8q8BfdZ/51MmtoMBpf4hxIE754HwLJN46gZ9/EppB+ajc/XmeO/F3sRAtLOMLPiMIhWUkdcxbA\u2026"
+        },
+        {
+          "title": "TMED9 transmembrane p24 trafficking protein 9 [Homo sapiens (human)] - Gene - NCBI",
+          "url": "https://www.ncbi.nlm.nih.gov/gene/?term=54732",
+          "snippet": "EvkCCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDJS4+AEo1/KN2IbSNRoMYM6hWgHJRtswE8ZaIjDLrhngkh94OoScHYJk1HyZbyUqhHEvrgCJ4J11pqi5ztgjY/tdlUjMwhPAB2MBHlQq/AHqdBlaU4dpT9aNcMbaOFA2nKRc+nQ5BjTr6tCOyfeXmU6Ky0jh4J+HQV4giDcVq3C8CLKt\u2026"
+        }
+      ]
+    }
+  ]
 }

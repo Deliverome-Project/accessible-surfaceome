@@ -7,15 +7,59 @@
   "truth_class": "secreted_negative",
   "predicted_verdict": "no",
   "predicted_reason": "secreted_only",
-  "verdict_reasoning": "FN1 encodes fibronectin, a secreted glycoprotein with no transmembrane domain, no GPI anchor, and no inner- or outer-leaflet lipidation. It exists as a soluble plasma dimer and as ECM-deposited multimers. The 'cell surface' form is pericellular ECM assembled extracellularly adjacent to cells, anchored via reversible non-covalent interactions with integrins, collagen, fibrin, and heparan sulfate proteoglycans \u2014 not stably tethered to the plasma membrane by any wash-resistant covalent or stable post-translational link to a TM partner. Applying all 5 contextual checks: (1) no cell-death/ICD-induced outer-leaflet display documented for FN1 protein body; (2) no narrow germline/tissue-restricted TM display; (3) not a lysosomal TM protein; (4) no documented minority PM pool with own anchor \u2014 the 'cell surface' residence is ECM/integrin-ligand equilibrium that washes off; (5) no wash-resistant stable TM-partner tethering. Anti-FN EDB clinical programs target tumor ECM/stroma fibronectin, not the plasma membrane surface of tumor cells, so they do not establish cell-surface accessibility. FN1 is secreted_only.",
+  "verdict_reasoning": "FN1 encodes fibronectin, a secreted glycoprotein with no transmembrane domain or GPI anchor of its own. It exists in two main pools: (1) soluble plasma fibronectin secreted by hepatocytes and circulating in blood, and (2) cellular fibronectin deposited as insoluble fibrils in the ECM by fibroblasts and epithelial cells. It binds cell-surface integrins and heparan sulfate proteoglycans non-covalently, but this interaction is reversible and wash-sensitive \u2014 fibronectin is not stably tethered to any TM partner after assembly. Checking each contextual bucket: cell_state_induced \u2014 EDA/EDB splice isoforms are upregulated in cancer/fibrosis but still secreted/ECM-deposited, not PM-anchored; tissue_restricted_surface \u2014 no evidence of stable PM display in any lineage; lysosomal_exocytosis \u2014 not a lysosomal TM protein; dual_localization \u2014 no documented PM-resident pool distinct from ECM fibrils; stable_surface_attachment \u2014 binding to integrins/syndecan is non-covalent and wash-removable, qualifying as reversible receptor recruitment, not wash-resistant anchoring. No membrane-anchored TM precursor isoform has been documented. Therapeutic programs targeting EDB (e.g. antibody-drug conjugates) engage ECM-deposited fibronectin in the tumor stroma, not a cell-surface-anchored form accessible from the outer leaflet of the plasma membrane.",
   "correct": true,
-  "prompt_tokens": 35122,
-  "completion_tokens": 1159,
+  "prompt_tokens": 709,
+  "completion_tokens": 468,
   "n_web_searches": 1,
-  "cost_usd": 0.132751,
-  "latency_s": 24.99713299999712,
+  "cost_usd": 0.0697306,
+  "latency_s": 13.506044625013601,
   "predicted_confidence": "high",
   "predicted_key_uncertainty": null,
+  "cache_creation_tokens": 12908,
+  "cache_read_tokens": 7262,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "user_message": "Triage the human gene **FN1**.\n\nCanonical identifiers and gene summary (machine-resolved from HGNC and NCBI; no further lookups available \u2014 judge from the context below plus your trained knowledge):\n\n- HGNC approved name: fibronectin 1\n- HGNC symbol: FN1\n- UniProt accession: P02751\n- Aliases: MSF, CIG, LETS, GFND2, FINC, lnc-ABCA12-8, ED-B, FN, FNZ, GFND, SMDCF\n- Previous symbols: (none)\n- HGNC gene-group memberships: Receptor ligands, Fibronectin type III domain containing\n- CD nomenclature: (none assigned)\n- NCBI summary: This gene encodes fibronectin, a glycoprotein present in a soluble dimeric form in plasma, and in a dimeric or multimeric form at the cell surface and in extracellular matrix. The encoded preproprotein is proteolytically processed to generate the mature protein. Fibronectin is involved in cell adhesion and migration processes including embryogenesis, wound healing, blood coagulation, host defense, and metastasis. The gene has three regions subject to alternative splicing, with the potential to produce 20 different transcript variants, at least one of which encodes an isoform that undergoes pr\u2026\n\nEmit one JSON object matching the `TriageRecordDraft` schema as your **entire** response \u2014 no prose around it, no markdown code fences, no commentary. Required keys: `verdict`, `verdict_reasoning`, `reason`.\n",
+  "temperature": null,
+  "top_p": null,
+  "max_tokens": 4096,
+  "api_response_id": "msg_01S67vR4anHT7fwauqg7QP3V",
+  "api_stop_reason": "end_turn",
+  "api_model": "claude-sonnet-4-6",
+  "search_log": [
+    {
+      "step_index": 0,
+      "tool": "web_search",
+      "query": "fibronectin FN1 cell surface plasma membrane surface biotinylation antibody therapeutic",
+      "n_results": 5,
+      "top_results": [
+        {
+          "title": "Fibronectin (FN1) | Abcam",
+          "url": "https://www.abcam.com/en-us/technical-resources/target-tips/fibronectinfn1",
+          "snippet": "EvEeCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDCfCpS4NWgvgi9gvVBoMVPElYsuvs0CDRz1oIjA3Z5x/hdwjvkQ3V4rrpI5DZGidwVpBwxXx3CTUP8jeX8cPyH2UcyyexUc9kfcZndIq9B0BUHfRNQk7MwSLpxwbFqQxPwODcoI8zCWRKtRPb41gwGLR8TyNKqotNQavxG5QlWll/jlT\u2026"
+        },
+        {
+          "title": "Fibronectin/FN1 Antibody | Cell Signaling Technology",
+          "url": "https://www.cellsignal.com/products/primary-antibodies/fibronectin-fn1-antibody/63779",
+          "snippet": "EpkSCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDGwMTsmquraSqeSzARoMvEvxp9j77w8CHMmtIjDvIOifoO4WkVsfoEaQG7yl3l/19HZ915sa5eFX0kAqAVCoAHv3SOj5Intqdqe6cUIqnBH5P5otUJ5ZuL+O+APBrYD34yW1b24GiaXYhJnSuyUxmQQbWF+fq77Pn/Bdtdan1O4FtX9u\u2026"
+        },
+        {
+          "title": "Fibronectin/FN1 (E5H6X) Rabbit Monoclonal Antibody | Cell Signaling Technology",
+          "url": "https://www.cellsignal.com/products/primary-antibodies/fibronectin-fn1-e5h6x-rabbit-mab/26836",
+          "snippet": "EpgTCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDKaxGG9oKwc6TmMKXhoMVFaVlIG/JnUcYdNuIjCmEUm09mikdyPtvPt4vQ48ZdauG+ONDiInuL7QAR5aJnjS8sdpE3ZUiuEZdFHrVtgqmxJkXqZ4uNbI5JJXJKe9Z/tu4kHpCB8Or4F8upldUQFgOr6YniugHnMfqiuLqPmMkjE9t58o\u2026"
+        },
+        {
+          "title": "Fibronectin - Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/Fibronectin",
+          "snippet": "Eo4YCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDDRejLesymqj7EqqDhoMAy1WCwB06Y7VnY8YIjB80RTUjrfjuuR+srLCEGzHx87WTLvSme7ZpY2jYsGXIoR1wJVFk1VCteLUaqK6enwqkRcSJ4FGLJHImYELpdoxqVut0K/dvyim1l2R55VVeVBxGQ8bGNBPN01RByV+8/OD6HEB+e4I\u2026"
+        },
+        {
+          "title": "Fibronectin/FN1 (E7F5X) Rabbit Monoclonal Antibody | Cell Signaling Technology",
+          "url": "https://www.cellsignal.com/products/primary-antibodies/fibronectin-fn1-e7f5x-rabbit-mab/30903",
+          "snippet": "EpkSCioIDxgCIiQ1YTU0YjhjMy1hZTMxLTQ4NmUtOGYwYi03MDMzODYzM2UxYzgSDCBDRoVztjPotMaVCxoMvNpvt0KeOmRotfUYIjDDTGT5EFADIspH3mDgxKIP1RjL60ZotFDth2FSxqS8MtBxMWieq10imSric9ptrKkqnBGsCXubbqkMjVNKkNUt22mkbkk7QJhtp2tsHDpSpW/D45qRid2ReHUSRoWjdwzfVK0EEPsv\u2026"
+        }
+      ]
+    }
+  ]
 }

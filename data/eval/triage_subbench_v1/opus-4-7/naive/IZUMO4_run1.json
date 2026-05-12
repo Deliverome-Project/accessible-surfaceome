@@ -7,15 +7,21 @@
   "truth_class": "induced_borderline",
   "predicted_verdict": "contextual",
   "predicted_reason": "tissue_restricted_surface",
-  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family expressed predominantly in testis/sperm. Unlike IZUMO1 which is a single-pass TM protein, IZUMO4 lacks a transmembrane domain and is a secreted/soluble protein. However, it forms a stable complex with other IZUMO family members (notably IZUMO1) on the sperm surface via disulfide-linked interactions, and is detected on the sperm plasma membrane as part of this complex. Its surface display is restricted to the germline (sperm) lineage. This fits tissue_restricted_surface \u2014 narrow germline lineage display via stable complex partnership with a TM anchor (IZUMO1).",
+  "verdict_reasoning": "IZUMO4 is a member of the IZUMO family expressed predominantly in testis/sperm. It lacks a transmembrane domain itself but is part of the IZUMO complex on the sperm surface, associating with IZUMO1 (a surface protein) via disulfide-linked interactions. Its surface display is restricted to the sperm lineage, making this a tissue-restricted surface presentation rather than broad somatic accessibility.",
   "correct": true,
-  "prompt_tokens": 7278,
-  "completion_tokens": 343,
+  "prompt_tokens": 74,
+  "completion_tokens": 279,
   "n_web_searches": 0,
-  "cost_usd": 0.134895,
-  "latency_s": 5.884761833003722,
+  "cost_usd": 0.025602,
+  "latency_s": 4.463323624979239,
   "predicted_confidence": "low",
-  "predicted_key_uncertainty": "Whether IZUMO4's association with IZUMO1/sperm surface is wash-resistant stable complex vs. transient; gene-specific surface biotinylation evidence is limited.",
+  "predicted_key_uncertainty": "Whether IZUMO4 is stably surface-anchored on sperm via IZUMO1 complex (stable_surface_attachment) vs primarily a soluble/secreted Ig-like protein; exact topology on mature sperm is debated.",
+  "cache_creation_tokens": 0,
+  "cache_read_tokens": 2378,
   "error": null,
-  "raw_text": ""
+  "raw_text": "",
+  "_synced_from_d1": {
+    "run_id": "final_slim_canonical_v1",
+    "created_at": "2026-05-12 03:23:17"
+  }
 }
