@@ -37,10 +37,14 @@ jobs:
       - name: typecheck
         run: npm run check
 
-      - name: build
-        # Hits the public Worker at SURFACEOME_API_BASE (defaults to
-        # https://api.deliverome.org/surfaceome) to fetch the catalog.
-        # The committed snapshot fallback was dropped — the
-        # `surfaceome-viewer` Pages project depends on the Worker
-        # being live, so CI should validate that path end-to-end.
+      - name: build (offline stub mode)
+        # GitHub-Actions IPs get a Cloudflare WAF 403 against
+        # `api.deliverome.org/surfaceome/v1/catalog`, so CI runs the
+        # build with `SURFACEOME_API_BASE=local` — the loader
+        # short-circuits to an empty stub catalog. The Pages-side
+        # production build hits the live Worker and emits the
+        # populated page. This step is an offline build smoke that
+        # catches syntax / type / SSG regressions before Pages tries.
+        env:
+          SURFACEOME_API_BASE: local
         run: npm run build

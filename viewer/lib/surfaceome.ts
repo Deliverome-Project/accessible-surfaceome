@@ -91,13 +91,21 @@ const FETCH_TIMEOUT_MS = 8_000;
 /**
  * Build-time catalog fetch. The committed
  * ``viewer/public/data/catalog.json`` snapshot fallback was dropped
- * once the public Worker stabilized (the snapshot's 270k-line
- * formatted JSON dominated the PR diff for ~zero runtime benefit).
- * If the Worker is unreachable, the build fails loudly — the
- * `surfaceome-viewer` Pages project depends on
+ * once the public Worker stabilized — the snapshot's 270k-line
+ * formatted JSON dominated the PR diff for ~zero runtime benefit.
+ * In production, the `surfaceome-viewer` Pages project depends on
  * `api.deliverome.org/surfaceome/v1/catalog` being live.
  *
- * Override the endpoint via `SURFACEOME_API_BASE` for staging.
+ * Two non-production paths:
+ *   * ``SURFACEOME_API_BASE=local`` — return an empty stub catalog
+ *     without hitting the network. Used by the GitHub-Actions
+ *     viewer-build workflow (the runner's IPs hit Cloudflare's WAF
+ *     and get 403'd, so the workflow runs an offline build smoke
+ *     and lets the Pages-side build do the live fetch).
+ *   * Custom URL — point at a staging Worker for previews.
+ *
+ * If the live fetch fails, the build fails loudly with the Worker
+ * response status.
  */
 interface GeneNameEntry {
   name: string;
@@ -206,8 +214,25 @@ export async function loadCatalog(): Promise<Catalog> {
   if (!base) {
     throw new Error(
       "SURFACEOME_API_BASE is empty — set it to the public Worker (e.g. " +
-        "https://api.deliverome.org/surfaceome) or to a staging endpoint.",
+        "https://api.deliverome.org/surfaceome), to `local` for an empty " +
+        "stub, or to a staging endpoint.",
     );
+  }
+  if (base === "local") {
+    // Offline-build stub. Used by the GitHub-Actions viewer-build
+    // smoke; the rendered page shows the chrome but a 0-row catalog.
+    // Pages-side builds run with the real Worker URL and emit the
+    // populated page.
+    return {
+      source: "api",
+      generated_at: undefined,
+      universe_version: "local-stub",
+      bench_version: null,
+      n_rows: 0,
+      n_with_triage: 0,
+      n_with_deep_dive: 0,
+      rows: [],
+    };
   }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
