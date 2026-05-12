@@ -649,28 +649,34 @@ def _f(r: dict, k: str) -> float | None:
 
 
 # Filter variants to plot. Baselines for the 5 DBs anchor each group;
-# additional variants are included only when they meaningfully differ
-# from baseline on the 147-gene benchmark.
+# additional variants surface raw-source filtering options that aren't
+# reachable from candidate_universe (since each loader pre-filters).
 #
-# What's included and why (after auditing raw upstream sources):
-#   * UniProt TM-OR-signal — a topology-feature substitute for the
-#     subcellular-location filter. **+11.5pp over the current UniProt
-#     baseline.** Pulls TM-domain or signal-peptide features from raw
-#     UniProt TSV (not in the universe TSV).
-#   * UniProt permissive (incl. plain "Cell membrane") — +4.7pp;
-#     trades neg precision for pos recall. Source-level variant.
-#   * GO permissive (incl. IEA-only annotations) — +4.8pp over GO
-#     baseline; pulls the electronic-evidence tier from raw GO TSV.
-#   * SURFY score>0.5 / >0.7 — distinct ML-score strictness levels.
+# Variants included:
+#   * UniProt permissive (incl. plain "Cell membrane") — broader
+#     location-term set than the strict baseline.
+#   * UniProt TM-or-signal-or-surface — topology proxy from raw
+#     TM-domain and signal-peptide feature counts.
+#   * GO permissive (incl. IEA-only annotations) — adds the
+#     electronic-evidence tier from raw GO TSV.
+#   * SURFY score>0.5 / >0.7 — ML-score strictness tiers.
 #   * Consensus n_sources ≥ 2 / ≥ 3 — cross-source agreement.
 #
-# What was tested and excluded (no-ops or strict-overshoot):
+# Under coverage-aware scoring (the current scheme; proteins missing
+# from a source aren't counted against it), the UniProt variants tie
+# the baseline — they only matter as coverage extenders, not as
+# accuracy improvements. The GO permissive variant remains a real
+# accuracy gain (+9pp) on top of much wider coverage (n=125 vs 89).
+#
+# What was tested and excluded (no-ops on this benchmark):
 #   * Drop-electronic-only / drop-low-conf / drop-unspecific etc:
-#     identical to baseline on this gene set.
-#   * HPA stricter and looser variants: capped at ~41% regardless
-#     (HPA's annotations aren't discriminating on this benchmark).
-#   * SURFY tm/signal columns: snapshot has them all zero — unusable.
-#   * CSPA experiment-count / probability thresholds: all 46-47%,
+#     identical to baseline.
+#   * HPA reliability tiers, Main-vs-Additional location splits,
+#     extracellular-location field: 60-64% under coverage-aware
+#     scoring regardless — HPA's microscopy signal doesn't
+#     discriminate surface accessibility well.
+#   * SURFY tm/signal columns: snapshot has them all zero.
+#   * CSPA experiment-count / probability thresholds: 65-70% range,
 #     no traction.
 
 # Functions used by the plot below — extra raw lookups for UniProt
@@ -810,6 +816,45 @@ _VARIANT_GROUP_PALETTE: dict[str, list[str]] = {
 }
 
 
+# Per-group "is the protein covered by this source" predicates. A
+# benchmark protein missing from a source's input data is not counted
+# against that source — DBs are scored on the subset they actually
+# cover, so the accuracies reflect signal quality rather than catalog
+# coverage. Consensus filters apply to all rows (the consensus count
+# is meaningful regardless of which sources contribute).
+def _has_uniprot(r: dict) -> bool:
+    return bool(r.get("uniprot_entry_name"))
+
+
+def _has_go(r: dict) -> bool:
+    try:
+        return int(r.get("go_n_go_ids") or 0) > 0
+    except (TypeError, ValueError):
+        return False
+
+
+def _has_hpa(r: dict) -> bool:
+    return bool(r.get("hpa_reliability"))
+
+
+def _has_surfy(r: dict) -> bool:
+    return bool(r.get("surfy_label"))
+
+
+def _has_cspa(r: dict) -> bool:
+    return bool(r.get("cspa_category"))
+
+
+GROUP_COVERAGE_FN: dict[str, "callable"] = {
+    "UniProt":   _has_uniprot,
+    "GO":        _has_go,
+    "HPA":       _has_hpa,
+    "SURFY":     _has_surfy,
+    "CSPA":      _has_cspa,
+    "consensus": lambda r: True,
+}
+
+
 def _benchmark_with_universe_join() -> list[dict]:
     """Load benchmark rows joined to candidate_universe by UniProt
     accession. Returns one dict per benchmark protein found in
@@ -834,16 +879,24 @@ def _benchmark_with_universe_join() -> list[dict]:
 def make_db_variants_plot(out_dir: Path) -> None:
     """Supplemental figure: per-DB filter variants vs benchmark truth.
 
-    Each bar is one filter variant's overall accuracy on the 147-gene
-    benchmark, color-coded by DB-family group. The five M1 surface DBs
-    each get a baseline bar; UniProt, GO, and SURFY also get additional
-    variants where raw-source filtering shifts the result meaningfully.
-    Consensus filters (`n_sources_surface ≥ N`) are on the right.
+    Each bar is one filter variant's accuracy on the subset of
+    benchmark proteins that source actually covers — proteins missing
+    from a source's input data are not counted against the source.
+    This separates signal quality from catalog coverage.
 
-    UniProt TM-or-signal-or-surface is the strongest single-DB variant
-    (+11.5pp over UniProt baseline); the only consensus filter that
-    beats every single-DB baseline is `n_sources_surface ≥ 2`. See
-    DB_VARIANTS for the audit summary of what was tested and excluded.
+    Key takeaways under coverage-aware scoring:
+      * UniProt's strict subcellular_locations baseline is already
+        excellent (97% on n=78 covered) — the permissive and
+        TM-or-signal variants don't add accuracy, they only widen
+        coverage to proteins UniProt didn't annotate as surface.
+      * GO permissive (incl. IEA) extends GO coverage from n=89 to
+        n=125 while boosting accuracy from 55% → 64% on covered.
+      * HPA is the weakest single-DB signal even on its own coverage.
+      * SURFY baseline is the strongest broad-coverage signal
+        (93% on n=124).
+      * Consensus ≥2 (86% on n=141) is the only filter scored on
+        every benchmark protein, and roughly trades a few points of
+        per-protein accuracy for full coverage.
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     rows = _benchmark_with_universe_join()
@@ -852,10 +905,15 @@ def make_db_variants_plot(out_dir: Path) -> None:
 
     bars: list[dict] = []
     for name, fn, group in DB_VARIANTS:
+        cov = GROUP_COVERAGE_FN.get(group, lambda r: True)
+        n_scored = 0
         n_correct = 0
         n_pos_correct = n_pos_total = 0
         n_neg_correct = n_neg_total = 0
         for r in rows:
+            if not cov(r):
+                continue
+            n_scored += 1
             truth = r["ground_truth_verdict"]
             vote = bool(fn(r))
             is_pos = truth in {"yes", "contextual"}
@@ -872,7 +930,8 @@ def make_db_variants_plot(out_dir: Path) -> None:
         bars.append({
             "label": name,
             "group": group,
-            "acc": n_correct / max(n_total, 1),
+            "n_scored": n_scored,
+            "acc": n_correct / max(n_scored, 1),
             "pos": n_pos_correct / max(n_pos_total, 1),
             "neg": n_neg_correct / max(n_neg_total, 1),
         })
@@ -909,18 +968,22 @@ def make_db_variants_plot(out_dir: Path) -> None:
             last_group = b["group"]
 
     ax.set_xticks(xs)
-    ax.set_xticklabels([b["label"] for b in bars], rotation=35, ha="right",
-                       rotation_mode="anchor", fontsize=9)
-    ax.set_ylabel("Overall accuracy on 147-gene benchmark (%)")
+    ax.set_xticklabels(
+        [f"{b['label']}\n(n={b['n_scored']})" for b in bars],
+        rotation=35, ha="right", rotation_mode="anchor", fontsize=9,
+    )
+    ax.set_ylabel("Accuracy on covered benchmark proteins (%)")
     ax.set_ylim(0, 105)
     ax.set_title(
         "Supplemental: filter-variant accuracy per surface-source database\n"
-        f"(soft-credit scoring; n={n_total} benchmark proteins in candidate_universe)"
+        f"(soft-credit scoring; benchmark n={n_total} ∩ candidate_universe; "
+        "each DB scored only on proteins it covers)"
     )
     ax.text(
-        0.5, -0.35,
+        0.5, -0.38,
         "In-bar text: +pos% / -neg% — fraction of yes/contextual-truth and "
-        "no-truth proteins each variant correctly classifies",
+        "no-truth covered proteins each variant correctly classifies. "
+        "Per-bar (n=) is the size of that source's coverage of the benchmark.",
         transform=ax.transAxes, ha="center", va="top", fontsize=9.5,
         color=COLORS["neutral"],
     )
