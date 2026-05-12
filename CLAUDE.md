@@ -131,6 +131,17 @@ Do not bundle a CSV in the gist unless the canonical source is unreachable (priv
 
 Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line so readers can find it from the source script. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
 
+**Also embed the gist URL in the artifact itself** via `save_figure(..., gist_url=...)` (in `src/accessible_surfaceome/audit/_plotting_config.py`). The helper writes the URL into the PNG's `Source` tEXt chunk and the PDF's `Subject` info field, so the URL travels with the file when it gets dragged into a Substack draft, copied to Slack, or sent in email. Reading the metadata back:
+
+| Audience | How to read it |
+|---|---|
+| **CLI / scripted** | `exiftool figure.png \| grep Source` (Homebrew: `brew install exiftool`). Also `pngcheck -t figure.png`, or `magick identify -verbose figure.png \| grep Source`. |
+| **Python** | `from PIL import Image; Image.open("figure.png").info["Source"]` |
+| **Non-technical reader** | Drop the PNG into an online viewer like [exif.tools](https://exif.tools/), [exifer.com](https://www.exifer.com/), or [onlineexifviewer.com](https://onlineexifviewer.com/) — they show every text chunk with the keyword name (look for "Source" or "PNG: Source"). On macOS, **GIMP** (free) → File → Open → Image → Image Properties → Comments. **macOS Preview's Inspector** (Cmd+I → ⓘ tab) does *not* surface PNG tEXt chunks, so don't rely on it. |
+| **Doesn't work** | GitHub web preview, Slack image preview, the OS file properties dialog, Photoshop's File Info (it reads XMP, not PNG tEXt). |
+
+So this is *author-side metadata*: it persists through any PNG-aware tool but isn't surfaced to a casual viewer in a browser. The on-image footer + gist link in the Substack post stays the primary surface for non-technical readers; the tEXt chunk is the durable backup.
+
 ## Web Viewer
 
 `viewer/` is a **standalone Next.js 16 app** that ships as its own

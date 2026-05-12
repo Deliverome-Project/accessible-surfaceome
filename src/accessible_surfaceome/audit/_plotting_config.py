@@ -222,7 +222,13 @@ def _disable_titles_globally() -> None:
     setattr(plt.Axes, "set_title", _no_title)
     setattr(plt.Figure, "suptitle", _no_title)
 
-def save_figure(fig, filename, output_dir='figures', formats=('pdf', 'png')):
+def save_figure(
+    fig,
+    filename,
+    output_dir='figures',
+    formats=('pdf', 'png'),
+    gist_url=None,
+):
     """
     Save figure in multiple formats.
 
@@ -241,13 +247,36 @@ def save_figure(fig, filename, output_dir='figures', formats=('pdf', 'png')):
         Output directory
     formats : iterable[str]
         Output formats. PNG / PDF / SVG preserve transparency; JPEG does not.
+    gist_url : str or None
+        If set, embeds the URL as a reproduction-link metadata field
+        on the saved artifacts. Read back with ``exiftool``, an online
+        EXIF viewer, or GIMP's *Image Properties → Comments*. Matches
+        the "Final-Figure Gist Convention" in CLAUDE.md — promoted
+        figures (in any ``*_final/`` analysis dir) should ship a gist
+        URL so readers can run ``uv run make_<slug>.py`` themselves.
+
+        PNG: written as a ``Source`` tEXt chunk (a standard PNG
+        keyword recognized by every PNG-aware tool).
+        PDF: written as the ``Subject`` doc-info field (the closest
+        analogue PDF carries for "where this came from").
+        SVG / other vector formats: skipped — matplotlib's metadata
+        plumbing doesn't surface them for non-PNG/PDF backends.
     """
     output_path = Path(output_dir)
     output_path.mkdir(exist_ok=True, parents=True)
 
     for fmt in formats:
         filepath = output_path / f"{filename}.{fmt}"
-        fig.savefig(filepath, format=fmt, dpi=300, bbox_inches='tight')
+        save_kwargs = {"format": fmt, "dpi": 300, "bbox_inches": "tight"}
+        if gist_url:
+            if fmt == "png":
+                save_kwargs["metadata"] = {"Source": gist_url}
+            elif fmt == "pdf":
+                # PDF info dict uses different keyword names than PNG's
+                # tEXt; "Subject" is the conventional slot for a
+                # reproduction / source URL.
+                save_kwargs["metadata"] = {"Subject": gist_url}
+        fig.savefig(filepath, **save_kwargs)
         print(f"  Saved: {filepath}")
 
 def create_figure(nrows=1, ncols=1, figsize=None, **kwargs):

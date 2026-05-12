@@ -91,6 +91,12 @@ Do not bundle a CSV in the gist unless the canonical source is unreachable.
 
 Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
 
+**Also embed the gist URL in the artifact itself** via `save_figure(..., gist_url=...)` in `src/accessible_surfaceome/audit/_plotting_config.py`. PNG gets a `Source` tEXt chunk; PDF gets a `Subject` info-field. Reading it back:
+
+- CLI: `exiftool figure.png | grep Source` (Homebrew `brew install exiftool`); also `pngcheck -t figure.png` or ImageMagick's `magick identify -verbose`.
+- Python: `from PIL import Image; Image.open("figure.png").info["Source"]`.
+- Non-technical reader: drop the PNG into an online EXIF viewer (e.g. exif.tools, exifer.com, onlineexifviewer.com) — they show every text chunk with the keyword name. GIMP's *Image Properties → Comments* also works. macOS Preview's Inspector does **not** show PNG tEXt chunks; GitHub / Slack previews don't either. So the URL is author-side metadata, not something a casual web viewer surfaces.
+
 ## Data Rules & Formats
 - Keep raw inputs unchanged in `data/raw/`.
 - Keep downloaded datasets and traceability artifacts in `data/external/`.
