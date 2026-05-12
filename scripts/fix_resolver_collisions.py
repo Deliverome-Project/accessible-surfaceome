@@ -62,11 +62,14 @@ from accessible_surfaceome.paths import REPO_ROOT
 
 load_env()
 
-AUDIT_TSV = REPO_ROOT / "data/analysis/resolver_definitive_audit.tsv"
+DEFAULT_AUDIT_TSV = REPO_ROOT / "data/analysis/resolver_definitive_audit.tsv"
 ANALYSIS_DIR = REPO_ROOT / "data/analysis"
 RUNNER = REPO_ROOT / "scripts/triage_subbench_runner.py"
 CANONICAL_RUN_ID = "genome_full_sonnet_ncbi_v1"
 CHUNK = 50  # D1 SQL-variable cap is ~100; stay well under
+
+# Re-bound at runtime from --audit-tsv. Module-level for the helpers below.
+AUDIT_TSV = DEFAULT_AUDIT_TSV
 
 
 def _load_affected() -> list[dict[str, str]]:
@@ -177,7 +180,20 @@ def main() -> int:
              "the script writes the backup snapshot and prints the "
              "planned commands but does NOT mutate D1.",
     )
+    ap.add_argument(
+        "--audit-tsv", default=str(DEFAULT_AUDIT_TSV),
+        help="Audit TSV to read affected symbols from. Default: "
+             "data/analysis/resolver_definitive_audit.tsv. Use the "
+             "v2-only set (resolver_collision_audit_v2_only.tsv) for "
+             "the second fix pass.",
+    )
     args = ap.parse_args()
+
+    global AUDIT_TSV
+    # Resolve relative paths against REPO_ROOT so the relative_to() display
+    # below works regardless of CWD.
+    raw_path = Path(args.audit_tsv)
+    AUDIT_TSV = raw_path if raw_path.is_absolute() else (REPO_ROOT / raw_path)
 
     affected = _load_affected()
     print(f"Loaded {len(affected)} affected symbols from "

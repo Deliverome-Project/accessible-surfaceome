@@ -1299,7 +1299,6 @@ CSTA	P01040	1	0	1	0	0	0				m1_only
 CSTL1		0	0	0	0	0	0	contextual	tissue_restricted_surface	low	sonnet_only
 CT83	Q5H943	1	1	0	0	0	0				m1_only
 CTBS		0	0	0	0	0	0	contextual	lysosomal_exocytosis	medium	sonnet_only
-CTH		0	0	0	0	0	0	yes	classical_surface_receptor	high	sonnet_only
 CTHRC1		0	0	0	0	0	0	contextual	stable_surface_attachment	medium	sonnet_only
 CTLA4	P16410	3	1	1	0	1	0	yes	classical_surface_receptor	high	both
 CTNNA1	P35221	2	0	1	1	0	0				m1_only
@@ -2566,7 +2565,6 @@ IL7R	P16871	5	1	1	1	1	1	yes	classical_surface_receptor	high	both
 IL9R	Q01113	3	1	1	0	1	0	yes	classical_surface_receptor	high	both
 ILDR1	Q86SU0	2	1	0	0	1	0	yes	classical_surface_receptor	high	both
 ILDR2	Q71H61	1	0	0	1	0	0	yes	classical_surface_receptor	medium	both
-IMP4		0	0	0	0	0	0	contextual	dual_localization	medium	sonnet_only
 IMPG1		0	0	0	0	0	0	contextual	tissue_restricted_surface	medium	sonnet_only
 IMPG2	Q9BZV3	2	1	0	0	1	0				m1_only
 INHA	P05111	1	0	1	0	0	0				m1_only
@@ -3063,7 +3061,6 @@ LRRTM4	Q86VH4	2	1	0	0	1	0	yes	classical_surface_receptor	high	both
 LRTM1	Q9HBL6	2	1	0	0	1	0	yes	classical_surface_receptor	medium	both
 LRTM2	Q8N967	2	1	0	0	1	0	yes	classical_surface_receptor	medium	both
 LRTM3	Q8NDH2	1	0	0	1	0	0	yes	classical_surface_receptor	medium	both
-LRTOMT		0	0	0	0	0	0	yes	classical_surface_receptor	medium	sonnet_only
 LSAMP	Q13449	2	0	0	0	1	1	yes	gpi_anchored	high	both
 LSMEM1	Q8N8F7	1	0	0	0	1	0	contextual	dual_localization	low	both
 LSMEM2	Q8N112	1	0	0	1	0	0	contextual	dual_localization	low	both
@@ -3312,7 +3309,7 @@ MRPS18B	Q9Y676	1	0	0	1	0	0				m1_only
 MS4A1	P11836	5	1	1	1	1	1	yes	multipass_with_exposed_loops	high	both
 MS4A10	Q96PG2	1	1	0	0	0	0	yes	multipass_with_exposed_loops	medium	both
 MS4A12	Q9NXJ0	2	1	0	1	0	0	yes	multipass_with_exposed_loops	high	both
-MS4A13		0	0	0	0	0	0	yes	multipass_with_exposed_loops	medium	sonnet_only
+MS4A13		0	0	0	0	0	0	contextual	tissue_restricted_surface	low	sonnet_only
 MS4A14	Q96JA4	1	0	0	1	0	0	yes	multipass_with_exposed_loops	medium	both
 MS4A15	Q8N5U1	2	0	0	1	1	0	yes	multipass_with_exposed_loops	medium	both
 MS4A18		0	0	0	0	0	0	yes	multipass_with_exposed_loops	medium	sonnet_only
@@ -4457,7 +4454,7 @@ PM20D1		0	0	0	0	0	0	contextual	dual_localization	low	sonnet_only
 PMEL	P40967	2	0	0	0	1	1	contextual	dual_localization	medium	both
 PMEPA1	Q969W9	2	0	0	0	1	1	yes	classical_surface_receptor	high	both
 PMIS2		0	0	0	0	0	0	contextual	tissue_restricted_surface	medium	sonnet_only
-PMP22	Q01453	1	1	0	0	0	0				m1_only
+PMP22	Q01453	1	1	0	0	0	0	yes	multipass_with_exposed_loops	high	both
 PNCK	Q6P2M8	1	0	0	1	0	0				m1_only
 PNISR	Q8TF01	1	0	0	1	0	0	contextual	dual_localization	low	both
 PNMA2		0	0	0	0	0	0	contextual	cell_state_induced	medium	sonnet_only
@@ -4473,7 +4470,6 @@ POMT1	Q9Y6A1	1	0	0	0	0	1				m1_only
 POMT2	Q9UKY4	1	0	0	0	0	1				m1_only
 POMZP3		0	0	0	0	0	0	contextual	tissue_restricted_surface	low	sonnet_only
 PON1	P27169	1	0	0	0	0	1				m1_only
-POP1		0	0	0	0	0	0	yes	multipass_with_exposed_loops	high	sonnet_only
 POPDC1	Q8NE79	5	1	1	1	1	1	yes	multipass_with_exposed_loops	high	both
 POPDC2	Q9HBU9	1	0	1	0	0	0	yes	multipass_with_exposed_loops	medium	both
 POPDC3	Q9HBV1	1	0	1	0	0	0				m1_only
@@ -4757,7 +4753,7 @@ RFTN1		0	0	0	0	0	0	contextual	cell_state_induced	low	sonnet_only
 RFTN2	Q52LD8	1	0	0	1	0	0	contextual	dual_localization	low	both
 RGMA	Q96B86	1	0	0	0	1	0	yes	gpi_anchored	high	both
 RGMB	Q6NW40	1	0	0	0	1	0	yes	gpi_anchored	high	both
-RGR	P47804	3	1	0	1	1	0				m1_only
+RGR	P47804	3	1	0	1	1	0	yes	multipass_with_exposed_loops	high	both
 RGS1	Q08116	1	0	1	0	0	0				m1_only
 RGS13	O14921	1	0	1	0	0	0				m1_only
 RGS16	O15492	1	0	1	0	0	0				m1_only
@@ -4793,7 +4789,6 @@ RHOJ	Q9H4E5	1	0	0	1	0	0				m1_only
 RHOXF2	Q9BQY4	1	0	0	1	0	0	contextual	dual_localization	low	both
 RHOXF2B	P0C7M4	1	0	0	1	0	0				m1_only
 RIC8A	Q9NPQ8	1	0	0	1	0	0				m1_only
-RIF1		0	0	0	0	0	0	contextual	tissue_restricted_surface	low	sonnet_only
 RIGI	O95786	2	0	1	1	0	0				m1_only
 RIMS1	Q86UR5	1	0	1	0	0	0				m1_only
 RIMS2	Q9UQ26	2	0	1	1	0	0				m1_only
@@ -4854,7 +4849,7 @@ RPN2	P04844	1	0	0	0	0	1				m1_only
 RPRM	Q9NS64	1	0	0	0	1	0	contextual	dual_localization	low	both
 RPRML	Q8N4K4	1	0	0	0	1	0				m1_only
 RPS3	P23396	1	0	1	0	0	0				m1_only
-RPSA	P08865	1	0	0	1	0	0	contextual	dual_localization	low	both
+RPSA	P08865	1	0	0	1	0	0	contextual	dual_localization	medium	both
 RPSA2		0	0	0	0	0	0	contextual	dual_localization	medium	sonnet_only
 RPTN	Q6XPR3	1	0	1	0	0	0				m1_only
 RPUSD1	Q9UJJ7	1	0	0	1	0	0				m1_only
@@ -5564,7 +5559,7 @@ SPPL2C	Q8IUH8	1	0	0	0	1	0				m1_only
 SPPL3	Q8TCT6	1	0	0	1	0	0	contextual	dual_localization	medium	both
 SPRED3	Q2MJR0	1	0	0	1	0	0				m1_only
 SPRING1	Q9H741	1	0	0	0	0	1				m1_only
-SPRN	Q5BIV9	1	0	0	0	1	0				m1_only
+SPRN	Q5BIV9	1	0	0	0	1	0	yes	gpi_anchored	high	both
 SPRR1A	P35321	1	0	1	0	0	0				m1_only
 SPRR1B	P22528	1	0	1	0	0	0				m1_only
 SPRR2A	P35326	1	0	1	0	0	0				m1_only
@@ -6267,7 +6262,6 @@ TYRO3	Q06418	4	1	1	0	1	1	yes	classical_surface_receptor	high	both
 TYROBP	O43914	3	1	1	1	0	0	yes	classical_surface_receptor	high	both
 TYRP1	P17643	2	0	0	0	1	1	contextual	tissue_restricted_surface	high	both
 TYW3	Q6IPR3	1	0	0	1	0	0				m1_only
-U2AF1L4		0	0	0	0	0	0	yes	classical_surface_receptor	medium	sonnet_only
 UAP1	Q16222	1	0	0	1	0	0	contextual	dual_localization	low	both
 UBA1	P22314	1	0	0	0	0	1				m1_only
 UBA3	Q8TBC4	1	0	0	1	0	0				m1_only
