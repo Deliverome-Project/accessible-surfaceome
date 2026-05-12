@@ -19,3 +19,8 @@ data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.ts
 # content directly (LFS pointers don't resolve over the raw URL).
 data/processed/candidate_universe/candidate_universe.tsv -filter -diff -merge text
 data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge text
+
+# Canonical main-bench export (D1 → flat TSV) — same role as the
+# candidate-universe TSVs above: drives gist-style reproduction
+# scripts under data/analysis/figures/. ~160 KB.
+data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
