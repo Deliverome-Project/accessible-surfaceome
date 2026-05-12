@@ -213,8 +213,14 @@ def _disable_titles_globally() -> None:
     def _no_title(self, *_args, **_kwargs):
         return None
 
-    plt.Axes.set_title = _no_title  # type: ignore[assignment]
-    plt.Figure.suptitle = _no_title  # type: ignore[assignment]
+    # Runtime monkey-patch via setattr. The static signatures of
+    # `Axes.set_title` / `Figure.suptitle` (positional + keyword args)
+    # don't match the catch-all `(self, *_args, **_kwargs)`, but the
+    # runtime behavior is intentional. Using setattr keeps the patch
+    # invisible to static type checkers (`ty` doesn't honor the
+    # mypy-style `# type: ignore[assignment]` comment we had here).
+    setattr(plt.Axes, "set_title", _no_title)
+    setattr(plt.Figure, "suptitle", _no_title)
 
 def save_figure(fig, filename, output_dir='figures', formats=('pdf', 'png')):
     """
