@@ -300,7 +300,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | `EGFR` | `gene.hgnc_symbol` | `str` | D |
 | `Surface Accessibility Brief` | (viewer-static title) | — | — |
 | `schema v1.0.0` | `schema_version` | `Literal["1.0.0"]` | D |
-| `generated 2026-05-13` | `generated_at` | `datetime` | D |
+| `generated 2026-05-13` | `record_generated_at` | `datetime` (renamed from `generated_at` for explicit contrast with nested `retrieved_at`) | D |
 | `model claude-opus-4-7` | `model_path` | `str` | D |
 | (cross-reference chip, e.g. `triage: likely_accessible`) | `triage_signal` | `Literal["likely_accessible","possibly_accessible","unlikely","unknown"]` — populated by the orchestrator from the latest `surface_triage` record. A validator flags inconsistency with `executive_summary.surface_accessibility` (e.g. triage=`unlikely` + accessibility=`high` → `contradiction_flag=True`). | D |
 
@@ -864,9 +864,19 @@ SurfaceomeRecord (v1.0.0)
 
 ├── evidence: list[Evidence]                      [reuse current Evidence/SourceRef/EvidenceSpan]
 ├── search_log: list[SearchEntry]                 [reuse]
-├── confidence: float
-├── confidence_reasoning: str
-└── contradiction_flag: bool
+├── confidence: Literal["high","moderate","low"]
+├── confidence_reasoning: str = Field(max_length=600)
+│   # Validator: confidence_reasoning is non-empty when
+│   # confidence ∈ {moderate, low}. A non-high record must explain why.
+└── record_generated_at: datetime                 # record-assembly time (renamed from
+│                                                  #   `generated_at` for explicit contrast
+│                                                  #   with nested deterministic-features
+│                                                  #   `retrieved_at` — tool-fetch time)
+# contradiction_flag was dropped — three structured signals already cover
+# the "is there disagreement?" question: (a) `contradicting_evidence[i].severity`,
+# (b) `evidence_grade == "conflicting"`, (c) the `triage_signal` ↔
+# `surface_accessibility` consistency validator. A redundant top-level
+# bool muddies the picture.
 ```
 
 **Key invariants:**
@@ -876,6 +886,9 @@ SurfaceomeRecord (v1.0.0)
 - **Evidence model unchanged.** Keep `EvidenceClaim` → `Evidence` → `SourceRef` with substring-validated quote spans. Every `cited_evidence_ids` list references `evidence[i].evidence_id`. This is the most rigorous part of the existing pipeline; the redesign preserves it.
 - **Cross-agent coherence with `surface_triage`**. Top-level `triage_signal` is populated by the orchestrator from the most recent triage record. A validator (`_check_triage_signal_consistency`) flags inconsistency between `triage_signal` and `executive_summary.surface_accessibility`: e.g., triage=`unlikely` + accessibility=`high` flips `contradiction_flag=True` and demands the LLM justify the disagreement in `confidence_reasoning`. `accessibility_modulation.category` mirrors triage's contextual `reason` taxonomy verbatim for its first 5 values (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`); the deep-dive's expansions (`activation_induced`, `stress_induced`, …) roll up to those at cross-validation time.
 - **Uncertainty routing**. The earlier `knowledge_gaps` block + its R7 validator were dropped. Uncertainty now lives in `contradicting_evidence` (for known literature conflicts), `confidence` + `confidence_reasoning` (overall uncertainty — the agent prompt instructs the model to lower confidence when load-bearing questions are unresolved), `evidence_grade` + `grade_rationale` (evidence quality), and per-section rationale fields. No structured caveats list.
+- **`confidence_reasoning` discipline**. `Field(max_length=600)` so reasoning is scannable. Validator: `confidence_reasoning` must be non-empty when `confidence ∈ {moderate, low}`. A non-high record without reasoning is unhelpful; the validator catches the case at parse time.
+- **`contradiction_flag` dropped**. Three structured signals already answer the "is there disagreement?" question: (a) per-row `contradicting_evidence[i].severity_for_surface_accessibility`, (b) `surface_evidence.evidence_grade == "conflicting"`, (c) the `triage_signal ↔ surface_accessibility` consistency validator. A redundant top-level bool muddied the picture.
+- **Timestamp naming**: top-level `record_generated_at` is the record-assembly time. Nested `retrieved_at` (e.g. `deterministic_features.canonical_topology.retrieved_at`, `orthologs[i].retrieved_at`) is the tool-fetch time. The two are different concepts and the names are now distinct enough that the casual reader won't conflate them.
 - **Numeric ranges enforced at validation time.** Floats carry explicit Pydantic bounds: `Field(ge=0.0, le=100.0)` for pct-identity / pct-similarity / pLDDT; `Field(ge=0.0, le=1.0)` for disordered_fraction / solvent_accessible_fraction. A buggy fetcher producing 110.0 or -5.0 is rejected before it reaches D1.
 - **String length limits enforced.** Every prose field declares `Field(max_length=N)` — `≤200` for short rationale fields, `≤300` for medium, `≤400` for longer rationale, `≤600` for the executive paragraph, `≤800` for evidence_summary / grade_rationale. The mockup annotations call these out per-field.
 - **Hybrid-enum pattern**: every closed enum that takes an `"other"` value pairs with a required `*_other_label: str | None` and a validator that enforces `category == "other" ↔ category_other_label is not None`. Applies to `accessibility_modulation.category` and any future open-ended enums.
