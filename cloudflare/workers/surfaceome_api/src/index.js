@@ -11,6 +11,8 @@
 //                                  (DB votes + latest triage + deep-dive flag)
 //   GET /v1/orthologs/:symbol   — ortholog table for a gene
 //   GET /v1/benchmark           — full benchmark truth labels (latest version)
+//   GET /v1/benchmark/matrix    — 147-gene matrix: truth + per-DB flags +
+//                                  per-model headline & alt LLM verdicts
 //   GET /v1/benchmark/:symbol   — single gene's truth label
 //   GET /v1/triage/:symbol      — model verdicts across runs (no costs)
 //
@@ -301,6 +303,200 @@ async function handleCatalog(env) {
   );
 }
 
+// Models and prompt variants the benchmark matrix endpoint surfaces. The
+// headline column is `ncbi` (NCBI resolver context, no web search) —
+// every model has dense coverage on this variant for the 147-gene bench
+// (Opus has no web_ncbi runs, so picking web_ncbi as headline leaves
+// the Opus column empty across all rows). The alt variants — naive,
+// web_ncbi, pubmed_ncbi — surface the "what does this tool add?" axis
+// and are revealed by expand-on-click footnote rows.
+const BENCH_MATRIX_MODELS = [
+  "claude-opus-4-7",
+  "claude-sonnet-4-6",
+  "claude-haiku-4-5",
+];
+const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
+const BENCH_MATRIX_ALT_VARIANTS = ["naive", "web_ncbi", "pubmed_ncbi"];
+const BENCH_MATRIX_SOURCES = [
+  "uniprot", "go", "surfy", "cspa", "hpa", "deeptmhmm", "compartments",
+];
+
+async function handleBenchmarkMatrix(env) {
+  // 1. Pick the canonical curated benchmark — the bench_version with
+  // the most rows carrying a non-empty truth_verdict, breaking ties by
+  // most recent created_at. The unlabeled gene-set snapshots (19k+
+  // rows, blank truth columns) and the small ad-hoc benches (2-9 rows)
+  // are interned with their own bench_version SHA, so a plain
+  // `ORDER BY bench_version DESC` is essentially random — bench_version
+  // is a content hash, not a timestamp. Filtering on labeled rows is
+  // robust to both the unlabeled inputs and the stub uploads.
+  const benchRow = await env.DB.prepare(
+    `SELECT bench_version, COUNT(*) AS n_labeled, MAX(created_at) AS latest
+       FROM benchmark_version
+      WHERE truth_verdict IS NOT NULL AND truth_verdict != ''
+      GROUP BY bench_version
+      ORDER BY n_labeled DESC, latest DESC
+      LIMIT 1`
+  ).first();
+  if (!benchRow) {
+    return json(
+      { bench_version: null, universe_version: null, n_genes: 0, rows: [] },
+      { ttl: CACHE_TTL_SHORT },
+    );
+  }
+  const benchVersion = benchRow.bench_version;
+
+  // 2. Truth labels for that bench_version.
+  const truthRows = await env.DB.prepare(
+    `SELECT gene_symbol, uniprot_acc, class, truth_verdict, truth_signal,
+            truth_reason, rationale
+       FROM benchmark_version
+      WHERE bench_version = ?
+      ORDER BY gene_symbol`
+  ).bind(benchVersion).all();
+
+  // 3. Latest universe_version + per-DB flags. Pull all 7 flags here
+  // (DeepTMHMM + COMPARTMENTS included — /v1/catalog drops them but the
+  // benchmark matrix is a forensic view and should show every source).
+  const releaseRow = await env.DB.prepare(
+    `SELECT universe_version FROM candidate_universe_release
+      ORDER BY loaded_at DESC LIMIT 1`
+  ).first();
+  const universeVersion = releaseRow?.universe_version ?? null;
+  const dbByGene = new Map();
+  if (universeVersion) {
+    const universeRows = await env.DB.prepare(
+      `SELECT gene_symbol, uniprot_surface_flag, go_surface_flag,
+              surfy_surface_flag, cspa_surface_flag, hpa_surface_flag,
+              deeptmhmm_surface_flag, compartments_surface_flag,
+              n_sources_surface
+         FROM candidate_universe_public
+        WHERE universe_version = ?`
+    ).bind(universeVersion).all();
+    for (const u of universeRows.results) {
+      dbByGene.set(u.gene_symbol, {
+        uniprot: u.uniprot_surface_flag ? 1 : 0,
+        go: u.go_surface_flag ? 1 : 0,
+        surfy: u.surfy_surface_flag ? 1 : 0,
+        cspa: u.cspa_surface_flag ? 1 : 0,
+        hpa: u.hpa_surface_flag ? 1 : 0,
+        deeptmhmm: u.deeptmhmm_surface_flag ? 1 : 0,
+        compartments: u.compartments_surface_flag ? 1 : 0,
+        n_sources_surface: u.n_sources_surface ?? 0,
+      });
+    }
+  }
+
+  // 4. Triage runs filtered to the bench_version + the model/variant
+  // grid we care about. Most-recent run wins per (gene, model, variant).
+  // Uses ROW_NUMBER() in a CTE so the "latest per partition" pass is a
+  // single window scan instead of a correlated subquery (which was
+  // O(N²) and put the 4-row, 147-gene endpoint at ~30s on cold cache).
+  const wantedVariants = [
+    BENCH_MATRIX_HEADLINE_VARIANT,
+    ...BENCH_MATRIX_ALT_VARIANTS,
+  ];
+  const variantPlaceholders = wantedVariants.map(() => "?").join(",");
+  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
+  const triageRows = await env.DB.prepare(
+    `WITH ranked AS (
+       SELECT gene_symbol, model, prompt_variant, predicted_verdict,
+              predicted_reason, predicted_confidence, predicted_key_uncertainty,
+              correct, latency_s, n_web_searches, created_at, error,
+              ROW_NUMBER() OVER (
+                PARTITION BY gene_symbol, model, prompt_variant
+                ORDER BY created_at DESC
+              ) AS rn
+         FROM triage_run_public
+        WHERE bench_version = ?
+          AND prompt_variant IN (${variantPlaceholders})
+          AND model IN (${modelPlaceholders})
+     )
+     SELECT gene_symbol, model, prompt_variant, predicted_verdict,
+            predicted_reason, predicted_confidence, predicted_key_uncertainty,
+            correct, latency_s, n_web_searches, created_at, error
+       FROM ranked
+      WHERE rn = 1`
+  ).bind(benchVersion, ...wantedVariants, ...BENCH_MATRIX_MODELS).all();
+
+  // Build a nested map: gene → model → variant → run.
+  const runMap = new Map();
+  for (const r of triageRows.results) {
+    let byModel = runMap.get(r.gene_symbol);
+    if (!byModel) {
+      byModel = new Map();
+      runMap.set(r.gene_symbol, byModel);
+    }
+    let byVariant = byModel.get(r.model);
+    if (!byVariant) {
+      byVariant = new Map();
+      byModel.set(r.model, byVariant);
+    }
+    byVariant.set(r.prompt_variant, {
+      verdict: r.predicted_verdict,
+      reason: r.predicted_reason,
+      confidence: r.predicted_confidence,
+      key_uncertainty: r.predicted_key_uncertainty,
+      correct: r.correct,
+      latency_s: r.latency_s,
+      n_web_searches: r.n_web_searches,
+      created_at: r.created_at,
+      error: r.error,
+    });
+  }
+
+  // 5. Stitch.
+  const rows = truthRows.results.map((t) => {
+    const byModel = runMap.get(t.gene_symbol);
+    const headline = {};
+    const alts = {};
+    for (const model of BENCH_MATRIX_MODELS) {
+      const byVariant = byModel?.get(model);
+      headline[model] = byVariant?.get(BENCH_MATRIX_HEADLINE_VARIANT) ?? null;
+      const altsByVariant = {};
+      for (const variant of BENCH_MATRIX_ALT_VARIANTS) {
+        altsByVariant[variant] = byVariant?.get(variant) ?? null;
+      }
+      alts[model] = altsByVariant;
+    }
+    const db = dbByGene.get(t.gene_symbol) ?? null;
+    const row = {
+      gene_symbol: t.gene_symbol,
+      uniprot_acc: t.uniprot_acc,
+      class: t.class,
+      truth_verdict: t.truth_verdict,
+      truth_signal: t.truth_signal,
+      truth_reason: t.truth_reason,
+      db: db
+        ? {
+            uniprot: db.uniprot, go: db.go, surfy: db.surfy, cspa: db.cspa,
+            hpa: db.hpa, deeptmhmm: db.deeptmhmm, compartments: db.compartments,
+          }
+        : null,
+      n_db_surface: db?.n_sources_surface ?? 0,
+      headline,
+      alts,
+    };
+    return row;
+  });
+
+  return json(
+    {
+      bench_version: benchVersion,
+      universe_version: universeVersion,
+      generated_at: new Date().toISOString(),
+      sources: BENCH_MATRIX_SOURCES,
+      models: BENCH_MATRIX_MODELS,
+      headline_variant: BENCH_MATRIX_HEADLINE_VARIANT,
+      alt_variants: BENCH_MATRIX_ALT_VARIANTS,
+      n_genes: rows.length,
+      rows,
+    },
+    { ttl: CACHE_TTL_LONG },
+  );
+}
+
+
 async function handleTriage(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -349,6 +545,7 @@ export default {
     if (path === "/v1/genes") return handleGeneList(env);
     if (path === "/v1/catalog") return handleCatalog(env);
     if (path === "/v1/benchmark") return handleBenchmarkList(env);
+    if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
 
     let m;
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);

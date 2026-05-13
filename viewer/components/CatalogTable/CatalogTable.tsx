@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CatalogRow } from "../../lib/surfaceome";
+import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import styles from "./CatalogTable.module.css";
 
 // Per-row height estimate fed to @tanstack/react-virtual. Rows with
@@ -93,6 +94,9 @@ interface CatalogTableProps {
   n_rows: number;
   n_with_triage: number;
   n_with_deep_dive: number;
+  /** universe_version identifier from /v1/catalog — included in the
+   *  TSV download filename so a downloaded snapshot is traceable. */
+  universe_version?: string;
 }
 
 export function CatalogTable({
@@ -101,6 +105,7 @@ export function CatalogTable({
   n_rows,
   n_with_triage,
   n_with_deep_dive,
+  universe_version,
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
   const [quick, setQuick] = useState<QuickFilter>("all");
@@ -257,19 +262,33 @@ export function CatalogTable({
         </div>
       </div>
 
-      <p className={styles.resultMeta}>
-        {sorted.length === rows.length
-          ? `${sorted.length.toLocaleString()} genes`
-          : `${sorted.length.toLocaleString()} of ${rows.length.toLocaleString()} genes`}
-        {generated_at ? (
-          <>
-            <span className={styles.dot} aria-hidden="true">
-              ·
-            </span>
-            <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
-          </>
-        ) : null}
-      </p>
+      <div className={styles.resultRow}>
+        <p className={styles.resultMeta}>
+          {sorted.length === rows.length
+            ? `${sorted.length.toLocaleString()} genes`
+            : `${sorted.length.toLocaleString()} of ${rows.length.toLocaleString()} genes`}
+          {generated_at ? (
+            <>
+              <span className={styles.dot} aria-hidden="true">
+                ·
+              </span>
+              <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
+            </>
+          ) : null}
+        </p>
+        <button
+          type="button"
+          className={styles.downloadBtn}
+          onClick={() => {
+            const tsv = buildCatalogTsv(rows);
+            const tag = universe_version ?? "snapshot";
+            downloadTextFile(`surfaceome-catalog-${tag}.tsv`, tsv);
+          }}
+          title={`Download all ${rows.length.toLocaleString()} catalog rows as TSV`}
+        >
+          Download TSV ↓
+        </button>
+      </div>
 
       <div
         className={styles.tableScroll}
@@ -382,6 +401,47 @@ export function CatalogTable({
       </div>
     </div>
   );
+}
+
+/**
+ * Build a TSV of the catalog rows — one row per gene, matching the
+ * columns shown in the table plus the gene name / synonyms from the
+ * NCBI lookup (which the UI uses for search but doesn't render). Bulk
+ * download is the full unfiltered dataset; if the reader needs a
+ * subset, they can filter in pandas / R after downloading.
+ */
+function buildCatalogTsv(rows: CatalogRow[]): string {
+  const headers = [
+    "gene_symbol",
+    "uniprot_acc",
+    "gene_name",
+    "synonyms",
+    "n_sources",
+    "db_uniprot",
+    "db_go",
+    "db_surfy",
+    "db_cspa",
+    "db_hpa",
+    "triage_verdict",
+    "triage_reason",
+    "has_deep_dive",
+  ];
+  const body: TsvCell[][] = rows.map((r) => [
+    r.symbol,
+    r.uniprot,
+    r.name ?? "",
+    r.synonyms ? r.synonyms.join("|") : "",
+    r.n_sources,
+    r.db.uniprot,
+    r.db.go,
+    r.db.surfy,
+    r.db.cspa,
+    r.db.hpa,
+    r.triage?.verdict ?? "",
+    r.triage?.reason ?? "",
+    r.deep_dive ? 1 : 0,
+  ]);
+  return buildTsv(headers, body);
 }
 
 function sortValue(r: CatalogRow, k: SortKey): string | number {

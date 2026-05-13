@@ -773,3 +773,59 @@ export interface SurfaceomeRecord {
   record_generated_at: string;
   model_path: string;
 }
+
+
+// ---------------------------------------------------------------------------
+// Benchmark matrix — shape of /v1/benchmark/matrix from the public Worker.
+// Renders at /benchmark/ as the 147-gene table: per-DB columns + headline
+// LLM verdicts for opus / sonnet / haiku, with expand-on-click alt-variant
+// footnotes.
+// ---------------------------------------------------------------------------
+
+export type BenchmarkSource =
+  | "uniprot"
+  | "go"
+  | "surfy"
+  | "cspa"
+  | "hpa"
+  | "deeptmhmm"
+  | "compartments";
+
+export interface BenchmarkVariantResult {
+  verdict: string | null;
+  reason: string | null;
+  confidence: string | null;
+  key_uncertainty: string | null;
+  correct: number | null;
+  latency_s: number | null;
+  n_web_searches: number | null;
+  created_at: string | null;
+  error: string | null;
+}
+
+export interface BenchmarkRow {
+  gene_symbol: string;
+  uniprot_acc: string;
+  class: string;
+  truth_verdict: "yes" | "contextual" | "no" | string;
+  truth_signal: string;
+  truth_reason: string;
+  db: Record<BenchmarkSource, 0 | 1> | null;
+  n_db_surface: number;
+  /** Map of model-id → headline-variant result (null when no run exists). */
+  headline: Record<string, BenchmarkVariantResult | null>;
+  /** Map of model-id → variant-name → result. */
+  alts: Record<string, Record<string, BenchmarkVariantResult | null>>;
+}
+
+export interface BenchmarkMatrix {
+  bench_version: string | null;
+  universe_version: string | null;
+  generated_at?: string;
+  sources: BenchmarkSource[];
+  models: string[];
+  headline_variant: string;
+  alt_variants: string[];
+  n_genes: number;
+  rows: BenchmarkRow[];
+}

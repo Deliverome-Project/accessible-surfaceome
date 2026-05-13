@@ -26,6 +26,9 @@ export function Shell({ children }: ShellProps) {
             <span className={styles.brandText}>Surfaceome</span>
           </Link>
           <nav className={styles.nav} aria-label="Primary">
+            <Link className={styles.navLink} href="/benchmark">
+              Benchmark
+            </Link>
             <Link className={styles.navLink} href="/prompts">
               Prompts
             </Link>

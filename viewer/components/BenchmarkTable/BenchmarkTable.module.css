@@ -1,0 +1,512 @@
+/*
+ * BenchmarkTable — 147-gene triage benchmark matrix.
+ *
+ * Shares the virtualized CSS-grid pattern from CatalogTable (sticky
+ * header + body rows use the same `--bench-cols` template so columns
+ * line up between thead and the absolutely-positioned virtual rows).
+ *
+ * Visual differences from CatalogTable, by design:
+ *   - Tighter row height (~32px) for scientific data density.
+ *   - Smaller verdict pills, with a "correct vs wrong" outline so the
+ *     reader can scan agreement against truth without reading text.
+ *   - Per-row expand reveals a 3×3 sub-grid of model × alt-variant
+ *     pills instead of a prose reasoning block.
+ */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.meta code {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-sm);
+}
+
+.metaDot {
+  color: var(--line);
+}
+
+/* ============================================================
+ * Toolbar
+ * ============================================================ */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search {
+  flex: 1 1 16rem;
+  max-width: 22rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.searchInput:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.65rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.chip:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.chipOn {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+.chipOn:hover {
+  color: var(--fg-on-dark);
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
+.chipCount {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  font-weight: var(--fw-regular);
+  opacity: 0.7;
+}
+
+.resultRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.resultMeta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.34rem 0.7rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.downloadBtn:hover,
+.downloadBtn:focus-visible {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+/* ============================================================
+ * Table grid
+ * ============================================================ */
+
+.tableScroll {
+  overflow: auto;
+  max-height: min(78vh, 760px);
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  position: relative;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: var(--bench-cols,
+    1.6rem 6rem 5rem 4.2rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 4.4rem 4.4rem 4.4rem minmax(10rem, 1fr));
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  border-bottom: 1px solid var(--line-soft);
+  min-height: 2.1rem;
+}
+
+.rowExpanded {
+  align-items: stretch;
+}
+
+.headerRow {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  min-height: 2.4rem;
+}
+
+.body {
+  display: block;
+}
+
+.row:nth-child(2n + 1):not(.headerRow):not(.loadingRow):not(.empty) {
+  background: rgba(146, 32, 56, 0.022);
+}
+
+.row:hover:not(.headerRow):not(.loadingRow):not(.empty) {
+  background: var(--maroon-soft);
+}
+
+/* ============================================================
+ * Cells
+ * ============================================================ */
+
+.headerCell {
+  padding: 0.45rem 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+
+.headerMono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-size: 0.7rem;
+}
+
+.headerDbCell {
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: none;
+  padding: 0.45rem 0.2rem;
+}
+
+.headerModelCell {
+  justify-content: center;
+  font-size: 0.7rem;
+}
+
+.cell {
+  padding: 0.3rem 0.45rem;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.toggleCell {
+  padding: 0.15rem;
+  justify-content: center;
+}
+
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.toggleBtn:hover,
+.toggleBtn:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggleBtn[aria-expanded="true"] {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+.geneCell {
+  /* nothing extra; container is the symbol link/text */
+}
+
+.symbolLink {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.symbolLink:hover,
+.symbolLink:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+.symbolText {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+
+.uniprotCell {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.truthCell {
+  justify-content: flex-start;
+}
+
+.dbCell {
+  justify-content: center;
+  padding: 0.3rem 0.2rem;
+}
+
+.dbDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.dbCellYes .dbDot {
+  background: var(--teal-mid);
+  border-color: var(--teal-mid);
+}
+
+.modelCell {
+  justify-content: center;
+  padding: 0.3rem 0.25rem;
+}
+
+/* Verdict pills — same color tokens as CatalogTable so the visual
+ * grammar stays consistent across the viewer. */
+.verdictLabel {
+  display: inline-flex;
+  padding: 0.12rem 0.42rem;
+  font-size: 0.7rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.verdictYes {
+  background: rgba(46, 122, 85, 0.14);
+  color: var(--success);
+}
+
+.verdictNo {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+}
+
+.verdictContextual {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+}
+
+.verdictUnknown {
+  background: var(--bg-warm);
+  color: var(--muted);
+}
+
+/* Outline pill state for LLM verdicts only — communicates whether
+ * the prediction agrees with truth (correct = subtle ring; wrong =
+ * maroon-leaning ring). Layered ON TOP of the verdict tone so the
+ * verdict color still reads first. */
+.verdictCorrect {
+  /* No extra ring — correct is the resting state; absence of a wrong
+   * marker is the signal. */
+}
+
+.verdictWrong {
+  outline: 1.5px solid var(--maroon-light);
+  outline-offset: -1.5px;
+}
+
+.classCell {
+  /* truth_class label, muted mono */
+  overflow: hidden;
+}
+
+.classText {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.dim {
+  color: var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+ * Expanded — 3 models × 3 alt variants
+ * ============================================================ */
+
+.expandedBlock {
+  grid-column: 1 / -1;
+  padding: var(--space-3) var(--space-4) var(--space-4) 2rem;
+  background: var(--bg-soft);
+  border-top: 1px dashed var(--line-soft);
+}
+
+.altGrid {
+  display: grid;
+  grid-template-columns: 6rem repeat(3, minmax(5rem, 1fr));
+  gap: 0.25rem 0.6rem;
+  align-items: center;
+  max-width: 32rem;
+}
+
+.altHeader {
+  font-family: var(--font-sans);
+  font-size: 0.66rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0.1rem 0;
+}
+
+.altModelLabel {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.altCell {
+  display: flex;
+  align-items: center;
+}
+
+.altPill {
+  display: inline-flex;
+  padding: 0.1rem 0.4rem;
+  font-size: 0.68rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+/* ============================================================
+ * Empty / loading rows
+ * ============================================================ */
+
+.empty,
+.loadingRow {
+  display: block;
+  text-align: center;
+  padding: var(--space-10);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.loadingRow {
+  font-style: italic;
+}
+
+/* ============================================================
+ * Responsive: drop the class column and shrink the UniProt
+ * column on narrow viewports
+ * ============================================================ */
+
+@media (max-width: 900px) {
+  .row {
+    grid-template-columns:
+      1.6rem 5.5rem 4.4rem 4.2rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 4rem 4rem 4rem;
+  }
+  .classCell,
+  .headerRow .headerCell:last-child {
+    display: none;
+  }
+}

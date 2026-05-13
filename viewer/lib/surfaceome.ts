@@ -16,7 +16,7 @@
 
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import type { SurfaceomeRecord } from "./surfaceome-types";
+import type { BenchmarkMatrix, SurfaceomeRecord } from "./surfaceome-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
 
@@ -291,6 +291,51 @@ export async function loadCatalog(): Promise<Catalog> {
     rows,
     n_with_deep_dive,
   };
+}
+
+/**
+ * Build-time fetch for the 147-gene benchmark matrix. Same pattern as
+ * `loadCatalog`: hit the public Worker with `cache: "force-cache"` so the
+ * response gets baked into the `output: "export"` artifact. Returns an
+ * empty stub under `SURFACEOME_API_BASE=local` so the GitHub-Actions
+ * smoke build (whose IPs hit the Cloudflare WAF) doesn't 403.
+ */
+export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  if (!base) {
+    throw new Error(
+      "SURFACEOME_API_BASE is empty — set it to the public Worker (e.g. " +
+        "https://api.deliverome.org/surfaceome), to `local` for an empty " +
+        "stub, or to a staging endpoint.",
+    );
+  }
+  if (base === "local") {
+    return {
+      bench_version: null,
+      universe_version: null,
+      sources: [
+        "uniprot", "go", "surfy", "cspa", "hpa", "deeptmhmm", "compartments",
+      ],
+      models: [
+        "claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5",
+      ],
+      headline_variant: "ncbi",
+      alt_variants: ["naive", "web_ncbi", "pubmed_ncbi"],
+      n_genes: 0,
+      rows: [],
+    };
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const res = await fetch(`${base}/v1/benchmark/matrix`, {
+    cache: "force-cache",
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timer));
+  if (!res.ok) {
+    throw new Error(`${base}/v1/benchmark/matrix returned ${res.status}`);
+  }
+  const payload = (await res.json()) as BenchmarkMatrix;
+  return payload;
 }
 
 export function listSurfaceomeGenes(): string[] {
