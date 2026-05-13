@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>EGFR — Surface Targetability Brief (preview)</title>
+    <title>EGFR — Surface Accessibility Brief (preview)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -664,7 +664,7 @@
     <header class="topbar">
       <div class="topbar__inner">
         <div>
-          <h1 class="topbar__title">EGFR — Surface Targetability Brief</h1>
+          <h1 class="topbar__title">EGFR — Surface Accessibility Brief</h1>
           <span class="topbar__meta">
             schema v1.0.0 · generated 2026-05-13 · model claude-opus-4-7
           </span>
@@ -755,32 +755,18 @@
           </div>
 
           <div class="grid-2">
-            <span class="field-label">Surface targetability</span>
+            <span class="field-label">Surface accessibility</span>
             <span class="field-value">
               <span class="chip chip--success chip--strong">HIGH</span>
               <div class="annot annot--llm">
                 <span class="annot__path"
-                  >executive_summary.surface_targetability</span
+                  >executive_summary.surface_accessibility</span
                 >
                 ·
                 <span class="annot__type"
                   >Literal["high","moderate","low","uncertain"]</span
                 >
                 <span class="annot__prov">L</span>
-              </div>
-              <div
-                style="
-                  font-size: 0.78rem;
-                  color: var(--muted);
-                  font-style: italic;
-                  margin-top: 4px;
-                  max-width: 56ch;
-                "
-              >
-                "Targetability" here means biological / physical reachability
-                — can a binder reach this protein. Not the commercial sense
-                (worth pursuing as a drug target). Deeper sections still use
-                <code>accessibility</code>-named fields.
               </div>
             </span>
 
@@ -891,7 +877,7 @@
         <div class="card__body">
           <div class="filters-grid">
             <div class="filters-group">
-              <p class="filters-group__title">Targetability</p>
+              <p class="filters-group__title">Accessibility</p>
               <div class="chip-row">
                 <span class="chip chip--success">overall=high</span>
                 <span class="chip chip--success">confidence=high</span>
@@ -903,10 +889,10 @@
                 <span class="chip chip--teal">evidence_density=high</span>
               </div>
               <div class="annot">
-                <span class="annot__path">filters.surface_targetability</span>
-                + siblings · top field renamed from
-                <code>surface_accessibility</code>. All derived from deeper
-                buckets at orchestration time.
+                <span class="annot__path">filters.surface_accessibility</span>
+                + siblings · all derived from deeper buckets at orchestration
+                time. Whole record uses the same "accessibility" vocabulary
+                top to bottom.
                 <span class="annot__prov">D</span>
               </div>
             </div>

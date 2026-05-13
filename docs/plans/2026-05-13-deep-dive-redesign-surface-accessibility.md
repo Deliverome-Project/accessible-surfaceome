@@ -19,7 +19,7 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 
 ```
 ═══════════════════════════════════════════════════════════════════════
-  EGFR — Surface Targetability Brief
+  EGFR — Surface Accessibility Brief
   schema v1.0.0 · generated 2026-05-13 · model claude-opus-4-7
 ═══════════════════════════════════════════════════════════════════════
 
@@ -33,17 +33,15 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │ polarized epithelia. HER family paralogs share the overall fold    │
 │ but empirical binders show minimal cross-reactivity in practice.   │
 │                                                                     │
-│   Surface targetability:  HIGH       Subcategory: single-pass T1   │
+│   Surface accessibility:  HIGH       Subcategory: single-pass T1   │
 │   Evidence grade:         direct_multi_method                       │
 │   Confidence:             HIGH       State dependence: MODERATE     │
 │   Headline risks:         shed_form · restricted_subdomain         │
-│   ("Targetability" here = physical/biological reachability —        │
-│    can a binder reach this protein. Not the commercial sense.)     │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─ FILTERS / TAGS  (catalog-facing, all closed enums) ───────────────┐
 │                                                                     │
-│  TARGETABILITY                                                      │
+│  ACCESSIBILITY                                                      │
 │    overall=HIGH · confidence=HIGH · subcategory=single_pass_T1     │
 │    evidence_grade=direct_multi_method · ecd_accessibility=LARGE     │
 │    evidence_density=HIGH                                            │
@@ -305,7 +303,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
 | `EGFR` | `gene.hgnc_symbol` | `str` | D |
-| `Surface Targetability Brief` | (viewer-static title) | — | — |
+| `Surface Accessibility Brief` | (viewer-static title) | — | — |
 | `schema v1.0.0` | `schema_version` | `Literal["1.0.0"]` | D |
 | `generated 2026-05-13` | `generated_at` | `datetime` | D |
 | `model claude-opus-4-7` | `model_path` | `str` | D |
@@ -315,7 +313,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
 | "EGFR is a single-pass type I…" prose | `executive_summary.one_paragraph` | `str` (≤600) | L |
-| `HIGH` (targetability) | `executive_summary.surface_targetability` | `Literal["high","moderate","low","uncertain"]` | L |
+| `HIGH` (accessibility) | `executive_summary.surface_accessibility` | `Literal["high","moderate","low","uncertain"]` | L |
 | `direct_multi_method` | `executive_summary.evidence_grade_summary` | `Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]` | L |
 | `HIGH` (confidence) | `executive_summary.confidence` | `Literal["high","moderate","low"]` | L |
 | `MODERATE` (state dependence) | `executive_summary.state_dependence` | `Literal["low","moderate","high","unclear"]` — how much does surface presence/exposure shift with cell state, tissue context, or disease state? Cross-checks against `biological_context.accessibility_modulation[]`. | L |
@@ -323,10 +321,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | `shed_form · paralog_cross_reactivity` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","other"]]` (max 3) | L |
 | (cite chips, not shown) | `executive_summary.cited_evidence_ids` | `list[str]` (→ `evidence[].evidence_id`) | L |
 
-Two notes on the top-line summary:
-
-- The numeric `accessibility_score: float` was dropped — categorical `surface_targetability` + categorical `confidence` carry the same information without implying a calibrated rubric we don't have.
-- **"Targetability" is the biological/physical sense here** — *can a binder physically reach this protein on the cell surface?* It is intentionally NOT the commercial sense (worth pursuing as a drug target). The downstream sections still carry `accessibility`-named fields (`accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`) — only the top-line summary and its filter chip use the `targetability` label so readers get a familiar headline word.
+Note on the top-line summary: the numeric `accessibility_score: float` was dropped — categorical `surface_accessibility` + categorical `confidence` carry the same information without implying a calibrated rubric we don't have. The whole schema is consistent on the word "accessibility" — top-line field name, filter chip, and deeper sections (`accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`) all use the same vocabulary.
 
 ### Filters / tags card
 
@@ -334,7 +329,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 
 | Rendered chip | Schema path | Type | Prov | Derivation rule (D-source) |
 |---|---|---|---|---|
-| `overall=HIGH` | `filters.surface_targetability` | `Literal["high","moderate","low","uncertain"]` | D | `executive_summary.surface_targetability` |
+| `overall=HIGH` | `filters.surface_accessibility` | `Literal["high","moderate","low","uncertain"]` | D | `executive_summary.surface_accessibility` |
 | `confidence=HIGH` | `filters.confidence` | `Literal["high","moderate","low"]` | D | `executive_summary.confidence` |
 | `subcategory=single_pass_T1` | `filters.subcategory` | `Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]` | D | `executive_summary.subcategory` |
 | `evidence_grade=direct_multi_method` | `filters.evidence_grade` | `Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]` | D | `surface_evidence.evidence_grade` |
@@ -451,7 +446,7 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 
 | Area | Change |
 |---|---|
-| Executive summary | Dropped numeric `accessibility_score: float`; replaced with categorical `surface_targetability` (renamed from `surface_accessibility` for readability — the BD/discovery audience reads "targetability" instantly) + categorical `confidence` + `evidence_grade_summary` + `state_dependence` (renamed from `context_dependence`, which read as jargon — it answers "how much does surface presence shift with cell state / tissue / disease?"). Categorical-only avoids implying a calibrated rubric we don't have. The rename is **top-level only** — deeper sections keep `accessibility`-named fields (`accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`). The plan now states explicitly that "targetability" here is the biological/physical sense (can a binder reach this protein), NOT the commercial sense (worth pursuing as a drug target). |
+| Executive summary | Dropped numeric `accessibility_score: float`; replaced with categorical `surface_accessibility` + categorical `confidence` + `evidence_grade_summary` + `state_dependence` (renamed from `context_dependence`, which read as jargon — it answers "how much does surface presence shift with cell state / tissue / disease?"). Categorical-only avoids implying a calibrated rubric we don't have. (An interim rename to `surface_targetability` was tried and reverted — the whole record is more readable when the headline word matches the deeper-section names: `accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`.) |
 | Surface evidence | Added `evidence_grade: Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]` + `grade_rationale` so the most important judgment in the section is explicit. |
 | Method observations | Expanded from `Literal["flow","MS","IF"]` to a full `method_family` × `method_subclass` matrix (`live_cell_flow`, `surface_biotinylation`, `nonpermeabilized_IF`, etc.) plus `permeabilization`, `expression_system: endogenous\|overexpression\|...`, `antibody_epitope_region`, `accessibility_relevance`, `surface_claim_type`. Captures the difference between *live-cell flow with ECD antibody* (direct accessibility) and *whole-cell MS* (expression only). |
 | Expression observations | Added closed `measurement_type: RNA\|bulk_protein\|IHC_protein\|surface_flow\|surface_proteomics\|single_cell_RNA\|unknown` + explicit `surface_specific: bool`. Prevents accidental conflation of expression with surface accessibility. |
@@ -463,7 +458,7 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 | Accessibility risks | Renamed `druggability_class` → `ecd_accessibility_class`. Added `severity` + `evidence_strength` to every risk. Added `restricted_subdomain` as a first-class risk. **Internalization/recycling is intentionally out of scope** for v1.0.0 — it is pro for some modalities (ADC delivery) and con for others (binder dwell time), so labeling it as a "risk" pre-judges; deferred until a separate dynamics block can frame it neutrally. |
 | References instead of mirrors | Replaced the `*_from_deterministic` mirrored-value pattern with references — `ParalogRisk.deterministic_paralog_ref` and `ecd_size_assessment.canonical_topology_ref` FK into `deterministic_features`. Viewer/orchestrator do the lookup; no drift validation needed. |
 | Knowledge gaps | Added `impact_on_confidence: high\|moderate\|low` and `suggested_resolution: str\|None` (the experiment that would resolve the gap). |
-| Filters block | Added `evidence_grade` and `has_restricted_subdomain`. Replaced `cross_species_useful_for: list[enum]` with single-enum `cross_species_accessibility_relevance`. Top field renamed `filters.surface_accessibility` → `filters.surface_targetability`. (No `has_rapid_internalization` — internalization is out of scope, see Accessibility risks row.) |
+| Filters block | Added `evidence_grade` and `has_restricted_subdomain`. Replaced `cross_species_useful_for: list[enum]` with single-enum `cross_species_accessibility_relevance`. Top field stays `filters.surface_accessibility` (an interim rename to `surface_targetability` was tried and reverted for vocabulary consistency with the rest of the record). No `has_rapid_internalization` — internalization is out of scope, see Accessibility risks row. |
 
 Things the reviewer suggested but we pushed back on:
 
@@ -545,11 +540,7 @@ SurfaceomeRecord (v1.0.0)
 │
 ├── executive_summary                             [LLM]
 │   ├── one_paragraph                             # ≤600 char, consultant-readable
-│   ├── surface_targetability                     # enum: high|moderate|low|uncertain
-│   │                                             #   ("targetability" here = biological /
-│   │                                             #    physical reachability, NOT commercial.
-│   │                                             #    Top-line summary + filter chip only —
-│   │                                             #    deeper sections keep `accessibility`.)
+│   ├── surface_accessibility                     # enum: high|moderate|low|uncertain
 │   ├── evidence_grade_summary                    # enum: direct_multi_method|direct_single_method|
 │   │                                             #   supportive_but_indirect|conflicting|weak
 │   ├── confidence                                # enum: high|moderate|low (categorical only —
@@ -566,7 +557,7 @@ SurfaceomeRecord (v1.0.0)
 │   │                                             # Flat, closed-enum/bool/list rollups
 │   │                                             # of the deep buckets. The catalog page
 │   │                                             # renders one chip per field.
-│   ├── surface_targetability                     # D ← executive_summary.surface_targetability
+│   ├── surface_accessibility                     # D ← executive_summary.surface_accessibility
 │   ├── confidence                                # D ← executive_summary.confidence
 │   ├── subcategory                               # D ← executive_summary.subcategory
 │   ├── evidence_grade                            # D ← surface_evidence.evidence_grade
