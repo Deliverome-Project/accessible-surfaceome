@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 540,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        55
+      ],
+      [
+        133,
+        138
+      ],
+      [
+        190,
+        198
+      ],
+      [
+        252,
+        316
+      ],
+      [
+        376,
+        382
+      ],
+      [
+        434,
+        447
+      ],
+      [
+        498,
+        540
+      ]
+    ],
+    "M": [
+      [
+        56,
+        78
+      ],
+      [
+        111,
+        132
+      ],
+      [
+        139,
+        159
+      ],
+      [
+        164,
+        189
+      ],
+      [
+        199,
+        221
+      ],
+      [
+        231,
+        251
+      ],
+      [
+        317,
+        337
+      ],
+      [
+        355,
+        375
+      ],
+      [
+        383,
+        404
+      ],
+      [
+        410,
+        433
+      ],
+      [
+        448,
+        473
+      ],
+      [
+        479,
+        497
+      ]
+    ],
+    "O": [
+      [
+        79,
+        110
+      ],
+      [
+        160,
+        163
+      ],
+      [
+        222,
+        230
+      ],
+      [
+        338,
+        354
+      ],
+      [
+        405,
+        409
+      ],
+      [
+        474,
+        478
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q9NRM0"
+}

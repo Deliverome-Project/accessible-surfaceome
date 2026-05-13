@@ -9,12 +9,14 @@ import { DeepDiveCard } from "../../components/surfaceome/DeepDiveCard/DeepDiveC
 import { ExpressionCard } from "../../components/surfaceome/ExpressionCard/ExpressionCard";
 import { LandscapeCard } from "../../components/surfaceome/LandscapeCard/LandscapeCard";
 import { RiskFlagsCard } from "../../components/surfaceome/RiskFlagsCard/RiskFlagsCard";
+import { StructureViewerCard } from "../../components/surfaceome/StructureViewerCard/StructureViewerCard";
 import {
   listSurfaceomeGenes,
   loadGeneName,
   loadSurfaceomeRecord,
   prettyEnum,
 } from "../../lib/surfaceome";
+import { loadStructureViewerData } from "../../lib/structure-viewer";
 import styles from "./page.module.css";
 
 interface PageProps {
@@ -45,15 +47,29 @@ export default async function GenePage({ params }: PageProps) {
   const rec = loadSurfaceomeRecord(symbol);
   if (!rec) notFound();
   const geneName = loadGeneName(rec.gene.hgnc_symbol);
+  const structureData = loadStructureViewerData(rec.gene.uniprot_acc);
 
   // Walk visible sections so the section numbers stay sequential even
   // when a record omits a bucket (v0.4.0 records have no `expression`;
-  // some genes have no deep-dive entries).
+  // some genes have no deep-dive entries; soluble proteins skip the
+  // structure card because DeepTMHMM has no topology for them).
   const sections: { kind: string; render: (n: number) => React.ReactNode }[] = [];
   sections.push({
     kind: "surface",
     render: (n) => <SurfaceBiologyCard rec={rec} n={n} />,
   });
+  if (structureData) {
+    sections.push({
+      kind: "structure",
+      render: (n) => (
+        <StructureViewerCard
+          data={structureData}
+          geneSymbol={rec.gene.hgnc_symbol}
+          n={n}
+        />
+      ),
+    });
+  }
   if (
     (rec.isoform_accessibility?.length ?? 0) +
       (rec.coreceptor_requirements?.length ?? 0) +

@@ -5,3 +5,7 @@ out
 *.log
 *.tsbuildinfo
 next-env.d.ts
+
+# Next.js 16 auto-generates these on every build; not source.
+AGENTS.md
+CLAUDE.md

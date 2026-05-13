@@ -1,0 +1,160 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 1492,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 17,
+  "topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        51,
+        67
+      ],
+      [
+        123,
+        132
+      ],
+      [
+        189,
+        285
+      ],
+      [
+        344,
+        393
+      ],
+      [
+        446,
+        504
+      ],
+      [
+        563,
+        882
+      ],
+      [
+        992,
+        1041
+      ],
+      [
+        1078,
+        1152
+      ],
+      [
+        1206,
+        1492
+      ]
+    ],
+    "M": [
+      [
+        29,
+        50
+      ],
+      [
+        68,
+        89
+      ],
+      [
+        102,
+        122
+      ],
+      [
+        133,
+        153
+      ],
+      [
+        172,
+        188
+      ],
+      [
+        286,
+        306
+      ],
+      [
+        323,
+        343
+      ],
+      [
+        394,
+        417
+      ],
+      [
+        422,
+        445
+      ],
+      [
+        505,
+        528
+      ],
+      [
+        537,
+        562
+      ],
+      [
+        883,
+        904
+      ],
+      [
+        978,
+        991
+      ],
+      [
+        1042,
+        1062
+      ],
+      [
+        1064,
+        1077
+      ],
+      [
+        1153,
+        1173
+      ],
+      [
+        1181,
+        1205
+      ]
+    ],
+    "O": [
+      [
+        1,
+        28
+      ],
+      [
+        90,
+        101
+      ],
+      [
+        154,
+        171
+      ],
+      [
+        307,
+        322
+      ],
+      [
+        418,
+        421
+      ],
+      [
+        529,
+        536
+      ],
+      [
+        905,
+        977
+      ],
+      [
+        1063,
+        1063
+      ],
+      [
+        1174,
+        1180
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q5T3U5"
+}

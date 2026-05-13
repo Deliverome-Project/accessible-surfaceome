@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 547,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        17
+      ],
+      [
+        168,
+        173
+      ],
+      [
+        223,
+        234
+      ],
+      [
+        276,
+        349
+      ],
+      [
+        401,
+        406
+      ],
+      [
+        455,
+        470
+      ],
+      [
+        516,
+        547
+      ]
+    ],
+    "M": [
+      [
+        18,
+        33
+      ],
+      [
+        147,
+        167
+      ],
+      [
+        174,
+        192
+      ],
+      [
+        202,
+        222
+      ],
+      [
+        235,
+        255
+      ],
+      [
+        260,
+        275
+      ],
+      [
+        350,
+        367
+      ],
+      [
+        380,
+        400
+      ],
+      [
+        407,
+        426
+      ],
+      [
+        436,
+        454
+      ],
+      [
+        471,
+        491
+      ],
+      [
+        495,
+        515
+      ]
+    ],
+    "O": [
+      [
+        34,
+        146
+      ],
+      [
+        193,
+        201
+      ],
+      [
+        256,
+        259
+      ],
+      [
+        368,
+        379
+      ],
+      [
+        427,
+        435
+      ],
+      [
+        492,
+        494
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q6T423"
+}

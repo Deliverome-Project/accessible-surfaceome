@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 549,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        74
+      ],
+      [
+        130,
+        143
+      ],
+      [
+        198,
+        214
+      ],
+      [
+        279,
+        309
+      ],
+      [
+        364,
+        379
+      ],
+      [
+        434,
+        448
+      ],
+      [
+        530,
+        549
+      ]
+    ],
+    "M": [
+      [
+        75,
+        95
+      ],
+      [
+        109,
+        129
+      ],
+      [
+        144,
+        159
+      ],
+      [
+        177,
+        197
+      ],
+      [
+        215,
+        235
+      ],
+      [
+        258,
+        278
+      ],
+      [
+        310,
+        330
+      ],
+      [
+        345,
+        363
+      ],
+      [
+        380,
+        396
+      ],
+      [
+        408,
+        433
+      ],
+      [
+        449,
+        471
+      ],
+      [
+        511,
+        529
+      ]
+    ],
+    "O": [
+      [
+        96,
+        108
+      ],
+      [
+        160,
+        176
+      ],
+      [
+        236,
+        257
+      ],
+      [
+        331,
+        344
+      ],
+      [
+        397,
+        407
+      ],
+      [
+        472,
+        510
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "O00400"
+}

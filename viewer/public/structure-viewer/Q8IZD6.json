@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 547,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMIIIIIIIIIIIMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        21
+      ],
+      [
+        130,
+        140
+      ],
+      [
+        188,
+        200
+      ],
+      [
+        244,
+        308
+      ],
+      [
+        359,
+        367
+      ],
+      [
+        423,
+        439
+      ],
+      [
+        482,
+        547
+      ]
+    ],
+    "M": [
+      [
+        22,
+        39
+      ],
+      [
+        113,
+        129
+      ],
+      [
+        141,
+        158
+      ],
+      [
+        164,
+        187
+      ],
+      [
+        201,
+        221
+      ],
+      [
+        228,
+        243
+      ],
+      [
+        309,
+        329
+      ],
+      [
+        338,
+        358
+      ],
+      [
+        368,
+        386
+      ],
+      [
+        402,
+        422
+      ],
+      [
+        440,
+        455
+      ],
+      [
+        461,
+        481
+      ]
+    ],
+    "O": [
+      [
+        40,
+        112
+      ],
+      [
+        159,
+        163
+      ],
+      [
+        222,
+        227
+      ],
+      [
+        330,
+        337
+      ],
+      [
+        387,
+        401
+      ],
+      [
+        456,
+        460
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q8IZD6"
+}

@@ -1,0 +1,104 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 723,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 10,
+  "topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMIMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        162
+      ],
+      [
+        285,
+        362
+      ],
+      [
+        426,
+        443
+      ],
+      [
+        506,
+        506
+      ],
+      [
+        577,
+        600
+      ],
+      [
+        680,
+        723
+      ]
+    ],
+    "M": [
+      [
+        163,
+        185
+      ],
+      [
+        264,
+        284
+      ],
+      [
+        363,
+        383
+      ],
+      [
+        404,
+        425
+      ],
+      [
+        444,
+        462
+      ],
+      [
+        496,
+        505
+      ],
+      [
+        507,
+        516
+      ],
+      [
+        552,
+        576
+      ],
+      [
+        601,
+        622
+      ],
+      [
+        666,
+        679
+      ]
+    ],
+    "O": [
+      [
+        186,
+        263
+      ],
+      [
+        384,
+        403
+      ],
+      [
+        463,
+        495
+      ],
+      [
+        517,
+        551
+      ],
+      [
+        623,
+        665
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q7Z402"
+}

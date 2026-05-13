@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 551,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        20
+      ],
+      [
+        160,
+        165
+      ],
+      [
+        214,
+        224
+      ],
+      [
+        268,
+        332
+      ],
+      [
+        385,
+        390
+      ],
+      [
+        437,
+        453
+      ],
+      [
+        496,
+        551
+      ]
+    ],
+    "M": [
+      [
+        21,
+        41
+      ],
+      [
+        142,
+        159
+      ],
+      [
+        166,
+        186
+      ],
+      [
+        190,
+        213
+      ],
+      [
+        225,
+        246
+      ],
+      [
+        252,
+        267
+      ],
+      [
+        333,
+        353
+      ],
+      [
+        364,
+        384
+      ],
+      [
+        391,
+        411
+      ],
+      [
+        416,
+        436
+      ],
+      [
+        454,
+        474
+      ],
+      [
+        480,
+        495
+      ]
+    ],
+    "O": [
+      [
+        42,
+        141
+      ],
+      [
+        187,
+        189
+      ],
+      [
+        247,
+        251
+      ],
+      [
+        354,
+        363
+      ],
+      [
+        412,
+        415
+      ],
+      [
+        475,
+        479
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q9Y226"
+}

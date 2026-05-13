@@ -1,0 +1,80 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 443,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 7,
+  "topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        60,
+        71
+      ],
+      [
+        131,
+        153
+      ],
+      [
+        214,
+        372
+      ],
+      [
+        431,
+        443
+      ]
+    ],
+    "M": [
+      [
+        36,
+        59
+      ],
+      [
+        72,
+        93
+      ],
+      [
+        109,
+        130
+      ],
+      [
+        154,
+        175
+      ],
+      [
+        189,
+        213
+      ],
+      [
+        373,
+        398
+      ],
+      [
+        410,
+        430
+      ]
+    ],
+    "O": [
+      [
+        1,
+        35
+      ],
+      [
+        94,
+        108
+      ],
+      [
+        176,
+        188
+      ],
+      [
+        399,
+        409
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "P14416"
+}

@@ -1,0 +1,104 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 719,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 10,
+  "topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMOMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        39
+      ],
+      [
+        264,
+        265
+      ],
+      [
+        347,
+        370
+      ],
+      [
+        480,
+        508
+      ],
+      [
+        530,
+        610
+      ],
+      [
+        674,
+        719
+      ]
+    ],
+    "M": [
+      [
+        40,
+        60
+      ],
+      [
+        243,
+        263
+      ],
+      [
+        266,
+        287
+      ],
+      [
+        326,
+        346
+      ],
+      [
+        371,
+        393
+      ],
+      [
+        459,
+        479
+      ],
+      [
+        509,
+        518
+      ],
+      [
+        520,
+        529
+      ],
+      [
+        611,
+        631
+      ],
+      [
+        651,
+        673
+      ]
+    ],
+    "O": [
+      [
+        61,
+        242
+      ],
+      [
+        288,
+        325
+      ],
+      [
+        394,
+        458
+      ],
+      [
+        519,
+        519
+      ],
+      [
+        632,
+        650
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q8NCS7"
+}

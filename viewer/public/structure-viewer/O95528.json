@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 541,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMMOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        12
+      ],
+      [
+        70,
+        75
+      ],
+      [
+        119,
+        133
+      ],
+      [
+        185,
+        232
+      ],
+      [
+        292,
+        297
+      ],
+      [
+        429,
+        447
+      ],
+      [
+        497,
+        541
+      ]
+    ],
+    "M": [
+      [
+        13,
+        33
+      ],
+      [
+        49,
+        69
+      ],
+      [
+        76,
+        96
+      ],
+      [
+        98,
+        118
+      ],
+      [
+        134,
+        157
+      ],
+      [
+        166,
+        184
+      ],
+      [
+        233,
+        245
+      ],
+      [
+        269,
+        291
+      ],
+      [
+        298,
+        320
+      ],
+      [
+        408,
+        428
+      ],
+      [
+        448,
+        470
+      ],
+      [
+        476,
+        496
+      ]
+    ],
+    "O": [
+      [
+        34,
+        48
+      ],
+      [
+        97,
+        97
+      ],
+      [
+        158,
+        165
+      ],
+      [
+        246,
+        268
+      ],
+      [
+        321,
+        407
+      ],
+      [
+        471,
+        475
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "O95528"
+}

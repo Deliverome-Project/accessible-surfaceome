@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 556,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        20
+      ],
+      [
+        177,
+        182
+      ],
+      [
+        231,
+        240
+      ],
+      [
+        285,
+        351
+      ],
+      [
+        402,
+        407
+      ],
+      [
+        455,
+        468
+      ],
+      [
+        517,
+        556
+      ]
+    ],
+    "M": [
+      [
+        21,
+        41
+      ],
+      [
+        156,
+        176
+      ],
+      [
+        183,
+        203
+      ],
+      [
+        207,
+        230
+      ],
+      [
+        241,
+        263
+      ],
+      [
+        269,
+        284
+      ],
+      [
+        352,
+        370
+      ],
+      [
+        381,
+        401
+      ],
+      [
+        408,
+        427
+      ],
+      [
+        434,
+        454
+      ],
+      [
+        469,
+        489
+      ],
+      [
+        498,
+        516
+      ]
+    ],
+    "O": [
+      [
+        42,
+        155
+      ],
+      [
+        204,
+        206
+      ],
+      [
+        264,
+        268
+      ],
+      [
+        371,
+        380
+      ],
+      [
+        428,
+        433
+      ],
+      [
+        490,
+        497
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "O75751"
+}

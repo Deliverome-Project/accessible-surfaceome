@@ -1,0 +1,120 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 553,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 12,
+  "topology": "IIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        21
+      ],
+      [
+        168,
+        173
+      ],
+      [
+        219,
+        231
+      ],
+      [
+        276,
+        350
+      ],
+      [
+        401,
+        406
+      ],
+      [
+        456,
+        469
+      ],
+      [
+        516,
+        553
+      ]
+    ],
+    "M": [
+      [
+        22,
+        34
+      ],
+      [
+        147,
+        167
+      ],
+      [
+        174,
+        193
+      ],
+      [
+        198,
+        218
+      ],
+      [
+        232,
+        252
+      ],
+      [
+        260,
+        275
+      ],
+      [
+        351,
+        369
+      ],
+      [
+        380,
+        400
+      ],
+      [
+        407,
+        426
+      ],
+      [
+        435,
+        455
+      ],
+      [
+        470,
+        490
+      ],
+      [
+        495,
+        515
+      ]
+    ],
+    "O": [
+      [
+        35,
+        146
+      ],
+      [
+        194,
+        197
+      ],
+      [
+        253,
+        259
+      ],
+      [
+        370,
+        379
+      ],
+      [
+        427,
+        434
+      ],
+      [
+        491,
+        494
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q96S37"
+}

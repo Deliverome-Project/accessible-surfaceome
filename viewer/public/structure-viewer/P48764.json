@@ -1,0 +1,117 @@
+{
+  "deeptmhmm_type": "SP+TM",
+  "sequence_length": 834,
+  "signal_peptide_length": 25,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 11,
+  "topology": "SSSSSSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIMMMMMMMMMMMMMMMMMMMMMOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        81,
+        81
+      ],
+      [
+        129,
+        143
+      ],
+      [
+        202,
+        210
+      ],
+      [
+        272,
+        294
+      ],
+      [
+        389,
+        405
+      ],
+      [
+        457,
+        834
+      ]
+    ],
+    "M": [
+      [
+        57,
+        80
+      ],
+      [
+        82,
+        102
+      ],
+      [
+        108,
+        128
+      ],
+      [
+        144,
+        165
+      ],
+      [
+        181,
+        201
+      ],
+      [
+        211,
+        230
+      ],
+      [
+        251,
+        271
+      ],
+      [
+        295,
+        314
+      ],
+      [
+        368,
+        388
+      ],
+      [
+        406,
+        426
+      ],
+      [
+        437,
+        456
+      ]
+    ],
+    "O": [
+      [
+        26,
+        56
+      ],
+      [
+        103,
+        107
+      ],
+      [
+        166,
+        180
+      ],
+      [
+        231,
+        250
+      ],
+      [
+        315,
+        367
+      ],
+      [
+        427,
+        436
+      ]
+    ],
+    "S": [
+      [
+        1,
+        25
+      ]
+    ]
+  },
+  "uniprot_acc": "P48764"
+}

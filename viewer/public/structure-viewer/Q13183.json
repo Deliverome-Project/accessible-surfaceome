@@ -1,0 +1,144 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 592,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 15,
+  "topology": "IIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMOOOOOOOMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMOOMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMIIMMMMMMMMMMMOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        13
+      ],
+      [
+        50,
+        55
+      ],
+      [
+        99,
+        122
+      ],
+      [
+        152,
+        226
+      ],
+      [
+        288,
+        329
+      ],
+      [
+        386,
+        420
+      ],
+      [
+        472,
+        473
+      ],
+      [
+        519,
+        538
+      ]
+    ],
+    "M": [
+      [
+        14,
+        31
+      ],
+      [
+        39,
+        49
+      ],
+      [
+        56,
+        70
+      ],
+      [
+        87,
+        98
+      ],
+      [
+        123,
+        139
+      ],
+      [
+        142,
+        151
+      ],
+      [
+        227,
+        237
+      ],
+      [
+        267,
+        287
+      ],
+      [
+        330,
+        345
+      ],
+      [
+        373,
+        385
+      ],
+      [
+        421,
+        432
+      ],
+      [
+        457,
+        471
+      ],
+      [
+        474,
+        484
+      ],
+      [
+        498,
+        518
+      ],
+      [
+        539,
+        556
+      ]
+    ],
+    "O": [
+      [
+        32,
+        38
+      ],
+      [
+        71,
+        86
+      ],
+      [
+        140,
+        141
+      ],
+      [
+        238,
+        266
+      ],
+      [
+        346,
+        372
+      ],
+      [
+        433,
+        456
+      ],
+      [
+        485,
+        497
+      ],
+      [
+        557,
+        592
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q13183"
+}

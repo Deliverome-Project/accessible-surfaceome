@@ -1,0 +1,104 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 710,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 10,
+  "topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMOMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        1,
+        35
+      ],
+      [
+        251,
+        252
+      ],
+      [
+        330,
+        354
+      ],
+      [
+        466,
+        494
+      ],
+      [
+        516,
+        593
+      ],
+      [
+        662,
+        710
+      ]
+    ],
+    "M": [
+      [
+        36,
+        56
+      ],
+      [
+        230,
+        250
+      ],
+      [
+        253,
+        275
+      ],
+      [
+        309,
+        329
+      ],
+      [
+        355,
+        379
+      ],
+      [
+        442,
+        465
+      ],
+      [
+        495,
+        504
+      ],
+      [
+        506,
+        515
+      ],
+      [
+        594,
+        616
+      ],
+      [
+        639,
+        661
+      ]
+    ],
+    "O": [
+      [
+        57,
+        229
+      ],
+      [
+        276,
+        308
+      ],
+      [
+        380,
+        441
+      ],
+      [
+        505,
+        505
+      ],
+      [
+        617,
+        638
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q53GD3"
+}

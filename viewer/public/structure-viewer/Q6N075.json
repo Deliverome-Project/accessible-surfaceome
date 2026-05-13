@@ -1,0 +1,128 @@
+{
+  "deeptmhmm_type": "TM",
+  "sequence_length": 450,
+  "signal_peptide_length": 0,
+  "source_cohort": "human_canonical_non_hla",
+  "source_tool": "deeptmhmm-1.0.24",
+  "tm_helix_count": 13,
+  "topology": "OOOOOOMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIMMMMMMMMMMMMMMMMMMOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIII",
+  "topology_ranges": {
+    "B": [],
+    "I": [
+      [
+        20,
+        43
+      ],
+      [
+        100,
+        105
+      ],
+      [
+        149,
+        170
+      ],
+      [
+        220,
+        249
+      ],
+      [
+        303,
+        311
+      ],
+      [
+        360,
+        376
+      ],
+      [
+        429,
+        450
+      ]
+    ],
+    "M": [
+      [
+        7,
+        19
+      ],
+      [
+        44,
+        64
+      ],
+      [
+        77,
+        99
+      ],
+      [
+        106,
+        123
+      ],
+      [
+        128,
+        148
+      ],
+      [
+        171,
+        192
+      ],
+      [
+        201,
+        219
+      ],
+      [
+        250,
+        270
+      ],
+      [
+        282,
+        302
+      ],
+      [
+        312,
+        332
+      ],
+      [
+        344,
+        359
+      ],
+      [
+        377,
+        396
+      ],
+      [
+        408,
+        428
+      ]
+    ],
+    "O": [
+      [
+        1,
+        6
+      ],
+      [
+        65,
+        76
+      ],
+      [
+        124,
+        127
+      ],
+      [
+        193,
+        200
+      ],
+      [
+        271,
+        281
+      ],
+      [
+        333,
+        343
+      ],
+      [
+        397,
+        407
+      ]
+    ],
+    "S": []
+  },
+  "uniprot_acc": "Q6N075"
+}
