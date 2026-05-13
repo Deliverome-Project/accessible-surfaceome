@@ -552,7 +552,9 @@
               <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
                 Topology booleans read TRUE because DeepTMHMM has no TM helix to anchor against
                 — the full mature protein is "outside." In biology, "outside" here means
-                ER-lumenal in normal cells; surface in tumor cells. Compare canonical_isoform_caveat.
+                ER-lumenal in normal cells; surface in tumor cells. The LLM calls this
+                disconnect out in <code>executive_summary.one_paragraph</code> and in the §3
+                section banner.
               </p>
             </div>
           </div>
@@ -1055,30 +1057,27 @@
             <span class="topo-legend__item"><span class="topo-legend__swatch" style="background: var(--tm-S)"></span> Signal peptide (S)</span>
           </div>
 
-          <div
+          <p
             style="
-              padding: var(--space-3) var(--space-4);
-              background: var(--amber-soft);
-              border-radius: 8px;
-              font-size: 0.92rem;
+              font-size: 0.82rem;
+              color: var(--muted);
               margin: var(--space-3) 0 0;
+              font-style: italic;
+              max-width: 70ch;
             "
           >
-            <strong>Canonical caveat:</strong> DeepTMHMM reads the post-signal-peptide region as
-            "extracellular" (O), but biologically this is <strong>ER-lumenal</strong> in normal cells
-            (held by C-terminal KDEL retention signal). The "surface" state is a non-canonical
-            translocation seen in tumor / stressed cells — covered in §1 evidence and §2
-            accessibility-modulation. Topology booleans alone don't distinguish ER lumen from
-            cell-surface "outside".
-          </div>
-          <div class="annot annot--llm">
-            <span class="annot__path">deterministic_features.canonical_topology.canonical_isoform_caveat</span>
-            ·
-            <span class="annot__type">str | None (≤300, LLM-emitted)</span>
-            · this is exactly the case the field was designed for — DeepTMHMM doesn't distinguish
-            "extracellular" from "ER lumenal" and the LLM has to flag the biological reading
-            <span class="annot__prov">L</span>
-          </div>
+            Section-level biology note (not a schema field): DeepTMHMM reads
+            the post-signal-peptide region as "extracellular" (O), but
+            biologically that's <strong>ER-lumenal</strong> in normal cells
+            (held by C-terminal KDEL). The "surface" state is non-canonical
+            translocation in tumor / stressed cells — covered in §1
+            evidence and §2 accessibility-modulation. Topology booleans
+            don't distinguish ER lumen from cell-surface "outside." The LLM
+            calls this out in <code>executive_summary.one_paragraph</code>
+            rather than via a per-record schema field (the previously-tried
+            <code>canonical_isoform_caveat</code> was dropped because it
+            embedded an LLM write inside <code>deterministic_features</code>).
+          </p>
         </div>
       </article>
 

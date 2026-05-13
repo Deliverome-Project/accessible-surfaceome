@@ -175,10 +175,6 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │   isoform-3   P00533-3      0         —         88        0  ◀ sol  │
 │   isoform-4   P00533-4      1       extra      490       542        │
 │                                                                     │
-│  Canonical caveat: P00533-1 is the UniProt canonical AND the        │
-│  dominant transcript in epithelial tissues — no tissue-specific     │
-│  mismatch flagged.                                                  │
-│                                                                     │
 │  (Per-isoform LLM interpretation is intentionally deferred —        │
 │   isoforms render as deterministic topology only in v1.0.0.         │
 │   The executive summary carries any biological synthesis the LLM    │
@@ -390,7 +386,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 |---|---|---|---|
 | Table row `canonical P00533-1 1 extra 621 542` | `deterministic_features.isoform_topologies[i]` | `IsoformTopology = { isoform_id: str, uniprot_acc: str, tm_helix_count: int, n_terminal_orientation: Literal["extracellular","cytoplasmic"], signal_peptide_length: int, ecd_length_residues: int, icd_length_residues: int, per_residue_topology: str, tool_version: str, retrieved_at: datetime }` | D |
 | `canonical_topology` (top-most row) | `deterministic_features.canonical_topology` | same `IsoformTopology` shape, single | D |
-| `Canonical caveat: P00533-1 is …` | `deterministic_features.canonical_topology.canonical_isoform_caveat` | `str \| None` (≤300) — LLM-emitted note when UniProt canonical isn't the tissue-dominant isoform | L |
+~~`canonical_isoform_caveat`~~ — **DROPPED**. Was a single LLM-emitted field embedded in `deterministic_features` that violated the strict orchestrator-only boundary of that region. The biological insight (e.g., DeepTMHMM reads `extracellular` for both ER-lumenal and cell-surface "outside" — meaningful for GRP78) now lives in `executive_summary.one_paragraph` or in the §3 deterministic-banner explanatory text, not as a separate schema field.
 
 **Per-isoform LLM interpretation is deferred** — v1.0.0 ships isoforms as deterministic topology only. Any biological reading of what an isoform implies for accessibility lives in `executive_summary.one_paragraph` if the LLM wants to surface it.
 
@@ -459,7 +455,7 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 | Contradictions | Restructured with `contradiction_type`, `severity_for_surface_accessibility`, `likely_explanation`. EGFR nuclear pool ≠ EGFR surface inaccessibility — the schema lets the LLM say so. |
 | Anatomical accessibility | Promoted to first-class `biological_context.anatomical_accessibility` with closed `orientation` enum (apical/basolateral/junction_restricted/ciliary/luminal_facing/...) and `accessibility_implication`. |
 | Disease / state relocalization | New `biological_context.accessibility_modulation` block — captures "basolateral in normal, depolarized in carcinoma" or "intracellular in resting, surface in activated". |
-| Isoforms | Added `expression_support: protein_level\|transcript_level\|predicted_only\|conflicting\|unknown` and `biological_relevance` to `IsoformAccessibility`, plus `canonical_isoform_caveat` on `deterministic_features.canonical_topology`. Stops predicted-only isoforms from being overinterpreted as soluble decoys. |
+| Isoforms | Added `expression_support: protein_level\|transcript_level\|predicted_only\|conflicting\|unknown` and `biological_relevance` to `IsoformAccessibility`. Stops predicted-only isoforms from being overinterpreted as soluble decoys. (A `canonical_isoform_caveat` field was added in this round but later dropped — it embedded an LLM-emitted field inside `deterministic_features`, breaking the strict orchestrator-only boundary; the biological note lives in `executive_summary.one_paragraph` instead.) |
 | Orthologs | Replaced translational `cross_species_useful_for: list["mouse_efficacy", "cyno_tox", ...]` with `cross_species_accessibility_relevance: Literal["strongly_conserved","partially_conserved",...]` + per-species `species_caveats`. |
 | Accessibility risks | Renamed `druggability_class` → `ecd_accessibility_class`. Added `severity` + `evidence_strength` to every risk. Added `restricted_subdomain` as a first-class risk. **Internalization/recycling is intentionally out of scope** for v1.0.0 — it is pro for some modalities (ADC delivery) and con for others (binder dwell time), so labeling it as a "risk" pre-judges; deferred until a separate dynamics block can frame it neutrally. |
 | References instead of mirrors | Replaced the `*_from_deterministic` mirrored-value pattern with references — `ParalogRisk.paralog_uniprot_acc` FK into `deterministic_features.paralogs[i].paralog_uniprot_acc` (unique per paralog, unlike `family_id` which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton field; viewer reads `ecd_length_residues` directly. Viewer/orchestrator do the lookup; no drift validation needed. |
@@ -766,7 +762,12 @@ SurfaceomeRecord (v1.0.0)
 │       # at cross-validation time (activation_induced / stress_induced → cell_state_induced).
 │
 ├── deterministic_features                        [ORCHESTRATOR ONLY — sections 3, 4, appendix]
-│   ├── canonical_topology                        # DeepTMHMM on canonical isoform
+│   ├── canonical_topology                        # DeepTMHMM on canonical isoform —
+│   │   │                                         # 100% orchestrator-emitted (no LLM
+│   │   │                                         # writes here); validator on
+│   │   │                                         # SurfaceomeRecordDraft rejects any
+│   │   │                                         # field within this region from
+│   │   │                                         # showing up in the agent's draft.
 │   │   ├── tm_helix_count
 │   │   ├── n_terminal_orientation                # extracellular|cytoplasmic
 │   │   ├── c_terminal_orientation                # extracellular|cytoplasmic
@@ -774,8 +775,6 @@ SurfaceomeRecord (v1.0.0)
 │   │   ├── ecd_length_residues
 │   │   ├── icd_length_residues
 │   │   ├── per_residue_topology                  # compressed 5-letter string
-│   │   ├── canonical_isoform_caveat              # str | None — LLM-emitted note when
-│   │   │                                         #   UniProt canonical ≠ tissue-dominant
 │   │   ├── tool_version                          # "deeptmhmm-1.0.24"
 │   │   └── retrieved_at
 │   ├── isoform_topologies: list[IsoformTopology] # DeepTMHMM per isoform
@@ -799,7 +798,12 @@ SurfaceomeRecord (v1.0.0)
 │   │   └── { paralog_symbol, ecd_pct_identity, family_id }
 │   └── structure                                 # AlphaFold DB
 │       ├── afdb_id
-│       ├── afdb_version
+│       ├── afdb_version: Literal["v4"]           # pinned for v1.0.0 reproducibility.
+│       │                                         #   When AFDB ships v5, bump schema
+│       │                                         #   to v1.1.0 with Literal["v4","v5"]
+│       │                                         #   and document migration. All v1.0.0
+│       │                                         #   records read against the same
+│       │                                         #   structure version.
 │       ├── ecd_mean_plddt: float = Field(ge=0.0, le=100.0)
 │       ├── ecd_disordered_fraction: float = Field(ge=0.0, le=1.0)
 │       ├── ecd_solvent_accessible_fraction: float = Field(ge=0.0, le=1.0)
@@ -900,7 +904,7 @@ SurfaceomeRecord (v1.0.0)
 **Key invariants:**
 
 - `deterministic_features.*` fields are written only by the orchestrator. The agent reads them in its task prompt but never emits them in its draft. Pydantic validator on `SurfaceomeRecordDraft` rejects any attempt by the agent to populate this region.
-- LLM blocks that need a deterministic number **reference** it rather than mirror it. `paralog_assessment[i].paralog_uniprot_acc` is an FK into `deterministic_features.paralogs[i]` (using the unique UniProt accession, not the family_id which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton and the viewer/orchestrator reads `ecd_length_residues` from it directly.
+- LLM blocks that need a deterministic number **reference** it rather than mirror it. `paralog_assessment[i].paralog_uniprot_acc` is an FK into `deterministic_features.paralogs[i]` (using the unique UniProt accession, not the family_id which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton and the viewer/orchestrator reads `ecd_length_residues` from it directly. **FK validation is schema-level** via a `@model_validator(mode="after")` on `SurfaceomeRecord` — each `paralog_assessment[i].paralog_uniprot_acc` must resolve to an entry in `deterministic_features.paralogs` or the record fails Pydantic validation at parse time (consistent with the other model_validators on this class). Records read from disk get validated too, not just freshly-emitted ones.
 - **Evidence model unchanged.** Keep `EvidenceClaim` → `Evidence` → `SourceRef` with substring-validated quote spans. Every `cited_evidence_ids` list references `evidence[i].evidence_id`. This is the most rigorous part of the existing pipeline; the redesign preserves it.
 - **Cross-agent coherence with `surface_triage`**. Top-level `triage_signal` is populated by the orchestrator from the most recent triage record. A validator (`_check_triage_signal_consistency`) flags inconsistency between `triage_signal` and `executive_summary.surface_accessibility`: e.g., triage=`unlikely` + accessibility=`high` flips `contradiction_flag=True` and demands the LLM justify the disagreement in `confidence_reasoning`. `accessibility_modulation.category` mirrors triage's contextual `reason` taxonomy verbatim for its first 5 values (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`); the deep-dive's expansions (`activation_induced`, `stress_induced`, …) roll up to those at cross-validation time.
 - **Knowledge-gaps / confidence consistency**. Pydantic validator: if any `knowledge_gaps[i].impact_on_confidence == "high"`, then top-level `confidence` must be ≤ `"moderate"`. Prevents the LLM from claiming high confidence while simultaneously flagging high-impact gaps.
