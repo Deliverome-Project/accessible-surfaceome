@@ -205,6 +205,41 @@ a Pages binding.
   `node_modules/.bin/wrangler`. The cloudflare/ scripts call
   `npx --yes wrangler ...` so the pinned version always wins over
   any globally installed wrangler. CI does the same `npm ci`.
+- **Node version pin: `.nvmrc` is the source of truth**
+  (currently `24.14.1`). It's mirrored at `viewer/.nvmrc` because
+  `cd viewer && nvm use` won't walk up the tree. Workflows read it via
+  `node-version-file:` so CI never drifts from local dev. The
+  `engines.node` field in `package.json` (root) and `viewer/package.json`
+  uses `^24` as a *floor* assertion (`engine-strict=true` in `viewer/.npmrc`
+  promotes the engines mismatch from warn to error). The
+  `viewer/@types/node` dep tracks the same major.
+- **`NODE_VERSION` on Cloudflare Pages lives outside the repo.** Set it
+  to the same value as `.nvmrc` (Settings → Environment Variables →
+  Production + Preview). **When bumping Node anywhere here, always
+  remind the user to bump `NODE_VERSION` on Cloudflare Pages in the
+  same change.** Skipping it means the Pages build either keeps using
+  the old Node (silent drift) or falls through to Cloudflare's rolling
+  default (which can shift under you).
+- **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
+  - `engine-strict=true` — refuse `npm install` on wrong Node major
+  - `audit-level=high` — `npm audit` (and implicit audit) exits non-zero on high+
+  - `min-release-age=7` — quarantine: refuse to install package versions
+    published in the last 7 days. Defense against fresh supply-chain
+    attacks (see Mini Shai-Hulud, 2026-05-12). As of npm 11.11.0 this
+    config is defined but not yet wired into resolution (no-op today,
+    activates automatically when npm completes the wiring, likely
+    11.12+). For new dep additions today, use `npm run safe-add
+    <package>` (in `viewer/`) — that script enforces the cooldown via
+    the working `--before` CLI flag.
+  - `viewer/package.json` `overrides.postcss` — pins all transitive
+    postcss to the patched line, regardless of what `next` declares.
+- **`next` is pinned to an exact canary version** (`16.3.0-canary.11`)
+  in `viewer/package.json` because every stable 16.x through 16.2.6
+  is in the vulnerable range for ~13 GHSA high-severity advisories
+  (Server Component DoS, RSC cache poisoning, middleware/proxy
+  bypasses, etc.). The fix is in 16.3 canary. **Bump to `^16.3.0`
+  once Next 16.3.0 ships stable** — CI's `npm audit --audit-level=high`
+  step will then continue to pass.
 - **Required CI secrets** (one-time): `CLOUDFLARE_API_TOKEN` (D1:Edit
   + R2:Edit) and `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket itself is
   provisioned locally via `npx --yes wrangler r2 bucket create deliverome-d1-backups`.

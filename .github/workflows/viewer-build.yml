@@ -27,12 +27,21 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version-file: "viewer/.nvmrc"
           cache: "npm"
           cache-dependency-path: viewer/package-lock.json
 
       - name: install
         run: npm ci
+
+      - name: audit
+        # Fails on high or critical advisories. The `next` dep is pinned to
+        # `16.3.0-canary.11` because every stable 16.x release through 16.2.6
+        # is in the vulnerable range for ~13 GHSA advisories — the fix landed
+        # in 16.3.0-canary.6+. Bump `next` back to a `^16.3.x` stable range
+        # in `viewer/package.json` once Next 16.3.0 ships, then this step
+        # picks it up automatically.
+        run: npm audit --audit-level=high
 
       - name: typecheck
         run: npm run check

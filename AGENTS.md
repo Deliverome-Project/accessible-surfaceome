@@ -153,6 +153,27 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   `node_modules/.bin/`; the cloudflare/ scripts and the CI workflow
   both invoke it as `npx --yes wrangler ...` so the pinned version
   always wins.
+- **Node version pin lives in `.nvmrc`** (root + `viewer/.nvmrc`),
+  currently `24.14.1`. Workflows read it via `node-version-file:` so
+  CI never drifts from local dev. `engines.node: ^24` in both
+  `package.json`s acts as a floor and is enforced as an error (not a
+  warning) via `engine-strict=true` in `viewer/.npmrc`. `viewer/@types/node`
+  tracks the same major. **`NODE_VERSION` build env var on Cloudflare
+  Pages lives outside the repo and must be kept in sync with `.nvmrc`
+  (Settings → Environment Variables → Production + Preview). When
+  bumping Node anywhere here, always remind the user to bump it on
+  Cloudflare Pages in the same change.** Skipping it leaves the Pages
+  build on the old Node (silent drift) or on Cloudflare's rolling
+  default (shifts under you).
+- **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
+  `engine-strict=true`, `audit-level=high`, `min-release-age=7`
+  (forward-looking; npm 11.11.0 defines but doesn't yet enforce). For
+  the cooldown to actually filter today, use `npm run safe-add
+  <package>` (in `viewer/`) — that script wraps `npm install` with
+  the working `--before=<7-days-ago>` flag.
+- **`next` pinned to exact `16.3.0-canary.11`** because stable 16.x
+  through 16.2.6 carries ~13 GHSA high-severity advisories with no
+  stable fix yet. Bump to `^16.3.0` once Next 16.3.0 ships stable.
 - **CI secrets** (one-time, in repo Settings → Secrets and variables
   → Actions): `CLOUDFLARE_API_TOKEN` (scoped D1:Edit + R2:Edit) and
   `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket is provisioned locally via
