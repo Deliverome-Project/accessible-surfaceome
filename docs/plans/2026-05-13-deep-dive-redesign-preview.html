@@ -932,7 +932,6 @@
                 <span class="chip">✓ has_shed_form</span>
                 <span class="chip">✓ has_secreted_form</span>
                 <span class="chip chip--muted">✗ coreceptor_for_expression</span>
-                <span class="chip chip--muted">• coreceptor_for_function</span>
                 <span class="chip">✓ paralog_cross_reactivity</span>
                 <span class="chip">✓ epitope_masking</span>
                 <span class="chip chip--muted">✗ restricted_subdomain</span>
@@ -945,20 +944,19 @@
             </div>
 
             <div class="filters-group">
-              <p class="filters-group__title">Cross-species</p>
+              <p class="filters-group__title">Cross-species (Compara)</p>
               <div class="chip-row">
-                <span class="chip chip--amber"
-                  >accessibility_conservation=partially_conserved</span
-                >
+                <span class="chip chip--teal">mouse_ecd_id=88.2%</span>
+                <span class="chip chip--teal">cyno_ecd_id=99.1%</span>
+                <span class="chip chip--teal">rat_ecd_id=88.0%</span>
               </div>
               <div class="annot">
                 <span class="annot__path"
-                  >filters.cross_species_accessibility_relevance</span
+                  >filters.{mouse,cyno,rat}_ortholog_ecd_pct_identity</span
                 >
                 ·
-                <span class="annot__type"
-                  >Literal["strongly_conserved","partially_conserved","poorly_conserved","species_specific","unclear"]</span
-                >
+                <span class="annot__type">float [0.0–100.0] each</span> ·
+                pulled straight from Compara, no LLM rollup
                 <span class="annot__prov">D</span>
               </div>
             </div>
@@ -1007,56 +1005,7 @@
             <span class="annot__prov">L</span>
           </div>
 
-          <h4 class="label-mono">Cell lines observed (12 distinct citations)</h4>
-          <table class="data">
-            <thead>
-              <tr>
-                <th>cell line</th>
-                <th>lineage</th>
-                <th style="text-align: right">distinct citations</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>A431</strong></td>
-                <td>epidermoid carcinoma</td>
-                <td style="text-align: right" class="mono">4</td>
-              </tr>
-              <tr>
-                <td><strong>A549</strong></td>
-                <td>lung adenocarcinoma</td>
-                <td style="text-align: right" class="mono">3</td>
-              </tr>
-              <tr>
-                <td><strong>HeLa</strong></td>
-                <td>cervical carcinoma</td>
-                <td style="text-align: right" class="mono">2</td>
-              </tr>
-              <tr>
-                <td><strong>MCF7</strong></td>
-                <td>breast</td>
-                <td style="text-align: right" class="mono">2</td>
-              </tr>
-              <tr>
-                <td><strong>Primary keratinocytes</strong></td>
-                <td>primary tissue</td>
-                <td style="text-align: right" class="mono">1</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="annot annot--llm">
-            <span class="annot__path"
-              >surface_evidence.cell_lines_observed</span
-            >
-            ·
-            <span class="annot__type"
-              >list[CellLineObservation] = { cell_line, lineage,
-              distinct_citation_count, cited_evidence_ids }</span
-            >
-            <span class="annot__prov">L</span>
-          </div>
-
-          <h4 class="label-mono">Methods + antibodies</h4>
+          <h4 class="label-mono">Methods + antibodies (with per-method sample observations)</h4>
           <ul class="method-list">
             <li class="method-card">
               <div class="method-card__head">
@@ -1072,15 +1021,72 @@
                 anti-EGFR clone 528 + ICR10 (ECD epitope)
                 <span class="inline-cite">[evi_02, evi_05]</span>
               </p>
+              <table class="data" style="margin-top: var(--space-2)">
+                <thead>
+                  <tr>
+                    <th>context</th>
+                    <th>sample_type</th>
+                    <th>level</th>
+                    <th>cite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Primary keratinocytes</td>
+                    <td>
+                      <span class="chip chip--success">primary_human_cell</span>
+                    </td>
+                    <td>
+                      <span class="chip chip--success chip--strong">HIGH</span>
+                    </td>
+                    <td class="mono">[evi_18]</td>
+                  </tr>
+                  <tr>
+                    <td>Hematopoietic PBMCs</td>
+                    <td>
+                      <span class="chip chip--success">primary_human_cell</span>
+                    </td>
+                    <td>
+                      <span class="chip chip--muted chip--strong">ABSENT</span>
+                    </td>
+                    <td class="mono">[evi_22]</td>
+                  </tr>
+                  <tr>
+                    <td>A431</td>
+                    <td>
+                      <span class="chip chip--muted">established_cell_line</span>
+                    </td>
+                    <td>
+                      <span class="chip chip--success chip--strong">HIGH</span>
+                    </td>
+                    <td class="mono">[evi_02]</td>
+                  </tr>
+                </tbody>
+              </table>
               <div class="annot annot--llm">
                 <span class="annot__path">surface_evidence.methods[0]</span> ·
                 <span class="annot__type"
-                  >MethodObservation = { method_family,
-                  method_subclass: "live_cell_flow", permeabilization,
-                  expression_system, antibodies: list[AntibodyRef],
-                  accessibility_relevance, surface_claim_type,
+                  >MethodObservation = { method_family, method_subclass:
+                  "live_cell_flow", permeabilization, expression_system,
+                  antibodies: list[AntibodyRef], accessibility_relevance,
+                  surface_claim_type,
+                  <strong>expression_observations: list[ExpressionObservation]</strong>,
                   cited_evidence_ids }</span
                 >
+                <span class="annot__prov">L</span>
+              </div>
+              <div class="annot annot--llm">
+                <span class="annot__path"
+                  >surface_evidence.methods[0].expression_observations[i]</span
+                >
+                ·
+                <span class="annot__type"
+                  >{ context, sample_type:
+                  Literal["primary_human_tissue","primary_human_cell","patient_sample","patient_derived_organoid","iPSC_derived","established_cell_line","xenograft","ex_vivo","unknown"],
+                  level: Literal["high","moderate","low","absent"],
+                  cited_evidence_ids }</span
+                >
+                · primary human samples are listed first when present
                 <span class="annot__prov">L</span>
               </div>
             </li>
@@ -1098,6 +1104,38 @@
                 label-free LC-MS/MS, A431 surface biotinylation
                 <span class="inline-cite">[evi_07]</span>
               </p>
+              <table class="data" style="margin-top: var(--space-2)">
+                <thead>
+                  <tr>
+                    <th>context</th>
+                    <th>sample_type</th>
+                    <th>level</th>
+                    <th>cite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Normal lung biopsy</td>
+                    <td>
+                      <span class="chip chip--success">primary_human_tissue</span>
+                    </td>
+                    <td>
+                      <span class="chip chip--success chip--strong">HIGH</span>
+                    </td>
+                    <td class="mono">[evi_11]</td>
+                  </tr>
+                  <tr>
+                    <td>A431</td>
+                    <td>
+                      <span class="chip chip--muted">established_cell_line</span>
+                    </td>
+                    <td>
+                      <span class="chip chip--success chip--strong">HIGH</span>
+                    </td>
+                    <td class="mono">[evi_07]</td>
+                  </tr>
+                </tbody>
+              </table>
             </li>
             <li class="method-card">
               <div class="method-card__head">
@@ -1112,66 +1150,53 @@
                 cetuximab + panitumumab (ECD epitopes)
                 <span class="inline-cite">[evi_11, evi_14]</span>
               </p>
+              <table class="data" style="margin-top: var(--space-2)">
+                <thead>
+                  <tr>
+                    <th>context</th>
+                    <th>sample_type</th>
+                    <th>level</th>
+                    <th>cite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Normal skin</td>
+                    <td>
+                      <span class="chip chip--success">primary_human_tissue</span>
+                    </td>
+                    <td>
+                      <span class="chip chip--success chip--strong">HIGH</span>
+                    </td>
+                    <td class="mono">[evi_18]</td>
+                  </tr>
+                  <tr>
+                    <td>Colon adenocarcinoma</td>
+                    <td>
+                      <span class="chip chip--success">patient_sample</span>
+                    </td>
+                    <td>
+                      <span class="chip chip--success chip--strong">HIGH</span>
+                    </td>
+                    <td class="mono">[evi_14]</td>
+                  </tr>
+                </tbody>
+              </table>
             </li>
           </ul>
-
-          <h4 class="label-mono">Expression levels (typed measurement)</h4>
-          <table class="data">
-            <thead>
-              <tr>
-                <th>context</th>
-                <th>level</th>
-                <th>measurement_type</th>
-                <th>surface-specific?</th>
-                <th>cite</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Epithelial tumors</td>
-                <td>
-                  <span class="chip chip--success chip--strong">HIGH</span>
-                </td>
-                <td class="mono">surface_flow</td>
-                <td>
-                  <span class="chip chip--success">YES</span>
-                </td>
-                <td class="mono">[evi_02]</td>
-              </tr>
-              <tr>
-                <td>Normal skin</td>
-                <td>
-                  <span class="chip chip--success chip--strong">HIGH</span>
-                </td>
-                <td class="mono">IHC_protein</td>
-                <td>
-                  <span class="chip chip--muted">NO</span>
-                </td>
-                <td class="mono">[evi_18]</td>
-              </tr>
-              <tr>
-                <td>Hematopoietic</td>
-                <td>
-                  <span class="chip chip--muted chip--strong">ABSENT</span>
-                </td>
-                <td class="mono">surface_flow</td>
-                <td>
-                  <span class="chip chip--success">YES</span>
-                </td>
-                <td class="mono">[evi_22]</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="annot annot--llm">
-            <span class="annot__path">surface_evidence.expression_levels</span>
-            ·
-            <span class="annot__type"
-              >list[ExpressionObservation] = { context, level,
-              measurement_type, surface_specific: bool, cited_evidence_ids
-              }</span
-            >
-            <span class="annot__prov">L</span>
-          </div>
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin: var(--space-2) 0 0;
+              font-style: italic;
+            "
+          >
+            Cell lines and tissues are listed inline with the method that
+            measured them — single source of truth. The earlier standalone
+            <code>cell_lines_observed</code> table was dropped; primary human
+            samples take precedence over established cell lines.
+          </p>
 
           <h4 class="label-mono">Contradicting evidence (typed + severity)</h4>
           <ul class="risk-list">
@@ -1326,12 +1351,25 @@
           <h4 class="label-mono">
             Accessibility modulation (disease / state relocalization)
           </h4>
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin: 0 0 var(--space-2);
+              font-style: italic;
+            "
+          >
+            <code>category</code> enum mirrors + expands the
+            <code>surface_triage</code> agent's contextual taxonomy so the two
+            agents share vocabulary.
+          </p>
           <ul class="risk-list">
             <li class="risk-card risk-card--info">
               <div class="risk-card__head">
                 <span class="risk-card__title"
                   >Normal → invasive carcinoma</span
                 >
+                <span class="chip chip--lavender">category=disease_state_induced</span>
                 <span class="risk-card__cite">[evi_36]</span>
               </div>
               <p class="risk-card__body">
@@ -1345,6 +1383,7 @@
                 <span class="risk-card__title"
                   >Resting → ligand-stimulated</span
                 >
+                <span class="chip chip--lavender">category=activation_induced</span>
                 <span class="risk-card__cite">[evi_27]</span>
               </div>
               <p class="risk-card__body">
@@ -1360,10 +1399,13 @@
             >
             ·
             <span class="annot__type"
-              >list[AccessibilityModulationObservation] = { baseline_context,
-              modulating_state, change, accessibility_implication,
-              cited_evidence_ids }</span
+              >list[AccessibilityModulationObservation] = { <strong>category:
+              Literal["cell_state_induced","tissue_restricted","activation_induced","stress_induced","disease_state_induced","polarization_dependent","post_translational_dependent","developmental_stage","none","unknown"]</strong>,
+              baseline_context, modulating_state, change,
+              accessibility_implication, cited_evidence_ids }</span
             >
+            · category enum mirrors + expands `surface_triage` contextual
+            reason taxonomy
             <span class="annot__prov">L</span>
           </div>
         </div>
@@ -1514,55 +1556,19 @@
             <span class="annot__prov">L</span>
           </div>
 
-          <h4 class="label-mono">
-            LLM interpretation (per isoform · gated by expression evidence)
-          </h4>
-          <ul class="risk-list">
-            <li class="risk-card">
-              <div class="risk-card__head">
-                <span class="risk-card__title">isoform-3 (soluble)</span>
-                <span class="chip chip--amber"
-                  >expression_support=transcript_level</span
-                >
-                <span class="chip chip--amber"
-                  >biological_relevance=moderate</span
-                >
-              </div>
-              <p class="risk-card__body">
-                Predicted soluble; transcript detected but no confirmed protein
-                expression in tumor tissue. Soluble-decoy concern is gated on
-                protein-level confirmation. <span class="inline-cite">[evi_38]</span>
-              </p>
-            </li>
-            <li class="risk-card">
-              <div class="risk-card__head">
-                <span class="risk-card__title">
-                  isoform-4 (truncated subdomain IV)
-                </span>
-                <span class="chip chip--muted"
-                  >expression_support=predicted_only</span
-                >
-                <span class="chip chip--muted"
-                  >biological_relevance=unknown</span
-                >
-              </div>
-              <p class="risk-card__body">
-                TM retained, ECD truncated. No transcript or protein evidence
-                found — domain-IV-targeting epitopes could be lost IF this
-                isoform is actually expressed.
-              </p>
-            </li>
-          </ul>
-          <div class="annot annot--llm">
-            <span class="annot__path">isoform_implications.per_isoform</span> ·
-            <span class="annot__type"
-              >list[IsoformAccessibility] = { isoform_id, accessible,
-              expression_support: Literal["protein_level","transcript_level","predicted_only","conflicting","unknown"],
-              biological_relevance, rationale, dominant_in_tissues,
-              cited_evidence_ids }</span
-            >
-            <span class="annot__prov">L</span>
-          </div>
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin-top: var(--space-3);
+              font-style: italic;
+            "
+          >
+            Per-isoform LLM interpretation is intentionally deferred — isoforms
+            render as deterministic topology only in v1.0.0. The executive
+            summary carries any biological synthesis the LLM wants to make
+            about isoform implications.
+          </p>
         </div>
       </article>
 
@@ -1589,31 +1595,55 @@
             <thead>
               <tr>
                 <th>species</th>
-                <th>ortholog</th>
-                <th>type</th>
+                <th>isoform</th>
+                <th>UniProt</th>
+                <th>TM</th>
+                <th>ECD len</th>
                 <th>ECD % id</th>
                 <th>ECD % sim</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>mouse</td>
-                <td><strong>Egfr</strong> <span class="mono">(Q01279)</span></td>
-                <td class="mono">one2one</td>
+                <td rowspan="2">mouse</td>
+                <td><strong>canonical (Egfr)</strong></td>
+                <td class="mono">Q01279</td>
+                <td class="mono">1</td>
+                <td class="mono">616</td>
                 <td class="mono">88.2%</td>
                 <td class="mono">94.1%</td>
               </tr>
               <tr>
+                <td>alt isoform-2</td>
+                <td class="mono">Q01279-2</td>
+                <td class="mono">1</td>
+                <td class="mono">614</td>
+                <td class="mono">87.8%</td>
+                <td class="mono">93.6%</td>
+              </tr>
+              <tr>
                 <td>rat</td>
-                <td><strong>Egfr</strong> <span class="mono">(Q9QX70)</span></td>
-                <td class="mono">one2one</td>
+                <td><strong>canonical (Egfr)</strong></td>
+                <td class="mono">Q9QX70</td>
+                <td class="mono">1</td>
+                <td class="mono">617</td>
                 <td class="mono">88.0%</td>
                 <td class="mono">94.3%</td>
               </tr>
               <tr>
-                <td>cynomolgus</td>
-                <td><strong>EGFR</strong></td>
-                <td class="mono">one2one</td>
+                <td rowspan="2">cyno</td>
+                <td><strong>canonical (EGFR)</strong></td>
+                <td class="mono">XP_005553</td>
+                <td class="mono">1</td>
+                <td class="mono">621</td>
+                <td class="mono">99.1%</td>
+                <td class="mono">99.6%</td>
+              </tr>
+              <tr>
+                <td>alt isoform-2</td>
+                <td class="mono">XP_005553-2</td>
+                <td class="mono">1</td>
+                <td class="mono">621</td>
                 <td class="mono">99.1%</td>
                 <td class="mono">99.6%</td>
               </tr>
@@ -1621,72 +1651,34 @@
           </table>
           <div class="annot">
             <span class="annot__path"
-              >deterministic_features.orthologs.{mouse,rat,cynomolgus}</span
+              >deterministic_features.orthologs.{mouse,rat,cynomolgus}: list[OrthologEntry]</span
             >
             ·
             <span class="annot__type">
-              OrthologEntry | None = { ensembl_id, ortholog_uniprot_acc,
-              ortholog_symbol, type, ecd_pct_identity, ecd_pct_similarity,
+              OrthologEntry = { <strong>is_canonical: bool</strong>, isoform_id,
+              ensembl_id, ortholog_uniprot_acc, ortholog_symbol, type:
+              Literal["one2one","one2many","many2many"],
+              <strong>ecd_pct_identity_to_human_canonical</strong>,
+              ecd_pct_similarity_to_human_canonical,
+              <strong>ecd_length_residues, tm_helix_count</strong>,
               compara_version, retrieved_at }
             </span>
+            · canonical first, then alternative isoforms — same shape, sorted
             <span class="annot__prov">D</span>
-          </div>
-
-          <div style="display: flex; align-items: center; gap: var(--space-3)">
-            <span class="banner banner--llm">
-              <span class="banner__dot"></span>
-              accessibility conservation: partially_conserved
-            </span>
-          </div>
-          <p>
-            Topology and ECD presence are conserved across all three species;
-            per-residue conservation drops at human-specific subdomain III
-            loops that participate in some antibody epitopes.
-          </p>
-
-          <h4 class="label-mono">Species caveats</h4>
-          <ul class="risk-list">
-            <li class="risk-card risk-card--info">
-              <div class="risk-card__head">
-                <span class="risk-card__title">mouse</span>
-                <span class="risk-card__cite">[evi_42]</span>
-              </div>
-              <p class="risk-card__body">
-                Surface presence likely conserved, but several human-directed
-                ECD binders may not bind mouse ortholog at all because
-                subdomain III loops diverge.
-              </p>
-            </li>
-            <li class="risk-card risk-card--ok">
-              <div class="risk-card__head">
-                <span class="risk-card__title">cynomolgus</span>
-              </div>
-              <p class="risk-card__body">
-                ECD nearly identical (99% id); human ECD binders are expected
-                to bind the cyno ortholog with similar affinity.
-              </p>
-            </li>
-          </ul>
-          <div class="annot annot--llm">
-            <span class="annot__path">ortholog_implications</span> ·
-            <span class="annot__type">
-              { cross_species_accessibility_relevance:
-              Literal["strongly_conserved","partially_conserved","poorly_conserved","species_specific","unclear"],
-              species_caveats: list[SpeciesCaveat], summary }
-            </span>
-            <span class="annot__prov">L</span>
           </div>
           <p
             style="
               font-size: 0.82rem;
               color: var(--muted);
-              margin: 0;
+              margin-top: var(--space-3);
               font-style: italic;
             "
           >
-            (Replaces translational <code>cross_species_useful_for</code>:
-            list["mouse_efficacy", "cyno_tox", …] with accessibility-focused
-            conservation framing.)
+            Per-species LLM interpretation is intentionally deferred —
+            orthologs render as deterministic ECD-conservation numbers +
+            alternative-isoform topology only in v1.0.0. The executive summary
+            carries any biological synthesis the LLM wants to make about
+            cross-species relevance.
           </p>
         </div>
       </article>
@@ -1709,16 +1701,22 @@
           <ul class="risk-list">
             <li class="risk-card risk-card--info">
               <div class="risk-card__head">
-                <span class="risk-card__title">Partner / co-receptor dependency (two independent axes)</span>
+                <span class="risk-card__title">Partner required for surface expression?</span>
+                <span class="chip chip--muted">surface_expression_dependency=NONE</span>
               </div>
               <p class="risk-card__body">
-                <strong>Surface-expression dependency: NONE</strong> — EGFR reaches the plasma membrane unassisted. <span class="inline-cite">[evi_46]</span><br />
-                <strong>Function dependency: MODULATORY</strong> — HER2/3/4 heterodimerization tunes signaling but partners aren't required. <span class="inline-cite">[evi_47]</span><br />
-                <span style="font-style: italic; color: var(--muted)">Partners: HER2, HER3, HER4. (TCR/CD3 would be REQUIRED on both axes.)</span>
+                EGFR reaches the plasma membrane unassisted; no obligate
+                partner required for trafficking. <span class="inline-cite">[evi_46]</span><br />
+                <span style="font-style: italic; color: var(--muted)">
+                  (TCR/CD3 would be REQUIRED — CD3 retains TCR in the ER
+                  without it. Function-side dependency was considered but is
+                  out of scope for v1.0.0; signaling biology lives elsewhere.)
+                </span>
               </p>
               <div class="annot annot--llm">
                 <span class="annot__path">accessibility_risks.co_receptor_requirements</span> ·
-                <span class="annot__type">{ surface_expression_dependency: Literal["required","modulatory","none","unknown"], function_dependency, partners, evidence_basis, rationale, cited_evidence_ids }</span>
+                <span class="annot__type">{ surface_expression_dependency: Literal["required","modulatory","none","unknown"], partners, evidence_basis: Literal["co_expression_only","trafficking","knockout","mixed"], rationale, cited_evidence_ids }</span>
+                · function_dependency dropped — out of scope for v1.0.0
                 <span class="annot__prov">L</span>
               </div>
             </li>
@@ -1973,8 +1971,15 @@
         </p>
         <ul>
           <li>AlphaFold DB structures — CC BY 4.0 (DeepMind / EMBL-EBI)</li>
-          <li>Ensembl Compara orthologs — Apache 2.0 (EMBL-EBI)</li>
-          <li>DeepTMHMM topology — GPL-3.0 (DTU Health Tech)</li>
+          <li>
+            Ensembl Compara orthologs — open data with citation requested
+            (EMBL-EBI; Howe <em>et al.</em> 2024 + Vilella <em>et al.</em>
+            2009)
+          </li>
+          <li>
+            DeepTMHMM topology — DTU Health Tech (Hallgren <em>et al.</em>
+            2022; academic-use service)
+          </li>
           <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
         </ul>
       </section>

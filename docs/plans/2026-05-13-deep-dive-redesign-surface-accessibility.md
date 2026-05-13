@@ -53,12 +53,12 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │                                                                     │
 │  RISKS                                                              │
 │    ✓ has_shed_form                  ✓ has_secreted_form             │
-│    ✗ coreceptor_for_expression      • coreceptor_for_function       │
+│    ✗ coreceptor_for_expression                                       │
 │    ✓ paralog_cross_reactivity       ✓ epitope_masking               │
 │    ✗ has_restricted_subdomain                                       │
 │                                                                     │
-│  CROSS-SPECIES                                                      │
-│    accessibility_conservation=partially_conserved                   │
+│  CROSS-SPECIES (deterministic — Compara ECD % identity)             │
+│    mouse=88.2% · cyno=99.1% · rat=88.0%                             │
 │                                                                     │
 │  TOPOLOGY                                                           │
 │    n_term_extracellular=TRUE                                        │
@@ -78,31 +78,33 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │  non-permeabilized IF all confirm endogenous surface localization   │
 │  in three independent epithelial lineages.                          │
 │                                                                     │
-│  Cell lines observed (12 distinct citations)                        │
-│  ----------------------------------------------------------------   │
-│   • A431  (epidermoid carcinoma)        4 citations  [evi_02,07,…]  │
-│   • A549  (lung adenocarcinoma)         3 citations  [evi_05,11]    │
-│   • HeLa  (cervical carcinoma)          2 citations  [evi_09]       │
-│   • MCF7  (breast)                      2 citations  [evi_14]       │
-│   • Primary keratinocytes               1 citation   [evi_18]       │
-│                                                                     │
-│  Methods + antibodies  (with permeabilization + epitope flags)     │
+│  Methods + antibodies  (each ties to its expression observations)  │
 │  ----------------------------------------------------------------   │
 │   • live_cell_flow / nonpermeabilized                               │
 │     anti-EGFR clone 528 (ECD epitope), endogenous expression        │
-│     accessibility: DIRECT_SURFACE_ACCESSIBILITY        [evi_02,05]  │
+│     accessibility: DIRECT_SURFACE_ACCESSIBILITY                     │
+│     observed in:                                                    │
+│        • A431 (cell_line · epidermoid carcinoma)  HIGH   [evi_02]   │
+│        • Primary keratinocytes (primary_human_cell) HIGH [evi_18]   │
+│        • Hematopoietic PBMCs (primary_human_cell) ABSENT [evi_22]   │
+│                                                                     │
 │   • surface_biotinylation / nonpermeabilized                        │
 │     label-free LC-MS/MS, endogenous expression                      │
-│     accessibility: DIRECT_SURFACE_ACCESSIBILITY        [evi_07]     │
+│     accessibility: DIRECT_SURFACE_ACCESSIBILITY                     │
+│     observed in:                                                    │
+│        • A431 (cell_line)                          HIGH   [evi_07]  │
+│        • Normal lung biopsy (primary_human_tissue) HIGH   [evi_11]  │
+│                                                                     │
 │   • nonpermeabilized_IF                                             │
 │     cetuximab + panitumumab (ECD epitopes), endogenous              │
-│     accessibility: SUPPORTS_SURFACE_LOCALIZATION       [evi_11,14]  │
+│     accessibility: SUPPORTS_SURFACE_LOCALIZATION                    │
+│     observed in:                                                    │
+│        • Normal skin (primary_human_tissue) HIGH         [evi_18]   │
+│        • Colon adenocarcinoma (patient_sample) HIGH      [evi_14]   │
 │                                                                     │
-│  Expression levels  (typed by measurement, surface-specific flag)  │
-│  ----------------------------------------------------------------   │
-│   • Epithelial tumors    HIGH    surface_flow    surface=YES [02]  │
-│   • Normal skin          HIGH    IHC_protein     surface=NO  [18]  │
-│   • Hematopoietic        ABSENT  surface_flow    surface=YES [22]  │
+│  (Cell lines and tissues are listed inline with the method that     │
+│   measured them — single source of truth, primary human samples     │
+│   shown first when present.)                                        │
 │                                                                     │
 │  Contradicting evidence  (typed + severity + interpretation)       │
 │  ----------------------------------------------------------------   │
@@ -147,11 +149,15 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │   resting keratinocyte basolateral      RESTRICTED  [evi_18]        │
 │                                                                     │
 │  Accessibility modulation  (disease / state relocalization)        │
+│  Categories aligned with the triage agent's contextual taxonomy     │
+│  (cell_state_induced, tissue_restricted, etc.) + expansions.       │
 │  ----------------------------------------------------------------   │
-│   • Normal: basolateral in polarized epithelium                     │
+│   • category=disease_state_induced                                  │
+│     Normal: basolateral in polarized epithelium                     │
 │     Disease: depolarized in invasive carcinoma — apical/lateral     │
 │     surface exposure increases                            [evi_36]  │
-│   • Resting: surface pool at steady-state                           │
+│   • category=activation_induced                                     │
+│     Resting: surface pool at steady-state                           │
 │     Stimulated: post-EGF endocytosis depletes surface ~25% within   │
 │     30 min — dwell time becomes assay-relevant            [evi_27]  │
 │                                                                     │
@@ -173,57 +179,38 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │  dominant transcript in epithelial tissues — no tissue-specific     │
 │  mismatch flagged.                                                  │
 │                                                                     │
-│  LLM interpretation  (per isoform — gated by expression evidence)  │
-│  ----------------------------------------------------------------   │
-│   isoform-3 (soluble)                                               │
-│     predicted: lacks TM helix → soluble in cytosol or secreted      │
-│     expression support: TRANSCRIPT_LEVEL (RNA-seq)        [evi_38]  │
-│     biological relevance: MODERATE — detectable transcript but no   │
-│       confirmed protein-level expression in tumor tissue            │
-│     accessibility implication: soluble decoy CAVEAT only if         │
-│       protein-level expression is later confirmed                   │
-│                                                                     │
-│   isoform-4 (truncated subdomain IV)                                │
-│     predicted: TM retained, ECD truncated                           │
-│     expression support: PREDICTED_ONLY                              │
-│     biological relevance: UNKNOWN — no transcript or protein        │
-│       evidence found                                                │
-│     accessibility implication: domain-IV-targeting epitopes may     │
-│       be lost IF this isoform is actually expressed                 │
+│  (Per-isoform LLM interpretation is intentionally deferred —        │
+│   isoforms render as deterministic topology only in v1.0.0.         │
+│   The executive summary carries any biological synthesis the LLM    │
+│   wants to make about isoform implications.)                        │
 └─────────────────────────────────────────────────────────────────────┘
 
-┌─ 4. ORTHOLOGS  [deterministic — Ensembl Compara r112] ─────────────┐
+┌─ 4. ORTHOLOGS  [deterministic — Compara r112 + DeepTMHMM 1.0.24] ──┐
 │                                                                     │
-│   species        ortholog       type        ECD % id   ECD % sim    │
-│   ─────────      ───────────    ─────────   ────────   ────────     │
-│   mouse          Egfr (Q01279)  one2one        88.2%      94.1%     │
-│   rat            Egfr (Q9QX70)  one2one        88.0%      94.3%     │
-│   cynomolgus     EGFR           one2one        99.1%      99.6%     │
+│   species  isoform           UniProt    TM  ECD len   ECD %id   sim │
+│   ───────  ─────────────     ────────   ──  ───────   ──────   ──── │
+│   mouse    canonical (Egfr)  Q01279     1     616    88.2%   94.1% │
+│   mouse    alt isoform-2     Q01279-2   1     614    87.8%   93.6% │
+│   rat      canonical (Egfr)  Q9QX70     1     617    88.0%   94.3% │
+│   cyno     canonical (EGFR)  XP_005553  1     621    99.1%   99.6% │
+│   cyno     alt isoform-2     XP_005553… 1     621    99.1%   99.6% │
 │                                                                     │
-│  Accessibility conservation:  PARTIALLY_CONSERVED                   │
-│  ----------------------------------------------------------------   │
-│  Topology and ECD presence are conserved across all three species;  │
-│  per-residue conservation drops at human-specific subdomain III     │
-│  loops that participate in some antibody epitopes.                  │
-│                                                                     │
-│  Species caveats                                                    │
-│   • mouse: surface presence likely conserved, but several           │
-│     human-directed ECD binders may not bind mouse ortholog at all   │
-│     because subdomain III loops diverge                  [evi_42]   │
-│   • cyno:  ECD nearly identical (99% id); human ECD binders are     │
-│     expected to bind the cyno ortholog with similar affinity        │
+│  (Per-species LLM interpretation is intentionally deferred —       │
+│   orthologs render as deterministic ECD-conservation numbers and   │
+│   alternative-isoform topology only in v1.0.0. The executive       │
+│   summary carries any biological synthesis the LLM wants to make   │
+│   about cross-species relevance.)                                  │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─ 5. ACCESSIBILITY RISKS  (severity ≠ evidence strength) ───────────┐
 │                                                                     │
-│  • Partner / co-receptor dependency  (two independent axes)        │
+│  • Partner required for surface expression?                         │
 │      Surface-expression dependency:  NONE                           │
-│        EGFR reaches the plasma membrane unassisted.       [evi_46]  │
-│      Function dependency:            MODULATORY                     │
-│        HER2/3/4 heterodimerization tunes signaling output —         │
-│        partners enhance but are not required.             [evi_47]  │
-│      Partners: HER2, HER3, HER4                                     │
-│      (TCR/CD3 would be REQUIRED on both axes; this captures both.) │
+│        EGFR reaches the plasma membrane unassisted; no obligate     │
+│        partner required for trafficking.                  [evi_46]  │
+│      (TCR/CD3 would be REQUIRED — CD3 retains TCR in the ER         │
+│       without it. Function-side dependency was considered but is    │
+│       out of scope for v1.0.0; signaling biology lives elsewhere.) │
 │                                                                     │
 │  • Shed form              severity=MODERATE · evidence=STRONG       │
 │      ADAM17-mediated, soluble sEGFR detectable in serum             │
@@ -276,8 +263,10 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 
 ┌─ DATA SOURCES ─────────────────────────────────────────────────────┐
 │  • AlphaFold DB structures — CC BY 4.0 (DeepMind / EMBL-EBI)        │
-│  • Ensembl Compara orthologs — Apache 2.0 (EMBL-EBI)                │
-│  • DeepTMHMM topology — GPL-3.0 (DTU Health Tech)                   │
+│  • Ensembl Compara orthologs — open data with citation              │
+│    (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)              │
+│  • DeepTMHMM topology — DTU Health Tech (Hallgren et al. 2022;      │
+│    academic-use service)                                            │
 │  • UniProt — CC BY 4.0 (UniProt Consortium)                         │
 └─────────────────────────────────────────────────────────────────────┘
 ```
@@ -334,11 +323,10 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `has_shed_form` (bool) | `filters.has_shed_form` | `bool` | D | `accessibility_risks.shed_form.present` |
 | `has_secreted_form` (bool) | `filters.has_secreted_form` | `bool` | D | `accessibility_risks.secreted_form.present` |
 | `coreceptor_for_expression` (bool) | `filters.requires_coreceptor_for_expression` | `bool` | D | `accessibility_risks.co_receptor_requirements.surface_expression_dependency == "required"` |
-| `coreceptor_for_function` (bool) | `filters.requires_coreceptor_for_function` | `bool` | D | `accessibility_risks.co_receptor_requirements.function_dependency == "required"` |
 | `paralog_cross_reactivity` (bool) | `filters.has_paralog_cross_reactivity_risk` | `bool` | D | any `accessibility_risks.paralog_cross_binding_risk[].cross_reactivity_assessment ∈ {high, moderate}` |
 | `epitope_masking` (bool) | `filters.has_epitope_masking` | `bool` | D | `accessibility_risks.epitope_masking.severity ∈ {high, moderate}` |
 | `restricted_subdomain` (bool) | `filters.has_restricted_subdomain` | `bool` | D | `accessibility_risks.restricted_subdomain.present == True` OR any `biological_context.anatomical_accessibility[].accessibility_implication == "restricted"` |
-| `accessibility_conservation=partially_conserved` | `filters.cross_species_accessibility_relevance` | `Literal["strongly_conserved","partially_conserved","poorly_conserved","species_specific","unclear"]` | D | mirror of `ortholog_implications.cross_species_accessibility_relevance` |
+| `mouse=88.2% · cyno=99.1%` | `filters.mouse_ortholog_ecd_pct_identity` + `filters.cyno_ortholog_ecd_pct_identity` | `float [0.0–100.0]` each | D | `deterministic_features.orthologs.{species}[is_canonical].ecd_pct_identity_to_human_canonical` — pulled straight from Compara, no LLM rollup |
 | `n_term_extracellular` (bool) | `filters.n_term_extracellular` | `bool` | D | `deterministic_features.canonical_topology.n_terminal_orientation == "extracellular"` |
 | `has_knowledge_gaps` (bool) | `filters.has_knowledge_gaps` | `bool` | D | `len(knowledge_gaps) > 0` |
 
@@ -352,10 +340,10 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 |---|---|---|---|
 | `DIRECT_MULTI_METHOD` banner | `surface_evidence.evidence_grade` | `Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]` | L |
 | Sentence under the banner | `surface_evidence.grade_rationale` | `str` (≤400) | L |
-| `A431 (epidermoid carcinoma) 4 citations` (per row) | `surface_evidence.cell_lines_observed: list[CellLineObservation]` | each: `{ cell_line: str, lineage: str, distinct_citation_count: int, cited_evidence_ids: list[str] }` | L |
-| Each row in *Methods + antibodies* | `surface_evidence.methods: list[MethodObservation]` | each: `{ method_family: Literal["flow_cytometry","immunofluorescence","immunohistochemistry","mass_spec","biotinylation","glycoproteomics","proximity_labeling","fractionation","other"], method_subclass: Literal["live_cell_flow","fixed_cell_flow","nonpermeabilized_IF","permeabilized_IF","IHC_membranous","surface_biotinylation","cell_surface_capture","N_glycoproteomics","plasma_membrane_fractionation","whole_cell_proteomics","unknown"], permeabilization: Literal["live_cell","nonpermeabilized","permeabilized","fixed_unknown","unknown"], expression_system: Literal["endogenous","overexpression","knock_in_tag","mixed","unknown"], antibodies: list[AntibodyRef], accessibility_relevance: Literal["direct_surface_accessibility","supports_surface_localization","supports_membrane_association","expression_only","weak_or_ambiguous"], surface_claim_type: Literal["surface_accessible","plasma_membrane_localized","membrane_fraction_enriched","cell_junction_localized","apical_or_luminal","secreted_or_shed","intracellular_pool","unclear"], cited_evidence_ids: list[str] }` | L |
+| Each row in *Methods + antibodies* | `surface_evidence.methods: list[MethodObservation]` | each: `{ method_family: Literal["flow_cytometry","immunofluorescence","immunohistochemistry","mass_spec","biotinylation","glycoproteomics","proximity_labeling","fractionation","other"], method_subclass: Literal["live_cell_flow","fixed_cell_flow","nonpermeabilized_IF","permeabilized_IF","IHC_membranous","surface_biotinylation","cell_surface_capture","N_glycoproteomics","plasma_membrane_fractionation","whole_cell_proteomics","unknown"], permeabilization: Literal["live_cell","nonpermeabilized","permeabilized","fixed_unknown","unknown"], expression_system: Literal["endogenous","overexpression","knock_in_tag","mixed","unknown"], antibodies: list[AntibodyRef], accessibility_relevance: Literal["direct_surface_accessibility","supports_surface_localization","supports_membrane_association","expression_only","weak_or_ambiguous"], surface_claim_type: Literal["surface_accessible","plasma_membrane_localized","membrane_fraction_enriched","cell_junction_localized","apical_or_luminal","secreted_or_shed","intracellular_pool","unclear"], expression_observations: list[ExpressionObservation], cited_evidence_ids: list[str] }` (the standalone `cell_lines_observed` list was dropped — sample context lives inline on each `expression_observations[]` entry below; primary human samples take precedence over established cell lines) | L |
 | Antibody record `anti-EGFR clone 528 (ECD epitope)` | `MethodObservation.antibodies[i]` | `AntibodyRef = { name: str, clone: str\|None, vendor: str\|None, catalog: str\|None, antibody_epitope_region: Literal["extracellular","intracellular","conformational","isoform_specific","unknown"] }` | L |
-| `Epithelial tumors HIGH surface_flow surface=YES` | `surface_evidence.expression_levels: list[ExpressionObservation]` | each: `{ context: str, level: Literal["high","moderate","low","absent"], measurement_type: Literal["RNA","bulk_protein","IHC_protein","surface_flow","surface_proteomics","single_cell_RNA","unknown"], surface_specific: bool, cited_evidence_ids: list[str] }` | L |
+| Per-observation `A431 (cell_line · epidermoid carcinoma) HIGH` rows inside each method card | `surface_evidence.methods[i].expression_observations: list[ExpressionObservation]` | each: `{ context: str, sample_type: Literal["primary_human_tissue","primary_human_cell","patient_sample","patient_derived_organoid","iPSC_derived","established_cell_line","xenograft","ex_vivo","unknown"], level: Literal["high","moderate","low","absent"], cited_evidence_ids: list[str] }`. **Nested inside `methods[i]` so each level is anchored to the measurement that produced it** — RNA / bulk-protein / IHC observations (which aren't tied to one of the 3 surface-evidence panels) live in `surface_evidence.non_surface_expression: list[NonSurfaceExpression]` instead. | L |
+| Non-surface expression observations (RNA, IHC, bulk) | `surface_evidence.non_surface_expression: list[NonSurfaceExpression]` | each: `{ context: str, sample_type: ..., measurement_type: Literal["RNA","bulk_protein","IHC_protein","single_cell_RNA","unknown"], level: Literal["high","moderate","low","absent"], cited_evidence_ids: list[str] }` — for context that isn't surface-specific. | L |
 | Each *Contradicting evidence* bullet | `surface_evidence.contradicting_evidence: list[Contradiction]` | each: `{ claim: str, contradiction_type: Literal["intracellular_pool","alternative_localization","secreted_only","cell_line_specific_absence","antibody_conflict","proteomics_conflict","isoform_conflict","other"], severity_for_surface_accessibility: Literal["high","moderate","low","unclear"], likely_explanation: str\|None, cited_evidence_ids: list[str] }` | L |
 
 ### Section 2 — Biological context
@@ -368,7 +356,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `Primary compartment: plasma_membrane` | `biological_context.subcellular_localization.primary_compartment` | `Literal["plasma_membrane","endosome","lysosome","ER","Golgi","mitochondrion","nucleus","cytosol","secreted","other"]` | L |
 | `endosome (post-internalization) ~25% under EGF` | `biological_context.subcellular_localization.dual_localization: list[DualLocalization]` | each: `{ compartment: str, fraction_estimate: float\|None, condition: str\|None, cited_evidence_ids: list[str] }` | L |
 | Anatomical accessibility table rows | `biological_context.anatomical_accessibility: list[AnatomicalAccessibilityObservation]` | each: `{ context: str, orientation: Literal["blood_interstitial_facing","luminal_facing","apical","basolateral","lateral","junction_restricted","ciliary","synaptic","matrix_facing","unknown"], accessibility_implication: Literal["favorable","restricted","context_dependent","unclear"], rationale: str (≤300), cited_evidence_ids: list[str] }` | L |
-| Accessibility-modulation bullets (Normal → Disease shifts) | `biological_context.accessibility_modulation: list[AccessibilityModulationObservation]` | each: `{ baseline_context: str, modulating_state: str, change: str (≤300), accessibility_implication: str (≤300), cited_evidence_ids: list[str] }` (replaces and broadens the earlier `disease_relocalization` idea — same shape works for activation/EMT/stress) | L |
+| Accessibility-modulation bullets (Normal → Disease shifts) | `biological_context.accessibility_modulation: list[AccessibilityModulationObservation]` | each: `{ category: Literal["cell_state_induced","tissue_restricted","activation_induced","stress_induced","disease_state_induced","polarization_dependent","post_translational_dependent","developmental_stage","none","unknown"], baseline_context: str, modulating_state: str, change: str (≤300), accessibility_implication: str (≤300), cited_evidence_ids: list[str] }`. **The `category` enum mirrors + expands the `surface_triage` agent's contextual `reason` taxonomy** (`cell_state_induced`, `tissue_restricted_surface`, `dual_localization`, `lysosomal_exocytosis`, `stable_surface_attachment`) so the two agents share vocabulary and a reader can cross-check a triage `contextual` verdict against the deep-dive evidence. | L |
 | `constitutive recycling from sorting endosomes` | `biological_context.subcellular_localization.exocytosis_evidence: list[ExocytosisEvidence]` | each: `{ stimulus: str\|None, mechanism: str\|None, cited_evidence_ids: list[str] }` | L |
 
 ### Section 3 — Isoforms (deterministic + LLM interpretation)
@@ -377,26 +365,24 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 |---|---|---|---|
 | Table row `canonical P00533-1 1 extra 621 542` | `deterministic_features.isoform_topologies[i]` | `IsoformTopology = { isoform_id: str, uniprot_acc: str, tm_helix_count: int, n_terminal_orientation: Literal["extracellular","cytoplasmic"], signal_peptide_length: int, ecd_length_residues: int, icd_length_residues: int, per_residue_topology: str, tool_version: str, retrieved_at: datetime }` | D |
 | `canonical_topology` (top-most row) | `deterministic_features.canonical_topology` | same `IsoformTopology` shape, single | D |
-| "Isoform-3 lacks the TM helix entirely…" prose | `isoform_implications.summary` | `str` (≤800) | L |
-| Per-isoform interpretation rows | `isoform_implications.per_isoform: list[IsoformAccessibility]` | each: `{ isoform_id: str, accessible: bool, expression_support: Literal["protein_level","transcript_level","predicted_only","conflicting","unknown"], biological_relevance: Literal["high","moderate","low","unknown"], rationale: str (≤300), dominant_in_tissues: list[str], cited_evidence_ids: list[str] }` (gates "soluble decoy" claims on actual expression evidence rather than predicted topology alone) | L |
 | `Canonical caveat: P00533-1 is …` | `deterministic_features.canonical_topology.canonical_isoform_caveat` | `str \| None` (≤300) — LLM-emitted note when UniProt canonical isn't the tissue-dominant isoform | L |
+
+**Per-isoform LLM interpretation is deferred** — v1.0.0 ships isoforms as deterministic topology only. Any biological reading of what an isoform implies for accessibility lives in `executive_summary.one_paragraph` if the LLM wants to surface it.
 
 ### Section 4 — Orthologs + paralogs (deterministic + LLM interpretation)
 
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
-| Table row `mouse Egfr (Q01279) one2one 88.2% 94.1%` | `deterministic_features.orthologs.mouse` | `OrthologEntry \| None = { ensembl_id: str, ortholog_uniprot_acc: str, ortholog_symbol: str, type: Literal["one2one","one2many","many2many"], ecd_pct_identity: float, ecd_pct_similarity: float, compara_version: str, retrieved_at: datetime }` | D |
-| Same shape for `rat`, `cynomolgus` | `deterministic_features.orthologs.{rat,cynomolgus}` | `OrthologEntry \| None` | D |
+| Per-species canonical + alternative isoforms (multi-row per species) | `deterministic_features.orthologs.{mouse,rat,cynomolgus}: list[OrthologEntry]` | each: `OrthologEntry = { is_canonical: bool, isoform_id: str, ensembl_id: str, ortholog_uniprot_acc: str, ortholog_symbol: str, type: Literal["one2one","one2many","many2many"], ecd_pct_identity_to_human_canonical: float, ecd_pct_similarity_to_human_canonical: float, ecd_length_residues: int, tm_helix_count: int, compara_version: str, retrieved_at: datetime }` (canonical first, then alternative isoforms — same shape, sorted) | D |
 | (paralog table, also shown in §5) | `deterministic_features.paralogs: list[ParalogEntry]` | each: `{ paralog_symbol: str, paralog_uniprot_acc: str, ecd_pct_identity: float, family_id: str, compara_version: str }` | D |
-| "Topology and ECD presence are conserved…" prose | `ortholog_implications.summary` | `str` (≤600) | L |
-| `PARTIALLY_CONSERVED` rollup | `ortholog_implications.cross_species_accessibility_relevance` | `Literal["strongly_conserved","partially_conserved","poorly_conserved","species_specific","unclear"]` (replaces the earlier `cross_species_useful_for: list[mouse_efficacy/cyno_tox/…]` — accessibility-focused, no translational framing) | L |
-| Species caveat bullets | `ortholog_implications.species_caveats: list[SpeciesCaveat]` | each: `{ species: Literal["mouse","rat","cynomolgus"], caveat: str (≤300), accessibility_implication: str (≤300), cited_evidence_ids: list[str] }` | L |
+
+**Per-species LLM interpretation is deferred** — v1.0.0 ships orthologs as deterministic ECD-conservation numbers + alternative-isoform topology only. Cross-species accessibility synthesis lives in `executive_summary.one_paragraph` if the LLM wants to make a call. (Earlier scratch fields `ortholog_implications.summary` / `cross_species_accessibility_relevance` / `species_caveats` are dropped.)
 
 ### Section 5 — Accessibility risks
 
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
-| `Partner / co-receptor dependency (two axes)…` | `accessibility_risks.co_receptor_requirements` | `{ surface_expression_dependency: Literal["required","modulatory","none","unknown"], function_dependency: Literal["required","modulatory","none","unknown"], partners: list[str], evidence_basis: Literal["co_expression_only","trafficking","signaling","binding","knockout","mixed"], rationale: str (≤400), cited_evidence_ids: list[str] }` | L |
+| `Partner required for surface expression?` | `accessibility_risks.co_receptor_requirements` | `{ surface_expression_dependency: Literal["required","modulatory","none","unknown"], partners: list[str], evidence_basis: Literal["co_expression_only","trafficking","knockout","mixed"], rationale: str (≤400), cited_evidence_ids: list[str] }` (function-side dependency dropped — out of scope for v1.0.0) | L |
 | `Shed form … severity=MODERATE · evidence=STRONG` | `accessibility_risks.shed_form` | `{ present: bool, severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], mechanism: str\|None, sheddase_if_known: str\|None, cited_evidence_ids: list[str] }` | L |
 | `Secreted form … severity=LOW · evidence=STRONG` | `accessibility_risks.secreted_form` | `{ present: bool, severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], ratio_to_membrane: float\|None, source: Literal["alternative_splicing","proteolytic","both","unknown"]\|None, cited_evidence_ids: list[str] }` | L |
 | `Restricted membrane subdomain … severity=MODERATE` | `accessibility_risks.restricted_subdomain` | `{ present: bool, domain: Literal["apical","junctional","ciliary","synaptic","raft","basolateral","other","unknown"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤300), cited_evidence_ids: list[str] }` | L |
@@ -560,12 +546,12 @@ SurfaceomeRecord (v1.0.0)
 │   ├── has_shed_form                             # D ← accessibility_risks.shed_form.present
 │   ├── has_secreted_form                         # D ← accessibility_risks.secreted_form.present
 │   ├── requires_coreceptor_for_expression        # D ← co_receptor_requirements.surface_expression_dependency == "required"
-│   ├── requires_coreceptor_for_function          # D ← co_receptor_requirements.function_dependency == "required"
 │   ├── has_paralog_cross_reactivity_risk         # D ← any paralog_cross_binding_risk[i] ≥ moderate
 │   ├── has_epitope_masking                       # D ← epitope_masking.severity ≥ moderate
 │   ├── has_restricted_subdomain                  # D ← restricted_subdomain.present OR any
 │   │                                             #     anatomical_accessibility[i].accessibility_implication == "restricted"
-│   ├── cross_species_accessibility_relevance     # D ← ortholog_implications.cross_species_accessibility_relevance
+│   ├── mouse_ortholog_ecd_pct_identity           # D ← orthologs.mouse[is_canonical].ecd_pct_identity
+│   ├── cyno_ortholog_ecd_pct_identity            # D ← orthologs.cynomolgus[is_canonical].ecd_pct_identity
 │   ├── n_term_extracellular: bool                # D ← canonical_topology.n_terminal_orientation
 │   └── has_knowledge_gaps: bool                  # D ← len(knowledge_gaps) > 0
 │
@@ -573,8 +559,6 @@ SurfaceomeRecord (v1.0.0)
 │   ├── evidence_grade                            # enum: direct_multi_method|direct_single_method|
 │   │                                             #   supportive_but_indirect|conflicting|weak
 │   ├── grade_rationale                           # ≤400 char — names the directness of evidence
-│   ├── cell_lines_observed: list[CellLineObservation]
-│   │   └── { cell_line, lineage, distinct_citation_count, cited_evidence_ids }
 │   ├── methods: list[MethodObservation]
 │   │   └── { method_family: flow_cytometry|IF|IHC|mass_spec|biotinylation|glycoproteomics|...,
 │   │         method_subclass: live_cell_flow|fixed_cell_flow|nonpermeabilized_IF|permeabilized_IF|
@@ -588,13 +572,19 @@ SurfaceomeRecord (v1.0.0)
 │   │         surface_claim_type: surface_accessible|plasma_membrane_localized|
 │   │           membrane_fraction_enriched|cell_junction_localized|apical_or_luminal|
 │   │           secreted_or_shed|intracellular_pool|unclear,
+│   │         expression_observations: list[ExpressionObservation],
+│   │           # nested under the method so each level is anchored to its measurement
+│   │           # each entry: { context, sample_type: primary_human_tissue|primary_human_cell|
+│   │           #   patient_sample|patient_derived_organoid|iPSC_derived|established_cell_line|
+│   │           #   xenograft|ex_vivo|unknown,
+│   │           #   level: high|moderate|low|absent, cited_evidence_ids }
+│   │           # primary human samples emphasized over established cell lines in the prompt
 │   │         cited_evidence_ids }
-│   ├── expression_levels: list[ExpressionObservation]
-│   │   └── { context, level: high|moderate|low|absent,
-│   │         measurement_type: RNA|bulk_protein|IHC_protein|surface_flow|surface_proteomics|
-│   │           single_cell_RNA|unknown,
-│   │         surface_specific: bool,            # explicit so expression≠accessibility conflation can't slip in
-│   │         cited_evidence_ids }
+│   ├── non_surface_expression: list[NonSurfaceExpression]
+│   │   # RNA / IHC / bulk-protein levels that are NOT tied to one of the surface-evidence panels.
+│   │   # Held separately so the report can't drift into treating RNA expression as accessibility.
+│   │   └── { context, sample_type, measurement_type: RNA|bulk_protein|IHC_protein|
+│   │           single_cell_RNA|unknown, level, cited_evidence_ids }
 │   └── contradicting_evidence: list[Contradiction]
 │       └── { claim,
 │             contradiction_type: intracellular_pool|alternative_localization|secreted_only|
@@ -618,9 +608,13 @@ SurfaceomeRecord (v1.0.0)
 │   │         accessibility_implication: favorable|restricted|context_dependent|unclear,
 │   │         rationale, cited_evidence_ids }
 │   └── accessibility_modulation: list[AccessibilityModulationObservation]
-│       └── { baseline_context, modulating_state, change, accessibility_implication,
-│             cited_evidence_ids }                # captures disease / activation / EMT / stress
-│                                                 #   relocalization in one shape
+│       └── { category: cell_state_induced|tissue_restricted|activation_induced|stress_induced|
+│               disease_state_induced|polarization_dependent|post_translational_dependent|
+│               developmental_stage|none|unknown,
+│                                                 #   mirrors + expands surface_triage's contextual
+│                                                 #   `reason` enum so the two agents share vocabulary
+│             baseline_context, modulating_state, change, accessibility_implication,
+│             cited_evidence_ids }
 │
 ├── deterministic_features                        [ORCHESTRATOR ONLY — sections 3, 4, appendix]
 │   ├── canonical_topology                        # DeepTMHMM on canonical isoform
@@ -635,11 +629,22 @@ SurfaceomeRecord (v1.0.0)
 │   │   ├── tool_version                          # "deeptmhmm-1.0.24"
 │   │   └── retrieved_at
 │   ├── isoform_topologies: list[IsoformTopology] # DeepTMHMM per isoform
-│   ├── orthologs                                 # Ensembl Compara one2one
-│   │   ├── mouse: OrthologEntry | null
-│   │   ├── rat: OrthologEntry | null
-│   │   └── cynomolgus: OrthologEntry | null
-│   │       └── { ensembl_id, ortholog_uniprot_acc, type, ecd_pct_identity, ecd_pct_similarity, compara_version }
+│   ├── orthologs                                 # Ensembl Compara + DeepTMHMM
+│   │   │                                         # Each species carries canonical + alt
+│   │   │                                         # isoforms — same shape, sorted with
+│   │   │                                         # canonical first. Alt isoforms let the
+│   │   │                                         # reader spot species-specific isoform
+│   │   │                                         # divergence that affects binder coverage.
+│   │   ├── mouse: list[OrthologEntry]
+│   │   ├── rat: list[OrthologEntry]
+│   │   └── cynomolgus: list[OrthologEntry]
+│   │       └── OrthologEntry = { is_canonical: bool, isoform_id, ensembl_id,
+│   │             ortholog_uniprot_acc, ortholog_symbol,
+│   │             type: one2one|one2many|many2many,
+│   │             ecd_pct_identity_to_human_canonical,
+│   │             ecd_pct_similarity_to_human_canonical,
+│   │             ecd_length_residues, tm_helix_count,
+│   │             compara_version, retrieved_at }
 │   ├── paralogs: list[ParalogEntry]              # Compara within-species
 │   │   └── { paralog_symbol, ecd_pct_identity, family_id }
 │   └── structure                                 # AlphaFold DB
@@ -654,21 +659,10 @@ SurfaceomeRecord (v1.0.0)
 │       └── citations                             # ["10.1038/s41586-021-03819-2",
 │                                                  #  "10.1093/nar/gkad1011"]
 │
-├── isoform_implications                          [LLM interprets deterministic_features.isoform_topologies]
-│   ├── summary
-│   └── per_isoform: list[IsoformAccessibility]
-│       └── { isoform_id, accessible: bool,
-│             expression_support: protein_level|transcript_level|predicted_only|conflicting|unknown,
-│             biological_relevance: high|moderate|low|unknown,
-│             rationale, dominant_in_tissues, cited_evidence_ids }
-│
-├── ortholog_implications                         [LLM interprets deterministic_features.orthologs]
-│   ├── cross_species_accessibility_relevance     # enum: strongly_conserved|partially_conserved|
-│   │                                             #   poorly_conserved|species_specific|unclear
-│   │                                             #   (replaces translational `cross_species_useful_for`)
-│   ├── species_caveats: list[SpeciesCaveat]
-│   │   └── { species: mouse|rat|cynomolgus, caveat, accessibility_implication, cited_evidence_ids }
-│   └── summary
+│   # Per-isoform and per-species LLM interpretation blocks are
+│   # intentionally OUT of v1.0.0. Isoforms and orthologs render
+│   # as deterministic-only tables; any biological synthesis the
+│   # LLM wants to make about them lives in executive_summary.one_paragraph.
 │
 ├── accessibility_risks                           [LLM — section 5]
 │   │                                             # Every risk now carries
@@ -681,14 +675,18 @@ SurfaceomeRecord (v1.0.0)
 │   ├── restricted_subdomain:                      # NEW — apical/junctional/etc.
 │   │   └── { present, domain: apical|junctional|ciliary|synaptic|raft|basolateral|other|unknown,
 │   │         severity, evidence_strength, rationale, cited_evidence_ids }
-│   ├── co_receptor_requirements:                 # TWO independent axes
+│   ├── co_receptor_requirements:                 # surface-expression axis ONLY
 │   │   ├── surface_expression_dependency         # enum: required|modulatory|none|unknown
-│   │   ├── function_dependency                   # enum: required|modulatory|none|unknown
+│   │   │                                         #   (does partner need to be present
+│   │   │                                         #    for the target to reach the surface?)
 │   │   ├── partners: list[str]
 │   │   ├── evidence_basis                        # enum: co_expression_only|trafficking|
-│   │   │                                         #   signaling|binding|knockout|mixed
+│   │   │                                         #   knockout|mixed
 │   │   ├── rationale
 │   │   └── cited_evidence_ids: list[str]
+│   │   # function-side dependency (does partner need to be present
+│   │   # for signaling?) is out of scope for v1.0.0 — signaling
+│   │   # biology lives elsewhere.
 │   ├── paralog_cross_binding_risk: list[ParalogRisk]
 │   │   └── { paralog_symbol,
 │   │         deterministic_paralog_ref,         # FK → deterministic_features.paralogs[i].family_id
@@ -736,7 +734,13 @@ Three new orchestrator-level fetchers (not agent tools). Each caches by `(unipro
 
 Caches under `data/external/agent_features/{uniprot_acc}/{tool}_{version}.json`. Orchestrator hits the cache first; misses trigger a fetch + write.
 
-**License compliance.** AlphaFold DB is CC BY 4.0, which requires that attribution accompany every downstream use. The viewer's per-gene Structure card and the bottom-of-page Data Sources footer both render the attribution string from `deterministic_features.structure`. The same applies to UniProt (CC BY 4.0), Ensembl Compara (Apache 2.0 — attribution not legally required but included for parity), and DeepTMHMM (GPL-3.0 — academic-use attribution by convention). The Data Sources footer in the mockup is the canonical surface; the structured `source / license / attribution / citations` fields on each deterministic block are what make that footer mechanically constructible (no hand-maintained list).
+**License compliance.** AlphaFold DB is CC BY 4.0, which requires that attribution accompany every downstream use. The viewer's per-gene Structure card and the bottom-of-page Data Sources footer both render the attribution string from `deterministic_features.structure`. The same applies to UniProt (CC BY 4.0).
+
+**Ensembl Compara** data is freely redistributable with citation requested — Ensembl's policy is unrestricted use of data, no license-text required. (Apache 2.0 applies to their *code*, not the data tables we redistribute.) We cite Howe *et al.* 2024 (current Ensembl paper) and Vilella *et al.* 2009 (the Compara methodology paper).
+
+**DeepTMHMM** is a DTU Health Tech service (Hallgren *et al.* 2022). Academic use of the service is free; we submit sequences and store the topology outputs as derived data, shipped with attribution. The model itself is not distributed under GPL or any other open-source license — commercial use of the model would require contacting DTU. Our redistribution of *outputs* is OK; we don't redistribute the model.
+
+The Data Sources footer in the mockup is the canonical surface; the structured `source / license / attribution / citations` fields on each deterministic block are what make that footer mechanically constructible (no hand-maintained list).
 
 ### 4. Orchestrator flow
 
