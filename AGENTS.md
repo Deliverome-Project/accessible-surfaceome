@@ -153,6 +153,16 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   `node_modules/.bin/`; the cloudflare/ scripts and the CI workflow
   both invoke it as `npx --yes wrangler ...` so the pinned version
   always wins.
+- **Node version pin lives in four places** that must stay in
+  lockstep: `package.json` `engines.node`, `viewer/package.json`
+  `@types/node`, the `node-version:` in `.github/workflows/d1-backup.yml`
+  and `viewer-build.yml`, AND the `NODE_VERSION` build env var on the
+  Cloudflare Pages project for `surfaceome.deliverome.org` (Settings →
+  Environment Variables → Production + Preview). **The Pages env var
+  lives outside the repo — when bumping Node anywhere here, always
+  remind the user to bump `NODE_VERSION` on Cloudflare Pages in the
+  same change.** Skipping it leaves the Pages build on the old Node
+  (silent drift) or on Cloudflare's rolling default (shifts under you).
 - **CI secrets** (one-time, in repo Settings → Secrets and variables
   → Actions): `CLOUDFLARE_API_TOKEN` (scoped D1:Edit + R2:Edit) and
   `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket is provisioned locally via

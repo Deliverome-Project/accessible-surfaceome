@@ -205,6 +205,17 @@ a Pages binding.
   `node_modules/.bin/wrangler`. The cloudflare/ scripts call
   `npx --yes wrangler ...` so the pinned version always wins over
   any globally installed wrangler. CI does the same `npm ci`.
+- **Node version is pinned in four places that must stay in lockstep**:
+  `package.json` `engines.node`, `viewer/package.json` `@types/node`,
+  the `node-version:` in `.github/workflows/d1-backup.yml` and
+  `viewer-build.yml`, AND the `NODE_VERSION` build env var on the
+  Cloudflare Pages project for `surfaceome.deliverome.org` (Settings →
+  Environment Variables → Production + Preview). **The Pages env var
+  lives outside the repo — when bumping Node anywhere here, always
+  remind the user to bump `NODE_VERSION` on Cloudflare Pages in the
+  same change.** Skipping it means the Pages build either keeps using
+  the old Node (silent drift) or falls through to Cloudflare's rolling
+  default (which can shift under you).
 - **Required CI secrets** (one-time): `CLOUDFLARE_API_TOKEN` (D1:Edit
   + R2:Edit) and `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket itself is
   provisioned locally via `npx --yes wrangler r2 bucket create deliverome-d1-backups`.
