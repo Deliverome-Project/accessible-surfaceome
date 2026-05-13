@@ -115,8 +115,44 @@ export default async function GenePage({ params }: PageProps) {
             >
               JSON ↗
             </a>
+            <a
+              className={styles.crumbAction}
+              href={`/data/surfaceome/${rec.gene.hgnc_symbol}.md`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Markdown ↗
+            </a>
+            <a
+              className={styles.crumbAction}
+              href={`https://alphafold.ebi.ac.uk/entry/${rec.gene.uniprot_acc}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              AFDB ↗
+            </a>
           </span>
         </nav>
+
+        <p className={styles.downloadsHint}>
+          <span className={`label-mono ${styles.downloadsLabel}`}>Downloads</span>
+          The <strong>JSON</strong> record above is the canonical artifact
+          (everything on this page is rendered from it). The{" "}
+          <strong>Markdown</strong> export bundles the same record plus the
+          full UniProt canonical sequence and the per-residue DeepTMHMM
+          topology for canonical + every alternative isoform, alongside a
+          link to the live{" "}
+          <a
+            className={styles.downloadsLink}
+            href={`https://alphafold.ebi.ac.uk/entry/${rec.gene.uniprot_acc}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            AlphaFold DB entry
+          </a>{" "}
+          (current model + sequence are auto-discovered from the AFDB
+          prediction API, so the link auto-tracks AFDB version bumps).
+        </p>
 
         <details className={styles.rawDetails}>
           <summary className={styles.rawSummary}>

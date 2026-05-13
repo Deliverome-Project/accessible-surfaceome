@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "next build --webpack",
+    "build": "npm run build:exports && next build --webpack",
+    "build:exports": "node scripts/build-markdown-exports.mjs",
     "start": "next start",
     "deploy": "wrangler pages deploy out",
     "check": "tsc --project tsconfig.json --noEmit",

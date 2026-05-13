@@ -78,6 +78,40 @@
   font-weight: var(--fw-semibold);
 }
 
+/* "Downloads include …" hint, sits above the raw-record disclosure
+ * so a reader knows what shipping with the JSON / Markdown links
+ * before they click through. */
+.downloadsHint {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-warm);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: baseline;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  max-width: 80ch;
+}
+
+.downloadsLabel {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.downloadsLink {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.downloadsLink:hover {
+  border-bottom-color: var(--accent);
+}
+
 /* Raw deep-dive record — collapsible at the top of the page so an
  * agent / curator can copy the canonical JSON without round-tripping
  * to the /data/surfaceome/SYMBOL.json endpoint. Default-closed so it
