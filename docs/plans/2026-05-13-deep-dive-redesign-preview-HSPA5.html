@@ -842,55 +842,81 @@
           <h3 class="h-section">Where the <em>contextual</em> surface fraction is reachable</h3>
         </div>
         <div class="card__body">
-          <h4 class="label-mono">Tissue / cell-state matrix</h4>
+          <h4 class="label-mono">Tissues × disease_context (surface fraction)</h4>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 var(--space-2); font-style: italic">
+            ER expression is uniformly high everywhere (GRP78 is a ubiquitous
+            ER chaperone). The interesting axis is the surface fraction —
+            captured by tissues.present, with disease_context separating
+            normal vs tumor rows.
+          </p>
           <table class="data">
             <thead>
               <tr>
-                <th>tissue / cell context</th>
-                <th>ER expression</th>
-                <th>surface fraction</th>
-                <th>state</th>
+                <th>tissue</th>
+                <th>disease_context</th>
+                <th>level (surface)</th>
+                <th>cell types / states</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>pancreatic carcinoma</td>
-                <td><span class="chip chip--success">HIGH (ubiquitous ER chaperone)</span></td>
-                <td><span class="chip chip--success">HIGH</span></td>
-                <td>tumor; ER-stressed</td>
+                <td>pancreas</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>adenocarcinoma cells; ER-stressed, UPR-active</td>
               </tr>
               <tr>
-                <td>multiple myeloma plasma cells</td>
-                <td><span class="chip chip--success">HIGH</span></td>
-                <td><span class="chip chip--success">HIGH</span></td>
-                <td>malignant; chronic UPR-active</td>
-              </tr>
-              <tr>
-                <td>hepatocellular carcinoma</td>
-                <td><span class="chip chip--success">HIGH</span></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-                <td>tumor; variable UPR</td>
-              </tr>
-              <tr>
-                <td>prostate carcinoma</td>
-                <td><span class="chip chip--success">HIGH</span></td>
-                <td><span class="chip chip--success">HIGH</span></td>
-                <td>tumor</td>
-              </tr>
-              <tr>
-                <td>matched normal pancreas / liver / prostate</td>
-                <td><span class="chip chip--success">HIGH</span></td>
+                <td>pancreas</td>
+                <td class="mono">normal</td>
                 <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
-                <td>baseline</td>
+                <td>acinar / ductal cells; baseline</td>
               </tr>
               <tr>
-                <td>peripheral blood (healthy)</td>
-                <td><span class="chip chip--success">moderate</span></td>
+                <td>bone marrow</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>multiple myeloma plasma cells; chronic UPR</td>
+              </tr>
+              <tr>
+                <td>bone marrow</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                <td>healthy plasma cells; baseline</td>
+              </tr>
+              <tr>
+                <td>liver</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--amber chip--strong">MODERATE</span></td>
+                <td>hepatocellular carcinoma; variable UPR</td>
+              </tr>
+              <tr>
+                <td>prostate</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>prostate carcinoma cells</td>
+              </tr>
+              <tr>
+                <td>peripheral blood</td>
+                <td class="mono">normal</td>
                 <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
                 <td>resting immune cells</td>
               </tr>
             </tbody>
           </table>
+          <div class="annot annot--llm">
+            <span class="annot__path">biological_context.tissues</span> ·
+            <span class="annot__type"
+              >list[TissueContext] = { tissue: str,
+              <strong>present: Literal["high","moderate","low","absent","mixed","unknown"]</strong>
+              (upgraded from bool),
+              <strong>disease_context: Literal["normal","tumor","tumor_adjacent","other_disease","mixed","unknown"]</strong>
+              (new), cell_types, cell_states, cited_evidence_ids }</span
+            >
+            · GRP78 is the canonical example for why disease_context matters
+            — same tissue, opposite surface presence depending on normal vs
+            tumor state.
+            <span class="annot__prov">L</span>
+          </div>
 
           <h4 class="label-mono">Anatomical accessibility</h4>
           <table class="data">

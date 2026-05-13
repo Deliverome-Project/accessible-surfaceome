@@ -691,44 +691,74 @@
           <h3 class="h-section">Where the receptor is — and reachable from</h3>
         </div>
         <div class="card__body">
-          <h4 class="label-mono">Tissue / cell-context matrix</h4>
+          <h4 class="label-mono">Tissues × disease_context</h4>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 var(--space-2); font-style: italic">
+            GPR75 is constitutively expressed at low levels — disease_context
+            mostly stays "normal" except for the lean → obese adipose
+            comparison.
+          </p>
           <table class="data">
             <thead>
-              <tr><th>tissue / cell context</th><th>RNA</th><th>protein</th><th>state</th></tr>
+              <tr>
+                <th>tissue</th>
+                <th>disease_context</th>
+                <th>level (protein)</th>
+                <th>cell types / states</th>
+              </tr>
             </thead>
             <tbody>
               <tr>
-                <td>hypothalamus (arcuate nucleus, PVN)</td>
-                <td><span class="chip chip--success">MODERATE</span></td>
-                <td><span class="chip chip--amber">LOW</span></td>
-                <td>baseline (CNS)</td>
+                <td>hypothalamus (arcuate, PVN)</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>neurons; baseline CNS</td>
               </tr>
               <tr>
-                <td>adipose tissue (white)</td>
-                <td><span class="chip chip--amber">LOW</span></td>
-                <td><span class="chip chip--amber">LOW</span></td>
-                <td>baseline; ↑ in obesity (controversial)</td>
+                <td>adipose</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>adipocytes; lean state</td>
+              </tr>
+              <tr>
+                <td>adipose</td>
+                <td class="mono">other_disease</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>adipocytes; obese state (controversial modest ↑)</td>
               </tr>
               <tr>
                 <td>vascular endothelium</td>
-                <td><span class="chip chip--amber">LOW</span></td>
-                <td><span class="chip chip--amber">LOW</span></td>
-                <td>baseline</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>endothelial cells; baseline</td>
               </tr>
               <tr>
-                <td>leukocytes (CD4+ T cells)</td>
-                <td><span class="chip chip--amber">LOW</span></td>
-                <td><span class="chip chip--muted">undetected</span></td>
-                <td>resting / activated (proposed CCL5 receptor context)</td>
+                <td>leukocytes (CD4+ T)</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                <td>resting / activated; proposed CCL5 R context</td>
               </tr>
               <tr>
-                <td>kidney, liver, heart</td>
-                <td><span class="chip chip--muted">LOW / NONE</span></td>
-                <td><span class="chip chip--muted">undetected</span></td>
+                <td>kidney / liver / heart</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
                 <td>baseline</td>
               </tr>
             </tbody>
           </table>
+          <div class="annot annot--llm">
+            <span class="annot__path">biological_context.tissues</span> ·
+            <span class="annot__type"
+              >list[TissueContext] = { tissue: str, <strong>present:
+              Literal["high","moderate","low","absent","mixed","unknown"]</strong>
+              (upgraded from bool), <strong>disease_context:
+              Literal["normal","tumor","tumor_adjacent","other_disease","mixed","unknown"]</strong>
+              (new), cell_types, cell_states, cited_evidence_ids }</span
+            >
+            · obesity uses <code>disease_context="other_disease"</code> (not
+            tumor); same adipose tissue appears in lean / obese rows with
+            potentially different levels.
+            <span class="annot__prov">L</span>
+          </div>
 
           <h4 class="label-mono">Anatomical accessibility</h4>
           <table class="data">

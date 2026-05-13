@@ -160,9 +160,10 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │     Stimulated: post-EGF endocytosis depletes surface ~25% within   │
 │     30 min — dwell time becomes assay-relevant            [evi_27]  │
 │                                                                     │
-│  Exocytosis / recycling evidence                                    │
-│  ----------------------------------------------------------------   │
-│      • constitutive recycling from sorting endosomes      [evi_29]  │
+│  (Exocytosis / recycling evidence formerly rendered here was        │
+│   dropped — same biology now lives in accessibility_modulation      │
+│   entries with category=activation_induced or                       │
+│   category=lysosomal_exocytosis, plus cell_state_trigger.)         │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─ 3. ISOFORMS  [deterministic — UniProt/Ensembl + DeepTMHMM 1.0.24]─┐
@@ -374,14 +375,14 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
-| `skin ✓ keratinocytes basal, suprabasal` (one row per tissue) | `biological_context.tissues: list[TissueContext]` | each: `{ tissue: str, present: bool, cell_types: list[str], cell_states: list[str], cited_evidence_ids: list[str] }` | L |
+| `skin · normal · HIGH · keratinocytes (basal, suprabasal)` (one row per tissue × disease_context) | `biological_context.tissues: list[TissueContext]` | each: `{ tissue: str, present: Literal["high","moderate","low","absent","mixed","unknown"], disease_context: Literal["normal","tumor","tumor_adjacent","other_disease","mixed","unknown"], cell_types: list[str], cell_states: list[str], cited_evidence_ids: list[str] }`. **`present` upgraded from bool to a 6-value level enum** + new **`disease_context`** axis lets the same tissue appear twice (normal vs tumor) with different levels — removes ambiguity that previously relied on cell_states to disambiguate. Tissue / cell_type / cell_state names stay free text per the user's decision to skip ontology IDs (UBERON / CL / Cellosaurus) for v1.0.0. | L |
 | (orthogonal pivot) cell types | `biological_context.cell_types: list[CellTypeContext]` | each: `{ cell_type: str, ontology_id: str\|None, present_in_tissues: list[str], cited_evidence_ids: list[str] }` | L |
 | (orthogonal pivot) cell states | `biological_context.cell_states: list[StateContext]` | each: `{ state: str, descriptor: str, cited_evidence_ids: list[str] }` | L |
 | `Primary compartment: plasma_membrane` | `biological_context.subcellular_localization.primary_compartment` | `Literal["plasma_membrane","endosome","lysosome","ER","Golgi","mitochondrion","nucleus","cytosol","secreted","other"]` | L |
 | `endosome (post-internalization) ~25% under EGF` | `biological_context.subcellular_localization.dual_localization: list[DualLocalization]` | each: `{ compartment: str, fraction_estimate: float\|None, condition: str\|None, cited_evidence_ids: list[str] }` | L |
 | Anatomical accessibility table rows | `biological_context.anatomical_accessibility: list[AnatomicalAccessibilityObservation]` | each: `{ context: str, orientation: Literal["blood_interstitial_facing","luminal_facing","apical","basolateral","lateral","junction_restricted","ciliary","synaptic","matrix_facing","unknown"], accessibility_implication: Literal["favorable","restricted","context_dependent","unclear"], rationale: str (≤300), cited_evidence_ids: list[str] }` | L |
 | Accessibility-modulation bullets (Normal → Disease shifts) | `biological_context.accessibility_modulation: list[AccessibilityModulationObservation]` | each: `{ category: Literal["cell_state_induced","tissue_restricted_surface","lysosomal_exocytosis","dual_localization","stable_surface_attachment","activation_induced","stress_induced","disease_state_induced","polarization_dependent","post_translational_dependent","developmental_stage","none","other","unknown"], category_other_label: str \| None (required when category=="other"), cell_state_trigger: Literal["ER_stress","heat_shock","oxidative_stress","DNA_damage_response","apoptosis","necroptosis","oncogenic_transformation","infection_viral","infection_bacterial","immune_activation","antigen_stimulation","cytokine_stimulation","hypoxia","nutrient_deprivation","hyperthermia","mechanical_stress","other","unknown"] \| None, restricted_lineage: Literal["germline_reproductive","embryonic_developmental","hematopoietic","neural","epithelial","endothelial","muscle","endocrine","specialized_somatic_other","other","unknown"] \| None, dual_loc_partner_compartment: Literal["ER","Golgi","endosome","lysosome","mitochondrion","nucleus","cytosol","secretory_vesicle","other","unknown"] \| None, baseline_context: str, modulating_state: str, change: str (max_length=300), accessibility_implication: str (max_length=300), cited_evidence_ids: list[str] }`. **The first five values in the `category` enum are VERBATIM from `surface_triage`'s contextual `reason` taxonomy** (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`) so cross-agent vocabulary stays in sync. The three NEW sub-fields (`cell_state_trigger`, `restricted_lineage`, `dual_loc_partner_compartment`) port the rich descriptive substructure from the triage *prompt* (which lists specific stress triggers, lineage taxonomy, partner compartments in prose) into closed enums in the deep-dive *schema* — promoting prose guidance into structured fields the catalog can filter on. Validators enforce category-conditional pairing (e.g., `cell_state_trigger` is non-None ↔ category ∈ state-induced flavors). | L |
-| `constitutive recycling from sorting endosomes` | `biological_context.subcellular_localization.exocytosis_evidence: list[ExocytosisEvidence]` | each: `{ stimulus: str\|None, mechanism: str\|None, cited_evidence_ids: list[str] }` | L |
+| ~~`constitutive recycling from sorting endosomes`~~ | ~~`biological_context.subcellular_localization.exocytosis_evidence`~~ | **DROPPED** — same biology is now expressed via `accessibility_modulation` entries (`category=lysosomal_exocytosis` or `category=activation_induced`) with the `cell_state_trigger` sub-enum. Single source of truth. | — | L |
 
 ### Section 3 — Isoforms (deterministic + LLM interpretation)
 
@@ -668,14 +669,27 @@ SurfaceomeRecord (v1.0.0)
 │             cited_evidence_ids }
 │
 ├── biological_context                            [LLM — section 2]
-│   ├── tissues: list[TissueContext]              # presence / absence per tissue, with cell types + states
+│   ├── tissues: list[TissueContext]
+│   │   └── { tissue: str,                        # free text (no ontology IDs; deferred)
+│   │         present: Literal["high","moderate","low","absent","mixed","unknown"],
+│   │           # was bool — upgraded to capture expression-level continuum
+│   │         disease_context: Literal["normal","tumor","tumor_adjacent",
+│   │                                   "other_disease","mixed","unknown"],
+│   │           # same tissue can appear twice (normal + tumor rows) with
+│   │           # different `present` levels — removes the ambiguity that
+│   │           # previously relied on cell_states to disambiguate
+│   │         cell_types: list[str], cell_states: list[str],
+│   │         cited_evidence_ids: list[str] }
 │   ├── cell_types: list[CellTypeContext]
 │   ├── cell_states: list[StateContext]           # activated/resting, stressed, EMT, ...
 │   ├── subcellular_localization
 │   │   ├── primary_compartment                   # enum: plasma_membrane|endosome|ER|...
 │   │   ├── dual_localization: list[{ compartment, fraction_estimate, cited_evidence_ids }]
-│   │   ├── membrane_subdomains: list[{ subdomain: lipid_raft|tight_junction|cilium|..., cited_evidence_ids }]
-│   │   └── exocytosis_evidence: list[{ stimulus, cited_evidence_ids }]
+│   │   └── membrane_subdomains: list[{ subdomain: lipid_raft|tight_junction|cilium|..., cited_evidence_ids }]
+│   │   # exocytosis_evidence was dropped — lysosomal / activation-induced / constitutive
+│   │   # exocytosis are now expressed through accessibility_modulation entries with
+│   │   # category=lysosomal_exocytosis (or category=activation_induced for ligand-induced)
+│   │   # plus the cell_state_trigger sub-enum. Single source of truth.
 │   ├── anatomical_accessibility: list[AnatomicalAccessibilityObservation]
 │   │   └── { context, orientation: blood_interstitial_facing|luminal_facing|apical|basolateral|
 │   │           lateral|junction_restricted|ciliary|synaptic|matrix_facing|unknown,

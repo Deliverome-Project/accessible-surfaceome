@@ -1374,12 +1374,13 @@
           <h3 class="h-section">Where it's <em>actually reachable</em></h3>
         </div>
         <div class="card__body">
-          <h4 class="label-mono">Tissues / cell types / cell states</h4>
+          <h4 class="label-mono">Tissues × disease_context (level + cell types + states)</h4>
           <table class="data">
             <thead>
               <tr>
                 <th>tissue</th>
-                <th>present</th>
+                <th>disease_context</th>
+                <th>level</th>
                 <th>cell types</th>
                 <th>states</th>
               </tr>
@@ -1387,30 +1388,55 @@
             <tbody>
               <tr>
                 <td>skin</td>
-                <td><span class="chip chip--success">✓</span></td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
                 <td>keratinocytes</td>
                 <td>basal, suprabasal</td>
               </tr>
               <tr>
                 <td>lung</td>
-                <td><span class="chip chip--success">✓</span></td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--amber chip--strong">MODERATE</span></td>
                 <td>alveolar T2, club cells</td>
-                <td>normal, fibrotic</td>
+                <td>normal</td>
+              </tr>
+              <tr>
+                <td>lung</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>adenocarcinoma cells</td>
+                <td>EMT, proliferative</td>
               </tr>
               <tr>
                 <td>colon</td>
-                <td><span class="chip chip--success">✓</span></td>
-                <td>enterocytes</td>
-                <td>normal, EMT</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>adenocarcinoma cells</td>
+                <td>EMT</td>
               </tr>
               <tr>
                 <td>blood</td>
-                <td><span class="chip chip--muted">✗</span></td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
                 <td>—</td>
                 <td>—</td>
               </tr>
             </tbody>
           </table>
+          <div class="annot annot--llm">
+            <span class="annot__path">biological_context.tissues</span> ·
+            <span class="annot__type"
+              >list[TissueContext] = { tissue: str,
+              <strong>present: Literal["high","moderate","low","absent","mixed","unknown"]</strong>
+              (upgraded from bool),
+              <strong>disease_context: Literal["normal","tumor","tumor_adjacent","other_disease","mixed","unknown"]</strong>
+              (new), cell_types, cell_states, cited_evidence_ids }</span
+            >
+            · same tissue appears in multiple rows when normal vs tumor
+            differ. Free-text tissue / cell_type / cell_state names —
+            ontology IDs deferred for v1.0.0.
+            <span class="annot__prov">L</span>
+          </div>
 
           <h4 class="label-mono">
             Anatomical accessibility (where can a binder physically reach?)
