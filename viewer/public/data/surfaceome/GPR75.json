@@ -121,8 +121,8 @@
       }
     ],
     "structure": {
-      "afdb_id": "AF-O95800-F1-model_v4",
-      "afdb_version": "v4",
+      "afdb_id": "AF-O95800-F1-model_v6",
+      "afdb_version": "v6",
       "ecd_mean_plddt": 62.4,
       "ecd_disordered_fraction": 0.38,
       "ecd_solvent_accessible_fraction": 0.71,

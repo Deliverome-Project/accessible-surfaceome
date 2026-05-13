@@ -132,11 +132,16 @@ export default async function GenePage({ params }: PageProps) {
           <GeneHeader rec={rec} geneName={geneName} />
         </Reveal>
 
-        <Reveal as="div" stagger stagger_ms={140}>
-          {sections.map((s, i) => (
-            <div key={s.kind}>{s.render(i + 1)}</div>
-          ))}
-        </Reveal>
+        {/* Per-section Reveal wrappers, not a single bulk wrapper.
+            A single stagger wrapper around all 12 sections is taller
+            than the viewport, so an IntersectionObserver with a
+            non-trivial threshold never reaches its trigger and every
+            child stays at opacity 0. Per-section Reveals also keep
+            the scroll-fade rhythm honest: each card fades in as it
+            actually scrolls into view. */}
+        {sections.map((s, i) => (
+          <Reveal key={s.kind}>{s.render(i + 1)}</Reveal>
+        ))}
 
         <Reveal className={styles.confidence}>
           <p className={`label-mono ${styles.confidenceEyebrow}`}>

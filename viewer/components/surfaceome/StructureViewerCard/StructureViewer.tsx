@@ -4,8 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
+  alphafoldPredictionApiUrl,
 } from "../../../lib/structure-viewer-types";
-import type { StructureViewerData } from "../../../lib/structure-viewer-types";
+import type {
+  AlphafoldPredictionEntry,
+  StructureViewerData,
+} from "../../../lib/structure-viewer-types";
 import styles from "./StructureViewerCard.module.css";
 
 interface StructureViewerProps {
@@ -44,7 +48,26 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       type Mod3D = typeof import("3dmol");
       const Mod = (await import("3dmol")) as Mod3D & { default?: Mod3D };
       const $3Dmol: Mod3D = Mod.default ?? Mod;
-      const pdbResp = await fetch(alphafoldPdbUrl(data.uniprot_acc));
+      // 1) Ask the AFDB API for the current latest pdbUrl. AFDB
+      //    occasionally bumps a UniProt to a new model version and
+      //    removes older versions from the file server, so a hard-
+      //    coded ``v4`` URL can 404 (observed for O95800 in 2025-08
+      //    when the model was promoted to v6). Fall back to the
+      //    legacy v4 URL if the API is unreachable.
+      let pdbUrl = alphafoldPdbUrl(data.uniprot_acc);
+      try {
+        const apiResp = await fetch(alphafoldPredictionApiUrl(data.uniprot_acc));
+        if (apiResp.ok) {
+          const entries = (await apiResp.json()) as AlphafoldPredictionEntry[];
+          if (entries[0]?.pdbUrl) {
+            pdbUrl = entries[0].pdbUrl;
+          }
+        }
+      } catch {
+        // Network blip → use the legacy URL; its 404 (if any) will
+        // surface in the next fetch with a clearer error.
+      }
+      const pdbResp = await fetch(pdbUrl);
       if (!pdbResp.ok) {
         throw new Error(
           `AlphaFold DB returned ${pdbResp.status} for ${data.uniprot_acc}`,

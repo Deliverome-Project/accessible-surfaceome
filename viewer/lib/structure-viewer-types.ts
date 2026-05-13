@@ -50,3 +50,28 @@ export const TOPOLOGY_COLORS: Record<string, string> = {
 export function alphafoldPdbUrl(uniprotAcc: string, version = "v4"): string {
   return `https://alphafold.ebi.ac.uk/files/AF-${uniprotAcc}-F1-model_${version}.pdb`;
 }
+
+/**
+ * AFDB serves a single API endpoint per UniProt that returns the
+ * current latest model + a ready-to-use ``pdbUrl``. Querying this
+ * before fetching the PDB lets the viewer auto-track AFDB version
+ * bumps (e.g. O95800 went v4 → v6 in 2025-08; v1–v5 were removed
+ * from the file server, so the legacy ``alphafoldPdbUrl(acc, "v4")``
+ * 404s).
+ */
+export function alphafoldPredictionApiUrl(uniprotAcc: string): string {
+  return `https://alphafold.ebi.ac.uk/api/prediction/${uniprotAcc}`;
+}
+
+/** Shape of one entry returned by ``alphafoldPredictionApiUrl``. The
+ *  endpoint returns an array (typically length 1 for a single UniProt).
+ *  We only need ``pdbUrl`` + ``latestVersion``; the API has many other
+ *  fields we don't depend on. */
+export interface AlphafoldPredictionEntry {
+  pdbUrl: string;
+  cifUrl?: string;
+  bcifUrl?: string;
+  latestVersion?: number;
+  entryId?: string;
+  modelEntityId?: string;
+}

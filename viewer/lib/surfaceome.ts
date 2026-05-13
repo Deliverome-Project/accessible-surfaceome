@@ -171,6 +171,27 @@ function enrichRowsWithNames(
 }
 
 /**
+ * The viewer's local JSON set is the source of truth for which
+ * rows have a viewable deep-dive page. The public catalog's
+ * ``deep_dive`` flag is currently out of sync with the v1.0.0
+ * cut-over: the production D1 mirror still flags v0.x records
+ * (HSPA1A, TGOLN2) that no longer have local JSONs, and doesn't
+ * yet flag the v1.0.0 records that this PR introduces (e.g.
+ * GPR75). Override the flag to match the local set so links resolve
+ * and the "Deep-dive" filter chip stays honest.
+ */
+function syncDeepDiveToLocal(
+  rows: CatalogRow[],
+  localSymbols: Set<string>,
+): CatalogRow[] {
+  return rows.map((r) => {
+    const hasLocal = localSymbols.has(r.symbol);
+    if (hasLocal === r.deep_dive) return r;
+    return { ...r, deep_dive: hasLocal };
+  });
+}
+
+/**
  * The Worker (`row_schema: 2`) packs the 5 surface-DB flags into a
  * 5-bit integer to keep payloads compact:
  *   bit 0 = uniprot, 1 = go, 2 = surfy, 3 = cspa, 4 = hpa.
@@ -255,10 +276,20 @@ export async function loadCatalog(): Promise<Catalog> {
         "reachable but no candidate-universe data has been loaded into D1 yet.",
     );
   }
+  const localSymbols = new Set(listSurfaceomeGenes());
+  const rows = syncDeepDiveToLocal(
+    enrichRowsWithNames(decodeDbBitmask(payload.rows), names),
+    localSymbols,
+  );
+  const n_with_deep_dive = rows.reduce(
+    (n, r) => n + (r.deep_dive ? 1 : 0),
+    0,
+  );
   return {
     source: "api",
     ...payload,
-    rows: enrichRowsWithNames(decodeDbBitmask(payload.rows), names),
+    rows,
+    n_with_deep_dive,
   };
 }
 
