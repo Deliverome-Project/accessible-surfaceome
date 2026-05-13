@@ -723,6 +723,19 @@
             </span>
             <span class="chip chip--muted">NCBI Gene 1956</span>
             <span class="chip chip--muted">Ensembl ENSG00000146648</span>
+            <span class="chip chip--teal">
+              triage: likely_accessible
+              <span class="annot annot--inline">
+                <span class="annot__path">triage_signal</span> ·
+                <span class="annot__type"
+                  >Literal["likely_accessible","possibly_accessible","unlikely","unknown"]</span
+                >
+                · populated from the latest surface_triage record;
+                inconsistency with surface_accessibility flips
+                contradiction_flag=True
+                <span class="annot__prov">D</span>
+              </span>
+            </span>
           </div>
         </div>
       </article>
@@ -1412,12 +1425,25 @@
             ·
             <span class="annot__type"
               >list[AccessibilityModulationObservation] = { <strong>category:
-              Literal["cell_state_induced","tissue_restricted","activation_induced","stress_induced","disease_state_induced","polarization_dependent","post_translational_dependent","developmental_stage","none","unknown"]</strong>,
-              baseline_context, modulating_state, change,
-              accessibility_implication, cited_evidence_ids }</span
+              Literal[<span style="color: var(--teal)">"cell_state_induced",
+              "tissue_restricted_surface", "lysosomal_exocytosis",
+              "dual_localization", "stable_surface_attachment"</span>,
+              "activation_induced", "stress_induced",
+              "disease_state_induced", "polarization_dependent",
+              "post_translational_dependent", "developmental_stage", "none",
+              <span style="color: var(--coral)">"other"</span>,
+              "unknown"]</strong>, category_other_label: str | None
+              (required-when-other), baseline_context, modulating_state,
+              change: str = Field(max_length=300), accessibility_implication:
+              str = Field(max_length=300), cited_evidence_ids }</span
             >
-            · category enum mirrors + expands `surface_triage` contextual
-            reason taxonomy
+            · the five teal values are <strong>verbatim from `surface_triage`</strong>
+            's contextual `reason` taxonomy so cross-agent vocabulary stays
+            in sync; the remaining values are deep-dive expansions that roll
+            up to triage's broader buckets at cross-validation time. The
+            <span style="color: var(--coral)">other</span> escape pairs with
+            <code>category_other_label</code> for parity with the codebase's
+            hybrid-enum pattern.
             <span class="annot__prov">L</span>
           </div>
         </div>
@@ -1715,11 +1741,13 @@
             ·
             <span class="annot__type">
               ParalogRisk = { paralog_symbol,
-              <strong>deterministic_paralog_ref</strong> (FK →
-              deterministic_features.paralogs[i].family_id),
+              <strong>paralog_uniprot_acc</strong> (FK →
+              deterministic_features.paralogs[i].paralog_uniprot_acc — unique
+              per paralog, unlike family_id which the whole family shares),
               cross_reactivity_assessment:
               Literal["high","moderate","low","negligible"], severity,
-              evidence_strength, rationale (≤200 char), cited_evidence_ids }
+              evidence_strength, rationale: str = Field(max_length=200),
+              cited_evidence_ids }
             </span>
             <span class="annot__prov">L→D-ref</span>
           </div>
@@ -1922,10 +1950,14 @@
                 plausible, but actual exposure depends on folding,
                 glycosylation, complex state, and membrane subdomain.
               </p>
-              <div class="annot annot--ref">
+              <div class="annot annot--llm">
                 <span class="annot__path">accessibility_risks.ecd_size_assessment</span> ·
-                <span class="annot__type">{ <strong>canonical_topology_ref</strong> (FK → deterministic_features.canonical_topology), ecd_accessibility_class: Literal["large","moderate","small","minimal","none"], rationale, cited_evidence_ids } &nbsp;(renamed from <code>druggability_class</code>)</span>
-                <span class="annot__prov">L→D-ref</span>
+                <span class="annot__type">{ ecd_accessibility_class: Literal["large","moderate","small","minimal","none"], rationale: str = Field(max_length=300), cited_evidence_ids }</span>
+                · renamed from <code>druggability_class</code>; viewer reads
+                <code>deterministic_features.canonical_topology.ecd_length_residues</code>
+                directly — no FK needed since canonical_topology is a known
+                singleton, not a list
+                <span class="annot__prov">L</span>
               </div>
             </li>
             <li class="risk-card">
