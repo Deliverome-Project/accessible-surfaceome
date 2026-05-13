@@ -61,10 +61,10 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │    mouse=88.2% · cyno=99.1% · rat=88.0%                             │
 │                                                                     │
 │  TOPOLOGY                                                           │
-│    n_term_extracellular=TRUE                                        │
+│    n_term_extracellular=TRUE · c_term_extracellular=FALSE          │
 │                                                                     │
 │  QUALITY                                                            │
-│    has_knowledge_gaps=TRUE                                          │
+│    knowledge_gaps_max_impact=HIGH                                   │
 │                                                                     │
 │  (Catalog page renders each as a chip; click to filter the gene    │
 │  list. Per-gene page surfaces these in the executive header above.) │
@@ -328,7 +328,8 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `restricted_subdomain` (bool) | `filters.has_restricted_subdomain` | `bool` | D | `accessibility_risks.restricted_subdomain.present == True` OR any `biological_context.anatomical_accessibility[].accessibility_implication == "restricted"` |
 | `mouse=88.2% · cyno=99.1%` | `filters.mouse_ortholog_ecd_pct_identity` + `filters.cyno_ortholog_ecd_pct_identity` | `float [0.0–100.0]` each | D | `deterministic_features.orthologs.{species}[is_canonical].ecd_pct_identity_to_human_canonical` — pulled straight from Compara, no LLM rollup |
 | `n_term_extracellular` (bool) | `filters.n_term_extracellular` | `bool` | D | `deterministic_features.canonical_topology.n_terminal_orientation == "extracellular"` |
-| `has_knowledge_gaps` (bool) | `filters.has_knowledge_gaps` | `bool` | D | `len(knowledge_gaps) > 0` |
+| `c_term_extracellular` (bool) | `filters.c_term_extracellular` | `bool` | D | `deterministic_features.canonical_topology.c_terminal_orientation == "extracellular"` |
+| `knowledge_gaps_max_impact=high` | `filters.knowledge_gaps_max_impact` | `Literal["high","moderate","low","none"]` | D | `max(g.impact_on_confidence for g in knowledge_gaps, default="none")` — replaces the earlier boolean `has_knowledge_gaps`, which was TRUE for almost every gene and carried no signal |
 
 **Filters-only rule (no duplication):** the three LLM-emitted dimensions (`expression_level`, `expression_breadth`, `surface_specificity`) live ONLY in `filters`. The deep `surface_evidence.expression_levels[]` list still carries per-context detail ("epithelial tumors HIGH; blood ABSENT") but the rolled-up filter values aren't repeated there. Zero drift risk.
 
@@ -553,7 +554,13 @@ SurfaceomeRecord (v1.0.0)
 │   ├── mouse_ortholog_ecd_pct_identity           # D ← orthologs.mouse[is_canonical].ecd_pct_identity
 │   ├── cyno_ortholog_ecd_pct_identity            # D ← orthologs.cynomolgus[is_canonical].ecd_pct_identity
 │   ├── n_term_extracellular: bool                # D ← canonical_topology.n_terminal_orientation
-│   └── has_knowledge_gaps: bool                  # D ← len(knowledge_gaps) > 0
+│   ├── c_term_extracellular: bool                # D ← canonical_topology.c_terminal_orientation
+│   └── knowledge_gaps_max_impact                 # enum: high|moderate|low|none
+│                                                 #   D ← max(g.impact_on_confidence for g in
+│                                                 #          knowledge_gaps, default="none")
+│                                                 #   (replaces boolean has_knowledge_gaps —
+│                                                 #    every gene has some gaps; severity is
+│                                                 #    what actually filters)
 │
 ├── surface_evidence                              [LLM — section 1 of viewer]
 │   ├── evidence_grade                            # enum: direct_multi_method|direct_single_method|
@@ -620,6 +627,7 @@ SurfaceomeRecord (v1.0.0)
 │   ├── canonical_topology                        # DeepTMHMM on canonical isoform
 │   │   ├── tm_helix_count
 │   │   ├── n_terminal_orientation                # extracellular|cytoplasmic
+│   │   ├── c_terminal_orientation                # extracellular|cytoplasmic
 │   │   ├── signal_peptide_length
 │   │   ├── ecd_length_residues
 │   │   ├── icd_length_residues

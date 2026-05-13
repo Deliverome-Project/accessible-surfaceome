@@ -965,7 +965,31 @@
               <p class="filters-group__title">Topology / quality</p>
               <div class="chip-row">
                 <span class="chip chip--teal">n_term_extracellular=TRUE</span>
-                <span class="chip chip--amber">has_knowledge_gaps=TRUE</span>
+                <span class="chip chip--muted">c_term_extracellular=FALSE</span>
+                <span class="chip chip--strong">knowledge_gaps_max_impact=HIGH</span>
+              </div>
+              <div class="annot">
+                <span class="annot__path">filters.knowledge_gaps_max_impact</span>
+                ·
+                <span class="annot__type"
+                  >Literal["high","moderate","low","none"]</span
+                >
+                · replaces the earlier boolean
+                <code>has_knowledge_gaps</code> — every gene has some gaps;
+                severity (max <code>impact_on_confidence</code> across the
+                list) is what filters usefully.
+                <span class="annot__prov">D</span>
+              </div>
+              <div class="annot">
+                <span class="annot__path"
+                  >filters.{n_term,c_term}_extracellular</span
+                >
+                ·
+                <span class="annot__type">bool each</span> · derived from
+                <code>canonical_topology.{n,c}_terminal_orientation == "extracellular"</code>
+                · both together let a reader pick proteins where a tag can be
+                fused at either terminus
+                <span class="annot__prov">D</span>
               </div>
             </div>
           </div>
