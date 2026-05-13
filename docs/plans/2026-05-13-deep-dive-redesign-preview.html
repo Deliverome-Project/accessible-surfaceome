@@ -1046,6 +1046,46 @@
                 anti-EGFR clone 528 + ICR10 (ECD epitope)
                 <span class="inline-cite">[evi_02, evi_05]</span>
               </p>
+              <div
+                style="
+                  display: flex;
+                  flex-wrap: wrap;
+                  gap: var(--space-2);
+                  margin: var(--space-2) 0;
+                  padding: var(--space-2) var(--space-3);
+                  background: rgba(116, 156, 117, 0.06);
+                  border-left: 2px solid var(--success);
+                  border-radius: 4px;
+                  font-size: 0.85rem;
+                "
+              >
+                <strong style="margin-right: 0.5em">clone 528:</strong>
+                <span class="chip chip--muted">RRID:AB_2096407</span>
+                <span class="chip chip--muted">monoclonal</span>
+                <span class="chip chip--success">genetic_KO validated</span>
+                <span class="chip chip--success">validation=STRONG</span>
+                <span style="color: var(--muted); font-style: italic">
+                  cross-reactivity: none reported in ERBB family
+                </span>
+              </div>
+              <div class="annot annot--llm">
+                <span class="annot__path">MethodObservation.antibodies[i]</span>
+                ·
+                <span class="annot__type"
+                  >AntibodyRef now carries
+                  <strong>rrid</strong>,
+                  <strong>monoclonal_or_polyclonal</strong>,
+                  <strong>validation_strategy: Literal["genetic_KO","siRNA_knockdown","CRISPR_KO","orthogonal_method","ip_ms_pulldown","isoform_specific_KO","overexpression_reference","vendor_claim_only","none","unknown"]</strong>,
+                  <strong>validation_strength: Literal["strong","moderate","weak","none","unknown"]</strong>,
+                  and
+                  <strong>cross_reactivity_notes: str | None</strong>
+                  on top of the existing name / clone / vendor / catalog /
+                  antibody_epitope_region. Antibody specificity is load-bearing
+                  for surface evidence — a "positive" flow signal from an
+                  antibody that cross-reacts with a paralog is a false positive.</span
+                >
+                <span class="annot__prov">L</span>
+              </div>
               <table class="data" style="margin-top: var(--space-2)">
                 <thead>
                   <tr>
