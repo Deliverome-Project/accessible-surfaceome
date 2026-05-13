@@ -2123,12 +2123,46 @@
               </div>
             </span>
             <span class="field-label">ECD mean pLDDT</span>
-            <span class="field-value mono">91.4</span>
+            <span class="field-value mono">
+              91.4
+              <div class="annot">
+                <span class="annot__path">deterministic_features.structure.ecd_mean_plddt</span>
+                ·
+                <span class="annot__type">float = Field(ge=0.0, le=100.0)</span>
+                · arithmetic mean over ECD residues only (DeepTMHMM "O"
+                labels, excluding signal peptide). Read from AFDB
+                confidence.json; no new dep.
+                <span class="annot__prov">D</span>
+              </div>
+            </span>
             <span class="field-label">ECD disordered fraction</span>
-            <span class="field-value mono">3.1%</span>
-            <span class="field-label">ECD SASA fraction</span>
-            <span class="field-value mono">0.62</span>
+            <span class="field-value mono">
+              3.1%
+              <div class="annot">
+                <span class="annot__path">deterministic_features.structure.ecd_disordered_fraction</span>
+                ·
+                <span class="annot__type">float = Field(ge=0.0, le=1.0)</span>
+                · fraction of ECD residues with pLDDT &lt; 50 (AlphaFold
+                team's published disorder-mapping convention). Zero-dep.
+                <span class="annot__prov">D</span>
+              </div>
+            </span>
           </div>
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin: var(--space-2) 0 0;
+              font-style: italic;
+            "
+          >
+            <strong>SASA / epitope-accessibility metric was considered and
+            dropped</strong> — would have required FreeSASA or mkdssp as a
+            new dependency, and the two pLDDT-based metrics above already
+            cover the structure-quality signal. Real epitope-accessibility
+            scoring (SASA + DSSP + cutoff calibration against known epitopes)
+            is deferred to v1.x.
+          </p>
           <p class="attribution">
             Structure data from
             <a

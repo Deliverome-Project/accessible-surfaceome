@@ -265,7 +265,7 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 ┌─ APPENDIX — STRUCTURE [deterministic, AlphaFold DB] ───────────────┐
 │   AFDB ID: AF-P00533-F1-model_v4                                    │
 │   ECD mean pLDDT: 91.4   ECD disordered fraction: 3.1%              │
-│   ECD solvent-accessible fraction (SASA proxy): 0.62                │
+│   (SASA-derived metric considered + dropped — no new dep)           │
 │                                                                     │
 │   Structure data from AlphaFold DB · © DeepMind / EMBL-EBI ·        │
 │   licensed CC BY 4.0 · cite Jumper et al., Nature 2021;             │
@@ -423,7 +423,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `AFDB ID: AF-P00533-F1-model_v4` | `deterministic_features.structure.afdb_id` | `str` | D |
 | `ECD mean pLDDT: 91.4` | `deterministic_features.structure.ecd_mean_plddt` | `float` | D |
 | `ECD disordered fraction: 3.1%` | `deterministic_features.structure.ecd_disordered_fraction` | `float` [0.0–1.0] | D |
-| `ECD solvent-accessible fraction: 0.62` | `deterministic_features.structure.ecd_solvent_accessible_fraction` | `float` [0.0–1.0] | D |
+| ~~`ECD solvent-accessible fraction: 0.62`~~ | ~~`deterministic_features.structure.ecd_solvent_accessible_fraction`~~ | **DROPPED** — would have required a new SASA dependency (FreeSASA / mkdssp). The two pLDDT-based metrics already cover structure-quality signal without it. Real epitope-accessibility scoring is deferred to v1.x. | — |
 | `Structure data from AlphaFold DB · © DeepMind / EMBL-EBI · licensed CC BY 4.0 · cite Jumper et al…` | `deterministic_features.structure.{source,attribution,license,citations}` | `source: str`, `attribution: str`, `license: str`, `citations: list[str]` (DOIs) | D |
 
 ### Evidence ledger
@@ -773,7 +773,11 @@ SurfaceomeRecord (v1.0.0)
 │       │                                         #   structure version.
 │       ├── ecd_mean_plddt: float = Field(ge=0.0, le=100.0)
 │       ├── ecd_disordered_fraction: float = Field(ge=0.0, le=1.0)
-│       ├── ecd_solvent_accessible_fraction: float = Field(ge=0.0, le=1.0)
+│       # ecd_solvent_accessible_fraction was considered and dropped — would
+│       # have required a new SASA dependency (FreeSASA / mkdssp), and the
+│       # two pLDDT-based metrics above already cover the structure-quality
+│       # signal without it. Real epitope-accessibility scoring is deferred
+│       # to v1.x (where it pairs with the dropped epitope_candidates idea).
 │       ├── source                                # fixed: "AlphaFold DB"
 │       ├── license                               # fixed: "CC BY 4.0"
 │       ├── attribution                           # fixed: "© DeepMind / EMBL-EBI"
@@ -890,7 +894,7 @@ SurfaceomeRecord (v1.0.0)
 - **`confidence_reasoning` discipline**. `Field(max_length=600)` so reasoning is scannable. Validator: `confidence_reasoning` must be non-empty when `confidence ∈ {moderate, low}`. A non-high record without reasoning is unhelpful; the validator catches the case at parse time.
 - **`contradiction_flag` dropped**. Three structured signals already answer the "is there disagreement?" question: (a) per-row `contradicting_evidence[i].severity_for_surface_accessibility`, (b) `surface_evidence.evidence_grade == "conflicting"`, (c) the `triage_signal ↔ surface_accessibility` consistency validator. A redundant top-level bool muddied the picture.
 - **Timestamp naming**: top-level `record_generated_at` is the record-assembly time. Nested `retrieved_at` (e.g. `deterministic_features.canonical_topology.retrieved_at`, `orthologs[i].retrieved_at`) is the tool-fetch time. The two are different concepts and the names are now distinct enough that the casual reader won't conflate them.
-- **Numeric ranges enforced at validation time.** Floats carry explicit Pydantic bounds: `Field(ge=0.0, le=100.0)` for pct-identity / pct-similarity / pLDDT; `Field(ge=0.0, le=1.0)` for disordered_fraction / solvent_accessible_fraction. A buggy fetcher producing 110.0 or -5.0 is rejected before it reaches D1.
+- **Numeric ranges enforced at validation time.** Floats carry explicit Pydantic bounds: `Field(ge=0.0, le=100.0)` for pct-identity / pct-similarity / pLDDT; `Field(ge=0.0, le=1.0)` for disordered_fraction. A buggy fetcher producing 110.0 or -5.0 is rejected before it reaches D1.
 - **String length limits enforced.** Every prose field declares `Field(max_length=N)` — `≤200` for short rationale fields, `≤300` for medium, `≤400` for longer rationale, `≤600` for the executive paragraph, `≤800` for evidence_summary / grade_rationale. The mockup annotations call these out per-field.
 - **Hybrid-enum pattern**: every closed enum that takes an `"other"` value pairs with a required `*_other_label: str | None` and a validator that enforces `category == "other" ↔ category_other_label is not None`. Applies to `accessibility_modulation.category` and any future open-ended enums.
 
@@ -902,33 +906,34 @@ Three new orchestrator-level fetchers (not agent tools). Each caches by `(unipro
 |---|---|---|
 | `src/accessible_surfaceome/agents/surface_annotator/fetchers/deeptmhmm_fetcher.py` | Runs DeepTMHMM on canonical + all isoforms; extracts TM count, terminal orientation, signal peptide, ECD/ICD lengths, per-residue topology | Existing M1 pipeline at [deeptmhmm.py](src/accessible_surfaceome/sources/deeptmhmm.py) — extract prediction-parsing into a shared helper |
 | `src/accessible_surfaceome/agents/surface_annotator/fetchers/compara_fetcher.py` | Looks up Ensembl Compara one2one orthologs for mouse/rat/cynomolgus + within-species paralogs; computes ECD pct identity using topology-derived ECD boundaries | Existing Compara CSV path referenced in [deeptmhmm.py:369](src/accessible_surfaceome/sources/deeptmhmm.py:369); needs new direct-fetch path or new ingestion script if CSV is stale |
-| `src/accessible_surfaceome/agents/surface_annotator/fetchers/alphafold_fetcher.py` | Fetches AlphaFold DB CIF + confidence JSON for canonical UniProt; computes ECD mean pLDDT, disordered fraction, SASA-derived epitope-accessibility proxy. **Stamps every output with `source="AlphaFold DB"`, `license="CC BY 4.0"`, `attribution="© DeepMind / EMBL-EBI"`, and the Jumper 2021 + Varadi 2024 DOIs** — these flow through to the record's `deterministic_features.structure` block and are rendered as an attribution line in both the viewer Structure card and the per-record Data Sources footer. | New — no current AlphaFold retrieval in the repo |
+| `src/accessible_surfaceome/agents/surface_annotator/fetchers/alphafold_fetcher.py` | Fetches AlphaFold DB CIF + confidence JSON for canonical UniProt; computes ECD mean pLDDT and disordered fraction from the per-residue pLDDT values in `confidence.json` (no SASA / DSSP dependency). **Stamps every output with `source="AlphaFold DB"`, `license="CC BY 4.0"`, `attribution="© DeepMind / EMBL-EBI"`, and the Jumper 2021 + Varadi 2024 DOIs** — these flow through to the record's `deterministic_features.structure` block and are rendered as an attribution line in both the viewer Structure card and the per-record Data Sources footer. | New — no current AlphaFold retrieval in the repo |
 
 ### ECD-statistics methodology
 
-How the three structure-block numbers (`ecd_mean_plddt`, `ecd_disordered_fraction`, `ecd_solvent_accessible_fraction`) are computed. These have meaningful biology behind them so it's worth pinning down the recipe explicitly — otherwise the LLM (and downstream readers) might over- or under-interpret what they mean.
+How the two structure-block numbers (`ecd_mean_plddt`, `ecd_disordered_fraction`) are computed. Both derive from data the AlphaFold DB already publishes (per-residue pLDDT confidence scores), so no new dependency is needed.
 
 **Step 1. Define ECD residues from DeepTMHMM topology.**
-DeepTMHMM emits a per-residue topology label string with the alphabet `S` / `O` / `M` / `I` / `B` (signal peptide / extracellular outside / TM helix / intracellular inside / β-strand). For each protein, ECD = the set of residues labeled `O` (extracellular). Signal-peptide (`S`) residues are *excluded* (the signal peptide is cleaved during ER processing; it is not part of the mature surface protein). For a single-pass type I receptor like EGFR, ECD = residues 25 → first TM helix start. For a multi-pass GPCR like GPR75, ECD = the union of N-terminal extracellular tail + the three extracellular loops (ECL1 + ECL2 + ECL3) — the function takes whatever residues are labeled `O`.
+DeepTMHMM emits a per-residue topology label string with the alphabet `S` / `O` / `M` / `I` / `B` (signal peptide / extracellular outside / TM helix / intracellular inside / β-strand). For each protein, ECD = the set of residues labeled `O` (extracellular). Signal-peptide (`S`) residues are *excluded* (the signal peptide is cleaved during ER processing; it is not part of the mature surface protein). For a single-pass type I receptor like EGFR, ECD = residues ~25 → first TM helix start. For a multi-pass GPCR like GPR75, ECD = the union of N-terminal extracellular tail + the three extracellular loops (ECL1 + ECL2 + ECL3) — whatever residues are labeled `O`.
 
 **Step 2. Look up per-residue pLDDT from AlphaFold DB.**
-AlphaFold publishes a per-residue confidence score called **pLDDT** (predicted Local Distance Difference Test) for every position in its structures. Scale is 0 → 100. Conventional bins:
+AlphaFold publishes a per-residue confidence score called **pLDDT** (predicted Local Distance Difference Test) for every position in its structures, in the `confidence.json` companion file alongside each PDB. Scale is 0 → 100. Conventional bins:
 - pLDDT > 90: very high confidence (model likely accurate)
 - pLDDT 70–90: confident
 - pLDDT 50–70: low confidence
 - pLDDT < 50: very low confidence — typically intrinsically disordered
 
-**Step 3. Compute the three statistics over ECD residues only.**
+**Step 3. Compute the two statistics over ECD residues only.**
 
 - **`ecd_mean_plddt`** = arithmetic mean of pLDDT over ECD residues only. Tells you whether AlphaFold is confident about the *extracellular* part of the protein specifically (the part a binder would engage). High value (e.g. EGFR ECD = 91.4) means the fold is well-predicted; low value (e.g. an ECD with a long flexible linker) means be careful about epitope-prediction from the model.
 
 - **`ecd_disordered_fraction`** = `count(ECD residues with pLDDT < 50) / count(ECD residues)`, range 0.0–1.0. Approximates the fraction of the ECD that's intrinsically disordered (the pLDDT < 50 → disorder mapping is the AlphaFold team's published convention, validated against IDR predictors in Akdel *et al.* 2022). Higher value = more flexible ECD = harder to design conformation-locked binders (the flexible regions don't have a stable epitope to engage).
 
-- **`ecd_solvent_accessible_fraction`** = mean fractional **SASA** (Solvent-Accessible Surface Area) over ECD residues, range 0.0–1.0. SASA is computed by rolling a 1.4 Å probe sphere (water-sized) over the AlphaFold structure and measuring how much surface area is exposed per residue. The fractional version normalizes by the residue's maximum-possible SASA (extended-tripeptide reference), so the value is comparable across amino-acid types. Computed with the **FreeSASA** Python library (pure-Python, no DSSP dependency — see [freesasa.github.io](https://freesasa.github.io/)). Lower value = more residues buried in the protein interior = fewer accessible binder targets; higher value = more surface-exposed = more binder real estate.
+**Both statistics are zero-dependency** — pLDDT comes from AlphaFold DB's confidence JSON, ECD-residue selection comes from the DeepTMHMM topology string we already cache. The alphafold_fetcher only needs to read JSON.
 
-**Interpretation rule of thumb for binder design:**
-- High pLDDT (>85) + low disordered_fraction (<10%) + moderate SASA (~0.4–0.6) → well-folded, structured ECD with plenty of surface area. Good antibody target.
-- High pLDDT + low disordered + very low SASA (<0.3) → well-folded but mostly buried. Look for surface patches.
+**Why not also compute SASA (solvent-accessible surface area)?** SASA-derived fields were considered (an `ecd_solvent_accessible_fraction` to estimate binder real estate, plus structure-derived `epitope_candidates`) but both were dropped from v1.0.0. Computing SASA requires either FreeSASA or DSSP, both new external dependencies, and the result is a noisy proxy for actual epitope accessibility (it doesn't account for glycosylation, membrane proximity, conformational dynamics, or partner-bound state). When this lands in v1.x, it'll come as a single SASA + DSSP pass with cutoff calibration against known-epitope proteins (EGFR domain III, PD-L1's IgV face) — not a stat-only number.
+
+**Interpretation rule of thumb:**
+- High `ecd_mean_plddt` (>85) + low `ecd_disordered_fraction` (<10%) → well-folded, structured ECD. AlphaFold model is trustworthy for downstream epitope reasoning.
 - Low pLDDT + high disordered → ECD has lots of flexible regions. Consider conformation-stabilizing constructs or accept that some epitopes will be context-dependent.
 
 **Why not just use the full-protein pLDDT?** Because the question we're answering is about *binder accessibility on the cell surface*, not whole-protein structural confidence. A single-pass receptor with a 600-aa well-folded ECD and a 500-aa disordered intracellular tail would have low full-protein pLDDT (the tail drags the average down) but high `ecd_mean_plddt` (which is what matters for surface targeting).
@@ -1084,7 +1089,7 @@ SurfaceomeRecord (v1.0.0)
 |---|---|
 | Surface evidence | `evidence_grade` ordinal (direct_multi_method → weak) + rationale; method observations carry method_family + method_subclass + permeabilization + expression_system + antibody_epitope_region + accessibility_relevance + surface_claim_type, with nested expression_observations using closed `sample_type` enum (primary_human_tissue / patient_sample / iPSC_derived / established_cell_line / …); AntibodyRef carries rrid + validation_strategy + validation_strength + cross_reactivity_notes; therapeutic_engagement struct with required `surface_form_rationale` |
 | Biological context | tissues with expression-level enum + disease_context axis; anatomical_accessibility (apical / basolateral / junction_restricted / luminal_facing / ciliary / synaptic / …); accessibility_modulation with triage-aligned category enum + cell_state_trigger / restricted_lineage / dual_loc_partner_compartment sub-enums; no exocytosis_evidence (covered by accessibility_modulation) |
-| Deterministic features | DeepTMHMM canonical + all isoforms; Ensembl Compara orthologs per species (canonical + alt isoforms, list[OrthologEntry]); paralogs list; AlphaFold v4 structure with ECD pLDDT / disordered / SASA fraction; numeric Field bounds enforced |
+| Deterministic features | DeepTMHMM canonical + all isoforms; Ensembl Compara orthologs per species (canonical + alt isoforms, list[OrthologEntry]); paralogs list; AlphaFold v4 structure with ECD pLDDT + disordered fraction (no new SASA dep); numeric Field bounds enforced |
 | Paralog assessment | Top-level (promoted out of accessibility_risks); FK by paralog_uniprot_acc into deterministic paralogs; cross_reactivity_assessment + severity + evidence_strength + rationale |
 | Accessibility risks | Per-risk severity + evidence_strength; epitope_masking.mechanism is a list (multi-mechanism cases don't collapse); co_receptor_requirements covers surface-expression axis only; restricted_subdomain captures basolateral / junction restriction; ecd_size_assessment renamed from druggability_class |
 | Filters | 17 flat top-level fields for D1 indexing; per-gene page drops the "Accessibility" group to avoid duplication with exec summary chips |
