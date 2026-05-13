@@ -3,18 +3,24 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
+import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
+import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
+import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
+import { EvidenceLedgerCard } from "../../components/surfaceome/EvidenceLedgerCard/EvidenceLedgerCard";
+import { ExecutiveSummaryCard } from "../../components/surfaceome/ExecutiveSummaryCard/ExecutiveSummaryCard";
+import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
 import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
-import { SurfaceBiologyCard } from "../../components/surfaceome/SurfaceBiologyCard/SurfaceBiologyCard";
-import { DeepDiveCard } from "../../components/surfaceome/DeepDiveCard/DeepDiveCard";
-import { ExpressionCard } from "../../components/surfaceome/ExpressionCard/ExpressionCard";
-import { LandscapeCard } from "../../components/surfaceome/LandscapeCard/LandscapeCard";
-import { RiskFlagsCard } from "../../components/surfaceome/RiskFlagsCard/RiskFlagsCard";
+import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
+import { KnowledgeGapsCard } from "../../components/surfaceome/KnowledgeGapsCard/KnowledgeGapsCard";
+import { OrthologsCard } from "../../components/surfaceome/OrthologsCard/OrthologsCard";
+import { ParalogsCard } from "../../components/surfaceome/ParalogsCard/ParalogsCard";
+import { StructureSummaryCard } from "../../components/surfaceome/StructureSummaryCard/StructureSummaryCard";
+import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import { StructureViewerCard } from "../../components/surfaceome/StructureViewerCard/StructureViewerCard";
 import {
   listSurfaceomeGenes,
   loadGeneName,
   loadSurfaceomeRecord,
-  prettyEnum,
 } from "../../lib/surfaceome";
 import { loadStructureViewerData } from "../../lib/structure-viewer";
 import styles from "./page.module.css";
@@ -38,7 +44,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
   return {
     title: `${symbol} — Surfaceome record`,
-    description: rec.targetability.tldr,
+    description: rec.executive_summary.one_paragraph.slice(0, 160),
   };
 }
 
@@ -49,15 +55,21 @@ export default async function GenePage({ params }: PageProps) {
   const geneName = loadGeneName(rec.gene.hgnc_symbol);
   const structureData = loadStructureViewerData(rec.gene.uniprot_acc);
 
-  // Walk visible sections so the section numbers stay sequential even
-  // when a record omits a bucket (v0.4.0 records have no `expression`;
-  // some genes have no deep-dive entries; soluble proteins skip the
-  // structure card because DeepTMHMM has no topology for them).
-  const sections: { kind: string; render: (n: number) => React.ReactNode }[] = [];
-  sections.push({
-    kind: "surface",
-    render: (n) => <SurfaceBiologyCard rec={rec} n={n} />,
-  });
+  // v1.0.0 section order mirrors the EGFR mockup in
+  // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
+  // All sections are required by schema, so the array is fixed-length
+  // except for StructureViewerCard, which is skipped for soluble
+  // proteins (DeepTMHMM has no topology).
+  const sections: { kind: string; render: (n: number) => React.ReactNode }[] = [
+    { kind: "executive", render: (n) => <ExecutiveSummaryCard rec={rec} n={n} /> },
+    { kind: "filters", render: (n) => <FiltersCard rec={rec} n={n} /> },
+    { kind: "evidence", render: (n) => <SurfaceEvidenceCard rec={rec} n={n} /> },
+    { kind: "biology", render: (n) => <BiologicalContextCard rec={rec} n={n} /> },
+    { kind: "isoforms", render: (n) => <IsoformsCard rec={rec} n={n} /> },
+    { kind: "paralogs", render: (n) => <ParalogsCard rec={rec} n={n} /> },
+    { kind: "orthologs", render: (n) => <OrthologsCard rec={rec} n={n} /> },
+    { kind: "risks", render: (n) => <AccessibilityRisksCard rec={rec} n={n} /> },
+  ];
   if (structureData) {
     sections.push({
       kind: "structure",
@@ -70,40 +82,18 @@ export default async function GenePage({ params }: PageProps) {
       ),
     });
   }
-  if (
-    (rec.isoform_accessibility?.length ?? 0) +
-      (rec.coreceptor_requirements?.length ?? 0) +
-      (rec.orthology?.length ?? 0) >
-    0
-  ) {
-    sections.push({
-      kind: "deepdive",
-      render: (n) => <DeepDiveCard rec={rec} n={n} />,
-    });
-  }
-  if (rec.protein_features || rec.expression) {
-    sections.push({
-      kind: "expression",
-      render: (n) => <ExpressionCard rec={rec} n={n} />,
-    });
-  }
-  if (
-    (rec.surface_engagement_validation?.preclinical_evidence?.length ?? 0) +
-      (rec.therapeutic_landscape?.patent_disclosures?.length ?? 0) +
-      (rec.therapeutic_landscape?.preclinical_evidence?.length ?? 0) >
-    0
-  ) {
-    sections.push({
-      kind: "landscape",
-      render: (n) => <LandscapeCard rec={rec} n={n} />,
-    });
-  }
-  if (rec.risk_flags.length > 0) {
-    sections.push({
-      kind: "risks",
-      render: (n) => <RiskFlagsCard rec={rec} n={n} />,
-    });
-  }
+  sections.push({
+    kind: "structure-summary",
+    render: (n) => <StructureSummaryCard rec={rec} n={n} />,
+  });
+  sections.push({
+    kind: "knowledge-gaps",
+    render: (n) => <KnowledgeGapsCard rec={rec} n={n} />,
+  });
+  sections.push({
+    kind: "ledger",
+    render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
+  });
 
   return (
     <Shell>
@@ -132,7 +122,7 @@ export default async function GenePage({ params }: PageProps) {
           <summary className={styles.rawSummary}>
             Raw deep-dive record
             <span className={styles.rawSummaryHint}>
-              · {rec.schema_version} · {rec.evidence_count} evidence
+              · v{rec.schema_version} · {rec.evidence.length} evidence
             </span>
           </summary>
           <pre className={styles.rawJson}>{JSON.stringify(rec, null, 2)}</pre>
@@ -149,11 +139,13 @@ export default async function GenePage({ params }: PageProps) {
         </Reveal>
 
         <Reveal className={styles.confidence}>
-          <p className={`label-mono ${styles.confidenceEyebrow}`}>Confidence</p>
-          <p className={styles.confidenceLine}>
-            <strong>{prettyEnum(rec.confidence)}</strong> — {rec.confidence_reasoning}
+          <p className={`label-mono ${styles.confidenceEyebrow}`}>
+            Confidence · {rec.confidence.toFixed(2)}
           </p>
+          <p className={styles.confidenceLine}>{rec.confidence_reasoning}</p>
         </Reveal>
+
+        <DataSourcesFooter rec={rec} />
       </article>
     </Shell>
   );

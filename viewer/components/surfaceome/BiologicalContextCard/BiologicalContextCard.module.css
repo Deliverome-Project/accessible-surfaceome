@@ -1,0 +1,108 @@
+.subsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line-soft);
+}
+
+.subsection:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.subhead {
+  color: var(--muted);
+  margin: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.empty {
+  margin: 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+.table th {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: var(--fw-medium);
+}
+
+.locHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.subdomains {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.bulletList {
+  list-style: disc;
+  margin: 0;
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  color: var(--ink);
+}
+
+.modList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.modHead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.modBaseline,
+.modChange,
+.modImpl {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+}
+
+.modBaseline {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+}

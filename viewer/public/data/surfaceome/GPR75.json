@@ -1,0 +1,457 @@
+{
+  "schema_version": "1.0.0",
+  "gene": {
+    "hgnc_symbol": "GPR75",
+    "hgnc_id": "HGNC:4526",
+    "uniprot_acc": "O95800",
+    "ncbi_gene_id": 10936,
+    "ensembl_gene": "ENSG00000119537"
+  },
+  "triage_signal": "likely_accessible",
+  "executive_summary": {
+    "one_paragraph": "GPR75 is an orphan class-A GPCR with a short ~41-aa extracellular N-terminal tail and three small extracellular loops. Surface presentation appears constitutive in adipocyte and vascular smooth-muscle contexts, but direct accessibility evidence on endogenously expressed GPR75 is sparse — most surface calls come from tagged overexpression. Headline risks: small ECD limits the accessible epitope footprint, and antibody validation is weak across the field.",
+    "surface_accessibility": "moderate",
+    "evidence_grade_summary": "supportive_but_indirect",
+    "confidence": "moderate",
+    "state_dependence": "low",
+    "subcategory": "GPCR",
+    "headline_risks": ["ecd_too_small", "antibody_validation_weak", "ligand_unknown"],
+    "cited_evidence_ids": ["evi_01", "evi_02"]
+  },
+  "filters": {
+    "surface_accessibility": "moderate",
+    "confidence": "moderate",
+    "subcategory": "GPCR",
+    "evidence_grade": "supportive_but_indirect",
+    "ecd_accessibility_class": "small",
+    "evidence_density": "low",
+    "expression_level": "moderate",
+    "expression_breadth": "restricted",
+    "surface_specificity": "surface_dominant",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "has_paralog_cross_reactivity_risk": false,
+    "has_epitope_masking": false,
+    "has_restricted_subdomain": false,
+    "mouse_ortholog_ecd_pct_identity": 90.1,
+    "cyno_ortholog_ecd_pct_identity": 98.4,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false,
+    "knowledge_gaps_max_impact": "high"
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "tm_helix_count": 7,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 89,
+      "icd_length_residues": 296,
+      "per_residue_topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "canonical_isoform_caveat": null,
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-13T00:00:00Z"
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "Q8K4Y3-1",
+          "ensembl_id": "ENSMUSG00000043017",
+          "ortholog_uniprot_acc": "Q8K4Y3",
+          "ortholog_symbol": "Gpr75",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 90.1,
+          "ecd_pct_similarity_to_human_canonical": 95.5,
+          "ecd_length_residues": 89,
+          "tm_helix_count": 7,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-13T00:00:00Z"
+        }
+      ],
+      "rat": [
+        {
+          "is_canonical": true,
+          "isoform_id": "F1LP90-1",
+          "ensembl_id": "ENSRNOG00000037843",
+          "ortholog_uniprot_acc": "F1LP90",
+          "ortholog_symbol": "Gpr75",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 89.4,
+          "ecd_pct_similarity_to_human_canonical": 95.1,
+          "ecd_length_residues": 89,
+          "tm_helix_count": 7,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-13T00:00:00Z"
+        }
+      ],
+      "cynomolgus": [
+        {
+          "is_canonical": true,
+          "isoform_id": "XP_005553-1",
+          "ensembl_id": "ENSMFAG00000006824",
+          "ortholog_uniprot_acc": "A0A2K5XAH3",
+          "ortholog_symbol": "GPR75",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 98.4,
+          "ecd_pct_similarity_to_human_canonical": 99.2,
+          "ecd_length_residues": 89,
+          "tm_helix_count": 7,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-13T00:00:00Z"
+        }
+      ]
+    },
+    "paralogs": [
+      {
+        "paralog_symbol": "CCRL2",
+        "paralog_uniprot_acc": "O00421",
+        "ecd_pct_identity": 18.2,
+        "family_id": "ENSFM00390000965",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "GPR15",
+        "paralog_uniprot_acc": "P49685",
+        "ecd_pct_identity": 16.8,
+        "family_id": "ENSFM00390000965",
+        "compara_version": "Compara r112"
+      }
+    ],
+    "structure": {
+      "afdb_id": "AF-O95800-F1-model_v4",
+      "afdb_version": "v4",
+      "ecd_mean_plddt": 62.4,
+      "ecd_disordered_fraction": 0.38,
+      "ecd_solvent_accessible_fraction": 0.71,
+      "source": "AlphaFold DB",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": ["10.1038/s41586-021-03819-2", "10.1093/nar/gkad1011"]
+    }
+  },
+  "surface_evidence": {
+    "evidence_grade": "supportive_but_indirect",
+    "grade_rationale": "Surface-localization evidence comes primarily from tagged overexpression in HEK293T / CHO heterologous systems. Endogenous live-cell flow with a validated anti-ECD antibody is not in the public record. Recent obesity-axis work (Akbari et al. 2021) is consistent with plasma-membrane presentation but did not directly assay surface display on primary cells.",
+    "methods": [
+      {
+        "method_family": "flow_cytometry",
+        "method_subclass": "live_cell_flow",
+        "permeabilization": "live_cell",
+        "expression_system": "overexpression",
+        "antibodies": [
+          {
+            "name": "anti-FLAG M2 (placeholder)",
+            "clone": "M2",
+            "vendor": "Sigma",
+            "catalog": "F1804",
+            "rrid": "AB_262044",
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "overexpression_reference",
+            "validation_strength": "moderate",
+            "cross_reactivity_notes": "Tag-based; reads N-terminal FLAG, not endogenous GPR75."
+          }
+        ],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "HEK293T transient transfection with N-terminal FLAG-GPR75",
+            "sample_type": "established_cell_line",
+            "level": "high",
+            "cited_evidence_ids": ["evi_03"]
+          }
+        ],
+        "cited_evidence_ids": ["evi_03"]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "Human adipose tissue (GTEx, bulk RNA)",
+        "sample_type": "primary_human_tissue",
+        "measurement_type": "RNA",
+        "level": "moderate",
+        "cited_evidence_ids": ["evi_04"]
+      }
+    ],
+    "therapeutic_engagement": null,
+    "contradicting_evidence": []
+  },
+  "biological_context": {
+    "tissues": [
+      {
+        "tissue": "adipose",
+        "present": true,
+        "cell_types": ["adipocyte"],
+        "cell_states": ["mature", "differentiating"],
+        "cited_evidence_ids": ["evi_04", "evi_05"]
+      },
+      {
+        "tissue": "vasculature",
+        "present": true,
+        "cell_types": ["vascular smooth muscle"],
+        "cell_states": ["quiescent"],
+        "cited_evidence_ids": ["evi_05"]
+      },
+      {
+        "tissue": "blood",
+        "present": false,
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": []
+      }
+    ],
+    "cell_types": [
+      {
+        "cell_type": "adipocyte",
+        "ontology_id": "CL:0000136",
+        "present_in_tissues": ["adipose"],
+        "cited_evidence_ids": ["evi_04"]
+      }
+    ],
+    "cell_states": [],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "dual_localization": [],
+      "membrane_subdomains": [],
+      "exocytosis_evidence": []
+    },
+    "anatomical_accessibility": [
+      {
+        "context": "Adipocyte in subcutaneous adipose",
+        "orientation": "blood_interstitial_facing",
+        "accessibility_implication": "favorable",
+        "rationale": "Mature adipocytes present their plasma membrane to the interstitial space and capillary plexus; small ECD is the limiting factor, not anatomy.",
+        "cited_evidence_ids": ["evi_05"]
+      }
+    ],
+    "accessibility_modulation": [
+      {
+        "category": "tissue_restricted_surface",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": "endocrine",
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Most surveyed tissues",
+        "modulating_state": "Adipocyte / vascular smooth-muscle lineage",
+        "change": "Endogenous expression is concentrated in metabolically active tissues; pan-tissue surface presence is not supported.",
+        "accessibility_implication": "Targeting can plausibly hit adipose / vascular endothelium-adjacent compartments without broad off-tissue draw.",
+        "cited_evidence_ids": ["evi_04", "evi_05"]
+      }
+    ]
+  },
+  "paralog_assessment": [
+    {
+      "paralog_symbol": "CCRL2",
+      "paralog_uniprot_acc": "O00421",
+      "cross_reactivity_assessment": "negligible",
+      "severity": "low",
+      "evidence_strength": "inferred",
+      "rationale": "Only ~18% ECD identity to GPR75. Cross-binding by an anti-GPR75 mAb against CCRL2 would require coincidental ECD-loop convergence; no empirical binders to validate either way.",
+      "cited_evidence_ids": []
+    }
+  ],
+  "accessibility_risks": {
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "inferred",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "inferred",
+      "ratio_to_membrane": null,
+      "source": null,
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": false,
+      "domain": "unknown",
+      "severity": "low",
+      "evidence_strength": "inferred",
+      "rationale": "No subcellular polarization documented in non-epithelial tissues where GPR75 is expressed.",
+      "cited_evidence_ids": []
+    },
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "unknown",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "No partner-trafficking studies in the public record. Heterologous-expression flow data suggest GPR75 reaches the surface without an obligate partner, but this is an overexpression artifact-prone signal.",
+      "cited_evidence_ids": ["evi_03"]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "small",
+      "rationale": "41-aa N-terminal tail plus three short loops totaling ~48 aa across the three ECLs. Total accessible ECD ~89 aa — limits epitope footprint for a conventional mAb but is sufficient for nanobody / small-molecule modalities.",
+      "cited_evidence_ids": []
+    },
+    "epitope_masking": {
+      "mechanism": "none",
+      "severity": "none",
+      "evidence_strength": "inferred",
+      "rationale": "No known glycan shield or partner-mediated masking. N-tail predicted to be unstructured (pLDDT ~62 in the AFDB model) but solvent-accessible.",
+      "cited_evidence_ids": []
+    }
+  },
+  "knowledge_gaps": [
+    {
+      "question": "Is there protein-level surface evidence on endogenously expressed GPR75 in primary adipocyte or vascular smooth-muscle samples?",
+      "why_unresolved": "no_literature",
+      "detail": "All current surface-localization signal is from tagged overexpression in HEK293T / CHO. A live-cell flow run with a validated anti-ECD antibody on primary adipocytes would resolve this.",
+      "impact_on_confidence": "high",
+      "suggested_resolution": "Generate or commission a validated anti-GPR75-ECD nanobody and run live-cell flow on primary human adipocytes.",
+      "cited_evidence_ids": []
+    },
+    {
+      "question": "Is the orphan ligand status genuinely orphan, or has a recent screen identified an endogenous ligand?",
+      "why_unresolved": "outside_scope",
+      "detail": "Ligand-binding context affects whether antibody and small-molecule modalities can be designed against the orthosteric pocket vs. an allosteric extracellular surface.",
+      "impact_on_confidence": "moderate",
+      "suggested_resolution": "Targeted PubMed sweep with the past-12-month filter; if still orphan, cite the most recent confirmation paper.",
+      "cited_evidence_ids": []
+    }
+  ],
+  "evidence": [
+    {
+      "evidence_id": "evi_01",
+      "claim": "GPR75 is a class-A orphan GPCR.",
+      "claim_type": "structural",
+      "evidence_tier": "secondary",
+      "confidence": 0.9,
+      "source": {
+        "pmid": null,
+        "doi": "10.1093/nar/gkac1052",
+        "pmcid": "PMC9825594",
+        "url": null,
+        "journal": "Nucleic Acids Res",
+        "title": "GtoPdb 2023.1 — IUPHAR/BPS classification of GPR75",
+        "authors": "Harding SD et al.",
+        "year": 2023
+      },
+      "spans": [
+        {
+          "text": "GPR75 is an orphan class A G protein-coupled receptor.",
+          "start": null,
+          "end": null
+        }
+      ],
+      "entailment_verified": false
+    },
+    {
+      "evidence_id": "evi_02",
+      "claim": "Loss-of-function variants in GPR75 are associated with reduced obesity risk.",
+      "claim_type": "human_genetics",
+      "evidence_tier": "primary",
+      "confidence": 0.85,
+      "source": {
+        "pmid": "34211177",
+        "doi": "10.1126/science.abf8683",
+        "pmcid": null,
+        "url": null,
+        "journal": "Science",
+        "title": "Sequencing of 640,000 exomes identifies GPR75 variants associated with protection from obesity",
+        "authors": "Akbari P et al.",
+        "year": 2021
+      },
+      "spans": [
+        {
+          "text": "Heterozygous loss-of-function variants in GPR75 were associated with lower BMI.",
+          "start": null,
+          "end": null
+        }
+      ],
+      "entailment_verified": false
+    },
+    {
+      "evidence_id": "evi_03",
+      "claim": "FLAG-tagged GPR75 traffics to the plasma membrane in HEK293T.",
+      "claim_type": "subcellular_localization",
+      "evidence_tier": "secondary",
+      "confidence": 0.6,
+      "source": {
+        "pmid": null,
+        "doi": null,
+        "pmcid": null,
+        "url": "https://example.org/mock-source-evi_03",
+        "journal": null,
+        "title": "Placeholder — tagged-overexpression surface readout",
+        "authors": "Mock placeholder",
+        "year": null
+      },
+      "spans": [
+        {
+          "text": "Anti-FLAG flow on live cells detected GPR75 at the plasma membrane.",
+          "start": null,
+          "end": null
+        }
+      ],
+      "entailment_verified": false
+    },
+    {
+      "evidence_id": "evi_04",
+      "claim": "GPR75 mRNA is detectable in human adipose tissue.",
+      "claim_type": "expression",
+      "evidence_tier": "tertiary",
+      "confidence": 0.75,
+      "source": {
+        "pmid": null,
+        "doi": null,
+        "pmcid": null,
+        "url": "https://gtexportal.org/home/gene/GPR75",
+        "journal": null,
+        "title": "GTEx Portal — GPR75 expression",
+        "authors": null,
+        "year": 2024
+      },
+      "spans": [
+        {
+          "text": "Median TPM across adipose subcutaneous samples > 1.",
+          "start": null,
+          "end": null
+        }
+      ],
+      "entailment_verified": false
+    },
+    {
+      "evidence_id": "evi_05",
+      "claim": "GPR75 is present in vascular smooth-muscle cells in mouse aorta.",
+      "claim_type": "expression",
+      "evidence_tier": "primary",
+      "confidence": 0.7,
+      "source": {
+        "pmid": null,
+        "doi": null,
+        "pmcid": null,
+        "url": "https://example.org/mock-source-evi_05",
+        "journal": null,
+        "title": "Placeholder — single-cell aorta atlas",
+        "authors": "Mock placeholder",
+        "year": null
+      },
+      "spans": [
+        {
+          "text": "GPR75 transcripts segregated to the smooth-muscle cluster.",
+          "start": null,
+          "end": null
+        }
+      ],
+      "entailment_verified": false
+    }
+  ],
+  "search_log": [
+    { "query": "GPR75 surface", "count": 12, "notes": "Most hits are heterologous expression in HEK / CHO" },
+    { "query": "GPR75 obesity Akbari", "count": 4, "notes": null },
+    { "query": "GPR75 antibody surface flow", "count": 2, "notes": "No endogenous-cell validation found" }
+  ],
+  "confidence": 0.55,
+  "confidence_reasoning": "Mock placeholder record. Confidence held to moderate because the high-impact knowledge gap (no protein-level surface evidence on endogenous GPR75) caps the executive-summary confidence — the validator rule says any knowledge_gap with impact_on_confidence='high' bounds top-line confidence at ≤ moderate.",
+  "contradiction_flag": false,
+  "generated_at": "2026-05-13T00:00:00Z",
+  "model_path": "mock-placeholder"
+}

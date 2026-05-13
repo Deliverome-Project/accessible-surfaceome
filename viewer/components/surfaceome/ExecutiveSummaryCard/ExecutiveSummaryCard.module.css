@@ -1,0 +1,39 @@
+.paragraph {
+  font-size: 1.05rem;
+  line-height: var(--lh-body);
+  color: var(--ink);
+  max-width: 60ch;
+}
+
+.pillStrip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.pillStrip li {
+  display: inline-flex;
+}
+
+.risks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line-soft);
+  color: var(--ink);
+}
+
+.risksLabel {
+  color: var(--muted);
+}
+
+.risksValue {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+}
