@@ -139,7 +139,7 @@ function md(rec, structureData, canonicalSequence) {
   lines.push(`# ${g.hgnc_symbol} — Surface Accessibility Brief`);
   lines.push("");
   lines.push(
-    `*Schema v${rec.schema_version} · generated ${rec.generated_at} · model \`${rec.model_path}\`*`,
+    `*Schema v${rec.schema_version} · generated ${rec.record_generated_at} · model \`${rec.model_path}\`*`,
   );
   lines.push("");
   lines.push(`> ${e.one_paragraph}`);
@@ -193,7 +193,6 @@ function md(rec, structureData, canonicalSequence) {
   lines.push(
     `| Topology | TM=${ct.tm_helix_count} · N-term-ECF=${f.n_term_extracellular} · C-term-ECF=${f.c_term_extracellular} |`,
   );
-  lines.push(`| Quality | knowledge_gaps_max_impact=${prettyEnum(f.knowledge_gaps_max_impact)} |`);
   lines.push("");
 
   // --- Surface evidence ---
@@ -278,13 +277,13 @@ function md(rec, structureData, canonicalSequence) {
   lines.push("## 4. Biological context");
   lines.push("");
   if (bc.tissues.length) {
-    lines.push("**Tissues**");
+    lines.push("**Tissues × disease context**");
     lines.push("");
-    lines.push("| Tissue | Present | Cell types | Cell states |");
-    lines.push("|---|---|---|---|");
+    lines.push("| Tissue | Disease context | Level (protein) | Cell types | Cell states |");
+    lines.push("|---|---|---|---|---|");
     for (const t of bc.tissues) {
       lines.push(
-        `| ${t.tissue} | ${t.present ? "✓" : "✗"} | ${t.cell_types.join(", ") || "—"} | ${t.cell_states.join(", ") || "—"} |`,
+        `| ${t.tissue} | ${prettyEnum(t.disease_context)} | ${prettyEnum(t.present)} | ${t.cell_types.join(", ") || "—"} | ${t.cell_states.join(", ") || "—"} |`,
       );
     }
     lines.push("");
@@ -395,7 +394,15 @@ function md(rec, structureData, canonicalSequence) {
     if ("present" in block) lines.push(`- present: ${block.present}`);
     if ("severity" in block) lines.push(`- severity: ${prettyEnum(block.severity)}`);
     if ("evidence_strength" in block) lines.push(`- evidence: ${prettyEnum(block.evidence_strength)}`);
-    if ("mechanism" in block && block.mechanism) lines.push(`- mechanism: ${prettyEnum(block.mechanism)}`);
+    if ("mechanism" in block && block.mechanism != null) {
+      // epitope_masking.mechanism is a list (PR23 round 6); other
+      // blocks have a scalar mechanism. Render either as a comma
+      // list of pretty enum values.
+      const mech = Array.isArray(block.mechanism)
+        ? block.mechanism.map(prettyEnum).join(", ")
+        : prettyEnum(block.mechanism);
+      lines.push(`- mechanism: ${mech}`);
+    }
     if ("sheddase_if_known" in block && block.sheddase_if_known) lines.push(`- sheddase: ${block.sheddase_if_known}`);
     if ("source" in block && block.source) lines.push(`- source: ${prettyEnum(block.source)}`);
     if ("ratio_to_membrane" in block && block.ratio_to_membrane != null) lines.push(`- ratio to membrane: ${block.ratio_to_membrane}`);
@@ -420,32 +427,17 @@ function md(rec, structureData, canonicalSequence) {
   lines.push(`| AFDB version | ${s.afdb_version} |`);
   lines.push(`| ECD mean pLDDT | ${s.ecd_mean_plddt.toFixed(1)} |`);
   lines.push(`| ECD disordered fraction | ${(s.ecd_disordered_fraction * 100).toFixed(1)}% |`);
-  lines.push(`| ECD solvent-accessible fraction | ${(s.ecd_solvent_accessible_fraction * 100).toFixed(1)}% |`);
+  // ecd_solvent_accessible_fraction was dropped in PR23 round 9.
   lines.push("");
   lines.push(
     `Structure data from [AlphaFold DB](${alphafoldEntryUrl(g.uniprot_acc)}) · ${s.attribution} · licensed [${s.license}](https://creativecommons.org/licenses/by/4.0/)${s.citations.length ? ` · cite ${s.citations.map((c) => `\`${c}\``).join("; ")}` : ""}.`,
   );
   lines.push("");
 
-  // --- Knowledge gaps ---
-  lines.push("## 10. Knowledge gaps");
-  lines.push("");
-  if (rec.knowledge_gaps.length === 0) {
-    lines.push("*All questions addressed.*");
-  } else {
-    for (const k of rec.knowledge_gaps) {
-      lines.push(`### ${k.question}`);
-      lines.push("");
-      lines.push(`*Impact: ${prettyEnum(k.impact_on_confidence)} · ${prettyEnum(k.why_unresolved)}*`);
-      lines.push("");
-      if (k.detail) lines.push(k.detail);
-      if (k.detail) lines.push("");
-      if (k.suggested_resolution) {
-        lines.push(`> Suggested next step: ${k.suggested_resolution}`);
-        lines.push("");
-      }
-    }
-  }
+  // The standalone "Knowledge gaps" section was dropped in PR23
+  // round 5 — uncertainty signal now flows through
+  // contradicting_evidence + confidence_reasoning + evidence_grade
+  // + per-section rationales.
 
   // --- Evidence ledger ---
   let primary = 0, secondary = 0, tertiary = 0, pmcOa = 0;
@@ -455,7 +447,7 @@ function md(rec, structureData, canonicalSequence) {
     else if (ev.evidence_tier === "tertiary") tertiary += 1;
     if (ev.source.pmcid) pmcOa += 1;
   }
-  lines.push("## 11. Evidence ledger");
+  lines.push("## 10. Evidence ledger");
   lines.push("");
   lines.push(
     `${rec.evidence.length} entries · ${primary} primary · ${secondary} secondary · ${tertiary} tertiary · ${pmcOa} PMC OA.`,

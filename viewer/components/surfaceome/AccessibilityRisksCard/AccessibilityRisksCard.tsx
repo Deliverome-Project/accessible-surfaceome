@@ -200,9 +200,17 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
       <div className={styles.subsection}>
         <div className={styles.subHead}>
           <p className={styles.subTitle}>Epitope masking</p>
-          <StatusPill tone="lavender" size="sm">
-            mechanism · {prettyEnum(r.epitope_masking.mechanism)}
-          </StatusPill>
+          {r.epitope_masking.mechanism.length === 0 ? (
+            <StatusPill tone="neutral" size="sm">
+              mechanism · none documented
+            </StatusPill>
+          ) : (
+            r.epitope_masking.mechanism.map((m) => (
+              <StatusPill key={m} tone="lavender" size="sm">
+                {prettyEnum(m)}
+              </StatusPill>
+            ))
+          )}
           <StatusPill tone={severityTone(r.epitope_masking.severity)} size="sm">
             severity · {prettyEnum(r.epitope_masking.severity)}
           </StatusPill>

@@ -1,6 +1,7 @@
 import type {
   AccessibilityImplication,
   SurfaceomeRecord,
+  TissueLevel,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { CiteCount } from "../CiteCount/CiteCount";
@@ -20,6 +21,15 @@ function implicationTone(v: AccessibilityImplication) {
   return "neutral" as const;
 }
 
+function tissueLevelTone(v: TissueLevel) {
+  if (v === "high") return "success" as const;
+  if (v === "moderate") return "teal" as const;
+  if (v === "low") return "amber" as const;
+  if (v === "absent") return "neutral" as const;
+  if (v === "mixed") return "lavender" as const;
+  return "neutral" as const;
+}
+
 export function BiologicalContextCard({ rec, n }: Props) {
   const bc = rec.biological_context;
   const loc = bc.subcellular_localization;
@@ -36,7 +46,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
       meta="Tissues · cell types · localization · anatomical accessibility · accessibility modulation"
     >
       <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>Tissues</p>
+        <p className={`label-mono ${styles.subhead}`}>Tissues × disease context</p>
         {bc.tissues.length === 0 ? (
           <p className={styles.empty}>No tissue rows recorded.</p>
         ) : (
@@ -44,7 +54,8 @@ export function BiologicalContextCard({ rec, n }: Props) {
             <thead>
               <tr>
                 <th scope="col">Tissue</th>
-                <th scope="col">Present</th>
+                <th scope="col">Disease context</th>
+                <th scope="col">Level (protein)</th>
                 <th scope="col">Cell types</th>
                 <th scope="col">Cell states</th>
                 <th scope="col">Cites</th>
@@ -55,8 +66,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 <tr key={i}>
                   <td>{t.tissue}</td>
                   <td>
-                    <StatusPill tone={t.present ? "success" : "neutral"} size="sm">
-                      {t.present ? "✓" : "✗"}
+                    <span className={styles.mono}>{prettyEnum(t.disease_context)}</span>
+                  </td>
+                  <td>
+                    <StatusPill tone={tissueLevelTone(t.present)} size="sm">
+                      {prettyEnum(t.present)}
                     </StatusPill>
                   </td>
                   <td>{t.cell_types.join(", ") || "—"}</td>
@@ -115,18 +129,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
             </tbody>
           </table>
         ) : null}
-        {loc.exocytosis_evidence.length > 0 ? (
-          <ul className={styles.bulletList}>
-            {loc.exocytosis_evidence.map((e, i) => (
-              <li key={i}>
-                <span className={`label-mono ${styles.muted}`}>Exocytosis</span>{" "}
-                {e.stimulus ? <strong>{e.stimulus}</strong> : null}
-                {e.mechanism ? ` — ${e.mechanism}` : null}
-                <CiteCount ids={e.cited_evidence_ids} label="Exocytosis" />
-              </li>
-            ))}
-          </ul>
-        ) : null}
+        {/* exocytosis_evidence was dropped in PR23 round 5 — same
+            biology now lives in `accessibility_modulation` rows
+            with `category=lysosomal_exocytosis` or `category=
+            activation_induced` plus `cell_state_trigger`. */}
       </div>
 
       <div className={styles.subsection}>

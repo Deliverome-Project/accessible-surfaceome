@@ -32,7 +32,6 @@ GPR75 is an orphan class-A GPCR with a short ~41-aa extracellular N-terminal tai
 | Risks | shed=false · secreted=false · coreceptor=false · paralog=false · masking=false · subdomain=false |
 | Cross-species | mouse=90.1% · cyno=98.4% |
 | Topology | TM=7 · N-term-ECF=true · C-term-ECF=false |
-| Quality | knowledge_gaps_max_impact=High |
 
 ## 3. Surface evidence
 
@@ -62,13 +61,14 @@ Surface-localization evidence comes primarily from tagged overexpression in HEK2
 
 ## 4. Biological context
 
-**Tissues**
+**Tissues × disease context**
 
-| Tissue | Present | Cell types | Cell states |
-|---|---|---|---|
-| adipose | ✓ | adipocyte | mature, differentiating |
-| vasculature | ✓ | vascular smooth muscle | quiescent |
-| blood | ✗ | — | — |
+| Tissue | Disease context | Level (protein) | Cell types | Cell states |
+|---|---|---|---|---|
+| adipose | Normal | Low | adipocyte | mature, lean |
+| adipose | Other Disease | Low | adipocyte | obese; controversial modest ↑ |
+| vasculature | Normal | Low | vascular smooth muscle | quiescent |
+| blood | Normal | Absent | — | — |
 
 **Primary subcellular compartment**: Plasma membrane
 
@@ -171,29 +171,10 @@ Surface-localization evidence comes primarily from tagged overexpression in HEK2
 | AFDB version | v6 |
 | ECD mean pLDDT | 62.4 |
 | ECD disordered fraction | 38.0% |
-| ECD solvent-accessible fraction | 71.0% |
 
 Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/O95800) · © DeepMind / EMBL-EBI · licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · cite `10.1038/s41586-021-03819-2`; `10.1093/nar/gkad1011`.
 
-## 10. Knowledge gaps
-
-### Is there protein-level surface evidence on endogenously expressed GPR75 in primary adipocyte or vascular smooth-muscle samples?
-
-*Impact: High · No literature*
-
-All current surface-localization signal is from tagged overexpression in HEK293T / CHO. A live-cell flow run with a validated anti-ECD antibody on primary adipocytes would resolve this.
-
-> Suggested next step: Generate or commission a validated anti-GPR75-ECD nanobody and run live-cell flow on primary human adipocytes.
-
-### Is the orphan ligand status genuinely orphan, or has a recent screen identified an endogenous ligand?
-
-*Impact: Moderate · Outside scope*
-
-Ligand-binding context affects whether antibody and small-molecule modalities can be designed against the orthosteric pocket vs. an allosteric extracellular surface.
-
-> Suggested next step: Targeted PubMed sweep with the past-12-month filter; if still orphan, cite the most recent confirmation paper.
-
-## 11. Evidence ledger
+## 10. Evidence ledger
 
 5 entries · 2 primary · 2 secondary · 1 tertiary · 1 PMC OA.
 
@@ -262,4 +243,4 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 - DeepTMHMM topology — deeptmhmm-1.0.24 · DTU Health Tech (Hallgren et al. 2022; academic-use service)
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
-*Confidence 0.55 — Mock placeholder record. Confidence held to moderate because the high-impact knowledge gap (no protein-level surface evidence on endogenous GPR75) caps the executive-summary confidence — the validator rule says any knowledge_gap with impact_on_confidence='high' bounds top-line confidence at ≤ moderate.*
+*Confidence 0.55 — Mock placeholder record. Confidence held to moderate because endogenous-tissue protein-level evidence on GPR75 is sparse (most surface signal is from tagged overexpression in heterologous systems) and antibody validation across the published reagents is weak.*

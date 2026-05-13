@@ -37,8 +37,7 @@
     "mouse_ortholog_ecd_pct_identity": 90.1,
     "cyno_ortholog_ecd_pct_identity": 98.4,
     "n_term_extracellular": true,
-    "c_term_extracellular": false,
-    "knowledge_gaps_max_impact": "high"
+    "c_term_extracellular": false
   },
   "deterministic_features": {
     "canonical_topology": {
@@ -49,7 +48,6 @@
       "ecd_length_residues": 89,
       "icd_length_residues": 296,
       "per_residue_topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
-      "canonical_isoform_caveat": null,
       "tool_version": "deeptmhmm-1.0.24",
       "retrieved_at": "2026-05-13T00:00:00Z"
     },
@@ -125,7 +123,6 @@
       "afdb_version": "v6",
       "ecd_mean_plddt": 62.4,
       "ecd_disordered_fraction": 0.38,
-      "ecd_solvent_accessible_fraction": 0.71,
       "source": "AlphaFold DB",
       "license": "CC BY 4.0",
       "attribution": "© DeepMind / EMBL-EBI",
@@ -184,21 +181,32 @@
     "tissues": [
       {
         "tissue": "adipose",
-        "present": true,
+        "present": "low",
+        "disease_context": "normal",
         "cell_types": ["adipocyte"],
-        "cell_states": ["mature", "differentiating"],
+        "cell_states": ["mature, lean"],
         "cited_evidence_ids": ["evi_04", "evi_05"]
       },
       {
+        "tissue": "adipose",
+        "present": "low",
+        "disease_context": "other_disease",
+        "cell_types": ["adipocyte"],
+        "cell_states": ["obese; controversial modest ↑"],
+        "cited_evidence_ids": ["evi_04"]
+      },
+      {
         "tissue": "vasculature",
-        "present": true,
+        "present": "low",
+        "disease_context": "normal",
         "cell_types": ["vascular smooth muscle"],
         "cell_states": ["quiescent"],
         "cited_evidence_ids": ["evi_05"]
       },
       {
         "tissue": "blood",
-        "present": false,
+        "present": "absent",
+        "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
         "cited_evidence_ids": []
@@ -216,8 +224,7 @@
     "subcellular_localization": {
       "primary_compartment": "plasma_membrane",
       "dual_localization": [],
-      "membrane_subdomains": [],
-      "exocytosis_evidence": []
+      "membrane_subdomains": []
     },
     "anatomical_accessibility": [
       {
@@ -292,31 +299,13 @@
       "cited_evidence_ids": []
     },
     "epitope_masking": {
-      "mechanism": "none",
+      "mechanism": ["none"],
       "severity": "none",
       "evidence_strength": "inferred",
       "rationale": "No known glycan shield or partner-mediated masking. N-tail predicted to be unstructured (pLDDT ~62 in the AFDB model) but solvent-accessible.",
       "cited_evidence_ids": []
     }
   },
-  "knowledge_gaps": [
-    {
-      "question": "Is there protein-level surface evidence on endogenously expressed GPR75 in primary adipocyte or vascular smooth-muscle samples?",
-      "why_unresolved": "no_literature",
-      "detail": "All current surface-localization signal is from tagged overexpression in HEK293T / CHO. A live-cell flow run with a validated anti-ECD antibody on primary adipocytes would resolve this.",
-      "impact_on_confidence": "high",
-      "suggested_resolution": "Generate or commission a validated anti-GPR75-ECD nanobody and run live-cell flow on primary human adipocytes.",
-      "cited_evidence_ids": []
-    },
-    {
-      "question": "Is the orphan ligand status genuinely orphan, or has a recent screen identified an endogenous ligand?",
-      "why_unresolved": "outside_scope",
-      "detail": "Ligand-binding context affects whether antibody and small-molecule modalities can be designed against the orthosteric pocket vs. an allosteric extracellular surface.",
-      "impact_on_confidence": "moderate",
-      "suggested_resolution": "Targeted PubMed sweep with the past-12-month filter; if still orphan, cite the most recent confirmation paper.",
-      "cited_evidence_ids": []
-    }
-  ],
   "evidence": [
     {
       "evidence_id": "evi_01",
@@ -450,8 +439,7 @@
     { "query": "GPR75 antibody surface flow", "count": 2, "notes": "No endogenous-cell validation found" }
   ],
   "confidence": 0.55,
-  "confidence_reasoning": "Mock placeholder record. Confidence held to moderate because the high-impact knowledge gap (no protein-level surface evidence on endogenous GPR75) caps the executive-summary confidence — the validator rule says any knowledge_gap with impact_on_confidence='high' bounds top-line confidence at ≤ moderate.",
-  "contradiction_flag": false,
-  "generated_at": "2026-05-13T00:00:00Z",
+  "confidence_reasoning": "Mock placeholder record. Confidence held to moderate because endogenous-tissue protein-level evidence on GPR75 is sparse (most surface signal is from tagged overexpression in heterologous systems) and antibody validation across the published reagents is weak.",
+  "record_generated_at": "2026-05-13T00:00:00Z",
   "model_path": "mock-placeholder"
 }

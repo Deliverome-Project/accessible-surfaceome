@@ -11,7 +11,6 @@ import { ExecutiveSummaryCard } from "../../components/surfaceome/ExecutiveSumma
 import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
 import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
 import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
-import { KnowledgeGapsCard } from "../../components/surfaceome/KnowledgeGapsCard/KnowledgeGapsCard";
 import { OrthologsCard } from "../../components/surfaceome/OrthologsCard/OrthologsCard";
 import { ParalogsCard } from "../../components/surfaceome/ParalogsCard/ParalogsCard";
 import { StructureSummaryCard } from "../../components/surfaceome/StructureSummaryCard/StructureSummaryCard";
@@ -85,10 +84,6 @@ export default async function GenePage({ params }: PageProps) {
   sections.push({
     kind: "structure-summary",
     render: (n) => <StructureSummaryCard rec={rec} n={n} />,
-  });
-  sections.push({
-    kind: "knowledge-gaps",
-    render: (n) => <KnowledgeGapsCard rec={rec} n={n} />,
   });
   sections.push({
     kind: "ledger",

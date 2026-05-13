@@ -117,12 +117,11 @@ export function IsoformsCard({ rec, n }: Props) {
         ])}
       />
 
-      {ct.canonical_isoform_caveat ? (
-        <p className={`lede ${styles.caveat}`}>
-          <span className={`label-mono ${styles.caveatLabel}`}>Canonical caveat</span>
-          {ct.canonical_isoform_caveat}
-        </p>
-      ) : null}
+      {/* canonical_isoform_caveat was dropped in PR23 round 8 —
+          a lone LLM-emitted field inside the deterministic block
+          violated the orchestrator-only boundary. Any biological
+          note about isoform implications now lives in
+          executive_summary.one_paragraph. */}
 
       {df.isoform_topologies.length === 0 ? (
         <p className={styles.empty}>

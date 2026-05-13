@@ -90,24 +90,6 @@ export function FiltersCard({ rec, n }: Props) {
         boolPill("C-term extracellular", f.c_term_extracellular),
       ],
     },
-    {
-      label: "Quality",
-      pills: [
-        <StatusPill
-          key="gap"
-          tone={
-            f.knowledge_gaps_max_impact === "high"
-              ? "danger"
-              : f.knowledge_gaps_max_impact === "moderate"
-              ? "amber"
-              : "neutral"
-          }
-          size="sm"
-        >
-          knowledge gaps max · {prettyEnum(f.knowledge_gaps_max_impact)}
-        </StatusPill>,
-      ],
-    },
   ];
 
   return (

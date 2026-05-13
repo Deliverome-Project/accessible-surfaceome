@@ -54,12 +54,11 @@ export function StructureSummaryCard({ rec, n }: Props) {
           <dt className={`label-mono ${styles.k}`}>ECD disordered fraction</dt>
           <dd className={styles.v}>{(s.ecd_disordered_fraction * 100).toFixed(1)}%</dd>
         </div>
-        <div className={styles.stat}>
-          <dt className={`label-mono ${styles.k}`}>ECD solvent-accessible fraction</dt>
-          <dd className={styles.v}>
-            {(s.ecd_solvent_accessible_fraction * 100).toFixed(1)}%
-          </dd>
-        </div>
+        {/* ecd_solvent_accessible_fraction was considered + dropped
+            in PR23 round 9 — would have required a new SASA dep
+            (FreeSASA / mkdssp); the two pLDDT-based metrics carry
+            the structure-quality signal without it. Real epitope-
+            accessibility scoring is deferred to v1.x. */}
       </dl>
 
       <p className={styles.attribution}>

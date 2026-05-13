@@ -99,7 +99,21 @@ export type HeadlineRisk =
   | "ligand_unknown"
   | "other";
 
-export type GapImpactWithNone = "high" | "moderate" | "low" | "none";
+export type TissueLevel =
+  | "high"
+  | "moderate"
+  | "low"
+  | "absent"
+  | "mixed"
+  | "unknown";
+
+export type DiseaseContext =
+  | "normal"
+  | "tumor"
+  | "tumor_adjacent"
+  | "other_disease"
+  | "mixed"
+  | "unknown";
 
 // ============================================================
 // Executive summary + filter facets
@@ -136,7 +150,6 @@ export interface Filters {
   cyno_ortholog_ecd_pct_identity: number;
   n_term_extracellular: boolean;
   c_term_extracellular: boolean;
-  knowledge_gaps_max_impact: GapImpactWithNone;
 }
 
 // ============================================================
@@ -151,7 +164,6 @@ export interface CanonicalTopology {
   ecd_length_residues: number;
   icd_length_residues: number;
   per_residue_topology: string;
-  canonical_isoform_caveat: string | null;
   tool_version: string;
   retrieved_at: string;
 }
@@ -203,7 +215,6 @@ export interface StructureBlock {
   afdb_version: string;
   ecd_mean_plddt: number;
   ecd_disordered_fraction: number;
-  ecd_solvent_accessible_fraction: number;
   source: string;
   license: string;
   attribution: string;
@@ -507,7 +518,15 @@ export type DualLocPartnerCompartment =
 
 export interface TissueContext {
   tissue: string;
-  present: boolean;
+  /** Six-level expression-level enum (upgraded from boolean in
+   *  PR23 round 5 — `mixed` covers tissues with heterogeneous
+   *  per-cell-type levels, `unknown` is the default when no
+   *  evidence speaks to it). */
+  present: TissueLevel;
+  /** New disease-context axis — same tissue can appear twice
+   *  (normal vs tumor) with different `present` levels. Obesity
+   *  / inflammation / etc. fall under `other_disease`. */
+  disease_context: DiseaseContext;
   cell_types: string[];
   cell_states: string[];
   cited_evidence_ids: string[];
@@ -538,17 +557,10 @@ export interface MembraneSubdomain {
   cited_evidence_ids: string[];
 }
 
-export interface ExocytosisEvidence {
-  stimulus: string | null;
-  mechanism: string | null;
-  cited_evidence_ids: string[];
-}
-
 export interface SubcellularLocalization {
   primary_compartment: Compartment;
   dual_localization: DualLocalization[];
   membrane_subdomains: MembraneSubdomain[];
-  exocytosis_evidence: ExocytosisEvidence[];
 }
 
 export interface AnatomicalAccessibilityObservation {
@@ -669,7 +681,12 @@ export type EpitopeMaskingMechanism =
 export type EpitopeMaskingSeverity = "high" | "moderate" | "low" | "none";
 
 export interface EpitopeMasking {
-  mechanism: EpitopeMaskingMechanism;
+  /** PR23 round 6: upgraded from a single value to a list so
+   *  multi-mechanism cases (GRP78: glycan + partner; GPR75:
+   *  glycan + conformational) don't collapse to one value. Empty
+   *  list means no mechanism documented; `["none"]` is the
+   *  explicit "no masking" call. */
+  mechanism: EpitopeMaskingMechanism[];
   severity: EpitopeMaskingSeverity;
   evidence_strength: EvidenceStrength;
   rationale: string;
@@ -686,20 +703,15 @@ export interface AccessibilityRisks {
 }
 
 // ============================================================
-// Knowledge gaps + evidence ledger
+// Evidence ledger
+// ------------------------------------------------------------
+// PR23 round 5: the standalone `knowledge_gaps` block was
+// dropped. Uncertainty signal now flows through
+// `contradicting_evidence` (literature conflicts),
+// `confidence` + `confidence_reasoning` (overall uncertainty,
+// max 600 chars), `evidence_grade` + `grade_rationale`
+// (evidence quality), and per-section `rationale` fields.
 // ============================================================
-
-export type WhyUnresolved = "no_literature" | "conflicting" | "outside_scope";
-export type GapImpact = "high" | "moderate" | "low";
-
-export interface KnowledgeGap {
-  question: string;
-  why_unresolved: WhyUnresolved;
-  detail: string | null;
-  impact_on_confidence: GapImpact;
-  suggested_resolution: string | null;
-  cited_evidence_ids: string[];
-}
 
 export type EvidenceTier = "primary" | "secondary" | "tertiary";
 
@@ -752,12 +764,17 @@ export interface SurfaceomeRecord {
   biological_context: BiologicalContext;
   paralog_assessment: ParalogRisk[];
   accessibility_risks: AccessibilityRisks;
-  knowledge_gaps: KnowledgeGap[];
   evidence: Evidence[];
   search_log: SearchEntry[];
   confidence: number;
+  /** Free-text justification for the top-level confidence value.
+   *  PR23 round 9 constraint: max 600 chars; required when
+   *  confidence != "high" (validator-enforced). */
   confidence_reasoning: string;
-  contradiction_flag: boolean;
-  generated_at: string;
+  /** Record-assembly time (renamed from `generated_at` in
+   *  PR23 round 9 for explicit contrast with the nested
+   *  `retrieved_at` fields on each deterministic-feature block,
+   *  which capture tool-fetch time). */
+  record_generated_at: string;
   model_path: string;
 }
