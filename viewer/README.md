@@ -34,8 +34,8 @@ They must validate against the
 Pydantic schema. The page bodies read these JSONs via `fs` at build
 time and SSG every gene through `generateStaticParams`.
 
-Reference records: `HSPA1A.json` (conditional-surface stress-induced),
-`TGOLN2.json`.
+Reference record: `GPR75.json` (orphan class-A GPCR worked
+example for the v1.0.0 schema).
 
 Same files double as the static fetch endpoint:
 `https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.json`.

@@ -8,9 +8,9 @@
  * client-side loaders.
  *
  * Returns ``null`` when no DeepTMHMM record exists for the UniProt
- * (e.g. soluble cytoplasmic proteins like HSPA1A). The per-gene page
- * skips the structure card in that case rather than rendering an
- * empty placeholder.
+ * (e.g. soluble cytoplasmic proteins with no membrane topology). The
+ * per-gene page skips the structure card in that case rather than
+ * rendering an empty placeholder.
  *
  * Browser-safe constants (TOPOLOGY_COLORS, alphafoldPdbUrl) live in
  * ``./structure-viewer-types`` so the client component doesn't drag

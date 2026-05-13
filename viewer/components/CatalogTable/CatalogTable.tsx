@@ -159,9 +159,8 @@ export function CatalogTable({
     return rows.filter((r) => {
       if (q) {
         // Search across symbol, UniProt, the NCBI descriptive name,
-        // and every synonym — so "transferrin" matches TF and "TGN46"
-        // matches TGOLN2 even though neither appears in the canonical
-        // symbol.
+        // and every synonym — so a free-text query like "transferrin"
+        // can match a gene whose canonical symbol is TF.
         const syn = r.synonyms ? r.synonyms.join(" ") : "";
         const hay =
           `${r.symbol} ${r.uniprot} ${r.name ?? ""} ${syn}`.toLowerCase();
