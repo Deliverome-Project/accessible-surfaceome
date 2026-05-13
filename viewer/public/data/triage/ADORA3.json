@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "multipass_with_exposed_loops",
-  "verdict_reasoning": "ADORA3 is a classical seven-transmembrane (7TM) G-protein-coupled receptor with an extracellular N-terminus and three extracellular loops. The adenosine-binding pocket is located in the extracellular domain formed by these loops and the N-terminal region, making the protein directly accessible to extracellular adenosine ligand. Adenosine receptors are well-characterized cell-surface receptors.",
-  "uniprot_acc": "P0DMS8",
-  "hgnc_id": "HGNC:268",
-  "model_path": "haiku_only"
-}

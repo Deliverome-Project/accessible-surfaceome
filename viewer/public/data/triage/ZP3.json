@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "secreted_only",
-  "verdict_reasoning": "ZP3 is a secreted zona pellucida glycoprotein. Although the nascent protein contains a transmembrane domain, it undergoes proteolytic processing via furin cleavage; the mature form is an ectodomain that is incorporated into the extracellular zona pellucida matrix as a structural component. The mature protein body lacks a functional membrane anchor and is not stably attached to the plasma membrane\u2014it resides within the extracellular matrix as part of the zona pellucida coat. No therapeutic binder would engage ZP3 as a cell-surface-anchored target.",
-  "uniprot_acc": "P21754",
-  "hgnc_id": "HGNC:13189",
-  "model_path": "haiku_only"
-}

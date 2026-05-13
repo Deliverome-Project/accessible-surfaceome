@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "secreted_only",
-  "verdict_reasoning": "IGF1 is a secreted growth factor (insulin-family neuropeptide) processed from a precursor and released into the extracellular space, where it circulates and binds to cell-surface receptors (IGF1R, others) in transient non-covalent equilibrium. No membrane-anchored isoform, GPI anchor, covalent surface tether, or documented MHC-presentation as a clinically engaged antigen. The protein does not remain stably on the outer leaflet via its own mechanism.",
-  "uniprot_acc": "P05019",
-  "hgnc_id": "HGNC:5464",
-  "model_path": "haiku_only"
-}

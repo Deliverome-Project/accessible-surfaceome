@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "nuclear",
-  "verdict_reasoning": "HNRNPK is a canonical heterogeneous nuclear ribonucleoprotein (hnRNP) family member, explicitly localized to the nucleoplasm. Its function is nuclear pre-mRNA processing and mRNA metabolism. While some hnRNPs shuttle transiently to the cytoplasm, none anchor to the plasma membrane or present surface-accessible domains. No membrane isoform, GPI anchor, secreted form, or clinical surface-targeting program is documented. Not a clinically engaged MHC-presented antigen.",
-  "uniprot_acc": "P61978",
-  "hgnc_id": "HGNC:5044",
-  "model_path": "haiku_only"
-}

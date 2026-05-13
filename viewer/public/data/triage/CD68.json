@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "dual_localization",
-  "verdict_reasoning": "CD68 is a type I integral membrane protein with documented dual compartmentalization: primarily localized to lysosomes and endosomes, but with a substantive minority pool circulating to and resident on the cell surface. The surface fraction is accessible via the protein's own membrane anchor and trafficking biology (including lysosomal exocytosis in activated macrophages). CD68 is a canonical CD-designated surface marker on monocytes and macrophages, detected by cell-surface antibodies, confirming surface accessibility even though lysosomes are the dominant compartment.",
-  "uniprot_acc": "P34810",
-  "hgnc_id": "HGNC:1693",
-  "model_path": "haiku_only"
-}

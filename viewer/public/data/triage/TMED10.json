@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "dual_localization",
-  "verdict_reasoning": "TMED10 is a type I membrane protein explicitly localized to both plasma membrane and Golgi cisternae. Its TM domain confers its own membrane anchor; when present at the PM (as documented), it presents an extracellular face. However, its primary functional role is in ER\u2013Golgi vesicular trafficking, making the PM a secondary cycling pool rather than stable residence. Dual-localization biology with documented PM presence qualifies for contextual accessibility.",
-  "uniprot_acc": "P49755",
-  "hgnc_id": "HGNC:16998",
-  "model_path": "haiku_only"
-}

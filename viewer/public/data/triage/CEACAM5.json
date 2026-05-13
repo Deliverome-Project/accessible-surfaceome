@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "gpi_anchored",
-  "verdict_reasoning": "CEACAM5 is explicitly described as a 'cell surface glycoprotein' in the NCBI summary. It is designated CD66e, confirming cell-surface antigen status. A founding member of the CEA/CEACAM family, it is GPI-anchored and mediates cell-adhesion and cellular signaling. The V-set and I-set domain memberships further confirm extracellular topology. The protein is clinically used as a biomarker, supporting direct surface accessibility for antibody engagement.",
-  "uniprot_acc": "P06731",
-  "hgnc_id": "HGNC:1817",
-  "model_path": "haiku_only"
-}

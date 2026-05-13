@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "cytoplasmic",
-  "verdict_reasoning": "TYK2 is a soluble cytoplasmic Janus kinase that associates with the cytoplasmic (intracellular) domains of type I and II cytokine receptors. It has no transmembrane domain, GPI anchor, or other outer-leaflet anchoring mechanism. It functions as an intracellular signaling enzyme recruited transiently to the inner face of the membrane via cytokine receptor binding, not as a surface-exposed protein accessible from outside the cell.",
-  "uniprot_acc": "P29597",
-  "hgnc_id": "HGNC:12440",
-  "model_path": "haiku_only"
-}

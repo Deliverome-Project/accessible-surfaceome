@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "gpi_anchored",
-  "verdict_reasoning": "EFNA4 is an ephrin A-class protein explicitly anchored to the plasma membrane via a glycosylphosphatidylinositol (GPI) linkage on the outer leaflet. GPI anchoring is a classical, stable surface-anchoring mechanism that provides direct extracellular accessibility. Ephrins function as surface ligands in cell-cell signaling.",
-  "uniprot_acc": "P52798",
-  "hgnc_id": "HGNC:3224",
-  "model_path": "haiku_only"
-}

@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "inner_leaflet_anchored",
-  "verdict_reasoning": "LYN is a Src family non-receptor tyrosine kinase anchored to the inner leaflet of the plasma membrane via N-terminal myristoylation and palmitoylation. The kinase domain is cytoplasmic. Although LYN associates with membrane-proximal signaling complexes (BCR, Fc\u03b5RI) in lymphocytes and mast cells, it does not reach the extracellular face via its own mechanism or co-trafficking with a TM partner that would expose its catalytic body. It is accessible only to intracellular substrates.",
-  "uniprot_acc": "P07948",
-  "hgnc_id": "HGNC:6735",
-  "model_path": "haiku_only"
-}

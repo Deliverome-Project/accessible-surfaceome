@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "lysosomal_exocytosis",
-  "verdict_reasoning": "LAMP1 is a lysosomal membrane glycoprotein that is constitutively resident on lysosomal membranes but transiently reaches the plasma membrane outer face during lysosomal exocytosis. This occurs in activated T cells, NK cells, and other lymphocytes during degranulation and immune activation. Its CD107a designation reflects this surface exposure as a cell-activation marker, and it is clinically engaged in CAR-T and TCR-T monitoring via flow cytometry. Surface accessibility is cell-state-dependent and well-documented.",
-  "uniprot_acc": "P11279",
-  "hgnc_id": "HGNC:6499",
-  "model_path": "haiku_only"
-}

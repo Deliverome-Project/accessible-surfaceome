@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "GALNT1 is a type II membrane protein with an N-terminal transmembrane domain. It is a Golgi-resident glycosyltransferase enzyme catalyzing mucin-type O-linked glycosylation in the Golgi apparatus. While it has a membrane anchor, it is stably localized to the Golgi lumen and does not have documented trafficking to or stable residency at the plasma membrane.",
-  "uniprot_acc": "Q10472",
-  "hgnc_id": "HGNC:4123",
-  "model_path": "haiku_only"
-}

@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "cell_state_induced",
-  "verdict_reasoning": "VDAC1 is primarily an outer mitochondrial membrane porin but the NCBI summary explicitly states it 'forms channels in the plasma membrane.' VDAC1 is known to translocate to the plasma membrane under cell-stress, apoptosis, and immunogenic cell-death conditions. Its surface presence is context-dependent and stress-induced rather than constitutive.",
-  "uniprot_acc": "P21796",
-  "hgnc_id": "HGNC:12669",
-  "model_path": "haiku_only"
-}

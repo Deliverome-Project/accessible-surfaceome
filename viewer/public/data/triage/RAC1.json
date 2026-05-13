@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "cytoplasmic",
-  "verdict_reasoning": "RAC1 is a small GTPase from the Rho family, a soluble cytoplasmic signaling protein. It carries a C-terminal prenylation motif (farnesylation/geranylgeranylation) that anchors it to the inner leaflet of the plasma membrane and intracellular membranes, but not the outer face. RAC1 lacks a transmembrane domain, GPI anchor, or any mechanism to reach the extracellular surface. It functions as an intracellular regulator of cytoskeletal dynamics and is not a target of surface-directed therapeutics.",
-  "uniprot_acc": "P63000",
-  "hgnc_id": "HGNC:9801",
-  "model_path": "haiku_only"
-}

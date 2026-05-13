@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "pmhc_only_intracellular",
-  "verdict_reasoning": "CTAG1A (NY-ESO-1) is a cancer/testis antigen with no documented transmembrane domain, GPI anchor, or membrane-anchoring mechanism. It is a cytoplasmic/intracellular antigen whose primary biology is MHC-mediated antigen presentation. Although it is a target of TCR-T and other cancer immunotherapies, these work via MHC-peptide recognition, not via surface accessibility of the protein body itself. The protein body does not reach the outer leaflet of the plasma membrane.",
-  "uniprot_acc": "P78358",
-  "hgnc_id": "HGNC:24198",
-  "model_path": "haiku_only"
-}

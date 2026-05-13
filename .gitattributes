@@ -30,6 +30,12 @@ data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
 # Tiny (~1.5 KB); raw-fetched by the figures-folder gist script.
 data/processed/triage_bench/db_cutoff_tradeoff_points.tsv -filter -diff -merge text
 
+# Optimized-cutoffs accession TSV dumped by
+# scripts/triage_bench_db_barplot.py::_dump_db_optimized_cutoffs.
+# ~50 KB; raw-fetched by the figures-folder by_class gist so it can
+# reproduce the optimized-cutoffs view of the plot.
+data/processed/triage_bench/db_optimized_cutoffs.tsv -filter -diff -merge text
+
 # Optimized DB-cutoff accession sets dumped by
 # scripts/triage_bench_db_barplot.py::_dump_optimized_db_accs.
 # Tiny single-column TSVs (~30/10 KB); raw-fetched by the

@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "cytoplasmic",
-  "verdict_reasoning": "MAP2K1 (MEK1) is a soluble cytoplasmic serine/threonine kinase and core component of the intracellular MAPK/ERK signaling cascade. It lacks any membrane anchor (no TM domain, no GPI anchor), is not known to encode membrane-anchored isoforms, and has no documented cell-surface pool or tissue-restricted surface form. It is a canonical intracellular signaling kinase, not a surface protein.",
-  "uniprot_acc": "Q02750",
-  "hgnc_id": "HGNC:6840",
-  "model_path": "haiku_only"
-}

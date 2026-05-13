@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "pmhc_only_intracellular",
-  "verdict_reasoning": "MAGEA4 is an intracellular cancer-testis antigen localized to the nucleus and cytoplasm. It lacks a transmembrane domain, GPI anchor, or any mechanism to reach the outer face of the plasma membrane. While MAGEA4-derived peptides are well-established MHC-I presentation targets recognized by CD8+ T cells (driving multiple TCR-T and TCR-mimic clinical programs), the protein body itself is not surface-accessible. MHC-peptide presentation is not credited as evidence for surface accessibility of the protein body.",
-  "uniprot_acc": "P43358",
-  "hgnc_id": "HGNC:6802",
-  "model_path": "haiku_only"
-}

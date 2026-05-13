@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "ITPR3 is the inositol 1,4,5-trisphosphate receptor, a multi-pass integral protein of the endoplasmic reticulum (ER) membrane. Its canonical function is intracellular calcium release triggered by the cytoplasmic second messenger IP3. The N-terminal ligand-binding site and C-terminal calcium channel are both cytoplasm-facing. While IP3R can cluster at ER-PM junctional contact sites, these are specialized junctions that do not expose the protein to the extracellular face or make it accessible to extracellular binders. The protein is resident of the endomembrane system, not the plasma membrane.",
-  "uniprot_acc": "Q14573",
-  "hgnc_id": "HGNC:6182",
-  "model_path": "haiku_only"
-}

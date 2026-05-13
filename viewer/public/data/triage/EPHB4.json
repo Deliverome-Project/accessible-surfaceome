@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "classical_surface_receptor",
-  "verdict_reasoning": "EPHB4 is an EPH receptor tyrosine kinase with a classical single-pass transmembrane topology. It contains an extracellular domain that directly binds ephrin-B ligands on the cell surface, a transmembrane domain anchoring it to the plasma membrane, and an intracellular kinase domain. The protein is stably present on the outer leaflet via its transmembrane anchor.",
-  "uniprot_acc": "P54760",
-  "hgnc_id": "HGNC:3395",
-  "model_path": "haiku_only"
-}

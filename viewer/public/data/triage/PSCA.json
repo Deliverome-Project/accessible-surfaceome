@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "gpi_anchored",
-  "verdict_reasoning": "PSCA is explicitly described as a glycosylphosphatidylinositol (GPI)-anchored cell membrane glycoprotein. GPI anchors covalently attach proteins to the outer leaflet of the plasma membrane via a stable phosphatidylinositol moiety, providing robust surface accessibility. The LY6/PLAUR domain-family membership is consistent with canonical GPI-anchored surface antigens. Multi-tissue expression (prostate, bladder, placenta, colon, kidney, stomach) and up-regulation in prostate cancer confirm its surface phenotype.",
-  "uniprot_acc": "O43653",
-  "hgnc_id": "HGNC:9500",
-  "model_path": "haiku_only"
-}

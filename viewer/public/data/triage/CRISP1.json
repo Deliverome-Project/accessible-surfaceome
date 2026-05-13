@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "secreted_only",
-  "verdict_reasoning": "CRISP1 is a secreted protein produced in the epididymis and released into the epididymal lumen. Although it binds to sperm and egg plasma membranes during fertilization, it does so as a soluble ligand in reversible equilibrium with the extracellular pool, not via a membrane anchor (TM domain, GPI anchor, or covalent/wash-resistant surface tethering) on its own protein body. Its role is as a recruited ligand to other cell surfaces, not as a stably membrane-anchored protein. Washing would remove it.",
-  "uniprot_acc": "P54107",
-  "hgnc_id": "HGNC:304",
-  "model_path": "haiku_only"
-}

@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "TMED9 is a p24 trafficking protein, a canonical member of the COPII/COPI coat complex family. It is a transmembrane resident of the endoplasmic reticulum and Golgi apparatus where it functions in intracellular vesicular transport. p24 proteins cycle between ER and Golgi compartments but have no mechanism to reach the plasma membrane and are not trafficked to or displayed on the cell surface.",
-  "uniprot_acc": "Q9BVK6",
-  "hgnc_id": "HGNC:24878",
-  "model_path": "haiku_only"
-}

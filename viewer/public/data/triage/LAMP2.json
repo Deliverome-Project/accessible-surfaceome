@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "lysosomal_exocytosis",
-  "verdict_reasoning": "LAMP2 is a single-pass transmembrane protein resident in the lysosomal membrane. During lysosomal exocytosis\u2014triggered by immune cell activation (T cell / NK cell degranulation)\u2014the lysosomal membrane fuses with the plasma membrane, exposing LAMP2 on the cell surface via its own TM anchor. The CD107b designation and HGNC gene-group membership confirm surface biology. Surface presence is documented but context-dependent on cell-state activation.",
-  "uniprot_acc": "P13473",
-  "hgnc_id": "HGNC:6501",
-  "model_path": "haiku_only"
-}

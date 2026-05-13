@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "extracellular_face_protein",
-  "verdict_reasoning": "NCBI summary explicitly states protein is located at cell surface. Functional annotation confirms extracellular accessibility: TGF-beta binding activity and sequestration of TGF-beta in extracellular matrix indicate an extracellular domain capable of ligand engagement. LRR-containing architecture (previous symbol LRRC33) is consistent with surface-anchored protein with structured extracellular binding face.",
-  "uniprot_acc": "Q86YC3",
-  "hgnc_id": "HGNC:24613",
-  "model_path": "haiku_only"
-}

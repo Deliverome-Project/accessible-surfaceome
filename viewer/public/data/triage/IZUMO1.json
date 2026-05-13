@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "classical_surface_receptor",
-  "verdict_reasoning": "IZUMO1 is a single-pass transmembrane protein with an extracellular immunoglobulin-like domain. It is essential for sperm-egg plasma membrane binding and fusion, functions as a ligand for the oocyte receptor JUNO, and is constitutively surface-localized on sperm via its own transmembrane anchor. The protein body is stably accessible from the extracellular face.",
-  "uniprot_acc": "Q8IYV9",
-  "hgnc_id": "HGNC:28539",
-  "model_path": "haiku_only"
-}

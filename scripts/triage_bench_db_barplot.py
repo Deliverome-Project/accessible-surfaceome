@@ -186,6 +186,40 @@ def _optimized_cspa_accs() -> set[str]:
     return accs
 
 
+def _dump_db_optimized_cutoffs() -> None:
+    """Dump the optimized-cutoff accession sets to a small TSV.
+
+    Lets the figures-folder gist ``make_db_correctness_by_class.py``
+    reproduce the optimized-cutoff version of the by-class plot
+    without re-loading the raw UniProt + CSPA dumps. Same pattern as
+    ``_dump_db_cutoff_tradeoff_points``.
+
+    Output: ``data/processed/triage_bench/db_optimized_cutoffs.tsv``
+    (LFS-exempted in .gitattributes). Columns:
+      accession, uniprot_optimized, cspa_optimized
+    where the flag is 1 if the accession is admitted by the optimized
+    rule for that source (TM+signal for UniProt, HC-only for CSPA),
+    else 0. Rows include the union of both optimized sets so the gist
+    can rebuild both flag columns from one file.
+    """
+    up = _optimized_uniprot_accs()
+    cspa = _optimized_cspa_accs()
+    out = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", newline="") as fh:
+        w = csv.DictWriter(
+            fh, fieldnames=["accession", "uniprot_optimized", "cspa_optimized"],
+            delimiter="\t",
+        )
+        w.writeheader()
+        for acc in sorted(up | cspa):
+            w.writerow({
+                "accession": acc,
+                "uniprot_optimized": int(acc in up),
+                "cspa_optimized":    int(acc in cspa),
+            })
+
+
 def _load_all_mainbench_records() -> list[dict]:
     """Pull every per-cell main-bench record from D1 in a single round-trip.
 
@@ -485,6 +519,12 @@ def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_clas
       - contextual : accuracy on ground_truth=contextual
       - no       : accuracy on ground_truth=no
     """
+
+    # Dump the optimized-cutoff accession sets to a small TSV so the
+    # figures-folder gist (data/analysis/figures/make_db_correctness_by_class.py)
+    # can reproduce the optimized-cutoffs view without re-loading the raw
+    # UniProt + CSPA dumps. Cheap; runs once per invocation.
+    _dump_db_optimized_cutoffs()
 
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     overall = overall_accuracy()

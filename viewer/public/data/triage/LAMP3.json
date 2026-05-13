@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "lysosomal_exocytosis",
-  "verdict_reasoning": "LAMP3 is a type 1 integral membrane protein that localizes primarily to late endosomes/lysosomes and MHC class II compartments\u2014classically intracellular. However, in mature dendritic cells, LAMP3-containing compartments traffic to the cell surface via lysosomal exocytosis, where it serves as a maturation marker (CD208). The protein body reaches the outer leaflet through fusion of late-endosomal/lysosomal vesicles with the plasma membrane during dendritic cell activation and antigen presentation. This surface mobilization is documented and condition-dependent, not baseline.",
-  "uniprot_acc": "Q9UQV4",
-  "hgnc_id": "HGNC:14582",
-  "model_path": "haiku_only"
-}

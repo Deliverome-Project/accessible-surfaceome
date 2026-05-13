@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "TGOLN2 is a type I integral membrane protein constitutively resident in the trans-Golgi network. It cycles between the TGN and early endosomes \u2014 an intracellular trafficking pathway \u2014 with no documented trafficking to or stable residence on the plasma membrane. The transmembrane anchor is embedded in TGN membranes, not the PM.",
-  "uniprot_acc": "O43493",
-  "hgnc_id": "HGNC:15450",
-  "model_path": "haiku_only"
-}

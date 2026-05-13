@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "stable_surface_attachment",
-  "verdict_reasoning": "C3 is a soluble plasma protein that undergoes proteolytic cleavage upon complement activation, generating C3b. The C3b fragment becomes stably anchored to pathogen and complement-activated cell surfaces via covalent thioester bonding\u2014a wash-resistant mechanism. C3 reaches the outer membrane through this stable post-translational covalent attachment of its cleavage product, not through an intrinsic membrane anchor. The thioester-mediated deposition is explicitly documented and represents a canonical complement-activation surface attachment.",
-  "uniprot_acc": "P01024",
-  "hgnc_id": "HGNC:1318",
-  "model_path": "haiku_only"
-}

@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "stable_complex_partner",
-  "verdict_reasoning": "B2M is a non-covalent structural partner of the MHC class I heavy chain, assembled intracellularly in the ER and co-trafficked to the cell surface as an integral component of the mature MHC class I trimeric complex (heavy chain + \u03b22M + peptide). The protein lacks its own membrane anchor but is stably bound to the anchored heavy chain throughout the complex's lifecycle and is surface-displayed on nearly all nucleated cells.",
-  "uniprot_acc": "P61769",
-  "hgnc_id": "HGNC:914",
-  "model_path": "haiku_only"
-}

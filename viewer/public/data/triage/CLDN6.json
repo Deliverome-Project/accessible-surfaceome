@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "multipass_with_exposed_loops",
-  "verdict_reasoning": "Claudin 6 is a tetraspan integral membrane protein with two extracellular loops that form tight junction strands. The extracellular domains are directly accessible from outside the cell, where they mediate claudin-claudin interactions between adjacent epithelial cells to seal the paracellular space. The protein is stably membrane-anchored via its transmembrane domains.",
-  "uniprot_acc": "P56747",
-  "hgnc_id": "HGNC:2048",
-  "model_path": "haiku_only"
-}

@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "classical_surface_receptor",
-  "verdict_reasoning": "MUC1 is a classical single-pass transmembrane mucin with an explicit CD227 designation and HGNC classification as a CD molecule. The NCBI summary confirms expression on the apical surface of epithelial cells. The protein is proteolytically cleaved into a membrane-anchored beta subunit and a large N-terminal alpha subunit bearing O-glycosylated mucin repeats that form a stable heterodimeric complex on the cell surface.",
-  "uniprot_acc": "P15941",
-  "hgnc_id": "HGNC:7508",
-  "model_path": "haiku_only"
-}

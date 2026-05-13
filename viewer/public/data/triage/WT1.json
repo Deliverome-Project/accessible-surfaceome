@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "nuclear",
-  "verdict_reasoning": "WT1 is a nuclear transcription factor with zinc-finger and DNA-binding domains that localize it to the nucleus for transcriptional regulation. It has no transmembrane domain, GPI anchor, lipidation signals, or documented membrane trafficking pathway. While WT1-derived peptides are presented on MHC (basis for some immunotherapy programs), the protein body itself is strictly nuclear and not surface-accessible; pMHC presentation alone does not establish surface accessibility for the protein.",
-  "uniprot_acc": "P19544",
-  "hgnc_id": "HGNC:12796",
-  "model_path": "haiku_only"
-}

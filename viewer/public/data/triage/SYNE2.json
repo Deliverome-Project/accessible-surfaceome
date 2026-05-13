@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "nuclear_envelope",
-  "verdict_reasoning": "SYNE2 (Nesprin-2) is a KASH-domain protein anchored to the outer nuclear membrane via coupling to SUN proteins and the nuclear lamina. Its function is to tether the nucleus to the cytoskeleton from the perinuclear space. There is no documented trafficking to the plasma membrane, no anchorrage at the cell surface, and no mechanism by which it could reach the extracellular face.",
-  "uniprot_acc": "Q8WXH0",
-  "hgnc_id": "HGNC:17084",
-  "model_path": "haiku_only"
-}

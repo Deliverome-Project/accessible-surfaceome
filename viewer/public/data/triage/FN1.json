@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "secreted_only",
-  "verdict_reasoning": "FN1 encodes fibronectin, a secreted glycoprotein present in soluble form in plasma and deposited in the extracellular matrix and at cell surfaces. It binds to cell-surface integrins and other ECM components via non-covalent interactions but has no transmembrane domain, GPI anchor, or other membrane-anchoring mechanism of its own. It reaches the cell surface only through recruitment by integrin binding, not via its own intrinsic membrane anchor. Extracellular ligands without self-directed surface anchoring fall under the secreted_only category.",
-  "uniprot_acc": "P02751",
-  "hgnc_id": "HGNC:3778",
-  "model_path": "haiku_only"
-}

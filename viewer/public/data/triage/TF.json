@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "secreted_only",
-  "verdict_reasoning": "Transferrin is a canonical secreted iron-transport glycoprotein synthesized by the liver and circulating in blood. It binds reversibly and non-covalently to transferrin receptors on cell surfaces, but has no membrane anchor of its own (no TM domain, GPI anchor, or covalent surface attachment). The protein is in equilibrium with the soluble pool and is not retained on cells via a stable physical link to the membrane.",
-  "uniprot_acc": "P02787",
-  "hgnc_id": "HGNC:11740",
-  "model_path": "haiku_only"
-}

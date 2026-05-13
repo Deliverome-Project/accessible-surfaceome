@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "SEC61G is the gamma subunit of the Sec61 translocon complex, an ER-resident integral membrane protein that forms the translocation channel in the endoplasmic reticulum. There is no evidence of PM trafficking, dual localization, or surface display. The protein functions exclusively in ER-mediated protein translocation and integration and is not accessible from the extracellular face.",
-  "uniprot_acc": "P60059",
-  "hgnc_id": "HGNC:18277",
-  "model_path": "haiku_only"
-}

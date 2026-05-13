@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "inner_leaflet_anchored",
-  "verdict_reasoning": "BTK is a cytoplasmic non-receptor tyrosine kinase with a pleckstrin homology domain that binds phosphatidylinositol phosphates on the inner leaflet of the plasma membrane during BCR signaling. While it transiently associates with the PM, this association is cytoplasmic-face anchoring via inner-leaflet lipid recognition, not outer-leaflet accessibility. BTK lacks transmembrane domains, GPI anchors, or secretory signals and is not deployed as a stable non-covalent partner of a TM surface protein.",
-  "uniprot_acc": "Q06187",
-  "hgnc_id": "HGNC:1133",
-  "model_path": "haiku_only"
-}

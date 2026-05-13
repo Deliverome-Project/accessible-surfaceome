@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "other",
-  "verdict_reasoning": "KAAG1 is a long non-coding RNA (lncRNA), not a protein-coding gene. It produces an RNA molecule, not a protein. The surface-accessibility triage framework evaluates protein bodies with defined membrane topology; lncRNAs have no protein product and are outside the scope of this triage.",
-  "uniprot_acc": "Q9UBP8",
-  "hgnc_id": "HGNC:21031",
-  "model_path": "haiku_only"
-}

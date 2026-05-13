@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "multipass_with_exposed_loops",
-  "verdict_reasoning": "HTR2C is a seven-transmembrane GPCR with canonical surface topology. The receptor binds extracellular serotonin via its extracellular N-terminus and loops, requiring stable outer-face positioning. No sequestration, trafficking restriction, or cell-state-dependent localization is indicated. Classical surface neurotransmitter receptor.",
-  "uniprot_acc": "P28335",
-  "hgnc_id": "HGNC:5295",
-  "model_path": "haiku_only"
-}

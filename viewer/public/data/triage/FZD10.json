@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "multipass_with_exposed_loops",
-  "verdict_reasoning": "FZD10 is a 7-transmembrane GPCR (Class F frizzled family) with an extracellular N-terminal domain and multiple extracellular loops. It is a canonical Wnt signaling receptor that binds extracellular Wnt ligands and is constitutively cell-surface localized. CD350 designation confirms surface accessibility. The multi-pass TM topology provides its own membrane anchor.",
-  "uniprot_acc": "Q9ULW2",
-  "hgnc_id": "HGNC:4039",
-  "model_path": "haiku_only"
-}

@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "cytoplasmic",
-  "verdict_reasoning": "JAK1 is a soluble cytoplasmic tyrosine kinase of the Jak family. Although it associates with the intracellular tails of activated cytokine receptors via its FERM domain, it lacks a transmembrane domain, GPI anchor, or any membrane-anchoring motif. JAK1 is recruited to the inner leaflet / cytoplasmic face of the plasma membrane transiently during signal transduction but does not reach the outer face or possess a stable membrane anchor of its own. The term 'membrane protein' in the summary refers to its role in membrane-proximal signaling complexes, not to its localization on the cell surface.",
-  "uniprot_acc": "P23458",
-  "hgnc_id": "HGNC:6190",
-  "model_path": "haiku_only"
-}

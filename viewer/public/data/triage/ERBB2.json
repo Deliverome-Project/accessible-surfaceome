@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "classical_surface_receptor",
-  "verdict_reasoning": "ERBB2 is a classical single-pass transmembrane receptor tyrosine kinase with a large extracellular domain stably anchored to the plasma membrane via its own TM domain. It is one of the most clinically validated surface oncology targets, targeted by approved antibodies (trastuzumab, pertuzumab) and ADCs that directly engage the extracellular domain on the cell surface. CD340 designation confirms canonical surface biology.",
-  "uniprot_acc": "P04626",
-  "hgnc_id": "HGNC:3430",
-  "model_path": "haiku_only"
-}

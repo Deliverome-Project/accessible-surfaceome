@@ -1,8 +1,0 @@
-{
-  "verdict": "contextual",
-  "reason": "dual_localization",
-  "verdict_reasoning": "SCARB2 is a type III transmembrane glycoprotein with primary lysosomal/endosomal localization. However, it has a well-documented plasma membrane pool that functions as a receptor for enterovirus A71 (EV-A71) and other enteroviruses, enabling viral entry from the extracellular space. This dual localization\u2014dominant endosomal/lysosomal residence alongside a functionally engaged surface pool\u2014qualifies as contextual surface accessibility.",
-  "uniprot_acc": "Q14108",
-  "hgnc_id": "HGNC:1665",
-  "model_path": "haiku_only"
-}

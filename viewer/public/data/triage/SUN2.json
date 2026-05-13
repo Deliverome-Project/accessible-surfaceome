@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "nuclear_envelope",
-  "verdict_reasoning": "SUN2 is an inner nuclear membrane (INM) protein that serves as a LINC complex component. The INM faces the nucleoplasm and is physically inaccessible from the extracellular milieu; it is not a substrate for cell-surface-directed binders.",
-  "uniprot_acc": "Q9UH99",
-  "hgnc_id": "HGNC:14210",
-  "model_path": "haiku_only"
-}

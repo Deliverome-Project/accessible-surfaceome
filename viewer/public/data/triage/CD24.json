@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "gpi_anchored",
-  "verdict_reasoning": "CD24 is a mature 32-amino-acid sialoglycoprotein anchored to the cell surface via a GPI (glycosyl phosphatidylinositol) link. GPI anchors are a canonical outer-leaflet lipidation mechanism conferring stable surface accessibility on granulocytes and B cells. The protein reaches the outer face via its own anchor.",
-  "uniprot_acc": "P25063",
-  "hgnc_id": "HGNC:1645",
-  "model_path": "haiku_only"
-}

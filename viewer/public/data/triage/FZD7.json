@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "multipass_with_exposed_loops",
-  "verdict_reasoning": "FZD7 is a Class F GPCR with 7 transmembrane helices, an N-terminal signal sequence, and an extracellular cysteine-rich domain. The multi-pass TM architecture is intrinsic and anchors the protein stably to the plasma membrane. The Wnt-binding extracellular loops are naturally positioned on the outer leaflet.",
-  "uniprot_acc": "O75084",
-  "hgnc_id": "HGNC:4045",
-  "model_path": "haiku_only"
-}

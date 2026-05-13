@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "mitochondrial_internal",
-  "verdict_reasoning": "HSPD1 is a soluble mitochondrial chaperonin (Hsp60) with no transmembrane domain, GPI anchor, or membrane-anchoring mechanism. Its primary function is protein folding within the mitochondrial matrix. While it can be released extracellularly as a damage-associated molecular pattern (DAMP) during stress or cell death and recognized by pattern recognition receptors, this transient release does not constitute stable surface accessibility by its own mechanism. The protein does not reside stably on the plasma membrane outer leaflet under baseline or documented surface-induction conditions.",
-  "uniprot_acc": "P10809",
-  "hgnc_id": "HGNC:5261",
-  "model_path": "haiku_only"
-}

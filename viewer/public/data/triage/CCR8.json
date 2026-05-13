@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "multipass_with_exposed_loops",
-  "verdict_reasoning": "CCR8 is a canonical C-C chemokine receptor and 7-transmembrane G protein-coupled receptor (GPCR) with extracellular loops and N-terminus forming the chemokine-binding site. Assigned CD nomenclature (CDw198) and registry-curated membership in the C-C chemokine receptor family. The protein's function \u2014 binding circulating chemokines (I-309, TARC, MIP-1\u03b2) to regulate immune-cell migration \u2014 requires surface accessibility; this is a prototypical cell-surface receptor.",
-  "uniprot_acc": "P51685",
-  "hgnc_id": "HGNC:1609",
-  "model_path": "haiku_only"
-}

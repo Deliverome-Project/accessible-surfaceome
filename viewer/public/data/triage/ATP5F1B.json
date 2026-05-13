@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "mitochondrial_internal",
-  "verdict_reasoning": "ATP5F1B encodes the beta subunit of mitochondrial ATP synthase F1 \u2014 the soluble catalytic core resident in the mitochondrial matrix. This is a strictly intramitochondrial protein with no plasma membrane expression, no membrane anchor reaching the outer leaflet, and no documented surface pool under any condition. The protein is inaccessible from the extracellular space.",
-  "uniprot_acc": "P06576",
-  "hgnc_id": "HGNC:830",
-  "model_path": "haiku_only"
-}

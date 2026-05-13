@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "secreted_only",
-  "verdict_reasoning": "VEGFA is a canonical secreted growth factor and member of the PDGF/VEGF family. It is produced with a signal peptide, secreted as a disulfide-linked homodimer, and functions as a soluble heparin-binding ligand that binds extracellular matrix and transient cell-surface receptors (VEGFR1/2/3, neuropilin). It has no transmembrane domain, GPI anchor, or stable post-translational anchoring to surface partners. Therapeutic anti-VEGF antibodies target the circulating secreted form, not a surface-displayed protein. The protein body does not stably reach the outer leaflet by its own mechanism.",
-  "uniprot_acc": "P15692",
-  "hgnc_id": "HGNC:12680",
-  "model_path": "haiku_only"
-}

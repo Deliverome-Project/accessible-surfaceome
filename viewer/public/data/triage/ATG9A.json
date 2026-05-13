@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "ATG9A is a transmembrane protein resident to intracellular compartments (Golgi, endosome, phagophore assembly site). It cycles through these endomembrane-system organelles as part of the core autophagy machinery, with no documented plasma membrane localization or surface-trafficking mechanism under baseline or induced conditions.",
-  "uniprot_acc": "Q7Z3C6",
-  "hgnc_id": "HGNC:22408",
-  "model_path": "haiku_only"
-}

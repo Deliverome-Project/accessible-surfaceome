@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "ABCB9 is a lysosomal ABC transporter that mediates peptide translocation from the cytosol into the lysosomal lumen. While it is a membrane-associated protein with transmembrane topology, these domains are embedded in the lysosomal membrane, not the plasma membrane. It has no known mechanism to reach the extracellular face of the plasma membrane under baseline or contextual conditions.",
-  "uniprot_acc": "Q9NP78",
-  "hgnc_id": "HGNC:50",
-  "model_path": "haiku_only"
-}

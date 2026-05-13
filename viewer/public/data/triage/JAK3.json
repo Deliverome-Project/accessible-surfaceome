@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "cytoplasmic",
-  "verdict_reasoning": "JAK3 is a soluble cytoplasmic tyrosine kinase with no transmembrane domain, GPI anchor, or lipidation. Although it associates with the intracellular domains of cytokine receptors (IL-2R, IL-4R, IL-7R, etc.) to transduce interleukin signals, the JAK3 protein body itself remains intracellular and does not reach the outer leaflet of the plasma membrane.",
-  "uniprot_acc": "P52333",
-  "hgnc_id": "HGNC:6193",
-  "model_path": "haiku_only"
-}

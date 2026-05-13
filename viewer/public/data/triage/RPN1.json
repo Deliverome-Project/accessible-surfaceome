@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "endomembrane_resident",
-  "verdict_reasoning": "RPN1 (ribophorin I) is an ER-resident type I integral membrane protein. The NCBI summary explicitly states it is 'found only in the rough endoplasmic reticulum,' where it functions as a subunit of the N-oligosaccharyltransferase (OST) complex and the 26S proteasome regulatory module. Although it possesses a transmembrane domain, that anchor resides in the ER membrane, not the plasma membrane. There is no documented PM trafficking, dual localization, or evidence of surface accessibility.",
-  "uniprot_acc": "P04843",
-  "hgnc_id": "HGNC:10381",
-  "model_path": "haiku_only"
-}

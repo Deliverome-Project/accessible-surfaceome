@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "multipass_with_exposed_loops",
-  "verdict_reasoning": "GRM4 is a metabotropic glutamate receptor (mGlu4) belonging to the GPCR superfamily. As a 7-transmembrane G protein-coupled receptor, it has multiple extracellular loops and a large extracellular N-terminal ligand-binding domain that recognizes and binds L-glutamate in the extracellular space. The protein is stably resident on the cell surface by virtue of its transmembrane topology.",
-  "uniprot_acc": "Q14833",
-  "hgnc_id": "HGNC:4596",
-  "model_path": "haiku_only"
-}

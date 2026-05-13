@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "classical_surface_receptor",
-  "verdict_reasoning": "DSG3 is a single-pass transmembrane cadherin with multiple extracellular cadherin-repeat domains. It is a constitutive component of desmosomes at the plasma membrane, mediating homophilic cell-cell adhesion between epithelial and myocardial cells. Its surface accessibility is confirmed by pemphigus vulgaris autoimmunity: IgG autoantibodies bind the extracellular domain and disrupt adhesion, proving the protein body is exposed on the outer face. Stably anchored via its transmembrane domain.",
-  "uniprot_acc": "P32926",
-  "hgnc_id": "HGNC:3050",
-  "model_path": "haiku_only"
-}

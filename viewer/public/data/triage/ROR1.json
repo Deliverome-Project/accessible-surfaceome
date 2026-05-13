@@ -1,8 +1,0 @@
-{
-  "verdict": "yes",
-  "reason": "classical_surface_receptor",
-  "verdict_reasoning": "ROR1 is explicitly described as a type I membrane protein and member of the ROR subfamily of cell surface receptors. Single-pass transmembrane architecture with an extracellular N-terminal domain and glycosylation support a classical surface-receptor topology. ROR1 functions as a co-receptor in non-canonical Wnt signaling and is a validated therapeutic target (CAR-T, ADC, and monoclonal antibody programs in B-cell lymphoid malignancies), confirming surface accessibility.",
-  "uniprot_acc": "Q01973",
-  "hgnc_id": "HGNC:10256",
-  "model_path": "haiku_only"
-}

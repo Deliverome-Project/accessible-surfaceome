@@ -1,8 +1,0 @@
-{
-  "verdict": "no",
-  "reason": "cytoplasmic",
-  "verdict_reasoning": "JAK2 is a soluble, non-receptor tyrosine kinase that localizes to the cytoplasm. Although it transiently associates with activated cytokine receptors at the plasma membrane during signal transduction, it is not anchored to the membrane by its own mechanism (no TM domain, GPI anchor, or covalent surface tether). The association is reversible recruitment to an intracellular-facing receptor domain, not stable surface residence. JAK2 returns to the cytoplasmic pool after signaling.",
-  "uniprot_acc": "O60674",
-  "hgnc_id": "HGNC:6192",
-  "model_path": "haiku_only"
-}
