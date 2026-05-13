@@ -205,17 +205,30 @@ a Pages binding.
   `node_modules/.bin/wrangler`. The cloudflare/ scripts call
   `npx --yes wrangler ...` so the pinned version always wins over
   any globally installed wrangler. CI does the same `npm ci`.
-- **Node version is pinned in four places that must stay in lockstep**:
-  `package.json` `engines.node`, `viewer/package.json` `@types/node`,
-  the `node-version:` in `.github/workflows/d1-backup.yml` and
-  `viewer-build.yml`, AND the `NODE_VERSION` build env var on the
-  Cloudflare Pages project for `surfaceome.deliverome.org` (Settings →
-  Environment Variables → Production + Preview). **The Pages env var
-  lives outside the repo — when bumping Node anywhere here, always
+- **Node version pin: `.nvmrc` is the source of truth**
+  (currently `24.14.1`). It's mirrored at `viewer/.nvmrc` because
+  `cd viewer && nvm use` won't walk up the tree. Workflows read it via
+  `node-version-file:` so CI never drifts from local dev. The
+  `engines.node` field in `package.json` (root) and `viewer/package.json`
+  uses `^24` as a *floor* assertion (`engine-strict=true` in `viewer/.npmrc`
+  promotes the engines mismatch from warn to error). The
+  `viewer/@types/node` dep tracks the same major.
+- **`NODE_VERSION` on Cloudflare Pages lives outside the repo.** Set it
+  to the same value as `.nvmrc` (Settings → Environment Variables →
+  Production + Preview). **When bumping Node anywhere here, always
   remind the user to bump `NODE_VERSION` on Cloudflare Pages in the
   same change.** Skipping it means the Pages build either keeps using
   the old Node (silent drift) or falls through to Cloudflare's rolling
   default (which can shift under you).
+- **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
+  - `engine-strict=true` — refuse `npm install` on wrong Node major
+  - `audit-level=high` — `npm audit` (and implicit audit) exits non-zero on high+
+  - `before=YYYY-MM-DD` — quarantine: refuse to install package versions
+    published after that date. Defense against fresh supply-chain attacks
+    (see Mini Shai-Hulud, 2026-05-12). Roll the date forward only when
+    you intentionally want to pull newer packages. npm 11.11.0 also
+    accepts `min-release-age=<days>` as a forward-looking config, but
+    only `before=` is actually wired into resolution as of that release.
 - **Required CI secrets** (one-time): `CLOUDFLARE_API_TOKEN` (D1:Edit
   + R2:Edit) and `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket itself is
   provisioned locally via `npx --yes wrangler r2 bucket create deliverome-d1-backups`.

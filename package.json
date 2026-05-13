@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "Repo-root Node tooling. Currently just pins the wrangler CLI used by cloudflare/ scripts (D1 schema apply, D1 export, R2 upload). Not a runtime package — the viewer SPA has its own package.json under viewer/.",
   "engines": {
-    "node": ">=22"
+    "node": "^24"
   },
   "scripts": {
     "wrangler": "wrangler"

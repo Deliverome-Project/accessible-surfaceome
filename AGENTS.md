@@ -153,16 +153,25 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   `node_modules/.bin/`; the cloudflare/ scripts and the CI workflow
   both invoke it as `npx --yes wrangler ...` so the pinned version
   always wins.
-- **Node version pin lives in four places** that must stay in
-  lockstep: `package.json` `engines.node`, `viewer/package.json`
-  `@types/node`, the `node-version:` in `.github/workflows/d1-backup.yml`
-  and `viewer-build.yml`, AND the `NODE_VERSION` build env var on the
-  Cloudflare Pages project for `surfaceome.deliverome.org` (Settings →
-  Environment Variables → Production + Preview). **The Pages env var
-  lives outside the repo — when bumping Node anywhere here, always
-  remind the user to bump `NODE_VERSION` on Cloudflare Pages in the
-  same change.** Skipping it leaves the Pages build on the old Node
-  (silent drift) or on Cloudflare's rolling default (shifts under you).
+- **Node version pin lives in `.nvmrc`** (root + `viewer/.nvmrc`),
+  currently `24.14.1`. Workflows read it via `node-version-file:` so
+  CI never drifts from local dev. `engines.node: ^24` in both
+  `package.json`s acts as a floor and is enforced as an error (not a
+  warning) via `engine-strict=true` in `viewer/.npmrc`. `viewer/@types/node`
+  tracks the same major. **`NODE_VERSION` build env var on Cloudflare
+  Pages lives outside the repo and must be kept in sync with `.nvmrc`
+  (Settings → Environment Variables → Production + Preview). When
+  bumping Node anywhere here, always remind the user to bump it on
+  Cloudflare Pages in the same change.** Skipping it leaves the Pages
+  build on the old Node (silent drift) or on Cloudflare's rolling
+  default (shifts under you).
+- **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
+  `engine-strict=true`, `audit-level=high`,
+  `before=YYYY-MM-DD` (cooldown quarantine — refuses packages published
+  after that date; defense against fresh supply-chain attacks). Roll the
+  `before=` date forward only when intentionally adding newer deps.
+  npm's `min-release-age=<days>` config is forward-looking — defined but
+  not yet wired into resolution as of npm 11.11.0.
 - **CI secrets** (one-time, in repo Settings → Secrets and variables
   → Actions): `CLOUDFLARE_API_TOKEN` (scoped D1:Edit + R2:Edit) and
   `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket is provisioned locally via

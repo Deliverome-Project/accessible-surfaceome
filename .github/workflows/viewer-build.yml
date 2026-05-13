@@ -27,12 +27,22 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version-file: "viewer/.nvmrc"
           cache: "npm"
           cache-dependency-path: viewer/package-lock.json
 
       - name: install
         run: npm ci
+
+      - name: audit
+        # Fails on critical advisories. `viewer/.npmrc` sets audit-level=high
+        # for local devs, but CI is set to `critical` only — the Next.js 16.x
+        # stable line currently carries ~13 high-severity advisories with no
+        # stable fix yet (fix is in 16.3 canary). Most don't apply to a static
+        # export deploy (no SSR/middleware/Image API at request time). Flip
+        # back to `high` once Next 16.3 stable ships and the lockfile picks
+        # up the fix.
+        run: npm audit --audit-level=critical
 
       - name: typecheck
         run: npm run check
