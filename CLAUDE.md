@@ -223,12 +223,23 @@ a Pages binding.
 - **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
   - `engine-strict=true` — refuse `npm install` on wrong Node major
   - `audit-level=high` — `npm audit` (and implicit audit) exits non-zero on high+
-  - `before=YYYY-MM-DD` — quarantine: refuse to install package versions
-    published after that date. Defense against fresh supply-chain attacks
-    (see Mini Shai-Hulud, 2026-05-12). Roll the date forward only when
-    you intentionally want to pull newer packages. npm 11.11.0 also
-    accepts `min-release-age=<days>` as a forward-looking config, but
-    only `before=` is actually wired into resolution as of that release.
+  - `min-release-age=7` — quarantine: refuse to install package versions
+    published in the last 7 days. Defense against fresh supply-chain
+    attacks (see Mini Shai-Hulud, 2026-05-12). As of npm 11.11.0 this
+    config is defined but not yet wired into resolution (no-op today,
+    activates automatically when npm completes the wiring, likely
+    11.12+). For new dep additions today, use `npm run safe-add
+    <package>` (in `viewer/`) — that script enforces the cooldown via
+    the working `--before` CLI flag.
+  - `viewer/package.json` `overrides.postcss` — pins all transitive
+    postcss to the patched line, regardless of what `next` declares.
+- **`next` is pinned to an exact canary version** (`16.3.0-canary.11`)
+  in `viewer/package.json` because every stable 16.x through 16.2.6
+  is in the vulnerable range for ~13 GHSA high-severity advisories
+  (Server Component DoS, RSC cache poisoning, middleware/proxy
+  bypasses, etc.). The fix is in 16.3 canary. **Bump to `^16.3.0`
+  once Next 16.3.0 ships stable** — CI's `npm audit --audit-level=high`
+  step will then continue to pass.
 - **Required CI secrets** (one-time): `CLOUDFLARE_API_TOKEN` (D1:Edit
   + R2:Edit) and `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket itself is
   provisioned locally via `npx --yes wrangler r2 bucket create deliverome-d1-backups`.

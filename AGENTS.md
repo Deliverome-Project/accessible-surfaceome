@@ -166,12 +166,14 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   build on the old Node (silent drift) or on Cloudflare's rolling
   default (shifts under you).
 - **`viewer/.npmrc` hardening** (per lirantal/npm-security-best-practices):
-  `engine-strict=true`, `audit-level=high`,
-  `before=YYYY-MM-DD` (cooldown quarantine — refuses packages published
-  after that date; defense against fresh supply-chain attacks). Roll the
-  `before=` date forward only when intentionally adding newer deps.
-  npm's `min-release-age=<days>` config is forward-looking — defined but
-  not yet wired into resolution as of npm 11.11.0.
+  `engine-strict=true`, `audit-level=high`, `min-release-age=7`
+  (forward-looking; npm 11.11.0 defines but doesn't yet enforce). For
+  the cooldown to actually filter today, use `npm run safe-add
+  <package>` (in `viewer/`) — that script wraps `npm install` with
+  the working `--before=<7-days-ago>` flag.
+- **`next` pinned to exact `16.3.0-canary.11`** because stable 16.x
+  through 16.2.6 carries ~13 GHSA high-severity advisories with no
+  stable fix yet. Bump to `^16.3.0` once Next 16.3.0 ships stable.
 - **CI secrets** (one-time, in repo Settings → Secrets and variables
   → Actions): `CLOUDFLARE_API_TOKEN` (scoped D1:Edit + R2:Edit) and
   `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket is provisioned locally via
