@@ -1,0 +1,97 @@
+name: D1 backup → R2
+
+# Trigger an offsite SQL-dump backup of BOTH the `surfaceome_agents`
+# D1 database (full triage + deep-dive write log) AND the read-only
+# `surfaceome_public` mirror (powers the public API + viewer) whenever
+# changes touch the data the DBs store or the schema / uploader that
+# defines them.
+#
+# The workflow runs `wrangler d1 export` twice and pushes each dump to
+# the R2 bucket `deliverome-d1-backups` under a timestamped key plus a
+# stable `latest.sql` pointer. Combined with Cloudflare's built-in Time
+# Travel (7-30 day automatic point-in-time recovery), this gives us
+# long-term offsite versioning with grep-able SQL for both DBs.
+#
+# Required repo secrets (Settings → Secrets and variables → Actions):
+#   CLOUDFLARE_API_TOKEN — scoped to D1:Edit and R2:Edit on the account
+#   CLOUDFLARE_ACCOUNT_ID — the account hex
+#
+# The wrangler CLI uses the API token via CLOUDFLARE_API_TOKEN env var
+# without needing `wrangler login`.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      # Schema / SQL — any change to the D1 schema triggers a fresh dump.
+      - "cloudflare/d1_schema.sql"
+      # Eval data — new triage runs land here.
+      - "data/eval/triage_subbench_v1/**"
+      - "data/eval/triage_benchmark_v1.tsv"
+      - "data/eval/triage_haiku_live_run.tsv"
+      # Deep-dive output — new SurfaceomeRecord persists here.
+      - "data/annotations/**"
+      - "data/triage/**"
+      # Per-gene candidate catalogue — drives the public viewer + API.
+      - "data/processed/candidate_universe/**"
+      # Uploaders / backup / public-sync scripts.
+      - "src/accessible_surfaceome/cloud/**"
+      - "scripts/upload_triage_runs_to_d1.py"
+      - "scripts/sync_public_d1.py"
+      - "scripts/d1_export_to_r2.sh"
+      - "scripts/d1_triage_backup.sh"
+      - ".github/workflows/d1-backup.yml"
+  workflow_dispatch:  # allow manual triggers from the Actions tab
+
+concurrency:
+  group: d1-backup-${{ github.ref }}
+  cancel-in-progress: false  # don't cancel an in-flight export
+
+jobs:
+  export-to-r2:
+    runs-on: ubuntu-latest
+    # Skip on forked-PR pushes — wrangler auth lives in secrets that
+    # forks can't read.
+    if: github.repository == 'Deliverome-Project/accessible-surfaceome'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install pinned wrangler (and any other Node devDeps)
+        run: npm ci
+
+      - name: Verify wrangler authentication
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          npx --yes wrangler whoami
+          npx --yes wrangler d1 list
+
+      - name: Export surfaceome_agents → R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bash scripts/d1_export_to_r2.sh --db surfaceome_agents
+
+      - name: Export surfaceome_public → R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: bash scripts/d1_export_to_r2.sh --db surfaceome_public
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### D1 → R2 backup" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Triggered by: ${GITHUB_EVENT_NAME}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Backups uploaded to R2 bucket: \`deliverome-d1-backups\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- \`d1-backups/surfaceome_agents/latest.sql\` (full agent write log)" >> $GITHUB_STEP_SUMMARY
+          echo "- \`d1-backups/surfaceome_public/latest.sql\` (public read-only mirror)" >> $GITHUB_STEP_SUMMARY

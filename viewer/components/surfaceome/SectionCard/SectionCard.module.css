@@ -1,0 +1,48 @@
+/*
+ * SectionCard — section frame used by every surfaceome record card.
+ * Editorial vertical rhythm: numbered eyebrow → section heading →
+ * lede → body. No box chrome — the eyebrow + heading carry the
+ * structural weight, with the body filling the page-width column.
+ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-12) 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.section:first-child {
+  border-top: 0;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 56ch;
+}
+
+.title {
+  font-size: clamp(1.55rem, 2.6vw, 2.2rem);
+  line-height: 1.1;
+}
+
+.meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.lede {
+  font-size: 1rem;
+  max-width: 60ch;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}

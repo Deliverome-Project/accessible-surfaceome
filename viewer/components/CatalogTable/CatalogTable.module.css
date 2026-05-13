@@ -1,0 +1,620 @@
+/*
+ * CatalogTable — genome-wide table for the catalogue index page.
+ * Filter / sort client-side over 5k+ rows; rows with a deep-dive
+ * record link into /[symbol]/, everything else is read-only.
+ *
+ * Layout: CSS Grid with a shared `--catalog-cols` template applied to
+ * the header row AND every body row. This is the structural fix for
+ * the "thead and tbody column widths drift" problem virtualized HTML
+ * tables suffer from — both the header and the absolutely-positioned
+ * virtual rows use the SAME grid template, so columns are guaranteed
+ * to align without any proportional-fill rounding.
+ *
+ * Keeps the editorial frame (Playfair display, Manrope sans, Rosy
+ * Maroon accent) but uses a dense data-grid in the body — clinical
+ * scan more than narrative reveal. No row-level borders; alternating
+ * row tinting is the rhythm.
+ */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* ============================================================
+ * Toolbar
+ * ============================================================ */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search {
+  flex: 1 1 16rem;
+  max-width: 28rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: var(--ink);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.searchInput:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.chip:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.chipOn {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+.chipOn:hover {
+  color: var(--fg-on-dark);
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
+.chipCount {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  font-weight: var(--fw-regular);
+  opacity: 0.7;
+}
+
+/* ============================================================
+ * Result meta
+ * ============================================================ */
+
+.resultMeta {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.dot {
+  color: var(--line);
+}
+
+/* ============================================================
+ * Table (CSS Grid)
+ * ============================================================ */
+
+.tableScroll {
+  /* Element-scroll for the virtualized body: this container owns the
+   * scrollbar, the page above (hero / toolbar) stays put. Height
+   * clamped to viewport so 19k rows never push the document scroll
+   * to absurd lengths. */
+  overflow: auto;
+  max-height: min(80vh, 800px);
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  position: relative;
+  /* The wrap supplies --catalog-cols via inline style; expose a
+   * fallback here so styles still work if it's not set. */
+}
+
+/* The shared row template — applied to both the header row and every
+ * body row. Columns: symbol | uniprot | sources | 5 db dots |
+ * triage | deep-dive. Triage uses `minmax(14rem, 1fr)` so it absorbs
+ * any leftover horizontal space; the other columns stay at their
+ * intrinsic rem widths. */
+.row {
+  display: grid;
+  grid-template-columns: var(--catalog-cols,
+    1.75rem 7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--line-soft);
+  min-height: 2.4rem;
+}
+
+.rowExpanded {
+  /* Expanded rows display the per-run reasoning underneath the
+   * normal cells. The expanded block uses grid-column: 1 / -1 to
+   * span every column. Align-items reverts to stretch so the
+   * detail block can lay out vertically. */
+  align-items: stretch;
+}
+
+/* Sticky header — same grid template as every body row guarantees
+ * column alignment. */
+.headerRow {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  min-height: 2.6rem;
+}
+
+/* Body wrapper — the virtualizer sizes this to its totalSize and
+ * absolutely positions each row inside it. */
+.body {
+  display: block;
+}
+
+.row[data-deep-dive] {
+  /* Subtle accent so deep-dive rows are scannable in a dense list. */
+}
+
+.row:nth-child(2n + 1):not(.headerRow):not(.loadingRow):not(.empty) {
+  background: rgba(146, 32, 56, 0.022);
+}
+
+.row:hover:not(.headerRow):not(.loadingRow):not(.empty) {
+  background: var(--maroon-soft);
+}
+
+/* ============================================================
+ * Cells
+ * ============================================================ */
+
+.headerCell {
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+
+.headerCenter {
+  justify-content: center;
+  text-align: center;
+}
+
+.headerMono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.06em;
+}
+
+.thBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.thBtn:hover {
+  color: var(--accent);
+}
+
+.thBtnActive {
+  color: var(--ink);
+}
+
+.sortIndicator {
+  font-size: 0.7em;
+  color: var(--accent);
+  width: 0.7em;
+  display: inline-block;
+  text-align: center;
+}
+
+.headerDbCell {
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: none;
+  padding: 0.5rem 0.3rem;
+}
+
+.cell {
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+/* Leading toggle cell + button — the +/− that opens the per-row
+ * triage-detail block. Small target, ink-soft default, accent on
+ * hover/active. */
+.toggleCell {
+  padding: 0.2rem 0.25rem 0.2rem 0.5rem;
+  justify-content: center;
+}
+
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.toggleBtn:hover,
+.toggleBtn:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggleBtn[aria-expanded="true"] {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+/* Expanded triage-detail block — spans every column of the parent
+ * grid row so the reasoning text isn't constrained to one cell.
+ * Indented from the leading toggle so the alignment reads as
+ * "child of this row". */
+.expandedBlock {
+  grid-column: 1 / -1;
+  padding: var(--space-3) var(--space-5) var(--space-5) 2.25rem;
+  background: var(--bg-soft);
+  border-top: 1px dashed var(--line-soft);
+}
+
+.expandedMeta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.runList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.runItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.runMeta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.runBadge {
+  display: inline-flex;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  background: var(--bg-warm);
+  color: var(--ink);
+}
+
+.runBadge[data-verdict="yes"] {
+  background: rgba(46, 122, 85, 0.14);
+  color: var(--success);
+}
+
+.runBadge[data-verdict="no"] {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+}
+
+.runBadge[data-verdict="contextual"] {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+}
+
+.runDim {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.runReasoning {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 78ch;
+}
+
+/* ============================================================
+ * Cell content (overrides only — column widths come from grid
+ * template, so no `width` here)
+ * ============================================================ */
+
+.symbolLink {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.04rem;
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.symbolLink:hover,
+.symbolLink:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+.symbolText {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.uniprotCell {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.nCell {
+  justify-content: center;
+}
+
+.nBubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-pill);
+  background: var(--bg-warm);
+  color: var(--muted);
+}
+
+.nBubble[data-n="0"] {
+  opacity: 0.45;
+}
+
+.nBubble[data-n="3"],
+.nBubble[data-n="4"] {
+  background: var(--teal-tint);
+  color: var(--teal-deepest);
+}
+
+.nBubble[data-n="5"] {
+  background: var(--teal-mid);
+  color: var(--fg-on-dark);
+}
+
+.dbCell {
+  justify-content: center;
+  padding: 0.4rem 0.3rem;
+}
+
+.dbDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.dbCellYes .dbDot {
+  background: var(--teal-mid);
+  border-color: var(--teal-mid);
+}
+
+.triageCell {
+  /* Triage absorbs slack via the grid template (minmax(14rem, 1fr)) —
+   * so no width here, just content rules. */
+}
+
+.verdict {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  flex-wrap: wrap;
+}
+
+/* Triage cell is now a button — clicking opens the same expanded
+ * detail as the leading "+". Reset native button chrome; keep
+ * baseline-aligned content, accent on hover/focus. */
+.verdictBtn {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  color: inherit;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.verdictBtn:hover,
+.verdictBtn:focus-visible {
+  opacity: 0.78;
+}
+
+.verdictBtn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.verdictLabel {
+  display: inline-flex;
+  padding: 0.18rem 0.5rem;
+  font-size: 0.74rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+}
+
+.verdictYes .verdictLabel {
+  background: rgba(46, 122, 85, 0.14);
+  color: var(--success);
+}
+
+.verdictNo .verdictLabel {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+}
+
+.verdictContextual .verdictLabel {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+}
+
+.verdictUnknown .verdictLabel {
+  background: var(--bg-warm);
+  color: var(--muted);
+}
+
+.verdictReason {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.deepCell {
+  justify-content: center;
+}
+
+.deepBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.22rem 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  color: var(--accent);
+  background: var(--maroon-blush);
+  border: 1px solid rgba(146, 32, 56, 0.22);
+  border-radius: var(--radius-pill);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.deepBadge:hover,
+.deepBadge:focus-visible {
+  background: var(--accent-fill);
+  color: var(--fg-on-dark);
+}
+
+.dim {
+  color: var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+}
+
+/* ============================================================
+ * Empty / loading rows — span the full grid row, not the columns.
+ * ============================================================ */
+
+.empty,
+.loadingRow {
+  display: block;
+  text-align: center;
+  padding: var(--space-12);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.loadingRow {
+  font-style: italic;
+}
+
+/* ============================================================
+ * Responsive: hide UniProt column on narrow viewports
+ * ============================================================ */
+
+@media (max-width: 720px) {
+  .row {
+    grid-template-columns:
+      1.75rem 7.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem;
+  }
+  .uniprotCell,
+  .headerRow .headerCell:nth-child(3) {
+    display: none;
+  }
+}

@@ -6,8 +6,34 @@ importing this module has no side effects.
 """
 from pathlib import Path
 
+import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import seaborn as sns
+
+# Bundled brand fonts (committed under ./assets/fonts/). Registered with
+# matplotlib's font manager on first call to setup_plotting_style so the
+# rcParams below actually resolve to Manrope instead of falling back to
+# DejaVu Sans.
+_REPO_ROOT = Path(__file__).resolve().parents[3]
+_BUNDLED_FONTS_DIR = _REPO_ROOT / "assets" / "fonts"
+_fonts_registered = False
+
+
+def register_bundled_fonts() -> None:
+    """Add ``./assets/fonts/*.ttf`` to matplotlib's font manager (idempotent)."""
+
+    global _fonts_registered
+    if _fonts_registered:
+        return
+    if not _BUNDLED_FONTS_DIR.is_dir():
+        _fonts_registered = True
+        return
+    for ttf in sorted(_BUNDLED_FONTS_DIR.glob("*.ttf")):
+        try:
+            fm.fontManager.addfont(str(ttf))
+        except Exception:  # noqa: BLE001 — best-effort; fall back if a font can't load
+            continue
+    _fonts_registered = True
 
 # Core Deliverome palette tokens (from Deliverome Design System)
 COLORS = {
@@ -72,6 +98,9 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         Scale factor for fonts (default: 2.2 for larger, more readable text)
     """
 
+    # Register bundled brand fonts before applying rcParams that reference them.
+    register_bundled_fonts()
+
     # Set seaborn style
     if style == "default":
         sns.set_style("whitegrid")
@@ -96,15 +125,24 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'figure.facecolor': 'none',
         'savefig.facecolor': 'none',
 
-        # Font
+        # Font (project convention is +30% from matplotlib defaults so
+        # exported figures stay readable when embedded in slides / PDFs)
         'font.family': 'sans-serif',
         'font.sans-serif': ['Manrope', 'Outfit', 'DejaVu Sans', 'Liberation Sans', 'Arial'],
         'font.serif': ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
-        'font.size': 11,
+        'font.size': 14,
 
         # Axes
-        'axes.labelsize': 12,
-        'axes.titlesize': 14,
+        'axes.labelsize': 16,
+        # Titles are suppressed by config (project convention is to
+        # caption figures rather than title them). Existing
+        # ``ax.set_title(...)`` calls become visual no-ops without
+        # raising — titlesize=0 + zero padding means no space is
+        # reserved either. To re-enable for a one-off plot, set
+        # ``axes.titlesize`` back to e.g. 16 via plt.rcParams after
+        # calling setup_plotting_style.
+        'axes.titlesize': 0,
+        'axes.titlepad': 0,
         'axes.titleweight': 'medium',
         'axes.labelweight': 'normal',
         'axes.spines.top': False,
@@ -123,8 +161,8 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'grid.color': COLORS['line'],
 
         # Ticks
-        'xtick.labelsize': 10,
-        'ytick.labelsize': 10,
+        'xtick.labelsize': 13,
+        'ytick.labelsize': 13,
         'xtick.color': COLORS['dark'],
         'ytick.color': COLORS['dark'],
 
@@ -132,7 +170,8 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'legend.frameon': True,
         'legend.framealpha': 0.9,
         'legend.fancybox': True,
-        'legend.fontsize': 10,
+        'legend.fontsize': 13,
+        'legend.title_fontsize': 14,
 
         # Lines
         'lines.linewidth': 2,
@@ -146,9 +185,57 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
     # Default despine to top/right for a clean look.
     sns.despine(top=True, right=True)
 
-def save_figure(fig, filename, output_dir='figures', formats=['pdf', 'jpeg']):
+    # Project convention: figures don't carry titles or suptitles — they
+    # get explanatory captions in the document around them instead. The
+    # rcParams above zero out axes titles; this also patches Figure.suptitle
+    # and Axes.set_title to be visual no-ops so existing call sites stop
+    # rendering text without needing a sweep of edits. Both originals are
+    # preserved at attribute names below for callers that need to opt back
+    # in (e.g. a one-off interactive plot in a notebook).
+    _disable_titles_globally()
+
+
+# Originals are stashed once at module import time so this is idempotent —
+# repeated setup_plotting_style() calls don't re-wrap an already-wrapped
+# function.
+_ORIGINAL_AXES_SET_TITLE = plt.Axes.set_title
+_ORIGINAL_FIGURE_SUPTITLE = plt.Figure.suptitle
+
+
+def _disable_titles_globally() -> None:
+    """Replace Axes.set_title and Figure.suptitle with no-ops.
+
+    Callers that want a title back can call ``set_title`` /  ``suptitle``
+    via the ``_ORIGINAL_*`` references on this module, or set the
+    rcParam ``axes.titlesize`` to a positive value and re-import.
+    """
+
+    def _no_title(self, *_args, **_kwargs):
+        return None
+
+    # Runtime monkey-patch via setattr. The static signatures of
+    # `Axes.set_title` / `Figure.suptitle` (positional + keyword args)
+    # don't match the catch-all `(self, *_args, **_kwargs)`, but the
+    # runtime behavior is intentional. Using setattr keeps the patch
+    # invisible to static type checkers (`ty` doesn't honor the
+    # mypy-style `# type: ignore[assignment]` comment we had here).
+    setattr(plt.Axes, "set_title", _no_title)
+    setattr(plt.Figure, "suptitle", _no_title)
+
+def save_figure(
+    fig,
+    filename,
+    output_dir='figures',
+    formats=('pdf', 'png'),
+    gist_url=None,
+):
     """
     Save figure in multiple formats.
+
+    Defaults to PDF (vector) + PNG (raster). PNG preserves the transparent
+    figure / axes background that the config sets via
+    ``figure.facecolor='none'``; JPEG cannot carry alpha and forces a
+    white background, so we don't ship JPEG by default.
 
     Parameters:
     -----------
@@ -158,15 +245,38 @@ def save_figure(fig, filename, output_dir='figures', formats=['pdf', 'jpeg']):
         Base filename (without extension)
     output_dir : str or Path
         Output directory
-    formats : list
-        List of formats to save ('png', 'pdf', 'svg')
+    formats : iterable[str]
+        Output formats. PNG / PDF / SVG preserve transparency; JPEG does not.
+    gist_url : str or None
+        If set, embeds the URL as a reproduction-link metadata field
+        on the saved artifacts. Read back with ``exiftool``, an online
+        EXIF viewer, or GIMP's *Image Properties → Comments*. Matches
+        the "Final-Figure Gist Convention" in CLAUDE.md — promoted
+        figures (in any ``*_final/`` analysis dir) should ship a gist
+        URL so readers can run ``uv run make_<slug>.py`` themselves.
+
+        PNG: written as a ``Source`` tEXt chunk (a standard PNG
+        keyword recognized by every PNG-aware tool).
+        PDF: written as the ``Subject`` doc-info field (the closest
+        analogue PDF carries for "where this came from").
+        SVG / other vector formats: skipped — matplotlib's metadata
+        plumbing doesn't surface them for non-PNG/PDF backends.
     """
     output_path = Path(output_dir)
     output_path.mkdir(exist_ok=True, parents=True)
 
     for fmt in formats:
         filepath = output_path / f"{filename}.{fmt}"
-        fig.savefig(filepath, format=fmt, dpi=300, bbox_inches='tight')
+        save_kwargs = {"format": fmt, "dpi": 300, "bbox_inches": "tight"}
+        if gist_url:
+            if fmt == "png":
+                save_kwargs["metadata"] = {"Source": gist_url}
+            elif fmt == "pdf":
+                # PDF info dict uses different keyword names than PNG's
+                # tEXt; "Subject" is the conventional slot for a
+                # reproduction / source URL.
+                save_kwargs["metadata"] = {"Subject": gist_url}
+        fig.savefig(filepath, **save_kwargs)
         print(f"  Saved: {filepath}")
 
 def create_figure(nrows=1, ncols=1, figsize=None, **kwargs):

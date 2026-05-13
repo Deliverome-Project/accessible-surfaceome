@@ -20,6 +20,12 @@ __pycache__/
 .env
 *.log
 
+# Wrangler.toml for the public Worker carries the surfaceome_public D1 UUID
+# inline (wrangler doesn't interpolate env vars into D1 bindings), so the
+# real file is generated from wrangler.toml.example and gitignored. See
+# cloudflare/workers/surfaceome_api/README.md.
+cloudflare/workers/surfaceome_api/wrangler.toml
+
 # Managed Agents run logs and tool cache (gitignored — contain timestamps,
 # session IDs, and possibly upstream API responses)
 .runs/
@@ -29,7 +35,44 @@ data/external/tool_cache.sqlite*
 # we have a stable set, not every smoke-test output.
 data/annotations/
 
+# Per-gene triage records are also agent-generated; same reasoning.
+data/triage/
+
+# Bulk external data dropped from version control to keep Cloudflare Pages
+# clones fast — every Pages build pulls all HEAD LFS objects, and these
+# two dirs were ~2 GB on their own. Re-fetch locally with the matching
+# downloader in `src/accessible_surfaceome/sources/`:
+#   * DeepTMHMM academic-license zip — install via
+#     `accessible-surfaceome tools deeptmhmm install` (signup-gated by
+#     the upstream project; the install handler walks you through it).
+#   * JensenLab COMPARTMENTS source TSVs — download via
+#     `python -m accessible_surfaceome.sources.compartments download`.
+data/external/deeptmhmm/
+data/external/jensenlab_compartments/
+
+# Triage-bench per-run records (one JSON per protein per cell). Reproducible
+# from `accessible-surfaceome triage-bench run`. The benchmark TSV input
+# lives at data/eval/triage_benchmark_v1.tsv and is committed.
+data/eval/triage_bench_v1/
+
+# `--smoke` runs of the sub-bench runner land here so a wiring test
+# can't clobber canonical artifacts (see triage_subbench_runner.py's
+# _smoke_routing). Throwaway by design — nuke with `rm -rf
+# data/eval/_smoke/`.
+data/eval/_smoke/
+
 # Per-source corpus written by the orchestrator (raw + normalized text +
 # citation metadata for every PMID/PMC/UniProt/WO the agent has fetched).
 # Reproducible from the upstream sources; commit a curated baseline later.
 data/sources/
+
+# Node devDependencies. wrangler is pinned in /package.json (used by the
+# cloudflare/ scripts for D1 / R2). The viewer SPA has its own
+# package.json + node_modules under viewer/. Reproducible via `npm ci`.
+node_modules/
+viewer/node_modules/
+
+# Local D1 → SQL dumps from `scripts/d1_export_to_r2.sh --keep-local`.
+# The canonical copies live in R2 (deliverome-d1-backups). The local
+# copies are convenience-only; reproducible from R2 at any time.
+data/processed/cloudflare/d1_backups/

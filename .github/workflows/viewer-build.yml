@@ -1,0 +1,50 @@
+name: viewer build check
+
+# Mirror the Cloudflare Pages build locally: anything that breaks the
+# Pages deploy should fail this workflow first. Runs on PRs that touch
+# `viewer/**` and on every push to `main` so a broken viewer commit
+# never reaches the Pages production branch.
+on:
+  pull_request:
+    paths:
+      - "viewer/**"
+      - ".github/workflows/viewer-build.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "viewer/**"
+      - ".github/workflows/viewer-build.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: viewer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: viewer/package-lock.json
+
+      - name: install
+        run: npm ci
+
+      - name: typecheck
+        run: npm run check
+
+      - name: build (offline stub mode)
+        # GitHub-Actions IPs get a Cloudflare WAF 403 against
+        # `api.deliverome.org/surfaceome/v1/catalog`, so CI runs the
+        # build with `SURFACEOME_API_BASE=local` — the loader
+        # short-circuits to an empty stub catalog. The Pages-side
+        # production build hits the live Worker and emits the
+        # populated page. This step is an offline build smoke that
+        # catches syntax / type / SSG regressions before Pages tries.
+        env:
+          SURFACEOME_API_BASE: local
+        run: npm run build

@@ -1,55 +1,81 @@
 # viewer
 
-Web app for the accessible-surfaceome catalogue. Vite + React + TypeScript SPA.
-Deploys as static assets to Cloudflare Pages — no Functions, no D1.
+Next.js 16 app for the accessible-surfaceome catalogue. Ships as its
+own Cloudflare Pages project at
+[`surfaceome.deliverome.org`](https://surfaceome.deliverome.org) —
+separate domain, separate build, separate deploy target from the main
+`deliverome.org` site.
+
+## Stack
+
+- Next.js 16 + React 19, **static export** (`output: "export"`).
+- Design tokens mirrored from `Deliverome-Project/deliverome-internal`
+  PR #24 (Rosy Maroon: Maroon · Teal · Amber · Lavender; Manrope +
+  Playfair Display via `next/font/google`). Source of truth for the
+  palette lives in deliverome-internal — re-sync manually when the
+  design system rev's.
+- PascalCase component dirs with co-located `.module.css`.
 
 ## Develop
 
 ```bash
 cd viewer
 npm install
-npm run dev    # http://localhost:5173
-```
-
-Visit `/gene/KAAG1` to see the seed record. Other gene URLs render a
-"record not yet ingested" stub until the M2 annotation pipeline produces
-per-gene `SurfaceomeRecord` JSONs.
-
-## Build
-
-```bash
-npm run build  # tsc -b && vite build → viewer/dist
+npm run dev      # http://localhost:3000
+npm run check    # tsc --noEmit
+npm run build    # next build → ./out (static)
 ```
 
 ## Data contract
 
-Per-gene records live under `public/data/genes/{SYMBOL}.json` and must validate
-against the [`SurfaceomeRecord`](../src/accessible_surfaceome/tools/_shared/models.py)
-Pydantic schema. The seed `KAAG1.json` was extracted from the Claude Design
-prototype's `data/kaag1.js`; future records will be emitted by a Python builder
-(deferred).
+Per-gene records live under `public/data/surfaceome/{SYMBOL}.json`.
+They must validate against the
+[`SurfaceomeRecord`](../src/accessible_surfaceome/tools/_shared/models.py)
+Pydantic schema. The page bodies read these JSONs via `fs` at build
+time and SSG every gene through `generateStaticParams`.
 
-Agent / curl access:
-- `/data/genes/{SYMBOL}.json` — direct static URL.
-- `/gene/{SYMBOL}?format=json` — preflight intercepts before React mounts and
-  renders the JSON as plaintext.
-- `/gene/{SYMBOL}?format=md` — same, rendered as Markdown.
+Reference records: `HSPA1A.json` (conditional-surface stress-induced),
+`TGOLN2.json`.
+
+Same files double as the static fetch endpoint:
+`https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.json`.
+
+Agents that prefer the live API hit the read-only Worker:
+[`api.deliverome.org/surfaceome/v1/genes/{SYMBOL}`](https://api.deliverome.org/surfaceome/v1/genes)
+(Worker source: `cloudflare/workers/surfaceome_api/`, bound to the
+public D1 mirror `surfaceome_public`). Same `SurfaceomeRecord` shape.
 
 ## Deploy to Cloudflare Pages
 
-- Build command: `cd viewer && npm ci && npm run build`
-- Output directory: `viewer/dist`
-- Framework preset: None (Vite static)
+This `viewer/` directory is its **own Pages project** — don't mix it
+with the deliverome.org site.
+
+- Project: `surfaceome-viewer`
+- **Root directory: `viewer/`** (set in the Pages project settings —
+  scopes the build to this subtree so Pages does *not* try to
+  `pip install` the parent `pyproject.toml`, which adds ~2 min of
+  unrelated work to every deploy)
+- Build command: `npm ci && npm run build`
+- Output directory: `out`
+- Custom domain: `surfaceome.deliverome.org`
+- Framework preset: Next.js (Static HTML Export)
 - Node version: 20
-- `public/_redirects` rewrites all unknown paths to `index.html` so the SPA
-  router owns `/gene/:symbol`.
-- `public/_headers` sets long-cache for `/fonts/*`, short-cache for `/data/*`.
 
-## Out of scope (future PRs)
+`wrangler.toml` records the same target so `npm run deploy` works
+locally via Wrangler.
 
-- Cmd+K corpus switcher with client-side `MiniSearch` over a `corpus.json`
-  manifest.
-- Source drawer with char-offset evidence highlighting (waits on M3 source
-  corpus persistence).
-- Stub records hydrated from `data/processed/candidate_universe/candidate_universe.tsv`.
-- Python builder + CI sync from `data/processed/` to `viewer/public/data/`.
+## Layout
+
+- `app/` — Next.js App Router (catalogue `/` + gene detail `/[symbol]/`)
+- `app/design-tokens.css` — Rosy Maroon palette mirror
+- `app/globals.css` — resets + type primitives
+- `components/Shell/` — site shell (header + footer specific to the
+  surfaceome subdomain — minimal, no funder strip / nav dropdowns)
+- `components/NumberedEyebrow/` — section eyebrow
+- `components/Reveal/` — IntersectionObserver fade-in (ported from
+  deliverome-internal site/components/reveal.tsx)
+- `components/surfaceome/` — record cards (SurfaceBiology, DeepDive,
+  Expression, Landscape, RiskFlags) + primitives (StatusPill, FieldRow,
+  CiteCount, SectionCard, DBVotes, GeneHeader)
+- `lib/surfaceome-types.ts` — TypeScript mirror of the Pydantic schema
+- `lib/surfaceome.ts` — fs-backed loader + enum prettifier

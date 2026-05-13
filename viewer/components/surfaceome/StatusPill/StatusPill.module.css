@@ -1,0 +1,80 @@
+/*
+ * StatusPill — small badge with a tone family. Tones reach into the
+ * design-token palette directly (no per-pill hex) so a future
+ * palette tweak picks up automatically.
+ */
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-sans);
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+
+.size_md {
+  padding: 0.32rem 0.7rem;
+  font-size: 0.82rem;
+}
+
+.size_sm {
+  padding: 0.22rem 0.55rem;
+  font-size: 0.74rem;
+}
+
+/* ============================================================
+ * Tones
+ * ============================================================ */
+
+.tone_neutral {
+  background: var(--bg-warm);
+  color: var(--ink-soft);
+  border-color: var(--line);
+}
+
+.tone_maroon {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+  border-color: rgba(146, 32, 56, 0.22);
+}
+
+.tone_teal {
+  background: var(--teal-tint);
+  color: var(--teal-deepest);
+  border-color: rgba(61, 107, 96, 0.22);
+}
+
+.tone_amber {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+  border-color: rgba(192, 120, 48, 0.28);
+}
+
+.tone_lavender {
+  background: var(--lavender-tint);
+  color: var(--lavender-deepest);
+  border-color: rgba(88, 72, 168, 0.22);
+}
+
+.tone_success {
+  background: rgba(46, 122, 85, 0.12);
+  color: var(--success);
+  border-color: rgba(46, 122, 85, 0.28);
+}
+
+.tone_warn {
+  background: var(--amber-tint);
+  color: var(--amber-dark);
+  border-color: rgba(192, 120, 48, 0.32);
+}
+
+.tone_danger {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+  border-color: rgba(146, 32, 56, 0.32);
+}

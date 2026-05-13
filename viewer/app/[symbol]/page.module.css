@@ -1,0 +1,143 @@
+.page {
+  padding: var(--space-12) 0 var(--space-24);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.crumbLink {
+  border-bottom: 1px dotted var(--line);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.crumbLink:hover,
+.crumbLink:focus-visible {
+  color: var(--accent);
+}
+
+.crumbSep {
+  color: var(--line);
+}
+
+.crumbHere {
+  font-family: var(--font-mono);
+  color: var(--ink);
+}
+
+.crumbActions {
+  margin-left: auto;
+  display: inline-flex;
+  gap: var(--space-3);
+}
+
+.crumbAction {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--muted);
+  border-bottom: 1px dotted var(--line);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.crumbAction:hover,
+.crumbAction:focus-visible {
+  color: var(--accent);
+}
+
+.confidence {
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 60ch;
+}
+
+.confidenceEyebrow {
+  color: var(--accent);
+  letter-spacing: 0.22em;
+}
+
+.confidenceLine {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.confidenceLine strong {
+  color: var(--ink);
+  font-weight: var(--fw-semibold);
+}
+
+/* Raw deep-dive record — collapsible at the top of the page so an
+ * agent / curator can copy the canonical JSON without round-tripping
+ * to the /data/surfaceome/SYMBOL.json endpoint. Default-closed so it
+ * doesn't dominate the page header on a fresh load. */
+.rawDetails {
+  margin-top: var(--space-2);
+}
+
+.rawSummary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  list-style: none;
+  user-select: none;
+  padding: var(--space-2) 0;
+}
+
+.rawSummary::-webkit-details-marker {
+  display: none;
+}
+
+.rawSummary::before {
+  content: "▸";
+  font-size: 0.8em;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.rawDetails[open] .rawSummary::before {
+  transform: rotate(90deg);
+}
+
+.rawSummary:hover,
+.rawSummary:focus-visible {
+  color: var(--accent);
+}
+
+.rawSummaryHint {
+  color: var(--line);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-left: var(--space-2);
+}
+
+.rawJson {
+  margin: var(--space-3) 0 var(--space-6);
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  white-space: pre;
+  overflow-x: auto;
+  max-height: 70vh;
+}

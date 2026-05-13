@@ -16,11 +16,12 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 from anthropic import Anthropic
 
@@ -31,6 +32,7 @@ from accessible_surfaceome.tools._shared import retraction_watch as _retraction_
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
     Evidence,
+    ProteinFeatures,
     SurfaceomeRecord,
     SurfaceomeRecordDraft,
 )
@@ -51,6 +53,7 @@ from .audit import (
     apply_entailment_audit,
     make_sonnet_entailment_audit,
 )
+from .deep_dive_pack import DeepDivePackLoader, render_markdown as _render_deep_dive
 from .evidence_promotion import build_search_log, promote_claim
 
 logger = logging.getLogger(__name__)
@@ -160,6 +163,56 @@ def _annotate_one(
     agent_entry = reg.agents[_agent.AGENT_NAME]
     env_entry = reg.environments[_environment.ENVIRONMENT_NAME]
 
+    # Drift check + auto-sync: the Managed Agent on Anthropic's side
+    # keeps its own snapshot of the system prompt;
+    # ``accessible-surfaceome agents sync`` pushes local edits. If the
+    # registry's sha doesn't match the prompt on disk, the run would
+    # use the STALE prompt and silently emit a degraded record (every
+    # ~$0.30–0.50 burnt on an outdated shape). To eliminate the
+    # "forgot to sync" failure mode, auto-sync inline at the start of
+    # every run when drift is detected. The sync is a single idempotent
+    # metadata round-trip — no model call, no extra spend.
+    #
+    # Disable via ANNOTATE_NO_AUTO_SYNC=1 in environments where the
+    # local prompt should NOT be pushed to the managed agent (e.g.
+    # experimental branches that should not affect the registered
+    # production prompt). When disabled, the operator gets the
+    # historical loud warning and the run proceeds against the stale
+    # remote prompt.
+    current_prompt_sha = _registry.sha256(_agent.read_system_prompt())
+    if agent_entry.system_prompt_sha256 != current_prompt_sha:
+        auto_sync = os.environ.get("ANNOTATE_NO_AUTO_SYNC") != "1"
+        if auto_sync:
+            logger.info(
+                "PROMPT DRIFT: local system.md sha256=%s does not match registered "
+                "agent (version=%s, registered sha256=%s). Auto-syncing now.",
+                current_prompt_sha,
+                agent_entry.version,
+                agent_entry.system_prompt_sha256,
+            )
+            sync_result = sync_agent_and_environment(client)
+            logger.info(
+                "Auto-sync complete: agent_id=%s, version=%s, agent_changed=%s, "
+                "environment_changed=%s",
+                sync_result.agent_id,
+                sync_result.agent_version,
+                sync_result.agent_changed,
+                sync_result.environment_changed,
+            )
+            # Reload registry so the rest of this run sees the new sha.
+            reg = _registry.load()
+            agent_entry = reg.agents[_agent.AGENT_NAME]
+        else:
+            logger.warning(
+                "PROMPT DRIFT (ANNOTATE_NO_AUTO_SYNC=1): local system.md sha256=%s "
+                "does not match registered agent (version=%s, registered sha256=%s). "
+                "Run `accessible-surfaceome agents sync` manually to push the prompt; "
+                "this run will use the STALE remote prompt.",
+                current_prompt_sha,
+                agent_entry.version,
+                agent_entry.system_prompt_sha256,
+            )
+
     source_store = SourceTextStore()
     retraction_index = _retraction_watch.from_http(http)
     logger.info(
@@ -171,7 +224,42 @@ def _annotate_one(
     handlers = tool_registry.build_handlers(
         http, source_store=source_store, retraction_index=retraction_index
     )
-    task_text = _render_task(gene)
+
+    try:
+        pack = DeepDivePackLoader().for_gene(hgnc_symbol=gene)
+        deep_dive_block = _render_deep_dive(pack)
+    except Exception as exc:  # noqa: BLE001
+        # Pack is best-effort context; never fail the run on a missing TSV.
+        logger.warning("deep_dive_pack render failed for %s: %s", gene, exc)
+        deep_dive_block = ""
+
+    # Pre-inject SURFY snapshot features so the agent doesn't burn tool
+    # calls on basic structural facts (TM count, signal peptide, Almen
+    # class, UniProt keywords). Empty block when the gene isn't in the
+    # snapshot — the agent falls back to its own gene_lookup cascade.
+    try:
+        protein_features = _load_surfy_features(gene)
+        protein_features_block = _render_protein_features_block(protein_features)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("SURFY feature load failed for %s: %s", gene, exc)
+        protein_features_block = ""
+
+    # If the triage agent already ran on this gene, inject its
+    # ``key_uncertainty`` as a focal directive for the deep-dive. Empty
+    # block when no triage record exists.
+    try:
+        triage_uncertainty = _load_triage_key_uncertainty(gene)
+        triage_uncertainty_block = _render_triage_uncertainty_block(triage_uncertainty)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("triage key_uncertainty load failed for %s: %s", gene, exc)
+        triage_uncertainty_block = ""
+
+    task_text = _render_task(
+        gene,
+        deep_dive_block=deep_dive_block,
+        protein_features_block=protein_features_block,
+        triage_uncertainty_block=triage_uncertainty_block,
+    )
 
     session = client.beta.sessions.create(
         agent={"type": "agent", "id": agent_entry.id, "version": agent_entry.version}
@@ -216,6 +304,7 @@ def _annotate_one(
         run_dir=run_dir,
         source_store=source_store,
         audit_callable=audit_callable,
+        protein_features_override=protein_features,
     )
     if validation_status == "invalid":
         logger.warning(
@@ -270,9 +359,190 @@ def _annotate_one(
 # ---------------------------------------------------------------------------
 
 
-def _render_task(gene: str) -> str:
+def _load_triage_key_uncertainty(gene: str) -> str | None:
+    """If a triage record exists for this gene at
+    ``data/triage/{gene}.json``, return its ``key_uncertainty`` text;
+    otherwise return None.
+
+    The triage agent emits a one-sentence ``key_uncertainty`` per gene
+    pointing at whatever ambiguity it couldn't resolve. The deep-dive
+    consumes that as a focal point for its own investigation.
+    """
+    triage_path = DATA_DIR / "triage" / f"{gene}.json"
+    if not triage_path.exists():
+        return None
+    try:
+        record = json.loads(triage_path.read_text())
+    except (json.JSONDecodeError, OSError) as exc:
+        logger.warning(
+            "triage record at %s failed to parse: %s — skipping key_uncertainty injection",
+            triage_path, exc,
+        )
+        return None
+    text = record.get("key_uncertainty") or record.get("predicted_key_uncertainty")
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+    return None
+
+
+def _render_triage_uncertainty_block(text: str | None) -> str:
+    if not text:
+        return ""
+    return (
+        "## Triage flag\n\n"
+        f"The triage agent flagged the following key uncertainty for this gene: "
+        f"*{text}*\n\n"
+        "Treat this as the focal question for your investigation. Your "
+        "`confidence_reasoning` should explicitly address whether your record "
+        "resolves or sustains this uncertainty.\n"
+    )
+
+
+_SURFY_SNAPSHOT_PATH = DATA_DIR / "processed" / "surfy" / "surfy_human_snapshot.tsv"
+
+
+def _load_surfy_features(gene_symbol: str) -> ProteinFeatures:
+    """Look up a gene in the SURFY snapshot and return a populated
+    :class:`ProteinFeatures`. Returns an empty (default) instance if
+    the snapshot file is missing or the gene isn't present.
+
+    The orchestrator calls this once per ``annotate_gene`` invocation
+    and injects the rendered block into the task prompt before the
+    LLM runs. The agent does not modify these fields.
+
+    Provenance: stamped with ``provenance="surfy_snapshot"`` so we can
+    distinguish snapshot-fed records from records built from direct
+    primary sources later (see plan: protein-features-provenance audit).
+    """
+    if not _SURFY_SNAPSHOT_PATH.exists():
+        logger.warning(
+            "SURFY snapshot not found at %s; protein_features will be empty",
+            _SURFY_SNAPSHOT_PATH,
+        )
+        return ProteinFeatures()
+
+    def _opt(row: dict[str, str], key: str) -> str | None:
+        v = (row.get(key) or "").strip()
+        return v or None
+
+    def _int(row: dict[str, str], key: str) -> int | None:
+        v = _opt(row, key)
+        try:
+            return int(float(v)) if v is not None else None
+        except ValueError:
+            return None
+
+    def _float(row: dict[str, str], key: str) -> float | None:
+        v = _opt(row, key)
+        try:
+            return float(v) if v is not None else None
+        except ValueError:
+            return None
+
+    def _bool(row: dict[str, str], key: str) -> bool | None:
+        v = _opt(row, key)
+        if v is None:
+            return None
+        return v.lower() in {"1", "true", "yes", "y", "t"}
+
+    def _list(row: dict[str, str], key: str) -> list[str]:
+        v = _opt(row, key)
+        if v is None:
+            return []
+        # SURFY uses ';' as the in-cell list separator for keywords / xrefs
+        return [tok.strip() for tok in v.split(";") if tok.strip()]
+
+    import csv as _csv  # local alias; csv is imported at module top
+    target = gene_symbol.strip().upper()
+    with _SURFY_SNAPSHOT_PATH.open() as fh:
+        for row in _csv.DictReader(fh, delimiter="\t"):
+            if (row.get("gene_symbol") or "").strip().upper() == target:
+                # Cast SURFY's surface-call flag into the topology_source slot
+                # only when SURFY explicitly cites one (most rows leave it blank).
+                raw_source = _opt(row, "topology_source") or "unknown"
+                if raw_source not in (
+                    "uniprot", "phobius", "deeptmhmm", "literature", "unknown",
+                ):
+                    raw_source = "unknown"
+                topology_source = cast(
+                    Literal["uniprot", "phobius", "deeptmhmm", "literature", "unknown"],
+                    raw_source,
+                )
+                return ProteinFeatures(
+                    protein_length_aa=_int(row, "protein_length"),
+                    tm_domain_count=_int(row, "tm_domain_count"),
+                    signal_peptide=_bool(row, "signal_peptide"),
+                    topology_string=_opt(row, "topology_string"),
+                    topology_source=topology_source,
+                    almen_main_class=_opt(row, "almen_main_class"),
+                    almen_sub_class=_opt(row, "almen_sub_class"),
+                    cd_designation=_opt(row, "cd_number"),
+                    uniprot_keywords=_list(row, "uniprot_keywords"),
+                    pdb_ids=[],  # not in SURFY snapshot; left empty
+                    cspa_peptide_count=_int(row, "cspa_peptide_count"),
+                    hpa_antibody_available=_bool(row, "hpa_antibody"),
+                    drugbank_ids=_list(row, "drugbank_ids"),
+                    surfy_ml_score=_float(row, "surfy_ml_score"),
+                    surfy_label_source=_opt(row, "surfy_label_source"),
+                    provenance="surfy_snapshot",
+                )
+    logger.info("gene %s not present in SURFY snapshot; protein_features empty", gene_symbol)
+    return ProteinFeatures()
+
+
+def _render_protein_features_block(features: ProteinFeatures) -> str:
+    """Render the pre-loaded ProteinFeatures bucket as the markdown block
+    injected into the task prompt. Returns empty when no field is populated."""
+    if features == ProteinFeatures():
+        return ""
+    lines: list[str] = ["## Pre-loaded protein features (SURFY snapshot + UniProt)\n"]
+    # Compact key:value lines for the populated fields only.
+    def _line(label: str, value: object) -> None:
+        if value is None or value == "" or value == []:
+            return
+        lines.append(f"- **{label}:** {value}")
+
+    _line("Protein length (aa)", features.protein_length_aa)
+    _line("TM domain count", features.tm_domain_count)
+    _line("Signal peptide", features.signal_peptide)
+    _line("Topology string", features.topology_string)
+    if features.topology_source not in {"unknown", None}:
+        _line("Topology source", features.topology_source)
+    _line("Almen main class", features.almen_main_class)
+    _line("Almen sub class", features.almen_sub_class)
+    _line("CD designation", features.cd_designation)
+    if features.uniprot_keywords:
+        _line("UniProt keywords", ", ".join(features.uniprot_keywords))
+    if features.pdb_ids:
+        _line("PDB ids", ", ".join(features.pdb_ids))
+    _line("CSPA peptide count", features.cspa_peptide_count)
+    _line("HPA antibody available", features.hpa_antibody_available)
+    if features.drugbank_ids:
+        _line("DrugBank ids", ", ".join(features.drugbank_ids))
+    if features.surfy_ml_score is not None:
+        _line("SURFY ML surface score", f"{features.surfy_ml_score:.3f}")
+    _line("SURFY label source", features.surfy_label_source)
+    lines.append(
+        "\nThese fields are pre-loaded; quote them when load-bearing. The "
+        "orchestrator stamped `provenance` on this bucket; do not overwrite it.\n"
+    )
+    return "\n".join(lines)
+
+
+def _render_task(
+    gene: str,
+    *,
+    deep_dive_block: str = "",
+    protein_features_block: str = "",
+    triage_uncertainty_block: str = "",
+) -> str:
     template = (Path(__file__).parent / "prompts" / "task_template.md").read_text()
-    return template.replace("{gene}", gene)
+    return (
+        template.replace("{gene}", gene)
+        .replace("{deep_dive_block}", deep_dive_block)
+        .replace("{protein_features_block}", protein_features_block)
+        .replace("{triage_key_uncertainty_block}", triage_uncertainty_block)
+    )
 
 
 _FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
@@ -285,6 +555,7 @@ def _persist_annotation(
     run_dir: Path,
     source_store: SourceTextStore,
     audit_callable: EntailmentAuditCallable | None = None,
+    protein_features_override: ProteinFeatures | None = None,
 ) -> tuple[Path | None, Path | None, Literal["valid", "invalid", "missing"], list[dict[str, Any]] | None]:
     """Promote the agent's ``SurfaceomeRecordDraft`` and persist as ``SurfaceomeRecord``.
 
@@ -317,6 +588,15 @@ def _persist_annotation(
     if annotation_json is None:
         return None, None, "missing", None
 
+    # Inject the orchestrator-loaded ProteinFeatures into the draft
+    # BEFORE Pydantic validation. The agent may emit a partial / wrong
+    # `protein_features` (e.g. legacy field names from prior schema),
+    # but those fields are authoritative on the orchestrator side, not
+    # agent-emitted. Stripping the agent's version + dumping the
+    # orchestrator's override prevents extra-field rejections.
+    if protein_features_override is not None:
+        annotation_json["protein_features"] = protein_features_override.model_dump()
+
     try:
         draft = SurfaceomeRecordDraft.model_validate(annotation_json)
     except ValidationError as exc:
@@ -346,22 +626,27 @@ def _persist_annotation(
             gene=draft.gene,
             canonical_isoform=draft.canonical_isoform,
             isoform_flattened=draft.isoform_flattened,
+            protein_features=draft.protein_features,
             targetability=draft.targetability,
             surface_biology=draft.surface_biology,
-            expression=draft.expression,
-            adc_properties=draft.adc_properties,
-            therapeutic_landscape=draft.therapeutic_landscape,
+            surface_engagement_validation=draft.surface_engagement_validation,
             risk_flags=draft.risk_flags,
+            isoform_accessibility=draft.isoform_accessibility,
+            coreceptor_requirements=draft.coreceptor_requirements,
+            orthology=draft.orthology,
+            paralogs=draft.paralogs,
             evidence=evidence,
             primary_evidence_count=primary,
             secondary_evidence_count=secondary,
             evidence_count=len(evidence),
+            contradictions=draft.contradictions,
             search_log=search_log,
             confidence=draft.confidence,
             confidence_reasoning=draft.confidence_reasoning,
             contradiction_flag=draft.contradiction_flag,
             rationale=draft.rationale,
             model_path=draft.model_path,
+            triage_signal=draft.triage_signal,
         )
     except ValidationError as exc:
         invalid_path = _write_invalid(annotation_json, gene=gene, run_dir=run_dir)

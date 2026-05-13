@@ -1,0 +1,15 @@
+.eyebrow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  line-height: 1;
+}
+
+.num {
+  color: var(--accent);
+  font-weight: var(--fw-medium);
+}
+
+.dash {
+  color: var(--line);
+}

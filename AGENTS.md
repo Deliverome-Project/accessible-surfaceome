@@ -8,7 +8,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution).
 - `src/accessible_surfaceome/audit/` audit + figure scripts.
 - `src/accessible_surfaceome/tools/` per-machine install plumbing (not part of the data pipeline).
-- `viewer/` Vite + React + TypeScript SPA — per-gene record viewer, deploys to Cloudflare Pages.
+- `viewer/` Next.js 16 app — **standalone Cloudflare Pages project deployed at `surfaceome.deliverome.org`**. Design tokens mirrored from `Deliverome-Project/deliverome-internal` PR #24 (Rosy Maroon system); manual sync.
 - `data/raw/` source workbooks.
 - `data/external/` downloaded datasets + traceability manifests.
 - `data/processed/` normalized outputs and candidate universe tables.
@@ -24,8 +24,25 @@ Concise contributor guide for `accessible-surfaceome`.
 - Run type checking: `uv run ty check`
 - Run tests: `uv run pytest -q`
 - Run hooks: `uv run pre-commit run --all-files --config .pre-commit-config.yaml`
-- Build viewer: `cd viewer && npm install && npm run build`
-- Run viewer dev server: `cd viewer && npm run dev` (http://localhost:5173)
+- Run viewer dev server: `cd viewer && npm install && npm run dev` (http://localhost:3000)
+- Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export)
+- Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
+
+## Managed Agents — auto-sync on drift
+The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
+
+**Auto-sync is wired into the annotator orchestrator.** On every `annotate` run it sha-checks the local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. The sync is a single idempotent metadata round-trip (no model call, no extra spend). Editing any of these no longer requires a manual sync:
+- `src/accessible_surfaceome/agents/surface_annotator/prompts/*.md`
+- the agent payload in `src/accessible_surfaceome/agents/surface_annotator/agent.py`
+- the `SurfaceomeRecord` / `SurfaceomeRecordDraft` schema in `src/accessible_surfaceome/tools/_shared/models.py` when the prompt references the new shape
+
+`uv run accessible-surfaceome agents sync` still works as a manual command (useful for CI, schema-only edits, dry-run verification).
+
+**Escape hatch.** Set `ANNOTATE_NO_AUTO_SYNC=1` in the environment to disable auto-sync — the orchestrator falls back to the historical loud `PROMPT DRIFT` warning and runs against the stale remote prompt. Use on experimental branches that shouldn't push their prompt to the production-registered managed agent.
+
+The registry is local (per-worktree, gitignored under `.runs/`). surface_triage runs through a different code path and doesn't use the Managed Agent registry, so it's not part of auto-sync.
+
+**Why auto-sync matters:** the surface_annotator run is ~$0.30–0.50 on Sonnet 4.6 per gene. Burning a sweep on a stale prompt produces records that quietly look like the previous schema version — expensive to discover late.
 
 ## Agent Command Allowlist
 - Codex and Claude agents may run `uv run python <module-or-script> [args...]` for repo analyses and processing.
@@ -45,6 +62,41 @@ ruff-formatted, names that describe what's there, one way to do common
 things (paths, traceability), validate at boundaries only, no plumbing
 masquerading as algorithm.
 
+## Plotting Conventions
+
+Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.py`:
+
+- **Always start a plotting script with `setup_plotting_style(...)`.** It applies seaborn whitegrid + the Deliverome palette + the brand rcParams (Manrope, transparent figure/axes background, 300 DPI on save). It also registers bundled fonts from `assets/fonts/` so Manrope actually resolves — calling it before `plt.subplots()` is the contract.
+- **Use seaborn's plotting functions** (`sns.barplot`, `sns.scatterplot`, `sns.boxplot`, etc.) over raw matplotlib. Build a tidy long-format `pandas.DataFrame` first and pass it through `data=...`. Color via the `CATEGORICAL_PALETTE` / `SEQUENTIAL_PALETTES` exports, not ad-hoc hex codes.
+- **Call `sns.despine(ax=ax, top=True, right=True)` after creating each axes.** The despine inside `setup_plotting_style` runs *before* any axes exist and is a no-op for new figures.
+- **Save with `save_figure(fig, filename, output_dir, formats=('pdf', 'png'))`** — PDF for vector publication, PNG for raster with alpha. **Never JPEG** — it can't carry the transparent background that the config requests, so the saved image gets a forced-white fill.
+- **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
+- **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
+
+## Final-Figure Gist Convention
+
+When a figure is **promoted** to `data/analysis/triage_bench_final/` (or any other `*_final/` analysis directory) it must ship with a GitHub gist for reader-side reproduction. The gist is what gets linked from a Substack / blog post under the figure, since Substack can't host CSV/code downloads.
+
+Each gist contains exactly two files:
+- `01_<figure_slug>.md` — one-paragraph context, run command, hyperlinks to the canonical data source and figure generator. The `01_` prefix forces it to the top of the gist's alphabetical file list.
+- `make_<figure_slug>.py` — standalone Python reproduction script. Uses **PEP 723 inline-script metadata** (`# /// script ... # ///` header) to declare deps so readers run it with `uv run make_<figure_slug>.py` — no `pip install` step.
+
+**Data fetching** — script reads from whichever source is canonical:
+- **D1 (preferred when canonical source is D1)** — query the public read-only D1 endpoint via HTTP.
+- **Canonical TSV at `raw.githubusercontent.com`** — when the figure's data lives in `data/processed/**.tsv` in the public repo, fetch directly via raw URL pinned to `main` (or a commit SHA for immutability). **The TSV must be non-LFS** (LFS pointers don't resolve over raw URLs) and the repo must be public — add a `-filter -diff -merge text` exemption in `.gitattributes` to un-LFS any small canonical TSV the gists depend on.
+
+Do not bundle a CSV in the gist unless the canonical source is unreachable.
+
+**Visibility:** create as **secret** by default — `gh gist create 01_<slug>.md make_<slug>.py -d "<short desc>"` (omit `--public`). Secret gists are unguessable-URL only. Flip to public via the web UI when discoverability is the goal; **public → secret is not reversible**. Always confirm with the user before publishing.
+
+Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
+
+**Also embed the gist URL in the artifact itself** via `save_figure(..., gist_url=...)` in `src/accessible_surfaceome/audit/_plotting_config.py`. PNG gets a `Source` tEXt chunk; PDF gets a `Subject` info-field. Reading it back:
+
+- CLI: `exiftool figure.png | grep Source` (Homebrew `brew install exiftool`); also `pngcheck -t figure.png` or ImageMagick's `magick identify -verbose`.
+- Python: `from PIL import Image; Image.open("figure.png").info["Source"]`.
+- Non-technical reader: drop the PNG into an online EXIF viewer (e.g. exif.tools, exifer.com, onlineexifviewer.com) — they show every text chunk with the keyword name. GIMP's *Image Properties → Comments* also works. macOS Preview's Inspector does **not** show PNG tEXt chunks; GitHub / Slack previews don't either. So the URL is author-side metadata, not something a casual web viewer surfaces.
+
 ## Data Rules & Formats
 - Keep raw inputs unchanged in `data/raw/`.
 - Keep downloaded datasets and traceability artifacts in `data/external/`.
@@ -62,6 +114,52 @@ masquerading as algorithm.
 ## CI & Checks
 - CI runs on PRs and pushes to `main` via `.github/workflows/ci.yml`.
 - CI validates lockfile consistency and runs Ruff, ty, compile, and pytest checks.
+- `.github/workflows/d1-backup.yml` exports the `surfaceome_agents`
+  D1 database to the R2 bucket `deliverome-d1-backups` on every push
+  to `main` that touches the D1 schema, the eval data, or the
+  uploader code. See **Cloudflare D1 + R2** below.
+
+## Cloudflare D1 + R2 backups for agent runs
+- The `surfaceome_agents` D1 database stores every `surface_triage`
+  and `surface_annotator` invocation with full reproducibility metadata
+  (prompt SHA, benchmark version, schema version, prose reasoning).
+  It's separate from the website's `signups` D1. **The Pages binding
+  lives in the deliverome main-site repo's `wrangler.toml`** — this
+  repo's Python tooling reads / writes via D1's HTTP API and doesn't
+  need a Pages binding.
+- **Schema**: `cloudflare/d1_schema.sql` — 6 tables (`prompt_version`,
+  `benchmark_version`, `triage_run`, `deep_dive_run`,
+  `deep_dive_evidence`, `deep_dive_search_log`) plus 3 views. Triage
+  and deep-dive share the DB so cross-table joins
+  (`triage_vs_deep_dive`) are cheap.
+- **Upload**: `scripts/upload_triage_runs_to_d1.py` after any sweep
+  produces per-cell JSON records under `data/eval/triage_subbench_v1/`.
+- **Verify**: `scripts/d1_triage_verify.py` reconciles D1 vs on-disk
+  JSON; exits non-zero on divergence.
+- **CI backup → R2**: every push to `main` that touches the relevant
+  paths (`cloudflare/d1_schema.sql`, `data/eval/triage_subbench_v1/**`,
+  `data/annotations/**`, `data/triage/**`,
+  `src/accessible_surfaceome/cloud/**`, the uploader / backup scripts
+  themselves) triggers `scripts/d1_export_to_r2.sh`, which runs
+  `wrangler d1 export` and uploads to the R2 bucket
+  `deliverome-d1-backups` under a dated key plus a stable
+  `latest.sql` pointer.
+- **Layered recovery** (cloudflare/README.md has the full walkthrough):
+  Time Travel (7-30 days, automatic) → R2 dated dumps (CI, durable
+  long-term) → on-disk JSON under `data/eval/` and `data/annotations/`
+  (canonical source — re-uploadable into a fresh D1).
+- **Wrangler is pinned** at the repo root via `/package.json`
+  (devDependency). Run `npm ci` once to install it under
+  `node_modules/.bin/`; the cloudflare/ scripts and the CI workflow
+  both invoke it as `npx --yes wrangler ...` so the pinned version
+  always wins.
+- **CI secrets** (one-time, in repo Settings → Secrets and variables
+  → Actions): `CLOUDFLARE_API_TOKEN` (scoped D1:Edit + R2:Edit) and
+  `CLOUDFLARE_ACCOUNT_ID`. The R2 bucket is provisioned locally via
+  `npx --yes wrangler r2 bucket create deliverome-d1-backups`.
+- When adding a new data path the DB stores, add it to the
+  `paths:` filter in `.github/workflows/d1-backup.yml` so CI catches
+  the change and exports a fresh dump.
 
 ## Pull Request Conventions
 PR titles are validated by `.github/workflows/lint-pr-title.yml` (Conventional

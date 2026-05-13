@@ -208,7 +208,7 @@ def _build_record_from(evi: Evidence) -> SurfaceomeRecord:
 
     return SurfaceomeRecord.model_validate(
         {
-            "schema_version": "v0.3.3",
+            "schema_version": "v0.4.0",
             "gene": {
                 "hgnc_symbol": "KAAG1",
                 "hgnc_id": "HGNC:21031",
@@ -218,7 +218,6 @@ def _build_record_from(evi: Evidence) -> SurfaceomeRecord:
             "isoform_flattened": True,
             "targetability": {
                 "tier": "edge_case",
-                "recommended_modalities": [],
                 "tldr": "tldr",
                 "cited_evidence_ids": [evi.evidence_id],
             },
@@ -226,19 +225,28 @@ def _build_record_from(evi: Evidence) -> SurfaceomeRecord:
                 "surface_status": "rare_surface",
                 "topology": "not_pm_associated",
                 "anchor_type": "mhc_presented_peptide",
+                "exposure_class": "unknown",
+                "extracellular_domain": {
+                    "size_aa": None,
+                    "domains": [],
+                    "accessibility": "unknown",
+                    "notes": None,
+                },
+                "induced_presentation": [],
+                "surface_localization_assays": [
+                    {
+                        "assay_type": "immunohistochemistry",
+                        "species": "human",
+                        "cell_type_or_line": "renal proximal tubule",
+                        "direction": "supports_surface",
+                        "strength": "moderate",
+                        "cited_evidence_ids": [evi.evidence_id],
+                    }
+                ],
                 "db_comparison": {"n_sources_voting_surface": 0},
                 "cited_evidence_ids": [evi.evidence_id],
             },
-            "expression": {
-                "tumor_indications": [],
-                "tumor_specificity": "indication_restricted",
-                "normal_tissue_top": [],
-                "normal_tissue_concerns": [],
-                "summary": None,
-                "cited_evidence_ids": [evi.evidence_id],
-            },
-            "adc_properties": {},
-            "therapeutic_landscape": {},
+            "surface_engagement_validation": {},
             "risk_flags": [],
             "evidence": [evi.model_dump()],
             "primary_evidence_count": 1,
@@ -250,6 +258,7 @@ def _build_record_from(evi: Evidence) -> SurfaceomeRecord:
             "contradiction_flag": False,
             "rationale": "test",
             "model_path": "opus_light",
+            "triage_signal": "possibly_accessible",
         }
     )
 
