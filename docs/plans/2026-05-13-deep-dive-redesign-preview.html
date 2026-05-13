@@ -743,8 +743,10 @@
             extensively profiled by flow cytometry, mass spec, and IF. ECD is
             large (~620 aa), well-folded (mean pLDDT 91), and highly conserved
             to mouse and cyno. Primary accessibility risks: regulated shedding
-            (sEGFR via ADAM17), endocytic turnover after ligand binding, and
-            paralog cross-reactivity (HER2/3/4 share ECD subdomain folds).
+            (sEGFR via ADAM17) and basolateral restriction in polarized
+            epithelia. HER family paralogs share the overall fold but
+            empirical binders (cetuximab, panitumumab) show minimal
+            cross-reactivity in practice.
           </p>
           <div class="annot annot--llm">
             <span class="annot__path">executive_summary.one_paragraph</span> ·
@@ -844,7 +846,7 @@
             <span class="field-value">
               <span class="chip-row">
                 <span class="chip">shed_form</span>
-                <span class="chip">paralog_cross_reactivity</span>
+                <span class="chip">restricted_subdomain</span>
               </span>
               <div class="annot annot--llm">
                 <span class="annot__path"
@@ -932,7 +934,7 @@
                 <span class="chip">✓ has_shed_form</span>
                 <span class="chip">✓ has_secreted_form</span>
                 <span class="chip chip--muted">✗ coreceptor_for_expression</span>
-                <span class="chip">✓ paralog_cross_reactivity</span>
+                <span class="chip chip--muted">✗ paralog_cross_reactivity</span>
                 <span class="chip">✓ epitope_masking</span>
                 <span class="chip chip--muted">✗ restricted_subdomain</span>
               </div>
@@ -1598,7 +1600,7 @@
 
       <hr class="divider" />
 
-      <!-- ─────────── SECTION 4 — ORTHOLOGS ─────────── -->
+      <!-- ─────────── SECTION 4 — PARALOGS ─────────── -->
       <article class="card">
         <div class="card__head">
           <div
@@ -1606,7 +1608,149 @@
             style="display: flex; align-items: center; gap: var(--space-3)"
           >
             <span class="eyebrow__n">4</span>
-            <span>Orthologs &amp; paralogs</span>
+            <span>Paralogs</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic table + LLM cross-binding assessment
+            </span>
+          </div>
+          <h3 class="h-section">
+            Will my binder <em>cross-react</em> with family members?
+          </h3>
+        </div>
+        <div class="card__body">
+          <h4 class="label-mono">
+            Deterministic — Ensembl Compara within-species paralogs
+          </h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>paralog</th>
+                <th>family</th>
+                <th>ECD % id (vs EGFR canonical)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HER2</strong></td>
+                <td>ERBB family</td>
+                <td class="mono">45.1%</td>
+              </tr>
+              <tr>
+                <td><strong>HER3</strong></td>
+                <td>ERBB family</td>
+                <td class="mono">42.7%</td>
+              </tr>
+              <tr>
+                <td><strong>HER4</strong></td>
+                <td>ERBB family</td>
+                <td class="mono">43.0%</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="annot">
+            <span class="annot__path"
+              >deterministic_features.paralogs: list[ParalogEntry]</span
+            >
+            ·
+            <span class="annot__type"
+              >{ paralog_symbol, paralog_uniprot_acc, ecd_pct_identity,
+              family_id, compara_version }</span
+            >
+            <span class="annot__prov">D</span>
+          </div>
+
+          <h4 class="label-mono">
+            LLM cross-binding assessment (sequence + literature)
+          </h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>paralog</th>
+                <th>cross_reactivity</th>
+                <th>severity</th>
+                <th>evidence_strength</th>
+                <th>cite</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HER2</strong></td>
+                <td><span class="chip chip--success">LOW</span></td>
+                <td><span class="chip chip--success">LOW</span></td>
+                <td><span class="chip chip--success">STRONG</span></td>
+                <td class="mono">[evi_41]</td>
+              </tr>
+              <tr>
+                <td><strong>HER3</strong></td>
+                <td><span class="chip chip--success">LOW</span></td>
+                <td><span class="chip chip--success">LOW</span></td>
+                <td><span class="chip chip--success">STRONG</span></td>
+                <td class="mono">[evi_41]</td>
+              </tr>
+              <tr>
+                <td><strong>HER4</strong></td>
+                <td><span class="chip chip--success">LOW</span></td>
+                <td><span class="chip chip--success">LOW</span></td>
+                <td><span class="chip chip--success">STRONG</span></td>
+                <td class="mono">[evi_41]</td>
+              </tr>
+            </tbody>
+          </table>
+          <p
+            style="
+              font-size: 0.92rem;
+              color: var(--muted);
+              margin: var(--space-2) 0;
+              max-width: 70ch;
+            "
+          >
+            <strong>Rationale:</strong> 42–45% ECD identity sits in the "fold
+            conserved, surface loops divergent" zone. Empirical evidence in
+            the ERBB family (cetuximab, panitumumab, trastuzumab) shows
+            minimal cross-reactivity across these paralogs despite the shared
+            fold — the loops that contact a mAb paratope diverge enough that
+            sequence identity alone would mislead. The LLM is responsible for
+            integrating the deterministic %id with literature on empirical
+            binder cross-reactivity to land the call.
+          </p>
+          <div class="annot annot--ref">
+            <span class="annot__path">paralog_assessment: list[ParalogRisk]</span>
+            <em
+              style="
+                color: var(--muted);
+                font-size: 0.78rem;
+                font-style: normal;
+              "
+            >
+              · top-level field, promoted out of accessibility_risks so the
+              deterministic table and LLM call live together
+            </em>
+            ·
+            <span class="annot__type">
+              ParalogRisk = { paralog_symbol,
+              <strong>deterministic_paralog_ref</strong> (FK →
+              deterministic_features.paralogs[i].family_id),
+              cross_reactivity_assessment:
+              Literal["high","moderate","low","negligible"], severity,
+              evidence_strength, rationale (≤200 char), cited_evidence_ids }
+            </span>
+            <span class="annot__prov">L→D-ref</span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 5 — ORTHOLOGS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div
+            class="eyebrow"
+            style="display: flex; align-items: center; gap: var(--space-3)"
+          >
+            <span class="eyebrow__n">5</span>
+            <span>Orthologs</span>
             <span class="banner banner--deterministic" style="margin-left: auto">
               <span class="banner__dot"></span>
               deterministic — Ensembl Compara r112
@@ -1709,11 +1853,11 @@
 
       <hr class="divider" />
 
-      <!-- ─────────── SECTION 5 — ACCESSIBILITY RISKS ─────────── -->
+      <!-- ─────────── SECTION 6 — ACCESSIBILITY RISKS ─────────── -->
       <article class="card">
         <div class="card__head">
           <div class="eyebrow">
-            <span class="eyebrow__n">5</span>
+            <span class="eyebrow__n">6</span>
             <span>Accessibility risks</span>
             <span style="margin-left: var(--space-3); text-transform: none">
               severity ≠ evidence strength
@@ -1782,52 +1926,6 @@
                 junction disruption in carcinoma relieves the restriction.
               </p>
             </li>
-            <li class="risk-card">
-              <div class="risk-card__head">
-                <span class="risk-card__title">Similar paralogs</span>
-                <span class="chip">severity=MODERATE</span>
-                <span class="chip chip--success">evidence=STRONG</span>
-              </div>
-              <p class="risk-card__body" style="padding-bottom: var(--space-2)">
-                Domain folds are conserved; binder specificity should be
-                empirically tested against the full ERBB family.
-              </p>
-              <table class="data" style="margin-top: var(--space-2)">
-                <thead>
-                  <tr>
-                    <th>paralog</th>
-                    <th>ECD id</th>
-                    <th>cross-reactivity risk</th>
-                    <th>cite</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>HER2</strong></td>
-                    <td class="mono">45.1%</td>
-                    <td><span class="chip">MODERATE</span></td>
-                    <td class="mono">[evi_41]</td>
-                  </tr>
-                  <tr>
-                    <td><strong>HER3</strong></td>
-                    <td class="mono">42.7%</td>
-                    <td><span class="chip">MODERATE</span></td>
-                    <td class="mono">[evi_41]</td>
-                  </tr>
-                  <tr>
-                    <td><strong>HER4</strong></td>
-                    <td class="mono">43.0%</td>
-                    <td><span class="chip">MODERATE</span></td>
-                    <td class="mono">[evi_41]</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="annot annot--ref">
-                <span class="annot__path">accessibility_risks.paralog_cross_binding_risk[i]</span> ·
-                <span class="annot__type">ParalogRisk = { paralog_symbol, <strong>deterministic_paralog_ref</strong> (FK → deterministic_features.paralogs[i].family_id), cross_reactivity_assessment, severity, evidence_strength, rationale, cited_evidence_ids }</span>
-                <span class="annot__prov">L→D-ref</span>
-              </div>
-            </li>
             <li class="risk-card risk-card--ok">
               <div class="risk-card__head">
                 <span class="risk-card__title">ECD accessibility size class</span>
@@ -1862,11 +1960,11 @@
 
       <hr class="divider" />
 
-      <!-- ─────────── SECTION 6 — KNOWLEDGE GAPS ─────────── -->
+      <!-- ─────────── SECTION 7 — KNOWLEDGE GAPS ─────────── -->
       <article class="card">
         <div class="card__head">
           <div class="eyebrow">
-            <span class="eyebrow__n">6</span>
+            <span class="eyebrow__n">7</span>
             <span>What we couldn't determine</span>
           </div>
           <h3 class="h-section">The <em>honest gaps</em></h3>

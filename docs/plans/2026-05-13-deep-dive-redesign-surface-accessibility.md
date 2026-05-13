@@ -29,14 +29,14 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │ extensively profiled by flow cytometry, mass spec, and IF. ECD is  │
 │ large (~620 aa), well-folded (mean pLDDT 91), and highly conserved │
 │ to mouse and cyno. Primary accessibility risks: regulated          │
-│ shedding (sEGFR via ADAM17), endocytic turnover after ligand       │
-│ binding, and paralog cross-reactivity (HER2/3/4 share ECD          │
-│ subdomain folds).                                                  │
+│ shedding (sEGFR via ADAM17) and basolateral restriction in         │
+│ polarized epithelia. HER family paralogs share the overall fold    │
+│ but empirical binders show minimal cross-reactivity in practice.   │
 │                                                                     │
 │   Surface targetability:  HIGH       Subcategory: single-pass T1   │
 │   Evidence grade:         direct_multi_method                       │
 │   Confidence:             HIGH       State dependence: MODERATE     │
-│   Headline risks:         shed_form · paralog_cross_reactivity     │
+│   Headline risks:         shed_form · restricted_subdomain         │
 │   ("Targetability" here = physical/biological reachability —        │
 │    can a binder reach this protein. Not the commercial sense.)     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -54,7 +54,7 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │  RISKS                                                              │
 │    ✓ has_shed_form                  ✓ has_secreted_form             │
 │    ✗ coreceptor_for_expression                                       │
-│    ✓ paralog_cross_reactivity       ✓ epitope_masking               │
+│    ✗ paralog_cross_reactivity       ✓ epitope_masking               │
 │    ✗ has_restricted_subdomain                                       │
 │                                                                     │
 │  CROSS-SPECIES (deterministic — Compara ECD % identity)             │
@@ -185,7 +185,33 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │   wants to make about isoform implications.)                        │
 └─────────────────────────────────────────────────────────────────────┘
 
-┌─ 4. ORTHOLOGS  [deterministic — Compara r112 + DeepTMHMM 1.0.24] ──┐
+┌─ 4. PARALOGS  [deterministic table + LLM cross-binding assessment]─┐
+│                                                                     │
+│  Deterministic — Ensembl Compara within-species paralogs            │
+│   paralog    family       ECD pct id (vs EGFR canonical)            │
+│   ────────   ──────────   ──────────────────────────────            │
+│   HER2       ERBB family   45.1%                                    │
+│   HER3       ERBB family   42.7%                                    │
+│   HER4       ERBB family   43.0%                                    │
+│                                                                     │
+│  LLM cross-binding assessment  (integrates sequence + literature)  │
+│   paralog    cross_reactivity   severity    evidence_strength       │
+│   ────────   ──────────────────  ─────────   ────────────────       │
+│   HER2       LOW                 LOW         STRONG          [evi_41]
+│   HER3       LOW                 LOW         STRONG          [evi_41]
+│   HER4       LOW                 LOW         STRONG          [evi_41]
+│                                                                     │
+│  Rationale: 42–45% ECD identity sits in the "fold conserved,        │
+│  surface loops divergent" zone. Empirical evidence in the ERBB      │
+│  family (cetuximab, panitumumab, trastuzumab) shows minimal         │
+│  cross-reactivity across these paralogs despite the shared fold,    │
+│  because the loops that contact a mAb paratope diverge enough.      │
+│  Sequence identity alone would suggest "moderate" — but the         │
+│  literature does the disambiguation, and the LLM should default     │
+│  to the empirical call when binders against this family exist.      │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─ 5. ORTHOLOGS  [deterministic — Compara r112 + DeepTMHMM 1.0.24] ──┐
 │                                                                     │
 │   species  isoform           UniProt    TM  ECD len   ECD %id   sim │
 │   ───────  ─────────────     ────────   ──  ───────   ──────   ──── │
@@ -202,7 +228,7 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │   about cross-species relevance.)                                  │
 └─────────────────────────────────────────────────────────────────────┘
 
-┌─ 5. ACCESSIBILITY RISKS  (severity ≠ evidence strength) ───────────┐
+┌─ 6. ACCESSIBILITY RISKS  (severity ≠ evidence strength) ───────────┐
 │                                                                     │
 │  • Partner required for surface expression?                         │
 │      Surface-expression dependency:  NONE                           │
@@ -228,13 +254,10 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │      tissue; junction disruption in carcinoma relieves restriction. │
 │                                                       [evi_22,36]   │
 │                                                                     │
-│  • Similar paralogs       severity=MODERATE · evidence=STRONG       │
-│       paralog    ECD id    cross-reactivity risk                    │
-│       HER2       45.1%     MODERATE                  [evi_41]       │
-│       HER3       42.7%     MODERATE                  [evi_41]       │
-│       HER4       43.0%     MODERATE                  [evi_41]       │
-│      Domain folds are conserved; binder specificity should be       │
-│      empirically tested against the full ERBB family.               │
+│  (Paralog cross-binding assessment is rendered in §4 above —       │
+│   paralog_assessment was promoted out of accessibility_risks so    │
+│   the deterministic paralog table and the LLM cross-binding call   │
+│   live together in one section.)                                   │
 │                                                                     │
 │  • ECD accessibility size class:  LARGE                             │
 │      621 aa extracellular region; multiple accessible epitopes      │
@@ -370,16 +393,25 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 
 **Per-isoform LLM interpretation is deferred** — v1.0.0 ships isoforms as deterministic topology only. Any biological reading of what an isoform implies for accessibility lives in `executive_summary.one_paragraph` if the LLM wants to surface it.
 
-### Section 4 — Orthologs + paralogs (deterministic + LLM interpretation)
+### Section 4 — Paralogs (deterministic table + LLM cross-binding assessment)
+
+| Rendered | Schema path | Type | Prov |
+|---|---|---|---|
+| Deterministic paralog table rows `HER2 ERBB family 45.1%` | `deterministic_features.paralogs: list[ParalogEntry]` | each: `{ paralog_symbol: str, paralog_uniprot_acc: str, ecd_pct_identity: float, family_id: str, compara_version: str }` | D |
+| LLM cross-binding rows `HER2 LOW LOW STRONG` | `paralog_assessment: list[ParalogRisk]` (top-level, promoted out of `accessibility_risks`) | each: `ParalogRisk = { paralog_symbol: str, deterministic_paralog_ref: str (FK → `deterministic_features.paralogs[i].family_id`), cross_reactivity_assessment: Literal["high","moderate","low","negligible"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤200), cited_evidence_ids: list[str] }` | L→D-ref |
+| Rationale paragraph "42–45% ECD identity sits in the…" | `paralog_assessment[i].rationale` | `str (≤200)` per entry; the LLM is responsible for integrating sequence + empirical literature evidence — 42–45% identity alone wouldn't necessarily warrant "low," but the literature on cetuximab / panitumumab / trastuzumab cross-reactivity does. | L |
+
+**Why paralogs got its own section:** orthologs answer *will this work in animal models* (cross-species), paralogs answer *will my binder cross-react with other human proteins* (within-species). They're different questions and shouldn't be merged. Paralogs are placed above orthologs because paralog cross-reactivity is usually a more pressing accessibility question than ortholog conservation.
+
+### Section 5 — Orthologs (deterministic only)
 
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
 | Per-species canonical + alternative isoforms (multi-row per species) | `deterministic_features.orthologs.{mouse,rat,cynomolgus}: list[OrthologEntry]` | each: `OrthologEntry = { is_canonical: bool, isoform_id: str, ensembl_id: str, ortholog_uniprot_acc: str, ortholog_symbol: str, type: Literal["one2one","one2many","many2many"], ecd_pct_identity_to_human_canonical: float, ecd_pct_similarity_to_human_canonical: float, ecd_length_residues: int, tm_helix_count: int, compara_version: str, retrieved_at: datetime }` (canonical first, then alternative isoforms — same shape, sorted) | D |
-| (paralog table, also shown in §5) | `deterministic_features.paralogs: list[ParalogEntry]` | each: `{ paralog_symbol: str, paralog_uniprot_acc: str, ecd_pct_identity: float, family_id: str, compara_version: str }` | D |
 
-**Per-species LLM interpretation is deferred** — v1.0.0 ships orthologs as deterministic ECD-conservation numbers + alternative-isoform topology only. Cross-species accessibility synthesis lives in `executive_summary.one_paragraph` if the LLM wants to make a call. (Earlier scratch fields `ortholog_implications.summary` / `cross_species_accessibility_relevance` / `species_caveats` are dropped.)
+**Per-species LLM interpretation is deferred** — v1.0.0 ships orthologs as deterministic ECD-conservation numbers + alternative-isoform topology only. Cross-species accessibility synthesis lives in `executive_summary.one_paragraph` if the LLM wants to make a call.
 
-### Section 5 — Accessibility risks
+### Section 6 — Accessibility risks
 
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
@@ -387,7 +419,6 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `Shed form … severity=MODERATE · evidence=STRONG` | `accessibility_risks.shed_form` | `{ present: bool, severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], mechanism: str\|None, sheddase_if_known: str\|None, cited_evidence_ids: list[str] }` | L |
 | `Secreted form … severity=LOW · evidence=STRONG` | `accessibility_risks.secreted_form` | `{ present: bool, severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], ratio_to_membrane: float\|None, source: Literal["alternative_splicing","proteolytic","both","unknown"]\|None, cited_evidence_ids: list[str] }` | L |
 | `Restricted membrane subdomain … severity=MODERATE` | `accessibility_risks.restricted_subdomain` | `{ present: bool, domain: Literal["apical","junctional","ciliary","synaptic","raft","basolateral","other","unknown"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤300), cited_evidence_ids: list[str] }` | L |
-| Each paralog risk row `HER2 45.1% MODERATE` | `accessibility_risks.paralog_cross_binding_risk: list[ParalogRisk]` | each: `{ paralog_symbol: str, deterministic_paralog_ref: str (FK → `deterministic_features.paralogs[i].family_id`), cross_reactivity_assessment: Literal["high","moderate","low","negligible"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤200), cited_evidence_ids: list[str] }` (viewer/orchestrator look up `ecd_pct_identity` from the deterministic block; no mirrored field) | L→D-ref |
 | `ECD accessibility size class: LARGE …` | `accessibility_risks.ecd_size_assessment` | `{ canonical_topology_ref: "canonical" (FK → `deterministic_features.canonical_topology`), ecd_accessibility_class: Literal["large","moderate","small","minimal","none"], rationale: str (≤300), cited_evidence_ids: list[str] }` (renamed from `druggability_class`; references rather than mirrors the deterministic length) | L→D-ref |
 | `Epitope masking … severity=MODERATE · evidence=STRONG` | `accessibility_risks.epitope_masking` | `{ mechanism: Literal["glycan","partner","conformational","cleaved","none"], severity: Literal["high","moderate","low","none"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤400), cited_evidence_ids: list[str] }` | L |
 
@@ -459,7 +490,7 @@ Six candidates were considered. **#1 (knowledge gaps) and #6 (filters block) lan
 Inserted as a card between *Accessibility Risks* and the *Evidence Ledger*:
 
 ```
-┌─ 6. WHAT WE COULDN'T DETERMINE  (with impact + suggested resolve)──┐
+┌─ 7. WHAT WE COULDN'T DETERMINE  (with impact + suggested resolve)──┐
 │                                                                     │
 │  • Cell-state-dependent surface turnover in stressed epithelia     │
 │      why_unresolved: no_literature                                  │
@@ -547,7 +578,9 @@ SurfaceomeRecord (v1.0.0)
 │   ├── has_shed_form                             # D ← accessibility_risks.shed_form.present
 │   ├── has_secreted_form                         # D ← accessibility_risks.secreted_form.present
 │   ├── requires_coreceptor_for_expression        # D ← co_receptor_requirements.surface_expression_dependency == "required"
-│   ├── has_paralog_cross_reactivity_risk         # D ← any paralog_cross_binding_risk[i] ≥ moderate
+│   ├── has_paralog_cross_reactivity_risk         # D ← any paralog_assessment[i].cross_reactivity_assessment ≥ moderate
+│                                                  #     (path moved when paralog_assessment was
+│                                                  #      promoted out of accessibility_risks)
 │   ├── has_epitope_masking                       # D ← epitope_masking.severity ≥ moderate
 │   ├── has_restricted_subdomain                  # D ← restricted_subdomain.present OR any
 │   │                                             #     anatomical_accessibility[i].accessibility_implication == "restricted"
@@ -672,7 +705,24 @@ SurfaceomeRecord (v1.0.0)
 │   # as deterministic-only tables; any biological synthesis the
 │   # LLM wants to make about them lives in executive_summary.one_paragraph.
 │
-├── accessibility_risks                           [LLM — section 5]
+├── paralog_assessment: list[ParalogRisk]         [LLM — section 4]
+│   │                                             # Promoted out of accessibility_risks to
+│   │                                             # live alongside deterministic_features.paralogs
+│   │                                             # in its own page section (above orthologs).
+│   │                                             # Paralogs answer "will my binder cross-react
+│   │                                             # with other human proteins?" — a more
+│   │                                             # pressing question than ortholog conservation.
+│   └── { paralog_symbol,
+│         deterministic_paralog_ref,             # FK → deterministic_features.paralogs[i].family_id
+│         cross_reactivity_assessment: high|moderate|low|negligible,
+│           # LLM integrates ECD %id + literature on empirical binder
+│           # cross-reactivity to land the call. 45% ECD identity is
+│           # often LOW in practice (fold conserved but paratope-relevant
+│           # loops diverge) — the LLM should not default to "moderate"
+│           # from %identity alone.
+│         severity, evidence_strength, rationale, cited_evidence_ids }
+│
+├── accessibility_risks                           [LLM — section 6]
 │   │                                             # Every risk now carries
 │   │                                             # severity + evidence_strength so
 │   │                                             # speculative-but-severe ≠ real-but-mild.
@@ -695,13 +745,6 @@ SurfaceomeRecord (v1.0.0)
 │   │   # function-side dependency (does partner need to be present
 │   │   # for signaling?) is out of scope for v1.0.0 — signaling
 │   │   # biology lives elsewhere.
-│   ├── paralog_cross_binding_risk: list[ParalogRisk]
-│   │   └── { paralog_symbol,
-│   │         deterministic_paralog_ref,         # FK → deterministic_features.paralogs[i].family_id
-│   │         cross_reactivity_assessment: high|moderate|low|negligible,
-│   │         severity, evidence_strength, rationale, cited_evidence_ids }
-│   │       # references-instead-of-mirrors: viewer/orchestrator look up
-│   │       # ecd_pct_identity from the deterministic block. No drift risk.
 │   ├── ecd_size_assessment
 │   │   └── { canonical_topology_ref,            # FK → deterministic_features.canonical_topology
 │   │         ecd_accessibility_class: large|moderate|small|minimal|none,
@@ -711,7 +754,7 @@ SurfaceomeRecord (v1.0.0)
 │       └── { mechanism: glycan|partner|conformational|cleaved|none,
 │             severity, evidence_strength, rationale, cited_evidence_ids }
 │
-├── knowledge_gaps: list[KnowledgeGap]            [LLM — section 6]
+├── knowledge_gaps: list[KnowledgeGap]            [LLM — section 7]
 │   └── { question, why_unresolved: no_literature|conflicting|outside_scope, detail,
 │         impact_on_confidence: high|moderate|low,
 │         suggested_resolution: str|None,         # next experiment that would resolve the gap
