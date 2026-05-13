@@ -904,6 +904,35 @@ Three new orchestrator-level fetchers (not agent tools). Each caches by `(unipro
 | `src/accessible_surfaceome/agents/surface_annotator/fetchers/compara_fetcher.py` | Looks up Ensembl Compara one2one orthologs for mouse/rat/cynomolgus + within-species paralogs; computes ECD pct identity using topology-derived ECD boundaries | Existing Compara CSV path referenced in [deeptmhmm.py:369](src/accessible_surfaceome/sources/deeptmhmm.py:369); needs new direct-fetch path or new ingestion script if CSV is stale |
 | `src/accessible_surfaceome/agents/surface_annotator/fetchers/alphafold_fetcher.py` | Fetches AlphaFold DB CIF + confidence JSON for canonical UniProt; computes ECD mean pLDDT, disordered fraction, SASA-derived epitope-accessibility proxy. **Stamps every output with `source="AlphaFold DB"`, `license="CC BY 4.0"`, `attribution="© DeepMind / EMBL-EBI"`, and the Jumper 2021 + Varadi 2024 DOIs** — these flow through to the record's `deterministic_features.structure` block and are rendered as an attribution line in both the viewer Structure card and the per-record Data Sources footer. | New — no current AlphaFold retrieval in the repo |
 
+### ECD-statistics methodology
+
+How the three structure-block numbers (`ecd_mean_plddt`, `ecd_disordered_fraction`, `ecd_solvent_accessible_fraction`) are computed. These have meaningful biology behind them so it's worth pinning down the recipe explicitly — otherwise the LLM (and downstream readers) might over- or under-interpret what they mean.
+
+**Step 1. Define ECD residues from DeepTMHMM topology.**
+DeepTMHMM emits a per-residue topology label string with the alphabet `S` / `O` / `M` / `I` / `B` (signal peptide / extracellular outside / TM helix / intracellular inside / β-strand). For each protein, ECD = the set of residues labeled `O` (extracellular). Signal-peptide (`S`) residues are *excluded* (the signal peptide is cleaved during ER processing; it is not part of the mature surface protein). For a single-pass type I receptor like EGFR, ECD = residues 25 → first TM helix start. For a multi-pass GPCR like GPR75, ECD = the union of N-terminal extracellular tail + the three extracellular loops (ECL1 + ECL2 + ECL3) — the function takes whatever residues are labeled `O`.
+
+**Step 2. Look up per-residue pLDDT from AlphaFold DB.**
+AlphaFold publishes a per-residue confidence score called **pLDDT** (predicted Local Distance Difference Test) for every position in its structures. Scale is 0 → 100. Conventional bins:
+- pLDDT > 90: very high confidence (model likely accurate)
+- pLDDT 70–90: confident
+- pLDDT 50–70: low confidence
+- pLDDT < 50: very low confidence — typically intrinsically disordered
+
+**Step 3. Compute the three statistics over ECD residues only.**
+
+- **`ecd_mean_plddt`** = arithmetic mean of pLDDT over ECD residues only. Tells you whether AlphaFold is confident about the *extracellular* part of the protein specifically (the part a binder would engage). High value (e.g. EGFR ECD = 91.4) means the fold is well-predicted; low value (e.g. an ECD with a long flexible linker) means be careful about epitope-prediction from the model.
+
+- **`ecd_disordered_fraction`** = `count(ECD residues with pLDDT < 50) / count(ECD residues)`, range 0.0–1.0. Approximates the fraction of the ECD that's intrinsically disordered (the pLDDT < 50 → disorder mapping is the AlphaFold team's published convention, validated against IDR predictors in Akdel *et al.* 2022). Higher value = more flexible ECD = harder to design conformation-locked binders (the flexible regions don't have a stable epitope to engage).
+
+- **`ecd_solvent_accessible_fraction`** = mean fractional **SASA** (Solvent-Accessible Surface Area) over ECD residues, range 0.0–1.0. SASA is computed by rolling a 1.4 Å probe sphere (water-sized) over the AlphaFold structure and measuring how much surface area is exposed per residue. The fractional version normalizes by the residue's maximum-possible SASA (extended-tripeptide reference), so the value is comparable across amino-acid types. Computed with the **FreeSASA** Python library (pure-Python, no DSSP dependency — see [freesasa.github.io](https://freesasa.github.io/)). Lower value = more residues buried in the protein interior = fewer accessible binder targets; higher value = more surface-exposed = more binder real estate.
+
+**Interpretation rule of thumb for binder design:**
+- High pLDDT (>85) + low disordered_fraction (<10%) + moderate SASA (~0.4–0.6) → well-folded, structured ECD with plenty of surface area. Good antibody target.
+- High pLDDT + low disordered + very low SASA (<0.3) → well-folded but mostly buried. Look for surface patches.
+- Low pLDDT + high disordered → ECD has lots of flexible regions. Consider conformation-stabilizing constructs or accept that some epitopes will be context-dependent.
+
+**Why not just use the full-protein pLDDT?** Because the question we're answering is about *binder accessibility on the cell surface*, not whole-protein structural confidence. A single-pass receptor with a 600-aa well-folded ECD and a 500-aa disordered intracellular tail would have low full-protein pLDDT (the tail drags the average down) but high `ecd_mean_plddt` (which is what matters for surface targeting).
+
 Caches under `data/external/agent_features/{uniprot_acc}/{tool}_{version}.json`. Orchestrator hits the cache first; misses trigger a fetch + write.
 
 **License compliance.** AlphaFold DB is CC BY 4.0, which requires that attribution accompany every downstream use. The viewer's per-gene Structure card and the bottom-of-page Data Sources footer both render the attribution string from `deterministic_features.structure`. The same applies to UniProt (CC BY 4.0).
@@ -1001,6 +1030,8 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 - **Per-section confidence (#4)** — defer. Top-level `confidence` + `confidence_reasoning` carry forward unchanged.
 - **Run-level methodology block (#5)** — defer. `.runs/<timestamp>/summary.json` already captures this for reproducibility; surfacing on the record can come later.
 - **Internalization / surface dynamics** — defer. Rapid internalization is con for binder dwell time but pro for ADC delivery; the schema shouldn't pre-judge as a "risk." When this lands in v1.x it goes into a neutral `surface_dynamics` block under `biological_context`, not under `accessibility_risks`.
+
+- **Structure viewer for orthologs (v1.x viewer enhancement)** — the structure viewer that lands later (PR [#24](https://github.com/Deliverome-Project/accessible-surfaceome/pull/24)) currently renders the canonical human AlphaFold structure colored by human DeepTMHMM topology only. v1.x should extend it to render *parallel views* for the mouse / rat / cynomolgus orthologs — each panel showing the ortholog's AFDB structure colored by *its own* DeepTMHMM topology (we already have ortholog DeepTMHMM in `data/external/deeptmhmm_surfaceome_predictions/{mouse,cyno}_ortholog_one2one_highconf_non_hla/`). The data shape is in place — `deterministic_features.orthologs.{species}: list[OrthologEntry]` already carries `ortholog_uniprot_acc` and topology fields per ortholog isoform. The viewer just needs to extend its per-gene page to fetch AFDB structures for each ortholog UniProt and render 4 viewers side-by-side (or in a tabbed interface). Pure rendering work; no schema change.
 
 ---
 

@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code for this repository.
 
+## Commit conventions — no Co-Authored-By trailer
+
+Do **not** add `Co-Authored-By: Claude <…>` (or any AI-attribution trailer) to git commit messages or PR descriptions. The repo's `.claude/settings.json` carries the equivalent `attribution.commit/pr: ""` config; this CLAUDE.md instruction is the belt-and-suspenders override for agents whose system prompt would otherwise inject the trailer.
+
 ## Project Overview
 
 `accessible-surfaceome` is a workspace for building an annotated catalogue of
