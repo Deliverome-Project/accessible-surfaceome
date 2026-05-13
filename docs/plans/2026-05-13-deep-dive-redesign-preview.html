@@ -1,0 +1,2016 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>EGFR — Surface Targetability Brief (preview)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f6f1ef;
+        --panel: #fdf9f7;
+        --panel-strong: #ffffff;
+        --line: #e8d6d2;
+        --line-soft: #efe2de;
+        --ink: #1f1718;
+        --muted: #6f5d5a;
+
+        --maroon: #6f0835;
+        --maroon-soft: rgba(111, 8, 53, 0.08);
+        --coral: #dd5955;
+        --coral-soft: rgba(226, 101, 94, 0.14);
+        --teal: #3469cd;
+        --teal-soft: rgba(52, 105, 205, 0.12);
+        --amber: #ffd579;
+        --amber-soft: rgba(255, 213, 121, 0.35);
+        --success: #749c75;
+        --success-soft: rgba(116, 156, 117, 0.18);
+        --lavender: #8a63d2;
+        --lavender-soft: rgba(138, 99, 210, 0.14);
+
+        /* DeepTMHMM topology palette (synced to the structure-site viewer) */
+        --tm-M: #ffd579;
+        --tm-O: #d7dce3;
+        --tm-I: #a9cfa8;
+        --tm-S: #7d8896;
+
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.5rem;
+        --space-6: 2rem;
+        --space-7: 3rem;
+
+        --font-display: "Playfair Display", Georgia, serif;
+        --font-sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-sans);
+        font-size: 16px;
+        line-height: 1.6;
+        font-feature-settings: "ss01", "ss02";
+      }
+
+      a {
+        color: inherit;
+      }
+
+      em {
+        font-family: var(--font-display);
+        font-style: italic;
+        font-weight: 500;
+      }
+
+      /* ───────── Top bar ───────── */
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(10px);
+        background: rgba(246, 241, 239, 0.85);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .topbar__inner {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: var(--space-3) var(--space-5);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-4);
+      }
+
+      .topbar__title {
+        margin: 0;
+        font-size: 0.95rem;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .topbar__meta {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-left: var(--space-2);
+      }
+
+      .toggle {
+        display: inline-flex;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 9999px;
+        padding: 3px;
+        gap: 2px;
+      }
+
+      .toggle__btn {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        border-radius: 9999px;
+        padding: 0.4rem 0.95rem;
+        font-family: inherit;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .toggle__btn:hover {
+        color: var(--ink);
+      }
+
+      .toggle__btn.is-active {
+        background: var(--maroon);
+        color: white;
+      }
+
+      .toggle__hint {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        color: var(--muted);
+        margin-left: var(--space-3);
+      }
+
+      /* ───────── Page shell ───────── */
+
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: var(--space-6) var(--space-5) var(--space-7);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-6);
+      }
+
+      .h-display {
+        font-family: var(--font-display);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        margin: 0;
+      }
+
+      .h-section {
+        font-family: var(--font-display);
+        font-size: 2rem;
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        margin: 0 0 var(--space-2);
+        line-height: 1.15;
+      }
+
+      .label-mono {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: baseline;
+        gap: var(--space-2);
+        color: var(--muted);
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: var(--space-3);
+      }
+
+      .eyebrow__n {
+        color: var(--coral);
+        font-weight: 700;
+        font-size: 0.9rem;
+      }
+
+      .lede {
+        font-size: 1.05rem;
+        line-height: 1.55;
+        color: var(--muted);
+        max-width: 60ch;
+        margin-bottom: var(--space-5);
+      }
+
+      /* ───────── Cards ───────── */
+
+      .card {
+        background: transparent;
+      }
+
+      .card__head {
+        margin-bottom: var(--space-4);
+      }
+
+      .card__body {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+      }
+
+      .grid-2 {
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        gap: var(--space-3) var(--space-5);
+        align-items: baseline;
+      }
+
+      .field-label {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        white-space: nowrap;
+        padding-top: 4px;
+      }
+
+      .field-value {
+        font-size: 0.95rem;
+        color: var(--ink);
+      }
+
+      .field-value strong {
+        font-weight: 700;
+      }
+
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35em;
+        padding: 0.18rem 0.55rem;
+        border-radius: 9999px;
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        font-weight: 500;
+        line-height: 1.3;
+        background: var(--coral-soft);
+        color: var(--maroon);
+        border: 1px solid transparent;
+      }
+
+      .chip--teal {
+        background: var(--teal-soft);
+        color: var(--teal);
+      }
+
+      .chip--success {
+        background: var(--success-soft);
+        color: var(--success);
+      }
+
+      .chip--lavender {
+        background: var(--lavender-soft);
+        color: var(--lavender);
+      }
+
+      .chip--amber {
+        background: var(--amber-soft);
+        color: #6f4a04;
+      }
+
+      .chip--muted {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--muted);
+      }
+
+      .chip--neutral {
+        background: rgba(0, 0, 0, 0.03);
+        color: var(--ink);
+      }
+
+      .chip--strong {
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.7rem;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+      }
+
+      /* ───────── Determinism banners ───────── */
+
+      .banner {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: 0.35rem 0.75rem;
+        border-radius: 6px;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .banner--deterministic {
+        background: var(--teal-soft);
+        color: var(--teal);
+      }
+
+      .banner--llm {
+        background: var(--lavender-soft);
+        color: var(--lavender);
+      }
+
+      .banner__dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+      }
+
+      /* ───────── Tables ───────── */
+
+      table.data {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.92rem;
+      }
+
+      table.data th {
+        text-align: left;
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        font-weight: 600;
+        padding: var(--space-2) var(--space-3);
+        border-bottom: 1px solid var(--line);
+      }
+
+      table.data td {
+        padding: var(--space-3);
+        border-bottom: 1px solid var(--line-soft);
+        vertical-align: top;
+      }
+
+      table.data tbody tr:hover {
+        background: var(--coral-soft);
+      }
+
+      table.data .mono {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
+      }
+
+      /* ───────── Topology swatches ───────── */
+
+      .topo-bar {
+        display: flex;
+        height: 14px;
+        border-radius: 3px;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        margin: var(--space-2) 0;
+      }
+
+      .topo-bar__seg {
+        height: 100%;
+      }
+
+      .topo-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-3);
+        margin-top: var(--space-2);
+      }
+
+      .topo-legend__item {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .topo-legend__swatch {
+        width: 14px;
+        height: 14px;
+        border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.1);
+      }
+
+      /* ───────── Method observations ───────── */
+
+      .method-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .method-card {
+        padding: var(--space-3) var(--space-4);
+        background: var(--panel);
+        border-radius: 8px;
+        border: 1px solid var(--line-soft);
+      }
+
+      .method-card__head {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: var(--space-2) var(--space-3);
+        margin-bottom: var(--space-2);
+      }
+
+      .method-card__title {
+        font-weight: 600;
+      }
+
+      .method-card__detail {
+        font-size: 0.92rem;
+        color: var(--muted);
+      }
+
+      /* ───────── Risks ───────── */
+
+      .risk-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .risk-card {
+        padding: var(--space-3) var(--space-4);
+        background: var(--panel);
+        border-radius: 8px;
+        border: 1px solid var(--line-soft);
+        border-left: 3px solid var(--coral);
+      }
+
+      .risk-card--info {
+        border-left-color: var(--teal);
+      }
+
+      .risk-card--ok {
+        border-left-color: var(--success);
+      }
+
+      .risk-card__head {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: var(--space-2) var(--space-3);
+        margin-bottom: var(--space-2);
+      }
+
+      .risk-card__title {
+        font-weight: 600;
+        font-size: 0.98rem;
+      }
+
+      .risk-card__body {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .risk-card__cite {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      /* ───────── Filters card ───────── */
+
+      .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--space-4);
+      }
+
+      .filters-group {
+        background: var(--panel);
+        border-radius: 8px;
+        border: 1px solid var(--line-soft);
+        padding: var(--space-3) var(--space-4);
+      }
+
+      .filters-group__title {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        margin: 0 0 var(--space-2);
+      }
+
+      /* ───────── Footer / attribution ───────── */
+
+      .attribution {
+        font-size: 0.82rem;
+        line-height: 1.55;
+        color: var(--muted);
+        max-width: 70ch;
+      }
+
+      .data-sources {
+        background: var(--panel);
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        padding: var(--space-4) var(--space-5);
+      }
+
+      .data-sources ul {
+        margin: 0;
+        padding-left: 1.2em;
+        font-size: 0.88rem;
+        color: var(--muted);
+      }
+
+      .data-sources li + li {
+        margin-top: 0.25em;
+      }
+
+      /* ───────── Schema annotations ───────── */
+
+      .annot {
+        display: none;
+        margin-top: 4px;
+        padding: 4px 8px;
+        border-radius: 4px;
+        background: rgba(52, 105, 205, 0.06);
+        border-left: 2px solid var(--teal);
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        line-height: 1.5;
+        color: var(--ink);
+      }
+
+      .annot--llm {
+        background: rgba(138, 99, 210, 0.06);
+        border-left-color: var(--lavender);
+      }
+
+      .annot--ref {
+        background: linear-gradient(
+          90deg,
+          rgba(138, 99, 210, 0.06) 0%,
+          rgba(52, 105, 205, 0.06) 100%
+        );
+        border-left-color: var(--lavender);
+      }
+
+      .annot__path {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .annot__type {
+        color: var(--muted);
+        word-break: break-word;
+      }
+
+      .annot__prov {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 6px;
+        border-radius: 9999px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        background: var(--teal);
+        color: white;
+      }
+
+      .annot--llm .annot__prov {
+        background: var(--lavender);
+      }
+
+      .annot--ref .annot__prov {
+        background: linear-gradient(90deg, var(--lavender), var(--teal));
+      }
+
+      body[data-mode="schema"] .annot {
+        display: block;
+      }
+
+      body[data-mode="schema"] .annot--inline {
+        display: inline-block;
+        margin-left: var(--space-2);
+        margin-top: 0;
+        vertical-align: middle;
+      }
+
+      /* Dim values slightly in schema mode so annotations pop */
+      body[data-mode="schema"] .card {
+        position: relative;
+      }
+
+      /* ───────── Section dividers ───────── */
+
+      .divider {
+        height: 1px;
+        background: var(--line);
+        margin: 0;
+        border: 0;
+      }
+
+      /* ───────── Misc ───────── */
+
+      .stack-2 {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+
+      .stack-3 {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-3);
+      }
+
+      .inline-cite {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-left: 0.4em;
+      }
+    </style>
+  </head>
+  <body data-mode="preview">
+    <header class="topbar">
+      <div class="topbar__inner">
+        <div>
+          <h1 class="topbar__title">EGFR — Surface Targetability Brief</h1>
+          <span class="topbar__meta">
+            schema v1.0.0 · generated 2026-05-13 · model claude-opus-4-7
+          </span>
+        </div>
+        <div style="display: flex; align-items: center">
+          <div class="toggle" role="tablist" aria-label="Display mode">
+            <button class="toggle__btn is-active" data-mode-btn="preview">
+              Preview
+            </button>
+            <button class="toggle__btn" data-mode-btn="schema">Schema</button>
+          </div>
+          <span class="toggle__hint" id="modeHint">what readers see</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ─────────── HEADER CARD ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">Gene</span>
+            <span>Identity</span>
+          </div>
+          <h2 class="h-section">
+            EGFR<span
+              style="
+                font-family: var(--font-sans);
+                font-size: 1.1rem;
+                font-weight: 500;
+                color: var(--muted);
+                margin-left: 0.5em;
+              "
+              >Epidermal growth factor receptor</span
+            >
+          </h2>
+          <div
+            class="chip-row"
+            style="margin-top: var(--space-3); align-items: baseline"
+          >
+            <span class="chip chip--muted">
+              UniProt P00533
+              <span class="annot annot--inline annot--llm">
+                <span class="annot__path">gene.uniprot_acc</span> ·
+                <span class="annot__type">str</span>
+                <span class="annot__prov">D</span>
+              </span>
+            </span>
+            <span class="chip chip--muted">
+              HGNC:3236
+              <span class="annot annot--inline annot--llm">
+                <span class="annot__path">gene.hgnc_id</span> ·
+                <span class="annot__type">str</span>
+                <span class="annot__prov">D</span>
+              </span>
+            </span>
+            <span class="chip chip--muted">NCBI Gene 1956</span>
+            <span class="chip chip--muted">Ensembl ENSG00000146648</span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── EXECUTIVE SUMMARY ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span>Executive summary</span>
+          </div>
+        </div>
+        <div class="card__body">
+          <p class="lede">
+            EGFR is a single-pass type I receptor with robust, multi-context
+            surface evidence — high expression in epithelial lineages,
+            extensively profiled by flow cytometry, mass spec, and IF. ECD is
+            large (~620 aa), well-folded (mean pLDDT 91), and highly conserved
+            to mouse and cyno. Primary accessibility risks: regulated shedding
+            (sEGFR via ADAM17), endocytic turnover after ligand binding, and
+            paralog cross-reactivity (HER2/3/4 share ECD subdomain folds).
+          </p>
+          <div class="annot annot--llm">
+            <span class="annot__path">executive_summary.one_paragraph</span> ·
+            <span class="annot__type">str (≤600)</span>
+            <span class="annot__prov">L</span>
+          </div>
+
+          <div class="grid-2">
+            <span class="field-label">Surface targetability</span>
+            <span class="field-value">
+              <span class="chip chip--success chip--strong">HIGH</span>
+              <div class="annot annot--llm">
+                <span class="annot__path"
+                  >executive_summary.surface_targetability</span
+                >
+                ·
+                <span class="annot__type"
+                  >Literal["high","moderate","low","uncertain"]</span
+                >
+                <span class="annot__prov">L</span>
+              </div>
+              <div
+                style="
+                  font-size: 0.78rem;
+                  color: var(--muted);
+                  font-style: italic;
+                  margin-top: 4px;
+                  max-width: 56ch;
+                "
+              >
+                "Targetability" here means biological / physical reachability
+                — can a binder reach this protein. Not the commercial sense
+                (worth pursuing as a drug target). Deeper sections still use
+                <code>accessibility</code>-named fields.
+              </div>
+            </span>
+
+            <span class="field-label">Evidence grade</span>
+            <span class="field-value">
+              <span class="chip chip--teal">direct_multi_method</span>
+              <div class="annot annot--llm">
+                <span class="annot__path"
+                  >executive_summary.evidence_grade_summary</span
+                >
+                ·
+                <span class="annot__type"
+                  >Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]</span
+                >
+                <span class="annot__prov">L</span>
+              </div>
+            </span>
+
+            <span class="field-label">Confidence</span>
+            <span class="field-value">
+              <strong>HIGH</strong>
+              <div class="annot annot--llm">
+                <span class="annot__path">executive_summary.confidence</span> ·
+                <span class="annot__type"
+                  >Literal["high","moderate","low"]</span
+                >
+                <span class="annot__prov">L</span>
+              </div>
+            </span>
+
+            <span class="field-label">State dependence</span>
+            <span class="field-value">
+              <strong>MODERATE</strong>
+              <div class="annot annot--llm">
+                <span class="annot__path"
+                  >executive_summary.state_dependence</span
+                >
+                ·
+                <span class="annot__type"
+                  >Literal["low","moderate","high","unclear"]</span
+                >
+                — how much does surface presence/exposure shift with cell
+                state, tissue context, or disease state? Cross-checks against
+                <code>biological_context.accessibility_modulation[]</code>.
+                <span class="annot__prov">L</span>
+              </div>
+            </span>
+
+            <span class="field-label">Subcategory</span>
+            <span class="field-value">
+              single-pass T1
+              <div class="annot annot--llm">
+                <span class="annot__path">executive_summary.subcategory</span>
+                ·
+                <span class="annot__type"
+                  >Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]</span
+                >
+                <span class="annot__prov">L</span>
+              </div>
+            </span>
+
+            <span class="field-label">Headline risks</span>
+            <span class="field-value">
+              <span class="chip-row">
+                <span class="chip">shed_form</span>
+                <span class="chip">paralog_cross_reactivity</span>
+              </span>
+              <div class="annot annot--llm">
+                <span class="annot__path"
+                  >executive_summary.headline_risks</span
+                >
+                ·
+                <span class="annot__type"
+                  >list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","other"]]
+                  (max 3)</span
+                >
+                <span class="annot__prov">L</span>
+              </div>
+            </span>
+          </div>
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin: var(--space-3) 0 0;
+              font-style: italic;
+            "
+          >
+            (The numeric <code>accessibility_score: float</code> was dropped —
+            categorical fields carry the same information without implying a
+            calibrated rubric.)
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── FILTERS / TAGS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span>Filters &amp; tags</span>
+            <span style="margin-left: var(--space-3); text-transform: none">
+              catalog-facing · all closed enums · D1-indexed
+            </span>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="filters-grid">
+            <div class="filters-group">
+              <p class="filters-group__title">Targetability</p>
+              <div class="chip-row">
+                <span class="chip chip--success">overall=high</span>
+                <span class="chip chip--success">confidence=high</span>
+                <span class="chip chip--teal">subcategory=single_pass_T1</span>
+                <span class="chip chip--teal"
+                  >evidence_grade=direct_multi_method</span
+                >
+                <span class="chip chip--teal">ecd_accessibility=large</span>
+                <span class="chip chip--teal">evidence_density=high</span>
+              </div>
+              <div class="annot">
+                <span class="annot__path">filters.surface_targetability</span>
+                + siblings · top field renamed from
+                <code>surface_accessibility</code>. All derived from deeper
+                buckets at orchestration time.
+                <span class="annot__prov">D</span>
+              </div>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Expression (LLM rollups)</p>
+              <div class="chip-row">
+                <span class="chip chip--lavender">level=high</span>
+                <span class="chip chip--lavender">breadth=broad</span>
+                <span class="chip chip--lavender">specificity=mixed</span>
+              </div>
+              <div class="annot annot--llm">
+                <span class="annot__path"
+                  >filters.expression_level / expression_breadth /
+                  surface_specificity</span
+                >
+                · live only here (no duplication into deep buckets)
+                <span class="annot__prov">L</span>
+              </div>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Risks (booleans)</p>
+              <div class="chip-row">
+                <span class="chip">✓ has_shed_form</span>
+                <span class="chip">✓ has_secreted_form</span>
+                <span class="chip chip--muted">✗ coreceptor_for_expression</span>
+                <span class="chip chip--muted">• coreceptor_for_function</span>
+                <span class="chip">✓ paralog_cross_reactivity</span>
+                <span class="chip">✓ epitope_masking</span>
+                <span class="chip chip--muted">✗ restricted_subdomain</span>
+              </div>
+              <div class="annot">
+                <span class="annot__path">filters.has_*</span> · all
+                orchestrator-derived from accessibility_risks.*
+                <span class="annot__prov">D</span>
+              </div>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Cross-species</p>
+              <div class="chip-row">
+                <span class="chip chip--amber"
+                  >accessibility_conservation=partially_conserved</span
+                >
+              </div>
+              <div class="annot">
+                <span class="annot__path"
+                  >filters.cross_species_accessibility_relevance</span
+                >
+                ·
+                <span class="annot__type"
+                  >Literal["strongly_conserved","partially_conserved","poorly_conserved","species_specific","unclear"]</span
+                >
+                <span class="annot__prov">D</span>
+              </div>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Topology / quality</p>
+              <div class="chip-row">
+                <span class="chip chip--teal">n_term_extracellular=TRUE</span>
+                <span class="chip chip--amber">has_knowledge_gaps=TRUE</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 1 — SURFACE EVIDENCE ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">1</span>
+            <span>Surface accessibility evidence</span>
+          </div>
+          <h3 class="h-section">The <em>extracellular</em> case</h3>
+        </div>
+        <div class="card__body">
+          <div style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="banner banner--llm">
+              <span class="banner__dot"></span>
+              evidence grade: direct_multi_method
+            </span>
+            <span class="annot annot--llm annot--inline">
+              <span class="annot__path">surface_evidence.evidence_grade</span>
+              <span class="annot__prov">L</span>
+            </span>
+          </div>
+          <p>
+            Live-cell flow with ECD antibody, surface biotinylation MS, and
+            non-permeabilized IF all confirm endogenous surface localization in
+            three independent epithelial lineages.
+          </p>
+          <div class="annot annot--llm">
+            <span class="annot__path">surface_evidence.grade_rationale</span> ·
+            <span class="annot__type">str (≤400)</span>
+            <span class="annot__prov">L</span>
+          </div>
+
+          <h4 class="label-mono">Cell lines observed (12 distinct citations)</h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>cell line</th>
+                <th>lineage</th>
+                <th style="text-align: right">distinct citations</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>A431</strong></td>
+                <td>epidermoid carcinoma</td>
+                <td style="text-align: right" class="mono">4</td>
+              </tr>
+              <tr>
+                <td><strong>A549</strong></td>
+                <td>lung adenocarcinoma</td>
+                <td style="text-align: right" class="mono">3</td>
+              </tr>
+              <tr>
+                <td><strong>HeLa</strong></td>
+                <td>cervical carcinoma</td>
+                <td style="text-align: right" class="mono">2</td>
+              </tr>
+              <tr>
+                <td><strong>MCF7</strong></td>
+                <td>breast</td>
+                <td style="text-align: right" class="mono">2</td>
+              </tr>
+              <tr>
+                <td><strong>Primary keratinocytes</strong></td>
+                <td>primary tissue</td>
+                <td style="text-align: right" class="mono">1</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="annot annot--llm">
+            <span class="annot__path"
+              >surface_evidence.cell_lines_observed</span
+            >
+            ·
+            <span class="annot__type"
+              >list[CellLineObservation] = { cell_line, lineage,
+              distinct_citation_count, cited_evidence_ids }</span
+            >
+            <span class="annot__prov">L</span>
+          </div>
+
+          <h4 class="label-mono">Methods + antibodies</h4>
+          <ul class="method-list">
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Flow cytometry</span>
+                <span class="chip chip--teal">live_cell_flow</span>
+                <span class="chip chip--muted">nonpermeabilized</span>
+                <span class="chip chip--muted">endogenous</span>
+                <span class="chip chip--success"
+                  >direct_surface_accessibility</span
+                >
+              </div>
+              <p class="method-card__detail">
+                anti-EGFR clone 528 + ICR10 (ECD epitope)
+                <span class="inline-cite">[evi_02, evi_05]</span>
+              </p>
+              <div class="annot annot--llm">
+                <span class="annot__path">surface_evidence.methods[0]</span> ·
+                <span class="annot__type"
+                  >MethodObservation = { method_family,
+                  method_subclass: "live_cell_flow", permeabilization,
+                  expression_system, antibodies: list[AntibodyRef],
+                  accessibility_relevance, surface_claim_type,
+                  cited_evidence_ids }</span
+                >
+                <span class="annot__prov">L</span>
+              </div>
+            </li>
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Mass spec</span>
+                <span class="chip chip--teal">surface_biotinylation</span>
+                <span class="chip chip--muted">nonpermeabilized</span>
+                <span class="chip chip--muted">endogenous</span>
+                <span class="chip chip--success"
+                  >direct_surface_accessibility</span
+                >
+              </div>
+              <p class="method-card__detail">
+                label-free LC-MS/MS, A431 surface biotinylation
+                <span class="inline-cite">[evi_07]</span>
+              </p>
+            </li>
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Immunofluorescence</span>
+                <span class="chip chip--teal">nonpermeabilized_IF</span>
+                <span class="chip chip--muted">endogenous</span>
+                <span class="chip chip--amber"
+                  >supports_surface_localization</span
+                >
+              </div>
+              <p class="method-card__detail">
+                cetuximab + panitumumab (ECD epitopes)
+                <span class="inline-cite">[evi_11, evi_14]</span>
+              </p>
+            </li>
+          </ul>
+
+          <h4 class="label-mono">Expression levels (typed measurement)</h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>context</th>
+                <th>level</th>
+                <th>measurement_type</th>
+                <th>surface-specific?</th>
+                <th>cite</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Epithelial tumors</td>
+                <td>
+                  <span class="chip chip--success chip--strong">HIGH</span>
+                </td>
+                <td class="mono">surface_flow</td>
+                <td>
+                  <span class="chip chip--success">YES</span>
+                </td>
+                <td class="mono">[evi_02]</td>
+              </tr>
+              <tr>
+                <td>Normal skin</td>
+                <td>
+                  <span class="chip chip--success chip--strong">HIGH</span>
+                </td>
+                <td class="mono">IHC_protein</td>
+                <td>
+                  <span class="chip chip--muted">NO</span>
+                </td>
+                <td class="mono">[evi_18]</td>
+              </tr>
+              <tr>
+                <td>Hematopoietic</td>
+                <td>
+                  <span class="chip chip--muted chip--strong">ABSENT</span>
+                </td>
+                <td class="mono">surface_flow</td>
+                <td>
+                  <span class="chip chip--success">YES</span>
+                </td>
+                <td class="mono">[evi_22]</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="annot annot--llm">
+            <span class="annot__path">surface_evidence.expression_levels</span>
+            ·
+            <span class="annot__type"
+              >list[ExpressionObservation] = { context, level,
+              measurement_type, surface_specific: bool, cited_evidence_ids
+              }</span
+            >
+            <span class="annot__prov">L</span>
+          </div>
+
+          <h4 class="label-mono">Contradicting evidence (typed + severity)</h4>
+          <ul class="risk-list">
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title"
+                  >Mitochondrial pool reported in stressed cells</span
+                >
+                <span class="chip chip--muted">intracellular_pool</span>
+                <span class="chip chip--muted">severity=LOW</span>
+                <span class="risk-card__cite">[evi_31]</span>
+              </div>
+              <p class="risk-card__body">
+                Minor stress-induced intracellular fraction does not negate
+                dominant plasma-membrane localization in baseline state.
+              </p>
+            </li>
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title"
+                  >Nuclear-translocated fraction (ligand-induced)</span
+                >
+                <span class="chip chip--muted">alternative_localization</span>
+                <span class="chip chip--muted">severity=LOW</span>
+                <span class="risk-card__cite">[evi_27]</span>
+              </div>
+              <p class="risk-card__body">
+                Ligand-stim ~5% nuclear translocation; majority remains on the
+                surface — does not undermine accessibility claim.
+              </p>
+            </li>
+          </ul>
+          <div class="annot annot--llm">
+            <span class="annot__path"
+              >surface_evidence.contradicting_evidence</span
+            >
+            ·
+            <span class="annot__type"
+              >list[Contradiction] = { claim, contradiction_type,
+              severity_for_surface_accessibility, likely_explanation,
+              cited_evidence_ids }</span
+            >
+            <span class="annot__prov">L</span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 2 — BIOLOGICAL CONTEXT ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">2</span>
+            <span>Biological context &amp; anatomical accessibility</span>
+          </div>
+          <h3 class="h-section">Where it's <em>actually reachable</em></h3>
+        </div>
+        <div class="card__body">
+          <h4 class="label-mono">Tissues / cell types / cell states</h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>tissue</th>
+                <th>present</th>
+                <th>cell types</th>
+                <th>states</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>skin</td>
+                <td><span class="chip chip--success">✓</span></td>
+                <td>keratinocytes</td>
+                <td>basal, suprabasal</td>
+              </tr>
+              <tr>
+                <td>lung</td>
+                <td><span class="chip chip--success">✓</span></td>
+                <td>alveolar T2, club cells</td>
+                <td>normal, fibrotic</td>
+              </tr>
+              <tr>
+                <td>colon</td>
+                <td><span class="chip chip--success">✓</span></td>
+                <td>enterocytes</td>
+                <td>normal, EMT</td>
+              </tr>
+              <tr>
+                <td>blood</td>
+                <td><span class="chip chip--muted">✗</span></td>
+                <td>—</td>
+                <td>—</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4 class="label-mono">
+            Anatomical accessibility (where can a binder physically reach?)
+          </h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>context</th>
+                <th>orientation</th>
+                <th>implication</th>
+                <th>cite</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>epithelial monolayer</td>
+                <td class="mono">basolateral</td>
+                <td>
+                  <span class="chip">RESTRICTED</span> in polarized
+                  tight-junction-intact tissue
+                </td>
+                <td class="mono">[evi_22]</td>
+              </tr>
+              <tr>
+                <td>carcinoma (EMT)</td>
+                <td class="mono">lateral / exposed</td>
+                <td>
+                  <span class="chip chip--success">FAVORABLE</span> — junction
+                  disruption exposes ECD
+                </td>
+                <td class="mono">[evi_36]</td>
+              </tr>
+              <tr>
+                <td>resting keratinocyte</td>
+                <td class="mono">basolateral</td>
+                <td>
+                  <span class="chip">RESTRICTED</span>
+                </td>
+                <td class="mono">[evi_18]</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="annot annot--llm">
+            <span class="annot__path"
+              >biological_context.anatomical_accessibility</span
+            >
+            ·
+            <span class="annot__type"
+              >list[AnatomicalAccessibilityObservation] = { context,
+              orientation: Literal["blood_interstitial_facing","luminal_facing","apical","basolateral","lateral","junction_restricted","ciliary","synaptic","matrix_facing","unknown"],
+              accessibility_implication, rationale, cited_evidence_ids }</span
+            >
+            <span class="annot__prov">L</span>
+          </div>
+
+          <h4 class="label-mono">
+            Accessibility modulation (disease / state relocalization)
+          </h4>
+          <ul class="risk-list">
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title"
+                  >Normal → invasive carcinoma</span
+                >
+                <span class="risk-card__cite">[evi_36]</span>
+              </div>
+              <p class="risk-card__body">
+                Basolateral in polarized epithelium → depolarized in invasive
+                carcinoma. Apical/lateral surface exposure increases as
+                junctions break down.
+              </p>
+            </li>
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title"
+                  >Resting → ligand-stimulated</span
+                >
+                <span class="risk-card__cite">[evi_27]</span>
+              </div>
+              <p class="risk-card__body">
+                Surface pool at steady-state; post-EGF endocytosis depletes
+                surface ~25% within 30 min — dwell time becomes
+                assay-relevant.
+              </p>
+            </li>
+          </ul>
+          <div class="annot annot--llm">
+            <span class="annot__path"
+              >biological_context.accessibility_modulation</span
+            >
+            ·
+            <span class="annot__type"
+              >list[AccessibilityModulationObservation] = { baseline_context,
+              modulating_state, change, accessibility_implication,
+              cited_evidence_ids }</span
+            >
+            <span class="annot__prov">L</span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 3 — ISOFORMS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div
+            class="eyebrow"
+            style="display: flex; align-items: center; gap: var(--space-3)"
+          >
+            <span class="eyebrow__n">3</span>
+            <span>Isoforms &amp; topology</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — UniProt/Ensembl + DeepTMHMM 1.0.24
+            </span>
+          </div>
+          <h3 class="h-section">The <em>predicted topology</em></h3>
+        </div>
+        <div class="card__body">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>isoform</th>
+                <th>UniProt</th>
+                <th>TM count</th>
+                <th>N-term</th>
+                <th>ECD len</th>
+                <th>ICD len</th>
+                <th>topology</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>canonical</strong></td>
+                <td class="mono">P00533-1</td>
+                <td class="mono">1</td>
+                <td class="mono">extracellular</td>
+                <td class="mono">621</td>
+                <td class="mono">542</td>
+                <td style="min-width: 180px">
+                  <div class="topo-bar">
+                    <div class="topo-bar__seg" style="flex: 24; background: var(--tm-S)"></div>
+                    <div class="topo-bar__seg" style="flex: 621; background: var(--tm-O)"></div>
+                    <div class="topo-bar__seg" style="flex: 24; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 542; background: var(--tm-I)"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>isoform-2</td>
+                <td class="mono">P00533-2</td>
+                <td class="mono">1</td>
+                <td class="mono">extracellular</td>
+                <td class="mono">621</td>
+                <td class="mono">430</td>
+                <td style="min-width: 180px">
+                  <div class="topo-bar">
+                    <div class="topo-bar__seg" style="flex: 24; background: var(--tm-S)"></div>
+                    <div class="topo-bar__seg" style="flex: 621; background: var(--tm-O)"></div>
+                    <div class="topo-bar__seg" style="flex: 24; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 430; background: var(--tm-I)"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>isoform-3 <span class="chip chip--lavender">soluble</span></td>
+                <td class="mono">P00533-3</td>
+                <td class="mono">0</td>
+                <td class="mono">—</td>
+                <td class="mono">88</td>
+                <td class="mono">0</td>
+                <td style="min-width: 180px">
+                  <div class="topo-bar">
+                    <div class="topo-bar__seg" style="flex: 1; background: var(--tm-O)"></div>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <td>isoform-4</td>
+                <td class="mono">P00533-4</td>
+                <td class="mono">1</td>
+                <td class="mono">extracellular</td>
+                <td class="mono">490</td>
+                <td class="mono">542</td>
+                <td style="min-width: 180px">
+                  <div class="topo-bar">
+                    <div class="topo-bar__seg" style="flex: 24; background: var(--tm-S)"></div>
+                    <div class="topo-bar__seg" style="flex: 490; background: var(--tm-O)"></div>
+                    <div class="topo-bar__seg" style="flex: 24; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 542; background: var(--tm-I)"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="topo-legend">
+            <span class="topo-legend__item">
+              <span class="topo-legend__swatch" style="background: var(--tm-M)"></span> TM helix (M)
+            </span>
+            <span class="topo-legend__item">
+              <span class="topo-legend__swatch" style="background: var(--tm-O)"></span> Extracellular (O)
+            </span>
+            <span class="topo-legend__item">
+              <span class="topo-legend__swatch" style="background: var(--tm-I)"></span> Intracellular (I)
+            </span>
+            <span class="topo-legend__item">
+              <span class="topo-legend__swatch" style="background: var(--tm-S)"></span> Signal peptide (S)
+            </span>
+          </div>
+          <div class="annot">
+            <span class="annot__path"
+              >deterministic_features.isoform_topologies[i]</span
+            >
+            ·
+            <span class="annot__type"
+              >IsoformTopology = { isoform_id, uniprot_acc, tm_helix_count,
+              n_terminal_orientation, signal_peptide_length,
+              ecd_length_residues, icd_length_residues, per_residue_topology,
+              tool_version, retrieved_at }</span
+            >
+            <span class="annot__prov">D</span>
+          </div>
+
+          <p
+            style="
+              padding: var(--space-3) var(--space-4);
+              background: var(--amber-soft);
+              border-radius: 8px;
+              font-size: 0.92rem;
+              margin: 0;
+            "
+          >
+            <strong>Canonical caveat:</strong> P00533-1 is the UniProt canonical
+            AND the dominant transcript in epithelial tissues — no
+            tissue-specific mismatch flagged.
+          </p>
+          <div class="annot annot--llm">
+            <span class="annot__path"
+              >deterministic_features.canonical_topology.canonical_isoform_caveat</span
+            >
+            ·
+            <span class="annot__type">str | None (LLM-emitted note)</span>
+            <span class="annot__prov">L</span>
+          </div>
+
+          <h4 class="label-mono">
+            LLM interpretation (per isoform · gated by expression evidence)
+          </h4>
+          <ul class="risk-list">
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">isoform-3 (soluble)</span>
+                <span class="chip chip--amber"
+                  >expression_support=transcript_level</span
+                >
+                <span class="chip chip--amber"
+                  >biological_relevance=moderate</span
+                >
+              </div>
+              <p class="risk-card__body">
+                Predicted soluble; transcript detected but no confirmed protein
+                expression in tumor tissue. Soluble-decoy concern is gated on
+                protein-level confirmation. <span class="inline-cite">[evi_38]</span>
+              </p>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">
+                  isoform-4 (truncated subdomain IV)
+                </span>
+                <span class="chip chip--muted"
+                  >expression_support=predicted_only</span
+                >
+                <span class="chip chip--muted"
+                  >biological_relevance=unknown</span
+                >
+              </div>
+              <p class="risk-card__body">
+                TM retained, ECD truncated. No transcript or protein evidence
+                found — domain-IV-targeting epitopes could be lost IF this
+                isoform is actually expressed.
+              </p>
+            </li>
+          </ul>
+          <div class="annot annot--llm">
+            <span class="annot__path">isoform_implications.per_isoform</span> ·
+            <span class="annot__type"
+              >list[IsoformAccessibility] = { isoform_id, accessible,
+              expression_support: Literal["protein_level","transcript_level","predicted_only","conflicting","unknown"],
+              biological_relevance, rationale, dominant_in_tissues,
+              cited_evidence_ids }</span
+            >
+            <span class="annot__prov">L</span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 4 — ORTHOLOGS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div
+            class="eyebrow"
+            style="display: flex; align-items: center; gap: var(--space-3)"
+          >
+            <span class="eyebrow__n">4</span>
+            <span>Orthologs &amp; paralogs</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — Ensembl Compara r112
+            </span>
+          </div>
+          <h3 class="h-section">Cross-<em>species</em> conservation</h3>
+        </div>
+        <div class="card__body">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>species</th>
+                <th>ortholog</th>
+                <th>type</th>
+                <th>ECD % id</th>
+                <th>ECD % sim</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>mouse</td>
+                <td><strong>Egfr</strong> <span class="mono">(Q01279)</span></td>
+                <td class="mono">one2one</td>
+                <td class="mono">88.2%</td>
+                <td class="mono">94.1%</td>
+              </tr>
+              <tr>
+                <td>rat</td>
+                <td><strong>Egfr</strong> <span class="mono">(Q9QX70)</span></td>
+                <td class="mono">one2one</td>
+                <td class="mono">88.0%</td>
+                <td class="mono">94.3%</td>
+              </tr>
+              <tr>
+                <td>cynomolgus</td>
+                <td><strong>EGFR</strong></td>
+                <td class="mono">one2one</td>
+                <td class="mono">99.1%</td>
+                <td class="mono">99.6%</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="annot">
+            <span class="annot__path"
+              >deterministic_features.orthologs.{mouse,rat,cynomolgus}</span
+            >
+            ·
+            <span class="annot__type">
+              OrthologEntry | None = { ensembl_id, ortholog_uniprot_acc,
+              ortholog_symbol, type, ecd_pct_identity, ecd_pct_similarity,
+              compara_version, retrieved_at }
+            </span>
+            <span class="annot__prov">D</span>
+          </div>
+
+          <div style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="banner banner--llm">
+              <span class="banner__dot"></span>
+              accessibility conservation: partially_conserved
+            </span>
+          </div>
+          <p>
+            Topology and ECD presence are conserved across all three species;
+            per-residue conservation drops at human-specific subdomain III
+            loops that participate in some antibody epitopes.
+          </p>
+
+          <h4 class="label-mono">Species caveats</h4>
+          <ul class="risk-list">
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title">mouse</span>
+                <span class="risk-card__cite">[evi_42]</span>
+              </div>
+              <p class="risk-card__body">
+                Surface presence likely conserved, but several human-directed
+                ECD binders may not bind mouse ortholog at all because
+                subdomain III loops diverge.
+              </p>
+            </li>
+            <li class="risk-card risk-card--ok">
+              <div class="risk-card__head">
+                <span class="risk-card__title">cynomolgus</span>
+              </div>
+              <p class="risk-card__body">
+                ECD nearly identical (99% id); human ECD binders are expected
+                to bind the cyno ortholog with similar affinity.
+              </p>
+            </li>
+          </ul>
+          <div class="annot annot--llm">
+            <span class="annot__path">ortholog_implications</span> ·
+            <span class="annot__type">
+              { cross_species_accessibility_relevance:
+              Literal["strongly_conserved","partially_conserved","poorly_conserved","species_specific","unclear"],
+              species_caveats: list[SpeciesCaveat], summary }
+            </span>
+            <span class="annot__prov">L</span>
+          </div>
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin: 0;
+              font-style: italic;
+            "
+          >
+            (Replaces translational <code>cross_species_useful_for</code>:
+            list["mouse_efficacy", "cyno_tox", …] with accessibility-focused
+            conservation framing.)
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 5 — ACCESSIBILITY RISKS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">5</span>
+            <span>Accessibility risks</span>
+            <span style="margin-left: var(--space-3); text-transform: none">
+              severity ≠ evidence strength
+            </span>
+          </div>
+          <h3 class="h-section">What could <em>hide</em> the protein</h3>
+        </div>
+        <div class="card__body">
+          <ul class="risk-list">
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Partner / co-receptor dependency (two independent axes)</span>
+              </div>
+              <p class="risk-card__body">
+                <strong>Surface-expression dependency: NONE</strong> — EGFR reaches the plasma membrane unassisted. <span class="inline-cite">[evi_46]</span><br />
+                <strong>Function dependency: MODULATORY</strong> — HER2/3/4 heterodimerization tunes signaling but partners aren't required. <span class="inline-cite">[evi_47]</span><br />
+                <span style="font-style: italic; color: var(--muted)">Partners: HER2, HER3, HER4. (TCR/CD3 would be REQUIRED on both axes.)</span>
+              </p>
+              <div class="annot annot--llm">
+                <span class="annot__path">accessibility_risks.co_receptor_requirements</span> ·
+                <span class="annot__type">{ surface_expression_dependency: Literal["required","modulatory","none","unknown"], function_dependency, partners, evidence_basis, rationale, cited_evidence_ids }</span>
+                <span class="annot__prov">L</span>
+              </div>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Shed form</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+                <span class="risk-card__cite">[evi_33, evi_34]</span>
+              </div>
+              <p class="risk-card__body">
+                ADAM17-mediated, soluble sEGFR detectable in serum. Mature
+                surface pool is the dominant pool; shedding is detectable but
+                not depleting.
+              </p>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Secreted form</span>
+                <span class="chip chip--muted">severity=LOW</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+              </div>
+              <p class="risk-card__body">
+                isoform-3 is predicted soluble (no TM helix), but biological
+                relevance is unconfirmed (transcript only) — risk gated on
+                protein-level expression evidence.
+              </p>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Restricted membrane subdomain</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+                <span class="risk-card__cite">[evi_22, evi_36]</span>
+              </div>
+              <p class="risk-card__body">
+                Basolateral in polarized normal epithelium. Epithelial
+                junctions limit luminal-side access in healthy tissue;
+                junction disruption in carcinoma relieves the restriction.
+              </p>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Similar paralogs</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+              </div>
+              <p class="risk-card__body" style="padding-bottom: var(--space-2)">
+                Domain folds are conserved; binder specificity should be
+                empirically tested against the full ERBB family.
+              </p>
+              <table class="data" style="margin-top: var(--space-2)">
+                <thead>
+                  <tr>
+                    <th>paralog</th>
+                    <th>ECD id</th>
+                    <th>cross-reactivity risk</th>
+                    <th>cite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>HER2</strong></td>
+                    <td class="mono">45.1%</td>
+                    <td><span class="chip">MODERATE</span></td>
+                    <td class="mono">[evi_41]</td>
+                  </tr>
+                  <tr>
+                    <td><strong>HER3</strong></td>
+                    <td class="mono">42.7%</td>
+                    <td><span class="chip">MODERATE</span></td>
+                    <td class="mono">[evi_41]</td>
+                  </tr>
+                  <tr>
+                    <td><strong>HER4</strong></td>
+                    <td class="mono">43.0%</td>
+                    <td><span class="chip">MODERATE</span></td>
+                    <td class="mono">[evi_41]</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="annot annot--ref">
+                <span class="annot__path">accessibility_risks.paralog_cross_binding_risk[i]</span> ·
+                <span class="annot__type">ParalogRisk = { paralog_symbol, <strong>deterministic_paralog_ref</strong> (FK → deterministic_features.paralogs[i].family_id), cross_reactivity_assessment, severity, evidence_strength, rationale, cited_evidence_ids }</span>
+                <span class="annot__prov">L→D-ref</span>
+              </div>
+            </li>
+            <li class="risk-card risk-card--ok">
+              <div class="risk-card__head">
+                <span class="risk-card__title">ECD accessibility size class</span>
+                <span class="chip chip--success">LARGE</span>
+              </div>
+              <p class="risk-card__body">
+                621 aa extracellular region; multiple accessible epitopes
+                plausible, but actual exposure depends on folding,
+                glycosylation, complex state, and membrane subdomain.
+              </p>
+              <div class="annot annot--ref">
+                <span class="annot__path">accessibility_risks.ecd_size_assessment</span> ·
+                <span class="annot__type">{ <strong>canonical_topology_ref</strong> (FK → deterministic_features.canonical_topology), ecd_accessibility_class: Literal["large","moderate","small","minimal","none"], rationale, cited_evidence_ids } &nbsp;(renamed from <code>druggability_class</code>)</span>
+                <span class="annot__prov">L→D-ref</span>
+              </div>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Epitope masking</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+                <span class="risk-card__cite">[evi_45]</span>
+              </div>
+              <p class="risk-card__body">
+                Heavy N-glycosylation on domain III; conformational gating by
+                domain II tether.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 6 — KNOWLEDGE GAPS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">6</span>
+            <span>What we couldn't determine</span>
+          </div>
+          <h3 class="h-section">The <em>honest gaps</em></h3>
+        </div>
+        <div class="card__body">
+          <ul class="risk-list">
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title"
+                  >Cell-state-dependent surface turnover in stressed
+                  epithelia</span
+                >
+                <span class="chip">no_literature</span>
+                <span class="chip chip--strong">impact=HIGH</span>
+              </div>
+              <p class="risk-card__body">
+                <strong>Suggested resolution:</strong> live-cell flow time-course
+                on stressed-vs-unstressed primary keratinocytes.
+              </p>
+            </li>
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title"
+                  >Glycoform heterogeneity across tissues</span
+                >
+                <span class="chip chip--muted">conflicting</span>
+                <span class="chip">impact=MODERATE</span>
+                <span class="risk-card__cite">[evi_43, evi_44]</span>
+              </div>
+              <p class="risk-card__body">
+                <strong>Suggested resolution:</strong> tissue-specific
+                N-glycoproteomics on matched normal/tumor pairs.
+              </p>
+            </li>
+            <li class="risk-card risk-card--ok">
+              <div class="risk-card__head">
+                <span class="risk-card__title"
+                  >In-vivo shedding rate (vs. in-vitro ADAM17 assays)</span
+                >
+                <span class="chip chip--muted">outside_scope</span>
+                <span class="chip chip--muted">impact=LOW</span>
+              </div>
+              <p class="risk-card__body">
+                <strong>Suggested resolution:</strong> serum sEGFR longitudinal
+                cohort study.
+              </p>
+            </li>
+          </ul>
+          <div class="annot annot--llm">
+            <span class="annot__path">knowledge_gaps</span> ·
+            <span class="annot__type"
+              >list[KnowledgeGap] = { question, why_unresolved:
+              Literal["no_literature","conflicting","outside_scope"], detail,
+              <strong>impact_on_confidence</strong>: Literal["high","moderate","low"],
+              <strong>suggested_resolution</strong>: str | None,
+              cited_evidence_ids }</span
+            >
+            <span class="annot__prov">L</span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── STRUCTURE APPENDIX ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div
+            class="eyebrow"
+            style="display: flex; align-items: center; gap: var(--space-3)"
+          >
+            <span>Appendix · Structure</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — AlphaFold DB
+            </span>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="grid-2">
+            <span class="field-label">AFDB ID</span>
+            <span class="field-value mono"
+              >AF-P00533-F1-model_v4
+              <div class="annot">
+                <span class="annot__path"
+                  >deterministic_features.structure.afdb_id</span
+                >
+                · <span class="annot__type">str</span>
+                <span class="annot__prov">D</span>
+              </div>
+            </span>
+            <span class="field-label">ECD mean pLDDT</span>
+            <span class="field-value mono">91.4</span>
+            <span class="field-label">ECD disordered fraction</span>
+            <span class="field-value mono">3.1%</span>
+            <span class="field-label">ECD SASA fraction</span>
+            <span class="field-value mono">0.62</span>
+          </div>
+          <p class="attribution">
+            Structure data from
+            <a
+              href="https://alphafold.ebi.ac.uk/entry/P00533"
+              target="_blank"
+              rel="noopener noreferrer"
+              >AlphaFold DB</a
+            >
+            · © DeepMind / EMBL-EBI · licensed
+            <a
+              href="https://creativecommons.org/licenses/by/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >CC BY 4.0</a
+            >
+            · cite Jumper <em>et al.</em>, <cite>Nature</cite> 2021; Varadi
+            <em>et al.</em>, <cite>NAR</cite> 2024.
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── DATA SOURCES ─────────── -->
+      <section class="data-sources">
+        <p class="label-mono" style="margin: 0 0 var(--space-2)">
+          Data sources
+        </p>
+        <ul>
+          <li>AlphaFold DB structures — CC BY 4.0 (DeepMind / EMBL-EBI)</li>
+          <li>Ensembl Compara orthologs — Apache 2.0 (EMBL-EBI)</li>
+          <li>DeepTMHMM topology — GPL-3.0 (DTU Health Tech)</li>
+          <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const body = document.body;
+        const buttons = document.querySelectorAll(".toggle__btn");
+        const hint = document.getElementById("modeHint");
+        const hints = {
+          preview: "what readers see",
+          schema: "each value annotated with Pydantic path + type + D/L",
+        };
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const mode = btn.dataset.modeBtn;
+            body.dataset.mode = mode;
+            buttons.forEach((b) =>
+              b.classList.toggle("is-active", b === btn),
+            );
+            if (hint) hint.textContent = hints[mode];
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        });
+        // Keyboard shortcut: 's' to toggle
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "s" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+            const next =
+              body.dataset.mode === "preview" ? "schema" : "preview";
+            document
+              .querySelector(`[data-mode-btn="${next}"]`)
+              .click();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

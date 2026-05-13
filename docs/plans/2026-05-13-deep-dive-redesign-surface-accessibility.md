@@ -19,7 +19,7 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 
 ```
 ═══════════════════════════════════════════════════════════════════════
-  EGFR — Surface Accessibility Brief
+  EGFR — Surface Targetability Brief
   schema v1.0.0 · generated 2026-05-13 · model claude-opus-4-7
 ═══════════════════════════════════════════════════════════════════════
 
@@ -33,15 +33,17 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │ binding, and paralog cross-reactivity (HER2/3/4 share ECD          │
 │ subdomain folds).                                                  │
 │                                                                     │
-│   Surface accessibility:  HIGH       Subcategory: single-pass T1   │
+│   Surface targetability:  HIGH       Subcategory: single-pass T1   │
 │   Evidence grade:         direct_multi_method                       │
-│   Confidence:             HIGH       Context dependence: MODERATE   │
+│   Confidence:             HIGH       State dependence: MODERATE     │
 │   Headline risks:         shed_form · paralog_cross_reactivity     │
+│   ("Targetability" here = physical/biological reachability —        │
+│    can a binder reach this protein. Not the commercial sense.)     │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─ FILTERS / TAGS  (catalog-facing, all closed enums) ───────────────┐
 │                                                                     │
-│  ACCESSIBILITY                                                      │
+│  TARGETABILITY                                                      │
 │    overall=HIGH · confidence=HIGH · subcategory=single_pass_T1     │
 │    evidence_grade=direct_multi_method · ecd_accessibility=LARGE     │
 │    evidence_density=HIGH                                            │
@@ -53,7 +55,7 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │    ✓ has_shed_form                  ✓ has_secreted_form             │
 │    ✗ coreceptor_for_expression      • coreceptor_for_function       │
 │    ✓ paralog_cross_reactivity       ✓ epitope_masking               │
-│    ✓ has_rapid_internalization      ✗ has_restricted_subdomain      │
+│    ✗ has_restricted_subdomain                                       │
 │                                                                     │
 │  CROSS-SPECIES                                                      │
 │    accessibility_conservation=partially_conserved                   │
@@ -233,13 +235,6 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │      relevance is unconfirmed (transcript only) — risk gated on     │
 │      protein-level expression evidence.                             │
 │                                                                     │
-│  • Surface turnover       severity=MODERATE · evidence=STRONG       │
-│      Internalization: RAPID (post-EGF, t½ ~10 min)                  │
-│      Trigger: ligand-induced clathrin-mediated endocytosis          │
-│      Fate: recycling + lysosomal degradation (mixed)                │
-│      Implication: surface dwell time falls sharply on activation —  │
-│      live-cell binding assays should clamp ligand state. [evi_27,29]│
-│                                                                     │
 │  • Restricted membrane subdomain  severity=MODERATE · evi=STRONG    │
 │      basolateral in polarized normal epithelium                     │
 │      Epithelial junctions limit luminal-side access in healthy      │
@@ -298,7 +293,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
 | `EGFR` | `gene.hgnc_symbol` | `str` | D |
-| `Surface Accessibility Brief` | (viewer-static title) | — | — |
+| `Surface Targetability Brief` | (viewer-static title) | — | — |
 | `schema v1.0.0` | `schema_version` | `Literal["1.0.0"]` | D |
 | `generated 2026-05-13` | `generated_at` | `datetime` | D |
 | `model claude-opus-4-7` | `model_path` | `str` | D |
@@ -308,15 +303,18 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
 | "EGFR is a single-pass type I…" prose | `executive_summary.one_paragraph` | `str` (≤600) | L |
-| `HIGH` (accessibility) | `executive_summary.surface_accessibility` | `Literal["high","moderate","low","uncertain"]` | L |
+| `HIGH` (targetability) | `executive_summary.surface_targetability` | `Literal["high","moderate","low","uncertain"]` | L |
 | `direct_multi_method` | `executive_summary.evidence_grade_summary` | `Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]` | L |
 | `HIGH` (confidence) | `executive_summary.confidence` | `Literal["high","moderate","low"]` | L |
-| `MODERATE` (context dependence) | `executive_summary.context_dependence` | `Literal["low","moderate","high","unclear"]` | L |
+| `MODERATE` (state dependence) | `executive_summary.state_dependence` | `Literal["low","moderate","high","unclear"]` — how much does surface presence/exposure shift with cell state, tissue context, or disease state? Cross-checks against `biological_context.accessibility_modulation[]`. | L |
 | `single-pass T1` | `executive_summary.subcategory` | `Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]` | L |
-| `shed_form · paralog_cross_reactivity` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","rapid_internalization","restricted_subdomain","other"]]` (max 3) | L |
+| `shed_form · paralog_cross_reactivity` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","other"]]` (max 3) | L |
 | (cite chips, not shown) | `executive_summary.cited_evidence_ids` | `list[str]` (→ `evidence[].evidence_id`) | L |
 
-The numeric `accessibility_score: float` was dropped — categorical `surface_accessibility` + categorical `confidence` carry the same information without implying a calibrated rubric we don't have.
+Two notes on the top-line summary:
+
+- The numeric `accessibility_score: float` was dropped — categorical `surface_targetability` + categorical `confidence` carry the same information without implying a calibrated rubric we don't have.
+- **"Targetability" is the biological/physical sense here** — *can a binder physically reach this protein on the cell surface?* It is intentionally NOT the commercial sense (worth pursuing as a drug target). The downstream sections still carry `accessibility`-named fields (`accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`) — only the top-line summary and its filter chip use the `targetability` label so readers get a familiar headline word.
 
 ### Filters / tags card
 
@@ -324,7 +322,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 
 | Rendered chip | Schema path | Type | Prov | Derivation rule (D-source) |
 |---|---|---|---|---|
-| `overall=HIGH` | `filters.surface_accessibility` | `Literal["high","moderate","low","uncertain"]` | D | `executive_summary.surface_accessibility` |
+| `overall=HIGH` | `filters.surface_targetability` | `Literal["high","moderate","low","uncertain"]` | D | `executive_summary.surface_targetability` |
 | `confidence=HIGH` | `filters.confidence` | `Literal["high","moderate","low"]` | D | `executive_summary.confidence` |
 | `subcategory=single_pass_T1` | `filters.subcategory` | `Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]` | D | `executive_summary.subcategory` |
 | `evidence_grade=direct_multi_method` | `filters.evidence_grade` | `Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]` | D | `surface_evidence.evidence_grade` |
@@ -339,7 +337,6 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `coreceptor_for_function` (bool) | `filters.requires_coreceptor_for_function` | `bool` | D | `accessibility_risks.co_receptor_requirements.function_dependency == "required"` |
 | `paralog_cross_reactivity` (bool) | `filters.has_paralog_cross_reactivity_risk` | `bool` | D | any `accessibility_risks.paralog_cross_binding_risk[].cross_reactivity_assessment ∈ {high, moderate}` |
 | `epitope_masking` (bool) | `filters.has_epitope_masking` | `bool` | D | `accessibility_risks.epitope_masking.severity ∈ {high, moderate}` |
-| `rapid_internalization` (bool) | `filters.has_rapid_internalization` | `bool` | D | `accessibility_risks.surface_turnover.internalization == "rapid"` |
 | `restricted_subdomain` (bool) | `filters.has_restricted_subdomain` | `bool` | D | `accessibility_risks.restricted_subdomain.present == True` OR any `biological_context.anatomical_accessibility[].accessibility_implication == "restricted"` |
 | `accessibility_conservation=partially_conserved` | `filters.cross_species_accessibility_relevance` | `Literal["strongly_conserved","partially_conserved","poorly_conserved","species_specific","unclear"]` | D | mirror of `ortholog_implications.cross_species_accessibility_relevance` |
 | `n_term_extracellular` (bool) | `filters.n_term_extracellular` | `bool` | D | `deterministic_features.canonical_topology.n_terminal_orientation == "extracellular"` |
@@ -402,7 +399,6 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `Partner / co-receptor dependency (two axes)…` | `accessibility_risks.co_receptor_requirements` | `{ surface_expression_dependency: Literal["required","modulatory","none","unknown"], function_dependency: Literal["required","modulatory","none","unknown"], partners: list[str], evidence_basis: Literal["co_expression_only","trafficking","signaling","binding","knockout","mixed"], rationale: str (≤400), cited_evidence_ids: list[str] }` | L |
 | `Shed form … severity=MODERATE · evidence=STRONG` | `accessibility_risks.shed_form` | `{ present: bool, severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], mechanism: str\|None, sheddase_if_known: str\|None, cited_evidence_ids: list[str] }` | L |
 | `Secreted form … severity=LOW · evidence=STRONG` | `accessibility_risks.secreted_form` | `{ present: bool, severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], ratio_to_membrane: float\|None, source: Literal["alternative_splicing","proteolytic","both","unknown"]\|None, cited_evidence_ids: list[str] }` | L |
-| `Surface turnover … severity=MODERATE · evidence=STRONG` | `accessibility_risks.surface_turnover` | `{ internalization: Literal["rapid","moderate","slow","unknown"], trigger: str\|None, recycling_or_degradation: Literal["recycling","degradation","both","unknown"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], accessibility_implication: str (≤300), cited_evidence_ids: list[str] }` | L |
 | `Restricted membrane subdomain … severity=MODERATE` | `accessibility_risks.restricted_subdomain` | `{ present: bool, domain: Literal["apical","junctional","ciliary","synaptic","raft","basolateral","other","unknown"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤300), cited_evidence_ids: list[str] }` | L |
 | Each paralog risk row `HER2 45.1% MODERATE` | `accessibility_risks.paralog_cross_binding_risk: list[ParalogRisk]` | each: `{ paralog_symbol: str, deterministic_paralog_ref: str (FK → `deterministic_features.paralogs[i].family_id`), cross_reactivity_assessment: Literal["high","moderate","low","negligible"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤200), cited_evidence_ids: list[str] }` (viewer/orchestrator look up `ecd_pct_identity` from the deterministic block; no mirrored field) | L→D-ref |
 | `ECD accessibility size class: LARGE …` | `accessibility_risks.ecd_size_assessment` | `{ canonical_topology_ref: "canonical" (FK → `deterministic_features.canonical_topology`), ecd_accessibility_class: Literal["large","moderate","small","minimal","none"], rationale: str (≤300), cited_evidence_ids: list[str] }` (renamed from `druggability_class`; references rather than mirrors the deterministic length) | L→D-ref |
@@ -437,7 +433,7 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 
 | Area | Change |
 |---|---|
-| Executive summary | Dropped numeric `accessibility_score: float`; replaced with categorical `surface_accessibility` + categorical `confidence` + `evidence_grade_summary` + `context_dependence`. Categorical-only avoids implying a calibrated rubric we don't have. |
+| Executive summary | Dropped numeric `accessibility_score: float`; replaced with categorical `surface_targetability` (renamed from `surface_accessibility` for readability — the BD/discovery audience reads "targetability" instantly) + categorical `confidence` + `evidence_grade_summary` + `state_dependence` (renamed from `context_dependence`, which read as jargon — it answers "how much does surface presence shift with cell state / tissue / disease?"). Categorical-only avoids implying a calibrated rubric we don't have. The rename is **top-level only** — deeper sections keep `accessibility`-named fields (`accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`). The plan now states explicitly that "targetability" here is the biological/physical sense (can a binder reach this protein), NOT the commercial sense (worth pursuing as a drug target). |
 | Surface evidence | Added `evidence_grade: Literal["direct_multi_method","direct_single_method","supportive_but_indirect","conflicting","weak"]` + `grade_rationale` so the most important judgment in the section is explicit. |
 | Method observations | Expanded from `Literal["flow","MS","IF"]` to a full `method_family` × `method_subclass` matrix (`live_cell_flow`, `surface_biotinylation`, `nonpermeabilized_IF`, etc.) plus `permeabilization`, `expression_system: endogenous\|overexpression\|...`, `antibody_epitope_region`, `accessibility_relevance`, `surface_claim_type`. Captures the difference between *live-cell flow with ECD antibody* (direct accessibility) and *whole-cell MS* (expression only). |
 | Expression observations | Added closed `measurement_type: RNA\|bulk_protein\|IHC_protein\|surface_flow\|surface_proteomics\|single_cell_RNA\|unknown` + explicit `surface_specific: bool`. Prevents accidental conflation of expression with surface accessibility. |
@@ -446,10 +442,10 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 | Disease / state relocalization | New `biological_context.accessibility_modulation` block — captures "basolateral in normal, depolarized in carcinoma" or "intracellular in resting, surface in activated". |
 | Isoforms | Added `expression_support: protein_level\|transcript_level\|predicted_only\|conflicting\|unknown` and `biological_relevance` to `IsoformAccessibility`, plus `canonical_isoform_caveat` on `deterministic_features.canonical_topology`. Stops predicted-only isoforms from being overinterpreted as soluble decoys. |
 | Orthologs | Replaced translational `cross_species_useful_for: list["mouse_efficacy", "cyno_tox", ...]` with `cross_species_accessibility_relevance: Literal["strongly_conserved","partially_conserved",...]` + per-species `species_caveats`. |
-| Accessibility risks | Renamed `druggability_class` → `ecd_accessibility_class`. Added `severity` + `evidence_strength` to every risk. Added `surface_turnover` (internalization/recycling) and `restricted_subdomain` as first-class risks. |
+| Accessibility risks | Renamed `druggability_class` → `ecd_accessibility_class`. Added `severity` + `evidence_strength` to every risk. Added `restricted_subdomain` as a first-class risk. **Internalization/recycling is intentionally out of scope** for v1.0.0 — it is pro for some modalities (ADC delivery) and con for others (binder dwell time), so labeling it as a "risk" pre-judges; deferred until a separate dynamics block can frame it neutrally. |
 | References instead of mirrors | Replaced the `*_from_deterministic` mirrored-value pattern with references — `ParalogRisk.deterministic_paralog_ref` and `ecd_size_assessment.canonical_topology_ref` FK into `deterministic_features`. Viewer/orchestrator do the lookup; no drift validation needed. |
 | Knowledge gaps | Added `impact_on_confidence: high\|moderate\|low` and `suggested_resolution: str\|None` (the experiment that would resolve the gap). |
-| Filters block | Added `evidence_grade`, `has_rapid_internalization`, `has_restricted_subdomain`. Replaced `cross_species_useful_for: list[enum]` with single-enum `cross_species_accessibility_relevance`. |
+| Filters block | Added `evidence_grade` and `has_restricted_subdomain`. Replaced `cross_species_useful_for: list[enum]` with single-enum `cross_species_accessibility_relevance`. Top field renamed `filters.surface_accessibility` → `filters.surface_targetability`. (No `has_rapid_internalization` — internalization is out of scope, see Accessibility risks row.) |
 
 Things the reviewer suggested but we pushed back on:
 
@@ -531,12 +527,19 @@ SurfaceomeRecord (v1.0.0)
 │
 ├── executive_summary                             [LLM]
 │   ├── one_paragraph                             # ≤600 char, consultant-readable
-│   ├── surface_accessibility                     # enum: high|moderate|low|uncertain
+│   ├── surface_targetability                     # enum: high|moderate|low|uncertain
+│   │                                             #   ("targetability" here = biological /
+│   │                                             #    physical reachability, NOT commercial.
+│   │                                             #    Top-line summary + filter chip only —
+│   │                                             #    deeper sections keep `accessibility`.)
 │   ├── evidence_grade_summary                    # enum: direct_multi_method|direct_single_method|
 │   │                                             #   supportive_but_indirect|conflicting|weak
 │   ├── confidence                                # enum: high|moderate|low (categorical only —
 │   │                                             #   numeric `accessibility_score` was dropped)
-│   ├── context_dependence                        # enum: low|moderate|high|unclear
+│   ├── state_dependence                          # enum: low|moderate|high|unclear
+│   │                                             #   how much does surface presence/exposure
+│   │                                             #   shift with cell state / tissue / disease?
+│   │                                             #   Cross-checks against accessibility_modulation[]
 │   ├── subcategory                               # enum: single_pass_T1|GPCR|GPI|tetraspanin|...
 │   ├── headline_risks: list[RiskTag]             # top-3 from accessibility_risks
 │   └── cited_evidence_ids: list[str]
@@ -545,7 +548,7 @@ SurfaceomeRecord (v1.0.0)
 │   │                                             # Flat, closed-enum/bool/list rollups
 │   │                                             # of the deep buckets. The catalog page
 │   │                                             # renders one chip per field.
-│   ├── surface_accessibility                     # D ← executive_summary.surface_accessibility
+│   ├── surface_targetability                     # D ← executive_summary.surface_targetability
 │   ├── confidence                                # D ← executive_summary.confidence
 │   ├── subcategory                               # D ← executive_summary.subcategory
 │   ├── evidence_grade                            # D ← surface_evidence.evidence_grade
@@ -560,7 +563,6 @@ SurfaceomeRecord (v1.0.0)
 │   ├── requires_coreceptor_for_function          # D ← co_receptor_requirements.function_dependency == "required"
 │   ├── has_paralog_cross_reactivity_risk         # D ← any paralog_cross_binding_risk[i] ≥ moderate
 │   ├── has_epitope_masking                       # D ← epitope_masking.severity ≥ moderate
-│   ├── has_rapid_internalization                 # D ← surface_turnover.internalization == "rapid"
 │   ├── has_restricted_subdomain                  # D ← restricted_subdomain.present OR any
 │   │                                             #     anatomical_accessibility[i].accessibility_implication == "restricted"
 │   ├── cross_species_accessibility_relevance     # D ← ortholog_implications.cross_species_accessibility_relevance
@@ -676,10 +678,6 @@ SurfaceomeRecord (v1.0.0)
 │   │                sheddase_if_known, cited_evidence_ids }
 │   ├── secreted_form: { present, severity, evidence_strength, ratio_to_membrane,
 │   │                     source, cited_evidence_ids }
-│   ├── surface_turnover:                          # NEW — surface dwell time
-│   │   └── { internalization: rapid|moderate|slow|unknown,
-│   │         trigger, recycling_or_degradation: recycling|degradation|both|unknown,
-│   │         severity, evidence_strength, accessibility_implication, cited_evidence_ids }
 │   ├── restricted_subdomain:                      # NEW — apical/junctional/etc.
 │   │   └── { present, domain: apical|junctional|ciliary|synaptic|raft|basolateral|other|unknown,
 │   │         severity, evidence_strength, rationale, cited_evidence_ids }
@@ -826,3 +824,4 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 - **Surface-exposed epitope candidates (#3)** — defer. Needs SASA+DSSP integration plus cutoff calibration against known-epitope proteins. The LLM still discusses epitope masking from literature.
 - **Per-section confidence (#4)** — defer. Top-level `confidence` + `confidence_reasoning` carry forward unchanged.
 - **Run-level methodology block (#5)** — defer. `.runs/<timestamp>/summary.json` already captures this for reproducibility; surfacing on the record can come later.
+- **Internalization / surface dynamics** — defer. Rapid internalization is con for binder dwell time but pro for ADC delivery; the schema shouldn't pre-judge as a "risk." When this lands in v1.x it goes into a neutral `surface_dynamics` block under `biological_context`, not under `accessibility_risks`.
