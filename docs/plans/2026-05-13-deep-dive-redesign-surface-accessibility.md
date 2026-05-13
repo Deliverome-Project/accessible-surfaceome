@@ -377,7 +377,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `Primary compartment: plasma_membrane` | `biological_context.subcellular_localization.primary_compartment` | `Literal["plasma_membrane","endosome","lysosome","ER","Golgi","mitochondrion","nucleus","cytosol","secreted","other"]` | L |
 | `endosome (post-internalization) ~25% under EGF` | `biological_context.subcellular_localization.dual_localization: list[DualLocalization]` | each: `{ compartment: str, fraction_estimate: float\|None, condition: str\|None, cited_evidence_ids: list[str] }` | L |
 | Anatomical accessibility table rows | `biological_context.anatomical_accessibility: list[AnatomicalAccessibilityObservation]` | each: `{ context: str, orientation: Literal["blood_interstitial_facing","luminal_facing","apical","basolateral","lateral","junction_restricted","ciliary","synaptic","matrix_facing","unknown"], accessibility_implication: Literal["favorable","restricted","context_dependent","unclear"], rationale: str (≤300), cited_evidence_ids: list[str] }` | L |
-| Accessibility-modulation bullets (Normal → Disease shifts) | `biological_context.accessibility_modulation: list[AccessibilityModulationObservation]` | each: `{ category: Literal["cell_state_induced","tissue_restricted_surface","lysosomal_exocytosis","dual_localization","stable_surface_attachment","activation_induced","stress_induced","disease_state_induced","polarization_dependent","post_translational_dependent","developmental_stage","none","other","unknown"], category_other_label: str \| None (required when category=="other"), baseline_context: str, modulating_state: str, change: str (max_length=300), accessibility_implication: str (max_length=300), cited_evidence_ids: list[str] }`. **The first five values in the `category` enum are VERBATIM from `surface_triage`'s contextual `reason` taxonomy** (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`) so cross-agent vocabulary stays in sync. The next six are deep-dive expansions that refine the broader triage buckets (e.g. `activation_induced` / `stress_induced` both roll up to triage's `cell_state_induced` at cross-validation time). The `"other"` escape pairs with `category_other_label`, consistent with the codebase's hybrid-enum pattern. | L |
+| Accessibility-modulation bullets (Normal → Disease shifts) | `biological_context.accessibility_modulation: list[AccessibilityModulationObservation]` | each: `{ category: Literal["cell_state_induced","tissue_restricted_surface","lysosomal_exocytosis","dual_localization","stable_surface_attachment","activation_induced","stress_induced","disease_state_induced","polarization_dependent","post_translational_dependent","developmental_stage","none","other","unknown"], category_other_label: str \| None (required when category=="other"), cell_state_trigger: Literal["ER_stress","heat_shock","oxidative_stress","DNA_damage_response","apoptosis","necroptosis","oncogenic_transformation","infection_viral","infection_bacterial","immune_activation","antigen_stimulation","cytokine_stimulation","hypoxia","nutrient_deprivation","hyperthermia","mechanical_stress","other","unknown"] \| None, restricted_lineage: Literal["germline_reproductive","embryonic_developmental","hematopoietic","neural","epithelial","endothelial","muscle","endocrine","specialized_somatic_other","other","unknown"] \| None, dual_loc_partner_compartment: Literal["ER","Golgi","endosome","lysosome","mitochondrion","nucleus","cytosol","secretory_vesicle","other","unknown"] \| None, baseline_context: str, modulating_state: str, change: str (max_length=300), accessibility_implication: str (max_length=300), cited_evidence_ids: list[str] }`. **The first five values in the `category` enum are VERBATIM from `surface_triage`'s contextual `reason` taxonomy** (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`) so cross-agent vocabulary stays in sync. The three NEW sub-fields (`cell_state_trigger`, `restricted_lineage`, `dual_loc_partner_compartment`) port the rich descriptive substructure from the triage *prompt* (which lists specific stress triggers, lineage taxonomy, partner compartments in prose) into closed enums in the deep-dive *schema* — promoting prose guidance into structured fields the catalog can filter on. Validators enforce category-conditional pairing (e.g., `cell_state_trigger` is non-None ↔ category ∈ state-induced flavors). | L |
 | `constitutive recycling from sorting endosomes` | `biological_context.subcellular_localization.exocytosis_evidence: list[ExocytosisEvidence]` | each: `{ stimulus: str\|None, mechanism: str\|None, cited_evidence_ids: list[str] }` | L |
 
 ### Section 3 — Isoforms (deterministic + LLM interpretation)
@@ -461,6 +461,7 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 | References instead of mirrors | Replaced the `*_from_deterministic` mirrored-value pattern with references — `ParalogRisk.paralog_uniprot_acc` FK into `deterministic_features.paralogs[i].paralog_uniprot_acc` (unique per paralog, unlike `family_id` which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton field; viewer reads `ecd_length_residues` directly. Viewer/orchestrator do the lookup; no drift validation needed. |
 | Knowledge gaps | Added `impact_on_confidence: high\|moderate\|low` and `suggested_resolution: str\|None` (the experiment that would resolve the gap). |
 | Filters block | Added `evidence_grade` and `has_restricted_subdomain`. Replaced `cross_species_useful_for: list[enum]` with single-enum `cross_species_accessibility_relevance`. Top field stays `filters.surface_accessibility` (an interim rename to `surface_targetability` was tried and reverted for vocabulary consistency with the rest of the record). No `has_rapid_internalization` — internalization is out of scope, see Accessibility risks row. |
+| Triage substructure port (round 3) | The first round only ported triage's top-level `reason` enum into `accessibility_modulation.category`. The triage *system prompt* enumerates rich descriptive substructure inside each reason — specific stress triggers (`stress, oncogenic transformation, immunogenic / programmed cell death, infection, activation-induced display`); lineage taxonomy (`germline / reproductive, developmental, specialized somatic`); dual-localization partner compartments — that the first port lost. Round 3 promotes that prose into three new optional sub-fields on `AccessibilityModulationObservation`: `cell_state_trigger` (closed enum: ER_stress / heat_shock / oxidative_stress / DNA_damage_response / apoptosis / necroptosis / oncogenic_transformation / infection_{viral,bacterial} / immune_activation / antigen_stimulation / cytokine_stimulation / hypoxia / nutrient_deprivation / hyperthermia / mechanical_stress / other / unknown), `restricted_lineage` (germline_reproductive / embryonic_developmental / hematopoietic / neural / epithelial / endothelial / muscle / endocrine / specialized_somatic_other / other / unknown), `dual_loc_partner_compartment` (ER / Golgi / endosome / lysosome / mitochondrion / nucleus / cytosol / secretory_vesicle / other / unknown). All three are `None` by default; Pydantic validators enforce category-conditional pairing (`cell_state_trigger ≠ None` only when category is state-induced; `restricted_lineage ≠ None` only when category is tissue_restricted_surface; `dual_loc_partner_compartment ≠ None` only when category is dual_localization). Catalog filter implications: "show me apoptosis-induced surface proteins" or "show me proteins cycling between PM and lysosome" become one-clause indexed queries. |
 
 Things the reviewer suggested but we pushed back on:
 
@@ -669,10 +670,51 @@ SurfaceomeRecord (v1.0.0)
 │               "unknown",
 │             ],
 │             category_other_label: str | None,   #   required-when-category=="other"
+│             #
+│             # Triage-inspired sub-fields. The triage prompt enumerates rich substructure
+│             # inside each contextual reason (specific stress triggers, lineage taxonomy,
+│             # partner compartments); these enums promote that substructure from prose
+│             # into closed enums for catalog filtering + cross-agent coherence.
+│             cell_state_trigger: Literal[        # NEW — populated when category is
+│               "ER_stress", "heat_shock",       #   one of the state-induced flavors
+│               "oxidative_stress",              #   (cell_state_induced / stress_induced /
+│               "DNA_damage_response",           #   activation_induced / disease_state_induced).
+│               "apoptosis", "necroptosis",
+│               "oncogenic_transformation",
+│               "infection_viral",
+│               "infection_bacterial",
+│               "immune_activation",
+│               "antigen_stimulation",
+│               "cytokine_stimulation",
+│               "hypoxia", "nutrient_deprivation",
+│               "hyperthermia", "mechanical_stress",
+│               "other", "unknown"
+│             ] | None,
+│             restricted_lineage: Literal[        # NEW — populated when
+│               "germline_reproductive",         #   category=tissue_restricted_surface.
+│               "embryonic_developmental",       #   Mirrors triage's lineage taxonomy.
+│               "hematopoietic", "neural",
+│               "epithelial", "endothelial",
+│               "muscle", "endocrine",
+│               "specialized_somatic_other",
+│               "other", "unknown"
+│             ] | None,
+│             dual_loc_partner_compartment:       # NEW — populated when
+│               Literal["ER", "Golgi",            #   category=dual_localization. Captures
+│                       "endosome", "lysosome",   #   the non-PM compartment that the
+│                       "mitochondrion",          #   protein cycles with.
+│                       "nucleus", "cytosol",
+│                       "secretory_vesicle",
+│                       "other", "unknown"] | None,
 │             baseline_context, modulating_state, change, accessibility_implication,
 │             cited_evidence_ids }
-│       # Pydantic validator: category=="other" ↔ category_other_label is not None.
-│       # The orchestrator can map deep-dive expansions back to the broader triage category
+│       # Validators:
+│       # * category=="other" ↔ category_other_label is not None
+│       # * cell_state_trigger is not None ↔ category ∈ {cell_state_induced, stress_induced,
+│       #     activation_induced, disease_state_induced}
+│       # * restricted_lineage is not None ↔ category == "tissue_restricted_surface"
+│       # * dual_loc_partner_compartment is not None ↔ category == "dual_localization"
+│       # The orchestrator maps deep-dive expansions back to the broader triage category
 │       # at cross-validation time (activation_induced / stress_induced → cell_state_induced).
 │
 ├── deterministic_features                        [ORCHESTRATOR ONLY — sections 3, 4, appendix]

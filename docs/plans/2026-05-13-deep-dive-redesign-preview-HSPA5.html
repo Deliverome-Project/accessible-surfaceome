@@ -881,13 +881,18 @@
           <h4 class="label-mono">Accessibility modulation</h4>
           <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 var(--space-2); font-style: italic">
             <code>category</code> enum mirrors + expands the <code>surface_triage</code> agent's
-            contextual taxonomy.
+            contextual taxonomy. The <code>cell_state_trigger</code> /
+            <code>restricted_lineage</code> / <code>dual_loc_partner_compartment</code>
+            sub-fields port the rich descriptive substructure from the triage prompt (which
+            enumerates specific stress triggers, lineages, and partner compartments in prose)
+            into structured closed enums the catalog can filter on.
           </p>
           <ul class="risk-list">
             <li class="risk-card risk-card--warning">
               <div class="risk-card__head">
                 <span class="risk-card__title">Normal → tumor (oncogenic transformation)</span>
                 <span class="chip chip--lavender">category=disease_state_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=oncogenic_transformation</span>
                 <span class="risk-card__cite">[evi_53, evi_55]</span>
               </div>
               <p class="risk-card__body">
@@ -901,18 +906,22 @@
               <div class="risk-card__head">
                 <span class="risk-card__title">Baseline → ER-stressed</span>
                 <span class="chip chip--lavender">category=stress_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=ER_stress</span>
                 <span class="risk-card__cite">[evi_62, evi_63]</span>
               </div>
               <p class="risk-card__body">
                 Pharmacological ER stress (tunicamycin, thapsigargin) or glucose deprivation
                 drives surface translocation in normal cell lines. Reversible on stress
-                withdrawal.
+                withdrawal. (Could equivalently use
+                <code>cell_state_trigger=nutrient_deprivation</code> for the glucose-deprivation
+                arm — one observation per trigger.)
               </p>
             </li>
             <li class="risk-card risk-card--warning">
               <div class="risk-card__head">
                 <span class="risk-card__title">Live → apoptotic</span>
                 <span class="chip chip--lavender">category=cell_state_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=apoptosis</span>
                 <span class="risk-card__cite">[evi_62]</span>
               </div>
               <p class="risk-card__body">

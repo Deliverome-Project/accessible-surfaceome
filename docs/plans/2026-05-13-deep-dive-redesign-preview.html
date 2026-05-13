@@ -1435,6 +1435,7 @@
                   >Normal → invasive carcinoma</span
                 >
                 <span class="chip chip--lavender">category=disease_state_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=oncogenic_transformation</span>
                 <span class="risk-card__cite">[evi_36]</span>
               </div>
               <p class="risk-card__body">
@@ -1473,17 +1474,28 @@
               "post_translational_dependent", "developmental_stage", "none",
               <span style="color: var(--coral)">"other"</span>,
               "unknown"]</strong>, category_other_label: str | None
-              (required-when-other), baseline_context, modulating_state,
-              change: str = Field(max_length=300), accessibility_implication:
-              str = Field(max_length=300), cited_evidence_ids }</span
+              (required-when-other),
+              <strong style="color: var(--teal)">cell_state_trigger:
+              Literal["ER_stress","heat_shock","oxidative_stress","DNA_damage_response","apoptosis","necroptosis","oncogenic_transformation","infection_viral","infection_bacterial","immune_activation","antigen_stimulation","cytokine_stimulation","hypoxia","nutrient_deprivation","hyperthermia","mechanical_stress","other","unknown"]
+              | None</strong> (paired with state-induced categories),
+              <strong style="color: var(--teal)">restricted_lineage:
+              Literal["germline_reproductive","embryonic_developmental","hematopoietic","neural","epithelial","endothelial","muscle","endocrine","specialized_somatic_other","other","unknown"]
+              | None</strong> (paired with tissue_restricted_surface),
+              <strong style="color: var(--teal)">dual_loc_partner_compartment:
+              Literal["ER","Golgi","endosome","lysosome","mitochondrion","nucleus","cytosol","secretory_vesicle","other","unknown"]
+              | None</strong> (paired with dual_localization), baseline_context,
+              modulating_state, change: str = Field(max_length=300),
+              accessibility_implication: str = Field(max_length=300),
+              cited_evidence_ids }</span
             >
-            · the five teal values are <strong>verbatim from `surface_triage`</strong>
-            's contextual `reason` taxonomy so cross-agent vocabulary stays
-            in sync; the remaining values are deep-dive expansions that roll
-            up to triage's broader buckets at cross-validation time. The
-            <span style="color: var(--coral)">other</span> escape pairs with
-            <code>category_other_label</code> for parity with the codebase's
-            hybrid-enum pattern.
+            · the five teal category values are <strong>verbatim from `surface_triage`</strong>'s
+            contextual `reason` taxonomy. The three NEW sub-fields
+            (cell_state_trigger / restricted_lineage / dual_loc_partner_compartment)
+            promote the triage prompt's prose substructure into closed enums —
+            so a catalog filter like "show me apoptosis-induced surface
+            proteins" or "show me proteins that cycle between PM and lysosome"
+            becomes a one-clause indexed query. Validators enforce
+            category-conditional pairing.
             <span class="annot__prov">L</span>
           </div>
         </div>
