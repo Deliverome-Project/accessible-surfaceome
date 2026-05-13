@@ -421,7 +421,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `Secreted form … severity=LOW · evidence=STRONG` | `accessibility_risks.secreted_form` | `{ present: bool, severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], ratio_to_membrane: float\|None, source: Literal["alternative_splicing","proteolytic","both","unknown"]\|None, cited_evidence_ids: list[str] }` | L |
 | `Restricted membrane subdomain … severity=MODERATE` | `accessibility_risks.restricted_subdomain` | `{ present: bool, domain: Literal["apical","junctional","ciliary","synaptic","raft","basolateral","other","unknown"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤300), cited_evidence_ids: list[str] }` | L |
 | `ECD accessibility size class: LARGE …` | `accessibility_risks.ecd_size_assessment` | `{ ecd_accessibility_class: Literal["large","moderate","small","minimal","none"], rationale: str (max_length=300), cited_evidence_ids: list[str] }` (renamed from `druggability_class`; viewer reads `deterministic_features.canonical_topology.ecd_length_residues` directly — no FK needed since canonical_topology is a known singleton field, not a list) | L |
-| `Epitope masking … severity=MODERATE · evidence=STRONG` | `accessibility_risks.epitope_masking` | `{ mechanism: Literal["glycan","partner","conformational","cleaved","none"], severity: Literal["high","moderate","low","none"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤400), cited_evidence_ids: list[str] }` | L |
+| `Epitope masking … severity=MODERATE · evidence=STRONG` | `accessibility_risks.epitope_masking` | `{ mechanism: list[Literal["glycan","partner","conformational","cleaved","none"]], severity: Literal["high","moderate","low","none"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (≤400), cited_evidence_ids: list[str] }`. **`mechanism` is now a list** so multi-mechanism cases (GRP78: glycan + partner; GPR75: glycan + conformational) don't collapse to a single value. Enum values unchanged. | L |
 
 ### Appendix — Structure
 
@@ -868,8 +868,21 @@ SurfaceomeRecord (v1.0.0)
 │   │         rationale: str = Field(max_length=300),
 │   │         cited_evidence_ids }
 │   └── epitope_masking
-│       └── { mechanism: glycan|partner|conformational|cleaved|none,
+│       └── { mechanism: list[Literal["glycan","partner",
+│                                       "conformational","cleaved","none"]],
 │             severity, evidence_strength, rationale, cited_evidence_ids }
+│       # mechanism is a list so multi-mechanism cases (e.g. GRP78:
+│       # ["glycan","partner"]; GPR75: ["glycan","conformational"])
+│       # don't collapse to a single value. Enum values unchanged.
+│
+│   # Intentionally NOT a separate block: "complex state dependence"
+│   # (multimer vs monomer, active vs inactive conformation, ligand-bound
+│   # vs not). When the question is "does the protein need a partner / a
+│   # specific state to be at the surface at all?", it's answered by
+│   # co_receptor_requirements.surface_expression_dependency above.
+│   # The other senses of "state" (active/inactive GPCR conformation, ligand-
+│   # bound binding sites) are functional/structural concerns rather than
+│   # accessibility concerns and are out of scope for v1.0.0.
 │
 ├── knowledge_gaps: list[KnowledgeGap]            [LLM — section 7]
 │   └── { question, why_unresolved: no_literature|conflicting|outside_scope, detail,

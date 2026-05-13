@@ -1091,7 +1091,8 @@
             </li>
             <li class="risk-card">
               <div class="risk-card__head">
-                <span class="risk-card__title">Epitope masking (glycan + conformational)</span>
+                <span class="risk-card__title">Epitope masking</span>
+                <span class="chip chip--muted">mechanism=[glycan, conformational]</span>
                 <span class="chip">severity=MODERATE</span>
                 <span class="chip chip--amber">evidence=MODERATE</span>
               </div>
@@ -1101,6 +1102,18 @@
                 receptor (active / inactive / arrestin-bound) may further occlude some loop
                 conformations.
               </p>
+              <div class="annot annot--llm">
+                <span class="annot__path">accessibility_risks.epitope_masking</span>
+                ·
+                <span class="annot__type"
+                  >{ <strong>mechanism: list[Literal["glycan","partner","conformational","cleaved","none"]]</strong>
+                  (upgraded from single value), severity, evidence_strength,
+                  rationale, cited_evidence_ids }</span
+                >
+                · GPCR-class case with glycan + conformational both contributing;
+                neither is the dominant story alone.
+                <span class="annot__prov">L</span>
+              </div>
             </li>
           </ul>
         </div>

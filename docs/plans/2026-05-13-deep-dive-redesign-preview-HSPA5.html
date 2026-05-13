@@ -1354,6 +1354,7 @@
             <li class="risk-card">
               <div class="risk-card__head">
                 <span class="risk-card__title">Epitope masking</span>
+                <span class="chip chip--muted">mechanism=[partner, conformational]</span>
                 <span class="chip">severity=MODERATE</span>
                 <span class="chip chip--success">evidence=STRONG</span>
                 <span class="risk-card__cite">[evi_77]</span>
@@ -1364,6 +1365,19 @@
                 PAT-SM6 — see §1) selectively recognize a subset of the surface pool, which
                 may be a feature rather than a limitation depending on the application.
               </p>
+              <div class="annot annot--llm">
+                <span class="annot__path">accessibility_risks.epitope_masking</span>
+                ·
+                <span class="annot__type"
+                  >{ <strong>mechanism: list[Literal["glycan","partner","conformational","cleaved","none"]]</strong>
+                  (upgraded from single value), severity, evidence_strength,
+                  rationale, cited_evidence_ids }</span
+                >
+                · GRP78 is the textbook multi-mechanism case (partner binding +
+                conformational state); the list type captures both without
+                losing either.
+                <span class="annot__prov">L</span>
+              </div>
             </li>
           </ul>
         </div>
