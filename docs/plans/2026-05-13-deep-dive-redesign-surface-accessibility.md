@@ -302,7 +302,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | `schema v1.0.0` | `schema_version` | `Literal["1.0.0"]` | D |
 | `generated 2026-05-13` | `record_generated_at` | `datetime` (renamed from `generated_at` for explicit contrast with nested `retrieved_at`) | D |
 | `model claude-opus-4-7` | `model_path` | `str` | D |
-| (cross-reference chip, e.g. `triage: likely_accessible`) | `triage_signal` | `Literal["likely_accessible","possibly_accessible","unlikely","unknown"]` — populated by the orchestrator from the latest `surface_triage` record. A validator flags inconsistency with `executive_summary.surface_accessibility` (e.g. triage=`unlikely` + accessibility=`high` → `contradiction_flag=True`). | D |
+| (cross-reference chip, e.g. `triage: likely_accessible`) | `triage_signal` | `Literal["likely_accessible","possibly_accessible","unlikely","unknown"]` — populated by the orchestrator from the latest `surface_triage` record. A validator flags inconsistency with `executive_summary.surface_accessibility` (e.g. triage=`unlikely` + accessibility=`high` requires the LLM to justify the disagreement in `confidence_reasoning`; the dropped `contradiction_flag` top-level bool is no longer set). | D |
 
 ### Executive summary
 
@@ -517,7 +517,8 @@ SurfaceomeRecord (v1.0.0)
 │                                                 # coherence: a validator flags inconsistency
 │                                                 # between triage and the deep-dive call (e.g.
 │                                                 # triage=unlikely + surface_accessibility=high
-│                                                 # → contradiction_flag=True).
+│                                                 # requires the LLM to justify the disagreement
+│                                                 # in confidence_reasoning).
 │
 ├── executive_summary                             [LLM]
 │   ├── one_paragraph                             # ≤600 char, consultant-readable
@@ -884,7 +885,7 @@ SurfaceomeRecord (v1.0.0)
 - `deterministic_features.*` fields are written only by the orchestrator. The agent reads them in its task prompt but never emits them in its draft. Pydantic validator on `SurfaceomeRecordDraft` rejects any attempt by the agent to populate this region.
 - LLM blocks that need a deterministic number **reference** it rather than mirror it. `paralog_assessment[i].paralog_uniprot_acc` is an FK into `deterministic_features.paralogs[i]` (using the unique UniProt accession, not the family_id which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton and the viewer/orchestrator reads `ecd_length_residues` from it directly. **FK validation is schema-level** via a `@model_validator(mode="after")` on `SurfaceomeRecord` — each `paralog_assessment[i].paralog_uniprot_acc` must resolve to an entry in `deterministic_features.paralogs` or the record fails Pydantic validation at parse time (consistent with the other model_validators on this class). Records read from disk get validated too, not just freshly-emitted ones.
 - **Evidence model unchanged.** Keep `EvidenceClaim` → `Evidence` → `SourceRef` with substring-validated quote spans. Every `cited_evidence_ids` list references `evidence[i].evidence_id`. This is the most rigorous part of the existing pipeline; the redesign preserves it.
-- **Cross-agent coherence with `surface_triage`**. Top-level `triage_signal` is populated by the orchestrator from the most recent triage record. A validator (`_check_triage_signal_consistency`) flags inconsistency between `triage_signal` and `executive_summary.surface_accessibility`: e.g., triage=`unlikely` + accessibility=`high` flips `contradiction_flag=True` and demands the LLM justify the disagreement in `confidence_reasoning`. `accessibility_modulation.category` mirrors triage's contextual `reason` taxonomy verbatim for its first 5 values (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`); the deep-dive's expansions (`activation_induced`, `stress_induced`, …) roll up to those at cross-validation time.
+- **Cross-agent coherence with `surface_triage`**. Top-level `triage_signal` is populated by the orchestrator from the most recent triage record. A validator (`_check_triage_signal_consistency`) flags inconsistency between `triage_signal` and `executive_summary.surface_accessibility`: e.g., triage=`unlikely` + accessibility=`high` requires the LLM to justify the disagreement in `confidence_reasoning` (the dropped `contradiction_flag` top-level bool is no longer set — three structured signals replace it: per-row `contradicting_evidence` severity, `evidence_grade="conflicting"`, and this validator's behavior). `accessibility_modulation.category` mirrors triage's contextual `reason` taxonomy verbatim for its first 5 values (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`); the deep-dive's expansions (`activation_induced`, `stress_induced`, …) roll up to those at cross-validation time.
 - **Uncertainty routing**. The earlier `knowledge_gaps` block + its R7 validator were dropped. Uncertainty now lives in `contradicting_evidence` (for known literature conflicts), `confidence` + `confidence_reasoning` (overall uncertainty — the agent prompt instructs the model to lower confidence when load-bearing questions are unresolved), `evidence_grade` + `grade_rationale` (evidence quality), and per-section rationale fields. No structured caveats list.
 - **`confidence_reasoning` discipline**. `Field(max_length=600)` so reasoning is scannable. Validator: `confidence_reasoning` must be non-empty when `confidence ∈ {moderate, low}`. A non-high record without reasoning is unhelpful; the validator catches the case at parse time.
 - **`contradiction_flag` dropped**. Three structured signals already answer the "is there disagreement?" question: (a) per-row `contradicting_evidence[i].severity_for_surface_accessibility`, (b) `surface_evidence.evidence_grade == "conflicting"`, (c) the `triage_signal ↔ surface_accessibility` consistency validator. A redundant top-level bool muddied the picture.
@@ -1000,3 +1001,114 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 - **Per-section confidence (#4)** — defer. Top-level `confidence` + `confidence_reasoning` carry forward unchanged.
 - **Run-level methodology block (#5)** — defer. `.runs/<timestamp>/summary.json` already captures this for reproducibility; surfacing on the record can come later.
 - **Internalization / surface dynamics** — defer. Rapid internalization is con for binder dwell time but pro for ADC delivery; the schema shouldn't pre-judge as a "risk." When this lands in v1.x it goes into a neutral `surface_dynamics` block under `biological_context`, not under `accessibility_risks`.
+
+---
+
+## v1.0.0 final summary
+
+After ~9 rounds of iteration, here's the canonical reference. Read this before implementing.
+
+### Top-level shape (final)
+
+```
+SurfaceomeRecord (v1.0.0)
+├── schema_version: Literal["1.0.0"]
+├── gene: GeneIdentifier
+├── record_generated_at: datetime
+├── model_path: str
+├── triage_signal: Literal["likely_accessible","possibly_accessible","unlikely","unknown"]
+│
+├── executive_summary             # surface_accessibility, evidence_grade_summary,
+│                                 # confidence, state_dependence, subcategory,
+│                                 # headline_risks, one_paragraph, cited_evidence_ids
+├── filters                       # 17 closed-enum/bool/list rollups for D1 indexing
+├── surface_evidence              # evidence_grade + grade_rationale, methods (with
+│                                 # nested expression_observations + antibody validation),
+│                                 # non_surface_expression, therapeutic_engagement,
+│                                 # contradicting_evidence
+├── biological_context            # tissues (level enum × disease_context), cell_types,
+│                                 # cell_states, subcellular_localization,
+│                                 # anatomical_accessibility, accessibility_modulation
+│                                 # (category + cell_state_trigger / restricted_lineage /
+│                                 # dual_loc_partner_compartment sub-fields)
+├── deterministic_features        # canonical_topology, isoform_topologies, orthologs
+│                                 # (list per species, alt isoforms), paralogs, structure
+│                                 # (afdb_version pinned to "v4"). 100% orchestrator-only.
+├── paralog_assessment            # promoted out of accessibility_risks; FK by uniprot_acc
+├── accessibility_risks           # shed_form, secreted_form, restricted_subdomain,
+│                                 # co_receptor_requirements (surface_expression axis only),
+│                                 # ecd_size_assessment, epitope_masking (mechanism: list)
+│
+├── evidence: list[Evidence]                  # unchanged from v0.5.x — substring-validated
+├── search_log: list[SearchEntry]
+├── evidence_count / primary_evidence_count / secondary_evidence_count   # derived
+├── confidence: Literal["high","moderate","low"]
+└── confidence_reasoning: str = Field(max_length=600)
+    # Validator: non-empty when confidence ∈ {moderate, low}.
+```
+
+### What landed in v1.0.0
+
+| Area | Key features |
+|---|---|
+| Surface evidence | `evidence_grade` ordinal (direct_multi_method → weak) + rationale; method observations carry method_family + method_subclass + permeabilization + expression_system + antibody_epitope_region + accessibility_relevance + surface_claim_type, with nested expression_observations using closed `sample_type` enum (primary_human_tissue / patient_sample / iPSC_derived / established_cell_line / …); AntibodyRef carries rrid + validation_strategy + validation_strength + cross_reactivity_notes; therapeutic_engagement struct with required `surface_form_rationale` |
+| Biological context | tissues with expression-level enum + disease_context axis; anatomical_accessibility (apical / basolateral / junction_restricted / luminal_facing / ciliary / synaptic / …); accessibility_modulation with triage-aligned category enum + cell_state_trigger / restricted_lineage / dual_loc_partner_compartment sub-enums; no exocytosis_evidence (covered by accessibility_modulation) |
+| Deterministic features | DeepTMHMM canonical + all isoforms; Ensembl Compara orthologs per species (canonical + alt isoforms, list[OrthologEntry]); paralogs list; AlphaFold v4 structure with ECD pLDDT / disordered / SASA fraction; numeric Field bounds enforced |
+| Paralog assessment | Top-level (promoted out of accessibility_risks); FK by paralog_uniprot_acc into deterministic paralogs; cross_reactivity_assessment + severity + evidence_strength + rationale |
+| Accessibility risks | Per-risk severity + evidence_strength; epitope_masking.mechanism is a list (multi-mechanism cases don't collapse); co_receptor_requirements covers surface-expression axis only; restricted_subdomain captures basolateral / junction restriction; ecd_size_assessment renamed from druggability_class |
+| Filters | 17 flat top-level fields for D1 indexing; per-gene page drops the "Accessibility" group to avoid duplication with exec summary chips |
+| Evidence ledger | Unchanged from v0.5.x: EvidenceClaim → Evidence → SourceRef with substring-validated quote spans; entailment_verified bool |
+| Cross-cutting | triage_signal cross-validated against surface_accessibility; record_generated_at vs nested retrieved_at distinct; confidence_reasoning max_length=600 + required-when-not-high |
+
+### What's deferred for v1.1+
+
+| Item | Why deferred |
+|---|---|
+| Knowledge_gaps block | Overlapped with contradicting_evidence + confidence_reasoning. Honest-caveat framing was nice but most entries read as noise. Uncertainty routes through contradicting_evidence / evidence_grade / confidence_reasoning. |
+| Glycosylation features (UniProt ft_carbohyd integration) | LLM cites glycan masking from literature in epitope_masking.mechanism. Structured glycosite fields can land additively in v1.1. |
+| Surface-exposed epitope candidates (SASA + DSSP) | Needs alphafold_fetcher SASA pass + cutoff calibration. Defer; the LLM still discusses epitope masking from literature. |
+| Per-section confidence | One top-level confidence + reasoning for v1.0.0. |
+| Run-level methodology block on the record | `.runs/<timestamp>/summary.json` already captures this; surfacing on the record can come later. |
+| Ontology IDs (UBERON / Cellosaurus / CL) | tissues / cell_types / sample contexts stay free text for v1.0.0. Catalog cross-reference uses string normalization. |
+| AFDB v5 migration | Pinned to v4 for v1.0.0. When AFDB ships v5, schema bumps to v1.1.0 with `Literal["v4","v5"]` + documented migration. |
+| complex_state_dependence block | Multimer / conformational / ligand-state questions route through co_receptor_requirements.surface_expression_dependency where they matter for accessibility. Other senses of "state" are out of scope. |
+| final_accessibility_interpretation | Duplicates executive_summary. One synthesis surface only. |
+| Internalization / surface dynamics | Rapid internalization is pro for ADC delivery and con for binder dwell time; schema shouldn't pre-judge as a "risk." When it lands, it goes in a neutral `surface_dynamics` block under biological_context. |
+| Evidence quality_grade (peer-reviewed vs preprint vs blog) | Evidence ledger walkthrough deferred. Current evidence_tier (primary / secondary / tertiary) carries the relevant signal. |
+
+### Validators in place (Pydantic model_validators)
+
+1. `SurfaceomeRecordDraft.deterministic_features` is None on submit — the agent's draft can't write to that region (100% orchestrator-only).
+2. `paralog_assessment[i].paralog_uniprot_acc` must FK-resolve to `deterministic_features.paralogs[i].paralog_uniprot_acc`.
+3. `triage_signal` ↔ `executive_summary.surface_accessibility` consistency — disagreement requires the LLM to justify in `confidence_reasoning`.
+4. `accessibility_modulation[i].category=="other"` ↔ `category_other_label is not None`.
+5. `accessibility_modulation[i].cell_state_trigger is not None` ↔ category ∈ {cell_state_induced, stress_induced, activation_induced, disease_state_induced, lysosomal_exocytosis}.
+6. `accessibility_modulation[i].restricted_lineage is not None` ↔ category == "tissue_restricted_surface".
+7. `accessibility_modulation[i].dual_loc_partner_compartment is not None` ↔ category == "dual_localization".
+8. `confidence_reasoning` non-empty ↔ `confidence ∈ {moderate, low}`.
+9. Numeric `Field(ge=, le=)` bounds on all floats (pLDDT 0–100, disordered_fraction 0–1, ecd_pct_identity 0–100, etc.).
+10. String `Field(max_length=N)` bounds on all rationale fields.
+
+### Worked examples
+
+Three HTML previews co-located with the plan, each stress-testing different parts of the schema:
+
+| Gene | What it tests |
+|---|---|
+| **EGFR** | Well-studied baseline — large ECD, multi-method consensus, low paralog cross-reactivity despite shared fold, approved-drug therapeutic_engagement |
+| **HSPA5 / GRP78** | DB disagreement, contextual surface fraction, HSP70 paralog cross-reactivity (the textbook antibody-validation problem), ER → PM translocation mechanism unresolved (caps confidence to moderate), multi-mechanism epitope_masking (partner + conformational) |
+| **GPR75** | High DB agreement + sparse endogenous evidence, orphan-receptor failure modes (small ECD, weak antibody validation), 7-TM topology, `low_endogenous_expression` + `ligand_unknown` headline_risks visible |
+
+### Iteration history (compressed)
+
+| Round | Focus |
+|---|---|
+| 1 | Initial v1.0.0 draft — deterministic boundary, mockup, schema-annotated mockup, EGFR example |
+| 2 | External-reviewer feedback (evidence_grade, expanded MethodObservation, anatomical_accessibility, contradiction severity, ecd_accessibility_class rename, cross_species_accessibility_relevance, internalization in-then-out) |
+| 3 | Triage parity (accessibility_modulation.category mirrors triage's contextual reason taxonomy verbatim) |
+| 4 | Executive summary walkthrough (therapeutic_engagement, headline_risks expansion to capture orphan-receptor failures, filter de-duplication on per-gene page) |
+| 5 | Biological context walkthrough (tissues.present bool → enum + disease_context axis; exocytosis_evidence dropped as redundant) |
+| 6 | Accessibility risks walkthrough (epitope_masking.mechanism → list; state-dep questions route through co_receptor_requirements; no separate complex_state_dependence block) |
+| 7 | Deterministic features walkthrough (canonical_isoform_caveat dropped to preserve strict orchestrator-only boundary; afdb_version pinned to v4; paralog FK promoted to schema-level model_validator) |
+| 8 | Knowledge_gaps dropped entirely (overlapped with contradicting_evidence + confidence_reasoning; honest-caveat framing not load-bearing enough) |
+| 9 | Cross-cutting cleanup (contradiction_flag dropped; confidence_reasoning constraints; generated_at → record_generated_at) |
