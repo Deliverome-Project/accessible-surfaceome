@@ -20,6 +20,7 @@ from typing import Any
 
 from accessible_surfaceome.tools._shared.models import (
     DBVotePanel,
+    EvidenceRetrievalPack,
     IdentifierBundle,
     LiteraturePack,
     MissDiagnosis,
@@ -27,6 +28,7 @@ from accessible_surfaceome.tools._shared.models import (
     PatentSummary,
     PublicationType,
     SourceType,
+    SyntheticSource,
     UniProtSummary,
 )
 from accessible_surfaceome.tools._shared.normalize import normalize_for_quote_matching
@@ -67,6 +69,14 @@ def register_from_tool_return(
     if tool == "patent_lookup":
         if isinstance(result, PatentSummary):
             _register_patent(result, store)
+        return
+
+    if tool == "evidence_retrieval":
+        if isinstance(result, EvidenceRetrievalPack):
+            for paper in result.papers:
+                _register_paper(paper, store)
+            for synthetic in result.synthetic_sources:
+                _register_synthetic(synthetic, store)
         return
 
 
@@ -316,6 +326,31 @@ def _register_patent(patent: PatentSummary, store: SourceTextStore) -> None:
         title=patent.title,
         raw_text=raw_text,
         publication_type="other",
+        is_retracted=False,
+    ))
+
+
+# ---------------------------------------------------------------------------
+# Synthetic sources (HPA snapshot, future local-source emissions)
+# ---------------------------------------------------------------------------
+
+
+def _register_synthetic(synthetic: SyntheticSource, store: SourceTextStore) -> None:
+    """Register a tool-fabricated source body keyed by ``synthetic.source_id``.
+
+    Used for sources that don't fetch over HTTP — currently the HPA snapshot
+    via ``evidence_retrieval(category="hpa_ihc")``. First-write-wins: a later
+    duplicate (same gene queried twice) is a no-op.
+    """
+    if store.has(synthetic.source_id):
+        return
+    store.put(_make_source_text(
+        source_id=synthetic.source_id,
+        source_type=synthetic.source_type,
+        url=synthetic.url,
+        title=synthetic.title,
+        raw_text=synthetic.raw_text,
+        publication_type="db_entry",
         is_retracted=False,
     ))
 

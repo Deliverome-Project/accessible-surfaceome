@@ -21,7 +21,7 @@ The orchestrator pre-injects three context blocks into your task prompt **before
 
 ## Tools
 
-You have two custom tools.
+You have three custom tools.
 
 ### `gene_lookup` — four-mode cascade
 
@@ -56,6 +56,23 @@ You have two custom tools.
       negative finding; a hit is a contradiction record.
 3. **`mode="fetch_abstract"`** — read the abstract of a specific PMID surfaced by the prior modes.
 4. **`mode="fetch_fulltext"`** — ONLY for PMC OA papers (`is_pmc_oa==True`) AND only when an abstract is genuinely ambiguous and the paper is critical. Capped at ~10k tokens.
+
+### `evidence_retrieval` — per-category quote candidates
+
+One call per assay category you intend to ground a `surface_status` claim on. Each call queries Europe PMC with a category-tuned term set, fetches up to 5 PMC-OA full texts, and returns `CandidateSnippet` objects — ≤200-char verbatim fragments from methods / results / figure_legends sections where that category's hallmark phrases appear. Paste the snippet's `text` field VERBATIM into `EvidenceClaim.quote` and the substring check passes by construction.
+
+Categories:
+
+- `"ihc"` — immunohistochemistry, prioritizes figure legends + methods.
+- `"if_intact"` — immunofluorescence on intact / non-permeabilized cells. Skip when the only available IF is on permeabilized fixed cells (that's not surface evidence).
+- `"flow_cytometry"` — flow / FACS on intact cells with extracellular antibodies.
+- `"surface_biotinylation"` — sulfo-NHS-biotin + streptavidin enrichment of the surface fraction.
+- `"mass_spec_surfaceome"` — surfaceome / cell-surface-capture LC-MS/MS, prioritizes methods + results.
+- `"western_blot_paired"` — WB readout of a fractionation / biotinylation pulldown. **A naked WB on whole-cell lysate is NOT surface evidence; the schema rejects `western_blot` claims about `surface_expression` that don't co-cite a `surface_biotinylation` or `mass_spec_surfaceome` claim from the same `source_id`.**
+- `"structure_with_ecd"` — crystal structure / cryo-EM of the ectodomain on the membrane.
+- `"hpa_ihc"` — Human Protein Atlas IHC reliability + subcellular-location lines. Reads the cached HPA snapshot directly (no HTTP). The `source_id` is `HPA:<symbol>` and the body is fixed-template; `evidence_tier="secondary"` (database, not primary). HPA evidence is supplemental — `surface_biology.cited_evidence_ids` still requires ≥1 primary-assay claim.
+
+For `surface_status != "absent"` you should call `evidence_retrieval` for at least the antibody-based categories (IHC, IF intact, flow) plus mass spec, before falling back to `gene_literature topic_search`. Empty returns still record a `SearchEntry` in the search_log — that's how reviewers tell "evidence absent" from "evidence not retrieved".
 
 You also have built-in `read`, `grep`, `glob`, `web_fetch`, `web_search` for fallback. `patent_lookup` was retired in the v0.4.0 refocus — patent claims are out of scope.
 
@@ -146,7 +163,7 @@ You emit `EvidenceClaim` objects in the top-level `evidence_claims` array. Every
   "claim": "Short-text statement of what's being asserted (e.g. 'Calreticulin is exposed on the surface of dying tumor cells during immunogenic cell death').",
   "claim_type": "surface_expression | topology | tissue_expression | methodological | contradictory",
   "direction": "supports | refutes | ambiguous",
-  "evidence_type": "flow_cytometry | surface_biotinylation | mass_spec_surfaceome | immunohistochemistry | immunofluorescence | crystal_structure | cryo_em | computational_prediction | orthology | review_assertion | db_annotation",
+  "evidence_type": "flow_cytometry | surface_biotinylation | mass_spec_surfaceome | immunohistochemistry | immunofluorescence | western_blot | crystal_structure | cryo_em | computational_prediction | orthology | review_assertion | db_annotation",
   "evidence_tier": "primary | secondary",
   "confidence": "strong | moderate | weak",
   "assay_context": {
@@ -169,6 +186,7 @@ You emit `EvidenceClaim` objects in the top-level `evidence_claims` array. Every
 - `PMID:10601354` — PubMed paper (integer PMID after the prefix).
 - `PMC:PMC2195717` — PMC OA full text (the full PMC accession including the `PMC` part).
 - `UniProt:Q9UBP8` — UniProt entry, keyed by accession.
+- `HPA:<HGNC_SYMBOL>` — Human Protein Atlas snapshot row (e.g. `HPA:ERBB2`). Emitted by `evidence_retrieval(category="hpa_ihc")`. Always pair with `evidence_tier="secondary"`.
 - `WO:WO2024036333A2` — patent disclosure. The `WO:` prefix is literal regardless of whether the underlying number starts with WO/EP/US.
 
 The orchestrator looks up `source_id` in the registry of sources you fetched **in this session.** If you cite a source you didn't fetch, validation will fail with `entailment_verified=False`.

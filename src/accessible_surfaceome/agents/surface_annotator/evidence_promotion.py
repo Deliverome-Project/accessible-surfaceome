@@ -284,6 +284,25 @@ def _extract_sources(
         wo = payload.get("wo_number")
         return ([f"WO:{wo}"] if wo else [], 1)
 
+    if tool == "evidence_retrieval":
+        ids: list[str] = []
+        for paper in payload.get("papers") or []:
+            if not isinstance(paper, dict):
+                continue
+            pmc_id = paper.get("pmc_id")
+            if pmc_id:
+                ids.append(f"PMC:{pmc_id}")
+            pmid = paper.get("pmid")
+            if pmid is not None:
+                ids.append(f"PMID:{pmid}")
+        for synthetic in payload.get("synthetic_sources") or []:
+            if isinstance(synthetic, dict):
+                src = synthetic.get("source_id")
+                if src:
+                    ids.append(src)
+        n_results = int(payload.get("n_papers_with_snippets") or len(ids))
+        return ids, n_results
+
     return [], 0
 
 

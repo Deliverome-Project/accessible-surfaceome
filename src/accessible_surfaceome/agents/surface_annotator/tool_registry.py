@@ -18,6 +18,7 @@ from typing import Any, Callable
 from accessible_surfaceome.tools._shared.http import CachedHTTP
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
 from accessible_surfaceome.tools._shared.source_text import SourceTextStore
+from accessible_surfaceome.tools.evidence_retrieval import evidence_retrieval
 from accessible_surfaceome.tools.gene_literature import gene_literature
 from accessible_surfaceome.tools.gene_lookup import gene_lookup
 
@@ -211,6 +212,93 @@ def _make_gene_literature_handler(
     return _call
 
 
+EVIDENCE_RETRIEVAL_DESCRIPTION = (
+    "Retrieve per-category surface-localization evidence with pre-extracted "
+    "verbatim quote candidates. Call once per assay category you intend to "
+    "ground a surface_status claim on: 'ihc', 'if_intact', 'flow_cytometry', "
+    "'surface_biotinylation', 'mass_spec_surfaceome', 'western_blot_paired', "
+    "'structure_with_ecd', or 'hpa_ihc'. Each call queries Europe PMC with "
+    "a category-tuned term set, fetches up to max_papers PMC-OA full texts, "
+    "and returns CandidateSnippet objects — ≤200-char verbatim fragments "
+    "from methods / results / figure_legends sections where the category's "
+    "hallmark phrases appear. Paste a snippet's `text` verbatim into "
+    "EvidenceClaim.quote; the orchestrator's substring check will pass by "
+    "construction. Use category='hpa_ihc' to pull the Human Protein Atlas "
+    "IHC reliability + subcellular location lines (no HTTP — reads the "
+    "cached HPA snapshot). Call this BEFORE gene_literature topic_search "
+    "for surface-method-specific claims; topic_search remains the recall "
+    "fallback for abstract-only signals. Empty returns are still useful — "
+    "the search_log records the negative so reviewers can distinguish "
+    "'evidence absent' from 'evidence not retrieved'. NOTE: western_blot_paired "
+    "is only valid surface evidence when the cited paper also runs a "
+    "fractionation / biotinylation step; a naked WB on whole-cell lysate "
+    "doesn't show surface localization."
+)
+
+EVIDENCE_RETRIEVAL_INPUT_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "uniprot_acc": {
+            "type": "string",
+            "description": (
+                "Canonical UniProt accession from the prior gene_lookup resolve."
+            ),
+        },
+        "category": {
+            "type": "string",
+            "enum": [
+                "ihc",
+                "if_intact",
+                "flow_cytometry",
+                "surface_biotinylation",
+                "mass_spec_surfaceome",
+                "western_blot_paired",
+                "structure_with_ecd",
+                "hpa_ihc",
+            ],
+            "description": (
+                "Which assay category to retrieve. Antibody-based categories "
+                "(ihc / if_intact / flow_cytometry) prioritize figure legends; "
+                "mass_spec_surfaceome prioritizes methods; western_blot_paired "
+                "requires co-citation of a fractionation step."
+            ),
+        },
+        "max_papers": {
+            "type": "integer",
+            "description": "Max PMC-OA full texts to fetch. Defaults to 5.",
+        },
+        "max_snippets_per_paper": {
+            "type": "integer",
+            "description": (
+                "Max candidate snippets to emit per paper. Defaults to 3."
+            ),
+        },
+    },
+    "required": ["uniprot_acc", "category"],
+}
+
+
+def _make_evidence_retrieval_handler(
+    ctx: HandlerContext,
+) -> Callable[[dict[str, Any]], Any]:
+    def _call(payload: dict[str, Any]) -> Any:
+        result = evidence_retrieval(
+            uniprot_acc=payload["uniprot_acc"],
+            category=payload["category"],
+            max_papers=payload.get("max_papers", 5),
+            max_snippets_per_paper=payload.get("max_snippets_per_paper", 3),
+            http=ctx.http,
+            retraction_index=ctx.retraction_index,
+        )
+        if ctx.source_store is not None:
+            register_from_tool_return(
+                tool="evidence_retrieval", result=result, store=ctx.source_store
+            )
+        return result
+
+    return _call
+
+
 SPECS: list[ToolSpec] = [
     ToolSpec(
         name="gene_lookup",
@@ -223,6 +311,12 @@ SPECS: list[ToolSpec] = [
         description=GENE_LITERATURE_DESCRIPTION,
         input_schema=GENE_LITERATURE_INPUT_SCHEMA,
         handler_factory=_make_gene_literature_handler,
+    ),
+    ToolSpec(
+        name="evidence_retrieval",
+        description=EVIDENCE_RETRIEVAL_DESCRIPTION,
+        input_schema=EVIDENCE_RETRIEVAL_INPUT_SCHEMA,
+        handler_factory=_make_evidence_retrieval_handler,
     ),
 ]
 
