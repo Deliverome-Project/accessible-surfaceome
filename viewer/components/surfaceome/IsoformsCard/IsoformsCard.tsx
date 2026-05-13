@@ -2,7 +2,16 @@ import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
+import { TopologyBar, TopologyLegend } from "./TopologyBar";
 import styles from "./IsoformsCard.module.css";
+
+function presentStates(topologies: string[]): string[] {
+  const seen = new Set<string>();
+  for (const t of topologies) {
+    for (const ch of t) seen.add(ch);
+  }
+  return ["M", "O", "I", "S", "B"].filter((s) => seen.has(s));
+}
 
 interface Props {
   rec: SurfaceomeRecord;
@@ -30,11 +39,14 @@ export function IsoformsCard({ rec, n }: Props) {
             <tr>
               <th scope="col">Isoform</th>
               <th scope="col">UniProt</th>
-              <th scope="col">TM count</th>
+              <th scope="col">TM</th>
               <th scope="col">N-term</th>
               <th scope="col">Signal pep</th>
               <th scope="col">ECD len</th>
               <th scope="col">ICD len</th>
+              <th scope="col" className={styles.topoCol}>
+                Topology
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -57,6 +69,12 @@ export function IsoformsCard({ rec, n }: Props) {
               <td>{ct.signal_peptide_length} aa</td>
               <td>{ct.ecd_length_residues} aa</td>
               <td>{ct.icd_length_residues} aa</td>
+              <td className={styles.topoCell}>
+                <TopologyBar
+                  topology={ct.per_residue_topology}
+                  ariaLabel={`${rec.gene.hgnc_symbol} canonical isoform topology`}
+                />
+              </td>
             </tr>
             {df.isoform_topologies.map((iso, i) => (
               <tr key={i}>
@@ -80,11 +98,24 @@ export function IsoformsCard({ rec, n }: Props) {
                 <td>{iso.signal_peptide_length} aa</td>
                 <td>{iso.ecd_length_residues} aa</td>
                 <td>{iso.icd_length_residues} aa</td>
+                <td className={styles.topoCell}>
+                  <TopologyBar
+                    topology={iso.per_residue_topology}
+                    ariaLabel={`${rec.gene.hgnc_symbol} ${iso.isoform_id} topology`}
+                  />
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      <TopologyLegend
+        presentStates={presentStates([
+          ct.per_residue_topology,
+          ...df.isoform_topologies.map((iso) => iso.per_residue_topology),
+        ])}
+      />
 
       {ct.canonical_isoform_caveat ? (
         <p className={`lede ${styles.caveat}`}>

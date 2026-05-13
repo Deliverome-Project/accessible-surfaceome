@@ -1,0 +1,100 @@
+import { TOPOLOGY_COLORS } from "../../../lib/structure-viewer-types";
+import styles from "./TopologyBar.module.css";
+
+interface Props {
+  /** Per-residue DeepTMHMM topology string (1 char per residue). */
+  topology: string;
+  /** A11y label — e.g. "GPR75 canonical isoform topology". */
+  ariaLabel?: string;
+}
+
+interface Run {
+  state: string;
+  length: number;
+  start: number;
+  end: number;
+}
+
+/** Collapse the per-residue topology string into runs of constant state. */
+function runs(topology: string): Run[] {
+  const out: Run[] = [];
+  if (!topology) return out;
+  let cur = topology[0];
+  let runStart = 1;
+  let runLen = 1;
+  for (let i = 1; i < topology.length; i += 1) {
+    if (topology[i] === cur) {
+      runLen += 1;
+    } else {
+      out.push({ state: cur, length: runLen, start: runStart, end: runStart + runLen - 1 });
+      cur = topology[i];
+      runStart = i + 1;
+      runLen = 1;
+    }
+  }
+  out.push({ state: cur, length: runLen, start: runStart, end: runStart + runLen - 1 });
+  return out;
+}
+
+const STATE_LABELS: Record<string, string> = {
+  M: "TM helix",
+  O: "Extracellular",
+  I: "Intracellular",
+  S: "Signal peptide",
+  B: "β-strand",
+};
+
+/**
+ * Horizontal topology strip, ported from the PR23 GPR75 preview HTML
+ * (`docs/plans/2026-05-13-deep-dive-redesign-preview-GPR75.html`).
+ * Each segment's flex-basis is the residue count of that run, so
+ * the bar is residue-proportional within the row. Colors use the
+ * shared `TOPOLOGY_COLORS` palette so the strip and the 3D card
+ * agree on what M / O / I / S look like.
+ */
+export function TopologyBar({ topology, ariaLabel }: Props) {
+  const segments = runs(topology);
+  if (segments.length === 0) return null;
+  return (
+    <div
+      className={styles.bar}
+      role="img"
+      aria-label={ariaLabel ?? "Per-residue topology bar"}
+    >
+      {segments.map((seg, i) => (
+        <div
+          key={i}
+          className={styles.seg}
+          style={{
+            flexGrow: seg.length,
+            background: TOPOLOGY_COLORS[seg.state] ?? "transparent",
+          }}
+          title={`${STATE_LABELS[seg.state] ?? seg.state} · residues ${seg.start}–${seg.end} (${seg.length} aa)`}
+        />
+      ))}
+    </div>
+  );
+}
+
+interface LegendProps {
+  /** Restrict the legend to the states actually present in any of the topologies. */
+  presentStates?: string[];
+}
+
+export function TopologyLegend({ presentStates }: LegendProps) {
+  const states = presentStates ?? ["M", "O", "I", "S", "B"];
+  return (
+    <ul className={styles.legend} aria-label="Topology color legend">
+      {states.map((s) => (
+        <li key={s} className={styles.legendItem}>
+          <span
+            className={styles.legendSwatch}
+            style={{ background: TOPOLOGY_COLORS[s] ?? "transparent" }}
+            aria-hidden="true"
+          />
+          <span className={styles.legendLabel}>{STATE_LABELS[s] ?? s}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}

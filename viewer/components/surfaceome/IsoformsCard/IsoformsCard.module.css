@@ -13,8 +13,18 @@
   text-align: left;
   padding: var(--space-2) var(--space-3) var(--space-2) 0;
   border-bottom: 1px solid var(--line-soft);
-  vertical-align: top;
+  vertical-align: middle;
   white-space: nowrap;
+}
+
+.topoCol {
+  width: 100%;
+  min-width: 14rem;
+}
+
+.topoCell {
+  white-space: normal;
+  padding-right: 0;
 }
 
 .table th {

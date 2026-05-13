@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
@@ -34,6 +35,7 @@ interface ViewerInstance {
 export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [status, setStatus] = useState<LoadStatus>("idle");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
@@ -73,7 +75,15 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
           `AlphaFold DB returned ${pdbResp.status} for ${data.uniprot_acc}`,
         );
       }
-      const pdbText = await pdbResp.text();
+      const rawPdb = await pdbResp.text();
+
+      // Rotate the PDB so the membrane plane is horizontal,
+      // extracellular side up. Ported from the deliverome-internal
+      // structure-site viewer; uses DeepTMHMM's per-residue
+      // topology to find the M/O/I centroids, then rotates I→O onto
+      // +Y. Falls back to the raw PDB when topology is too sparse
+      // (small ECDs / soluble proteins).
+      const pdbText = orientPdbForTopology(rawPdb, data.topology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -99,6 +109,29 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       viewer.zoomTo();
       viewer.render();
       viewerRef.current = viewer as ViewerInstance;
+
+      // Re-fit on container resize. Without this the viewer keeps
+      // its initial pixel dimensions on layout shifts (responsive
+      // viewport, dev-tools open / close, parent flex re-layout)
+      // which manifests as "starts too zoomed in" the moment
+      // anything else on the page resizes.
+      if (
+        typeof ResizeObserver !== "undefined" &&
+        containerRef.current
+      ) {
+        const node = containerRef.current;
+        const ro = new ResizeObserver(() => {
+          try {
+            viewer.resize();
+            viewer.zoomTo();
+            viewer.render();
+          } catch {
+            // 3Dmol throws on race against teardown; ignore.
+          }
+        });
+        ro.observe(node);
+        resizeObserverRef.current = ro;
+      }
       setStatus("ready");
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -109,6 +142,12 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
 
   useEffect(() => {
     return () => {
+      try {
+        resizeObserverRef.current?.disconnect();
+      } catch {
+        // ignore
+      }
+      resizeObserverRef.current = null;
       try {
         viewerRef.current?.clear();
       } catch {
