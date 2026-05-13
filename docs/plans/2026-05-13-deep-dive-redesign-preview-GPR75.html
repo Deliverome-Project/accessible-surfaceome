@@ -388,21 +388,17 @@
         </div>
         <div class="card__body">
           <div class="filters-grid">
-            <div class="filters-group">
-              <p class="filters-group__title">Accessibility</p>
-              <div class="chip-row">
-                <span class="chip chip--success">overall=high</span>
-                <span class="chip chip--amber">confidence=moderate</span>
-                <span class="chip chip--teal">subcategory=GPCR</span>
-                <span class="chip chip--amber">evidence_grade=supportive_but_indirect</span>
-                <span class="chip">ecd_accessibility=small</span>
-                <span class="chip chip--amber">evidence_density=low</span>
-              </div>
-              <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
-                Interesting contrast: high overall accessibility (canonical GPCR) but low evidence
-                density and supportive_but_indirect grade — the catalog reader sees the conflict
-                at a glance.
-              </p>
+            <!-- Per-gene rendering rule: Accessibility filter group not duplicated
+                 (exec summary covers overall / confidence / subcategory /
+                 evidence_grade / ecd_accessibility / evidence_density). -->
+            <div class="annot">
+              <span class="annot__path">filters.{surface_accessibility, confidence, subcategory, evidence_grade, ecd_accessibility_class, evidence_density}</span>
+              · top-level for D1 indexing; <strong>not rendered on per-gene
+              page</strong> (exec summary covers them). Catalog renders as
+              chip facets. (GPR75's interesting case — high accessibility +
+              low evidence density — is captured in the exec summary chips
+              and the §1 evidence_grade banner.)
+              <span class="annot__prov">D</span>
             </div>
             <div class="filters-group">
               <p class="filters-group__title">Expression (LLM rollups)</p>
@@ -605,6 +601,51 @@
               </p>
             </li>
           </ul>
+
+          <h4 class="label-mono">Therapeutic engagement (not a comprehensive landscape)</h4>
+          <div
+            style="
+              padding: var(--space-3) var(--space-4);
+              background: rgba(255, 213, 121, 0.2);
+              border-left: 3px solid #c89400;
+              border-radius: 6px;
+              font-size: 0.92rem;
+            "
+          >
+            <div class="chip-row" style="margin-bottom: var(--space-2)">
+              <span class="chip chip--amber chip--strong">highest_stage = in_clinical_trials</span>
+            </div>
+            <p style="margin: 0 0 var(--space-2)">
+              <strong>Description:</strong> Regeneron's anti-GPR75 program
+              (REGN9933 + small molecules) advanced to Phase 1 for obesity
+              following the 2021 NEJM genetic LoF + BMI association
+              <span class="inline-cite">[evi_T21, evi_T22]</span>. Multiple
+              preclinical antibody and small-molecule programs in industry
+              and academic labs.
+            </p>
+            <p style="margin: 0; color: var(--muted)">
+              <strong>Surface-form rationale:</strong> GPR75 is a 7-TM GPCR
+              with no documented secreted form — the only physiologically
+              relevant species is the cell-surface receptor. Therapeutic
+              engagement (binding the receptor on intact cells) is by
+              definition surface-form engagement. The published Regeneron
+              candidates target extracellular-loop epitopes (mAb arm) or the
+              TM allosteric pocket (small-molecule arm), both of which
+              require an intact surface-displayed receptor.
+            </p>
+            <p
+              style="
+                margin-top: var(--space-2);
+                font-size: 0.78rem;
+                color: var(--muted);
+                font-style: italic;
+              "
+            >
+              Not a comprehensive therapeutic landscape — just the topline
+              signal that surface GPR75 has reached clinical-stage
+              therapeutic engagement.
+            </p>
+          </div>
 
           <h4 class="label-mono">Contradicting evidence</h4>
           <ul class="risk-list">

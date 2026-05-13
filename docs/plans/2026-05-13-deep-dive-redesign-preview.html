@@ -889,25 +889,19 @@
         </div>
         <div class="card__body">
           <div class="filters-grid">
-            <div class="filters-group">
-              <p class="filters-group__title">Accessibility</p>
-              <div class="chip-row">
-                <span class="chip chip--success">overall=high</span>
-                <span class="chip chip--success">confidence=high</span>
-                <span class="chip chip--teal">subcategory=single_pass_T1</span>
-                <span class="chip chip--teal"
-                  >evidence_grade=direct_multi_method</span
-                >
-                <span class="chip chip--teal">ecd_accessibility=large</span>
-                <span class="chip chip--teal">evidence_density=high</span>
-              </div>
-              <div class="annot">
-                <span class="annot__path">filters.surface_accessibility</span>
-                + siblings · all derived from deeper buckets at orchestration
-                time. Whole record uses the same "accessibility" vocabulary
-                top to bottom.
-                <span class="annot__prov">D</span>
-              </div>
+            <!-- Per-gene rendering rule: the "Accessibility" filter group is
+                 intentionally NOT rendered here — those fields (overall /
+                 confidence / subcategory / evidence_grade / ecd_accessibility /
+                 evidence_density) are already in the executive-summary header
+                 strip above. The schema keeps them at top level for catalog
+                 indexing; the per-gene page just doesn't duplicate them. -->
+            <div class="annot">
+              <span class="annot__path">filters.{surface_accessibility, confidence, subcategory, evidence_grade, ecd_accessibility_class, evidence_density}</span>
+              · stored in the schema as top-level fields for D1 indexing but
+              <strong>not rendered on the per-gene page</strong> since the
+              exec summary covers them. The catalog page renders them as
+              chip facets.
+              <span class="annot__prov">D</span>
             </div>
 
             <div class="filters-group">
@@ -1262,6 +1256,65 @@
             <code>cell_lines_observed</code> table was dropped; primary human
             samples take precedence over established cell lines.
           </p>
+
+          <h4 class="label-mono">Therapeutic engagement (not a comprehensive landscape)</h4>
+          <div
+            style="
+              padding: var(--space-3) var(--space-4);
+              background: var(--success-soft);
+              border-left: 3px solid var(--success);
+              border-radius: 6px;
+              font-size: 0.92rem;
+            "
+          >
+            <div class="chip-row" style="margin-bottom: var(--space-2)">
+              <span class="chip chip--success chip--strong">highest_stage = approved_drug</span>
+            </div>
+            <p style="margin: 0 0 var(--space-2)">
+              <strong>Description:</strong> Multiple approved mAbs targeting
+              the EGFR ECD on the cell surface — cetuximab (2004, mCRC + SCCHN)
+              and panitumumab (2006, mCRC). Several Phase 3 trials in NSCLC
+              and glioblastoma. Extensive preclinical xenograft validation in
+              the literature.
+              <span class="inline-cite">[evi_T01, evi_T02]</span>
+            </p>
+            <p style="margin: 0; color: var(--muted)">
+              <strong>Surface-form rationale:</strong> Cetuximab and
+              panitumumab bind the EGFR domain III ECD epitope, which is
+              displayed on the membrane-anchored full-length protein. The
+              soluble sEGFR (shed via ADAM17) also presents this epitope, but
+              the therapeutic mechanism (receptor internalization / signaling
+              blockade) requires engagement of the membrane-bound form
+              — confirmed by competition assays showing membrane occupancy
+              correlates with response.
+            </p>
+            <p
+              style="
+                margin-top: var(--space-2);
+                font-size: 0.78rem;
+                color: var(--muted);
+                font-style: italic;
+              "
+            >
+              Not a comprehensive therapeutic landscape — just a topline
+              signal that the surface form has been clinically engaged.
+            </p>
+          </div>
+          <div class="annot annot--llm">
+            <span class="annot__path">surface_evidence.therapeutic_engagement</span>
+            ·
+            <span class="annot__type"
+              >TherapeuticEngagementContext | None = { <strong>highest_stage:
+              Literal["approved_drug","in_clinical_trials","preclinical_in_vivo","none_documented","unknown"]</strong>,
+              description: str = Field(max_length=400),
+              <strong>surface_form_rationale: str = Field(max_length=200)</strong>
+              — required, names how the intervention engages the SURFACE form
+              (rules out secreted-only drugs), cited_evidence_ids }</span
+            >
+            · single optional struct (not a list); lightweight signal of
+            therapeutic reach, NOT a comprehensive landscape
+            <span class="annot__prov">L</span>
+          </div>
 
           <h4 class="label-mono">Contradicting evidence (typed + severity)</h4>
           <ul class="risk-list">

@@ -320,7 +320,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | `HIGH` (confidence) | `executive_summary.confidence` | `Literal["high","moderate","low"]` | L |
 | `MODERATE` (state dependence) | `executive_summary.state_dependence` | `Literal["low","moderate","high","unclear"]` — how much does surface presence/exposure shift with cell state, tissue context, or disease state? Cross-checks against `biological_context.accessibility_modulation[]`. | L |
 | `single-pass T1` | `executive_summary.subcategory` | `Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]` | L |
-| `shed_form · paralog_cross_reactivity` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","other"]]` (max 3) | L |
+| `shed_form · paralog_cross_reactivity` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","low_endogenous_expression","antibody_validation_weak","ligand_unknown","other"]]` (max 3) — three new values (`low_endogenous_expression`, `antibody_validation_weak`, `ligand_unknown`) capture the orphan-receptor failure mode (GPR75-style cases) so the catalog can filter on them | L |
 | (cite chips, not shown) | `executive_summary.cited_evidence_ids` | `list[str]` (→ `evidence[].evidence_id`) | L |
 
 Note on the top-line summary: the numeric `accessibility_score: float` was dropped — categorical `surface_accessibility` + categorical `confidence` carry the same information without implying a calibrated rubric we don't have. The whole schema is consistent on the word "accessibility" — top-line field name, filter chip, and deeper sections (`accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`) all use the same vocabulary.
@@ -355,6 +355,8 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 
 **D1 indexing:** every filter is a top-level column on `deep_dive_run`, so queries like *"single_pass_T1 receptors with broad expression, no shed form, mouse_efficacy"* are an indexed scan, not JSON traversal.
 
+**Per-gene rendering rule:** the schema keeps all 17 filters at top level for catalog indexing, but the per-gene page renderer **does not duplicate fields that already appear in the executive-summary header strip**. Specifically, the per-gene filters card drops the "Accessibility" group (overall / confidence / subcategory / evidence_grade / ecd_accessibility / evidence_density) since the exec summary already surfaces those. The remaining filter groups (Expression rollups, Risk booleans, Cross-species, Topology/quality) carry information that ISN'T in the exec summary and so they stay visible on the per-gene page. The catalog page renders the full filter set as chip facets, since there's no exec-summary on the catalog view.
+
 ### Section 1 — Surface accessibility evidence
 
 | Rendered | Schema path | Type | Prov |
@@ -365,6 +367,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | Antibody record `anti-EGFR clone 528 (ECD epitope)` + validation chips | `MethodObservation.antibodies[i]` | `AntibodyRef = { name: str, clone: str\|None, vendor: str\|None, catalog: str\|None, rrid: str\|None, monoclonal_or_polyclonal: Literal["monoclonal","polyclonal","recombinant","unknown"], antibody_epitope_region: Literal["extracellular","intracellular","conformational","isoform_specific","unknown"], validation_strategy: Literal["genetic_KO","siRNA_knockdown","CRISPR_KO","orthogonal_method","ip_ms_pulldown","isoform_specific_KO","overexpression_reference","vendor_claim_only","none","unknown"], validation_strength: Literal["strong","moderate","weak","none","unknown"], cross_reactivity_notes: str (max_length=200) \| None }`. **Antibody specificity is load-bearing for surface evidence** — a "positive" flow signal from an antibody that cross-reacts with a paralog is a false positive that's nearly invisible without these fields. `validation_strategy` is the gold-standard evidence (e.g. signal disappears on `genetic_KO`); `validation_strength` is the LLM's rolled-up judgment after weighing the strategy + cross-reactivity caveats. `cross_reactivity_notes` is free-text for known issues (e.g. "cross-reacts with HSPA1A at ≥50 nM"). | L |
 | Per-observation `A431 (cell_line · epidermoid carcinoma) HIGH` rows inside each method card | `surface_evidence.methods[i].expression_observations: list[ExpressionObservation]` | each: `{ context: str, sample_type: Literal["primary_human_tissue","primary_human_cell","patient_sample","patient_derived_organoid","iPSC_derived","established_cell_line","xenograft","ex_vivo","unknown"], level: Literal["high","moderate","low","absent"], cited_evidence_ids: list[str] }`. **Nested inside `methods[i]` so each level is anchored to the measurement that produced it** — RNA / bulk-protein / IHC observations (which aren't tied to one of the 3 surface-evidence panels) live in `surface_evidence.non_surface_expression: list[NonSurfaceExpression]` instead. | L |
 | Non-surface expression observations (RNA, IHC, bulk) | `surface_evidence.non_surface_expression: list[NonSurfaceExpression]` | each: `{ context: str, sample_type: ..., measurement_type: Literal["RNA","bulk_protein","IHC_protein","single_cell_RNA","unknown"], level: Literal["high","moderate","low","absent"], cited_evidence_ids: list[str] }` — for context that isn't surface-specific. | L |
+| Therapeutic engagement block (`Approved · cetuximab + panitumumab …`) | `surface_evidence.therapeutic_engagement: TherapeuticEngagementContext \| None` | `{ highest_stage: Literal["approved_drug","in_clinical_trials","preclinical_in_vivo","none_documented","unknown"], description: str (max_length=400), surface_form_rationale: str (max_length=200), cited_evidence_ids: list[str] }`. Lightweight signal of therapeutic reach — NOT a comprehensive landscape. **`surface_form_rationale` is required and load-bearing** for proteins with both surface and secreted forms (GRP78, EGFR, etc.) — clarifies which form the drug actually engages. Renders with explicit "(not a comprehensive landscape)" disclaimer. | L |
 | Each *Contradicting evidence* bullet | `surface_evidence.contradicting_evidence: list[Contradiction]` | each: `{ claim: str, contradiction_type: Literal["intracellular_pool","alternative_localization","secreted_only","cell_line_specific_absence","antibody_conflict","proteomics_conflict","isoform_conflict","other"], severity_for_surface_accessibility: Literal["high","moderate","low","unclear"], likely_explanation: str\|None, cited_evidence_ids: list[str] }` | L |
 
 ### Section 2 — Biological context
@@ -563,6 +566,17 @@ SurfaceomeRecord (v1.0.0)
 │   │                                             #   Cross-checks against accessibility_modulation[]
 │   ├── subcategory                               # enum: single_pass_T1|GPCR|GPI|tetraspanin|...
 │   ├── headline_risks: list[RiskTag]             # top-3 from accessibility_risks
+│                                                  #   enum: shed_form | secreted_form | co_receptor |
+│                                                  #     paralog_cross_reactivity | ecd_too_small |
+│                                                  #     epitope_masked | isoform_decoy |
+│                                                  #     restricted_subdomain |
+│                                                  #     low_endogenous_expression |  ← NEW
+│                                                  #     antibody_validation_weak |    ← NEW
+│                                                  #     ligand_unknown |              ← NEW (orphan)
+│                                                  #     other
+│                                                  #   The 3 new values capture orphan-receptor
+│                                                  #   failure modes (GPR75-style cases) for catalog
+│                                                  #   filtering.
 │   └── cited_evidence_ids: list[str]
 │
 ├── filters                                       [TOP-LEVEL — D1-indexed for catalog facets]
@@ -628,6 +642,23 @@ SurfaceomeRecord (v1.0.0)
 │   │   # Held separately so the report can't drift into treating RNA expression as accessibility.
 │   │   └── { context, sample_type, measurement_type: RNA|bulk_protein|IHC_protein|
 │   │           single_cell_RNA|unknown, level, cited_evidence_ids }
+│   ├── therapeutic_engagement: TherapeuticEngagementContext | None
+│   │   # Lightweight signal that someone has reached this protein at the
+│   │   # cell surface in a therapeutic context — NOT a comprehensive
+│   │   # therapeutic-landscape assessment. Only counts interventions that
+│   │   # target the SURFACE form (not secreted-only forms).
+│   │   └── { highest_stage: Literal["approved_drug","in_clinical_trials",
+│   │           "preclinical_in_vivo","none_documented","unknown"],
+│   │         description: str = Field(max_length=400),
+│   │           # Agent names specific interventions at the highest stage.
+│   │           # Renders with explicit "(not a comprehensive landscape)"
+│   │           # disclaimer.
+│   │         surface_form_rationale: str = Field(max_length=200),
+│   │           # REQUIRED short explanation of how the intervention(s)
+│   │           # engage the SURFACE form. For proteins with both surface
+│   │           # and secreted forms (GRP78, EGFR, etc.) this is load-
+│   │           # bearing — clarifies which form the drug actually targets.
+│   │         cited_evidence_ids: list[str] }
 │   └── contradicting_evidence: list[Contradiction]
 │       └── { claim,
 │             contradiction_type: intracellular_pool|alternative_localization|secreted_only|
@@ -711,7 +742,10 @@ SurfaceomeRecord (v1.0.0)
 │       # Validators:
 │       # * category=="other" ↔ category_other_label is not None
 │       # * cell_state_trigger is not None ↔ category ∈ {cell_state_induced, stress_induced,
-│       #     activation_induced, disease_state_induced}
+│       #     activation_induced, disease_state_induced, lysosomal_exocytosis}
+│       #   — lysosomal_exocytosis triggers (CTL/NK degranulation, PM repair, Ca²⁺ flux)
+│       #     are captured by the same cell_state_trigger enum
+│       #     (immune_activation / mechanical_stress / cytokine_stimulation)
 │       # * restricted_lineage is not None ↔ category == "tissue_restricted_surface"
 │       # * dual_loc_partner_compartment is not None ↔ category == "dual_localization"
 │       # The orchestrator maps deep-dive expansions back to the broader triage category

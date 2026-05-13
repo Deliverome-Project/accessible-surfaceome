@@ -497,16 +497,16 @@
         </div>
         <div class="card__body">
           <div class="filters-grid">
-            <div class="filters-group">
-              <p class="filters-group__title">Accessibility</p>
-              <div class="chip-row">
-                <span class="chip chip--amber">overall=moderate</span>
-                <span class="chip chip--amber">confidence=moderate</span>
-                <span class="chip chip--teal">subcategory=other</span>
-                <span class="chip chip--teal">evidence_grade=direct_multi_method</span>
-                <span class="chip chip--teal">ecd_accessibility=large</span>
-                <span class="chip chip--teal">evidence_density=high</span>
-              </div>
+            <!-- Per-gene rendering rule: the Accessibility filter group is
+                 not duplicated here — exec summary already covers
+                 overall / confidence / subcategory / evidence_grade /
+                 ecd_accessibility / evidence_density. -->
+            <div class="annot">
+              <span class="annot__path">filters.{surface_accessibility, confidence, subcategory, evidence_grade, ecd_accessibility_class, evidence_density}</span>
+              · top-level for D1 indexing; <strong>not rendered on per-gene
+              page</strong> (exec summary covers them). Catalog renders as
+              chip facets.
+              <span class="annot__prov">D</span>
             </div>
 
             <div class="filters-group">
@@ -751,6 +751,52 @@
               </p>
             </li>
           </ul>
+
+          <h4 class="label-mono">Therapeutic engagement (not a comprehensive landscape)</h4>
+          <div
+            style="
+              padding: var(--space-3) var(--space-4);
+              background: rgba(255, 213, 121, 0.2);
+              border-left: 3px solid #c89400;
+              border-radius: 6px;
+              font-size: 0.92rem;
+            "
+          >
+            <div class="chip-row" style="margin-bottom: var(--space-2)">
+              <span class="chip chip--amber chip--strong">highest_stage = in_clinical_trials</span>
+            </div>
+            <p style="margin: 0 0 var(--space-2)">
+              <strong>Description:</strong> PAT-SM6 (Patrys) — anti-GRP78
+              IgM monoclonal in Phase 1 for relapsed/refractory multiple
+              myeloma <span class="inline-cite">[evi_T11]</span>. Additional
+              preclinical programs targeting surface GRP78 in pancreatic and
+              prostate cancer
+              <span class="inline-cite">[evi_T12, evi_T13]</span>.
+            </p>
+            <p style="margin: 0; color: var(--muted)">
+              <strong>Surface-form rationale:</strong> PAT-SM6 recognizes a
+              conformational ECD epitope present <em>only on cell-surface
+              GRP78</em>, not on the canonical ER-lumenal form (the antibody
+              was selected against patient-derived tumor cells, not the
+              soluble chaperone). This specificity is the entire point —
+              GRP78 is ubiquitous as an ER chaperone, so a non-specific
+              binder would have catastrophic on-target / off-tumor toxicity.
+              Soluble sGRP78 in patient serum (also documented) is NOT the
+              therapeutic target.
+            </p>
+            <p
+              style="
+                margin-top: var(--space-2);
+                font-size: 0.78rem;
+                color: var(--muted);
+                font-style: italic;
+              "
+            >
+              Not a comprehensive therapeutic landscape — just the topline
+              signal that surface GRP78 specifically has been clinically
+              engaged.
+            </p>
+          </div>
 
           <h4 class="label-mono">Contradicting evidence (typed + severity)</h4>
           <ul class="risk-list">
