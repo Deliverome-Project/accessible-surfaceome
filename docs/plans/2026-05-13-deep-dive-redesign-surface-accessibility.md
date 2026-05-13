@@ -38,6 +38,33 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │   Headline risks:         shed_form · paralog_cross_reactivity     │
 └─────────────────────────────────────────────────────────────────────┘
 
+┌─ FILTERS / TAGS  (catalog-facing, all closed enums) ───────────────┐
+│                                                                     │
+│  ACCESSIBILITY                                                      │
+│    overall=HIGH · confidence=HIGH · subcategory=single_pass_T1     │
+│    ecd_size_class=LARGE · evidence_density=HIGH                     │
+│                                                                     │
+│  EXPRESSION                                                         │
+│    level=HIGH · breadth=BROAD · surface_specificity=MIXED          │
+│                                                                     │
+│  RISKS                                                              │
+│    ✓ has_shed_form                  ✓ has_secreted_form             │
+│    ✗ coreceptor_for_expression      • coreceptor_for_function       │
+│    ✓ paralog_cross_reactivity       ✓ epitope_masking               │
+│                                                                     │
+│  CROSS-SPECIES                                                      │
+│    mouse_efficacy · rat_PK · cyno_tox                               │
+│                                                                     │
+│  TOPOLOGY                                                           │
+│    n_term_extracellular=TRUE                                        │
+│                                                                     │
+│  QUALITY                                                            │
+│    has_knowledge_gaps=TRUE                                          │
+│                                                                     │
+│  (Catalog page renders each as a chip; click to filter the gene    │
+│  list. Per-gene page surfaces these in the executive header above.) │
+└─────────────────────────────────────────────────────────────────────┘
+
 ┌─ 1. SURFACE EVIDENCE ──────────────────────────────────────────────┐
 │                                                                     │
 │  What is the evidence for surface localization?                     │
@@ -131,13 +158,16 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 
 ┌─ 5. ACCESSIBILITY RISKS ───────────────────────────────────────────┐
 │                                                                     │
-│  • Co-receptor required for FUNCTION?                               │
-│      Functional dependency: NO — EGFR autophosphorylates after      │
-│      ligand binding without an obligate co-receptor.                │
-│      Heterodimerization partners (HER2/3/4) modulate signaling      │
-│      but are not required for ligand-induced activation. [evi_47]   │
-│      (Mere co-expression ≠ functional dependency; flag distinguishes │
-│      these.)                                                        │
+│  • Co-receptor requirements (two independent axes)                  │
+│      Surface-expression dependency:  NONE                           │
+│        EGFR reaches the plasma membrane unassisted; no partner      │
+│        is required for trafficking.                       [evi_46]  │
+│      Function dependency:            MODULATORY                     │
+│        EGFR autophosphorylates after ligand binding alone, but      │
+│        HER2/3/4 heterodimerization tunes signaling output —         │
+│        partners enhance but are not required.             [evi_47]  │
+│      Partners: HER2, HER3, HER4                                     │
+│      (TCR/CD3 would be REQUIRED on both axes; this captures both.) │
 │  • Shed form?                  YES — ADAM17-mediated, soluble sEGFR │
 │                                detectable in serum  [evi_33,34]     │
 │  • Secreted form?              YES — isoform-3 is constitutively    │
@@ -205,6 +235,34 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | `shed_form · paralog_cross_reactivity` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","other"]]` (max 3) | L |
 | (cite chips, not shown) | `executive_summary.cited_evidence_ids` | `list[str]` (→ `evidence[].evidence_id`) | L |
 
+### Filters / tags card
+
+Top-level `filters` block — every value is a closed enum, `bool`, or `list[enum]`. The catalog/index page reads these to render filter chips and faceted search; the per-gene executive header surfaces the same chips. Provenance column: **D** = derived by orchestrator from deeper fields (no extra LLM work), **L** = LLM emits directly (typically rolling-up judgment).
+
+| Rendered chip | Schema path | Type | Prov | Derivation rule (D-source) |
+|---|---|---|---|---|
+| `overall=HIGH` | `filters.overall_accessibility` | `Literal["high","moderate","low","uncertain"]` | D | `executive_summary.overall_accessibility` |
+| `confidence=HIGH` | `filters.accessibility_confidence` | `Literal["high","moderate","low"]` | D | bucketed from `confidence: float` (≥0.75/≥0.5/else) |
+| `subcategory=single_pass_T1` | `filters.subcategory` | `Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]` | D | `executive_summary.subcategory` |
+| `ecd_size_class=LARGE` | `filters.ecd_size_class` | `Literal["large","moderate","small","nano"]` | D | `accessibility_risks.ecd_size_assessment.druggability_class` |
+| `evidence_density=HIGH` | `filters.evidence_density` | `Literal["low","moderate","high"]` | D | bucketed from `evidence_count` (≥30/≥10/else) |
+| `level=HIGH` | `filters.expression_level` | `Literal["high","moderate","low","absent"]` | L | LLM rollup of `surface_evidence.expression_levels[]` |
+| `breadth=BROAD` | `filters.expression_breadth` | `Literal["pan_tissue","broad","restricted","rare"]` | L | LLM judgment from `biological_context.tissues[]` |
+| `surface_specificity=MIXED` | `filters.surface_specificity` | `Literal["surface_dominant","mixed","mostly_intracellular"]` | L | LLM rollup of `subcellular_localization.dual_localization[]` |
+| `has_shed_form` (bool) | `filters.has_shed_form` | `bool` | D | `accessibility_risks.shed_form.present` |
+| `has_secreted_form` (bool) | `filters.has_secreted_form` | `bool` | D | `accessibility_risks.secreted_form.present` |
+| `coreceptor_for_expression` (bool) | `filters.requires_coreceptor_for_expression` | `bool` | D | `accessibility_risks.co_receptor_requirements.surface_expression_dependency == "required"` |
+| `coreceptor_for_function` (bool) | `filters.requires_coreceptor_for_function` | `bool` | D | `accessibility_risks.co_receptor_requirements.function_dependency == "required"` |
+| `paralog_cross_reactivity` (bool) | `filters.has_paralog_cross_reactivity_risk` | `bool` | D | any `accessibility_risks.similar_paralogs[].cross_reactivity_assessment ∈ {high, moderate}` |
+| `epitope_masking` (bool) | `filters.has_epitope_masking` | `bool` | D | `accessibility_risks.epitope_masking.severity ∈ {high, moderate}` |
+| `mouse_efficacy · cyno_tox …` | `filters.cross_species_useful_for` | `list[Literal["mouse_efficacy","mouse_tox","rat_PK","cyno_tox","cyno_efficacy","surrogate_needed","none"]]` | D | mirror of `ortholog_implications.cross_species_useful_for` |
+| `n_term_extracellular` (bool) | `filters.n_term_extracellular` | `bool` | D | `deterministic_features.canonical_topology.n_terminal_orientation == "extracellular"` |
+| `has_knowledge_gaps` (bool) | `filters.has_knowledge_gaps` | `bool` | D | `len(knowledge_gaps) > 0` |
+
+**Filters-only rule (no duplication):** the three LLM-emitted dimensions (`expression_level`, `expression_breadth`, `surface_specificity`) live ONLY in `filters`. The deep `surface_evidence.expression_levels[]` list still carries per-context detail ("epithelial tumors HIGH; blood ABSENT") but the rolled-up filter values aren't repeated there. Zero drift risk.
+
+**D1 indexing:** every filter is a top-level column on `deep_dive_run`, so queries like *"single_pass_T1 receptors with broad expression, no shed form, mouse_efficacy"* are an indexed scan, not JSON traversal.
+
 ### Section 1 — Surface evidence
 
 | Rendered | Schema path | Type | Prov |
@@ -252,7 +310,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
-| `Co-receptor required for FUNCTION? Functional dependency: NO …` | `accessibility_risks.co_receptor_for_function` | `{ functional_dependency: Literal["required","modulatory","none","unknown"], partners: list[str], evidence_basis: Literal["co_expression_only","signaling","binding","knockout","mixed"], rationale: str (≤400), cited_evidence_ids: list[str] }` | L |
+| `Co-receptor requirements (two axes)…` | `accessibility_risks.co_receptor_requirements` | `{ surface_expression_dependency: Literal["required","modulatory","none","unknown"], function_dependency: Literal["required","modulatory","none","unknown"], partners: list[str], evidence_basis: Literal["co_expression_only","trafficking","signaling","binding","knockout","mixed"], rationale: str (≤400), cited_evidence_ids: list[str] }` | L |
 | `Shed form? YES — ADAM17-mediated, soluble sEGFR…` | `accessibility_risks.shed_form` | `{ present: bool, mechanism: str\|None, sheddase_if_known: str\|None, cited_evidence_ids: list[str] }` | L |
 | `Secreted form? YES — isoform-3 is constitutively soluble` | `accessibility_risks.secreted_form` | `{ present: bool, ratio_to_membrane: float\|None, source: Literal["alternative_splicing","proteolytic","both","unknown"]\|None, cited_evidence_ids: list[str] }` | L |
 | Each paralog risk row `HER2 45.1% moderate` | `accessibility_risks.similar_paralogs: list[ParalogRisk]` | each: `{ paralog_symbol: str, ecd_similarity_pct_from_deterministic: float, cross_reactivity_assessment: Literal["high","moderate","low","negligible"], rationale: str (≤200), cited_evidence_ids: list[str] }` (orchestrator validates that `ecd_similarity_pct_from_deterministic` equals the matching `deterministic_features.paralogs[i].ecd_pct_identity`) | L→D |
@@ -284,11 +342,12 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 
 ## Optional additions — final decisions for v1.0.0
 
-Five candidates were considered. **Only #1 (knowledge gaps) lands in v1.0.0.** The others are explicitly deferred so v1.0.0 ships lean.
+Six candidates were considered. **#1 (knowledge gaps) and #6 (filters block) land in v1.0.0.** The others are explicitly deferred so v1.0.0 ships lean.
 
 | # | Feature | Decision | Notes |
 |---|---|---|---|
 | 1 | **Knowledge gaps** | **IN** | New top-level field `knowledge_gaps: list[KnowledgeGap]` where each entry is `{ question: str (≤200), why_unresolved: Literal["no_literature","conflicting","outside_scope"], cited_evidence_ids: list[str] }`. Rendered as a "What we couldn't determine" card between *Accessibility Risks* and the *Evidence Ledger*. The agent prompt instructs the model to enumerate questions it tried and couldn't resolve. |
+| 6 | **Filters block (catalog-facing)** | **IN** | New top-level `filters` block — flat, closed-enum/bool/list rollups of the deep buckets. Powers chip filters + faceted search on the catalog/index page, and indexed D1 queries on `deep_dive_run`. Three rollup dimensions (`expression_level`, `expression_breadth`, `surface_specificity`) are LLM-emitted and live ONLY in `filters` (no duplication). The rest are orchestrator-derived from deeper fields. Co-receptor splits into two booleans: `requires_coreceptor_for_expression` (does the partner have to be present for the target to reach the surface?) and `requires_coreceptor_for_function` (does the partner have to be present for the target to signal?). |
 | 2 | Glycosylation features | OUT (v1.0.0) | Defer to v1.1 — UniProt `ft_carbohyd` data is available; can land additively once the v1.0.0 surface is stable. For now, the LLM cites glycosylation from literature in `epitope_masking.mechanism`. |
 | 3 | Surface-exposed epitope candidates | OUT (v1.0.0) | Defer. Needs SASA+DSSP integration in alphafold_fetcher + cutoff calibration against known-epitope proteins (EGFR domain III, PD-L1 IgV face). The LLM still discusses epitope masking from literature; we just don't have the structural-grounding numbers. |
 | 4 | Per-section confidence | OUT (v1.0.0) | Defer. Top-level `confidence` + `confidence_reasoning` carry forward unchanged. |
@@ -351,6 +410,28 @@ SurfaceomeRecord (v1.0.0)
 │   ├── expression_summary                        # enum: high|moderate|low|mixed
 │   ├── headline_risks: list[RiskTag]             # top-3 from accessibility_risks
 │   └── cited_evidence_ids: list[str]
+│
+├── filters                                       [TOP-LEVEL — D1-indexed for catalog facets]
+│   │                                             # Flat, closed-enum/bool/list rollups
+│   │                                             # of the deep buckets. The catalog page
+│   │                                             # renders one chip per field.
+│   ├── overall_accessibility                     # D ← executive_summary.overall_accessibility
+│   ├── accessibility_confidence                  # D ← bucketed from confidence: float
+│   ├── subcategory                               # D ← executive_summary.subcategory
+│   ├── ecd_size_class                            # D ← accessibility_risks.ecd_size_assessment
+│   ├── evidence_density                          # D ← bucketed from evidence_count
+│   ├── expression_level                          # L (rollup; lives ONLY here)
+│   ├── expression_breadth                        # L (rollup; lives ONLY here)
+│   ├── surface_specificity                       # L (rollup; lives ONLY here)
+│   ├── has_shed_form                             # D ← accessibility_risks.shed_form.present
+│   ├── has_secreted_form                         # D ← accessibility_risks.secreted_form.present
+│   ├── requires_coreceptor_for_expression        # D ← co_receptor_requirements.surface_expression_dependency == "required"
+│   ├── requires_coreceptor_for_function          # D ← co_receptor_requirements.function_dependency == "required"
+│   ├── has_paralog_cross_reactivity_risk         # D ← any similar_paralogs[i] ≥ moderate
+│   ├── has_epitope_masking                       # D ← epitope_masking.severity ≥ moderate
+│   ├── cross_species_useful_for: list[enum]      # D ← ortholog_implications.cross_species_useful_for
+│   ├── n_term_extracellular: bool                # D ← canonical_topology.n_terminal_orientation
+│   └── has_knowledge_gaps: bool                  # D ← len(knowledge_gaps) > 0
 │
 ├── surface_evidence                              [LLM — section 1 of viewer]
 │   ├── evidence_summary                          # ≤800 char
@@ -417,12 +498,18 @@ SurfaceomeRecord (v1.0.0)
 ├── accessibility_risks                           [LLM — section 5]
 │   ├── shed_form: { present, mechanism, sheddase_if_known, cited_evidence_ids }
 │   ├── secreted_form: { present, ratio_to_membrane, cited_evidence_ids }
-│   ├── co_receptor_for_function:
-│   │   ├── functional_dependency                 # enum: required|modulatory|none|unknown
+│   ├── co_receptor_requirements:                 # TWO independent axes
+│   │   ├── surface_expression_dependency         # enum: required|modulatory|none|unknown
+│   │   │                                         #   (does partner need to be present
+│   │   │                                         #    for the target to reach the surface?)
+│   │   ├── function_dependency                   # enum: required|modulatory|none|unknown
+│   │   │                                         #   (does partner need to be present
+│   │   │                                         #    for the target to signal/function?)
 │   │   ├── partners: list[str]                   # gene symbols
-│   │   ├── evidence_basis                        # enum: co_expression_only|signaling|binding|knockout|mixed
-│   │   ├── rationale                             # ≤400 char — distinguishes "must be present
-│   │   │                                         #   to signal" vs "merely co-expressed"
+│   │   ├── evidence_basis                        # enum: co_expression_only|trafficking|
+│   │   │                                         #   signaling|binding|knockout|mixed
+│   │   ├── rationale                             # ≤400 char — names which axis the
+│   │   │                                         #   evidence speaks to
 │   │   └── cited_evidence_ids: list[str]
 │   ├── similar_paralogs: list[ParalogRisk]       # cross-refs deterministic_features.paralogs
 │   │   └── { paralog_symbol, ecd_similarity_pct_from_deterministic, cross_reactivity_assessment, cited_evidence_ids }
@@ -540,7 +627,7 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 - Migrating old mock `data/annotations/*.json` records — they're discardable.
 - A surrogate-target recommender — that's translational and belongs in a separate downstream layer.
 - Multi-isoform tissue dominance from RNA-seq — too heavy for v1.0.0; the agent will summarize from literature with the deterministic topology side-by-side.
-- AlphaFold-Multimer / partner complexes for `co_receptor_for_function` — single-chain AlphaFold only for v1.0.0.
+- AlphaFold-Multimer / partner complexes for `co_receptor_requirements` — single-chain AlphaFold only for v1.0.0.
 - **Glycosylation features (#2)** — defer to v1.1. UniProt `ft_carbohyd` data is available; will land additively once v1.0.0 stabilizes.
 - **Surface-exposed epitope candidates (#3)** — defer. Needs SASA+DSSP integration plus cutoff calibration against known-epitope proteins. The LLM still discusses epitope masking from literature.
 - **Per-section confidence (#4)** — defer. Top-level `confidence` + `confidence_reasoning` carry forward unchanged.
