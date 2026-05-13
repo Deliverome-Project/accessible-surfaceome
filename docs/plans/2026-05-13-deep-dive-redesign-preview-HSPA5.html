@@ -543,11 +543,10 @@
             </div>
 
             <div class="filters-group">
-              <p class="filters-group__title">Topology / quality</p>
+              <p class="filters-group__title">Topology</p>
               <div class="chip-row">
                 <span class="chip chip--teal">n_term_extracellular=TRUE</span>
                 <span class="chip chip--teal">c_term_extracellular=TRUE</span>
-                <span class="chip chip--strong">knowledge_gaps_max_impact=HIGH</span>
               </div>
               <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
                 Topology booleans read TRUE because DeepTMHMM has no TM helix to anchor against
@@ -1384,70 +1383,16 @@
 
       <hr class="divider" />
 
-      <!-- ─────────── SECTION 7 — KNOWLEDGE GAPS ─────────── -->
-      <article class="card">
-        <div class="card__head">
-          <div class="eyebrow">
-            <span class="eyebrow__n">7</span>
-            <span>What we couldn't determine</span>
-          </div>
-          <h3 class="h-section">The <em>real</em> uncertainties</h3>
-        </div>
-        <div class="card__body">
-          <ul class="risk-list">
-            <li class="risk-card">
-              <div class="risk-card__head">
-                <span class="risk-card__title">
-                  Molecular mechanism of GRP78 ER → plasma membrane translocation
-                </span>
-                <span class="chip chip--muted">conflicting</span>
-                <span class="chip chip--strong">impact=HIGH</span>
-                <span class="risk-card__cite">[evi_73, evi_74]</span>
-              </div>
-              <p class="risk-card__body">
-                Three proposed mechanisms in the literature; no consensus. This caps top-level
-                confidence at <strong>moderate</strong>.
-                <strong>Suggested resolution:</strong> dominant-negative MTJ-1 + KDEL-receptor
-                rescue experiments in tumor cells; mass-spec characterization of any
-                post-translational modifications on the surface pool.
-              </p>
-            </li>
-            <li class="risk-card">
-              <div class="risk-card__head">
-                <span class="risk-card__title">
-                  Is surface GRP78 the same biochemical species as ER GRP78?
-                </span>
-                <span class="chip chip--muted">conflicting</span>
-                <span class="chip chip--strong">impact=HIGH</span>
-                <span class="risk-card__cite">[evi_61]</span>
-              </div>
-              <p class="risk-card__body">
-                KDEL-trimmed? Phosphorylated? Anchored to a partner? The GRP78-N fragment
-                question is relevant here.
-                <strong>Suggested resolution:</strong> surface biotinylation + IP-MS with PTM
-                mapping, comparing surface vs ER fractions.
-              </p>
-            </li>
-            <li class="risk-card risk-card--info">
-              <div class="risk-card__head">
-                <span class="risk-card__title">
-                  Quantitative surface : ER ratio across tumor types
-                </span>
-                <span class="chip chip--muted">no_literature</span>
-                <span class="chip">impact=MODERATE</span>
-              </div>
-              <p class="risk-card__body">
-                Surface fraction is reported qualitatively as "high" in many tumors but rarely
-                quantified. <strong>Suggested resolution:</strong> tumor-type-stratified
-                quantitative flow + intact-cell surface biotinylation, normalized to total
-                cellular GRP78.
-              </p>
-            </li>
-          </ul>
-        </div>
-      </article>
+      <!-- §7 Knowledge Gaps card dropped — knowledge_gaps schema block retired.
+           GRP78's two HIGH-impact uncertainties (mechanism of ER→PM translocation,
+           biochemical identity of surface vs ER form) now flow through:
+           * §1 contradicting_evidence (the conflicting-mechanism reports)
+           * top-level confidence_reasoning (the LLM lowers confidence and
+             explains why; this is why GRP78's confidence reads MODERATE)
+           * §6 partner-required-for-surface-expression risk card (the
+             mechanism debate is partly an open question about which
+             partners are obligate). -->
 
-      <hr class="divider" />
 
       <!-- ─────────── STRUCTURE APPENDIX ─────────── -->
       <article class="card">

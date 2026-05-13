@@ -957,23 +957,10 @@
             </div>
 
             <div class="filters-group">
-              <p class="filters-group__title">Topology / quality</p>
+              <p class="filters-group__title">Topology</p>
               <div class="chip-row">
                 <span class="chip chip--teal">n_term_extracellular=TRUE</span>
                 <span class="chip chip--muted">c_term_extracellular=FALSE</span>
-                <span class="chip chip--strong">knowledge_gaps_max_impact=HIGH</span>
-              </div>
-              <div class="annot">
-                <span class="annot__path">filters.knowledge_gaps_max_impact</span>
-                ·
-                <span class="annot__type"
-                  >Literal["high","moderate","low","none"]</span
-                >
-                · replaces the earlier boolean
-                <code>has_knowledge_gaps</code> — every gene has some gaps;
-                severity (max <code>impact_on_confidence</code> across the
-                list) is what filters usefully.
-                <span class="annot__prov">D</span>
               </div>
               <div class="annot">
                 <span class="annot__path"
@@ -983,7 +970,9 @@
                 <span class="annot__type">bool each</span> · derived from
                 <code>canonical_topology.{n,c}_terminal_orientation == "extracellular"</code>
                 · both together let a reader pick proteins where a tag can be
-                fused at either terminus
+                fused at either terminus.
+                <em>knowledge_gaps_max_impact chip dropped along with the
+                knowledge_gaps block (§7 was retired).</em>
                 <span class="annot__prov">D</span>
               </div>
             </div>
@@ -2099,74 +2088,11 @@
 
       <hr class="divider" />
 
-      <!-- ─────────── SECTION 7 — KNOWLEDGE GAPS ─────────── -->
-      <article class="card">
-        <div class="card__head">
-          <div class="eyebrow">
-            <span class="eyebrow__n">7</span>
-            <span>What we couldn't determine</span>
-          </div>
-          <h3 class="h-section">The <em>honest gaps</em></h3>
-        </div>
-        <div class="card__body">
-          <ul class="risk-list">
-            <li class="risk-card">
-              <div class="risk-card__head">
-                <span class="risk-card__title"
-                  >Cell-state-dependent surface turnover in stressed
-                  epithelia</span
-                >
-                <span class="chip">no_literature</span>
-                <span class="chip chip--strong">impact=HIGH</span>
-              </div>
-              <p class="risk-card__body">
-                <strong>Suggested resolution:</strong> live-cell flow time-course
-                on stressed-vs-unstressed primary keratinocytes.
-              </p>
-            </li>
-            <li class="risk-card risk-card--info">
-              <div class="risk-card__head">
-                <span class="risk-card__title"
-                  >Glycoform heterogeneity across tissues</span
-                >
-                <span class="chip chip--muted">conflicting</span>
-                <span class="chip">impact=MODERATE</span>
-                <span class="risk-card__cite">[evi_43, evi_44]</span>
-              </div>
-              <p class="risk-card__body">
-                <strong>Suggested resolution:</strong> tissue-specific
-                N-glycoproteomics on matched normal/tumor pairs.
-              </p>
-            </li>
-            <li class="risk-card risk-card--ok">
-              <div class="risk-card__head">
-                <span class="risk-card__title"
-                  >In-vivo shedding rate (vs. in-vitro ADAM17 assays)</span
-                >
-                <span class="chip chip--muted">outside_scope</span>
-                <span class="chip chip--muted">impact=LOW</span>
-              </div>
-              <p class="risk-card__body">
-                <strong>Suggested resolution:</strong> serum sEGFR longitudinal
-                cohort study.
-              </p>
-            </li>
-          </ul>
-          <div class="annot annot--llm">
-            <span class="annot__path">knowledge_gaps</span> ·
-            <span class="annot__type"
-              >list[KnowledgeGap] = { question, why_unresolved:
-              Literal["no_literature","conflicting","outside_scope"], detail,
-              <strong>impact_on_confidence</strong>: Literal["high","moderate","low"],
-              <strong>suggested_resolution</strong>: str | None,
-              cited_evidence_ids }</span
-            >
-            <span class="annot__prov">L</span>
-          </div>
-        </div>
-      </article>
+      <!-- §7 Knowledge Gaps card dropped — the knowledge_gaps schema block
+           was retired. Uncertainty content lives in §1 contradicting_evidence,
+           §1 evidence_grade + grade_rationale, and top-level confidence +
+           confidence_reasoning. -->
 
-      <hr class="divider" />
 
       <!-- ─────────── STRUCTURE APPENDIX ─────────── -->
       <article class="card">

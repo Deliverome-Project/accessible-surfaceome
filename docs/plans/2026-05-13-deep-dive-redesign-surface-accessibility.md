@@ -61,9 +61,6 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │  TOPOLOGY                                                           │
 │    n_term_extracellular=TRUE · c_term_extracellular=FALSE          │
 │                                                                     │
-│  QUALITY                                                            │
-│    knowledge_gaps_max_impact=HIGH                                   │
-│                                                                     │
 │  (Catalog page renders each as a chip; click to filter the gene    │
 │  list. Per-gene page surfaces these in the executive header above.) │
 └─────────────────────────────────────────────────────────────────────┘
@@ -346,7 +343,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `mouse=88.2% · cyno=99.1%` | `filters.mouse_ortholog_ecd_pct_identity` + `filters.cyno_ortholog_ecd_pct_identity` | `float [0.0–100.0]` each | D | `deterministic_features.orthologs.{species}[is_canonical].ecd_pct_identity_to_human_canonical` — pulled straight from Compara, no LLM rollup |
 | `n_term_extracellular` (bool) | `filters.n_term_extracellular` | `bool` | D | `deterministic_features.canonical_topology.n_terminal_orientation == "extracellular"` |
 | `c_term_extracellular` (bool) | `filters.c_term_extracellular` | `bool` | D | `deterministic_features.canonical_topology.c_terminal_orientation == "extracellular"` |
-| `knowledge_gaps_max_impact=high` | `filters.knowledge_gaps_max_impact` | `Literal["high","moderate","low","none"]` | D | `max(g.impact_on_confidence for g in knowledge_gaps, default="none")` — replaces the earlier boolean `has_knowledge_gaps`, which was TRUE for almost every gene and carried no signal |
+| ~~`knowledge_gaps_max_impact`~~ | ~~`filters.knowledge_gaps_max_impact`~~ | **DROPPED** along with the `knowledge_gaps` block (Reviewer-feedback table has the rationale). Uncertainty signal flows through `filters.confidence` + `filters.evidence_grade` instead. | — |
 
 **Filters-only rule (no duplication):** the three LLM-emitted dimensions (`expression_level`, `expression_breadth`, `surface_specificity`) live ONLY in `filters`. The deep `surface_evidence.expression_levels[]` list still carries per-context detail ("epithelial tumors HIGH; blood ABSENT") but the rolled-up filter values aren't repeated there. Zero drift risk.
 
@@ -459,7 +456,7 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 | Orthologs | Replaced translational `cross_species_useful_for: list["mouse_efficacy", "cyno_tox", ...]` with `cross_species_accessibility_relevance: Literal["strongly_conserved","partially_conserved",...]` + per-species `species_caveats`. |
 | Accessibility risks | Renamed `druggability_class` → `ecd_accessibility_class`. Added `severity` + `evidence_strength` to every risk. Added `restricted_subdomain` as a first-class risk. **Internalization/recycling is intentionally out of scope** for v1.0.0 — it is pro for some modalities (ADC delivery) and con for others (binder dwell time), so labeling it as a "risk" pre-judges; deferred until a separate dynamics block can frame it neutrally. |
 | References instead of mirrors | Replaced the `*_from_deterministic` mirrored-value pattern with references — `ParalogRisk.paralog_uniprot_acc` FK into `deterministic_features.paralogs[i].paralog_uniprot_acc` (unique per paralog, unlike `family_id` which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton field; viewer reads `ecd_length_residues` directly. Viewer/orchestrator do the lookup; no drift validation needed. |
-| Knowledge gaps | Added `impact_on_confidence: high\|moderate\|low` and `suggested_resolution: str\|None` (the experiment that would resolve the gap). |
+| ~~Knowledge gaps~~ — **later dropped** | Originally added `impact_on_confidence` + `suggested_resolution`. The block was dropped entirely in the round-5 walkthrough — most entries duplicated `contradicting_evidence` (for `conflicting` cases) or read as noise (every gene has "no quantitative data" gaps). Uncertainty now lives in contradicting_evidence + confidence_reasoning + evidence_grade. The R7 validator (HIGH-impact gap caps confidence) was retired with it. |
 | Filters block | Added `evidence_grade` and `has_restricted_subdomain`. Replaced `cross_species_useful_for: list[enum]` with single-enum `cross_species_accessibility_relevance`. Top field stays `filters.surface_accessibility` (an interim rename to `surface_targetability` was tried and reverted for vocabulary consistency with the rest of the record). No `has_rapid_internalization` — internalization is out of scope, see Accessibility risks row. |
 | Triage substructure port (round 3) | The first round only ported triage's top-level `reason` enum into `accessibility_modulation.category`. The triage *system prompt* enumerates rich descriptive substructure inside each reason — specific stress triggers (`stress, oncogenic transformation, immunogenic / programmed cell death, infection, activation-induced display`); lineage taxonomy (`germline / reproductive, developmental, specialized somatic`); dual-localization partner compartments — that the first port lost. Round 3 promotes that prose into three new optional sub-fields on `AccessibilityModulationObservation`: `cell_state_trigger` (closed enum: ER_stress / heat_shock / oxidative_stress / DNA_damage_response / apoptosis / necroptosis / oncogenic_transformation / infection_{viral,bacterial} / immune_activation / antigen_stimulation / cytokine_stimulation / hypoxia / nutrient_deprivation / hyperthermia / mechanical_stress / other / unknown), `restricted_lineage` (germline_reproductive / embryonic_developmental / hematopoietic / neural / epithelial / endothelial / muscle / endocrine / specialized_somatic_other / other / unknown), `dual_loc_partner_compartment` (ER / Golgi / endosome / lysosome / mitochondrion / nucleus / cytosol / secretory_vesicle / other / unknown). All three are `None` by default; Pydantic validators enforce category-conditional pairing (`cell_state_trigger ≠ None` only when category is state-induced; `restricted_lineage ≠ None` only when category is tissue_restricted_surface; `dual_loc_partner_compartment ≠ None` only when category is dual_localization). Catalog filter implications: "show me apoptosis-induced surface proteins" or "show me proteins cycling between PM and lysosome" become one-clause indexed queries. |
 
@@ -476,44 +473,16 @@ Six candidates were considered. **#1 (knowledge gaps) and #6 (filters block) lan
 
 | # | Feature | Decision | Notes |
 |---|---|---|---|
-| 1 | **Knowledge gaps** | **IN** | New top-level field `knowledge_gaps: list[KnowledgeGap]` where each entry is `{ question: str (≤200), why_unresolved: Literal["no_literature","conflicting","outside_scope"], cited_evidence_ids: list[str] }`. Rendered as a "What we couldn't determine" card between *Accessibility Risks* and the *Evidence Ledger*. The agent prompt instructs the model to enumerate questions it tried and couldn't resolve. |
+| 1 | ~~Knowledge gaps~~ | **DROPPED in round 5** | Was added in round 2 with the rationale that consultants ask "what don't you know?" — but in practice most entries duplicated `contradicting_evidence` and the rest read as noise (every gene has "no quantitative data" gaps). Dropped entirely; uncertainty signal flows through `contradicting_evidence` + `confidence_reasoning` + `evidence_grade` + per-section rationale. |
 | 6 | **Filters block (catalog-facing)** | **IN** | New top-level `filters` block — flat, closed-enum/bool/list rollups of the deep buckets. Powers chip filters + faceted search on the catalog/index page, and indexed D1 queries on `deep_dive_run`. Three rollup dimensions (`expression_level`, `expression_breadth`, `surface_specificity`) are LLM-emitted and live ONLY in `filters` (no duplication). The rest are orchestrator-derived from deeper fields. Co-receptor splits into two booleans: `requires_coreceptor_for_expression` (does the partner have to be present for the target to reach the surface?) and `requires_coreceptor_for_function` (does the partner have to be present for the target to signal?). |
 | 2 | Glycosylation features | OUT (v1.0.0) | Defer to v1.1 — UniProt `ft_carbohyd` data is available; can land additively once the v1.0.0 surface is stable. For now, the LLM cites glycosylation from literature in `epitope_masking.mechanism`. |
 | 3 | Surface-exposed epitope candidates | OUT (v1.0.0) | Defer. Needs SASA+DSSP integration in alphafold_fetcher + cutoff calibration against known-epitope proteins (EGFR domain III, PD-L1 IgV face). The LLM still discusses epitope masking from literature; we just don't have the structural-grounding numbers. |
 | 4 | Per-section confidence | OUT (v1.0.0) | Defer. Top-level `confidence` + `confidence_reasoning` carry forward unchanged. |
 | 5 | Run-level methodology block | OUT (v1.0.0) | Defer. `.runs/<timestamp>/summary.json` already captures this for reproducibility; surfacing it on the record itself can come later. |
 
-### Knowledge gaps — placement in the mockup
+### Knowledge gaps — DROPPED
 
-Inserted as a card between *Accessibility Risks* and the *Evidence Ledger*:
-
-```
-┌─ 7. WHAT WE COULDN'T DETERMINE  (with impact + suggested resolve)──┐
-│                                                                     │
-│  • Cell-state-dependent surface turnover in stressed epithelia     │
-│      why_unresolved: no_literature                                  │
-│      impact_on_confidence: HIGH                                     │
-│      suggested resolution: live-cell flow time-course on            │
-│        stressed-vs-unstressed primary keratinocytes                 │
-│                                                                     │
-│  • Glycoform heterogeneity across tissues                          │
-│      why_unresolved: conflicting  [evi_43, evi_44]                  │
-│      impact_on_confidence: MODERATE                                 │
-│      suggested resolution: tissue-specific N-glycoproteomics on     │
-│        matched normal/tumor pairs                                   │
-│                                                                     │
-│  • In-vivo shedding rate (vs. in-vitro ADAM17 assays)              │
-│      why_unresolved: outside_scope                                  │
-│      impact_on_confidence: LOW                                      │
-│      suggested resolution: serum sEGFR longitudinal cohort study    │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Knowledge gaps — schema entry (added to the top-level shape)
-
-| Rendered | Schema path | Type | Prov |
-|---|---|---|---|
-| Each bullet `• {question} — {why_unresolved} · impact=X · resolve: …` | `knowledge_gaps: list[KnowledgeGap]` | each: `KnowledgeGap = { question: str (≤200), why_unresolved: Literal["no_literature","conflicting","outside_scope"], detail: str (≤300) \| None, impact_on_confidence: Literal["high","moderate","low"], suggested_resolution: str (≤300) \| None, cited_evidence_ids: list[str] }` | L |
+The `knowledge_gaps` block was added in round 2 and dropped after the round-5 walkthrough. The honest-caveat framing was nice but most entries either duplicated `contradicting_evidence` (for `why_unresolved="conflicting"` cases) or read as low-signal noise (every gene has some "no quantitative data" gap). Uncertainty now lives in: `contradicting_evidence` (known literature conflicts), `confidence` + `confidence_reasoning` (overall uncertainty — agent prompt instructs the model to lower confidence and explain why when load-bearing questions are unresolved), `evidence_grade` + `grade_rationale` (evidence quality), and each section's `rationale` fields. The R7 validator (HIGH-impact gap caps confidence) was retired with it.
 
 ## Recommended approach
 
@@ -601,13 +570,10 @@ SurfaceomeRecord (v1.0.0)
 │   ├── mouse_ortholog_ecd_pct_identity           # D ← orthologs.mouse[is_canonical].ecd_pct_identity
 │   ├── cyno_ortholog_ecd_pct_identity            # D ← orthologs.cynomolgus[is_canonical].ecd_pct_identity
 │   ├── n_term_extracellular: bool                # D ← canonical_topology.n_terminal_orientation
-│   ├── c_term_extracellular: bool                # D ← canonical_topology.c_terminal_orientation
-│   └── knowledge_gaps_max_impact                 # enum: high|moderate|low|none
-│                                                 #   D ← max(g.impact_on_confidence for g in
-│                                                 #          knowledge_gaps, default="none")
-│                                                 #   (replaces boolean has_knowledge_gaps —
-│                                                 #    every gene has some gaps; severity is
-│                                                 #    what actually filters)
+│   └── c_term_extracellular: bool                # D ← canonical_topology.c_terminal_orientation
+│   # knowledge_gaps_max_impact was dropped with the knowledge_gaps block
+│   # (Reviewer-feedback table has the rationale). Catalog readers infer
+│   # uncertainty from `confidence` + `evidence_grade` filters directly.
 │
 ├── surface_evidence                              [LLM — section 1 of viewer]
 │   ├── evidence_grade                            # enum: direct_multi_method|direct_single_method|
@@ -888,12 +854,14 @@ SurfaceomeRecord (v1.0.0)
 │   # bound binding sites) are functional/structural concerns rather than
 │   # accessibility concerns and are out of scope for v1.0.0.
 │
-├── knowledge_gaps: list[KnowledgeGap]            [LLM — section 7]
-│   └── { question, why_unresolved: no_literature|conflicting|outside_scope, detail,
-│         impact_on_confidence: high|moderate|low,
-│         suggested_resolution: str|None,         # next experiment that would resolve the gap
-│         cited_evidence_ids }
-│
+# knowledge_gaps was added in round 2 and dropped later (see Reviewer-
+# feedback table for the rationale). Honest-caveat content now lives in:
+#   * contradicting_evidence (known conflicts)
+#   * confidence + confidence_reasoning (overall uncertainty)
+#   * evidence_grade + grade_rationale (evidence quality concerns)
+#   * Per-section rationale fields where claim-specific
+#
+
 ├── evidence: list[Evidence]                      [reuse current Evidence/SourceRef/EvidenceSpan]
 ├── search_log: list[SearchEntry]                 [reuse]
 ├── confidence: float
@@ -907,7 +875,7 @@ SurfaceomeRecord (v1.0.0)
 - LLM blocks that need a deterministic number **reference** it rather than mirror it. `paralog_assessment[i].paralog_uniprot_acc` is an FK into `deterministic_features.paralogs[i]` (using the unique UniProt accession, not the family_id which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton and the viewer/orchestrator reads `ecd_length_residues` from it directly. **FK validation is schema-level** via a `@model_validator(mode="after")` on `SurfaceomeRecord` — each `paralog_assessment[i].paralog_uniprot_acc` must resolve to an entry in `deterministic_features.paralogs` or the record fails Pydantic validation at parse time (consistent with the other model_validators on this class). Records read from disk get validated too, not just freshly-emitted ones.
 - **Evidence model unchanged.** Keep `EvidenceClaim` → `Evidence` → `SourceRef` with substring-validated quote spans. Every `cited_evidence_ids` list references `evidence[i].evidence_id`. This is the most rigorous part of the existing pipeline; the redesign preserves it.
 - **Cross-agent coherence with `surface_triage`**. Top-level `triage_signal` is populated by the orchestrator from the most recent triage record. A validator (`_check_triage_signal_consistency`) flags inconsistency between `triage_signal` and `executive_summary.surface_accessibility`: e.g., triage=`unlikely` + accessibility=`high` flips `contradiction_flag=True` and demands the LLM justify the disagreement in `confidence_reasoning`. `accessibility_modulation.category` mirrors triage's contextual `reason` taxonomy verbatim for its first 5 values (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`); the deep-dive's expansions (`activation_induced`, `stress_induced`, …) roll up to those at cross-validation time.
-- **Knowledge-gaps / confidence consistency**. Pydantic validator: if any `knowledge_gaps[i].impact_on_confidence == "high"`, then top-level `confidence` must be ≤ `"moderate"`. Prevents the LLM from claiming high confidence while simultaneously flagging high-impact gaps.
+- **Uncertainty routing**. The earlier `knowledge_gaps` block + its R7 validator were dropped. Uncertainty now lives in `contradicting_evidence` (for known literature conflicts), `confidence` + `confidence_reasoning` (overall uncertainty — the agent prompt instructs the model to lower confidence when load-bearing questions are unresolved), `evidence_grade` + `grade_rationale` (evidence quality), and per-section rationale fields. No structured caveats list.
 - **Numeric ranges enforced at validation time.** Floats carry explicit Pydantic bounds: `Field(ge=0.0, le=100.0)` for pct-identity / pct-similarity / pLDDT; `Field(ge=0.0, le=1.0)` for disordered_fraction / solvent_accessible_fraction. A buggy fetcher producing 110.0 or -5.0 is rejected before it reaches D1.
 - **String length limits enforced.** Every prose field declares `Field(max_length=N)` — `≤200` for short rationale fields, `≤300` for medium, `≤400` for longer rationale, `≤600` for the executive paragraph, `≤800` for evidence_summary / grade_rationale. The mockup annotations call these out per-field.
 - **Hybrid-enum pattern**: every closed enum that takes an `"other"` value pairs with a required `*_other_label: str | None` and a validator that enforces `category == "other" ↔ category_other_label is not None`. Applies to `accessibility_modulation.category` and any future open-ended enums.
