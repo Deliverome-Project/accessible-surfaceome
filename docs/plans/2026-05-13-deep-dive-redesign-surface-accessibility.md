@@ -1051,9 +1051,22 @@ Single-shot replacement of the agent side. After this PR merges, `uv run accessi
 
 **Acceptance criteria for PR-α:** `uv run accessible-surfaceome agents annotate EGFR` exits 0; the resulting `data/annotations/EGFR.json` validates against `SurfaceomeRecord` v1.0.0; the 9 validators are enforced (a deliberately-bad fixture fails parse); the three Managed Agents are registered and their prompts SHA-match the on-disk `system.md` files.
 
+**Soak period between PR-α and PR-β.** Do *not* cut PR-β the day PR-α merges. The hardest-to-roll-back risk in PR-β is a schema gap discovered after the viewer is wired up — fixing it then means rippling through `models.py` + D1 + viewer types in lockstep. Catch it during soak instead. Concretely, between PR-α and PR-β:
+
+1. Run `annotate` on a stress-test set covering the failure modes: **EGFR** (well-studied baseline), **GRP78 / HSPA5** (DB disagreement + paralog-heavy + ER↔PM cycling), **GPR75** (orphan GPCR + small ECD + sparse evidence), **CD81** (tetraspanin with minimal ECD loops), **TNFR1** (shed receptor with soluble pool), one more **orphan GPCR** of your choice.
+2. Eyeball each record for:
+   - `filters` values land sensibly (no weird `surface_specificity` / `expression_breadth` rollups; `max_paralog_ecd_pct_identity` populated where paralogs exist)
+   - `headline_risks` picks aren't gameable (agent isn't reaching for `other` to dodge, isn't double-counting `epitope_masked` + `restricted_subdomain`)
+   - `accessibility_modulation[i]` entries respect the sub-enum validators (cell_state_trigger when category is state-induced; restricted_lineage only when tissue_restricted_surface; etc.)
+   - `confidence_reasoning` actually explains the moderate/low calls — not boilerplate
+   - `triage_signal` ↔ `executive_summary.surface_accessibility` disagreements are justified in `confidence_reasoning` per the validator
+3. If a schema gap surfaces (a field that should exist, an enum value that's missing, a validator that's wrong), fix it in a small PR-α follow-up *before* PR-β starts. Prompt-only fixes don't need a PR — they go through `agents sync` auto-sync.
+
+**Gate for cutting PR-β:** stress-test set above has been annotated, records reviewed, no schema gaps outstanding. Prompt iteration may still be happening — that's fine, prompts are tunable independently of D1 / viewer.
+
 **PR-β — D1 + viewer cutover**
 
-Once PR-α is producing v1.0.0 records on disk, this PR makes them visible end-to-end.
+Once PR-α is producing v1.0.0 records on disk *and* the soak period has ratified the schema, this PR makes them visible end-to-end.
 
 - D1 schema: drop `deep_dive_run` / `deep_dive_evidence` / `deep_dive_search_log` (mock data only); recreate for the v1.0.0 shape; add `deep_dive_features` storing the deterministic block as JSON for fast filter-by-topology queries. Update [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql).
 - [scripts/upload_triage_runs_to_d1.py](scripts/upload_triage_runs_to_d1.py) — new payload shape; write to `deep_dive_features`.
