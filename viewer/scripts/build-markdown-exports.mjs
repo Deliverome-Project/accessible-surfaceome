@@ -185,10 +185,17 @@ function md(rec, structureData, canonicalSequence) {
     `| Expression | level=${prettyEnum(f.expression_level)} · breadth=${prettyEnum(f.expression_breadth)} · specificity=${prettyEnum(f.surface_specificity)} |`,
   );
   lines.push(
-    `| Risks | shed=${f.has_shed_form} · secreted=${f.has_secreted_form} · coreceptor=${f.requires_coreceptor_for_expression} · paralog=${f.has_paralog_cross_reactivity_risk} · masking=${f.has_epitope_masking} · subdomain=${f.has_restricted_subdomain} |`,
+    `| Risks | shed=${f.has_shed_form} · secreted=${f.has_secreted_form} · coreceptor=${f.requires_coreceptor_for_expression} · masking=${f.has_epitope_masking} · subdomain=${f.has_restricted_subdomain} |`,
   );
   lines.push(
     `| Cross-species | mouse=${f.mouse_ortholog_ecd_pct_identity.toFixed(1)}% · cyno=${f.cyno_ortholog_ecd_pct_identity.toFixed(1)}% |`,
+  );
+  lines.push(
+    `| Paralogs | max %ECD identity = ${
+      f.max_paralog_ecd_pct_identity == null
+        ? "no Compara paralogs"
+        : `${f.max_paralog_ecd_pct_identity.toFixed(1)}%`
+    } |`,
   );
   lines.push(
     `| Topology | TM=${ct.tm_helix_count} · N-term-ECF=${f.n_term_extracellular} · C-term-ECF=${f.c_term_extracellular} |`,
@@ -345,18 +352,14 @@ function md(rec, structureData, canonicalSequence) {
     }
     lines.push("");
   }
-  if (rec.paralog_assessment.length) {
-    lines.push("**LLM cross-binding assessment**");
-    lines.push("");
-    lines.push("| Paralog | Cross-reactivity | Severity | Evidence | Rationale |");
-    lines.push("|---|---|---|---|---|");
-    for (const a of rec.paralog_assessment) {
-      lines.push(
-        `| ${a.paralog_symbol} | ${prettyEnum(a.cross_reactivity_assessment)} | ${prettyEnum(a.severity)} | ${prettyEnum(a.evidence_strength)} | ${a.rationale} |`,
-      );
-    }
-    lines.push("");
-  }
+  // PR23 round 10 dropped the LLM paralog cross-reactivity verdict.
+  // Per-antibody cross-reactivity behavior is captured in §3
+  // `AntibodyRef.cross_reactivity_notes`; the gene-family prior is
+  // captured by `filters.max_paralog_ecd_pct_identity`.
+  lines.push(
+    `*Per-antibody cross-reactivity behavior is captured per-clone under §3 (Surface evidence → antibodies). The LLM cross-reactivity verdict is deferred to v1.x.*`,
+  );
+  lines.push("");
 
   // --- Orthologs ---
   lines.push("## 7. Orthologs");

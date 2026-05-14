@@ -29,8 +29,9 @@ GPR75 is an orphan class-A GPCR with a short ~41-aa extracellular N-terminal tai
 |---|---|
 | Accessibility | overall=Moderate · conf=Moderate · subcategory=GPCR · grade=Supportive but indirect · ecd=Small · density=Low |
 | Expression | level=Moderate · breadth=Restricted · specificity=Surface Dominant |
-| Risks | shed=false · secreted=false · coreceptor=false · paralog=false · masking=false · subdomain=false |
+| Risks | shed=false · secreted=false · coreceptor=false · masking=false · subdomain=false |
 | Cross-species | mouse=90.1% · cyno=98.4% |
+| Paralogs | max %ECD identity = 18.2% |
 | Topology | TM=7 · N-term-ECF=true · C-term-ECF=false |
 
 ## 3. Surface evidence
@@ -97,11 +98,7 @@ Surface-localization evidence comes primarily from tagged overexpression in HEK2
 | CCRL2 | [O00421](https://www.uniprot.org/uniprotkb/O00421) | 18.2% | ENSFM00390000965 |
 | GPR15 | [P49685](https://www.uniprot.org/uniprotkb/P49685) | 16.8% | ENSFM00390000965 |
 
-**LLM cross-binding assessment**
-
-| Paralog | Cross-reactivity | Severity | Evidence | Rationale |
-|---|---|---|---|---|
-| CCRL2 | Negligible | Low | Inferred | Only ~18% ECD identity to GPR75. Cross-binding by an anti-GPR75 mAb against CCRL2 would require coincidental ECD-loop convergence; no empirical binders to validate either way. |
+*Per-antibody cross-reactivity behavior is captured per-clone under §3 (Surface evidence → antibodies). The LLM cross-reactivity verdict is deferred to v1.x.*
 
 ## 7. Orthologs
 

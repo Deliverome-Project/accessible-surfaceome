@@ -76,11 +76,6 @@ export type SurfaceSpecificity =
 
 export type Severity = "high" | "moderate" | "low" | "unknown";
 export type EvidenceStrength = "strong" | "moderate" | "weak" | "inferred";
-export type CrossReactivityAssessment =
-  | "high"
-  | "moderate"
-  | "low"
-  | "negligible";
 
 export type Orientation = "extracellular" | "cytoplasmic";
 export type OrthologyType = "one2one" | "one2many" | "many2many";
@@ -89,7 +84,6 @@ export type HeadlineRisk =
   | "shed_form"
   | "secreted_form"
   | "co_receptor"
-  | "paralog_cross_reactivity"
   | "ecd_too_small"
   | "epitope_masked"
   | "isoform_decoy"
@@ -143,11 +137,16 @@ export interface Filters {
   has_shed_form: boolean;
   has_secreted_form: boolean;
   requires_coreceptor_for_expression: boolean;
-  has_paralog_cross_reactivity_risk: boolean;
   has_epitope_masking: boolean;
   has_restricted_subdomain: boolean;
   mouse_ortholog_ecd_pct_identity: number;
   cyno_ortholog_ecd_pct_identity: number;
+  /** PR23 round 10: replaces the dropped LLM
+   *  `has_paralog_cross_reactivity_risk` bool. Deterministic
+   *  rollup `max(deterministic_features.paralogs[].ecd_pct_identity)`;
+   *  `null` when the gene has no paralogs in Compara. Catalog
+   *  readers filter on raw %identity instead of an LLM verdict. */
+  max_paralog_ecd_pct_identity: number | null;
   n_term_extracellular: boolean;
   c_term_extracellular: boolean;
 }
@@ -594,18 +593,15 @@ export interface BiologicalContext {
 }
 
 // ============================================================
-// Accessibility risks + paralog assessment
+// Accessibility risks
+// ------------------------------------------------------------
+// PR23 round 10 dropped the LLM `paralog_assessment: list[ParalogRisk]`
+// block entirely. Per-antibody cross-reactivity behavior is captured
+// in `AntibodyRef.cross_reactivity_notes` (§1 surface evidence);
+// the gene-family prior is captured by the deterministic
+// `filters.max_paralog_ecd_pct_identity` rollup. The §4 Paralogs
+// card now renders the Compara table only.
 // ============================================================
-
-export interface ParalogRisk {
-  paralog_symbol: string;
-  paralog_uniprot_acc: string;
-  cross_reactivity_assessment: CrossReactivityAssessment;
-  severity: Severity;
-  evidence_strength: EvidenceStrength;
-  rationale: string;
-  cited_evidence_ids: string[];
-}
 
 export interface ShedForm {
   present: boolean;
@@ -762,7 +758,6 @@ export interface SurfaceomeRecord {
   deterministic_features: DeterministicFeatures;
   surface_evidence: SurfaceEvidence;
   biological_context: BiologicalContext;
-  paralog_assessment: ParalogRisk[];
   accessibility_risks: AccessibilityRisks;
   evidence: Evidence[];
   search_log: SearchEntry[];

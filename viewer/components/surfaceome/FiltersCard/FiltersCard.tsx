@@ -64,7 +64,6 @@ export function FiltersCard({ rec, n }: Props) {
         boolPill("shed form", f.has_shed_form),
         boolPill("secreted form", f.has_secreted_form),
         boolPill("co-receptor for expression", f.requires_coreceptor_for_expression),
-        boolPill("paralog cross-reactivity", f.has_paralog_cross_reactivity_risk),
         boolPill("epitope masking", f.has_epitope_masking),
         boolPill("restricted subdomain", f.has_restricted_subdomain),
       ],
@@ -78,6 +77,20 @@ export function FiltersCard({ rec, n }: Props) {
         <StatusPill key="c" tone="teal" size="sm">
           cyno · {f.cyno_ortholog_ecd_pct_identity.toFixed(1)}%
         </StatusPill>,
+      ],
+    },
+    {
+      label: "Paralogs (deterministic)",
+      pills: [
+        f.max_paralog_ecd_pct_identity == null ? (
+          <StatusPill key="p" tone="neutral" size="sm">
+            no Compara paralogs
+          </StatusPill>
+        ) : (
+          <StatusPill key="p" tone="lavender" size="sm">
+            max %ECD identity · {f.max_paralog_ecd_pct_identity.toFixed(1)}%
+          </StatusPill>
+        ),
       ],
     },
     {
