@@ -123,8 +123,8 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 14,
-        "axes.labelsize": 16,
+        "font.size": 17,
+        "axes.labelsize": 19,
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -139,12 +139,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 13,
-        "ytick.labelsize": 13,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 13,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -303,7 +303,7 @@ def main() -> None:
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
                 ha="center", va="bottom",
-                fontsize=9, color=BRAND_INK,
+                fontsize=11, color=BRAND_INK,
             )
 
     ax.set_xlabel("")
@@ -326,7 +326,7 @@ def main() -> None:
     ax.text(
         0.5, -0.16, "  ·  ".join(subtitle_parts),
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=10, color=BRAND_NEUTRAL,
+        fontsize=12, color=BRAND_NEUTRAL,
     )
     sns.despine(ax=ax, top=True, right=True)
 

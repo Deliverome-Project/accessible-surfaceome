@@ -93,8 +93,8 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 14,
-        "axes.labelsize": 16,
+        "font.size": 17,
+        "axes.labelsize": 19,
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -109,12 +109,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 13,
-        "ytick.labelsize": 13,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 13,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -182,12 +182,12 @@ def main() -> None:
             )
             ax.text(
                 x, acc * 100 + 1.2, f"{acc*100:.1f}%",
-                ha="center", va="bottom", fontsize=9, color=BRAND_INK,
+                ha="center", va="bottom", fontsize=11, color=BRAND_INK,
             )
 
     ax.set_xticks(range(n_models))
-    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=12)
-    ax.set_ylabel("Overall accuracy on 147-gene benchmark", fontsize=11)
+    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=14)
+    ax.set_ylabel("Overall accuracy on 147-gene benchmark", fontsize=13)
     ax.set_ylim(0, 105)
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=BRAND_INK,
@@ -197,7 +197,7 @@ def main() -> None:
     ax.legend(
         handles=legend_handles, title="Variant (hatch)",
         loc="center left", bbox_to_anchor=(1.01, 0.5),
-        frameon=False, fontsize=10, title_fontsize=11,
+        frameon=False, fontsize=12, title_fontsize=16,
     )
     sns.despine(ax=ax, top=True, right=True)
 

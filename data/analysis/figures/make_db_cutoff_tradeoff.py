@@ -91,8 +91,8 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 14,
-        "axes.labelsize": 16,
+        "font.size": 17,
+        "axes.labelsize": 19,
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -107,12 +107,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 13,
-        "ytick.labelsize": 13,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 16,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 13,
+        "legend.fontsize": 16,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -203,7 +203,7 @@ def main() -> None:
 
         ax.set_xscale("log")
         ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=16, fontweight="bold",
+                ha="left", va="top", fontsize=19, fontweight="bold",
                 color=ramp[0])
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
@@ -219,7 +219,7 @@ def main() -> None:
             0.0, -0.30, "\n".join(caption_lines),
             transform=ax.transAxes,
             ha="left", va="top",
-            fontsize=10, color=BRAND_INK,
+            fontsize=12, color=BRAND_INK,
             family="monospace",
         )
 
@@ -237,22 +237,22 @@ def main() -> None:
                    markersize=20, markeredgecolor=RECOMMENDED_EDGE,
                    markeredgewidth=1.4, label="Recommended after trade-off audit"),
     ]
-    legend_ax.legend(handles=handles, loc="upper center", fontsize=13,
+    legend_ax.legend(handles=handles, loc="upper center", fontsize=16,
                      frameon=False, title="Marker shape",
-                     title_fontsize=14)
+                     title_fontsize=17)
     legend_ax.text(
         0.5, 0.10,
         "Per-source missing rule:\n"
         "UniProt / GO / SURFY / CSPA absence → predict 'no'.\n"
         "HPA absence → abstain.",
         transform=legend_ax.transAxes, ha="center", va="bottom",
-        fontsize=11, color=BRAND_NEUTRAL,
+        fontsize=13, color=BRAND_NEUTRAL,
     )
 
     fig.supxlabel("Universe size — proteins this filter would admit "
-                  "(log scale; lower = stricter)", fontsize=13, y=0.02,
+                  "(log scale; lower = stricter)", fontsize=16, y=0.02,
                   color=BRAND_INK)
-    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=13, x=0.005,
+    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=16, x=0.005,
                   color=BRAND_INK)
     plt.tight_layout(rect=[0.015, 0.03, 1, 0.985])
     # Add vertical space between row 1 panels (which have captions below
