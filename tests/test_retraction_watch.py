@@ -14,9 +14,9 @@ Exercises:
 from __future__ import annotations
 
 from accessible_surfaceome.tools._shared import retraction_watch as rw
-from accessible_surfaceome.tools.gene_literature import (
-    _check_retraction,
-    _paper_from_europepmc,
+from accessible_surfaceome.tools._shared.europepmc import (
+    check_retraction as _check_retraction,
+    paper_from_europepmc as _paper_from_europepmc,
 )
 
 

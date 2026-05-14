@@ -354,6 +354,88 @@ class LiteraturePack(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# evidence_retrieval return shapes
+# ---------------------------------------------------------------------------
+
+
+# One first-class retrieval slot per assay category. The agent calls
+# ``evidence_retrieval`` once per category it wants to ground a claim
+# on; empty returns are still recorded in the search_log so reviewers
+# can distinguish "absent" from "not retrieved".
+EvidenceCategory = Literal[
+    "ihc",
+    "if_intact",
+    "flow_cytometry",
+    "surface_biotinylation",
+    "mass_spec_surfaceome",
+    "western_blot_paired",
+    "structure_with_ecd",
+    "hpa_ihc",
+]
+
+
+class CandidateSnippet(BaseModel):
+    """One candidate verbatim fragment ready to drop into ``EvidenceClaim.quote``.
+
+    The text is ≤200 chars and copied verbatim from the cached source body,
+    so the orchestrator's substring check passes when the agent pastes it
+    back into a claim. ``hallmark_phrase`` is the regex tag that fired and
+    is included for audit, not for the agent to act on.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_id: str  # "PMID:..." | "PMC:..." | "HPA:<symbol>"
+    section: PaperSection_
+    figure_or_table_id: str | None = None
+    text: str = Field(..., max_length=200)
+    score: float
+    hallmark_phrase: str
+
+
+class SyntheticSource(BaseModel):
+    """A source body the tool synthesized (e.g. from a local TSV) rather
+    than fetched as a paper. Registered with the orchestrator's
+    ``SourceTextStore`` so quote substring validation works the same way
+    as for PMC papers. ``HPA:<symbol>`` is the current canonical example.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    source_id: str
+    source_type: SourceType
+    url: str
+    title: str | None = None
+    raw_text: str
+
+
+class EvidenceRetrievalPack(BaseModel):
+    """Return shape of ``evidence_retrieval``.
+
+    One call → one ``(uniprot_acc, category)`` pair → up to N candidate
+    snippets across up to M papers. ``empty_reason`` is set when no
+    snippets came out; the agent should still pass through (the search
+    log records the consultation) and try other categories.
+
+    ``synthetic_sources`` carries source bodies the tool fabricated from
+    local data (HPA snapshot, etc.) so the orchestrator can register
+    them in its ``SourceTextStore`` alongside the papers. Agent-facing
+    consumers can ignore this field; it's plumbing.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    uniprot_acc: str
+    category: EvidenceCategory
+    n_papers_searched: int = 0
+    n_papers_with_snippets: int = 0
+    papers: list[Paper] = Field(default_factory=list)
+    snippets: list[CandidateSnippet] = Field(default_factory=list)
+    synthetic_sources: list[SyntheticSource] = Field(default_factory=list)
+    empty_reason: str | None = None
+
+
+# ---------------------------------------------------------------------------
 # patent_lookup return shapes
 # ---------------------------------------------------------------------------
 
@@ -409,6 +491,7 @@ SourceType = Literal[
     "biorxiv",
     "medrxiv",
     "hpa",
+    "hpa_ihc",
     "pdb",
     "patent",
     "web",
@@ -555,6 +638,11 @@ EvidenceType = Literal[
     "mass_spec_surfaceome",
     "immunohistochemistry",
     "immunofluorescence",
+    # ``western_blot`` is only valid surface evidence when paired with a
+    # fractionation / biotinylation step from the same source — a WB on
+    # whole-cell lysate doesn't distinguish surface from intracellular pool.
+    # The pairing is enforced by ``SurfaceomeRecordDraft._check_wb_pairing``.
+    "western_blot",
     "crystal_structure",
     "cryo_em",
     "computational_prediction",
@@ -1058,6 +1146,10 @@ SurfaceAssayType = Literal[
     "immunohistochemistry",
     "crystal_structure_with_ecd",
     "antibody_on_live_cells",
+    # WB readout of a fractionation / biotinylation pulldown. Naming
+    # makes the constraint explicit — a naked WB on whole-cell lysate
+    # is not surface evidence and should not use this assay_type.
+    "western_blot_paired",
     "other",
 ]
 AssayDirection = Literal["supports_surface", "refutes_surface", "ambiguous"]
@@ -1648,6 +1740,36 @@ class SurfaceomeRecord(BaseModel):
         return self
 
     @model_validator(mode="after")
+    def _check_wb_pairing(self) -> SurfaceomeRecord:
+        # Mirror of SurfaceomeRecordDraft._check_wb_pairing. After
+        # promotion the source_id lives on Evidence.spans[].source.source_id
+        # rather than on the top-level Evidence, but the pairing logic is
+        # the same: each western_blot surface_expression claim must share
+        # a source_id with at least one surface_biotinylation /
+        # mass_spec_surfaceome claim.
+        paired_types = {"surface_biotinylation", "mass_spec_surfaceome"}
+        sources_with_pair: set[str] = set()
+        wb_surface_claims: list[tuple[str, set[str]]] = []
+        for evi in self.evidence:
+            evi_sources = {span.source.source_id for span in evi.spans}
+            if evi.evidence_type in paired_types:
+                sources_with_pair.update(evi_sources)
+            if evi.evidence_type == "western_blot" and evi.claim_type == "surface_expression":
+                wb_surface_claims.append((evi.evidence_id, evi_sources))
+        unpaired = [
+            evi_id
+            for evi_id, sources in wb_surface_claims
+            if not (sources & sources_with_pair)
+        ]
+        if unpaired:
+            raise ValueError(
+                "western_blot evidence for surface_expression requires a paired "
+                "surface_biotinylation or mass_spec_surfaceome Evidence with a "
+                f"shared source_id; unpaired evidence_ids: {unpaired!r}"
+            )
+        return self
+
+    @model_validator(mode="after")
     def _check_contradiction_consistency(self) -> SurfaceomeRecord:
         _validate_contradiction_consistency(
             self.contradiction_flag, self.contradictions
@@ -1742,6 +1864,47 @@ class SurfaceomeRecordDraft(BaseModel):
             self.contradiction_flag, self.contradictions
         )
         return self
+
+    @model_validator(mode="after")
+    def _check_wb_pairing(self) -> SurfaceomeRecordDraft:
+        _validate_wb_pairing(self.evidence_claims)
+        return self
+
+
+def _validate_wb_pairing(claims: list[EvidenceClaim]) -> None:
+    """A western_blot claim about surface_expression is only valid surface
+    evidence when paired with a fractionation/biotinylation step from the
+    same source (streptavidin pulldown → WB, plasma-membrane fraction →
+    WB, etc.). Whole-cell-lysate WB doesn't distinguish surface from
+    intracellular pool and must not stand alone for a surface call.
+
+    Rule: every EvidenceClaim with ``evidence_type="western_blot"`` and
+    ``claim_type="surface_expression"`` must be paired with at least one
+    other EvidenceClaim of evidence_type ∈ {surface_biotinylation,
+    mass_spec_surfaceome} sharing the same ``source_id``. Pairing within
+    a single paper is the load-bearing pattern (Methods describes the
+    fractionation, Results / Fig X shows the WB).
+    """
+    paired_types = {"surface_biotinylation", "mass_spec_surfaceome"}
+    sources_with_pair = {
+        c.source_id
+        for c in claims
+        if c.evidence_type in paired_types
+    }
+    unpaired: list[str] = []
+    for c in claims:
+        if c.evidence_type != "western_blot":
+            continue
+        if c.claim_type != "surface_expression":
+            continue
+        if c.source_id not in sources_with_pair:
+            unpaired.append(c.evidence_id)
+    if unpaired:
+        raise ValueError(
+            "western_blot evidence for surface_expression requires a paired "
+            "surface_biotinylation or mass_spec_surfaceome EvidenceClaim "
+            f"with the same source_id; unpaired evidence_ids: {unpaired!r}"
+        )
 
 
 def _validate_contradiction_consistency(
