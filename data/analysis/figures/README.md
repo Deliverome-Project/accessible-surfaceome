@@ -17,7 +17,7 @@ In-progress / scratch plots live in `data/analysis/triage_bench/` and
 similar working folders. Promote to `figures/` only when the three
 conditions hold.
 
-## Current figures (6)
+## Current figures (7)
 
 | Figure | Reproduction gist (public) | Generator |
 |--------|---------------------------|-----------|
@@ -27,6 +27,7 @@ conditions hold.
 | `db_correctness_overall` | [9c765ed9…](https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d) | `scripts/triage_bench_db_barplot.py::make_overall_plot` |
 | `benchmark_cost_vs_accuracy` | [d7f764d2…](https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41) | `scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot` |
 | `ensemble_vs_best_db_vs_sonnet` | [0104308c…](https://gist.github.com/beccajcarlson/0104308c239fe49d91d82a1007632b27) | `data/analysis/triage_bench_exploration/ensemble_vs_best_db_vs_sonnet.py` |
+| `db_vs_sonnet_whole_proteome` | [1265c867…](https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013) | `data/analysis/triage_bench_exploration/db_vs_sonnet_whole_proteome.py` |
 
 Each PDF + PNG also carries its gist URL in file metadata (PDF
 `dc:source` XMP field, PNG `Source` tEXt chunk). Refresh with
