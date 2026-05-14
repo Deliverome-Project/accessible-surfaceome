@@ -74,7 +74,7 @@ export function BenchmarkTable({ matrix, deepDiveGenes }: BenchmarkTableProps) {
   function handleDownload() {
     const tsv = buildBenchmarkTsv(matrix);
     const tag = matrix.bench_version?.slice(0, 8) ?? "snapshot";
-    downloadTextFile(`surfaceome-benchmark-${tag}.tsv`, tsv);
+    downloadTextFile(`surfacebench-${tag}.tsv`, tsv);
   }
 
   const [query, setQuery] = useState("");

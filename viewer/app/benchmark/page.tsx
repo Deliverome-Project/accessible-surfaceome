@@ -14,9 +14,9 @@ import styles from "./page.module.css";
  * (.h-data / .h-data-eyebrow) so the table dominates the page.
  */
 export const metadata = {
-  title: "147-gene benchmark · Surfaceome",
+  title: "SurfaceBench · 147-gene triage benchmark",
   description:
-    "Per-gene comparison of seven surface-membership databases against three LLM triage variants on the 147-gene triage benchmark.",
+    "SurfaceBench — per-gene comparison of seven surface-membership databases against three LLM triage variants on a 147-gene benchmark.",
 };
 
 export default async function BenchmarkPage() {
@@ -28,14 +28,15 @@ export default async function BenchmarkPage() {
       <section className={`${styles.page} page-width`}>
         <header className={styles.head}>
           <p className="h-data-eyebrow">
-            Triage benchmark · v0.5
+            SurfaceBench · v0.5
           </p>
           <h1 className={`h-data ${styles.title}`}>
             147 genes, seven databases, three models.
           </h1>
           <p className={styles.lede}>
-            Each row is one of the 147 curated proteins in our triage
-            benchmark, scored against ground truth, the union of seven
+            <strong>SurfaceBench</strong> is the 147-gene triage
+            benchmark behind this project. Each row is one curated
+            protein, scored against ground truth, the union of seven
             public surface-membership databases, and headline-prompt
             verdicts from Opus 4.7, Sonnet 4.6, and Haiku 4.5. Click a
             row to compare the headline against three alternative
