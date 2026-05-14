@@ -19,13 +19,13 @@ conditions hold.
 
 ## Current figures (5)
 
-| Figure | Reproduction gist (secret) | Generator |
+| Figure | Reproduction gist (public) | Generator |
 |--------|---------------------------|-----------|
-| `db_overlap_venn` | [f0cfd828…](https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa) | `scripts/triage_bench_db_venn.py::make_plot` |
-| `db_correctness_by_class` | [b4d7c89d…](https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d) | `scripts/triage_bench_db_barplot.py::make_by_class_plot` |
-| `db_cutoff_tradeoff` | [06d053b5…](https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed) | `scripts/triage_bench_db_barplot.py::make_db_tradeoff_plot` |
-| `db_correctness_overall` | [1e3d464f…](https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d) | `scripts/triage_bench_db_barplot.py::make_overall_plot` |
-| `benchmark_cost_vs_accuracy` | [774ff119…](https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41) | `scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot` |
+| `db_overlap_venn` | [d655abfc…](https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa) | `scripts/triage_bench_db_venn.py::make_plot` |
+| `db_correctness_by_class` | [2bb4f7aa…](https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d) | `scripts/triage_bench_db_barplot.py::make_by_class_plot` |
+| `db_cutoff_tradeoff` | [f9319af8…](https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed) | `scripts/triage_bench_db_barplot.py::make_db_tradeoff_plot` |
+| `db_correctness_overall` | [9c765ed9…](https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d) | `scripts/triage_bench_db_barplot.py::make_overall_plot` |
+| `benchmark_cost_vs_accuracy` | [d7f764d2…](https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41) | `scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot` |
 
 Each PDF + PNG also carries its gist URL in file metadata (PDF
 `dc:source` XMP field, PNG `Source` tEXt chunk). Refresh with
@@ -55,15 +55,20 @@ Per the CLAUDE.md "Final-Figure Gist Convention":
 1. Edit `make_<slug>.py` until it produces the figure you want.
 2. Confirm `uv run make_<slug>.py` produces a clean output against
    the canonical data sources.
-3. Create the gist:
+3. Create the gist **as public** — figure-reproduction gists are linked
+   from Substack / blog posts so discoverability is the right default:
    ```
-   gh gist create 01_<slug>.md make_<slug>.py -d "<short description>"
+   gh gist create --public 01_<slug>.md make_<slug>.py -d "<short description>"
    ```
-   Defaults to secret (don't pass `--public`); confirm with the user
-   before flipping to public — that operation is one-way.
+   GitHub does NOT allow flipping visibility after creation — pick
+   public on first creation. Before publishing a new gist for an
+   existing figure, check the slug → gist-ID map in the saved-memory
+   `figure_gists.md` to avoid duplicates.
 4. Record the gist URL in the canonical generator script's module
    docstring under a `# Reproduction:` line so readers can find it
-   from the source.
+   from the source. Also set the `GIST_URL` constant in
+   `make_<slug>.py` so the URL embeds in PNG `Source` / PDF `Subject`
+   metadata on next regeneration.
 
 The on-repo `make_<slug>.py` is the source of truth; the gist is the
 readers' minimal-dependency mirror.
