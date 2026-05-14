@@ -475,7 +475,7 @@
             <span class="field-value">
               <span class="chip-row">
                 <span class="chip">state_dependent_localization</span>
-                <span class="chip">paralog_cross_reactivity</span>
+                <span class="chip">antibody_validation_weak</span>
                 <span class="chip">uncertain_anchor_mechanism</span>
               </span>
             </span>
@@ -527,10 +527,12 @@
                 <span class="chip chip--muted">✗ has_shed_form</span>
                 <span class="chip">✓ has_secreted_form</span>
                 <span class="chip chip--muted">✗ coreceptor_for_expression</span>
-                <span class="chip">✓ paralog_cross_reactivity</span>
                 <span class="chip">✓ epitope_masking</span>
                 <span class="chip chip--muted">✗ restricted_subdomain</span>
               </div>
+              <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+                <code>filters.max_paralog_ecd_pct_identity = 64.2%</code> (HSPA8) — deterministic; LLM cross-reactivity verdict deferred to v1.x
+              </p>
             </div>
 
             <div class="filters-group">
@@ -1148,64 +1150,25 @@
             </tbody>
           </table>
 
-          <h4 class="label-mono">LLM cross-binding assessment (sequence + literature)</h4>
-          <table class="data">
-            <thead>
-              <tr>
-                <th>paralog</th>
-                <th>cross_reactivity</th>
-                <th>severity</th>
-                <th>evidence</th>
-                <th>cite</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>HSPA1A</strong></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-                <td><span class="chip">HIGH</span></td>
-                <td><span class="chip chip--success">STRONG</span></td>
-                <td class="mono">[evi_70]</td>
-              </tr>
-              <tr>
-                <td><strong>HSPA8</strong></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-                <td><span class="chip">HIGH</span></td>
-                <td><span class="chip chip--success">STRONG</span></td>
-                <td class="mono">[evi_70]</td>
-              </tr>
-              <tr>
-                <td><strong>HSPA1B</strong></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-                <td><span class="chip">MODERATE</span></td>
-                <td><span class="chip chip--success">STRONG</span></td>
-                <td class="mono">[evi_70]</td>
-              </tr>
-              <tr>
-                <td><strong>HSPA9</strong></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip">LOW</span></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-                <td class="mono">[evi_71]</td>
-              </tr>
-              <tr>
-                <td>HSPH1</td>
-                <td><span class="chip chip--success">NEGLIGIBLE</span></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">STRONG</span></td>
-                <td class="mono">[evi_71]</td>
-              </tr>
-            </tbody>
-          </table>
-          <p style="font-size: 0.92rem; color: var(--muted); margin: var(--space-2) 0; max-width: 70ch">
-            <strong>Rationale:</strong> 63–64% ECD identity to HSPA1A / HSPA8 — well above the
-            "fold conserved, loops divergent" zone where binders typically separate. Published
-            cross-reactivity is documented for multiple commercial polyclonals; KO-validated
-            monoclonals (PAT-SM6) demonstrate that paralog-specific binding is achievable but
-            non-trivial. <strong>Mitigation:</strong> require KO-validation for any anti-GRP78
-            reagent used in flow / IF; prefer C-terminal-targeting antibodies (HSP70 family is
-            more divergent there than at the N-terminal ATPase domain).
+          <p style="font-size: 0.92rem; color: var(--muted); margin: var(--space-2) 0; max-width: 72ch">
+            <strong>LLM paralog cross-reactivity verdict deferred to v1.x.</strong> The previous
+            draft had a five-row LLM table classifying each HSP70 family member as
+            MODERATE / LOW / NEGLIGIBLE cross-reactivity with rationale paragraph. We dropped that
+            for v1.0.0 — the load-bearing signal for "does my actual binder cross-react" is
+            already captured per-antibody in §1 via
+            <code>AntibodyRef.cross_reactivity_notes</code> (the C20 polyclonal cross-reacts;
+            PAT-SM6 is paralog-specific; etc.) and the gene-family prior is captured by the
+            deterministic <code>filters.max_paralog_ecd_pct_identity = 64.2%</code> rollup. The
+            verdict slot is reserved for v1.x — HSPA5 is the textbook case where it might
+            justifiably come back, but only after evaluating whether the per-antibody notes
+            are sufficient signal in practice.
           </p>
+          <div class="annot">
+            <span class="annot__path">filters.max_paralog_ecd_pct_identity</span>
+            ·
+            <span class="annot__type">float | None — 64.2% (HSPA8)</span>
+            <span class="annot__prov">D</span>
+          </div>
         </div>
       </article>
 
@@ -1322,19 +1285,15 @@
               </p>
             </li>
 
-            <li class="risk-card">
-              <div class="risk-card__head">
-                <span class="risk-card__title">Similar paralogs (HSP70 family)</span>
-                <span class="chip">severity=HIGH</span>
-                <span class="chip chip--success">evidence=STRONG</span>
-              </div>
-              <p class="risk-card__body" style="padding-bottom: var(--space-2)">
-                HSPA1A / HSPA1B / HSPA8 are 63–64% identical and share the ATPase + substrate-
-                binding fold. <strong>Antibody cross-reactivity is the dominant accessibility
-                risk for this target</strong> — see §4 paralog table + §1 antibody validation
-                chips. Mitigation: KO-validated mAbs only.
-              </p>
-            </li>
+            <!--
+              The "Similar paralogs (HSP70 family)" risk card that used to live here
+              mapped to `accessibility_risks.paralog_cross_binding_risk`, which was
+              promoted to top-level `paralog_assessment` and then dropped in round 10
+              when the LLM verdict was removed. The biology (HSPA1A/HSPA8 ~64% ECD
+              identity → dominant accessibility risk for this target) is now expressed
+              via: §4 deterministic paralog table + §1 AntibodyRef.cross_reactivity_notes
+              (per-clone) + filters.max_paralog_ecd_pct_identity rollup.
+            -->
 
             <li class="risk-card risk-card--ok">
               <div class="risk-card__head">

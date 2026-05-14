@@ -51,9 +51,9 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │                                                                     │
 │  RISKS                                                              │
 │    ✓ has_shed_form                  ✓ has_secreted_form             │
-│    ✗ coreceptor_for_expression                                       │
-│    ✗ paralog_cross_reactivity       ✓ epitope_masking               │
+│    ✗ coreceptor_for_expression      ✓ epitope_masking               │
 │    ✗ has_restricted_subdomain                                       │
+│    max_paralog_ecd_pct_identity=45.1%  (deterministic)              │
 │                                                                     │
 │  CROSS-SPECIES (deterministic — Compara ECD % identity)             │
 │    mouse=88.2% · cyno=99.1% · rat=88.0%                             │
@@ -178,30 +178,19 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │   wants to make about isoform implications.)                        │
 └─────────────────────────────────────────────────────────────────────┘
 
-┌─ 4. PARALOGS  [deterministic table + LLM cross-binding assessment]─┐
+┌─ 4. PARALOGS  [deterministic — Compara within-species] ────────────┐
 │                                                                     │
-│  Deterministic — Ensembl Compara within-species paralogs            │
+│  Ensembl Compara within-species paralogs                            │
 │   paralog    family       ECD pct id (vs EGFR canonical)            │
 │   ────────   ──────────   ──────────────────────────────            │
 │   HER2       ERBB family   45.1%                                    │
 │   HER3       ERBB family   42.7%                                    │
 │   HER4       ERBB family   43.0%                                    │
 │                                                                     │
-│  LLM cross-binding assessment  (integrates sequence + literature)  │
-│   paralog    cross_reactivity   severity    evidence_strength       │
-│   ────────   ──────────────────  ─────────   ────────────────       │
-│   HER2       LOW                 LOW         STRONG          [evi_41]
-│   HER3       LOW                 LOW         STRONG          [evi_41]
-│   HER4       LOW                 LOW         STRONG          [evi_41]
-│                                                                     │
-│  Rationale: 42–45% ECD identity sits in the "fold conserved,        │
-│  surface loops divergent" zone. Empirical evidence in the ERBB      │
-│  family (cetuximab, panitumumab, trastuzumab) shows minimal         │
-│  cross-reactivity across these paralogs despite the shared fold,    │
-│  because the loops that contact a mAb paratope diverge enough.      │
-│  Sequence identity alone would suggest "moderate" — but the         │
-│  literature does the disambiguation, and the LLM should default     │
-│  to the empirical call when binders against this family exist.      │
+│  (LLM paralog cross-reactivity verdict deferred to v1.x. Per-       │
+│   antibody cross-reactivity behavior is already captured in §1      │
+│   via `AntibodyRef.cross_reactivity_notes`. Catalog users filter    │
+│   on the deterministic `max_paralog_ecd_pct_identity` rollup.)      │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─ 5. ORTHOLOGS  [deterministic — Compara r112 + DeepTMHMM 1.0.24] ──┐
@@ -247,10 +236,10 @@ This is what a reader sees in the viewer for a single gene. Section order mirror
 │      tissue; junction disruption in carcinoma relieves restriction. │
 │                                                       [evi_22,36]   │
 │                                                                     │
-│  (Paralog cross-binding assessment is rendered in §4 above —       │
-│   paralog_assessment was promoted out of accessibility_risks so    │
-│   the deterministic paralog table and the LLM cross-binding call   │
-│   live together in one section.)                                   │
+│  (Paralog %ECD identity is rendered in §4 above as a deterministic │
+│   table; the LLM cross-reactivity verdict is deferred to v1.x.     │
+│   Antibody-specific cross-reactivity behavior already lives in §1  │
+│   via `AntibodyRef.cross_reactivity_notes`.)                       │
 │                                                                     │
 │  • ECD accessibility size class:  LARGE                             │
 │      621 aa extracellular region; multiple accessible epitopes      │
@@ -314,7 +303,7 @@ Same mockup, each visible element labeled with its Pydantic field path + type so
 | `HIGH` (confidence) | `executive_summary.confidence` | `Literal["high","moderate","low"]` | L |
 | `MODERATE` (state dependence) | `executive_summary.state_dependence` | `Literal["low","moderate","high","unclear"]` — how much does surface presence/exposure shift with cell state, tissue context, or disease state? Cross-checks against `biological_context.accessibility_modulation[]`. | L |
 | `single-pass T1` | `executive_summary.subcategory` | `Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]` | L |
-| `shed_form · paralog_cross_reactivity` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","low_endogenous_expression","antibody_validation_weak","ligand_unknown","other"]]` (max 3) — three new values (`low_endogenous_expression`, `antibody_validation_weak`, `ligand_unknown`) capture the orphan-receptor failure mode (GPR75-style cases) so the catalog can filter on them | L |
+| `shed_form · restricted_subdomain` | `executive_summary.headline_risks` | `list[Literal["shed_form","secreted_form","co_receptor","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","low_endogenous_expression","antibody_validation_weak","ligand_unknown","other"]]` (max 3) — three values (`low_endogenous_expression`, `antibody_validation_weak`, `ligand_unknown`) capture the orphan-receptor failure mode (GPR75-style cases) so the catalog can filter on them. `paralog_cross_reactivity` was dropped from this enum when the LLM cross-reactivity verdict was removed — antibody-paratope cross-reactivity behavior is captured per-antibody in `AntibodyRef.cross_reactivity_notes`. | L |
 | (cite chips, not shown) | `executive_summary.cited_evidence_ids` | `list[str]` (→ `evidence[].evidence_id`) | L |
 
 Note on the top-line summary: the numeric `accessibility_score: float` was dropped — categorical `surface_accessibility` + categorical `confidence` carry the same information without implying a calibrated rubric we don't have. The whole schema is consistent on the word "accessibility" — top-line field name, filter chip, and deeper sections (`accessibility_risks`, `anatomical_accessibility`, `accessibility_modulation`, `accessibility_relevance`) all use the same vocabulary.
@@ -337,7 +326,7 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 | `has_shed_form` (bool) | `filters.has_shed_form` | `bool` | D | `accessibility_risks.shed_form.present` |
 | `has_secreted_form` (bool) | `filters.has_secreted_form` | `bool` | D | `accessibility_risks.secreted_form.present` |
 | `coreceptor_for_expression` (bool) | `filters.requires_coreceptor_for_expression` | `bool` | D | `accessibility_risks.co_receptor_requirements.surface_expression_dependency == "required"` |
-| `paralog_cross_reactivity` (bool) | `filters.has_paralog_cross_reactivity_risk` | `bool` | D | any `accessibility_risks.paralog_cross_binding_risk[].cross_reactivity_assessment ∈ {high, moderate}` |
+| `max_paralog_ecd_pct_identity=45.1%` | `filters.max_paralog_ecd_pct_identity` | `float \| None` | D | `max(deterministic_features.paralogs[i].ecd_pct_identity)` (None when no paralogs) — deterministic rollup; the LLM cross-reactivity verdict was dropped, so catalog users filter on raw %identity instead |
 | `epitope_masking` (bool) | `filters.has_epitope_masking` | `bool` | D | `accessibility_risks.epitope_masking.severity ∈ {high, moderate}` |
 | `restricted_subdomain` (bool) | `filters.has_restricted_subdomain` | `bool` | D | `accessibility_risks.restricted_subdomain.present == True` OR any `biological_context.anatomical_accessibility[].accessibility_implication == "restricted"` |
 | `mouse=88.2% · cyno=99.1%` | `filters.mouse_ortholog_ecd_pct_identity` + `filters.cyno_ortholog_ecd_pct_identity` | `float [0.0–100.0]` each | D | `deterministic_features.orthologs.{species}[is_canonical].ecd_pct_identity_to_human_canonical` — pulled straight from Compara, no LLM rollup |
@@ -387,15 +376,19 @@ Top-level `filters` block — every value is a closed enum, `bool`, or `list[enu
 
 **Per-isoform LLM interpretation is deferred** — v1.0.0 ships isoforms as deterministic topology only. Any biological reading of what an isoform implies for accessibility lives in `executive_summary.one_paragraph` if the LLM wants to surface it.
 
-### Section 4 — Paralogs (deterministic table + LLM cross-binding assessment)
+### Section 4 — Paralogs (deterministic only)
 
 | Rendered | Schema path | Type | Prov |
 |---|---|---|---|
 | Deterministic paralog table rows `HER2 ERBB family 45.1%` | `deterministic_features.paralogs: list[ParalogEntry]` | each: `{ paralog_symbol: str, paralog_uniprot_acc: str, ecd_pct_identity: float, family_id: str, compara_version: str }` | D |
-| LLM cross-binding rows `HER2 LOW LOW STRONG` | `paralog_assessment: list[ParalogRisk]` (top-level, promoted out of `accessibility_risks`) | each: `ParalogRisk = { paralog_symbol: str, paralog_uniprot_acc: str (FK → `deterministic_features.paralogs[i].paralog_uniprot_acc` — unique per paralog, unlike `family_id` which the whole ERBB family shares), cross_reactivity_assessment: Literal["high","moderate","low","negligible"], severity: Literal["high","moderate","low","unknown"], evidence_strength: Literal["strong","moderate","weak","inferred"], rationale: str (max_length=200), cited_evidence_ids: list[str] }` | L→D-ref |
-| Rationale paragraph "42–45% ECD identity sits in the…" | `paralog_assessment[i].rationale` | `str (≤200)` per entry; the LLM is responsible for integrating sequence + empirical literature evidence — 42–45% identity alone wouldn't necessarily warrant "low," but the literature on cetuximab / panitumumab / trastuzumab cross-reactivity does. | L |
 
-**Why paralogs got its own section:** orthologs answer *will this work in animal models* (cross-species), paralogs answer *will my binder cross-react with other human proteins* (within-species). They're different questions and shouldn't be merged. Paralogs are placed above orthologs because paralog cross-reactivity is usually a more pressing accessibility question than ortholog conservation.
+**LLM paralog cross-reactivity verdict deferred to v1.x.** The previous draft had `paralog_assessment: list[ParalogRisk]` as an LLM-emitted block that classified each paralog as high/moderate/low/negligible cross-reactivity. We dropped that for v1.0.0 because:
+
+1. Antibody-paratope cross-reactivity behavior is *already* captured per-antibody in `surface_evidence.methods[].antibodies[].cross_reactivity_notes` — that's the load-bearing signal for "does my actual binder cross-react", and it travels with the antibody, not a separate verdict block.
+2. The remaining "gene-family-level prior" question (does %ECD identity in the danger zone imply cross-reactivity is plausible?) is answered by the deterministic `max_paralog_ecd_pct_identity` filter rollup — a catalog reader can filter "paralogs with ≥60% ECD identity" without needing the LLM to integrate sequence + literature.
+3. Cross-section coherence drops a level of indirection: the agent doesn't have to keep `paralog_assessment` consistent with each `AntibodyRef.cross_reactivity_notes` it writes.
+
+**Why paralogs still has its own section:** orthologs answer *will this work in animal models* (cross-species), paralogs answer *will my binder cross-react with other human proteins* (within-species). They're different questions, the deterministic identity numbers are still useful side-by-side, and the section reserves a slot for the v1.x verdict if we revisit it.
 
 ### Section 5 — Orthologs (deterministic only)
 
@@ -455,7 +448,7 @@ After the initial plan, a second reviewer flagged that the schema was still drif
 | Isoforms | Added `expression_support: protein_level\|transcript_level\|predicted_only\|conflicting\|unknown` and `biological_relevance` to `IsoformAccessibility`. Stops predicted-only isoforms from being overinterpreted as soluble decoys. (A `canonical_isoform_caveat` field was added in this round but later dropped — it embedded an LLM-emitted field inside `deterministic_features`, breaking the strict orchestrator-only boundary; the biological note lives in `executive_summary.one_paragraph` instead.) |
 | Orthologs | Replaced translational `cross_species_useful_for: list["mouse_efficacy", "cyno_tox", ...]` with `cross_species_accessibility_relevance: Literal["strongly_conserved","partially_conserved",...]` + per-species `species_caveats`. |
 | Accessibility risks | Renamed `druggability_class` → `ecd_accessibility_class`. Added `severity` + `evidence_strength` to every risk. Added `restricted_subdomain` as a first-class risk. **Internalization/recycling is intentionally out of scope** for v1.0.0 — it is pro for some modalities (ADC delivery) and con for others (binder dwell time), so labeling it as a "risk" pre-judges; deferred until a separate dynamics block can frame it neutrally. |
-| References instead of mirrors | Replaced the `*_from_deterministic` mirrored-value pattern with references — `ParalogRisk.paralog_uniprot_acc` FK into `deterministic_features.paralogs[i].paralog_uniprot_acc` (unique per paralog, unlike `family_id` which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton field; viewer reads `ecd_length_residues` directly. Viewer/orchestrator do the lookup; no drift validation needed. |
+| References instead of mirrors | Replaced the `*_from_deterministic` mirrored-value pattern with references. `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton field; viewer reads `ecd_length_residues` directly. Viewer/orchestrator do the lookup; no drift validation needed. (The `ParalogRisk.paralog_uniprot_acc` FK that originally lived here is gone — `paralog_assessment` itself was dropped in round 10; see the topology section below.) |
 | ~~Knowledge gaps~~ — **later dropped** | Originally added `impact_on_confidence` + `suggested_resolution`. The block was dropped entirely in the round-5 walkthrough — most entries duplicated `contradicting_evidence` (for `conflicting` cases) or read as noise (every gene has "no quantitative data" gaps). Uncertainty now lives in contradicting_evidence + confidence_reasoning + evidence_grade. The R7 validator (HIGH-impact gap caps confidence) was retired with it. |
 | Filters block | Added `evidence_grade` and `has_restricted_subdomain`. Replaced `cross_species_useful_for: list[enum]` with single-enum `cross_species_accessibility_relevance`. Top field stays `filters.surface_accessibility` (an interim rename to `surface_targetability` was tried and reverted for vocabulary consistency with the rest of the record). No `has_rapid_internalization` — internalization is out of scope, see Accessibility risks row. |
 | Triage substructure port (round 3) | The first round only ported triage's top-level `reason` enum into `accessibility_modulation.category`. The triage *system prompt* enumerates rich descriptive substructure inside each reason — specific stress triggers (`stress, oncogenic transformation, immunogenic / programmed cell death, infection, activation-induced display`); lineage taxonomy (`germline / reproductive, developmental, specialized somatic`); dual-localization partner compartments — that the first port lost. Round 3 promotes that prose into three new optional sub-fields on `AccessibilityModulationObservation`: `cell_state_trigger` (closed enum: ER_stress / heat_shock / oxidative_stress / DNA_damage_response / apoptosis / necroptosis / oncogenic_transformation / infection_{viral,bacterial} / immune_activation / antigen_stimulation / cytokine_stimulation / hypoxia / nutrient_deprivation / hyperthermia / mechanical_stress / other / unknown), `restricted_lineage` (germline_reproductive / embryonic_developmental / hematopoietic / neural / epithelial / endothelial / muscle / endocrine / specialized_somatic_other / other / unknown), `dual_loc_partner_compartment` (ER / Golgi / endosome / lysosome / mitochondrion / nucleus / cytosol / secretory_vesicle / other / unknown). All three are `None` by default; Pydantic validators enforce category-conditional pairing (`cell_state_trigger ≠ None` only when category is state-induced; `restricted_lineage ≠ None` only when category is tissue_restricted_surface; `dual_loc_partner_compartment ≠ None` only when category is dual_localization). Catalog filter implications: "show me apoptosis-induced surface proteins" or "show me proteins cycling between PM and lysosome" become one-clause indexed queries. |
@@ -534,16 +527,16 @@ SurfaceomeRecord (v1.0.0)
 │   ├── subcategory                               # enum: single_pass_T1|GPCR|GPI|tetraspanin|...
 │   ├── headline_risks: list[RiskTag]             # top-3 from accessibility_risks
 │                                                  #   enum: shed_form | secreted_form | co_receptor |
-│                                                  #     paralog_cross_reactivity | ecd_too_small |
-│                                                  #     epitope_masked | isoform_decoy |
-│                                                  #     restricted_subdomain |
-│                                                  #     low_endogenous_expression |  ← NEW
-│                                                  #     antibody_validation_weak |    ← NEW
-│                                                  #     ligand_unknown |              ← NEW (orphan)
+│                                                  #     ecd_too_small | epitope_masked |
+│                                                  #     isoform_decoy | restricted_subdomain |
+│                                                  #     low_endogenous_expression |  ← orphan
+│                                                  #     antibody_validation_weak |    ← orphan
+│                                                  #     ligand_unknown |              ← orphan
 │                                                  #     other
-│                                                  #   The 3 new values capture orphan-receptor
-│                                                  #   failure modes (GPR75-style cases) for catalog
-│                                                  #   filtering.
+│                                                  #   `paralog_cross_reactivity` was dropped when
+│                                                  #   the LLM cross-reactivity verdict was removed
+│                                                  #   (round 10). Per-antibody cross-reactivity now
+│                                                  #   lives in AntibodyRef.cross_reactivity_notes.
 │   └── cited_evidence_ids: list[str]
 │
 ├── filters                                       [TOP-LEVEL — D1-indexed for catalog facets]
@@ -562,9 +555,13 @@ SurfaceomeRecord (v1.0.0)
 │   ├── has_shed_form                             # D ← accessibility_risks.shed_form.present
 │   ├── has_secreted_form                         # D ← accessibility_risks.secreted_form.present
 │   ├── requires_coreceptor_for_expression        # D ← co_receptor_requirements.surface_expression_dependency == "required"
-│   ├── has_paralog_cross_reactivity_risk         # D ← any paralog_assessment[i].cross_reactivity_assessment ≥ moderate
-│                                                  #     (path moved when paralog_assessment was
-│                                                  #      promoted out of accessibility_risks)
+│   ├── max_paralog_ecd_pct_identity              # D ← max(deterministic_features.paralogs[i].ecd_pct_identity)
+│                                                  #     (None when no paralogs). Replaced the LLM-
+│                                                  #     verdict-derived has_paralog_cross_reactivity_risk
+│                                                  #     bool in round 10 when paralog_assessment
+│                                                  #     was dropped. Catalog users filter on the
+│                                                  #     raw deterministic %identity instead of an
+│                                                  #     LLM-judged binary.
 │   ├── has_epitope_masking                       # D ← epitope_masking.severity ≥ moderate
 │   ├── has_restricted_subdomain                  # D ← restricted_subdomain.present OR any
 │   │                                             #     anatomical_accessibility[i].accessibility_implication == "restricted"
@@ -789,28 +786,17 @@ SurfaceomeRecord (v1.0.0)
 │   # as deterministic-only tables; any biological synthesis the
 │   # LLM wants to make about them lives in executive_summary.one_paragraph.
 │
-├── paralog_assessment: list[ParalogRisk]         [LLM — section 4]
-│   │                                             # Promoted out of accessibility_risks to
-│   │                                             # live alongside deterministic_features.paralogs
-│   │                                             # in its own page section (above orthologs).
-│   │                                             # Paralogs answer "will my binder cross-react
-│   │                                             # with other human proteins?" — a more
-│   │                                             # pressing question than ortholog conservation.
-│   └── { paralog_symbol,
-│         paralog_uniprot_acc,                   # FK → deterministic_features.paralogs[i]
-│                                                 #   .paralog_uniprot_acc (unique per paralog;
-│                                                 #   family_id is shared across the family
-│                                                 #   so it can't be the FK target).
-│         cross_reactivity_assessment: high|moderate|low|negligible,
-│           # LLM integrates ECD %id + literature on empirical binder
-│           # cross-reactivity to land the call. 45% ECD identity is
-│           # often LOW in practice (fold conserved but paratope-relevant
-│           # loops diverge) — the LLM should not default to "moderate"
-│           # from %identity alone.
-│         severity, evidence_strength,
-│         rationale: str = Field(max_length=200),
-│         cited_evidence_ids }
-│
+# paralog_assessment was dropped in round 10. The LLM-emitted cross-reactivity
+# verdict (high/moderate/low/negligible per paralog) was redundant with two
+# already-load-bearing signals:
+#   * per-antibody behavior — surface_evidence.methods[i].antibodies[j].cross_reactivity_notes
+#     (a string field on AntibodyRef capturing what manufacturer/validation
+#      papers report about THIS antibody on related paralogs).
+#   * gene-family prior — filters.max_paralog_ecd_pct_identity, a deterministic
+#     rollup of max(paralogs[i].ecd_pct_identity).
+# Section 4 of the page still renders the deterministic paralog table; the
+# verdict slot is reserved for v1.x if we revisit.
+#
 ├── accessibility_risks                           [LLM — section 6]
 │   │                                             # Every risk now carries
 │   │                                             # severity + evidence_strength so
@@ -887,7 +873,7 @@ SurfaceomeRecord (v1.0.0)
 **Key invariants:**
 
 - `deterministic_features.*` fields are written only by the orchestrator. The agent reads them in its task prompt but never emits them in its draft. Pydantic validator on `SurfaceomeRecordDraft` rejects any attempt by the agent to populate this region.
-- LLM blocks that need a deterministic number **reference** it rather than mirror it. `paralog_assessment[i].paralog_uniprot_acc` is an FK into `deterministic_features.paralogs[i]` (using the unique UniProt accession, not the family_id which is shared). `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton and the viewer/orchestrator reads `ecd_length_residues` from it directly. **FK validation is schema-level** via a `@model_validator(mode="after")` on `SurfaceomeRecord` — each `paralog_assessment[i].paralog_uniprot_acc` must resolve to an entry in `deterministic_features.paralogs` or the record fails Pydantic validation at parse time (consistent with the other model_validators on this class). Records read from disk get validated too, not just freshly-emitted ones.
+- LLM blocks that need a deterministic number **reference** it rather than mirror it. `ecd_size_assessment` has no FK at all — `canonical_topology` is a known singleton and the viewer/orchestrator reads `ecd_length_residues` from it directly. (The `paralog_assessment[i].paralog_uniprot_acc` FK that was originally the load-bearing example here is gone — `paralog_assessment` was dropped in round 10. With only the singleton-direct-read pattern left, there are no FK validators on `SurfaceomeRecord` for v1.0.0; if a v1.x block adds one we'll restore the schema-level `@model_validator(mode="after")` pattern.)
 - **Evidence model unchanged.** Keep `EvidenceClaim` → `Evidence` → `SourceRef` with substring-validated quote spans. Every `cited_evidence_ids` list references `evidence[i].evidence_id`. This is the most rigorous part of the existing pipeline; the redesign preserves it.
 - **Cross-agent coherence with `surface_triage`**. Top-level `triage_signal` is populated by the orchestrator from the most recent triage record. A validator (`_check_triage_signal_consistency`) flags inconsistency between `triage_signal` and `executive_summary.surface_accessibility`: e.g., triage=`unlikely` + accessibility=`high` requires the LLM to justify the disagreement in `confidence_reasoning` (the dropped `contradiction_flag` top-level bool is no longer set — three structured signals replace it: per-row `contradicting_evidence` severity, `evidence_grade="conflicting"`, and this validator's behavior). `accessibility_modulation.category` mirrors triage's contextual `reason` taxonomy verbatim for its first 5 values (`cell_state_induced`, `tissue_restricted_surface`, `lysosomal_exocytosis`, `dual_localization`, `stable_surface_attachment`); the deep-dive's expansions (`activation_induced`, `stress_induced`, …) roll up to those at cross-validation time.
 - **Uncertainty routing**. The earlier `knowledge_gaps` block + its R7 validator were dropped. Uncertainty now lives in `contradicting_evidence` (for known literature conflicts), `confidence` + `confidence_reasoning` (overall uncertainty — the agent prompt instructs the model to lower confidence when load-bearing questions are unresolved), `evidence_grade` + `grade_rationale` (evidence quality), and per-section rationale fields. No structured caveats list.
@@ -964,9 +950,9 @@ annotate_gene(symbol):
   5. stream events, collect SurfaceomeRecordDraft from agent
   6. validate:
        - draft.deterministic_features is None (agent isn't allowed to write it)
-       - every reference field (`paralog_assessment[i].paralog_uniprot_acc`)
-         resolves to an entry in the orchestrator's deterministic_features.paralogs
        - promote evidence_claims → evidence via existing promote_claim() pipeline
+       - (no FK validation for v1.0.0; the only FK example — paralog_assessment[i].
+          paralog_uniprot_acc — was removed when paralog_assessment was dropped.)
   7. derive filters block from deep buckets (orchestrator-derived rows)
   8. assemble SurfaceomeRecord, persist to data/annotations/{gene}.json + D1
 ```
@@ -1040,6 +1026,110 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 
 ---
 
+## Agent topology (multi-agent)
+
+v1.0.0 splits the single `surface_annotator` agent into **three Anthropic Managed Agents**, each with a distinct system prompt and tool surface. The split principle: *agents with tools do evidence-grounded writes; agents without tools do derivation*. Per-section specialization happens via different system prompts on the two Compilers, not by per-section agent proliferation.
+
+### Roles
+
+| Agent | Role | Tools | Reads | Writes | Model |
+|---|---|---|---|---|---|
+| **A1 — Surface Evidence Compiler** | DB-consensus interpretation, methods tagging, antibody validation | `gene_lookup`, `gene_literature`, `read`, `grep`, `glob`, `web_fetch`, `web_search` | gene + full triage record + deterministic_features (read-only) | `surface_evidence` block (all sub-fields) + its own evidence rows | claude-sonnet-4-6 |
+| **A2 — Biology Compiler** | Tissue context, anatomical accessibility, accessibility_modulation entries with sub-enums | `gene_lookup`, `gene_literature`, `read`, `grep`, `glob`, `web_fetch`, `web_search` | gene + full triage record + deterministic_features (read-only) | `biological_context` block (tissues, anatomical_accessibility, accessibility_modulation, etc.) + its own evidence rows | claude-sonnet-4-6 |
+| **B — Synthesizer** | Cross-section integration, filter derivation, headline-risks selection | NONE (cite-only from A1 + A2 evidence ledger) | A1 output + A2 output + deterministic_features + triage record | `executive_summary`, `filters` (all 17), `accessibility_risks`, `confidence` + `confidence_reasoning` | claude-sonnet-4-6 |
+
+Each agent is a separate Managed Agent registration with its own `system.md`, its own `agent.py` payload, and its own line in `.runs/agents-registry.json`. The auto-sync machinery already established for `surface_annotator` extends across all three (`sync_agent_and_environment` iterates over the registry).
+
+### Why this split
+
+- **Tool-use boundary, not section boundary.** A1 and A2 both need literature tools but query different patterns; B does no retrieval, only synthesis over a fixed ledger. Splitting along this axis matches the actual cost surface (tool calls are where the spend lives).
+- **A1 and A2 run in parallel.** Neither depends on the other. The orchestrator dispatches them concurrently after the deterministic-prefetch phase, then awaits both before invoking B. Real wall-clock saving over a serial 2-agent design.
+- **B has no tools by design.** Cite-only enforces "if you can't quote it from the A1/A2 ledger, you can't claim it." Removes the failure mode where the synthesizer invents a citation.
+- **Per-section specialization in system prompts.** A1's system prompt has DB-vote-interpretation and antibody-validation few-shots; A2's has tissue-atlas and cell-state-perturbation few-shots. We didn't need separate agents per section to get this — the prompt is the right place.
+
+### Inputs (what each agent receives in its task message)
+
+All three agents receive the full triage record (raw triage prompt input + emitted triage record) so they have the contextual taxonomy and prior cell-state framing available without re-querying.
+
+```
+Common preamble (sent to A1, A2, B):
+  - gene: HGNCSymbol + UniProt canonical + isoforms
+  - triage_record: full SurfaceTriageRecord from latest surface_triage run
+  - deterministic_features: prefetched canonical_topology / isoform_topologies /
+    orthologs / paralogs / structure (with `do not contradict, do not rewrite`)
+
+A1-only:
+  - "produce surface_evidence: evidence_grade + grade_rationale + methods[] +
+     non_surface_expression[] + therapeutic_engagement + contradicting_evidence[]"
+
+A2-only:
+  - "produce biological_context: tissues[] + cell_types[] + cell_states[] +
+     subcellular_localization + anatomical_accessibility[] + accessibility_modulation[]
+     (with cell_state_trigger / restricted_lineage / dual_loc_partner_compartment sub-fields)"
+
+B-only:
+  - A1's emitted surface_evidence block + evidence ledger fragment
+  - A2's emitted biological_context block + evidence ledger fragment
+  - "produce executive_summary + filters + accessibility_risks +
+     confidence + confidence_reasoning. Cite only from the ledger above."
+```
+
+### Inter-agent handoff (evidence ledger)
+
+A1 and A2 each emit their own `evidence: list[Evidence]` slice with `evidence_id` prefixed (`a1_evi_NN`, `a2_evi_NN`) so the orchestrator can merge without collision. The Synthesizer receives the merged ledger as part of its input context; `cited_evidence_ids` lists in B's output must reference entries from that merged ledger. The orchestrator validates this at parse time.
+
+The same evidence_id namespace lets a future Challenger agent (v1.x) review B's output and call back to A1 or A2 for clarification on specific ledger entries.
+
+### Orchestrator changes
+
+```
+annotate_gene(symbol):
+  1. resolve gene → canonical UniProt + isoform list                  [reuse gene_lookup]
+  2. prefetch deterministic_features in parallel:
+       - deeptmhmm_fetcher(canonical + isoforms)
+       - compara_fetcher(uniprot)
+       - alphafold_fetcher(uniprot)
+  3. load latest surface_triage record for this gene from data/triage/
+  4. build common preamble (gene + triage + deterministic)
+  5. dispatch A1 + A2 in parallel via separate Managed Agent sessions
+     -- await both, collect SurfaceEvidenceDraft + BiologicalContextDraft +
+        each agent's evidence-list slice
+  6. merge evidence ledger (a1_evi_*, a2_evi_*); validate substring quotes
+  7. dispatch B with merged A1 + A2 output + ledger
+     -- collect ExecutiveSummary + Filters + AccessibilityRisks + Confidence
+  8. validate:
+       - draft.deterministic_features is None for all three agents
+       - every cited_evidence_id in B resolves to an entry in the merged ledger
+       - triage_signal ↔ executive_summary.surface_accessibility validator
+  9. assemble SurfaceomeRecord, persist to data/annotations/{gene}.json + D1
+```
+
+### Managed Agent registration
+
+Three new agent directories under `src/accessible_surfaceome/agents/`:
+
+- `surface_evidence_compiler/` — A1
+- `biology_compiler/` — A2
+- `surfaceome_synthesizer/` — B
+
+Each contains `agent.py` (payload builder + upsert), `prompts/system.md` (system prompt), `prompts/task_template.md` (per-call user message template). The `_support/registry.py` already supports multiple agent entries — no changes needed there. Auto-sync on drift extends naturally: when any of the three `system.md` files change, the next `annotate` run re-syncs the affected agent before the first model call.
+
+The old `surface_annotator/` directory is retired (mock runs only — see "Critical files to modify" above). For v1.0.0, fresh start with the three new agents.
+
+### Why not other topologies considered
+
+- **5+ per-section agents** (one each for §1 / §2 / §4 / §6 / synthesis) — rejected. Per-section query patterns can live as separate few-shots in one system prompt; cross-section coherence (filters derived from same facts as risks) is harder across agents than within one. Cost ~1.7× for marginal gain.
+- **2 agents (single Compiler + Synthesizer)** — initial proposal. Rejected because §1 and §2 have genuinely different reasoning shapes: §1 is structured DB-vote interpretation + methods tagging (could plausibly run on a smaller model later), §2 is open-ended cell-state synthesis. Splitting them lets v1.x cost-optimize §1 independently. Also gets us parallel wall-clock.
+- **Single agent (status quo)** — already the design we're refactoring away from. Doesn't scale to the new schema's reasoning surface.
+
+### v1.x extensions
+
+- **Challenger agent** — reviews B's output, can ping A1 or A2 for clarification (Managed Agents' multi-agent discussion fits here). Produces an audit trail. Deferred from v1.0.0 to avoid scope creep.
+- **Compiler model tier split** — A1 → Haiku (structured DB/method tagging), A2 → Sonnet (open synthesis). Cost optimization once eval baseline is stable.
+- **Paralog cross-reactivity verdict** — if `AntibodyRef.cross_reactivity_notes` + `max_paralog_ecd_pct_identity` prove insufficient signal, restore the dropped `paralog_assessment` block in either A2 (with `gene_literature` for cross-reactivity papers) or in a 4th specialized agent.
+
+---
+
 ## v1.0.0 final summary
 
 After ~9 rounds of iteration, here's the canonical reference. Read this before implementing.
@@ -1057,7 +1147,8 @@ SurfaceomeRecord (v1.0.0)
 ├── executive_summary             # surface_accessibility, evidence_grade_summary,
 │                                 # confidence, state_dependence, subcategory,
 │                                 # headline_risks, one_paragraph, cited_evidence_ids
-├── filters                       # 17 closed-enum/bool/list rollups for D1 indexing
+├── filters                       # 17 closed-enum/bool/list/float rollups for D1 indexing
+│                                 # (paralog row is now deterministic float — see below)
 ├── surface_evidence              # evidence_grade + grade_rationale, methods (with
 │                                 # nested expression_observations + antibody validation),
 │                                 # non_surface_expression, therapeutic_engagement,
@@ -1070,7 +1161,6 @@ SurfaceomeRecord (v1.0.0)
 ├── deterministic_features        # canonical_topology, isoform_topologies, orthologs
 │                                 # (list per species, alt isoforms), paralogs, structure
 │                                 # (afdb_version pinned to "v4"). 100% orchestrator-only.
-├── paralog_assessment            # promoted out of accessibility_risks; FK by uniprot_acc
 ├── accessibility_risks           # shed_form, secreted_form, restricted_subdomain,
 │                                 # co_receptor_requirements (surface_expression axis only),
 │                                 # ecd_size_assessment, epitope_masking (mechanism: list)
@@ -1090,9 +1180,9 @@ SurfaceomeRecord (v1.0.0)
 | Surface evidence | `evidence_grade` ordinal (direct_multi_method → weak) + rationale; method observations carry method_family + method_subclass + permeabilization + expression_system + antibody_epitope_region + accessibility_relevance + surface_claim_type, with nested expression_observations using closed `sample_type` enum (primary_human_tissue / patient_sample / iPSC_derived / established_cell_line / …); AntibodyRef carries rrid + validation_strategy + validation_strength + cross_reactivity_notes; therapeutic_engagement struct with required `surface_form_rationale` |
 | Biological context | tissues with expression-level enum + disease_context axis; anatomical_accessibility (apical / basolateral / junction_restricted / luminal_facing / ciliary / synaptic / …); accessibility_modulation with triage-aligned category enum + cell_state_trigger / restricted_lineage / dual_loc_partner_compartment sub-enums; no exocytosis_evidence (covered by accessibility_modulation) |
 | Deterministic features | DeepTMHMM canonical + all isoforms; Ensembl Compara orthologs per species (canonical + alt isoforms, list[OrthologEntry]); paralogs list; AlphaFold v4 structure with ECD pLDDT + disordered fraction (no new SASA dep); numeric Field bounds enforced |
-| Paralog assessment | Top-level (promoted out of accessibility_risks); FK by paralog_uniprot_acc into deterministic paralogs; cross_reactivity_assessment + severity + evidence_strength + rationale |
+| Paralogs | §4 renders deterministic Compara table only (paralog_symbol / family_id / ecd_pct_identity). LLM cross-reactivity verdict was dropped in round 10 — load-bearing antibody-specific cross-reactivity behavior lives in `AntibodyRef.cross_reactivity_notes` (§1), and the gene-family-level prior is captured by `filters.max_paralog_ecd_pct_identity` |
 | Accessibility risks | Per-risk severity + evidence_strength; epitope_masking.mechanism is a list (multi-mechanism cases don't collapse); co_receptor_requirements covers surface-expression axis only; restricted_subdomain captures basolateral / junction restriction; ecd_size_assessment renamed from druggability_class |
-| Filters | 17 flat top-level fields for D1 indexing; per-gene page drops the "Accessibility" group to avoid duplication with exec summary chips |
+| Filters | 17 flat top-level fields for D1 indexing (including the deterministic float `max_paralog_ecd_pct_identity`); per-gene page drops the "Accessibility" group to avoid duplication with exec summary chips |
 | Evidence ledger | Unchanged from v0.5.x: EvidenceClaim → Evidence → SourceRef with substring-validated quote spans; entailment_verified bool |
 | Cross-cutting | triage_signal cross-validated against surface_accessibility; record_generated_at vs nested retrieved_at distinct; confidence_reasoning max_length=600 + required-when-not-high |
 
@@ -1101,6 +1191,7 @@ SurfaceomeRecord (v1.0.0)
 | Item | Why deferred |
 |---|---|
 | Knowledge_gaps block | Overlapped with contradicting_evidence + confidence_reasoning. Honest-caveat framing was nice but most entries read as noise. Uncertainty routes through contradicting_evidence / evidence_grade / confidence_reasoning. |
+| LLM paralog cross-reactivity verdict (`paralog_assessment: list[ParalogRisk]`) | Redundant with per-antibody `AntibodyRef.cross_reactivity_notes` (load-bearing) and the deterministic `filters.max_paralog_ecd_pct_identity` rollup (gene-family prior). Dropping it also removes cross-section coherence risk between the verdict and the underlying antibody notes. §4 still renders the deterministic paralog table for v1.0.0; the verdict slot is reserved for v1.x if we revisit. |
 | Glycosylation features (UniProt ft_carbohyd integration) | LLM cites glycan masking from literature in epitope_masking.mechanism. Structured glycosite fields can land additively in v1.1. |
 | Surface-exposed epitope candidates (SASA + DSSP) | Needs alphafold_fetcher SASA pass + cutoff calibration. Defer; the LLM still discusses epitope masking from literature. |
 | Per-section confidence | One top-level confidence + reasoning for v1.0.0. |
@@ -1115,15 +1206,16 @@ SurfaceomeRecord (v1.0.0)
 ### Validators in place (Pydantic model_validators)
 
 1. `SurfaceomeRecordDraft.deterministic_features` is None on submit — the agent's draft can't write to that region (100% orchestrator-only).
-2. `paralog_assessment[i].paralog_uniprot_acc` must FK-resolve to `deterministic_features.paralogs[i].paralog_uniprot_acc`.
-3. `triage_signal` ↔ `executive_summary.surface_accessibility` consistency — disagreement requires the LLM to justify in `confidence_reasoning`.
-4. `accessibility_modulation[i].category=="other"` ↔ `category_other_label is not None`.
-5. `accessibility_modulation[i].cell_state_trigger is not None` ↔ category ∈ {cell_state_induced, stress_induced, activation_induced, disease_state_induced, lysosomal_exocytosis}.
-6. `accessibility_modulation[i].restricted_lineage is not None` ↔ category == "tissue_restricted_surface".
-7. `accessibility_modulation[i].dual_loc_partner_compartment is not None` ↔ category == "dual_localization".
-8. `confidence_reasoning` non-empty ↔ `confidence ∈ {moderate, low}`.
-9. Numeric `Field(ge=, le=)` bounds on all floats (pLDDT 0–100, disordered_fraction 0–1, ecd_pct_identity 0–100, etc.).
-10. String `Field(max_length=N)` bounds on all rationale fields.
+2. `triage_signal` ↔ `executive_summary.surface_accessibility` consistency — disagreement requires the LLM to justify in `confidence_reasoning`.
+3. `accessibility_modulation[i].category=="other"` ↔ `category_other_label is not None`.
+4. `accessibility_modulation[i].cell_state_trigger is not None` ↔ category ∈ {cell_state_induced, stress_induced, activation_induced, disease_state_induced, lysosomal_exocytosis}.
+5. `accessibility_modulation[i].restricted_lineage is not None` ↔ category == "tissue_restricted_surface".
+6. `accessibility_modulation[i].dual_loc_partner_compartment is not None` ↔ category == "dual_localization".
+7. `confidence_reasoning` non-empty ↔ `confidence ∈ {moderate, low}`.
+8. Numeric `Field(ge=, le=)` bounds on all floats (pLDDT 0–100, disordered_fraction 0–1, ecd_pct_identity 0–100, etc.).
+9. String `Field(max_length=N)` bounds on all rationale fields.
+
+(The paralog FK validator that was here in earlier rounds was dropped with `paralog_assessment` in round 10. v1.0.0 has no FK validators on `SurfaceomeRecord` — if a v1.x block adds one we'll restore the `@model_validator(mode="after")` pattern.)
 
 ### Worked examples
 
@@ -1148,3 +1240,4 @@ Three HTML previews co-located with the plan, each stress-testing different part
 | 7 | Deterministic features walkthrough (canonical_isoform_caveat dropped to preserve strict orchestrator-only boundary; afdb_version pinned to v4; paralog FK promoted to schema-level model_validator) |
 | 8 | Knowledge_gaps dropped entirely (overlapped with contradicting_evidence + confidence_reasoning; honest-caveat framing not load-bearing enough) |
 | 9 | Cross-cutting cleanup (contradiction_flag dropped; confidence_reasoning constraints; generated_at → record_generated_at) |
+| 10 | LLM paralog cross-reactivity verdict dropped (paralog_assessment → deterministic-only §4 + AntibodyRef.cross_reactivity_notes + filters.max_paralog_ecd_pct_identity); agent topology formalized as 3 managed agents (A1 surface-evidence compiler, A2 biology compiler, B synthesizer) |

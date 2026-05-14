@@ -417,7 +417,6 @@
                 <span class="chip chip--muted">✗ has_shed_form</span>
                 <span class="chip chip--muted">✗ has_secreted_form</span>
                 <span class="chip chip--muted">✗ coreceptor_for_expression</span>
-                <span class="chip chip--muted">✗ paralog_cross_reactivity</span>
                 <span class="chip">✓ epitope_masking</span>
                 <span class="chip chip--muted">✗ restricted_subdomain</span>
               </div>
@@ -888,20 +887,19 @@
             <span class="eyebrow__n">4</span><span>Paralogs</span>
             <span class="banner banner--deterministic" style="margin-left: auto">
               <span class="banner__dot"></span>
-              deterministic + LLM cross-binding (low-risk family)
+              deterministic — Compara r112
             </span>
           </div>
           <h3 class="h-section">Class A <em>orphans</em> diverge in the ECD</h3>
         </div>
         <div class="card__body">
           <p>
-            Unlike the HSP70 family (60%+ ECD identity, MODERATE-HIGH cross-reactivity risk) or
-            the ERBB family (45% ECD identity, LOW empirical risk), Class A orphan GPCRs diverge
-            substantially in their extracellular loops. ECD-targeting antibodies face low
-            cross-reactivity risk; the more pressing concern is the small ECD itself
-            (see §3).
+            Class A orphan GPCRs diverge substantially in their extracellular loops — the
+            closest paralogs sit at 20–27% ECD identity, well below the danger zone for
+            antibody cross-binding. The more pressing accessibility concern is the small
+            ECD itself (see §3).
           </p>
-          <h4 class="label-mono">Deterministic — closest paralogs</h4>
+          <h4 class="label-mono">Closest paralogs</h4>
           <table class="data">
             <thead>
               <tr><th>paralog</th><th>family</th><th>ECD % id (vs GPR75)</th></tr>
@@ -913,39 +911,13 @@
               <tr><td>CCR1 / CCR2 / CCR5 (chemokine R)</td><td>Class A (chemokine sub-family)</td><td class="mono">18–22%</td></tr>
             </tbody>
           </table>
-          <h4 class="label-mono">LLM cross-binding assessment</h4>
-          <table class="data">
-            <thead>
-              <tr><th>paralog</th><th>cross_reactivity</th><th>severity</th><th>evidence</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>GPR84</strong></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-              </tr>
-              <tr>
-                <td><strong>GPR146</strong></td>
-                <td><span class="chip chip--success">NEGLIGIBLE</span></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-              </tr>
-              <tr>
-                <td>CCR1/2/5 (chemokine)</td>
-                <td><span class="chip chip--success">NEGLIGIBLE</span></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--amber">MODERATE</span></td>
-              </tr>
-            </tbody>
-          </table>
           <p style="font-size: 0.92rem; color: var(--muted); margin: var(--space-2) 0; max-width: 70ch">
-            <strong>Rationale:</strong> 20–27% ECD identity among Class A orphans is below the
-            threshold at which mAb paratopes typically cross-bind. The chemokine receptor
-            sub-family is relevant because CCL5/RANTES has been proposed as a GPR75 ligand —
-            but cross-binding of <em>antibodies</em> (vs. ligand cross-recognition) is not a
-            documented concern. Evidence is "MODERATE" rather than "STRONG" because few studies
-            have systematically tested anti-GPR75 antibodies against the orphan-GPCR panel.
+            <strong>LLM paralog cross-reactivity verdict deferred to v1.x.</strong>
+            Antibody-specific cross-reactivity behavior is already captured per-antibody in
+            §1 via <code>AntibodyRef.cross_reactivity_notes</code>. The gene-family-level
+            prior is captured by the deterministic
+            <code>filters.max_paralog_ecd_pct_identity = 27.1%</code> rollup — a catalog
+            reader can filter on it directly without an LLM verdict.
           </p>
         </div>
       </article>

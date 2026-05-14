@@ -854,7 +854,7 @@
                 >
                 ·
                 <span class="annot__type"
-                  >list[Literal["shed_form","secreted_form","co_receptor","paralog_cross_reactivity","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","other"]]
+                  >list[Literal["shed_form","secreted_form","co_receptor","ecd_too_small","epitope_masked","isoform_decoy","restricted_subdomain","low_endogenous_expression","antibody_validation_weak","ligand_unknown","other"]]
                   (max 3)</span
                 >
                 <span class="annot__prov">L</span>
@@ -928,7 +928,6 @@
                 <span class="chip">✓ has_shed_form</span>
                 <span class="chip">✓ has_secreted_form</span>
                 <span class="chip chip--muted">✗ coreceptor_for_expression</span>
-                <span class="chip chip--muted">✗ paralog_cross_reactivity</span>
                 <span class="chip">✓ epitope_masking</span>
                 <span class="chip chip--muted">✗ restricted_subdomain</span>
               </div>
@@ -1722,16 +1721,16 @@
             <span>Paralogs</span>
             <span class="banner banner--deterministic" style="margin-left: auto">
               <span class="banner__dot"></span>
-              deterministic table + LLM cross-binding assessment
+              deterministic — Ensembl Compara r112
             </span>
           </div>
           <h3 class="h-section">
-            Will my binder <em>cross-react</em> with family members?
+            Within-species paralogs (%ECD identity)
           </h3>
         </div>
         <div class="card__body">
           <h4 class="label-mono">
-            Deterministic — Ensembl Compara within-species paralogs
+            Ensembl Compara within-species paralogs
           </h4>
           <table class="data">
             <thead>
@@ -1771,43 +1770,6 @@
             <span class="annot__prov">D</span>
           </div>
 
-          <h4 class="label-mono">
-            LLM cross-binding assessment (sequence + literature)
-          </h4>
-          <table class="data">
-            <thead>
-              <tr>
-                <th>paralog</th>
-                <th>cross_reactivity</th>
-                <th>severity</th>
-                <th>evidence_strength</th>
-                <th>cite</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>HER2</strong></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">STRONG</span></td>
-                <td class="mono">[evi_41]</td>
-              </tr>
-              <tr>
-                <td><strong>HER3</strong></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">STRONG</span></td>
-                <td class="mono">[evi_41]</td>
-              </tr>
-              <tr>
-                <td><strong>HER4</strong></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">LOW</span></td>
-                <td><span class="chip chip--success">STRONG</span></td>
-                <td class="mono">[evi_41]</td>
-              </tr>
-            </tbody>
-          </table>
           <p
             style="
               font-size: 0.92rem;
@@ -1816,39 +1778,23 @@
               max-width: 70ch;
             "
           >
-            <strong>Rationale:</strong> 42–45% ECD identity sits in the "fold
-            conserved, surface loops divergent" zone. Empirical evidence in
-            the ERBB family (cetuximab, panitumumab, trastuzumab) shows
-            minimal cross-reactivity across these paralogs despite the shared
-            fold — the loops that contact a mAb paratope diverge enough that
-            sequence identity alone would mislead. The LLM is responsible for
-            integrating the deterministic %id with literature on empirical
-            binder cross-reactivity to land the call.
+            <strong>LLM paralog cross-reactivity verdict deferred to v1.x.</strong>
+            The previous draft had an LLM-emitted <code>paralog_assessment:
+            list[ParalogRisk]</code> block classifying each paralog as
+            high/moderate/low/negligible cross-reactivity. We dropped that for
+            v1.0.0 because antibody-specific cross-reactivity behavior is
+            already captured per-antibody in §1 via
+            <code>AntibodyRef.cross_reactivity_notes</code> (the load-bearing
+            signal for "does my actual binder cross-react"), and the
+            gene-family prior is captured by the deterministic
+            <code>filters.max_paralog_ecd_pct_identity</code> rollup. The
+            section reserves a slot for the v1.x verdict if we revisit.
           </p>
-          <div class="annot annot--ref">
-            <span class="annot__path">paralog_assessment: list[ParalogRisk]</span>
-            <em
-              style="
-                color: var(--muted);
-                font-size: 0.78rem;
-                font-style: normal;
-              "
-            >
-              · top-level field, promoted out of accessibility_risks so the
-              deterministic table and LLM call live together
-            </em>
+          <div class="annot">
+            <span class="annot__path">filters.max_paralog_ecd_pct_identity</span>
             ·
-            <span class="annot__type">
-              ParalogRisk = { paralog_symbol,
-              <strong>paralog_uniprot_acc</strong> (FK →
-              deterministic_features.paralogs[i].paralog_uniprot_acc — unique
-              per paralog, unlike family_id which the whole family shares),
-              cross_reactivity_assessment:
-              Literal["high","moderate","low","negligible"], severity,
-              evidence_strength, rationale: str = Field(max_length=200),
-              cited_evidence_ids }
-            </span>
-            <span class="annot__prov">L→D-ref</span>
+            <span class="annot__type">float | None — max(deterministic_features.paralogs[i].ecd_pct_identity)</span>
+            <span class="annot__prov">D</span>
           </div>
         </div>
       </article>
