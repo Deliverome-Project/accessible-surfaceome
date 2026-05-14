@@ -38,6 +38,10 @@ CAND_URL = (
     f"/data/processed/candidate_universe/candidate_universe.tsv"
 )
 
+# Published reproduction gist (embedded into output PNG Source / PDF
+# Subject metadata — mirrors save_figure in _plotting_config.py).
+GIST_URL = "https://gist.github.com/beccajcarlson/f0cfd8281a9d512174ac49c32d051bde"
+
 # ──── Inline brand styling — sentinel: brand-style-v1 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained (no in-repo imports — Substack readers run it
@@ -170,8 +174,8 @@ def main() -> None:
 
     out_pdf = Path("db_overlap_venn.pdf")
     out_png = Path("db_overlap_venn.png")
-    fig.savefig(out_pdf, bbox_inches="tight")
-    fig.savefig(out_png, bbox_inches="tight", dpi=300)
+    fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
+    fig.savefig(out_png, bbox_inches="tight", dpi=300, metadata={"Source": GIST_URL})
     print(f"Wrote {out_pdf} + {out_png}  ({sum(len(s) for s in sets.values()):,} "
           f"per-DB votes across {len(set().union(*sets.values())):,} unique proteins)")
 

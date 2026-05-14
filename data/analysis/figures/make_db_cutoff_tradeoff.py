@@ -37,6 +37,10 @@ POINTS_URL = (
     f"/data/processed/triage_bench/db_cutoff_tradeoff_points.tsv"
 )
 
+# Published reproduction gist (embedded into output PNG Source / PDF
+# Subject metadata — mirrors save_figure in _plotting_config.py).
+GIST_URL = "https://gist.github.com/beccajcarlson/06d053b54810285af495886871ee7f8a"
+
 # ──── Inline brand styling — sentinel: brand-style-v1 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
@@ -242,8 +246,8 @@ def main() -> None:
 
     out_pdf = Path("db_cutoff_tradeoff.pdf")
     out_png = Path("db_cutoff_tradeoff.png")
-    fig.savefig(out_pdf, bbox_inches="tight")
-    fig.savefig(out_png, bbox_inches="tight", dpi=300)
+    fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
+    fig.savefig(out_png, bbox_inches="tight", dpi=300, metadata={"Source": GIST_URL})
     print(f"Wrote {out_pdf} + {out_png}  ({len(df)} cutoff variants across {df['group'].nunique()} DBs)")
 
 

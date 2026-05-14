@@ -149,6 +149,36 @@ def test_gist_calls_sns_despine(gist: Path):
 
 
 @pytest.mark.parametrize("gist", _gist_files(), ids=lambda p: p.name)
+def test_gist_embeds_gist_url_metadata(gist: Path):
+    """Every gist must declare a `GIST_URL = "https://gist.github.com/..."`
+    constant and pass it into `fig.savefig(..., metadata={"Source": GIST_URL})`
+    (PNG) / `metadata={"Subject": GIST_URL}` (PDF). Mirrors the
+    save_figure(gist_url=...) helper in
+    src/accessible_surfaceome/audit/_plotting_config.py — the URL then
+    travels in the PNG's Source tEXt chunk + PDF's Subject info field so
+    a figure dragged into Substack / Slack / email still tells you where
+    it came from. Read back with `exiftool figure.png | grep Source`."""
+    text = gist.read_text()
+    assert re.search(
+        r'GIST_URL\s*=\s*["\']https://gist\.github\.com/', text
+    ), (
+        f"{gist.name}: missing `GIST_URL = \"https://gist.github.com/...\"` "
+        f"constant. Add the published reproduction-gist URL so the figure "
+        f"carries its source URL in PNG/PDF metadata."
+    )
+    assert 'metadata={"Source": GIST_URL}' in text or "metadata={'Source': GIST_URL}" in text, (
+        f"{gist.name}: PNG `fig.savefig(...)` does not pass "
+        f"`metadata={{'Source': GIST_URL}}`. Without this, the embedded "
+        f"PNG `Source` tEXt chunk is missing."
+    )
+    assert 'metadata={"Subject": GIST_URL}' in text or "metadata={'Subject': GIST_URL}" in text, (
+        f"{gist.name}: PDF `fig.savefig(...)` does not pass "
+        f"`metadata={{'Subject': GIST_URL}}`. Without this, the embedded "
+        f"PDF `Subject` info field is missing."
+    )
+
+
+@pytest.mark.parametrize("gist", _gist_files(), ids=lambda p: p.name)
 def test_gist_has_no_legacy_bad_colors(gist: Path):
     text = gist.read_text()
     bad = [c for c in LEGACY_BAD_COLORS if c in text]

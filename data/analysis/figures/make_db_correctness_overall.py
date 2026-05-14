@@ -39,6 +39,10 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
 PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
 
+# Published reproduction gist (embedded into output PNG Source / PDF
+# Subject metadata — mirrors save_figure in _plotting_config.py).
+GIST_URL = "https://gist.github.com/beccajcarlson/1e3d464fa905536611df4d5ee0950558"
+
 # ──── Inline brand styling — sentinel: brand-style-v1 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
@@ -200,8 +204,8 @@ def main() -> None:
     fig.tight_layout()
     out_pdf = Path("db_correctness_overall.pdf")
     out_png = Path("db_correctness_overall.png")
-    fig.savefig(out_pdf, bbox_inches="tight")
-    fig.savefig(out_png, bbox_inches="tight", dpi=300)
+    fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
+    fig.savefig(out_png, bbox_inches="tight", dpi=300, metadata={"Source": GIST_URL})
     print(f"Wrote {out_pdf} + {out_png}")
 
 

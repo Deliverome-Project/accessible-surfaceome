@@ -49,6 +49,14 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
+# Published reproduction gist (embedded into the output PNG's Source
+# tEXt chunk + PDF's Subject info field — same pattern as the canonical
+# save_figure helper in src/accessible_surfaceome/audit/_plotting_config.py
+# so the figure carries its source URL even when dragged into a Substack
+# draft or copied to Slack). Read back with `exiftool figure.png | grep Source`,
+# or in Python: `from PIL import Image; Image.open(p).info["Source"]`.
+GIST_URL = "https://gist.github.com/beccajcarlson/b4d7c89ddd810bf38213b123512f9075"
+
 BENCH_TSV   = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
 CAND_TSV    = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
 PREDS_TSV   = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
@@ -324,8 +332,8 @@ def main() -> None:
 
     out_pdf = Path("db_correctness_by_class.pdf")
     out_png = Path("db_correctness_by_class.png")
-    fig.savefig(out_pdf, bbox_inches="tight")
-    fig.savefig(out_png, bbox_inches="tight", dpi=300)
+    fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
+    fig.savefig(out_png, bbox_inches="tight", dpi=300, metadata={"Source": GIST_URL})
     print(f"Wrote {out_pdf} + {out_png}  ({len(df)} (caller, bucket) cells; "
           f"UniProt TM+signal n={len(uniprot_opt):,}, CSPA HC-only n={len(cspa_opt):,})")
 
