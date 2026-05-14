@@ -36,4 +36,4 @@ Sources (fetched live from the public repo + public catalog API):
 - UniProt + CSPA optimized-cutoff accession sets: [`data/processed/triage_bench/db_optimized_cutoffs.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/triage_bench/db_optimized_cutoffs.tsv)
 
 Canonical in-repo generator:
-[`data/analysis/triage_bench_exploration/db_vs_sonnet_whole_proteome.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/triage_bench_exploration/db_vs_sonnet_whole_proteome.py).
+[`scripts/db_vs_sonnet_whole_proteome.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/db_vs_sonnet_whole_proteome.py).

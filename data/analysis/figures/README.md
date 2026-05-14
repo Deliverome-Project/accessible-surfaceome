@@ -26,9 +26,9 @@ conditions hold.
 | `db_cutoff_tradeoff` | [f9319af8…](https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed) | `scripts/triage_bench_db_barplot.py::make_db_tradeoff_plot` |
 | `db_correctness_overall` | [9c765ed9…](https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d) | `scripts/triage_bench_db_barplot.py::make_overall_plot` |
 | `benchmark_cost_vs_accuracy` | [d7f764d2…](https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41) | `scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot` |
-| `ensemble_vs_best_db_vs_sonnet` | [0104308c…](https://gist.github.com/beccajcarlson/0104308c239fe49d91d82a1007632b27) | `data/analysis/triage_bench_exploration/ensemble_vs_best_db_vs_sonnet.py` |
-| `db_vs_sonnet_whole_proteome` | [1265c867…](https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013) | `data/analysis/triage_bench_exploration/db_vs_sonnet_whole_proteome.py` |
-| `zero_db_rescues_by_triage` | [a4526c9e…](https://gist.github.com/beccajcarlson/a4526c9e6de5e958826bf1d764744c1b) | `data/analysis/triage_bench_exploration/zero_db_rescues_by_triage.py` |
+| `ensemble_vs_best_db_vs_sonnet` | [0104308c…](https://gist.github.com/beccajcarlson/0104308c239fe49d91d82a1007632b27) | `scripts/ensemble_vs_best_db_vs_sonnet.py` |
+| `db_vs_sonnet_whole_proteome` | [1265c867…](https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013) | `scripts/db_vs_sonnet_whole_proteome.py` |
+| `zero_db_rescues_by_triage` | [a4526c9e…](https://gist.github.com/beccajcarlson/a4526c9e6de5e958826bf1d764744c1b) | `scripts/zero_db_rescues_by_triage.py` |
 
 Each PDF + PNG also carries its gist URL in file metadata (PDF
 `dc:source` XMP field, PNG `Source` tEXt chunk). Refresh with

@@ -28,4 +28,4 @@ classical-DB yes-vote count) plus a `triage` block with `verdict`
 and `reason`. The rescue slice = `db == 0 AND verdict ∈ {yes, contextual}`.
 
 Canonical in-repo generator:
-[`data/analysis/triage_bench_exploration/zero_db_rescues_by_triage.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/triage_bench_exploration/zero_db_rescues_by_triage.py).
+[`scripts/zero_db_rescues_by_triage.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/zero_db_rescues_by_triage.py).

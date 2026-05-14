@@ -31,4 +31,4 @@ Sources (fetched live from the public repo):
 - DB-optimized cutoffs: [`data/processed/triage_bench/db_optimized_cutoffs.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/triage_bench/db_optimized_cutoffs.tsv)
 
 Canonical in-repo generator:
-[`data/analysis/triage_bench_exploration/ensemble_vs_best_db_vs_sonnet.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/triage_bench_exploration/ensemble_vs_best_db_vs_sonnet.py).
+[`scripts/ensemble_vs_best_db_vs_sonnet.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/ensemble_vs_best_db_vs_sonnet.py).
