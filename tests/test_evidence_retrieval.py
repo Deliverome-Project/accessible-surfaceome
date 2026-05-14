@@ -11,6 +11,9 @@ Three groups of cases:
 * **HPA short-circuit**: no HTTP, reads from a fixture TSV; output
   body matches the orchestrator's body templater so substring
   validation works end-to-end.
+* **Backfill-deeper**: when the gene-proximity filter empties the
+  top-ranked papers, ``_pmc_retrieval`` keeps fetching deeper into the
+  candidate pool — bounded by a fetch cap.
 """
 
 from __future__ import annotations
@@ -22,10 +25,12 @@ from typing import Any, cast
 import pytest
 from pydantic import ValidationError
 
+from accessible_surfaceome.tools._shared import retraction_watch as rw
 from accessible_surfaceome.tools._shared.http import CachedHTTP
 
 from accessible_surfaceome.tools import evidence_retrieval as er
 from accessible_surfaceome.tools._shared.models import (
+    IdentifierBundle,
     Paper,
     PaperSection,
     SurfaceomeRecordDraft,
@@ -456,3 +461,151 @@ def test_hpa_body_template_is_deterministic() -> None:
     assert body_a == body_b
     assert "HPA reliability for IHC: Enhanced" in body_a
     assert "Plasma membrane" in body_a
+
+
+# ---------------------------------------------------------------------------
+# Backfill-deeper-when-filtered
+# ---------------------------------------------------------------------------
+
+
+def _candidate_paper(pmid: int, pmcid: str) -> Paper:
+    """A discovery-pool paper: PMC-OA, no sections yet (pre-fetch)."""
+    return Paper(
+        pmid=pmid,
+        pmc_id=pmcid,
+        title=f"candidate {pmid}",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+    )
+
+
+def _fulltext_paper(pmcid: str, section_text: str) -> Paper:
+    """A post-fetch paper with one figure-legends section."""
+    pmid = int(pmcid.removeprefix("PMC"))
+    return Paper(
+        pmid=pmid,
+        pmc_id=pmcid,
+        title=f"fulltext {pmid}",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+        sections=[PaperSection(name="figure_legends", text=section_text)],
+    )
+
+
+def _patch_pmc_retrieval(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    pool: list[Paper],
+    bodies: dict[str, str],
+    target_symbol: str = "GPRC5D",
+    gazetteer: frozenset[str] = frozenset({"GPRC5D", "BCMA"}),
+) -> list[str]:
+    """Wire up _pmc_retrieval's collaborators with fakes; return a list
+    that records every pmcid fetch_fulltext is called with."""
+    bundle = IdentifierBundle(
+        uniprot_acc="Q9NZD1", hgnc_id="HGNC:1", hgnc_symbol=target_symbol
+    )
+    monkeypatch.setattr(er, "_resolve", lambda acc, *, http: bundle)
+    monkeypatch.setattr(er, "load_gazetteer", lambda: gazetteer)
+    monkeypatch.setattr(er, "_pubtator_discovery", lambda **kw: [])
+    monkeypatch.setattr(er, "_europepmc_discovery", lambda **kw: list(pool))
+
+    fetch_calls: list[str] = []
+
+    def _fake_fetch(*, http: Any, pmcid: str, retraction_index: Any) -> Paper:
+        fetch_calls.append(pmcid)
+        return _fulltext_paper(pmcid, bodies[pmcid])
+
+    monkeypatch.setattr(er, "fetch_fulltext", _fake_fetch)
+    return fetch_calls
+
+
+_COMPETING = "BCMA surface expression was confirmed by flow cytometry on intact cells."
+_ON_SUBJECT = "GPRC5D surface expression was confirmed by flow cytometry on intact cells."
+
+
+def test_backfill_reaches_deeper_paper_when_top_filtered(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Papers 1-3 only have competing-gene (BCMA) sentences; paper 4 has
+    the on-subject GPRC5D sentence. With max_papers=1 the loop must
+    backfill past the three filtered papers to reach paper 4."""
+    pool = [_candidate_paper(i, f"PMC{i}") for i in range(1, 5)]
+    bodies = {
+        "PMC1": _COMPETING,
+        "PMC2": _COMPETING,
+        "PMC3": _COMPETING,
+        "PMC4": _ON_SUBJECT,
+    }
+    fetch_calls = _patch_pmc_retrieval(monkeypatch, pool=pool, bodies=bodies)
+
+    pack = er.evidence_retrieval(
+        uniprot_acc="Q9NZD1",
+        category="flow_cytometry",
+        max_papers=1,
+        max_snippets_per_paper=3,
+        http=cast(CachedHTTP, object()),
+        retraction_index=rw.empty(),
+    )
+
+    # All four papers were fetched — the loop didn't stop at the filtered top.
+    assert fetch_calls == ["PMC1", "PMC2", "PMC3", "PMC4"]
+    # Only the on-subject paper is returned, and only its snippets.
+    assert pack.n_papers_with_snippets == 1
+    assert [p.pmc_id for p in pack.papers] == ["PMC4"]
+    assert pack.snippets
+    assert all("GPRC5D" in s.text for s in pack.snippets)
+    assert pack.empty_reason is None
+
+
+def test_backfill_respects_fetch_cap(monkeypatch: pytest.MonkeyPatch) -> None:
+    """When every candidate is competing-gene-only, the loop stops at the
+    fetch cap rather than walking the whole pool, and reports an honest
+    empty result. With max_papers=2 the cap is the floor (8), not the
+    multiplier product (6)."""
+    pool = [_candidate_paper(i, f"PMC{i}") for i in range(1, 13)]  # 12 papers
+    bodies = {f"PMC{i}": _COMPETING for i in range(1, 13)}
+    fetch_calls = _patch_pmc_retrieval(monkeypatch, pool=pool, bodies=bodies)
+
+    pack = er.evidence_retrieval(
+        uniprot_acc="Q9NZD1",
+        category="flow_cytometry",
+        max_papers=2,
+        max_snippets_per_paper=3,
+        http=cast(CachedHTTP, object()),
+        retraction_index=rw.empty(),
+    )
+
+    # cap = max(2 * _BACKFILL_FETCH_MULTIPLIER, _BACKFILL_MIN_FETCHES) = 8.
+    cap = max(2 * er._BACKFILL_FETCH_MULTIPLIER, er._BACKFILL_MIN_FETCHES)
+    assert cap == 8
+    assert len(fetch_calls) == cap
+    assert pack.snippets == []
+    assert pack.n_papers_with_snippets == 0
+    assert pack.papers == []
+    assert pack.empty_reason is not None
+    assert f"fetched {cap} of 12" in pack.empty_reason
+
+
+def test_backfill_happy_path_does_not_overfetch(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """When the top papers all yield, the loop stops at max_papers — it
+    does not keep fetching just because the pool is deeper."""
+    pool = [_candidate_paper(i, f"PMC{i}") for i in range(1, 9)]  # 8 papers
+    bodies = {f"PMC{i}": _ON_SUBJECT for i in range(1, 9)}
+    fetch_calls = _patch_pmc_retrieval(monkeypatch, pool=pool, bodies=bodies)
+
+    pack = er.evidence_retrieval(
+        uniprot_acc="Q9NZD1",
+        category="flow_cytometry",
+        max_papers=3,
+        max_snippets_per_paper=3,
+        http=cast(CachedHTTP, object()),
+        retraction_index=rw.empty(),
+    )
+
+    # Stopped at 3 yielding papers; did not fetch papers 4-8.
+    assert fetch_calls == ["PMC1", "PMC2", "PMC3"]
+    assert pack.n_papers_with_snippets == 3
+    assert len(pack.papers) == 3
