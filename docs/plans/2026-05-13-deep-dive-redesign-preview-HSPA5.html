@@ -1,0 +1,1443 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HSPA5 / GRP78 — Surface Accessibility Brief (contextual case)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f6f1ef;
+        --panel: #fdf9f7;
+        --panel-strong: #ffffff;
+        --line: #e8d6d2;
+        --line-soft: #efe2de;
+        --ink: #1f1718;
+        --muted: #6f5d5a;
+
+        --maroon: #6f0835;
+        --maroon-soft: rgba(111, 8, 53, 0.08);
+        --coral: #dd5955;
+        --coral-soft: rgba(226, 101, 94, 0.14);
+        --teal: #3469cd;
+        --teal-soft: rgba(52, 105, 205, 0.12);
+        --amber: #ffd579;
+        --amber-soft: rgba(255, 213, 121, 0.35);
+        --success: #749c75;
+        --success-soft: rgba(116, 156, 117, 0.18);
+        --lavender: #8a63d2;
+        --lavender-soft: rgba(138, 99, 210, 0.14);
+
+        --tm-M: #ffd579;
+        --tm-O: #d7dce3;
+        --tm-I: #a9cfa8;
+        --tm-S: #7d8896;
+
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.5rem;
+        --space-6: 2rem;
+        --space-7: 3rem;
+
+        --font-display: "Playfair Display", Georgia, serif;
+        --font-sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0; background: var(--bg); color: var(--ink);
+        font-family: var(--font-sans); font-size: 16px; line-height: 1.6;
+      }
+      a { color: inherit; }
+      em { font-family: var(--font-display); font-style: italic; font-weight: 500; }
+
+      .topbar {
+        position: sticky; top: 0; z-index: 10;
+        backdrop-filter: blur(10px);
+        background: rgba(246, 241, 239, 0.85);
+        border-bottom: 1px solid var(--line);
+      }
+      .topbar__inner {
+        max-width: 1080px; margin: 0 auto;
+        padding: var(--space-3) var(--space-5);
+        display: flex; align-items: center; justify-content: space-between;
+        gap: var(--space-4);
+      }
+      .topbar__title { margin: 0; font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em; }
+      .topbar__meta {
+        font-family: var(--font-mono); font-size: 0.75rem;
+        color: var(--muted); margin-left: var(--space-2);
+      }
+      .toggle {
+        display: inline-flex; background: var(--panel);
+        border: 1px solid var(--line); border-radius: 9999px;
+        padding: 3px; gap: 2px;
+      }
+      .toggle__btn {
+        appearance: none; background: transparent; border: 0;
+        border-radius: 9999px; padding: 0.4rem 0.95rem;
+        font-family: inherit; font-size: 0.85rem; font-weight: 600;
+        color: var(--muted); cursor: pointer; transition: all 0.15s ease;
+      }
+      .toggle__btn:hover { color: var(--ink); }
+      .toggle__btn.is-active { background: var(--maroon); color: white; }
+      .toggle__hint {
+        font-family: var(--font-mono); font-size: 0.7rem;
+        color: var(--muted); margin-left: var(--space-3);
+      }
+
+      main {
+        max-width: 1080px; margin: 0 auto;
+        padding: var(--space-6) var(--space-5) var(--space-7);
+        display: flex; flex-direction: column; gap: var(--space-6);
+      }
+      .h-display { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+      .h-section {
+        font-family: var(--font-display); font-size: 2rem; font-weight: 600;
+        letter-spacing: -0.015em; margin: 0 0 var(--space-2); line-height: 1.15;
+      }
+      .label-mono {
+        font-family: var(--font-mono); font-size: 0.72rem;
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
+      }
+      .eyebrow {
+        display: inline-flex; align-items: baseline; gap: var(--space-2);
+        color: var(--muted); font-family: var(--font-mono);
+        font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+        margin-bottom: var(--space-3);
+      }
+      .eyebrow__n { color: var(--coral); font-weight: 700; font-size: 0.9rem; }
+      .lede {
+        font-size: 1.05rem; line-height: 1.55; color: var(--muted);
+        max-width: 60ch; margin-bottom: var(--space-5);
+      }
+
+      .card { background: transparent; }
+      .card__head { margin-bottom: var(--space-4); }
+      .card__body { display: flex; flex-direction: column; gap: var(--space-4); }
+
+      .grid-2 {
+        display: grid; grid-template-columns: max-content 1fr;
+        gap: var(--space-3) var(--space-5); align-items: baseline;
+      }
+      .field-label {
+        font-family: var(--font-mono); font-size: 0.72rem;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); white-space: nowrap; padding-top: 4px;
+      }
+      .field-value { font-size: 0.95rem; color: var(--ink); }
+      .field-value strong { font-weight: 700; }
+
+      .chip {
+        display: inline-flex; align-items: center; gap: 0.35em;
+        padding: 0.18rem 0.55rem; border-radius: 9999px;
+        font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
+        line-height: 1.3; background: var(--coral-soft); color: var(--maroon);
+        border: 1px solid transparent;
+      }
+      .chip--teal { background: var(--teal-soft); color: var(--teal); }
+      .chip--success { background: var(--success-soft); color: var(--success); }
+      .chip--lavender { background: var(--lavender-soft); color: var(--lavender); }
+      .chip--amber { background: var(--amber-soft); color: #6f4a04; }
+      .chip--muted { background: rgba(0, 0, 0, 0.05); color: var(--muted); }
+      .chip--neutral { background: rgba(0, 0, 0, 0.03); color: var(--ink); }
+      .chip--strong { font-weight: 700; font-size: 0.85rem; padding: 0.3rem 0.7rem; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+      .banner {
+        display: inline-flex; align-items: center; gap: var(--space-2);
+        padding: 0.35rem 0.75rem; border-radius: 6px;
+        font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.06em;
+      }
+      .banner--deterministic { background: var(--teal-soft); color: var(--teal); }
+      .banner--llm { background: var(--lavender-soft); color: var(--lavender); }
+      .banner--warning { background: var(--amber-soft); color: #6f4a04; }
+      .banner__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+      table.data { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+      table.data th {
+        text-align: left; font-family: var(--font-mono); font-size: 0.72rem;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); font-weight: 600;
+        padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line);
+      }
+      table.data td { padding: var(--space-3); border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+      table.data tbody tr:hover { background: var(--coral-soft); }
+      table.data .mono { font-family: var(--font-mono); font-size: 0.85rem; }
+
+      .topo-bar {
+        display: flex; height: 14px; border-radius: 3px;
+        overflow: hidden; border: 1px solid var(--line); margin: var(--space-2) 0;
+      }
+      .topo-bar__seg { height: 100%; }
+      .topo-legend { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-2); }
+      .topo-legend__item { display: inline-flex; align-items: center; gap: var(--space-2); font-size: 0.85rem; color: var(--muted); }
+      .topo-legend__swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, 0.1); }
+
+      .method-list { display: flex; flex-direction: column; gap: var(--space-3); list-style: none; padding: 0; margin: 0; }
+      .method-card { padding: var(--space-3) var(--space-4); background: var(--panel); border-radius: 8px; border: 1px solid var(--line-soft); }
+      .method-card__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+      .method-card__title { font-weight: 600; }
+      .method-card__detail { font-size: 0.92rem; color: var(--muted); }
+
+      .ab-block {
+        display: flex; flex-wrap: wrap; gap: var(--space-2);
+        margin: var(--space-2) 0; padding: var(--space-2) var(--space-3);
+        background: rgba(116, 156, 117, 0.06);
+        border-left: 2px solid var(--success); border-radius: 4px;
+        font-size: 0.85rem;
+      }
+      .ab-block--warn {
+        background: rgba(255, 213, 121, 0.2);
+        border-left-color: #c89400;
+      }
+      .ab-block--danger {
+        background: rgba(221, 89, 85, 0.08);
+        border-left-color: var(--coral);
+      }
+
+      .risk-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: var(--space-3); }
+      .risk-card { padding: var(--space-3) var(--space-4); background: var(--panel); border-radius: 8px; border: 1px solid var(--line-soft); border-left: 3px solid var(--coral); }
+      .risk-card--info { border-left-color: var(--teal); }
+      .risk-card--ok { border-left-color: var(--success); }
+      .risk-card--warning { border-left-color: #c89400; }
+      .risk-card__head { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+      .risk-card__title { font-weight: 600; font-size: 0.98rem; }
+      .risk-card__body { color: var(--muted); font-size: 0.92rem; }
+      .risk-card__cite { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+      .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+      .filters-group { background: var(--panel); border-radius: 8px; border: 1px solid var(--line-soft); padding: var(--space-3) var(--space-4); }
+      .filters-group__title { font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 var(--space-2); }
+
+      .db-disagree-table {
+        margin: var(--space-3) 0;
+        background: var(--panel-strong);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .db-disagree-table table { width: 100%; border-collapse: collapse; }
+      .db-disagree-table th, .db-disagree-table td {
+        padding: var(--space-2) var(--space-3);
+        text-align: left;
+        font-size: 0.88rem;
+        border-bottom: 1px solid var(--line-soft);
+      }
+      .db-disagree-table th {
+        font-family: var(--font-mono); font-size: 0.7rem;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted);
+        background: var(--panel);
+      }
+      .vote-yes { color: var(--success); font-weight: 700; }
+      .vote-no { color: var(--muted); }
+      .vote-mixed { color: #6f4a04; font-weight: 600; }
+
+      .attribution { font-size: 0.82rem; line-height: 1.55; color: var(--muted); max-width: 70ch; }
+      .data-sources { background: var(--panel); border-radius: 8px; border: 1px solid var(--line); padding: var(--space-4) var(--space-5); }
+      .data-sources ul { margin: 0; padding-left: 1.2em; font-size: 0.88rem; color: var(--muted); }
+      .data-sources li + li { margin-top: 0.25em; }
+
+      .annot {
+        display: none; margin-top: 4px; padding: 4px 8px;
+        border-radius: 4px; background: rgba(52, 105, 205, 0.06);
+        border-left: 2px solid var(--teal);
+        font-family: var(--font-mono); font-size: 0.7rem;
+        line-height: 1.5; color: var(--ink);
+      }
+      .annot--llm { background: rgba(138, 99, 210, 0.06); border-left-color: var(--lavender); }
+      .annot--ref {
+        background: linear-gradient(90deg, rgba(138, 99, 210, 0.06) 0%, rgba(52, 105, 205, 0.06) 100%);
+        border-left-color: var(--lavender);
+      }
+      .annot__path { color: var(--ink); font-weight: 600; }
+      .annot__type { color: var(--muted); word-break: break-word; }
+      .annot__prov {
+        display: inline-block; margin-left: 6px; padding: 1px 6px;
+        border-radius: 9999px; font-size: 0.65rem; font-weight: 700;
+        background: var(--teal); color: white;
+      }
+      .annot--llm .annot__prov { background: var(--lavender); }
+      .annot--ref .annot__prov { background: linear-gradient(90deg, var(--lavender), var(--teal)); }
+      body[data-mode="schema"] .annot { display: block; }
+      body[data-mode="schema"] .annot--inline { display: inline-block; margin-left: var(--space-2); margin-top: 0; vertical-align: middle; }
+
+      .divider { height: 1px; background: var(--line); margin: 0; border: 0; }
+      .stack-2 { display: flex; flex-direction: column; gap: var(--space-2); }
+      .stack-3 { display: flex; flex-direction: column; gap: var(--space-3); }
+      .inline-cite { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); margin-left: 0.4em; }
+    </style>
+  </head>
+  <body data-mode="preview">
+    <header class="topbar">
+      <div class="topbar__inner">
+        <div>
+          <h1 class="topbar__title">HSPA5 / GRP78 — Surface Accessibility Brief</h1>
+          <span class="topbar__meta">
+            contextual case · DB disagreement · schema v1.0.0 · model claude-opus-4-7
+          </span>
+        </div>
+        <div style="display: flex; align-items: center">
+          <div class="toggle" role="tablist" aria-label="Display mode">
+            <button class="toggle__btn is-active" data-mode-btn="preview">Preview</button>
+            <button class="toggle__btn" data-mode-btn="schema">Schema</button>
+          </div>
+          <span class="toggle__hint" id="modeHint">what readers see</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- ─────────── HEADER CARD ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">Gene</span>
+            <span>Identity</span>
+          </div>
+          <h2 class="h-section">
+            HSPA5
+            <span style="font-family: var(--font-sans); font-size: 1.1rem; font-weight: 500; color: var(--muted); margin-left: 0.5em">
+              Heat shock protein family A (Hsp70) member 5 · also GRP78 · BiP
+            </span>
+          </h2>
+          <div class="chip-row" style="margin-top: var(--space-3); align-items: baseline">
+            <span class="chip chip--muted">UniProt P11021</span>
+            <span class="chip chip--muted">HGNC:5238</span>
+            <span class="chip chip--muted">NCBI Gene 3309</span>
+            <span class="chip chip--muted">Ensembl ENSG00000044574</span>
+            <span class="chip chip--amber">
+              triage: possibly_accessible · verdict: contextual
+              <span class="annot annot--inline">
+                <span class="annot__path">triage_signal</span> ·
+                <span class="annot__type">Literal["likely_accessible","possibly_accessible","unlikely","unknown"]</span>
+                · triage agent's verdict was <code>contextual</code> with reason
+                <code>cell_state_induced</code>; deep-dive evidence below confirms
+                tumor-cell surface fraction
+                <span class="annot__prov">D</span>
+              </span>
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── DB DISAGREEMENT CALLOUT ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span>M1 source panel</span>
+            <span style="margin-left: var(--space-3); text-transform: none; color: #c89400; font-weight: 600">
+              significant disagreement — 4 / 7 sources call surface
+            </span>
+          </div>
+        </div>
+        <div class="db-disagree-table">
+          <table>
+            <thead>
+              <tr>
+                <th>source</th>
+                <th>verdict</th>
+                <th>basis</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>UniProt</strong> (canonical localization)</td>
+                <td class="vote-no">NO — Endoplasmic reticulum lumen (KDEL retention)</td>
+                <td class="mono" style="color: var(--muted)">subcellular_location annotation</td>
+              </tr>
+              <tr>
+                <td><strong>HPA</strong> subcellular</td>
+                <td class="vote-no">NO — predominantly ER staining</td>
+                <td class="mono" style="color: var(--muted)">IF panel, RPE-1 + U-2 OS</td>
+              </tr>
+              <tr>
+                <td><strong>GO</strong> cellular component</td>
+                <td class="vote-mixed">MIXED — ER lumen + cell surface + cytosol</td>
+                <td class="mono" style="color: var(--muted)">multiple terms across studies</td>
+              </tr>
+              <tr>
+                <td><strong>SURFY</strong></td>
+                <td class="vote-yes">YES — classified as surface</td>
+                <td class="mono" style="color: var(--muted)">ML classifier on surface proteomics</td>
+              </tr>
+              <tr>
+                <td><strong>CSPA</strong> (Cell Surface Protein Atlas)</td>
+                <td class="vote-yes">YES — captured in surface biotinylation</td>
+                <td class="mono" style="color: var(--muted)">N-glycopeptide MS, multiple lines</td>
+              </tr>
+              <tr>
+                <td><strong>DeepTMHMM</strong></td>
+                <td class="vote-no">NO TM — signal peptide only (SP class)</td>
+                <td class="mono" style="color: var(--muted)">topology: S(1-18) + O(19-654)</td>
+              </tr>
+              <tr>
+                <td><strong>COMPARTMENTS</strong></td>
+                <td class="vote-mixed">MIXED — high ER score + moderate plasma membrane score</td>
+                <td class="mono" style="color: var(--muted)">text-mining + curated annotations</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size: 0.92rem; color: var(--muted); margin: 0; max-width: 70ch">
+          The DB split is real and biological: UniProt / HPA / DeepTMHMM capture the dominant
+          ER-lumenal pool of GRP78 (the canonical chaperone state). SURFY / CSPA capture the
+          tumor-cell and stress-induced surface fraction (which they sample preferentially because
+          their input datasets are biased toward cancer cell lines). The deep-dive evidence below
+          confirms both are true — the question is <em>in which cells / contexts</em> the surface
+          fraction matters.
+        </p>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── EXECUTIVE SUMMARY ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow"><span>Executive summary</span></div>
+        </div>
+        <div class="card__body">
+          <p class="lede">
+            GRP78 is the ER chaperone BiP — predominantly lumenal in normal cells (held by KDEL
+            retention) but with a robust, multi-citation surface fraction in tumor cells
+            (pancreatic, multiple myeloma, prostate, glioma) and under ER stress / apoptosis.
+            DeepTMHMM finds signal peptide only — no transmembrane anchor — so the surface story
+            doesn't fit a classical receptor framework. Anti-GRP78 antibodies of varying specificity
+            are in clinical-stage trials (PAT-SM6 in myeloma). Accessibility is genuinely
+            high-state-dependent and the key risks are paralog cross-reactivity (HSP70 family is
+            highly conserved) and uncertainty about the molecular mechanism of ER → surface
+            translocation.
+          </p>
+
+          <div class="grid-2">
+            <span class="field-label">Surface accessibility</span>
+            <span class="field-value">
+              <span class="chip chip--amber chip--strong">MODERATE</span>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                tumor-cell-specific
+              </span>
+              <div class="annot annot--llm">
+                <span class="annot__path">executive_summary.surface_accessibility</span> ·
+                <span class="annot__type">Literal["high","moderate","low","uncertain"]</span>
+                <span class="annot__prov">L</span>
+              </div>
+            </span>
+
+            <span class="field-label">Evidence grade</span>
+            <span class="field-value">
+              <span class="chip chip--teal">direct_multi_method</span>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                in tumor contexts
+              </span>
+            </span>
+
+            <span class="field-label">Confidence</span>
+            <span class="field-value">
+              <strong>MODERATE</strong>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                capped at moderate by HIGH-impact knowledge gaps
+              </span>
+            </span>
+
+            <span class="field-label">State dependence</span>
+            <span class="field-value">
+              <strong>HIGH</strong>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                surface only in tumor / stressed / apoptotic cells
+              </span>
+            </span>
+
+            <span class="field-label">Subcategory</span>
+            <span class="field-value">
+              other (chaperone — signal peptide only, no TM)
+              <div class="annot annot--llm">
+                <span class="annot__path">executive_summary.subcategory</span> ·
+                <span class="annot__type">Literal["single_pass_T1","single_pass_T2","multi_pass","GPCR","GPI_anchored","tetraspanin","ion_channel","transporter","other"]</span>
+                · "other" captures non-canonical chaperone-on-surface cases like GRP78 / CALR
+                <span class="annot__prov">L</span>
+              </div>
+            </span>
+
+            <span class="field-label">Headline risks</span>
+            <span class="field-value">
+              <span class="chip-row">
+                <span class="chip">state_dependent_localization</span>
+                <span class="chip">antibody_validation_weak</span>
+                <span class="chip">uncertain_anchor_mechanism</span>
+              </span>
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── FILTERS / TAGS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span>Filters &amp; tags</span>
+            <span style="margin-left: var(--space-3); text-transform: none">
+              catalog-facing · all closed enums · D1-indexed
+            </span>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="filters-grid">
+            <!-- Per-gene rendering rule: the Accessibility filter group is
+                 not duplicated here — exec summary already covers
+                 overall / confidence / subcategory / evidence_grade /
+                 ecd_accessibility / evidence_density. -->
+            <div class="annot">
+              <span class="annot__path">filters.{surface_accessibility, confidence, subcategory, evidence_grade, ecd_accessibility_class, evidence_density}</span>
+              · top-level for D1 indexing; <strong>not rendered on per-gene
+              page</strong> (exec summary covers them). Catalog renders as
+              chip facets.
+              <span class="annot__prov">D</span>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Expression (LLM rollups)</p>
+              <div class="chip-row">
+                <span class="chip chip--lavender">level=high</span>
+                <span class="chip chip--lavender">breadth=pan_tissue</span>
+                <span class="chip chip--lavender">specificity=mostly_intracellular</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+                Surface fraction is the minority — most GRP78 is ER-lumenal.
+              </p>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Risks (booleans)</p>
+              <div class="chip-row">
+                <span class="chip chip--muted">✗ has_shed_form</span>
+                <span class="chip">✓ has_secreted_form</span>
+                <span class="chip chip--muted">✗ coreceptor_for_expression</span>
+                <span class="chip">✓ epitope_masking</span>
+                <span class="chip chip--muted">✗ restricted_subdomain</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+                <code>filters.max_paralog_ecd_pct_identity = 64.2%</code> (HSPA8) — deterministic; LLM cross-reactivity verdict deferred to v1.x
+              </p>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Cross-species (Compara)</p>
+              <div class="chip-row">
+                <span class="chip chip--success">mouse_ecd_id=98.2%</span>
+                <span class="chip chip--success">cyno_ecd_id=99.7%</span>
+                <span class="chip chip--success">rat_ecd_id=98.0%</span>
+              </div>
+            </div>
+
+            <div class="filters-group">
+              <p class="filters-group__title">Topology</p>
+              <div class="chip-row">
+                <span class="chip chip--teal">n_term_extracellular=TRUE</span>
+                <span class="chip chip--teal">c_term_extracellular=TRUE</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+                Topology booleans read TRUE because DeepTMHMM has no TM helix to anchor against
+                — the full mature protein is "outside." In biology, "outside" here means
+                ER-lumenal in normal cells; surface in tumor cells. The LLM calls this
+                disconnect out in <code>executive_summary.one_paragraph</code> and in the §3
+                section banner.
+              </p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 1 — SURFACE EVIDENCE ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">1</span>
+            <span>Surface accessibility evidence</span>
+          </div>
+          <h3 class="h-section">The <em>tumor-cell-surface</em> case</h3>
+        </div>
+        <div class="card__body">
+          <div style="display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap">
+            <span class="banner banner--llm">
+              <span class="banner__dot"></span>
+              evidence grade: direct_multi_method
+            </span>
+            <span class="banner banner--warning">
+              <span class="banner__dot"></span>
+              tumor-context-specific
+            </span>
+          </div>
+          <p>
+            Live-cell flow cytometry with multiple anti-GRP78 clones, surface biotinylation MS, and
+            non-permeabilized IF all confirm endogenous surface GRP78 on tumor cell lines and
+            patient-derived tumor samples. Matched normal cells show no surface signal —
+            consistent with the DB disagreement (UniProt / HPA capture the dominant ER pool;
+            SURFY / CSPA capture the tumor-cell surface fraction).
+          </p>
+
+          <h4 class="label-mono">Methods + antibodies (with validation chips)</h4>
+          <ul class="method-list">
+
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Flow cytometry</span>
+                <span class="chip chip--teal">live_cell_flow</span>
+                <span class="chip chip--muted">nonpermeabilized</span>
+                <span class="chip chip--muted">endogenous</span>
+                <span class="chip chip--success">direct_surface_accessibility</span>
+              </div>
+
+              <div class="ab-block">
+                <strong style="margin-right: 0.5em">PAT-SM6 (Patrys):</strong>
+                <span class="chip chip--muted">RRID:AB_2738831</span>
+                <span class="chip chip--muted">monoclonal IgM</span>
+                <span class="chip chip--muted">conformational ECD epitope</span>
+                <span class="chip chip--success">CRISPR_KO validated</span>
+                <span class="chip chip--success">validation=STRONG</span>
+                <span style="color: var(--muted); font-style: italic; flex-basis: 100%; margin-top: 4px">
+                  cross-reactivity: highly specific for cell-surface GRP78; does not bind ER-luminal
+                  form. KO-tested in MM cells. [evi_51]
+                </span>
+              </div>
+
+              <div class="ab-block ab-block--warn">
+                <strong style="margin-right: 0.5em">N-20 (Santa Cruz):</strong>
+                <span class="chip chip--muted">RRID:AB_2120480</span>
+                <span class="chip chip--muted">polyclonal goat</span>
+                <span class="chip chip--muted">N-terminal epitope</span>
+                <span class="chip chip--amber">siRNA_knockdown validated</span>
+                <span class="chip chip--amber">validation=MODERATE</span>
+                <span style="color: var(--muted); font-style: italic; flex-basis: 100%; margin-top: 4px">
+                  cross-reactivity: weak cross-reaction with HSPA1A at ≥250 nM titer; reduce
+                  concentration or pre-absorb against HSPA1A-overexpressing lysate. [evi_52]
+                </span>
+              </div>
+
+              <p class="method-card__detail">
+                <strong>Observed in:</strong>
+              </p>
+              <table class="data">
+                <thead>
+                  <tr>
+                    <th>context</th>
+                    <th>sample_type</th>
+                    <th>level</th>
+                    <th>cite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Primary multiple myeloma plasma cells</td>
+                    <td><span class="chip chip--success">patient_sample</span></td>
+                    <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                    <td class="mono">[evi_51]</td>
+                  </tr>
+                  <tr>
+                    <td>AsPC-1 (pancreatic cancer)</td>
+                    <td><span class="chip chip--muted">established_cell_line</span></td>
+                    <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                    <td class="mono">[evi_53]</td>
+                  </tr>
+                  <tr>
+                    <td>MM.1S (myeloma)</td>
+                    <td><span class="chip chip--muted">established_cell_line</span></td>
+                    <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                    <td class="mono">[evi_51]</td>
+                  </tr>
+                  <tr>
+                    <td>Normal PBMCs (healthy donors)</td>
+                    <td><span class="chip chip--success">primary_human_cell</span></td>
+                    <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                    <td class="mono">[evi_54]</td>
+                  </tr>
+                  <tr>
+                    <td>Normal bone marrow plasma cells</td>
+                    <td><span class="chip chip--success">primary_human_cell</span></td>
+                    <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                    <td class="mono">[evi_51]</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Mass spec</span>
+                <span class="chip chip--teal">surface_biotinylation</span>
+                <span class="chip chip--muted">nonpermeabilized</span>
+                <span class="chip chip--muted">endogenous</span>
+                <span class="chip chip--success">direct_surface_accessibility</span>
+              </div>
+              <p class="method-card__detail">
+                label-free LC-MS/MS, sulfo-NHS-biotin labeling of intact cells.
+                GRP78 peptides detected in surface fraction of cancer cell lines but
+                not in matched normal tissue. <span class="inline-cite">[evi_55]</span>
+                <em>No antibody dependency at this step — clean orthogonal evidence
+                for the flow data above.</em>
+              </p>
+              <table class="data" style="margin-top: var(--space-2)">
+                <thead>
+                  <tr>
+                    <th>context</th>
+                    <th>sample_type</th>
+                    <th>level</th>
+                    <th>cite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>AsPC-1 surface fraction</td>
+                    <td><span class="chip chip--muted">established_cell_line</span></td>
+                    <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                    <td class="mono">[evi_55]</td>
+                  </tr>
+                  <tr>
+                    <td>MM.1S surface fraction</td>
+                    <td><span class="chip chip--muted">established_cell_line</span></td>
+                    <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                    <td class="mono">[evi_55]</td>
+                  </tr>
+                  <tr>
+                    <td>Normal pancreas (post-mortem biopsy)</td>
+                    <td><span class="chip chip--success">primary_human_tissue</span></td>
+                    <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                    <td class="mono">[evi_55]</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Immunofluorescence</span>
+                <span class="chip chip--teal">nonpermeabilized_IF</span>
+                <span class="chip chip--muted">endogenous</span>
+                <span class="chip chip--amber">supports_surface_localization</span>
+              </div>
+
+              <div class="ab-block ab-block--danger">
+                <strong style="margin-right: 0.5em">clone 76-E6 (Abcam ab21685):</strong>
+                <span class="chip chip--muted">RRID:AB_961874</span>
+                <span class="chip chip--muted">monoclonal mouse IgG1</span>
+                <span class="chip chip--muted">N-terminal epitope</span>
+                <span class="chip">overexpression_reference only</span>
+                <span class="chip">validation=WEAK</span>
+                <span style="color: var(--muted); font-style: italic; flex-basis: 100%; margin-top: 4px">
+                  cross-reactivity: <strong>cross-reacts with HSPA1A and HSPA8</strong>
+                  by Western blot in HEK293T overexpression panels. IF signal in tumor sections
+                  may include HSPA1A signal — interpret with care, prefer KO-validated clones
+                  (PAT-SM6) when possible. [evi_56]
+                </span>
+              </div>
+
+              <p class="method-card__detail">
+                Pancreatic tumor sections + multiple myeloma BM aspirates show punctate / clustered
+                surface staining vs. diffuse ER pattern in normal cells.
+                <span class="inline-cite">[evi_56, evi_57]</span>
+              </p>
+            </li>
+          </ul>
+
+          <h4 class="label-mono">Therapeutic engagement (not a comprehensive landscape)</h4>
+          <div
+            style="
+              padding: var(--space-3) var(--space-4);
+              background: rgba(255, 213, 121, 0.2);
+              border-left: 3px solid #c89400;
+              border-radius: 6px;
+              font-size: 0.92rem;
+            "
+          >
+            <div class="chip-row" style="margin-bottom: var(--space-2)">
+              <span class="chip chip--amber chip--strong">highest_stage = in_clinical_trials</span>
+            </div>
+            <p style="margin: 0 0 var(--space-2)">
+              <strong>Description:</strong> PAT-SM6 (Patrys) — anti-GRP78
+              IgM monoclonal in Phase 1 for relapsed/refractory multiple
+              myeloma <span class="inline-cite">[evi_T11]</span>. Additional
+              preclinical programs targeting surface GRP78 in pancreatic and
+              prostate cancer
+              <span class="inline-cite">[evi_T12, evi_T13]</span>.
+            </p>
+            <p style="margin: 0; color: var(--muted)">
+              <strong>Surface-form rationale:</strong> PAT-SM6 recognizes a
+              conformational ECD epitope present <em>only on cell-surface
+              GRP78</em>, not on the canonical ER-lumenal form (the antibody
+              was selected against patient-derived tumor cells, not the
+              soluble chaperone). This specificity is the entire point —
+              GRP78 is ubiquitous as an ER chaperone, so a non-specific
+              binder would have catastrophic on-target / off-tumor toxicity.
+              Soluble sGRP78 in patient serum (also documented) is NOT the
+              therapeutic target.
+            </p>
+            <p
+              style="
+                margin-top: var(--space-2);
+                font-size: 0.78rem;
+                color: var(--muted);
+                font-style: italic;
+              "
+            >
+              Not a comprehensive therapeutic landscape — just the topline
+              signal that surface GRP78 specifically has been clinically
+              engaged.
+            </p>
+          </div>
+
+          <h4 class="label-mono">Contradicting evidence (typed + severity)</h4>
+          <ul class="risk-list">
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Canonical ER-lumenal localization</span>
+                <span class="chip chip--muted">alternative_localization</span>
+                <span class="chip chip--amber">severity=HIGH (for normal cells)</span>
+                <span class="risk-card__cite">[evi_60]</span>
+              </div>
+              <p class="risk-card__body">
+                The dominant non-tumor state. Does NOT undermine the tumor-cell surface claim —
+                instead it reframes the context. Normal cells: surface=ABSENT. Tumor / stressed
+                cells: surface=HIGH. Both are biologically real; the DB split reflects this.
+              </p>
+            </li>
+            <li class="risk-card risk-card--warning">
+              <div class="risk-card__head">
+                <span class="risk-card__title">N-terminal fragment "GRP78-N"</span>
+                <span class="chip chip--muted">isoform_conflict</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="risk-card__cite">[evi_61]</span>
+              </div>
+              <p class="risk-card__body">
+                Some surface-detection reports show a ~50 kDa fragment rather than full-length
+                ~78 kDa. Origin unclear (proteolytic? alternative start?). Antibody epitope matters:
+                C-terminal antibodies may miss the surface form.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 2 — BIOLOGICAL CONTEXT ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">2</span>
+            <span>Biological context &amp; anatomical accessibility</span>
+          </div>
+          <h3 class="h-section">Where the <em>contextual</em> surface fraction is reachable</h3>
+        </div>
+        <div class="card__body">
+          <h4 class="label-mono">Tissues × disease_context (surface fraction)</h4>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 var(--space-2); font-style: italic">
+            ER expression is uniformly high everywhere (GRP78 is a ubiquitous
+            ER chaperone). The interesting axis is the surface fraction —
+            captured by tissues.present, with disease_context separating
+            normal vs tumor rows.
+          </p>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>tissue</th>
+                <th>disease_context</th>
+                <th>level (surface)</th>
+                <th>cell types / states</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>pancreas</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>adenocarcinoma cells; ER-stressed, UPR-active</td>
+              </tr>
+              <tr>
+                <td>pancreas</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                <td>acinar / ductal cells; baseline</td>
+              </tr>
+              <tr>
+                <td>bone marrow</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>multiple myeloma plasma cells; chronic UPR</td>
+              </tr>
+              <tr>
+                <td>bone marrow</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                <td>healthy plasma cells; baseline</td>
+              </tr>
+              <tr>
+                <td>liver</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--amber chip--strong">MODERATE</span></td>
+                <td>hepatocellular carcinoma; variable UPR</td>
+              </tr>
+              <tr>
+                <td>prostate</td>
+                <td class="mono">tumor</td>
+                <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                <td>prostate carcinoma cells</td>
+              </tr>
+              <tr>
+                <td>peripheral blood</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                <td>resting immune cells</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="annot annot--llm">
+            <span class="annot__path">biological_context.tissues</span> ·
+            <span class="annot__type"
+              >list[TissueContext] = { tissue: str,
+              <strong>present: Literal["high","moderate","low","absent","mixed","unknown"]</strong>
+              (upgraded from bool),
+              <strong>disease_context: Literal["normal","tumor","tumor_adjacent","other_disease","mixed","unknown"]</strong>
+              (new), cell_types, cell_states, cited_evidence_ids }</span
+            >
+            · GRP78 is the canonical example for why disease_context matters
+            — same tissue, opposite surface presence depending on normal vs
+            tumor state.
+            <span class="annot__prov">L</span>
+          </div>
+
+          <h4 class="label-mono">Anatomical accessibility</h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>context</th>
+                <th>orientation</th>
+                <th>implication</th>
+                <th>cite</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>pancreatic / myeloma tumor cell</td>
+                <td class="mono">blood_interstitial_facing</td>
+                <td><span class="chip chip--success">FAVORABLE</span> — direct vascular access in solid tumor; bone marrow access in MM</td>
+                <td class="mono">[evi_51, evi_53]</td>
+              </tr>
+              <tr>
+                <td>normal cell (any tissue)</td>
+                <td class="mono">unknown</td>
+                <td><span class="chip">RESTRICTED</span> — protein is ER-lumenal, not at surface</td>
+                <td class="mono">[evi_60]</td>
+              </tr>
+              <tr>
+                <td>apoptotic cell (any tissue)</td>
+                <td class="mono">blood_interstitial_facing</td>
+                <td><span class="chip chip--amber">CONTEXT_DEPENDENT</span> — exposure correlates with apoptotic progression</td>
+                <td class="mono">[evi_62]</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4 class="label-mono">Accessibility modulation</h4>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 var(--space-2); font-style: italic">
+            <code>category</code> enum mirrors + expands the <code>surface_triage</code> agent's
+            contextual taxonomy. The <code>cell_state_trigger</code> /
+            <code>restricted_lineage</code> / <code>dual_loc_partner_compartment</code>
+            sub-fields port the rich descriptive substructure from the triage prompt (which
+            enumerates specific stress triggers, lineages, and partner compartments in prose)
+            into structured closed enums the catalog can filter on.
+          </p>
+          <ul class="risk-list">
+            <li class="risk-card risk-card--warning">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Normal → tumor (oncogenic transformation)</span>
+                <span class="chip chip--lavender">category=disease_state_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=oncogenic_transformation</span>
+                <span class="risk-card__cite">[evi_53, evi_55]</span>
+              </div>
+              <p class="risk-card__body">
+                Surface GRP78 emerges as part of the malignant phenotype across pancreatic,
+                myeloma, prostate, hepatocellular tumors. Mechanistically linked to chronic UPR
+                activation. (Rolls up to triage's <code>cell_state_induced</code> bucket at
+                cross-validation.)
+              </p>
+            </li>
+            <li class="risk-card risk-card--warning">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Baseline → ER-stressed</span>
+                <span class="chip chip--lavender">category=stress_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=ER_stress</span>
+                <span class="risk-card__cite">[evi_62, evi_63]</span>
+              </div>
+              <p class="risk-card__body">
+                Pharmacological ER stress (tunicamycin, thapsigargin) or glucose deprivation
+                drives surface translocation in normal cell lines. Reversible on stress
+                withdrawal. (Could equivalently use
+                <code>cell_state_trigger=nutrient_deprivation</code> for the glucose-deprivation
+                arm — one observation per trigger.)
+              </p>
+            </li>
+            <li class="risk-card risk-card--warning">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Live → apoptotic</span>
+                <span class="chip chip--lavender">category=cell_state_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=apoptosis</span>
+                <span class="risk-card__cite">[evi_62]</span>
+              </div>
+              <p class="risk-card__body">
+                Anthracycline / oxaliplatin-induced apoptosis exposes GRP78 alongside CALR as
+                an "eat me" signal. Verbatim from the triage taxonomy.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 3 — ISOFORMS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="eyebrow__n">3</span>
+            <span>Isoforms &amp; topology</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — UniProt + DeepTMHMM 1.0.24
+            </span>
+          </div>
+          <h3 class="h-section">Signal peptide, <em>no TM helix</em></h3>
+        </div>
+        <div class="card__body">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>isoform</th>
+                <th>UniProt</th>
+                <th>TM count</th>
+                <th>N-term</th>
+                <th>signal peptide</th>
+                <th>"ECD" len</th>
+                <th>topology</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>canonical</strong></td>
+                <td class="mono">P11021</td>
+                <td class="mono">0</td>
+                <td class="mono">extracellular</td>
+                <td class="mono">1–18 (cleaved)</td>
+                <td class="mono">636</td>
+                <td style="min-width: 180px">
+                  <div class="topo-bar">
+                    <div class="topo-bar__seg" style="flex: 18; background: var(--tm-S)"></div>
+                    <div class="topo-bar__seg" style="flex: 636; background: var(--tm-O)"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="topo-legend">
+            <span class="topo-legend__item"><span class="topo-legend__swatch" style="background: var(--tm-O)"></span> Extracellular (O) — lumenal in ER context, surface in tumor context</span>
+            <span class="topo-legend__item"><span class="topo-legend__swatch" style="background: var(--tm-S)"></span> Signal peptide (S)</span>
+          </div>
+
+          <p
+            style="
+              font-size: 0.82rem;
+              color: var(--muted);
+              margin: var(--space-3) 0 0;
+              font-style: italic;
+              max-width: 70ch;
+            "
+          >
+            Section-level biology note (not a schema field): DeepTMHMM reads
+            the post-signal-peptide region as "extracellular" (O), but
+            biologically that's <strong>ER-lumenal</strong> in normal cells
+            (held by C-terminal KDEL). The "surface" state is non-canonical
+            translocation in tumor / stressed cells — covered in §1
+            evidence and §2 accessibility-modulation. Topology booleans
+            don't distinguish ER lumen from cell-surface "outside." The LLM
+            calls this out in <code>executive_summary.one_paragraph</code>
+            rather than via a per-record schema field (the previously-tried
+            <code>canonical_isoform_caveat</code> was dropped because it
+            embedded an LLM write inside <code>deterministic_features</code>).
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 4 — PARALOGS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="eyebrow__n">4</span>
+            <span>Paralogs</span>
+            <span class="banner banner--warning" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              HSP70 family — antibody specificity is non-trivial
+            </span>
+          </div>
+          <h3 class="h-section">The <em>HSP70 family</em> cross-binding problem</h3>
+        </div>
+        <div class="card__body">
+          <p>
+            The HSP70 family is the textbook case where antibody specificity is hard. Members
+            share &gt;60% identity at the protein level and conserve the substrate-binding domain
+            fold. Some commercial antibodies marketed as "anti-GRP78" cross-react with HSPA1A or
+            HSPA8 — see §1 antibody validation chips for which clones were
+            <span class="chip chip--success" style="font-size: 0.75rem">KO-validated</span> vs.
+            <span class="chip" style="font-size: 0.75rem">overexpression-only</span>.
+          </p>
+
+          <h4 class="label-mono">Deterministic — Ensembl Compara within-species paralogs</h4>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>paralog</th>
+                <th>family</th>
+                <th>ECD % id (vs GRP78)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HSPA1A</strong> (HSP70-1A)</td>
+                <td>HSPA family</td>
+                <td class="mono">63.4%</td>
+              </tr>
+              <tr>
+                <td><strong>HSPA1B</strong> (HSP70-1B)</td>
+                <td>HSPA family</td>
+                <td class="mono">63.1%</td>
+              </tr>
+              <tr>
+                <td><strong>HSPA8</strong> (HSC70 / Hsp73)</td>
+                <td>HSPA family</td>
+                <td class="mono">64.2%</td>
+              </tr>
+              <tr>
+                <td><strong>HSPA9</strong> (mtHSP70 / mortalin / GRP75)</td>
+                <td>HSPA family (mitochondrial)</td>
+                <td class="mono">52.1%</td>
+              </tr>
+              <tr>
+                <td>HSPA2</td>
+                <td>HSPA family (testis)</td>
+                <td class="mono">62.8%</td>
+              </tr>
+              <tr>
+                <td>HSPH1 (HSP110)</td>
+                <td>HSPH family</td>
+                <td class="mono">31.2%</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <p style="font-size: 0.92rem; color: var(--muted); margin: var(--space-2) 0; max-width: 72ch">
+            <strong>LLM paralog cross-reactivity verdict deferred to v1.x.</strong> The previous
+            draft had a five-row LLM table classifying each HSP70 family member as
+            MODERATE / LOW / NEGLIGIBLE cross-reactivity with rationale paragraph. We dropped that
+            for v1.0.0 — the load-bearing signal for "does my actual binder cross-react" is
+            already captured per-antibody in §1 via
+            <code>AntibodyRef.cross_reactivity_notes</code> (the C20 polyclonal cross-reacts;
+            PAT-SM6 is paralog-specific; etc.) and the gene-family prior is captured by the
+            deterministic <code>filters.max_paralog_ecd_pct_identity = 64.2%</code> rollup. The
+            verdict slot is reserved for v1.x — HSPA5 is the textbook case where it might
+            justifiably come back, but only after evaluating whether the per-antibody notes
+            are sufficient signal in practice.
+          </p>
+          <div class="annot">
+            <span class="annot__path">filters.max_paralog_ecd_pct_identity</span>
+            ·
+            <span class="annot__type">float | None — 64.2% (HSPA8)</span>
+            <span class="annot__prov">D</span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 5 — ORTHOLOGS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="eyebrow__n">5</span>
+            <span>Orthologs</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — Compara r112
+            </span>
+          </div>
+          <h3 class="h-section">Strongly <em>conserved</em></h3>
+        </div>
+        <div class="card__body">
+          <table class="data">
+            <thead>
+              <tr>
+                <th>species</th>
+                <th>isoform</th>
+                <th>UniProt</th>
+                <th>TM</th>
+                <th>ECD len</th>
+                <th>ECD % id</th>
+                <th>ECD % sim</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>mouse</td>
+                <td><strong>canonical (Hspa5)</strong></td>
+                <td class="mono">P20029</td>
+                <td class="mono">0</td>
+                <td class="mono">638</td>
+                <td class="mono">98.2%</td>
+                <td class="mono">99.4%</td>
+              </tr>
+              <tr>
+                <td>rat</td>
+                <td><strong>canonical (Hspa5)</strong></td>
+                <td class="mono">P06761</td>
+                <td class="mono">0</td>
+                <td class="mono">638</td>
+                <td class="mono">98.0%</td>
+                <td class="mono">99.4%</td>
+              </tr>
+              <tr>
+                <td>cyno</td>
+                <td><strong>canonical (HSPA5)</strong></td>
+                <td class="mono">A0A2K5W…</td>
+                <td class="mono">0</td>
+                <td class="mono">638</td>
+                <td class="mono">99.7%</td>
+                <td class="mono">99.9%</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="font-size: 0.82rem; color: var(--muted); margin-top: var(--space-3); font-style: italic">
+            Per-species LLM interpretation is intentionally deferred — orthologs render as
+            deterministic ECD-conservation numbers only in v1.0.0. Note all three species share
+            the same topology (signal peptide + no TM), consistent with conserved chaperone
+            function.
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- ─────────── SECTION 6 — ACCESSIBILITY RISKS ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span class="eyebrow__n">6</span>
+            <span>Accessibility risks</span>
+            <span style="margin-left: var(--space-3); text-transform: none">
+              severity ≠ evidence strength
+            </span>
+          </div>
+          <h3 class="h-section">What could <em>hide</em> or <em>obscure</em> the protein</h3>
+        </div>
+        <div class="card__body">
+          <ul class="risk-list">
+
+            <li class="risk-card risk-card--warning">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Partner required for surface expression?</span>
+                <span class="chip chip--muted">surface_expression_dependency=UNKNOWN</span>
+              </div>
+              <p class="risk-card__body">
+                Mechanism of ER → plasma membrane translocation is unresolved. Proposed
+                mechanisms include MTJ-1 (DnaJC1) co-trafficking, KDEL-receptor saturation under
+                ER stress, and direct insertion via GPI-anchor-like modification. None confirmed.
+                <strong>This uncertainty is the load-bearing knowledge gap below.</strong>
+                <span class="inline-cite">[evi_73, evi_74]</span>
+              </p>
+            </li>
+
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Secreted form</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+                <span class="risk-card__cite">[evi_75]</span>
+              </div>
+              <p class="risk-card__body">
+                Soluble GRP78 is detectable in serum of cancer patients and in conditioned media
+                of tumor cell lines. Two pools may exist: surface-attached and freely secreted.
+                Binders intended for surface engagement should be screened for activity against
+                soluble GRP78 (sink risk).
+              </p>
+            </li>
+
+            <!--
+              The "Similar paralogs (HSP70 family)" risk card that used to live here
+              mapped to `accessibility_risks.paralog_cross_binding_risk`, which was
+              promoted to top-level `paralog_assessment` and then dropped in round 10
+              when the LLM verdict was removed. The biology (HSPA1A/HSPA8 ~64% ECD
+              identity → dominant accessibility risk for this target) is now expressed
+              via: §4 deterministic paralog table + §1 AntibodyRef.cross_reactivity_notes
+              (per-clone) + filters.max_paralog_ecd_pct_identity rollup.
+            -->
+
+            <li class="risk-card risk-card--ok">
+              <div class="risk-card__head">
+                <span class="risk-card__title">ECD accessibility size class</span>
+                <span class="chip chip--success">LARGE</span>
+              </div>
+              <p class="risk-card__body">
+                636 aa post-signal-peptide region. The whole mature protein is potentially
+                surface-accessible <em>when</em> on the surface (no membrane anchor restricts
+                which face is exposed). Caveat: the chaperone substrate-binding domain may be
+                occupied by client peptides, occluding some epitopes.
+              </p>
+            </li>
+
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Epitope masking</span>
+                <span class="chip chip--muted">mechanism=[partner, conformational]</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+                <span class="risk-card__cite">[evi_77]</span>
+              </div>
+              <p class="risk-card__body">
+                Chaperone partner binding (BAG family, GRP94, J-domain proteins) and substrate
+                clients may mask epitopes on surface GRP78. Conformational antibodies (e.g.
+                PAT-SM6 — see §1) selectively recognize a subset of the surface pool, which
+                may be a feature rather than a limitation depending on the application.
+              </p>
+              <div class="annot annot--llm">
+                <span class="annot__path">accessibility_risks.epitope_masking</span>
+                ·
+                <span class="annot__type"
+                  >{ <strong>mechanism: list[Literal["glycan","partner","conformational","cleaved","none"]]</strong>
+                  (upgraded from single value), severity, evidence_strength,
+                  rationale, cited_evidence_ids }</span
+                >
+                · GRP78 is the textbook multi-mechanism case (partner binding +
+                conformational state); the list type captures both without
+                losing either.
+                <span class="annot__prov">L</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- §7 Knowledge Gaps card dropped — knowledge_gaps schema block retired.
+           GRP78's two HIGH-impact uncertainties (mechanism of ER→PM translocation,
+           biochemical identity of surface vs ER form) now flow through:
+           * §1 contradicting_evidence (the conflicting-mechanism reports)
+           * top-level confidence_reasoning (the LLM lowers confidence and
+             explains why; this is why GRP78's confidence reads MODERATE)
+           * §6 partner-required-for-surface-expression risk card (the
+             mechanism debate is partly an open question about which
+             partners are obligate). -->
+
+
+      <!-- ─────────── STRUCTURE APPENDIX ─────────── -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span>Appendix · Structure</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — AlphaFold DB
+            </span>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="grid-2">
+            <span class="field-label">AFDB ID</span>
+            <span class="field-value mono">AF-P11021-F1-model_v4</span>
+            <span class="field-label">ECD mean pLDDT</span>
+            <span class="field-value mono">85.2</span>
+            <span class="field-label">ECD disordered fraction</span>
+            <span class="field-value mono">12.4%</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+            SASA / epitope-accessibility metric dropped (no new
+            FreeSASA / mkdssp dep). Two pLDDT-based metrics cover
+            structure-quality signal; real epitope-accessibility scoring
+            deferred to v1.x.
+          </p>
+          <p class="attribution">
+            Structure data from
+            <a href="https://alphafold.ebi.ac.uk/entry/P11021" target="_blank" rel="noopener noreferrer">
+              AlphaFold DB
+            </a>
+            · © DeepMind / EMBL-EBI · licensed
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">
+              CC BY 4.0
+            </a>
+            · cite Jumper <em>et al.</em>, <cite>Nature</cite> 2021;
+            Varadi <em>et al.</em>, <cite>NAR</cite> 2024.
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <section class="data-sources">
+        <p class="label-mono" style="margin: 0 0 var(--space-2)">Data sources</p>
+        <ul>
+          <li>AlphaFold DB structures — CC BY 4.0 (DeepMind / EMBL-EBI)</li>
+          <li>
+            Ensembl Compara orthologs — open data with citation requested
+            (EMBL-EBI; Howe <em>et al.</em> 2024 + Vilella <em>et al.</em> 2009)
+          </li>
+          <li>
+            DeepTMHMM topology — DTU Health Tech (Hallgren <em>et al.</em> 2022;
+            academic-use service)
+          </li>
+          <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const body = document.body;
+        const buttons = document.querySelectorAll(".toggle__btn");
+        const hint = document.getElementById("modeHint");
+        const hints = {
+          preview: "what readers see",
+          schema: "each value annotated with Pydantic path + type + D/L",
+        };
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const mode = btn.dataset.modeBtn;
+            body.dataset.mode = mode;
+            buttons.forEach((b) => b.classList.toggle("is-active", b === btn));
+            if (hint) hint.textContent = hints[mode];
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "s" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+            const next = body.dataset.mode === "preview" ? "schema" : "preview";
+            document.querySelector(`[data-mode-btn="${next}"]`).click();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>

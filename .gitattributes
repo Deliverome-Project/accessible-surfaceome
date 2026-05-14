@@ -3,6 +3,15 @@ data/external/** filter=lfs diff=lfs merge=lfs -text
 data/processed/** filter=lfs diff=lfs merge=lfs -text
 data/analysis/** filter=lfs diff=lfs merge=lfs -text
 
+# Figure-reproduction gist scripts + gist-context markdown ship as
+# plain git, not LFS — they're tiny (1–13 KB each) and CI needs to
+# read their contents directly (tests/test_figure_gists_styling.py
+# greps each script for the brand-style sentinel + palette anchors;
+# an LFS pointer there fails every assertion). The PNG / PDF figure
+# outputs alongside them stay LFS-tracked under the general rule above.
+data/analysis/figures/*.py -filter -diff -merge text
+data/analysis/figures/*.md -filter -diff -merge text
+
 # Small reference TSVs that ship as plain git so a fresh `git clone`
 # can run the genome-wide sweeps without an LFS-hydration step. The
 # 3.4 MB upstream NCBI protein-coding catalog is the canonical input
@@ -24,6 +33,12 @@ data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge
 # candidate-universe TSVs above: drives gist-style reproduction
 # scripts under data/analysis/figures/. ~160 KB.
 data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
+
+# 147-gene triage benchmark with ground-truth verdicts. Tiny (~37 KB) —
+# fetched by the by_class / overall / cost_vs_accuracy gists for the
+# truth column. Stays non-LFS so raw.githubusercontent.com can serve it
+# once the repo goes public.
+data/eval/triage_benchmark_v1.tsv -filter -diff -merge text
 
 # DB cutoff-tradeoff precomputed points dumped by
 # scripts/triage_bench_db_barplot.py::_dump_db_cutoff_tradeoff_points.

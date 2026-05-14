@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code for this repository.
 
+## Commit conventions — no Co-Authored-By trailer
+
+Do **not** add `Co-Authored-By: Claude <…>` (or any AI-attribution trailer) to git commit messages or PR descriptions. The repo's `.claude/settings.json` carries the equivalent `attribution.commit/pr: ""` config; this CLAUDE.md instruction is the belt-and-suspenders override for agents whose system prompt would otherwise inject the trailer.
+
 ## Project Overview
 
 `accessible-surfaceome` is a workspace for building an annotated catalogue of
@@ -127,7 +131,7 @@ Each gist contains exactly two files:
 
 Do not bundle a CSV in the gist unless the canonical source is unreachable (private repo, D1 without a public endpoint). Keep the gist as a thin wrapper around the canonical data.
 
-**Visibility:** create as **secret** by default — `gh gist create 01_<slug>.md make_<slug>.py -d "<short desc>"` (omit `--public`). Secret gists are unguessable-URL only (not listed on your profile, not searchable), which is the right default for Substack-linked downloads. Flip to public via the web UI when discoverability is the goal; **public → secret is not reversible** (only delete-and-recreate). Always confirm with the user before publishing.
+**Visibility:** create as **public** by default — `gh gist create --public 01_<slug>.md make_<slug>.py -d "<short desc>"`. Figure-reproduction gists are linked from Substack / blog posts, so they're meant to be discoverable; public is the right default for this category. **GitHub does NOT allow flipping visibility after creation** (neither secret → public nor the reverse) — only delete-and-recreate, which invalidates the URL and breaks every place it's embedded (PNG `Source` tEXt, PDF `Subject`, canonical generator's `# Reproduction:` line, and the gist mirror's `GIST_URL` constant under `data/analysis/figures/`). Pick the right visibility on first creation. Before creating a new gist for an existing figure, **check the slug → gist-ID map in the saved-memory `figure_gists.md` reference** — duplicates have happened (e.g. an outdated `make_venn.py` predates the conforming `make_db_overlap_venn.py`).
 
 Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line so readers can find it from the source script. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
 

@@ -34,13 +34,13 @@ Outputs (PDF + PNG via the brand plotting config):
 # source-of-truth; the gists are the readers' minimal-dep mirror).
 #
 #   db_correctness_by_class:
-#     https://gist.github.com/beccajcarlson/b4d7c89ddd810bf38213b123512f9075
+#     https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d
 #   db_cutoff_tradeoff:
-#     https://gist.github.com/beccajcarlson/06d053b54810285af495886871ee7f8a
+#     https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed
 #   db_correctness_overall:
-#     https://gist.github.com/beccajcarlson/1e3d464fa905536611df4d5ee0950558
+#     https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d
 #   benchmark_cost_vs_accuracy:
-#     https://gist.github.com/beccajcarlson/774ff119060c9d4c81a3f020afb576f7
+#     https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41
 #
 # See Final-Figure Gist Convention in CLAUDE.md / AGENTS.md.
 """

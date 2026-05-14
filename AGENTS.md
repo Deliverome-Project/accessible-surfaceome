@@ -87,7 +87,7 @@ Each gist contains exactly two files:
 
 Do not bundle a CSV in the gist unless the canonical source is unreachable.
 
-**Visibility:** create as **secret** by default — `gh gist create 01_<slug>.md make_<slug>.py -d "<short desc>"` (omit `--public`). Secret gists are unguessable-URL only. Flip to public via the web UI when discoverability is the goal; **public → secret is not reversible**. Always confirm with the user before publishing.
+**Visibility:** create as **public** by default — `gh gist create --public 01_<slug>.md make_<slug>.py -d "<short desc>"`. Figure-reproduction gists are linked from Substack / blog posts; public is the right default for this category. GitHub does NOT allow flipping visibility after creation; pick correctly on first creation. Before creating a new gist for an existing figure, check the saved-memory `figure_gists.md` slug → gist-ID map — duplicates have happened.
 
 Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
 

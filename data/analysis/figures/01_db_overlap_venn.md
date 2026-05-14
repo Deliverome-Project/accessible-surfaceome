@@ -1,3 +1,23 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:42f5e923b8c22842765d16c910deb740367d638b08b2eb6df135de22e85e278e
-size 957
+# DB overlap Venn — 5-way agreement across the M1 surface databases
+
+Topologically-correct 5-ellipse Venn of the M1 candidate universe.
+Each ellipse is one surface-prediction DB (UniProt subcellular,
+GO cellular component, HPA, SURFY, CSPA). Cell labels are protein
+counts in each of the 31 non-empty regions.
+
+Note: 5-set Venns can't be drawn area-proportional in 2D (open
+geometry problem). For an area-proportional view of the same data,
+see the companion UpSet plot.
+
+Run:
+
+```
+uv run make_db_overlap_venn.py
+```
+
+Source (fetched live from the public repo):
+
+- DB votes: [`data/processed/candidate_universe/candidate_universe.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/candidate_universe/candidate_universe.tsv)
+
+Canonical in-repo generator:
+[`scripts/triage_bench_db_venn.py::make_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_bench_db_venn.py).

@@ -1,0 +1,1185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GPR75 — Surface Accessibility Brief (orphan GPCR, small-ECD case)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <style>
+      :root {
+        --bg: #f6f1ef; --panel: #fdf9f7; --panel-strong: #ffffff;
+        --line: #e8d6d2; --line-soft: #efe2de;
+        --ink: #1f1718; --muted: #6f5d5a;
+        --maroon: #6f0835; --maroon-soft: rgba(111, 8, 53, 0.08);
+        --coral: #dd5955; --coral-soft: rgba(226, 101, 94, 0.14);
+        --teal: #3469cd; --teal-soft: rgba(52, 105, 205, 0.12);
+        --amber: #ffd579; --amber-soft: rgba(255, 213, 121, 0.35);
+        --success: #749c75; --success-soft: rgba(116, 156, 117, 0.18);
+        --lavender: #8a63d2; --lavender-soft: rgba(138, 99, 210, 0.14);
+        --tm-M: #ffd579; --tm-O: #d7dce3; --tm-I: #a9cfa8; --tm-S: #7d8896;
+        --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+        --space-4: 1rem; --space-5: 1.5rem; --space-6: 2rem; --space-7: 3rem;
+        --font-display: "Playfair Display", Georgia, serif;
+        --font-sans: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body { margin: 0; background: var(--bg); color: var(--ink);
+        font-family: var(--font-sans); font-size: 16px; line-height: 1.6; }
+      a { color: inherit; }
+      em { font-family: var(--font-display); font-style: italic; font-weight: 500; }
+
+      .topbar { position: sticky; top: 0; z-index: 10; backdrop-filter: blur(10px);
+        background: rgba(246, 241, 239, 0.85); border-bottom: 1px solid var(--line); }
+      .topbar__inner { max-width: 1080px; margin: 0 auto;
+        padding: var(--space-3) var(--space-5);
+        display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+      .topbar__title { margin: 0; font-size: 0.95rem; font-weight: 600; letter-spacing: -0.01em; }
+      .topbar__meta { font-family: var(--font-mono); font-size: 0.75rem;
+        color: var(--muted); margin-left: var(--space-2); }
+      .toggle { display: inline-flex; background: var(--panel);
+        border: 1px solid var(--line); border-radius: 9999px; padding: 3px; gap: 2px; }
+      .toggle__btn { appearance: none; background: transparent; border: 0;
+        border-radius: 9999px; padding: 0.4rem 0.95rem; font-family: inherit;
+        font-size: 0.85rem; font-weight: 600; color: var(--muted); cursor: pointer;
+        transition: all 0.15s ease; }
+      .toggle__btn:hover { color: var(--ink); }
+      .toggle__btn.is-active { background: var(--maroon); color: white; }
+      .toggle__hint { font-family: var(--font-mono); font-size: 0.7rem;
+        color: var(--muted); margin-left: var(--space-3); }
+
+      main { max-width: 1080px; margin: 0 auto;
+        padding: var(--space-6) var(--space-5) var(--space-7);
+        display: flex; flex-direction: column; gap: var(--space-6); }
+      .h-section { font-family: var(--font-display); font-size: 2rem; font-weight: 600;
+        letter-spacing: -0.015em; margin: 0 0 var(--space-2); line-height: 1.15; }
+      .label-mono { font-family: var(--font-mono); font-size: 0.72rem;
+        letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+      .eyebrow { display: inline-flex; align-items: baseline; gap: var(--space-2);
+        color: var(--muted); font-family: var(--font-mono);
+        font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+        margin-bottom: var(--space-3); }
+      .eyebrow__n { color: var(--coral); font-weight: 700; font-size: 0.9rem; }
+      .lede { font-size: 1.05rem; line-height: 1.55; color: var(--muted);
+        max-width: 60ch; margin-bottom: var(--space-5); }
+
+      .card { background: transparent; }
+      .card__head { margin-bottom: var(--space-4); }
+      .card__body { display: flex; flex-direction: column; gap: var(--space-4); }
+      .grid-2 { display: grid; grid-template-columns: max-content 1fr;
+        gap: var(--space-3) var(--space-5); align-items: baseline; }
+      .field-label { font-family: var(--font-mono); font-size: 0.72rem;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); white-space: nowrap; padding-top: 4px; }
+      .field-value { font-size: 0.95rem; color: var(--ink); }
+      .field-value strong { font-weight: 700; }
+
+      .chip { display: inline-flex; align-items: center; gap: 0.35em;
+        padding: 0.18rem 0.55rem; border-radius: 9999px;
+        font-family: var(--font-mono); font-size: 0.78rem; font-weight: 500;
+        line-height: 1.3; background: var(--coral-soft); color: var(--maroon);
+        border: 1px solid transparent; }
+      .chip--teal { background: var(--teal-soft); color: var(--teal); }
+      .chip--success { background: var(--success-soft); color: var(--success); }
+      .chip--lavender { background: var(--lavender-soft); color: var(--lavender); }
+      .chip--amber { background: var(--amber-soft); color: #6f4a04; }
+      .chip--muted { background: rgba(0, 0, 0, 0.05); color: var(--muted); }
+      .chip--strong { font-weight: 700; font-size: 0.85rem; padding: 0.3rem 0.7rem; }
+      .chip-row { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+      .banner { display: inline-flex; align-items: center; gap: var(--space-2);
+        padding: 0.35rem 0.75rem; border-radius: 6px;
+        font-family: var(--font-mono); font-size: 0.75rem; font-weight: 600;
+        text-transform: uppercase; letter-spacing: 0.06em; }
+      .banner--deterministic { background: var(--teal-soft); color: var(--teal); }
+      .banner--llm { background: var(--lavender-soft); color: var(--lavender); }
+      .banner--warning { background: var(--amber-soft); color: #6f4a04; }
+      .banner__dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+      table.data { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+      table.data th { text-align: left; font-family: var(--font-mono); font-size: 0.72rem;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); font-weight: 600;
+        padding: var(--space-2) var(--space-3); border-bottom: 1px solid var(--line); }
+      table.data td { padding: var(--space-3); border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+      table.data tbody tr:hover { background: var(--coral-soft); }
+      table.data .mono { font-family: var(--font-mono); font-size: 0.85rem; }
+
+      .topo-bar { display: flex; height: 14px; border-radius: 3px;
+        overflow: hidden; border: 1px solid var(--line); margin: var(--space-2) 0; }
+      .topo-bar__seg { height: 100%; }
+      .topo-legend { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-2); }
+      .topo-legend__item { display: inline-flex; align-items: center; gap: var(--space-2);
+        font-size: 0.85rem; color: var(--muted); }
+      .topo-legend__swatch { width: 14px; height: 14px; border-radius: 3px;
+        border: 1px solid rgba(0, 0, 0, 0.1); }
+
+      .method-list { display: flex; flex-direction: column; gap: var(--space-3);
+        list-style: none; padding: 0; margin: 0; }
+      .method-card { padding: var(--space-3) var(--space-4); background: var(--panel);
+        border-radius: 8px; border: 1px solid var(--line-soft); }
+      .method-card__head { display: flex; align-items: baseline; flex-wrap: wrap;
+        gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+      .method-card__title { font-weight: 600; }
+      .method-card__detail { font-size: 0.92rem; color: var(--muted); }
+
+      .ab-block { display: flex; flex-wrap: wrap; gap: var(--space-2);
+        margin: var(--space-2) 0; padding: var(--space-2) var(--space-3);
+        background: rgba(116, 156, 117, 0.06);
+        border-left: 2px solid var(--success); border-radius: 4px; font-size: 0.85rem; }
+      .ab-block--warn { background: rgba(255, 213, 121, 0.2); border-left-color: #c89400; }
+      .ab-block--danger { background: rgba(221, 89, 85, 0.08); border-left-color: var(--coral); }
+
+      .risk-list { list-style: none; padding: 0; margin: 0;
+        display: flex; flex-direction: column; gap: var(--space-3); }
+      .risk-card { padding: var(--space-3) var(--space-4); background: var(--panel);
+        border-radius: 8px; border: 1px solid var(--line-soft);
+        border-left: 3px solid var(--coral); }
+      .risk-card--info { border-left-color: var(--teal); }
+      .risk-card--ok { border-left-color: var(--success); }
+      .risk-card--warning { border-left-color: #c89400; }
+      .risk-card__head { display: flex; align-items: baseline; flex-wrap: wrap;
+        gap: var(--space-2) var(--space-3); margin-bottom: var(--space-2); }
+      .risk-card__title { font-weight: 600; font-size: 0.98rem; }
+      .risk-card__body { color: var(--muted); font-size: 0.92rem; }
+      .risk-card__cite { font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+
+      .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: var(--space-4); }
+      .filters-group { background: var(--panel); border-radius: 8px;
+        border: 1px solid var(--line-soft); padding: var(--space-3) var(--space-4); }
+      .filters-group__title { font-family: var(--font-mono); font-size: 0.72rem;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); margin: 0 0 var(--space-2); }
+
+      .db-disagree-table { margin: var(--space-3) 0;
+        background: var(--panel-strong); border: 1px solid var(--line);
+        border-radius: 8px; overflow: hidden; }
+      .db-disagree-table table { width: 100%; border-collapse: collapse; }
+      .db-disagree-table th, .db-disagree-table td {
+        padding: var(--space-2) var(--space-3); text-align: left;
+        font-size: 0.88rem; border-bottom: 1px solid var(--line-soft); }
+      .db-disagree-table th { font-family: var(--font-mono); font-size: 0.7rem;
+        text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--muted); background: var(--panel); }
+      .vote-yes { color: var(--success); font-weight: 700; }
+      .vote-no { color: var(--muted); }
+      .vote-mixed { color: #6f4a04; font-weight: 600; }
+
+      .attribution { font-size: 0.82rem; line-height: 1.55; color: var(--muted); max-width: 70ch; }
+      .data-sources { background: var(--panel); border-radius: 8px;
+        border: 1px solid var(--line); padding: var(--space-4) var(--space-5); }
+      .data-sources ul { margin: 0; padding-left: 1.2em; font-size: 0.88rem; color: var(--muted); }
+      .data-sources li + li { margin-top: 0.25em; }
+
+      .annot { display: none; margin-top: 4px; padding: 4px 8px;
+        border-radius: 4px; background: rgba(52, 105, 205, 0.06);
+        border-left: 2px solid var(--teal);
+        font-family: var(--font-mono); font-size: 0.7rem; line-height: 1.5; color: var(--ink); }
+      .annot--llm { background: rgba(138, 99, 210, 0.06); border-left-color: var(--lavender); }
+      .annot__path { color: var(--ink); font-weight: 600; }
+      .annot__type { color: var(--muted); word-break: break-word; }
+      .annot__prov { display: inline-block; margin-left: 6px; padding: 1px 6px;
+        border-radius: 9999px; font-size: 0.65rem; font-weight: 700;
+        background: var(--teal); color: white; }
+      .annot--llm .annot__prov { background: var(--lavender); }
+      body[data-mode="schema"] .annot { display: block; }
+      body[data-mode="schema"] .annot--inline { display: inline-block;
+        margin-left: var(--space-2); margin-top: 0; vertical-align: middle; }
+
+      .divider { height: 1px; background: var(--line); margin: 0; border: 0; }
+      .inline-cite { font-family: var(--font-mono); font-size: 0.72rem;
+        color: var(--muted); margin-left: 0.4em; }
+    </style>
+  </head>
+  <body data-mode="preview">
+    <header class="topbar">
+      <div class="topbar__inner">
+        <div>
+          <h1 class="topbar__title">GPR75 — Surface Accessibility Brief</h1>
+          <span class="topbar__meta">
+            orphan GPCR · small ECD · anti-obesity target · schema v1.0.0
+          </span>
+        </div>
+        <div style="display: flex; align-items: center">
+          <div class="toggle" role="tablist" aria-label="Display mode">
+            <button class="toggle__btn is-active" data-mode-btn="preview">Preview</button>
+            <button class="toggle__btn" data-mode-btn="schema">Schema</button>
+          </div>
+          <span class="toggle__hint" id="modeHint">what readers see</span>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- HEADER -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow"><span class="eyebrow__n">Gene</span><span>Identity</span></div>
+          <h2 class="h-section">
+            GPR75
+            <span style="font-family: var(--font-sans); font-size: 1.1rem; font-weight: 500; color: var(--muted); margin-left: 0.5em">
+              G protein-coupled receptor 75 · orphan Class A GPCR
+            </span>
+          </h2>
+          <div class="chip-row" style="margin-top: var(--space-3); align-items: baseline">
+            <span class="chip chip--muted">UniProt O95800</span>
+            <span class="chip chip--muted">HGNC:4526</span>
+            <span class="chip chip--muted">NCBI Gene 10936</span>
+            <span class="chip chip--muted">Ensembl ENSG00000119737</span>
+            <span class="chip chip--success">
+              triage: likely_accessible · multipass_with_exposed_loops
+              <span class="annot annot--inline">
+                <span class="annot__path">triage_signal</span> ·
+                <span class="annot__type">Literal["likely_accessible","possibly_accessible","unlikely","unknown"]</span>
+                · triage verdict <code>yes</code> with reason
+                <code>multipass_with_exposed_loops</code> (7-TM GPCR)
+                <span class="annot__prov">D</span>
+              </span>
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- DB AGREEMENT (high agreement, low evidence — contrast with GRP78) -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span>M1 source panel</span>
+            <span style="margin-left: var(--space-3); text-transform: none; color: var(--success); font-weight: 600">
+              high agreement — 6 / 7 sources call surface
+            </span>
+          </div>
+        </div>
+        <div class="db-disagree-table">
+          <table>
+            <thead>
+              <tr><th>source</th><th>verdict</th><th>basis</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>UniProt</strong></td>
+                <td class="vote-yes">YES — Cell membrane, multi-pass</td>
+                <td class="mono" style="color: var(--muted)">canonical GPCR annotation</td>
+              </tr>
+              <tr>
+                <td><strong>SURFY</strong></td>
+                <td class="vote-yes">YES</td>
+                <td class="mono" style="color: var(--muted)">classified as surface by ML</td>
+              </tr>
+              <tr>
+                <td><strong>CSPA</strong></td>
+                <td class="vote-no">NO — not captured</td>
+                <td class="mono" style="color: var(--muted)">N-glycopeptide MS; low endogenous expression likely below detection</td>
+              </tr>
+              <tr>
+                <td><strong>GO</strong></td>
+                <td class="vote-yes">YES — plasma membrane + GPCR signaling</td>
+                <td class="mono" style="color: var(--muted)">curated annotations</td>
+              </tr>
+              <tr>
+                <td><strong>HPA</strong> subcellular</td>
+                <td class="vote-yes">YES — plasma membrane staining (low intensity)</td>
+                <td class="mono" style="color: var(--muted)">IF panel</td>
+              </tr>
+              <tr>
+                <td><strong>DeepTMHMM</strong></td>
+                <td class="vote-yes">YES — 7 TM helices (TM class)</td>
+                <td class="mono" style="color: var(--muted)">canonical GPCR topology</td>
+              </tr>
+              <tr>
+                <td><strong>COMPARTMENTS</strong></td>
+                <td class="vote-yes">YES — plasma membrane (high score)</td>
+                <td class="mono" style="color: var(--muted)">text-mining + curated</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size: 0.92rem; color: var(--muted); margin: 0; max-width: 70ch">
+          DB consensus is strong — the 7-TM GPCR topology makes plasma-membrane assignment
+          canonical. The interesting wrinkle is that <strong>high DB agreement does not mean
+          strong evidence base for the deep-dive call</strong>: most surface confirmations come
+          from heterologous overexpression systems (HEK293-transfected), not endogenous tissue.
+          CSPA's "no" vote is the tell — endogenous GPR75 expression is below the surface
+          biotinylation detection threshold. (Contrast: GRP78 has DB disagreement and abundant
+          endogenous evidence; GPR75 has DB agreement and sparse endogenous evidence.)
+        </p>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- EXECUTIVE SUMMARY -->
+      <article class="card">
+        <div class="card__head"><div class="eyebrow"><span>Executive summary</span></div></div>
+        <div class="card__body">
+          <p class="lede">
+            GPR75 is a Class A orphan GPCR with seven transmembrane helices. Surface localization
+            is canonical for the topology class and DB sources agree, but endogenous protein
+            evidence is sparse — most surface confirmation comes from HEK293 overexpression
+            systems. Anti-GPR75 antibodies are predominantly polyclonal peptide preparations with
+            weak validation. The three small extracellular loops (~30 aa each; ~90 aa total)
+            make this a constrained binder-design surface. Currently of high interest as an
+            anti-obesity target following the 2021 NEJM genetic LoF + BMI association (Akbari
+            et al.) and Regeneron's clinical-stage program.
+          </p>
+          <div class="grid-2">
+            <span class="field-label">Surface accessibility</span>
+            <span class="field-value">
+              <span class="chip chip--success chip--strong">HIGH</span>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                topology-confident; expression-uncertain
+              </span>
+            </span>
+            <span class="field-label">Evidence grade</span>
+            <span class="field-value">
+              <span class="chip chip--amber">supportive_but_indirect</span>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                overexpression-dominant; no live-cell flow on primary tissue
+              </span>
+            </span>
+            <span class="field-label">Confidence</span>
+            <span class="field-value">
+              <strong>MODERATE</strong>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                capped at moderate by HIGH-impact knowledge gaps
+              </span>
+            </span>
+            <span class="field-label">State dependence</span>
+            <span class="field-value">
+              <strong>LOW</strong>
+              <span style="margin-left: var(--space-2); color: var(--muted); font-style: italic; font-size: 0.85rem">
+                constitutive in expressing cells
+              </span>
+            </span>
+            <span class="field-label">Subcategory</span>
+            <span class="field-value">
+              <span class="chip chip--teal">GPCR</span>
+            </span>
+            <span class="field-label">Headline risks</span>
+            <span class="field-value">
+              <span class="chip-row">
+                <span class="chip">small_ECD</span>
+                <span class="chip">poor_antibody_validation</span>
+                <span class="chip">low_endogenous_evidence</span>
+              </span>
+            </span>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- FILTERS -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow">
+            <span>Filters &amp; tags</span>
+            <span style="margin-left: var(--space-3); text-transform: none">
+              catalog-facing · D1-indexed
+            </span>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="filters-grid">
+            <!-- Per-gene rendering rule: Accessibility filter group not duplicated
+                 (exec summary covers overall / confidence / subcategory /
+                 evidence_grade / ecd_accessibility / evidence_density). -->
+            <div class="annot">
+              <span class="annot__path">filters.{surface_accessibility, confidence, subcategory, evidence_grade, ecd_accessibility_class, evidence_density}</span>
+              · top-level for D1 indexing; <strong>not rendered on per-gene
+              page</strong> (exec summary covers them). Catalog renders as
+              chip facets. (GPR75's interesting case — high accessibility +
+              low evidence density — is captured in the exec summary chips
+              and the §1 evidence_grade banner.)
+              <span class="annot__prov">D</span>
+            </div>
+            <div class="filters-group">
+              <p class="filters-group__title">Expression (LLM rollups)</p>
+              <div class="chip-row">
+                <span class="chip chip--lavender">level=low</span>
+                <span class="chip chip--lavender">breadth=restricted</span>
+                <span class="chip chip--lavender">specificity=surface_dominant</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+                CNS + vascular endothelium + adipose dominant. Low absolute abundance per cell.
+              </p>
+            </div>
+            <div class="filters-group">
+              <p class="filters-group__title">Risks (booleans)</p>
+              <div class="chip-row">
+                <span class="chip chip--muted">✗ has_shed_form</span>
+                <span class="chip chip--muted">✗ has_secreted_form</span>
+                <span class="chip chip--muted">✗ coreceptor_for_expression</span>
+                <span class="chip">✓ epitope_masking</span>
+                <span class="chip chip--muted">✗ restricted_subdomain</span>
+              </div>
+            </div>
+            <div class="filters-group">
+              <p class="filters-group__title">Cross-species (Compara)</p>
+              <div class="chip-row">
+                <span class="chip chip--amber">mouse_ecd_id=84.1%</span>
+                <span class="chip chip--success">cyno_ecd_id=98.2%</span>
+                <span class="chip chip--amber">rat_ecd_id=84.6%</span>
+              </div>
+            </div>
+            <div class="filters-group">
+              <p class="filters-group__title">Topology</p>
+              <div class="chip-row">
+                <span class="chip chip--teal">n_term_extracellular=TRUE</span>
+                <span class="chip chip--muted">c_term_extracellular=FALSE</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+                7-TM GPCR: N-term outside (extracellular), C-term inside (cytoplasmic). C-terminal
+                tags are not surface-accessible.
+              </p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- SECTION 1 — SURFACE EVIDENCE -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow"><span class="eyebrow__n">1</span><span>Surface accessibility evidence</span></div>
+          <h3 class="h-section">The <em>orphan-receptor</em> evidence base</h3>
+        </div>
+        <div class="card__body">
+          <div style="display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap">
+            <span class="banner banner--warning">
+              <span class="banner__dot"></span>
+              evidence grade: supportive_but_indirect
+            </span>
+            <span class="banner banner--warning">
+              <span class="banner__dot"></span>
+              overexpression-dominant; few endogenous studies
+            </span>
+          </div>
+          <p>
+            GPR75 surface localization is supported by topology (7-TM GPCR) and DB consensus, but
+            most experimental evidence comes from heterologous overexpression. Endogenous
+            protein-level surface detection is limited — likely a sensitivity issue (low
+            receptor density per cell) rather than a localization issue. <strong>Antibody
+            validation is the major weakness</strong> — orphan receptors don't have well-validated
+            commercial antibodies. CSPA's failure to detect endogenous GPR75 in surface
+            biotinylation reinforces this read: the protein IS at the surface, but at expression
+            levels that strain the sensitivity of standard surface-proteomics workflows.
+          </p>
+
+          <h4 class="label-mono">Methods + antibodies (with validation chips)</h4>
+          <ul class="method-list">
+
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Flow cytometry</span>
+                <span class="chip chip--teal">fixed_cell_flow</span>
+                <span class="chip chip--muted">nonpermeabilized</span>
+                <span class="chip">overexpression</span>
+                <span class="chip chip--amber">supports_surface_localization</span>
+              </div>
+              <div class="ab-block ab-block--warn">
+                <strong style="margin-right: 0.5em">anti-GPR75 (Sigma SAB1305842):</strong>
+                <span class="chip chip--muted">RRID:AB_10641421</span>
+                <span class="chip chip--muted">polyclonal rabbit</span>
+                <span class="chip chip--muted">N-terminal peptide immunogen</span>
+                <span class="chip">vendor_claim_only</span>
+                <span class="chip">validation=WEAK</span>
+                <span style="color: var(--muted); font-style: italic; flex-basis: 100%; margin-top: 4px">
+                  cross-reactivity: not characterized in literature; likely concerns with other
+                  Class A orphan GPCRs at shared N-terminal motifs. Use HEK293T mock-transfection
+                  control to interpret signal. [evi_81]
+                </span>
+              </div>
+              <p class="method-card__detail">
+                <strong>Observed in:</strong>
+              </p>
+              <table class="data">
+                <thead><tr><th>context</th><th>sample_type</th><th>level</th><th>cite</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>HEK293T + GPR75 cDNA</td>
+                    <td><span class="chip chip--muted">established_cell_line</span></td>
+                    <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                    <td class="mono">[evi_81]</td>
+                  </tr>
+                  <tr>
+                    <td>HEK293T mock-transfected (control)</td>
+                    <td><span class="chip chip--muted">established_cell_line</span></td>
+                    <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                    <td class="mono">[evi_81]</td>
+                  </tr>
+                  <tr>
+                    <td>Primary human adipocytes</td>
+                    <td><span class="chip chip--success">primary_human_cell</span></td>
+                    <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                    <td class="mono">[evi_82]</td>
+                  </tr>
+                </tbody>
+              </table>
+            </li>
+
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Mass spec</span>
+                <span class="chip chip--teal">surface_biotinylation</span>
+                <span class="chip chip--muted">nonpermeabilized</span>
+                <span class="chip">overexpression (HEK293T) / endogenous (adipocytes)</span>
+                <span class="chip chip--amber">supports_surface_localization</span>
+              </div>
+              <p class="method-card__detail">
+                Sulfo-NHS-biotin labeling, LC-MS/MS. GPR75 peptides detected in surface fraction
+                of GPR75-transfected HEK293T cells, confirming plasma membrane localization in
+                that system. Endogenous detection in primary human adipocyte surface fraction
+                reported in one study but not consistently reproducible.
+                <span class="inline-cite">[evi_82]</span>
+              </p>
+              <table class="data" style="margin-top: var(--space-2)">
+                <thead><tr><th>context</th><th>sample_type</th><th>level</th><th>cite</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td>HEK293T-GPR75 surface fraction</td>
+                    <td><span class="chip chip--muted">established_cell_line</span></td>
+                    <td><span class="chip chip--success chip--strong">HIGH</span></td>
+                    <td class="mono">[evi_82]</td>
+                  </tr>
+                  <tr>
+                    <td>Primary human adipocyte surface fraction</td>
+                    <td><span class="chip chip--success">primary_human_cell</span></td>
+                    <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                    <td class="mono">[evi_82]</td>
+                  </tr>
+                  <tr>
+                    <td>Whole tissue surfaceomes (multiple)</td>
+                    <td><span class="chip chip--success">primary_human_tissue</span></td>
+                    <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                    <td class="mono">[evi_55]</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p style="font-size: 0.82rem; color: var(--muted); margin: var(--space-2) 0 0; font-style: italic">
+                CSPA panel does not capture GPR75 — consistent with low endogenous expression at
+                or below the standard surface-MS detection floor.
+              </p>
+            </li>
+
+            <li class="method-card">
+              <div class="method-card__head">
+                <span class="method-card__title">Immunofluorescence</span>
+                <span class="chip chip--teal">permeabilized_IF (mostly)</span>
+                <span class="chip">overexpression / endogenous mixed</span>
+                <span class="chip chip--amber">supports_membrane_association</span>
+              </div>
+              <div class="ab-block ab-block--danger">
+                <strong style="margin-right: 0.5em">anti-GPR75 (LSBio LS-A5121):</strong>
+                <span class="chip chip--muted">RRID:not_recorded</span>
+                <span class="chip chip--muted">polyclonal rabbit</span>
+                <span class="chip chip--muted">C-terminal peptide immunogen</span>
+                <span class="chip">vendor_claim_only</span>
+                <span class="chip">validation=NONE</span>
+                <span style="color: var(--muted); font-style: italic; flex-basis: 100%; margin-top: 4px">
+                  cross-reactivity: not characterized. C-terminal peptide immunogen is cytoplasmic
+                  — antibody only works on permeabilized samples, NOT for nonpermeabilized live-cell
+                  surface detection. Signal in IHC could include non-target binding. [evi_83]
+                </span>
+              </div>
+              <p class="method-card__detail">
+                Hypothalamus + adipose sections show membrane-associated staining patterns. The
+                signal is consistent with plasma membrane localization but cannot definitively
+                distinguish surface vs. just-below-surface (recycling endosome) without orthogonal
+                methods.
+                <span class="inline-cite">[evi_83]</span>
+              </p>
+            </li>
+          </ul>
+
+          <h4 class="label-mono">Therapeutic engagement (not a comprehensive landscape)</h4>
+          <div
+            style="
+              padding: var(--space-3) var(--space-4);
+              background: rgba(255, 213, 121, 0.2);
+              border-left: 3px solid #c89400;
+              border-radius: 6px;
+              font-size: 0.92rem;
+            "
+          >
+            <div class="chip-row" style="margin-bottom: var(--space-2)">
+              <span class="chip chip--amber chip--strong">highest_stage = in_clinical_trials</span>
+            </div>
+            <p style="margin: 0 0 var(--space-2)">
+              <strong>Description:</strong> Regeneron's anti-GPR75 program
+              (REGN9933 + small molecules) advanced to Phase 1 for obesity
+              following the 2021 NEJM genetic LoF + BMI association
+              <span class="inline-cite">[evi_T21, evi_T22]</span>. Multiple
+              preclinical antibody and small-molecule programs in industry
+              and academic labs.
+            </p>
+            <p style="margin: 0; color: var(--muted)">
+              <strong>Surface-form rationale:</strong> GPR75 is a 7-TM GPCR
+              with no documented secreted form — the only physiologically
+              relevant species is the cell-surface receptor. Therapeutic
+              engagement (binding the receptor on intact cells) is by
+              definition surface-form engagement. The published Regeneron
+              candidates target extracellular-loop epitopes (mAb arm) or the
+              TM allosteric pocket (small-molecule arm), both of which
+              require an intact surface-displayed receptor.
+            </p>
+            <p
+              style="
+                margin-top: var(--space-2);
+                font-size: 0.78rem;
+                color: var(--muted);
+                font-style: italic;
+              "
+            >
+              Not a comprehensive therapeutic landscape — just the topline
+              signal that surface GPR75 has reached clinical-stage
+              therapeutic engagement.
+            </p>
+          </div>
+
+          <h4 class="label-mono">Contradicting evidence</h4>
+          <ul class="risk-list">
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Intracellular staining patterns in some IF studies</span>
+                <span class="chip chip--muted">intracellular_pool</span>
+                <span class="chip">severity=LOW</span>
+                <span class="risk-card__cite">[evi_84]</span>
+              </div>
+              <p class="risk-card__body">
+                Some studies show GPR75 staining beyond the plasma membrane (intracellular
+                punctate, ER-like). Likely a mix of biosynthetic intermediates (normal for any
+                GPCR) plus antibody non-specificity given the polyclonal preps in use.
+                Does not undermine the surface localization claim — but reinforces the
+                antibody-validation concern.
+              </p>
+            </li>
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title">CSPA panel does not detect endogenous GPR75</span>
+                <span class="chip chip--muted">proteomics_conflict</span>
+                <span class="chip">severity=LOW</span>
+                <span class="risk-card__cite">[evi_55]</span>
+              </div>
+              <p class="risk-card__body">
+                CSPA's surface biotinylation MS panel doesn't capture GPR75 in any of its tissue
+                or cell-line surfaceomes. Most likely an expression-level / sensitivity floor
+                rather than a localization claim — consistent with overall low endogenous
+                expression. <strong>This is what the evidence_density=LOW filter captures.</strong>
+              </p>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- SECTION 2 — BIOLOGICAL CONTEXT -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow"><span class="eyebrow__n">2</span><span>Biological context &amp; anatomical accessibility</span></div>
+          <h3 class="h-section">Where the receptor is — and reachable from</h3>
+        </div>
+        <div class="card__body">
+          <h4 class="label-mono">Tissues × disease_context</h4>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 var(--space-2); font-style: italic">
+            GPR75 is constitutively expressed at low levels — disease_context
+            mostly stays "normal" except for the lean → obese adipose
+            comparison.
+          </p>
+          <table class="data">
+            <thead>
+              <tr>
+                <th>tissue</th>
+                <th>disease_context</th>
+                <th>level (protein)</th>
+                <th>cell types / states</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>hypothalamus (arcuate, PVN)</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>neurons; baseline CNS</td>
+              </tr>
+              <tr>
+                <td>adipose</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>adipocytes; lean state</td>
+              </tr>
+              <tr>
+                <td>adipose</td>
+                <td class="mono">other_disease</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>adipocytes; obese state (controversial modest ↑)</td>
+              </tr>
+              <tr>
+                <td>vascular endothelium</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--amber chip--strong">LOW</span></td>
+                <td>endothelial cells; baseline</td>
+              </tr>
+              <tr>
+                <td>leukocytes (CD4+ T)</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                <td>resting / activated; proposed CCL5 R context</td>
+              </tr>
+              <tr>
+                <td>kidney / liver / heart</td>
+                <td class="mono">normal</td>
+                <td><span class="chip chip--muted chip--strong">ABSENT</span></td>
+                <td>baseline</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="annot annot--llm">
+            <span class="annot__path">biological_context.tissues</span> ·
+            <span class="annot__type"
+              >list[TissueContext] = { tissue: str, <strong>present:
+              Literal["high","moderate","low","absent","mixed","unknown"]</strong>
+              (upgraded from bool), <strong>disease_context:
+              Literal["normal","tumor","tumor_adjacent","other_disease","mixed","unknown"]</strong>
+              (new), cell_types, cell_states, cited_evidence_ids }</span
+            >
+            · obesity uses <code>disease_context="other_disease"</code> (not
+            tumor); same adipose tissue appears in lean / obese rows with
+            potentially different levels.
+            <span class="annot__prov">L</span>
+          </div>
+
+          <h4 class="label-mono">Anatomical accessibility</h4>
+          <table class="data">
+            <thead><tr><th>context</th><th>orientation</th><th>implication</th><th>cite</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>vascular endothelial cells</td>
+                <td class="mono">blood_interstitial_facing</td>
+                <td><span class="chip chip--success">FAVORABLE</span> — direct luminal access</td>
+                <td class="mono">[evi_85]</td>
+              </tr>
+              <tr>
+                <td>adipocytes</td>
+                <td class="mono">blood_interstitial_facing</td>
+                <td><span class="chip chip--success">FAVORABLE</span> — direct adipose vasculature access</td>
+                <td class="mono">[evi_82]</td>
+              </tr>
+              <tr>
+                <td>hypothalamic neurons</td>
+                <td class="mono">blood_interstitial_facing</td>
+                <td>
+                  <span class="chip">RESTRICTED</span> — behind blood-brain barrier; antibody
+                  access requires BBB-penetrant format
+                </td>
+                <td class="mono">[evi_86]</td>
+              </tr>
+              <tr>
+                <td>circulating leukocytes</td>
+                <td class="mono">blood_interstitial_facing</td>
+                <td><span class="chip chip--success">FAVORABLE</span> — IV-accessible</td>
+                <td class="mono">—</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h4 class="label-mono">Accessibility modulation</h4>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: 0 0 var(--space-2); font-style: italic">
+            GPR75 is mostly constitutive. Modest disease-state effects reported but not well-quantified.
+          </p>
+          <ul class="risk-list">
+            <li class="risk-card risk-card--info">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Lean → obese state (adipose)</span>
+                <span class="chip chip--lavender">category=disease_state_induced</span>
+                <span class="chip chip--teal">cell_state_trigger=oxidative_stress</span>
+                <span class="risk-card__cite">[evi_82]</span>
+              </div>
+              <p class="risk-card__body">
+                Adipose-tissue GPR75 expression reported to increase in obese vs lean states in
+                some studies. Magnitude is modest and not always reproducible. Functionally
+                consistent with the LoF-protective-against-BMI human-genetics finding.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- SECTION 3 — ISOFORMS -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="eyebrow__n">3</span><span>Isoforms &amp; topology</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — UniProt + DeepTMHMM 1.0.24
+            </span>
+          </div>
+          <h3 class="h-section">Classical <em>7-TM</em> bundle</h3>
+        </div>
+        <div class="card__body">
+          <table class="data">
+            <thead>
+              <tr><th>isoform</th><th>UniProt</th><th>TM count</th><th>N-term</th><th>"ECD" len (3 loops)</th><th>topology</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>canonical</strong></td>
+                <td class="mono">O95800</td>
+                <td class="mono">7</td>
+                <td class="mono">extracellular</td>
+                <td class="mono">~90 (N-term + ECL1 + ECL2 + ECL3)</td>
+                <td style="min-width: 200px">
+                  <div class="topo-bar">
+                    <div class="topo-bar__seg" style="flex: 35; background: var(--tm-O)"></div>
+                    <div class="topo-bar__seg" style="flex: 22; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 14; background: var(--tm-I)"></div>
+                    <div class="topo-bar__seg" style="flex: 22; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 12; background: var(--tm-O)"></div>
+                    <div class="topo-bar__seg" style="flex: 22; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 25; background: var(--tm-I)"></div>
+                    <div class="topo-bar__seg" style="flex: 22; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 28; background: var(--tm-O)"></div>
+                    <div class="topo-bar__seg" style="flex: 22; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 20; background: var(--tm-I)"></div>
+                    <div class="topo-bar__seg" style="flex: 22; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 30; background: var(--tm-O)"></div>
+                    <div class="topo-bar__seg" style="flex: 22; background: var(--tm-M)"></div>
+                    <div class="topo-bar__seg" style="flex: 160; background: var(--tm-I)"></div>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="topo-legend">
+            <span class="topo-legend__item"><span class="topo-legend__swatch" style="background: var(--tm-M)"></span> TM helix × 7 (M)</span>
+            <span class="topo-legend__item"><span class="topo-legend__swatch" style="background: var(--tm-O)"></span> Extracellular (N-term + 3 loops)</span>
+            <span class="topo-legend__item"><span class="topo-legend__swatch" style="background: var(--tm-I)"></span> Intracellular (C-term + 3 loops)</span>
+          </div>
+          <p style="font-size: 0.92rem; color: var(--muted); margin: var(--space-3) 0 0; max-width: 70ch">
+            <strong>Small extracellular surface:</strong> the 3 extracellular loops (ECL1, ECL2,
+            ECL3) plus the N-terminal extension sum to ~90 residues — much smaller than EGFR's
+            ~620-aa ECD. This is why <code>ecd_accessibility=small</code> in the filters. Binder
+            design is constrained: mAb paratopes have less area to engage, conformational
+            recognition of the loop ensemble is harder to achieve, and small-molecule allosteric
+            sites on the TM bundle become competitive with extracellular-loop antibodies.
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- SECTION 4 — PARALOGS -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="eyebrow__n">4</span><span>Paralogs</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — Compara r112
+            </span>
+          </div>
+          <h3 class="h-section">Class A <em>orphans</em> diverge in the ECD</h3>
+        </div>
+        <div class="card__body">
+          <p>
+            Class A orphan GPCRs diverge substantially in their extracellular loops — the
+            closest paralogs sit at 20–27% ECD identity, well below the danger zone for
+            antibody cross-binding. The more pressing accessibility concern is the small
+            ECD itself (see §3).
+          </p>
+          <h4 class="label-mono">Closest paralogs</h4>
+          <table class="data">
+            <thead>
+              <tr><th>paralog</th><th>family</th><th>ECD % id (vs GPR75)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>GPR84</strong></td><td>Class A orphan</td><td class="mono">27.1%</td></tr>
+              <tr><td><strong>GPR146</strong></td><td>Class A orphan</td><td class="mono">24.8%</td></tr>
+              <tr><td><strong>GPR21</strong></td><td>Class A orphan</td><td class="mono">23.4%</td></tr>
+              <tr><td>CCR1 / CCR2 / CCR5 (chemokine R)</td><td>Class A (chemokine sub-family)</td><td class="mono">18–22%</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size: 0.92rem; color: var(--muted); margin: var(--space-2) 0; max-width: 70ch">
+            <strong>LLM paralog cross-reactivity verdict deferred to v1.x.</strong>
+            Antibody-specific cross-reactivity behavior is already captured per-antibody in
+            §1 via <code>AntibodyRef.cross_reactivity_notes</code>. The gene-family-level
+            prior is captured by the deterministic
+            <code>filters.max_paralog_ecd_pct_identity = 27.1%</code> rollup — a catalog
+            reader can filter on it directly without an LLM verdict.
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- SECTION 5 — ORTHOLOGS -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span class="eyebrow__n">5</span><span>Orthologs</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — Compara r112
+            </span>
+          </div>
+          <h3 class="h-section">Conserved enough for <em>animal models</em></h3>
+        </div>
+        <div class="card__body">
+          <table class="data">
+            <thead>
+              <tr><th>species</th><th>isoform</th><th>UniProt</th><th>TM</th><th>ECD len</th><th>ECD % id</th><th>ECD % sim</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>mouse</td>
+                <td><strong>canonical (Gpr75)</strong></td>
+                <td class="mono">Q99JC5</td>
+                <td class="mono">7</td>
+                <td class="mono">~90</td>
+                <td class="mono">84.1%</td>
+                <td class="mono">91.7%</td>
+              </tr>
+              <tr>
+                <td>rat</td>
+                <td><strong>canonical (Gpr75)</strong></td>
+                <td class="mono">Q5BJU9</td>
+                <td class="mono">7</td>
+                <td class="mono">~90</td>
+                <td class="mono">84.6%</td>
+                <td class="mono">92.1%</td>
+              </tr>
+              <tr>
+                <td>cyno</td>
+                <td><strong>canonical (GPR75)</strong></td>
+                <td class="mono">G7N2K1</td>
+                <td class="mono">7</td>
+                <td class="mono">~90</td>
+                <td class="mono">98.2%</td>
+                <td class="mono">99.4%</td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="font-size: 0.82rem; color: var(--muted); margin-top: var(--space-3); font-style: italic">
+            Mouse / rat ECD identity in the mid-80s — sufficient for in-vivo efficacy studies but
+            human-directed mAb paratopes may not bind rodent orthologs cleanly (residue-level
+            divergence in the small loops is enough to disrupt some epitopes). Cyno ECD is
+            nearly identical. Topology (7-TM) is conserved across all three.
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- SECTION 6 — ACCESSIBILITY RISKS -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow"><span class="eyebrow__n">6</span><span>Accessibility risks</span></div>
+          <h3 class="h-section">A constrained <em>extracellular surface</em></h3>
+        </div>
+        <div class="card__body">
+          <ul class="risk-list">
+            <li class="risk-card risk-card--ok">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Partner required for surface expression?</span>
+                <span class="chip chip--muted">surface_expression_dependency=NONE</span>
+              </div>
+              <p class="risk-card__body">
+                Classical GPCRs traffic to the surface unassisted; no documented obligate partner
+                for GPR75 trafficking. Some orphan GPCRs require RAMP-like accessory proteins —
+                no evidence of such a requirement for GPR75.
+              </p>
+            </li>
+            <li class="risk-card risk-card--ok">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Shed / secreted form</span>
+                <span class="chip chip--success">NEGLIGIBLE</span>
+              </div>
+              <p class="risk-card__body">
+                7-TM GPCRs are not shed and not secreted. No evidence of soluble GPR75 fragments.
+              </p>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Small ECD (extracellular loops only)</span>
+                <span class="chip">severity=HIGH</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+              </div>
+              <p class="risk-card__body">
+                The three extracellular loops + N-terminal extension sum to ~90 aa — much smaller
+                than a single-pass receptor like EGFR. Binder design is constrained: paratope area
+                is limited, conformational recognition across loops is harder, and small molecules
+                that engage the orthosteric / allosteric TM pockets compete with antibodies on
+                accessibility grounds. <strong>This is the most consequential structural risk for
+                a GPR75 antibody program.</strong> Consider nanobody / VHH formats with smaller
+                paratopes, or small-molecule modulators that engage TM-bundle pockets.
+              </p>
+              <div class="annot annot--llm">
+                <span class="annot__path">accessibility_risks.ecd_size_assessment</span> ·
+                <span class="annot__type">{ ecd_accessibility_class: Literal["large","moderate","small","minimal","none"] = "small", rationale, cited_evidence_ids }</span>
+                <span class="annot__prov">L</span>
+              </div>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Poor antibody validation (orphan-receptor problem)</span>
+                <span class="chip">severity=HIGH</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+              </div>
+              <p class="risk-card__body">
+                No KO-validated commercial anti-GPR75 antibody documented in the public
+                literature. All major reagents are polyclonal peptide preps from commercial
+                vendors with "vendor_claim_only" validation. <strong>This makes any flow / IF /
+                IHC signal interpretation provisional</strong> until a KO-validated reagent is
+                generated. Common path: in-house mAb development against the N-terminus or ECL2,
+                with HEK293T-KO of GPR75 as the validation reference.
+              </p>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Low endogenous expression evidence</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--success">evidence=STRONG</span>
+              </div>
+              <p class="risk-card__body">
+                Per-cell receptor density at endogenous expression levels has not been quantified.
+                CSPA's failure to detect GPR75 in any tissue surfaceome suggests endogenous
+                abundance is below standard MS sensitivity. For a binder program, this implies
+                bin-counting flow assays will be near the dynamic-range floor — high-affinity
+                reagents and amplification (e.g. dual-binders) may be needed.
+              </p>
+            </li>
+            <li class="risk-card">
+              <div class="risk-card__head">
+                <span class="risk-card__title">Epitope masking</span>
+                <span class="chip chip--muted">mechanism=[glycan, conformational]</span>
+                <span class="chip">severity=MODERATE</span>
+                <span class="chip chip--amber">evidence=MODERATE</span>
+              </div>
+              <p class="risk-card__body">
+                Predicted N-glycosylation at N-terminus (UniProt). Small ECD + glycan masking
+                further reduces accessible paratope footprint. Conformational state of the
+                receptor (active / inactive / arrestin-bound) may further occlude some loop
+                conformations.
+              </p>
+              <div class="annot annot--llm">
+                <span class="annot__path">accessibility_risks.epitope_masking</span>
+                ·
+                <span class="annot__type"
+                  >{ <strong>mechanism: list[Literal["glycan","partner","conformational","cleaved","none"]]</strong>
+                  (upgraded from single value), severity, evidence_strength,
+                  rationale, cited_evidence_ids }</span
+                >
+                · GPCR-class case with glycan + conformational both contributing;
+                neither is the dominant story alone.
+                <span class="annot__prov">L</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <!-- §7 Knowledge Gaps card dropped — knowledge_gaps schema block retired.
+           GPR75's load-bearing uncertainties (endogenous ligand identity is
+           conflicting; quantitative endogenous expression has no literature)
+           now flow through:
+           * §1 contradicting_evidence (the conflicting-ligand papers)
+           * top-level confidence (capped at MODERATE) + confidence_reasoning
+             (the LLM explains why low_endogenous_expression_evidence + the
+             ligand ambiguity warrant the moderate read)
+           * `low_endogenous_expression` and `ligand_unknown` headline_risks
+             chips in the exec summary — added in an earlier round
+             specifically for the orphan-receptor failure mode this gene
+             represents. -->
+
+
+      <hr class="divider" />
+
+      <!-- STRUCTURE APPENDIX -->
+      <article class="card">
+        <div class="card__head">
+          <div class="eyebrow" style="display: flex; align-items: center; gap: var(--space-3)">
+            <span>Appendix · Structure</span>
+            <span class="banner banner--deterministic" style="margin-left: auto">
+              <span class="banner__dot"></span>
+              deterministic — AlphaFold DB
+            </span>
+          </div>
+        </div>
+        <div class="card__body">
+          <div class="grid-2">
+            <span class="field-label">AFDB ID</span>
+            <span class="field-value mono">AF-O95800-F1-model_v4</span>
+            <span class="field-label">ECD mean pLDDT</span>
+            <span class="field-value mono">62.4</span>
+            <span class="field-label">ECD disordered fraction</span>
+            <span class="field-value mono">28.1%</span>
+          </div>
+          <p style="font-size: 0.82rem; color: var(--muted); margin: var(--space-2) 0 0; max-width: 70ch; font-style: italic">
+            Lower pLDDT on the extracellular loops (62.4 mean) is expected — GPCR ECLs are flexible
+            and rarely well-predicted. The reader should interpret pLDDT here cautiously: low ECL
+            pLDDT doesn't mean "inaccessible," it means "conformationally dynamic."
+            SASA / epitope-accessibility metric dropped (no new FreeSASA / mkdssp dep); real
+            epitope-accessibility scoring deferred to v1.x.
+          </p>
+          <p class="attribution">
+            Structure data from
+            <a href="https://alphafold.ebi.ac.uk/entry/O95800" target="_blank" rel="noopener noreferrer">AlphaFold DB</a>
+            · © DeepMind / EMBL-EBI · licensed
+            <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>
+            · cite Jumper <em>et al.</em>, <cite>Nature</cite> 2021; Varadi <em>et al.</em>, <cite>NAR</cite> 2024.
+          </p>
+        </div>
+      </article>
+
+      <hr class="divider" />
+
+      <section class="data-sources">
+        <p class="label-mono" style="margin: 0 0 var(--space-2)">Data sources</p>
+        <ul>
+          <li>AlphaFold DB structures — CC BY 4.0 (DeepMind / EMBL-EBI)</li>
+          <li>Ensembl Compara orthologs — open data with citation requested (EMBL-EBI; Howe <em>et al.</em> 2024 + Vilella <em>et al.</em> 2009)</li>
+          <li>DeepTMHMM topology — DTU Health Tech (Hallgren <em>et al.</em> 2022; academic-use service)</li>
+          <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        const body = document.body;
+        const buttons = document.querySelectorAll(".toggle__btn");
+        const hint = document.getElementById("modeHint");
+        const hints = { preview: "what readers see", schema: "each value annotated with Pydantic path + type + D/L" };
+        buttons.forEach((btn) => {
+          btn.addEventListener("click", () => {
+            const mode = btn.dataset.modeBtn;
+            body.dataset.mode = mode;
+            buttons.forEach((b) => b.classList.toggle("is-active", b === btn));
+            if (hint) hint.textContent = hints[mode];
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        });
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "s" && !e.metaKey && !e.ctrlKey && !e.altKey) {
+            const next = body.dataset.mode === "preview" ? "schema" : "preview";
+            document.querySelector(`[data-mode-btn="${next}"]`).click();
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
