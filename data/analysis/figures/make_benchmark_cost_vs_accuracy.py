@@ -150,6 +150,24 @@ CELL_COLOR = {
     ("claude-opus-4-7",   "ncbi"):        "#a85b3f",
 }
 
+# Per-cell label offsets (pixels) to deconflict dense clusters — mirrors
+# scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot. Without
+# these, Opus(naive) and Sonnet(+NCBI+web) land at similar (cost, acc.) and
+# their labels stack. When abs(dy) >= 16 a short leader line is drawn so
+# the label → point mapping stays unambiguous. Re-tune if cells move.
+CELL_LABEL_OFFSET = {
+    ("claude-haiku-4-5",  "naive"):       (7,   6),
+    ("claude-haiku-4-5",  "ncbi"):        (7,  10),
+    ("claude-haiku-4-5",  "pubmed_ncbi"): (7, -18),
+    ("claude-haiku-4-5",  "web_ncbi"):    (7,   6),
+    ("claude-sonnet-4-6", "naive"):       (7, -18),
+    ("claude-sonnet-4-6", "ncbi"):        (7,  10),
+    ("claude-sonnet-4-6", "pubmed_ncbi"): (7, -20),
+    ("claude-sonnet-4-6", "web_ncbi"):    (7,   6),
+    ("claude-opus-4-7",   "naive"):       (7, -18),
+    ("claude-opus-4-7",   "ncbi"):        (7,  10),
+}
+
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
     local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
@@ -223,15 +241,23 @@ def main() -> None:
 
     fig, ax = plt.subplots(figsize=(9.5, 6))
     for _, row in df.iterrows():
+        x = row["cost_whole_genome_usd"]
+        y = row["accuracy"] * 100
         ax.scatter(
-            row["cost_whole_genome_usd"], row["accuracy"] * 100,
+            x, y,
             s=180, c=row["color"], edgecolor=BRAND_INK, linewidth=0.8, zorder=3,
         )
+        dx, dy = CELL_LABEL_OFFSET.get((row["model"], row["variant"]), (8, -3))
+        arrowprops = (
+            dict(arrowstyle="-", color=BRAND_NEUTRAL,
+                 linewidth=0.6, alpha=0.7, shrinkA=0, shrinkB=4)
+            if abs(dy) >= 16 else None
+        )
         ax.annotate(
-            row["label"],
-            (row["cost_whole_genome_usd"], row["accuracy"] * 100),
-            xytext=(8, -3), textcoords="offset points",
+            row["label"], (x, y),
+            xytext=(dx, dy), textcoords="offset points",
             fontsize=9.5, color=BRAND_INK,
+            arrowprops=arrowprops,
         )
     ax.set_xscale("log")
     ax.set_xlabel("$ / whole-genome triage pass (19,324 genes, 1 replicate)")
