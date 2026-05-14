@@ -91,8 +91,8 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 12,
-        "axes.labelsize": 13,
+        "font.size": 14,
+        "axes.labelsize": 16,
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -107,12 +107,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
+        "xtick.labelsize": 13,
+        "ytick.labelsize": 13,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 11,
+        "legend.fontsize": 13,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -167,7 +167,9 @@ def main() -> None:
     _apply_brand_style()
     df = _fetch_tsv(POINTS_URL)
 
-    fig, axes = plt.subplots(2, 3, figsize=(13, 8))
+    # Taller figure now that per-variant info moved to caption blocks
+    # below each panel — needs vertical room for the captions.
+    fig, axes = plt.subplots(2, 3, figsize=(13, 11))
     axes_flat = axes.flatten()
 
     for gi, group in enumerate(GROUP_ORDER):
@@ -179,31 +181,29 @@ def main() -> None:
         ax.plot([p["size"] for p in pts], [p["acc"] * 100 for p in pts],
                 color=ramp[0], linewidth=1.6, alpha=0.5, zorder=2)
 
+        caption_lines = []
         for idx, p in enumerate(pts):
             color = ramp[min(idx, len(ramp) - 1)]
             if p.get("recommended"):
-                marker, msize, edge = "*", 420, RECOMMENDED_EDGE
+                marker, msize, edge = "*", 480, RECOMMENDED_EDGE
+                marker_char = "★"
             elif p.get("canonical"):
-                marker, msize, edge = "D", 180, CANONICAL_EDGE
+                marker, msize, edge = "D", 200, CANONICAL_EDGE
+                marker_char = "◆"
             else:
-                marker, msize, edge = "o", 110, "white"
+                marker, msize, edge = "o", 130, "white"
+                marker_char = "●"
             ax.scatter(p["size"], p["acc"] * 100,
                        marker=marker, s=msize, color=color,
                        edgecolor=edge, linewidth=1.6, zorder=4)
-            short = SHORT_LABEL.get(p["label"], p["label"])
-            ax.annotate(
-                f"{short}\nn={int(p['size']):,} • +{p['pos']*100:.0f}/-{p['neg']*100:.0f}",
-                xy=(p["size"], p["acc"] * 100),
-                xytext=(0, 18), textcoords="offset points",
-                ha="center", va="center",
-                fontsize=8, color=BRAND_INK,
-                bbox={"boxstyle": "round,pad=0.3", "fc": "white",
-                      "ec": color, "lw": 0.7, "alpha": 0.94},
+            short = SHORT_LABEL.get(p["label"], p["label"]).replace("\n", " ")
+            caption_lines.append(
+                f"{marker_char}  {short:<14}  n={int(p['size']):>5,}   +{p['pos']*100:.0f}/-{p['neg']*100:.0f}"
             )
 
         ax.set_xscale("log")
         ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=14, fontweight="bold",
+                ha="left", va="top", fontsize=16, fontweight="bold",
                 color=ramp[0])
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
@@ -211,38 +211,54 @@ def main() -> None:
             ax.set_xlim(max(40, min(xs) / 1.8), max(xs) * 1.8)
         sns.despine(ax=ax, top=True, right=True)
 
-    # 6th cell: legend.
+        # Per-panel caption block — one line per cutoff variant, marker
+        # char doubles as the visual key for matching to on-plot points.
+        # Monospace so columns align; tiny enough that even DejaVu Sans
+        # Mono fallback reads cleanly on systems without a brand mono.
+        ax.text(
+            0.0, -0.30, "\n".join(caption_lines),
+            transform=ax.transAxes,
+            ha="left", va="top",
+            fontsize=10, color=BRAND_INK,
+            family="monospace",
+        )
+
+    # 6th cell: marker-shape key + missing-rule footnote.
     legend_ax = axes_flat[5]
     legend_ax.axis("off")
     handles = [
         plt.Line2D([], [], marker="o", linestyle="", color=BRAND_NEUTRAL,
-                   markersize=10, markeredgecolor="white",
+                   markersize=11, markeredgecolor="white",
                    markeredgewidth=1.4, label="Alternative cutoff (not used)"),
         plt.Line2D([], [], marker="D", linestyle="", color=BRAND_NEUTRAL,
-                   markersize=11, markeredgecolor=CANONICAL_EDGE,
+                   markersize=12, markeredgecolor=CANONICAL_EDGE,
                    markeredgewidth=1.4, label="Canonical (current merge rule)"),
         plt.Line2D([], [], marker="*", linestyle="", color=BRAND_NEUTRAL,
-                   markersize=18, markeredgecolor=RECOMMENDED_EDGE,
+                   markersize=20, markeredgecolor=RECOMMENDED_EDGE,
                    markeredgewidth=1.4, label="Recommended after trade-off audit"),
     ]
-    legend_ax.legend(handles=handles, loc="center", fontsize=11,
+    legend_ax.legend(handles=handles, loc="upper center", fontsize=13,
                      frameon=False, title="Marker shape",
-                     title_fontsize=12)
+                     title_fontsize=14)
     legend_ax.text(
-        0.5, 0.05,
-        "Annotation per point: variant • universe size • +pos%/-neg% recall.\n"
-        "Per-source missing rule: UniProt/GO/SURFY/CSPA absence → predict 'no'; "
+        0.5, 0.10,
+        "Per-source missing rule:\n"
+        "UniProt / GO / SURFY / CSPA absence → predict 'no'.\n"
         "HPA absence → abstain.",
         transform=legend_ax.transAxes, ha="center", va="bottom",
-        fontsize=9, color=BRAND_NEUTRAL,
+        fontsize=11, color=BRAND_NEUTRAL,
     )
 
     fig.supxlabel("Universe size — proteins this filter would admit "
-                  "(log scale; lower = stricter)", fontsize=11, y=0.02,
+                  "(log scale; lower = stricter)", fontsize=13, y=0.02,
                   color=BRAND_INK)
-    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=11, x=0.005,
+    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=13, x=0.005,
                   color=BRAND_INK)
     plt.tight_layout(rect=[0.015, 0.03, 1, 0.985])
+    # Add vertical space between row 1 panels (which have captions below
+    # them) and row 2 panels (whose top edge would otherwise crash into
+    # row 1's caption).
+    plt.subplots_adjust(hspace=0.55)
 
     out_pdf = Path("db_cutoff_tradeoff.pdf")
     out_png = Path("db_cutoff_tradeoff.png")
