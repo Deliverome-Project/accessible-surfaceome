@@ -1024,6 +1024,49 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 
 - **Structure viewer for orthologs (v1.x viewer enhancement)** — the structure viewer that lands later (PR [#24](https://github.com/Deliverome-Project/accessible-surfaceome/pull/24)) currently renders the canonical human AlphaFold structure colored by human DeepTMHMM topology only. v1.x should extend it to render *parallel views* for the mouse / rat / cynomolgus orthologs — each panel showing the ortholog's AFDB structure colored by *its own* DeepTMHMM topology (we already have ortholog DeepTMHMM in `data/external/deeptmhmm_surfaceome_predictions/{mouse,cyno}_ortholog_one2one_highconf_non_hla/`). The data shape is in place — `deterministic_features.orthologs.{species}: list[OrthologEntry]` already carries `ortholog_uniprot_acc` and topology fields per ortholog isoform. The viewer just needs to extend its per-gene page to fetch AFDB structures for each ortholog UniProt and render 4 viewers side-by-side (or in a tabbed interface). Pure rendering work; no schema change.
 
+### 11. Follow-up PRs (post-#23 / #24 / #25)
+
+This PR ([#23](https://github.com/Deliverome-Project/accessible-surfaceome/pull/23)) ships the plan + worked-example previews + stub managed-agent directories. Implementation lands in **two follow-up PRs** sized for review.
+
+**Already in flight (independent of #23, branched off `main`):**
+- [#24](https://github.com/Deliverome-Project/accessible-surfaceome/pull/24) — viewer Structure card (canonical AFDB + DeepTMHMM topology coloring) under `viewer/components/surfaceome/StructureViewerCard/`. Standalone; lands in either order with the deep-dive work.
+- [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25) — viewer `/benchmark/` page + bulk TSV download. Orthogonal — about the triage bench, not the deep-dive — but establishes the public-Worker / SSG patterns the deep-dive viewer rewrite will use.
+
+**PR-α — v1.0.0 schema + agent cutover** (the big one)
+
+Single-shot replacement of the agent side. After this PR merges, `uv run accessible-surfaceome agents annotate EGFR` produces a `SurfaceomeRecord` v1.0.0 record on disk through the 3-agent topology. No D1, no viewer changes yet — those records persist as JSON only until PR-β.
+
+- [src/accessible_surfaceome/tools/_shared/models.py](src/accessible_surfaceome/tools/_shared/models.py) — `SurfaceomeRecord` / `SurfaceomeRecordDraft` v1.0.0 rewrite; drop `targetability` / `ADCProperties` / `therapeutic_landscape` nested classes; add `executive_summary`, `filters` (17 fields incl. `max_paralog_ecd_pct_identity`), `surface_evidence`, `biological_context`, `deterministic_features`, `accessibility_risks`. Add the 9 v1.0.0 validators (deterministic_features-is-None, triage-signal consistency, all the `accessibility_modulation` sub-enum pairings, confidence-reasoning required-when-not-high). Keep shared primitives (`GeneIdentifier`, `Evidence`, `SourceRef`, `EvidenceSpan`, `EvidenceClaim`, `SearchEntry`).
+- New fetchers under `src/accessible_surfaceome/agents/surface_annotator/fetchers/` (or a fresh `src/accessible_surfaceome/agents/_fetchers/` shared dir):
+  - `deeptmhmm_fetcher.py` — extract prediction-parsing from existing M1 pipeline at [deeptmhmm.py](src/accessible_surfaceome/sources/deeptmhmm.py) into a shared helper; run on canonical + all isoforms.
+  - `compara_fetcher.py` — one2one orthologs (mouse / rat / cynomolgus) + within-species paralogs; ECD pct identity using topology-derived ECD boundaries.
+  - `alphafold_fetcher.py` — AFDB CIF + confidence JSON; ECD mean pLDDT + disordered fraction (no SASA dep); stamp `source` / `license` / `attribution` / `citations` metadata.
+  - Each fetcher caches by `(uniprot_acc, tool_version)`; pin tool versions.
+- Real system prompts in the three stub agent dirs ([surface_evidence_compiler/prompts/system.md](src/accessible_surfaceome/agents/surface_evidence_compiler/prompts/system.md), [biology_compiler/prompts/system.md](src/accessible_surfaceome/agents/biology_compiler/prompts/system.md), [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md)). Citation discipline carries over from the retired `surface_annotator` prompt.
+- [src/accessible_surfaceome/agents/surface_annotator/orchestrator.py](src/accessible_surfaceome/agents/surface_annotator/orchestrator.py) replaced with new `surfaceome_v1/orchestrator.py` (or in place — caller's call): deterministic-prefetch phase → parallel A1 + A2 dispatch via separate Managed Agent sessions → merge `a1_evi_*` / `a2_evi_*` ledgers + substring-quote validation → B dispatch with merged ledger → assemble `SurfaceomeRecord`. Auto-sync extends to all three agents in the registry.
+- Drop `patent_lookup` custom tool (was for the dropped therapeutic_landscape).
+- Retire `src/accessible_surfaceome/agents/surface_annotator/`: delete the dir, delete mock records under `data/annotations/*.json`, drop CLI references.
+- Tests: per-fetcher unit tests against known UniProt accs (EGFR, GRP78, GPR75) with pinned tool versions; schema round-trip test for a fixture record; end-to-end smoke `annotate EGFR` produces a record that validates against v1.0.0 and includes all 4 `deterministic_features` blocks.
+- `bash scripts/check-py.sh` green.
+
+**Acceptance criteria for PR-α:** `uv run accessible-surfaceome agents annotate EGFR` exits 0; the resulting `data/annotations/EGFR.json` validates against `SurfaceomeRecord` v1.0.0; the 9 validators are enforced (a deliberately-bad fixture fails parse); the three Managed Agents are registered and their prompts SHA-match the on-disk `system.md` files.
+
+**PR-β — D1 + viewer cutover**
+
+Once PR-α is producing v1.0.0 records on disk, this PR makes them visible end-to-end.
+
+- D1 schema: drop `deep_dive_run` / `deep_dive_evidence` / `deep_dive_search_log` (mock data only); recreate for the v1.0.0 shape; add `deep_dive_features` storing the deterministic block as JSON for fast filter-by-topology queries. Update [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql).
+- [scripts/upload_triage_runs_to_d1.py](scripts/upload_triage_runs_to_d1.py) — new payload shape; write to `deep_dive_features`.
+- Public Worker at `api.deliverome.org/surfaceome/v1/*` — new `/deep-dive/{symbol}` route reading from the new tables; same pattern as the `/benchmark/matrix` route added in [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25).
+- [viewer/lib/surfaceome.ts](viewer/lib/surfaceome.ts) — `SurfaceomeRecord` TypeScript types regenerated from the v1.0.0 Pydantic schema (or hand-rolled to match).
+- Viewer per-gene page rewrite — replace the current detail page with the section order from the §16 page mockup (header → executive → filters → §1 surface_evidence → §2 biological_context → §3 isoforms → §4 paralogs → §5 orthologs → §6 risks → structure appendix → ledger → data sources). Reuse the [StructureViewerCard](viewer/components/surfaceome/StructureViewerCard/StructureViewerCard.tsx) from [#24](https://github.com/Deliverome-Project/accessible-surfaceome/pull/24) for the structure appendix. Reuse the TSV-download pattern from [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25) for any per-gene downloads.
+- CLAUDE.md + AGENTS.md — update the "Managed Agents" + "Cloudflare D1" sections to reflect the new schema version + 3-agent topology + dropped `patent_lookup` tool. Update the `.github/workflows/d1-backup.yml` paths filter to include the new uploader paths.
+- Old D1 rows dropped + recreated.
+
+**Acceptance criteria for PR-β:** a record produced by PR-α uploads cleanly to `deep_dive_run` + `deep_dive_features`; `viewer/ npm run build` succeeds with the new page; the per-gene page renders in mockup section order against a fixture record; the StructureViewerCard appears between §5 (orthologs) and §6 (risks) or in the appendix per the mockup; D1 backup CI catches changes to the new schema.
+
+**That's it.** Two PRs after #23 (and independent of #24 / #25). The split is along the natural cost axis: PR-α is the agent / schema atomic cutover that can ship without any persistence layer changes (records live as JSON), PR-β is the persistence + presentation catch-up.
+
 ---
 
 ## Agent topology (multi-agent)
