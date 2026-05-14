@@ -169,22 +169,25 @@ CONTEXTUAL_PALETTE = {
 YES_HEADER_COLOR = "#2E7A55"
 CONTEXTUAL_HEADER_COLOR = "#8C4210"
 
+# Ordered to match the per-reason bar order in the panel above
+# (YES_REASONS / CONTEXTUAL_REASONS), so callouts read top-to-bottom in
+# the same sequence as the bars left-to-right.
 YES_CALLOUTS = [
     ("PVRIG",   "NK/T checkpoint; COM701 = anti-PVRIG surface mAb", "classical_surface_receptor"),
-    ("STEAP1",  "Prostate ADC + BiTE target",          "multipass_with_exposed_loops"),
-    ("CRIPTO",  "GPI-anchored oncofetal antigen",      "gpi_anchored"),
-    ("ORAI2",   "Store-operated Ca2+ channel",         "multipass_with_exposed_loops"),
     ("ECEL1",   "Type-II TM; neprilysin/M13 family",   "classical_surface_receptor"),
+    ("STEAP1",  "Prostate ADC + BiTE target",          "multipass_with_exposed_loops"),
+    ("ORAI2",   "Store-operated Ca2+ channel",         "multipass_with_exposed_loops"),
+    ("CRIPTO",  "GPI-anchored oncofetal antigen",      "gpi_anchored"),
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
 ]
 CONTEXTUAL_CALLOUTS = [
+    ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
+    ("TIMP2",   "MT1-MMP ternary complex",             "stable_surface_attachment"),
     ("GSDMD",   "Gasdermin D/E/C — pyroptosis pores",  "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
     ("HSP90B1", "Surface GRP94 in tumor cells",        "cell_state_induced"),
-    ("TIMP2",   "MT1-MMP ternary complex",             "stable_surface_attachment"),
     ("HPSE",    "Surface heparanase on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
-    ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
 ]
 
 
