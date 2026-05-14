@@ -21,11 +21,11 @@ conditions hold.
 
 | Figure | Reproduction gist (secret) | Generator |
 |--------|---------------------------|-----------|
-| `db_overlap_venn` | [f0cfd828…](https://gist.github.com/beccajcarlson/f0cfd8281a9d512174ac49c32d051bde) | `scripts/triage_bench_db_venn.py::make_plot` |
-| `db_correctness_by_class` | [b4d7c89d…](https://gist.github.com/beccajcarlson/b4d7c89ddd810bf38213b123512f9075) | `scripts/triage_bench_db_barplot.py::make_by_class_plot` |
-| `db_cutoff_tradeoff` | [06d053b5…](https://gist.github.com/beccajcarlson/06d053b54810285af495886871ee7f8a) | `scripts/triage_bench_db_barplot.py::make_db_tradeoff_plot` |
-| `db_correctness_overall` | [1e3d464f…](https://gist.github.com/beccajcarlson/1e3d464fa905536611df4d5ee0950558) | `scripts/triage_bench_db_barplot.py::make_overall_plot` |
-| `benchmark_cost_vs_accuracy` | [774ff119…](https://gist.github.com/beccajcarlson/774ff119060c9d4c81a3f020afb576f7) | `scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot` |
+| `db_overlap_venn` | [f0cfd828…](https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa) | `scripts/triage_bench_db_venn.py::make_plot` |
+| `db_correctness_by_class` | [b4d7c89d…](https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d) | `scripts/triage_bench_db_barplot.py::make_by_class_plot` |
+| `db_cutoff_tradeoff` | [06d053b5…](https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed) | `scripts/triage_bench_db_barplot.py::make_db_tradeoff_plot` |
+| `db_correctness_overall` | [1e3d464f…](https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d) | `scripts/triage_bench_db_barplot.py::make_overall_plot` |
+| `benchmark_cost_vs_accuracy` | [774ff119…](https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41) | `scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot` |
 
 Each PDF + PNG also carries its gist URL in file metadata (PDF
 `dc:source` XMP field, PNG `Source` tEXt chunk). Refresh with

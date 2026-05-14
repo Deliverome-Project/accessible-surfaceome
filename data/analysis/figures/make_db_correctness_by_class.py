@@ -55,7 +55,7 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # so the figure carries its source URL even when dragged into a Substack
 # draft or copied to Slack). Read back with `exiftool figure.png | grep Source`,
 # or in Python: `from PIL import Image; Image.open(p).info["Source"]`.
-GIST_URL = "https://gist.github.com/beccajcarlson/b4d7c89ddd810bf38213b123512f9075"
+GIST_URL = "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"
 
 BENCH_TSV   = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
 CAND_TSV    = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"

@@ -40,7 +40,7 @@ CAND_URL = (
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
-GIST_URL = "https://gist.github.com/beccajcarlson/f0cfd8281a9d512174ac49c32d051bde"
+GIST_URL = "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"
 
 # ──── Inline brand styling — sentinel: brand-style-v1 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist

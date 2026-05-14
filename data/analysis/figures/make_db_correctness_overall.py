@@ -41,7 +41,7 @@ PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
-GIST_URL = "https://gist.github.com/beccajcarlson/1e3d464fa905536611df4d5ee0950558"
+GIST_URL = "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d"
 
 # ──── Inline brand styling — sentinel: brand-style-v1 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist

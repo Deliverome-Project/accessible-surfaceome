@@ -23,11 +23,11 @@ REPO_URL = "https://github.com/Deliverome-Project/accessible-surfaceome"
 # slug → secret gist URL. Update when a gist is rotated or a new
 # figure is promoted.
 FIGURE_GISTS: dict[str, str] = {
-    "db_overlap_venn":            "https://gist.github.com/beccajcarlson/f0cfd8281a9d512174ac49c32d051bde",
-    "db_correctness_by_class":    "https://gist.github.com/beccajcarlson/b4d7c89ddd810bf38213b123512f9075",
-    "db_cutoff_tradeoff":         "https://gist.github.com/beccajcarlson/06d053b54810285af495886871ee7f8a",
-    "db_correctness_overall":     "https://gist.github.com/beccajcarlson/1e3d464fa905536611df4d5ee0950558",
-    "benchmark_cost_vs_accuracy": "https://gist.github.com/beccajcarlson/774ff119060c9d4c81a3f020afb576f7",
+    "db_overlap_venn":            "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",
+    "db_correctness_by_class":    "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d",
+    "db_cutoff_tradeoff":         "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed",
+    "db_correctness_overall":     "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d",
+    "benchmark_cost_vs_accuracy": "https://gist.github.com/beccajcarlson/d7f764d2de288ae31cf44173bc396d41",
 }
 
 

@@ -39,7 +39,7 @@ POINTS_URL = (
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
-GIST_URL = "https://gist.github.com/beccajcarlson/06d053b54810285af495886871ee7f8a"
+GIST_URL = "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
 
 # ──── Inline brand styling — sentinel: brand-style-v1 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
