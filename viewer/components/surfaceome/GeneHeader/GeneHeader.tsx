@@ -2,8 +2,16 @@ import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { StatusPill } from "../StatusPill/StatusPill";
+import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
+
+function presentTopologyStates(topology: string): string[] {
+  if (!topology) return [];
+  const seen = new Set<string>();
+  for (const ch of topology) seen.add(ch);
+  return ["M", "O", "I", "S", "B"].filter((s) => seen.has(s));
+}
 
 interface GeneHeaderProps {
   rec: SurfaceomeRecord;
@@ -123,6 +131,9 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
         {structureData ? (
           <aside className={styles.structureSlot} aria-label="3D structure">
             <StructureViewer data={structureData} geneSymbol={g.hgnc_symbol} />
+            <TopologyLegend
+              presentStates={presentTopologyStates(structureData.topology)}
+            />
             <p className={styles.structureCaption}>
               <a
                 href={`https://alphafold.ebi.ac.uk/entry/${g.uniprot_acc}`}
