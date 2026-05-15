@@ -1989,6 +1989,54 @@ class BiologicalContextDraft(BaseModel):
         return self
 
 
+class SynthesizerLLMFilters(BaseModel):
+    """The three ``filters`` rollups B is responsible for.
+
+    The full :class:`Filters` block has 17 fields; 14 of those are
+    orchestrator-derived from A1/A2 deep blocks and ``deterministic_features``.
+    B emits only the three rollups that don't have a deterministic source —
+    surface vs. intracellular split, expression breadth across tissues, and
+    expression level for the protein's primary contexts. The orchestrator
+    composes the full :class:`Filters` after the fact.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    expression_level: ExpressionLevel
+    expression_breadth: ExpressionBreadth
+    surface_specificity: SurfaceSpecificity
+
+
+class SynthesizerDraft(BaseModel):
+    """What agent B (Surfaceome Synthesizer) emits.
+
+    Cite-only integration over the merged A1 + A2 evidence ledger. B has no
+    tools — the orchestrator validates ``cited_evidence_ids`` against the
+    merged ledger after the fact, so this draft does NOT carry an
+    ``evidence_claims`` slice.
+
+    The ``confidence_reasoning`` non-empty-on-non-high rule mirrors the rule
+    on the assembled :class:`SurfaceomeRecord` — surfacing the constraint at
+    parse time keeps B honest before the orchestrator stitches the record.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    executive_summary: ExecutiveSummary
+    accessibility_risks: AccessibilityRisks
+    filters_llm: SynthesizerLLMFilters
+    confidence: Confidence
+    confidence_reasoning: str = Field(..., max_length=600)
+
+    @model_validator(mode="after")
+    def _check_confidence_reasoning(self) -> SynthesizerDraft:
+        if self.confidence in ("moderate", "low") and not self.confidence_reasoning.strip():
+            raise ValueError(
+                f"confidence={self.confidence!r} requires a non-empty confidence_reasoning"
+            )
+        return self
+
+
 # ---------------------------------------------------------------------------
 # Triage record — lightweight per-protein decision: is this protein surface
 # accessible? Pure-model inference (no tools, no web search, no evidence
@@ -2304,6 +2352,8 @@ __all__ = [
     "SurfaceomeRecordDraft",
     "SurfaceEvidenceDraft",
     "BiologicalContextDraft",
+    "SynthesizerLLMFilters",
+    "SynthesizerDraft",
     # v1.0.0 — closed enums
     "TriageSignal",
     "SurfaceAccessibility",
