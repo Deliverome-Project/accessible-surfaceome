@@ -23,11 +23,15 @@ const ROW_OVERSCAN = 12;
 // virtualized HTML <table> rows. Both the header and each row are
 // `display: grid; grid-template-columns: var(--catalog-cols)`, so the
 // columns are GUARANTEED to line up — no proportional-fill rounding,
-// no per-row `<table>` re-layout. The triage column uses `minmax(14rem,1fr)`
-// so it absorbs any leftover horizontal space rather than leaving a
-// trailing empty gutter on wide viewports.
+// no per-row `<table>` re-layout. The Symbol column needs enough room
+// to fit the gene's full NCBI descriptive name beneath the symbol
+// without truncation (e.g. "G-protein-coupled receptor 75"); 16rem
+// covers most cases. Triage was widened way beyond what its content
+// uses — `minmax(11rem, 1fr)` is enough for "contextual · cell-state
+// induced" + chip + hover hint without leaving the table running off
+// the right edge.
 const GRID_TEMPLATE =
-  "1.75rem 11rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 6rem";
+  "1.75rem 16rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(11rem, 1fr) 6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
