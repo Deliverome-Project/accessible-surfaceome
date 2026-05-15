@@ -21,42 +21,19 @@ def main(argv: list[str] | None = None) -> None:
         add_help=False,
     )
     agents_parser = subparsers.add_parser(
-        "agents", help="Manage the surface-annotator Managed Agent."
+        "agents", help="Run the v1.0.0 deep-dive pipeline (A1 ∥ A2 → B → assemble)."
     )
     agents_sub = agents_parser.add_subparsers(dest="agents_command", required=True)
-    agents_sub.add_parser("sync", help="Create-or-update the remote agent + environment.")
     annotate = agents_sub.add_parser(
         "annotate", help="Run a one-off annotation session for a single gene."
     )
     annotate.add_argument("gene", help="Gene symbol or UniProt accession (e.g. KAAG1, Q9UBP8).")
-    annotate.add_argument(
-        "--audit",
-        action="store_true",
-        help=(
-            "Run the Sonnet claim-entailment audit on each promoted Evidence "
-            "(catches 'right citation, wrong direction'). Adds ~$0.05–0.15/gene."
-        ),
-    )
-    audit_corpus = agents_sub.add_parser(
-        "audit-corpus",
-        help="Verify every persisted Evidence span round-trips against data/sources/.",
-    )
-    audit_corpus.add_argument(
-        "gene",
-        nargs="?",
-        help=(
-            "Gene to audit (e.g. KAAG1). When omitted, audits every record in "
-            "data/annotations/."
-        ),
-    )
-    view = agents_sub.add_parser(
-        "view",
-        help=(
-            "Pretty-print a persisted record's Evidence chain with deep-links "
-            "that highlight each verbatim quote on the source page."
-        ),
-    )
-    view.add_argument("gene", help="Gene to view (e.g. HER2).")
+    # ``sync`` (Managed-Agents create/update), ``audit-corpus`` (v0.5.1
+    # ``surface_annotator.audit``), and ``view`` (v0.5.1 record viewer) were
+    # retired alongside the surface_annotator/ directory when the v1.0.0
+    # 3-agent pipeline replaced the single Managed Agent. v1.0.0 runs on the
+    # Messages API — no remote agent registry to sync; viewer-style
+    # rendering moved to the per-agent ``render_html.py`` modules.
 
     # The legacy `triage` subcommand (Managed Agents one-off via
     # `client.beta.sessions`) was retired because Anthropic's
@@ -100,67 +77,40 @@ def main(argv: list[str] | None = None) -> None:
 
 def _run_agents(args: argparse.Namespace) -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
-    from accessible_surfaceome.agents.surface_annotator import orchestrator
 
-    if args.agents_command == "sync":
-        result = orchestrator.sync_agent_and_environment()
+    if args.agents_command == "annotate":
+        # v1.0.0 deep-dive pipeline: dispatch A1 ∥ A2 → B → assemble via
+        # ``surfaceome_v1.annotate``. Output JSON carries per-agent counters
+        # and the assembled-record path.
+        from accessible_surfaceome.agents import surfaceome_v1
+
+        result = surfaceome_v1.annotate(args.gene)
+        a1, a2, b = result.a1, result.a2, result.b
         print(
             json.dumps(
                 {
-                    "agent_id": result.agent_id,
-                    "agent_version": result.agent_version,
-                    "environment_id": result.environment_id,
-                    "agent_changed": result.agent_changed,
-                    "environment_changed": result.environment_changed,
-                },
-                indent=2,
-            )
-        )
-    elif args.agents_command == "annotate":
-        result = orchestrator.annotate_gene(args.gene, audit=args.audit)
-        print(
-            json.dumps(
-                {
-                    "gene": args.gene,
-                    "session_id": result.session_id,
-                    "n_custom_tool_calls": result.n_tool_calls,
+                    "gene": result.gene,
+                    "schema_version": "1.0.0",
                     "annotation_path": str(result.annotation_path) if result.annotation_path else None,
-                    "run_dir": str(result.run_dir),
-                    "annotation_emitted": result.annotation_json is not None,
-                    "audit_enabled": args.audit,
+                    "annotation_emitted": result.record is not None,
+                    "error": result.error,
+                    "evidence_count": result.record.evidence_count if result.record else None,
+                    "n_tool_calls": {
+                        "a1": a1.n_tool_calls if a1 else None,
+                        "a2": a2.n_tool_calls if a2 else None,
+                        "b": b.n_tool_calls if b else None,
+                    },
+                    "n_repair_attempts": {
+                        "a1": a1.n_repair_attempts if a1 else None,
+                        "a2": a2.n_repair_attempts if a2 else None,
+                        "b": b.n_repair_attempts if b else None,
+                    },
                 },
                 indent=2,
             )
         )
-    elif args.agents_command == "audit-corpus":
-        from accessible_surfaceome.agents.surface_annotator import audit as _audit
-        from accessible_surfaceome.paths import DATA_DIR, DATA_SOURCES_DIR
-
-        annotations_dir = DATA_DIR / "annotations"
-        if args.gene:
-            paths = [annotations_dir / f"{args.gene}.json"]
-        else:
-            paths = sorted(annotations_dir.glob("*.json"))
-        any_failed = False
-        for path in paths:
-            if not path.exists():
-                print(f"audit: {path} (missing)")
-                any_failed = True
-                continue
-            report = _audit.audit_record_path(path, sources_dir=DATA_SOURCES_DIR)
-            print(_audit.format_report(report))
-            if not report.all_passed:
-                any_failed = True
-        if any_failed:
+        if result.error:
             raise SystemExit(1)
-    elif args.agents_command == "view":
-        from accessible_surfaceome.agents.surface_annotator import view as _view
-        from accessible_surfaceome.paths import DATA_DIR
-
-        annotation_path = DATA_DIR / "annotations" / f"{args.gene}.json"
-        if not annotation_path.exists():
-            raise SystemExit(f"no record at {annotation_path}")
-        print(_view.format_record(annotation_path))
 
 
 def _run_triage_bench(args: argparse.Namespace) -> None:

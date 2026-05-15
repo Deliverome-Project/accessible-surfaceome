@@ -21,7 +21,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, HttpUrl, model_validator
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
 
 # ---------------------------------------------------------------------------
 # Shared identifiers
@@ -821,1178 +821,1220 @@ class SearchEntry(BaseModel):
 # record was made under as we evolve.
 # ---------------------------------------------------------------------------
 
-SCHEMA_VERSION = "v0.5.1"
+SCHEMA_VERSION = "1.0.0"
 
 
-# ---- shared enums (closed) ------------------------------------------------
+# ===========================================================================
+# SurfaceomeRecord v1.0.0 — surface-accessibility deep-dive record.
+#
+# Two structurally separated regions:
+#   * ``deterministic_features`` — verbatim tool output, populated by the
+#     orchestrator. The agent never writes here; a validator on
+#     :class:`SurfaceomeRecordDraft` rejects any attempt to populate it.
+#   * the LLM-synthesis blocks (``executive_summary``, ``surface_evidence``,
+#     ``biological_context``, ``accessibility_risks``, ``filters``) — the
+#     agent's work.
+# Evidence + search log live at the top level and are referenced from both.
+# Field order mirrors the viewer mockup so JSON-reading humans see the same
+# scientific flow.
+#
+# Several enums are intentionally **hybrid** — a closed list plus an
+# ``"other"`` escape hatch with a required ``*_other_label`` and a validator
+# enforcing ``category == "other" ↔ label is not None``.
+# ===========================================================================
 
-SurfaceStatus = Literal[
-    "strong_surface",
-    "moderate_surface",
-    "weak_surface",
-    "rare_surface",
-    "conditional_surface",  # induced/state-dependent surface presentation
-    "absent",
-    "contradictory",
+
+# ---- closed enums ---------------------------------------------------------
+
+TriageSignal = Literal[
+    "likely_accessible",
+    "possibly_accessible",
+    "unlikely",
+    "unknown",
 ]
-Topology = Literal[
-    "transmembrane_single_pass",
-    "transmembrane_multi_pass",
-    "outer_leaflet_peripheral",
-    "gpi_anchored",
-    "inner_leaflet_peripheral",
-    "cytosolic_pm_adjacent",
-    "not_pm_associated",
+
+SurfaceAccessibility = Literal["high", "moderate", "low", "uncertain"]
+EvidenceGrade = Literal[
+    "direct_multi_method",
+    "direct_single_method",
+    "supportive_but_indirect",
+    "conflicting",
+    "weak",
 ]
-AnchorType = Literal[
-    "transmembrane_single",
-    "transmembrane_multi",
-    "gpi_anchored",
-    "lipidated",
-    "peripheral",
-    "mhc_presented_peptide",
+Confidence = Literal["high", "moderate", "low"]
+StateDependence = Literal["low", "moderate", "high", "unclear"]
+Subcategory = Literal[
+    "single_pass_T1",
+    "single_pass_T2",
+    "multi_pass",
+    "GPCR",
+    "GPI_anchored",
+    "tetraspanin",
+    "ion_channel",
+    "transporter",
+    "other",
+]
+HeadlineRisk = Literal[
+    "shed_form",
+    "secreted_form",
+    "co_receptor",
+    "ecd_too_small",
+    "epitope_masked",
+    "isoform_decoy",
+    "restricted_subdomain",
+    "low_endogenous_expression",
+    "antibody_validation_weak",
+    "ligand_unknown",
+    "other",
+]
+
+ExpressionLevel = Literal["high", "moderate", "low", "absent"]
+ExpressionBreadth = Literal["pan_tissue", "broad", "restricted", "rare"]
+SurfaceSpecificity = Literal["surface_dominant", "mixed", "mostly_intracellular"]
+EvidenceDensity = Literal["low", "moderate", "high"]
+ECDAccessibilityClass = Literal["large", "moderate", "small", "minimal", "none"]
+
+MethodFamily = Literal[
+    "flow_cytometry",
+    "immunofluorescence",
+    "immunohistochemistry",
+    "mass_spec",
+    "biotinylation",
+    "glycoproteomics",
+    "proximity_labeling",
+    "fractionation",
+    "other",
+]
+MethodSubclass = Literal[
+    "live_cell_flow",
+    "fixed_cell_flow",
+    "nonpermeabilized_IF",
+    "permeabilized_IF",
+    "IHC_membranous",
+    "surface_biotinylation",
+    "cell_surface_capture",
+    "N_glycoproteomics",
+    "plasma_membrane_fractionation",
+    "whole_cell_proteomics",
+    "unknown",
+]
+Permeabilization = Literal[
+    "live_cell",
+    "nonpermeabilized",
+    "permeabilized",
+    "fixed_unknown",
+    "unknown",
+]
+ExpressionSystem = Literal[
+    "endogenous",
+    "overexpression",
+    "knock_in_tag",
+    "mixed",
+    "unknown",
+]
+AccessibilityRelevance = Literal[
+    "direct_surface_accessibility",
+    "supports_surface_localization",
+    "supports_membrane_association",
+    "expression_only",
+    "weak_or_ambiguous",
+]
+SurfaceClaimType = Literal[
+    "surface_accessible",
+    "plasma_membrane_localized",
+    "membrane_fraction_enriched",
+    "cell_junction_localized",
+    "apical_or_luminal",
+    "secreted_or_shed",
+    "intracellular_pool",
+    "unclear",
+]
+AntibodyClonality = Literal["monoclonal", "polyclonal", "recombinant", "unknown"]
+AntibodyEpitopeRegion = Literal[
+    "extracellular",
+    "intracellular",
+    "conformational",
+    "isoform_specific",
+    "unknown",
+]
+ValidationStrategy = Literal[
+    "genetic_KO",
+    "siRNA_knockdown",
+    "CRISPR_KO",
+    "orthogonal_method",
+    "ip_ms_pulldown",
+    "isoform_specific_KO",
+    "overexpression_reference",
+    "vendor_claim_only",
     "none",
     "unknown",
 ]
-SynthesisConfidence = Literal["high", "medium", "low"]
-ModelPath = Literal["sonnet_only", "opus_light", "opus_heavy"]
-
-
-# Closed: the gold-standard list itself uses a fixed taxonomy. If the agent
-# encounters a candidate that doesn't fit, the right answer is to expand the
-# enum, not sneak it in via "other".
-TargetabilityTier = Literal[
-    "validated_target",  # approved drug exists targeting this surface protein
-    "clinical_stage",  # in clinical trials
-    "preclinical",  # patent disclosures or published preclinical mAbs/ADCs
-    "novel_candidate",  # plausible surface target with no therapeutic precedent
-    "edge_case",  # mechanism doesn't fit conventional surface targeting (KAAG1)
-    "contraindicated",  # safety/biology rules it out (e.g. essential organ expression)
-    "non_target",  # not surface-accessible
-]
-
-
-# ---- hybrid enums (closed list + "other") ---------------------------------
-
-RiskFlagKind = Literal[
-    "soluble_shedding",  # cleavage/shedding releases a soluble pool of antigen
-    "secreted_form",  # alternative isoform/variant generates a secreted form (no shedding required)
-    "other",
-]
-RiskSeverity = Literal["blocking", "high", "medium", "low"]
-
-
-# v0.5.0: structured backing for ``RiskFlag(kind ∈ {soluble_shedding,
-# secreted_form})``. Captures the protease(s), cleavage site, regulation,
-# and serum-pool documentation that the v0.4.0 free-text
-# ``RiskFlag.description`` had to hand-roll. Loaded only when the flag's
-# ``kind`` is shedding/secreted-form related; ``other`` flags leave it null.
-ProteaseFamily = Literal[
-    "adam10",
-    "adam17",
-    "adam_other",
-    "mmp2",
-    "mmp9",
-    "mmp_other",
-    "bace1",
-    "bace2",
-    "gamma_secretase",
-    "site_1_protease",  # S1P / MBTPS1
-    "site_2_protease",  # S2P / MBTPS2
-    "furin",
-    "pcsk_other",
-    "rhomboid",
-    "cathepsin",
-    "granzyme",
-    "caspase",
-    "asp_protease_other",
-    "ser_protease_other",
-    "metalloprotease_other",
+ValidationStrength = Literal["strong", "moderate", "weak", "none", "unknown"]
+SampleType = Literal[
+    "primary_human_tissue",
+    "primary_human_cell",
+    "patient_sample",
+    "patient_derived_organoid",
+    "iPSC_derived",
+    "established_cell_line",
+    "xenograft",
+    "ex_vivo",
     "unknown",
+]
+MeasurementType = Literal[
+    "RNA",
+    "bulk_protein",
+    "IHC_protein",
+    "single_cell_RNA",
+    "unknown",
+]
+TherapeuticStage = Literal[
+    "approved_drug",
+    "in_clinical_trials",
+    "preclinical_in_vivo",
+    "none_documented",
+    "unknown",
+]
+ContradictionType = Literal[
+    "intracellular_pool",
+    "alternative_localization",
+    "secreted_only",
+    "cell_line_specific_absence",
+    "antibody_conflict",
+    "proteomics_conflict",
+    "isoform_conflict",
     "other",
 ]
-SheddingRegulation = Literal["constitutive", "stimulated", "both", "unknown"]
+ContradictionSeverity = Literal["high", "moderate", "low", "unclear"]
 
-
-class SheddingContext(BaseModel):
-    """Structural backing for a ``RiskFlag`` whose ``kind`` is shedding /
-    secreted-form related.
-
-    Captures protease family (closed enum with ``other`` escape hatch),
-    cleavage site, constitutive vs stimulated regulation, stimuli that
-    trigger shedding, and whether a soluble pool has been documented in
-    serum. ``soluble_isoform_uniprot`` is populated for ``secreted_form``
-    flags pointing at the specific isoform that's released.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    proteases: list[ProteaseFamily] = Field(default_factory=list)
-    # Parallel to ``proteases`` — only populated for entries set to
-    # ``other`` / ``*_other`` families; describes the specific protease.
-    protease_other_labels: list[str] = Field(default_factory=list)
-    cleavage_site: str | None = Field(default=None, max_length=200)
-    regulation: SheddingRegulation = "unknown"
-    stimuli: list[str] = Field(default_factory=list)
-    serum_pool_documented: bool | None = None
-    soluble_isoform_uniprot: str | None = None
-    notes: str | None = Field(default=None, max_length=500)
-
-
-class RiskFlag(BaseModel):
-    """A surface-biology risk flag that affects accessibility / targetability.
-
-    Scope is narrow on purpose: the agent's job is the accessibility call,
-    not systematic safety profiling. The two closed kinds capture the
-    accessibility-relevant risks that arise directly from surface biology
-    (a soluble pool of antigen produced by either shedding or an alternative
-    secreted form competes for binders). Anything else uses ``"other"`` with
-    a ``kind_other_label`` so the corpus can surface emerging categories.
-
-    Hybrid enum: ``other`` requires a ``kind_other_label`` so the
-    corpus can surface emerging categories without an immediate schema bump.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    kind: RiskFlagKind
-    kind_other_label: str | None = None
-    severity: RiskSeverity
-    description: str = Field(..., max_length=500)
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-    # v0.5.0: structured shedding / secreted-form context. Populated only
-    # when ``kind`` is shedding/secreted-form related; ``other`` flags
-    # leave it null. Old (v0.4.0) records that emit no sub-record stay valid.
-    shedding_context: SheddingContext | None = None
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> RiskFlag:
-        if self.kind == "other" and not self.kind_other_label:
-            raise ValueError("RiskFlag.kind='other' requires kind_other_label")
-        if self.kind != "other" and self.kind_other_label is not None:
-            raise ValueError(f"RiskFlag.kind_other_label must be None when kind={self.kind!r}")
-        return self
-
-    @model_validator(mode="after")
-    def _check_shedding_context(self) -> RiskFlag:
-        if self.shedding_context is not None and self.kind == "other":
-            raise ValueError(
-                "RiskFlag.shedding_context is only meaningful for "
-                "kind in {soluble_shedding, secreted_form}, not kind='other'"
-            )
-        return self
-
-
-# ---- bucket: targetability ------------------------------------------------
-
-
-class TargetabilityVerdict(BaseModel):
-    """Top-of-page summary: where does this protein sit on the
-    translational-precedent axis?
-
-    Carries only the precedent tier + a tight one-line tldr; modality
-    recommendations were dropped in the v0.4.0 refocus — modality choice
-    belongs to downstream curator work, not basic-biology classification.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    tier: TargetabilityTier
-    tldr: str = Field(..., max_length=400)
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-
-# ---- bucket: surface biology ----------------------------------------------
-
-
-ECDAccessibility = Literal["accessible", "membrane_proximal", "buried", "unknown"]
-
-
-# Single signal answering "is there a binder-targetable extracellular
-# protrusion?" — distinct from ``surface_status`` (which says whether the
-# protein reaches the outer leaflet at all). A 7TM GPCR with tiny extracellular
-# loops is ``minimal_ectoloops`` even though ``surface_status="strong_surface"``.
-ExposureClass = Literal[
-    "exposed_ecd",  # one or more meaningful extracellular protrusions
-    "minimal_ectoloops",  # only short loops between TM helices reach outside
-    "embedded_no_ecd",  # essentially no extracellular face protruding from the bilayer
-    "none",  # not at the plasma membrane at all
+TissuePresence = Literal["high", "moderate", "low", "absent", "mixed", "unknown"]
+DiseaseContext = Literal[
+    "normal",
+    "tumor",
+    "tumor_adjacent",
+    "other_disease",
+    "mixed",
+    "unknown",
+]
+PrimaryCompartment = Literal[
+    "plasma_membrane",
+    "endosome",
+    "lysosome",
+    "ER",
+    "Golgi",
+    "mitochondrion",
+    "nucleus",
+    "cytosol",
+    "secreted",
+    "other",
+]
+Orientation = Literal[
+    "blood_interstitial_facing",
+    "luminal_facing",
+    "apical",
+    "basolateral",
+    "lateral",
+    "junction_restricted",
+    "ciliary",
+    "synaptic",
+    "matrix_facing",
+    "unknown",
+]
+AccessibilityImplication = Literal[
+    "favorable",
+    "restricted",
+    "context_dependent",
+    "unclear",
+]
+ModulationCategory = Literal[
+    # First five are VERBATIM from surface_triage's contextual `reason`
+    # taxonomy so cross-agent vocabulary stays in sync.
+    "cell_state_induced",
+    "tissue_restricted_surface",
+    "lysosomal_exocytosis",
+    "dual_localization",
+    "stable_surface_attachment",
+    # Deep-dive expansions — roll up to the broader triage category at
+    # cross-validation time.
+    "activation_induced",
+    "stress_induced",
+    "disease_state_induced",
+    "polarization_dependent",
+    "post_translational_dependent",
+    "developmental_stage",
+    "none",
+    "other",
+    "unknown",
+]
+CellStateTrigger = Literal[
+    "ER_stress",
+    "heat_shock",
+    "oxidative_stress",
+    "DNA_damage_response",
+    "apoptosis",
+    "necroptosis",
+    "oncogenic_transformation",
+    "infection_viral",
+    "infection_bacterial",
+    "immune_activation",
+    "antigen_stimulation",
+    "cytokine_stimulation",
+    "hypoxia",
+    "nutrient_deprivation",
+    "hyperthermia",
+    "mechanical_stress",
+    "other",
+    "unknown",
+]
+RestrictedLineage = Literal[
+    "germline_reproductive",
+    "embryonic_developmental",
+    "hematopoietic",
+    "neural",
+    "epithelial",
+    "endothelial",
+    "muscle",
+    "endocrine",
+    "specialized_somatic_other",
+    "other",
+    "unknown",
+]
+DualLocPartnerCompartment = Literal[
+    "ER",
+    "Golgi",
+    "endosome",
+    "lysosome",
+    "mitochondrion",
+    "nucleus",
+    "cytosol",
+    "secretory_vesicle",
+    "other",
     "unknown",
 ]
 
+# accessibility_modulation category-conditional pairings (validator support).
+_STATE_INDUCED_CATEGORIES: frozenset[str] = frozenset(
+    {
+        "cell_state_induced",
+        "stress_induced",
+        "activation_induced",
+        "disease_state_induced",
+        "lysosomal_exocytosis",
+    }
+)
 
-# Why a protein that is intracellular at baseline reaches the outer leaflet.
-# Backs ``SurfaceStatus="conditional_surface"`` calls.
-#
-# Enum names align with the ``TriageVerdictReason`` taxonomy in
-# ``surface_triage`` (system.md) so the deep-dive's per-context labels
-# map 1:1 onto the triage's verdict-reason buckets. The four
-# stress / ICD / infection / oncogenic variants are the deep-dive
-# granular breakdown of triage's umbrella ``cell_state_induced``.
-InducedContextKind = Literal[
-    "cell_state_stress",  # heat shock, ER stress, oxidative stress — triage: cell_state_induced
-    "immunogenic_cell_death",  # ICD-induced exposure (e.g. CALR) — triage: cell_state_induced
-    "infection_induced",  # viral or bacterial infection drives surfacing — triage: cell_state_induced
-    "oncogenic_state",  # transformation-driven mislocalization — triage: cell_state_induced
-    "tissue_restricted_surface",  # surface only in a narrow lineage — triage: tissue_restricted_surface
-    "dual_localization",  # cycling / partial-PM-residence — triage: dual_localization
-    "lysosomal_exocytosis",  # lysosomal TM protein reaches PM via exocytosis — triage: lysosomal_exocytosis
+TerminalOrientation = Literal["extracellular", "cytoplasmic"]
+OrthologyType = Literal["one2one", "one2many", "many2many"]
+AFDBVersion = Literal["v4"]
+
+RiskSeverity = Literal["high", "moderate", "low", "unknown"]
+EvidenceStrength = Literal["strong", "moderate", "weak", "inferred"]
+RestrictedSubdomainName = Literal[
+    "apical",
+    "junctional",
+    "ciliary",
+    "synaptic",
+    "raft",
+    "basolateral",
     "other",
-]
-
-
-class InducedPresentation(BaseModel):
-    """One context under which an otherwise-intracellular protein reaches the surface.
-
-    Used to back ``SurfaceStatus="conditional_surface"`` calls (e.g.
-    calreticulin during ICD; HSP70 stress exposure; GLUT4-style trafficking
-    cycling). Hybrid enum: ``context_kind="other"`` requires a
-    ``context_kind_other_label`` so the corpus can surface new categories.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    context_kind: InducedContextKind
-    context_kind_other_label: str | None = None
-    description: str = Field(..., max_length=400)
-    # v0.4.0 refocus: every induced-presentation entry MUST cite at least
-    # one EvidenceClaim. A conditional-surface call without citation is
-    # speculation; require evidence to land it in the record.
-    cited_evidence_ids: list[str] = Field(..., min_length=1)
-    # v0.5.0: structured cell-type context the induction is documented in
-    # (e.g. "anthracycline-treated CT26 colon carcinoma"). Optional;
-    # backward-compatible with v0.4.0 records.
-    cell_context: CellTypeContext | None = None
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> InducedPresentation:
-        if self.context_kind == "other" and not self.context_kind_other_label:
-            raise ValueError(
-                "InducedPresentation.context_kind='other' requires context_kind_other_label"
-            )
-        if self.context_kind != "other" and self.context_kind_other_label is not None:
-            raise ValueError(
-                "InducedPresentation.context_kind_other_label must be None when "
-                f"context_kind={self.context_kind!r}"
-            )
-        return self
-
-
-class ExtracellularDomainSummary(BaseModel):
-    """Sketch of the extracellular face — what a binder actually sees."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    size_aa: int | None = None
-    domains: list[str] = Field(default_factory=list)  # e.g. ["Ig-like C2", "Fibronectin III"]
-    accessibility: ECDAccessibility = "unknown"
-    notes: str | None = Field(default=None, max_length=400)
-
-
-class DBComparison(BaseModel):
-    """Compact per-source vote summary embedded in the surface_biology bucket.
-
-    Distinct from ``DBVotePanel`` (which is a tool return with rich per-source
-    evidence payloads). This is the side-by-side bool vote table the record
-    ships, suitable for a blog table or join key.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    surfy: bool | None = None
-    cspa: bool | None = None
-    uniprot_query: bool | None = None
-    go: bool | None = None
-    hpa: bool | None = None
-    deeptmhmm: bool | None = None
-    compartments: bool | None = None
-    patent_handle: bool | None = None
-    n_sources_voting_surface: int
-
-
-# v0.5.0: assay-type-specific sub-records for SurfaceLocalizationAssay.
-# Flow / IF / IHC / antibody-on-live-cells entries carry an
-# :class:`AntibodyReference`; mass-spec entries carry a :class:`MassSpecDetail`.
-# Both fields are optional — historical literature often omits the
-# reagent / method specifics, and forcing them would block evidence
-# from older but still-informative papers.
-MassSpecMethod = Literal[
-    "lc_ms_ms_surface_biotinylation",
-    "lc_ms_ms_click_chemistry",
-    "cell_surface_capture",  # CSC (Wollscheid)
-    "tmt_quantitative",
-    "silac_quantitative",
-    "label_free_quantitative",
-    "data_independent_acquisition",  # DIA
-    "other",
-]
-
-
-class MassSpecDetail(BaseModel):
-    """Method-specific detail for a ``mass_spec_surfaceome`` assay entry.
-
-    Hybrid enum: ``method="other"`` requires a ``method_other_label``.
-    The remaining fields are nullable — peptide counts and enrichment
-    descriptions are often missing from older surfaceome papers.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    method: MassSpecMethod
-    method_other_label: str | None = Field(default=None, max_length=120)
-    enrichment_strategy: str | None = Field(default=None, max_length=200)
-    peptide_count: int | None = None
-    notes: str | None = Field(default=None, max_length=300)
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> MassSpecDetail:
-        if self.method == "other" and not self.method_other_label:
-            raise ValueError("MassSpecDetail.method='other' requires method_other_label")
-        if self.method != "other" and self.method_other_label is not None:
-            raise ValueError(
-                "MassSpecDetail.method_other_label must be None when "
-                f"method={self.method!r}"
-            )
-        return self
-
-
-class AntibodyReference(BaseModel):
-    """Reagent identity for flow / IF / IHC / antibody-on-live-cells assays.
-
-    All fields are optional — older literature routinely omits clone /
-    catalog / RRID; the model captures whatever is reported without
-    forcing the agent to invent reagent identity.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    clone: str | None = Field(default=None, max_length=80)
-    catalog_number: str | None = Field(default=None, max_length=80)
-    vendor: str | None = Field(default=None, max_length=120)
-    rrid: str | None = Field(default=None, max_length=40)  # e.g. "AB_2877654"
-    url: HttpUrl | None = None
-    target_epitope: str | None = Field(default=None, max_length=200)
-    notes: str | None = Field(default=None, max_length=300)
-
-
-# Primary surface-localization assay types. The deep-dive agent uses these
-# to emit ``SurfaceLocalizationAssay`` entries that index into the
-# ``evidence_claims`` array, so the surface call can be scanned at a glance
-# without walking the full evidence list.
-SurfaceAssayType = Literal[
-    "flow_cytometry",
-    "surface_biotinylation",
-    "mass_spec_surfaceome",
-    "immunofluorescence_intact_cells",
-    "immunohistochemistry",
-    "crystal_structure_with_ecd",
-    "antibody_on_live_cells",
-    # WB readout of a fractionation / biotinylation pulldown. Naming
-    # makes the constraint explicit — a naked WB on whole-cell lysate
-    # is not surface evidence and should not use this assay_type.
-    "western_blot_paired",
-    "other",
-]
-AssayDirection = Literal["supports_surface", "refutes_surface", "ambiguous"]
-AssayStrength = Literal["strong", "moderate", "weak"]
-
-
-class SurfaceLocalizationAssay(BaseModel):
-    """One empirical assay observation of surface localization.
-
-    Indexes into ``evidence_claims`` — every entry here MUST cite at
-    least one EvidenceClaim. Not a duplicate of evidence_claims but a
-    typed view: it lets a reader see "this surface call rests on
-    {N} primary assays of these types" without parsing every claim.
-
-    Hybrid enum: ``assay_type="other"`` requires ``assay_type_other_label``.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    assay_type: SurfaceAssayType
-    assay_type_other_label: str | None = Field(default=None, max_length=80)
-    species: Literal[
-        "human", "mouse", "rat", "macaque", "dog", "other", "unspecified"
-    ]
-    cell_type_or_line: str = Field(..., max_length=200)
-    direction: AssayDirection
-    strength: AssayStrength
-    cited_evidence_ids: list[str] = Field(..., min_length=1)
-    # v0.5.0: structured cell-type identity (companion to the free-text
-    # ``cell_type_or_line``). Optional and backward-compatible with v0.4.0.
-    cell_context: CellTypeContext | None = None
-    # v0.5.0: assay-type-specific sub-records.
-    # * ``mass_spec_detail`` valid only for assay_type="mass_spec_surfaceome".
-    # * ``antibody`` valid only for antibody-based readouts (flow / IF /
-    #   IHC / antibody_on_live_cells). The cross-field validator rejects
-    #   misuse so the sub-record stays semantically meaningful.
-    mass_spec_detail: MassSpecDetail | None = None
-    antibody: AntibodyReference | None = None
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> SurfaceLocalizationAssay:
-        if self.assay_type == "other" and not self.assay_type_other_label:
-            raise ValueError(
-                "SurfaceLocalizationAssay.assay_type='other' requires assay_type_other_label"
-            )
-        if self.assay_type != "other" and self.assay_type_other_label is not None:
-            raise ValueError(
-                "SurfaceLocalizationAssay.assay_type_other_label only valid when assay_type='other'"
-            )
-        return self
-
-    @model_validator(mode="after")
-    def _check_assay_subrecord(self) -> SurfaceLocalizationAssay:
-        antibody_assay_types = {
-            "flow_cytometry",
-            "immunofluorescence_intact_cells",
-            "immunohistochemistry",
-            "antibody_on_live_cells",
-        }
-        if self.assay_type == "mass_spec_surfaceome":
-            if self.antibody is not None:
-                raise ValueError(
-                    "SurfaceLocalizationAssay.antibody is not valid for "
-                    "assay_type='mass_spec_surfaceome'"
-                )
-        elif self.assay_type in antibody_assay_types:
-            if self.mass_spec_detail is not None:
-                raise ValueError(
-                    "SurfaceLocalizationAssay.mass_spec_detail is not valid for "
-                    f"assay_type={self.assay_type!r}"
-                )
-        else:
-            # surface_biotinylation, crystal_structure_with_ecd, other:
-            # neither sub-record is conventionally meaningful; reject both
-            # to keep the schema honest.
-            if self.mass_spec_detail is not None:
-                raise ValueError(
-                    "SurfaceLocalizationAssay.mass_spec_detail is not valid for "
-                    f"assay_type={self.assay_type!r}"
-                )
-            if self.antibody is not None:
-                raise ValueError(
-                    "SurfaceLocalizationAssay.antibody is not valid for "
-                    f"assay_type={self.assay_type!r}"
-                )
-        return self
-
-
-# v0.5.0: membrane microdomain / sub-PM compartment assignments.
-# Critical for epithelial-cell binders (a basolateral target isn't
-# reachable from the lumen) and for ADC / radioligand internalization
-# kinetics (clathrin-coated pit vs caveolae vs lipid raft drive
-# different uptake trajectories). Every assignment cites at least one
-# EvidenceClaim — microdomain calls are load-bearing.
-MembraneMicrodomain = Literal[
-    "apical_pm",
-    "basolateral_pm",
-    "tight_junction",
-    "lipid_raft",
-    "caveolae",
-    "clathrin_coated_pit",
-    "tgn_membrane",
-    "endosomal_recycling",
-    "early_endosome",
-    "late_endosome",
-    "lysosomal_membrane",
-    "filopodia",
-    "uropod",
-    "immunological_synapse",
-    "other",
-]
-
-
-class MicrodomainAssignment(BaseModel):
-    """One documented membrane-microdomain assignment for the subject protein.
-
-    Hybrid enum: ``microdomain="other"`` requires a
-    ``microdomain_other_label``. Citation list is required
-    (``min_length=1``) — microdomain calls determine which binders
-    can reach the protein and need primary-evidence backing.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    microdomain: MembraneMicrodomain
-    microdomain_other_label: str | None = Field(default=None, max_length=80)
-    notes: str = Field(default="", max_length=400)
-    cited_evidence_ids: list[str] = Field(..., min_length=1)
-
-    @model_validator(mode="after")
-    def _check_other_label(self) -> MicrodomainAssignment:
-        if self.microdomain == "other" and not self.microdomain_other_label:
-            raise ValueError(
-                "MicrodomainAssignment.microdomain='other' requires microdomain_other_label"
-            )
-        if self.microdomain != "other" and self.microdomain_other_label is not None:
-            raise ValueError(
-                "MicrodomainAssignment.microdomain_other_label must be None when "
-                f"microdomain={self.microdomain!r}"
-            )
-        return self
-
-
-class SurfaceBiology(BaseModel):
-    """The reconciled accessibility call + supporting biology.
-
-    Three orthogonal axes:
-
-    * ``surface_status`` — does the protein reach the outer leaflet at all,
-      and if so under what regime? ``conditional_surface`` is reserved for
-      proteins intracellular at baseline that reach the surface only under
-      defined conditions (see ``induced_presentation``).
-    * ``topology`` — physical localization in/around the bilayer. KRAS is
-      ``topology=inner_leaflet_peripheral`` and ``surface_status=absent``.
-      Conflating these reproduces the SURFY false-positive pattern.
-    * ``exposure_class`` — is there a binder-targetable extracellular
-      protrusion? A 7TM GPCR with tiny ECLs is ``minimal_ectoloops`` even
-      though it's ``surface_status=strong_surface``.
-
-    ``induced_presentation`` carries the context list backing a
-    ``conditional_surface`` call (or capturing tissue-subset / trafficking
-    nuance even when the headline is ``rare_surface`` or stronger).
-
-    ``surface_localization_assays`` is a denormalized view of the primary
-    surface-assay citations that back the call — flow cytometry on intact
-    cells, surface biotinylation, mass-spec surfaceomes, etc. Required
-    (≥1 entry) whenever ``surface_status`` is not ``absent``.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    surface_status: SurfaceStatus
-    topology: Topology
-    anchor_type: AnchorType
-    exposure_class: ExposureClass = "unknown"
-    extracellular_domain: ExtracellularDomainSummary
-    induced_presentation: list[InducedPresentation] = Field(default_factory=list)
-    surface_localization_assays: list[SurfaceLocalizationAssay] = Field(default_factory=list)
-    # ``bool`` is the canonical "yes/no glycosylated" flag, but for densely-
-    # glycosylated targets (HER2's seven N-linked sites, MUC1's tandem-repeat
-    # O-glycans) the agent has informative prose to share — N-site positions,
-    # ECD-vs-cytoplasmic distribution, antibody-accessibility implications.
-    # Accepting ``str`` keeps that signal instead of forcing it into a binary.
-    # Downstream readers should treat any non-null value as "glycosylated";
-    # the prose form just adds detail.
-    glycosylation: bool | str | None = None
-    shedding_documented: bool | None = None  # soluble pool present (relevant to any extracellular-binder modality)
-    # v0.5.0: membrane microdomain / sub-PM compartment assignments.
-    # Empty list when no microdomain-resolved evidence exists.
-    microdomains: list[MicrodomainAssignment] = Field(default_factory=list)
-    db_comparison: DBComparison
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-    @model_validator(mode="after")
-    def _check_surface_evidence(self) -> SurfaceBiology:
-        # Strong evidence requirement (v0.4.0 refocus): every non-absent
-        # surface_status MUST cite at least one EvidenceClaim AND emit
-        # at least one SurfaceLocalizationAssay entry. DB annotations
-        # alone don't qualify; the load-bearing call needs primary-assay
-        # backing.
-        if self.surface_status != "absent":
-            if not self.cited_evidence_ids:
-                raise ValueError(
-                    f"SurfaceBiology.surface_status={self.surface_status!r} requires "
-                    "at least one cited_evidence_ids entry (primary-assay backing)"
-                )
-            if not self.surface_localization_assays:
-                raise ValueError(
-                    f"SurfaceBiology.surface_status={self.surface_status!r} requires "
-                    "at least one surface_localization_assays entry"
-                )
-        return self
-
-
-# ---- bucket: surface engagement validation -------------------------------
-#
-# v0.4.0 refocus: dropped ApprovedDrug, ClinicalTrial, and PatentDisclosure.
-# Modality-aware therapeutic precedent is downstream curator work, not
-# basic-biology classification. What remains is one array of
-# preclinical studies that demonstrate the protein is engaged by an
-# *extracellular* binder on live cells — these are
-# surface-accessibility evidence, not commercial precedent. Patents
-# are also gone (hype-prone, low signal); the agent no longer calls
-# patent_lookup.
-
-
-class PreclinicalEvidence(BaseModel):
-    """One published study demonstrating extracellular engagement.
-
-    Counts as evidence FOR surface accessibility only when the binder
-    is shown to engage the protein on live cells: flow cytometry on
-    intact cells, surface biotinylation, surface-pulldown mass-spec,
-    in-cell-membrane structural studies, antibody-binding-to-live-cells
-    assays. Studies of intracellular pockets, soluble-form binding, or
-    purely structural in vitro work don't qualify here — they live in
-    ``evidence_claims`` instead.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    citation: str  # PMID:..., DOI:..., or PMC:...
-    finding_summary: str = Field(..., max_length=1000)
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-
-class SurfaceEngagementValidation(BaseModel):
-    """Pre-clinical / clinical studies that demonstrate the protein is
-    engaged by an extracellular binder on live cells.
-
-    Reframed from the v0.3.x ``TherapeuticLandscape``: not a
-    therapeutic-precedent catalog, but a surface-accessibility evidence
-    catalog. Sparse for novel candidates; rich for proteins with
-    documented extracellular-binder studies.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    preclinical_evidence: list[PreclinicalEvidence] = Field(default_factory=list)
-
-
-# ---- deep-dive: isoforms, co-receptors, orthology -------------------------
-
-
-OrthologSpecies = Literal["mouse", "rat", "cynomolgus"]
-OrthologyType = Literal[
-    "one_to_one",
-    "one_to_many",
-    "many_to_many",
-    "no_ortholog",
     "unknown",
 ]
-CoreceptorRequirementKind = Literal[
-    "obligate_heterodimer",  # cannot fold/exit ER without partner (TCRα needs CD3 chains)
-    "trafficking_chaperone",  # transient partner required for surface delivery (HLA-I + TAP/tapasin)
-    "stabilizing_partner",  # surface half-life depends on partner co-expression
-    "complex_assembly",  # the protein only exists on the surface as part of a defined complex
-    "other",
+CoreceptorDependency = Literal["required", "modulatory", "none", "unknown"]
+CoreceptorEvidenceBasis = Literal[
+    "co_expression_only",
+    "trafficking",
+    "knockout",
+    "mixed",
 ]
+SecretedFormSource = Literal["alternative_splicing", "proteolytic", "both", "unknown"]
+EpitopeMaskingMechanism = Literal[
+    "glycan",
+    "partner",
+    "conformational",
+    "cleaved",
+    "none",
+]
+EpitopeMaskingSeverity = Literal["high", "moderate", "low", "none"]
 
 
-class IsoformAccessibility(BaseModel):
-    """Per-isoform accessibility call.
+# ---- executive summary ----------------------------------------------------
 
-    Why a list of these alongside the gene-level ``surface_biology``: a single
-    gene can have isoforms with divergent localization (one membrane-bound,
-    one secreted, one cytoplasmic). The gene-level record reports the
-    canonical isoform; this list reports the others when their call differs.
-    Emit a single entry for the canonical isoform when isoforms are not
-    differential.
-    """
+
+class ExecutiveSummary(BaseModel):
+    """LLM-emitted top-line synthesis — the consultant-readable headline."""
 
     model_config = ConfigDict(extra="forbid")
 
-    isoform_id: str  # UniProt isoform ID, e.g. "P04626-1"
-    name: str | None = None
-    is_canonical: bool = False
-    length_aa: int | None = None
-
-    surface_status: SurfaceStatus | None = None
-    exposure_class: ExposureClass = "unknown"
-
-    # UniProt SUBCELLULAR LOCATION comments tagged "[Isoform N]" matching this isoform.
-    # Pulled from UniProtSummary.subcellular_locations where is_isoform_specific=True.
-    uniprot_isoform_specific_locations: list[str] = Field(default_factory=list)
-
-    differential_from_canonical: bool = False
-    rationale: str = Field(default="", max_length=500)
+    one_paragraph: str = Field(..., max_length=600)
+    surface_accessibility: SurfaceAccessibility
+    evidence_grade_summary: EvidenceGrade
+    confidence: Confidence
+    state_dependence: StateDependence
+    subcategory: Subcategory
+    headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-class CoreceptorRequirement(BaseModel):
-    """A partner required for this protein to reach or remain on the cell surface.
+# ---- filters --------------------------------------------------------------
 
-    Use only when the partner is *required* for surface delivery / retention,
-    not for any constitutive interaction. Common patterns: CD3 chains require
-    CD247 (ζ-chain); TCR α/β require the CD3 complex; HLA-I requires TAP +
-    tapasin + β2-microglobulin; some heterodimeric receptors require both
-    chains (IL-2Rα/β/γ). Source: UniProt SUBUNIT comments + literature.
+
+class Filters(BaseModel):
+    """Flat, closed-enum/bool/list rollups of the deep buckets.
+
+    Top-level so every field is a D1-indexed column on ``deep_dive_run``;
+    the catalog page renders one chip per field. Most fields are
+    orchestrator-derived from deeper blocks; three (``expression_level``,
+    ``expression_breadth``, ``surface_specificity``) are LLM-emitted rollups
+    that live ONLY here (no duplication in the deep blocks).
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    partner_symbol: str
-    partner_uniprot_acc: str | None = None
-    requirement_kind: CoreceptorRequirementKind
-    requirement_kind_other_label: str | None = None
-    description: str = Field(..., max_length=500)
+    surface_accessibility: SurfaceAccessibility
+    confidence: Confidence
+    subcategory: Subcategory
+    evidence_grade: EvidenceGrade
+    ecd_accessibility_class: ECDAccessibilityClass
+    evidence_density: EvidenceDensity
+    expression_level: ExpressionLevel
+    expression_breadth: ExpressionBreadth
+    surface_specificity: SurfaceSpecificity
+    has_shed_form: bool
+    has_secreted_form: bool
+    requires_coreceptor_for_expression: bool
+    max_paralog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    has_epitope_masking: bool
+    has_restricted_subdomain: bool
+    mouse_ortholog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    cyno_ortholog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    n_term_extracellular: bool
+    c_term_extracellular: bool
+
+
+# ---- surface evidence (section 1) -----------------------------------------
+
+
+class AntibodyRef(BaseModel):
+    """One antibody reagent used in a :class:`MethodObservation`.
+
+    Antibody specificity is load-bearing for surface evidence — a "positive"
+    flow signal from an antibody that cross-reacts with a paralog is a false
+    positive that's nearly invisible without these fields. ``validation_strategy``
+    is the gold-standard evidence; ``validation_strength`` is the LLM's
+    rolled-up judgment after weighing the strategy + cross-reactivity caveats.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    name: str
+    clone: str | None = None
+    vendor: str | None = None
+    catalog: str | None = None
+    rrid: str | None = None
+    monoclonal_or_polyclonal: AntibodyClonality
+    antibody_epitope_region: AntibodyEpitopeRegion
+    validation_strategy: ValidationStrategy
+    validation_strength: ValidationStrength
+    cross_reactivity_notes: str | None = Field(default=None, max_length=200)
+
+
+class ExpressionObservation(BaseModel):
+    """One expression-level observation anchored to a surface-evidence method."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    context: str
+    sample_type: SampleType
+    level: ExpressionLevel
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class MethodObservation(BaseModel):
+    """One surface-evidence method panel: how the surface claim was measured."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    method_family: MethodFamily
+    method_subclass: MethodSubclass
+    permeabilization: Permeabilization
+    expression_system: ExpressionSystem
+    antibodies: list[AntibodyRef] = Field(default_factory=list)
+    accessibility_relevance: AccessibilityRelevance
+    surface_claim_type: SurfaceClaimType
+    expression_observations: list[ExpressionObservation] = Field(default_factory=list)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class NonSurfaceExpression(BaseModel):
+    """RNA / IHC / bulk-protein levels NOT tied to a surface-evidence panel.
+
+    Held separately so the report can't drift into treating RNA expression as
+    surface accessibility.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    context: str
+    sample_type: SampleType
+    measurement_type: MeasurementType
+    level: ExpressionLevel
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class TherapeuticEngagementContext(BaseModel):
+    """Lightweight signal that a therapeutic has reached this protein at the
+    cell surface — NOT a comprehensive therapeutic-landscape assessment.
+
+    ``surface_form_rationale`` is required and load-bearing for proteins with
+    both surface and secreted forms (GRP78, EGFR, etc.) — it clarifies which
+    form the drug actually engages.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    highest_stage: TherapeuticStage
+    # Prose caps relaxed from the per-element table's 400/200 to give the agent
+    # real room on heavily-studied genes (the 400/200 first-run overran on
+    # EGFR). These are LLM prose, not verbatim quotes — the 200-char cap on
+    # `EvidenceClaim.quote` / `EvidenceSpan.quote` (the substring-anchor
+    # surface) is unchanged.
+    description: str = Field(..., max_length=600)
+    surface_form_rationale: str = Field(..., max_length=400)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class Contradiction(BaseModel):
+    """One piece of contradicting evidence + the LLM's read on whether it
+    matters for surface accessibility."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    claim: str
+    contradiction_type: ContradictionType
+    severity_for_surface_accessibility: ContradictionSeverity
+    likely_explanation: str | None = None
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class SurfaceEvidence(BaseModel):
+    """Section 1 — the surface-accessibility evidence the agent assembled."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_grade: EvidenceGrade
+    # Per-element table said ≤400, macro-rule said ≤800; 400 overran on the
+    # first EGFR pass (922 chars). 800 matches the macro-rule and gives a
+    # heavily-cited gene room to name the directness of evidence without
+    # weakening the verbatim-quote substring discipline elsewhere.
+    grade_rationale: str = Field(..., max_length=800)
+    methods: list[MethodObservation] = Field(default_factory=list)
+    non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
+    therapeutic_engagement: TherapeuticEngagementContext | None = None
+    contradicting_evidence: list[Contradiction] = Field(default_factory=list)
+
+
+# ---- biological context (section 2) ---------------------------------------
+
+
+class TissueContext(BaseModel):
+    """One tissue × disease_context expression row.
+
+    The same tissue can appear twice (normal + tumor rows) with different
+    ``present`` levels. Tissue / cell_type / cell_state names are free text —
+    no ontology IDs for v1.0.0.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    tissue: str
+    present: TissuePresence
+    disease_context: DiseaseContext
+    cell_types: list[str] = Field(default_factory=list)
+    cell_states: list[str] = Field(default_factory=list)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class CellTypeContextV1(BaseModel):
+    """Orthogonal cell-type pivot for biological context (v1.0.0)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type: str
+    ontology_id: str | None = None
+    present_in_tissues: list[str] = Field(default_factory=list)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class StateContext(BaseModel):
+    """Orthogonal cell-state pivot — activated/resting, stressed, EMT, etc."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    state: str
+    descriptor: str
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class DualLocalization(BaseModel):
+    """One non-primary compartment the protein also occupies."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    compartment: str
+    fraction_estimate: float | None = None
+    condition: str | None = None
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class MembraneSubdomain(BaseModel):
+    """One membrane subdomain assignment (lipid raft, tight junction, cilium...)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    subdomain: str
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class SubcellularLocalization(BaseModel):
+    """Where the protein lives, and how its localization is split."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    primary_compartment: PrimaryCompartment
+    dual_localization: list[DualLocalization] = Field(default_factory=list)
+    membrane_subdomains: list[MembraneSubdomain] = Field(default_factory=list)
+
+
+class AnatomicalAccessibilityObservation(BaseModel):
+    """How the protein's anatomical orientation affects whether a systemic
+    binder can physically reach it."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    context: str
+    orientation: Orientation
+    accessibility_implication: AccessibilityImplication
+    rationale: str = Field(..., max_length=300)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class AccessibilityModulationObservation(BaseModel):
+    """How surface presence/exposure shifts with cell state, tissue, or disease.
+
+    The first five ``category`` values are verbatim from ``surface_triage``'s
+    contextual ``reason`` taxonomy. The three optional sub-fields
+    (``cell_state_trigger``, ``restricted_lineage``,
+    ``dual_loc_partner_compartment``) port the rich descriptive substructure
+    from the triage prompt into closed enums for catalog filtering.
+
+    Validators enforce category-conditional pairing.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    category: ModulationCategory
+    category_other_label: str | None = None
+    cell_state_trigger: CellStateTrigger | None = None
+    restricted_lineage: RestrictedLineage | None = None
+    dual_loc_partner_compartment: DualLocPartnerCompartment | None = None
+    baseline_context: str
+    modulating_state: str
+    change: str = Field(..., max_length=300)
+    accessibility_implication: str = Field(..., max_length=300)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
-    def _check_other_label(self) -> CoreceptorRequirement:
-        if self.requirement_kind == "other" and not self.requirement_kind_other_label:
+    def _check_category_conditionals(self) -> AccessibilityModulationObservation:
+        if self.category == "other" and not self.category_other_label:
             raise ValueError(
-                "CoreceptorRequirement.requirement_kind='other' requires requirement_kind_other_label"
+                "AccessibilityModulationObservation.category='other' requires "
+                "category_other_label"
             )
-        if self.requirement_kind != "other" and self.requirement_kind_other_label is not None:
+        if self.category != "other" and self.category_other_label is not None:
             raise ValueError(
-                "CoreceptorRequirement.requirement_kind_other_label must be None when "
-                f"requirement_kind={self.requirement_kind!r}"
+                "AccessibilityModulationObservation.category_other_label must be None "
+                f"when category={self.category!r}"
+            )
+        if self.cell_state_trigger is not None and (
+            self.category not in _STATE_INDUCED_CATEGORIES
+        ):
+            raise ValueError(
+                "AccessibilityModulationObservation.cell_state_trigger may be set only "
+                f"when category is one of {sorted(_STATE_INDUCED_CATEGORIES)}; "
+                f"got category={self.category!r}"
+            )
+        if (
+            self.restricted_lineage is not None
+            and self.category != "tissue_restricted_surface"
+        ):
+            raise ValueError(
+                "AccessibilityModulationObservation.restricted_lineage may be set only "
+                f"when category=='tissue_restricted_surface'; got category={self.category!r}"
+            )
+        if (
+            self.dual_loc_partner_compartment is not None
+            and self.category != "dual_localization"
+        ):
+            raise ValueError(
+                "AccessibilityModulationObservation.dual_loc_partner_compartment may be "
+                f"set only when category=='dual_localization'; got category={self.category!r}"
             )
         return self
 
 
-class OrthologRecord(BaseModel):
-    """Mouse or cynomolgus ortholog identity + surface-concordance call.
-
-    Cross-species concordance is a sanity check on the human surface call
-    and a preclinical-model selector. The precomputed pack supplies
-    Ensembl Compara one-to-one + high-confidence identity (UniProt acc,
-    gene symbol, Ensembl gene id, percent_identity); the agent
-    contributes the surface-status interpretation (when literature
-    supports a call for the ortholog) plus the concordance flag.
-
-    v0.4.0 refocus dropped the precomputed DeepTMHMM topology fields
-    (label / helix count / signal peptide) — they added a third source
-    of topology calls without clarifying the human accessibility call.
-    """
+class BiologicalContext(BaseModel):
+    """Section 2 — where, in what cell types/states, and under what
+    conditions the protein presents at the surface."""
 
     model_config = ConfigDict(extra="forbid")
 
-    species: OrthologSpecies
-    ortholog_uniprot_acc: str | None = None
-    ortholog_gene_symbol: str | None = None
-    ensembl_gene_id: str | None = None
-    orthology_type: OrthologyType = "unknown"
-    percent_identity: float | None = None
-
-    surface_status: SurfaceStatus | None = None
-    # Tri-state: True iff the ortholog's topology + status agrees with the human call,
-    # False iff it diverges, None when either side is unknown.
-    surface_concordant_with_human: bool | None = None
-    notes: str = Field(default="", max_length=500)
-    cited_evidence_ids: list[str] = Field(default_factory=list)
+    tissues: list[TissueContext] = Field(default_factory=list)
+    cell_types: list[CellTypeContextV1] = Field(default_factory=list)
+    cell_states: list[StateContext] = Field(default_factory=list)
+    subcellular_localization: SubcellularLocalization
+    anatomical_accessibility: list[AnatomicalAccessibilityObservation] = Field(
+        default_factory=list
+    )
+    accessibility_modulation: list[AccessibilityModulationObservation] = Field(
+        default_factory=list
+    )
 
 
-# ---- deep-dive: close paralogs -------------------------------------------
-#
-# v0.5.0 addition. Surfaces close paralogs alongside orthology to flag
-# ECD cross-reactivity for binders: an antibody against HSPA1A may also
-# bind HSPA1B / HSPA1L because the ECD-equivalent regions are ~99%
-# identical. ``ecd_percent_identity`` captures the targeting-relevant
-# identity even when overall identity is lower (or vice versa).
+# ---- deterministic features (sections 3, 4, 5, appendix) ------------------
 
 
-ParalogSurfaceStatus = Literal[
-    "surface", "non_surface", "conditional_surface", "unknown"
-]
-CrossReactivityRisk = Literal["high", "moderate", "low", "negligible", "unknown"]
+class IsoformTopology(BaseModel):
+    """DeepTMHMM-derived topology for one isoform. Orchestrator-emitted."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    isoform_id: str
+    uniprot_acc: str
+    tm_helix_count: int
+    n_terminal_orientation: TerminalOrientation
+    c_terminal_orientation: TerminalOrientation
+    signal_peptide_length: int
+    ecd_length_residues: int
+    icd_length_residues: int
+    per_residue_topology: str
+    tool_version: str
+    retrieved_at: datetime
 
 
-class ParalogRecord(BaseModel):
-    """One close paralog and its ECD-binder cross-reactivity profile.
+class OrthologEntry(BaseModel):
+    """One ortholog isoform record — Ensembl Compara + DeepTMHMM. Deterministic."""
 
-    Emit one entry per paralog with >~50% overall identity OR meaningful
-    ECD homology. Don't pad with every distant family member — the goal
-    is the cross-reactivity short-list, not the full phylogeny.
-    """
+    model_config = ConfigDict(extra="forbid")
+
+    is_canonical: bool
+    isoform_id: str
+    ensembl_id: str
+    ortholog_uniprot_acc: str
+    ortholog_symbol: str
+    type: OrthologyType
+    ecd_pct_identity_to_human_canonical: float = Field(..., ge=0.0, le=100.0)
+    ecd_pct_similarity_to_human_canonical: float = Field(..., ge=0.0, le=100.0)
+    ecd_length_residues: int
+    tm_helix_count: int
+    compara_version: str
+    retrieved_at: datetime
+
+
+class Orthologs(BaseModel):
+    """Per-species ortholog isoform lists — canonical first, then alternatives."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mouse: list[OrthologEntry] = Field(default_factory=list)
+    rat: list[OrthologEntry] = Field(default_factory=list)
+    cynomolgus: list[OrthologEntry] = Field(default_factory=list)
+
+
+class ParalogEntry(BaseModel):
+    """One within-species paralog — Ensembl Compara. Deterministic."""
 
     model_config = ConfigDict(extra="forbid")
 
     paralog_symbol: str
-    paralog_uniprot_acc: str | None = None
-    percent_identity: float | None = Field(default=None, ge=0.0, le=100.0)
-    ecd_percent_identity: float | None = Field(default=None, ge=0.0, le=100.0)
-    paralog_surface_status: ParalogSurfaceStatus = "unknown"
-    cross_reactivity_risk: CrossReactivityRisk = "unknown"
-    notes: str = Field(default="", max_length=500)
+    paralog_uniprot_acc: str
+    ecd_pct_identity: float = Field(..., ge=0.0, le=100.0)
+    family_id: str
+    compara_version: str
+
+
+class StructureFeatures(BaseModel):
+    """AlphaFold DB structure-quality metrics for the canonical ECD.
+
+    Both numeric metrics derive from per-residue pLDDT (no SASA/DSSP
+    dependency). Attribution fields flow through to the viewer Structure card
+    and the per-record Data Sources footer.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    afdb_id: str
+    afdb_version: AFDBVersion = "v4"
+    ecd_mean_plddt: float = Field(..., ge=0.0, le=100.0)
+    ecd_disordered_fraction: float = Field(..., ge=0.0, le=1.0)
+    source: str
+    license: str
+    attribution: str
+    citations: list[str] = Field(default_factory=list)
+
+
+class DeterministicFeatures(BaseModel):
+    """Verbatim tool output — populated by the orchestrator, never by the agent.
+
+    A validator on :class:`SurfaceomeRecordDraft` rejects any attempt by the
+    agent to populate this region in its draft.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    canonical_topology: IsoformTopology
+    isoform_topologies: list[IsoformTopology] = Field(default_factory=list)
+    orthologs: Orthologs = Field(default_factory=Orthologs)
+    paralogs: list[ParalogEntry] = Field(default_factory=list)
+    structure: StructureFeatures
+
+
+# ---- accessibility risks (section 6) --------------------------------------
+
+
+class CoReceptorRequirements(BaseModel):
+    """Does a partner have to be present for the target to reach the surface?
+
+    Surface-expression axis ONLY — function-side dependency (does the partner
+    have to be present for signaling?) is out of scope for v1.0.0.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    surface_expression_dependency: CoreceptorDependency
+    partners: list[str] = Field(default_factory=list)
+    evidence_basis: CoreceptorEvidenceBasis
+    rationale: str = Field(..., max_length=400)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-# ---- deep-dive: contradictions -------------------------------------------
-#
-# v0.5.0 addition. The v0.4.0 schema carried a fast-scan
-# ``contradiction_flag: bool`` plus per-claim ``claim_type=contradictory``
-# and ``direction=refutes`` markers, but no adjudication record.
-# ``ContradictionRecord`` pairs the supporting and refuting claim ids with
-# an explicit resolution, so the corpus captures *which* call we landed on
-# and *why*, not just that contradictions exist.
-
-
-ContradictionResolution = Literal[
-    "subject_call_holds",  # keep our surface_status; refuting evidence downweighted
-    "subject_call_revised",  # surface_status changed because of the refuting evidence
-    "unresolved",  # genuine disagreement; flagged for human review
-    "context_dependent",  # both true under different conditions (cell type, isoform, etc.)
-]
-
-
-class ContradictionRecord(BaseModel):
-    """A documented disagreement between cited evidence on a load-bearing call."""
+class ShedForm(BaseModel):
+    """Proteolytically shed soluble form of the protein."""
 
     model_config = ConfigDict(extra="forbid")
 
-    topic: str = Field(..., max_length=200)
-    supporting_claim_ids: list[str] = Field(..., min_length=1)
-    refuting_claim_ids: list[str] = Field(..., min_length=1)
-    resolution: ContradictionResolution
-    resolution_rationale: str = Field(..., max_length=600)
+    present: bool
+    severity: RiskSeverity
+    evidence_strength: EvidenceStrength
+    mechanism: str | None = None
+    sheddase_if_known: str | None = None
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-# ---- protein features (pre-injected static context) -----------------------
-#
-# The orchestrator populates this bucket from the SURFY snapshot
-# (data/processed/surfy/surfy_human_snapshot.tsv) BEFORE the LLM call,
-# so the agent receives basic-biology + engineerability features as
-# static context without spending tool calls on them. The agent quotes
-# from these only when they're load-bearing.
-#
-# Provenance TODO (tracked in docs/decisions/protein-features-provenance.md):
-# some of these fields are SURFY-curated, others are upstream-sourced
-# (UniProt, PDB, CSPA, HPA, HGNC) and just cached by SURFY. Future work
-# should source the upstream-cached fields directly from their primary
-# sources; SURFY's own curated outputs stay as the source for the
-# SURFY-only fields. Until that audit completes, every record stamps
-# ``_provenance`` so we can tell snapshot-fed records apart later.
+class SecretedForm(BaseModel):
+    """Secreted (non-membrane-anchored) form of the protein."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    present: bool
+    severity: RiskSeverity
+    evidence_strength: EvidenceStrength
+    ratio_to_membrane: float | None = None
+    source: SecretedFormSource | None = None
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-class ProteinFeatures(BaseModel):
-    """Static structured biology features pre-injected from the SURFY
-    snapshot + UniProt. Populated by the orchestrator pre-LLM; the
-    agent does not modify these fields, only quotes them when
-    load-bearing.
+class RestrictedSubdomain(BaseModel):
+    """Surface presence restricted to a membrane subdomain (apical, junctional,
+    ciliary, etc.) that a systemic binder may not reach."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    present: bool
+    domain: RestrictedSubdomainName
+    severity: RiskSeverity
+    evidence_strength: EvidenceStrength
+    rationale: str = Field(..., max_length=300)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class ECDSizeAssessment(BaseModel):
+    """How much extracellular surface a binder has to engage.
+
+    Renamed from ``druggability_class``. The viewer reads
+    ``deterministic_features.canonical_topology.ecd_length_residues``
+    directly — no FK needed since that field is a known singleton.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    protein_length_aa: int | None = None
-    tm_domain_count: int | None = None
-    signal_peptide: bool | None = None
-    topology_string: str | None = None  # e.g. "NC:1-145;TM:146-171;CY:172-178"
-    topology_source: Literal[
-        "uniprot", "phobius", "deeptmhmm", "literature", "unknown"
-    ] = "unknown"
-    almen_main_class: str | None = None
-    almen_sub_class: str | None = None
-    cd_designation: str | None = None
-    uniprot_keywords: list[str] = Field(default_factory=list)
-    pdb_ids: list[str] = Field(default_factory=list)
-    cspa_peptide_count: int | None = None
-    hpa_antibody_available: bool | None = None
-    drugbank_ids: list[str] = Field(default_factory=list)
-    surfy_ml_score: float | None = None
-    surfy_label_source: str | None = None
-    # Stamped by the orchestrator so we can identify records built from
-    # snapshot-cached values vs. records built from direct primary
-    # sources after the provenance audit lands.
-    provenance: str | None = Field(default=None, max_length=120)
+    ecd_accessibility_class: ECDAccessibilityClass
+    rationale: str = Field(..., max_length=300)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-# ---- triage signal cross-reference ----------------------------------------
-#
-# A one-field summary that mirrors the surface_triage agent's
-# `signal` field (likely_accessible | possibly_accessible | unlikely |
-# unknown). Provides a cross-validation check between the deep-dive's
-# surface_status and the triage-style signal: if the two disagree, the
-# record is internally inconsistent and the cross-validator rejects it.
+class EpitopeMasking(BaseModel):
+    """Whether the extracellular epitope is masked from binders.
 
-TriageSignal = Literal["likely_accessible", "possibly_accessible", "unlikely", "unknown"]
+    ``mechanism`` is a list so multi-mechanism cases don't collapse to a
+    single value.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    mechanism: list[EpitopeMaskingMechanism] = Field(default_factory=list)
+    severity: EpitopeMaskingSeverity
+    evidence_strength: EvidenceStrength
+    rationale: str = Field(..., max_length=400)
+    cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-# ---- top-level record -----------------------------------------------------
+class AccessibilityRisks(BaseModel):
+    """Section 6 — risks to a binder physically engaging the surface form.
+
+    Every risk carries ``severity`` + ``evidence_strength`` so
+    speculative-but-severe is distinguishable from real-but-mild.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    co_receptor_requirements: CoReceptorRequirements
+    shed_form: ShedForm
+    secreted_form: SecretedForm
+    restricted_subdomain: RestrictedSubdomain
+    ecd_size_assessment: ECDSizeAssessment
+    epitope_masking: EpitopeMasking
+
+
+# ---- triage_signal ↔ surface_accessibility consistency --------------------
+
+# Cross-agent coherence: a triage verdict of ``unlikely`` paired with a
+# deep-dive ``surface_accessibility`` of ``high`` is a disagreement the LLM
+# must justify in ``confidence_reasoning``. We don't hard-reject the
+# disagreement (the deep-dive can legitimately overturn triage) — we require
+# the record to carry an explanation. Only the strongest contradiction
+# (triage=unlikely + accessibility=high) is gated.
+_TRIAGE_HIGH_CONFLICT: dict[str, frozenset[str]] = {
+    "unlikely": frozenset({"high"}),
+}
+
+
+def _validate_triage_signal_consistency(
+    triage_signal: str,
+    surface_accessibility: str,
+    confidence_reasoning: str,
+) -> None:
+    """Flag triage ↔ deep-dive disagreement that lacks a written justification.
+
+    Raises ``ValueError`` when ``triage_signal`` strongly contradicts
+    ``executive_summary.surface_accessibility`` and ``confidence_reasoning``
+    is empty — the LLM must explain the disagreement.
+    """
+
+    conflicting = _TRIAGE_HIGH_CONFLICT.get(triage_signal, frozenset())
+    if surface_accessibility in conflicting and not confidence_reasoning.strip():
+        raise ValueError(
+            f"triage_signal={triage_signal!r} conflicts with "
+            f"surface_accessibility={surface_accessibility!r}; the disagreement must "
+            "be justified in a non-empty confidence_reasoning"
+        )
+
+
+# ---- assembled record + agent draft ---------------------------------------
 
 
 class SurfaceomeRecord(BaseModel):
-    """The reconciled per-protein record persisted to data/annotations/{gene}.json.
+    """The reconciled per-protein surface-accessibility record (v1.0.0).
 
-    Primary purpose: answer "is this protein accessible to extracellular
-    therapeutic targeting, and what would you need to know to evaluate it?"
-    The headline is the surface-biology / accessibility classification (which
-    is the project's core deliverable); therapeutic context fills in the
-    metadata a scientist needs alongside the call. Modality-agnostic — any
-    extracellular-binder modality is in scope.
+    Persisted to ``data/annotations/{gene}.json``. Two structurally separated
+    regions — ``deterministic_features`` (orchestrator-populated tool output)
+    and the LLM-synthesis blocks. Field order mirrors the viewer mockup.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: str = SCHEMA_VERSION
-
-    # Identity
+    schema_version: Literal["1.0.0"] = "1.0.0"
     gene: GeneIdentifier
-    canonical_isoform: str
-    isoform_flattened: bool
 
-    # v0.5.1: was this gene in the canonical M1 candidate_universe at the
-    # time of deep-dive? Tri-state — ``True`` (admitted by ≥1 source
-    # flag), ``False`` (universe-missed; deep-dive was triggered by
-    # triage or manual nomination), ``None`` (unknown / not checked).
-    # ``DBComparison`` reports the deep-dive's own re-vote, which can
-    # disagree with the merged universe (e.g. TGOLN2: 3 sources vote
-    # surface in the deep-dive's DBComparison but the protein is NOT in
-    # candidate_universe because the universe filter requires alignment
-    # with the merge-time canonical rules).
-    in_candidate_universe: bool | None = None
+    # Cross-agent coherence — populated by the orchestrator from the most
+    # recent surface_triage record.
+    triage_signal: TriageSignal = "unknown"
 
-    # Pre-injected protein features (SURFY snapshot + UniProt) — populated
-    # by the orchestrator before the LLM call, not by the agent.
-    protein_features: ProteinFeatures = Field(default_factory=ProteinFeatures)
+    # LLM synthesis
+    executive_summary: ExecutiveSummary
 
-    # Headline + supporting buckets
-    targetability: TargetabilityVerdict
-    surface_biology: SurfaceBiology
-    surface_engagement_validation: SurfaceEngagementValidation = Field(
-        default_factory=SurfaceEngagementValidation
-    )
-    risk_flags: list[RiskFlag] = Field(default_factory=list)
+    # Catalog-facing flat rollups (D1-indexed)
+    filters: Filters
 
-    # Deep-dive: per-isoform accessibility (when isoforms differ),
-    # required surface co-receptors, mouse/cyno ortholog records, and
-    # (v0.5.0) close paralogs flagged for ECD cross-reactivity.
-    isoform_accessibility: list[IsoformAccessibility] = Field(default_factory=list)
-    coreceptor_requirements: list[CoreceptorRequirement] = Field(default_factory=list)
-    orthology: list[OrthologRecord] = Field(default_factory=list)
-    paralogs: list[ParalogRecord] = Field(default_factory=list)
+    # Section 1
+    surface_evidence: SurfaceEvidence
+
+    # Section 2
+    biological_context: BiologicalContext
+
+    # Sections 3, 4, 5, appendix — orchestrator-only
+    deterministic_features: DeterministicFeatures
+
+    # Section 6
+    accessibility_risks: AccessibilityRisks
 
     # Provenance — centralized Evidence array referenced by per-bucket
     # ``cited_evidence_ids``. Built by the orchestrator from agent-emitted
-    # ``EvidenceClaim`` records in :class:`SurfaceomeRecordDraft` after
-    # substring validation against cached source bodies.
+    # ``EvidenceClaim`` records after substring validation.
     evidence: list[Evidence] = Field(default_factory=list)
+    search_log: list[SearchEntry] = Field(default_factory=list)
+    evidence_count: int = 0
     primary_evidence_count: int = 0
     secondary_evidence_count: int = 0
-    evidence_count: int = 0
-
-    # v0.5.0: structured adjudication of disagreements between cited
-    # evidence on a load-bearing call. ``contradiction_flag`` remains a
-    # fast-scan bool; the list carries the supporting / refuting claim
-    # ids plus the resolution. The cross-validator below keeps them
-    # consistent.
-    contradictions: list[ContradictionRecord] = Field(default_factory=list)
-
-    # Search log — orchestrator-built from ``events.jsonl`` post-hoc. Records
-    # every source consultation whether it yielded a citation or not, so we
-    # can audit comprehensiveness ("did we check shedding lit?") and skip
-    # redundant queries on re-annotation.
-    search_log: list[SearchEntry] = Field(default_factory=list)
 
     # Synthesis metadata
-    confidence: SynthesisConfidence
-    confidence_reasoning: str
-    contradiction_flag: bool
-    rationale: str = Field(..., max_length=1800)
-    model_path: ModelPath
-    triage_signal: TriageSignal = "unknown"
+    confidence: Confidence
+    confidence_reasoning: str = Field(..., max_length=600)
+    model_path: str
+    record_generated_at: datetime
 
     @model_validator(mode="after")
-    def _check_triage_signal_consistency(self) -> SurfaceomeRecord:
-        _validate_triage_signal(self.triage_signal, self.surface_biology.surface_status)
-        return self
-
-    @model_validator(mode="after")
-    def _check_wb_pairing(self) -> SurfaceomeRecord:
-        # Mirror of SurfaceomeRecordDraft._check_wb_pairing. After
-        # promotion the source_id lives on Evidence.spans[].source.source_id
-        # rather than on the top-level Evidence, but the pairing logic is
-        # the same: each western_blot surface_expression claim must share
-        # a source_id with at least one surface_biotinylation /
-        # mass_spec_surfaceome claim.
-        paired_types = {"surface_biotinylation", "mass_spec_surfaceome"}
-        sources_with_pair: set[str] = set()
-        wb_surface_claims: list[tuple[str, set[str]]] = []
-        for evi in self.evidence:
-            evi_sources = {span.source.source_id for span in evi.spans}
-            if evi.evidence_type in paired_types:
-                sources_with_pair.update(evi_sources)
-            if evi.evidence_type == "western_blot" and evi.claim_type == "surface_expression":
-                wb_surface_claims.append((evi.evidence_id, evi_sources))
-        unpaired = [
-            evi_id
-            for evi_id, sources in wb_surface_claims
-            if not (sources & sources_with_pair)
-        ]
-        if unpaired:
+    def _check_confidence_reasoning(self) -> SurfaceomeRecord:
+        if self.confidence in ("moderate", "low") and not self.confidence_reasoning.strip():
             raise ValueError(
-                "western_blot evidence for surface_expression requires a paired "
-                "surface_biotinylation or mass_spec_surfaceome Evidence with a "
-                f"shared source_id; unpaired evidence_ids: {unpaired!r}"
+                f"confidence={self.confidence!r} requires a non-empty confidence_reasoning"
             )
         return self
 
     @model_validator(mode="after")
-    def _check_contradiction_consistency(self) -> SurfaceomeRecord:
-        _validate_contradiction_consistency(
-            self.contradiction_flag, self.contradictions
+    def _check_triage_signal_consistency(self) -> SurfaceomeRecord:
+        _validate_triage_signal_consistency(
+            self.triage_signal,
+            self.executive_summary.surface_accessibility,
+            self.confidence_reasoning,
         )
         return self
 
 
 class SurfaceomeRecordDraft(BaseModel):
-    """What the AGENT emits as its final JSON.
+    """What the AGENT emits for a surface-accessibility deep-dive.
 
-    Mirrors :class:`SurfaceomeRecord` exactly except it carries
-    ``evidence_claims: list[EvidenceClaim]`` (small, agent-shaped) instead of
-    ``evidence: list[Evidence]`` (full provenance chain), and omits
-    ``search_log`` (orchestrator-built from ``events.jsonl``).
+    Same LLM-synthesis blocks as :class:`SurfaceomeRecord`, but:
 
-    The orchestrator parses the agent's JSON as ``SurfaceomeRecordDraft``,
-    promotes each ``EvidenceClaim`` to ``Evidence`` via the substring +
-    normalization pipeline, attaches the ``search_log``, and emits a
-    canonical ``SurfaceomeRecord`` for persistence.
-
-    Per-bucket ``cited_evidence_ids`` use the agent-assigned
-    ``EvidenceClaim.evidence_id`` strings; those handles carry over to
-    the persisted ``Evidence`` records so cross-references remain stable.
+    * ``deterministic_features`` is absent — the orchestrator populates that
+      region after the agent emits. A validator rejects any attempt by the
+      agent to smuggle a deterministic block into the draft.
+    * Evidence is the small, human-shaped ``evidence_claims: list[EvidenceClaim]``
+      rather than the promoted ``evidence: list[Evidence]`` chain. The
+      orchestrator promotes ``EvidenceClaim`` → ``Evidence`` by normalizing
+      the source + quote, running a substring check, and filling in hashes /
+      char offsets / ``SourceRef`` metadata.
+    * ``search_log`` and the derived evidence counts are orchestrator-built and
+      not part of the draft.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: str = SCHEMA_VERSION
-
-    # Identity
+    schema_version: Literal["1.0.0"] = "1.0.0"
     gene: GeneIdentifier
-    canonical_isoform: str
-    isoform_flattened: bool
 
-    # v0.5.1: was this gene in the canonical M1 candidate_universe at the
-    # time of deep-dive? Tri-state — ``True`` (admitted by ≥1 source
-    # flag), ``False`` (universe-missed; deep-dive was triggered by
-    # triage or manual nomination), ``None`` (unknown / not checked).
-    # ``DBComparison`` reports the deep-dive's own re-vote, which can
-    # disagree with the merged universe (e.g. TGOLN2: 3 sources vote
-    # surface in the deep-dive's DBComparison but the protein is NOT in
-    # candidate_universe because the universe filter requires alignment
-    # with the merge-time canonical rules).
-    in_candidate_universe: bool | None = None
+    # Orchestrator-injected before the agent call; the agent reads it but does
+    # not change it.
+    triage_signal: TriageSignal = "unknown"
 
-    # Pre-injected protein features (SURFY snapshot + UniProt) — populated
-    # by the orchestrator before the LLM call, not by the agent.
-    protein_features: ProteinFeatures = Field(default_factory=ProteinFeatures)
+    # LLM synthesis
+    executive_summary: ExecutiveSummary
+    filters: Filters
+    surface_evidence: SurfaceEvidence
+    biological_context: BiologicalContext
+    accessibility_risks: AccessibilityRisks
 
-    # Headline + supporting buckets — same shapes as SurfaceomeRecord
-    targetability: TargetabilityVerdict
-    surface_biology: SurfaceBiology
-    surface_engagement_validation: SurfaceEngagementValidation = Field(
-        default_factory=SurfaceEngagementValidation
-    )
-    risk_flags: list[RiskFlag] = Field(default_factory=list)
-
-    # Deep-dive: per-isoform accessibility (when isoforms differ),
-    # required surface co-receptors, mouse/cyno ortholog records, and
-    # (v0.5.0) close paralogs flagged for ECD cross-reactivity.
-    isoform_accessibility: list[IsoformAccessibility] = Field(default_factory=list)
-    coreceptor_requirements: list[CoreceptorRequirement] = Field(default_factory=list)
-    orthology: list[OrthologRecord] = Field(default_factory=list)
-    paralogs: list[ParalogRecord] = Field(default_factory=list)
-
-    # Agent-emitted EvidenceClaim records — orchestrator promotes to Evidence
+    # Agent-emitted evidence — promoted to ``Evidence`` by the orchestrator.
     evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
-    primary_evidence_count: int = 0
-    secondary_evidence_count: int = 0
-    evidence_count: int = 0
-
-    # v0.5.0: structured adjudication of disagreements between cited
-    # evidence on a load-bearing call. Mirrored from SurfaceomeRecord.
-    contradictions: list[ContradictionRecord] = Field(default_factory=list)
 
     # Synthesis metadata
-    confidence: SynthesisConfidence
-    confidence_reasoning: str
-    contradiction_flag: bool
-    rationale: str = Field(..., max_length=1800)
-    model_path: ModelPath
-    triage_signal: TriageSignal = "unknown"
+    confidence: Confidence
+    confidence_reasoning: str = Field(..., max_length=600)
+    model_path: str
+
+    @model_validator(mode="after")
+    def _check_confidence_reasoning(self) -> SurfaceomeRecordDraft:
+        if self.confidence in ("moderate", "low") and not self.confidence_reasoning.strip():
+            raise ValueError(
+                f"confidence={self.confidence!r} requires a non-empty confidence_reasoning"
+            )
+        return self
 
     @model_validator(mode="after")
     def _check_triage_signal_consistency(self) -> SurfaceomeRecordDraft:
-        _validate_triage_signal(self.triage_signal, self.surface_biology.surface_status)
+        _validate_triage_signal_consistency(
+            self.triage_signal,
+            self.executive_summary.surface_accessibility,
+            self.confidence_reasoning,
+        )
         return self
+
+    @model_validator(mode="before")
+    @classmethod
+    def _reject_deterministic_features(cls, data: Any) -> Any:
+        # ``deterministic_features`` is orchestrator-only — the agent reads it
+        # in its task prompt but must never emit it. ``extra="forbid"`` would
+        # already reject the key with a generic error; this before-validator
+        # raises a precise, self-documenting message so a stale-prompt run is
+        # diagnosed immediately rather than as an opaque extra-field error.
+        if isinstance(data, dict) and "deterministic_features" in data:
+            raise ValueError(
+                "SurfaceomeRecordDraft must not carry deterministic_features — "
+                "that region is orchestrator-only and is populated after the agent emits"
+            )
+        return data
+
+
+# ---- per-agent partial drafts (multi-agent topology) ----------------------
+
+
+class SurfaceEvidenceDraft(BaseModel):
+    """What agent A1 (Surface Evidence Compiler) emits.
+
+    The ``surface_evidence`` block plus the evidence-ledger slice backing it.
+    Claim ids are prefixed ``a1_evi_`` so the orchestrator can merge A1's and
+    A2's ledgers without collision. Every ``cited_evidence_ids`` entry inside
+    ``surface_evidence`` must resolve to an ``evidence_claims`` entry — A1
+    cannot cite a claim it didn't emit.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    surface_evidence: SurfaceEvidence
+    evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
+
+    @field_validator("evidence_claims")
+    @classmethod
+    def _check_claim_id_prefix(cls, claims: list[EvidenceClaim]) -> list[EvidenceClaim]:
+        bad = [c.evidence_id for c in claims if not c.evidence_id.startswith("a1_evi_")]
+        if bad:
+            raise ValueError(
+                f"A1 evidence_claims must use the 'a1_evi_' id prefix; got: {bad}"
+            )
+        return claims
 
     @model_validator(mode="after")
-    def _check_contradiction_consistency(self) -> SurfaceomeRecordDraft:
-        _validate_contradiction_consistency(
-            self.contradiction_flag, self.contradictions
-        )
+    def _check_citations_resolve(self) -> SurfaceEvidenceDraft:
+        known = {c.evidence_id for c in self.evidence_claims}
+        cited: set[str] = set()
+        se = self.surface_evidence
+        for method in se.methods:
+            cited.update(method.cited_evidence_ids)
+            for obs in method.expression_observations:
+                cited.update(obs.cited_evidence_ids)
+        for nse in se.non_surface_expression:
+            cited.update(nse.cited_evidence_ids)
+        if se.therapeutic_engagement is not None:
+            cited.update(se.therapeutic_engagement.cited_evidence_ids)
+        for contradiction in se.contradicting_evidence:
+            cited.update(contradiction.cited_evidence_ids)
+        unresolved = sorted(cited - known)
+        if unresolved:
+            raise ValueError(
+                "surface_evidence cites evidence_ids absent from evidence_claims: "
+                f"{unresolved}"
+            )
         return self
+
+
+class BiologicalContextDraft(BaseModel):
+    """What agent A2 (Biology Compiler) emits.
+
+    The ``biological_context`` block plus the evidence-ledger slice backing
+    it. Claim ids are prefixed ``a2_evi_`` so the orchestrator can merge A2's
+    ledger with A1's (``a1_evi_``) without collision. Every
+    ``cited_evidence_ids`` value referenced anywhere inside
+    ``biological_context`` must resolve to a claim A2 emits.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    biological_context: BiologicalContext
+    evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
+
+    @field_validator("evidence_claims")
+    @classmethod
+    def _check_claim_id_prefix(cls, claims: list[EvidenceClaim]) -> list[EvidenceClaim]:
+        bad = [c.evidence_id for c in claims if not c.evidence_id.startswith("a2_evi_")]
+        if bad:
+            raise ValueError(
+                f"A2 evidence_claims must use the 'a2_evi_' id prefix; got: {bad}"
+            )
+        return claims
 
     @model_validator(mode="after")
-    def _check_wb_pairing(self) -> SurfaceomeRecordDraft:
-        _validate_wb_pairing(self.evidence_claims)
+    def _check_citations_resolve(self) -> BiologicalContextDraft:
+        known = {c.evidence_id for c in self.evidence_claims}
+        cited: set[str] = set()
+        bc = self.biological_context
+        for tissue in bc.tissues:
+            cited.update(tissue.cited_evidence_ids)
+        for cell_type in bc.cell_types:
+            cited.update(cell_type.cited_evidence_ids)
+        for state in bc.cell_states:
+            cited.update(state.cited_evidence_ids)
+        for dual in bc.subcellular_localization.dual_localization:
+            cited.update(dual.cited_evidence_ids)
+        for sub in bc.subcellular_localization.membrane_subdomains:
+            cited.update(sub.cited_evidence_ids)
+        for anat in bc.anatomical_accessibility:
+            cited.update(anat.cited_evidence_ids)
+        for mod in bc.accessibility_modulation:
+            cited.update(mod.cited_evidence_ids)
+        unresolved = sorted(cited - known)
+        if unresolved:
+            raise ValueError(
+                "biological_context cites evidence_ids absent from evidence_claims: "
+                f"{unresolved}"
+            )
         return self
 
 
-def _validate_wb_pairing(claims: list[EvidenceClaim]) -> None:
-    """A western_blot claim about surface_expression is only valid surface
-    evidence when paired with a fractionation/biotinylation step from the
-    same source (streptavidin pulldown → WB, plasma-membrane fraction →
-    WB, etc.). Whole-cell-lysate WB doesn't distinguish surface from
-    intracellular pool and must not stand alone for a surface call.
+class SynthesizerLLMFilters(BaseModel):
+    """The three ``filters`` rollups B is responsible for.
 
-    Rule: every EvidenceClaim with ``evidence_type="western_blot"`` and
-    ``claim_type="surface_expression"`` must be paired with at least one
-    other EvidenceClaim of evidence_type ∈ {surface_biotinylation,
-    mass_spec_surfaceome} sharing the same ``source_id``. Pairing within
-    a single paper is the load-bearing pattern (Methods describes the
-    fractionation, Results / Fig X shows the WB).
+    The full :class:`Filters` block has 17 fields; 14 of those are
+    orchestrator-derived from A1/A2 deep blocks and ``deterministic_features``.
+    B emits only the three rollups that don't have a deterministic source —
+    surface vs. intracellular split, expression breadth across tissues, and
+    expression level for the protein's primary contexts. The orchestrator
+    composes the full :class:`Filters` after the fact.
     """
-    paired_types = {"surface_biotinylation", "mass_spec_surfaceome"}
-    sources_with_pair = {
-        c.source_id
-        for c in claims
-        if c.evidence_type in paired_types
-    }
-    unpaired: list[str] = []
-    for c in claims:
-        if c.evidence_type != "western_blot":
-            continue
-        if c.claim_type != "surface_expression":
-            continue
-        if c.source_id not in sources_with_pair:
-            unpaired.append(c.evidence_id)
-    if unpaired:
-        raise ValueError(
-            "western_blot evidence for surface_expression requires a paired "
-            "surface_biotinylation or mass_spec_surfaceome EvidenceClaim "
-            f"with the same source_id; unpaired evidence_ids: {unpaired!r}"
-        )
+
+    model_config = ConfigDict(extra="forbid")
+
+    expression_level: ExpressionLevel
+    expression_breadth: ExpressionBreadth
+    surface_specificity: SurfaceSpecificity
 
 
-def _validate_contradiction_consistency(
-    flag: bool, contradictions: list[ContradictionRecord]
-) -> None:
-    """Shared cross-validator: top-level ``contradiction_flag`` must mirror
-    ``bool(contradictions)``. v0.5.0 records emit both; legacy v0.4.0
-    records (which never carried contradictions) pass trivially because
-    ``flag == False`` and the list defaults to empty.
+class SynthesizerDraft(BaseModel):
+    """What agent B (Surfaceome Synthesizer) emits.
+
+    Cite-only integration over the merged A1 + A2 evidence ledger. B has no
+    tools — the orchestrator validates ``cited_evidence_ids`` against the
+    merged ledger after the fact, so this draft does NOT carry an
+    ``evidence_claims`` slice.
+
+    The ``confidence_reasoning`` non-empty-on-non-high rule mirrors the rule
+    on the assembled :class:`SurfaceomeRecord` — surfacing the constraint at
+    parse time keeps B honest before the orchestrator stitches the record.
     """
-    if flag != bool(contradictions):
-        raise ValueError(
-            "contradiction_flag must equal bool(contradictions); "
-            f"got contradiction_flag={flag!r} with {len(contradictions)} "
-            "contradiction record(s)"
-        )
 
+    model_config = ConfigDict(extra="forbid")
 
-def _validate_triage_signal(
-    signal: TriageSignal, status: SurfaceStatus | None
-) -> None:
-    """Shared cross-validator: ``triage_signal`` must be consistent with
-    ``surface_status``. Used by both SurfaceomeRecord and
-    SurfaceomeRecordDraft.
+    executive_summary: ExecutiveSummary
+    accessibility_risks: AccessibilityRisks
+    filters_llm: SynthesizerLLMFilters
+    confidence: Confidence
+    confidence_reasoning: str = Field(..., max_length=600)
 
-    Rules:
-      * ``likely_accessible`` → ``strong_surface`` | ``moderate_surface``
-      * ``possibly_accessible`` → ``weak_surface`` | ``rare_surface`` |
-        ``conditional_surface``
-      * ``unlikely`` → ``absent``
-      * ``unknown`` → any (no constraint)
-    """
-    if signal == "unknown":
-        return
-    expected: dict[str, set[str]] = {
-        "likely_accessible": {"strong_surface", "moderate_surface"},
-        "possibly_accessible": {
-            "weak_surface", "rare_surface", "conditional_surface"
-        },
-        "unlikely": {"absent"},
-    }
-    allowed = expected.get(signal, set())
-    if allowed and status not in allowed:
-        raise ValueError(
-            f"triage_signal={signal!r} requires surface_status in {sorted(allowed)!r}; "
-            f"got surface_status={status!r}"
-        )
+    @model_validator(mode="after")
+    def _check_confidence_reasoning(self) -> SynthesizerDraft:
+        if self.confidence in ("moderate", "low") and not self.confidence_reasoning.strip():
+            raise ValueError(
+                f"confidence={self.confidence!r} requires a non-empty confidence_reasoning"
+            )
+        return self
 
 
 # ---------------------------------------------------------------------------
@@ -2304,57 +2346,98 @@ __all__ = [
     "EvidenceConfidence",
     "SearchEntry",
     "EvidenceClaim",
-    # SurfaceomeRecord + buckets
+    # SurfaceomeRecord v1.0.0 — assembled record + agent draft
     "SCHEMA_VERSION",
     "SurfaceomeRecord",
     "SurfaceomeRecordDraft",
-    "TargetabilityVerdict",
-    "TargetabilityTier",
-    "SurfaceBiology",
-    "AnchorType",
-    "ExposureClass",
-    "InducedContextKind",
-    "InducedPresentation",
-    "ExtracellularDomainSummary",
-    "ECDAccessibility",
-    "DBComparison",
-    "SurfaceLocalizationAssay",
-    "SurfaceAssayType",
-    "AssayDirection",
-    "AssayStrength",
-    "MassSpecDetail",
-    "MassSpecMethod",
-    "AntibodyReference",
-    "CellTypeContext",
-    "CellMaterialKind",
-    "MicrodomainAssignment",
-    "MembraneMicrodomain",
-    "ProteinFeatures",
+    "SurfaceEvidenceDraft",
+    "BiologicalContextDraft",
+    "SynthesizerLLMFilters",
+    "SynthesizerDraft",
+    # v1.0.0 — closed enums
     "TriageSignal",
-    "SurfaceEngagementValidation",
-    "PreclinicalEvidence",
-    "RiskFlag",
-    "RiskFlagKind",
-    "RiskSeverity",
-    "SheddingContext",
-    "ProteaseFamily",
-    "SheddingRegulation",
-    "SurfaceStatus",
-    "Topology",
-    "SynthesisConfidence",
-    "ModelPath",
-    # Deep-dive
-    "IsoformAccessibility",
-    "CoreceptorRequirement",
-    "CoreceptorRequirementKind",
-    "OrthologRecord",
-    "OrthologSpecies",
+    "SurfaceAccessibility",
+    "EvidenceGrade",
+    "Confidence",
+    "StateDependence",
+    "Subcategory",
+    "HeadlineRisk",
+    "ExpressionLevel",
+    "ExpressionBreadth",
+    "SurfaceSpecificity",
+    "EvidenceDensity",
+    "ECDAccessibilityClass",
+    "MethodFamily",
+    "MethodSubclass",
+    "Permeabilization",
+    "ExpressionSystem",
+    "AccessibilityRelevance",
+    "SurfaceClaimType",
+    "AntibodyClonality",
+    "AntibodyEpitopeRegion",
+    "ValidationStrategy",
+    "ValidationStrength",
+    "SampleType",
+    "MeasurementType",
+    "TherapeuticStage",
+    "ContradictionType",
+    "ContradictionSeverity",
+    "TissuePresence",
+    "DiseaseContext",
+    "PrimaryCompartment",
+    "Orientation",
+    "AccessibilityImplication",
+    "ModulationCategory",
+    "CellStateTrigger",
+    "RestrictedLineage",
+    "DualLocPartnerCompartment",
+    "TerminalOrientation",
     "OrthologyType",
-    "ParalogRecord",
-    "ParalogSurfaceStatus",
-    "CrossReactivityRisk",
-    "ContradictionRecord",
-    "ContradictionResolution",
+    "AFDBVersion",
+    "RiskSeverity",
+    "EvidenceStrength",
+    "RestrictedSubdomainName",
+    "CoreceptorDependency",
+    "CoreceptorEvidenceBasis",
+    "SecretedFormSource",
+    "EpitopeMaskingMechanism",
+    "EpitopeMaskingSeverity",
+    # v1.0.0 — executive summary + filters
+    "ExecutiveSummary",
+    "Filters",
+    # v1.0.0 — surface evidence (section 1)
+    "AntibodyRef",
+    "ExpressionObservation",
+    "MethodObservation",
+    "NonSurfaceExpression",
+    "TherapeuticEngagementContext",
+    "Contradiction",
+    "SurfaceEvidence",
+    # v1.0.0 — biological context (section 2)
+    "TissueContext",
+    "CellTypeContextV1",
+    "StateContext",
+    "DualLocalization",
+    "MembraneSubdomain",
+    "SubcellularLocalization",
+    "AnatomicalAccessibilityObservation",
+    "AccessibilityModulationObservation",
+    "BiologicalContext",
+    # v1.0.0 — deterministic features (sections 3, 4, 5, appendix)
+    "IsoformTopology",
+    "OrthologEntry",
+    "Orthologs",
+    "ParalogEntry",
+    "StructureFeatures",
+    "DeterministicFeatures",
+    # v1.0.0 — accessibility risks (section 6)
+    "CoReceptorRequirements",
+    "ShedForm",
+    "SecretedForm",
+    "RestrictedSubdomain",
+    "ECDSizeAssessment",
+    "EpitopeMasking",
+    "AccessibilityRisks",
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",
     "TriageRecord",

@@ -1,11 +1,7 @@
-"""Tests for the ``evidence_retrieval`` tool + WB pairing validator.
+"""Tests for the ``evidence_retrieval`` tool.
 
 Three groups of cases:
 
-* **WB pairing validator** on :class:`SurfaceomeRecordDraft`: a record
-  emitting a `western_blot` + `surface_expression` EvidenceClaim must
-  co-cite a `surface_biotinylation` or `mass_spec_surfaceome` claim
-  sharing the same `source_id` — otherwise Pydantic rejects.
 * **Snippet extractor**: per-category hallmark regex + section weighting
   on a fixture Paper with controlled section text.
 * **HPA short-circuit**: no HTTP, reads from a fixture TSV; output
@@ -14,6 +10,12 @@ Three groups of cases:
 * **Backfill-deeper**: when the gene-proximity filter empties the
   top-ranked papers, ``_pmc_retrieval`` keeps fetching deeper into the
   candidate pool — bounded by a fetch cap.
+
+(The v0.5.1 ``SurfaceomeRecordDraft._check_wb_pairing`` validator was
+retired in the v1.0.0 schema rewrite — the surface-evidence block now
+models WB on whole-cell lysate via ``method_subclass=whole_cell_proteomics``
++ ``accessibility_relevance=expression_only`` rather than via a
+draft-level cross-reference rule.)
 """
 
 from __future__ import annotations
@@ -23,7 +25,6 @@ from pathlib import Path
 from typing import Any, cast
 
 import pytest
-from pydantic import ValidationError
 
 from accessible_surfaceome.tools._shared import retraction_watch as rw
 from accessible_surfaceome.tools._shared.http import CachedHTTP
@@ -33,220 +34,8 @@ from accessible_surfaceome.tools._shared.models import (
     IdentifierBundle,
     Paper,
     PaperSection,
-    SurfaceomeRecordDraft,
 )
 
-
-# ---------------------------------------------------------------------------
-# Helpers — minimal valid SurfaceomeRecordDraft scaffolding
-# ---------------------------------------------------------------------------
-
-
-def _draft_payload(evidence_claims: list[dict[str, Any]]) -> dict[str, Any]:
-    """Minimal payload that satisfies SurfaceomeRecordDraft + buckets."""
-    return {
-        "schema_version": "v0.5.1",
-        "gene": {
-            "hgnc_symbol": "TEST1",
-            "hgnc_id": "HGNC:1",
-            "uniprot_acc": "P00001",
-        },
-        "canonical_isoform": "P00001-1",
-        "isoform_flattened": False,
-        "in_candidate_universe": True,
-        "targetability": {
-            "tier": "novel_candidate",
-            "tldr": "test",
-            "cited_evidence_ids": [],
-        },
-        "surface_biology": {
-            "surface_status": "moderate_surface",
-            "topology": "transmembrane_single_pass",
-            "anchor_type": "transmembrane_single",
-            "exposure_class": "exposed_ecd",
-            "extracellular_domain": {
-                "accessibility": "unknown",
-            },
-            "surface_localization_assays": [
-                {
-                    "assay_type": "flow_cytometry",
-                    "species": "human",
-                    "cell_type_or_line": "test cell",
-                    "direction": "supports_surface",
-                    "strength": "moderate",
-                    "cited_evidence_ids": ["evi_dummy"],
-                    "antibody": {},
-                }
-            ],
-            "db_comparison": {"n_sources_voting_surface": 0},
-            "cited_evidence_ids": ["evi_dummy"],
-        },
-        "isoform_accessibility": [],
-        "coreceptor_requirements": [],
-        "orthology": [],
-        "paralogs": [],
-        "evidence_claims": evidence_claims,
-        "contradictions": [],
-        "confidence": "medium",
-        "confidence_reasoning": "test",
-        "contradiction_flag": False,
-        "rationale": "test",
-        "model_path": "sonnet_only",
-        "triage_signal": "likely_accessible",
-    }
-
-
-def _claim(
-    *,
-    evidence_id: str,
-    evidence_type: str,
-    claim_type: str = "surface_expression",
-    source_id: str = "PMID:1",
-    quote: str = "the protein localizes to the plasma membrane",
-) -> dict[str, Any]:
-    return {
-        "evidence_id": evidence_id,
-        "claim": "test claim",
-        "claim_type": claim_type,
-        "direction": "supports",
-        "evidence_type": evidence_type,
-        "evidence_tier": "primary",
-        "confidence": "moderate",
-        "assay_context": {
-            "species": "human",
-            "cell_type_or_line": "HEK293",
-            "fixation": "live",
-        },
-        "source_id": source_id,
-        "quote": quote,
-        "section": "results",
-    }
-
-
-# ---------------------------------------------------------------------------
-# WB pairing validator
-# ---------------------------------------------------------------------------
-
-
-def test_wb_surface_claim_without_pair_rejects() -> None:
-    """A western_blot + surface_expression claim alone fails validation."""
-    payload = _draft_payload(
-        evidence_claims=[
-            _claim(
-                evidence_id="evi_dummy",
-                evidence_type="flow_cytometry",
-                source_id="PMID:1",
-            ),
-            _claim(
-                evidence_id="evi_wb",
-                evidence_type="western_blot",
-                source_id="PMID:2",
-            ),
-        ]
-    )
-    with pytest.raises(ValidationError) as exc_info:
-        SurfaceomeRecordDraft.model_validate(payload)
-    errors = exc_info.value.errors()
-    assert any(
-        "western_blot evidence for surface_expression requires a paired" in str(e["msg"])
-        for e in errors
-    )
-
-
-def test_wb_paired_with_biotinylation_same_source_validates() -> None:
-    """WB + biotinylation on the same source_id — pairing satisfied."""
-    payload = _draft_payload(
-        evidence_claims=[
-            _claim(
-                evidence_id="evi_dummy",
-                evidence_type="flow_cytometry",
-                source_id="PMID:1",
-            ),
-            _claim(
-                evidence_id="evi_biot",
-                evidence_type="surface_biotinylation",
-                source_id="PMID:42",
-            ),
-            _claim(
-                evidence_id="evi_wb",
-                evidence_type="western_blot",
-                source_id="PMID:42",
-            ),
-        ]
-    )
-    draft = SurfaceomeRecordDraft.model_validate(payload)
-    assert any(c.evidence_type == "western_blot" for c in draft.evidence_claims)
-
-
-def test_wb_paired_with_ms_same_source_validates() -> None:
-    """WB + MS on the same source_id — pairing satisfied via the MS route."""
-    payload = _draft_payload(
-        evidence_claims=[
-            _claim(
-                evidence_id="evi_dummy",
-                evidence_type="flow_cytometry",
-                source_id="PMID:1",
-            ),
-            _claim(
-                evidence_id="evi_ms",
-                evidence_type="mass_spec_surfaceome",
-                source_id="PMC:PMC42",
-            ),
-            _claim(
-                evidence_id="evi_wb",
-                evidence_type="western_blot",
-                source_id="PMC:PMC42",
-            ),
-        ]
-    )
-    draft = SurfaceomeRecordDraft.model_validate(payload)
-    assert sum(c.evidence_type == "western_blot" for c in draft.evidence_claims) == 1
-
-
-def test_wb_pair_must_share_source_id() -> None:
-    """A biotinylation claim on a *different* source doesn't pair."""
-    payload = _draft_payload(
-        evidence_claims=[
-            _claim(
-                evidence_id="evi_dummy",
-                evidence_type="flow_cytometry",
-                source_id="PMID:1",
-            ),
-            _claim(
-                evidence_id="evi_biot",
-                evidence_type="surface_biotinylation",
-                source_id="PMID:42",
-            ),
-            _claim(
-                evidence_id="evi_wb",
-                evidence_type="western_blot",
-                source_id="PMID:99",  # different paper
-            ),
-        ]
-    )
-    with pytest.raises(ValidationError):
-        SurfaceomeRecordDraft.model_validate(payload)
-
-
-def test_wb_topology_claim_does_not_require_pair() -> None:
-    """The pairing rule fires only for claim_type=surface_expression. A
-    WB claim about something else (e.g. topology) doesn't need a pair."""
-    payload = _draft_payload(
-        evidence_claims=[
-            _claim(
-                evidence_id="evi_dummy",
-                evidence_type="flow_cytometry",
-                source_id="PMID:1",
-            ),
-            _claim(
-                evidence_id="evi_wb_topo",
-                evidence_type="western_blot",
-                claim_type="topology",
-                source_id="PMID:99",
-            ),
-        ]
-    )
-    SurfaceomeRecordDraft.model_validate(payload)  # no raise
 
 
 # ---------------------------------------------------------------------------
