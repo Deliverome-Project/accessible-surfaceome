@@ -1,8 +1,0 @@
-{
-  "generated_from": "data/external/deeptmhmm_surfaceome_predictions/human_canonical_non_hla/predicted_topologies.3line",
-  "output_dir": "viewer/public/structure-viewer",
-  "records_written": 2351,
-  "skipped_globular": 8,
-  "source_cohort": "human_canonical_non_hla",
-  "source_tool": "deeptmhmm-1.0.24"
-}
