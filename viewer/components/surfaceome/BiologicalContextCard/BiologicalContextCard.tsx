@@ -1,0 +1,218 @@
+import type {
+  AccessibilityImplication,
+  SurfaceomeRecord,
+  TissueLevel,
+} from "../../../lib/surfaceome-types";
+import { prettyEnum } from "../../../lib/surfaceome";
+import { CiteCount } from "../CiteCount/CiteCount";
+import { SectionCard } from "../SectionCard/SectionCard";
+import { StatusPill } from "../StatusPill/StatusPill";
+import styles from "./BiologicalContextCard.module.css";
+
+interface Props {
+  rec: SurfaceomeRecord;
+  n: number;
+}
+
+function implicationTone(v: AccessibilityImplication) {
+  if (v === "favorable") return "success" as const;
+  if (v === "restricted") return "danger" as const;
+  if (v === "context_dependent") return "amber" as const;
+  return "neutral" as const;
+}
+
+function tissueLevelTone(v: TissueLevel) {
+  if (v === "high") return "success" as const;
+  if (v === "moderate") return "teal" as const;
+  if (v === "low") return "amber" as const;
+  if (v === "absent") return "neutral" as const;
+  if (v === "mixed") return "lavender" as const;
+  return "neutral" as const;
+}
+
+export function BiologicalContextCard({ rec, n }: Props) {
+  const bc = rec.biological_context;
+  const loc = bc.subcellular_localization;
+
+  return (
+    <SectionCard
+      n={n}
+      eyebrow="Biological context"
+      title={
+        <>
+          Where it <em>shows up</em>
+        </>
+      }
+      meta="Tissues · cell types · localization · anatomical accessibility · accessibility modulation"
+    >
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Tissues × disease context</p>
+        {bc.tissues.length === 0 ? (
+          <p className={styles.empty}>No tissue rows recorded.</p>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">Tissue</th>
+                <th scope="col">Disease context</th>
+                <th scope="col">Level (protein)</th>
+                <th scope="col">Cell types</th>
+                <th scope="col">Cell states</th>
+                <th scope="col">Cites</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bc.tissues.map((t, i) => (
+                <tr key={i}>
+                  <td>{t.tissue}</td>
+                  <td>
+                    <span className={styles.mono}>{prettyEnum(t.disease_context)}</span>
+                  </td>
+                  <td>
+                    <StatusPill tone={tissueLevelTone(t.present)} size="sm">
+                      {prettyEnum(t.present)}
+                    </StatusPill>
+                  </td>
+                  <td>{t.cell_types.join(", ") || "—"}</td>
+                  <td>{t.cell_states.join(", ") || "—"}</td>
+                  <td>
+                    <CiteCount ids={t.cited_evidence_ids} label="Tissue" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
+        <div className={styles.locHead}>
+          <StatusPill tone="teal">
+            primary · {prettyEnum(loc.primary_compartment)}
+          </StatusPill>
+          {loc.membrane_subdomains.length > 0 ? (
+            <span className={styles.subdomains}>
+              {loc.membrane_subdomains.map((s, i) => (
+                <StatusPill key={i} tone="lavender" size="sm">
+                  {prettyEnum(s.subdomain)}
+                </StatusPill>
+              ))}
+            </span>
+          ) : null}
+        </div>
+        {loc.dual_localization.length > 0 ? (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">Compartment</th>
+                <th scope="col">Fraction</th>
+                <th scope="col">Condition</th>
+                <th scope="col">Cites</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loc.dual_localization.map((d, i) => (
+                <tr key={i}>
+                  <td>{prettyEnum(d.compartment)}</td>
+                  <td>
+                    {d.fraction_estimate != null
+                      ? `${(d.fraction_estimate * 100).toFixed(0)}%`
+                      : "—"}
+                  </td>
+                  <td>{d.condition ?? "—"}</td>
+                  <td>
+                    <CiteCount ids={d.cited_evidence_ids} label="Dual localization" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+        {/* exocytosis_evidence was dropped in PR23 round 5 — same
+            biology now lives in `accessibility_modulation` rows
+            with `category=lysosomal_exocytosis` or `category=
+            activation_induced` plus `cell_state_trigger`. */}
+      </div>
+
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Anatomical accessibility</p>
+        {bc.anatomical_accessibility.length === 0 ? (
+          <p className={styles.empty}>No anatomical-accessibility rows recorded.</p>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">Context</th>
+                <th scope="col">Orientation</th>
+                <th scope="col">Implication</th>
+                <th scope="col">Rationale</th>
+                <th scope="col">Cites</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bc.anatomical_accessibility.map((a, i) => (
+                <tr key={i}>
+                  <td>{a.context}</td>
+                  <td>{prettyEnum(a.orientation)}</td>
+                  <td>
+                    <StatusPill
+                      tone={implicationTone(a.accessibility_implication)}
+                      size="sm"
+                    >
+                      {prettyEnum(a.accessibility_implication)}
+                    </StatusPill>
+                  </td>
+                  <td>{a.rationale}</td>
+                  <td>
+                    <CiteCount ids={a.cited_evidence_ids} label="Anatomical" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
+        {bc.accessibility_modulation.length === 0 ? (
+          <p className={styles.empty}>No modulation rows recorded.</p>
+        ) : (
+          <ul className={styles.modList}>
+            {bc.accessibility_modulation.map((m, i) => (
+              <li key={i} className={styles.modItem}>
+                <div className={styles.modHead}>
+                  <StatusPill tone="lavender" size="sm">
+                    {prettyEnum(m.category)}
+                  </StatusPill>
+                  {m.cell_state_trigger ? (
+                    <StatusPill tone="amber" size="sm">
+                      trigger · {prettyEnum(m.cell_state_trigger)}
+                    </StatusPill>
+                  ) : null}
+                  {m.restricted_lineage ? (
+                    <StatusPill tone="teal" size="sm">
+                      lineage · {prettyEnum(m.restricted_lineage)}
+                    </StatusPill>
+                  ) : null}
+                  <CiteCount ids={m.cited_evidence_ids} label="Modulation" />
+                </div>
+                <p className={styles.modBaseline}>
+                  <span className={styles.muted}>baseline</span> {m.baseline_context}{" "}
+                  <span aria-hidden="true">→</span>{" "}
+                  <span className={styles.muted}>modulating</span> {m.modulating_state}
+                </p>
+                <p className={styles.modChange}>{m.change}</p>
+                <p className={styles.modImpl}>
+                  <span className={`label-mono ${styles.muted}`}>Implication</span>{" "}
+                  {m.accessibility_implication}
+                </p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </SectionCard>
+  );
+}

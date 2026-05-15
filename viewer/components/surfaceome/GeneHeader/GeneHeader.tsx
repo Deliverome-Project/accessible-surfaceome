@@ -1,7 +1,17 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
+import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { StatusPill } from "../StatusPill/StatusPill";
+import { TopologyLegend } from "../IsoformsCard/TopologyBar";
+import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
+
+function presentTopologyStates(topology: string): string[] {
+  if (!topology) return [];
+  const seen = new Set<string>();
+  for (const ch of topology) seen.add(ch);
+  return ["M", "O", "I", "S", "B"].filter((s) => seen.has(s));
+}
 
 interface GeneHeaderProps {
   rec: SurfaceomeRecord;
@@ -10,16 +20,50 @@ interface GeneHeaderProps {
    *  ``loadGeneName(symbol)`` and passes it down. ``null`` when no
    *  entry exists for the symbol. */
   geneName?: { name: string; synonyms: string[] } | null;
+  /** DeepTMHMM topology data for the canonical UniProt. Loaded
+   *  server-side via ``loadStructureViewerData(uniprot_acc)``;
+   *  ``null`` for soluble proteins (DeepTMHMM has no membrane
+   *  topology) — header collapses back to single-column. */
+  structureData?: StructureViewerData | null;
+}
+
+function tierCounts(rec: SurfaceomeRecord) {
+  let primary = 0;
+  let secondary = 0;
+  let tertiary = 0;
+  for (const e of rec.evidence) {
+    if (e.evidence_tier === "primary") primary += 1;
+    else if (e.evidence_tier === "secondary") secondary += 1;
+    else if (e.evidence_tier === "tertiary") tertiary += 1;
+  }
+  return { primary, secondary, tertiary, total: rec.evidence.length };
+}
+
+function accessibilityTone(value: string) {
+  if (value === "high") return "success" as const;
+  if (value === "moderate") return "teal" as const;
+  if (value === "low") return "amber" as const;
+  return "neutral" as const;
+}
+
+function gradeTone(value: string) {
+  if (value === "direct_multi_method") return "success" as const;
+  if (value === "direct_single_method") return "teal" as const;
+  if (value === "supportive_but_indirect") return "amber" as const;
+  if (value === "conflicting") return "danger" as const;
+  return "neutral" as const;
 }
 
 /**
- * GeneHeader — display-scale gene symbol, lede, identifier links,
- * and four vitals. Designed as the page-opening editorial block so
- * the reader gets a one-glance picture of the record before any
- * section card.
+ * GeneHeader — display-scale gene symbol, executive lede, identifier
+ * links, and four vitals. Driven entirely by `executive_summary` +
+ * derived counts from the evidence ledger; no v0.x targetability /
+ * surface_biology fields.
  */
-export function GeneHeader({ rec, geneName }: GeneHeaderProps) {
+export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
   const g = rec.gene;
+  const exec = rec.executive_summary;
+  const counts = tierCounts(rec);
   const ids = [
     {
       label: "HGNC",
@@ -42,91 +86,112 @@ export function GeneHeader({ rec, geneName }: GeneHeaderProps) {
       href: `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${g.ensembl_gene}`,
     },
   ];
-  const blocking = rec.risk_flags.filter((r) => r.severity === "blocking").length;
-  const highRisks = rec.risk_flags.filter((r) => r.severity === "high").length;
-  const sub =
-    rec.targetability.recommended_modalities?.[0]?.kind ??
-    rec.triage_signal ??
-    rec.surface_biology.surface_status;
 
   return (
     <header className={styles.header}>
-      <p className={`label-mono ${styles.eyebrow}`}>
-        Surfaceome record · {rec.schema_version}
-      </p>
-      <h1 className={`h-display ${styles.symbol}`}>{g.hgnc_symbol}</h1>
-      {geneName?.name ? (
-        <p className={styles.geneName}>
-          {geneName.name}
-          {geneName.synonyms.length > 0 ? (
-            <span className={styles.geneSynonyms}>
-              {" · also known as "}
-              {geneName.synonyms.slice(0, 4).join(", ")}
-              {geneName.synonyms.length > 4
-                ? `, +${geneName.synonyms.length - 4}`
-                : ""}
-            </span>
+      <div className={styles.headerGrid}>
+        <div className={styles.headerText}>
+          <p className={`label-mono ${styles.eyebrow}`}>
+            Surfaceome record · v{rec.schema_version}
+          </p>
+          <h1 className={`h-display ${styles.symbol}`}>{g.hgnc_symbol}</h1>
+          {geneName?.name ? (
+            <p className={styles.geneName}>
+              {geneName.name}
+              {geneName.synonyms.length > 0 ? (
+                <span className={styles.geneSynonyms}>
+                  {" · also known as "}
+                  {geneName.synonyms.slice(0, 4).join(", ")}
+                  {geneName.synonyms.length > 4
+                    ? `, +${geneName.synonyms.length - 4}`
+                    : ""}
+                </span>
+              ) : null}
+            </p>
           ) : null}
-        </p>
-      ) : null}
-      <p className={`lede ${styles.tldr}`}>{rec.targetability.tldr}</p>
+          <p className={`lede ${styles.tldr}`}>{exec.one_paragraph}</p>
 
-      <ul className={styles.ids} aria-label="External identifiers">
-        {ids.map((id) => (
-          <li key={id.label} className={styles.idItem}>
-            <a
-              className={styles.idLink}
-              href={id.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span className={`label-mono ${styles.idLabel}`}>{id.label}</span>
-              <span className={styles.idValue}>{id.value}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+          <ul className={styles.ids} aria-label="External identifiers">
+            {ids.map((id) => (
+              <li key={id.label} className={styles.idItem}>
+                <a
+                  className={styles.idLink}
+                  href={id.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className={`label-mono ${styles.idLabel}`}>{id.label}</span>
+                  <span className={styles.idValue}>{id.value}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {structureData ? (
+          <aside className={styles.structureSlot} aria-label="3D structure">
+            <StructureViewer data={structureData} geneSymbol={g.hgnc_symbol} />
+            <TopologyLegend
+              presentStates={presentTopologyStates(structureData.topology)}
+            />
+            <p className={styles.structureCaption}>
+              <a
+                href={`https://alphafold.ebi.ac.uk/entry/${g.uniprot_acc}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.structureLink}
+              >
+                AlphaFold DB
+              </a>{" "}
+              · DeepTMHMM topology · membrane horizontal, extracellular up
+            </p>
+          </aside>
+        ) : null}
+      </div>
 
       <dl className={styles.vitals}>
         <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Surface status</dt>
+          <dt className={`label-mono ${styles.vitalK}`}>Accessibility</dt>
           <dd className={styles.vitalV}>
-            <StatusPill tone="teal">
-              {prettyEnum(rec.surface_biology.surface_status)}
+            <StatusPill tone={accessibilityTone(exec.surface_accessibility)}>
+              {prettyEnum(exec.surface_accessibility)}
             </StatusPill>
-            <span className={styles.vitalSub}>
-              {rec.surface_biology.db_comparison.n_sources_voting_surface}/8 sources
-            </span>
+            <span className={styles.vitalSub}>{prettyEnum(exec.subcategory)}</span>
           </dd>
         </div>
 
         <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Targetability</dt>
+          <dt className={`label-mono ${styles.vitalK}`}>Evidence grade</dt>
           <dd className={styles.vitalV}>
-            <StatusPill tone="maroon">{prettyEnum(rec.targetability.tier)}</StatusPill>
-            <span className={styles.vitalSub}>{prettyEnum(sub)}</span>
+            <StatusPill tone={gradeTone(exec.evidence_grade_summary)}>
+              {prettyEnum(exec.evidence_grade_summary)}
+            </StatusPill>
+            <span className={styles.vitalSub}>
+              {counts.total} entries
+            </span>
           </dd>
         </div>
 
         <div className={styles.vital}>
           <dt className={`label-mono ${styles.vitalK}`}>Confidence</dt>
           <dd className={styles.vitalV}>
-            <StatusPill tone="lavender">{prettyEnum(rec.confidence)}</StatusPill>
+            <StatusPill tone="lavender">{prettyEnum(exec.confidence)}</StatusPill>
             <span className={styles.vitalSub}>
-              {rec.primary_evidence_count} primary · {rec.secondary_evidence_count} secondary
+              {counts.primary} primary · {counts.secondary} secondary
             </span>
           </dd>
         </div>
 
         <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Risk flags</dt>
+          <dt className={`label-mono ${styles.vitalK}`}>Triage</dt>
           <dd className={styles.vitalV}>
-            <span className={styles.vitalCount}>{rec.risk_flags.length}</span>
+            <StatusPill tone="teal">{prettyEnum(rec.triage_signal)}</StatusPill>
             <span className={styles.vitalSub}>
-              {blocking ? `${blocking} blocking` : null}
-              {blocking && highRisks ? " · " : null}
-              {highRisks ? `${highRisks} high` : null}
-              {!blocking && !highRisks ? "—" : null}
+              {exec.headline_risks.length
+                ? `${exec.headline_risks.length} headline risk${
+                    exec.headline_risks.length === 1 ? "" : "s"
+                  }`
+                : "No headline risks"}
             </span>
           </dd>
         </div>

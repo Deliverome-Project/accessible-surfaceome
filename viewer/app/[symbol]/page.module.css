@@ -39,6 +39,7 @@
 }
 
 .crumbAction {
+  position: relative;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: var(--muted);
@@ -49,6 +50,43 @@
 .crumbAction:hover,
 .crumbAction:focus-visible {
   color: var(--accent);
+}
+
+/* Custom hover tooltip — replaces the native ``title`` attribute,
+ * which has a ~500ms delay and inherits the OS tooltip styling.
+ * The CSS-driven version shows immediately, sits visually anchored
+ * to the link, and matches the page's editorial tone. The label
+ * comes from the ``data-hint`` attribute on each crumb-action. */
+.crumbAction[data-hint]::after {
+  content: attr(data-hint);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: 320px;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.crumbAction[data-hint]:hover::after,
+.crumbAction[data-hint]:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .confidence {
@@ -76,68 +114,4 @@
 .confidenceLine strong {
   color: var(--ink);
   font-weight: var(--fw-semibold);
-}
-
-/* Raw deep-dive record — collapsible at the top of the page so an
- * agent / curator can copy the canonical JSON without round-tripping
- * to the /data/surfaceome/SYMBOL.json endpoint. Default-closed so it
- * doesn't dominate the page header on a fresh load. */
-.rawDetails {
-  margin-top: var(--space-2);
-}
-
-.rawSummary {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  cursor: pointer;
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  list-style: none;
-  user-select: none;
-  padding: var(--space-2) 0;
-}
-
-.rawSummary::-webkit-details-marker {
-  display: none;
-}
-
-.rawSummary::before {
-  content: "▸";
-  font-size: 0.8em;
-  transition: transform var(--dur-fast) var(--ease-out);
-}
-
-.rawDetails[open] .rawSummary::before {
-  transform: rotate(90deg);
-}
-
-.rawSummary:hover,
-.rawSummary:focus-visible {
-  color: var(--accent);
-}
-
-.rawSummaryHint {
-  color: var(--line);
-  text-transform: none;
-  letter-spacing: 0;
-  margin-left: var(--space-2);
-}
-
-.rawJson {
-  margin: var(--space-3) 0 var(--space-6);
-  padding: var(--space-4) var(--space-5);
-  background: var(--bg-soft);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  line-height: 1.55;
-  color: var(--ink-soft);
-  white-space: pre;
-  overflow-x: auto;
-  max-height: 70vh;
 }

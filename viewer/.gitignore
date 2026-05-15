@@ -5,3 +5,21 @@ out
 *.log
 *.tsbuildinfo
 next-env.d.ts
+
+# Next.js 16 auto-generates these on every build; not source.
+AGENTS.md
+CLAUDE.md
+
+# Per-UniProt DeepTMHMM topology JSONs are *generated artifacts* —
+# `scripts/build_structure_viewer_data.py` writes them here from the
+# external DeepTMHMM cohort under
+# `data/external/deeptmhmm_surfaceome_predictions/`. They should
+# eventually land in D1 under the deep-dive schema (PR #23) and be
+# fetched at request time. For now we ship a single mock
+# (`O95800.json` for GPR75) so the v1.0.0 viewer demo is self-contained;
+# the rest are gitignored. Regenerate locally with:
+#
+#   uv run python scripts/build_structure_viewer_data.py
+#
+public/structure-viewer/*
+!public/structure-viewer/O95800.json
