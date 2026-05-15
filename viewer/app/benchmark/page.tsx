@@ -66,23 +66,25 @@ export default async function BenchmarkPage() {
         <footer className={styles.footnotes}>
           <p>
             <span className="label-mono">DB columns ·</span> U UniProt · G GO ·
-            S SURFY · C CSPA · H HPA · T DeepTMHMM · M COMPARTMENTS. Each
-            cell is one source&apos;s vote on whether the protein reaches
-            the plasma membrane. Filled dot = surface; empty ring = not
-            on the surface in that source.
+            S SURFY · C CSPA · H HPA — the five gating databases that
+            drive M1 universe membership (same set the homepage catalog
+            shows). Each cell is one source&apos;s vote on whether the
+            protein reaches the plasma membrane: filled dot = surface,
+            empty ring = not on the surface in that source.
           </p>
           <p>
-            <span className="label-mono">LLM columns ·</span> Twelve
-            cells per row — one per (model × prompt variant). Each cell
-            is a single-letter glyph (<code>Y</code> / <code>N</code> /{" "}
-            <code>C</code>) coloured by verdict; cells outlined in
-            maroon disagree with truth (collapsing <em>yes</em> ≡{" "}
-            <em>contextual</em>, matching the D1 <code>correct</code>{" "}
-            column). The headline variant (<code>{matrix.headline_variant}</code>)
-            gets a small accent underline on its column header. Hover
-            any cell for the full (model · variant → verdict + reason)
-            tooltip; click <em>+</em> on the row to reveal each call&apos;s
-            free-text reasoning.
+            <span className="label-mono">LLM columns ·</span> Three
+            cells per row — one per model on the headline{" "}
+            <code>{matrix.headline_variant}</code> prompt variant
+            (Haiku / Sonnet / Opus). Each is a verdict pill coloured
+            by call; pills outlined in maroon disagree with truth
+            (collapsing <em>yes</em> ≡ <em>contextual</em>, matching
+            the D1 <code>correct</code> semantics). Hover for the full
+            (model → verdict + reason) tooltip. Click <em>+</em> on
+            the row to expand the full <strong>3 model × 4 variant</strong>{" "}
+            grid (Opus has runs on 2 of 4 variants only); each cell in
+            that grid carries its own <em>+</em> to reveal the
+            agent&apos;s free-text reasoning for that specific call.
           </p>
           <p>
             <span className="label-mono">API ·</span>{" "}
