@@ -48,7 +48,12 @@ from ._shared.europepmc import (
     fetch_fulltext,
     paper_from_europepmc,
 )
-from ._shared.gene_gazetteer import build_target_names, load_gazetteer, sentence_subject
+from ._shared.gene_gazetteer import (
+    build_target_names,
+    extract_symbol_tokens,
+    load_gazetteer,
+    sentence_subject,
+)
 from ._shared.http import CachedHTTP, open_default_client
 from ._shared.models import (
     CandidateSnippet,
@@ -128,12 +133,27 @@ class _CategorySpec:
     supplied separately as ``@GENE_<symbol>``); ``hallmark_patterns``
     are run sentence-by-sentence over fetched full text;
     ``section_weights`` decide which section's hits float to the top.
+
+    ``accepts_paper_level_evidence`` widens the gene-proximity filter
+    for high-throughput methods (``mass_spec_surfaceome``,
+    ``surface_biotinylation``, ``western_blot_paired``). In those
+    methodologies the methods sentence describes the *experiment*
+    generically (e.g. "Cells were biotinylated with sulfo-NHS-SS-biotin")
+    and the target gene appears only in a supplementary table or a
+    different sentence — never as the subject of the methods sentence.
+    With this flag set, the filter treats a competing-gene-only
+    sentence as acceptable as long as the *target gene also appears
+    somewhere in the same section*; the strict filter still drops
+    sentences from sections that don't mention the target at all
+    (which is the case for surfaceome papers where the target is
+    truly absent from the protein list).
     """
 
     query_clauses: tuple[str, ...]
     pubtator_terms: str
     hallmark_patterns: tuple[re.Pattern[str], ...]
     section_weights: Mapping[SectionName, float]
+    accepts_paper_level_evidence: bool = False
 
 
 # Per-category retrieval config. Query clauses are joined with AND to
@@ -215,6 +235,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             ),
         ),
         section_weights=_DEFAULT_BIOTIN_WEIGHTS,
+        accepts_paper_level_evidence=True,
     ),
     "mass_spec_surfaceome": _CategorySpec(
         query_clauses=(
@@ -236,6 +257,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             ),
         ),
         section_weights=_DEFAULT_MS_WEIGHTS,
+        accepts_paper_level_evidence=True,
     ),
     "western_blot_paired": _CategorySpec(
         query_clauses=(
@@ -259,6 +281,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             ),
         ),
         section_weights=_DEFAULT_BIOTIN_WEIGHTS,
+        accepts_paper_level_evidence=True,
     ),
     "structure_with_ecd": _CategorySpec(
         query_clauses=(
@@ -639,6 +662,14 @@ def _extract_snippets(
         if weight <= 0:
             continue
         section_enum = _SECTION_TO_CLAIM.get(section.name, "other")
+        # Per-section paper-level relaxation. High-throughput methods
+        # describe the experiment generically and only name the target in
+        # a different sentence (or supplementary table). When the target
+        # appears anywhere in this section's text we keep "competing"
+        # sentences too — they're describing the same experiment.
+        section_mentions_target = bool(target_names) and any(
+            tok in target_names for tok in extract_symbol_tokens(section.text)
+        )
         for sentence in _split_sentences(section.text):
             # Subject-grounding: drop sentences about a sibling gene,
             # boost sentences that name the target. Computed once per
@@ -646,7 +677,9 @@ def _extract_snippets(
             subject = sentence_subject(
                 sentence, target_names=target_names, gazetteer=gazetteer
             )
-            if subject == "competing":
+            if subject == "competing" and not (
+                spec.accepts_paper_level_evidence and section_mentions_target
+            ):
                 continue
             for pattern in spec.hallmark_patterns:
                 match = pattern.search(sentence)

@@ -6,26 +6,26 @@
     {
       "gene": "CD81",
       "error": null,
-      "elapsed_s": 356.4,
+      "elapsed_s": 264.4,
       "annotation_path": "/Users/msmallegan/code/accessible-surfaceome/.claude/worktrees/objective-borg-466f10/data/annotations/CD81.json",
-      "a1_cost_usd": 0.638945,
-      "a2_cost_usd": 0.583128,
-      "b_cost_usd": 0.14257,
-      "total_cost_usd": 1.364644,
+      "a1_cost_usd": 0.666799,
+      "a2_cost_usd": 0.421677,
+      "b_cost_usd": 0.186879,
+      "total_cost_usd": 1.275355,
       "a1_tool_calls": 15,
       "a2_tool_calls": 17,
-      "a1_repair_attempts": 2,
-      "a2_repair_attempts": 1,
-      "b_repair_attempts": 1,
-      "a1_input_tokens": 14889,
-      "a1_output_tokens": 21671,
-      "a2_input_tokens": 16133,
-      "a2_output_tokens": 19572,
-      "b_input_tokens": 1665,
-      "b_output_tokens": 2743,
-      "evidence_count": 32,
-      "pct_substring_anchored": 71.9
+      "a1_repair_attempts": 1,
+      "a2_repair_attempts": 0,
+      "b_repair_attempts": 2,
+      "a1_input_tokens": 7621,
+      "a1_output_tokens": 14755,
+      "a2_input_tokens": 9,
+      "a2_output_tokens": 11101,
+      "b_input_tokens": 2041,
+      "b_output_tokens": 4294,
+      "evidence_count": 33,
+      "pct_substring_anchored": 57.6
     }
   ],
-  "total_cost_usd": 1.3646
+  "total_cost_usd": 1.2754
 }
