@@ -100,9 +100,14 @@ def main(argv: list[str] | None = None) -> None:
 
 def _run_agents(args: argparse.Namespace) -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
-    from accessible_surfaceome.agents.surface_annotator import orchestrator
 
     if args.agents_command == "sync":
+        # ``sync`` is Managed-Agents specific (per the v0.5.1 surface_annotator);
+        # the v1.0.0 deep-dive pipeline runs on the Messages API and has no
+        # remote agent registry to sync against. The branch + import stay so
+        # PR-α phase-3 sees a clean retirement diff.
+        from accessible_surfaceome.agents.surface_annotator import orchestrator
+
         result = orchestrator.sync_agent_and_environment()
         print(
             json.dumps(
@@ -117,21 +122,45 @@ def _run_agents(args: argparse.Namespace) -> None:
             )
         )
     elif args.agents_command == "annotate":
-        result = orchestrator.annotate_gene(args.gene, audit=args.audit)
+        # v1.0.0 cutover: dispatch the 3-agent deep-dive pipeline through
+        # ``surfaceome_v1.annotate`` instead of the retired
+        # ``surface_annotator.orchestrator.annotate_gene``. The output JSON
+        # carries per-agent counters and the assembled-record path.
+        from accessible_surfaceome.agents import surfaceome_v1
+
+        if args.audit:
+            logging.getLogger(__name__).warning(
+                "--audit is a no-op under the v1.0.0 pipeline; the Sonnet "
+                "claim-entailment audit hook was tied to surface_annotator and "
+                "will be re-wired in a follow-up."
+            )
+        result = surfaceome_v1.annotate(args.gene)
+        a1, a2, b = result.a1, result.a2, result.b
         print(
             json.dumps(
                 {
-                    "gene": args.gene,
-                    "session_id": result.session_id,
-                    "n_custom_tool_calls": result.n_tool_calls,
+                    "gene": result.gene,
+                    "schema_version": "1.0.0",
                     "annotation_path": str(result.annotation_path) if result.annotation_path else None,
-                    "run_dir": str(result.run_dir),
-                    "annotation_emitted": result.annotation_json is not None,
-                    "audit_enabled": args.audit,
+                    "annotation_emitted": result.record is not None,
+                    "error": result.error,
+                    "evidence_count": result.record.evidence_count if result.record else None,
+                    "n_tool_calls": {
+                        "a1": a1.n_tool_calls if a1 else None,
+                        "a2": a2.n_tool_calls if a2 else None,
+                        "b": b.n_tool_calls if b else None,
+                    },
+                    "n_repair_attempts": {
+                        "a1": a1.n_repair_attempts if a1 else None,
+                        "a2": a2.n_repair_attempts if a2 else None,
+                        "b": b.n_repair_attempts if b else None,
+                    },
                 },
                 indent=2,
             )
         )
+        if result.error:
+            raise SystemExit(1)
     elif args.agents_command == "audit-corpus":
         from accessible_surfaceome.agents.surface_annotator import audit as _audit
         from accessible_surfaceome.paths import DATA_DIR, DATA_SOURCES_DIR
