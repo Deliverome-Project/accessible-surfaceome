@@ -393,6 +393,14 @@ class CandidateSnippet(BaseModel):
     so the orchestrator's substring check passes when the agent pastes it
     back into a claim. ``hallmark_phrase`` is the regex tag that fired and
     is included for audit, not for the agent to act on.
+
+    ``context_excerpt`` is the surrounding 1-2 sentences in the same section
+    (≤500 chars), verbatim. The agent reads this to *understand* what the
+    snippet says — useful when a methodology description spans multiple
+    sentences ("Cells were biotinylated… Eluted material was analyzed by
+    LC-MS/MS… CD81 was identified in the enriched fraction"). The agent
+    must still copy ``text`` (not ``context_excerpt``) into the claim's
+    ``quote`` field — only ``text`` is bounded to the 200-char schema cap.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -403,6 +411,47 @@ class CandidateSnippet(BaseModel):
     text: str = Field(..., max_length=200)
     score: float
     hallmark_phrase: str
+    context_excerpt: str | None = Field(default=None, max_length=500)
+
+
+class EvidenceClaimDraft(BaseModel):
+    """Pre-built ``EvidenceClaim`` skeleton emitted by ``evidence_retrieval``.
+
+    The tool fills the load-bearing anchor fields (``quote``, ``source_id``,
+    ``section``, ``figure_or_table_id``) directly from a CandidateSnippet so
+    that the (quote, source_id) pair the orchestrator substring-checks at
+    promotion time is locked together by construction — the agent cannot
+    paraphrase the quote, and cannot mis-attribute it to a different
+    source. The agent's remaining job is to fill the narrative fields
+    (``claim`` text, ``claim_type``, ``evidence_type``, ``direction``,
+    ``evidence_tier``, ``confidence``, ``assay_context``) and decide
+    whether to keep this draft at all.
+
+    ``suggested_evidence_id`` is a deterministic, paper-keyed handle the
+    agent may adopt as ``EvidenceClaim.evidence_id`` (or replace with a
+    sequential ``a1_evi_NN`` — either works downstream).
+
+    ``context_excerpt`` carries the surrounding 1-2 sentences from the
+    same section for the agent's understanding. Do NOT copy
+    ``context_excerpt`` into the claim's ``quote`` — only ``quote`` is
+    schema-bound to 200 chars.
+
+    Drafts are emitted for every snippet returned by ``evidence_retrieval``
+    (hallmark snippets + target-mention snippets for high-throughput
+    categories), so the agent can choose by score / hallmark_phrase
+    without bouncing between two parallel lists.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    suggested_evidence_id: str
+    quote: str = Field(..., max_length=200)
+    source_id: str
+    section: PaperSection_
+    figure_or_table_id: str | None = None
+    context_excerpt: str | None = Field(default=None, max_length=500)
+    hallmark_phrase: str
+    score: float
 
 
 class SyntheticSource(BaseModel):
@@ -443,6 +492,7 @@ class EvidenceRetrievalPack(BaseModel):
     n_papers_with_snippets: int = 0
     papers: list[Paper] = Field(default_factory=list)
     snippets: list[CandidateSnippet] = Field(default_factory=list)
+    evidence_claim_drafts: list[EvidenceClaimDraft] = Field(default_factory=list)
     synthetic_sources: list[SyntheticSource] = Field(default_factory=list)
     empty_reason: str | None = None
 

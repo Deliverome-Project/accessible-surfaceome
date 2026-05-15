@@ -195,6 +195,86 @@ def test_target_mention_extractor_inert_for_strict_categories() -> None:
     assert mentions == []
 
 
+def test_adjacent_context_returns_window_when_neighbors_present() -> None:
+    """Sentence with one before + one after yields a multi-sentence window."""
+    section = (
+        "Cells were biotinylated with sulfo-NHS-SS-biotin. "
+        "Eluted material was analyzed by LC-MS/MS. "
+        "CD81 was identified in the enriched fraction."
+    )
+    focal = "Eluted material was analyzed by LC-MS/MS."
+    ctx = er._adjacent_context(section, focal)
+    assert ctx is not None
+    assert "Cells were biotinylated" in ctx
+    assert "CD81 was identified" in ctx
+    assert len(ctx) <= 500
+
+
+def test_adjacent_context_returns_none_when_focal_stands_alone() -> None:
+    """A section with a single sentence has no surrounding context to add."""
+    section = "CD81 was detected on the surface."
+    focal = "CD81 was detected on the surface."
+    assert er._adjacent_context(section, focal) is None
+
+
+def test_extractor_populates_context_excerpt() -> None:
+    """Snippets emitted by ``_extract_snippets`` carry a ``context_excerpt``
+    when the focal sentence has adjacent neighbors in the same section.
+    """
+    paper = _fixture_paper(
+        sections=[
+            PaperSection(
+                name="methods",
+                text=(
+                    "Cells were lysed in RIPA buffer. "
+                    "Cell-surface capture (CSC) was performed using "
+                    "periodate-oxidized sialic acid biotinylation followed by "
+                    "neutravidin enrichment and LC-MS/MS analysis. "
+                    "Captured proteins were trypsinized for downstream analysis."
+                ),
+            ),
+        ],
+    )
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["mass_spec_surfaceome"],
+        max_snippets=3,
+    )
+    assert snippets
+    ctx = snippets[0].context_excerpt
+    assert ctx is not None
+    assert len(ctx) <= 500
+    # Context should mention the surrounding sentences, not just the focal one.
+    assert ("Cells were lysed" in ctx) or ("Captured proteins" in ctx)
+
+
+def test_pmc_retrieval_emits_evidence_claim_drafts(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_pmc_retrieval`` packages every emitted snippet as an
+    ``EvidenceClaimDraft`` with the snippet's quote/source_id/section
+    locked together for downstream copy-paste-free claim authoring.
+    """
+    from accessible_surfaceome.tools._shared.models import CandidateSnippet
+
+    snippet = CandidateSnippet(
+        source_id="PMC:PMC42",
+        section="methods",
+        figure_or_table_id=None,
+        text="Cell-surface capture (CSC) was performed using LC-MS/MS analysis.",
+        score=4.0,
+        hallmark_phrase="LC-MS/MS",
+        context_excerpt="A longer surrounding context goes here.",
+    )
+    draft = er._snippet_to_draft(snippet, seq=3)
+    assert draft.quote == snippet.text
+    assert draft.source_id == snippet.source_id
+    assert draft.section == snippet.section
+    assert draft.figure_or_table_id == snippet.figure_or_table_id
+    assert draft.context_excerpt == snippet.context_excerpt
+    assert draft.hallmark_phrase == snippet.hallmark_phrase
+    assert draft.score == snippet.score
+    assert draft.suggested_evidence_id == "draft_PMC42_methods_03"
+
+
 def test_target_mention_extractor_dedups_within_paper() -> None:
     """Repeated identical target-naming sentences in one paper collapse
     to a single emitted snippet — the dedup key matches what

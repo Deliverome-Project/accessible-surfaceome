@@ -58,6 +58,7 @@ from ._shared.http import CachedHTTP, open_default_client
 from ._shared.models import (
     CandidateSnippet,
     EvidenceCategory,
+    EvidenceClaimDraft,
     EvidenceRetrievalPack,
     IdentifierBundle,
     Paper,
@@ -519,6 +520,15 @@ def _pmc_retrieval(
     # strongest matches first.
     all_snippets.sort(key=lambda s: s.score, reverse=True)
 
+    # Convert every snippet into a pre-built EvidenceClaimDraft so the
+    # agent doesn't have to re-type (quote, source_id, section) into a
+    # new claim — the (quote, source_id) pair the orchestrator
+    # substring-checks at promotion is locked together by construction.
+    claim_drafts = [
+        _snippet_to_draft(snippet, seq=i + 1)
+        for i, snippet in enumerate(all_snippets)
+    ]
+
     empty_reason: str | None = None
     if not all_snippets:
         empty_reason = (
@@ -534,6 +544,7 @@ def _pmc_retrieval(
         n_papers_with_snippets=len(snippet_papers),
         papers=snippet_papers,
         snippets=all_snippets,
+        evidence_claim_drafts=claim_drafts,
         empty_reason=empty_reason,
     )
 
@@ -665,6 +676,58 @@ TARGET_MENTION_HALLMARK = "target_mention"
 # excerpt makes it through alongside the methodology snippets.
 _MAX_TARGET_MENTIONS_PER_PAPER = 3
 
+# Context-excerpt cap. The 200-char ``CandidateSnippet.text`` is the
+# substring anchor; ``context_excerpt`` carries the surrounding 1-2
+# sentences (≤500 chars) so the agent can READ the snippet in
+# situ. High-throughput methodology routinely spans two sentences
+# ("Cells were biotinylated. Eluted proteins were analyzed by LC-MS/MS")
+# and the focal-sentence-only quote is insufficient context without it.
+_CONTEXT_EXCERPT_MAX_CHARS = 500
+
+
+def _adjacent_context(
+    section_text: str,
+    focal_sentence: str,
+    *,
+    max_chars: int = _CONTEXT_EXCERPT_MAX_CHARS,
+) -> str | None:
+    """Return up to ``max_chars`` of section text around ``focal_sentence``.
+
+    Picks the focal sentence + at most one sentence on each side, joined
+    with single spaces. Returns ``None`` when the focal sentence stands
+    alone in its section (no extra context to add) or when the lookup
+    can't locate it among the split sentences (punctuation-edge cases).
+
+    The window is verbatim from ``section_text`` — if downstream code
+    wants to register it as a quote-anchorable excerpt it can; the
+    primary use is the agent's understanding of multi-sentence
+    methodology context.
+    """
+    sentences = _split_sentences(section_text)
+    try:
+        idx = sentences.index(focal_sentence)
+    except ValueError:
+        return None
+    start = max(0, idx - 1)
+    end = min(len(sentences), idx + 2)
+    chosen = sentences[start:end]
+    if len(chosen) <= 1:
+        return None  # focal sentence is alone — no useful surrounding context
+    window = " ".join(chosen)
+    if len(window) <= max_chars:
+        return window
+    # Window too long: try dropping the further-out sentence first to
+    # keep focal + one adjacent.
+    if start < idx:
+        narrowed = " ".join(sentences[idx:end])
+        if len(narrowed) <= max_chars:
+            return narrowed
+    if end > idx + 1:
+        narrowed = " ".join(sentences[start:idx + 1])
+        if len(narrowed) <= max_chars:
+            return narrowed
+    return None  # even minimal context overflows — give up rather than truncate mid-sentence
+
 
 def _extract_snippets(
     *,
@@ -741,6 +804,7 @@ def _extract_snippets(
                             text=snippet_text,
                             score=score,
                             hallmark_phrase=match.group(0)[:80],
+                            context_excerpt=_adjacent_context(section.text, sentence),
                         ),
                     )
                 )
@@ -821,6 +885,7 @@ def _extract_target_mentions(
                     text=snippet_text,
                     score=score,
                     hallmark_phrase=TARGET_MENTION_HALLMARK,
+                    context_excerpt=_adjacent_context(section.text, sentence),
                 ),
             ))
     emitted.sort(key=lambda pair: pair[0], reverse=True)
@@ -851,6 +916,30 @@ def _trim_to_target(sentence: str, target_token: str) -> str:
         if last_space > len(snippet) - 40:
             snippet = snippet[:last_space]
     return snippet.strip()
+
+
+def _snippet_to_draft(snippet: CandidateSnippet, *, seq: int) -> EvidenceClaimDraft:
+    """Convert a ``CandidateSnippet`` into a pre-filled EvidenceClaim skeleton.
+
+    The agent extends the draft into a full :class:`EvidenceClaim` by
+    adding the narrative + classification fields; the load-bearing
+    anchor fields (``quote``, ``source_id``, ``section``,
+    ``figure_or_table_id``) are copied from the snippet verbatim so the
+    substring check at promotion passes by construction.
+    """
+    # source_id like "PMC:PMC10898066" or "PMID:38414005"; strip the
+    # prefix for the suggested handle, fall back to the raw value.
+    bare = snippet.source_id.split(":", 1)[-1] if ":" in snippet.source_id else snippet.source_id
+    return EvidenceClaimDraft(
+        suggested_evidence_id=f"draft_{bare}_{snippet.section}_{seq:02d}",
+        quote=snippet.text,
+        source_id=snippet.source_id,
+        section=snippet.section,
+        figure_or_table_id=snippet.figure_or_table_id,
+        context_excerpt=snippet.context_excerpt,
+        hallmark_phrase=snippet.hallmark_phrase,
+        score=snippet.score,
+    )
 
 
 def _split_sentences(text: str) -> list[str]:
@@ -962,6 +1051,9 @@ def _hpa_ihc(*, uniprot_acc: str, http: CachedHTTP) -> EvidenceRetrievalPack:
         n_papers_with_snippets=1 if snippets else 0,
         papers=[],
         snippets=snippets,
+        evidence_claim_drafts=[
+            _snippet_to_draft(s, seq=i + 1) for i, s in enumerate(snippets)
+        ],
         synthetic_sources=synthetic,
         empty_reason=None if snippets else "HPA row matched but no quotable lines emitted",
     )
