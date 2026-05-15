@@ -33,6 +33,7 @@ from accessible_surfaceome.agents.surface_annotator import tool_registry
 from accessible_surfaceome.tools._shared import retraction_watch as _retraction_watch
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import BiologicalContextDraft
+from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
 from accessible_surfaceome.tools._shared.source_text import SourceTextStore
 
 logger = logging.getLogger(__name__)
@@ -156,22 +157,40 @@ def run_biology_compiler(
     *,
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
+    source_store: SourceTextStore | None = None,
+    retraction_index: RetractionIndex | None = None,
 ) -> A2Result:
-    """Run A2 against one gene and return the validated draft (or the failure)."""
+    """Run A2 against one gene and return the validated draft (or the failure).
+
+    ``source_store`` and ``retraction_index`` are accepted so the orchestrator
+    can share a single store + index across A1 / A2 in a parallel dispatch.
+    """
     client = client or get_client()
     own_http = http is None
     http = http or open_default_client()
     try:
-        return _run(client, http, gene)
+        return _run(
+            client, http, gene,
+            source_store=source_store, retraction_index=retraction_index,
+        )
     finally:
         if own_http:
             http.close()
 
 
-def _run(client: Anthropic, http: CachedHTTP, gene: str) -> A2Result:
+def _run(
+    client: Anthropic,
+    http: CachedHTTP,
+    gene: str,
+    *,
+    source_store: SourceTextStore | None = None,
+    retraction_index: RetractionIndex | None = None,
+) -> A2Result:
     system_prompt = SYSTEM_PROMPT_PATH.read_text()
-    source_store = SourceTextStore()
-    retraction_index = _retraction_watch.from_http(http)
+    if source_store is None:
+        source_store = SourceTextStore()
+    if retraction_index is None:
+        retraction_index = _retraction_watch.from_http(http)
     handlers = tool_registry.build_handlers(
         http, source_store=source_store, retraction_index=retraction_index
     )

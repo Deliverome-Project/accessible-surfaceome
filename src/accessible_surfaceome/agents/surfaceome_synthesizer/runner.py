@@ -33,7 +33,11 @@ from anthropic.types import TextBlock
 from pydantic import ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
-from accessible_surfaceome.tools._shared.models import SynthesizerDraft
+from accessible_surfaceome.tools._shared.models import (
+    BiologicalContextDraft,
+    SurfaceEvidenceDraft,
+    SynthesizerDraft,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -124,11 +128,29 @@ def run_synthesizer(
     a2_path: Path | None = None,
     client: Anthropic | None = None,
 ) -> BResult:
-    """Run B against one gene's A1 (+ optional A2) draft and return the result."""
+    """Run B against one gene's A1 (+ optional A2) draft from disk."""
     client = client or get_client()
     a1_draft = _load_json(a1_path)
     a2_draft = _load_json(a2_path) if a2_path is not None else None
     return _run(client, gene, a1_draft=a1_draft, a2_draft=a2_draft)
+
+
+def run_synthesizer_with_drafts(
+    gene: str,
+    *,
+    a1_draft: SurfaceEvidenceDraft,
+    a2_draft: BiologicalContextDraft | None = None,
+    client: Anthropic | None = None,
+) -> BResult:
+    """In-memory peer of :func:`run_synthesizer` — for orchestrator usage.
+
+    Accepts Pydantic drafts directly so the orchestrator doesn't have to
+    round-trip A1 / A2 outputs through disk just to feed them into B.
+    """
+    client = client or get_client()
+    a1_dict = a1_draft.model_dump(mode="json")
+    a2_dict = a2_draft.model_dump(mode="json") if a2_draft is not None else None
+    return _run(client, gene, a1_draft=a1_dict, a2_draft=a2_dict)
 
 
 def _run(
