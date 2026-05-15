@@ -1936,6 +1936,59 @@ class SurfaceEvidenceDraft(BaseModel):
         return self
 
 
+class BiologicalContextDraft(BaseModel):
+    """What agent A2 (Biology Compiler) emits.
+
+    The ``biological_context`` block plus the evidence-ledger slice backing
+    it. Claim ids are prefixed ``a2_evi_`` so the orchestrator can merge A2's
+    ledger with A1's (``a1_evi_``) without collision. Every
+    ``cited_evidence_ids`` value referenced anywhere inside
+    ``biological_context`` must resolve to a claim A2 emits.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    biological_context: BiologicalContext
+    evidence_claims: list[EvidenceClaim] = Field(default_factory=list)
+
+    @field_validator("evidence_claims")
+    @classmethod
+    def _check_claim_id_prefix(cls, claims: list[EvidenceClaim]) -> list[EvidenceClaim]:
+        bad = [c.evidence_id for c in claims if not c.evidence_id.startswith("a2_evi_")]
+        if bad:
+            raise ValueError(
+                f"A2 evidence_claims must use the 'a2_evi_' id prefix; got: {bad}"
+            )
+        return claims
+
+    @model_validator(mode="after")
+    def _check_citations_resolve(self) -> BiologicalContextDraft:
+        known = {c.evidence_id for c in self.evidence_claims}
+        cited: set[str] = set()
+        bc = self.biological_context
+        for tissue in bc.tissues:
+            cited.update(tissue.cited_evidence_ids)
+        for cell_type in bc.cell_types:
+            cited.update(cell_type.cited_evidence_ids)
+        for state in bc.cell_states:
+            cited.update(state.cited_evidence_ids)
+        for dual in bc.subcellular_localization.dual_localization:
+            cited.update(dual.cited_evidence_ids)
+        for sub in bc.subcellular_localization.membrane_subdomains:
+            cited.update(sub.cited_evidence_ids)
+        for anat in bc.anatomical_accessibility:
+            cited.update(anat.cited_evidence_ids)
+        for mod in bc.accessibility_modulation:
+            cited.update(mod.cited_evidence_ids)
+        unresolved = sorted(cited - known)
+        if unresolved:
+            raise ValueError(
+                "biological_context cites evidence_ids absent from evidence_claims: "
+                f"{unresolved}"
+            )
+        return self
+
+
 # ---------------------------------------------------------------------------
 # Triage record — lightweight per-protein decision: is this protein surface
 # accessible? Pure-model inference (no tools, no web search, no evidence
@@ -2250,6 +2303,7 @@ __all__ = [
     "SurfaceomeRecord",
     "SurfaceomeRecordDraft",
     "SurfaceEvidenceDraft",
+    "BiologicalContextDraft",
     # v1.0.0 — closed enums
     "TriageSignal",
     "SurfaceAccessibility",
