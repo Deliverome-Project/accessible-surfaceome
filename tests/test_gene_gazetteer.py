@@ -249,3 +249,103 @@ def test_extract_snippets_noop_without_dictionaries() -> None:
         max_snippets=5,
     )
     assert any("CD47" in s.text for s in snippets)
+
+
+# ---------------------------------------------------------------------------
+# accepts_paper_level_evidence — per-category relaxation for high-throughput
+# methods (mass_spec_surfaceome, surface_biotinylation, western_blot_paired)
+# ---------------------------------------------------------------------------
+
+
+def test_paper_level_evidence_keeps_competing_when_section_mentions_target() -> None:
+    """For high-throughput methods, a methods sentence describing the
+    experiment that happens to name a competing gene (sibling target) is
+    kept *as long as the target also appears in the same section* — the
+    paper as a whole is about a surfaceome experiment that included the
+    target, even if the methods sentence describes the experiment
+    generically.
+    """
+    paper = _paper_with([
+        PaperSection(
+            name="methods",
+            text=(
+                "We surface-biotinylated TCDB-expressing HEK293T cells using "
+                "sulfo-NHS-SS-biotin and enriched with streptavidin beads. "
+                "Captured proteins, including CD81, were eluted and analyzed by LC-MS/MS."
+            ),
+        )
+    ])
+    target = frozenset({"CD81"})
+    gazetteer = frozenset({"CD81", "TCDB"})
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["surface_biotinylation"],
+        max_snippets=5,
+        target_names=target,
+        gazetteer=gazetteer,
+    )
+    # The first sentence names TCDB (competing) but the section also mentions
+    # CD81 (target), so the methods description survives the proximity filter.
+    texts = " || ".join(s.text for s in snippets)
+    assert "sulfo-NHS-SS-biotin" in texts.lower() or "biotinylated" in texts.lower()
+
+
+def test_paper_level_evidence_still_drops_when_section_lacks_target() -> None:
+    """Relaxation is bounded: when the section doesn't mention the target
+    anywhere, competing-gene methods sentences are still dropped. The
+    point of the relaxation is "paper-level evidence about the target,"
+    not "any surfaceome paper anywhere."
+    """
+    paper = _paper_with([
+        PaperSection(
+            name="methods",
+            text=(
+                "TCDB-expressing HEK293T cells were surface-biotinylated using "
+                "sulfo-NHS-SS-biotin and enriched with streptavidin beads."
+            ),
+        )
+    ])
+    target = frozenset({"CD81"})
+    gazetteer = frozenset({"CD81", "TCDB"})
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["surface_biotinylation"],
+        max_snippets=5,
+        target_names=target,
+        gazetteer=gazetteer,
+    )
+    assert snippets == []
+
+
+def test_paper_level_relaxation_does_not_affect_flow_cytometry() -> None:
+    """The relaxation is opt-in per category. Antibody-based assays
+    (``flow_cytometry``) keep the strict filter — the CALR/CD47
+    sibling-misfire guarantee in
+    :func:`test_extract_snippets_drops_competing_gene_sentence` stays
+    intact even when the section happens to mention both genes.
+    """
+    paper = _paper_with([
+        PaperSection(
+            name="figure_legends",
+            text=(
+                "CD47 surface expression was analyzed using flow cytometry "
+                "in lymphoma cell lines. "
+                "CALR was used as a positive control in a parallel experiment."
+            ),
+        )
+    ])
+    target = frozenset({"CALR", "CRT"})
+    gazetteer = frozenset({"CALR", "CRT", "CD47"})
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["flow_cytometry"],
+        max_snippets=5,
+        target_names=target,
+        gazetteer=gazetteer,
+    )
+    texts = " || ".join(s.text for s in snippets)
+    # The CD47-subject sentence must still be dropped despite CALR being
+    # mentioned in a *different* sentence of the same section —
+    # flow_cytometry is sentence-level strict by design, even though
+    # the section contains the target.
+    assert "CD47 surface expression" not in texts

@@ -48,11 +48,17 @@ from ._shared.europepmc import (
     fetch_fulltext,
     paper_from_europepmc,
 )
-from ._shared.gene_gazetteer import build_target_names, load_gazetteer, sentence_subject
+from ._shared.gene_gazetteer import (
+    build_target_names,
+    extract_symbol_tokens,
+    load_gazetteer,
+    sentence_subject,
+)
 from ._shared.http import CachedHTTP, open_default_client
 from ._shared.models import (
     CandidateSnippet,
     EvidenceCategory,
+    EvidenceClaimDraft,
     EvidenceRetrievalPack,
     IdentifierBundle,
     Paper,
@@ -128,12 +134,27 @@ class _CategorySpec:
     supplied separately as ``@GENE_<symbol>``); ``hallmark_patterns``
     are run sentence-by-sentence over fetched full text;
     ``section_weights`` decide which section's hits float to the top.
+
+    ``accepts_paper_level_evidence`` widens the gene-proximity filter
+    for high-throughput methods (``mass_spec_surfaceome``,
+    ``surface_biotinylation``, ``western_blot_paired``). In those
+    methodologies the methods sentence describes the *experiment*
+    generically (e.g. "Cells were biotinylated with sulfo-NHS-SS-biotin")
+    and the target gene appears only in a supplementary table or a
+    different sentence — never as the subject of the methods sentence.
+    With this flag set, the filter treats a competing-gene-only
+    sentence as acceptable as long as the *target gene also appears
+    somewhere in the same section*; the strict filter still drops
+    sentences from sections that don't mention the target at all
+    (which is the case for surfaceome papers where the target is
+    truly absent from the protein list).
     """
 
     query_clauses: tuple[str, ...]
     pubtator_terms: str
     hallmark_patterns: tuple[re.Pattern[str], ...]
     section_weights: Mapping[SectionName, float]
+    accepts_paper_level_evidence: bool = False
 
 
 # Per-category retrieval config. Query clauses are joined with AND to
@@ -215,6 +236,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             ),
         ),
         section_weights=_DEFAULT_BIOTIN_WEIGHTS,
+        accepts_paper_level_evidence=True,
     ),
     "mass_spec_surfaceome": _CategorySpec(
         query_clauses=(
@@ -236,6 +258,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             ),
         ),
         section_weights=_DEFAULT_MS_WEIGHTS,
+        accepts_paper_level_evidence=True,
     ),
     "western_blot_paired": _CategorySpec(
         query_clauses=(
@@ -259,6 +282,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             ),
         ),
         section_weights=_DEFAULT_BIOTIN_WEIGHTS,
+        accepts_paper_level_evidence=True,
     ),
     "structure_with_ecd": _CategorySpec(
         query_clauses=(
@@ -467,13 +491,43 @@ def _pmc_retrieval(
             target_names=target_names,
             gazetteer=gazetteer,
         )
-        if per_paper:
-            snippet_papers.append(full)
+        # For high-throughput categories, additionally pull verbatim
+        # target-naming sentences from the paper body. These give the
+        # agent a ready-to-quote paper-level attribution that pairs
+        # with the methodology snippet for a complete "Paper performed
+        # X AND identified target" citation. Dedup against hallmark
+        # snippets so a target-naming sentence that ALSO matched a
+        # hallmark pattern (e.g. "CD81 was detected by Western blot")
+        # is only emitted once.
+        already_emitted = {s.text for s in per_paper}
+        target_mentions = [
+            tm for tm in _extract_target_mentions(
+                full, spec=spec, target_names=target_names,
+            ) if tm.text not in already_emitted
+        ]
+        if per_paper or target_mentions:
+            # Pin the target-mention excerpts on the paper itself so the
+            # agent can find them via the Paper record even if the
+            # snippet ranking pushes some out of the top-N.
+            full_with_mentions = full.model_copy(
+                update={"target_mention_excerpts": [s.text for s in target_mentions]}
+            ) if target_mentions else full
+            snippet_papers.append(full_with_mentions)
             all_snippets.extend(per_paper)
+            all_snippets.extend(target_mentions)
 
     # Sort across papers by score (descending) so the agent sees the
     # strongest matches first.
     all_snippets.sort(key=lambda s: s.score, reverse=True)
+
+    # Convert every snippet into a pre-built EvidenceClaimDraft so the
+    # agent doesn't have to re-type (quote, source_id, section) into a
+    # new claim — the (quote, source_id) pair the orchestrator
+    # substring-checks at promotion is locked together by construction.
+    claim_drafts = [
+        _snippet_to_draft(snippet, seq=i + 1)
+        for i, snippet in enumerate(all_snippets)
+    ]
 
     empty_reason: str | None = None
     if not all_snippets:
@@ -490,6 +544,7 @@ def _pmc_retrieval(
         n_papers_with_snippets=len(snippet_papers),
         papers=snippet_papers,
         snippets=all_snippets,
+        evidence_claim_drafts=claim_drafts,
         empty_reason=empty_reason,
     )
 
@@ -608,6 +663,71 @@ _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(])")
 # snippets outrank anaphoric ones ("the protein was detected...").
 _TARGET_MENTION_BOOST = 2.0
 
+# For the high-throughput categories, a sentence that names the target
+# but doesn't fire a methodology hallmark is still load-bearing — it is
+# the paper-level attribution that ties the methodology (described in a
+# different sentence) to this specific gene. We emit those as separate
+# CandidateSnippets with this synthetic hallmark_phrase so the agent
+# (and audit code) can tell them apart from regex-matched ones.
+TARGET_MENTION_HALLMARK = "target_mention"
+
+# Max target-mention snippets emitted per paper. Keeps the snippet
+# budget bounded while ensuring at least one target-attribution
+# excerpt makes it through alongside the methodology snippets.
+_MAX_TARGET_MENTIONS_PER_PAPER = 3
+
+# Context-excerpt cap. The 200-char ``CandidateSnippet.text`` is the
+# substring anchor; ``context_excerpt`` carries the surrounding 1-2
+# sentences (≤500 chars) so the agent can READ the snippet in
+# situ. High-throughput methodology routinely spans two sentences
+# ("Cells were biotinylated. Eluted proteins were analyzed by LC-MS/MS")
+# and the focal-sentence-only quote is insufficient context without it.
+_CONTEXT_EXCERPT_MAX_CHARS = 500
+
+
+def _adjacent_context(
+    section_text: str,
+    focal_sentence: str,
+    *,
+    max_chars: int = _CONTEXT_EXCERPT_MAX_CHARS,
+) -> str | None:
+    """Return up to ``max_chars`` of section text around ``focal_sentence``.
+
+    Picks the focal sentence + at most one sentence on each side, joined
+    with single spaces. Returns ``None`` when the focal sentence stands
+    alone in its section (no extra context to add) or when the lookup
+    can't locate it among the split sentences (punctuation-edge cases).
+
+    The window is verbatim from ``section_text`` — if downstream code
+    wants to register it as a quote-anchorable excerpt it can; the
+    primary use is the agent's understanding of multi-sentence
+    methodology context.
+    """
+    sentences = _split_sentences(section_text)
+    try:
+        idx = sentences.index(focal_sentence)
+    except ValueError:
+        return None
+    start = max(0, idx - 1)
+    end = min(len(sentences), idx + 2)
+    chosen = sentences[start:end]
+    if len(chosen) <= 1:
+        return None  # focal sentence is alone — no useful surrounding context
+    window = " ".join(chosen)
+    if len(window) <= max_chars:
+        return window
+    # Window too long: try dropping the further-out sentence first to
+    # keep focal + one adjacent.
+    if start < idx:
+        narrowed = " ".join(sentences[idx:end])
+        if len(narrowed) <= max_chars:
+            return narrowed
+    if end > idx + 1:
+        narrowed = " ".join(sentences[start:idx + 1])
+        if len(narrowed) <= max_chars:
+            return narrowed
+    return None  # even minimal context overflows — give up rather than truncate mid-sentence
+
 
 def _extract_snippets(
     *,
@@ -639,6 +759,14 @@ def _extract_snippets(
         if weight <= 0:
             continue
         section_enum = _SECTION_TO_CLAIM.get(section.name, "other")
+        # Per-section paper-level relaxation. High-throughput methods
+        # describe the experiment generically and only name the target in
+        # a different sentence (or supplementary table). When the target
+        # appears anywhere in this section's text we keep "competing"
+        # sentences too — they're describing the same experiment.
+        section_mentions_target = bool(target_names) and any(
+            tok in target_names for tok in extract_symbol_tokens(section.text)
+        )
         for sentence in _split_sentences(section.text):
             # Subject-grounding: drop sentences about a sibling gene,
             # boost sentences that name the target. Computed once per
@@ -646,7 +774,9 @@ def _extract_snippets(
             subject = sentence_subject(
                 sentence, target_names=target_names, gazetteer=gazetteer
             )
-            if subject == "competing":
+            if subject == "competing" and not (
+                spec.accepts_paper_level_evidence and section_mentions_target
+            ):
                 continue
             for pattern in spec.hallmark_patterns:
                 match = pattern.search(sentence)
@@ -674,6 +804,7 @@ def _extract_snippets(
                             text=snippet_text,
                             score=score,
                             hallmark_phrase=match.group(0)[:80],
+                            context_excerpt=_adjacent_context(section.text, sentence),
                         ),
                     )
                 )
@@ -693,6 +824,122 @@ def _extract_snippets(
         if len(chosen) >= max_snippets:
             break
     return chosen
+
+
+def _extract_target_mentions(
+    paper: Paper,
+    *,
+    spec: _CategorySpec,
+    target_names: frozenset[str],
+    max_mentions: int = _MAX_TARGET_MENTIONS_PER_PAPER,
+) -> list[CandidateSnippet]:
+    """Emit verbatim ≤200-char sentences where the target gene is named.
+
+    Only fires for ``spec.accepts_paper_level_evidence=True`` categories
+    (high-throughput methods) — for antibody assays the existing
+    hallmark + target-boost path already covers target-naming sentences.
+    The score puts target-mention snippets between the
+    hallmark-with-target snippets (which carry both methodology and gene
+    in one sentence — the strongest signal) and the methodology-only
+    snippets (the paper-level relaxation), so a tier-ranked agent picks
+    a target-mention when one is available.
+
+    Sentences over the 200-char cap are trimmed around the first target
+    token; the trimmed text must still substring-match the source body
+    or the snippet is dropped (substring-anchoring guarantee).
+    """
+    if not spec.accepts_paper_level_evidence or not target_names or not paper.sections:
+        return []
+    emitted: list[tuple[float, CandidateSnippet]] = []
+    seen_norm: set[str] = set()
+    source_id = f"PMC:{paper.pmc_id}" if paper.pmc_id else f"PMID:{paper.pmid}"
+    for section in paper.sections:
+        weight = spec.section_weights.get(section.name, 0.5)
+        if weight <= 0:
+            continue
+        section_enum = _SECTION_TO_CLAIM.get(section.name, "other")
+        for sentence in _split_sentences(section.text):
+            tokens = extract_symbol_tokens(sentence)
+            target_hits = [t for t in tokens if t in target_names]
+            if not target_hits:
+                continue
+            snippet_text = _trim_to_target(sentence, target_hits[0])
+            if not snippet_text or snippet_text not in section.text:
+                continue
+            key = re.sub(r"\s+", " ", snippet_text.lower()).strip()
+            if key in seen_norm:
+                continue
+            seen_norm.add(key)
+            # Target-mention scoring: section weight + the existing
+            # target boost. A target-named sentence in methods scores
+            # weight 3 + boost 2 = 5; in results, 2 + 2 = 4. A
+            # hallmark+target sentence still wins (it adds hallmark
+            # match credit on top).
+            score = weight + _TARGET_MENTION_BOOST
+            emitted.append((
+                score,
+                CandidateSnippet(
+                    source_id=source_id,
+                    section=section_enum,
+                    figure_or_table_id=None,
+                    text=snippet_text,
+                    score=score,
+                    hallmark_phrase=TARGET_MENTION_HALLMARK,
+                    context_excerpt=_adjacent_context(section.text, sentence),
+                ),
+            ))
+    emitted.sort(key=lambda pair: pair[0], reverse=True)
+    return [snippet for _, snippet in emitted[:max_mentions]]
+
+
+def _trim_to_target(sentence: str, target_token: str) -> str:
+    """Trim a sentence to ≤200 chars, biased to keep the target token in view."""
+    sentence = sentence.strip()
+    if len(sentence) <= 200:
+        return sentence
+    # Find the target token; center a window around it.
+    idx = sentence.find(target_token)
+    if idx < 0:
+        # Token might be a normalized form (hyphens dropped); fall back to first 200.
+        return sentence[:200].rstrip()
+    pad = max(0, (200 - len(target_token)) // 2)
+    start = max(0, idx - pad)
+    end = min(len(sentence), start + 200)
+    start = max(0, end - 200)
+    snippet = sentence[start:end]
+    if start > 0:
+        first_space = snippet.find(" ")
+        if 0 < first_space < 40:
+            snippet = snippet[first_space + 1:]
+    if end < len(sentence):
+        last_space = snippet.rfind(" ")
+        if last_space > len(snippet) - 40:
+            snippet = snippet[:last_space]
+    return snippet.strip()
+
+
+def _snippet_to_draft(snippet: CandidateSnippet, *, seq: int) -> EvidenceClaimDraft:
+    """Convert a ``CandidateSnippet`` into a pre-filled EvidenceClaim skeleton.
+
+    The agent extends the draft into a full :class:`EvidenceClaim` by
+    adding the narrative + classification fields; the load-bearing
+    anchor fields (``quote``, ``source_id``, ``section``,
+    ``figure_or_table_id``) are copied from the snippet verbatim so the
+    substring check at promotion passes by construction.
+    """
+    # source_id like "PMC:PMC10898066" or "PMID:38414005"; strip the
+    # prefix for the suggested handle, fall back to the raw value.
+    bare = snippet.source_id.split(":", 1)[-1] if ":" in snippet.source_id else snippet.source_id
+    return EvidenceClaimDraft(
+        suggested_evidence_id=f"draft_{bare}_{snippet.section}_{seq:02d}",
+        quote=snippet.text,
+        source_id=snippet.source_id,
+        section=snippet.section,
+        figure_or_table_id=snippet.figure_or_table_id,
+        context_excerpt=snippet.context_excerpt,
+        hallmark_phrase=snippet.hallmark_phrase,
+        score=snippet.score,
+    )
 
 
 def _split_sentences(text: str) -> list[str]:
@@ -804,6 +1051,9 @@ def _hpa_ihc(*, uniprot_acc: str, http: CachedHTTP) -> EvidenceRetrievalPack:
         n_papers_with_snippets=1 if snippets else 0,
         papers=[],
         snippets=snippets,
+        evidence_claim_drafts=[
+            _snippet_to_draft(s, seq=i + 1) for i, s in enumerate(snippets)
+        ],
         synthetic_sources=synthetic,
         empty_reason=None if snippets else "HPA row matched but no quotable lines emitted",
     )

@@ -135,6 +135,176 @@ def test_extractor_returns_empty_when_no_hallmark_match() -> None:
     assert snippets == []
 
 
+def test_target_mention_extractor_emits_for_high_throughput_categories() -> None:
+    """For high-throughput categories, ``_extract_target_mentions`` emits a
+    target-naming sentence even when it doesn't match a hallmark pattern.
+    The agent uses these for paper-level gene attribution alongside the
+    methodology snippet from the same paper.
+    """
+    paper = Paper(
+        pmid=99,
+        pmc_id="PMC99",
+        title="surfaceome paper",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "We identified 312 surface proteins by sulfo-NHS-SS-biotin "
+                    "labeling. Among the top hits, CD81 ranked 47 in HEK293 "
+                    "cells. CD81 expression was confirmed across all replicates."
+                ),
+            )
+        ],
+    )
+    target = frozenset({"CD81"})
+    mentions = er._extract_target_mentions(
+        paper,
+        spec=er._CATEGORY_SPECS["surface_biotinylation"],
+        target_names=target,
+    )
+    assert mentions, "expected at least one target-mention snippet"
+    assert all("CD81" in m.text for m in mentions)
+    assert all(m.hallmark_phrase == er.TARGET_MENTION_HALLMARK for m in mentions)
+    # Each mention must substring-match the source body for anchoring.
+    full_text = "\n\n".join(s.text for s in paper.sections)
+    for m in mentions:
+        assert m.text in full_text
+
+
+def test_target_mention_extractor_inert_for_strict_categories() -> None:
+    """Strict-filter categories (e.g. flow_cytometry) keep the original
+    hallmark + target-boost flow; ``_extract_target_mentions`` returns
+    nothing for them so we don't double-emit target-named sentences that
+    the hallmark path already covers.
+    """
+    paper = Paper(
+        pmid=99,
+        pmc_id="PMC99",
+        title="paper",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+        sections=[PaperSection(name="results", text="CD81 was detected on the surface.")],
+    )
+    mentions = er._extract_target_mentions(
+        paper,
+        spec=er._CATEGORY_SPECS["flow_cytometry"],
+        target_names=frozenset({"CD81"}),
+    )
+    assert mentions == []
+
+
+def test_adjacent_context_returns_window_when_neighbors_present() -> None:
+    """Sentence with one before + one after yields a multi-sentence window."""
+    section = (
+        "Cells were biotinylated with sulfo-NHS-SS-biotin. "
+        "Eluted material was analyzed by LC-MS/MS. "
+        "CD81 was identified in the enriched fraction."
+    )
+    focal = "Eluted material was analyzed by LC-MS/MS."
+    ctx = er._adjacent_context(section, focal)
+    assert ctx is not None
+    assert "Cells were biotinylated" in ctx
+    assert "CD81 was identified" in ctx
+    assert len(ctx) <= 500
+
+
+def test_adjacent_context_returns_none_when_focal_stands_alone() -> None:
+    """A section with a single sentence has no surrounding context to add."""
+    section = "CD81 was detected on the surface."
+    focal = "CD81 was detected on the surface."
+    assert er._adjacent_context(section, focal) is None
+
+
+def test_extractor_populates_context_excerpt() -> None:
+    """Snippets emitted by ``_extract_snippets`` carry a ``context_excerpt``
+    when the focal sentence has adjacent neighbors in the same section.
+    """
+    paper = _fixture_paper(
+        sections=[
+            PaperSection(
+                name="methods",
+                text=(
+                    "Cells were lysed in RIPA buffer. "
+                    "Cell-surface capture (CSC) was performed using "
+                    "periodate-oxidized sialic acid biotinylation followed by "
+                    "neutravidin enrichment and LC-MS/MS analysis. "
+                    "Captured proteins were trypsinized for downstream analysis."
+                ),
+            ),
+        ],
+    )
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["mass_spec_surfaceome"],
+        max_snippets=3,
+    )
+    assert snippets
+    ctx = snippets[0].context_excerpt
+    assert ctx is not None
+    assert len(ctx) <= 500
+    # Context should mention the surrounding sentences, not just the focal one.
+    assert ("Cells were lysed" in ctx) or ("Captured proteins" in ctx)
+
+
+def test_pmc_retrieval_emits_evidence_claim_drafts(monkeypatch: pytest.MonkeyPatch) -> None:
+    """``_pmc_retrieval`` packages every emitted snippet as an
+    ``EvidenceClaimDraft`` with the snippet's quote/source_id/section
+    locked together for downstream copy-paste-free claim authoring.
+    """
+    from accessible_surfaceome.tools._shared.models import CandidateSnippet
+
+    snippet = CandidateSnippet(
+        source_id="PMC:PMC42",
+        section="methods",
+        figure_or_table_id=None,
+        text="Cell-surface capture (CSC) was performed using LC-MS/MS analysis.",
+        score=4.0,
+        hallmark_phrase="LC-MS/MS",
+        context_excerpt="A longer surrounding context goes here.",
+    )
+    draft = er._snippet_to_draft(snippet, seq=3)
+    assert draft.quote == snippet.text
+    assert draft.source_id == snippet.source_id
+    assert draft.section == snippet.section
+    assert draft.figure_or_table_id == snippet.figure_or_table_id
+    assert draft.context_excerpt == snippet.context_excerpt
+    assert draft.hallmark_phrase == snippet.hallmark_phrase
+    assert draft.score == snippet.score
+    assert draft.suggested_evidence_id == "draft_PMC42_methods_03"
+
+
+def test_target_mention_extractor_dedups_within_paper() -> None:
+    """Repeated identical target-naming sentences in one paper collapse
+    to a single emitted snippet — the dedup key matches what
+    ``_extract_snippets`` uses, so cross-pollination between hallmark
+    and target-mention snippets stays consistent.
+    """
+    paper = Paper(
+        pmid=99,
+        pmc_id="PMC99",
+        title="paper",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "CD81 was among the identified surface proteins. "
+                    "CD81 was among the identified surface proteins."
+                ),
+            )
+        ],
+    )
+    mentions = er._extract_target_mentions(
+        paper,
+        spec=er._CATEGORY_SPECS["mass_spec_surfaceome"],
+        target_names=frozenset({"CD81"}),
+    )
+    assert len(mentions) == 1
+
+
 def test_extractor_caps_to_200_chars() -> None:
     long_sentence = (
         "The protein was detected on the surface of non-permeabilized intact cells "

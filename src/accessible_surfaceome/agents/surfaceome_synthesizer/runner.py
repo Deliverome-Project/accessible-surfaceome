@@ -33,6 +33,13 @@ from anthropic.types import TextBlock
 from pydantic import ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.payload import cached_system, cached_user_text
+from accessible_surfaceome.agents._support.pricing import (
+    UsageRecord,
+    UsageSummary,
+    record_from_response,
+    summarize_usage,
+)
 from accessible_surfaceome.tools._shared.models import (
     BiologicalContextDraft,
     SurfaceEvidenceDraft,
@@ -66,6 +73,9 @@ class BResult:
     n_tool_calls: int  # always 0 by design — kept for API symmetry with A1
     n_repair_attempts: int = 0
     messages: list[dict[str, Any]] = field(default_factory=list)
+    usage: UsageSummary = field(
+        default_factory=lambda: UsageSummary(model=AGENT_MODEL)
+    )
 
 
 def _extract_json(text: str) -> dict[str, Any] | None:
@@ -161,13 +171,15 @@ def _run(
     a2_draft: dict[str, Any] | None,
 ) -> BResult:
     system_prompt = SYSTEM_PROMPT_PATH.read_text()
+    cached_system_blocks = cached_system(system_prompt)
+    # The initial user task message embeds both ledgers + the SynthesizerDraft
+    # JSON schema — large, static across repair iterations. Cache it once so
+    # repairs only pay full price for the new error-feedback turn.
     messages: list[dict[str, Any]] = [
-        {
-            "role": "user",
-            "content": _build_task(gene, a1_draft=a1_draft, a2_draft=a2_draft),
-        }
+        cached_user_text(_build_task(gene, a1_draft=a1_draft, a2_draft=a2_draft))
     ]
     n_repair_attempts = 0
+    usage_records: list[UsageRecord] = []
     final_text = ""
     raw_json: dict[str, Any] | None = None
     validation_error: str | None = None
@@ -176,10 +188,11 @@ def _run(
         resp = client.messages.create(
             model=AGENT_MODEL,
             max_tokens=MAX_TOKENS,
-            system=system_prompt,
+            system=cast("Any", cached_system_blocks),
             # No tools by design — see module docstring.
             messages=cast("Any", messages),
         )
+        usage_records.append(record_from_response(resp.usage, AGENT_MODEL))
         messages.append({"role": "assistant", "content": resp.content})
 
         # Defensive: B should never trigger tool_use (no tools were offered),
@@ -246,6 +259,7 @@ def _run(
             n_tool_calls=0,
             n_repair_attempts=n_repair_attempts,
             messages=messages,
+            usage=summarize_usage(usage_records, AGENT_MODEL),
         )
     else:
         logger.warning("B hit MAX_ITERATIONS=%d for %s", MAX_ITERATIONS, gene)
@@ -259,6 +273,7 @@ def _run(
         n_tool_calls=0,
         n_repair_attempts=n_repair_attempts,
         messages=messages,
+        usage=summarize_usage(usage_records, AGENT_MODEL),
     )
 
 
@@ -303,6 +318,12 @@ def _main(argv: list[str] | None = None) -> int:
         f"tool calls: {result.n_tool_calls}  "
         f"repair attempts: {result.n_repair_attempts}"
     )
+    print(
+        f"tokens: in={result.usage.input_tokens} out={result.usage.output_tokens} "
+        f"cache_w={result.usage.cache_creation_input_tokens} "
+        f"cache_r={result.usage.cache_read_input_tokens}  "
+        f"cost: ${result.usage.cost_usd:.4f}"
+    )
 
     run_dir.mkdir(exist_ok=True)
 
@@ -313,6 +334,7 @@ def _main(argv: list[str] | None = None) -> int:
         "n_tool_calls": result.n_tool_calls,
         "n_repair_attempts": result.n_repair_attempts,
         "validation_error": result.validation_error,
+        "usage": result.usage.as_dict(),
     }
     meta_out = run_dir / f"b_{gene}.meta.json"
     meta_out.write_text(json.dumps(meta, indent=2))
