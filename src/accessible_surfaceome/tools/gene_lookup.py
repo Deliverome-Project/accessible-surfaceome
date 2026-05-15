@@ -655,6 +655,199 @@ def _uniprot_entry(acc: str, *, http: CachedHTTP) -> dict[str, Any]:
     return http.get_json(url, source="uniprot", ttl_days=_TTL["uniprot"])
 
 
+def resolve_by_hgnc_id(hgnc_id: str, *, http: CachedHTTP) -> IdentifierBundle:
+    """Resolve directly from a stable HGNC ID — preferred over the
+    symbol-keyed ``resolve()`` whenever the cohort row carries one.
+
+    HGNC IDs are one-per-gene and never reassigned, so the three
+    residual failure modes documented in ``_uniprot_search_by_symbol``
+    don't apply here:
+
+      * **Primary-name collisions.** Two reviewed UniProt entries can
+        share a primary ``geneName.value`` (e.g. across HLA / Ig / TCR
+        gene-segment families); ``_uniprot_search_by_symbol`` returns
+        the first such hit, which is server-rank-dependent. By
+        contrast, HGNC's ``uniprot_ids`` xref is a closed set per
+        gene and we explicitly pick the canonical Swiss-Prot entry
+        from it.
+      * **HGNC fallback's ``uniprot_ids[0]``.** The legacy fallback
+        path silently took index 0 of HGNC's xref list when UniProt's
+        symbol search returned nothing; this picker iterates and
+        applies a canonicalization rule.
+      * **Symbol-reassignment drift.** When HGNC re-assigns a symbol
+        from one gene to another (rare but documented), a
+        symbol-keyed query returns the new gene; an HGNC-ID-keyed
+        query returns the gene the cohort actually meant.
+
+    Raises ``LookupError`` when the HGNC record has no
+    ``uniprot_ids`` xref — that gene is out of study scope (no
+    reviewed human protein), same contract as ``resolve``.
+    """
+
+    raw = hgnc_id.strip()
+    if not raw.upper().startswith("HGNC:"):
+        raw = f"HGNC:{raw}"
+    hgnc = _hgnc_record_by_id(raw, http=http)
+    if not hgnc:
+        raise LookupError(f"no HGNC record for {hgnc_id!r}")
+    uniprot_ids = list(hgnc.get("uniprot_ids") or [])
+    if not uniprot_ids:
+        raise LookupError(
+            f"HGNC record for {hgnc_id} has no uniprot_ids xref — "
+            "out of study scope"
+        )
+    uniprot_acc = _pick_canonical_uniprot(uniprot_ids, http=http)
+    entry = _uniprot_entry(uniprot_acc, http=http)
+    return _bundle_from_entry(
+        entry,
+        uniprot_acc=uniprot_acc,
+        hgnc=hgnc,
+        http=http,
+    )
+
+
+def _hgnc_record_by_id(hgnc_id: str, *, http: CachedHTTP) -> dict[str, Any] | None:
+    """Fetch an HGNC record by ID. ``hgnc_id`` must include the
+    ``HGNC:`` prefix (HGNC's REST API requires it). Same TTL +
+    cache-source as ``_hgnc_record`` so symbol- and ID-keyed
+    lookups share the cache."""
+
+    url = f"https://rest.genenames.org/fetch/hgnc_id/{hgnc_id}"
+    payload = http.get_json(
+        url, source="hgnc", ttl_days=_TTL["hgnc"], headers={"Accept": "application/json"}
+    )
+    docs = ((payload or {}).get("response") or {}).get("docs") or []
+    return docs[0] if docs else None
+
+
+def _pick_canonical_uniprot(uniprot_ids: list[str], *, http: CachedHTTP) -> str:
+    """Pick the canonical reviewed Swiss-Prot accession from an HGNC
+    ``uniprot_ids`` list.
+
+    HGNC sometimes lists multiple UniProt accs for one gene (canonical
+    + isoform-specific reviewed entries; less commonly canonical +
+    a TrEMBL stub). The legacy fallback at ``resolve()`` line 193 took
+    ``uniprot_ids[0]`` blindly, which is HGNC's listing order — not
+    "the canonical one".
+
+    Strategy (deterministic):
+      1. If only one acc, return it.
+      2. Otherwise, fetch each entry; drop those that 404.
+      3. Prefer reviewed Swiss-Prot over unreviewed TrEMBL.
+      4. Prefer canonical-isoform accessions (no ``-N`` suffix).
+      5. Tie-break on lexicographic accession order — Swiss-Prot's
+         own canonical convention assigns the lowest-sorted acc to
+         the canonical entry.
+
+    Falls back to ``uniprot_ids[0]`` if every candidate 404s, so the
+    contract matches the legacy behavior in the worst case (caller
+    can still detect the lookup failure downstream).
+    """
+
+    if not uniprot_ids:
+        raise ValueError("uniprot_ids is empty")
+    if len(uniprot_ids) == 1:
+        return uniprot_ids[0]
+
+    candidates: list[tuple[int, int, str]] = []
+    for acc in uniprot_ids:
+        try:
+            entry = _uniprot_entry(acc, http=http)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 404:
+                continue
+            raise
+        reviewed_rank = (
+            0 if entry.get("entryType") == "UniProtKB reviewed (Swiss-Prot)" else 1
+        )
+        isoform_rank = 1 if "-" in acc else 0
+        candidates.append((reviewed_rank, isoform_rank, acc))
+    if not candidates:
+        return uniprot_ids[0]
+    candidates.sort()
+    return candidates[0][2]
+
+
+def _bundle_from_entry(
+    entry: dict[str, Any],
+    *,
+    uniprot_acc: str,
+    hgnc: dict[str, Any] | None,
+    http: CachedHTTP,
+) -> IdentifierBundle:
+    """Shared bundle-assembly logic for ``resolve`` and
+    ``resolve_by_hgnc_id``. Lifted verbatim from the post-search tail
+    of ``resolve()`` so behavior matches when the same UniProt entry
+    is reached through either path. Caller supplies the resolved
+    UniProt entry + the HGNC record (None forces a symbol-keyed HGNC
+    lookup off the entry's primary symbol — same as the legacy path)."""
+
+    status, merged_into = _entry_status(entry)
+    primary_symbol = _entry_primary_symbol(entry) or ""
+    xrefs = _index_xrefs(entry)
+    ensembl_canonical_protein = _ensembl_canonical_protein(entry)
+
+    if hgnc is None:
+        hgnc = _hgnc_record(primary_symbol, http=http) or {}
+    hgnc_id = hgnc.get("hgnc_id") or (xrefs.get("HGNC") or [""])[0]
+    approved_name = hgnc.get("name")
+    hgnc_aliases = list(hgnc.get("alias_symbol") or [])
+    alias_names = list(hgnc.get("alias_name") or [])
+    previous_symbols = list(hgnc.get("prev_symbol") or [])
+    previous_names = list(hgnc.get("prev_name") or [])
+    hgnc_gene_groups = list(hgnc.get("gene_group") or [])
+    cd_designation_raw = hgnc.get("cd")
+    cd_designation = (
+        cd_designation_raw if isinstance(cd_designation_raw, str) and cd_designation_raw else None
+    )
+    entrez_id_raw = hgnc.get("entrez_id")
+    ensembl_gene = hgnc.get("ensembl_gene_id")
+    ncbi_gene_id = int(entrez_id_raw) if entrez_id_raw else None
+
+    ncbi = _ncbi_gene_summary(ncbi_gene_id, http=http) if ncbi_gene_id else None
+    ncbi_aliases = _parse_ncbi_aliases(ncbi)
+    aliases = _merge_aliases(
+        current=hgnc_aliases,
+        extras=[ncbi_aliases],
+        exclude={primary_symbol, *previous_symbols},
+    )
+
+    sequence_block = entry.get("sequence") or {}
+    length_aa = sequence_block.get("length")
+    isoform_count = _entry_isoform_count(entry)
+    alias_collision_risk = _alias_collision_risk(
+        primary_symbol, aliases, previous_symbols, http=http
+    )
+    ncbi_summary = _truncate(ncbi.get("summary") if ncbi else None, _NCBI_SUMMARY_CHARS)
+
+    # Use the HGNC primary symbol when available (canonical for the
+    # gene), otherwise the UniProt entry's primary, otherwise empty.
+    final_symbol = hgnc.get("symbol") or primary_symbol
+
+    return IdentifierBundle(
+        hgnc_symbol=final_symbol,
+        hgnc_id=hgnc_id,
+        approved_name=approved_name,
+        aliases=aliases,
+        alias_names=alias_names,
+        previous_symbols=previous_symbols,
+        previous_names=previous_names,
+        hgnc_gene_groups=hgnc_gene_groups,
+        cd_designation=cd_designation,
+        uniprot_acc=uniprot_acc,
+        uniprot_status=status,
+        uniprot_merged_into=merged_into,
+        ncbi_gene_id=ncbi_gene_id,
+        ensembl_gene=ensembl_gene,
+        ensembl_canonical_protein=ensembl_canonical_protein,
+        length_aa=length_aa,
+        isoform_count=isoform_count,
+        alias_collision_risk=alias_collision_risk,
+        open_targets_status=None,
+        ncbi_summary=ncbi_summary,
+    )
+
+
 def _uniprot_search_by_symbol(symbol: str, *, http: CachedHTTP) -> str | None:
     """Resolve a gene symbol → reviewed UniProt accession, preferring
     entries where ``symbol`` is the primary gene name over entries
