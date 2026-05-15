@@ -722,32 +722,41 @@ def _hgnc_record_by_id(hgnc_id: str, *, http: CachedHTTP) -> dict[str, Any] | No
 
 def _pick_canonical_uniprot(uniprot_ids: list[str], *, http: CachedHTTP) -> str:
     """Pick the canonical reviewed Swiss-Prot accession from an HGNC
-    ``uniprot_ids`` list.
+    ``uniprot_ids`` list, with the same accession-history reconciliation
+    the M1 candidate-universe merge applies (``merge/normalize.py``).
 
     HGNC sometimes lists multiple UniProt accs for one gene (canonical
     + isoform-specific reviewed entries; less commonly canonical +
-    a TrEMBL stub). The legacy fallback at ``resolve()`` line 193 took
-    ``uniprot_ids[0]`` blindly, which is HGNC's listing order — not
-    "the canonical one".
+    a TrEMBL stub). HGNC's xref is also curated manually and lags
+    UniProt's monthly merges, so the list can include:
+
+      * **Secondary accs** that UniProt has merged into a current
+        primary. Mirroring ``normalize_accessions``' ``sec_ac.txt``
+        rewrite, follow the merge chain to the current primary.
+      * **Deleted Swiss-Prot accs**. Mirroring the ``delac_sp.txt``
+        drop, skip them entirely.
 
     Strategy (deterministic):
-      1. If only one acc, return it.
-      2. Otherwise, fetch each entry; drop those that 404.
+      1. If only one acc, run it through the same reconciliation
+         (single-acc shortcut would otherwise leak stale IDs).
+      2. For each acc: fetch the entry; drop 404s; if ``status ==
+         "merged"`` and a target acc exists, re-fetch the merged-into
+         entry and continue with that acc; if ``status == "deleted"``,
+         drop it.
       3. Prefer reviewed Swiss-Prot over unreviewed TrEMBL.
-      4. Prefer canonical-isoform accessions (no ``-N`` suffix).
-      5. Tie-break on lexicographic accession order — Swiss-Prot's
-         own canonical convention assigns the lowest-sorted acc to
-         the canonical entry.
+      4. Prefer canonical-isoform accs (no ``-N`` suffix).
+      5. Tie-break on lexicographic acc order — Swiss-Prot's own
+         canonical convention assigns the lowest-sorted acc to the
+         canonical entry.
 
-    Falls back to ``uniprot_ids[0]`` if every candidate 404s, so the
-    contract matches the legacy behavior in the worst case (caller
-    can still detect the lookup failure downstream).
+    Raises ``LookupError`` when *every* listed acc resolves to
+    merged-with-no-target / deleted / 404. Returning a known-bad acc
+    silently is worse than failing loudly — same contract as the M1
+    merge's "no rows surface for this gene" result.
     """
 
     if not uniprot_ids:
         raise ValueError("uniprot_ids is empty")
-    if len(uniprot_ids) == 1:
-        return uniprot_ids[0]
 
     candidates: list[tuple[int, int, str]] = []
     for acc in uniprot_ids:
@@ -757,13 +766,39 @@ def _pick_canonical_uniprot(uniprot_ids: list[str], *, http: CachedHTTP) -> str:
             if exc.response.status_code == 404:
                 continue
             raise
+
+        status, merged_into = _entry_status(entry)
+        # Mirror M1 ``normalize_accessions`` secondary→primary rewrite:
+        # when HGNC's xref points at a merged acc, walk one hop to
+        # the current primary. UniProt itself returns a single hop
+        # at most (multi-hop merges are flattened to the final
+        # primary), so one re-fetch is sufficient.
+        if status == "merged" and merged_into:
+            try:
+                entry = _uniprot_entry(merged_into, http=http)
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 404:
+                    continue
+                raise
+            status, _ = _entry_status(entry)
+            acc = merged_into
+
+        # Mirror M1's ``delac_sp.txt`` drop. Also drops any acc whose
+        # merged-into target is itself deleted.
+        if status == "deleted":
+            continue
+
         reviewed_rank = (
             0 if entry.get("entryType") == "UniProtKB reviewed (Swiss-Prot)" else 1
         )
         isoform_rank = 1 if "-" in acc else 0
         candidates.append((reviewed_rank, isoform_rank, acc))
+
     if not candidates:
-        return uniprot_ids[0]
+        raise LookupError(
+            f"every uniprot_id in HGNC xref {uniprot_ids!r} resolved to "
+            "merged-with-no-target / deleted / 404 — out of study scope"
+        )
     candidates.sort()
     return candidates[0][2]
 
