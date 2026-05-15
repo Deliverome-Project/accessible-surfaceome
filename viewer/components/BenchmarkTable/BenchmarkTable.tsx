@@ -12,31 +12,49 @@ import type {
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import styles from "./BenchmarkTable.module.css";
 
-const ROW_ESTIMATE_PX = 40;
+const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
 
-// Grid template: toggle | gene | uniprot | truth | 7 db dots | opus | sonnet
-// | haiku | class. Kept narrow so the table reads as a dense matrix rather
-// than a layout-heavy editorial block.
-const GRID_TEMPLATE =
-  "1.6rem 10rem 5rem 4.2rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 4.4rem 4.4rem 4.4rem minmax(10rem, 1fr)";
+// Grid template (top→bottom): toggle | gene | uniprot | truth | 5 DBs |
+// 12 model×variant pills (Opus naive/ncbi/web/pubmed → Sonnet ditto →
+// Haiku ditto) | class. Each LLM pill is 2.6rem so 12 of them fit in
+// ~31rem; the matrix is wide but readable on a laptop with the
+// horizontal scroll the .tableScroll wrapper provides.
+const LLM_CELL_REM = 2.6;
+const GRID_TEMPLATE = [
+  "1.6rem",                         // toggle
+  "10rem",                          // gene
+  "5rem",                           // uniprot
+  "4rem",                           // truth pill
+  ...Array(5).fill("1.4rem"),       // 5 DB dots
+  ...Array(12).fill(`${LLM_CELL_REM}rem`), // 3 models × 4 variants
+  "minmax(8rem, 1fr)",              // class
+].join(" ");
 
+// Five gating DBs — same set the homepage CatalogTable renders so a
+// reader can scan both surfaces with the same mental model.
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
   { key: "go", short: "G", long: "GO" },
   { key: "surfy", short: "S", long: "SURFY" },
   { key: "cspa", short: "C", long: "CSPA" },
   { key: "hpa", short: "H", long: "HPA" },
-  { key: "deeptmhmm", short: "T", long: "DeepTMHMM" },
-  { key: "compartments", short: "M", long: "COMPARTMENTS" },
 ];
 
-// Map model ids to short column labels; the long form lives in the
-// metadata strip above the table and as the column's title attribute.
 const MODEL_LABELS: { id: string; short: string; long: string }[] = [
   { id: "claude-opus-4-7", short: "Opus", long: "Opus 4.7" },
   { id: "claude-sonnet-4-6", short: "Sonnet", long: "Sonnet 4.6" },
   { id: "claude-haiku-4-5", short: "Haiku", long: "Haiku 4.5" },
+];
+
+// One-letter variant abbreviations for the header — long form lives
+// in the `title` attribute. Order is fixed at render time so the
+// 12-cell grid stays stable across (gene, model) combinations.
+const VARIANT_LABELS: { id: string; short: string; long: string }[] = [
+  { id: "naive",       short: "n", long: "naive (no context)" },
+  { id: "ncbi",        short: "c", long: "ncbi (HGNC + UniProt + NCBI summary)" },
+  { id: "web_ncbi",    short: "w", long: "web_ncbi (ncbi + web search)" },
+  { id: "pubmed_ncbi", short: "p", long: "pubmed_ncbi (ncbi + PubMed evidence)" },
 ];
 
 type TruthFilter = "all" | "yes" | "contextual" | "no" | "disagreements";
@@ -48,27 +66,42 @@ function verdictTone(v: string | null | undefined): string {
   return styles.verdictUnknown;
 }
 
-function isCorrect(headlineVerdict: string | null, truth: string): boolean {
-  // Mirror the D1 `correct` semantics: yes ≡ contextual count as the
-  // same predicted class for accuracy purposes.
-  if (!headlineVerdict) return false;
-  const v = headlineVerdict;
-  const t = truth;
-  if (v === t) return true;
-  if ((v === "yes" || v === "contextual") && (t === "yes" || t === "contextual")) {
+function isCorrect(verdict: string | null, truth: string): boolean {
+  if (!verdict) return false;
+  if (verdict === truth) return true;
+  if (
+    (verdict === "yes" || verdict === "contextual") &&
+    (truth === "yes" || truth === "contextual")
+  ) {
     return true;
+  }
+  return false;
+}
+
+function rowHasAnyDisagreement(r: BenchmarkRow, models: string[]): boolean {
+  // Defensive: `r.verdicts` is required by the shipped Worker but may
+  // be absent in stub responses (`SURFACEOME_API_BASE=local`) or in
+  // a stale edge-cached payload from before the 2026-05-15 shape
+  // change. Treat missing data as "no disagreement signal".
+  const verdicts = r.verdicts ?? {};
+  for (const m of models) {
+    const byVariant = verdicts[m];
+    if (!byVariant) continue;
+    for (const v of VARIANT_LABELS) {
+      const cell = byVariant[v.id];
+      if (cell?.verdict && !isCorrect(cell.verdict, r.truth_verdict)) return true;
+    }
   }
   return false;
 }
 
 interface BenchmarkTableProps {
   matrix: BenchmarkMatrix;
-  /** Genes the viewer has a deep-dive record for — used to link gene
-   *  symbols to /[symbol]/ pages when one exists. */
+  /** Genes the viewer has a deep-dive record for — used to link
+   *  gene symbols to /[symbol]/ pages when one exists. */
   deepDiveGenes: Set<string>;
-  /** symbol → full gene name (from HGNC) so each row can show
-   *  "ERBB2 / Erb-b2 receptor tyrosine kinase 2" without an extra
-   *  client fetch. Missing keys render the symbol alone. */
+  /** symbol → full gene name (HGNC) for the secondary line under
+   *  each gene symbol. */
   geneNames?: Record<string, string>;
 }
 
@@ -77,14 +110,7 @@ export function BenchmarkTable({
   deepDiveGenes,
   geneNames,
 }: BenchmarkTableProps) {
-  const { rows, headline_variant, alt_variants, models } = matrix;
-
-  function handleDownload() {
-    const tsv = buildBenchmarkTsv(matrix);
-    const tag = matrix.bench_version?.slice(0, 8) ?? "snapshot";
-    downloadTextFile(`surfacebench-${tag}.tsv`, tsv);
-  }
-
+  const { rows, models, headline_variant } = matrix;
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<TruthFilter>("all");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
@@ -98,21 +124,19 @@ export function BenchmarkTable({
     });
   }
 
+  function handleDownload() {
+    const tsv = buildBenchmarkTsv(matrix);
+    const tag = matrix.bench_version?.slice(0, 8) ?? "snapshot";
+    downloadTextFile(`surfacebench-${tag}.tsv`, tsv);
+  }
+
   const counts = useMemo(() => {
-    let yes = 0;
-    let contextual = 0;
-    let no = 0;
-    let disagreements = 0;
+    let yes = 0, contextual = 0, no = 0, disagreements = 0;
     for (const r of rows) {
       if (r.truth_verdict === "yes") yes++;
       else if (r.truth_verdict === "contextual") contextual++;
       else if (r.truth_verdict === "no") no++;
-      const anyWrong = models.some((m) => {
-        const h = r.headline[m];
-        if (!h?.verdict) return false;
-        return !isCorrect(h.verdict, r.truth_verdict);
-      });
-      if (anyWrong) disagreements++;
+      if (rowHasAnyDisagreement(r, models)) disagreements++;
     }
     return { yes, contextual, no, disagreements };
   }, [rows, models]);
@@ -128,13 +152,8 @@ export function BenchmarkTable({
       if (filter === "yes" && r.truth_verdict !== "yes") return false;
       if (filter === "contextual" && r.truth_verdict !== "contextual") return false;
       if (filter === "no" && r.truth_verdict !== "no") return false;
-      if (filter === "disagreements") {
-        const anyWrong = models.some((m) => {
-          const h = r.headline[m];
-          if (!h?.verdict) return false;
-          return !isCorrect(h.verdict, r.truth_verdict);
-        });
-        if (!anyWrong) return false;
+      if (filter === "disagreements" && !rowHasAnyDisagreement(r, models)) {
+        return false;
       }
       return true;
     });
@@ -157,8 +176,6 @@ export function BenchmarkTable({
     ["--bench-cols" as string]: GRID_TEMPLATE,
   };
 
-  const headlineShort = headline_variant.replace(/_/g, " ");
-
   return (
     <div className={styles.wrap} style={gridStyle}>
       <p className={styles.meta}>
@@ -167,14 +184,16 @@ export function BenchmarkTable({
         </span>
         <span className={styles.metaDot}>·</span>
         <span>
-          headline <code>{headlineShort}</code>
+          models {MODEL_LABELS.map((m) => m.long).join(" · ")}
         </span>
-        <span className={styles.metaDot}>·</span>
-        <span>models {MODEL_LABELS.map((m) => m.long).join(" · ")}</span>
         <span className={styles.metaDot}>·</span>
         <span>
-          alt variants {alt_variants.join(" · ")} (expand row)
+          variants {VARIANT_LABELS.map((v) => v.id).join(" · ")}
         </span>
+        <span className={styles.metaDot}>·</span>
+        <span>headline <code>{headline_variant}</code></span>
+        <span className={styles.metaDot}>·</span>
+        <span>click <em>+</em> for per-call reasoning</span>
       </p>
 
       <div className={styles.toolbar}>
@@ -229,7 +248,7 @@ export function BenchmarkTable({
           type="button"
           className={styles.downloadBtn}
           onClick={handleDownload}
-          title={`Download all ${rows.length} rows as TSV (headline + alt variants for every model)`}
+          title={`Download all ${rows.length} rows as TSV — every (model, variant) cell flattened to its own columns`}
         >
           Download TSV ↓
         </button>
@@ -241,20 +260,40 @@ export function BenchmarkTable({
         role="table"
         aria-rowcount={filtered.length + 1}
       >
+        {/* Two-row header: top row groups the LLM cells by model
+            (spanning 4 variant columns each); bottom row carries the
+            actual column labels (gene / uniprot / truth / DB short
+            codes / variant short codes / class). */}
+        <div className={`${styles.headerRow} ${styles.row} ${styles.modelGroupRow}`} role="row">
+          <div className={styles.headerCell} aria-hidden="true" />
+          <div className={styles.headerCell} aria-hidden="true" />
+          <div className={styles.headerCell} aria-hidden="true" />
+          <div className={styles.headerCell} aria-hidden="true" />
+          {DB_KEYS.map((d) => (
+            <div key={`gap-db-${d.key}`} className={styles.headerCell} aria-hidden="true" />
+          ))}
+          {MODEL_LABELS.map((m) => (
+            <div
+              key={`grp-${m.id}`}
+              className={`${styles.headerCell} ${styles.modelGroupCell}`}
+              role="columnheader"
+              title={m.long}
+            >
+              {m.short}
+            </div>
+          ))}
+          <div className={styles.headerCell} aria-hidden="true" />
+        </div>
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
           <div className={styles.headerCell} aria-hidden="true" />
-          <div className={`${styles.headerCell}`} role="columnheader">
-            Gene
-          </div>
+          <div className={styles.headerCell} role="columnheader">Gene</div>
           <div className={`${styles.headerCell} ${styles.headerMono}`} role="columnheader">
             UniProt
           </div>
-          <div className={`${styles.headerCell}`} role="columnheader">
-            Truth
-          </div>
+          <div className={styles.headerCell} role="columnheader">Truth</div>
           {DB_KEYS.map((d) => (
             <div
-              key={d.key}
+              key={`hdr-db-${d.key}`}
               className={`${styles.headerCell} ${styles.headerDbCell}`}
               title={d.long}
               role="columnheader"
@@ -263,19 +302,24 @@ export function BenchmarkTable({
               <span className="sr-only">{d.long}</span>
             </div>
           ))}
-          {MODEL_LABELS.map((m) => (
-            <div
-              key={m.id}
-              className={`${styles.headerCell} ${styles.headerModelCell}`}
-              title={`${m.long} · ${headlineShort}`}
-              role="columnheader"
-            >
-              {m.short}
-            </div>
-          ))}
-          <div className={styles.headerCell} role="columnheader">
-            Class
-          </div>
+          {MODEL_LABELS.map((m) =>
+            VARIANT_LABELS.map((v) => {
+              const isHeadline = v.id === headline_variant;
+              return (
+                <div
+                  key={`hdr-${m.id}-${v.id}`}
+                  className={`${styles.headerCell} ${styles.headerVariantCell} ${
+                    isHeadline ? styles.headerVariantHeadline : ""
+                  }`}
+                  title={`${m.long} · ${v.long}`}
+                  role="columnheader"
+                >
+                  {v.short}
+                </div>
+              );
+            })
+          )}
+          <div className={styles.headerCell} role="columnheader">Class</div>
         </div>
 
         <div
@@ -305,7 +349,6 @@ export function BenchmarkTable({
                     virtualStart={item.start}
                     isExpanded={isExpanded}
                     onToggleExpand={toggleExpand}
-                    altVariants={alt_variants}
                     hasDeepDive={deepDiveGenes.has(r.gene_symbol)}
                     geneName={geneNames?.[r.gene_symbol]}
                   />
@@ -351,7 +394,6 @@ function BenchRowView({
   virtualStart,
   isExpanded,
   onToggleExpand,
-  altVariants,
   hasDeepDive,
   geneName,
 }: {
@@ -361,7 +403,6 @@ function BenchRowView({
   virtualStart?: number;
   isExpanded: boolean;
   onToggleExpand: (symbol: string) => void;
-  altVariants: string[];
   hasDeepDive: boolean;
   geneName?: string;
 }) {
@@ -407,8 +448,8 @@ function BenchRowView({
           onClick={() => onToggleExpand(row.gene_symbol)}
           aria-label={
             isExpanded
-              ? `Collapse alt variants for ${row.gene_symbol}`
-              : `Expand alt variants for ${row.gene_symbol}`
+              ? `Collapse reasoning for ${row.gene_symbol}`
+              : `Expand reasoning for ${row.gene_symbol}`
           }
           aria-expanded={isExpanded}
         >
@@ -442,37 +483,36 @@ function BenchRowView({
           </div>
         );
       })}
-      {MODEL_LABELS.map((m) => {
-        const h = row.headline[m.id];
-        return (
-          <div
-            key={m.id}
-            className={`${styles.cell} ${styles.modelCell}`}
-            role="cell"
-          >
-            {h?.verdict ? (
-              <span
-                className={`${styles.verdictLabel} ${verdictTone(h.verdict)} ${
-                  isCorrect(h.verdict, row.truth_verdict)
-                    ? styles.verdictCorrect
-                    : styles.verdictWrong
-                }`}
-                title={
-                  h.reason
-                    ? `${h.verdict} · ${h.reason.replace(/_/g, " ")}${
-                        h.confidence ? ` · ${h.confidence} confidence` : ""
-                      }`
-                    : h.verdict
-                }
-              >
-                {h.verdict}
-              </span>
-            ) : (
-              <span className={styles.dim}>—</span>
-            )}
-          </div>
-        );
-      })}
+      {MODEL_LABELS.map((m) =>
+        VARIANT_LABELS.map((v) => {
+          const cell: BenchmarkVariantResult | null | undefined =
+            row.verdicts?.[m.id]?.[v.id];
+          return (
+            <div
+              key={`${m.id}-${v.id}`}
+              className={`${styles.cell} ${styles.modelCell}`}
+              role="cell"
+            >
+              {cell?.verdict ? (
+                <span
+                  className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
+                    isCorrect(cell.verdict, row.truth_verdict)
+                      ? styles.verdictCorrect
+                      : styles.verdictWrong
+                  }`}
+                  title={`${m.short} · ${v.id} → ${cell.verdict}${
+                    cell.reason ? ` (${cell.reason.replace(/_/g, " ")})` : ""
+                  }`}
+                >
+                  {verdictGlyph(cell.verdict)}
+                </span>
+              ) : (
+                <span className={styles.dim}>·</span>
+              )}
+            </div>
+          );
+        })
+      )}
       <div className={`${styles.cell} ${styles.classCell}`} role="cell">
         <span className={styles.classText} title={row.truth_reason.replace(/_/g, " ")}>
           {row.class.replace(/_/g, " ")}
@@ -480,49 +520,91 @@ function BenchRowView({
       </div>
       {isExpanded ? (
         <div className={styles.expandedBlock}>
-          <AltVariantMatrix row={row} altVariants={altVariants} />
+          <ReasoningGrid row={row} />
         </div>
       ) : null}
     </div>
   );
 }
 
-function AltVariantMatrix({
-  row,
-  altVariants,
-}: {
-  row: BenchmarkRow;
-  altVariants: string[];
-}) {
+/** Single-character glyph for the per-cell verdict — keeps each of
+ *  the 12 LLM cells legible at 2.6rem wide. Hover-tip exposes the
+ *  full verdict + reason. */
+function verdictGlyph(v: string): string {
+  if (v === "yes") return "Y";
+  if (v === "no") return "N";
+  if (v === "contextual") return "C";
+  return "?";
+}
+
+/** Row-expand reveal — the full reasoning text for each of the 12
+ *  (model × variant) cells. Laid out as 3 model groups, 4 variant
+ *  cards per group. Cards without data show a muted "no run on
+ *  file". This is the per-call audit surface the user asked for. */
+function ReasoningGrid({ row }: { row: BenchmarkRow }) {
   return (
-    <div className={styles.altGrid}>
-      <div className={styles.altHeader}>Model</div>
-      {altVariants.map((v) => (
-        <div key={v} className={styles.altHeader}>
-          {v.replace(/_/g, " ")}
-        </div>
-      ))}
+    <div className={styles.reasoningGrid}>
       {MODEL_LABELS.map((m) => (
-        <AltVariantRow
-          key={m.id}
-          modelLabel={m.long}
-          model={m.id}
-          row={row}
-          altVariants={altVariants}
-        />
+        <div key={m.id} className={styles.reasoningGroup}>
+          <h4 className={styles.reasoningGroupHead}>{m.long}</h4>
+          <div className={styles.reasoningCards}>
+            {VARIANT_LABELS.map((v) => {
+              const cell: BenchmarkVariantResult | null | undefined =
+                row.verdicts?.[m.id]?.[v.id];
+              return (
+                <article
+                  key={v.id}
+                  className={`${styles.reasoningCard} ${
+                    cell?.verdict
+                      ? isCorrect(cell.verdict, row.truth_verdict)
+                        ? styles.reasoningCardCorrect
+                        : styles.reasoningCardWrong
+                      : styles.reasoningCardMissing
+                  }`}
+                >
+                  <header className={styles.reasoningCardHead}>
+                    <span className={styles.reasoningVariant}>{v.id}</span>
+                    {cell?.verdict ? (
+                      <span
+                        className={`${styles.verdictLabel} ${verdictTone(cell.verdict)}`}
+                      >
+                        {cell.verdict}
+                      </span>
+                    ) : (
+                      <span className={styles.reasoningMissing}>no run</span>
+                    )}
+                    {cell?.confidence ? (
+                      <span className={styles.reasoningMeta} title="confidence">
+                        {cell.confidence}
+                      </span>
+                    ) : null}
+                  </header>
+                  {cell?.reasoning ? (
+                    <p className={styles.reasoningText}>{cell.reasoning}</p>
+                  ) : cell?.verdict && !cell.reasoning ? (
+                    <p className={styles.reasoningEmpty}>
+                      (no free-text reasoning recorded — verdict only)
+                    </p>
+                  ) : null}
+                  {cell?.reason && cell.reason !== cell.verdict ? (
+                    <p className={styles.reasoningReason}>
+                      <span className="label-mono">reason ·</span>{" "}
+                      {cell.reason.replace(/_/g, " ")}
+                    </p>
+                  ) : null}
+                </article>
+              );
+            })}
+          </div>
+        </div>
       ))}
     </div>
   );
 }
 
-/**
- * Build a wide TSV from the matrix: one row per gene, with the truth
- * label, every per-DB flag, the headline-variant verdict for each
- * model, and every alt-variant verdict for each model. This matches
- * what the table shows (resting + expanded), so anyone analyzing the
- * download in pandas / R gets the same picture without needing to
- * cross-reference the JSON.
- */
+/** Wide TSV download — one row per gene, columns for every cell
+ *  (model × variant) in the matrix. Matches the on-page grid so a
+ *  reader can pull it down and reproduce the table in pandas. */
 function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
   const headers: string[] = [
     "gene_symbol",
@@ -533,31 +615,21 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
     "truth_reason",
     "n_db_surface",
   ];
-  // Per-DB flags in the same order as the table columns.
   for (const src of matrix.sources) headers.push(`db_${src}`);
-  // Headline-variant columns per model (verdict / reason / confidence /
-  // correct / latency_s).
   for (const model of matrix.models) {
-    const m = modelSlug(model);
-    headers.push(
-      `${m}_headline_verdict`,
-      `${m}_headline_reason`,
-      `${m}_headline_confidence`,
-      `${m}_headline_correct`,
-      `${m}_headline_latency_s`,
-    );
-  }
-  // Alt-variant columns: per (model × variant), verdict + correct only
-  // (keeps the row narrow — readers wanting full detail can request
-  // the long-format dump separately).
-  for (const model of matrix.models) {
-    const m = modelSlug(model);
-    for (const variant of matrix.alt_variants) {
-      headers.push(`${m}_${variant}_verdict`, `${m}_${variant}_correct`);
+    const slug = modelSlug(model);
+    for (const variant of matrix.variants) {
+      headers.push(
+        `${slug}_${variant}_verdict`,
+        `${slug}_${variant}_correct`,
+        `${slug}_${variant}_confidence`,
+        `${slug}_${variant}_latency_s`,
+        `${slug}_${variant}_cost_usd`,
+      );
     }
   }
 
-  const rows: TsvCell[][] = matrix.rows.map((r) => {
+  const body: TsvCell[][] = matrix.rows.map((r) => {
     const row: TsvCell[] = [
       r.gene_symbol,
       r.uniprot_acc,
@@ -571,77 +643,24 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
       row.push(r.db ? r.db[src] : "");
     }
     for (const model of matrix.models) {
-      const h: BenchmarkVariantResult | null | undefined = r.headline[model];
-      row.push(
-        h?.verdict ?? "",
-        h?.reason ?? "",
-        h?.confidence ?? "",
-        h?.correct ?? "",
-        h?.latency_s ?? "",
-      );
-    }
-    for (const model of matrix.models) {
-      const byVariant = r.alts[model] ?? {};
-      for (const variant of matrix.alt_variants) {
-        const v: BenchmarkVariantResult | null | undefined = byVariant[variant];
-        row.push(v?.verdict ?? "", v?.correct ?? "");
+      const byVariant = r.verdicts?.[model] ?? {};
+      for (const variant of matrix.variants) {
+        const c: BenchmarkVariantResult | null | undefined = byVariant[variant];
+        row.push(
+          c?.verdict ?? "",
+          c?.correct ?? "",
+          c?.confidence ?? "",
+          c?.latency_s ?? "",
+          c?.cost_usd ?? "",
+        );
       }
     }
     return row;
   });
-  return buildTsv(headers, rows);
+  return buildTsv(headers, body);
 }
 
 function modelSlug(modelId: string): string {
-  // claude-opus-4-7 → opus, claude-sonnet-4-6 → sonnet, claude-haiku-4-5 → haiku.
   const m = modelId.match(/(opus|sonnet|haiku)/i);
   return m ? m[1].toLowerCase() : modelId.replace(/[^a-z0-9]+/gi, "_");
-}
-
-function AltVariantRow({
-  modelLabel,
-  model,
-  row,
-  altVariants,
-}: {
-  modelLabel: string;
-  model: string;
-  row: BenchmarkRow;
-  altVariants: string[];
-}) {
-  const byVariant = row.alts[model] ?? {};
-  return (
-    <>
-      <div className={styles.altModelLabel}>{modelLabel}</div>
-      {altVariants.map((v) => {
-        const r: BenchmarkVariantResult | null = byVariant[v] ?? null;
-        if (!r?.verdict) {
-          return (
-            <div key={v} className={styles.altCell}>
-              <span className={styles.dim}>—</span>
-            </div>
-          );
-        }
-        const correct = isCorrect(r.verdict, row.truth_verdict);
-        return (
-          <div key={v} className={styles.altCell}>
-            <span
-              className={`${styles.altPill} ${verdictTone(r.verdict)} ${
-                correct ? styles.verdictCorrect : styles.verdictWrong
-              }`}
-              title={
-                r.reason
-                  ? `${r.verdict} · ${r.reason.replace(/_/g, " ")}${
-                      r.confidence ? ` · ${r.confidence} confidence` : ""
-                    }`
-                  : r.verdict
-              }
-            >
-              {r.verdict}
-            </span>
-          </div>
-        );
-      })}
-    </>
-  );
 }

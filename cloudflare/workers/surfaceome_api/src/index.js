@@ -367,22 +367,24 @@ async function handleCatalog(env) {
   );
 }
 
-// Models and prompt variants the benchmark matrix endpoint surfaces. The
-// headline column is `ncbi` (NCBI resolver context, no web search) —
-// every model has dense coverage on this variant for the 147-gene bench
-// (Opus has no web_ncbi runs, so picking web_ncbi as headline leaves
-// the Opus column empty across all rows). The alt variants — naive,
-// web_ncbi, pubmed_ncbi — surface the "what does this tool add?" axis
-// and are revealed by expand-on-click footnote rows.
+// Models + prompt variants surfaced in the benchmark matrix. All 4
+// variants render as their own columns on the /benchmark/ page (the
+// old "headline + 3 alts behind an expand" UX collapsed into a flat
+// grid per the user request 2026-05-15). `headline_variant` is still
+// returned for consumers that want to highlight one column.
 const BENCH_MATRIX_MODELS = [
   "claude-opus-4-7",
   "claude-sonnet-4-6",
   "claude-haiku-4-5",
 ];
+const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"];
 const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
-const BENCH_MATRIX_ALT_VARIANTS = ["naive", "web_ncbi", "pubmed_ncbi"];
+// Five gating DBs — same five the homepage CatalogTable renders. The
+// matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
+// but those were demoted from the M1 universe gate and only confused
+// the side-by-side, so we drop them here too (2026-05-15).
 const BENCH_MATRIX_SOURCES = [
-  "uniprot", "go", "surfy", "cspa", "hpa", "deeptmhmm", "compartments",
+  "uniprot", "go", "surfy", "cspa", "hpa",
 ];
 
 async function handleBenchmarkMatrix(env) {
@@ -419,9 +421,9 @@ async function handleBenchmarkMatrix(env) {
       ORDER BY gene_symbol`
   ).bind(benchVersion).all();
 
-  // 3. Latest universe_version + per-DB flags. Pull all 7 flags here
-  // (DeepTMHMM + COMPARTMENTS included — /v1/catalog drops them but the
-  // benchmark matrix is a forensic view and should show every source).
+  // 3. Latest universe_version + per-DB flags. Five gating DBs only —
+  // matches the homepage CatalogTable so the SurfaceBench and Catalog
+  // surfaces are side-by-side comparable.
   const releaseRow = await env.DB.prepare(
     `SELECT universe_version FROM candidate_universe_release
       ORDER BY loaded_at DESC LIMIT 1`
@@ -432,7 +434,6 @@ async function handleBenchmarkMatrix(env) {
     const universeRows = await env.DB.prepare(
       `SELECT gene_symbol, uniprot_surface_flag, go_surface_flag,
               surfy_surface_flag, cspa_surface_flag, hpa_surface_flag,
-              deeptmhmm_surface_flag, compartments_surface_flag,
               n_sources_surface
          FROM candidate_universe_public
         WHERE universe_version = ?`
@@ -444,8 +445,6 @@ async function handleBenchmarkMatrix(env) {
         surfy: u.surfy_surface_flag ? 1 : 0,
         cspa: u.cspa_surface_flag ? 1 : 0,
         hpa: u.hpa_surface_flag ? 1 : 0,
-        deeptmhmm: u.deeptmhmm_surface_flag ? 1 : 0,
-        compartments: u.compartments_surface_flag ? 1 : 0,
         n_sources_surface: u.n_sources_surface ?? 0,
       });
     }
@@ -461,10 +460,7 @@ async function handleBenchmarkMatrix(env) {
   // the 147 rows happens upstream via the benchmark_version join in
   // the JS stitching step. Latest run wins per (gene, model, variant)
   // by created_at; ROW_NUMBER() over a partition stays O(N) cold.
-  const wantedVariants = [
-    BENCH_MATRIX_HEADLINE_VARIANT,
-    ...BENCH_MATRIX_ALT_VARIANTS,
-  ];
+  const wantedVariants = BENCH_MATRIX_VARIANTS;
   const variantPlaceholders = wantedVariants.map(() => "?").join(",");
   const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
   // Build a Set of the 147 benchmark gene symbols so we can drop
@@ -478,6 +474,7 @@ async function handleBenchmarkMatrix(env) {
     `WITH ranked AS (
        SELECT gene_symbol, model, prompt_variant, predicted_verdict,
               predicted_reason, predicted_confidence, predicted_key_uncertainty,
+              verdict_reasoning,
               correct, latency_s, n_web_searches, created_at, error,
               cost_usd, prompt_tokens, completion_tokens,
               cache_creation_tokens, cache_read_tokens,
@@ -491,6 +488,7 @@ async function handleBenchmarkMatrix(env) {
      )
      SELECT gene_symbol, model, prompt_variant, predicted_verdict,
             predicted_reason, predicted_confidence, predicted_key_uncertainty,
+            verdict_reasoning,
             correct, latency_s, n_web_searches, created_at, error,
             cost_usd, prompt_tokens, completion_tokens,
             cache_creation_tokens, cache_read_tokens
@@ -521,6 +519,7 @@ async function handleBenchmarkMatrix(env) {
       reason: r.predicted_reason,
       confidence: r.predicted_confidence,
       key_uncertainty: r.predicted_key_uncertainty,
+      reasoning: r.verdict_reasoning,
       correct: r.correct,
       latency_s: r.latency_s,
       n_web_searches: r.n_web_searches,
@@ -534,19 +533,20 @@ async function handleBenchmarkMatrix(env) {
     });
   }
 
-  // 5. Stitch.
+  // 5. Stitch. Flat verdicts dict: model → variant → run (or null when
+  // we have no data for that cell). Replaces the prior headline+alts
+  // split; the page renders all 4 variants per model as their own
+  // columns and shows each cell's verdict_reasoning on row-expand.
   const rows = truthRows.results.map((t) => {
     const byModel = runMap.get(t.gene_symbol);
-    const headline = {};
-    const alts = {};
+    const verdicts = {};
     for (const model of BENCH_MATRIX_MODELS) {
       const byVariant = byModel?.get(model);
-      headline[model] = byVariant?.get(BENCH_MATRIX_HEADLINE_VARIANT) ?? null;
-      const altsByVariant = {};
-      for (const variant of BENCH_MATRIX_ALT_VARIANTS) {
-        altsByVariant[variant] = byVariant?.get(variant) ?? null;
+      const perVariant = {};
+      for (const variant of BENCH_MATRIX_VARIANTS) {
+        perVariant[variant] = byVariant?.get(variant) ?? null;
       }
-      alts[model] = altsByVariant;
+      verdicts[model] = perVariant;
     }
     const db = dbByGene.get(t.gene_symbol) ?? null;
     const row = {
@@ -558,13 +558,12 @@ async function handleBenchmarkMatrix(env) {
       truth_reason: t.truth_reason,
       db: db
         ? {
-            uniprot: db.uniprot, go: db.go, surfy: db.surfy, cspa: db.cspa,
-            hpa: db.hpa, deeptmhmm: db.deeptmhmm, compartments: db.compartments,
+            uniprot: db.uniprot, go: db.go, surfy: db.surfy,
+            cspa: db.cspa, hpa: db.hpa,
           }
         : null,
       n_db_surface: db?.n_sources_surface ?? 0,
-      headline,
-      alts,
+      verdicts,
     };
     return row;
   });
@@ -576,8 +575,8 @@ async function handleBenchmarkMatrix(env) {
       generated_at: new Date().toISOString(),
       sources: BENCH_MATRIX_SOURCES,
       models: BENCH_MATRIX_MODELS,
+      variants: BENCH_MATRIX_VARIANTS,
       headline_variant: BENCH_MATRIX_HEADLINE_VARIANT,
-      alt_variants: BENCH_MATRIX_ALT_VARIANTS,
       n_genes: rows.length,
       rows,
     },

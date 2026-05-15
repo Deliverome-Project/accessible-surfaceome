@@ -72,19 +72,17 @@ export default async function BenchmarkPage() {
             on the surface in that source.
           </p>
           <p>
-            <span className="label-mono">LLM columns ·</span> Headline
-            verdict on the <code>{matrix.headline_variant}</code> prompt
-            variant. Pills outlined in maroon disagree with truth
-            (collapsing <em>yes</em> ≡ <em>contextual</em>, matching the
-            D1 <code>correct</code> column). Click <em>+</em> to expand
-            the row and compare against{" "}
-            {matrix.alt_variants.map((v, i) => (
-              <span key={v}>
-                <code>{v}</code>
-                {i < matrix.alt_variants.length - 1 ? ", " : ""}
-              </span>
-            ))}
-            .
+            <span className="label-mono">LLM columns ·</span> Twelve
+            cells per row — one per (model × prompt variant). Each cell
+            is a single-letter glyph (<code>Y</code> / <code>N</code> /{" "}
+            <code>C</code>) coloured by verdict; cells outlined in
+            maroon disagree with truth (collapsing <em>yes</em> ≡{" "}
+            <em>contextual</em>, matching the D1 <code>correct</code>{" "}
+            column). The headline variant (<code>{matrix.headline_variant}</code>)
+            gets a small accent underline on its column header. Hover
+            any cell for the full (model · variant → verdict + reason)
+            tooltip; click <em>+</em> on the row to reveal each call&apos;s
+            free-text reasoning.
           </p>
           <p>
             <span className="label-mono">API ·</span>{" "}

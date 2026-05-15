@@ -183,14 +183,45 @@
 }
 
 .row {
+  /* Component supplies --bench-cols at runtime. Fallback covers the
+   * 22-column layout: toggle | gene | uniprot | truth | 5 DBs |
+   * 12 model×variant cells | class. */
   display: grid;
   grid-template-columns: var(--bench-cols,
-    1.6rem 10rem 5rem 4.2rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 4.4rem 4.4rem 4.4rem minmax(10rem, 1fr));
+    1.6rem 10rem 5rem 4rem
+    1.4rem 1.4rem 1.4rem 1.4rem 1.4rem
+    2.6rem 2.6rem 2.6rem 2.6rem
+    2.6rem 2.6rem 2.6rem 2.6rem
+    2.6rem 2.6rem 2.6rem 2.6rem
+    minmax(8rem, 1fr));
   align-items: center;
   font-family: var(--font-sans);
   font-size: 0.84rem;
   border-bottom: 1px solid var(--line-soft);
   min-height: 2.6rem;
+}
+
+/* Group header above the variant short codes — one cell per model
+ * spanning 4 variant columns. Implemented with grid-column span so
+ * it lines up with the variant header below it. */
+.modelGroupRow {
+  border-bottom: none;
+  min-height: 1.8rem;
+}
+
+.modelGroupCell {
+  /* Span 4 variant columns. CSS Grid: count from the model's first
+   * variant cell — but easier to use grid-column: span 4. */
+  grid-column: span 4;
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.06em;
+  text-transform: none;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line-soft);
+  padding: 0.25rem 0;
 }
 
 .rowExpanded {
@@ -254,6 +285,26 @@
 .headerModelCell {
   justify-content: center;
   font-size: 0.7rem;
+}
+
+/* Per-variant column header — one for each of the 12 LLM cells.
+ * Mono short label (n/c/w/p) plus a hover-tip with the full name.
+ * The headline variant gets a small accent underline so it's
+ * scannable in the row. */
+.headerVariantCell {
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: none;
+  padding: 0.45rem 0.1rem;
+}
+
+.headerVariantHeadline {
+  color: var(--ink);
+  font-weight: var(--fw-medium);
+  border-bottom: 1.5px solid var(--accent);
 }
 
 .cell {
@@ -375,7 +426,21 @@
 
 .modelCell {
   justify-content: center;
-  padding: 0.3rem 0.25rem;
+  padding: 0.3rem 0.1rem;
+}
+
+/* Mini verdict — single character glyph (Y/N/C) sized so 12 cells
+ * fit comfortably across the matrix. The hover-tip carries the
+ * (model · variant → verdict + reason) text. */
+.verdictMini {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0;
+  text-transform: none;
+  padding: 0.1rem 0.35rem;
+  min-width: 1.3rem;
+  justify-content: center;
 }
 
 /* Verdict pills — same color tokens as CatalogTable so the visual
@@ -451,49 +516,118 @@
 
 .expandedBlock {
   grid-column: 1 / -1;
-  padding: var(--space-3) var(--space-4) var(--space-4) 2rem;
+  padding: var(--space-4) var(--space-5) var(--space-5) 2rem;
   background: var(--bg-soft);
   border-top: 1px dashed var(--line-soft);
 }
 
-.altGrid {
+/* Row-expand reveal — per-cell reasoning organised as 3 model groups,
+ * each containing 4 variant cards. Audit surface for "why did Sonnet
+ * web_ncbi call this gene contextual?". Each card shows the verdict
+ * pill + the agent's free-text reasoning. */
+.reasoningGrid {
   display: grid;
-  grid-template-columns: 6rem repeat(3, minmax(5rem, 1fr));
-  gap: 0.25rem 0.6rem;
-  align-items: center;
-  max-width: 32rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-4);
+  max-width: 88rem;
 }
 
-.altHeader {
-  font-family: var(--font-sans);
-  font-size: 0.66rem;
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  padding: 0.1rem 0;
+.reasoningGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
-.altModelLabel {
+.reasoningGroupHead {
+  margin: 0;
   font-family: var(--font-sans);
   font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.reasoningCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.reasoningCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: var(--space-3);
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  min-width: 0;
+}
+
+.reasoningCardWrong {
+  border-color: var(--maroon-light);
+  border-width: 1.5px;
+}
+
+.reasoningCardCorrect {
+  /* default border */
+}
+
+.reasoningCardMissing {
+  background: transparent;
+  border-style: dashed;
+  opacity: 0.7;
+}
+
+.reasoningCardHead {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.reasoningVariant {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.reasoningMeta {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.reasoningMissing {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.reasoningText {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  line-height: 1.55;
   color: var(--ink-soft);
 }
 
-.altCell {
-  display: flex;
-  align-items: center;
+.reasoningEmpty {
+  margin: 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--muted);
 }
 
-.altPill {
-  display: inline-flex;
-  padding: 0.1rem 0.4rem;
-  font-size: 0.68rem;
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  border-radius: var(--radius-pill);
-  border: 1px solid transparent;
+.reasoningReason {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  color: var(--muted);
 }
 
 /* ============================================================
@@ -514,17 +648,17 @@
 }
 
 /* ============================================================
- * Responsive: drop the class column and shrink the UniProt
- * column on narrow viewports
+ * Responsive: collapse the reasoning grid from 3 columns to 1
+ * on narrow viewports so the per-cell cards stay legible.
+ * (The main matrix scrolls horizontally; we don't try to
+ * restructure it.)
  * ============================================================ */
 
 @media (max-width: 900px) {
-  .row {
-    grid-template-columns:
-      1.6rem 9rem 4.4rem 4.2rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 4rem 4rem 4rem;
+  .reasoningGrid {
+    grid-template-columns: 1fr;
   }
-  .classCell,
-  .headerRow .headerCell:last-child {
-    display: none;
+  .reasoningCards {
+    grid-template-columns: 1fr;
   }
 }
