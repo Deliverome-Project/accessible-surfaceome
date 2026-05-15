@@ -10,10 +10,13 @@ Tables synced:
   * compara_ortholog      — full row
   * benchmark_version     — full row (curated truth labels)
   * triage_run → triage_run_public
-        - DROP: cost_usd, prompt_tokens, completion_tokens,
-                cache_creation_tokens, cache_read_tokens, raw_text
+        - DROP: raw_text (the full model response — only the parsed
+                fields cross over)
         - KEEP: verdict, reason, confidence, key_uncertainty,
-                verdict_reasoning, correct, latency, n_web_searches, error
+                verdict_reasoning, correct, latency, n_web_searches,
+                error, plus cost_usd + token counts (cost data is now
+                public so external readers can reproduce
+                cost-vs-accuracy figures without private credentials)
         - JOIN: prompt_version.prompt_filename (added; prompt_version.text
                 stays private)
   * surface_annotation    — uploaded separately from local
@@ -60,12 +63,12 @@ logger = logging.getLogger(__name__)
 
 # Batch size: Cloudflare D1 caps SQL parameters per statement around ~100,
 # so chunk multi-row INSERTs accordingly. compara_ortholog has 11 cols → 8 rows;
-# triage_run_public has 16 cols → 6 rows; benchmark has 8 cols → 12 rows.
+# triage_run_public has 25 cols → 3 rows; benchmark has 8 cols → 12 rows.
 BATCH_BY_TABLE: dict[str, int] = {
     "compara_release":     18,   # 5 cols → 90 params
     "compara_ortholog":    8,    # 11 cols → 88 params
     "benchmark_version":   9,    # 9 cols → 81 params (D1 rejected 12×9=108)
-    "triage_run_public":   4,    # 20 cols → 80 params (D1 rejected 6×20=120)
+    "triage_run_public":   3,    # 25 cols → 75 params (was 4×20=80; +5 cost cols)
     "surface_annotation":  4,    # 11 cols → 44 params (annotation_json can be large)
 }
 
@@ -126,8 +129,17 @@ def _query(d1: D1, sql: str, params: list[Any] | None = None, *, client: httpx.C
 def _multi_insert(
     d1: D1, table: str, cols: list[str], rows: list[list[Any]],
     *, dry_run: bool, client: httpx.Client,
+    on_conflict: str = "IGNORE",
 ) -> None:
-    """INSERT OR IGNORE many rows into ``table`` via multi-value INSERTs."""
+    """INSERT OR <on_conflict> many rows into ``table`` via multi-value INSERTs.
+
+    ``on_conflict`` controls how duplicates on a UNIQUE constraint are
+    handled — ``IGNORE`` skips them (the historical default; safe when
+    the public-side columns are a strict superset of what's already
+    there), ``REPLACE`` overwrites the row (used when public columns
+    have been added since the prior sync and existing rows need
+    backfilling).
+    """
     if not rows:
         logger.info("  %s: 0 rows (skip)", table)
         return
@@ -138,7 +150,7 @@ def _multi_insert(
     for start in range(0, total, batch):
         chunk = rows[start : start + batch]
         sql = (
-            f"INSERT OR IGNORE INTO {table} ({cols_sql}) "
+            f"INSERT OR {on_conflict} INTO {table} ({cols_sql}) "
             f"VALUES {', '.join([placeholders_one] * len(chunk))}"
         )
         params = [v for row in chunk for v in row]
@@ -194,7 +206,9 @@ def sync_triage_runs(*, priv: D1, pub: D1, dry_run: bool, since: str | None, cli
         "       tr.predicted_verdict, tr.predicted_reason, "
         "       tr.predicted_confidence, tr.predicted_key_uncertainty, "
         "       tr.verdict_reasoning, tr.correct, tr.latency_s, "
-        "       tr.n_web_searches, tr.error "
+        "       tr.n_web_searches, tr.error, "
+        "       tr.cost_usd, tr.prompt_tokens, tr.completion_tokens, "
+        "       tr.cache_creation_tokens, tr.cache_read_tokens "
         "  FROM triage_run tr LEFT JOIN prompt_version pv "
         "       ON pv.prompt_sha = tr.prompt_sha"
     )
@@ -209,9 +223,19 @@ def sync_triage_runs(*, priv: D1, pub: D1, dry_run: bool, since: str | None, cli
         "replicate", "predicted_verdict", "predicted_reason",
         "predicted_confidence", "predicted_key_uncertainty",
         "verdict_reasoning", "correct", "latency_s", "n_web_searches", "error",
+        "cost_usd", "prompt_tokens", "completion_tokens",
+        "cache_creation_tokens", "cache_read_tokens",
     ]
     out = [[r.get(c) for c in cols] for r in rows]
-    _multi_insert(pub, "triage_run_public", cols, out, dry_run=dry_run, client=client)
+    # `triage_run_public` carries a UNIQUE INDEX on the natural key
+    # (run_id, gene_symbol, model, prompt_variant, replicate, prompt_sha),
+    # so use OR REPLACE rather than OR IGNORE. The historical sync
+    # inserted rows without cost_usd/token columns when those were
+    # stripped at sync time; OR REPLACE backfills them in place
+    # without us having to manually DELETE first. id renumbering
+    # doesn't matter — nothing outside this table references it.
+    _multi_insert(pub, "triage_run_public", cols, out, dry_run=dry_run,
+                  client=client, on_conflict="REPLACE")
 
 
 def sync_surface_annotations(*, pub: D1, dry_run: bool, client: httpx.Client) -> None:

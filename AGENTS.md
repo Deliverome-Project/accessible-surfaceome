@@ -73,6 +73,22 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 - **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
 - **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
 
+## Final figures must read from the public API
+
+Every figure promoted to a published gist — and every on-repo generator under `data/analysis/figures/make_*.py` that mirrors one — **must read its data from `api.deliverome.org/surfaceome/v1/*`**, never from `raw.githubusercontent.com/.../*.tsv` or a local TSV path. The canonical predictions TSV (`data/processed/triage_bench/mainbench_canonical_v1.tsv`) and its exporter (`scripts/export_mainbench_to_tsv.py`) were removed on 2026-05-15 once the API became the single source of truth; data now flows private D1 → `scripts/sync_public_d1.py` → `triage_run_public` → `/v1/triage/export.tsv`.
+
+Why:
+- **One source of truth.** `triage_run_public` carries every column the figures need, including `cost_usd` and per-call token counts (as of 2026-05-15 — see the schema change at [cloudflare/d1_public_schema.sql](cloudflare/d1_public_schema.sql)). There's no second artifact to drift against.
+- **No "TSV got committed but D1 wasn't synced" drift.** Before the policy change, the mainbench D1 sync was 68 rows short of the TSV and the SurfaceBench page silently showed empty cells for two LLM variants. Pinning figures to the API forces both halves of the contract to stay in lockstep — if the API is short, the figure renders short, you notice, you fix the sync.
+- **Cost data is now public.** The original policy stripped `cost_usd` + tokens from public D1, which made `make_benchmark_cost_vs_accuracy.py` unreproducible without private credentials. That's reversed; cost data flows through, the figure is reproducible from `/v1/triage/export.tsv`.
+
+The three endpoints final figures pull from:
+- **`GET /v1/triage/export.tsv?run_id=<run>&replicate=<n>`** — long-format TSV (gene/model/variant/replicate + verdict/reason/confidence + the 5 cost+token columns + n_web_searches + latency_s). Default `run_id=mainbench_canonical_v1`, default `replicate` unset (returns every replicate).
+- **`GET /v1/benchmark/export.tsv`** — 7-column TSV of curated truth labels (gene/uniprot/class/verdict/signal/reason/rationale).
+- **`GET /v1/catalog`** — genome-wide per-DB-vote matrix + latest triage verdict; drives whole-proteome figures.
+
+CI doesn't enforce the "API-only" rule yet — flag any new `make_*.py` that imports a TSV path or fetches `raw.githubusercontent.com` during review. The truth-labels TSV at `data/eval/triage_benchmark_v1.tsv` stays committed because it's the *input* to the benchmark upload, but figures still read truth labels via `/v1/benchmark/export.tsv` rather than that file.
+
 ## Final-Figure Gist Convention
 
 When a figure is **promoted** to `data/analysis/triage_bench_final/` (or any other `*_final/` analysis directory) it must ship with a GitHub gist for reader-side reproduction. The gist is what gets linked from a Substack / blog post under the figure, since Substack can't host CSV/code downloads.

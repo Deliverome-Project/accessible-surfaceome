@@ -45,9 +45,14 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
-BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
+# Truth labels + predictions come from the public API (see CLAUDE.md
+# "Final figures must read from the public API"). CAND_TSV +
+# OPT_CUTOFFS_TSV still load from the committed TSVs — per-DB-vote
+# and per-DB-cutoff endpoints aren't shipped yet.
+API = "https://api.deliverome.org/surfaceome"
+BENCH_TSV = f"{API}/v1/benchmark/export.tsv"
 CAND_TSV = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
-PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
+PREDS_TSV = f"{API}/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1"
 OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF

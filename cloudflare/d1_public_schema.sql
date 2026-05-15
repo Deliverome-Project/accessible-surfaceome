@@ -86,11 +86,14 @@ CREATE INDEX IF NOT EXISTS idx_benchmark_version_uniprot
 
 
 -- ---------------------------------------------------------------------------
--- triage_run_public — per-gene triage verdicts WITHOUT billing data
--- Subset of `triage_run` in the private DB. Drops cost_usd, token counts,
--- and cache_* columns (operational metadata). Keeps the model verdict +
--- reason + confidence + key_uncertainty + latency so public consumers
--- can reproduce the eval headline numbers.
+-- triage_run_public — per-gene triage verdicts with cost + token data
+-- Subset of `triage_run` in the private DB. The original design dropped
+-- cost_usd + token counts + cache_* columns as "operational metadata",
+-- but external reproducibility of figures like benchmark_cost_vs_accuracy
+-- requires those exact fields — and there's no security reason to gate
+-- aggregate per-model cost data for an LLM eval that is itself public.
+-- (Raw prompt text + verdict_reasoning + raw_text stay private; only
+-- per-call cost telemetry leaves.)
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS triage_run_public (
@@ -122,6 +125,16 @@ CREATE TABLE IF NOT EXISTS triage_run_public (
     n_web_searches          INTEGER,
     error                   TEXT,
 
+    -- Cost + token telemetry. Carried through from private D1 so
+    -- external readers can reproduce cost_vs_accuracy plots without
+    -- needing private credentials. Nullable because rows that
+    -- pre-date the policy change have NULL here until backfilled.
+    cost_usd                REAL,
+    prompt_tokens           INTEGER,
+    completion_tokens       INTEGER,
+    cache_creation_tokens   INTEGER,
+    cache_read_tokens       INTEGER,
+
     -- When this row landed in the public mirror (separate from created_at
     -- which is the original run timestamp on the private side)
     synced_at               TEXT NOT NULL DEFAULT (datetime('now'))
@@ -133,6 +146,16 @@ CREATE INDEX IF NOT EXISTS idx_triage_run_public_bench
     ON triage_run_public (bench_version, gene_symbol);
 CREATE INDEX IF NOT EXISTS idx_triage_run_public_model
     ON triage_run_public (model, prompt_variant);
+
+-- Natural-key UNIQUE constraint so `sync_public_d1.py`'s INSERT OR IGNORE
+-- actually dedupes. Without this, the AUTOINCREMENT primary key is the
+-- only uniqueness signal and every re-sync inserts duplicates, forcing
+-- consumers of the sync to always pass `--since` to avoid bloat — which
+-- in turn risks permanent gaps if the very first sync was interrupted
+-- (which is how 67 Opus naive + 1 Haiku naive rows ended up missing from
+-- the mainbench_canonical_v1 sweep).
+CREATE UNIQUE INDEX IF NOT EXISTS uq_triage_run_public_natural
+    ON triage_run_public (run_id, gene_symbol, model, prompt_variant, replicate, prompt_sha);
 
 
 -- ---------------------------------------------------------------------------

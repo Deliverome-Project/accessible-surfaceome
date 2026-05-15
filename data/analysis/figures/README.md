@@ -36,20 +36,27 @@ Each PDF + PNG also carries its gist URL in file metadata (PDF
 
 ## Data sources used by the reproduction scripts
 
-All published as plain-git TSVs in the repo (LFS-exempted in
-`.gitattributes`) so the gist scripts can fetch them via
-`raw.githubusercontent.com`:
+Predictions and truth labels are read from the public API (see
+`CLAUDE.md` "Final figures must read from the public API"). The
+per-DB universe table and cutoff-tradeoff points are still
+committed TSVs — they don't have API endpoints yet.
 
-- [`data/processed/triage_bench/mainbench_canonical_v1.tsv`](../../processed/triage_bench/mainbench_canonical_v1.tsv)
-  — 1,470 per-cell predictions exported from D1 by
-  [`scripts/export_mainbench_to_tsv.py`](../../../scripts/export_mainbench_to_tsv.py).
+- `https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1`
+  — 1,470 per-cell predictions (gene × model × variant), with
+  cost_usd + token counts. Source-of-truth replacement for the
+  former `data/processed/triage_bench/mainbench_canonical_v1.tsv`.
+- `https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv`
+  — 147-gene ground-truth labels (gene / uniprot / class / verdict
+  / signal / reason / rationale).
 - [`data/processed/triage_bench/db_cutoff_tradeoff_points.tsv`](../../processed/triage_bench/db_cutoff_tradeoff_points.tsv)
   — precomputed cutoff-variant accuracy points; dumped as a side
   effect of `scripts/triage_bench_db_barplot.py::make_db_tradeoff_plot`.
 - [`data/processed/candidate_universe/candidate_universe.tsv`](../../processed/candidate_universe/candidate_universe.tsv)
   — 5-DB surface-vote table (also drives the Venn).
 - [`data/eval/triage_benchmark_v1.tsv`](../../eval/triage_benchmark_v1.tsv)
-  — 147-gene ground-truth labels.
+  — 147-gene ground-truth source (input to the D1 sync that
+  populates `/v1/benchmark/export.tsv`; figures read the API
+  endpoint, not this file).
 
 ## Gist-publishing workflow
 

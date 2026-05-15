@@ -13,8 +13,18 @@
 //   GET /v1/benchmark           — full benchmark truth labels (latest version)
 //   GET /v1/benchmark/matrix    — 147-gene matrix: truth + per-DB flags +
 //                                  per-model headline & alt LLM verdicts
+//   GET /v1/benchmark/export.tsv — 7-column TSV of curated truth labels,
+//                                  mirrors `data/eval/triage_benchmark_v1.tsv`
+//                                  shape (gene/uniprot/class/verdict/
+//                                  signal/reason/rationale). Figure scripts
+//                                  load truth labels from here.
 //   GET /v1/benchmark/:symbol   — single gene's truth label
-//   GET /v1/triage/:symbol      — model verdicts across runs (no costs)
+//   GET /v1/triage/:symbol      — model verdicts across runs (with costs)
+//   GET /v1/triage/export.tsv   — long-format TSV of all triage runs for a
+//                                  given run_id (default mainbench_canonical_v1).
+//                                  Single source of truth for final-figure
+//                                  predictions data; carries cost_usd + token
+//                                  counts.
 //
 // Schema: cloudflare/d1_public_schema.sql.
 
@@ -44,6 +54,27 @@ function notFound(msg = "not_found") {
 
 function badRequest(msg) {
   return json({ error: msg }, { status: 400, ttl: 0 });
+}
+
+// TSV response — same cache/CORS posture as `json` but text/tsv.
+// Used by /v1/triage/export.tsv so reproducibility scripts can `pd.read_csv(url, sep="\t")`
+// straight from the API.
+function tsv(content, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
+  return new Response(content, {
+    status,
+    headers: {
+      "Content-Type": "text/tab-separated-values; charset=utf-8",
+      "Cache-Control": `public, max-age=${ttl}, s-maxage=${ttl}`,
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+// Minimal TSV escaping: tabs/CR/LF in a cell would break the row,
+// so collapse them to a single space. Don't quote — TSV doesn't.
+function tsvCell(v) {
+  if (v == null) return "";
+  return String(v).replace(/[\t\r\n]+/g, " ");
 }
 
 // Light gene-symbol validation: alnum + dash + dot, ≤30 chars.
@@ -138,6 +169,39 @@ async function handleBenchmarkList(env) {
     entries: rows.results,
   }, { ttl: CACHE_TTL_LONG });
 }
+
+// Long-format TSV export of the curated benchmark truth labels. Mirrors
+// `/v1/benchmark` (JSON) in the 7-column TSV shape that the historical
+// `data/eval/triage_benchmark_v1.tsv` ships in, so figure scripts can
+// `pd.read_csv(url, sep="\t")` without conditional parsing.
+async function handleBenchmarkExport(env) {
+  const v = await env.DB.prepare(
+    `SELECT bench_version, COUNT(*) AS n_labeled
+       FROM benchmark_version
+      WHERE truth_verdict IS NOT NULL AND truth_verdict != ''
+      GROUP BY bench_version
+      ORDER BY n_labeled DESC, bench_version DESC
+      LIMIT 1`
+  ).first();
+  if (!v) return tsv("gene_symbol\tuniprot_acc\tclass\tground_truth_verdict\tground_truth_signal\tground_truth_reason\trationale\n", { ttl: CACHE_TTL_LONG });
+  const rs = await env.DB.prepare(
+    `SELECT gene_symbol, uniprot_acc, class, truth_verdict, truth_signal,
+            truth_reason, rationale
+       FROM benchmark_version
+      WHERE bench_version = ?
+      ORDER BY gene_symbol`
+  ).bind(v.bench_version).all();
+  // Column header names match the on-repo TSV at data/eval/triage_benchmark_v1.tsv
+  // so existing figure scripts don't need to rename columns when swapping
+  // the URL.
+  const headers = "gene_symbol\tuniprot_acc\tclass\tground_truth_verdict\tground_truth_signal\tground_truth_reason\trationale";
+  const body = rs.results.map((r) =>
+    [r.gene_symbol, r.uniprot_acc, r.class, r.truth_verdict, r.truth_signal,
+     r.truth_reason, r.rationale].map(tsvCell).join("\t")
+  ).join("\n");
+  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+}
+
 
 async function handleBenchmarkOne(env, symbol) {
   const sym = checkSymbol(symbol);
@@ -387,41 +451,61 @@ async function handleBenchmarkMatrix(env) {
     }
   }
 
-  // 4. Triage runs filtered to the bench_version + the model/variant
-  // grid we care about. Most-recent run wins per (gene, model, variant).
-  // Uses ROW_NUMBER() in a CTE so the "latest per partition" pass is a
-  // single window scan instead of a correlated subquery (which was
-  // O(N²) and put the 4-row, 147-gene endpoint at ~30s on cold cache).
+  // 4. Triage runs for the model/variant grid we care about. NO
+  // bench_version filter — runs uploaded against older bench_version
+  // SHAs are still valid predictions for the same (gene, model,
+  // variant) cell, and filtering them out leaves the matrix with
+  // ~half of the Opus and Haiku naive coverage that actually exists
+  // (the published figures load the same predictions from a static
+  // TSV and confirm 147/147 coverage on those cells). Restricting
+  // the 147 rows happens upstream via the benchmark_version join in
+  // the JS stitching step. Latest run wins per (gene, model, variant)
+  // by created_at; ROW_NUMBER() over a partition stays O(N) cold.
   const wantedVariants = [
     BENCH_MATRIX_HEADLINE_VARIANT,
     ...BENCH_MATRIX_ALT_VARIANTS,
   ];
   const variantPlaceholders = wantedVariants.map(() => "?").join(",");
   const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
+  // Build a Set of the 147 benchmark gene symbols so we can drop
+  // non-bench rows JS-side. D1's prepared-statement parameter cap
+  // (~100) makes a 147-element IN (...) infeasible in one query, and
+  // chunking forces N+1 round-trips. Since the model+variant filter
+  // already shrinks the universe to ~10 cells × 147 genes = ~1.5k
+  // rows post-rank, the JS-side filter is cheap.
+  const benchSymbolSet = new Set(truthRows.results.map((t) => t.gene_symbol));
   const triageRows = await env.DB.prepare(
     `WITH ranked AS (
        SELECT gene_symbol, model, prompt_variant, predicted_verdict,
               predicted_reason, predicted_confidence, predicted_key_uncertainty,
               correct, latency_s, n_web_searches, created_at, error,
+              cost_usd, prompt_tokens, completion_tokens,
+              cache_creation_tokens, cache_read_tokens,
               ROW_NUMBER() OVER (
                 PARTITION BY gene_symbol, model, prompt_variant
                 ORDER BY created_at DESC
               ) AS rn
          FROM triage_run_public
-        WHERE bench_version = ?
-          AND prompt_variant IN (${variantPlaceholders})
+        WHERE prompt_variant IN (${variantPlaceholders})
           AND model IN (${modelPlaceholders})
      )
      SELECT gene_symbol, model, prompt_variant, predicted_verdict,
             predicted_reason, predicted_confidence, predicted_key_uncertainty,
-            correct, latency_s, n_web_searches, created_at, error
+            correct, latency_s, n_web_searches, created_at, error,
+            cost_usd, prompt_tokens, completion_tokens,
+            cache_creation_tokens, cache_read_tokens
        FROM ranked
       WHERE rn = 1`
-  ).bind(benchVersion, ...wantedVariants, ...BENCH_MATRIX_MODELS).all();
+  ).bind(...wantedVariants, ...BENCH_MATRIX_MODELS).all();
 
-  // Build a nested map: gene → model → variant → run.
+  // Build a nested map: gene → model → variant → run. Skip rows
+  // that aren't in the 147 benchmark — the SQL pulls every cell
+  // across the genome-wide sweep (no gene_symbol filter possible
+  // within D1's parameter cap), so the bench-symbol Set is the
+  // gate that keeps the matrix to 147 genes.
   const runMap = new Map();
   for (const r of triageRows.results) {
+    if (!benchSymbolSet.has(r.gene_symbol)) continue;
     let byModel = runMap.get(r.gene_symbol);
     if (!byModel) {
       byModel = new Map();
@@ -442,6 +526,11 @@ async function handleBenchmarkMatrix(env) {
       n_web_searches: r.n_web_searches,
       created_at: r.created_at,
       error: r.error,
+      cost_usd: r.cost_usd,
+      prompt_tokens: r.prompt_tokens,
+      completion_tokens: r.completion_tokens,
+      cache_creation_tokens: r.cache_creation_tokens,
+      cache_read_tokens: r.cache_read_tokens,
     });
   }
 
@@ -497,6 +586,62 @@ async function handleBenchmarkMatrix(env) {
 }
 
 
+// Long-format TSV export — the single source of truth for figure
+// reproduction. One row per (gene, model, variant, replicate) for a
+// given run_id. Final figures pull from here so the predictions side
+// of every published figure is reproducible from public D1 alone.
+//
+// Columns: gene_symbol / model / prompt_variant / replicate /
+// predicted_verdict / predicted_reason / predicted_confidence /
+// prompt_tokens / completion_tokens / cache_creation_tokens /
+// cache_read_tokens / n_web_searches / cost_usd / latency_s.
+const EXPORT_COLUMNS = [
+  "gene_symbol",
+  "model",
+  "prompt_variant",
+  "replicate",
+  "predicted_verdict",
+  "predicted_reason",
+  "predicted_confidence",
+  "prompt_tokens",
+  "completion_tokens",
+  "cache_creation_tokens",
+  "cache_read_tokens",
+  "n_web_searches",
+  "cost_usd",
+  "latency_s",
+];
+const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v1";
+
+async function handleTriageExport(env, url) {
+  // Pin to a single run_id (default mainbench_canonical_v1) so
+  // consumers don't have to disambiguate across sweeps.
+  const runId = url.searchParams.get("run_id") || DEFAULT_EXPORT_RUN_ID;
+  // Optional: filter to a specific replicate. Most consumers pass
+  // replicate=1 to mirror the historical headline numbers.
+  const replicate = url.searchParams.get("replicate");
+  const sqlParts = [
+    `SELECT ${EXPORT_COLUMNS.join(", ")}`,
+    `  FROM triage_run_public`,
+    ` WHERE run_id = ?`,
+  ];
+  const params = [runId];
+  if (replicate != null) {
+    const r = parseInt(replicate, 10);
+    if (Number.isNaN(r)) return badRequest("invalid_replicate");
+    sqlParts.push(` AND replicate = ?`);
+    params.push(r);
+  }
+  sqlParts.push(` ORDER BY model, prompt_variant, gene_symbol`);
+  const rs = await env.DB.prepare(sqlParts.join("")).bind(...params).all();
+  const headers = EXPORT_COLUMNS.join("\t");
+  const body = rs.results
+    .map((r) => EXPORT_COLUMNS.map((c) => tsvCell(r[c])).join("\t"))
+    .join("\n");
+  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+}
+
+
 async function handleTriage(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -504,7 +649,9 @@ async function handleTriage(env, symbol) {
     `SELECT created_at, model, prompt_variant, prompt_filename,
             schema_version, replicate, predicted_verdict, predicted_reason,
             predicted_confidence, predicted_key_uncertainty,
-            verdict_reasoning, correct, latency_s, n_web_searches, error
+            verdict_reasoning, correct, latency_s, n_web_searches, error,
+            cost_usd, prompt_tokens, completion_tokens,
+            cache_creation_tokens, cache_read_tokens
        FROM triage_run_public
       WHERE gene_symbol = ?
       ORDER BY created_at DESC, model, prompt_variant, replicate`
@@ -546,6 +693,8 @@ export default {
     if (path === "/v1/catalog") return handleCatalog(env);
     if (path === "/v1/benchmark") return handleBenchmarkList(env);
     if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
+    if (path === "/v1/benchmark/export.tsv") return handleBenchmarkExport(env);
+    if (path === "/v1/triage/export.tsv") return handleTriageExport(env, url);
 
     let m;
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);

@@ -34,7 +34,9 @@ Do **not** invoke this skill for non-human genes, for general protein-biology qu
 | `GET` | `/v1/benchmark` | The 147 ground-truth labels for the current bench_version | 1d |
 | `GET` | `/v1/benchmark/matrix` | The full SurfaceBench matrix: truth + 7 per-DB flags + per-model LLM verdicts | 1d |
 | `GET` | `/v1/benchmark/{SYMBOL}` | Single gene's truth label | 1d |
-| `GET` | `/v1/triage/{SYMBOL}` | Every triage run on file for a gene (model × variant × replicate) | 60s |
+| `GET` | `/v1/triage/{SYMBOL}` | Every triage run on file for a gene (model × variant × replicate) with cost + token counts | 60s |
+| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for a `run_id` (default `mainbench_canonical_v1`). Source of truth for figure-reproduction scripts; includes cost_usd + token counts. | 1d |
+| `GET` | `/v1/benchmark/export.tsv` | 7-column TSV of curated truth labels for the SurfaceBench gene set. Mirrors `/v1/benchmark` in TSV shape. | 1d |
 | `GET` | `/v1/orthologs/{SYMBOL}` | Mouse + cyno orthologs from latest Ensembl Compara release | 1d |
 
 Gene symbols are case-insensitive on the wire (the Worker uppercases them) but the canonical HGNC form is upper-case.
@@ -117,6 +119,26 @@ import httpx
 r = httpx.get("https://api.deliverome.org/surfaceome/v1/genes/ERBB2", timeout=15)
 record = r.json()
 print(record["targetability"]["tier"])
+```
+
+## Example: rebuild the canonical predictions table
+
+`/v1/triage/export.tsv` returns the same 14-column long-format TSV that the figure scripts and gists consume — the public source of truth for every published figure.
+
+```bash
+curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1' \
+  | head -5
+```
+
+```python
+import pandas as pd
+preds = pd.read_csv(
+    "https://api.deliverome.org/surfaceome/v1/triage/export.tsv"
+    "?run_id=mainbench_canonical_v1&replicate=1",
+    sep="\t",
+)
+# 1,470 rows = 147 genes × {2 Opus + 4 Sonnet + 4 Haiku} cells
+print(preds.groupby(["model", "prompt_variant"]).size())
 ```
 
 ## Example: SurfaceBench accuracy

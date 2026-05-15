@@ -76,9 +76,17 @@ const ENDPOINTS: Endpoint[] = [
     method: "GET",
     path: "/v1/triage/{SYMBOL}",
     summary:
-      "Every triage run on file for a gene (model × prompt variant × replicate) with verdict, reason, confidence, latency.",
+      "Every triage run on file for a gene (model × prompt variant × replicate) with verdict, reason, confidence, latency, cost, and token counts.",
     curl:
       "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2 | jq '.count'",
+  },
+  {
+    method: "GET",
+    path: "/v1/triage/export.tsv",
+    summary:
+      "Long-format TSV of every triage run for a given run_id (default mainbench_canonical_v1). The canonical source of truth for the figure-reproduction scripts and gists.",
+    curl:
+      "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1' | head -3",
   },
   {
     method: "GET",
@@ -179,6 +187,46 @@ export default function ApiPage() {
               Skill file is missing from the build — file an issue.
             </p>
           )}
+        </section>
+
+        <section className={styles.skill}>
+          <h2 className="h-data-section">Reproduce the figures</h2>
+          <p className={styles.skillBody}>
+            Every figure in this project is regenerated from{" "}
+            <code className={styles.code}>
+              api.deliverome.org/surfaceome/v1/*
+            </code>
+            . Cost-vs-accuracy, per-DB correctness, ensemble-vs-Sonnet,
+            and the rest pull from one of two endpoints:
+          </p>
+          <ul className={styles.repList}>
+            <li>
+              <code className={styles.code}>
+                /v1/triage/export.tsv?run_id=mainbench_canonical_v1
+              </code>{" "}
+              — long-format TSV of the 147-gene × {`{model × variant}`}{" "}
+              sweep, with verdict / reason / confidence /{" "}
+              <strong>cost_usd</strong> / token counts / latency.
+            </li>
+            <li>
+              <code className={styles.code}>
+                /v1/benchmark/export.tsv
+              </code>{" "}
+              — 7-column TSV of curated truth labels for the same
+              147 genes (verdict / signal / reason / rationale).
+            </li>
+            <li>
+              <code className={styles.code}>/v1/catalog</code> — genome-wide
+              per-DB votes and latest triage verdict for the universe
+              consensus figures.
+            </li>
+          </ul>
+          <p className={styles.skillBody}>
+            Each figure script under{" "}
+            <code className={styles.code}>data/analysis/figures/</code>{" "}
+            and its published gist load directly from these URLs — no
+            local data files, no committed TSVs required.
+          </p>
         </section>
 
         <section className={styles.endpoints}>

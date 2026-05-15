@@ -57,9 +57,15 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # or in Python: `from PIL import Image; Image.open(p).info["Source"]`.
 GIST_URL = "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"
 
-BENCH_TSV   = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
+# Truth labels + predictions come from the public API (single source of
+# truth for final figures — see CLAUDE.md "Final figures must read from
+# the public API"). The CAND_TSV (per-DB votes for the candidate universe)
+# still pulls from the on-repo committed TSV because a per-DB-vote
+# endpoint isn't shipped yet.
+API = "https://api.deliverome.org/surfaceome"
+BENCH_TSV   = f"{API}/v1/benchmark/export.tsv"
 CAND_TSV    = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
-PREDS_TSV   = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
+PREDS_TSV   = f"{API}/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1"
 # Optimized DB-cutoff accession TSV (one row per accession admitted
 # by EITHER optimized rule; columns mark which). Dumped by the
 # canonical generator's _dump_db_optimized_cutoffs when the by_class

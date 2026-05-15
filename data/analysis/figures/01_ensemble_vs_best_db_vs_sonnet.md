@@ -26,7 +26,7 @@ uv run make_ensemble_vs_best_db_vs_sonnet.py
 Sources (fetched live from the public repo):
 
 - Bench truth labels: [`data/eval/triage_benchmark_v1.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/eval/triage_benchmark_v1.tsv)
-- Sonnet predictions: [`data/processed/triage_bench/mainbench_canonical_v1.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/triage_bench/mainbench_canonical_v1.tsv)
+- Sonnet predictions: `https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1` (filtered to model=claude-sonnet-4-6)
 - Candidate-universe DB flags: [`data/processed/candidate_universe/candidate_universe.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/candidate_universe/candidate_universe.tsv)
 - DB-optimized cutoffs: [`data/processed/triage_bench/db_optimized_cutoffs.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/triage_bench/db_optimized_cutoffs.tsv)
 

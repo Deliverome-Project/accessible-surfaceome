@@ -35,9 +35,14 @@ from accessible_surfaceome.audit._plotting_config import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
+# Truth labels + predictions come from the public API (see CLAUDE.md
+# "Final figures must read from the public API"). CAND_TSV +
+# OPT_CUTOFFS_TSV still load from the committed TSVs (per-DB-vote and
+# per-DB-cutoff endpoints aren't shipped yet).
+API = "https://api.deliverome.org/surfaceome"
+BENCH_TSV = f"{API}/v1/benchmark/export.tsv"
+PREDS_TSV = f"{API}/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1"
 CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
-PREDS_TSV = ROOT / "data/processed/triage_bench/mainbench_canonical_v1.tsv"
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 OUT_DIR = ROOT / "data/analysis/figures"  # promoted to canonical figures dir
 
