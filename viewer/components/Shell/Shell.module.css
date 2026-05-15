@@ -85,6 +85,22 @@
   border-bottom-color: var(--accent);
 }
 
+/* Icon-only nav link (the GitHub octocat). The underline-on-hover
+ * trick from .navLink looks awkward under an SVG, so we suppress
+ * the border there and lean on the colour-shift alone for hover
+ * affordance. */
+.navIconLink {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  border-bottom: none;
+}
+
+.navIconLink:hover,
+.navIconLink:focus-visible {
+  border-bottom-color: transparent;
+}
+
 .main {
   flex: 1;
 }
