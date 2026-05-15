@@ -19,7 +19,7 @@ These tests pin both fixes.
 
 from __future__ import annotations
 
-from accessible_surfaceome.agents.surface_annotator.source_registration import (
+from accessible_surfaceome.agents._support.source_registration import (
     _register_uniprot_from_bundle,
     _register_uniprot_from_summary,
 )

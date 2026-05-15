@@ -39,7 +39,7 @@ from accessible_surfaceome.agents.biology_compiler.runner import (
     A2Result,
     run_biology_compiler,
 )
-from accessible_surfaceome.agents.surface_annotator.evidence_promotion import promote_claim
+from accessible_surfaceome.agents._support.evidence_promotion import promote_claim
 from accessible_surfaceome.agents.surface_evidence_compiler.runner import (
     A1Result,
     run_surface_evidence_compiler,

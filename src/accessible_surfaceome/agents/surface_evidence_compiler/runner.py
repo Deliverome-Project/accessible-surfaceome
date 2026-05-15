@@ -31,7 +31,7 @@ from anthropic.types import TextBlock, ToolUseBlock
 from pydantic import BaseModel, ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
-from accessible_surfaceome.agents.surface_annotator import tool_registry
+from accessible_surfaceome.agents._support import tool_registry
 from accessible_surfaceome.tools._shared import retraction_watch as _retraction_watch
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import SurfaceEvidenceDraft
