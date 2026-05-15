@@ -29,6 +29,9 @@ export function Shell({ children }: ShellProps) {
             <Link className={styles.navLink} href="/benchmark">
               SurfaceBench
             </Link>
+            <Link className={styles.navLink} href="/api">
+              API
+            </Link>
             <Link className={styles.navLink} href="/prompts">
               Prompts
             </Link>
