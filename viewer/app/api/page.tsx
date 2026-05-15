@@ -15,86 +15,120 @@ interface Endpoint {
   method: "GET";
   path: string;
   summary: string;
-  /** Optional one-line curl example. */
   curl?: string;
 }
 
-const ENDPOINTS: Endpoint[] = [
+interface EndpointGroup {
+  label: string;
+  blurb: string;
+  endpoints: Endpoint[];
+}
+
+const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
-    method: "GET",
-    path: "/v1/health",
-    summary: "Liveness check. Returns the count of deep-dive records on file.",
-    curl: "curl -s https://api.deliverome.org/surfaceome/v1/health",
+    label: "Discovery",
+    blurb: "Health + per-gene lookups.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/health",
+        summary:
+          "Liveness check. Returns the count of deep-dive SurfaceomeRecords on file.",
+        curl: "curl -s https://api.deliverome.org/surfaceome/v1/health",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes",
+        summary:
+          "List of genes that have a deep-dive SurfaceomeRecord on file (summary fields only — gene symbol, UniProt, schema version, top-line verdict).",
+        curl: "curl -s https://api.deliverome.org/surfaceome/v1/genes | jq '.count'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}",
+        summary:
+          "Full SurfaceomeRecord JSON for one gene — targetability tier, surface biology with seven per-DB votes, primary + secondary evidence chain, risk flags, rationale. The single richest payload in the API.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 | jq '.targetability.tier, .confidence'",
+      },
+      {
+        method: "GET",
+        path: "/v1/orthologs/{SYMBOL}",
+        summary:
+          "Mouse + cynomolgus orthologs for a human gene from the latest Ensembl Compara release. Powers the cross-species ECD-identity callouts on the deep-dive page.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/orthologs/ERBB2 | jq '.release_version, (.orthologs | length)'",
+      },
+    ],
   },
   {
-    method: "GET",
-    path: "/v1/genes",
-    summary:
-      "List of genes that have a deep-dive SurfaceomeRecord on file (summary fields).",
-    curl: "curl -s https://api.deliverome.org/surfaceome/v1/genes | jq '.count'",
+    label: "Genome-wide",
+    blurb:
+      "All ~19,300 protein-coding human genes with their per-DB surface votes and the latest Sonnet/NCBI triage verdict. This is the data the homepage table renders.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/catalog",
+        summary:
+          "Per-gene-per-source DB-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + deep-dive flag. ~6 MB; one row per gene in the candidate universe. Drives the homepage CatalogTable.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage'",
+      },
+      {
+        method: "GET",
+        path: "/v1/triage/{SYMBOL}",
+        summary:
+          "Every triage run on file for one gene — model × prompt-variant × replicate, with verdict, reason, confidence, latency, cost_usd, and per-call token counts. The deep-dive expansion view of a single catalog row.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2 | jq '.count, .runs[0]'",
+      },
+      {
+        method: "GET",
+        path: "/v1/triage/export.tsv",
+        summary:
+          "Long-format TSV of every triage run for one run_id. Default is mainbench_canonical_v1 (1,470 SurfaceBench rows); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet/NCBI sweep. Same 14-column shape that scripts/export_mainbench_to_tsv.py writes to data/processed/triage_bench/.",
+        curl:
+          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1' | head -3",
+      },
+    ],
   },
   {
-    method: "GET",
-    path: "/v1/genes/{SYMBOL}",
-    summary:
-      "Full SurfaceomeRecord JSON for one gene — targetability, surface biology, evidence, risk flags, rationale.",
-    curl:
-      "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 | jq '.targetability.tier'",
-  },
-  {
-    method: "GET",
-    path: "/v1/catalog",
-    summary:
-      "Genome-wide table: per-gene-per-source DB votes (5 sources) + latest triage verdict + deep-dive flag. ~6 MB; drives the homepage.",
-    curl:
-      "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.n_rows'",
-  },
-  {
-    method: "GET",
-    path: "/v1/benchmark",
-    summary:
-      "147 SurfaceBench ground-truth labels for the current bench_version.",
-    curl:
-      "curl -s https://api.deliverome.org/surfaceome/v1/benchmark | jq '.count'",
-  },
-  {
-    method: "GET",
-    path: "/v1/benchmark/matrix",
-    summary:
-      "Full SurfaceBench matrix: truth + 7 per-DB flags + per-model LLM verdicts (headline + alts). Drives the /benchmark/ page.",
-    curl:
-      "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models'",
-  },
-  {
-    method: "GET",
-    path: "/v1/benchmark/{SYMBOL}",
-    summary: "Single gene's SurfaceBench truth label and rationale.",
-    curl:
-      "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/ERBB2 | jq '.truth_verdict'",
-  },
-  {
-    method: "GET",
-    path: "/v1/triage/{SYMBOL}",
-    summary:
-      "Every triage run on file for a gene (model × prompt variant × replicate) with verdict, reason, confidence, latency, cost, and token counts.",
-    curl:
-      "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2 | jq '.count'",
-  },
-  {
-    method: "GET",
-    path: "/v1/triage/export.tsv",
-    summary:
-      "Long-format TSV of every triage run for a given run_id (default mainbench_canonical_v1). The canonical source of truth for the figure-reproduction scripts and gists.",
-    curl:
-      "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1' | head -3",
-  },
-  {
-    method: "GET",
-    path: "/v1/orthologs/{SYMBOL}",
-    summary:
-      "Mouse + cynomolgus orthologs from the latest Ensembl Compara release.",
-    curl:
-      "curl -s https://api.deliverome.org/surfaceome/v1/orthologs/ERBB2 | jq '.release_version'",
+    label: "SurfaceBench",
+    blurb:
+      "147 curated proteins with ground-truth surface verdicts — the eval set behind every published cost/accuracy figure.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/benchmark",
+        summary:
+          "147 SurfaceBench ground-truth labels (gene, UniProt, class, verdict, signal, reason, rationale) for the current bench_version. JSON shape.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark | jq '.count, .bench_version'",
+      },
+      {
+        method: "GET",
+        path: "/v1/benchmark/export.tsv",
+        summary:
+          "Same 147 truth labels as /v1/benchmark, in 7-column TSV shape — mirrors data/eval/triage_benchmark_v1.tsv so figure scripts can pd.read_csv it directly.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv | head -3",
+      },
+      {
+        method: "GET",
+        path: "/v1/benchmark/{SYMBOL}",
+        summary: "Single gene's SurfaceBench truth label + rationale.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/ERBB2 | jq '.truth_verdict, .truth_reason'",
+      },
+      {
+        method: "GET",
+        path: "/v1/benchmark/matrix",
+        summary:
+          "Full SurfaceBench matrix — one row per gene with truth + 7 per-DB flags + per-model LLM verdicts (headline + 3 alt prompt variants). Single round-trip; drives the /benchmark/ page.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .headline_variant, .alt_variants'",
+      },
+    ],
   },
 ];
 
@@ -190,63 +224,60 @@ export default function ApiPage() {
         </section>
 
         <section className={styles.skill}>
-          <h2 className="h-data-section">Reproduce the figures</h2>
+          <h2 className="h-data-section">Data flow (pre-publication)</h2>
           <p className={styles.skillBody}>
-            Every figure in this project is regenerated from{" "}
-            <code className={styles.code}>
-              api.deliverome.org/surfaceome/v1/*
-            </code>
-            . Cost-vs-accuracy, per-DB correctness, ensemble-vs-Sonnet,
-            and the rest pull from one of two endpoints:
+            The work is <strong>pre-publication</strong>; figures and
+            tables shown today are draft artifacts and will be re-pinned
+            to Zenodo DOIs at submission time. Today the lineage runs:
           </p>
-          <ul className={styles.repList}>
-            <li>
-              <code className={styles.code}>
-                /v1/triage/export.tsv?run_id=mainbench_canonical_v1
-              </code>{" "}
-              — long-format TSV of the 147-gene × {`{model × variant}`}{" "}
-              sweep, with verdict / reason / confidence /{" "}
-              <strong>cost_usd</strong> / token counts / latency.
-            </li>
-            <li>
-              <code className={styles.code}>
-                /v1/benchmark/export.tsv
-              </code>{" "}
-              — 7-column TSV of curated truth labels for the same
-              147 genes (verdict / signal / reason / rationale).
-            </li>
-            <li>
-              <code className={styles.code}>/v1/catalog</code> — genome-wide
-              per-DB votes and latest triage verdict for the universe
-              consensus figures.
-            </li>
-          </ul>
+          <pre className={styles.lineage}>
+{`private D1 ──sync_public_d1.py──▶ public D1
+                                    │
+                                    ├─▶ this API  (live consumers: viewer, agents, notebooks)
+                                    │
+                                    └─▶ scripts/export_mainbench_to_tsv.py
+                                          ▼
+                                        data/processed/triage_bench/mainbench_canonical_v1.tsv
+                                          ▼
+                                        raw.githubusercontent.com/<repo>/<branch>/...
+                                          ▼
+                                        figure scripts + published gists`}
+          </pre>
           <p className={styles.skillBody}>
-            Each figure script under{" "}
-            <code className={styles.code}>data/analysis/figures/</code>{" "}
-            and its published gist load directly from these URLs — no
-            local data files, no committed TSVs required.
+            <strong>Final figures</strong> read their data from{" "}
+            <code className={styles.code}>raw.githubusercontent.com</code>{" "}
+            — pinned to a commit SHA at publication for stable citation,
+            and eventually mirrored to a Zenodo DOI. The API on this
+            page is the source for everything <em>live</em>: the viewer,
+            agent skills, notebook exploration. Both surfaces mirror the
+            same public D1.
           </p>
         </section>
 
         <section className={styles.endpoints}>
           <h2 className="h-data-section">Endpoints</h2>
-          <ul className={styles.endpointList}>
-            {ENDPOINTS.map((e) => (
-              <li key={e.path} className={styles.endpoint}>
-                <p className={styles.endpointLine}>
-                  <span className={styles.method}>{e.method}</span>
-                  <code className={styles.endpointPath}>{e.path}</code>
-                </p>
-                <p className={styles.endpointSummary}>{e.summary}</p>
-                {e.curl ? (
-                  <pre className={styles.curl}>
-                    <code>{e.curl}</code>
-                  </pre>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+          {ENDPOINT_GROUPS.map((group) => (
+            <div key={group.label} className={styles.endpointGroup}>
+              <h3 className={styles.groupLabel}>{group.label}</h3>
+              <p className={styles.groupBlurb}>{group.blurb}</p>
+              <ul className={styles.endpointList}>
+                {group.endpoints.map((e) => (
+                  <li key={e.path} className={styles.endpoint}>
+                    <p className={styles.endpointLine}>
+                      <span className={styles.method}>{e.method}</span>
+                      <code className={styles.endpointPath}>{e.path}</code>
+                    </p>
+                    <p className={styles.endpointSummary}>{e.summary}</p>
+                    {e.curl ? (
+                      <pre className={styles.curl}>
+                        <code>{e.curl}</code>
+                      </pre>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </section>
 
         <footer className={styles.footnotes}>

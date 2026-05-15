@@ -29,15 +29,19 @@ data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.ts
 data/processed/candidate_universe/candidate_universe.tsv -filter -diff -merge text
 data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge text
 
+# Canonical SurfaceBench predictions TSV — refreshed from public D1
+# by `scripts/export_mainbench_to_tsv.py` and pinned to a commit SHA
+# at publication for stable citation. Figure scripts + published gists
+# fetch it via raw.githubusercontent.com, so it stays non-LFS (LFS
+# pointers don't resolve over the raw URL). The Worker also serves
+# the same shape at `/v1/triage/export.tsv` for live consumers.
+data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
+
 # 147-gene triage benchmark with ground-truth verdicts. Stays non-LFS
-# because `scripts/upload_benchmark_to_d1.py` reads it as the SOURCE OF
-# TRUTH input to the D1 sync. (Figure scripts no longer fetch it via
-# raw.githubusercontent.com — they pull from
-# api.deliverome.org/surfaceome/v1/benchmark/export.tsv instead, per
-# the "final figures must read from the public API" policy in CLAUDE.md.
-# The committed mainbench predictions TSV that lived next to this one
-# was removed for the same reason: predictions now flow from
-# /v1/triage/export.tsv.)
+# because (a) `scripts/upload_benchmark_to_d1.py` reads it as the
+# source-of-truth input to the D1 sync, and (b) figure scripts fetch
+# it via raw.githubusercontent.com for ground-truth labels alongside
+# the predictions TSV above.
 data/eval/triage_benchmark_v1.tsv -filter -diff -merge text
 
 # DB cutoff-tradeoff precomputed points dumped by

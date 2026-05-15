@@ -32,11 +32,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-# Public API endpoints — single source of truth for final figures
-# (see CLAUDE.md "Final figures must read from the public API").
-API = "https://api.deliverome.org/surfaceome"
-BENCH_TSV = f"{API}/v1/benchmark/export.tsv"
-PREDS_TSV = f"{API}/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1"
+REPO = "Deliverome-Project/accessible-surfaceome"
+BRANCH = "main"
+BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
+BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
+PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -136,9 +136,9 @@ VARIANT_ORDER = [
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    # Final figures load from the public API — no local-file fallback
-    # by policy (see CLAUDE.md "Final figures must read from the public
-    # API").
+    local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
+    if local.is_file():
+        return pd.read_csv(local, sep="\t")
     r = httpx.get(url, timeout=30)
     r.raise_for_status()
     return pd.read_csv(io.StringIO(r.text), sep="\t")

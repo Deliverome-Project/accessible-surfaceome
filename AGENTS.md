@@ -73,21 +73,54 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 - **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
 - **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
 
-## Final figures must read from the public API
+## Final-figure data flow (pre-publication)
 
-Every figure promoted to a published gist — and every on-repo generator under `data/analysis/figures/make_*.py` that mirrors one — **must read its data from `api.deliverome.org/surfaceome/v1/*`**, never from `raw.githubusercontent.com/.../*.tsv` or a local TSV path. The canonical predictions TSV (`data/processed/triage_bench/mainbench_canonical_v1.tsv`) and its exporter (`scripts/export_mainbench_to_tsv.py`) were removed on 2026-05-15 once the API became the single source of truth; data now flows private D1 → `scripts/sync_public_d1.py` → `triage_run_public` → `/v1/triage/export.tsv`.
+**The work is pre-publication.** Figures and tables that ship to readers today are draft artifacts — at submission time they'll be re-pinned to immutable Zenodo DOIs and the figure scripts + gists will swap their source URLs over. Until then, the lineage is:
 
-Why:
-- **One source of truth.** `triage_run_public` carries every column the figures need, including `cost_usd` and per-call token counts (as of 2026-05-15 — see the schema change at [cloudflare/d1_public_schema.sql](cloudflare/d1_public_schema.sql)). There's no second artifact to drift against.
-- **No "TSV got committed but D1 wasn't synced" drift.** Before the policy change, the mainbench D1 sync was 68 rows short of the TSV and the SurfaceBench page silently showed empty cells for two LLM variants. Pinning figures to the API forces both halves of the contract to stay in lockstep — if the API is short, the figure renders short, you notice, you fix the sync.
-- **Cost data is now public.** The original policy stripped `cost_usd` + tokens from public D1, which made `make_benchmark_cost_vs_accuracy.py` unreproducible without private credentials. That's reversed; cost data flows through, the figure is reproducible from `/v1/triage/export.tsv`.
+```
+  private D1 (triage_run)
+    │
+    ├─sync_public_d1.py───────▶ public D1 (triage_run_public, candidate_universe_public, ...)
+    │                              │
+    │                              ├─Worker /v1/triage/export.tsv ─────▶ live consumers (notebooks, agents)
+    │                              ├─Worker /v1/benchmark/export.tsv
+    │                              ├─Worker /v1/catalog
+    │                              ├─Worker /v1/benchmark/matrix
+    │                              ├─Worker /v1/genes/{SYMBOL}
+    │                              └─Worker /v1/triage/{SYMBOL}
+    │
+    └─export_mainbench_to_tsv.py──▶ data/processed/triage_bench/mainbench_canonical_v1.tsv
+                                      │ (re-reads from PUBLIC D1, not private — so the public
+                                      │  mirror is the citable source. LFS-exempted in
+                                      │  .gitattributes so raw.githubusercontent.com serves
+                                      │  text, not a pointer.)
+                                      │
+                                      └─raw.githubusercontent.com/{REPO}/{BRANCH}/…
+                                          │
+                                          └─figure scripts + published gists
+                                              (data/analysis/figures/make_*.py,
+                                               gist.github.com/beccajcarlson/...)
+```
 
-The three endpoints final figures pull from:
-- **`GET /v1/triage/export.tsv?run_id=<run>&replicate=<n>`** — long-format TSV (gene/model/variant/replicate + verdict/reason/confidence + the 5 cost+token columns + n_web_searches + latency_s). Default `run_id=mainbench_canonical_v1`, default `replicate` unset (returns every replicate).
-- **`GET /v1/benchmark/export.tsv`** — 7-column TSV of curated truth labels (gene/uniprot/class/verdict/signal/reason/rationale).
-- **`GET /v1/catalog`** — genome-wide per-DB-vote matrix + latest triage verdict; drives whole-proteome figures.
+**Final figures read from `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — not the Worker, not the local file system. Reasons:
+- **Citation stability.** Pinning `BRANCH` to a commit SHA at publication time freezes the file forever; the API endpoint could move or change shape.
+- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v1.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer.
+- **Pre-pub flexibility.** Today the gists' `BRANCH = "main"` so a re-run picks up fresh data. At publication, `BRANCH` becomes a commit SHA and the gist URL pins to a Zenodo DOI.
 
-CI doesn't enforce the "API-only" rule yet — flag any new `make_*.py` that imports a TSV path or fetches `raw.githubusercontent.com` during review. The truth-labels TSV at `data/eval/triage_benchmark_v1.tsv` stays committed because it's the *input* to the benchmark upload, but figures still read truth labels via `/v1/benchmark/export.tsv` rather than that file.
+**Refresh procedure** (after any sweep that updates predictions in public D1):
+
+```bash
+# Pulls the latest mainbench_canonical_v1 rows from public D1 and writes
+# data/processed/triage_bench/mainbench_canonical_v1.tsv. Identical shape
+# to /v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1.
+uv run python scripts/export_mainbench_to_tsv.py
+git add data/processed/triage_bench/mainbench_canonical_v1.tsv
+git commit -m "chore(triage): refresh canonical TSV from public D1"
+```
+
+CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
+
+**At publication:** swap `BRANCH = "main"` for a pinned commit SHA in every figure script + gist, register the figure files on Zenodo, and update each gist's README to cite the Zenodo DOI alongside the raw GitHub URL.
 
 ## Final-Figure Gist Convention
 
