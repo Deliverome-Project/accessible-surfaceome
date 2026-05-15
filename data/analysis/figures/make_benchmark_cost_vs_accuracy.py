@@ -31,12 +31,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
+# Final-figure data sources — pinned to the public repo at raw.githubusercontent.com
+# for citation stability. The predictions TSV is refreshed from public D1
+# by `scripts/export_mainbench_to_tsv.py`; truth labels come from the
+# curated benchmark TSV in `data/eval/`. (Live consumers wanting the same
+# shape can hit `api.deliverome.org/surfaceome/v1/{triage,benchmark}/
+# export.tsv` instead — see the API page on the viewer.)
 REPO = "Deliverome-Project/accessible-surfaceome"
-BRANCH = "main"
+BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-
-BENCH_TSV   = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-PREDS_TSV   = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
+BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
+PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).

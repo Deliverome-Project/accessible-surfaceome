@@ -1,0 +1,615 @@
+/*
+ * BenchmarkTable — 147-gene triage benchmark matrix.
+ *
+ * Shares the virtualized CSS-grid pattern from CatalogTable (sticky
+ * header + body rows use the same `--bench-cols` template so columns
+ * line up between thead and the absolutely-positioned virtual rows).
+ *
+ * Visual differences from CatalogTable, by design:
+ *   - Tighter row height (~32px) for scientific data density.
+ *   - Smaller verdict pills, with a "correct vs wrong" outline so the
+ *     reader can scan agreement against truth without reading text.
+ *   - Per-row expand reveals a 3×3 sub-grid of model × alt-variant
+ *     pills instead of a prose reasoning block.
+ */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.meta code {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-sm);
+}
+
+.metaDot {
+  color: var(--line);
+}
+
+/* ============================================================
+ * Toolbar
+ * ============================================================ */
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+
+.search {
+  flex: 1 1 16rem;
+  max-width: 22rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  color: var(--ink);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.searchInput:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.32rem 0.65rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.chip:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.chipOn {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+.chipOn:hover {
+  color: var(--fg-on-dark);
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
+.chipCount {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  font-weight: var(--fw-regular);
+  opacity: 0.7;
+}
+
+.resultRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.resultMeta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.34rem 0.7rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.downloadBtn:hover,
+.downloadBtn:focus-visible {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+/* ============================================================
+ * Table grid
+ * ============================================================ */
+
+.tableScroll {
+  overflow: auto;
+  max-height: min(78vh, 760px);
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+  position: relative;
+}
+
+.row {
+  /* Resting grid: toggle | gene | uniprot | truth | 5 DBs |
+   * 3 model NCBI pills | class. Expand reveals the full
+   * model×variant grid as a row block (.expandedBlock below). */
+  display: grid;
+  grid-template-columns: var(--bench-cols,
+    1.6rem 10rem 5rem 4rem
+    1.4rem 1.4rem 1.4rem 1.4rem 1.4rem
+    4.4rem 4.4rem 4.4rem
+    minmax(8rem, 1fr));
+  align-items: center;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  border-bottom: 1px solid var(--line-soft);
+  min-height: 2.6rem;
+}
+
+.rowExpanded {
+  align-items: stretch;
+}
+
+.headerRow {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+  min-height: 2.4rem;
+}
+
+.body {
+  display: block;
+}
+
+.row:nth-child(2n + 1):not(.headerRow):not(.loadingRow):not(.empty) {
+  background: rgba(146, 32, 56, 0.022);
+}
+
+.row:hover:not(.headerRow):not(.loadingRow):not(.empty) {
+  background: var(--maroon-soft);
+}
+
+/* ============================================================
+ * Cells
+ * ============================================================ */
+
+.headerCell {
+  padding: 0.45rem 0.45rem;
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+
+.headerMono {
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: none;
+  font-size: 0.7rem;
+}
+
+.headerDbCell {
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: none;
+  padding: 0.45rem 0.2rem;
+}
+
+.headerModelCell {
+  justify-content: center;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: var(--fw-medium);
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+}
+
+.cell {
+  padding: 0.3rem 0.45rem;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.toggleCell {
+  padding: 0.15rem;
+  justify-content: center;
+}
+
+.toggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  padding: 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  line-height: 1;
+  color: var(--muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.toggleBtn:hover,
+.toggleBtn:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.toggleBtn[aria-expanded="true"] {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+.geneCell {
+  /* nothing extra; container is the symbol stack */
+}
+
+.symbolStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.symbolName {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 10rem;
+}
+
+.symbolLink {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.symbolLink:hover,
+.symbolLink:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+.symbolText {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 0.98rem;
+  color: var(--ink);
+}
+
+.uniprotCell {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.truthCell {
+  justify-content: flex-start;
+}
+
+.dbCell {
+  justify-content: center;
+  padding: 0.3rem 0.2rem;
+}
+
+.dbDot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.dbCellYes .dbDot {
+  background: var(--teal-mid);
+  border-color: var(--teal-mid);
+}
+
+.modelCell {
+  justify-content: center;
+  padding: 0.3rem 0.1rem;
+}
+
+/* Mini verdict pill — the three per-model NCBI cells on each row.
+ * Compact so 3 pills + the row chrome fit comfortably. */
+.verdictMini {
+  font-size: 0.66rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.4rem;
+  justify-content: center;
+}
+
+/* Verdict pills — same color tokens as CatalogTable so the visual
+ * grammar stays consistent across the viewer. */
+.verdictLabel {
+  display: inline-flex;
+  padding: 0.12rem 0.42rem;
+  font-size: 0.7rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.verdictYes {
+  background: rgba(46, 122, 85, 0.14);
+  color: var(--success);
+}
+
+.verdictNo {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+}
+
+.verdictContextual {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+}
+
+.verdictUnknown {
+  background: var(--bg-warm);
+  color: var(--muted);
+}
+
+/* Outline pill state for LLM verdicts only — communicates whether
+ * the prediction agrees with truth (correct = subtle ring; wrong =
+ * maroon-leaning ring). Layered ON TOP of the verdict tone so the
+ * verdict color still reads first. */
+.verdictCorrect {
+  /* No extra ring — correct is the resting state; absence of a wrong
+   * marker is the signal. */
+}
+
+.verdictWrong {
+  outline: 1.5px solid var(--maroon-light);
+  outline-offset: -1.5px;
+}
+
+.classCell {
+  /* truth_class label, muted mono */
+  overflow: hidden;
+}
+
+.classText {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.dim {
+  color: var(--line);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+/* ============================================================
+ * Expanded — 3 models × 3 alt variants
+ * ============================================================ */
+
+.expandedBlock {
+  grid-column: 1 / -1;
+  padding: var(--space-4) var(--space-5) var(--space-5) 2rem;
+  background: var(--bg-soft);
+  border-top: 1px dashed var(--line-soft);
+}
+
+/* Row-expand grid — 3 model rows × 5 columns (label + 4 variants).
+ * Each cell is a verdict pill plus a `+` to expand inline reasoning. */
+.variantGrid {
+  display: grid;
+  grid-template-columns: 8rem repeat(4, minmax(0, 1fr));
+  gap: 0.4rem 0.6rem;
+  align-items: start;
+  max-width: 64rem;
+}
+
+.variantHeader {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 0.2rem 0;
+}
+
+.variantRowLabel {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  padding-top: 0.35rem;
+}
+
+.variantCellWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.variantCellOpen {
+  /* visual cue — bring the open cell forward */
+}
+
+.variantCellBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.4rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  align-self: flex-start;
+}
+
+.variantCellBtn:hover,
+.variantCellBtn:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.variantCellPlus {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.variantCellMissing {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--line);
+  padding-left: 0.4rem;
+}
+
+.variantCellPanel {
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  /* Span the variant column it's anchored to — the grid's natural
+   * column flow already keeps it under its parent pill. */
+}
+
+.variantPanelMeta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.variantPanelReasoning {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.variantPanelEmpty {
+  margin: 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* ============================================================
+ * Empty / loading rows
+ * ============================================================ */
+
+.empty,
+.loadingRow {
+  display: block;
+  text-align: center;
+  padding: var(--space-10);
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.loadingRow {
+  font-style: italic;
+}
+
+/* ============================================================
+ * Responsive: collapse the reasoning grid from 3 columns to 1
+ * on narrow viewports so the per-cell cards stay legible.
+ * (The main matrix scrolls horizontally; we don't try to
+ * restructure it.)
+ * ============================================================ */
+
+@media (max-width: 900px) {
+  .variantGrid {
+    grid-template-columns: 6rem repeat(2, minmax(0, 1fr));
+  }
+}

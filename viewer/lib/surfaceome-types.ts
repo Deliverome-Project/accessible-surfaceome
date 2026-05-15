@@ -773,3 +773,69 @@ export interface SurfaceomeRecord {
   record_generated_at: string;
   model_path: string;
 }
+
+
+// ---------------------------------------------------------------------------
+// Benchmark matrix — shape of /v1/benchmark/matrix from the public Worker.
+// Renders at /benchmark/ as the 147-gene table with all four prompt
+// variants per model laid out flat (one column per model × variant cell),
+// the same five DB columns the homepage CatalogTable shows, and a
+// row-expand reveal of each cell's verdict reasoning.
+// ---------------------------------------------------------------------------
+
+export type BenchmarkSource =
+  | "uniprot"
+  | "go"
+  | "surfy"
+  | "cspa"
+  | "hpa";
+
+export interface BenchmarkVariantResult {
+  verdict: string | null;
+  reason: string | null;
+  confidence: string | null;
+  key_uncertainty: string | null;
+  /** Per-call free-text reasoning the agent emitted alongside the
+   *  verdict. Shown in the row-expand reveal so readers can audit
+   *  any specific (gene, model, variant) call's logic. */
+  reasoning: string | null;
+  correct: number | null;
+  latency_s: number | null;
+  n_web_searches: number | null;
+  created_at: string | null;
+  error: string | null;
+  cost_usd?: number | null;
+  prompt_tokens?: number | null;
+  completion_tokens?: number | null;
+  cache_creation_tokens?: number | null;
+  cache_read_tokens?: number | null;
+}
+
+export interface BenchmarkRow {
+  gene_symbol: string;
+  uniprot_acc: string;
+  class: string;
+  truth_verdict: "yes" | "contextual" | "no" | string;
+  truth_signal: string;
+  truth_reason: string;
+  db: Record<BenchmarkSource, 0 | 1> | null;
+  n_db_surface: number;
+  /** model-id → variant-name → run result (or null for a missing cell). */
+  verdicts: Record<string, Record<string, BenchmarkVariantResult | null>>;
+}
+
+export interface BenchmarkMatrix {
+  bench_version: string | null;
+  universe_version: string | null;
+  generated_at?: string;
+  sources: BenchmarkSource[];
+  models: string[];
+  /** All prompt variants in display order — every one renders as its
+   *  own column on the page. */
+  variants: string[];
+  /** Optional hint for consumers that want to highlight one variant
+   *  visually (e.g. emboss the column header). */
+  headline_variant: string;
+  n_genes: number;
+  rows: BenchmarkRow[];
+}

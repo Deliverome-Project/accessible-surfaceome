@@ -104,6 +104,39 @@ button {
   color: var(--accent);
 }
 
+/* Data-view headings — used by /benchmark/ and any future data-dense page
+ * where the table is the figure and headings are signposts. Playfair stays
+ * for brand tie-in but at a much smaller clamp, and `text-wrap: balance`
+ * is dropped so wrapping stays predictable. */
+.h-data {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+  line-height: 1.12;
+  letter-spacing: var(--tracking-display);
+  color: var(--ink);
+}
+
+.h-data-section {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+
+.h-data-eyebrow {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .lede {
   margin: 0;
   color: var(--muted);

@@ -35,7 +35,6 @@ import seaborn as sns
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-
 BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
 PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
 

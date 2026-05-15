@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { CatalogRow } from "../../lib/surfaceome";
+import type { CatalogRow, TriageCell } from "../../lib/surfaceome";
+import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import styles from "./CatalogTable.module.css";
 
 // Per-row height estimate fed to @tanstack/react-virtual. Rows with
@@ -12,21 +13,16 @@ import styles from "./CatalogTable.module.css";
 // height. The virtualizer dynamically re-measures as rows enter the
 // viewport, so this only needs to be in the right ballpark for the
 // initial scroll-height calc and overscan window.
-const ROW_ESTIMATE_PX = 48;
+const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
-// CSS Grid template shared by the header row and every virtualized
-// body row. Defining it once here (and once in CSS via the
-// ``--catalog-cols`` custom property) is the bulletproof fix for the
-// "thead and tbody column widths drift" problem that plagues
-// virtualized HTML <table> rows. Both the header and each row are
-// `display: grid; grid-template-columns: var(--catalog-cols)`, so the
-// columns are GUARANTEED to line up — no proportional-fill rounding,
-// no per-row `<table>` re-layout. The triage column uses `minmax(14rem,1fr)`
-// so it absorbs any leftover horizontal space rather than leaving a
-// trailing empty gutter on wide viewports.
+// CSS Grid template — toggle | gene | uniprot | sources | 5 DB dots
+// | 3 model verdicts (H/S/O on the NCBI variant) | deep-dive flag.
+// Each LLM cell is a compact verdict pill (~4.4rem) and they sit
+// side-by-side so a reader can scan agreement across the three
+// models at a glance.
 const GRID_TEMPLATE =
-  "1.75rem 7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 6rem";
+  "1.75rem 16rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem 4.4rem 4.4rem 4.4rem 6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -70,7 +66,16 @@ const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = 
   { key: "hpa", short: "H", long: "HPA" },
 ];
 
-type SortKey = "symbol" | "uniprot" | "n_sources" | "triage" | "deep_dive";
+// Three models surfaced on the catalog page — order pinned to match
+// the Worker response (response.models). Each model's NCBI verdict
+// renders in its own column.
+const CATALOG_MODELS: { id: string; idx: number; short: string; long: string }[] = [
+  { id: "claude-haiku-4-5",  idx: 0, short: "H", long: "Haiku 4.5 · ncbi" },
+  { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Sonnet 4.6 · ncbi" },
+  { id: "claude-opus-4-7",   idx: 2, short: "O", long: "Opus 4.7 · ncbi" },
+];
+
+type SortKey = "symbol" | "uniprot" | "n_sources" | "triage_sonnet" | "deep_dive";
 type SortDir = "asc" | "desc";
 // Triage filter was dropped — every gene in the universe has a triage
 // verdict (the one gap, SEA, is a resolver-failure outlier), so the
@@ -93,6 +98,9 @@ interface CatalogTableProps {
   n_rows: number;
   n_with_triage: number;
   n_with_deep_dive: number;
+  /** universe_version identifier from /v1/catalog — included in the
+   *  TSV download filename so a downloaded snapshot is traceable. */
+  universe_version?: string;
 }
 
 export function CatalogTable({
@@ -101,6 +109,7 @@ export function CatalogTable({
   n_rows,
   n_with_triage,
   n_with_deep_dive,
+  universe_version,
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
   const [quick, setQuick] = useState<QuickFilter>("all");
@@ -257,19 +266,33 @@ export function CatalogTable({
         </div>
       </div>
 
-      <p className={styles.resultMeta}>
-        {sorted.length === rows.length
-          ? `${sorted.length.toLocaleString()} genes`
-          : `${sorted.length.toLocaleString()} of ${rows.length.toLocaleString()} genes`}
-        {generated_at ? (
-          <>
-            <span className={styles.dot} aria-hidden="true">
-              ·
-            </span>
-            <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
-          </>
-        ) : null}
-      </p>
+      <div className={styles.resultRow}>
+        <p className={styles.resultMeta}>
+          {sorted.length === rows.length
+            ? `${sorted.length.toLocaleString()} genes`
+            : `${sorted.length.toLocaleString()} of ${rows.length.toLocaleString()} genes`}
+          {generated_at ? (
+            <>
+              <span className={styles.dot} aria-hidden="true">
+                ·
+              </span>
+              <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
+            </>
+          ) : null}
+        </p>
+        <button
+          type="button"
+          className={styles.downloadBtn}
+          onClick={() => {
+            const tsv = buildCatalogTsv(rows);
+            const tag = universe_version ?? "snapshot";
+            downloadTextFile(`surfaceome-catalog-${tag}.tsv`, tsv);
+          }}
+          title={`Download all ${rows.length.toLocaleString()} catalog rows as TSV`}
+        >
+          Download TSV ↓
+        </button>
+      </div>
 
       <div
         className={styles.tableScroll}
@@ -319,14 +342,17 @@ export function CatalogTable({
               <span className="sr-only">{d.long}</span>
             </div>
           ))}
-          <SortableHeader
-            label="Triage"
-            k="triage"
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onClick={setSort}
-            align="left"
-          />
+          {CATALOG_MODELS.map((m) => (
+            <div
+              key={`mhdr-${m.id}`}
+              className={`${styles.headerCell} ${styles.headerCenter}`}
+              title={m.long}
+              role="columnheader"
+            >
+              {m.short}
+              <span className="sr-only"> · {m.long}</span>
+            </div>
+          ))}
           <SortableHeader
             label="Deep dive"
             k="deep_dive"
@@ -384,13 +410,57 @@ export function CatalogTable({
   );
 }
 
+/**
+ * Build a TSV of the catalog rows — one row per gene, matching the
+ * columns shown in the table plus the gene name / synonyms from the
+ * NCBI lookup (which the UI uses for search but doesn't render). Bulk
+ * download is the full unfiltered dataset; if the reader needs a
+ * subset, they can filter in pandas / R after downloading.
+ */
+function buildCatalogTsv(rows: CatalogRow[]): string {
+  const headers = [
+    "gene_symbol",
+    "uniprot_acc",
+    "gene_name",
+    "synonyms",
+    "n_sources",
+    "db_uniprot",
+    "db_go",
+    "db_surfy",
+    "db_cspa",
+    "db_hpa",
+    "haiku_ncbi_verdict",  "haiku_ncbi_reason",
+    "sonnet_ncbi_verdict", "sonnet_ncbi_reason",
+    "opus_ncbi_verdict",   "opus_ncbi_reason",
+    "has_deep_dive",
+  ];
+  const body: TsvCell[][] = rows.map((r) => [
+    r.symbol,
+    r.uniprot,
+    r.name ?? "",
+    r.synonyms ? r.synonyms.join("|") : "",
+    r.n_sources,
+    r.db.uniprot,
+    r.db.go,
+    r.db.surfy,
+    r.db.cspa,
+    r.db.hpa,
+    r.triage_by_model[0]?.verdict ?? "", r.triage_by_model[0]?.reason ?? "",
+    r.triage_by_model[1]?.verdict ?? "", r.triage_by_model[1]?.reason ?? "",
+    r.triage_by_model[2]?.verdict ?? "", r.triage_by_model[2]?.reason ?? "",
+    r.deep_dive ? 1 : 0,
+  ]);
+  return buildTsv(headers, body);
+}
+
 function sortValue(r: CatalogRow, k: SortKey): string | number {
   if (k === "symbol") return r.symbol;
   if (k === "uniprot") return r.uniprot;
   if (k === "n_sources") return r.n_sources;
-  if (k === "triage") {
-    // yes > contextual > no > none
-    const v = r.triage?.verdict;
+  if (k === "triage_sonnet") {
+    // Sort by the Sonnet/ncbi verdict (slot 1) — the only model with
+    // full-genome coverage. yes > contextual > no > none.
+    const v = r.triage_by_model[1]?.verdict;
     if (v === "yes") return 3;
     if (v === "contextual") return 2;
     if (v === "no") return 1;
@@ -458,12 +528,22 @@ function CatalogRowView({
   onToggleExpand: (symbol: string) => void;
   detail: TriageDetailState | undefined;
 }) {
-  const symbolCell = row.deep_dive ? (
+  const symbolHead = row.deep_dive ? (
     <Link href={`/${row.symbol}/`} className={styles.symbolLink}>
       {row.symbol}
     </Link>
   ) : (
     <span className={styles.symbolText}>{row.symbol}</span>
+  );
+  const symbolCell = (
+    <span className={styles.symbolStack}>
+      {symbolHead}
+      {row.name ? (
+        <span className={styles.symbolName} title={row.name}>
+          {row.name}
+        </span>
+      ) : null}
+    </span>
   );
   const style: React.CSSProperties | undefined =
     virtualStart != null
@@ -523,30 +603,34 @@ function CatalogRowView({
           </div>
         );
       })}
-      <div className={`${styles.cell} ${styles.triageCell}`} role="cell">
-        {row.triage ? (
-          <button
-            type="button"
-            className={`${styles.verdict} ${styles.verdictBtn} ${verdictTone(row.triage.verdict)}`}
-            onClick={() => onToggleExpand(row.symbol)}
-            aria-expanded={isExpanded}
-            aria-label={
-              isExpanded
-                ? `Collapse triage details for ${row.symbol}`
-                : `Open triage details for ${row.symbol}`
-            }
+      {CATALOG_MODELS.map((m) => {
+        const cell = row.triage_by_model[m.idx];
+        return (
+          <div
+            key={`triage-${m.id}`}
+            className={`${styles.cell} ${styles.triageCell} ${styles.modelCell}`}
+            role="cell"
           >
-            <span className={styles.verdictLabel}>{row.triage.verdict}</span>
-            {row.triage.reason ? (
-              <span className={styles.verdictReason}>
-                {row.triage.reason.replace(/_/g, " ")}
-              </span>
-            ) : null}
-          </button>
-        ) : (
-          <span className={styles.dim}>—</span>
-        )}
-      </div>
+            {cell ? (
+              <button
+                type="button"
+                className={`${styles.verdictBtn} ${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)}`}
+                onClick={() => onToggleExpand(row.symbol)}
+                aria-expanded={isExpanded}
+                title={
+                  cell.reason
+                    ? `${m.long}: ${cell.verdict} (${cell.reason.replace(/_/g, " ")})`
+                    : `${m.long}: ${cell.verdict}`
+                }
+              >
+                {cell.verdict}
+              </button>
+            ) : (
+              <span className={styles.dim} title={`${m.long}: no run on file`}>—</span>
+            )}
+          </div>
+        );
+      })}
       <div className={`${styles.cell} ${styles.deepCell}`} role="cell">
         {row.deep_dive ? (
           <Link
@@ -562,7 +646,11 @@ function CatalogRowView({
       </div>
       {isExpanded ? (
         <div className={styles.expandedBlock}>
-          <TriageDetail symbol={row.symbol} fallback={row.triage} detail={detail} />
+          <TriageDetail
+            symbol={row.symbol}
+            fallback={row.triage_by_model}
+            detail={detail}
+          />
         </div>
       ) : null}
     </div>
@@ -575,13 +663,15 @@ function TriageDetail({
   detail,
 }: {
   symbol: string;
-  fallback: CatalogRow["triage"];
+  /** Per-model NCBI verdicts from the catalog row, used as the
+   *  fallback if the on-demand fetch fails. */
+  fallback: (TriageCell | null)[];
   detail: TriageDetailState | undefined;
 }) {
   if (!detail || detail.status === "loading") {
     return (
       <p className={styles.expandedMeta}>
-        Loading triage runs for <strong>{symbol}</strong>…
+        Loading triage reasoning for <strong>{symbol}</strong>…
       </p>
     );
   }
@@ -589,76 +679,72 @@ function TriageDetail({
     return (
       <p className={styles.expandedMeta}>
         Could not load triage details ({detail.message}).
-        {fallback ? (
-          <>
-            {" "}Cached verdict: <strong>{fallback.verdict}</strong>
-            {fallback.reason ? <> · {fallback.reason.replace(/_/g, " ")}</> : null}
-          </>
-        ) : null}
       </p>
     );
   }
-  // Filter to the canonical genome-wide-sweep run — Sonnet 4.6 with
-  // the NCBI prompt variant. The /v1/triage endpoint returns ALL runs
-  // including benchmark / eval reruns, replicates, alternate prompts,
-  // and (on D1) duplicate uploads from sweep iterations. Take only
-  // the SINGLE latest sonnet/ncbi row so the expanded view shows one
-  // canonical verdict per gene; "history" can come from a future
-  // /history endpoint when it's useful.
-  const sweepRuns = detail.runs
-    .filter(
-      (r) =>
-        r.model.toLowerCase().includes("sonnet") && r.prompt_variant === "ncbi",
-    )
-    .sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
-  const latestSweep = sweepRuns[0];
-  if (!latestSweep) {
-    return (
-      <p className={styles.expandedMeta}>
-        No genome-wide (Sonnet/NCBI) triage run recorded for{" "}
-        <strong>{symbol}</strong>.
-        {detail.runs.length > 0
-          ? ` ${detail.runs.length} other run(s) on file (not shown).`
-          : null}
-      </p>
-    );
+  // Render one card per CATALOG_MODELS slot — the latest NCBI-variant
+  // run with that model. The /v1/triage endpoint returns ALL runs
+  // (every variant + replicate) for a gene; we filter to ncbi and
+  // pick the most-recent per model.
+  const byModelLatest = new Map<string, TriageRun>();
+  for (const run of detail.runs) {
+    if (run.prompt_variant !== "ncbi") continue;
+    const prev = byModelLatest.get(run.model);
+    if (!prev || prev.created_at < run.created_at) {
+      byModelLatest.set(run.model, run);
+    }
   }
-  // Render exactly one row — the latest sweep verdict.
   return (
-    <ol className={styles.runList}>
-      {[latestSweep].map((run, i) => (
-        <li key={i} className={styles.runItem}>
-          <p className={styles.runMeta}>
-            <span className={styles.runBadge} data-verdict={run.predicted_verdict}>
-              {run.predicted_verdict}
-            </span>
-            {run.predicted_reason ? (
-              <span>{run.predicted_reason.replace(/_/g, " ")}</span>
+    <div className={styles.triageDetailGrid}>
+      {CATALOG_MODELS.map((m) => {
+        const run = byModelLatest.get(m.id);
+        const cached = fallback[m.idx];
+        if (!run && !cached) {
+          return (
+            <article key={m.id} className={`${styles.triageDetailCard} ${styles.triageDetailMissing}`}>
+              <p className={styles.runMeta}>
+                <strong>{m.long}</strong>
+                <span className={styles.runDim}>· no run on file</span>
+              </p>
+            </article>
+          );
+        }
+        const verdict = run?.predicted_verdict ?? cached?.verdict ?? "";
+        const reason = run?.predicted_reason ?? cached?.reason ?? null;
+        return (
+          <article key={m.id} className={styles.triageDetailCard}>
+            <p className={styles.runMeta}>
+              <strong>{m.long}</strong>
+              <span className={styles.runDim}>·</span>
+              <span className={styles.runBadge} data-verdict={verdict}>
+                {verdict}
+              </span>
+              {reason ? (
+                <span>{reason.replace(/_/g, " ")}</span>
+              ) : null}
+              {run?.predicted_confidence ? (
+                <>
+                  <span className={styles.runDim}>·</span>
+                  <span className={styles.runDim}>
+                    conf {run.predicted_confidence}
+                  </span>
+                </>
+              ) : null}
+              {run?.created_at ? (
+                <>
+                  <span className={styles.runDim}>·</span>
+                  <span className={styles.runDim}>
+                    {run.created_at.slice(0, 10)}
+                  </span>
+                </>
+              ) : null}
+            </p>
+            {run?.verdict_reasoning ? (
+              <p className={styles.runReasoning}>{run.verdict_reasoning}</p>
             ) : null}
-            <span className={styles.runDim}>·</span>
-            <span className={styles.runDim}>{run.model}</span>
-            {run.prompt_variant ? (
-              <>
-                <span className={styles.runDim}>·</span>
-                <span className={styles.runDim}>{run.prompt_variant}</span>
-              </>
-            ) : null}
-            {run.predicted_confidence ? (
-              <>
-                <span className={styles.runDim}>·</span>
-                <span className={styles.runDim}>
-                  conf {run.predicted_confidence}
-                </span>
-              </>
-            ) : null}
-            <span className={styles.runDim}>·</span>
-            <span className={styles.runDim}>{run.created_at.slice(0, 16)}</span>
-          </p>
-          {run.verdict_reasoning ? (
-            <p className={styles.runReasoning}>{run.verdict_reasoning}</p>
-          ) : null}
-        </li>
-      ))}
-    </ol>
+          </article>
+        );
+      })}
+    </div>
   );
 }

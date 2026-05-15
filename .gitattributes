@@ -29,15 +29,19 @@ data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.ts
 data/processed/candidate_universe/candidate_universe.tsv -filter -diff -merge text
 data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge text
 
-# Canonical main-bench export (D1 → flat TSV) — same role as the
-# candidate-universe TSVs above: drives gist-style reproduction
-# scripts under data/analysis/figures/. ~160 KB.
+# Canonical SurfaceBench predictions TSV — refreshed from public D1
+# by `scripts/export_mainbench_to_tsv.py` and pinned to a commit SHA
+# at publication for stable citation. Figure scripts + published gists
+# fetch it via raw.githubusercontent.com, so it stays non-LFS (LFS
+# pointers don't resolve over the raw URL). The Worker also serves
+# the same shape at `/v1/triage/export.tsv` for live consumers.
 data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
 
-# 147-gene triage benchmark with ground-truth verdicts. Tiny (~37 KB) —
-# fetched by the by_class / overall / cost_vs_accuracy gists for the
-# truth column. Stays non-LFS so raw.githubusercontent.com can serve it
-# once the repo goes public.
+# 147-gene triage benchmark with ground-truth verdicts. Stays non-LFS
+# because (a) `scripts/upload_benchmark_to_d1.py` reads it as the
+# source-of-truth input to the D1 sync, and (b) figure scripts fetch
+# it via raw.githubusercontent.com for ground-truth labels alongside
+# the predictions TSV above.
 data/eval/triage_benchmark_v1.tsv -filter -diff -merge text
 
 # DB cutoff-tradeoff precomputed points dumped by

@@ -11,8 +11,20 @@
 //                                  (DB votes + latest triage + deep-dive flag)
 //   GET /v1/orthologs/:symbol   — ortholog table for a gene
 //   GET /v1/benchmark           — full benchmark truth labels (latest version)
+//   GET /v1/benchmark/matrix    — 147-gene matrix: truth + per-DB flags +
+//                                  per-model headline & alt LLM verdicts
+//   GET /v1/benchmark/export.tsv — 7-column TSV of curated truth labels,
+//                                  mirrors `data/eval/triage_benchmark_v1.tsv`
+//                                  shape (gene/uniprot/class/verdict/
+//                                  signal/reason/rationale). Figure scripts
+//                                  load truth labels from here.
 //   GET /v1/benchmark/:symbol   — single gene's truth label
-//   GET /v1/triage/:symbol      — model verdicts across runs (no costs)
+//   GET /v1/triage/:symbol      — model verdicts across runs (with costs)
+//   GET /v1/triage/export.tsv   — long-format TSV of all triage runs for a
+//                                  given run_id (default mainbench_canonical_v1).
+//                                  Single source of truth for final-figure
+//                                  predictions data; carries cost_usd + token
+//                                  counts.
 //
 // Schema: cloudflare/d1_public_schema.sql.
 
@@ -42,6 +54,27 @@ function notFound(msg = "not_found") {
 
 function badRequest(msg) {
   return json({ error: msg }, { status: 400, ttl: 0 });
+}
+
+// TSV response — same cache/CORS posture as `json` but text/tsv.
+// Used by /v1/triage/export.tsv so reproducibility scripts can `pd.read_csv(url, sep="\t")`
+// straight from the API.
+function tsv(content, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
+  return new Response(content, {
+    status,
+    headers: {
+      "Content-Type": "text/tab-separated-values; charset=utf-8",
+      "Cache-Control": `public, max-age=${ttl}, s-maxage=${ttl}`,
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+// Minimal TSV escaping: tabs/CR/LF in a cell would break the row,
+// so collapse them to a single space. Don't quote — TSV doesn't.
+function tsvCell(v) {
+  if (v == null) return "";
+  return String(v).replace(/[\t\r\n]+/g, " ");
 }
 
 // Light gene-symbol validation: alnum + dash + dot, ≤30 chars.
@@ -137,6 +170,39 @@ async function handleBenchmarkList(env) {
   }, { ttl: CACHE_TTL_LONG });
 }
 
+// Long-format TSV export of the curated benchmark truth labels. Mirrors
+// `/v1/benchmark` (JSON) in the 7-column TSV shape that the historical
+// `data/eval/triage_benchmark_v1.tsv` ships in, so figure scripts can
+// `pd.read_csv(url, sep="\t")` without conditional parsing.
+async function handleBenchmarkExport(env) {
+  const v = await env.DB.prepare(
+    `SELECT bench_version, COUNT(*) AS n_labeled
+       FROM benchmark_version
+      WHERE truth_verdict IS NOT NULL AND truth_verdict != ''
+      GROUP BY bench_version
+      ORDER BY n_labeled DESC, bench_version DESC
+      LIMIT 1`
+  ).first();
+  if (!v) return tsv("gene_symbol\tuniprot_acc\tclass\tground_truth_verdict\tground_truth_signal\tground_truth_reason\trationale\n", { ttl: CACHE_TTL_LONG });
+  const rs = await env.DB.prepare(
+    `SELECT gene_symbol, uniprot_acc, class, truth_verdict, truth_signal,
+            truth_reason, rationale
+       FROM benchmark_version
+      WHERE bench_version = ?
+      ORDER BY gene_symbol`
+  ).bind(v.bench_version).all();
+  // Column header names match the on-repo TSV at data/eval/triage_benchmark_v1.tsv
+  // so existing figure scripts don't need to rename columns when swapping
+  // the URL.
+  const headers = "gene_symbol\tuniprot_acc\tclass\tground_truth_verdict\tground_truth_signal\tground_truth_reason\trationale";
+  const body = rs.results.map((r) =>
+    [r.gene_symbol, r.uniprot_acc, r.class, r.truth_verdict, r.truth_signal,
+     r.truth_reason, r.rationale].map(tsvCell).join("\t")
+  ).join("\n");
+  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+}
+
+
 async function handleBenchmarkOne(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -195,34 +261,45 @@ async function handleCatalog(env) {
       ORDER BY gene_symbol`
   ).bind(universe).all();
 
-  // Latest triage verdict per gene, regardless of bench_version. The
-  // earlier query strict-filtered to the latest bench, which left the
-  // catalog mostly empty: most triage runs are genome-wide sweeps
-  // (~19k genes) that aren't anchored to a benchmark at all, so
-  // their bench_version is either NULL or whatever was current
-  // months ago — not useful as a "freshness" filter. Take
-  // max(created_at) across all benches; surface `bench_version`
-  // (possibly null) + `created_at` per row so consumers can tell
-  // *which* run each verdict came from.
-  const triageMap = new Map();
+  // Latest per-model NCBI-variant verdict for each gene. The page
+  // renders three columns (Haiku / Sonnet / Opus); each cell shows
+  // that model's ncbi-variant call. Only `prompt_variant='ncbi'`
+  // because that's the variant with cross-model coverage and the one
+  // the published figures use as headline.
+  //
+  // Coverage today:
+  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v1)
+  //   - Haiku/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v1)
+  //   - Opus/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v1)
+  // So most rows will show only the Sonnet column populated.
+  const CATALOG_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"];
+  const triageByGene = new Map();
   const triageRows = await env.DB.prepare(
-    `SELECT gene_symbol, predicted_verdict, predicted_reason,
-            bench_version, created_at
-       FROM triage_run_public t
-      WHERE created_at = (
-        SELECT MAX(created_at) FROM triage_run_public
-         WHERE gene_symbol = t.gene_symbol
-      )`
+    `WITH ranked AS (
+       SELECT gene_symbol, model, predicted_verdict, predicted_reason,
+              created_at,
+              ROW_NUMBER() OVER (
+                PARTITION BY gene_symbol, model
+                ORDER BY created_at DESC
+              ) AS rn
+         FROM triage_run_public
+        WHERE prompt_variant = 'ncbi'
+          AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-7')
+     )
+     SELECT gene_symbol, model, predicted_verdict, predicted_reason, created_at
+       FROM ranked WHERE rn = 1`
   ).all();
   for (const r of triageRows.results) {
-    if (!triageMap.has(r.gene_symbol)) {
-      triageMap.set(r.gene_symbol, {
-        verdict: r.predicted_verdict,
-        reason: r.predicted_reason,
-        bench_version: r.bench_version,
-        created_at: r.created_at,
-      });
+    let perModel = triageByGene.get(r.gene_symbol);
+    if (!perModel) {
+      perModel = {};
+      triageByGene.set(r.gene_symbol, perModel);
     }
+    perModel[r.model] = {
+      verdict: r.predicted_verdict,
+      reason: r.predicted_reason,
+      created_at: r.created_at,
+    };
   }
 
   // Genes with a published deep-dive SurfaceomeRecord (whatever schema_version).
@@ -240,6 +317,22 @@ async function handleCatalog(env) {
   // (LSB → MSB) matches the order the viewer renders columns in:
   //   bit 0 = uniprot, 1 = go, 2 = surfy, 3 = cspa, 4 = hpa.
   // Decoded in viewer/lib/surfaceome.ts; see DB_BIT_KEYS there.
+  //
+  // Per-model NCBI verdict: `tr` is a 3-slot array
+  // [haiku, sonnet, opus]. Each slot is null or [verdict, reason].
+  // Compact wire form because we have ~19k rows; the verdict strings
+  // are short and ~95% of slots are null (Haiku/Opus only cover the
+  // 147 SurfaceBench genes today).
+  function packTriage(sym) {
+    const per = triageByGene.get(sym);
+    if (!per) return undefined;
+    const out = CATALOG_MODELS.map((m) => {
+      const t = per[m];
+      if (!t?.verdict) return null;
+      return [t.verdict, t.reason ?? null];
+    });
+    return out.some((x) => x) ? out : undefined;
+  }
   const rows = universeRows.results.map((u) => {
     covered.add(u.gene_symbol);
     const db =
@@ -253,24 +346,19 @@ async function handleCatalog(env) {
       n_sources: u.n_sources_surface,
       db,
     };
-    // Drop empty / falsy fields to compact the wire payload further —
-    // most rows have no uniprot accession and no triage / deep-dive
-    // flag.
     if (u.uniprot_acc) row.uniprot = u.uniprot_acc;
-    const t = triageMap.get(u.gene_symbol);
-    if (t) row.triage = t;
+    const t = packTriage(u.gene_symbol);
+    if (t) row.tr = t;
     if (deepSet.has(u.gene_symbol)) row.deep_dive = true;
     return row;
   });
 
   // Append deep-dive-only genes (missing from the universe row set).
-  // Without this the index page loses these records entirely; they're
-  // the strongest accessibility data we have.
   for (const sym of deepSet) {
     if (covered.has(sym)) continue;
     const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
-    const t = triageMap.get(sym);
-    if (t) row.triage = t;
+    const t = packTriage(sym);
+    if (t) row.tr = t;
     rows.push(row);
   }
 
@@ -288,18 +376,294 @@ async function handleCatalog(env) {
     {
       universe_version: universe,
       bench_version: benchVersion,
+      models: CATALOG_MODELS,
       n_rows: rows.length,
-      n_with_triage: rows.filter((r) => r.triage).length,
+      n_with_triage: rows.filter((r) => r.tr).length,
       n_with_deep_dive: rows.filter((r) => r.deep_dive).length,
       // Schema version of the row encoding. Bumped when the shape
       // changes; viewer/lib/surfaceome.ts checks this and decodes
-      // accordingly.
-      row_schema: 2,
+      // accordingly. v3 = per-model ncbi `tr` array replaces the
+      // single `triage` object.
+      row_schema: 3,
       rows,
     },
     { ttl: CACHE_TTL_SHORT },
   );
 }
+
+// Models + prompt variants surfaced in the benchmark matrix. All 4
+// variants render as their own columns on the /benchmark/ page (the
+// old "headline + 3 alts behind an expand" UX collapsed into a flat
+// grid per the user request 2026-05-15). `headline_variant` is still
+// returned for consumers that want to highlight one column.
+const BENCH_MATRIX_MODELS = [
+  "claude-opus-4-7",
+  "claude-sonnet-4-6",
+  "claude-haiku-4-5",
+];
+const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"];
+const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
+// Five gating DBs — same five the homepage CatalogTable renders. The
+// matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
+// but those were demoted from the M1 universe gate and only confused
+// the side-by-side, so we drop them here too (2026-05-15).
+const BENCH_MATRIX_SOURCES = [
+  "uniprot", "go", "surfy", "cspa", "hpa",
+];
+
+async function handleBenchmarkMatrix(env) {
+  // 1. Pick the canonical curated benchmark — the bench_version with
+  // the most rows carrying a non-empty truth_verdict, breaking ties by
+  // most recent created_at. The unlabeled gene-set snapshots (19k+
+  // rows, blank truth columns) and the small ad-hoc benches (2-9 rows)
+  // are interned with their own bench_version SHA, so a plain
+  // `ORDER BY bench_version DESC` is essentially random — bench_version
+  // is a content hash, not a timestamp. Filtering on labeled rows is
+  // robust to both the unlabeled inputs and the stub uploads.
+  const benchRow = await env.DB.prepare(
+    `SELECT bench_version, COUNT(*) AS n_labeled, MAX(created_at) AS latest
+       FROM benchmark_version
+      WHERE truth_verdict IS NOT NULL AND truth_verdict != ''
+      GROUP BY bench_version
+      ORDER BY n_labeled DESC, latest DESC
+      LIMIT 1`
+  ).first();
+  if (!benchRow) {
+    return json(
+      { bench_version: null, universe_version: null, n_genes: 0, rows: [] },
+      { ttl: CACHE_TTL_SHORT },
+    );
+  }
+  const benchVersion = benchRow.bench_version;
+
+  // 2. Truth labels for that bench_version.
+  const truthRows = await env.DB.prepare(
+    `SELECT gene_symbol, uniprot_acc, class, truth_verdict, truth_signal,
+            truth_reason, rationale
+       FROM benchmark_version
+      WHERE bench_version = ?
+      ORDER BY gene_symbol`
+  ).bind(benchVersion).all();
+
+  // 3. Latest universe_version + per-DB flags. Five gating DBs only —
+  // matches the homepage CatalogTable so the SurfaceBench and Catalog
+  // surfaces are side-by-side comparable.
+  const releaseRow = await env.DB.prepare(
+    `SELECT universe_version FROM candidate_universe_release
+      ORDER BY loaded_at DESC LIMIT 1`
+  ).first();
+  const universeVersion = releaseRow?.universe_version ?? null;
+  const dbByGene = new Map();
+  if (universeVersion) {
+    const universeRows = await env.DB.prepare(
+      `SELECT gene_symbol, uniprot_surface_flag, go_surface_flag,
+              surfy_surface_flag, cspa_surface_flag, hpa_surface_flag,
+              n_sources_surface
+         FROM candidate_universe_public
+        WHERE universe_version = ?`
+    ).bind(universeVersion).all();
+    for (const u of universeRows.results) {
+      dbByGene.set(u.gene_symbol, {
+        uniprot: u.uniprot_surface_flag ? 1 : 0,
+        go: u.go_surface_flag ? 1 : 0,
+        surfy: u.surfy_surface_flag ? 1 : 0,
+        cspa: u.cspa_surface_flag ? 1 : 0,
+        hpa: u.hpa_surface_flag ? 1 : 0,
+        n_sources_surface: u.n_sources_surface ?? 0,
+      });
+    }
+  }
+
+  // 4. Triage runs for the model/variant grid we care about. NO
+  // bench_version filter — runs uploaded against older bench_version
+  // SHAs are still valid predictions for the same (gene, model,
+  // variant) cell, and filtering them out leaves the matrix with
+  // ~half of the Opus and Haiku naive coverage that actually exists
+  // (the published figures load the same predictions from a static
+  // TSV and confirm 147/147 coverage on those cells). Restricting
+  // the 147 rows happens upstream via the benchmark_version join in
+  // the JS stitching step. Latest run wins per (gene, model, variant)
+  // by created_at; ROW_NUMBER() over a partition stays O(N) cold.
+  const wantedVariants = BENCH_MATRIX_VARIANTS;
+  const variantPlaceholders = wantedVariants.map(() => "?").join(",");
+  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
+  // Build a Set of the 147 benchmark gene symbols so we can drop
+  // non-bench rows JS-side. D1's prepared-statement parameter cap
+  // (~100) makes a 147-element IN (...) infeasible in one query, and
+  // chunking forces N+1 round-trips. Since the model+variant filter
+  // already shrinks the universe to ~10 cells × 147 genes = ~1.5k
+  // rows post-rank, the JS-side filter is cheap.
+  const benchSymbolSet = new Set(truthRows.results.map((t) => t.gene_symbol));
+  const triageRows = await env.DB.prepare(
+    `WITH ranked AS (
+       SELECT gene_symbol, model, prompt_variant, predicted_verdict,
+              predicted_reason, predicted_confidence, predicted_key_uncertainty,
+              verdict_reasoning,
+              correct, latency_s, n_web_searches, created_at, error,
+              cost_usd, prompt_tokens, completion_tokens,
+              cache_creation_tokens, cache_read_tokens,
+              ROW_NUMBER() OVER (
+                PARTITION BY gene_symbol, model, prompt_variant
+                ORDER BY created_at DESC
+              ) AS rn
+         FROM triage_run_public
+        WHERE prompt_variant IN (${variantPlaceholders})
+          AND model IN (${modelPlaceholders})
+     )
+     SELECT gene_symbol, model, prompt_variant, predicted_verdict,
+            predicted_reason, predicted_confidence, predicted_key_uncertainty,
+            verdict_reasoning,
+            correct, latency_s, n_web_searches, created_at, error,
+            cost_usd, prompt_tokens, completion_tokens,
+            cache_creation_tokens, cache_read_tokens
+       FROM ranked
+      WHERE rn = 1`
+  ).bind(...wantedVariants, ...BENCH_MATRIX_MODELS).all();
+
+  // Build a nested map: gene → model → variant → run. Skip rows
+  // that aren't in the 147 benchmark — the SQL pulls every cell
+  // across the genome-wide sweep (no gene_symbol filter possible
+  // within D1's parameter cap), so the bench-symbol Set is the
+  // gate that keeps the matrix to 147 genes.
+  const runMap = new Map();
+  for (const r of triageRows.results) {
+    if (!benchSymbolSet.has(r.gene_symbol)) continue;
+    let byModel = runMap.get(r.gene_symbol);
+    if (!byModel) {
+      byModel = new Map();
+      runMap.set(r.gene_symbol, byModel);
+    }
+    let byVariant = byModel.get(r.model);
+    if (!byVariant) {
+      byVariant = new Map();
+      byModel.set(r.model, byVariant);
+    }
+    byVariant.set(r.prompt_variant, {
+      verdict: r.predicted_verdict,
+      reason: r.predicted_reason,
+      confidence: r.predicted_confidence,
+      key_uncertainty: r.predicted_key_uncertainty,
+      reasoning: r.verdict_reasoning,
+      correct: r.correct,
+      latency_s: r.latency_s,
+      n_web_searches: r.n_web_searches,
+      created_at: r.created_at,
+      error: r.error,
+      cost_usd: r.cost_usd,
+      prompt_tokens: r.prompt_tokens,
+      completion_tokens: r.completion_tokens,
+      cache_creation_tokens: r.cache_creation_tokens,
+      cache_read_tokens: r.cache_read_tokens,
+    });
+  }
+
+  // 5. Stitch. Flat verdicts dict: model → variant → run (or null when
+  // we have no data for that cell). Replaces the prior headline+alts
+  // split; the page renders all 4 variants per model as their own
+  // columns and shows each cell's verdict_reasoning on row-expand.
+  const rows = truthRows.results.map((t) => {
+    const byModel = runMap.get(t.gene_symbol);
+    const verdicts = {};
+    for (const model of BENCH_MATRIX_MODELS) {
+      const byVariant = byModel?.get(model);
+      const perVariant = {};
+      for (const variant of BENCH_MATRIX_VARIANTS) {
+        perVariant[variant] = byVariant?.get(variant) ?? null;
+      }
+      verdicts[model] = perVariant;
+    }
+    const db = dbByGene.get(t.gene_symbol) ?? null;
+    const row = {
+      gene_symbol: t.gene_symbol,
+      uniprot_acc: t.uniprot_acc,
+      class: t.class,
+      truth_verdict: t.truth_verdict,
+      truth_signal: t.truth_signal,
+      truth_reason: t.truth_reason,
+      db: db
+        ? {
+            uniprot: db.uniprot, go: db.go, surfy: db.surfy,
+            cspa: db.cspa, hpa: db.hpa,
+          }
+        : null,
+      n_db_surface: db?.n_sources_surface ?? 0,
+      verdicts,
+    };
+    return row;
+  });
+
+  return json(
+    {
+      bench_version: benchVersion,
+      universe_version: universeVersion,
+      generated_at: new Date().toISOString(),
+      sources: BENCH_MATRIX_SOURCES,
+      models: BENCH_MATRIX_MODELS,
+      variants: BENCH_MATRIX_VARIANTS,
+      headline_variant: BENCH_MATRIX_HEADLINE_VARIANT,
+      n_genes: rows.length,
+      rows,
+    },
+    { ttl: CACHE_TTL_LONG },
+  );
+}
+
+
+// Long-format TSV export — the single source of truth for figure
+// reproduction. One row per (gene, model, variant, replicate) for a
+// given run_id. Final figures pull from here so the predictions side
+// of every published figure is reproducible from public D1 alone.
+//
+// Columns: gene_symbol / model / prompt_variant / replicate /
+// predicted_verdict / predicted_reason / predicted_confidence /
+// prompt_tokens / completion_tokens / cache_creation_tokens /
+// cache_read_tokens / n_web_searches / cost_usd / latency_s.
+const EXPORT_COLUMNS = [
+  "gene_symbol",
+  "model",
+  "prompt_variant",
+  "replicate",
+  "predicted_verdict",
+  "predicted_reason",
+  "predicted_confidence",
+  "prompt_tokens",
+  "completion_tokens",
+  "cache_creation_tokens",
+  "cache_read_tokens",
+  "n_web_searches",
+  "cost_usd",
+  "latency_s",
+];
+const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v1";
+
+async function handleTriageExport(env, url) {
+  // Pin to a single run_id (default mainbench_canonical_v1) so
+  // consumers don't have to disambiguate across sweeps.
+  const runId = url.searchParams.get("run_id") || DEFAULT_EXPORT_RUN_ID;
+  // Optional: filter to a specific replicate. Most consumers pass
+  // replicate=1 to mirror the historical headline numbers.
+  const replicate = url.searchParams.get("replicate");
+  const sqlParts = [
+    `SELECT ${EXPORT_COLUMNS.join(", ")}`,
+    `  FROM triage_run_public`,
+    ` WHERE run_id = ?`,
+  ];
+  const params = [runId];
+  if (replicate != null) {
+    const r = parseInt(replicate, 10);
+    if (Number.isNaN(r)) return badRequest("invalid_replicate");
+    sqlParts.push(` AND replicate = ?`);
+    params.push(r);
+  }
+  sqlParts.push(` ORDER BY model, prompt_variant, gene_symbol`);
+  const rs = await env.DB.prepare(sqlParts.join("")).bind(...params).all();
+  const headers = EXPORT_COLUMNS.join("\t");
+  const body = rs.results
+    .map((r) => EXPORT_COLUMNS.map((c) => tsvCell(r[c])).join("\t"))
+    .join("\n");
+  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+}
+
 
 async function handleTriage(env, symbol) {
   const sym = checkSymbol(symbol);
@@ -308,7 +672,9 @@ async function handleTriage(env, symbol) {
     `SELECT created_at, model, prompt_variant, prompt_filename,
             schema_version, replicate, predicted_verdict, predicted_reason,
             predicted_confidence, predicted_key_uncertainty,
-            verdict_reasoning, correct, latency_s, n_web_searches, error
+            verdict_reasoning, correct, latency_s, n_web_searches, error,
+            cost_usd, prompt_tokens, completion_tokens,
+            cache_creation_tokens, cache_read_tokens
        FROM triage_run_public
       WHERE gene_symbol = ?
       ORDER BY created_at DESC, model, prompt_variant, replicate`
@@ -349,6 +715,9 @@ export default {
     if (path === "/v1/genes") return handleGeneList(env);
     if (path === "/v1/catalog") return handleCatalog(env);
     if (path === "/v1/benchmark") return handleBenchmarkList(env);
+    if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
+    if (path === "/v1/benchmark/export.tsv") return handleBenchmarkExport(env);
+    if (path === "/v1/triage/export.tsv") return handleTriageExport(env, url);
 
     let m;
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);

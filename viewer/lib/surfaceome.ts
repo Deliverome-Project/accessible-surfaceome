@@ -16,7 +16,7 @@
 
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import type { SurfaceomeRecord } from "./surfaceome-types";
+import type { BenchmarkMatrix, SurfaceomeRecord } from "./surfaceome-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
 
@@ -34,6 +34,25 @@ const GENE_NAMES_TSV = path.join(
   "Homo_sapiens.protein_coding.with_hgnc.triageable.tsv",
 );
 
+// HGNC complete set — authoritative symbol↔UniProt mapping. The
+// candidate_universe_public table only carries `uniprot_acc` for genes
+// that hit at least one DB, leaving ~13.7k non-candidate rows in the
+// catalog with no accession surfaced. The HGNC TSV fills that gap and
+// also gives us a second source for the full gene name (preferred over
+// the NCBI description because HGNC's `name` field is the canonical
+// "approved name" — the same string used by UniProt, Ensembl, etc.).
+//
+// ~45k rows, ~25 MB; parsing it once per build is fine and the result
+// is memoized below.
+const HGNC_TSV = path.join(
+  process.cwd(),
+  "..",
+  "data",
+  "external",
+  "hgnc",
+  "hgnc_complete_set.tsv",
+);
+
 /**
  * One row of the genome-wide catalog the index table renders. Sourced
  * from the public Worker's `/v1/catalog` endpoint (which joins
@@ -42,24 +61,17 @@ const GENE_NAMES_TSV = path.join(
  * `public/data/catalog.json` is a snapshot fallback used when the API
  * is unreachable (offline dev, Worker not yet deployed, etc.).
  */
+export interface TriageCell {
+  verdict: string;
+  reason: string | null;
+}
+
 export interface CatalogRow {
   symbol: string;
   uniprot: string;
-  /** Descriptive gene name from NCBI gene_info (e.g. ``transferrin``).
-   *  Merged in by ``loadCatalog`` from
-   *  ``public/data/gene_names.json``; empty / missing when the symbol
-   *  isn't in the NCBI snapshot. */
   name?: string;
-  /** Pipe-separated synonyms from NCBI gene_info (e.g.
-   *  ``["HEL-S-71p", "PRO1557", ...]`` for TF). Same provenance as
-   *  ``name``. */
   synonyms?: string[];
   n_sources: number;
-  // Five gating DBs (uniprot, go, surfy, cspa, hpa). DeepTMHMM +
-  // COMPARTMENTS are demoted to auxiliary signals upstream
-  // (src/accessible_surfaceome/merge/__init__.py) and don't appear in
-  // the public catalog table — the database row still carries them
-  // for fidelity, but the Worker filters them out of /v1/catalog.
   db: {
     uniprot: number;
     go: number;
@@ -67,18 +79,26 @@ export interface CatalogRow {
     cspa: number;
     hpa: number;
   };
-  triage: { verdict: string; reason: string | null } | null;
+  /** Per-model NCBI-variant verdict in the order matrix.models
+   *  exposes. Today: [Haiku 4.5, Sonnet 4.6, Opus 4.7]. Each slot is
+   *  null when no run exists for that model on that gene (most non-
+   *  bench genes have only the Sonnet slot populated). */
+  triage_by_model: (TriageCell | null)[];
   deep_dive: boolean;
 }
 
 export interface Catalog {
   /** Always ``"api"`` — the committed snapshot path was dropped when
-   *  the public Worker stabilized. Kept for forward-compat / explicit
-   *  semantics; the field tells consumers what built the catalog. */
+   *  the public Worker stabilized. */
   source: "api";
   generated_at?: string;
   universe_version?: string;
   bench_version?: string | null;
+  /** Model order for `CatalogRow.triage_by_model`. The viewer pins
+   *  this to a known [Haiku, Sonnet, Opus] but reads from the
+   *  response so a future Worker-side reorder doesn't silently swap
+   *  columns. */
+  models: string[];
   n_rows: number;
   n_with_triage: number;
   n_with_deep_dive: number;
@@ -110,6 +130,12 @@ const FETCH_TIMEOUT_MS = 8_000;
 interface GeneNameEntry {
   name: string;
   synonyms: string[];
+  /** UniProt accession for this gene symbol, sourced from HGNC's
+   *  authoritative symbol→uniprot mapping. Used to fill in the
+   *  catalog rows where `candidate_universe_public.uniprot_acc` is
+   *  empty (most non-surface genes). Empty when HGNC has no mapping
+   *  (rare — non-protein-coding loci, withdrawn symbols). */
+  uniprot?: string;
 }
 
 // Module-level memo. The TSV is ~3.5 MB / 19,325 rows; parsing it
@@ -120,42 +146,81 @@ let _geneNamesCache: Record<string, GeneNameEntry> | null = null;
 
 function loadGeneNamesMap(): Record<string, GeneNameEntry> {
   if (_geneNamesCache) return _geneNamesCache;
+  const out: Record<string, GeneNameEntry> = {};
+  // Pass 1 — NCBI gene_info. Source of synonyms (canonical pipe-
+  // delimited list) and a fallback gene description when HGNC
+  // doesn't carry one.
   try {
     const raw = readFileSync(GENE_NAMES_TSV, "utf-8");
     const lines = raw.split(/\r?\n/);
-    if (lines.length < 2) {
-      _geneNamesCache = {};
-      return _geneNamesCache;
+    if (lines.length >= 2) {
+      const header = lines[0].split("\t");
+      const symIdx = header.indexOf("gene_symbol");
+      const nameIdx = header.indexOf("description");
+      const synIdx = header.indexOf("synonyms");
+      if (symIdx >= 0 && nameIdx >= 0 && synIdx >= 0) {
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i];
+          if (!row) continue;
+          const cols = row.split("\t");
+          const sym = cols[symIdx]?.trim();
+          if (!sym) continue;
+          const name = cols[nameIdx]?.trim() ?? "";
+          const rawSyn = cols[synIdx]?.trim() ?? "";
+          const synonyms =
+            rawSyn && rawSyn !== "-"
+              ? rawSyn.split("|").filter((s) => s && s !== "-")
+              : [];
+          out[sym] = { name, synonyms };
+        }
+      }
     }
-    const header = lines[0].split("\t");
-    const symIdx = header.indexOf("gene_symbol");
-    const nameIdx = header.indexOf("description");
-    const synIdx = header.indexOf("synonyms");
-    if (symIdx < 0 || nameIdx < 0 || synIdx < 0) {
-      _geneNamesCache = {};
-      return _geneNamesCache;
-    }
-    const out: Record<string, GeneNameEntry> = {};
-    for (let i = 1; i < lines.length; i++) {
-      const row = lines[i];
-      if (!row) continue;
-      const cols = row.split("\t");
-      const sym = cols[symIdx]?.trim();
-      if (!sym) continue;
-      const name = cols[nameIdx]?.trim() ?? "";
-      const rawSyn = cols[synIdx]?.trim() ?? "";
-      const synonyms =
-        rawSyn && rawSyn !== "-"
-          ? rawSyn.split("|").filter((s) => s && s !== "-")
-          : [];
-      out[sym] = { name, synonyms };
-    }
-    _geneNamesCache = out;
-    return out;
   } catch {
-    _geneNamesCache = {};
-    return _geneNamesCache;
+    /* fall through with whatever we got so far */
   }
+  // Pass 2 — HGNC. Authoritative symbol→uniprot mapping; HGNC's
+  // `name` overrides NCBI's `description` when both are present so
+  // every gene gets the canonical "approved name" used by UniProt /
+  // Ensembl downstream. Entries seen only in HGNC (not NCBI) get
+  // created here, so the merged map covers any gene with an HGNC
+  // record even if NCBI's protein-coding triageable filter dropped it.
+  try {
+    const raw = readFileSync(HGNC_TSV, "utf-8");
+    const lines = raw.split(/\r?\n/);
+    if (lines.length >= 2) {
+      const header = lines[0].split("\t");
+      const symIdx = header.indexOf("symbol");
+      const nameIdx = header.indexOf("name");
+      const uniprotIdx = header.indexOf("uniprot_ids");
+      if (symIdx >= 0 && uniprotIdx >= 0) {
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i];
+          if (!row) continue;
+          const cols = row.split("\t");
+          const sym = cols[symIdx]?.trim();
+          if (!sym) continue;
+          const hgncName = nameIdx >= 0 ? (cols[nameIdx]?.trim() ?? "") : "";
+          // HGNC's uniprot_ids is a pipe-separated list when a symbol
+          // maps to multiple reviewed Swiss-Prot entries (rare —
+          // mostly genuine 1-to-1). Take the first so the rendered
+          // value is unambiguous; downstream consumers wanting the
+          // full list can hit the API for the deep-dive record.
+          const rawUni = cols[uniprotIdx]?.trim() ?? "";
+          const uniprot = rawUni ? rawUni.split("|")[0]?.trim() : "";
+          const prior = out[sym];
+          out[sym] = {
+            name: hgncName || prior?.name || "",
+            synonyms: prior?.synonyms ?? [],
+            uniprot: uniprot || prior?.uniprot,
+          };
+        }
+      }
+    }
+  } catch {
+    /* fall through */
+  }
+  _geneNamesCache = out;
+  return out;
 }
 
 function enrichRowsWithNames(
@@ -166,7 +231,18 @@ function enrichRowsWithNames(
   return rows.map((r) => {
     const entry = names[r.symbol];
     if (!entry) return r;
-    return { ...r, name: entry.name, synonyms: entry.synonyms };
+    // Backfill `uniprot` from HGNC when the row arrived from
+    // `candidate_universe_public` with an empty accession (currently
+    // ~71% of universe rows — every non-surface gene). Existing
+    // accessions take priority because the catalog row may be more
+    // specific (e.g. an isoform-aware mapping the universe builder
+    // pinned to).
+    return {
+      ...r,
+      name: entry.name,
+      synonyms: entry.synonyms,
+      uniprot: r.uniprot || entry.uniprot || "",
+    };
   });
 }
 
@@ -192,29 +268,46 @@ function syncDeepDiveToLocal(
 }
 
 /**
- * The Worker (`row_schema: 2`) packs the 5 surface-DB flags into a
- * 5-bit integer to keep payloads compact:
- *   bit 0 = uniprot, 1 = go, 2 = surfy, 3 = cspa, 4 = hpa.
- * The committed snapshot still uses the object form. Decode the
- * bitmask into the object shape so the CatalogTable can index by
- * key. No-op when `row.db` is already an object (snapshot fallback).
+ * The Worker (`row_schema: 3`) packs each row's per-model NCBI
+ * verdicts into a 3-slot tuple at `r.tr` — `[haiku?, sonnet?, opus?]`
+ * where each slot is either `null` or `[verdict, reason]`. Plus the
+ * 5 DB flags as a 5-bit integer at `r.db` (LSB → MSB: uniprot, go,
+ * surfy, cspa, hpa).
+ *
+ * Inflate both into the object/array shape the CatalogTable consumes.
+ * No-op if a snapshot fallback already has the inflated form.
  */
-function decodeDbBitmask(rows: CatalogRow[]): CatalogRow[] {
-  return rows.map((r) => {
-    const dbValue = r.db as unknown;
-    if (typeof dbValue !== "number") return r;
-    const bits = dbValue;
-    return {
-      ...r,
-      db: {
-        uniprot: bits & 1 ? 1 : 0,
-        go: bits & 2 ? 1 : 0,
-        surfy: bits & 4 ? 1 : 0,
-        cspa: bits & 8 ? 1 : 0,
-        hpa: bits & 16 ? 1 : 0,
-      },
+function inflateCatalogRow(raw: unknown): CatalogRow {
+  const r = raw as Record<string, unknown>;
+  let db: CatalogRow["db"];
+  if (typeof r.db === "number") {
+    const bits = r.db as number;
+    db = {
+      uniprot: bits & 1 ? 1 : 0,
+      go: bits & 2 ? 1 : 0,
+      surfy: bits & 4 ? 1 : 0,
+      cspa: bits & 8 ? 1 : 0,
+      hpa: bits & 16 ? 1 : 0,
     };
-  });
+  } else {
+    db = r.db as CatalogRow["db"];
+  }
+  const tr = (r.tr ?? r.triage_by_model) as
+    | Array<[string, string | null] | null>
+    | undefined;
+  const triage_by_model: (TriageCell | null)[] = (tr ?? [null, null, null]).map(
+    (slot) => (slot ? { verdict: slot[0], reason: slot[1] } : null),
+  );
+  return {
+    symbol: r.symbol as string,
+    uniprot: (r.uniprot as string | undefined) ?? "",
+    name: r.name as string | undefined,
+    synonyms: r.synonyms as string[] | undefined,
+    n_sources: r.n_sources as number,
+    db,
+    triage_by_model,
+    deep_dive: Boolean(r.deep_dive),
+  };
 }
 
 /** Look up the descriptive gene name for a symbol. Used by the gene
@@ -249,6 +342,7 @@ export async function loadCatalog(): Promise<Catalog> {
       generated_at: undefined,
       universe_version: "local-stub",
       bench_version: null,
+      models: ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"],
       n_rows: 0,
       n_with_triage: 0,
       n_with_deep_dive: 0,
@@ -269,7 +363,9 @@ export async function loadCatalog(): Promise<Catalog> {
   if (!res.ok) {
     throw new Error(`${base}/v1/catalog returned ${res.status}`);
   }
-  const payload = (await res.json()) as Omit<Catalog, "source">;
+  const payload = (await res.json()) as Omit<Catalog, "source" | "rows"> & {
+    rows: unknown[];
+  };
   if (!payload.rows || payload.rows.length === 0) {
     throw new Error(
       `${base}/v1/catalog returned an empty catalog — the Worker is ` +
@@ -277,10 +373,8 @@ export async function loadCatalog(): Promise<Catalog> {
     );
   }
   const localSymbols = new Set(listSurfaceomeGenes());
-  const rows = syncDeepDiveToLocal(
-    enrichRowsWithNames(decodeDbBitmask(payload.rows), names),
-    localSymbols,
-  );
+  const inflated = payload.rows.map(inflateCatalogRow);
+  const rows = syncDeepDiveToLocal(enrichRowsWithNames(inflated, names), localSymbols);
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,
@@ -291,6 +385,49 @@ export async function loadCatalog(): Promise<Catalog> {
     rows,
     n_with_deep_dive,
   };
+}
+
+/**
+ * Build-time fetch for the 147-gene benchmark matrix. Same pattern as
+ * `loadCatalog`: hit the public Worker with `cache: "force-cache"` so the
+ * response gets baked into the `output: "export"` artifact. Returns an
+ * empty stub under `SURFACEOME_API_BASE=local` so the GitHub-Actions
+ * smoke build (whose IPs hit the Cloudflare WAF) doesn't 403.
+ */
+export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  if (!base) {
+    throw new Error(
+      "SURFACEOME_API_BASE is empty — set it to the public Worker (e.g. " +
+        "https://api.deliverome.org/surfaceome), to `local` for an empty " +
+        "stub, or to a staging endpoint.",
+    );
+  }
+  if (base === "local") {
+    return {
+      bench_version: null,
+      universe_version: null,
+      sources: ["uniprot", "go", "surfy", "cspa", "hpa"],
+      models: [
+        "claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5",
+      ],
+      variants: ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"],
+      headline_variant: "ncbi",
+      n_genes: 0,
+      rows: [],
+    };
+  }
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  const res = await fetch(`${base}/v1/benchmark/matrix`, {
+    cache: "force-cache",
+    signal: controller.signal,
+  }).finally(() => clearTimeout(timer));
+  if (!res.ok) {
+    throw new Error(`${base}/v1/benchmark/matrix returned ${res.status}`);
+  }
+  const payload = (await res.json()) as BenchmarkMatrix;
+  return payload;
 }
 
 export function listSurfaceomeGenes(): string[] {

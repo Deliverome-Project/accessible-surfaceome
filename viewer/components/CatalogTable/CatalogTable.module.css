@@ -112,6 +112,13 @@
  * Result meta
  * ============================================================ */
 
+.resultRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
 .resultMeta {
   margin: 0;
   display: flex;
@@ -123,6 +130,33 @@
 
 .dot {
   color: var(--line);
+}
+
+.downloadBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.36rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.downloadBtn:hover,
+.downloadBtn:focus-visible {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
 }
 
 /* ============================================================
@@ -151,12 +185,12 @@
 .row {
   display: grid;
   grid-template-columns: var(--catalog-cols,
-    1.75rem 7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
+    1.75rem 11rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
   align-items: center;
   font-family: var(--font-sans);
   font-size: 0.88rem;
   border-bottom: 1px solid var(--line-soft);
-  min-height: 2.4rem;
+  min-height: 2.8rem;
 }
 
 .rowExpanded {
@@ -400,6 +434,29 @@
  * template, so no `width` here)
  * ============================================================ */
 
+/* Stack the italic gene symbol on top of a small full-name line so a
+ * row reads `ERBB2 / Erb-b2 receptor tyrosine kinase 2` without
+ * costing a separate column. Full name is sourced at build time from
+ * HGNC (`data/external/hgnc/hgnc_complete_set.tsv`) — see
+ * `loadGeneNamesMap` in viewer/lib/surfaceome.ts. */
+.symbolStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.symbolName {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 12rem;
+}
+
 .symbolLink {
   font-family: var(--font-display);
   font-style: italic;
@@ -529,24 +586,72 @@
   border-radius: var(--radius-pill);
 }
 
+/* Combined-class form: when verdictTone goes on the same element as
+ * verdictLabel (used by the per-model mini pills in the row), this
+ * selector matches. The nested form below stays for backwards-
+ * compat with anywhere we wrap a parent with verdictTone. */
+.verdictLabel.verdictYes,
 .verdictYes .verdictLabel {
   background: rgba(46, 122, 85, 0.14);
   color: var(--success);
 }
 
+.verdictLabel.verdictNo,
 .verdictNo .verdictLabel {
   background: var(--maroon-blush);
   color: var(--maroon-dark);
 }
 
+.verdictLabel.verdictContextual,
 .verdictContextual .verdictLabel {
   background: var(--amber-tint);
   color: var(--amber-deepest);
 }
 
+.verdictLabel.verdictUnknown,
 .verdictUnknown .verdictLabel {
   background: var(--bg-warm);
   color: var(--muted);
+}
+
+/* Per-model mini verdict — sized to fit three columns at 4.4rem each
+ * in the catalog grid. Mono shorthand (the verdict word itself) with
+ * a 0 margin so they sit tight in the row. */
+.verdictMini {
+  padding: 0.14rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.modelCell {
+  justify-content: center;
+}
+
+/* Row-expand triage detail — three cards (one per model) stacked
+ * inline. Each shows verdict + reasoning if available. */
+.triageDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--space-3);
+}
+
+.triageDetailCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: var(--space-3);
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+}
+
+.triageDetailMissing {
+  border-style: dashed;
+  opacity: 0.7;
 }
 
 .verdictReason {
@@ -611,7 +716,7 @@
 @media (max-width: 720px) {
   .row {
     grid-template-columns:
-      1.75rem 7.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem;
+      1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(9rem, 1fr) 4.5rem;
   }
   .uniprotCell,
   .headerRow .headerCell:nth-child(3) {

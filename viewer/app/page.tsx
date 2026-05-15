@@ -57,6 +57,7 @@ export default async function HomePage() {
           n_rows={catalog.n_rows}
           n_with_triage={catalog.n_with_triage}
           n_with_deep_dive={catalog.n_with_deep_dive}
+          universe_version={catalog.universe_version}
         />
 
         <footer className={styles.footnotes}>
