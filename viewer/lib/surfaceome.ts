@@ -34,6 +34,25 @@ const GENE_NAMES_TSV = path.join(
   "Homo_sapiens.protein_coding.with_hgnc.triageable.tsv",
 );
 
+// HGNC complete set — authoritative symbol↔UniProt mapping. The
+// candidate_universe_public table only carries `uniprot_acc` for genes
+// that hit at least one DB, leaving ~13.7k non-candidate rows in the
+// catalog with no accession surfaced. The HGNC TSV fills that gap and
+// also gives us a second source for the full gene name (preferred over
+// the NCBI description because HGNC's `name` field is the canonical
+// "approved name" — the same string used by UniProt, Ensembl, etc.).
+//
+// ~45k rows, ~25 MB; parsing it once per build is fine and the result
+// is memoized below.
+const HGNC_TSV = path.join(
+  process.cwd(),
+  "..",
+  "data",
+  "external",
+  "hgnc",
+  "hgnc_complete_set.tsv",
+);
+
 /**
  * One row of the genome-wide catalog the index table renders. Sourced
  * from the public Worker's `/v1/catalog` endpoint (which joins
@@ -110,6 +129,12 @@ const FETCH_TIMEOUT_MS = 8_000;
 interface GeneNameEntry {
   name: string;
   synonyms: string[];
+  /** UniProt accession for this gene symbol, sourced from HGNC's
+   *  authoritative symbol→uniprot mapping. Used to fill in the
+   *  catalog rows where `candidate_universe_public.uniprot_acc` is
+   *  empty (most non-surface genes). Empty when HGNC has no mapping
+   *  (rare — non-protein-coding loci, withdrawn symbols). */
+  uniprot?: string;
 }
 
 // Module-level memo. The TSV is ~3.5 MB / 19,325 rows; parsing it
@@ -120,42 +145,81 @@ let _geneNamesCache: Record<string, GeneNameEntry> | null = null;
 
 function loadGeneNamesMap(): Record<string, GeneNameEntry> {
   if (_geneNamesCache) return _geneNamesCache;
+  const out: Record<string, GeneNameEntry> = {};
+  // Pass 1 — NCBI gene_info. Source of synonyms (canonical pipe-
+  // delimited list) and a fallback gene description when HGNC
+  // doesn't carry one.
   try {
     const raw = readFileSync(GENE_NAMES_TSV, "utf-8");
     const lines = raw.split(/\r?\n/);
-    if (lines.length < 2) {
-      _geneNamesCache = {};
-      return _geneNamesCache;
+    if (lines.length >= 2) {
+      const header = lines[0].split("\t");
+      const symIdx = header.indexOf("gene_symbol");
+      const nameIdx = header.indexOf("description");
+      const synIdx = header.indexOf("synonyms");
+      if (symIdx >= 0 && nameIdx >= 0 && synIdx >= 0) {
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i];
+          if (!row) continue;
+          const cols = row.split("\t");
+          const sym = cols[symIdx]?.trim();
+          if (!sym) continue;
+          const name = cols[nameIdx]?.trim() ?? "";
+          const rawSyn = cols[synIdx]?.trim() ?? "";
+          const synonyms =
+            rawSyn && rawSyn !== "-"
+              ? rawSyn.split("|").filter((s) => s && s !== "-")
+              : [];
+          out[sym] = { name, synonyms };
+        }
+      }
     }
-    const header = lines[0].split("\t");
-    const symIdx = header.indexOf("gene_symbol");
-    const nameIdx = header.indexOf("description");
-    const synIdx = header.indexOf("synonyms");
-    if (symIdx < 0 || nameIdx < 0 || synIdx < 0) {
-      _geneNamesCache = {};
-      return _geneNamesCache;
-    }
-    const out: Record<string, GeneNameEntry> = {};
-    for (let i = 1; i < lines.length; i++) {
-      const row = lines[i];
-      if (!row) continue;
-      const cols = row.split("\t");
-      const sym = cols[symIdx]?.trim();
-      if (!sym) continue;
-      const name = cols[nameIdx]?.trim() ?? "";
-      const rawSyn = cols[synIdx]?.trim() ?? "";
-      const synonyms =
-        rawSyn && rawSyn !== "-"
-          ? rawSyn.split("|").filter((s) => s && s !== "-")
-          : [];
-      out[sym] = { name, synonyms };
-    }
-    _geneNamesCache = out;
-    return out;
   } catch {
-    _geneNamesCache = {};
-    return _geneNamesCache;
+    /* fall through with whatever we got so far */
   }
+  // Pass 2 — HGNC. Authoritative symbol→uniprot mapping; HGNC's
+  // `name` overrides NCBI's `description` when both are present so
+  // every gene gets the canonical "approved name" used by UniProt /
+  // Ensembl downstream. Entries seen only in HGNC (not NCBI) get
+  // created here, so the merged map covers any gene with an HGNC
+  // record even if NCBI's protein-coding triageable filter dropped it.
+  try {
+    const raw = readFileSync(HGNC_TSV, "utf-8");
+    const lines = raw.split(/\r?\n/);
+    if (lines.length >= 2) {
+      const header = lines[0].split("\t");
+      const symIdx = header.indexOf("symbol");
+      const nameIdx = header.indexOf("name");
+      const uniprotIdx = header.indexOf("uniprot_ids");
+      if (symIdx >= 0 && uniprotIdx >= 0) {
+        for (let i = 1; i < lines.length; i++) {
+          const row = lines[i];
+          if (!row) continue;
+          const cols = row.split("\t");
+          const sym = cols[symIdx]?.trim();
+          if (!sym) continue;
+          const hgncName = nameIdx >= 0 ? (cols[nameIdx]?.trim() ?? "") : "";
+          // HGNC's uniprot_ids is a pipe-separated list when a symbol
+          // maps to multiple reviewed Swiss-Prot entries (rare —
+          // mostly genuine 1-to-1). Take the first so the rendered
+          // value is unambiguous; downstream consumers wanting the
+          // full list can hit the API for the deep-dive record.
+          const rawUni = cols[uniprotIdx]?.trim() ?? "";
+          const uniprot = rawUni ? rawUni.split("|")[0]?.trim() : "";
+          const prior = out[sym];
+          out[sym] = {
+            name: hgncName || prior?.name || "",
+            synonyms: prior?.synonyms ?? [],
+            uniprot: uniprot || prior?.uniprot,
+          };
+        }
+      }
+    }
+  } catch {
+    /* fall through */
+  }
+  _geneNamesCache = out;
+  return out;
 }
 
 function enrichRowsWithNames(
@@ -166,7 +230,18 @@ function enrichRowsWithNames(
   return rows.map((r) => {
     const entry = names[r.symbol];
     if (!entry) return r;
-    return { ...r, name: entry.name, synonyms: entry.synonyms };
+    // Backfill `uniprot` from HGNC when the row arrived from
+    // `candidate_universe_public` with an empty accession (currently
+    // ~71% of universe rows — every non-surface gene). Existing
+    // accessions take priority because the catalog row may be more
+    // specific (e.g. an isoform-aware mapping the universe builder
+    // pinned to).
+    return {
+      ...r,
+      name: entry.name,
+      synonyms: entry.synonyms,
+      uniprot: r.uniprot || entry.uniprot || "",
+    };
   });
 }
 

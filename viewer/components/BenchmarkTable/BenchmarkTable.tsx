@@ -19,7 +19,7 @@ const ROW_OVERSCAN = 12;
 // | haiku | class. Kept narrow so the table reads as a dense matrix rather
 // than a layout-heavy editorial block.
 const GRID_TEMPLATE =
-  "1.6rem 6rem 5rem 4.2rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 4.4rem 4.4rem 4.4rem minmax(10rem, 1fr)";
+  "1.6rem 10rem 5rem 4.2rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 4.4rem 4.4rem 4.4rem minmax(10rem, 1fr)";
 
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
@@ -66,9 +66,17 @@ interface BenchmarkTableProps {
   /** Genes the viewer has a deep-dive record for — used to link gene
    *  symbols to /[symbol]/ pages when one exists. */
   deepDiveGenes: Set<string>;
+  /** symbol → full gene name (from HGNC) so each row can show
+   *  "ERBB2 / Erb-b2 receptor tyrosine kinase 2" without an extra
+   *  client fetch. Missing keys render the symbol alone. */
+  geneNames?: Record<string, string>;
 }
 
-export function BenchmarkTable({ matrix, deepDiveGenes }: BenchmarkTableProps) {
+export function BenchmarkTable({
+  matrix,
+  deepDiveGenes,
+  geneNames,
+}: BenchmarkTableProps) {
   const { rows, headline_variant, alt_variants, models } = matrix;
 
   function handleDownload() {
@@ -299,6 +307,7 @@ export function BenchmarkTable({ matrix, deepDiveGenes }: BenchmarkTableProps) {
                     onToggleExpand={toggleExpand}
                     altVariants={alt_variants}
                     hasDeepDive={deepDiveGenes.has(r.gene_symbol)}
+                    geneName={geneNames?.[r.gene_symbol]}
                   />
                 );
               })
@@ -344,6 +353,7 @@ function BenchRowView({
   onToggleExpand,
   altVariants,
   hasDeepDive,
+  geneName,
 }: {
   row: BenchmarkRow;
   measureRef?: (el: HTMLDivElement | null) => void;
@@ -353,6 +363,7 @@ function BenchRowView({
   onToggleExpand: (symbol: string) => void;
   altVariants: string[];
   hasDeepDive: boolean;
+  geneName?: string;
 }) {
   const style: React.CSSProperties | undefined =
     virtualStart != null
@@ -364,12 +375,22 @@ function BenchRowView({
           transform: `translateY(${virtualStart}px)`,
         }
       : undefined;
-  const geneCell = hasDeepDive ? (
+  const symbolHead = hasDeepDive ? (
     <Link href={`/${row.gene_symbol}/`} className={styles.symbolLink}>
       {row.gene_symbol}
     </Link>
   ) : (
     <span className={styles.symbolText}>{row.gene_symbol}</span>
+  );
+  const geneCell = (
+    <span className={styles.symbolStack}>
+      {symbolHead}
+      {geneName ? (
+        <span className={styles.symbolName} title={geneName}>
+          {geneName}
+        </span>
+      ) : null}
+    </span>
   );
   return (
     <div

@@ -185,12 +185,12 @@
 .row {
   display: grid;
   grid-template-columns: var(--bench-cols,
-    1.6rem 6rem 5rem 4.2rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 4.4rem 4.4rem 4.4rem minmax(10rem, 1fr));
+    1.6rem 10rem 5rem 4.2rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 1.4rem 4.4rem 4.4rem 4.4rem minmax(10rem, 1fr));
   align-items: center;
   font-family: var(--font-sans);
   font-size: 0.84rem;
   border-bottom: 1px solid var(--line-soft);
-  min-height: 2.1rem;
+  min-height: 2.6rem;
 }
 
 .rowExpanded {
@@ -302,7 +302,25 @@
 }
 
 .geneCell {
-  /* nothing extra; container is the symbol link/text */
+  /* nothing extra; container is the symbol stack */
+}
+
+.symbolStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.symbolName {
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 10rem;
 }
 
 .symbolLink {
@@ -503,7 +521,7 @@
 @media (max-width: 900px) {
   .row {
     grid-template-columns:
-      1.6rem 5.5rem 4.4rem 4.2rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 4rem 4rem 4rem;
+      1.6rem 9rem 4.4rem 4.2rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 1.3rem 4rem 4rem 4rem;
   }
   .classCell,
   .headerRow .headerCell:last-child {

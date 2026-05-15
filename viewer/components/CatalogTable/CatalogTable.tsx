@@ -13,7 +13,7 @@ import styles from "./CatalogTable.module.css";
 // height. The virtualizer dynamically re-measures as rows enter the
 // viewport, so this only needs to be in the right ballpark for the
 // initial scroll-height calc and overscan window.
-const ROW_ESTIMATE_PX = 48;
+const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
 // CSS Grid template shared by the header row and every virtualized
@@ -27,7 +27,7 @@ const ROW_OVERSCAN = 12;
 // so it absorbs any leftover horizontal space rather than leaving a
 // trailing empty gutter on wide viewports.
 const GRID_TEMPLATE =
-  "1.75rem 7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 6rem";
+  "1.75rem 11rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -518,12 +518,22 @@ function CatalogRowView({
   onToggleExpand: (symbol: string) => void;
   detail: TriageDetailState | undefined;
 }) {
-  const symbolCell = row.deep_dive ? (
+  const symbolHead = row.deep_dive ? (
     <Link href={`/${row.symbol}/`} className={styles.symbolLink}>
       {row.symbol}
     </Link>
   ) : (
     <span className={styles.symbolText}>{row.symbol}</span>
+  );
+  const symbolCell = (
+    <span className={styles.symbolStack}>
+      {symbolHead}
+      {row.name ? (
+        <span className={styles.symbolName} title={row.name}>
+          {row.name}
+        </span>
+      ) : null}
+    </span>
   );
   const style: React.CSSProperties | undefined =
     virtualStart != null

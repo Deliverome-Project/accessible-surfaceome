@@ -1,6 +1,10 @@
 import { Shell } from "../../components/Shell/Shell";
 import { BenchmarkTable } from "../../components/BenchmarkTable/BenchmarkTable";
-import { listSurfaceomeGenes, loadBenchmarkMatrix } from "../../lib/surfaceome";
+import {
+  listSurfaceomeGenes,
+  loadBenchmarkMatrix,
+  loadGeneName,
+} from "../../lib/surfaceome";
 import styles from "./page.module.css";
 
 /**
@@ -22,6 +26,15 @@ export const metadata = {
 export default async function BenchmarkPage() {
   const matrix = await loadBenchmarkMatrix();
   const deepDiveGenes = new Set(listSurfaceomeGenes());
+  // Build a symbol → full-name map for the benchmark genes so each
+  // row can show "ERBB2 / Erb-b2 receptor tyrosine kinase 2" without
+  // shipping the entire HGNC lookup to the client. `loadGeneName` is
+  // memoized so all 147 calls share one TSV parse.
+  const geneNames: Record<string, string> = {};
+  for (const row of matrix.rows) {
+    const entry = loadGeneName(row.gene_symbol);
+    if (entry?.name) geneNames[row.gene_symbol] = entry.name;
+  }
 
   return (
     <Shell>
@@ -44,7 +57,11 @@ export default async function BenchmarkPage() {
           </p>
         </header>
 
-        <BenchmarkTable matrix={matrix} deepDiveGenes={deepDiveGenes} />
+        <BenchmarkTable
+          matrix={matrix}
+          deepDiveGenes={deepDiveGenes}
+          geneNames={geneNames}
+        />
 
         <footer className={styles.footnotes}>
           <p>

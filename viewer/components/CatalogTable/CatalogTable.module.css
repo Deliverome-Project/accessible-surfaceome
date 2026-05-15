@@ -185,12 +185,12 @@
 .row {
   display: grid;
   grid-template-columns: var(--catalog-cols,
-    1.75rem 7.5rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
+    1.75rem 11rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem);
   align-items: center;
   font-family: var(--font-sans);
   font-size: 0.88rem;
   border-bottom: 1px solid var(--line-soft);
-  min-height: 2.4rem;
+  min-height: 2.8rem;
 }
 
 .rowExpanded {
@@ -434,6 +434,29 @@
  * template, so no `width` here)
  * ============================================================ */
 
+/* Stack the italic gene symbol on top of a small full-name line so a
+ * row reads `ERBB2 / Erb-b2 receptor tyrosine kinase 2` without
+ * costing a separate column. Full name is sourced at build time from
+ * HGNC (`data/external/hgnc/hgnc_complete_set.tsv`) — see
+ * `loadGeneNamesMap` in viewer/lib/surfaceome.ts. */
+.symbolStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+  line-height: 1.15;
+}
+
+.symbolName {
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 12rem;
+}
+
 .symbolLink {
   font-family: var(--font-display);
   font-style: italic;
@@ -645,7 +668,7 @@
 @media (max-width: 720px) {
   .row {
     grid-template-columns:
-      1.75rem 7.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem;
+      1.75rem 10rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(14rem, 1fr) 4.5rem;
   }
   .uniprotCell,
   .headerRow .headerCell:nth-child(3) {
