@@ -61,24 +61,17 @@ const HGNC_TSV = path.join(
  * `public/data/catalog.json` is a snapshot fallback used when the API
  * is unreachable (offline dev, Worker not yet deployed, etc.).
  */
+export interface TriageCell {
+  verdict: string;
+  reason: string | null;
+}
+
 export interface CatalogRow {
   symbol: string;
   uniprot: string;
-  /** Descriptive gene name from NCBI gene_info (e.g. ``transferrin``).
-   *  Merged in by ``loadCatalog`` from
-   *  ``public/data/gene_names.json``; empty / missing when the symbol
-   *  isn't in the NCBI snapshot. */
   name?: string;
-  /** Pipe-separated synonyms from NCBI gene_info (e.g.
-   *  ``["HEL-S-71p", "PRO1557", ...]`` for TF). Same provenance as
-   *  ``name``. */
   synonyms?: string[];
   n_sources: number;
-  // Five gating DBs (uniprot, go, surfy, cspa, hpa). DeepTMHMM +
-  // COMPARTMENTS are demoted to auxiliary signals upstream
-  // (src/accessible_surfaceome/merge/__init__.py) and don't appear in
-  // the public catalog table — the database row still carries them
-  // for fidelity, but the Worker filters them out of /v1/catalog.
   db: {
     uniprot: number;
     go: number;
@@ -86,18 +79,26 @@ export interface CatalogRow {
     cspa: number;
     hpa: number;
   };
-  triage: { verdict: string; reason: string | null } | null;
+  /** Per-model NCBI-variant verdict in the order matrix.models
+   *  exposes. Today: [Haiku 4.5, Sonnet 4.6, Opus 4.7]. Each slot is
+   *  null when no run exists for that model on that gene (most non-
+   *  bench genes have only the Sonnet slot populated). */
+  triage_by_model: (TriageCell | null)[];
   deep_dive: boolean;
 }
 
 export interface Catalog {
   /** Always ``"api"`` — the committed snapshot path was dropped when
-   *  the public Worker stabilized. Kept for forward-compat / explicit
-   *  semantics; the field tells consumers what built the catalog. */
+   *  the public Worker stabilized. */
   source: "api";
   generated_at?: string;
   universe_version?: string;
   bench_version?: string | null;
+  /** Model order for `CatalogRow.triage_by_model`. The viewer pins
+   *  this to a known [Haiku, Sonnet, Opus] but reads from the
+   *  response so a future Worker-side reorder doesn't silently swap
+   *  columns. */
+  models: string[];
   n_rows: number;
   n_with_triage: number;
   n_with_deep_dive: number;
@@ -267,29 +268,46 @@ function syncDeepDiveToLocal(
 }
 
 /**
- * The Worker (`row_schema: 2`) packs the 5 surface-DB flags into a
- * 5-bit integer to keep payloads compact:
- *   bit 0 = uniprot, 1 = go, 2 = surfy, 3 = cspa, 4 = hpa.
- * The committed snapshot still uses the object form. Decode the
- * bitmask into the object shape so the CatalogTable can index by
- * key. No-op when `row.db` is already an object (snapshot fallback).
+ * The Worker (`row_schema: 3`) packs each row's per-model NCBI
+ * verdicts into a 3-slot tuple at `r.tr` — `[haiku?, sonnet?, opus?]`
+ * where each slot is either `null` or `[verdict, reason]`. Plus the
+ * 5 DB flags as a 5-bit integer at `r.db` (LSB → MSB: uniprot, go,
+ * surfy, cspa, hpa).
+ *
+ * Inflate both into the object/array shape the CatalogTable consumes.
+ * No-op if a snapshot fallback already has the inflated form.
  */
-function decodeDbBitmask(rows: CatalogRow[]): CatalogRow[] {
-  return rows.map((r) => {
-    const dbValue = r.db as unknown;
-    if (typeof dbValue !== "number") return r;
-    const bits = dbValue;
-    return {
-      ...r,
-      db: {
-        uniprot: bits & 1 ? 1 : 0,
-        go: bits & 2 ? 1 : 0,
-        surfy: bits & 4 ? 1 : 0,
-        cspa: bits & 8 ? 1 : 0,
-        hpa: bits & 16 ? 1 : 0,
-      },
+function inflateCatalogRow(raw: unknown): CatalogRow {
+  const r = raw as Record<string, unknown>;
+  let db: CatalogRow["db"];
+  if (typeof r.db === "number") {
+    const bits = r.db as number;
+    db = {
+      uniprot: bits & 1 ? 1 : 0,
+      go: bits & 2 ? 1 : 0,
+      surfy: bits & 4 ? 1 : 0,
+      cspa: bits & 8 ? 1 : 0,
+      hpa: bits & 16 ? 1 : 0,
     };
-  });
+  } else {
+    db = r.db as CatalogRow["db"];
+  }
+  const tr = (r.tr ?? r.triage_by_model) as
+    | Array<[string, string | null] | null>
+    | undefined;
+  const triage_by_model: (TriageCell | null)[] = (tr ?? [null, null, null]).map(
+    (slot) => (slot ? { verdict: slot[0], reason: slot[1] } : null),
+  );
+  return {
+    symbol: r.symbol as string,
+    uniprot: (r.uniprot as string | undefined) ?? "",
+    name: r.name as string | undefined,
+    synonyms: r.synonyms as string[] | undefined,
+    n_sources: r.n_sources as number,
+    db,
+    triage_by_model,
+    deep_dive: Boolean(r.deep_dive),
+  };
 }
 
 /** Look up the descriptive gene name for a symbol. Used by the gene
@@ -324,6 +342,7 @@ export async function loadCatalog(): Promise<Catalog> {
       generated_at: undefined,
       universe_version: "local-stub",
       bench_version: null,
+      models: ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"],
       n_rows: 0,
       n_with_triage: 0,
       n_with_deep_dive: 0,
@@ -344,7 +363,9 @@ export async function loadCatalog(): Promise<Catalog> {
   if (!res.ok) {
     throw new Error(`${base}/v1/catalog returned ${res.status}`);
   }
-  const payload = (await res.json()) as Omit<Catalog, "source">;
+  const payload = (await res.json()) as Omit<Catalog, "source" | "rows"> & {
+    rows: unknown[];
+  };
   if (!payload.rows || payload.rows.length === 0) {
     throw new Error(
       `${base}/v1/catalog returned an empty catalog — the Worker is ` +
@@ -352,10 +373,8 @@ export async function loadCatalog(): Promise<Catalog> {
     );
   }
   const localSymbols = new Set(listSurfaceomeGenes());
-  const rows = syncDeepDiveToLocal(
-    enrichRowsWithNames(decodeDbBitmask(payload.rows), names),
-    localSymbols,
-  );
+  const inflated = payload.rows.map(inflateCatalogRow);
+  const rows = syncDeepDiveToLocal(enrichRowsWithNames(inflated, names), localSymbols);
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,

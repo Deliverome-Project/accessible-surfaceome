@@ -586,24 +586,72 @@
   border-radius: var(--radius-pill);
 }
 
+/* Combined-class form: when verdictTone goes on the same element as
+ * verdictLabel (used by the per-model mini pills in the row), this
+ * selector matches. The nested form below stays for backwards-
+ * compat with anywhere we wrap a parent with verdictTone. */
+.verdictLabel.verdictYes,
 .verdictYes .verdictLabel {
   background: rgba(46, 122, 85, 0.14);
   color: var(--success);
 }
 
+.verdictLabel.verdictNo,
 .verdictNo .verdictLabel {
   background: var(--maroon-blush);
   color: var(--maroon-dark);
 }
 
+.verdictLabel.verdictContextual,
 .verdictContextual .verdictLabel {
   background: var(--amber-tint);
   color: var(--amber-deepest);
 }
 
+.verdictLabel.verdictUnknown,
 .verdictUnknown .verdictLabel {
   background: var(--bg-warm);
   color: var(--muted);
+}
+
+/* Per-model mini verdict — sized to fit three columns at 4.4rem each
+ * in the catalog grid. Mono shorthand (the verdict word itself) with
+ * a 0 margin so they sit tight in the row. */
+.verdictMini {
+  padding: 0.14rem 0.45rem;
+  font-size: 0.7rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+}
+
+.modelCell {
+  justify-content: center;
+}
+
+/* Row-expand triage detail — three cards (one per model) stacked
+ * inline. Each shows verdict + reasoning if available. */
+.triageDetailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: var(--space-3);
+}
+
+.triageDetailCard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: var(--space-3);
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+}
+
+.triageDetailMissing {
+  border-style: dashed;
+  opacity: 0.7;
 }
 
 .verdictReason {

@@ -261,34 +261,45 @@ async function handleCatalog(env) {
       ORDER BY gene_symbol`
   ).bind(universe).all();
 
-  // Latest triage verdict per gene, regardless of bench_version. The
-  // earlier query strict-filtered to the latest bench, which left the
-  // catalog mostly empty: most triage runs are genome-wide sweeps
-  // (~19k genes) that aren't anchored to a benchmark at all, so
-  // their bench_version is either NULL or whatever was current
-  // months ago — not useful as a "freshness" filter. Take
-  // max(created_at) across all benches; surface `bench_version`
-  // (possibly null) + `created_at` per row so consumers can tell
-  // *which* run each verdict came from.
-  const triageMap = new Map();
+  // Latest per-model NCBI-variant verdict for each gene. The page
+  // renders three columns (Haiku / Sonnet / Opus); each cell shows
+  // that model's ncbi-variant call. Only `prompt_variant='ncbi'`
+  // because that's the variant with cross-model coverage and the one
+  // the published figures use as headline.
+  //
+  // Coverage today:
+  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v1)
+  //   - Haiku/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v1)
+  //   - Opus/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v1)
+  // So most rows will show only the Sonnet column populated.
+  const CATALOG_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"];
+  const triageByGene = new Map();
   const triageRows = await env.DB.prepare(
-    `SELECT gene_symbol, predicted_verdict, predicted_reason,
-            bench_version, created_at
-       FROM triage_run_public t
-      WHERE created_at = (
-        SELECT MAX(created_at) FROM triage_run_public
-         WHERE gene_symbol = t.gene_symbol
-      )`
+    `WITH ranked AS (
+       SELECT gene_symbol, model, predicted_verdict, predicted_reason,
+              created_at,
+              ROW_NUMBER() OVER (
+                PARTITION BY gene_symbol, model
+                ORDER BY created_at DESC
+              ) AS rn
+         FROM triage_run_public
+        WHERE prompt_variant = 'ncbi'
+          AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-7')
+     )
+     SELECT gene_symbol, model, predicted_verdict, predicted_reason, created_at
+       FROM ranked WHERE rn = 1`
   ).all();
   for (const r of triageRows.results) {
-    if (!triageMap.has(r.gene_symbol)) {
-      triageMap.set(r.gene_symbol, {
-        verdict: r.predicted_verdict,
-        reason: r.predicted_reason,
-        bench_version: r.bench_version,
-        created_at: r.created_at,
-      });
+    let perModel = triageByGene.get(r.gene_symbol);
+    if (!perModel) {
+      perModel = {};
+      triageByGene.set(r.gene_symbol, perModel);
     }
+    perModel[r.model] = {
+      verdict: r.predicted_verdict,
+      reason: r.predicted_reason,
+      created_at: r.created_at,
+    };
   }
 
   // Genes with a published deep-dive SurfaceomeRecord (whatever schema_version).
@@ -306,6 +317,22 @@ async function handleCatalog(env) {
   // (LSB → MSB) matches the order the viewer renders columns in:
   //   bit 0 = uniprot, 1 = go, 2 = surfy, 3 = cspa, 4 = hpa.
   // Decoded in viewer/lib/surfaceome.ts; see DB_BIT_KEYS there.
+  //
+  // Per-model NCBI verdict: `tr` is a 3-slot array
+  // [haiku, sonnet, opus]. Each slot is null or [verdict, reason].
+  // Compact wire form because we have ~19k rows; the verdict strings
+  // are short and ~95% of slots are null (Haiku/Opus only cover the
+  // 147 SurfaceBench genes today).
+  function packTriage(sym) {
+    const per = triageByGene.get(sym);
+    if (!per) return undefined;
+    const out = CATALOG_MODELS.map((m) => {
+      const t = per[m];
+      if (!t?.verdict) return null;
+      return [t.verdict, t.reason ?? null];
+    });
+    return out.some((x) => x) ? out : undefined;
+  }
   const rows = universeRows.results.map((u) => {
     covered.add(u.gene_symbol);
     const db =
@@ -319,24 +346,19 @@ async function handleCatalog(env) {
       n_sources: u.n_sources_surface,
       db,
     };
-    // Drop empty / falsy fields to compact the wire payload further —
-    // most rows have no uniprot accession and no triage / deep-dive
-    // flag.
     if (u.uniprot_acc) row.uniprot = u.uniprot_acc;
-    const t = triageMap.get(u.gene_symbol);
-    if (t) row.triage = t;
+    const t = packTriage(u.gene_symbol);
+    if (t) row.tr = t;
     if (deepSet.has(u.gene_symbol)) row.deep_dive = true;
     return row;
   });
 
   // Append deep-dive-only genes (missing from the universe row set).
-  // Without this the index page loses these records entirely; they're
-  // the strongest accessibility data we have.
   for (const sym of deepSet) {
     if (covered.has(sym)) continue;
     const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
-    const t = triageMap.get(sym);
-    if (t) row.triage = t;
+    const t = packTriage(sym);
+    if (t) row.tr = t;
     rows.push(row);
   }
 
@@ -354,13 +376,15 @@ async function handleCatalog(env) {
     {
       universe_version: universe,
       bench_version: benchVersion,
+      models: CATALOG_MODELS,
       n_rows: rows.length,
-      n_with_triage: rows.filter((r) => r.triage).length,
+      n_with_triage: rows.filter((r) => r.tr).length,
       n_with_deep_dive: rows.filter((r) => r.deep_dive).length,
       // Schema version of the row encoding. Bumped when the shape
       // changes; viewer/lib/surfaceome.ts checks this and decodes
-      // accordingly.
-      row_schema: 2,
+      // accordingly. v3 = per-model ncbi `tr` array replaces the
+      // single `triage` object.
+      row_schema: 3,
       rows,
     },
     { ttl: CACHE_TTL_SHORT },

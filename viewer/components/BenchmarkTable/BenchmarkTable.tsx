@@ -15,24 +15,15 @@ import styles from "./BenchmarkTable.module.css";
 const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
 
-// Grid template (top→bottom): toggle | gene | uniprot | truth | 5 DBs |
-// 12 model×variant pills (Opus naive/ncbi/web/pubmed → Sonnet ditto →
-// Haiku ditto) | class. Each LLM pill is 2.6rem so 12 of them fit in
-// ~31rem; the matrix is wide but readable on a laptop with the
-// horizontal scroll the .tableScroll wrapper provides.
-const LLM_CELL_REM = 2.6;
-const GRID_TEMPLATE = [
-  "1.6rem",                         // toggle
-  "10rem",                          // gene
-  "5rem",                           // uniprot
-  "4rem",                           // truth pill
-  ...Array(5).fill("1.4rem"),       // 5 DB dots
-  ...Array(12).fill(`${LLM_CELL_REM}rem`), // 3 models × 4 variants
-  "minmax(8rem, 1fr)",              // class
-].join(" ");
+// Resting-grid template: toggle | gene | uniprot | truth | 5 DB dots |
+// 3 model NCBI pills | class. Click `+` to expand into the full
+// model × variant grid + per-cell reasoning.
+const GRID_TEMPLATE =
+  "1.6rem 10rem 5rem 4rem " +
+  "1.4rem 1.4rem 1.4rem 1.4rem 1.4rem " +
+  "4.4rem 4.4rem 4.4rem " +
+  "minmax(8rem, 1fr)";
 
-// Five gating DBs — same set the homepage CatalogTable renders so a
-// reader can scan both surfaces with the same mental model.
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
   { key: "go", short: "G", long: "GO" },
@@ -42,19 +33,17 @@ const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
 ];
 
 const MODEL_LABELS: { id: string; short: string; long: string }[] = [
-  { id: "claude-opus-4-7", short: "Opus", long: "Opus 4.7" },
-  { id: "claude-sonnet-4-6", short: "Sonnet", long: "Sonnet 4.6" },
-  { id: "claude-haiku-4-5", short: "Haiku", long: "Haiku 4.5" },
+  { id: "claude-haiku-4-5",  short: "H", long: "Haiku 4.5" },
+  { id: "claude-sonnet-4-6", short: "S", long: "Sonnet 4.6" },
+  { id: "claude-opus-4-7",   short: "O", long: "Opus 4.7" },
 ];
 
-// One-letter variant abbreviations for the header — long form lives
-// in the `title` attribute. Order is fixed at render time so the
-// 12-cell grid stays stable across (gene, model) combinations.
+// Display order for the expanded model × variant grid.
 const VARIANT_LABELS: { id: string; short: string; long: string }[] = [
-  { id: "naive",       short: "n", long: "naive (no context)" },
-  { id: "ncbi",        short: "c", long: "ncbi (HGNC + UniProt + NCBI summary)" },
-  { id: "web_ncbi",    short: "w", long: "web_ncbi (ncbi + web search)" },
-  { id: "pubmed_ncbi", short: "p", long: "pubmed_ncbi (ncbi + PubMed evidence)" },
+  { id: "naive",       short: "naive",       long: "no context"                  },
+  { id: "ncbi",        short: "ncbi",        long: "HGNC + UniProt + NCBI summary" },
+  { id: "web_ncbi",    short: "web_ncbi",    long: "ncbi + web search"           },
+  { id: "pubmed_ncbi", short: "pubmed_ncbi", long: "ncbi + PubMed evidence"      },
 ];
 
 type TruthFilter = "all" | "yes" | "contextual" | "no" | "disagreements";
@@ -79,10 +68,6 @@ function isCorrect(verdict: string | null, truth: string): boolean {
 }
 
 function rowHasAnyDisagreement(r: BenchmarkRow, models: string[]): boolean {
-  // Defensive: `r.verdicts` is required by the shipped Worker but may
-  // be absent in stub responses (`SURFACEOME_API_BASE=local`) or in
-  // a stale edge-cached payload from before the 2026-05-15 shape
-  // change. Treat missing data as "no disagreement signal".
   const verdicts = r.verdicts ?? {};
   for (const m of models) {
     const byVariant = verdicts[m];
@@ -97,11 +82,7 @@ function rowHasAnyDisagreement(r: BenchmarkRow, models: string[]): boolean {
 
 interface BenchmarkTableProps {
   matrix: BenchmarkMatrix;
-  /** Genes the viewer has a deep-dive record for — used to link
-   *  gene symbols to /[symbol]/ pages when one exists. */
   deepDiveGenes: Set<string>;
-  /** symbol → full gene name (HGNC) for the secondary line under
-   *  each gene symbol. */
   geneNames?: Record<string, string>;
 }
 
@@ -110,16 +91,38 @@ export function BenchmarkTable({
   deepDiveGenes,
   geneNames,
 }: BenchmarkTableProps) {
-  const { rows, models, headline_variant } = matrix;
+  const { rows, models } = matrix;
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<TruthFilter>("all");
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Row-level expand: shows the full model × variant grid for that gene.
+  const [rowExpanded, setRowExpanded] = useState<Set<string>>(new Set());
+  // Cell-level expand: per (gene, model, variant) — shows the verdict
+  // reasoning text for that specific call. Independent of row expand;
+  // toggling a cell auto-opens its parent row so the panel is visible.
+  const [cellExpanded, setCellExpanded] = useState<Set<string>>(new Set());
 
-  function toggleExpand(symbol: string) {
-    setExpanded((prev) => {
+  function toggleRow(symbol: string) {
+    setRowExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(symbol)) next.delete(symbol);
       else next.add(symbol);
+      return next;
+    });
+  }
+
+  function toggleCell(symbol: string, model: string, variant: string) {
+    const key = `${symbol}|${model}|${variant}`;
+    setCellExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+    // Auto-expand the parent row so the panel is visible.
+    setRowExpanded((prev) => {
+      if (prev.has(symbol)) return prev;
+      const next = new Set(prev);
+      next.add(symbol);
       return next;
     });
   }
@@ -183,17 +186,11 @@ export function BenchmarkTable({
           BENCH <code>{matrix.bench_version?.slice(0, 8) ?? "—"}</code>
         </span>
         <span className={styles.metaDot}>·</span>
-        <span>
-          models {MODEL_LABELS.map((m) => m.long).join(" · ")}
-        </span>
+        <span>models {MODEL_LABELS.map((m) => m.long).join(" · ")}</span>
         <span className={styles.metaDot}>·</span>
         <span>
-          variants {VARIANT_LABELS.map((v) => v.id).join(" · ")}
+          ncbi headline · click <em>+</em> for all 4 variants + per-cell reasoning
         </span>
-        <span className={styles.metaDot}>·</span>
-        <span>headline <code>{headline_variant}</code></span>
-        <span className={styles.metaDot}>·</span>
-        <span>click <em>+</em> for per-call reasoning</span>
       </p>
 
       <div className={styles.toolbar}>
@@ -260,30 +257,6 @@ export function BenchmarkTable({
         role="table"
         aria-rowcount={filtered.length + 1}
       >
-        {/* Two-row header: top row groups the LLM cells by model
-            (spanning 4 variant columns each); bottom row carries the
-            actual column labels (gene / uniprot / truth / DB short
-            codes / variant short codes / class). */}
-        <div className={`${styles.headerRow} ${styles.row} ${styles.modelGroupRow}`} role="row">
-          <div className={styles.headerCell} aria-hidden="true" />
-          <div className={styles.headerCell} aria-hidden="true" />
-          <div className={styles.headerCell} aria-hidden="true" />
-          <div className={styles.headerCell} aria-hidden="true" />
-          {DB_KEYS.map((d) => (
-            <div key={`gap-db-${d.key}`} className={styles.headerCell} aria-hidden="true" />
-          ))}
-          {MODEL_LABELS.map((m) => (
-            <div
-              key={`grp-${m.id}`}
-              className={`${styles.headerCell} ${styles.modelGroupCell}`}
-              role="columnheader"
-              title={m.long}
-            >
-              {m.short}
-            </div>
-          ))}
-          <div className={styles.headerCell} aria-hidden="true" />
-        </div>
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
           <div className={styles.headerCell} aria-hidden="true" />
           <div className={styles.headerCell} role="columnheader">Gene</div>
@@ -302,23 +275,16 @@ export function BenchmarkTable({
               <span className="sr-only">{d.long}</span>
             </div>
           ))}
-          {MODEL_LABELS.map((m) =>
-            VARIANT_LABELS.map((v) => {
-              const isHeadline = v.id === headline_variant;
-              return (
-                <div
-                  key={`hdr-${m.id}-${v.id}`}
-                  className={`${styles.headerCell} ${styles.headerVariantCell} ${
-                    isHeadline ? styles.headerVariantHeadline : ""
-                  }`}
-                  title={`${m.long} · ${v.long}`}
-                  role="columnheader"
-                >
-                  {v.short}
-                </div>
-              );
-            })
-          )}
+          {MODEL_LABELS.map((m) => (
+            <div
+              key={`hdr-mdl-${m.id}`}
+              className={`${styles.headerCell} ${styles.headerModelCell}`}
+              title={`${m.long} · ncbi variant`}
+              role="columnheader"
+            >
+              {m.short}
+            </div>
+          ))}
           <div className={styles.headerCell} role="columnheader">Class</div>
         </div>
 
@@ -339,7 +305,6 @@ export function BenchmarkTable({
           {mounted && filtered.length > 0
             ? virtualItems.map((item) => {
                 const r = filtered[item.index];
-                const isExpanded = expanded.has(r.gene_symbol);
                 return (
                   <BenchRowView
                     key={r.gene_symbol}
@@ -347,8 +312,10 @@ export function BenchmarkTable({
                     measureRef={virtualizer.measureElement}
                     dataIndex={item.index}
                     virtualStart={item.start}
-                    isExpanded={isExpanded}
-                    onToggleExpand={toggleExpand}
+                    isExpanded={rowExpanded.has(r.gene_symbol)}
+                    onToggleRow={toggleRow}
+                    cellExpanded={cellExpanded}
+                    onToggleCell={toggleCell}
                     hasDeepDive={deepDiveGenes.has(r.gene_symbol)}
                     geneName={geneNames?.[r.gene_symbol]}
                   />
@@ -393,7 +360,9 @@ function BenchRowView({
   dataIndex,
   virtualStart,
   isExpanded,
-  onToggleExpand,
+  onToggleRow,
+  cellExpanded,
+  onToggleCell,
   hasDeepDive,
   geneName,
 }: {
@@ -402,7 +371,9 @@ function BenchRowView({
   dataIndex?: number;
   virtualStart?: number;
   isExpanded: boolean;
-  onToggleExpand: (symbol: string) => void;
+  onToggleRow: (symbol: string) => void;
+  cellExpanded: Set<string>;
+  onToggleCell: (symbol: string, model: string, variant: string) => void;
   hasDeepDive: boolean;
   geneName?: string;
 }) {
@@ -445,11 +416,11 @@ function BenchRowView({
         <button
           type="button"
           className={styles.toggleBtn}
-          onClick={() => onToggleExpand(row.gene_symbol)}
+          onClick={() => onToggleRow(row.gene_symbol)}
           aria-label={
             isExpanded
-              ? `Collapse reasoning for ${row.gene_symbol}`
-              : `Expand reasoning for ${row.gene_symbol}`
+              ? `Collapse model×variant grid for ${row.gene_symbol}`
+              : `Expand model×variant grid for ${row.gene_symbol}`
           }
           aria-expanded={isExpanded}
         >
@@ -483,36 +454,39 @@ function BenchRowView({
           </div>
         );
       })}
-      {MODEL_LABELS.map((m) =>
-        VARIANT_LABELS.map((v) => {
-          const cell: BenchmarkVariantResult | null | undefined =
-            row.verdicts?.[m.id]?.[v.id];
-          return (
-            <div
-              key={`${m.id}-${v.id}`}
-              className={`${styles.cell} ${styles.modelCell}`}
-              role="cell"
-            >
-              {cell?.verdict ? (
-                <span
-                  className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
-                    isCorrect(cell.verdict, row.truth_verdict)
-                      ? styles.verdictCorrect
-                      : styles.verdictWrong
-                  }`}
-                  title={`${m.short} · ${v.id} → ${cell.verdict}${
-                    cell.reason ? ` (${cell.reason.replace(/_/g, " ")})` : ""
-                  }`}
-                >
-                  {verdictGlyph(cell.verdict)}
-                </span>
-              ) : (
-                <span className={styles.dim}>·</span>
-              )}
-            </div>
-          );
-        })
-      )}
+      {MODEL_LABELS.map((m) => {
+        // Headline column: NCBI verdict for this model.
+        const cell: BenchmarkVariantResult | null | undefined =
+          row.verdicts?.[m.id]?.ncbi;
+        return (
+          <div
+            key={`${m.id}-ncbi`}
+            className={`${styles.cell} ${styles.modelCell}`}
+            role="cell"
+          >
+            {cell?.verdict ? (
+              <span
+                className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
+                  isCorrect(cell.verdict, row.truth_verdict)
+                    ? styles.verdictCorrect
+                    : styles.verdictWrong
+                }`}
+                title={
+                  cell.reason
+                    ? `${m.long} · ncbi → ${cell.verdict} (${cell.reason.replace(/_/g, " ")})`
+                    : `${m.long} · ncbi → ${cell.verdict}`
+                }
+              >
+                {cell.verdict}
+              </span>
+            ) : (
+              <span className={styles.dim} title={`${m.long} · ncbi: no run on file`}>
+                —
+              </span>
+            )}
+          </div>
+        );
+      })}
       <div className={`${styles.cell} ${styles.classCell}`} role="cell">
         <span className={styles.classText} title={row.truth_reason.replace(/_/g, " ")}>
           {row.class.replace(/_/g, " ")}
@@ -520,91 +494,141 @@ function BenchRowView({
       </div>
       {isExpanded ? (
         <div className={styles.expandedBlock}>
-          <ReasoningGrid row={row} />
+          <VariantGrid
+            row={row}
+            cellExpanded={cellExpanded}
+            onToggleCell={onToggleCell}
+          />
         </div>
       ) : null}
     </div>
   );
 }
 
-/** Single-character glyph for the per-cell verdict — keeps each of
- *  the 12 LLM cells legible at 2.6rem wide. Hover-tip exposes the
- *  full verdict + reason. */
-function verdictGlyph(v: string): string {
-  if (v === "yes") return "Y";
-  if (v === "no") return "N";
-  if (v === "contextual") return "C";
-  return "?";
-}
-
-/** Row-expand reveal — the full reasoning text for each of the 12
- *  (model × variant) cells. Laid out as 3 model groups, 4 variant
- *  cards per group. Cards without data show a muted "no run on
- *  file". This is the per-call audit surface the user asked for. */
-function ReasoningGrid({ row }: { row: BenchmarkRow }) {
+/** Expanded model × variant grid with per-cell `+` for reasoning.
+ *  Three rows (one per model) × four columns (one per variant).
+ *  Each cell shows a verdict pill; clicking the pill's `+` opens an
+ *  inline reasoning panel for just that cell. */
+function VariantGrid({
+  row,
+  cellExpanded,
+  onToggleCell,
+}: {
+  row: BenchmarkRow;
+  cellExpanded: Set<string>;
+  onToggleCell: (symbol: string, model: string, variant: string) => void;
+}) {
   return (
-    <div className={styles.reasoningGrid}>
-      {MODEL_LABELS.map((m) => (
-        <div key={m.id} className={styles.reasoningGroup}>
-          <h4 className={styles.reasoningGroupHead}>{m.long}</h4>
-          <div className={styles.reasoningCards}>
-            {VARIANT_LABELS.map((v) => {
-              const cell: BenchmarkVariantResult | null | undefined =
-                row.verdicts?.[m.id]?.[v.id];
-              return (
-                <article
-                  key={v.id}
-                  className={`${styles.reasoningCard} ${
-                    cell?.verdict
-                      ? isCorrect(cell.verdict, row.truth_verdict)
-                        ? styles.reasoningCardCorrect
-                        : styles.reasoningCardWrong
-                      : styles.reasoningCardMissing
-                  }`}
-                >
-                  <header className={styles.reasoningCardHead}>
-                    <span className={styles.reasoningVariant}>{v.id}</span>
-                    {cell?.verdict ? (
-                      <span
-                        className={`${styles.verdictLabel} ${verdictTone(cell.verdict)}`}
-                      >
-                        {cell.verdict}
-                      </span>
-                    ) : (
-                      <span className={styles.reasoningMissing}>no run</span>
-                    )}
-                    {cell?.confidence ? (
-                      <span className={styles.reasoningMeta} title="confidence">
-                        {cell.confidence}
-                      </span>
-                    ) : null}
-                  </header>
-                  {cell?.reasoning ? (
-                    <p className={styles.reasoningText}>{cell.reasoning}</p>
-                  ) : cell?.verdict && !cell.reasoning ? (
-                    <p className={styles.reasoningEmpty}>
-                      (no free-text reasoning recorded — verdict only)
-                    </p>
-                  ) : null}
-                  {cell?.reason && cell.reason !== cell.verdict ? (
-                    <p className={styles.reasoningReason}>
-                      <span className="label-mono">reason ·</span>{" "}
-                      {cell.reason.replace(/_/g, " ")}
-                    </p>
-                  ) : null}
-                </article>
-              );
-            })}
-          </div>
+    <div className={styles.variantGrid}>
+      <div className={styles.variantHeader} />
+      {VARIANT_LABELS.map((v) => (
+        <div
+          key={`vh-${v.id}`}
+          className={styles.variantHeader}
+          title={v.long}
+        >
+          {v.short}
         </div>
+      ))}
+      {MODEL_LABELS.map((m) => (
+        <ModelVariantRow
+          key={`vrow-${m.id}`}
+          row={row}
+          model={m}
+          cellExpanded={cellExpanded}
+          onToggleCell={onToggleCell}
+        />
       ))}
     </div>
   );
 }
 
+function ModelVariantRow({
+  row,
+  model,
+  cellExpanded,
+  onToggleCell,
+}: {
+  row: BenchmarkRow;
+  model: { id: string; short: string; long: string };
+  cellExpanded: Set<string>;
+  onToggleCell: (symbol: string, model: string, variant: string) => void;
+}) {
+  return (
+    <>
+      <div className={styles.variantRowLabel}>{model.long}</div>
+      {VARIANT_LABELS.map((v) => {
+        const cell: BenchmarkVariantResult | null | undefined =
+          row.verdicts?.[model.id]?.[v.id];
+        const key = `${row.gene_symbol}|${model.id}|${v.id}`;
+        const open = cellExpanded.has(key);
+        return (
+          <div
+            key={`vcell-${model.id}-${v.id}`}
+            className={`${styles.variantCellWrap} ${open ? styles.variantCellOpen : ""}`}
+          >
+            {cell?.verdict ? (
+              <button
+                type="button"
+                className={`${styles.variantCellBtn} ${verdictTone(cell.verdict)} ${
+                  isCorrect(cell.verdict, row.truth_verdict)
+                    ? styles.verdictCorrect
+                    : styles.verdictWrong
+                }`}
+                onClick={() => onToggleCell(row.gene_symbol, model.id, v.id)}
+                title={`${model.long} · ${v.id} → ${cell.verdict}${
+                  cell.reason ? ` (${cell.reason.replace(/_/g, " ")})` : ""
+                }`}
+              >
+                <span className={`${styles.verdictLabel} ${verdictTone(cell.verdict)}`}>
+                  {cell.verdict}
+                </span>
+                <span className={styles.variantCellPlus} aria-hidden="true">
+                  {open ? "−" : "+"}
+                </span>
+              </button>
+            ) : (
+              <span className={styles.variantCellMissing}>—</span>
+            )}
+            {open && cell ? (
+              <div className={styles.variantCellPanel}>
+                <p className={styles.variantPanelMeta}>
+                  <strong>{model.long}</strong>
+                  <span className={styles.runDim}>·</span>
+                  <span>{v.id}</span>
+                  {cell.reason ? (
+                    <>
+                      <span className={styles.runDim}>·</span>
+                      <span>{cell.reason.replace(/_/g, " ")}</span>
+                    </>
+                  ) : null}
+                  {cell.confidence ? (
+                    <>
+                      <span className={styles.runDim}>·</span>
+                      <span>{cell.confidence} conf</span>
+                    </>
+                  ) : null}
+                </p>
+                {cell.reasoning ? (
+                  <p className={styles.variantPanelReasoning}>
+                    {cell.reasoning}
+                  </p>
+                ) : (
+                  <p className={styles.variantPanelEmpty}>
+                    (no free-text reasoning recorded — verdict only)
+                  </p>
+                )}
+              </div>
+            ) : null}
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 /** Wide TSV download — one row per gene, columns for every cell
- *  (model × variant) in the matrix. Matches the on-page grid so a
- *  reader can pull it down and reproduce the table in pandas. */
+ *  (model × variant) in the matrix. */
 function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
   const headers: string[] = [
     "gene_symbol",

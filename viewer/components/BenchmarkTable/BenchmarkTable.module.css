@@ -183,45 +183,20 @@
 }
 
 .row {
-  /* Component supplies --bench-cols at runtime. Fallback covers the
-   * 22-column layout: toggle | gene | uniprot | truth | 5 DBs |
-   * 12 model×variant cells | class. */
+  /* Resting grid: toggle | gene | uniprot | truth | 5 DBs |
+   * 3 model NCBI pills | class. Expand reveals the full
+   * model×variant grid as a row block (.expandedBlock below). */
   display: grid;
   grid-template-columns: var(--bench-cols,
     1.6rem 10rem 5rem 4rem
     1.4rem 1.4rem 1.4rem 1.4rem 1.4rem
-    2.6rem 2.6rem 2.6rem 2.6rem
-    2.6rem 2.6rem 2.6rem 2.6rem
-    2.6rem 2.6rem 2.6rem 2.6rem
+    4.4rem 4.4rem 4.4rem
     minmax(8rem, 1fr));
   align-items: center;
   font-family: var(--font-sans);
   font-size: 0.84rem;
   border-bottom: 1px solid var(--line-soft);
   min-height: 2.6rem;
-}
-
-/* Group header above the variant short codes — one cell per model
- * spanning 4 variant columns. Implemented with grid-column span so
- * it lines up with the variant header below it. */
-.modelGroupRow {
-  border-bottom: none;
-  min-height: 1.8rem;
-}
-
-.modelGroupCell {
-  /* Span 4 variant columns. CSS Grid: count from the model's first
-   * variant cell — but easier to use grid-column: span 4. */
-  grid-column: span 4;
-  justify-content: center;
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.06em;
-  text-transform: none;
-  color: var(--ink);
-  border-bottom: 1px solid var(--line-soft);
-  padding: 0.25rem 0;
 }
 
 .rowExpanded {
@@ -284,27 +259,12 @@
 
 .headerModelCell {
   justify-content: center;
-  font-size: 0.7rem;
-}
-
-/* Per-variant column header — one for each of the 12 LLM cells.
- * Mono short label (n/c/w/p) plus a hover-tip with the full name.
- * The headline variant gets a small accent underline so it's
- * scannable in the row. */
-.headerVariantCell {
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 0.66rem;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  text-transform: none;
-  padding: 0.45rem 0.1rem;
-}
-
-.headerVariantHeadline {
-  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
   font-weight: var(--fw-medium);
-  border-bottom: 1.5px solid var(--accent);
+  text-transform: none;
+  letter-spacing: 0.04em;
+  color: var(--ink);
 }
 
 .cell {
@@ -429,17 +389,13 @@
   padding: 0.3rem 0.1rem;
 }
 
-/* Mini verdict — single character glyph (Y/N/C) sized so 12 cells
- * fit comfortably across the matrix. The hover-tip carries the
- * (model · variant → verdict + reason) text. */
+/* Mini verdict pill — the three per-model NCBI cells on each row.
+ * Compact so 3 pills + the row chrome fit comfortably. */
 .verdictMini {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: var(--fw-medium);
-  letter-spacing: 0;
-  text-transform: none;
-  padding: 0.1rem 0.35rem;
-  min-width: 1.3rem;
+  letter-spacing: 0.04em;
+  padding: 0.12rem 0.4rem;
   justify-content: center;
 }
 
@@ -521,112 +477,110 @@
   border-top: 1px dashed var(--line-soft);
 }
 
-/* Row-expand reveal — per-cell reasoning organised as 3 model groups,
- * each containing 4 variant cards. Audit surface for "why did Sonnet
- * web_ncbi call this gene contextual?". Each card shows the verdict
- * pill + the agent's free-text reasoning. */
-.reasoningGrid {
+/* Row-expand grid — 3 model rows × 5 columns (label + 4 variants).
+ * Each cell is a verdict pill plus a `+` to expand inline reasoning. */
+.variantGrid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
-  max-width: 88rem;
+  grid-template-columns: 8rem repeat(4, minmax(0, 1fr));
+  gap: 0.4rem 0.6rem;
+  align-items: start;
+  max-width: 64rem;
 }
 
-.reasoningGroup {
+.variantHeader {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding: 0.2rem 0;
+}
+
+.variantRowLabel {
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  padding-top: 0.35rem;
+}
+
+.variantCellWrap {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 0.3rem;
   min-width: 0;
 }
 
-.reasoningGroupHead {
-  margin: 0;
-  font-family: var(--font-sans);
+.variantCellOpen {
+  /* visual cue — bring the open cell forward */
+}
+
+.variantCellBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.4rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  align-self: flex-start;
+}
+
+.variantCellBtn:hover,
+.variantCellBtn:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.variantCellPlus {
+  font-family: var(--font-mono);
   font-size: 0.78rem;
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.06em;
-  color: var(--ink);
+  color: var(--muted);
 }
 
-.reasoningCards {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2);
+.variantCellMissing {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--line);
+  padding-left: 0.4rem;
 }
 
-.reasoningCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: var(--space-3);
+.variantCellPanel {
   background: var(--bg);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
-  min-width: 0;
-}
-
-.reasoningCardWrong {
-  border-color: var(--maroon-light);
-  border-width: 1.5px;
-}
-
-.reasoningCardCorrect {
-  /* default border */
-}
-
-.reasoningCardMissing {
-  background: transparent;
-  border-style: dashed;
-  opacity: 0.7;
-}
-
-.reasoningCardHead {
+  padding: var(--space-3);
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.4rem;
+  /* Span the variant column it's anchored to — the grid's natural
+   * column flow already keeps it under its parent pill. */
 }
 
-.reasoningVariant {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
-
-.reasoningMeta {
-  font-family: var(--font-sans);
-  font-size: 0.7rem;
-  color: var(--muted);
-  font-style: italic;
-}
-
-.reasoningMissing {
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
-  color: var(--muted);
-  font-style: italic;
-}
-
-.reasoningText {
+.variantPanelMeta {
   margin: 0;
-  font-family: var(--font-sans);
-  font-size: 0.84rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.variantPanelReasoning {
+  margin: 0;
+  font-size: 0.82rem;
   line-height: 1.55;
   color: var(--ink-soft);
 }
 
-.reasoningEmpty {
+.variantPanelEmpty {
   margin: 0;
   font-size: 0.78rem;
   font-style: italic;
-  color: var(--muted);
-}
-
-.reasoningReason {
-  margin: 0;
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
   color: var(--muted);
 }
 
@@ -655,10 +609,7 @@
  * ============================================================ */
 
 @media (max-width: 900px) {
-  .reasoningGrid {
-    grid-template-columns: 1fr;
-  }
-  .reasoningCards {
-    grid-template-columns: 1fr;
+  .variantGrid {
+    grid-template-columns: 6rem repeat(2, minmax(0, 1fr));
   }
 }
