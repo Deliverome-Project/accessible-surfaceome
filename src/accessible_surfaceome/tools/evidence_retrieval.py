@@ -43,19 +43,23 @@ from typing import Literal, get_args
 
 from ._shared.europepmc import (
     SectionName,
+    europepmc_bulk_by_pmid,
     europepmc_search,
     fetch_fulltext,
     paper_from_europepmc,
 )
+from ._shared.gene_gazetteer import build_target_names, load_gazetteer, sentence_subject
 from ._shared.http import CachedHTTP, open_default_client
 from ._shared.models import (
     CandidateSnippet,
     EvidenceCategory,
     EvidenceRetrievalPack,
+    IdentifierBundle,
     Paper,
     PaperSection_,
     SyntheticSource,
 )
+from ._shared.pubtator import build_gene_entity_query, pubtator_search
 from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
 from .gene_lookup import resolve as _resolve
 
@@ -118,13 +122,16 @@ _SECTION_TO_CLAIM: dict[SectionName, PaperSection_] = {
 class _CategorySpec:
     """Internal config for one EvidenceCategory.
 
-    ``query_clauses`` are AND'd together with the gene-name disjunction;
-    ``hallmark_patterns`` are run sentence-by-sentence over fetched full
-    text; ``section_weights`` decide which section's hits float to the
-    top.
+    ``query_clauses`` are AND'd together with the gene-name disjunction
+    for the Europe PMC keyword query; ``pubtator_terms`` is the
+    free-text tail of the PubTator entity-anchored query (the gene is
+    supplied separately as ``@GENE_<symbol>``); ``hallmark_patterns``
+    are run sentence-by-sentence over fetched full text;
+    ``section_weights`` decide which section's hits float to the top.
     """
 
     query_clauses: tuple[str, ...]
+    pubtator_terms: str
     hallmark_patterns: tuple[re.Pattern[str], ...]
     section_weights: Mapping[SectionName, float]
 
@@ -139,6 +146,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             '("immunohistochemistry" OR "IHC")',
             '("surface" OR "plasma membrane" OR "membranous staining" OR "cell membrane")',
         ),
+        pubtator_terms="immunohistochemistry",
         hallmark_patterns=(
             re.compile(
                 r"(membranous|plasma\s*membran(?:e|ous)|cell\s*surface|surface)\s+"
@@ -155,6 +163,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             '("non-permeabilized" OR "non permeabilized" OR "unpermeabilized" '
             'OR "live cells" OR "intact cells" OR "surface staining")',
         ),
+        pubtator_terms="immunofluorescence",
         hallmark_patterns=(
             re.compile(
                 r"(non[-\s]?permeabili[sz]ed|unpermeabili[sz]ed|intact|live)\s+(cells|t\s*cells|"
@@ -173,6 +182,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             '("flow cytometry" OR "FACS")',
             '("surface" OR "non-permeabilized" OR "live cells" OR "intact cells")',
         ),
+        pubtator_terms="flow cytometry",
         hallmark_patterns=(
             re.compile(
                 r"(flow\s*cytometr|FACS)[^.]{0,200}?\b(surface|non[-\s]?permeabili[sz]ed|"
@@ -192,6 +202,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "biotin labeling" OR "biotinyl" OR "sulfo-NHS-biotin")',
             '("plasma membrane" OR "cell surface" OR "streptavidin")',
         ),
+        pubtator_terms="surface biotinylation",
         hallmark_patterns=(
             re.compile(
                 r"(sulfo[-\s]?NHS[-\s]?biotin|sulfo[-\s]?NHS[-\s]?SS[-\s]?biotin|"
@@ -211,6 +222,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "cell-surface capture")',
             '("LC-MS/MS" OR "LC-MS" OR "mass spectrometry" OR "proteomic" OR "proteomics")',
         ),
+        pubtator_terms="surfaceome mass spectrometry",
         hallmark_patterns=(
             re.compile(
                 r"(LC[-\s]?MS/?MS?|mass\s*spectrometr|cell[-\s]?surface\s*capture|CSC|"
@@ -233,6 +245,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "plasma membrane fraction" OR "cell surface fraction" '
             'OR "membrane preparation")',
         ),
+        pubtator_terms="surface biotinylation western blot",
         hallmark_patterns=(
             re.compile(
                 r"(western\s*blot|immunoblot)[^.]{0,200}?(surface|"
@@ -253,6 +266,7 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "X-ray structure")',
             '("ectodomain" OR "extracellular domain" OR "ECD" OR "extracellular region")',
         ),
+        pubtator_terms="crystal structure ectodomain",
         hallmark_patterns=(
             re.compile(
                 r"(crystal\s*structure|cryo[-\s]?EM|cryo[-\s]?electron)[^.]{0,200}?"
@@ -267,10 +281,11 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
         ),
         section_weights=_DEFAULT_STRUCT_WEIGHTS,
     ),
-    # hpa_ihc has no Europe PMC query — it's served from the cached
-    # HPA snapshot.
+    # hpa_ihc has no literature query — it's served from the cached
+    # HPA snapshot, so both the Europe PMC and PubTator queries are empty.
     "hpa_ihc": _CategorySpec(
         query_clauses=(),
+        pubtator_terms="",
         hallmark_patterns=(),
         section_weights={},
     ),
@@ -343,6 +358,20 @@ def evidence_retrieval(
 # ---------------------------------------------------------------------------
 
 
+# The gene-proximity filter can empty a top-ranked paper's snippets, so
+# instead of stopping at a fixed ``max_papers`` slice we keep pulling
+# deeper into the candidate pool until that many papers have actually
+# *yielded* snippets. The fetch cap bounds the cost of that backfill:
+# ``max(max_papers * _BACKFILL_FETCH_MULTIPLIER, _BACKFILL_MIN_FETCHES)``
+# full-text fetches are attempted before we give up and report an honest
+# empty result. The floor keeps small ``max_papers`` calls (e.g. a
+# focused ``max_papers=1`` query) from having essentially no backfill
+# room — the realistic "good paper ranked below the filtered top"
+# scenario needs to look ~8 deep regardless of the target count.
+_BACKFILL_FETCH_MULTIPLIER = 3
+_BACKFILL_MIN_FETCHES = 8
+
+
 def _pmc_retrieval(
     *,
     uniprot_acc: str,
@@ -353,28 +382,48 @@ def _pmc_retrieval(
     retraction_index: RetractionIndex,
 ) -> EvidenceRetrievalPack:
     bundle = _resolve(uniprot_acc, http=http)
-    name_terms = [bundle.hgnc_symbol, *bundle.aliases]
-    name_disjunction = " OR ".join(f'"{n}"' for n in name_terms if n)
-
     spec = _CATEGORY_SPECS[category]
-    query = (
-        f"({name_disjunction}) AND "
-        + " AND ".join(spec.query_clauses)
-        + " AND SRC:MED"
+
+    # Subject-grounding dictionaries for the snippet filter: the target's
+    # own safe name set (from the resolved bundle) and the HGNC gazetteer
+    # of every other gene symbol. ``load_gazetteer`` is cached and
+    # degrades to an empty set when the LFS-tracked TSV isn't hydrated.
+    target_names = build_target_names(
+        bundle.hgnc_symbol, bundle.aliases, bundle.previous_symbols
     )
-    payload = europepmc_search(http=http, query=query, page_size=max_papers * 3)
-    hits = (payload.get("resultList") or {}).get("result") or []
-    papers = [
-        paper_from_europepmc(record, retraction_index=retraction_index)
-        for record in hits
-    ]
-    # Prefer PMC OA + non-retracted papers; cap to max_papers.
-    candidates = [
+    gazetteer = load_gazetteer()
+
+    # Two discovery sources, unioned. PubTator is entity-anchored
+    # (subject-grounded — a hit means NER tagged this gene, not that the
+    # string appears somewhere) so its papers rank first; Europe PMC's
+    # keyword search backfills recall. Dedup is by PMID.
+    pubtator_papers = _pubtator_discovery(
+        bundle=bundle,
+        spec=spec,
+        max_papers=max_papers,
+        http=http,
+        retraction_index=retraction_index,
+    )
+    epmc_papers = _europepmc_discovery(
+        bundle=bundle,
+        spec=spec,
+        max_papers=max_papers,
+        http=http,
+        retraction_index=retraction_index,
+    )
+    papers = _union_by_pmid(pubtator_papers, epmc_papers)
+
+    # Full PMC-OA, non-retracted candidate pool, ranked PubTator-first
+    # via the union order. We walk this pool fetching + extracting; the
+    # gene-proximity filter inside _extract_snippets can leave a
+    # top-ranked paper with zero on-subject snippets, so we keep going
+    # rather than stopping at a fixed slice.
+    candidate_pool = [
         p for p in papers
         if p.is_pmc_oa and p.pmc_id and not p.is_retracted
-    ][:max_papers]
+    ]
 
-    if not candidates:
+    if not candidate_pool:
         return EvidenceRetrievalPack(
             uniprot_acc=uniprot_acc,
             category=category,
@@ -388,26 +437,38 @@ def _pmc_retrieval(
             ),
         )
 
-    fetched: list[Paper] = []
+    # Backfill loop: keep fetching + extracting until ``max_papers``
+    # papers have *yielded* snippets, the candidate pool is exhausted,
+    # or the fetch cap is hit. ``snippet_papers`` holds only the papers
+    # that contributed — papers fetched but filtered empty are not
+    # returned (the agent can't cite them, and their full text would be
+    # dead weight in the tool result).
+    fetch_cap = max(
+        max_papers * _BACKFILL_FETCH_MULTIPLIER, _BACKFILL_MIN_FETCHES
+    )
+    snippet_papers: list[Paper] = []
     all_snippets: list[CandidateSnippet] = []
-    n_with_snippets = 0
-    for paper in candidates:
+    n_fetch_attempts = 0
+    for paper in candidate_pool:
+        if len(snippet_papers) >= max_papers or n_fetch_attempts >= fetch_cap:
+            break
+        n_fetch_attempts += 1
         try:
             full = fetch_fulltext(
                 http=http, pmcid=paper.pmc_id or "", retraction_index=retraction_index
             )
         except (LookupError, ValueError) as exc:
             logger.warning("fetch_fulltext failed for %s: %s", paper.pmc_id, exc)
-            fetched.append(paper)
             continue
-        fetched.append(full)
         per_paper = _extract_snippets(
             paper=full,
             spec=spec,
             max_snippets=max_snippets_per_paper,
+            target_names=target_names,
+            gazetteer=gazetteer,
         )
         if per_paper:
-            n_with_snippets += 1
+            snippet_papers.append(full)
             all_snippets.extend(per_paper)
 
     # Sort across papers by score (descending) so the agent sees the
@@ -417,20 +478,119 @@ def _pmc_retrieval(
     empty_reason: str | None = None
     if not all_snippets:
         empty_reason = (
-            "PMC-OA hits present but no hallmark-phrase match in "
-            "intro/methods/results/discussion/figure_legends — full text "
-            "may use non-standard phrasing"
+            f"fetched {n_fetch_attempts} of {len(candidate_pool)} PMC-OA candidate "
+            "papers; none yielded an on-subject hallmark match — the literature "
+            "may lack this category, or the full text uses non-standard phrasing"
         )
 
     return EvidenceRetrievalPack(
         uniprot_acc=uniprot_acc,
         category=category,
         n_papers_searched=len(papers),
-        n_papers_with_snippets=n_with_snippets,
-        papers=fetched,
+        n_papers_with_snippets=len(snippet_papers),
+        papers=snippet_papers,
         snippets=all_snippets,
         empty_reason=empty_reason,
     )
+
+
+# ---------------------------------------------------------------------------
+# Discovery sources
+# ---------------------------------------------------------------------------
+
+
+def _europepmc_discovery(
+    *,
+    bundle: IdentifierBundle,
+    spec: _CategorySpec,
+    max_papers: int,
+    http: CachedHTTP,
+    retraction_index: RetractionIndex,
+) -> list[Paper]:
+    """Keyword discovery: gene-name disjunction AND category clauses.
+
+    High recall, no subject grounding — a paper matches if the gene's
+    name (or an alias) appears anywhere the index covers. PubTator's
+    entity-anchored results are preferred over these; this backfills
+    recall for papers PubTator's NER missed.
+    """
+    name_terms = [bundle.hgnc_symbol, *bundle.aliases]
+    name_disjunction = " OR ".join(f'"{n}"' for n in name_terms if n)
+    query = (
+        f"({name_disjunction}) AND "
+        + " AND ".join(spec.query_clauses)
+        + " AND SRC:MED"
+    )
+    payload = europepmc_search(http=http, query=query, page_size=max_papers * 3)
+    hits = (payload.get("resultList") or {}).get("result") or []
+    return [
+        paper_from_europepmc(record, retraction_index=retraction_index)
+        for record in hits
+    ]
+
+
+def _pubtator_discovery(
+    *,
+    bundle: IdentifierBundle,
+    spec: _CategorySpec,
+    max_papers: int,
+    http: CachedHTTP,
+    retraction_index: RetractionIndex,
+) -> list[Paper]:
+    """Entity-anchored discovery: ``@GENE_<symbol> <category terms>``.
+
+    A PubTator hit means its NER tagged this gene as a subject entity in
+    the paper — not just that the name appears — which is the fix for
+    the "method paper mentions the gene in passing" failure mode.
+
+    PubTator returns PMIDs + metadata but no open-access status or full
+    text, so the PMIDs are resolved against Europe PMC (one bulk call)
+    to get the ``Paper`` shape the rest of the pipeline expects.
+
+    Degrades gracefully: any failure on either hop logs a warning and
+    returns an empty list, leaving Europe PMC keyword discovery as the
+    sole source for that call.
+    """
+    if not spec.pubtator_terms:
+        return []
+    query = build_gene_entity_query(bundle.hgnc_symbol, spec.pubtator_terms)
+    try:
+        result = pubtator_search(http=http, query=query)
+    except Exception as exc:  # noqa: BLE001 - degrade to Europe-PMC-only discovery
+        logger.warning("PubTator search failed for %r: %s", query, exc)
+        return []
+    # PubTator pre-sorts by relevance score; take a generous slice so the
+    # downstream PMC-OA filter still has candidates to work with.
+    pmids = [hit.pmid for hit in result.hits[: max_papers * 2]]
+    if not pmids:
+        return []
+    try:
+        return europepmc_bulk_by_pmid(
+            http=http, pmids=pmids, retraction_index=retraction_index
+        )
+    except Exception as exc:  # noqa: BLE001 - degrade to Europe-PMC-only discovery
+        logger.warning(
+            "Europe PMC bulk resolve of %d PubTator PMIDs failed: %s",
+            len(pmids), exc,
+        )
+        return []
+
+
+def _union_by_pmid(*paper_lists: list[Paper]) -> list[Paper]:
+    """Concatenate paper lists, keeping first occurrence per PMID.
+
+    Order is preserved: papers from earlier lists win, so callers pass
+    the higher-precision source (PubTator) first.
+    """
+    seen: set[int] = set()
+    out: list[Paper] = []
+    for papers in paper_lists:
+        for paper in papers:
+            if paper.pmid in seen:
+                continue
+            seen.add(paper.pmid)
+            out.append(paper)
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -444,18 +604,31 @@ def _pmc_retrieval(
 # the trimming.
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(])")
 
+# Score bump for a sentence that names the target gene, so on-subject
+# snippets outrank anaphoric ones ("the protein was detected...").
+_TARGET_MENTION_BOOST = 2.0
+
 
 def _extract_snippets(
     *,
     paper: Paper,
     spec: _CategorySpec,
     max_snippets: int,
+    target_names: frozenset[str] = frozenset(),
+    gazetteer: frozenset[str] = frozenset(),
 ) -> list[CandidateSnippet]:
     """Pull up to ``max_snippets`` candidate sentences from ``paper.sections``.
 
     Per-section: split into sentences, score each by section weight ×
     hallmark-match count, keep the top sentences (capped at 200 chars).
     Deduplicate against already-emitted snippets from the same paper.
+
+    ``target_names`` + ``gazetteer`` drive the subject-grounding filter
+    (see :func:`accessible_surfaceome.tools._shared.gene_gazetteer.sentence_subject`):
+    a sentence about a *competing* gene — a sibling target on a
+    multi-target paper — is dropped, and a sentence that names the
+    target is score-boosted. Both default empty, in which case the
+    filter is a no-op and extraction behaves as it did pre-filter.
     """
     if not paper.sections or not spec.hallmark_patterns:
         return []
@@ -467,6 +640,14 @@ def _extract_snippets(
             continue
         section_enum = _SECTION_TO_CLAIM.get(section.name, "other")
         for sentence in _split_sentences(section.text):
+            # Subject-grounding: drop sentences about a sibling gene,
+            # boost sentences that name the target. Computed once per
+            # sentence, before the (pattern-independent) hallmark loop.
+            subject = sentence_subject(
+                sentence, target_names=target_names, gazetteer=gazetteer
+            )
+            if subject == "competing":
+                continue
             for pattern in spec.hallmark_patterns:
                 match = pattern.search(sentence)
                 if not match:
@@ -481,6 +662,8 @@ def _extract_snippets(
                 if snippet_text not in section.text:
                     continue
                 score = weight + min(2.0, _count_hallmarks(sentence, spec.hallmark_patterns))
+                if subject == "target":
+                    score += _TARGET_MENTION_BOOST
                 candidates.append(
                     (
                         score,

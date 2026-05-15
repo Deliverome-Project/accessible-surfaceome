@@ -436,6 +436,47 @@ class EvidenceRetrievalPack(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# PubTator3 search return shapes
+# ---------------------------------------------------------------------------
+
+
+class PubTatorHit(BaseModel):
+    """One paper from a PubTator3 entity-anchored search.
+
+    PubTator's value over keyword search is *subject grounding*: a hit
+    means PubTator's NER tagged the queried gene as an entity in the
+    paper, not merely that the gene's name appears somewhere in the
+    indexed metadata. ``score`` is PubTator's own relevance score
+    (higher = more on-topic); hits arrive pre-sorted by it.
+
+    PubTator does not return abstracts or open-access status — those are
+    filled in downstream by resolving the PMID against Europe PMC.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    pmid: int
+    pmcid: str | None = None
+    doi: str | None = None
+    title: str
+    journal: str | None = None
+    year: int | None = None
+    score: float = 0.0
+    authors: list[str] = Field(default_factory=list)
+
+
+class PubTatorSearchResult(BaseModel):
+    """Return shape of one PubTator3 entity-anchored search request."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    query: str
+    total_count: int = 0
+    page: int = 1
+    hits: list[PubTatorHit] = Field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
 # patent_lookup return shapes
 # ---------------------------------------------------------------------------
 
