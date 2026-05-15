@@ -105,6 +105,17 @@ def _run_agents(args: argparse.Namespace) -> None:
                         "a2": a2.n_repair_attempts if a2 else None,
                         "b": b.n_repair_attempts if b else None,
                     },
+                    "cost_usd": {
+                        "a1": round(result.a1_cost_usd, 6),
+                        "a2": round(result.a2_cost_usd, 6),
+                        "b": round(result.b_cost_usd, 6),
+                        "total": round(result.total_cost_usd, 6),
+                    },
+                    "tokens": {
+                        "a1": a1.usage.as_dict() if a1 else None,
+                        "a2": a2.usage.as_dict() if a2 else None,
+                        "b": b.usage.as_dict() if b else None,
+                    },
                 },
                 indent=2,
             )

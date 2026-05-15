@@ -26,6 +26,7 @@ validator enforces the same boundary on the agent side.
 
 from __future__ import annotations
 
+import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
@@ -76,11 +77,19 @@ logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"  # all three agents currently run on Sonnet 4.6
 SCHEMA_VERSION_LITERAL = "1.0.0"
+RUNS_DIR = Path(".runs")
 
 
 @dataclass
 class AnnotateResult:
-    """Outcome of one v1.0.0 annotate run."""
+    """Outcome of one v1.0.0 annotate run.
+
+    Cost properties (``a1_cost_usd`` etc.) are derived from each agent's
+    ``UsageSummary`` and are ``0.0`` when the corresponding agent didn't run
+    (e.g. resolver failed before A1 dispatch). The orchestrator persists the
+    per-iteration usage trace into ``.runs/{a1,a2,b}_<gene>.meta.json``
+    alongside the existing tool-call trace.
+    """
 
     gene: str
     record: SurfaceomeRecord | None
@@ -89,6 +98,22 @@ class AnnotateResult:
     b: BResult | None
     annotation_path: Path | None
     error: str | None = None
+
+    @property
+    def a1_cost_usd(self) -> float:
+        return self.a1.usage.cost_usd if self.a1 is not None else 0.0
+
+    @property
+    def a2_cost_usd(self) -> float:
+        return self.a2.usage.cost_usd if self.a2 is not None else 0.0
+
+    @property
+    def b_cost_usd(self) -> float:
+        return self.b.usage.cost_usd if self.b is not None else 0.0
+
+    @property
+    def total_cost_usd(self) -> float:
+        return self.a1_cost_usd + self.a2_cost_usd + self.b_cost_usd
 
 
 def annotate(
@@ -162,6 +187,13 @@ def _annotate(
         a1 = a1_future.result()
         a2 = a2_future.result()
 
+    # Persist per-iteration usage + tool-call traces regardless of validation
+    # outcome. The meta file is the durable record of "what did this run
+    # spend / do?" — losing it on a bad-JSON failure is exactly the case we
+    # want to debug from.
+    _write_meta(gene_id.hgnc_symbol, "a1", a1=a1)
+    _write_meta(gene_id.hgnc_symbol, "a2", a2=a2)
+
     if a1.draft is None:
         msg = f"A1 returned invalid draft for {gene_id.hgnc_symbol}: {a1.validation_error}"
         logger.error(msg)
@@ -182,6 +214,7 @@ def _annotate(
         gene_id.hgnc_symbol,
         a1_draft=a1.draft, a2_draft=a2.draft, client=client,
     )
+    _write_meta(gene_id.hgnc_symbol, "b", b=b)
     if b.draft is None:
         msg = f"B returned invalid draft for {gene_id.hgnc_symbol}: {b.validation_error}"
         logger.error(msg)
@@ -251,6 +284,58 @@ def _annotate(
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
+
+def _write_meta(
+    gene: str,
+    agent: str,
+    *,
+    a1: A1Result | None = None,
+    a2: A2Result | None = None,
+    b: BResult | None = None,
+) -> None:
+    """Persist ``.runs/{agent}_{gene}.meta.json`` with tool-calls + usage.
+
+    Mirrors the JSON shape the standalone-CLI ``_main`` blocks already write,
+    so a meta file produced by ``annotate`` and one produced by running an
+    individual runner module are interchangeable for downstream cost analysis.
+    """
+    RUNS_DIR.mkdir(exist_ok=True)
+    if agent == "a1" and a1 is not None:
+        meta: dict[str, object] = {
+            "gene": gene,
+            "n_tool_calls": a1.n_tool_calls,
+            "n_repair_attempts": a1.n_repair_attempts,
+            "tool_calls": [
+                {"name": tc.name, "input": tc.input_summary, "error": tc.is_error}
+                for tc in a1.tool_calls
+            ],
+            "validation_error": a1.validation_error,
+            "usage": a1.usage.as_dict(),
+        }
+    elif agent == "a2" and a2 is not None:
+        meta = {
+            "gene": gene,
+            "n_tool_calls": a2.n_tool_calls,
+            "n_repair_attempts": a2.n_repair_attempts,
+            "tool_calls": [
+                {"name": tc.name, "input": tc.input_summary, "error": tc.is_error}
+                for tc in a2.tool_calls
+            ],
+            "validation_error": a2.validation_error,
+            "usage": a2.usage.as_dict(),
+        }
+    elif agent == "b" and b is not None:
+        meta = {
+            "gene": gene,
+            "n_tool_calls": b.n_tool_calls,
+            "n_repair_attempts": b.n_repair_attempts,
+            "validation_error": b.validation_error,
+            "usage": b.usage.as_dict(),
+        }
+    else:
+        return
+    (RUNS_DIR / f"{agent}_{gene}.meta.json").write_text(json.dumps(meta, indent=2))
 
 
 _TRIAGE_VERDICT_TO_SIGNAL: dict[str, TriageSignal] = {
@@ -433,6 +518,10 @@ def _main(argv: list[str] | None = None) -> int:
         f"tissues={len(rec.biological_context.tissues)} "
         f"evidence={rec.evidence_count} (primary={rec.primary_evidence_count} "
         f"secondary={rec.secondary_evidence_count})"
+    )
+    print(
+        f"cost: A1=${result.a1_cost_usd:.4f}  A2=${result.a2_cost_usd:.4f}  "
+        f"B=${result.b_cost_usd:.4f}  total=${result.total_cost_usd:.4f}"
     )
     return 0
 

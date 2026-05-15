@@ -32,6 +32,12 @@ from pydantic import BaseModel, ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support import tool_registry
+from accessible_surfaceome.agents._support.pricing import (
+    UsageRecord,
+    UsageSummary,
+    record_from_response,
+    summarize_usage,
+)
 from accessible_surfaceome.tools._shared import retraction_watch as _retraction_watch
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import SurfaceEvidenceDraft
@@ -82,6 +88,9 @@ class A1Result:
     n_repair_attempts: int = 0
     tool_calls: list[ToolCall] = field(default_factory=list)
     messages: list[dict[str, Any]] = field(default_factory=list)
+    usage: UsageSummary = field(
+        default_factory=lambda: UsageSummary(model=AGENT_MODEL)
+    )
 
 
 def _summarize_tool_input(name: str, payload: dict[str, Any]) -> str:
@@ -207,6 +216,7 @@ def _run(
     n_tool_calls = 0
     n_repair_attempts = 0
     tool_calls: list[ToolCall] = []
+    usage_records: list[UsageRecord] = []
     final_text = ""
     raw_json: dict[str, Any] | None = None
     validation_error: str | None = None
@@ -221,6 +231,7 @@ def _run(
             tools=cast("Any", tools),
             messages=cast("Any", messages),
         )
+        usage_records.append(record_from_response(resp.usage, AGENT_MODEL))
         messages.append({"role": "assistant", "content": resp.content})
 
         # --- tool-use turn: dispatch handlers, feed results back ---
@@ -333,6 +344,7 @@ def _run(
             n_repair_attempts=n_repair_attempts,
             tool_calls=tool_calls,
             messages=messages,
+            usage=summarize_usage(usage_records, AGENT_MODEL),
         )
     else:
         logger.warning("A1 hit MAX_ITERATIONS=%d for %s", MAX_ITERATIONS, gene)
@@ -347,6 +359,7 @@ def _run(
         n_repair_attempts=n_repair_attempts,
         tool_calls=tool_calls,
         messages=messages,
+        usage=summarize_usage(usage_records, AGENT_MODEL),
     )
 
 
@@ -370,6 +383,12 @@ def _main(argv: list[str] | None = None) -> int:
 
     print(f"\n=== A1 result for {gene} ===")
     print(f"tool calls: {result.n_tool_calls}  repair attempts: {result.n_repair_attempts}")
+    print(
+        f"tokens: in={result.usage.input_tokens} out={result.usage.output_tokens} "
+        f"cache_w={result.usage.cache_creation_input_tokens} "
+        f"cache_r={result.usage.cache_read_input_tokens}  "
+        f"cost: ${result.usage.cost_usd:.4f}"
+    )
 
     # Per-tool breakdown
     from collections import Counter
@@ -396,6 +415,7 @@ def _main(argv: list[str] | None = None) -> int:
             for tc in result.tool_calls
         ],
         "validation_error": result.validation_error,
+        "usage": result.usage.as_dict(),
     }
     meta_out = run_dir / f"a1_{gene}.meta.json"
     meta_out.write_text(json.dumps(meta, indent=2))
