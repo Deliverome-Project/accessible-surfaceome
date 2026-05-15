@@ -7,13 +7,37 @@
 
 ## TL;DR
 
-The newly-wired cost instrumentation surfaced a finding the original
-estimate didn't anticipate: **one gene's deep-dive run costs ~$4 on
-Sonnet 4.6, not ~$1**. A single live worked example (CD81) blew the
-$5–10 sweep budget on its own. The remaining six stress-test genes are
-deferred to a follow-up that lands prompt caching first; this PR ships
-the instrumentation, the CD81 worked example, and a per-iteration
-decomposition that pinpoints the cause.
+The cost instrumentation surfaced a finding the original estimate didn't
+anticipate — **one gene's deep-dive run cost ~$4 on Sonnet 4.6 instead
+of ~$1** — and the same PR landed the fix:
+
+| | Round 1 (baseline) | Round 2 (caching + compaction) | Δ |
+|---|---|---|---|
+| **Total $ / gene (CD81)** | $4.432 | **$1.365** | **3.25× cheaper** |
+| **% substring-anchored** | 21.4% | **71.9%** | **3.4× higher quality** |
+| A1 $ | $2.085 | $0.639 | 3.3× |
+| A2 $ | $2.163 | $0.583 | 3.7× |
+| B $ | $0.184 | $0.143 | 1.3× |
+| Evidence claims | 28 | 32 | +14% |
+
+Two changes drove the cost reduction:
+- **Prompt caching.** Two cache breakpoints per request (system prompt
+  + rolling latest tool_result) move ~95% of repeat-iteration input from
+  base rate to 0.1× cache-read rate. CD81 A1 paid for 170k cache-read
+  tokens + 58k cache-write tokens + only 15k uncached input.
+- **Tool-result compaction.** `evidence_retrieval` was returning the
+  full PMC paper bodies (`paper.sections[*].text`) alongside the
+  ≤200-char snippets the agent actually quotes from. The full body is
+  already in `SourceTextStore` (registered before the result is
+  serialized for the model), so stripping `sections` from transport
+  doesn't affect substring anchoring — and the lighter payload appears
+  to let the agent extract more, better-anchored claims (the quality jump
+  was an unexpected bonus, not a designed effect).
+
+The remaining six stress-test genes (EGFR / HSPA5 / GPR75 / CALR /
+GPRC5D / TNFR1) are still deferred — even at $1.36/gene the user-set
+budget didn't allow a full sweep in this PR. With the new per-gene cost
+estimate, the full panel should land in ~$10 of API spend.
 
 ## How the instrumentation works
 
@@ -31,21 +55,42 @@ emits a `cost_usd` + `tokens` block.
 Pricing lives in one dict keyed by model id — adding a new model is a
 single-entry edit, no per-call-site changes.
 
-## Headline table (CD81)
+## Headline table (CD81 — both rounds)
 
-| gene | A1 $ | A2 $ | B $ | total $ | claims | % anchored | A1 repairs | A2 repairs | B repairs |
-|------|------|------|------|---------|--------|------------|------------|------------|-----------|
-| CD81 | 2.085 | 2.163 | 0.184 | **4.432** | 28 | **21.4%** ⚠ | 1 | 1 | 1 |
+| round | gene | A1 $ | A2 $ | B $ | total $ | claims | % anchored | A1 repairs | A2 repairs | B repairs |
+|-------|------|------|------|------|---------|--------|------------|------------|------------|-----------|
+| 1 (baseline) | CD81 | 2.085 | 2.163 | 0.184 | **4.432** | 28 | **21.4%** ⚠ | 1 | 1 | 1 |
+| 2 (cached + compacted) | CD81 | 0.639 | 0.583 | 0.143 | **1.365** | 32 | **71.9%** ✓ | 2 | 1 | 1 |
 
-Both stress-test outlier rules fire on CD81: substring-anchored
-fraction (21.4%) is well under the 60% quality threshold, and the
-per-gene cost is ~3× the original $0.50–1.50/gene estimate.
+Round 1 fired both stress-test outlier rules: substring-anchored
+fraction under the 60% quality threshold, and per-gene cost ~3× the
+original $0.50–1.50/gene estimate. Round 2 clears both.
 
 The remaining six genes (EGFR, HSPA5, GPR75, CALR, GPRC5D, TNFR1) are
-not in this report — they were blocked by the cost-confirmation gate
-the task carved out, after CD81 alone hit the budget.
+still not in this report — they were blocked by the cost-confirmation
+gate the task carved out. At round-2 rates ($1.36/gene observed,
+$1–2/gene plausible across the panel) the full sweep is back inside
+the original $5–10 budget and can land in a follow-up PR.
 
-## Why CD81 cost $4.43
+## Round 2 round-trip — cache usage
+
+CD81 round-2 token decomposition pulled from `.runs/{a1,a2,b}_CD81.meta.json`:
+
+| agent | iters | input | cache write | cache read | output | cost $ |
+|-------|-------|-------|-------------|------------|--------|--------|
+| A1 | 7 | 14,889 | 58,191 | **169,989** | 21,671 | 0.639 |
+| A2 | 8 | 16,133 | 49,238 | **188,356** | 19,572 | 0.583 |
+| B  | 2 |  1,665 | 23,810 |  23,810 |  2,743 | 0.143 |
+
+Cache-read tokens dominate input on A1 / A2 — the rolling tool_result
+breakpoint is catching the cumulative prior context on every iteration
+after the first. B's symmetric write=read=23,810 confirms the initial
+task-message cache_control is doing exactly what it should: caching
+the full A1+A2 ledger once, then reading it on the repair iteration.
+The uncached `input_tokens` columns are now ~10–15k per agent — orders
+of magnitude smaller than the round-1 figures below.
+
+## Why round 1 cost $4.43 (kept for context)
 
 Per-iteration token counts from `.runs/a1_CD81.meta.json` and `a2_CD81.meta.json`:
 
@@ -89,42 +134,59 @@ the structured drafts (~22k tokens, fixed), not raw fetched text.
 
 ## Quality observation
 
-CD81 substring-anchored fraction (21.4%, 6/28 evidence rows) is well
-under the 60% threshold the stress-test spec uses to flag quality
-outliers. The 22 unanchored claims emitted by the agents did not match
-into the shared `SourceTextStore` at promotion time. Two plausible
-explanations, each independently fixable:
+Round-1 CD81 substring-anchored fraction was 21.4% (6/28 evidence
+rows) — well under the 60% threshold the stress-test spec uses to flag
+quality outliers.
 
-- **Quote drift.** Agents paraphrasing rather than copying the exact
-  ≤200-char substring from tool-result bodies. The schema requires
-  verbatim quotes; a Sonnet entailment audit (currently de-wired,
-  separate follow-up PR) would catch this.
+Round 2 lifted it to **71.9% (23/32 evidence rows)** without any
+change to the schema, prompts, or substring-matching code. The likely
+mechanism: when raw `paper.sections` were dropping into the message
+history, the agent had two paths to grounding a claim — quote a snippet
+(pre-extracted to substring-match by construction) or quote loose text
+from a section (paraphrase-prone, often failed the substring check).
+With the sections stripped from transport, the snippet path is the
+only available option, and snippet quotes are byte-identical to the
+substrings registered in `SourceTextStore`. This is a behaviour shift,
+not a designed effect — worth re-validating on a wider gene panel before
+generalising.
 
-- **Body never landed in the store.** Some `evidence_retrieval`
-  categories may produce summary structures rather than full text the
-  store can index against. The promotion code is the right place to
-  audit which sources actually feed `SourceTextStore`.
+The remaining ~28% of unanchored claims are likely cite-against-
+non-snippet sources (UniProt prose, HPA snapshot, db panels). Those
+bodies *are* in `SourceTextStore` — the failure mode is paraphrase, not
+missing-body. The de-wired Sonnet entailment audit is the right tool
+to drive that fraction down further.
 
-Both belong in their own diagnostic pass — not in this PR.
+## What landed (rounds 1 + 2)
 
-## Recommendations (separate follow-ups, in priority order)
+1. **Round 1 — instrumentation.** Per-call token + cost capture in A1 /
+   A2 / B; orchestrator surfaces per-agent + total cost; `.runs/*.meta.json`
+   carries the per-iteration trace; CLI emits `cost_usd` + `tokens` blocks.
+2. **Round 2 — prompt caching.** Two cache breakpoints per request
+   (system prompt always; rolling latest tool_result). Implemented in
+   [`agents/_support/payload.py`](../../src/accessible_surfaceome/agents/_support/payload.py).
+3. **Round 2 — tool-result compaction.** `evidence_retrieval`
+   `paper.sections[*]` stripped before transport; the full body stays
+   in `SourceTextStore` for substring anchoring. Implemented in the same
+   payload module via `compact_for_agent_transport()`.
 
-1. **Prompt caching on the static prefix** in A1 / A2 (system prompt +
-   the schema-bearing task message). Likely 5–10× cost reduction per
-   gene; gate the full 7-gene sweep on this landing.
+## Recommendations still open (separate follow-ups)
 
-2. **Cap or summarise huge tool results** before they hit the model.
-   Full PMC XML pulls are the biggest single source of message-history
-   bloat; a tool-side truncation budget (with the full body remaining
-   in `SourceTextStore` for substring anchoring) would compound with
-   #1.
+1. **Run the full 7-gene panel.** At observed round-2 rates the sweep
+   should cost ~$10. Worth doing once a fresh budget is allocated to
+   validate that the CD81-specific quality jump (21.4% → 71.9%)
+   generalises — single-gene results can be lucky.
 
-3. **Re-wire the substring-anchoring audit** so quality outliers like
-   CD81's 21.4% surface as orchestrator warnings rather than
-   post-hoc analysis.
+2. **Re-wire the substring-anchoring audit** so quality outliers surface
+   as orchestrator warnings rather than post-hoc analysis. Even at 71.9%
+   anchored, ~30% of claims weren't substring-matched — the Sonnet
+   entailment audit (currently de-wired) would catch each one
+   immediately.
 
-Once #1 and #2 land, re-run the full 7-gene panel; expected spend
-should drop from ~$30 back into the originally-budgeted $5–10 range.
+3. **EuropePMC vs PubTator quality A/B.** Not redundant — PubTator3
+   drives discovery (NER over PubMed), EuropePMC delivers the body text
+   substring anchoring runs against. Worth a separate experiment to
+   confirm both are pulling their weight, especially for orphan
+   GPCRs / under-annotated genes; out of scope for this cost PR.
 
 ## Artifacts
 

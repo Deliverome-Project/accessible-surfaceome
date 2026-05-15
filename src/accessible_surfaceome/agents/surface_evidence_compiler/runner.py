@@ -32,6 +32,11 @@ from pydantic import BaseModel, ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support import tool_registry
+from accessible_surfaceome.agents._support.payload import (
+    cached_system,
+    compact_for_agent_transport,
+    mark_latest_tool_result_for_cache,
+)
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
     UsageSummary,
@@ -221,13 +226,18 @@ def _run(
     raw_json: dict[str, Any] | None = None
     validation_error: str | None = None
 
+    cached_system_blocks = cached_system(system_prompt)
     for _ in range(MAX_ITERATIONS):
+        # Rotate the rolling cache breakpoint onto the most recent tool_result
+        # (no-op on iteration 1; from iteration 2 on, ~95% of input is a
+        # cache hit at 0.1× the base rate).
+        mark_latest_tool_result_for_cache(messages)
         # cast: tool / message dicts are SDK-shaped at runtime, but the SDK's
         # TypedDict params don't accept a bare list[dict[str, Any]].
         resp = client.messages.create(
             model=AGENT_MODEL,
             max_tokens=MAX_TOKENS,
-            system=system_prompt,
+            system=cast("Any", cached_system_blocks),
             tools=cast("Any", tools),
             messages=cast("Any", messages),
         )
@@ -258,7 +268,10 @@ def _run(
                 input_summary = _summarize_tool_input(block.name, payload)
                 try:
                     result = handler(payload)
-                    content = _serialize_tool_result(result)
+                    # Handler already registered the unstripped body into
+                    # SourceTextStore; compact for transport drops the heavy
+                    # paper.sections fields the agent doesn't need.
+                    content = _serialize_tool_result(compact_for_agent_transport(result))
                     is_error = False
                 except Exception as exc:  # noqa: BLE001
                     logger.warning("A1 tool %s failed: %s", block.name, exc)

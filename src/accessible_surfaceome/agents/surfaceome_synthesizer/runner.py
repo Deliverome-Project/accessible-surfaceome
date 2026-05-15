@@ -33,6 +33,7 @@ from anthropic.types import TextBlock
 from pydantic import ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.payload import cached_system, cached_user_text
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
     UsageSummary,
@@ -170,11 +171,12 @@ def _run(
     a2_draft: dict[str, Any] | None,
 ) -> BResult:
     system_prompt = SYSTEM_PROMPT_PATH.read_text()
+    cached_system_blocks = cached_system(system_prompt)
+    # The initial user task message embeds both ledgers + the SynthesizerDraft
+    # JSON schema — large, static across repair iterations. Cache it once so
+    # repairs only pay full price for the new error-feedback turn.
     messages: list[dict[str, Any]] = [
-        {
-            "role": "user",
-            "content": _build_task(gene, a1_draft=a1_draft, a2_draft=a2_draft),
-        }
+        cached_user_text(_build_task(gene, a1_draft=a1_draft, a2_draft=a2_draft))
     ]
     n_repair_attempts = 0
     usage_records: list[UsageRecord] = []
@@ -186,7 +188,7 @@ def _run(
         resp = client.messages.create(
             model=AGENT_MODEL,
             max_tokens=MAX_TOKENS,
-            system=system_prompt,
+            system=cast("Any", cached_system_blocks),
             # No tools by design — see module docstring.
             messages=cast("Any", messages),
         )
