@@ -135,6 +135,96 @@ def test_extractor_returns_empty_when_no_hallmark_match() -> None:
     assert snippets == []
 
 
+def test_target_mention_extractor_emits_for_high_throughput_categories() -> None:
+    """For high-throughput categories, ``_extract_target_mentions`` emits a
+    target-naming sentence even when it doesn't match a hallmark pattern.
+    The agent uses these for paper-level gene attribution alongside the
+    methodology snippet from the same paper.
+    """
+    paper = Paper(
+        pmid=99,
+        pmc_id="PMC99",
+        title="surfaceome paper",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "We identified 312 surface proteins by sulfo-NHS-SS-biotin "
+                    "labeling. Among the top hits, CD81 ranked 47 in HEK293 "
+                    "cells. CD81 expression was confirmed across all replicates."
+                ),
+            )
+        ],
+    )
+    target = frozenset({"CD81"})
+    mentions = er._extract_target_mentions(
+        paper,
+        spec=er._CATEGORY_SPECS["surface_biotinylation"],
+        target_names=target,
+    )
+    assert mentions, "expected at least one target-mention snippet"
+    assert all("CD81" in m.text for m in mentions)
+    assert all(m.hallmark_phrase == er.TARGET_MENTION_HALLMARK for m in mentions)
+    # Each mention must substring-match the source body for anchoring.
+    full_text = "\n\n".join(s.text for s in paper.sections)
+    for m in mentions:
+        assert m.text in full_text
+
+
+def test_target_mention_extractor_inert_for_strict_categories() -> None:
+    """Strict-filter categories (e.g. flow_cytometry) keep the original
+    hallmark + target-boost flow; ``_extract_target_mentions`` returns
+    nothing for them so we don't double-emit target-named sentences that
+    the hallmark path already covers.
+    """
+    paper = Paper(
+        pmid=99,
+        pmc_id="PMC99",
+        title="paper",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+        sections=[PaperSection(name="results", text="CD81 was detected on the surface.")],
+    )
+    mentions = er._extract_target_mentions(
+        paper,
+        spec=er._CATEGORY_SPECS["flow_cytometry"],
+        target_names=frozenset({"CD81"}),
+    )
+    assert mentions == []
+
+
+def test_target_mention_extractor_dedups_within_paper() -> None:
+    """Repeated identical target-naming sentences in one paper collapse
+    to a single emitted snippet — the dedup key matches what
+    ``_extract_snippets`` uses, so cross-pollination between hallmark
+    and target-mention snippets stays consistent.
+    """
+    paper = Paper(
+        pmid=99,
+        pmc_id="PMC99",
+        title="paper",
+        is_pmc_oa=True,
+        retraction_checked_at=datetime.now(UTC),
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "CD81 was among the identified surface proteins. "
+                    "CD81 was among the identified surface proteins."
+                ),
+            )
+        ],
+    )
+    mentions = er._extract_target_mentions(
+        paper,
+        spec=er._CATEGORY_SPECS["mass_spec_surfaceome"],
+        target_names=frozenset({"CD81"}),
+    )
+    assert len(mentions) == 1
+
+
 def test_extractor_caps_to_200_chars() -> None:
     long_sentence = (
         "The protein was detected on the surface of non-permeabilized intact cells "

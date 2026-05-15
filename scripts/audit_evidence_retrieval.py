@@ -28,6 +28,7 @@ from accessible_surfaceome.tools.evidence_retrieval import (
     _CATEGORY_SPECS,
     _europepmc_discovery,
     _extract_snippets,
+    _extract_target_mentions,
     _pubtator_discovery,
     _union_by_pmid,
 )
@@ -88,14 +89,21 @@ def trace_category(uniprot_acc: str, category: EvidenceCategory, http, max_paper
             paper=full, spec=spec, max_snippets=3,
             target_names=target_names, gazetteer=gazetteer,
         )
+        already = {s.text for s in per_paper}
+        tm = [m for m in _extract_target_mentions(
+            full, spec=spec, target_names=target_names,
+        ) if m.text not in already]
         section_counts = Counter(s.name for s in full.sections)
         sec_summary = ", ".join(f"{n}={c}" for n, c in section_counts.items())
-        if per_paper:
+        if per_paper or tm:
             snippet_paper_count += 1
-            snippets_total.extend(per_paper)
-            print(f"  ✓ {p.pmc_id} sections=[{sec_summary}] → {len(per_paper)} snippets")
+            snippets_total.extend(per_paper + tm)
+            print(f"  ✓ {p.pmc_id} sections=[{sec_summary}] → {len(per_paper)} hallmark + {len(tm)} target-mention snippets")
             for s in per_paper[:3]:
-                print(f"      {s.section:15} score={s.score:.1f} hallmark={s.hallmark_phrase!r}")
+                print(f"      [hallmark] {s.section:15} score={s.score:.1f} {s.hallmark_phrase!r}")
+                print(f"      └─ {s.text[:160]!r}")
+            for s in tm[:3]:
+                print(f"      [target_mention] {s.section:15} score={s.score:.1f}")
                 print(f"      └─ {s.text[:160]!r}")
         else:
             print(f"  ✗ {p.pmc_id} sections=[{sec_summary}] → 0 snippets (after gene-proximity filter)")

@@ -310,6 +310,17 @@ class Paper(BaseModel):
     ``sections`` only by ``fetch_fulltext``. Tags and flags (``topic_tags``,
     ``is_review``, ``is_retracted``, ``is_pmc_oa``) are computed by the tool *before*
     tokens reach the agent, so the agent can prioritize without re-reading.
+
+    ``target_mention_excerpts`` is populated for the high-throughput
+    ``evidence_retrieval`` categories (``mass_spec_surfaceome``,
+    ``surface_biotinylation``, ``western_blot_paired``). Each entry is a
+    ≤200-char verbatim sentence from the paper body where the target gene
+    is named. The agent can quote one of these *in addition to* a
+    methodology snippet to anchor a paper-level claim like "PMC X
+    performed [method] and identified [target] in [context]". For
+    antibody assays and other strict-filter categories the field stays
+    empty — target-naming sentences are already covered by the
+    hallmark+target snippets in those categories.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -330,6 +341,7 @@ class Paper(BaseModel):
     topic_tags: list[TopicAnchor] = Field(default_factory=list)
     sections: list[PaperSection] = Field(default_factory=list)
     truncated_sections: list[str] = Field(default_factory=list)
+    target_mention_excerpts: list[str] = Field(default_factory=list)
 
 
 LiteratureMode = Literal["gene2pubmed", "topic_search", "fetch_abstract", "fetch_fulltext"]

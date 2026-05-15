@@ -490,9 +490,30 @@ def _pmc_retrieval(
             target_names=target_names,
             gazetteer=gazetteer,
         )
-        if per_paper:
-            snippet_papers.append(full)
+        # For high-throughput categories, additionally pull verbatim
+        # target-naming sentences from the paper body. These give the
+        # agent a ready-to-quote paper-level attribution that pairs
+        # with the methodology snippet for a complete "Paper performed
+        # X AND identified target" citation. Dedup against hallmark
+        # snippets so a target-naming sentence that ALSO matched a
+        # hallmark pattern (e.g. "CD81 was detected by Western blot")
+        # is only emitted once.
+        already_emitted = {s.text for s in per_paper}
+        target_mentions = [
+            tm for tm in _extract_target_mentions(
+                full, spec=spec, target_names=target_names,
+            ) if tm.text not in already_emitted
+        ]
+        if per_paper or target_mentions:
+            # Pin the target-mention excerpts on the paper itself so the
+            # agent can find them via the Paper record even if the
+            # snippet ranking pushes some out of the top-N.
+            full_with_mentions = full.model_copy(
+                update={"target_mention_excerpts": [s.text for s in target_mentions]}
+            ) if target_mentions else full
+            snippet_papers.append(full_with_mentions)
             all_snippets.extend(per_paper)
+            all_snippets.extend(target_mentions)
 
     # Sort across papers by score (descending) so the agent sees the
     # strongest matches first.
@@ -631,6 +652,19 @@ _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(])")
 # snippets outrank anaphoric ones ("the protein was detected...").
 _TARGET_MENTION_BOOST = 2.0
 
+# For the high-throughput categories, a sentence that names the target
+# but doesn't fire a methodology hallmark is still load-bearing — it is
+# the paper-level attribution that ties the methodology (described in a
+# different sentence) to this specific gene. We emit those as separate
+# CandidateSnippets with this synthetic hallmark_phrase so the agent
+# (and audit code) can tell them apart from regex-matched ones.
+TARGET_MENTION_HALLMARK = "target_mention"
+
+# Max target-mention snippets emitted per paper. Keeps the snippet
+# budget bounded while ensuring at least one target-attribution
+# excerpt makes it through alongside the methodology snippets.
+_MAX_TARGET_MENTIONS_PER_PAPER = 3
+
 
 def _extract_snippets(
     *,
@@ -726,6 +760,97 @@ def _extract_snippets(
         if len(chosen) >= max_snippets:
             break
     return chosen
+
+
+def _extract_target_mentions(
+    paper: Paper,
+    *,
+    spec: _CategorySpec,
+    target_names: frozenset[str],
+    max_mentions: int = _MAX_TARGET_MENTIONS_PER_PAPER,
+) -> list[CandidateSnippet]:
+    """Emit verbatim ≤200-char sentences where the target gene is named.
+
+    Only fires for ``spec.accepts_paper_level_evidence=True`` categories
+    (high-throughput methods) — for antibody assays the existing
+    hallmark + target-boost path already covers target-naming sentences.
+    The score puts target-mention snippets between the
+    hallmark-with-target snippets (which carry both methodology and gene
+    in one sentence — the strongest signal) and the methodology-only
+    snippets (the paper-level relaxation), so a tier-ranked agent picks
+    a target-mention when one is available.
+
+    Sentences over the 200-char cap are trimmed around the first target
+    token; the trimmed text must still substring-match the source body
+    or the snippet is dropped (substring-anchoring guarantee).
+    """
+    if not spec.accepts_paper_level_evidence or not target_names or not paper.sections:
+        return []
+    emitted: list[tuple[float, CandidateSnippet]] = []
+    seen_norm: set[str] = set()
+    source_id = f"PMC:{paper.pmc_id}" if paper.pmc_id else f"PMID:{paper.pmid}"
+    for section in paper.sections:
+        weight = spec.section_weights.get(section.name, 0.5)
+        if weight <= 0:
+            continue
+        section_enum = _SECTION_TO_CLAIM.get(section.name, "other")
+        for sentence in _split_sentences(section.text):
+            tokens = extract_symbol_tokens(sentence)
+            target_hits = [t for t in tokens if t in target_names]
+            if not target_hits:
+                continue
+            snippet_text = _trim_to_target(sentence, target_hits[0])
+            if not snippet_text or snippet_text not in section.text:
+                continue
+            key = re.sub(r"\s+", " ", snippet_text.lower()).strip()
+            if key in seen_norm:
+                continue
+            seen_norm.add(key)
+            # Target-mention scoring: section weight + the existing
+            # target boost. A target-named sentence in methods scores
+            # weight 3 + boost 2 = 5; in results, 2 + 2 = 4. A
+            # hallmark+target sentence still wins (it adds hallmark
+            # match credit on top).
+            score = weight + _TARGET_MENTION_BOOST
+            emitted.append((
+                score,
+                CandidateSnippet(
+                    source_id=source_id,
+                    section=section_enum,
+                    figure_or_table_id=None,
+                    text=snippet_text,
+                    score=score,
+                    hallmark_phrase=TARGET_MENTION_HALLMARK,
+                ),
+            ))
+    emitted.sort(key=lambda pair: pair[0], reverse=True)
+    return [snippet for _, snippet in emitted[:max_mentions]]
+
+
+def _trim_to_target(sentence: str, target_token: str) -> str:
+    """Trim a sentence to ≤200 chars, biased to keep the target token in view."""
+    sentence = sentence.strip()
+    if len(sentence) <= 200:
+        return sentence
+    # Find the target token; center a window around it.
+    idx = sentence.find(target_token)
+    if idx < 0:
+        # Token might be a normalized form (hyphens dropped); fall back to first 200.
+        return sentence[:200].rstrip()
+    pad = max(0, (200 - len(target_token)) // 2)
+    start = max(0, idx - pad)
+    end = min(len(sentence), start + 200)
+    start = max(0, end - 200)
+    snippet = sentence[start:end]
+    if start > 0:
+        first_space = snippet.find(" ")
+        if 0 < first_space < 40:
+            snippet = snippet[first_space + 1:]
+    if end < len(sentence):
+        last_space = snippet.rfind(" ")
+        if last_space > len(snippet) - 40:
+            snippet = snippet[:last_space]
+    return snippet.strip()
 
 
 def _split_sentences(text: str) -> list[str]:
