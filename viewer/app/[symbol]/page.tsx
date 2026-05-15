@@ -91,30 +91,21 @@ export default async function GenePage({ params }: PageProps) {
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
+              data-hint="Canonical record. Everything on this page is rendered from it."
               href={`/data/surfaceome/${rec.gene.hgnc_symbol}.json`}
               target="_blank"
               rel="noopener noreferrer"
-              title="Canonical record. Everything on this page is rendered from it."
             >
               JSON ↗
             </a>
             <a
               className={styles.crumbAction}
+              data-hint="Markdown export of the same record + the full UniProt canonical sequence + per-residue DeepTMHMM topology for canonical and every alternative isoform + a link to the live AlphaFold DB entry."
               href={`/data/surfaceome/${rec.gene.hgnc_symbol}.md`}
               target="_blank"
               rel="noopener noreferrer"
-              title="Markdown export of the same record + full UniProt canonical sequence + per-residue DeepTMHMM topology for canonical and every alternative isoform."
             >
               Markdown (full) ↗
-            </a>
-            <a
-              className={styles.crumbAction}
-              href={`https://alphafold.ebi.ac.uk/entry/${rec.gene.uniprot_acc}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Live AlphaFold DB entry. Current model + sequence are auto-discovered from the AFDB prediction API, so this link auto-tracks AFDB version bumps."
-            >
-              AFDB ↗
             </a>
           </span>
         </nav>

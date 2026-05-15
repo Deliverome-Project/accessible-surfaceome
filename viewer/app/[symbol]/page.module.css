@@ -39,6 +39,7 @@
 }
 
 .crumbAction {
+  position: relative;
   font-family: var(--font-mono);
   font-size: 0.82rem;
   color: var(--muted);
@@ -49,6 +50,43 @@
 .crumbAction:hover,
 .crumbAction:focus-visible {
   color: var(--accent);
+}
+
+/* Custom hover tooltip — replaces the native ``title`` attribute,
+ * which has a ~500ms delay and inherits the OS tooltip styling.
+ * The CSS-driven version shows immediately, sits visually anchored
+ * to the link, and matches the page's editorial tone. The label
+ * comes from the ``data-hint`` attribute on each crumb-action. */
+.crumbAction[data-hint]::after {
+  content: attr(data-hint);
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: max-content;
+  max-width: 320px;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--bg);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: normal;
+  letter-spacing: normal;
+  text-transform: none;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-2px);
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.crumbAction[data-hint]:hover::after,
+.crumbAction[data-hint]:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .confidence {
