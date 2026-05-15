@@ -15,7 +15,6 @@ import { OrthologsCard } from "../../components/surfaceome/OrthologsCard/Ortholo
 import { ParalogsCard } from "../../components/surfaceome/ParalogsCard/ParalogsCard";
 import { StructureSummaryCard } from "../../components/surfaceome/StructureSummaryCard/StructureSummaryCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
-import { StructureViewerCard } from "../../components/surfaceome/StructureViewerCard/StructureViewerCard";
 import {
   listSurfaceomeGenes,
   loadGeneName,
@@ -56,9 +55,9 @@ export default async function GenePage({ params }: PageProps) {
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
-  // All sections are required by schema, so the array is fixed-length
-  // except for StructureViewerCard, which is skipped for soluble
-  // proteins (DeepTMHMM has no topology).
+  // The 3D structure viewer itself was promoted to a top-of-page
+  // sidekick on `<GeneHeader>` (auto-loads on mount); the deterministic
+  // AFDB stats stay as a section card later.
   const sections: { kind: string; render: (n: number) => React.ReactNode }[] = [
     { kind: "executive", render: (n) => <ExecutiveSummaryCard rec={rec} n={n} /> },
     { kind: "filters", render: (n) => <FiltersCard rec={rec} n={n} /> },
@@ -69,18 +68,6 @@ export default async function GenePage({ params }: PageProps) {
     { kind: "orthologs", render: (n) => <OrthologsCard rec={rec} n={n} /> },
     { kind: "risks", render: (n) => <AccessibilityRisksCard rec={rec} n={n} /> },
   ];
-  if (structureData) {
-    sections.push({
-      kind: "structure",
-      render: (n) => (
-        <StructureViewerCard
-          data={structureData}
-          geneSymbol={rec.gene.hgnc_symbol}
-          n={n}
-        />
-      ),
-    });
-  }
   sections.push({
     kind: "structure-summary",
     render: (n) => <StructureSummaryCard rec={rec} n={n} />,
@@ -133,7 +120,7 @@ export default async function GenePage({ params }: PageProps) {
         </nav>
 
         <Reveal>
-          <GeneHeader rec={rec} geneName={geneName} />
+          <GeneHeader rec={rec} geneName={geneName} structureData={structureData} />
         </Reveal>
 
         {/* Per-section Reveal wrappers, not a single bulk wrapper.

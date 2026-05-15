@@ -1,6 +1,8 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
+import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { StatusPill } from "../StatusPill/StatusPill";
+import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
 
 interface GeneHeaderProps {
@@ -10,6 +12,11 @@ interface GeneHeaderProps {
    *  ``loadGeneName(symbol)`` and passes it down. ``null`` when no
    *  entry exists for the symbol. */
   geneName?: { name: string; synonyms: string[] } | null;
+  /** DeepTMHMM topology data for the canonical UniProt. Loaded
+   *  server-side via ``loadStructureViewerData(uniprot_acc)``;
+   *  ``null`` for soluble proteins (DeepTMHMM has no membrane
+   *  topology) — header collapses back to single-column. */
+  structureData?: StructureViewerData | null;
 }
 
 function tierCounts(rec: SurfaceomeRecord) {
@@ -45,7 +52,7 @@ function gradeTone(value: string) {
  * derived counts from the evidence ledger; no v0.x targetability /
  * surface_biology fields.
  */
-export function GeneHeader({ rec, geneName }: GeneHeaderProps) {
+export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
   const counts = tierCounts(rec);
@@ -74,41 +81,62 @@ export function GeneHeader({ rec, geneName }: GeneHeaderProps) {
 
   return (
     <header className={styles.header}>
-      <p className={`label-mono ${styles.eyebrow}`}>
-        Surfaceome record · v{rec.schema_version}
-      </p>
-      <h1 className={`h-display ${styles.symbol}`}>{g.hgnc_symbol}</h1>
-      {geneName?.name ? (
-        <p className={styles.geneName}>
-          {geneName.name}
-          {geneName.synonyms.length > 0 ? (
-            <span className={styles.geneSynonyms}>
-              {" · also known as "}
-              {geneName.synonyms.slice(0, 4).join(", ")}
-              {geneName.synonyms.length > 4
-                ? `, +${geneName.synonyms.length - 4}`
-                : ""}
-            </span>
+      <div className={styles.headerGrid}>
+        <div className={styles.headerText}>
+          <p className={`label-mono ${styles.eyebrow}`}>
+            Surfaceome record · v{rec.schema_version}
+          </p>
+          <h1 className={`h-display ${styles.symbol}`}>{g.hgnc_symbol}</h1>
+          {geneName?.name ? (
+            <p className={styles.geneName}>
+              {geneName.name}
+              {geneName.synonyms.length > 0 ? (
+                <span className={styles.geneSynonyms}>
+                  {" · also known as "}
+                  {geneName.synonyms.slice(0, 4).join(", ")}
+                  {geneName.synonyms.length > 4
+                    ? `, +${geneName.synonyms.length - 4}`
+                    : ""}
+                </span>
+              ) : null}
+            </p>
           ) : null}
-        </p>
-      ) : null}
-      <p className={`lede ${styles.tldr}`}>{exec.one_paragraph}</p>
+          <p className={`lede ${styles.tldr}`}>{exec.one_paragraph}</p>
 
-      <ul className={styles.ids} aria-label="External identifiers">
-        {ids.map((id) => (
-          <li key={id.label} className={styles.idItem}>
-            <a
-              className={styles.idLink}
-              href={id.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <span className={`label-mono ${styles.idLabel}`}>{id.label}</span>
-              <span className={styles.idValue}>{id.value}</span>
-            </a>
-          </li>
-        ))}
-      </ul>
+          <ul className={styles.ids} aria-label="External identifiers">
+            {ids.map((id) => (
+              <li key={id.label} className={styles.idItem}>
+                <a
+                  className={styles.idLink}
+                  href={id.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span className={`label-mono ${styles.idLabel}`}>{id.label}</span>
+                  <span className={styles.idValue}>{id.value}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {structureData ? (
+          <aside className={styles.structureSlot} aria-label="3D structure">
+            <StructureViewer data={structureData} geneSymbol={g.hgnc_symbol} />
+            <p className={styles.structureCaption}>
+              <a
+                href={`https://alphafold.ebi.ac.uk/entry/${g.uniprot_acc}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.structureLink}
+              >
+                AlphaFold DB
+              </a>{" "}
+              · DeepTMHMM topology · membrane horizontal, extracellular up
+            </p>
+          </aside>
+        ) : null}
+      </div>
 
       <dl className={styles.vitals}>
         <div className={styles.vital}>

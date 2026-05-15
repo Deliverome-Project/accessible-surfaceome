@@ -18,7 +18,7 @@ interface StructureViewerProps {
   geneSymbol: string;
 }
 
-type LoadStatus = "idle" | "loading" | "ready" | "error";
+type LoadStatus = "loading" | "ready" | "error";
 
 interface ViewerInstance {
   clear: () => void;
@@ -29,14 +29,16 @@ interface ViewerInstance {
 /**
  * StructureViewer — the 3Dmol.js-backed canvas. Client-only because
  * 3Dmol expects a DOM + WebGL. The 3Dmol module is dynamically
- * imported on the first "Show 3D structure" click so the 524 KB
- * library never lands in the initial bundle.
+ * imported on mount so the 524 KB library only lands on per-gene
+ * pages (not the catalog index). Auto-loads — no click-to-show
+ * gate — so the viewer reads as part of the gene-identity surface
+ * rather than a hidden affordance.
  */
 export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
-  const [status, setStatus] = useState<LoadStatus>("idle");
+  const [status, setStatus] = useState<LoadStatus>("loading");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
   const renderViewer = useCallback(async () => {
@@ -141,6 +143,7 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
   }, [data]);
 
   useEffect(() => {
+    void renderViewer();
     return () => {
       try {
         resizeObserverRef.current?.disconnect();
@@ -155,7 +158,7 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       }
       viewerRef.current = null;
     };
-  }, []);
+  }, [renderViewer]);
 
   return (
     <div className={styles.viewerShell}>
@@ -166,20 +169,8 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
         role="img"
         aria-label={`3D structure of ${geneSymbol}, AlphaFold DB ${data.uniprot_acc}`}
       >
-        {status === "idle" ? (
-          <button
-            type="button"
-            className={styles.loadButton}
-            onClick={renderViewer}
-          >
-            Show 3D structure
-            <span className={styles.loadButtonHint}>
-              ~600 KB · loads 3Dmol.js + AFDB structure
-            </span>
-          </button>
-        ) : null}
         {status === "loading" ? (
-          <p className={styles.loadingNote}>Loading AlphaFold structure…</p>
+          <p className={styles.loadingNote}>Loading AlphaFold…</p>
         ) : null}
         {status === "error" ? (
           <div className={styles.errorBox}>
