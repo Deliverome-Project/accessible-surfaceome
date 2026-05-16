@@ -49,3 +49,8 @@ root = ["./src"]
 
 [tool.ty.src]
 include = ["src", "tests"]
+
+[tool.pytest.ini_options]
+markers = [
+    "network: tests that require external network (gated by --run-network)",
+]
