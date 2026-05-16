@@ -259,6 +259,15 @@ export function BenchmarkTable({
           {filtered.length === rows.length
             ? `${filtered.length} genes`
             : `${filtered.length} of ${rows.length} genes`}
+          <span className={styles.metaDot} aria-hidden="true">·</span>
+          <span>
+            TSV ships verdicts + reason codes + telemetry. Free-text
+            reasoning per cell is on{" "}
+            <Link href="/api/#benchmark-matrix" className={styles.apiHintLink}>
+              <code>GET /v1/benchmark/matrix</code>
+            </Link>
+            .
+          </span>
         </p>
       </div>
 
@@ -629,6 +638,7 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
     for (const variant of matrix.variants) {
       headers.push(
         `${slug}_${variant}_verdict`,
+        `${slug}_${variant}_reason`,
         `${slug}_${variant}_correct`,
         `${slug}_${variant}_confidence`,
         `${slug}_${variant}_latency_s`,
@@ -656,6 +666,7 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
         const c: BenchmarkVariantResult | null | undefined = byVariant[variant];
         row.push(
           c?.verdict ?? "",
+          c?.reason ?? "",
           c?.correct ?? "",
           c?.confidence ?? "",
           c?.latency_s ?? "",

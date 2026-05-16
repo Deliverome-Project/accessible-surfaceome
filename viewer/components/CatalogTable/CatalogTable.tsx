@@ -750,6 +750,15 @@ export function CatalogTable({
               <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
             </>
           ) : null}
+          <span className={styles.dot} aria-hidden="true">·</span>
+          <span>
+            TSV is verdicts + reason codes only. Free-text reasoning per
+            run is on{" "}
+            <Link href="/api/#triage" className={styles.apiHintLink}>
+              <code>GET /v1/triage/&#123;SYMBOL&#125;</code>
+            </Link>
+            .
+          </span>
         </p>
       </div>
 

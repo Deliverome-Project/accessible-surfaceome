@@ -152,6 +152,29 @@
   margin: 0;
   font-size: 0.8rem;
   color: var(--muted);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+/* Inline link from the "TSV is verdicts-only" hint to the matching
+ * API endpoint. Reads as prose, not a chip. */
+.apiHintLink {
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.apiHintLink:hover,
+.apiHintLink:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+.apiHintLink code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: inherit;
 }
 
 .chipsActions {
