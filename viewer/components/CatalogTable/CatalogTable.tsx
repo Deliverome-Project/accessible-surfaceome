@@ -20,14 +20,14 @@ import styles from "./CatalogTable.module.css";
 const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
-// CSS Grid template — gene | uniprot | sources | 5 DB dots | Sonnet
-// verdict (NCBI variant; the catalog's headline model) | deep-dive
-// flag. Haiku and Opus calls live on /benchmark so the catalog stays
-// a single-model surface. There's no row +/- toggle: clicking the
-// gene symbol or the verdict cell opens the right-side rationale
-// drawer.
+// CSS Grid template — gene | DB-votes count | 5 DB dots | Triage
+// verdict | Reason (flex) | Deep-dive flag. The UniProt-accession
+// column was dropped (it duplicated info that's on the deep-dive
+// page); the per-row "reason" column is new and takes the remaining
+// horizontal space via `minmax(.., 1fr)`. Haiku and Opus calls live
+// on /benchmark, not here.
 const GRID_TEMPLATE =
-  "16rem 5.5rem 3rem 4.5rem 3.2rem 4.5rem 4rem 3.2rem 8rem 5rem";
+  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 5rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -82,7 +82,16 @@ const CATALOG_MODELS: { id: string; idx: number; short: string; long: string }[]
   { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Triage agent" },
 ];
 
-type SortKey = "symbol" | "uniprot" | "n_sources" | "triage_sonnet" | "deep_dive";
+type SortKey =
+  | "symbol"
+  | "n_sources"
+  | "db_uniprot"
+  | "db_go"
+  | "db_surfy"
+  | "db_cspa"
+  | "db_hpa"
+  | "triage"
+  | "deep_dive";
 type SortDir = "asc" | "desc";
 // Triage filter was dropped — every gene in the universe has a triage
 // verdict (the one gap, SEA, is a resolver-failure outlier), so the
@@ -225,7 +234,7 @@ export function CatalogTable({
       setSortDir(sortDir === "asc" ? "desc" : "asc");
     } else {
       setSortKey(k);
-      setSortDir(k === "symbol" || k === "uniprot" ? "asc" : "desc");
+      setSortDir(k === "symbol" ? "asc" : "desc");
     }
   }
 
@@ -329,43 +338,42 @@ export function CatalogTable({
             align="left"
           />
           <SortableHeader
-            label="Accession"
-            k="uniprot"
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onClick={setSort}
-            align="left"
-            mono
-          />
-          <SortableHeader
-            label="Sources"
+            label="DB votes"
             k="n_sources"
             sortKey={sortKey}
             sortDir={sortDir}
             onClick={setSort}
             align="center"
-            title="Count of DB sources voting surface"
+            title="Count of DB sources voting surface (0-5)"
           />
           {DB_KEYS.map((d) => (
-            <div
+            <SortableHeader
               key={d.key}
-              className={`${styles.headerCell} ${styles.headerDbCell}`}
-              title={d.long}
-              role="columnheader"
-            >
-              {d.long}
-            </div>
+              label={d.long}
+              k={`db_${d.key}` as SortKey}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onClick={setSort}
+              align="center"
+              title={`${d.long} surface call (sort by yes / no)`}
+              extraClass={styles.headerDbCell}
+            />
           ))}
           {CATALOG_MODELS.map((m) => (
-            <div
+            <SortableHeader
               key={`mhdr-${m.id}`}
-              className={`${styles.headerCell} ${styles.headerCenter}`}
-              title={m.long}
-              role="columnheader"
-            >
-              {m.long}
-            </div>
+              label={m.long}
+              k="triage"
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onClick={setSort}
+              align="center"
+              title={`Sort by ${m.long} verdict`}
+            />
           ))}
+          <div className={styles.headerCell} role="columnheader">
+            Reason
+          </div>
           <SortableHeader
             label="Deep dive"
             k="deep_dive"
@@ -516,11 +524,15 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
 
 function sortValue(r: CatalogRow, k: SortKey): string | number {
   if (k === "symbol") return r.symbol;
-  if (k === "uniprot") return r.uniprot;
   if (k === "n_sources") return r.n_sources;
-  if (k === "triage_sonnet") {
-    // Sort by the Sonnet/ncbi verdict (slot 1) — the only model with
-    // full-genome coverage. yes > contextual > no > none.
+  if (k === "db_uniprot") return r.db.uniprot ? 1 : 0;
+  if (k === "db_go") return r.db.go ? 1 : 0;
+  if (k === "db_surfy") return r.db.surfy ? 1 : 0;
+  if (k === "db_cspa") return r.db.cspa ? 1 : 0;
+  if (k === "db_hpa") return r.db.hpa ? 1 : 0;
+  if (k === "triage") {
+    // Sort by the triage-agent verdict (Worker slot 1) — the only
+    // model with full-genome coverage. yes > contextual > no > none.
     const v = r.triage_by_model[1]?.verdict;
     if (v === "yes") return 3;
     if (v === "contextual") return 2;
@@ -540,6 +552,7 @@ function SortableHeader({
   align,
   mono,
   title,
+  extraClass,
 }: {
   label: string;
   k: SortKey;
@@ -549,12 +562,15 @@ function SortableHeader({
   align: "left" | "center";
   mono?: boolean;
   title?: string;
+  /** Extra class concatenated onto the header div — used to slot
+   *  the DB-cell tight padding ({.headerDbCell}) on the DB columns. */
+  extraClass?: string;
 }) {
   const active = sortKey === k;
   return (
     <div
       role="columnheader"
-      className={`${styles.headerCell} ${align === "center" ? styles.headerCenter : ""} ${mono ? styles.headerMono : ""}`}
+      className={`${styles.headerCell} ${align === "center" ? styles.headerCenter : ""} ${mono ? styles.headerMono : ""} ${extraClass ?? ""}`}
       aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
     >
       <button
@@ -643,9 +659,6 @@ function CatalogRowView({
       <div className={`${styles.cell} ${styles.symbolCell}`} role="cell">
         {symbolButton}
       </div>
-      <div className={`${styles.cell} ${styles.uniprotCell}`} role="cell">
-        {row.uniprot}
-      </div>
       <div className={`${styles.cell} ${styles.nCell}`} role="cell">
         <span className={styles.nBubble} data-n={row.n_sources}>
           {row.n_sources}
@@ -692,11 +705,23 @@ function CatalogRowView({
           </div>
         );
       })}
+      <div className={`${styles.cell} ${styles.reasonCell}`} role="cell">
+        {(() => {
+          const reason = row.triage_by_model[1]?.reason;
+          if (!reason) return <span className={styles.dim}>—</span>;
+          const pretty = reason.replace(/_/g, " ");
+          return (
+            <span className={styles.reasonText} title={pretty}>
+              {pretty}
+            </span>
+          );
+        })()}
+      </div>
       <div className={`${styles.cell} ${styles.deepCell}`} role="cell">
         {row.deep_dive ? (
           <Link
             href={`/${row.symbol}/`}
-            className={styles.deepBadge}
+            className={`${styles.verdictLabel} ${styles.verdictMini} ${styles.verdictYes} ${styles.deepLink}`}
             aria-label={`Open the deep-dive record for ${row.symbol}`}
             title={`Open the deep-dive record for ${row.symbol}`}
           >
