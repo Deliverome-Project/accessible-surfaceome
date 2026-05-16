@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Plan → trim → select evidence flow — 2026-05-16</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #fafafa;
+    --fg: #222;
+    --muted: #666;
+    --card: #fff;
+    --border: #e2e2e2;
+    --code: #1b5e20;
+    --llm: #e65100;
+    --store: #0d47a1;
+    --note: #5e35b1;
+  }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    margin: 0;
+    padding: 28px;
+    max-width: 1200px;
+    margin-inline: auto;
+  }
+  h1 { font-size: 24px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 36px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  h3 { font-size: 15px; margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+  .meta { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 13px; color: var(--muted);
+    margin: 12px 0 18px;
+  }
+  .legend .swatch {
+    display: inline-block; width: 14px; height: 14px;
+    vertical-align: middle; margin-right: 5px;
+    border-radius: 3px; border: 1px solid;
+  }
+  .diagram {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+  }
+  .caption {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 6px;
+    margin-bottom: 18px;
+    font-style: italic;
+  }
+  pre.code {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-radius: 6px;
+    padding: 14px 18px;
+    overflow-x: auto;
+    font: 13px/1.5 ui-monospace, "SF Mono", Menlo, monospace;
+    margin: 8px 0 14px;
+  }
+  pre.code .k { color: #a5d6ff; }
+  pre.code .s { color: #ffa657; }
+  pre.code .c { color: #8b949e; font-style: italic; }
+  table.compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    margin: 8px 0 18px;
+  }
+  table.compare th, table.compare td {
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  table.compare th {
+    background: #f0f0f0;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  table.compare td.changed { background: #fffde7; }
+  table.compare td.unchanged { color: var(--muted); }
+  .callout {
+    background: #fff;
+    border-left: 4px solid var(--note);
+    padding: 12px 16px;
+    margin: 18px 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .callout h3 {
+    margin: 0 0 6px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--note);
+  }
+  .callout p { margin: 4px 0; font-size: 14px; }
+  code, .mono {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    background: #f3f3f3;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.92em;
+  }
+  ul { margin: 6px 0; padding-left: 22px; }
+  li { margin-bottom: 4px; }
+  details { margin: 12px 0; }
+  details summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+</style>
+</head>
+<body>
+
+<h1>Plan → trim → select: a deep-dive evidence loop</h1>
+<div class="meta">2026-05-16 · Design preview, not yet implemented · Probe results in <span class="mono">.runs/paragraph_clip_probe_GPR75.json</span></div>
+
+<p>Three jobs, three actors, two models — no new tools required:</p>
+
+<ol>
+  <li><b>Sonnet (A1) plans the searches</b> using only what we already have (<code>gene_lookup</code>, <code>evidence_retrieval</code>, <code>gene_literature</code>). The agent emits a structured search plan, not free-form tool calls.</li>
+  <li><b>Orchestrator executes the plan + Haiku trims the results.</b> All planned searches run in parallel; for each paper that comes back, Haiku reduces the paragraph/snippet pool to the load-bearing clips with one-line "why kept" reasons.</li>
+  <li><b>Sonnet selects by clip ID.</b> The trimmed clips come back tagged with stable IDs. Sonnet's only output is a list of <code>clip_id</code> picks plus their classifications — no <code>quote</code> field, no prose retyping. The orchestrator fills <code>EvidenceClaim.quote</code> from the clip's verbatim text.</li>
+</ol>
+
+<div class="legend">
+  <span><span class="swatch" style="background:#e8f5e9;border-color:#43a047"></span>Deterministic code</span>
+  <span><span class="swatch" style="background:#fff3e0;border-color:#fb8c00"></span>Haiku (trim)</span>
+  <span><span class="swatch" style="background:#ffebee;border-color:#c62828"></span>Sonnet (plan + select)</span>
+  <span><span class="swatch" style="background:#e3f2fd;border-color:#1976d2"></span>Data store</span>
+</div>
+
+<h2>The loop</h2>
+<div class="diagram">
+<pre class="mermaid">
+flowchart TB
+    classDef code fill:#e8f5e9,stroke:#43a047,color:#1b5e20
+    classDef haiku fill:#fff3e0,stroke:#fb8c00,color:#e65100
+    classDef sonnet fill:#ffebee,stroke:#c62828,color:#b71c1c
+    classDef store fill:#e3f2fd,stroke:#1976d2,color:#0d47a1
+    classDef out fill:#ede7f6,stroke:#5e35b1,color:#311b92
+
+    Gene([Gene + UniProt summary + HPA snapshot]):::store --> Plan
+
+    Plan["1. PLAN<br/>Sonnet (A1) emits a SearchPlan<br/>structured JSON: which existing tools<br/>to call with what params"]:::sonnet --> Execute
+
+    Execute["2. EXECUTE (parallel, code)<br/>orchestrator dispatches each search<br/>using gene_lookup, evidence_retrieval,<br/>gene_literature — no new tools"]:::code --> Pool
+
+    Pool[("Raw clip pool per paper<br/>50-200 paragraphs / snippets / drafts<br/>tagged: source_id, section, paragraph_index")]:::store --> Trim
+
+    Trim["3. TRIM (Haiku, one call per paper)<br/>input: all clips for paper P<br/>output: keep list (~15%) +<br/>one-line reason per kept clip"]:::haiku --> Trimmed
+
+    Trimmed[("Trimmed clip menu<br/>per paper, IDs preserved<br/>each: {clip_id, preview, reason, section}")]:::store --> Select
+
+    Select["4. SELECT (Sonnet A1 / A2)<br/>input: trimmed clip menu<br/>output: selections =<br/>list of {clip_id + classifications + claim narrative}<br/>NO quote field"]:::sonnet --> Iterate{"Sonnet says<br/>more searches<br/>needed?"}
+
+    Iterate -->|"yes"| Plan
+    Iterate -->|"no"| Promote
+
+    Promote["5. PROMOTE (orchestrator code)<br/>for each selection:<br/>EvidenceClaim.quote = Clip.text<br/>EvidenceClaim.source_id = Clip.source_id<br/>substring-anchor passes by construction"]:::code --> Ledger
+
+    Ledger[("Evidence ledger<br/>(unchanged schema)")]:::store --> B
+
+    B["6. SYNTHESIZE (B, Sonnet)<br/>cite-only synthesis<br/>(unchanged from today)"]:::sonnet --> Record[/"SurfaceomeRecord<br/>data/annotations/{GENE}.json"/]:::out
+</pre>
+</div>
+<div class="caption">The loop has one decision point: after seeing trimmed clips, Sonnet either selects + finishes, or plans more searches and goes around again. A1 and A2 run this loop independently against the shared clip pool (A1 selects surface-evidence clips, A2 selects biology-context clips); their selections merge in the ledger.</div>
+
+<h2>Agent I/O at each step</h2>
+
+<h3>Step 1 — Sonnet's SearchPlan output</h3>
+<pre class="code">{
+  <span class="k">"searches"</span>: [
+    <span class="c">// All 8 evidence_retrieval categories run by default; Sonnet only lists the</span>
+    <span class="c">// ones it wants to override or skip. Empty list = run defaults.</span>
+    {<span class="k">"tool"</span>: <span class="s">"evidence_retrieval"</span>, <span class="k">"category"</span>: <span class="s">"surface_biotinylation"</span>},
+
+    <span class="c">// gene_literature topic_search with free-text anchors Sonnet chose</span>
+    {<span class="k">"tool"</span>: <span class="s">"gene_literature"</span>, <span class="k">"mode"</span>: <span class="s">"topic_search"</span>,
+     <span class="k">"anchors"</span>: [<span class="s">"ciliary GPCR"</span>, <span class="s">"TULP3 trafficking"</span>, <span class="s">"primary cilia hypothalamus"</span>]},
+
+    <span class="c">// gene2pubmed for the curated PMID baseline</span>
+    {<span class="k">"tool"</span>: <span class="s">"gene_literature"</span>, <span class="k">"mode"</span>: <span class="s">"gene2pubmed"</span>},
+
+    <span class="c">// targeted fetches for specific papers Sonnet wants deep-dived</span>
+    {<span class="k">"tool"</span>: <span class="s">"gene_literature"</span>, <span class="k">"mode"</span>: <span class="s">"fetch_fulltext"</span>, <span class="k">"pmcid"</span>: <span class="s">"PMC11444156"</span>}
+  ],
+  <span class="k">"rationale"</span>: <span class="s">"Generic categories cover surface methodology; ciliary anchors target the GPR75-specific biology that wouldn't surface otherwise. PMC11444156 is the canonical Jiang et al. ciliary paper."</span>
+}</pre>
+
+<h3>Step 3 — Haiku's TrimResponse (one per paper)</h3>
+<pre class="code">{
+  <span class="k">"paper_id"</span>: <span class="s">"PMC:PMC11444156"</span>,
+  <span class="k">"kept"</span>: [
+    {<span class="k">"clip_id"</span>: <span class="s">"p_results_05"</span>,
+     <span class="k">"reason"</span>: <span class="s">"Tissue/cell-type expression: GPR75 mRNA highest in brain"</span>,
+     <span class="k">"preview"</span>: <span class="s">"GPR75 mRNA puncta were detected by FISH-IHC in TH-positive neurons..."</span>,
+     <span class="k">"section"</span>: <span class="s">"results"</span>, <span class="k">"char_len"</span>: 412},
+    {<span class="k">"clip_id"</span>: <span class="s">"p_results_07"</span>,
+     <span class="k">"reason"</span>: <span class="s">"Endogenous GPR75 colocalizes with ciliary marker ADCY3"</span>, ...},
+    ...
+  ]
+  <span class="c">// Total kept: 8 of 45 clips. Dropped clips are silently discarded.</span>
+}</pre>
+
+<h3>Step 4 — Sonnet's SelectionResponse (the key UX)</h3>
+<pre class="code">{
+  <span class="k">"selections"</span>: [
+    {
+      <span class="k">"clip_id"</span>: <span class="s">"p_results_05@PMC11444156"</span>,  <span class="c">// orchestrator-globalized id</span>
+      <span class="k">"claim"</span>: <span class="s">"Endogenous GPR75 mRNA expressed in TH-positive neurons of the substantia nigra/VTA and locus coeruleus, indicating expression in dopaminergic and noradrenergic populations."</span>,
+      <span class="k">"claim_type"</span>: <span class="s">"tissue_expression"</span>,
+      <span class="k">"evidence_type"</span>: <span class="s">"immunofluorescence"</span>,
+      <span class="k">"evidence_tier"</span>: <span class="s">"primary"</span>,
+      <span class="k">"direction"</span>: <span class="s">"supports"</span>,
+      <span class="k">"confidence"</span>: <span class="s">"strong"</span>,
+      <span class="k">"assay_context"</span>: {<span class="k">"species"</span>: <span class="s">"mouse"</span>, <span class="k">"cell_type_or_line"</span>: <span class="s">"neurons"</span>,
+                          <span class="k">"permeabilized"</span>: <span class="s">"unknown"</span>}
+      <span class="c">// NO `quote` field. Orchestrator fills it from Clip.text on promote.</span>
+    },
+    ...
+  ],
+  <span class="k">"needs_more_searches"</span>: <span class="s">false</span>,
+  <span class="k">"additional_searches"</span>: []  <span class="c">// populated only if needs_more_searches=true</span>
+}</pre>
+
+<div class="callout">
+  <h3>The verbatim-without-retyping property</h3>
+  <p>Sonnet's selection output is the only place a quote could be paraphrased — and there's no <code>quote</code> field on it. The agent references the clip by ID, the orchestrator looks up the verbatim text in the clip pool, and the assembled <code>EvidenceClaim.quote</code> is byte-identical to the source body. The substring check at promotion passes by construction. Sonnet still writes the <code>claim</code> narrative (the agent's interpretation, which is meant to be synthesis, not a quote) — that field is not anchored.</p>
+</div>
+
+<h2>What changes vs today's pipeline</h2>
+<table class="compare">
+  <thead><tr><th style="width:18%">Layer</th><th>Today</th><th>Proposed</th></tr></thead>
+  <tbody>
+    <tr><td><b>Tools</b></td>
+        <td class="unchanged"><code>gene_lookup</code>, <code>evidence_retrieval</code>, <code>gene_literature</code></td>
+        <td class="unchanged">Same. No new tools.</td></tr>
+    <tr><td><b>Search direction</b></td>
+        <td class="changed">A1 / A2 decide tool-by-tool, mid-loop, while also reading results and writing claims. One agent does too many jobs.</td>
+        <td class="changed">A1 plans all searches up front (one Sonnet call), orchestrator executes in parallel, Sonnet sees pre-trimmed results.</td></tr>
+    <tr><td><b>Trim</b></td>
+        <td class="changed">No trim layer. Raw tool results (full paper bodies, all snippets, all drafts) go to Sonnet, who has to scroll through everything.</td>
+        <td class="changed">Haiku trims each paper to ~15% of its clips with a one-line reason. Sonnet sees a focused menu.</td></tr>
+    <tr><td><b>Quote anchoring</b></td>
+        <td class="changed">Sonnet copies <code>EvidenceClaimDraft.quote</code> into the claim (best case) or paraphrases from <code>paper.abstract</code> / <code>paper.sections</code> (worst case — the GPR75 failure mode).</td>
+        <td class="changed">Sonnet picks <code>clip_id</code>. Orchestrator fills <code>quote</code> from the clip's verbatim text. Paraphrase impossible by construction.</td></tr>
+    <tr><td><b>Sonnet's surface area</b></td>
+        <td class="changed">Reads tool results + writes <code>quote</code> + <code>source_id</code> + <code>section</code> + classifications + <code>claim</code> narrative. ~6 fields per row, two of them substring-checked.</td>
+        <td class="changed">Reads trimmed clips + picks <code>clip_id</code> + writes classifications + <code>claim</code> narrative. ~5 enum fields + 1 prose field. None substring-checked at the agent boundary.</td></tr>
+    <tr><td><b>Synthesizer B</b></td>
+        <td class="unchanged">Cite-only synthesis over the merged ledger.</td>
+        <td class="unchanged">Unchanged.</td></tr>
+    <tr><td><b>Output schema</b></td>
+        <td class="unchanged"><code>SurfaceomeRecord</code> v1.0.0</td>
+        <td class="unchanged">Unchanged — viewer / D1 unaffected.</td></tr>
+  </tbody>
+</table>
+
+<h2>How "needs more searches" works</h2>
+
+<p>Step 4 lets Sonnet emit <code>needs_more_searches: true</code> with an additional <code>SearchPlan</code> instead of selections. The orchestrator runs the new plan, Haiku trims the new papers, and the menu hands back to Sonnet for the actual selection pass. This is the iterative escape hatch for cases where:</p>
+<ul>
+  <li>The initial trim returned thin coverage of a category Sonnet thinks is load-bearing</li>
+  <li>A kept clip cites a paper that needs <code>fetch_fulltext</code> to verify</li>
+  <li>Sonnet realizes after seeing the trim that a different topic anchor would help (e.g., a paper mentioned a partner protein the planner didn't anticipate)</li>
+</ul>
+
+<p>Cap at 2-3 plan iterations so the loop terminates.</p>
+
+<h2>Open questions for the design</h2>
+<ul>
+  <li><b>A1 vs A2 split.</b> Keep them parallel (each runs the loop independently against the shared clip pool, selecting their respective claim_types) or merge into one Sonnet agent that handles both? Two passes give the synthesizer independent reads; one pass is simpler.</li>
+  <li><b>Haiku batch size per paper.</b> One Haiku call per paper is clean, but for a 100-paragraph paper that's 100 clips to judge in one prompt. Cap at ~50 per call? Multiple calls per paper?</li>
+  <li><b>The <code>claim</code> narrative field on Sonnet's selection.</b> Today this is required (the agent's interpretation of the evidence). Keep it required, allow optional, or auto-generate from the clip text + classifications? My read: keep required — the agent's synthesis adds real signal beyond the verbatim quote.</li>
+  <li><b>Plan iteration cap.</b> 2? 3? Need data from the first real run.</li>
+  <li><b>Trim model.</b> Haiku at this step looked clean on the GPR75 probe; if quality demands surface (the LGR4 over-inclusion case), bump to Sonnet for the trim too. Currently Sonnet-everywhere is the conservative quality-led choice; Haiku-for-trim is the leaner default.</li>
+</ul>
+
+<h2>Future tool surface (not for this design, kept as reference)</h2>
+<p>The design above uses only the tools we have today. The list below is for later additions when specific quality gaps surface (e.g., the EGFR "missing necitumumab" gap motivates adding Tier B sources). Each row notes whether the tool exists today and where the gap is.</p>
+
+<details>
+  <summary>Tier A — Direct evidence retrieval (always run, no Sonnet judgment to call)</summary>
+  <table class="compare">
+    <thead><tr><th>Tool</th><th>Returns</th><th>Why load-bearing</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>PubTator3 gene-tagged search</td>
+          <td>PMID list, NER-disambiguated by gene entity</td>
+          <td>Highest paper-search precision. Gene resolved to NCBI entity → no paralog leakage.</td>
+          <td>Internal to <code>evidence_retrieval</code>; not exposed standalone.</td></tr>
+      <tr><td>EuropePMC method-bound search (8 categories)</td>
+          <td>Paper list per category, filtered by hallmark vocabulary</td>
+          <td>Direct method-grounded — "flow cytometry + intact cells + GENE" hits load-bearing assays.</td>
+          <td><code>evidence_retrieval</code> ✓</td></tr>
+      <tr><td>HPA snapshot</td>
+          <td>subcellular_location, IHC reliability tier, expression atlas</td>
+          <td>Curated direct surface-localization. One of the few non-paper sources.</td>
+          <td><code>gene_lookup</code> ✓</td></tr>
+      <tr><td>UniProt subcellular_location + topology + features</td>
+          <td>Transmembrane spans, curator-asserted localization, PTM features</td>
+          <td>Canonical "what does the curator think." Feeds the deterministic <code>canonical_topology</code> block.</td>
+          <td><code>gene_lookup uniprot_summary</code> ✓</td></tr>
+    </tbody>
+  </table>
+</details>
+
+<details>
+  <summary>Tier B — Therapeutic engagement (the "missing necitumumab" gap)</summary>
+  <table class="compare">
+    <thead><tr><th>Tool</th><th>Returns</th><th>Why</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>clinicaltrials.gov API</td>
+          <td>NCT IDs targeting this gene, drug, phase</td>
+          <td>Canonical source for <code>highest_stage = phase_1/2/3/approved</code>. Today the agent infers this from abstracts and misses approved drugs.</td>
+          <td>Missing</td></tr>
+      <tr><td>ChEMBL / DrugBank target API</td>
+          <td>Approved + investigational drugs against this target, mechanism</td>
+          <td>Catches all 4 EGFR-approved antibodies — would have prevented the necitumumab miss.</td>
+          <td>Missing</td></tr>
+      <tr><td>Open Targets target API</td>
+          <td>Aggregated drug + disease + tractability evidence</td>
+          <td>One-stop signal for therapeutic + genetics evidence.</td>
+          <td>Missing</td></tr>
+    </tbody>
+  </table>
+</details>
+
+<details>
+  <summary>Tier C — Structural / topology</summary>
+  <table class="compare">
+    <thead><tr><th>Tool</th><th>Returns</th><th>Why</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>PDB structure search</td>
+          <td>PDB IDs with chain ranges + resolution</td>
+          <td>Direct structural evidence for ECD topology; lets the agent cite a specific chain.</td>
+          <td>Partial — <code>structure_with_ecd</code> in <code>evidence_retrieval</code> finds papers about structures, not the structures themselves.</td></tr>
+      <tr><td>AlphaFold DB</td>
+          <td>AFDB ID + pLDDT per residue</td>
+          <td>Predicted structure for proteins without crystal. Fills <code>canonical_topology</code> gaps.</td>
+          <td>Used by deterministic block; not agent-callable.</td></tr>
+    </tbody>
+  </table>
+</details>
+
+<details>
+  <summary>Tier D — Sonnet-planned anchors (this IS exposed today as gene_literature topic_search)</summary>
+  <table class="compare">
+    <thead><tr><th>Tool</th><th>Returns</th><th>Why</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>EuropePMC topic_search with planner-emitted anchors</td>
+          <td>Paper list per anchor</td>
+          <td>Catches gene-specific niches: "ciliary GPCR + TULP3" for GPR75, "ER stress + GRP78 surface" for HSPA5, "amivantamab bispecific" for EGFR.</td>
+          <td><code>gene_literature topic_search</code> ✓ (used by Step 1's SearchPlan)</td></tr>
+    </tbody>
+  </table>
+</details>
+
+<details>
+  <summary>Tier E — Recall fill (sparse-evidence genes; not always-on)</summary>
+  <table class="compare">
+    <thead><tr><th>Tool</th><th>Returns</th><th>Why</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>gene2pubmed</td>
+          <td>NCBI's curated full PMID list</td>
+          <td>Catches reviews + foundational papers that may not have method-specific terms.</td>
+          <td><code>gene_literature gene2pubmed</code> ✓</td></tr>
+      <tr><td>OpenAlex</td>
+          <td>Cross-publisher paper discovery, citation graph</td>
+          <td>Broader than PubMed; catches preprints, non-indexed journals.</td>
+          <td>Missing</td></tr>
+      <tr><td>PMC supplementary tables</td>
+          <td>Per-row data from surfaceome MS supplementary tables (LFQ, fold-change, p-value)</td>
+          <td>Surfaceome MS papers' load-bearing evidence is often in supplementary tables, not the body.</td>
+          <td>Missing</td></tr>
+      <tr><td>PRIDE / ProteomicsDB</td>
+          <td>MS datasets with the target detected</td>
+          <td>When no paper cites the gene's surfaceome MS detection but the dataset exists in PRIDE.</td>
+          <td>Missing</td></tr>
+    </tbody>
+  </table>
+</details>
+
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'default', flowchart: { useMaxWidth: false } });
+</script>
+
+</body>
+</html>

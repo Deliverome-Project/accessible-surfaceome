@@ -18,10 +18,41 @@ persisted ``Evidence`` record after deterministic validation.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl, field_validator, model_validator
+
+logger = logging.getLogger(__name__)
+
+
+def _warn_prose_overshoot(instance: BaseModel, targets: dict[str, int]) -> None:
+    """Log a warning per prose field that exceeds its soft target.
+
+    Used by per-class ``model_validator(mode="after")`` hooks to keep the
+    "aim for ≤N chars" signal alive *without* dropping the agent's
+    submission. LLMs don't count characters reliably and a 20-30%
+    overshoot on a content-rich gene is not worth discarding a $1.40
+    annotation; we log it so the audit step can find it. Empty / ``None``
+    values are skipped.
+    """
+
+    for field, target in targets.items():
+        value = getattr(instance, field, None)
+        if not value:
+            continue
+        n = len(value)
+        if n > target:
+            logger.warning(
+                "soft-target overshoot on %s.%s: len=%d, target=%d (over by %d chars, %.0f%%)",
+                type(instance).__name__,
+                field,
+                n,
+                target,
+                n - target,
+                100.0 * (n - target) / target,
+            )
 
 # ---------------------------------------------------------------------------
 # Shared identifiers
@@ -342,6 +373,17 @@ class Paper(BaseModel):
     sections: list[PaperSection] = Field(default_factory=list)
     truncated_sections: list[str] = Field(default_factory=list)
     target_mention_excerpts: list[str] = Field(default_factory=list)
+    # Pre-extracted verbatim-anchored EvidenceClaimDraft skeletons from the
+    # paper's abstract (and full-text sections when ``fetch_fulltext`` was
+    # used). Mirrors what ``evidence_retrieval`` provides for the category-
+    # bounded path — the (quote, source_id, section) triple is locked by
+    # the tool so the agent can copy-paste anchors verbatim and the
+    # substring check at promotion passes by construction. Empty for
+    # ``gene2pubmed`` / ``topic_search`` listings, which don't fetch
+    # bodies. Populated by ``gene_literature.fetch_abstract`` and
+    # ``gene_literature.fetch_fulltext`` (and any caller that builds a
+    # Paper with body text).
+    evidence_claim_drafts: list["EvidenceClaimDraft"] = Field(default_factory=list)
 
 
 LiteratureMode = Literal["gene2pubmed", "topic_search", "fetch_abstract", "fetch_fulltext"]
@@ -394,13 +436,13 @@ class CandidateSnippet(BaseModel):
     back into a claim. ``hallmark_phrase`` is the regex tag that fired and
     is included for audit, not for the agent to act on.
 
-    ``context_excerpt`` is the surrounding 1-2 sentences in the same section
-    (≤500 chars), verbatim. The agent reads this to *understand* what the
-    snippet says — useful when a methodology description spans multiple
-    sentences ("Cells were biotinylated… Eluted material was analyzed by
-    LC-MS/MS… CD81 was identified in the enriched fraction"). The agent
-    must still copy ``text`` (not ``context_excerpt``) into the claim's
-    ``quote`` field — only ``text`` is bounded to the 200-char schema cap.
+    ``context_excerpt`` is the broader surrounding context in the same
+    section (≤1500 chars), verbatim. The agent reads this to *understand*
+    what the snippet says — useful when a methodology description spans
+    multiple sentences ("Cells were biotinylated… Eluted material was
+    analyzed by LC-MS/MS… CD81 was identified in the enriched fraction").
+    The agent must still copy ``text`` (not ``context_excerpt``) into the
+    claim's ``quote`` field.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -408,10 +450,10 @@ class CandidateSnippet(BaseModel):
     source_id: str  # "PMID:..." | "PMC:..." | "HPA:<symbol>"
     section: PaperSection_
     figure_or_table_id: str | None = None
-    text: str = Field(..., max_length=200)
+    text: str = Field(..., max_length=600)
     score: float
     hallmark_phrase: str
-    context_excerpt: str | None = Field(default=None, max_length=500)
+    context_excerpt: str | None = Field(default=None, max_length=1500)
 
 
 class EvidenceClaimDraft(BaseModel):
@@ -431,10 +473,10 @@ class EvidenceClaimDraft(BaseModel):
     agent may adopt as ``EvidenceClaim.evidence_id`` (or replace with a
     sequential ``a1_evi_NN`` — either works downstream).
 
-    ``context_excerpt`` carries the surrounding 1-2 sentences from the
-    same section for the agent's understanding. Do NOT copy
-    ``context_excerpt`` into the claim's ``quote`` — only ``quote`` is
-    schema-bound to 200 chars.
+    ``context_excerpt`` carries the broader surrounding context from the
+    same section for the agent's understanding (≤1500 chars). Do NOT copy
+    ``context_excerpt`` into the claim's ``quote`` — ``quote`` is the
+    substring-anchored field.
 
     Drafts are emitted for every snippet returned by ``evidence_retrieval``
     (hallmark snippets + target-mention snippets for high-throughput
@@ -445,11 +487,11 @@ class EvidenceClaimDraft(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     suggested_evidence_id: str
-    quote: str = Field(..., max_length=200)
+    quote: str = Field(..., max_length=600)
     source_id: str
     section: PaperSection_
     figure_or_table_id: str | None = None
-    context_excerpt: str | None = Field(default=None, max_length=500)
+    context_excerpt: str | None = Field(default=None, max_length=1500)
     hallmark_phrase: str
     score: float
 
@@ -646,7 +688,7 @@ class EvidenceSpan(BaseModel):
     source: SourceRef
     section: PaperSection_
     figure_or_table_id: str | None = None  # "Figure 3A", "Table S1", "Chain A"
-    quote: str = Field(..., max_length=200)  # ≤200 chars, ALWAYS verbatim
+    quote: str = Field(..., max_length=600)  # ≤600 chars, ALWAYS verbatim (up to ~3 sentences)
     quote_sha256: str  # tamper-detection
     char_offset: int  # position in source; REQUIRED, no None
     normalized_source_sha256: str  # hash of normalized form used for substring check
@@ -785,7 +827,7 @@ class EvidenceClaim(BaseModel):
     confidence: EvidenceConfidence
     assay_context: AssayContext
     source_id: str  # "PMID:10601354" | "WO2024036333A2" | "UniProt:Q9UBP8" | "PDB:2ABC"
-    quote: str = Field(..., max_length=200)  # verbatim, ≤200 chars
+    quote: str = Field(..., max_length=600)  # verbatim, ≤600 chars (up to ~3 sentences)
     section: PaperSection_
     figure_or_table_id: str | None = None  # "Figure 3A", "Table S1"
 
@@ -1227,7 +1269,10 @@ class ExecutiveSummary(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    one_paragraph: str = Field(..., max_length=600)
+    one_paragraph: str = Field(
+        ...,
+        description="Consultant-readable headline. Soft target ≤600 chars (overshoots are warned but accepted).",
+    )
     surface_accessibility: SurfaceAccessibility
     evidence_grade_summary: EvidenceGrade
     confidence: Confidence
@@ -1235,6 +1280,13 @@ class ExecutiveSummary(BaseModel):
     subcategory: Subcategory
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"one_paragraph": 600}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "ExecutiveSummary":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 # ---- filters --------------------------------------------------------------
@@ -1297,7 +1349,17 @@ class AntibodyRef(BaseModel):
     antibody_epitope_region: AntibodyEpitopeRegion
     validation_strategy: ValidationStrategy
     validation_strength: ValidationStrength
-    cross_reactivity_notes: str | None = Field(default=None, max_length=200)
+    cross_reactivity_notes: str | None = Field(
+        default=None,
+        description="Cross-reactivity notes. Soft target ≤200 chars (overshoots warned but accepted).",
+    )
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"cross_reactivity_notes": 200}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "AntibodyRef":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class ExpressionObservation(BaseModel):
@@ -1355,14 +1417,25 @@ class TherapeuticEngagementContext(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     highest_stage: TherapeuticStage
-    # Prose caps relaxed from the per-element table's 400/200 to give the agent
-    # real room on heavily-studied genes (the 400/200 first-run overran on
-    # EGFR). These are LLM prose, not verbatim quotes — the 200-char cap on
-    # `EvidenceClaim.quote` / `EvidenceSpan.quote` (the substring-anchor
-    # surface) is unchanged.
-    description: str = Field(..., max_length=600)
-    surface_form_rationale: str = Field(..., max_length=400)
+    description: str = Field(
+        ...,
+        description="Therapeutic engagement description. Soft target ≤600 chars (overshoots warned but accepted).",
+    )
+    surface_form_rationale: str = Field(
+        ...,
+        description="Which form the drug engages (surface vs. secreted). Soft target ≤400 chars (overshoots warned but accepted).",
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
+        "description": 600,
+        "surface_form_rationale": 400,
+    }
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "TherapeuticEngagementContext":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class Contradiction(BaseModel):
@@ -1384,15 +1457,21 @@ class SurfaceEvidence(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     evidence_grade: EvidenceGrade
-    # Per-element table said ≤400, macro-rule said ≤800; 400 overran on the
-    # first EGFR pass (922 chars). 800 matches the macro-rule and gives a
-    # heavily-cited gene room to name the directness of evidence without
-    # weakening the verbatim-quote substring discipline elsewhere.
-    grade_rationale: str = Field(..., max_length=800)
+    grade_rationale: str = Field(
+        ...,
+        description="Why this evidence_grade. Soft target ≤800 chars (overshoots warned but accepted).",
+    )
     methods: list[MethodObservation] = Field(default_factory=list)
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
     therapeutic_engagement: TherapeuticEngagementContext | None = None
     contradicting_evidence: list[Contradiction] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"grade_rationale": 800}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "SurfaceEvidence":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 # ---- biological context (section 2) ---------------------------------------
@@ -1476,8 +1555,18 @@ class AnatomicalAccessibilityObservation(BaseModel):
     context: str
     orientation: Orientation
     accessibility_implication: AccessibilityImplication
-    rationale: str = Field(..., max_length=300)
+    rationale: str = Field(
+        ...,
+        description="Why this orientation affects accessibility. Soft target ≤300 chars (overshoots warned but accepted).",
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "AnatomicalAccessibilityObservation":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class AccessibilityModulationObservation(BaseModel):
@@ -1501,9 +1590,25 @@ class AccessibilityModulationObservation(BaseModel):
     dual_loc_partner_compartment: DualLocPartnerCompartment | None = None
     baseline_context: str
     modulating_state: str
-    change: str = Field(..., max_length=300)
-    accessibility_implication: str = Field(..., max_length=300)
+    change: str = Field(
+        ...,
+        description="What changes between baseline_context and modulating_state. Soft target ≤300 chars (overshoots warned but accepted).",
+    )
+    accessibility_implication: str = Field(
+        ...,
+        description="What the change means for accessibility. Soft target ≤300 chars (overshoots warned but accepted).",
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
+        "change": 300,
+        "accessibility_implication": 300,
+    }
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> AccessibilityModulationObservation:
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
     @model_validator(mode="after")
     def _check_category_conditionals(self) -> AccessibilityModulationObservation:
@@ -1675,8 +1780,18 @@ class CoReceptorRequirements(BaseModel):
     surface_expression_dependency: CoreceptorDependency
     partners: list[str] = Field(default_factory=list)
     evidence_basis: CoreceptorEvidenceBasis
-    rationale: str = Field(..., max_length=400)
+    rationale: str = Field(
+        ...,
+        description="Why this surface-expression dependency. Soft target ≤400 chars (overshoots warned but accepted).",
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 400}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "CoReceptorRequirements":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class ShedForm(BaseModel):
@@ -1715,8 +1830,18 @@ class RestrictedSubdomain(BaseModel):
     domain: RestrictedSubdomainName
     severity: RiskSeverity
     evidence_strength: EvidenceStrength
-    rationale: str = Field(..., max_length=300)
+    rationale: str = Field(
+        ...,
+        description="Why surface presence is restricted to this subdomain. Soft target ≤300 chars (overshoots warned but accepted).",
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "RestrictedSubdomain":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class ECDSizeAssessment(BaseModel):
@@ -1730,8 +1855,18 @@ class ECDSizeAssessment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     ecd_accessibility_class: ECDAccessibilityClass
-    rationale: str = Field(..., max_length=300)
+    rationale: str = Field(
+        ...,
+        description="Why this ECD-size class. Soft target ≤300 chars (overshoots warned but accepted).",
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "ECDSizeAssessment":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class EpitopeMasking(BaseModel):
@@ -1746,8 +1881,18 @@ class EpitopeMasking(BaseModel):
     mechanism: list[EpitopeMaskingMechanism] = Field(default_factory=list)
     severity: EpitopeMaskingSeverity
     evidence_strength: EvidenceStrength
-    rationale: str = Field(..., max_length=400)
+    rationale: str = Field(
+        ...,
+        description="Why the epitope is (or isn't) masked. Soft target ≤400 chars (overshoots warned but accepted).",
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 400}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "EpitopeMasking":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class AccessibilityRisks(BaseModel):
@@ -1850,9 +1995,19 @@ class SurfaceomeRecord(BaseModel):
 
     # Synthesis metadata
     confidence: Confidence
-    confidence_reasoning: str = Field(..., max_length=600)
+    confidence_reasoning: str = Field(
+        ...,
+        description="Why this confidence level. Soft target ≤600 chars (overshoots warned but accepted).",
+    )
     model_path: str
     record_generated_at: datetime
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"confidence_reasoning": 600}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> SurfaceomeRecord:
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
     @model_validator(mode="after")
     def _check_confidence_reasoning(self) -> SurfaceomeRecord:
@@ -1910,8 +2065,18 @@ class SurfaceomeRecordDraft(BaseModel):
 
     # Synthesis metadata
     confidence: Confidence
-    confidence_reasoning: str = Field(..., max_length=600)
+    confidence_reasoning: str = Field(
+        ...,
+        description="Why this confidence level. Soft target ≤600 chars (overshoots warned but accepted).",
+    )
     model_path: str
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"confidence_reasoning": 600}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> SurfaceomeRecordDraft:
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
     @model_validator(mode="after")
     def _check_confidence_reasoning(self) -> SurfaceomeRecordDraft:
@@ -2088,7 +2253,17 @@ class SynthesizerDraft(BaseModel):
     accessibility_risks: AccessibilityRisks
     filters_llm: SynthesizerLLMFilters
     confidence: Confidence
-    confidence_reasoning: str = Field(..., max_length=600)
+    confidence_reasoning: str = Field(
+        ...,
+        description="Why this confidence level. Soft target ≤600 chars (overshoots warned but accepted).",
+    )
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"confidence_reasoning": 600}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> SynthesizerDraft:
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
     @model_validator(mode="after")
     def _check_confidence_reasoning(self) -> SynthesizerDraft:
@@ -2311,11 +2486,27 @@ class TriageRecordDraft(BaseModel):
     schema_version: str = TRIAGE_SCHEMA_VERSION
     gene: GeneIdentifier
     verdict: TriageVerdict
-    verdict_reasoning: str = Field(..., max_length=800)
+    verdict_reasoning: str = Field(
+        ...,
+        description="Why this triage verdict. Soft target ≤800 chars (overshoots warned but accepted).",
+    )
     reason: TriageReason
     confidence: TriageConfidence
-    key_uncertainty: str | None = Field(default=None, max_length=200)
+    key_uncertainty: str | None = Field(
+        default=None,
+        description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
+    )
     model_path: TriageModelPath = "haiku_only"
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
+        "verdict_reasoning": 800,
+        "key_uncertainty": 200,
+    }
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> TriageRecordDraft:
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
     @model_validator(mode="after")
     def _check_reason_matches_verdict(self) -> TriageRecordDraft:
@@ -2340,12 +2531,28 @@ class TriageRecord(BaseModel):
     schema_version: str = TRIAGE_SCHEMA_VERSION
     gene: GeneIdentifier
     verdict: TriageVerdict
-    verdict_reasoning: str = Field(..., max_length=800)
+    verdict_reasoning: str = Field(
+        ...,
+        description="Why this triage verdict. Soft target ≤800 chars (overshoots warned but accepted).",
+    )
     reason: TriageReason
     confidence: TriageConfidence
-    key_uncertainty: str | None = Field(default=None, max_length=200)
+    key_uncertainty: str | None = Field(
+        default=None,
+        description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
+    )
     search_log: list[SearchEntry] = Field(default_factory=list)
     model_path: TriageModelPath = "haiku_only"
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
+        "verdict_reasoning": 800,
+        "key_uncertainty": 200,
+    }
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> TriageRecord:
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
     @model_validator(mode="after")
     def _check_reason_matches_verdict(self) -> TriageRecord:

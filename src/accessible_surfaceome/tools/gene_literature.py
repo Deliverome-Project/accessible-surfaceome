@@ -40,6 +40,7 @@ from ._shared.models import (
     TopicAnchor,
 )
 from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
+from .evidence_retrieval import extract_paper_drafts
 from .gene_lookup import resolve as _resolve
 
 logger = logging.getLogger(__name__)
@@ -196,12 +197,21 @@ def gene_literature(
         if mode == "fetch_fulltext":
             if not pmcid:
                 raise ValueError("fetch_fulltext requires a pmcid")
-            return fetch_fulltext(
+            paper = fetch_fulltext(
                 http=client,
                 pmcid=pmcid,
                 retraction_index=index,
                 topic_tagger=_detect_topic_tags,
             )
+            # Same paper-level draft extraction as fetch_abstract — covers
+            # full-text fetches that don't route through evidence_retrieval.
+            source_id = f"PMC:{paper.pmc_id}" if paper.pmc_id else f"PMID:{paper.pmid}"
+            paper.evidence_claim_drafts = extract_paper_drafts(
+                source_id=source_id,
+                abstract=paper.abstract,
+                sections=paper.sections,
+            )
+            return paper
         raise ValueError(f"unknown mode: {mode!r}")
     finally:
         if own_client:
@@ -321,9 +331,17 @@ def _fetch_abstract(
     hits = (payload.get("resultList") or {}).get("result") or []
     if not hits:
         raise LookupError(f"PMID:{pmid} not found in Europe PMC (MED source)")
-    return paper_from_europepmc(
+    paper = paper_from_europepmc(
         hits[0], retraction_index=retraction_index, topic_tagger=_detect_topic_tags
     )
+    # Pre-extract verbatim-anchored drafts so A2 can adopt quotes without
+    # paraphrasing — GPR75 audit (2026-05-15) found 6/6 unanchored rows
+    # came from gene_literature paths where no drafts were emitted.
+    source_id = f"PMC:{paper.pmc_id}" if paper.pmc_id else f"PMID:{paper.pmid}"
+    paper.evidence_claim_drafts = extract_paper_drafts(
+        source_id=source_id, abstract=paper.abstract, sections=paper.sections
+    )
+    return paper
 
 
 # ---------------------------------------------------------------------------

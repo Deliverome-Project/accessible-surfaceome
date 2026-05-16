@@ -6,11 +6,13 @@ gives the agent bibliographic access; this tool drives the agent to specific
 *assay-category* evidence with pre-extracted candidate quotes.
 
 One call → one (uniprot_acc, category) pair → a small set of papers + the
-≤200-char sentences from those papers where the category's hallmark phrases
-appear. The agent then picks one of the candidate snippets verbatim, pastes
-it into ``EvidenceClaim.quote``, and the orchestrator's substring check
-passes by construction (the snippet was extracted from the cached source
-body the substring check normalizes against).
+≤600-char sentences from those papers where the category's hallmark phrases
+appear (cap is ``_QUOTE_MAX_CHARS``; bumped from 200 → 600 after the EGFR
+audit showed mid-clause truncation on long methodology sentences). The
+agent then picks one of the candidate snippets verbatim, pastes it into
+``EvidenceClaim.quote``, and the orchestrator's substring check passes by
+construction (the snippet was extracted from the cached source body the
+substring check normalizes against).
 
 Categories
 ----------
@@ -62,6 +64,7 @@ from ._shared.models import (
     EvidenceRetrievalPack,
     IdentifierBundle,
     Paper,
+    PaperSection,
     PaperSection_,
     SyntheticSource,
 )
@@ -655,7 +658,7 @@ def _union_by_pmid(*paper_lists: list[Paper]) -> list[Paper]:
 
 # A sentence-ish splitter. Doesn't try to be perfect — surface biology
 # papers use plenty of "Fig. 3A" and "i.e." that throw off naive
-# splitters, so we keep a lenient pattern and let the ≤200-char cap do
+# splitters, so we keep a lenient pattern and let the cap do
 # the trimming.
 _SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z(])")
 
@@ -676,13 +679,22 @@ TARGET_MENTION_HALLMARK = "target_mention"
 # excerpt makes it through alongside the methodology snippets.
 _MAX_TARGET_MENTIONS_PER_PAPER = 3
 
-# Context-excerpt cap. The 200-char ``CandidateSnippet.text`` is the
-# substring anchor; ``context_excerpt`` carries the surrounding 1-2
-# sentences (≤500 chars) so the agent can READ the snippet in
-# situ. High-throughput methodology routinely spans two sentences
-# ("Cells were biotinylated. Eluted proteins were analyzed by LC-MS/MS")
+# Verbatim-quote cap for ``CandidateSnippet.text``. Substring-anchored
+# into ``SourceTextStore`` at promotion; bumped from 200 → 600 to fit
+# up to ~3 sentences of context (EGFR audit, 2026-05-15: 10/37 quotes
+# were truncated mid-clause at the old 199-char ceiling). Schema-side
+# cap is in ``models.CandidateSnippet.text`` / ``EvidenceClaim.quote``;
+# this constant is the snippet extractor's pre-cap target so the schema
+# never has to refuse a tool-emitted snippet.
+_QUOTE_MAX_CHARS = 600
+
+# Context-excerpt cap. ``CandidateSnippet.text`` is the substring
+# anchor; ``context_excerpt`` carries broader surrounding text
+# (≤1500 chars) so the agent can READ the snippet in situ. High-
+# throughput methodology routinely spans multiple sentences ("Cells
+# were biotinylated. Eluted proteins were analyzed by LC-MS/MS")
 # and the focal-sentence-only quote is insufficient context without it.
-_CONTEXT_EXCERPT_MAX_CHARS = 500
+_CONTEXT_EXCERPT_MAX_CHARS = 1500
 
 
 def _adjacent_context(
@@ -740,8 +752,9 @@ def _extract_snippets(
     """Pull up to ``max_snippets`` candidate sentences from ``paper.sections``.
 
     Per-section: split into sentences, score each by section weight ×
-    hallmark-match count, keep the top sentences (capped at 200 chars).
-    Deduplicate against already-emitted snippets from the same paper.
+    hallmark-match count, keep the top sentences (capped at
+    ``_QUOTE_MAX_CHARS``). Deduplicate against already-emitted snippets
+    from the same paper.
 
     ``target_names`` + ``gazetteer`` drive the subject-grounding filter
     (see :func:`accessible_surfaceome.tools._shared.gene_gazetteer.sentence_subject`):
@@ -782,7 +795,7 @@ def _extract_snippets(
                 match = pattern.search(sentence)
                 if not match:
                     continue
-                snippet_text = _trim_to_200_chars(sentence, match)
+                snippet_text = _trim_to_quote_cap(sentence, match)
                 if not snippet_text:
                     continue
                 # Confirm the trimmed snippet is a substring of the
@@ -814,8 +827,9 @@ def _extract_snippets(
     seen: set[str] = set()
     chosen: list[CandidateSnippet] = []
     for _, snippet in candidates:
-        # Dedup on normalized text — first-200-chars overlap is enough
-        # to consider the same snippet under different patterns.
+        # Dedup on normalized text — full-snippet overlap (under the
+        # quote cap) is enough to consider the same snippet under
+        # different patterns.
         key = re.sub(r"\s+", " ", snippet.text.lower()).strip()
         if key in seen:
             continue
@@ -833,7 +847,7 @@ def _extract_target_mentions(
     target_names: frozenset[str],
     max_mentions: int = _MAX_TARGET_MENTIONS_PER_PAPER,
 ) -> list[CandidateSnippet]:
-    """Emit verbatim ≤200-char sentences where the target gene is named.
+    """Emit verbatim ≤``_QUOTE_MAX_CHARS`` sentences where the target gene is named.
 
     Only fires for ``spec.accepts_paper_level_evidence=True`` categories
     (high-throughput methods) — for antibody assays the existing
@@ -844,9 +858,9 @@ def _extract_target_mentions(
     snippets (the paper-level relaxation), so a tier-ranked agent picks
     a target-mention when one is available.
 
-    Sentences over the 200-char cap are trimmed around the first target
-    token; the trimmed text must still substring-match the source body
-    or the snippet is dropped (substring-anchoring guarantee).
+    Sentences over the cap are trimmed around the first target token;
+    the trimmed text must still substring-match the source body or the
+    snippet is dropped (substring-anchoring guarantee).
     """
     if not spec.accepts_paper_level_evidence or not target_names or not paper.sections:
         return []
@@ -893,29 +907,133 @@ def _extract_target_mentions(
 
 
 def _trim_to_target(sentence: str, target_token: str) -> str:
-    """Trim a sentence to ≤200 chars, biased to keep the target token in view."""
+    """Trim a sentence to ``_QUOTE_MAX_CHARS``, biased to keep the target
+    token in view. Snaps window edges to the nearest clause boundary so
+    the snippet doesn't start or end mid-clause.
+    """
     sentence = sentence.strip()
-    if len(sentence) <= 200:
+    if len(sentence) <= _QUOTE_MAX_CHARS:
         return sentence
-    # Find the target token; center a window around it.
     idx = sentence.find(target_token)
     if idx < 0:
-        # Token might be a normalized form (hyphens dropped); fall back to first 200.
-        return sentence[:200].rstrip()
-    pad = max(0, (200 - len(target_token)) // 2)
+        # Token might be a normalized form (hyphens dropped); fall back to first cap chars.
+        return sentence[:_QUOTE_MAX_CHARS].rstrip()
+    pad = max(0, (_QUOTE_MAX_CHARS - len(target_token)) // 2)
     start = max(0, idx - pad)
-    end = min(len(sentence), start + 200)
-    start = max(0, end - 200)
+    end = min(len(sentence), start + _QUOTE_MAX_CHARS)
+    start = max(0, end - _QUOTE_MAX_CHARS)
     snippet = sentence[start:end]
     if start > 0:
-        first_space = snippet.find(" ")
-        if 0 < first_space < 40:
-            snippet = snippet[first_space + 1:]
+        snippet = _snap_left_to_clause(snippet)
     if end < len(sentence):
-        last_space = snippet.rfind(" ")
-        if last_space > len(snippet) - 40:
-            snippet = snippet[:last_space]
+        snippet = _snap_right_to_clause(snippet)
     return snippet.strip()
+
+
+# ---------------------------------------------------------------------------
+# Paper-level draft extraction (used by gene_literature.fetch_abstract /
+# fetch_fulltext to give the agent verbatim-anchored EvidenceClaimDraft
+# skeletons even when the call didn't go through evidence_retrieval).
+#
+# Motivation: the GPR75 audit (2026-05-15) showed that 6/6 unanchored rows
+# came from A2 paraphrasing quotes off papers fetched via gene_literature
+# rather than via evidence_retrieval. evidence_retrieval pre-builds
+# (quote, source_id)-locked drafts; gene_literature did not. With the same
+# pre-extraction pattern here, the agent can't paraphrase what it never
+# types — substring anchoring passes by construction.
+# ---------------------------------------------------------------------------
+
+
+# Max drafts per paper, summed across abstract + sections. 30 is enough
+# to surface the load-bearing sentences from a typical 8-section
+# full-text paper (≈4/section) without blowing up the agent's tool-
+# result payload. For an abstract-only fetch this is effectively a
+# no-op cap (abstracts rarely have >12 sentences).
+_MAX_DRAFTS_PER_PAPER = 30
+# Per-section sentence cap inside the per-paper budget. Keeps long
+# results / discussion sections from monopolizing the draft list and
+# starving the abstract / methods quotes.
+_MAX_DRAFTS_PER_SECTION = 8
+
+
+def extract_paper_drafts(
+    *,
+    source_id: str,
+    abstract: str | None,
+    sections: list[PaperSection],
+    max_drafts: int = _MAX_DRAFTS_PER_PAPER,
+) -> list[EvidenceClaimDraft]:
+    """Pre-extract verbatim-anchored EvidenceClaimDraft skeletons from a
+    Europe-PMC-style paper's abstract + (optionally) full-text sections.
+
+    Strategy: split each available body into sentences, trim any sentence
+    that exceeds ``_QUOTE_MAX_CHARS`` to a clause-snapped substring, and
+    emit one draft per sentence that substring-matches its source text.
+    No hallmark filter — the agent fetched this paper because they
+    already think it's topical, so we hand over every sentence as a
+    quotable anchor and let the agent pick. Per-section and per-paper
+    caps keep the payload bounded.
+
+    The substring check (``snippet_text not in body``) guarantees that
+    every emitted draft will satisfy the orchestrator's promotion-time
+    substring anchor by construction — same invariant
+    ``_extract_snippets`` provides for the category-bounded path.
+
+    ``sections`` is the same ``list[PaperSection]`` carried on ``Paper``;
+    we map each section's ``name`` to the ``PaperSection_`` enum used by
+    EvidenceClaim via ``_SECTION_TO_CLAIM`` (unknown names → "other").
+    """
+
+    drafts: list[EvidenceClaimDraft] = []
+    seq = 0
+    bare = source_id.split(":", 1)[-1] if ":" in source_id else source_id
+
+    body_iter: list[tuple[PaperSection_, str]] = []
+    if abstract and abstract.strip():
+        body_iter.append(("abstract", abstract))
+    for sec in sections:
+        body_iter.append((_SECTION_TO_CLAIM.get(sec.name, "other"), sec.text))
+
+    for section_enum, text in body_iter:
+        if not text or not text.strip():
+            continue
+        per_section = 0
+        # Score by position: earlier sentences score higher. Uniform
+        # base so the agent's tier-ranking logic stays compatible with
+        # evidence_retrieval-emitted drafts (which use weight + match
+        # count); paper-level drafts sit below the methodology snippets
+        # by design.
+        n_sentences = max(1, len(_split_sentences(text)))
+        for pos, sentence in enumerate(_split_sentences(text)):
+            if len(drafts) >= max_drafts or per_section >= _MAX_DRAFTS_PER_SECTION:
+                break
+            quote = sentence.strip()
+            if len(quote) > _QUOTE_MAX_CHARS:
+                # Sentence is over the cap — center the trim on the
+                # first long-enough alphanumeric stretch as a stand-in
+                # for "where the content is."
+                m = re.search(r"\w{5,}", quote)
+                if m is None:
+                    continue
+                quote = _trim_to_quote_cap(quote, m)
+            if not quote or quote not in text:
+                continue
+            position_score = 1.0 + (n_sentences - pos) / n_sentences  # 1..2
+            seq += 1
+            per_section += 1
+            drafts.append(
+                EvidenceClaimDraft(
+                    suggested_evidence_id=f"draft_{bare}_{section_enum}_{seq:02d}",
+                    quote=quote,
+                    source_id=source_id,
+                    section=section_enum,
+                    figure_or_table_id=None,
+                    context_excerpt=None,
+                    hallmark_phrase="paper_level",
+                    score=position_score,
+                )
+            )
+    return drafts
 
 
 def _snippet_to_draft(snippet: CandidateSnippet, *, seq: int) -> EvidenceClaimDraft:
@@ -950,35 +1068,86 @@ def _count_hallmarks(sentence: str, patterns: tuple[re.Pattern[str], ...]) -> in
     return sum(1 for p in patterns if p.search(sentence))
 
 
-def _trim_to_200_chars(sentence: str, match: re.Match[str]) -> str:
-    """Return up to 200 chars centered on ``match`` while staying within
-    ``sentence``. Prefer the whole sentence when it fits; otherwise carve
-    a window around the match, breaking on whitespace.
+def _trim_to_quote_cap(sentence: str, match: re.Match[str]) -> str:
+    """Return up to ``_QUOTE_MAX_CHARS`` characters centered on ``match``
+    while staying within ``sentence``. Prefer the whole sentence when it
+    fits; otherwise carve a window around the match, snapping the edges
+    to the nearest clause boundary (sentence-end, semicolon, colon,
+    comma) so the snippet doesn't start or end mid-clause.
     """
     sentence = sentence.strip()
-    if len(sentence) <= 200:
+    if len(sentence) <= _QUOTE_MAX_CHARS:
         return sentence
 
     start, end = match.span()
-    # Center 200-char window on the match, biased to capture the full
-    # match if possible.
     span_len = end - start
-    pad = max(0, (200 - span_len) // 2)
+    pad = max(0, (_QUOTE_MAX_CHARS - span_len) // 2)
     window_start = max(0, start - pad)
-    window_end = min(len(sentence), window_start + 200)
-    window_start = max(0, window_end - 200)
+    window_end = min(len(sentence), window_start + _QUOTE_MAX_CHARS)
+    window_start = max(0, window_end - _QUOTE_MAX_CHARS)
 
     snippet = sentence[window_start:window_end]
-    # Break on whitespace at edges so we don't emit a half-word.
     if window_start > 0:
-        first_space = snippet.find(" ")
-        if 0 < first_space < 40:
-            snippet = snippet[first_space + 1 :]
+        snippet = _snap_left_to_clause(snippet)
     if window_end < len(sentence):
-        last_space = snippet.rfind(" ")
-        if last_space > len(snippet) - 40:
-            snippet = snippet[:last_space]
+        snippet = _snap_right_to_clause(snippet)
     return snippet.strip()
+
+
+# Per-separator snap budgets, ordered by preference. A sentence-end
+# boundary is worth giving up the most chars for (the result reads as
+# a complete thought); semicolons and colons are strong-enough clause
+# breaks to be worth a similar budget; commas get a small budget so
+# we don't drop a quarter of the snippet chasing one. Tuned so that
+# with cap=600 the trim path (sentence > cap) typically loses <150
+# chars when it fires; under cap=600 the trim path doesn't fire at
+# all.
+_SNAP_BUDGETS: tuple[tuple[str, int], ...] = (
+    (". ", 150),
+    ("! ", 150),
+    ("? ", 150),
+    ("; ", 150),
+    (": ", 120),
+    (", ", 60),
+)
+
+
+def _snap_left_to_clause(text: str) -> str:
+    """Drop leading characters up to the nearest clause boundary, with
+    per-separator budgets that prefer sentence-end snaps over comma
+    snaps. Falls back to a word boundary when no clause boundary is in
+    range.
+    """
+
+    for sep, budget in _SNAP_BUDGETS:
+        idx = text.find(sep, 0, budget)
+        if 0 <= idx < budget:
+            return text[idx + len(sep) :]
+    first_space = text.find(" ")
+    if 0 < first_space < 40:
+        return text[first_space + 1 :]
+    return text
+
+
+def _snap_right_to_clause(text: str) -> str:
+    """Drop trailing characters back to the nearest clause boundary, with
+    per-separator budgets. Sentence-end terminators are kept on the
+    retained side; mid-clause separators (semicolon, colon, comma) are
+    dropped so the snippet doesn't end with a dangling punctuation mark.
+    """
+
+    n = len(text)
+    for sep, budget in _SNAP_BUDGETS:
+        tail_start = max(0, n - budget)
+        idx = text.rfind(sep, tail_start)
+        if idx >= 0:
+            if sep[0] in ".!?":
+                return text[: idx + 1]
+            return text[:idx]
+    last_space = text.rfind(" ")
+    if last_space > n - 40:
+        return text[:last_space]
+    return text
 
 
 # ---------------------------------------------------------------------------
