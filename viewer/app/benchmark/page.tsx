@@ -40,20 +40,19 @@ export default async function BenchmarkPage() {
     <Shell>
       <section className={`${styles.page} page-width`}>
         <header className={styles.head}>
-          <p className="h-data-eyebrow">
-            SurfaceBench · v0.5
-          </p>
           <h1 className={`h-data ${styles.title}`}>
             147 genes, seven databases, three models.
           </h1>
           <p className={styles.lede}>
-            <strong>SurfaceBench</strong> is the 147-gene triage
-            benchmark behind this project. Each row is one curated
-            protein, scored against ground truth, the union of seven
-            public surface-membership databases, and headline-prompt
-            verdicts from Opus 4.7, Sonnet 4.6, and Haiku 4.5. Click a
-            row to compare the headline against three alternative
-            prompt variants.
+            <strong>SurfaceBench</strong> is a 147-protein benchmark
+            assembled from cases where the five public surface-membership
+            databases disagree on surface status. Each protein was
+            manually reviewed and classified as surface, contextually
+            surface, or non-surface. Sonnet 4.6 and Opus 4.7 — with no
+            external tools, working from training-time knowledge plus
+            a short NCBI context block — outperform every gold-standard
+            database on this set. The table below shows every model ×
+            prompt-variant call so you can audit the reasoning per gene.
           </p>
         </header>
 
@@ -65,8 +64,8 @@ export default async function BenchmarkPage() {
 
         <footer className={styles.footnotes}>
           <p>
-            <span className="label-mono">DB columns ·</span> U UniProt · G GO ·
-            S SURFY · C CSPA · H HPA — the five gating databases that
+            <span className="label-mono">DB columns ·</span> UniProt · GO ·
+            SURFY · CSPA · HPA — the five gating databases that
             drive M1 universe membership (same set the homepage catalog
             shows). Each cell is one source&apos;s vote on whether the
             protein reaches the plasma membrane: filled dot = surface,
@@ -95,12 +94,7 @@ export default async function BenchmarkPage() {
           </p>
           <p className={styles.sourceLine}>
             <span className="label-mono">Source ·</span> live D1{" "}
-            <code>
-              {matrix.universe_version ?? "—"}
-              {matrix.bench_version
-                ? ` · ${matrix.bench_version.slice(0, 12)}`
-                : null}
-            </code>
+            <code>{matrix.universe_version ?? "—"}</code>
           </p>
         </footer>
       </section>

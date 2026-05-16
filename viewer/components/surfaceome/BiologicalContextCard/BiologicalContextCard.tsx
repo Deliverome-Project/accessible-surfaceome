@@ -38,11 +38,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Biological context"
-      title={
-        <>
-          Where it <em>shows up</em>
-        </>
-      }
+      title="Expression and tissue distribution"
       meta="Tissues · cell types · localization · anatomical accessibility · accessibility modulation"
     >
       <div className={styles.subsection}>

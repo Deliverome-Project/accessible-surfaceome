@@ -20,37 +20,13 @@
   line-height: 1.1;
 }
 
-.lede {
-  font-size: 1rem;
-  max-width: none;
-}
-
-.stats {
-  list-style: none;
-  margin: var(--space-4) 0 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-}
-
-.stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-}
-
-.statN {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-weight: var(--display-weight);
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
+.heroAccent {
   color: var(--accent);
-  line-height: 1;
 }
 
-.statK {
-  color: var(--muted);
+.lede {
+  /* font-size inherited from globals .lede (0.92rem). */
+  max-width: none;
 }
 
 .footnotes {
@@ -84,4 +60,15 @@
 
 .sourceLine {
   color: var(--ink-soft);
+}
+
+.surfaceBenchLink {
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.surfaceBenchLink:hover,
+.surfaceBenchLink:focus-visible {
+  border-bottom-color: var(--accent);
 }

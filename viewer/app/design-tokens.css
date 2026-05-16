@@ -206,7 +206,7 @@
      The two media queries below bump --max-width on genuinely large
      external displays so content doesn't sit in a narrow column with
      huge empty gutters at 1920+. */
-  --max-width: 1120px;
+  --max-width: 1280px;
   --gutter: 1rem;
   --page-width: min(var(--max-width), calc(100vw - 2rem));
 }
@@ -216,7 +216,7 @@
    with 40 %+ empty side margins. */
 @media (min-width: 1700px) {
   :root {
-    --max-width: 1450px;
+    --max-width: 1600px;
   }
 }
 
@@ -226,6 +226,6 @@
    density across the site. */
 @media (min-width: 2200px) {
   :root {
-    --max-width: 1670px;
+    --max-width: 1820px;
   }
 }

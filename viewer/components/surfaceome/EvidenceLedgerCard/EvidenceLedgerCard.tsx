@@ -55,11 +55,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Evidence ledger"
-      title={
-        <>
-          The <em>citations</em>
-        </>
-      }
+      title="Evidence ledger"
       meta={`${total} entries · ${primary} primary · ${secondary} secondary · ${tertiary} tertiary · ${pmcOa} PMC OA`}
     >
       {total === 0 ? (

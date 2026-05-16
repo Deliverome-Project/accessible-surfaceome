@@ -16,6 +16,10 @@ interface Endpoint {
   path: string;
   summary: string;
   curl?: string;
+  /** Optional URL-fragment anchor so other pages can deep-link
+   *  (e.g. /api/#triage from the CatalogTable's "Full reasoning"
+   *  hint). Defaults to a slug derived from the path. */
+  anchor?: string;
 }
 
 interface EndpointGroup {
@@ -70,15 +74,16 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/catalog",
         summary:
-          "Per-gene-per-source DB-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + deep-dive flag. ~6 MB; one row per gene in the candidate universe. Drives the homepage CatalogTable.",
+          "Per-gene-per-source DB-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + reason code + deep-dive flag. One row per protein-coding gene (~19k rows); response is ~3.8 MB gzipped, ~24 MB decoded — too large to inline reasoning text, so the free-text per-run verdict_reasoning is on /v1/triage/{SYMBOL} instead. Drives the homepage CatalogTable.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage'",
       },
       {
         method: "GET",
         path: "/v1/triage/{SYMBOL}",
+        anchor: "triage",
         summary:
-          "Every triage run on file for one gene — model × prompt-variant × replicate, with verdict, reason, confidence, latency, cost_usd, and per-call token counts. The deep-dive expansion view of a single catalog row.",
+          "Every triage run on file for one gene — model × prompt-variant × replicate, with verdict, reason, confidence, latency, cost_usd, per-call token counts, and the agent's free-text verdict_reasoning. The catalog's drawer pulls from this endpoint.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2 | jq '.count, .runs[0]'",
       },
@@ -123,8 +128,9 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
       {
         method: "GET",
         path: "/v1/benchmark/matrix",
+        anchor: "benchmark-matrix",
         summary:
-          "Full SurfaceBench matrix — one row per gene with truth + 7 per-DB flags + per-model LLM verdicts (headline + 3 alt prompt variants). Single round-trip; drives the /benchmark/ page.",
+          "Full SurfaceBench matrix — one row per gene with truth + 7 per-DB flags + per-model LLM verdicts (headline + 3 alt prompt variants). Includes the agent's free-text reasoning on every (model, variant) cell, which the SurfaceBench page's side-drawer renders. Single round-trip; ~2 MB JSON.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .headline_variant, .alt_variants'",
       },
@@ -185,6 +191,46 @@ export default function ApiPage() {
             cheap; nothing here is rate-limited.
           </p>
         </header>
+
+        <aside className={styles.callout}>
+          <p className={styles.calloutLabel}>Where the reasoning lives</p>
+          <p className={styles.calloutBody}>
+            The bulk summary endpoints (
+            <code className={styles.code}>/v1/catalog</code>,{" "}
+            <code className={styles.code}>/v1/benchmark</code>) ship
+            verdicts + reason codes only — they&apos;d be too large to
+            inline the agent&apos;s free-text{" "}
+            <code className={styles.code}>verdict_reasoning</code>{" "}
+            paragraph on every row. For the full reasoning text:
+          </p>
+          <ul className={styles.calloutList}>
+            <li>
+              One gene (any of ~19k):{" "}
+              <code className={styles.code}>
+                GET /v1/triage/&#123;SYMBOL&#125;
+              </code>{" "}
+              — every model × prompt-variant × replicate run on file,
+              with the reasoning paragraph on each.
+            </li>
+            <li>
+              Bulk download:{" "}
+              <code className={styles.code}>
+                GET /v1/triage/export.tsv?run_id=…
+              </code>{" "}
+              — long-format TSV, one row per (gene, run), reasoning
+              column included.
+            </li>
+            <li>
+              SurfaceBench 147 with reasoning per cell:{" "}
+              <code className={styles.code}>
+                GET /v1/benchmark/matrix
+              </code>{" "}
+              — full 3 model × 4 variant grid with{" "}
+              <code className={styles.code}>reasoning</code> populated
+              on each verdict object.
+            </li>
+          </ul>
+        </aside>
 
         <section className={styles.skill}>
           <h2 className="h-data-section">Agent skill</h2>
@@ -262,7 +308,11 @@ export default function ApiPage() {
               <p className={styles.groupBlurb}>{group.blurb}</p>
               <ul className={styles.endpointList}>
                 {group.endpoints.map((e) => (
-                  <li key={e.path} className={styles.endpoint}>
+                  <li
+                    key={e.path}
+                    id={e.anchor}
+                    className={styles.endpoint}
+                  >
                     <p className={styles.endpointLine}>
                       <span className={styles.method}>{e.method}</span>
                       <code className={styles.endpointPath}>{e.path}</code>

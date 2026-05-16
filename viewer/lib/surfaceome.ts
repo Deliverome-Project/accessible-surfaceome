@@ -373,7 +373,15 @@ export async function loadCatalog(): Promise<Catalog> {
     );
   }
   const localSymbols = new Set(listSurfaceomeGenes());
-  const inflated = payload.rows.map(inflateCatalogRow);
+  // Sonnet 4.6 (slot 1 in triage_by_model) is the catalog's headline
+  // verdict — every page surface reads from that slot. Rows where it
+  // didn't run on file are the universe's resolver-failure outliers
+  // (e.g. CTXN1 as of 2026-05; SEA was healed by PR #30). Drop them
+  // from the catalog so the visible universe matches `n_with_triage`
+  // and the verdict filter doesn't need a "no call" bucket.
+  const inflated = payload.rows
+    .map(inflateCatalogRow)
+    .filter((r) => Boolean(r.triage_by_model[1]));
   const rows = syncDeepDiveToLocal(enrichRowsWithNames(inflated, names), localSymbols);
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
@@ -382,6 +390,10 @@ export async function loadCatalog(): Promise<Catalog> {
   return {
     source: "api",
     ...payload,
+    // Override the Worker's header counts so they match what we
+    // actually shipped to the page (after dropping null-triage rows).
+    n_rows: rows.length,
+    n_with_triage: rows.length,
     rows,
     n_with_deep_dive,
   };

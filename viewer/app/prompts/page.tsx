@@ -2,7 +2,6 @@ import path from "node:path";
 import { readFileSync, statSync } from "node:fs";
 import type { Metadata } from "next";
 import { Shell } from "../../components/Shell/Shell";
-import { NumberedEyebrow } from "../../components/NumberedEyebrow/NumberedEyebrow";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -59,10 +58,7 @@ export default function PromptsPage() {
     <Shell>
       <section className={`${styles.page} page-width`}>
         <header className={styles.hero}>
-          <NumberedEyebrow n={1}>Agent prompts</NumberedEyebrow>
-          <h1 className={`h-display ${styles.heroH1}`}>
-            What the <em>agents</em> are told.
-          </h1>
+          <h1 className={`h-display ${styles.heroH1}`}>Agent prompts</h1>
           <p className={`lede ${styles.lede}`}>
             The exact Markdown system prompts the triage and deep-dive
             agents run with — read straight from the agent source tree at
@@ -83,10 +79,9 @@ export default function PromptsPage() {
           </p>
         ) : null}
 
-        {loaded.map((p, i) => (
+        {loaded.map((p) => (
           <article key={p.id} id={p.id} className={styles.promptBlock}>
             <header className={styles.promptHeader}>
-              <NumberedEyebrow n={i + 2}>{p.label}</NumberedEyebrow>
               <h2 className={`h-section ${styles.promptH2}`}>{p.label}</h2>
               <p className={styles.promptMeta}>
                 <code className={styles.code}>{p.source_path}</code>

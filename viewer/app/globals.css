@@ -83,25 +83,27 @@ button {
   text-wrap: balance;
 }
 
-.h-display em {
-  font-style: italic;
-  color: var(--accent);
-}
-
 .h-section {
   margin: 0;
   font-family: var(--font-display);
   font-weight: var(--display-weight);
-  font-size: clamp(2rem, 3.4vw, 2.8rem);
-  line-height: 1.05;
+  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
+  line-height: 1.15;
   letter-spacing: var(--tracking-display);
   color: var(--ink);
   text-wrap: balance;
 }
 
-.h-section em {
-  font-style: italic;
-  color: var(--accent);
+/* Gene-page H1 — Manrope sans for a more scientific register; serif is
+ * reserved for editorial display headings on marketing-ish pages. */
+.h-gene {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
 
 /* Data-view headings — used by /benchmark/ and any future data-dense page
@@ -140,15 +142,10 @@ button {
 .lede {
   margin: 0;
   color: var(--muted);
-  font-size: 1.12rem;
-  line-height: 1.62;
+  font-size: 0.92rem;
+  line-height: 1.6;
   font-weight: 300;
   max-width: 38rem;
-}
-
-.lede em {
-  font-style: italic;
-  color: var(--ink-soft);
 }
 
 .label-mono {

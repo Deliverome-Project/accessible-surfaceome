@@ -5,6 +5,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CatalogRow, TriageCell } from "../../lib/surfaceome";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
+import {
+  CatalogRationaleDrawer,
+  type CatalogTriageDetailState,
+} from "./CatalogRationaleDrawer";
 import styles from "./CatalogTable.module.css";
 
 // Per-row height estimate fed to @tanstack/react-virtual. Rows with
@@ -16,13 +20,14 @@ import styles from "./CatalogTable.module.css";
 const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
-// CSS Grid template — toggle | gene | uniprot | sources | 5 DB dots
-// | 3 model verdicts (H/S/O on the NCBI variant) | deep-dive flag.
-// Each LLM cell is a compact verdict pill (~4.4rem) and they sit
-// side-by-side so a reader can scan agreement across the three
-// models at a glance.
+// CSS Grid template — gene | DB-votes count | 5 DB dots | Triage
+// verdict | Reason (flex) | Deep-dive flag. The UniProt-accession
+// column was dropped (it duplicated info that's on the deep-dive
+// page); the per-row "reason" column is new and takes the remaining
+// horizontal space via `minmax(.., 1fr)`. Haiku and Opus calls live
+// on /benchmark, not here.
 const GRID_TEMPLATE =
-  "1.75rem 16rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem 4.4rem 4.4rem 4.4rem 6rem";
+  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 5rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -66,21 +71,115 @@ const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = 
   { key: "hpa", short: "H", long: "HPA" },
 ];
 
-// Three models surfaced on the catalog page — order pinned to match
-// the Worker response (response.models). Each model's NCBI verdict
-// renders in its own column.
+// The catalog's headline call comes from the project's "triage agent"
+// — Sonnet 4.6 with an NCBI-context block, run on every protein-coding
+// gene. We surface it as "Triage agent" in the UI to keep the catalog
+// model-agnostic; the specific model identity is reserved for the
+// SurfaceBench benchmark, where cross-model comparison is the point.
+// `idx` is the index in the Worker's `triage_by_model` array (still
+// fixed at Haiku=0, Sonnet=1, Opus=2 per Worker contract).
 const CATALOG_MODELS: { id: string; idx: number; short: string; long: string }[] = [
-  { id: "claude-haiku-4-5",  idx: 0, short: "H", long: "Haiku 4.5 · ncbi" },
-  { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Sonnet 4.6 · ncbi" },
-  { id: "claude-opus-4-7",   idx: 2, short: "O", long: "Opus 4.7 · ncbi" },
+  { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Triage agent" },
 ];
 
-type SortKey = "symbol" | "uniprot" | "n_sources" | "triage_sonnet" | "deep_dive";
+type SortKey =
+  | "symbol"
+  | "n_sources"
+  | "db_uniprot"
+  | "db_go"
+  | "db_surfy"
+  | "db_cspa"
+  | "db_hpa"
+  | "triage"
+  | "deep_dive";
 type SortDir = "asc" | "desc";
-// Triage filter was dropped — every gene in the universe has a triage
-// verdict (the one gap, SEA, is a resolver-failure outlier), so the
-// chip filtered ~all rows in and offered no signal.
-type QuickFilter = "all" | "deep_dive" | "n7";
+// The "All" Quick chip was kept after the others were dropped because
+// it's the explicit "clear filters" affordance — clicking it restores
+// the unfiltered view. Deep-dive moved into the filter panel as a
+// proper binary radio so it doesn't AND-conflict with itself.
+type QuickFilter = "all";
+
+type DbKey = keyof CatalogRow["db"];
+type VerdictKey = "yes" | "contextual" | "no";
+
+const VERDICT_OPTIONS: { key: VerdictKey; label: string }[] = [
+  { key: "yes", label: "yes" },
+  { key: "contextual", label: "contextual" },
+  { key: "no", label: "no" },
+];
+
+/** The canonical TriageReason enum from
+ *  ``src/accessible_surfaceome/tools/_shared/models.py`` (YesReason,
+ *  ContextualReason, NoReason). Grouped by verdict here so the filter
+ *  UI can render them under three subheads, but every group's "other"
+ *  collapses to the same wire value, so they share a filter state. */
+const REASON_GROUPS: { verdict: VerdictKey; label: string; reasons: string[] }[] = [
+  {
+    verdict: "yes",
+    label: "yes",
+    reasons: [
+      "classical_surface_receptor",
+      "gpi_anchored",
+      "multipass_with_exposed_loops",
+      "extracellular_face_protein",
+      "stable_complex_partner",
+    ],
+  },
+  {
+    verdict: "contextual",
+    label: "contextual",
+    reasons: [
+      "cell_state_induced",
+      "tissue_restricted_surface",
+      "lysosomal_exocytosis",
+      "dual_localization",
+      "stable_surface_attachment",
+    ],
+  },
+  {
+    verdict: "no",
+    label: "no",
+    reasons: [
+      "cytoplasmic",
+      "nuclear",
+      "mitochondrial_internal",
+      "endomembrane_resident",
+      "nuclear_envelope",
+      "inner_leaflet_anchored",
+      "secreted_only",
+      "pmhc_only_intracellular",
+    ],
+  },
+];
+const REASON_OTHER = "other";
+
+function prettyReason(r: string): string {
+  return r.replace(/_/g, " ");
+}
+
+/** Map a verdict bucket onto a CSS modifier class on the reason-
+ *  group label, so "yes" reads as green, "contextual" as amber, "no"
+ *  as maroon — matches the verdict-pill palette in the table. */
+function reasonGroupLabelToneClass(v: VerdictKey): string {
+  if (v === "yes") return styles.filterReasonGroupLabelYes;
+  if (v === "contextual") return styles.filterReasonGroupLabelContextual;
+  if (v === "no") return styles.filterReasonGroupLabelNo;
+  return styles.filterReasonGroupLabelAny;
+}
+
+/** Schema fields the advanced-filter panel could surface once the
+ *  Worker payload extends — currently the catalog row doesn't carry
+ *  `subcategory` or `headline_risks` (those live on the per-gene
+ *  deep-dive JSON). Listed here as a TODO for the panel: when the
+ *  /v1/catalog response grows the fields, add chip rows for them. */
+// TODO(catalog-filters): deep-dive subcategory chips
+//   (single_pass_T1, single_pass_T2, multi_pass, GPCR, GPI_anchored,
+//   tetraspanin, ion_channel, transporter, other)
+// TODO(catalog-filters): headline_risks chips
+//   (shed_form, secreted_form, co_receptor, ecd_too_small,
+//   epitope_masked, isoform_decoy, restricted_subdomain,
+//   low_endogenous_expression, antibody_validation_weak,
+//   ligand_unknown, other)
 
 function verdictTone(v: string | null | undefined): string {
   if (v === "yes") return styles.verdictYes;
@@ -115,23 +214,127 @@ export function CatalogTable({
   const [quick, setQuick] = useState<QuickFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("deep_dive");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  // Per-row "+" expander: tracks which symbols are open + the
-  // lazily-fetched /v1/triage/<symbol> response per symbol. We don't
-  // ship the full per-run reasoning in /v1/catalog (too big — 19k
-  // genes × ~1 KB reasoning = 20 MB) so the expand triggers a single
-  // small fetch and caches the result for the session.
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Advanced filters. `dbFilter` is AND-semantics: a row passes only
+  // if every DB in the set voted yes (intersection of `DB ∈ filter`
+  // and `row.db[DB] === 1`). `verdictFilter` and `reasonFilter` are
+  // both OR-semantics — a row passes if its verdict / reason is in
+  // the (non-empty) set. Reasons are a closed enum (TriageReason in
+  // models.py: 17 fixed values + "other"), so the UI is a chip
+  // multi-select grouped by verdict bucket, not a free-text input.
+  const [showFilters, setShowFilters] = useState(false);
+  const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
+  const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
+    new Set(),
+  );
+  const [reasonFilter, setReasonFilter] = useState<Set<string>>(new Set());
+  // Deep-dive is a binary attribute on each row, so the filter is a
+  // radio (yes / no / null=either) rather than a Set multi-select.
+  // The earlier multi-select form let users select both yes AND no
+  // (an empty intersection) without realizing it.
+  const [deepDiveFilter, setDeepDiveFilter] = useState<"yes" | "no" | null>(
+    null,
+  );
+
+  function toggleDbFilter(key: DbKey) {
+    setDbFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  function toggleVerdictFilter(key: VerdictKey) {
+    // Toggle the verdict, then prune `reasonFilter` so only reasons
+    // that belong to a still-selected verdict (or are "other", which
+    // is verdict-agnostic) survive.
+    const nextVerdict = new Set(verdictFilter);
+    if (nextVerdict.has(key)) nextVerdict.delete(key);
+    else nextVerdict.add(key);
+    setVerdictFilter(nextVerdict);
+    // Unrestricted verdict filter ⇒ every reason still applies; no
+    // prune needed.
+    if (nextVerdict.size === 0) return;
+    setReasonFilter((prev) => {
+      const compatible = new Set<string>();
+      for (const r of prev) {
+        if (r === REASON_OTHER) {
+          compatible.add(r);
+          continue;
+        }
+        const group = REASON_GROUPS.find((g) => g.reasons.includes(r));
+        if (group && nextVerdict.has(group.verdict)) {
+          compatible.add(r);
+        }
+      }
+      return compatible;
+    });
+  }
+  function toggleReasonFilter(key: string) {
+    setReasonFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  function toggleDeepDiveFilter(key: "yes" | "no") {
+    // Radio: clicking the active chip clears the filter; clicking the
+    // other chip switches to it. yes/no are mutually exclusive.
+    setDeepDiveFilter((prev) => (prev === key ? null : key));
+  }
+  function clearAdvancedFilters() {
+    setDbFilter(new Set());
+    setVerdictFilter(new Set());
+    setReasonFilter(new Set());
+    setDeepDiveFilter(null);
+  }
+  const activeFilterCount =
+    dbFilter.size +
+    verdictFilter.size +
+    reasonFilter.size +
+    (deepDiveFilter !== null ? 1 : 0);
+
+  // Which reason groups make sense to surface, given the current
+  // verdict filter. The triage reason is constrained by the verdict
+  // (e.g. `gpi_anchored` only appears on yes-verdict rows), so we
+  // hide groups whose verdict isn't in the active filter.
+  const visibleReasonGroups = useMemo<{
+    groups: typeof REASON_GROUPS;
+    showOther: boolean;
+    hint: string | null;
+  }>(() => {
+    if (verdictFilter.size === 0) {
+      return { groups: REASON_GROUPS, showOther: true, hint: null };
+    }
+    const allowed = verdictFilter;
+    if (allowed.size === 0) {
+      return {
+        groups: [],
+        showOther: false,
+        hint: "No reasons apply — the verdict filter excluded every bucket.",
+      };
+    }
+    return {
+      groups: REASON_GROUPS.filter((g) => allowed.has(g.verdict)),
+      showOther: true,
+      hint: null,
+    };
+  }, [verdictFilter]);
+  // Side-rationale drawer: one selected symbol at a time. Clicking the
+  // same symbol again toggles the drawer off. The /v1/triage/{symbol}
+  // fetch is lazy — kicked off the first time a symbol is selected,
+  // cached for the rest of the session (we don't ship the full per-
+  // run reasoning in /v1/catalog: 19k genes × ~1 KB reasoning is too
+  // big to inline). The drawer reads the cached detail entry and
+  // falls back to the catalog row's headline verdict while the fetch
+  // is in flight.
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [triageDetails, setTriageDetails] = useState<
     Record<string, TriageDetailState>
   >({});
 
-  function toggleExpand(symbol: string) {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(symbol)) next.delete(symbol);
-      else next.add(symbol);
-      return next;
-    });
+  function handleSelectSymbol(symbol: string) {
+    setSelectedSymbol((prev) => (prev === symbol ? null : symbol));
     if (triageDetails[symbol]) return;
     setTriageDetails((prev) => ({ ...prev, [symbol]: { status: "loading" } }));
     fetch(`${TRIAGE_API_BASE}/v1/triage/${symbol}`, { cache: "force-cache" })
@@ -151,6 +354,17 @@ export function CatalogTable({
       });
   }
 
+  // ESC closes the drawer. Installed at the table level so the
+  // non-modal drawer doesn't need focus to dismiss.
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedSymbol(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedSymbol]);
+
   // `mounted` gates the virtualized body so the SSR pass renders an
   // empty body — the header, toolbar, and footnotes still hydrate
   // from server HTML for snappy first paint, and the rows appear on
@@ -165,6 +379,7 @@ export function CatalogTable({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const dbList = Array.from(dbFilter);
     return rows.filter((r) => {
       if (q) {
         // Search across symbol, UniProt, the NCBI descriptive name,
@@ -175,11 +390,37 @@ export function CatalogTable({
           `${r.symbol} ${r.uniprot} ${r.name ?? ""} ${syn}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (quick === "deep_dive" && !r.deep_dive) return false;
-      if (quick === "n7" && r.n_sources < 5) return false;
+      // Advanced filters — AND across categories, semantics described
+      // alongside the state declarations above.
+      if (dbList.length > 0) {
+        for (const dbKey of dbList) {
+          if (!r.db[dbKey]) return false;
+        }
+      }
+      if (verdictFilter.size > 0) {
+        const v = r.triage_by_model[1]?.verdict;
+        if (v !== "yes" && v !== "contextual" && v !== "no") return false;
+        if (!verdictFilter.has(v)) return false;
+      }
+      if (reasonFilter.size > 0) {
+        const reason = r.triage_by_model[1]?.reason ?? "";
+        if (!reasonFilter.has(reason)) return false;
+      }
+      if (deepDiveFilter !== null) {
+        const k = r.deep_dive ? "yes" : "no";
+        if (k !== deepDiveFilter) return false;
+      }
       return true;
     });
-  }, [rows, query, quick]);
+  }, [
+    rows,
+    query,
+    quick,
+    dbFilter,
+    verdictFilter,
+    reasonFilter,
+    deepDiveFilter,
+  ]);
 
   const sorted = useMemo(() => {
     const copy = filtered.slice();
@@ -209,7 +450,7 @@ export function CatalogTable({
       setSortDir(sortDir === "asc" ? "desc" : "asc");
     } else {
       setSortKey(k);
-      setSortDir(k === "symbol" || k === "uniprot" ? "asc" : "desc");
+      setSortDir(k === "symbol" ? "asc" : "desc");
     }
   }
 
@@ -238,33 +479,242 @@ export function CatalogTable({
             spellCheck={false}
           />
         </div>
-        <div className={styles.chips} role="tablist" aria-label="Quick filters">
+        <div className={styles.chipsActions}>
+          <div className={styles.chips} role="tablist" aria-label="Quick filters">
+            <button
+              type="button"
+              className={`${styles.chip} ${quick === "all" ? styles.chipOn : ""}`}
+              onClick={() => setQuick("all")}
+              aria-pressed={quick === "all"}
+            >
+              All <span className={styles.chipCount}>{n_rows}</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.chip} ${showFilters ? styles.chipOn : ""}`}
+              onClick={() => setShowFilters((s) => !s)}
+              aria-pressed={showFilters}
+              aria-expanded={showFilters}
+              aria-controls="catalog-filter-panel"
+            >
+              {showFilters ? "Hide filters" : "More filters"}
+              {activeFilterCount > 0 ? (
+                <span className={styles.chipCount}>{activeFilterCount}</span>
+              ) : null}
+            </button>
+          </div>
           <button
             type="button"
-            className={`${styles.chip} ${quick === "all" ? styles.chipOn : ""}`}
-            onClick={() => setQuick("all")}
-            aria-pressed={quick === "all"}
+            className={styles.downloadBtn}
+            onClick={() => {
+              // Download what the reader is actually looking at — the
+              // current filtered + sorted view, not the full 19k-row
+              // catalog. Clear filters to download the whole thing.
+              const tsv = buildCatalogTsv(sorted);
+              const tag = universe_version ?? "snapshot";
+              const filtered = sorted.length !== rows.length;
+              const suffix = filtered ? `-filtered-${sorted.length}` : "";
+              downloadTextFile(
+                `surfaceome-catalog-${tag}${suffix}.tsv`,
+                tsv,
+              );
+            }}
+            title={
+              sorted.length === rows.length
+                ? `Download all ${rows.length.toLocaleString()} catalog rows as TSV`
+                : `Download ${sorted.length.toLocaleString()} filtered rows as TSV (of ${rows.length.toLocaleString()} total)`
+            }
           >
-            All <span className={styles.chipCount}>{n_rows}</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.chip} ${quick === "deep_dive" ? styles.chipOn : ""}`}
-            onClick={() => setQuick("deep_dive")}
-            aria-pressed={quick === "deep_dive"}
-          >
-            Deep-dive <span className={styles.chipCount}>{n_with_deep_dive}</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.chip} ${quick === "n7" ? styles.chipOn : ""}`}
-            onClick={() => setQuick("n7")}
-            aria-pressed={quick === "n7"}
-          >
-            5-source consensus
+            TSV ↓{" "}
+            <span className={styles.downloadCount}>
+              {sorted.length === rows.length
+                ? rows.length.toLocaleString()
+                : `${sorted.length.toLocaleString()}/${rows.length.toLocaleString()}`}
+            </span>
           </button>
         </div>
       </div>
+
+      {showFilters ? (
+        <div
+          id="catalog-filter-panel"
+          className={styles.filterPanel}
+          role="region"
+          aria-label="Advanced catalog filters"
+        >
+          <div className={styles.filterRow}>
+            <span className={styles.filterLabel}>DBs</span>
+            <div className={styles.filterChips}>
+              {DB_KEYS.map((d) => {
+                const on = dbFilter.has(d.key);
+                return (
+                  <button
+                    key={`db-filter-${d.key}`}
+                    type="button"
+                    className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                    onClick={() => toggleDbFilter(d.key)}
+                    aria-pressed={on}
+                    title={`Require ${d.long} = yes`}
+                  >
+                    {d.long}
+                  </button>
+                );
+              })}
+            </div>
+            <span className={styles.filterHint}>
+              Requires all checked DBs to vote yes
+            </span>
+          </div>
+
+          <div className={styles.filterRow}>
+            <span className={styles.filterLabel}>Triage</span>
+            <div className={styles.filterChips}>
+              {VERDICT_OPTIONS.map((v) => {
+                const on = verdictFilter.has(v.key);
+                // Verdict chips wear the same pill colors as the in-
+                // table verdict labels (verdictYes / verdictContextual
+                // / verdictNo / verdictUnknown). Combined with the
+                // filterVerdictChip styling — uppercase + tracking +
+                // pill shape — they read as the same vocabulary as
+                // the column verdicts.
+                const toneClass =
+                  v.key === "yes"
+                    ? styles.verdictYes
+                    : v.key === "contextual"
+                      ? styles.verdictContextual
+                      : v.key === "no"
+                        ? styles.verdictNo
+                        : styles.verdictUnknown;
+                return (
+                  <button
+                    key={`verdict-filter-${v.key}`}
+                    type="button"
+                    className={`${styles.filterVerdictChip} ${on ? toneClass : ""}`}
+                    onClick={() => toggleVerdictFilter(v.key)}
+                    aria-pressed={on}
+                  >
+                    {v.label}
+                  </button>
+                );
+              })}
+            </div>
+            <span className={styles.filterHint}>
+              Any of the checked verdicts
+            </span>
+          </div>
+
+          <div className={styles.filterReason}>
+            <span className={styles.filterLabel}>Triage reason</span>
+            <div className={styles.filterReasonGroups}>
+              {visibleReasonGroups.hint ? (
+                <span className={styles.filterHint}>
+                  {visibleReasonGroups.hint}
+                </span>
+              ) : null}
+              {visibleReasonGroups.groups.map((g) => (
+                <div
+                  className={styles.filterReasonGroup}
+                  key={`rg-${g.verdict}`}
+                >
+                  <span
+                    className={`${styles.filterReasonGroupLabel} ${reasonGroupLabelToneClass(g.verdict)}`}
+                  >
+                    {g.label}
+                  </span>
+                  <div className={styles.filterChips}>
+                    {g.reasons.map((r) => {
+                      const on = reasonFilter.has(r);
+                      return (
+                        <button
+                          key={`rf-${r}`}
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleReasonFilter(r)}
+                          aria-pressed={on}
+                        >
+                          {prettyReason(r)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              {visibleReasonGroups.showOther ? (
+                <div className={styles.filterReasonGroup}>
+                  <span
+                    className={`${styles.filterReasonGroupLabel} ${styles.filterReasonGroupLabelAny}`}
+                  >
+                    any
+                  </span>
+                  <div className={styles.filterChips}>
+                    {(() => {
+                      const on = reasonFilter.has(REASON_OTHER);
+                      return (
+                        <button
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleReasonFilter(REASON_OTHER)}
+                          aria-pressed={on}
+                          title="Catch-all bucket the agent uses when nothing else fits"
+                        >
+                          other
+                        </button>
+                      );
+                    })()}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div
+            className={styles.filterRow}
+            role="radiogroup"
+            aria-label="Deep dive presence"
+          >
+            <span className={styles.filterLabel}>Deep dive</span>
+            <div className={styles.filterChips}>
+              {(["yes", "no"] as const).map((k) => {
+                const on = deepDiveFilter === k;
+                const toneClass =
+                  k === "yes" ? styles.verdictYes : styles.verdictUnknown;
+                return (
+                  <button
+                    key={`dd-filter-${k}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    className={`${styles.filterVerdictChip} ${on ? toneClass : ""}`}
+                    onClick={() => toggleDeepDiveFilter(k)}
+                  >
+                    {k}
+                  </button>
+                );
+              })}
+            </div>
+            <span className={styles.filterHint}>
+              {`Has a deep-dive page — currently ${n_with_deep_dive} of ${n_rows.toLocaleString()} genes. Click an active chip to clear.`}
+            </span>
+          </div>
+
+          {activeFilterCount > 0 ? (
+            <div className={styles.filterFoot}>
+              <button
+                type="button"
+                className={styles.filterClearBtn}
+                onClick={clearAdvancedFilters}
+              >
+                Clear filters ({activeFilterCount})
+              </button>
+            </div>
+          ) : null}
+
+          <p className={styles.filterFootnote}>
+            Deep-dive subcategory and headline-risk tags will appear here
+            once the catalog payload carries them per row.
+          </p>
+        </div>
+      ) : null}
 
       <div className={styles.resultRow}>
         <p className={styles.resultMeta}>
@@ -279,19 +729,16 @@ export function CatalogTable({
               <span title={generated_at}>generated {generated_at.slice(0, 10)}</span>
             </>
           ) : null}
+          <span className={styles.dot} aria-hidden="true">·</span>
+          <span>
+            TSV is verdicts + reason codes only. Free-text reasoning per
+            run is on{" "}
+            <Link href="/api/#triage" className={styles.apiHintLink}>
+              <code>GET /v1/triage/&#123;SYMBOL&#125;</code>
+            </Link>
+            .
+          </span>
         </p>
-        <button
-          type="button"
-          className={styles.downloadBtn}
-          onClick={() => {
-            const tsv = buildCatalogTsv(rows);
-            const tag = universe_version ?? "snapshot";
-            downloadTextFile(`surfaceome-catalog-${tag}.tsv`, tsv);
-          }}
-          title={`Download all ${rows.length.toLocaleString()} catalog rows as TSV`}
-        >
-          Download TSV ↓
-        </button>
       </div>
 
       <div
@@ -302,9 +749,6 @@ export function CatalogTable({
       >
         {/* Header row — sticky, identical grid template as every body row */}
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
-          {/* Leading toggle column. Empty header cell — every body row
-              has a `+` button in this slot to expand triage details. */}
-          <div className={styles.headerCell} aria-hidden="true" />
           <SortableHeader
             label="Symbol"
             k="symbol"
@@ -314,45 +758,42 @@ export function CatalogTable({
             align="left"
           />
           <SortableHeader
-            label="UniProt"
-            k="uniprot"
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onClick={setSort}
-            align="left"
-            mono
-          />
-          <SortableHeader
-            label="Sources"
+            label="DB votes"
             k="n_sources"
             sortKey={sortKey}
             sortDir={sortDir}
             onClick={setSort}
             align="center"
-            title="Count of DB sources voting surface"
+            title="Count of DB sources voting surface (0-5)"
           />
           {DB_KEYS.map((d) => (
-            <div
+            <SortableHeader
               key={d.key}
-              className={`${styles.headerCell} ${styles.headerDbCell}`}
-              title={d.long}
-              role="columnheader"
-            >
-              <span aria-hidden="true">{d.short}</span>
-              <span className="sr-only">{d.long}</span>
-            </div>
+              label={d.long}
+              k={`db_${d.key}` as SortKey}
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onClick={setSort}
+              align="center"
+              title={`${d.long} surface call (sort by yes / no)`}
+              extraClass={styles.headerDbCell}
+            />
           ))}
           {CATALOG_MODELS.map((m) => (
-            <div
+            <SortableHeader
               key={`mhdr-${m.id}`}
-              className={`${styles.headerCell} ${styles.headerCenter}`}
-              title={m.long}
-              role="columnheader"
-            >
-              {m.short}
-              <span className="sr-only"> · {m.long}</span>
-            </div>
+              label={m.long}
+              k="triage"
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onClick={setSort}
+              align="center"
+              title={`Sort by ${m.long} verdict`}
+            />
           ))}
+          <div className={styles.headerCell} role="columnheader">
+            Reason
+          </div>
           <SortableHeader
             label="Deep dive"
             k="deep_dive"
@@ -384,7 +825,7 @@ export function CatalogTable({
           {mounted && sorted.length > 0
             ? virtualItems.map((item) => {
                 const r = sorted[item.index];
-                const isExpanded = expanded.has(r.symbol);
+                const isSelected = selectedSymbol === r.symbol;
                 return (
                   <CatalogRowView
                     key={`${r.symbol}-${r.uniprot}`}
@@ -392,9 +833,8 @@ export function CatalogTable({
                     measureRef={virtualizer.measureElement}
                     dataIndex={item.index}
                     virtualStart={item.start}
-                    isExpanded={isExpanded}
-                    onToggleExpand={toggleExpand}
-                    detail={isExpanded ? triageDetails[r.symbol] : undefined}
+                    isSelected={isSelected}
+                    onSelect={handleSelectSymbol}
                   />
                 );
               })
@@ -406,8 +846,57 @@ export function CatalogTable({
           ) : null}
         </div>
       </div>
+
+      <CatalogRationaleDrawer
+        selectedSymbol={selectedSymbol}
+        detail={
+          selectedSymbol
+            ? (triageDetails[selectedSymbol] as
+                | CatalogTriageDetailState
+                | undefined)
+            : undefined
+        }
+        fallback={
+          selectedSymbol
+            ? fallbackFromRows(sorted, selectedSymbol)
+            : null
+        }
+        geneName={
+          selectedSymbol ? geneNameFromRows(sorted, selectedSymbol) : null
+        }
+        hasDeepDive={
+          selectedSymbol
+            ? Boolean(
+                sorted.find((r) => r.symbol === selectedSymbol)?.deep_dive,
+              )
+            : false
+        }
+        onClose={() => setSelectedSymbol(null)}
+      />
     </div>
   );
+}
+
+/** Headline NCBI Sonnet verdict from the catalog row — used as a
+ *  synchronous fallback while the drawer's lazy fetch is in flight. */
+function fallbackFromRows(
+  rows: CatalogRow[],
+  symbol: string,
+): { verdict: string | null; reason: string | null } | null {
+  const row = rows.find((r) => r.symbol === symbol);
+  if (!row) return null;
+  // idx 1 = Sonnet 4.6 in the Worker's triage_by_model array; see
+  // CATALOG_MODELS above for the contract.
+  const cell = row.triage_by_model[1];
+  return {
+    verdict: cell?.verdict ?? null,
+    reason: cell?.reason ?? null,
+  };
+}
+
+function geneNameFromRows(rows: CatalogRow[], symbol: string): string | null {
+  const row = rows.find((r) => r.symbol === symbol);
+  return row?.name ?? null;
 }
 
 /**
@@ -455,11 +944,15 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
 
 function sortValue(r: CatalogRow, k: SortKey): string | number {
   if (k === "symbol") return r.symbol;
-  if (k === "uniprot") return r.uniprot;
   if (k === "n_sources") return r.n_sources;
-  if (k === "triage_sonnet") {
-    // Sort by the Sonnet/ncbi verdict (slot 1) — the only model with
-    // full-genome coverage. yes > contextual > no > none.
+  if (k === "db_uniprot") return r.db.uniprot ? 1 : 0;
+  if (k === "db_go") return r.db.go ? 1 : 0;
+  if (k === "db_surfy") return r.db.surfy ? 1 : 0;
+  if (k === "db_cspa") return r.db.cspa ? 1 : 0;
+  if (k === "db_hpa") return r.db.hpa ? 1 : 0;
+  if (k === "triage") {
+    // Sort by the triage-agent verdict (Worker slot 1) — the only
+    // model with full-genome coverage. yes > contextual > no > none.
     const v = r.triage_by_model[1]?.verdict;
     if (v === "yes") return 3;
     if (v === "contextual") return 2;
@@ -479,6 +972,7 @@ function SortableHeader({
   align,
   mono,
   title,
+  extraClass,
 }: {
   label: string;
   k: SortKey;
@@ -488,12 +982,15 @@ function SortableHeader({
   align: "left" | "center";
   mono?: boolean;
   title?: string;
+  /** Extra class concatenated onto the header div — used to slot
+   *  the DB-cell tight padding ({.headerDbCell}) on the DB columns. */
+  extraClass?: string;
 }) {
   const active = sortKey === k;
   return (
     <div
       role="columnheader"
-      className={`${styles.headerCell} ${align === "center" ? styles.headerCenter : ""} ${mono ? styles.headerMono : ""}`}
+      className={`${styles.headerCell} ${align === "center" ? styles.headerCenter : ""} ${mono ? styles.headerMono : ""} ${extraClass ?? ""}`}
       aria-sort={active ? (sortDir === "asc" ? "ascending" : "descending") : "none"}
     >
       <button
@@ -516,34 +1013,49 @@ function CatalogRowView({
   measureRef,
   dataIndex,
   virtualStart,
-  isExpanded,
-  onToggleExpand,
-  detail,
+  isSelected,
+  onSelect,
 }: {
   row: CatalogRow;
   measureRef?: (el: HTMLDivElement | null) => void;
   dataIndex?: number;
   virtualStart?: number;
-  isExpanded: boolean;
-  onToggleExpand: (symbol: string) => void;
-  detail: TriageDetailState | undefined;
+  isSelected: boolean;
+  onSelect: (symbol: string) => void;
 }) {
-  const symbolHead = row.deep_dive ? (
-    <Link href={`/${row.symbol}/`} className={styles.symbolLink}>
-      {row.symbol}
-    </Link>
-  ) : (
-    <span className={styles.symbolText}>{row.symbol}</span>
-  );
-  const symbolCell = (
+  // Genes with a deep-dive go straight to the rich deep-dive page on
+  // click — the side-rationale drawer is redundant for those (the
+  // deep-dive page carries the triage reasoning plus everything else).
+  // Genes WITHOUT a deep-dive open the drawer instead, since that's
+  // the only place to read the triage call's full text.
+  const symbolStack = (
     <span className={styles.symbolStack}>
-      {symbolHead}
+      <span className={styles.symbolText}>{row.symbol}</span>
       {row.name ? (
         <span className={styles.symbolName} title={row.name}>
           {row.name}
         </span>
       ) : null}
     </span>
+  );
+  const symbolButton = row.deep_dive ? (
+    <Link
+      href={`/${row.symbol}/`}
+      className={styles.symbolButton}
+      aria-label={`Open the deep-dive page for ${row.symbol}`}
+    >
+      {symbolStack}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      className={styles.symbolButton}
+      onClick={() => onSelect(row.symbol)}
+      aria-pressed={isSelected}
+      aria-label={`Open triage reasoning for ${row.symbol}`}
+    >
+      {symbolStack}
+    </button>
   );
   const style: React.CSSProperties | undefined =
     virtualStart != null
@@ -560,30 +1072,12 @@ function CatalogRowView({
       ref={measureRef}
       data-index={dataIndex}
       role="row"
-      className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""}`}
+      className={`${styles.row} ${isSelected ? styles.rowSelected : ""}`}
       data-deep-dive={row.deep_dive || undefined}
       style={style}
     >
-      <div className={`${styles.cell} ${styles.toggleCell}`} role="cell">
-        <button
-          type="button"
-          className={styles.toggleBtn}
-          onClick={() => onToggleExpand(row.symbol)}
-          aria-label={
-            isExpanded
-              ? `Collapse triage details for ${row.symbol}`
-              : `Expand triage details for ${row.symbol}`
-          }
-          aria-expanded={isExpanded}
-        >
-          {isExpanded ? "−" : "+"}
-        </button>
-      </div>
       <div className={`${styles.cell} ${styles.symbolCell}`} role="cell">
-        {symbolCell}
-      </div>
-      <div className={`${styles.cell} ${styles.uniprotCell}`} role="cell">
-        {row.uniprot}
+        {symbolButton}
       </div>
       <div className={`${styles.cell} ${styles.nCell}`} role="cell">
         <span className={styles.nBubble} data-n={row.n_sources}>
@@ -615,12 +1109,12 @@ function CatalogRowView({
               <button
                 type="button"
                 className={`${styles.verdictBtn} ${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)}`}
-                onClick={() => onToggleExpand(row.symbol)}
-                aria-expanded={isExpanded}
+                onClick={() => onSelect(row.symbol)}
+                aria-pressed={isSelected}
                 title={
                   cell.reason
-                    ? `${m.long}: ${cell.verdict} (${cell.reason.replace(/_/g, " ")})`
-                    : `${m.long}: ${cell.verdict}`
+                    ? `${m.long}: ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for reasoning`
+                    : `${m.long}: ${cell.verdict} — click for reasoning`
                 }
               >
                 {cell.verdict}
@@ -631,120 +1125,32 @@ function CatalogRowView({
           </div>
         );
       })}
+      <div className={`${styles.cell} ${styles.reasonCell}`} role="cell">
+        {(() => {
+          const reason = row.triage_by_model[1]?.reason;
+          if (!reason) return <span className={styles.dim}>—</span>;
+          const pretty = reason.replace(/_/g, " ");
+          return (
+            <span className={styles.reasonText} title={pretty}>
+              {pretty}
+            </span>
+          );
+        })()}
+      </div>
       <div className={`${styles.cell} ${styles.deepCell}`} role="cell">
         {row.deep_dive ? (
           <Link
             href={`/${row.symbol}/`}
-            className={styles.deepBadge}
-            aria-label={`View deep-dive record for ${row.symbol}`}
+            className={`${styles.verdictLabel} ${styles.verdictMini} ${styles.verdictYes} ${styles.deepLink}`}
+            aria-label={`Open the deep-dive record for ${row.symbol}`}
+            title={`Open the deep-dive record for ${row.symbol}`}
           >
-            view →
+            yes
           </Link>
         ) : (
           <span className={styles.dim}>—</span>
         )}
       </div>
-      {isExpanded ? (
-        <div className={styles.expandedBlock}>
-          <TriageDetail
-            symbol={row.symbol}
-            fallback={row.triage_by_model}
-            detail={detail}
-          />
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function TriageDetail({
-  symbol,
-  fallback,
-  detail,
-}: {
-  symbol: string;
-  /** Per-model NCBI verdicts from the catalog row, used as the
-   *  fallback if the on-demand fetch fails. */
-  fallback: (TriageCell | null)[];
-  detail: TriageDetailState | undefined;
-}) {
-  if (!detail || detail.status === "loading") {
-    return (
-      <p className={styles.expandedMeta}>
-        Loading triage reasoning for <strong>{symbol}</strong>…
-      </p>
-    );
-  }
-  if (detail.status === "error") {
-    return (
-      <p className={styles.expandedMeta}>
-        Could not load triage details ({detail.message}).
-      </p>
-    );
-  }
-  // Render one card per CATALOG_MODELS slot — the latest NCBI-variant
-  // run with that model. The /v1/triage endpoint returns ALL runs
-  // (every variant + replicate) for a gene; we filter to ncbi and
-  // pick the most-recent per model.
-  const byModelLatest = new Map<string, TriageRun>();
-  for (const run of detail.runs) {
-    if (run.prompt_variant !== "ncbi") continue;
-    const prev = byModelLatest.get(run.model);
-    if (!prev || prev.created_at < run.created_at) {
-      byModelLatest.set(run.model, run);
-    }
-  }
-  return (
-    <div className={styles.triageDetailGrid}>
-      {CATALOG_MODELS.map((m) => {
-        const run = byModelLatest.get(m.id);
-        const cached = fallback[m.idx];
-        if (!run && !cached) {
-          return (
-            <article key={m.id} className={`${styles.triageDetailCard} ${styles.triageDetailMissing}`}>
-              <p className={styles.runMeta}>
-                <strong>{m.long}</strong>
-                <span className={styles.runDim}>· no run on file</span>
-              </p>
-            </article>
-          );
-        }
-        const verdict = run?.predicted_verdict ?? cached?.verdict ?? "";
-        const reason = run?.predicted_reason ?? cached?.reason ?? null;
-        return (
-          <article key={m.id} className={styles.triageDetailCard}>
-            <p className={styles.runMeta}>
-              <strong>{m.long}</strong>
-              <span className={styles.runDim}>·</span>
-              <span className={styles.runBadge} data-verdict={verdict}>
-                {verdict}
-              </span>
-              {reason ? (
-                <span>{reason.replace(/_/g, " ")}</span>
-              ) : null}
-              {run?.predicted_confidence ? (
-                <>
-                  <span className={styles.runDim}>·</span>
-                  <span className={styles.runDim}>
-                    conf {run.predicted_confidence}
-                  </span>
-                </>
-              ) : null}
-              {run?.created_at ? (
-                <>
-                  <span className={styles.runDim}>·</span>
-                  <span className={styles.runDim}>
-                    {run.created_at.slice(0, 10)}
-                  </span>
-                </>
-              ) : null}
-            </p>
-            {run?.verdict_reasoning ? (
-              <p className={styles.runReasoning}>{run.verdict_reasoning}</p>
-            ) : null}
-          </article>
-        );
-      })}
     </div>
   );
 }

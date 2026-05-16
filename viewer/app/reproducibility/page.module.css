@@ -1,0 +1,121 @@
+/*
+ * /reproducibility/ — citation-pinning strategy for figures, the
+ * whole repository, and the deposited data + writeup. Same docs-style
+ * register as /api/ (small heading, prose-heavy).
+ */
+
+.page {
+  padding: var(--space-10) 0 var(--space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+}
+
+.lede {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--muted);
+  font-weight: 300;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--line-soft);
+}
+
+.section:first-of-type {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.sectionHead {
+  margin: 0;
+}
+
+.body {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.body + .body {
+  margin-top: var(--space-3);
+}
+
+.body code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: var(--ink);
+  background: var(--bg-soft);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-soft);
+}
+
+.list {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.handleCard {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.6rem var(--space-4);
+  align-items: baseline;
+  padding: var(--space-4) var(--space-5);
+  background: var(--bg-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+}
+
+.handleLabel {
+  margin: 0;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.handleValue {
+  margin: 0;
+  color: var(--ink);
+  word-break: break-all;
+}
+
+.handlePending {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.extLink {
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.extLink:hover,
+.extLink:focus-visible {
+  border-bottom-color: var(--accent);
+}

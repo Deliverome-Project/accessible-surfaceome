@@ -25,11 +25,7 @@ export function ParalogsCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Paralogs"
-      title={
-        <>
-          The <em>Compara</em> table
-        </>
-      }
+      title="Paralogs (Ensembl Compara)"
       meta={`Deterministic · Ensembl Compara ${comparaVersion} · within-species paralogs`}
       lede="Compara within-species paralog %ECD identities. Per-antibody cross-reactivity behavior is captured per-clone under §1 Surface Evidence (AntibodyRef.cross_reactivity_notes). The LLM cross-reactivity verdict was deferred to v1.x."
     >
