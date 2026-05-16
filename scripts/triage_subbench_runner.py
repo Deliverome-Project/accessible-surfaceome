@@ -50,7 +50,7 @@ from accessible_surfaceome.agents._support import client as _client_module
 from accessible_surfaceome.agents.surface_triage.task import render_task as _render_task
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.tools._shared.http import open_default_client
-from accessible_surfaceome.tools.gene_lookup import resolve
+from accessible_surfaceome.tools.gene_lookup import resolve, resolve_by_hgnc_id
 
 logger = logging.getLogger(__name__)
 ROOT = Path("/Users/rebeccacarlson/Git/accessible-surfaceome/.claude/worktrees/optimistic-goldwasser-ea19aa")
@@ -177,9 +177,32 @@ def _load_prompt(name: str) -> str:
     return (PROMPTS_DIR / name).read_text()
 
 
-def _resolve_task_text(gene: str) -> str:
+def _resolve_task_text(gene: str, hgnc_id: str | None = None) -> str:
     """Use the orchestrator's _render_task to format the task message
-    with HGNC + UniProt + NCBI + gene-group + CD designation context."""
+    with HGNC + UniProt + NCBI + gene-group + CD designation context.
+
+    Resolution priority — stable-identifier-first per the policy
+    documented in ``CLAUDE.md``'s "Gene identifier resolution"
+    section. When ``hgnc_id`` is available (every row in
+    ``Homo_sapiens.protein_coding.with_hgnc.tsv`` carries one),
+    use the HGNC-ID-keyed path; this avoids the documented
+    symbol-keyed failure modes (primary-name collisions, HGNC
+    xref empty, symbol-reassignment drift — see
+    ``data/analysis/resolver_definitive_audit_v3.tsv``).
+
+    Symbol fallback exists for cells without an HGNC ID, but the
+    cohort has 100% HGNC coverage so this path should be effectively
+    dead for canonical sweeps.
+    """
+    if hgnc_id:
+        try:
+            bundle = resolve_by_hgnc_id(hgnc_id, http=_http())
+            return _render_task(bundle)
+        except LookupError:
+            # HGNC's API returned no record for this ID (rare —
+            # ~1 of 19k cohort rows has a stale HGNC ID). Fall
+            # through to symbol search rather than failing the cell.
+            pass
     bundle = resolve(gene, http=_http())
     return _render_task(bundle)
 
@@ -315,13 +338,14 @@ def _run_one(
     replicate: int,
     truth_verdict: str,
     truth_class: str,
+    hgnc_id: str | None = None,
 ) -> RunRecord:
     cfg = VARIANTS[variant]
     system_prompt = _load_prompt(cfg["prompt"])
 
     if cfg["resolver"]:
         try:
-            user_message = _resolve_task_text(gene_symbol)
+            user_message = _resolve_task_text(gene_symbol, hgnc_id=hgnc_id)
         except Exception as exc:  # noqa: BLE001
             return RunRecord(
                 variant=variant, model=model, gene_symbol=gene_symbol,
@@ -587,6 +611,7 @@ def _run_one_with_retry(
     replicate: int,
     truth_verdict: str,
     truth_class: str,
+    hgnc_id: str | None = None,
 ) -> RunRecord:
     """``_run_one`` with one automatic retry for transient failures
     or schema-mismatch emissions, plus a refusal-fallback to the
@@ -614,6 +639,7 @@ def _run_one_with_retry(
     first = _run_one(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+        hgnc_id=hgnc_id,
     )
 
     # Refusal fallback: when a resolver-context variant gets refused,
@@ -623,6 +649,7 @@ def _run_one_with_retry(
         naive_attempt = _run_one(
             variant="naive", model=model, gene_symbol=gene_symbol,
             replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+            hgnc_id=hgnc_id,
         )
         if naive_attempt.predicted_verdict is not None:
             return naive_attempt
@@ -635,6 +662,7 @@ def _run_one_with_retry(
     second = _run_one(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+        hgnc_id=hgnc_id,
     )
     return second
 
@@ -882,6 +910,12 @@ def main() -> None:
                 variant=v, model=m, gene_symbol=row["gene_symbol"],
                 replicate=rep, truth_verdict=row["ground_truth_verdict"],
                 truth_class=row["class"],
+                # Pass-through to the resolver. Cohort TSVs carry
+                # hgnc_id per CLAUDE.md "Gene identifier resolution";
+                # rerun inputs (resolver-fix sweeps) carry it
+                # explicitly. Absent / empty when the input TSV
+                # doesn't supply one — falls back to symbol search.
+                hgnc_id=(row.get("hgnc_id") or None),
             ): (v, m, row["gene_symbol"], rep)
             for (v, m, row, rep) in cells
         }

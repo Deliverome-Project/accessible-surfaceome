@@ -101,6 +101,97 @@ Commits). A title that doesn't match fails the check and blocks merge.
   listed, update the workflow's `scopes:` block in the same PR — don't
   invent a new one.
 
+## Gene identifier resolution
+
+When writing any code that takes "a gene" as input — agent tool, sweep
+runner, figure generator, manual one-off — **the entry point must be a
+stable identifier, not a gene symbol.** Bare gene symbols silently
+resolve to the wrong protein for a small but real subset of human
+genes (~0.2% of the 19,464-row protein-coding cohort), including
+high-profile failures like **COX1** (cyclooxygenase-1 vs the
+mitochondrial cytochrome c oxidase the cohort actually meant) and
+**WAS** (Wiskott-Aldrich protein vs the MT-RNR1 rRNA gene). The audit
+that surfaced these lives at
+[`scripts/audit_resolver_hgnc_id_v3.py`](scripts/audit_resolver_hgnc_id_v3.py);
+the documented divergence list is at
+`data/analysis/resolver_definitive_audit_v3.tsv`.
+
+### The canonical resolver
+
+`src/accessible_surfaceome/tools/gene_lookup.py:resolve_by_hgnc_id` is
+the preferred entry point. Callers thread `hgnc_id` through from the
+cohort row:
+
+    bundle = resolve_by_hgnc_id(row["hgnc_id"], http=http)
+
+The cohort file
+[`data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv`](data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv)
+carries `hgnc_id` for every gene (100% coverage as of last refresh) —
+no symbol-keyed sweep should exist for cohort-driven code paths.
+
+The legacy `resolve(symbol_or_acc)` stays in the module for free-text
+agent tool calls (where only a symbol or accession-shape string is
+available); it emits a `UserWarning` on the symbol path so misuse is
+auditable in logs.
+
+### Failure modes the HGNC-ID path is designed to avoid
+
+Three classes of bug the symbol-keyed path has, all encoded in the
+audit's divergence buckets:
+
+1. **Primary-name collisions across reviewed UniProt entries**
+   (`multi_xref_canonical_pick_disagrees`) — when ≥2 reviewed
+   Swiss-Prot entries share a primary `geneName.value`, UniProt's
+   `gene_exact:` server-rank ordering decides the winner non-
+   deterministically. The HGNC-ID picker enumerates HGNC's
+   `uniprot_ids` xref explicitly and tiebreaks on `(reviewed,
+   primary-name-match, canonical-isoform, earliest firstPublicDate,
+   acc)` — pinning the canonical Swiss-Prot record.
+2. **HGNC xref empty** (`production_caught_hgnc_missed`) — HGNC
+   curates the gene but hasn't filled the UniProt xref. The
+   resolver falls back to UniProt symbol search via HGNC's primary
+   symbol, then HGNC's `prev_symbol` list, so these genes don't
+   drop out.
+3. **Symbol-reassignment drift** (`production_missed_hgnc_caught` +
+   `synonym_fallback_vs_canonical`) — HGNC re-assigns a symbol;
+   symbol-keyed lookup returns the gene the symbol points to *now*
+   (sometimes the wrong kingdom: WAS → MT-RNR1 rRNA). HGNC-ID
+   resolution returns the gene the cohort row actually meant.
+
+### Downstream searches: identifier-per-source
+
+Build any new tool by reading from the resolved `IdentifierBundle`,
+never by re-resolving from the symbol. Once the bundle is in hand:
+
+| Source | Identifier from the bundle |
+|---|---|
+| AlphaFold DB / PDB / InterPro / Pfam / DrugBank / Reactome (protein) | `bundle.uniprot_acc` |
+| Ensembl / GTEx / HPA / Open Targets / STRING (gene) | `bundle.hgnc_id` or `bundle.ensembl_gene` |
+| PubMed / Europe PMC (free text) | OR of `bundle.aliases + bundle.previous_symbols + bundle.hgnc_symbol` |
+| dbSNP / ClinVar / OMIM | `bundle.ncbi_gene_id` or `bundle.hgnc_id` |
+
+Symbol-keyed queries to structured databases reintroduce the same
+bug class one layer down — don't.
+
+### Refreshing the audit
+
+After any cohort regeneration, any UniProt or HGNC API behavior
+change, or any picker logic change, re-run the audit:
+
+    uv run python scripts/audit_resolver_hgnc_id_v3.py
+
+Sub-minute on a warm cache, ~60-90 min on a cold cache. Outputs
+`data/analysis/resolver_definitive_audit_v3.tsv` (per-symbol
+divergences) and `_d1_rows.tsv` / `_d1_rows_full.tsv` (affected D1
+rows for Phase-4-style targeted reruns). The
+`scripts/audit_resolver_hgnc_id_v3_extend.py` companion scans
+`triage_run`, `deep_dive_run`, and `benchmark_version` in one pass.
+
+Pinned regression cases (BBC3, ND4, PRNP, TSPO, ABHD4, HSD17B8,
+SACK1A, CLMB, COX1, COX2, WAS) live at
+[`tests/test_gene_lookup_resolver.py`](tests/test_gene_lookup_resolver.py)
+— any picker / fallback regression breaks these.
+
 ## Coding Style
 
 See [docs/coding-style.md](docs/coding-style.md) for the conventions we

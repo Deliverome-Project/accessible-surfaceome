@@ -81,10 +81,14 @@ OUT_D1_ROWS = (
     REPO_ROOT / "data" / "analysis" / "resolver_definitive_audit_v3_d1_rows.tsv"
 )
 
-# Workers parallelize HGNC + UniProt API hits. Both endpoints handle
-# the load fine; CachedHTTP serializes per-URL so cache writes don't
-# race.
-N_WORKERS = 8
+# Workers parallelize HGNC + UniProt API hits. The post-patch picker
+# fetches every candidate in HGNC's uniprot_ids xref (not just the
+# first), so per-symbol API load is ~2-4x what the v2 audit did.
+# Combined with HGNC's per-record requests, 8 workers overrun
+# UniProt's 429 budget. Three workers stays under both APIs'
+# tolerated rate while keeping the cold-cache pass under 90 min;
+# warm cache is sub-minute regardless of concurrency.
+N_WORKERS = 3
 
 
 def _load_cohort_mapping() -> dict[str, str]:
@@ -151,6 +155,14 @@ def _classify(
 ) -> str:
     """Bucket the divergence by likely root cause."""
 
+    # Filter transient API failures first — these aren't real
+    # divergences, just rate-limit hits the CachedHTTP retry budget
+    # couldn't absorb. Re-running the audit (warm cache) collapses
+    # them. Keep them visible in the TSV so the rerun script can
+    # also retry these symbols, but don't conflate with real
+    # divergences in the breakdown.
+    if hgnc_class.startswith(("hgnc_http_", "uniprot_http_")):
+        return "transient_api_failure"
     if production_pick is None and hgnc_pick is not None:
         return "production_missed_hgnc_caught"
     if production_pick is not None and hgnc_pick is None:
