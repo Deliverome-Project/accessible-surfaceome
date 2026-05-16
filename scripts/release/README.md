@@ -129,6 +129,65 @@ After both records exist:
    embedded metadata in `data/analysis/figures/*.{png,pdf}`.
 5. **Commit** the metadata bump.
 
+## The full publication ritual (both records together)
+
+The data record (this script) and the code record (GitHub-release
+auto-archive) are independent — they can be released at different
+cadences. But for a real publication moment, you usually want both
+refreshed together. The end-to-end ritual:
+
+### Prerequisites (one-time)
+
+1. **Enable GitHub-Zenodo auto-archive** for `accessible-surfaceome`
+   at <https://zenodo.org/account/settings/github/>. Find the repo
+   in the list, flip its toggle to ON. From this point forward, every
+   GitHub Release (not just a tag — needs an actual published Release
+   in the GitHub UI) creates a new Zenodo record automatically.
+2. **(Optional) Add a `.zenodo.json`** at the repo root with default
+   metadata (creators, license, keywords). Without it, Zenodo guesses
+   from the release notes. With it, the auto-deposit has clean,
+   complete metadata from version 1.
+
+### Per-release ritual
+
+When you're ready to publish a new version of the project:
+
+```bash
+# 1. Audit + run the data deposit (this script).
+ZENODO_TOKEN='...' ./scripts/release/publish-archive.py
+# → drafts a Zenodo record with EXTRA_FILES_RELATIVE contents
+# → audit phase 2.5 surfaces any data inputs the gists reference
+#   that aren't already deposited — fix EXTRA_FILES_RELATIVE if needed
+
+# 2. Open the draft URL the script printed, review, click Publish.
+#    Note the new data record DOI (e.g. 10.5281/zenodo.NEW_DATA).
+
+# 3. Tag a new version in the repo:
+git tag -a v1.2.0 -m "Release v1.2.0: <one-line summary>"
+git push origin v1.2.0
+
+# 4. Create a GitHub Release for that tag:
+gh release create v1.2.0 --generate-notes
+# → Zenodo auto-archive watches for this event, fetches the repo tarball,
+#   creates a new Zenodo record with a new version DOI under the existing
+#   concept-DOI series.
+
+# 5. After both records exist, link them via metadata in the Zenodo UI:
+#    on the data record: relatedIdentifier isSupplementTo <code-concept-DOI>
+#    on the code record: relatedIdentifier isSupplementedBy <data-concept-DOI>
+#    (Zenodo lets you edit metadata after publishing; just not files.)
+
+# 6. Update FIGURE_PROVENANCE with the new code-record's concept DOI
+#    so future figure renders pick it up:
+#    edit scripts/embed_figure_gist_metadata.py → set `doi` per figure
+#    → uv run python scripts/embed_figure_gist_metadata.py
+#    → git add data/analysis/figures/ && git commit
+```
+
+After step 6, the figures know about both their gist SWHID (for the
+reproduction artifact) and the bundle DOI (for the publication
+citation), and the Zenodo records know about each other.
+
 ## Auto-archive vs this script — they're complementary
 
 If you already have GitHub-Zenodo auto-archive enabled (recommended

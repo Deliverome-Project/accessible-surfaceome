@@ -20,8 +20,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-import pikepdf
-from PIL import Image, PngImagePlugin
+# pikepdf + PIL are heavy imports needed only for the actual embedding
+# (writing to PDF/PNG metadata). Other consumers — e.g. the
+# scripts/release/publish-archive.py audit phase — just read the
+# FIGURE_PROVENANCE dict and shouldn't pay the import cost. Lazy-loaded
+# inside _embed_pdf / _embed_png below.
 
 from accessible_surfaceome._provenance import build_provenance, validate_provenance
 from accessible_surfaceome.paths import REPO_ROOT
@@ -76,6 +79,7 @@ def _build_blob(slug: str) -> dict[str, Any]:
 
 
 def _embed_pdf(path: Path, slug: str, gist_url: str, description: str, blob_json: str) -> None:
+    import pikepdf  # noqa: PLC0415 — lazy: see module-level comment
     with pikepdf.open(path, allow_overwriting_input=True) as pdf:
         with pdf.open_metadata() as meta:
             meta["dc:title"] = slug
@@ -87,6 +91,7 @@ def _embed_pdf(path: Path, slug: str, gist_url: str, description: str, blob_json
 
 
 def _embed_png(path: Path, slug: str, gist_url: str, description: str, blob_json: str) -> None:
+    from PIL import Image, PngImagePlugin  # noqa: PLC0415 — lazy
     img = Image.open(path)
     info = PngImagePlugin.PngInfo()
     for k, v in (img.info or {}).items():

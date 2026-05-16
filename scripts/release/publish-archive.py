@@ -363,6 +363,107 @@ def phase_audit_figures(*, dry_run: bool) -> bool:
         return False
 
 
+def phase_audit_data_inputs() -> None:
+    """Surface every data input referenced by a managed figure's
+    provenance, so the operator can decide which to include in the
+    Zenodo deposit.
+
+    Reads ``FIGURE_PROVENANCE`` from ``scripts/embed_figure_gist_metadata.py``
+    (the source of truth for which data sources back which figures).
+    For each ``data[]`` entry:
+
+    * If the URL is already on a durable archive (Zenodo, Figshare,
+      OSF, archive.softwareheritage.org), report it as already-deposited.
+    * If the URL is on a mutable host (raw.githubusercontent.com without
+      a pinned commit SHA, etc.), flag it as a candidate for deposit.
+    * If a ``swhid`` or ``doi`` is already set on the entry, treat it
+      as durably referenced and skip.
+
+    This phase doesn't ADD anything to EXTRA_FILES_RELATIVE — it just
+    surfaces a checklist for the operator. Adding to the deposit is a
+    deliberate human step.
+    """
+    announce("PHASE 2.5 — Audit data inputs referenced by figure gists")
+
+    # Read FIGURE_PROVENANCE from the project venv via subprocess, so this
+    # PEP 723 script's isolated venv (which doesn't know about the
+    # accessible_surfaceome package) can still see the canonical
+    # registry of which data inputs back which figures.
+    try:
+        out = subprocess.check_output(
+            [
+                "uv", "run", "--project", str(REPO_ROOT), "python", "-c",
+                "import json, sys; "
+                "sys.path.insert(0, 'scripts'); "
+                "from embed_figure_gist_metadata import FIGURE_PROVENANCE; "
+                "print(json.dumps(FIGURE_PROVENANCE))",
+            ],
+            cwd=REPO_ROOT,
+            text=True,
+        )
+        FIGURE_PROVENANCE: dict[str, dict[str, Any]] = json.loads(out)
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as exc:
+        warn(f"could not load FIGURE_PROVENANCE for audit: {exc}")
+        return
+
+    durable_hosts = {
+        "zenodo.org",
+        "sandbox.zenodo.org",
+        "figshare.com",
+        "ndownloader.figshare.com",
+        "osf.io",
+        "datadryad.org",
+        "archive.softwareheritage.org",
+    }
+
+    rows: list[tuple[str, str, str, str]] = []  # (slug, url, status, note)
+    for slug, prov in FIGURE_PROVENANCE.items():
+        for i, entry in enumerate(prov.get("data") or []):
+            url = entry.get("url") or ""
+            sha = entry.get("sha256") or ""
+            swhid = entry.get("swhid") or ""
+            doi = entry.get("doi") or ""
+            try:
+                host = urllib.parse.urlparse(url).hostname or ""
+            except Exception:
+                host = ""
+            if doi:
+                rows.append((slug, url, "DOI",
+                             f"deposited (doi={doi})"))
+            elif swhid:
+                rows.append((slug, url, "SWHID",
+                             f"archived (swhid={swhid[:24]}…)"))
+            elif host in durable_hosts:
+                rows.append((slug, url, "durable host", host))
+            elif "raw.githubusercontent.com" in host and "/main/" not in url:
+                # Pinned to a commit SHA — content-verifiable but storage-fragile.
+                rows.append((slug, f"data[{i}]: {url}", "review",
+                             f"pinned to commit SHA; sha256={'set' if sha else 'MISSING'}; "
+                             "consider Zenodo deposit"))
+            else:
+                rows.append((slug, f"data[{i}]: {url}", "review",
+                             "mutable URL — needs Zenodo deposit"))
+
+    if not rows:
+        warn("FIGURE_PROVENANCE has no data[] entries — nothing to audit")
+        return
+
+    print()
+    print("  Data inputs referenced by figure gists:")
+    print()
+    for slug, url, status, note in rows:
+        flag = "  ✓" if status in {"DOI", "SWHID", "durable host"} else "  ⚠"
+        print(f"  {flag} [{slug}] {status}: {note}")
+        print(f"      url: {url[:96]}…" if len(url) > 96 else f"      url: {url}")
+    print()
+    print(
+        "  Review: any '⚠ review' rows above should probably be added to "
+        "EXTRA_FILES_RELATIVE (or deposited separately) before publishing.\n"
+        "  Edit the top of this script and re-run."
+    )
+    print()
+
+
 def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool) -> None:
     """Create Zenodo draft and upload artifacts.
 
@@ -489,6 +590,7 @@ def main() -> int:
         warn("--skip-swh: skipping Software Heritage submissions")
 
     phase_audit_figures(dry_run=args.dry_run)
+    phase_audit_data_inputs()
 
     if not args.skip_zenodo:
         phase_zenodo(
