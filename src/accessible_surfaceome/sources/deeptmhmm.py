@@ -1279,12 +1279,21 @@ def run_deeptmhmm_batch(
     Raises ``RuntimeError`` if the subprocess exits non-zero or the expected
     output file is missing.
     """
+    import shutil
     import subprocess
 
-    output_dir.mkdir(parents=True, exist_ok=True)
     expected = output_dir / "predicted_topologies.3line"
+    # Checkpoint: skip the run if this batch already produced an output file
+    # (resume-on-failure path for the overnight sweep).
     if expected.exists() and expected.stat().st_size > 0:
         return expected
+
+    # DeepTMHMM's predict.py refuses to run when --output-dir already exists.
+    # Wipe any partial/stale dir so it can create a fresh one. The parent dir
+    # is preserved so the orchestrator's batch_<NNN>/ structure isn't lost.
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
 
     predict_py = package_dir / "predict.py"
     if not predict_py.exists():
