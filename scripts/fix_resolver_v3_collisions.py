@@ -216,10 +216,41 @@ def _run_runner(input_tsv: str, model: str, fix_run_id: str, *, execute: bool) -
     """Invoke triage_subbench_runner with the rerun input. The runner
     must pick up hgnc_id from the input row (Phase 5 patch makes
     _resolve_task_text use it). Variant=ncbi is the canonical sweep
-    variant; switch if needed."""
+    variant; switch if needed.
+
+    Subtle: we deliberately invoke the canonical checkout's venv
+    Python rather than ``uv run`` from this worktree. ``uv run`` in
+    a fresh worktree triggers a full ``uv sync`` which can fail on
+    the matplotlib sdist build (system deps). The canonical venv at
+    ``$CANONICAL/.venv`` already has every dependency installed; we
+    point PYTHONPATH at this worktree's ``src/`` so the patched
+    resolver wins over the canonical's installed package.
+    """
+
+    import os
+
+    canonical_root = REPO_ROOT
+    # Find the canonical checkout — when running from a worktree,
+    # REPO_ROOT is the worktree root, but the canonical venv lives
+    # at the original clone root. Use ``git rev-parse --git-common-dir``
+    # to find the shared .git dir and infer the canonical from there.
+    try:
+        common_git = subprocess.check_output(
+            ["git", "rev-parse", "--git-common-dir"],
+            cwd=str(REPO_ROOT),
+            text=True,
+        ).strip()
+        canonical_root = REPO_ROOT.joinpath(common_git, "..").resolve()
+    except (subprocess.CalledProcessError, OSError):
+        pass
+    py = canonical_root / ".venv" / "bin" / "python"
+    if not py.exists():
+        py = REPO_ROOT / ".venv" / "bin" / "python"  # worktree fallback
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(REPO_ROOT / "src") + os.pathsep + env.get("PYTHONPATH", "")
 
     cmd = [
-        "uv", "run", "python", str(RUNNER),
+        str(py), str(RUNNER),
         "--gene-list", input_tsv,
         "--variants", "ncbi",
         "--model", model,
@@ -230,12 +261,13 @@ def _run_runner(input_tsv: str, model: str, fix_run_id: str, *, execute: bool) -
     ]
     print()
     print(f"  Runner command (fix_run_id={fix_run_id}):")
+    print("    PYTHONPATH=" + env["PYTHONPATH"].split(os.pathsep)[0] + " \\")
     print("    " + " ".join(cmd))
     if not execute:
         print("  (dry-run) skipping runner invocation")
         return 0
     print()
-    return subprocess.call(cmd, cwd=REPO_ROOT)
+    return subprocess.call(cmd, cwd=REPO_ROOT, env=env)
 
 
 def main() -> int:
