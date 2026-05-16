@@ -62,9 +62,9 @@ from accessible_surfaceome.tools._shared.http import open_default_client
 from accessible_surfaceome.tools.gene_lookup import (
     _entry_primary_symbol,
     _hgnc_record_by_id,
-    _pick_canonical_uniprot,
     _TTL,
     _uniprot_search_by_symbol,
+    resolve_by_hgnc_id,
 )
 
 load_env()
@@ -104,9 +104,16 @@ def _load_cohort_mapping() -> dict[str, str]:
 def _hgnc_pick(hgnc_id: str, *, http) -> tuple[str | None, str]:
     """Return (canonical_acc, classification) for an HGNC ID.
 
-    classification ∈ {"ok", "no_record", "no_uniprot_xref",
-    "single_xref", "multi_xref"} — useful for divergence-class
-    bucketing later.
+    Delegates to ``resolve_by_hgnc_id`` so the audit always tracks
+    whatever the real resolver does — including the Class B
+    fallback (UniProt symbol search when HGNC's xref is empty),
+    the picker's primary-name preference, merge-chain follow, and
+    deleted-Swiss-Prot drop. Hand-rolled reimplementations of the
+    resolver inside the audit silently drift from production.
+
+    The ``classification`` is preserved as a coarse bucket for
+    downstream divergence-class assignment: we re-fetch the HGNC
+    record just to count xref entries (cached, free).
     """
 
     try:
@@ -116,11 +123,22 @@ def _hgnc_pick(hgnc_id: str, *, http) -> tuple[str | None, str]:
     if not hgnc:
         return None, "no_record"
     uniprot_ids = list(hgnc.get("uniprot_ids") or [])
-    if not uniprot_ids:
-        return None, "no_uniprot_xref"
-    if len(uniprot_ids) == 1:
-        return uniprot_ids[0], "single_xref"
-    return _pick_canonical_uniprot(uniprot_ids, http=http), "multi_xref"
+    n_xref = len(uniprot_ids)
+
+    try:
+        bundle = resolve_by_hgnc_id(hgnc_id, http=http)
+    except LookupError:
+        return None, "no_uniprot_xref" if n_xref == 0 else "all_candidates_dropped"
+    except httpx.HTTPStatusError as e:
+        return None, f"uniprot_http_{e.response.status_code}"
+
+    if n_xref == 0:
+        klass = "fallback_symbol_search"
+    elif n_xref == 1:
+        klass = "single_xref"
+    else:
+        klass = "multi_xref"
+    return bundle.uniprot_acc, klass
 
 
 def _classify(

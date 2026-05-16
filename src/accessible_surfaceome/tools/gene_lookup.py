@@ -690,13 +690,41 @@ def resolve_by_hgnc_id(hgnc_id: str, *, http: CachedHTTP) -> IdentifierBundle:
     hgnc = _hgnc_record_by_id(raw, http=http)
     if not hgnc:
         raise LookupError(f"no HGNC record for {hgnc_id!r}")
+
+    primary_symbol = (hgnc.get("symbol") or "").strip()
     uniprot_ids = list(hgnc.get("uniprot_ids") or [])
-    if not uniprot_ids:
-        raise LookupError(
-            f"HGNC record for {hgnc_id} has no uniprot_ids xref — "
-            "out of study scope"
+    uniprot_acc: str | None = None
+
+    if uniprot_ids:
+        # Path A — HGNC has the xref. Pick canonical with the
+        # primary-name + age tiebreak.
+        uniprot_acc = _pick_canonical_uniprot(
+            uniprot_ids, http=http, prefer_primary_name=primary_symbol or None
         )
-    uniprot_acc = _pick_canonical_uniprot(uniprot_ids, http=http)
+    elif primary_symbol:
+        # Path B — HGNC curates the gene but hasn't filled the
+        # UniProt xref yet (~8 of 19k cases in the audit: ABHD4,
+        # C10orf90, HSD17B8, LGTN, LRTOMT, PTPRZ2, RSC1A1, UBE2O).
+        # Fall back to UniProt symbol search using HGNC's primary
+        # symbol — that's the canonical name UniProt indexes
+        # against (more current than whatever the cohort row had).
+        uniprot_acc = _uniprot_search_by_symbol(primary_symbol, http=http)
+        # Path C — HGNC's primary symbol doesn't hit either (rare
+        # mid-rename windows). Try HGNC's previous symbols.
+        if uniprot_acc is None:
+            for prev in hgnc.get("prev_symbol") or []:
+                uniprot_acc = _uniprot_search_by_symbol(prev, http=http)
+                if uniprot_acc:
+                    break
+
+    if uniprot_acc is None:
+        raise LookupError(
+            f"HGNC {hgnc_id} (primary={primary_symbol!r}) has no "
+            "uniprot_ids xref and UniProt symbol search of the "
+            "primary + previous symbols returned nothing — out of "
+            "study scope"
+        )
+
     entry = _uniprot_entry(uniprot_acc, http=http)
     return _bundle_from_entry(
         entry,
@@ -720,7 +748,12 @@ def _hgnc_record_by_id(hgnc_id: str, *, http: CachedHTTP) -> dict[str, Any] | No
     return docs[0] if docs else None
 
 
-def _pick_canonical_uniprot(uniprot_ids: list[str], *, http: CachedHTTP) -> str:
+def _pick_canonical_uniprot(
+    uniprot_ids: list[str],
+    *,
+    http: CachedHTTP,
+    prefer_primary_name: str | None = None,
+) -> str:
     """Pick the canonical reviewed Swiss-Prot accession from an HGNC
     ``uniprot_ids`` list, with the same accession-history reconciliation
     the M1 candidate-universe merge applies (``merge/normalize.py``).
@@ -736,29 +769,35 @@ def _pick_canonical_uniprot(uniprot_ids: list[str], *, http: CachedHTTP) -> str:
       * **Deleted Swiss-Prot accs**. Mirroring the ``delac_sp.txt``
         drop, skip them entirely.
 
-    Strategy (deterministic):
-      1. If only one acc, run it through the same reconciliation
-         (single-acc shortcut would otherwise leak stale IDs).
-      2. For each acc: fetch the entry; drop 404s; if ``status ==
-         "merged"`` and a target acc exists, re-fetch the merged-into
-         entry and continue with that acc; if ``status == "deleted"``,
-         drop it.
-      3. Prefer reviewed Swiss-Prot over unreviewed TrEMBL.
-      4. Prefer canonical-isoform accs (no ``-N`` suffix).
-      5. Tie-break on lexicographic acc order — Swiss-Prot's own
-         canonical convention assigns the lowest-sorted acc to the
-         canonical entry.
+    Canonical-pick tiebreak (each higher-priority field decides
+    before the next is consulted):
+
+      1. **reviewed Swiss-Prot** > unreviewed TrEMBL.
+      2. **primary ``geneName.value`` matches ``prefer_primary_name``**
+         > everything else. Lifts entries that name the gene as
+         primary above isoform-specific / fragment / variant
+         entries that share the symbol only as a synonym.
+      3. **canonical-isoform** (no ``-N`` suffix) > isoform-specific.
+      4. **earliest ``entryAudit.firstPublicDate``**. Swiss-Prot's
+         own canonical convention — the first reviewed entry is the
+         canonical record; later additions are usually variants,
+         fragments, or refined-annotation duplicates. Audit found
+         this consistently identifies the canonical (PRNP 1986 vs
+         2012, ND4 1986 vs 2026, TSPO 1993 vs 2009, BBC3 2004 vs
+         2012). The lex-sort tiebreak used previously got these all
+         wrong (lex order has no relation to canonical-ness).
+      5. **lexicographic accession** as final deterministic tie.
 
     Raises ``LookupError`` when *every* listed acc resolves to
-    merged-with-no-target / deleted / 404. Returning a known-bad acc
-    silently is worse than failing loudly — same contract as the M1
-    merge's "no rows surface for this gene" result.
+    merged-with-no-target / deleted / 404 — same contract as the M1
+    merge's "no rows surface for this gene".
     """
 
     if not uniprot_ids:
         raise ValueError("uniprot_ids is empty")
 
-    candidates: list[tuple[int, int, str]] = []
+    target = (prefer_primary_name or "").upper().strip()
+    candidates: list[tuple[int, int, int, str, str]] = []
     for acc in uniprot_ids:
         try:
             entry = _uniprot_entry(acc, http=http)
@@ -791,8 +830,18 @@ def _pick_canonical_uniprot(uniprot_ids: list[str], *, http: CachedHTTP) -> str:
         reviewed_rank = (
             0 if entry.get("entryType") == "UniProtKB reviewed (Swiss-Prot)" else 1
         )
+        primary_name = (_entry_primary_symbol(entry) or "").upper().strip()
+        name_match_rank = 0 if (target and primary_name == target) else 1
         isoform_rank = 1 if "-" in acc else 0
-        candidates.append((reviewed_rank, isoform_rank, acc))
+        # ``firstPublicDate`` is ISO YYYY-MM-DD, so string sort is
+        # chronological. Missing dates sort last (treat as "never
+        # canonical" rather than "ancient").
+        first_public = (
+            (entry.get("entryAudit") or {}).get("firstPublicDate") or "9999-99-99"
+        )
+        candidates.append(
+            (reviewed_rank, name_match_rank, isoform_rank, first_public, acc)
+        )
 
     if not candidates:
         raise LookupError(
@@ -800,7 +849,7 @@ def _pick_canonical_uniprot(uniprot_ids: list[str], *, http: CachedHTTP) -> str:
             "merged-with-no-target / deleted / 404 — out of study scope"
         )
     candidates.sort()
-    return candidates[0][2]
+    return candidates[0][4]
 
 
 def _bundle_from_entry(
