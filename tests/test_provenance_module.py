@@ -82,6 +82,33 @@ def test_validate_provenance_accepts_zenodo_doi_only() -> None:
     validate_provenance(build_provenance(**fields))
 
 
+def test_validate_provenance_accepts_data_with_swhid_and_doi() -> None:
+    fields = _minimal_fields()
+    fields["data"] = [
+        {
+            "url": fields["data"][0]["url"],
+            "sha256": "a" * 64,
+            "swhid": "swh:1:cnt:" + "a" * 40,
+            "doi": "10.5281/zenodo.42",
+        }
+    ]
+    validate_provenance(build_provenance(**fields))
+
+
+def test_validate_provenance_rejects_bad_data_swhid() -> None:
+    fields = _minimal_fields()
+    fields["data"] = [{"url": fields["data"][0]["url"], "swhid": "not-a-swhid"}]
+    with pytest.raises(ProvenanceError, match=r"data\[0\]\.swhid"):
+        validate_provenance(build_provenance(**fields))
+
+
+def test_validate_provenance_rejects_bad_data_doi() -> None:
+    fields = _minimal_fields()
+    fields["data"] = [{"url": fields["data"][0]["url"], "doi": "not-a-doi"}]
+    with pytest.raises(ProvenanceError, match=r"data\[0\]\.doi"):
+        validate_provenance(build_provenance(**fields))
+
+
 def test_build_provenance_round_trips_through_json() -> None:
     blob = build_provenance(**_minimal_fields())
     serialized = json.dumps(blob, separators=(",", ":"))

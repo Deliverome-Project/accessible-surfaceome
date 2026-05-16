@@ -123,6 +123,21 @@ def validate_provenance(blob: dict[str, Any]) -> None:
             sha = entry.get("sha256")
             if sha is not None and not (isinstance(sha, str) and _SHA256_RE.match(sha)):
                 raise ProvenanceError(f"data[{i}].sha256 must be 64 hex chars")
+            entry_doi = entry.get("doi")
+            if entry_doi is not None and not (
+                isinstance(entry_doi, str) and _DOI_RE.match(entry_doi)
+            ):
+                raise ProvenanceError(
+                    f"data[{i}].doi must match the DOI format 10.NNNN/..."
+                )
+            entry_swhid = entry.get("swhid")
+            if entry_swhid is not None and not (
+                isinstance(entry_swhid, str) and _SWHID_RE.match(entry_swhid)
+            ):
+                raise ProvenanceError(
+                    f"data[{i}].swhid must start with 'swh:1:<cnt|dir|rev|rel|snp>:' "
+                    "followed by 40 hex chars"
+                )
 
     has_durable = bool(
         swhid

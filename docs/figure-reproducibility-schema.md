@@ -42,7 +42,9 @@ back-compat.
   "data": [
     {
       "url":    "https://raw.githubusercontent.com/.../<commit-sha>/.../data.tsv",
-      "sha256": "<64-char hex>"
+      "sha256": "<64-char hex>",
+      "swhid":  "swh:1:cnt:<40-hex>",
+      "doi":    null
     }
   ]
 }
@@ -51,6 +53,21 @@ back-compat.
 All fields except `schema_version` and `title` are optional individually,
 but at least one durable identifier (`swhid`, `zenodo_doi`, or
 `repo + repo_path + repo_ref-as-commit-sha`) is required.
+
+### Data durability (per `data[]` entry)
+
+`url + sha256` is **content-verifiable** (you can prove the bytes are
+right when you find them) but not **storage-durable** (the URL can
+disappear). For research-grade durability on data:
+
+- `swhid` — Software Heritage assigns a content-addressed identifier
+  per file blob (`swh:1:cnt:<40-hex>`). Free, durable, no DOI.
+- `doi` — Zenodo / DataCite DOI for a data deposit. Durable, citeable
+  in papers.
+
+Each `data[]` entry accepts all three (`sha256`, `swhid`, `doi`)
+independently. Validation enforces format only — the schema treats
+content-verifiable and storage-durable as orthogonal properties.
 
 ## Validation rules
 

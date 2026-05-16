@@ -51,6 +51,11 @@ FIGURE_PROVENANCE: dict[str, dict[str, Any]] = {
                     "data/processed/candidate_universe/candidate_universe.tsv"
                 ),
                 "sha256": "2406464f3f86680e76844fe07e9aa32e5550960bc9fa5573137bb31c15ea3ef2",
+                # Git-blob SWHID for this file (content-addressed).
+                # Resolves via Software Heritage once the repo archive
+                # request 2332998 completes its initial crawl.
+                "swhid": "swh:1:cnt:e7a29bb9ab3b4a1746ac25726e818377ecac3392",
+                "doi": None,
             }
         ],
     },
