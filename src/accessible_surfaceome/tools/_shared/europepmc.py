@@ -21,11 +21,14 @@ category-specific term lists should ship their own).
 from __future__ import annotations
 
 import logging
+import os
 import re
 import xml.etree.ElementTree as ET
 from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from typing import Any, Literal
+
+import httpx
 
 from .http import CachedHTTP
 from .models import Paper, PaperSection, PublicationType, TopicAnchor
@@ -48,6 +51,7 @@ FULLTEXT_CHAR_CAP = FULLTEXT_TOKEN_CAP * 4
 
 EUROPEPMC_SEARCH = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 EUROPEPMC_FULLTEXT = "https://www.ebi.ac.uk/europepmc/webservices/rest/{pmcid}/fullTextXML"
+NCBI_PMC_EFETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 
 
 # ---------------------------------------------------------------------------
@@ -118,6 +122,31 @@ def fetch_fulltext(
     populated, ``truncated_sections`` flags any sections trimmed to fit
     the per-paper char budget. Caller decides whether to re-tag topics
     using full text vs abstract.
+
+    Three-layer fallback chain (NCBI-first, post-2026-05-16):
+
+    1. **NCBI E-utilities** ``efetch.fcgi?db=pmc`` (preferred). NCBI is
+       the authoritative PMC source; EuropePMC is a downstream mirror.
+       Survey on GPR75 (44 unique PMCIDs, 2026-05-16) found EuropePMC's
+       ``fullTextXML`` endpoint 404'd on 58/58 fulltext attempts while
+       NCBI succeeded on 40/40 — so NCBI was promoted to first-line to
+       cut wasted HTTP roundtrips and surface the authoritative content
+       directly.
+    2. **EuropePMC** ``fullTextXML`` endpoint when NCBI returns a
+       non-fatal HTTP error or an empty article-set. Some EuropePMC-
+       only OAI ingestions may not yet be in NCBI's PMC; this layer
+       catches them.
+    3. **Abstract-only** graceful degrade when both fulltext sources
+       fail or return an empty/error JATS body. ``sections`` is empty
+       and the caller should treat the abstract (already populated on
+       the returned ``Paper``) as the body.
+
+    The decision is surfaced on the returned ``Paper`` via
+    ``fulltext_fetch_source`` so callers (per-search audit logs,
+    figure provenance, etc.) can see which layer fired. The metadata
+    lookup at the top of this function still uses EuropePMC's search
+    API — that endpoint is independent of the fulltext mirror and
+    remains reliable.
     """
     cleaned = pmcid.strip().upper()
     if not cleaned.startswith("PMC"):
@@ -137,19 +166,143 @@ def fetch_fulltext(
         hits[0], retraction_index=retraction_index, topic_tagger=topic_tagger
     )
 
-    xml_text = http.get_text(
-        EUROPEPMC_FULLTEXT.format(pmcid=cleaned),
-        source="europepmc_fulltext",
-        ttl_days=FULLTEXT_TTL,
-    )
-    sections, truncated_section_names = parse_jats_sections(xml_text)
+    sections: list[PaperSection] = []
+    truncated_section_names: list[str] = []
+    fulltext_source: Literal["europepmc", "ncbi", "abstract_only"] = "abstract_only"
 
+    # Layer 1: NCBI efetch (preferred — authoritative source).
+    ncbi_xml = _fetch_fulltext_xml_ncbi(http, cleaned)
+    if ncbi_xml is not None:
+        sections, truncated_section_names = parse_jats_sections(ncbi_xml)
+        if sections:
+            fulltext_source = "ncbi"
+
+    # Layer 2: EuropePMC fullTextXML — used when NCBI returned nothing usable.
+    if fulltext_source == "abstract_only":
+        epmc_xml = _fetch_fulltext_xml_europepmc(http, cleaned)
+        if epmc_xml is not None:
+            sections, truncated_section_names = parse_jats_sections(epmc_xml)
+            if sections:
+                fulltext_source = "europepmc"
+
+    # Layer 3: abstract-only — sections stays [], fulltext_source records degrade.
     if topic_tagger is not None:
         full_text_for_tags = (base.abstract or "") + "\n" + "\n".join(s.text for s in sections)
         base.topic_tags = topic_tagger(full_text_for_tags, base.title)
     base.sections = sections
     base.truncated_sections = truncated_section_names
+    base.fulltext_fetch_source = fulltext_source
     return base
+
+
+# ---------------------------------------------------------------------------
+# Fulltext-source helpers (NCBI = layer 1, EuropePMC = layer 2)
+# ---------------------------------------------------------------------------
+
+
+def _fetch_fulltext_xml_europepmc(http: CachedHTTP, pmcid: str) -> str | None:
+    """Layer 2 of the fulltext chain (fallback when NCBI fails).
+
+    Returns the raw JATS XML on success, ``None`` on any recoverable
+    HTTP failure (4xx / 5xx). Non-HTTP errors (network failures,
+    timeouts) also degrade to ``None`` — they trip Layer 3
+    (abstract-only).
+    """
+    try:
+        return http.get_text(
+            EUROPEPMC_FULLTEXT.format(pmcid=pmcid),
+            source="europepmc_fulltext",
+            ttl_days=FULLTEXT_TTL,
+        )
+    except httpx.HTTPStatusError as exc:
+        logger.info(
+            "EuropePMC fullTextXML returned %s for %s; degrading to abstract-only",
+            exc.response.status_code,
+            pmcid,
+        )
+        return None
+    except httpx.RequestError as exc:
+        logger.warning(
+            "EuropePMC fullTextXML request error for %s: %s; degrading to abstract-only",
+            pmcid,
+            exc,
+        )
+        return None
+
+
+def _fetch_fulltext_xml_ncbi(http: CachedHTTP, pmcid: str) -> str | None:
+    """Layer 1 of the fulltext chain (preferred — authoritative PMC source).
+
+    Hits NCBI E-utilities ``efetch.fcgi?db=pmc&rettype=xml``. Strips the
+    ``PMC`` prefix per the efetch contract. Returns the JATS XML on
+    success, or ``None`` if NCBI 404s, times out, 5xx's, or returns an
+    empty ``<pmc-articleset/>`` (NCBI's stand-in for "article not
+    accessible via this endpoint"). Same JATS schema as EuropePMC so
+    ``parse_jats_sections`` works unchanged. When NCBI fails, the
+    caller falls through to Layer 2 (EuropePMC) and Layer 3
+    (abstract-only).
+    """
+    numeric = pmcid.removeprefix("PMC")
+    params: dict[str, Any] = {
+        "db": "pmc",
+        "id": numeric,
+        "rettype": "xml",
+    }
+    api_key = os.environ.get("NCBI_API_KEY")
+    if api_key:
+        # NCBI lifts per-IP rate limit 3 -> 10 req/sec when an api_key is
+        # presented. Same convention as pubmed_lookup._with_ncbi_api_key.
+        params["api_key"] = api_key
+    try:
+        xml_text = http.get_text(
+            NCBI_PMC_EFETCH,
+            source="ncbi_pmc_efetch",
+            ttl_days=FULLTEXT_TTL,
+            params=params,
+        )
+    except httpx.HTTPStatusError as exc:
+        logger.info(
+            "NCBI efetch returned %s for %s; degrading to abstract-only",
+            exc.response.status_code,
+            pmcid,
+        )
+        return None
+    except httpx.RequestError as exc:
+        logger.warning(
+            "NCBI efetch request error for %s: %s; degrading to abstract-only",
+            pmcid,
+            exc,
+        )
+        return None
+
+    if _is_empty_pmc_articleset(xml_text):
+        logger.info(
+            "NCBI efetch returned empty pmc-articleset for %s; degrading to abstract-only",
+            pmcid,
+        )
+        return None
+    return xml_text
+
+
+def _is_empty_pmc_articleset(xml_text: str) -> bool:
+    """True when NCBI returned a placeholder ``<pmc-articleset/>`` body.
+
+    NCBI occasionally returns HTTP 200 with an empty
+    ``<pmc-articleset/>`` (or a wrapper containing only error nodes
+    and no ``<article>``) when the article isn't accessible via efetch.
+    Treated as 404-equivalent by the fallback chain so we move on to
+    abstract-only.
+    """
+    if not xml_text or not xml_text.strip():
+        return True
+    try:
+        root = ET.fromstring(xml_text)
+    except ET.ParseError:
+        return True
+    if root.tag != "pmc-articleset":
+        # Some response — let parse_jats_sections handle it.
+        return False
+    return root.find("article") is None
 
 
 # ---------------------------------------------------------------------------
@@ -409,6 +562,7 @@ __all__ = [
     "FULLTEXT_CHAR_CAP",
     "EUROPEPMC_SEARCH",
     "EUROPEPMC_FULLTEXT",
+    "NCBI_PMC_EFETCH",
     "SectionName",
     "TopicTagger",
     "europepmc_search",

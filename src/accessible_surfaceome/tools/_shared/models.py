@@ -372,6 +372,16 @@ class Paper(BaseModel):
     topic_tags: list[TopicAnchor] = Field(default_factory=list)
     sections: list[PaperSection] = Field(default_factory=list)
     truncated_sections: list[str] = Field(default_factory=list)
+    # Which layer of the full-text fallback chain produced ``sections``.
+    # ``"europepmc"`` — EuropePMC's fullTextXML endpoint (preferred path).
+    # ``"ncbi"`` — NCBI E-utilities efetch (used when EuropePMC 404s or
+    #   otherwise refuses the article; same JATS schema).
+    # ``"abstract_only"`` — both fulltext sources failed; ``sections`` is
+    #   empty and the caller should treat the abstract as the body.
+    # ``None`` — the paper was produced by a path that didn't attempt a
+    #   fulltext fetch (e.g. ``gene2pubmed`` / ``topic_search`` listings,
+    #   ``fetch_abstract`` mode).
+    fulltext_fetch_source: Literal["europepmc", "ncbi", "abstract_only"] | None = None
     target_mention_excerpts: list[str] = Field(default_factory=list)
     # Pre-extracted verbatim-anchored EvidenceClaimDraft skeletons from the
     # paper's abstract (and full-text sections when ``fetch_fulltext`` was
@@ -778,6 +788,7 @@ ClaimType = Literal[
 ]
 Direction = Literal["supports", "refutes", "ambiguous"]
 EvidenceType = Literal[
+    # ---- Surface-protein assays ----
     "flow_cytometry",
     "surface_biotinylation",
     "mass_spec_surfaceome",
@@ -788,10 +799,36 @@ EvidenceType = Literal[
     # whole-cell lysate doesn't distinguish surface from intracellular pool.
     # The pairing is enforced by ``SurfaceomeRecordDraft._check_wb_pairing``.
     "western_blot",
+    # ---- Structural ----
     "crystal_structure",
     "cryo_em",
     "computational_prediction",
     "orthology",
+    # ---- RNA / transcript-level techniques (added 2026-05-16 for A2 accuracy).
+    # These do NOT establish surface accessibility on their own; downstream
+    # block builders should route them to ``non_surface_expression`` rows
+    # with ``measurement_type=RNA`` or ``single_cell_RNA`` as appropriate.
+    "rt_qpcr",
+    "rna_seq",
+    "single_cell_rna_seq",
+    "in_situ_hybridization",
+    "northern_blot",
+    "microarray",
+    # ---- Functional / signaling readouts ----
+    # Calcium imaging, insulin / hormone secretion ELISA, electrophysiology,
+    # receptor-activation reporter assays. Do not establish surface
+    # localization on their own but corroborate functional engagement when
+    # paired with a direct surface assay from the same source.
+    "functional_assay",
+    # ---- Human / mouse genetics ----
+    # Akbari-class large-cohort exome / GWAS associations and KO / CRISPR
+    # phenotype readouts. ``genetic_association`` is for population-genetics
+    # associations; ``loss_of_function_phenotype`` is for mouse / cellular
+    # KO phenotype data. Both go to ``tissue_expression`` or
+    # ``contradictory`` claim_type rollups at the EvidenceClaim layer.
+    "genetic_association",
+    "loss_of_function_phenotype",
+    # ---- Aggregation ----
     "review_assertion",
     "db_annotation",
 ]

@@ -18,8 +18,17 @@ Three-step loop using only existing tools:
 """
 
 from accessible_surfaceome.agents.plan_trim_select.runner import (
+    AgentFocus,
+    DualPlanTrimSelectResult,
     PlanTrimSelectResult,
     run_plan_trim_select,
+    run_plan_trim_select_dual,
 )
 
-__all__ = ["PlanTrimSelectResult", "run_plan_trim_select"]
+__all__ = [
+    "AgentFocus",
+    "DualPlanTrimSelectResult",
+    "PlanTrimSelectResult",
+    "run_plan_trim_select",
+    "run_plan_trim_select_dual",
+]
