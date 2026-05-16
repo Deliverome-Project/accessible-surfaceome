@@ -84,8 +84,19 @@ def main() -> None:
     print(f"Fetching {CATALOG_URL} ...")
     r = httpx.get(CATALOG_URL, timeout=60.0)
     r.raise_for_status()
-    catalog_rows = r.json()["rows"]
-    print(f"  fetched {len(catalog_rows):,} catalog rows")
+    body = r.json()
+    catalog_rows = body["rows"]
+    models = body.get("models") or []
+    # Catalog ``row_schema=3``: each row carries ``tr: [variant_0, ..., variant_N]``
+    # where each variant is ``[verdict, reason]`` or None. The figure uses
+    # the canonical Sonnet (+ NCBI) variant — resolve its index from the
+    # ``models`` array. Falls back to index 1 (historic default).
+    sonnet_idx = next(
+        (i for i, m in enumerate(models) if "sonnet" in (m or "").lower()),
+        1,
+    )
+    print(f"  fetched {len(catalog_rows):,} catalog rows; "
+          f"sonnet variant = {models[sonnet_idx] if sonnet_idx < len(models) else '?'} (idx {sonnet_idx})")
 
     cand = pd.read_csv(CAND_TSV, sep="\t").set_index("uniprot_accession")
     opt = pd.read_csv(OPT_CUTOFFS_TSV, sep="\t")
@@ -109,8 +120,9 @@ def main() -> None:
     # Build per-gene table: symbol, acc, Sonnet verdict, per-DB vote bools
     records = []
     for row in catalog_rows:
-        t = row.get("triage") or {}
-        v = t.get("verdict")
+        tr = row.get("tr") or []
+        entry = tr[sonnet_idx] if 0 <= sonnet_idx < len(tr) else None
+        v = entry[0] if entry and isinstance(entry, list) and entry else None
         if v not in ("yes", "contextual", "no"):
             continue
         acc = row.get("uniprot") or ""

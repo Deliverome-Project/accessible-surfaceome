@@ -124,11 +124,31 @@ CONTEXTUAL_CALLOUTS = [
 ]
 
 
-def _fetch_catalog() -> list[dict]:
+def _fetch_catalog() -> tuple[list[dict], list[str]]:
+    """Return (rows, models). The catalog ``row_schema=3`` returns each row's
+    triage block as a compact ``tr: [haiku_or_None, sonnet_or_None, opus_or_None]``
+    array indexed by ``models``. The pre-schema-v3 ``triage`` dict format
+    is no longer emitted.
+    """
     print(f"Fetching {CATALOG_URL} ...")
     r = httpx.get(CATALOG_URL, timeout=60.0)
     r.raise_for_status()
-    return r.json()["rows"]
+    body = r.json()
+    return body["rows"], body.get("models") or []
+
+
+def _sonnet_verdict_reason(row: dict, sonnet_idx: int) -> tuple[str, str]:
+    """Pull the Sonnet (canonical) variant's verdict + reason from a row.
+
+    Schema (v3): ``tr`` is ``[variant_0, variant_1, variant_2]`` where each
+    element is ``[verdict, reason]`` or None. ``models`` array tells us
+    which index is Sonnet (usually 1 = claude-sonnet-4-6).
+    """
+    tr = row.get("tr") or []
+    entry = tr[sonnet_idx] if 0 <= sonnet_idx < len(tr) else None
+    if entry and isinstance(entry, list) and len(entry) >= 2:
+        return (entry[0] or "unknown"), (entry[1] or "other")
+    return "unknown", "other"
 
 
 def _draw_reason_bars(
@@ -215,16 +235,23 @@ def _draw_callouts(ax, callouts: list[tuple[str, str, str]], palette: dict, titl
 
 
 def main() -> None:
-    rows = _fetch_catalog()
-    print(f"  fetched {len(rows):,} rows")
+    rows, models = _fetch_catalog()
+    print(f"  fetched {len(rows):,} rows; models: {models}")
+
+    # Resolve the Sonnet variant's index. Canonical figure uses
+    # claude-sonnet-4-6; fall back to whichever entry has 'sonnet' in
+    # its name, then to index 1 (historic default).
+    sonnet_idx = next(
+        (i for i, m in enumerate(models) if "sonnet" in (m or "").lower()),
+        1,
+    )
 
     zero_db = [r for r in rows if r.get("db", 0) == 0]
     print(f"\nZero-DB universe: {len(zero_db):,} / {len(rows):,} "
-          f"({100*len(zero_db)/len(rows):.1f}%)")
+          f"({100*len(zero_db)/len(rows):.1f}%); sonnet model = {models[sonnet_idx] if sonnet_idx < len(models) else '?'}")
 
     def verdict_reason(row: dict) -> tuple[str, str]:
-        t = row.get("triage") or {}
-        return (t.get("verdict") or "unknown"), (t.get("reason") or "other")
+        return _sonnet_verdict_reason(row, sonnet_idx)
 
     yes_counts: Counter = Counter()
     ctx_counts: Counter = Counter()
