@@ -110,6 +110,140 @@
   border-color: var(--accent-deep);
 }
 
+/* ============================================================
+ * Advanced filter panel — toggled by the "More filters" chip.
+ * One row per category (DBs, Verdicts, Reason), each row has a
+ * leading label + a chip strip. Inline reset button at the foot.
+ * ============================================================ */
+
+.filterPanel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+  margin: var(--space-3) 0 0;
+  background: var(--bg-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+}
+
+.filterRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+}
+
+.filterLabel {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 5rem;
+}
+
+.filterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.filterChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.55rem;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: var(--fw-medium);
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.filterChip:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+
+.filterChipOn {
+  color: var(--fg-on-dark);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
+}
+
+.filterChipOn:hover {
+  color: var(--fg-on-dark);
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
+.filterHint {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.filterInput {
+  flex: 1 1 16rem;
+  max-width: 28rem;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.filterInput:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.filterInput::-webkit-search-cancel-button,
+.filterInput::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+.filterFoot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.filterClearBtn {
+  padding: 0.25rem 0.7rem;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.filterClearBtn:hover,
+.filterClearBtn:focus-visible {
+  border-color: var(--accent);
+}
+
+.filterFootnote {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
 .chipCount {
   font-family: var(--font-mono);
   font-size: 0.78em;

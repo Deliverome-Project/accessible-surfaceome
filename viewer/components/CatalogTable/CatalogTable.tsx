@@ -95,8 +95,34 @@ type SortKey =
 type SortDir = "asc" | "desc";
 // Triage filter was dropped — every gene in the universe has a triage
 // verdict (the one gap, SEA, is a resolver-failure outlier), so the
-// chip filtered ~all rows in and offered no signal.
-type QuickFilter = "all" | "deep_dive" | "n7";
+// chip filtered ~all rows in and offered no signal. The "n7" / 5-source
+// consensus chip was also dropped — it's expressible via the advanced
+// filter panel ("require all 5 DBs"), so it doesn't need a chip slot.
+type QuickFilter = "all" | "deep_dive";
+
+type DbKey = keyof CatalogRow["db"];
+type VerdictKey = "yes" | "contextual" | "no" | "none";
+
+const VERDICT_OPTIONS: { key: VerdictKey; label: string }[] = [
+  { key: "yes", label: "yes" },
+  { key: "contextual", label: "contextual" },
+  { key: "no", label: "no" },
+  { key: "none", label: "no call" },
+];
+
+/** Schema fields the advanced-filter panel could surface once the
+ *  Worker payload extends — currently the catalog row doesn't carry
+ *  `subcategory` or `headline_risks` (those live on the per-gene
+ *  deep-dive JSON). Listed here as a TODO for the panel: when the
+ *  /v1/catalog response grows the fields, add chip rows for them. */
+// TODO(catalog-filters): deep-dive subcategory chips
+//   (single_pass_T1, single_pass_T2, multi_pass, GPCR, GPI_anchored,
+//   tetraspanin, ion_channel, transporter, other)
+// TODO(catalog-filters): headline_risks chips
+//   (shed_form, secreted_form, co_receptor, ecd_too_small,
+//   epitope_masked, isoform_decoy, restricted_subdomain,
+//   low_endogenous_expression, antibody_validation_weak,
+//   ligand_unknown, other)
 
 function verdictTone(v: string | null | undefined): string {
   if (v === "yes") return styles.verdictYes;
@@ -131,6 +157,44 @@ export function CatalogTable({
   const [quick, setQuick] = useState<QuickFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("deep_dive");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  // Advanced filters. `dbFilter` is AND-semantics: a row passes only
+  // if every DB in the set voted yes (intersection of `DB ∈ filter`
+  // and `row.db[DB] === 1`). `verdictFilter` is OR-semantics: a row
+  // passes if its triage verdict (or "none" when no run on file) is
+  // in the set. `reasonQuery` is a case-insensitive substring match
+  // against `predicted_reason` (with underscores treated as spaces
+  // so the user can search "secreted only" or "secreted_only" and
+  // both work).
+  const [showFilters, setShowFilters] = useState(false);
+  const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
+  const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
+    new Set(),
+  );
+  const [reasonQuery, setReasonQuery] = useState("");
+
+  function toggleDbFilter(key: DbKey) {
+    setDbFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  function toggleVerdictFilter(key: VerdictKey) {
+    setVerdictFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+  function clearAdvancedFilters() {
+    setDbFilter(new Set());
+    setVerdictFilter(new Set());
+    setReasonQuery("");
+  }
+  const activeFilterCount =
+    dbFilter.size + verdictFilter.size + (reasonQuery.trim() ? 1 : 0);
   // Side-rationale drawer: one selected symbol at a time. Clicking the
   // same symbol again toggles the drawer off. The /v1/triage/{symbol}
   // fetch is lazy — kicked off the first time a symbol is selected,
@@ -190,6 +254,8 @@ export function CatalogTable({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
+    const reasonNeedle = reasonQuery.trim().toLowerCase().replace(/_/g, " ");
+    const dbList = Array.from(dbFilter);
     return rows.filter((r) => {
       if (q) {
         // Search across symbol, UniProt, the NCBI descriptive name,
@@ -201,10 +267,28 @@ export function CatalogTable({
         if (!hay.includes(q)) return false;
       }
       if (quick === "deep_dive" && !r.deep_dive) return false;
-      if (quick === "n7" && r.n_sources < 5) return false;
+      // Advanced filters — AND across categories, semantics described
+      // alongside the state declarations above.
+      if (dbList.length > 0) {
+        for (const dbKey of dbList) {
+          if (!r.db[dbKey]) return false;
+        }
+      }
+      if (verdictFilter.size > 0) {
+        const v = r.triage_by_model[1]?.verdict;
+        const slot: VerdictKey =
+          v === "yes" || v === "contextual" || v === "no" ? v : "none";
+        if (!verdictFilter.has(slot)) return false;
+      }
+      if (reasonNeedle) {
+        const reason = (r.triage_by_model[1]?.reason ?? "")
+          .toLowerCase()
+          .replace(/_/g, " ");
+        if (!reason.includes(reasonNeedle)) return false;
+      }
       return true;
     });
-  }, [rows, query, quick]);
+  }, [rows, query, quick, dbFilter, verdictFilter, reasonQuery]);
 
   const sorted = useMemo(() => {
     const copy = filtered.slice();
@@ -283,11 +367,16 @@ export function CatalogTable({
             </button>
             <button
               type="button"
-              className={`${styles.chip} ${quick === "n7" ? styles.chipOn : ""}`}
-              onClick={() => setQuick("n7")}
-              aria-pressed={quick === "n7"}
+              className={`${styles.chip} ${showFilters ? styles.chipOn : ""}`}
+              onClick={() => setShowFilters((s) => !s)}
+              aria-pressed={showFilters}
+              aria-expanded={showFilters}
+              aria-controls="catalog-filter-panel"
             >
-              5-source consensus
+              {showFilters ? "Hide filters" : "More filters"}
+              {activeFilterCount > 0 ? (
+                <span className={styles.chipCount}>{activeFilterCount}</span>
+              ) : null}
             </button>
           </div>
           <button
@@ -304,6 +393,92 @@ export function CatalogTable({
           </button>
         </div>
       </div>
+
+      {showFilters ? (
+        <div
+          id="catalog-filter-panel"
+          className={styles.filterPanel}
+          role="region"
+          aria-label="Advanced catalog filters"
+        >
+          <div className={styles.filterRow}>
+            <span className={styles.filterLabel}>DBs</span>
+            <div className={styles.filterChips}>
+              {DB_KEYS.map((d) => {
+                const on = dbFilter.has(d.key);
+                return (
+                  <button
+                    key={`db-filter-${d.key}`}
+                    type="button"
+                    className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                    onClick={() => toggleDbFilter(d.key)}
+                    aria-pressed={on}
+                    title={`Require ${d.long} = yes`}
+                  >
+                    {d.long}
+                  </button>
+                );
+              })}
+            </div>
+            <span className={styles.filterHint}>
+              Requires all checked DBs to vote yes
+            </span>
+          </div>
+
+          <div className={styles.filterRow}>
+            <span className={styles.filterLabel}>Triage</span>
+            <div className={styles.filterChips}>
+              {VERDICT_OPTIONS.map((v) => {
+                const on = verdictFilter.has(v.key);
+                return (
+                  <button
+                    key={`verdict-filter-${v.key}`}
+                    type="button"
+                    className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                    onClick={() => toggleVerdictFilter(v.key)}
+                    aria-pressed={on}
+                  >
+                    {v.label}
+                  </button>
+                );
+              })}
+            </div>
+            <span className={styles.filterHint}>
+              Any of the checked verdicts
+            </span>
+          </div>
+
+          <div className={styles.filterRow}>
+            <span className={styles.filterLabel}>Reason</span>
+            <input
+              type="search"
+              className={styles.filterInput}
+              placeholder="substring match (e.g. multipass, secreted, gpcr)"
+              value={reasonQuery}
+              onChange={(e) => setReasonQuery(e.target.value)}
+              autoComplete="off"
+              spellCheck={false}
+            />
+          </div>
+
+          {activeFilterCount > 0 ? (
+            <div className={styles.filterFoot}>
+              <button
+                type="button"
+                className={styles.filterClearBtn}
+                onClick={clearAdvancedFilters}
+              >
+                Clear filters ({activeFilterCount})
+              </button>
+            </div>
+          ) : null}
+
+          <p className={styles.filterFootnote}>
+            Deep-dive subcategory and headline-risk tags will appear here
+            once the catalog payload carries them per row.
+          </p>
+        </div>
+      ) : null}
 
       <div className={styles.resultRow}>
         <p className={styles.resultMeta}>
