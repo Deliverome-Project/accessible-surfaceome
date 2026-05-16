@@ -37,6 +37,7 @@ from pydantic import ValidationError
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.evidence_promotion import promote_claim
 from accessible_surfaceome.agents._support.pricing import UsageRecord, UsageSummary
+from accessible_surfaceome.agents._support.timing import StepTiming, TimingRecorder
 from accessible_surfaceome.agents.plan_trim_select import (
     DualPlanTrimSelectResult,
     run_plan_trim_select_dual,
@@ -119,6 +120,10 @@ class AnnotateResultV2:
     builder_usage: dict[str, BlockBuilderUsage] = field(default_factory=dict)
     annotation_path: Path | None = None
     error: str | None = None
+    # Per-step wall-clock audit: every model call + post-process step,
+    # in execution order. Empty when ``annotate`` was invoked with
+    # ``timing=None`` (legacy path).
+    timing: list[StepTiming] = field(default_factory=list)
 
     @property
     def plan_trim_select_cost_usd(self) -> float:
@@ -147,13 +152,21 @@ def annotate(
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
     persist: bool = False,
+    timing: TimingRecorder | None = None,
 ) -> AnnotateResultV2:
-    """Run the v2 deep-dive pipeline on one gene."""
+    """Run the v2 deep-dive pipeline on one gene.
+
+    A fresh :class:`TimingRecorder` is allocated when ``timing`` is
+    ``None`` so every annotate run captures the per-step wall-clock
+    trace by default. Pass an externally-owned recorder to merge into a
+    larger audit (e.g. a sweep over multiple genes).
+    """
     own_http = http is None
     client = client or get_client()
     http = http or open_default_client()
+    timing = timing if timing is not None else TimingRecorder()
     try:
-        return _annotate(client, http, gene, persist=persist)
+        return _annotate(client, http, gene, persist=persist, timing=timing)
     finally:
         if own_http:
             http.close()
@@ -165,12 +178,13 @@ def _annotate(
     gene: str,
     *,
     persist: bool,
+    timing: TimingRecorder,
 ) -> AnnotateResultV2:
     builder_usage: dict[str, BlockBuilderUsage] = {}
 
     # ---- step 1: plan-trim-select dual -------------------------------------
     logger.info("v2 orchestrator: running plan-trim-select dual for %s", gene)
-    dual = run_plan_trim_select_dual(gene, client=client, http=http)
+    dual = run_plan_trim_select_dual(gene, client=client, http=http, timing=timing)
     if dual.bundle is None:
         return AnnotateResultV2(
             gene=gene,
@@ -178,6 +192,7 @@ def _annotate(
             dual=dual,
             synthesizer=None,
             error="plan-trim-select did not resolve a gene bundle",
+            timing=list(timing.entries),
         )
     gene_id = GeneIdentifier(
         hgnc_symbol=dual.bundle.hgnc_symbol,
@@ -201,29 +216,57 @@ def _annotate(
 
     methods_records: list[UsageRecord] = []
     builder_usage["methods"] = BlockBuilderUsage("methods", methods_records)
-    methods = build_methods(
-        a1_claims, client=client, usage_sink=methods_records, context=a1_ctx
-    )
+    with timing.step(
+        "builder:methods",
+        phase="builders_a1",
+        n_items=len(a1_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        methods = build_methods(
+            a1_claims, client=client, usage_sink=methods_records, context=a1_ctx
+        )
+        _h.set_usage(methods_records, model=AGENT_MODEL)
 
     te_records: list[UsageRecord] = []
     builder_usage["therapeutic_engagement"] = BlockBuilderUsage(
         "therapeutic_engagement", te_records
     )
-    therapeutic = build_therapeutic_engagement(
-        a1_claims, client=client, usage_sink=te_records, context=a1_ctx
-    )
+    with timing.step(
+        "builder:therapeutic_engagement",
+        phase="builders_a1",
+        n_items=len(a1_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        therapeutic = build_therapeutic_engagement(
+            a1_claims, client=client, usage_sink=te_records, context=a1_ctx
+        )
+        _h.set_usage(te_records, model=AGENT_MODEL)
 
     contr_records: list[UsageRecord] = []
     builder_usage["contradictions"] = BlockBuilderUsage("contradictions", contr_records)
-    contradictions = build_contradictions(
-        a1_claims, client=client, usage_sink=contr_records, context=a1_ctx
-    )
+    with timing.step(
+        "builder:contradictions",
+        phase="builders_a1",
+        n_items=len(a1_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        contradictions = build_contradictions(
+            a1_claims, client=client, usage_sink=contr_records, context=a1_ctx
+        )
+        _h.set_usage(contr_records, model=AGENT_MODEL)
 
     grade_records: list[UsageRecord] = []
     builder_usage["evidence_grade"] = BlockBuilderUsage("evidence_grade", grade_records)
-    grade_block: EvidenceGradeBlock = build_evidence_grade(
-        a1_claims, client=client, usage_sink=grade_records, context=a1_ctx
-    )
+    with timing.step(
+        "builder:evidence_grade",
+        phase="builders_a1",
+        n_items=len(a1_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        grade_block: EvidenceGradeBlock = build_evidence_grade(
+            a1_claims, client=client, usage_sink=grade_records, context=a1_ctx
+        )
+        _h.set_usage(grade_records, model=AGENT_MODEL)
 
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,
@@ -239,39 +282,74 @@ def _annotate(
 
     tissues_records: list[UsageRecord] = []
     builder_usage["tissues"] = BlockBuilderUsage("tissues", tissues_records)
-    tissues = build_tissues(
-        a2_claims, client=client, usage_sink=tissues_records, context=a2_ctx
-    )
+    with timing.step(
+        "builder:tissues",
+        phase="builders_a2",
+        n_items=len(a2_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        tissues = build_tissues(
+            a2_claims, client=client, usage_sink=tissues_records, context=a2_ctx
+        )
+        _h.set_usage(tissues_records, model=AGENT_MODEL)
 
     cell_types_records: list[UsageRecord] = []
     builder_usage["cell_types"] = BlockBuilderUsage("cell_types", cell_types_records)
-    cell_types = build_cell_types(
-        a2_claims, client=client, usage_sink=cell_types_records, context=a2_ctx
-    )
+    with timing.step(
+        "builder:cell_types",
+        phase="builders_a2",
+        n_items=len(a2_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        cell_types = build_cell_types(
+            a2_claims, client=client, usage_sink=cell_types_records, context=a2_ctx
+        )
+        _h.set_usage(cell_types_records, model=AGENT_MODEL)
 
     subloc_records: list[UsageRecord] = []
     builder_usage["subcellular_localization"] = BlockBuilderUsage(
         "subcellular_localization", subloc_records
     )
-    subloc = build_subcellular_localization(
-        a2_claims, client=client, usage_sink=subloc_records, context=a2_ctx
-    )
+    with timing.step(
+        "builder:subcellular_localization",
+        phase="builders_a2",
+        n_items=len(a2_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        subloc = build_subcellular_localization(
+            a2_claims, client=client, usage_sink=subloc_records, context=a2_ctx
+        )
+        _h.set_usage(subloc_records, model=AGENT_MODEL)
 
     anat_records: list[UsageRecord] = []
     builder_usage["anatomical_accessibility"] = BlockBuilderUsage(
         "anatomical_accessibility", anat_records
     )
-    anatomical = build_anatomical_accessibility(
-        a2_claims, client=client, usage_sink=anat_records, context=a2_ctx
-    )
+    with timing.step(
+        "builder:anatomical_accessibility",
+        phase="builders_a2",
+        n_items=len(a2_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        anatomical = build_anatomical_accessibility(
+            a2_claims, client=client, usage_sink=anat_records, context=a2_ctx
+        )
+        _h.set_usage(anat_records, model=AGENT_MODEL)
 
     mod_records: list[UsageRecord] = []
     builder_usage["accessibility_modulation"] = BlockBuilderUsage(
         "accessibility_modulation", mod_records
     )
-    modulation = build_accessibility_modulation(
-        a2_claims, client=client, usage_sink=mod_records, context=a2_ctx
-    )
+    with timing.step(
+        "builder:accessibility_modulation",
+        phase="builders_a2",
+        n_items=len(a2_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        modulation = build_accessibility_modulation(
+            a2_claims, client=client, usage_sink=mod_records, context=a2_ctx
+        )
+        _h.set_usage(mod_records, model=AGENT_MODEL)
 
     biological_context = BiologicalContext(
         tissues=tissues,
@@ -300,6 +378,7 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"SurfaceEvidenceDraft validation failed: {exc}",
+            timing=list(timing.entries),
         )
     try:
         a2_draft = BiologicalContextDraft(
@@ -315,16 +394,34 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"BiologicalContextDraft validation failed: {exc}",
+            timing=list(timing.entries),
         )
 
     # ---- step 5: synthesizer (B) ------------------------------------------
     logger.info("v2 orchestrator: dispatching synthesizer for %s", gene_id.hgnc_symbol)
-    b = run_synthesizer_with_drafts(
-        gene_id.hgnc_symbol,
-        a1_draft=a1_draft,
-        a2_draft=a2_draft,
-        client=client,
-    )
+    with timing.step(
+        "synthesizer",
+        phase="synthesizer",
+        n_items=len(a1_claims) + len(a2_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        b = run_synthesizer_with_drafts(
+            gene_id.hgnc_symbol,
+            a1_draft=a1_draft,
+            a2_draft=a2_draft,
+            client=client,
+        )
+        _h.model = b.usage.model
+        # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a
+        # one-shot UsageRecord-shaped record so ``set_usage`` rolls it.
+        synth_rec = UsageRecord(
+            input_tokens=b.usage.input_tokens,
+            output_tokens=b.usage.output_tokens,
+            cache_creation_input_tokens=b.usage.cache_creation_input_tokens,
+            cache_read_input_tokens=b.usage.cache_read_input_tokens,
+            cost_usd=b.usage.cost_usd,
+        )
+        _h.set_usage([synth_rec], model=b.usage.model)
     if b.draft is None:
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
@@ -334,28 +431,40 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"synthesizer returned no valid draft: {b.validation_error}",
+            timing=list(timing.entries),
         )
 
     # ---- step 6: promote claims → Evidence (synthetic source store) -------
     merged_claims = a1_claims + a2_claims
-    source_store = _synthetic_source_store(merged_claims)
-    evidence: list[Evidence] = [
-        promote_claim(c, store=source_store) for c in merged_claims
-    ]
+    with timing.step(
+        "evidence_promotion",
+        phase="post",
+        n_items=len(merged_claims),
+    ):
+        source_store = _synthetic_source_store(merged_claims)
+        evidence: list[Evidence] = [
+            promote_claim(c, store=source_store) for c in merged_claims
+        ]
 
     # ---- step 7: deterministic features stub (reused from v1) -------------
-    det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+    with timing.step("deterministic_features", phase="post"):
+        det_features = _stub_deterministic_features(gene_id.uniprot_acc)
 
     # ---- step 8: derive filters (reused from v1) --------------------------
-    filters = _derive_filters(
-        executive_summary=b.draft.executive_summary,
-        surface_evidence=surface_evidence,
-        biological_context=biological_context,
-        accessibility_risks=b.draft.accessibility_risks,
-        filters_llm=b.draft.filters_llm,
-        deterministic_features=det_features,
-        n_evidence=len(evidence),
-    )
+    with timing.step(
+        "filters_derivation",
+        phase="post",
+        n_items=len(evidence),
+    ):
+        filters = _derive_filters(
+            executive_summary=b.draft.executive_summary,
+            surface_evidence=surface_evidence,
+            biological_context=biological_context,
+            accessibility_risks=b.draft.accessibility_risks,
+            filters_llm=b.draft.filters_llm,
+            deterministic_features=det_features,
+            n_evidence=len(evidence),
+        )
 
     # ---- step 9: assemble SurfaceomeRecord --------------------------------
     primary = sum(1 for e in evidence if e.evidence_tier == "primary")
@@ -390,6 +499,7 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"SurfaceomeRecord assembly failed: {exc}",
+            timing=list(timing.entries),
         )
 
     annotation_path: Path | None = None
@@ -406,6 +516,7 @@ def _annotate(
         blocks_used=_count_blocks(surface_evidence, biological_context),
         builder_usage=builder_usage,
         annotation_path=annotation_path,
+        timing=list(timing.entries),
     )
 
 
@@ -540,6 +651,10 @@ def write_summary_meta(result: AnnotateResultV2, *, runs_dir: Path = RUNS_DIR) -
         "builders_cost_usd": round(result.builders_cost_usd, 6),
         "synthesizer_cost_usd": round(result.synthesizer_cost_usd, 6),
         "total_cost_usd": round(result.total_cost_usd, 6),
+        "total_elapsed_s": round(
+            sum(t.elapsed_s for t in result.timing), 3
+        ),
+        "timing": [t.as_dict() for t in result.timing],
         "annotation_path": str(result.annotation_path)
         if result.annotation_path is not None
         else None,

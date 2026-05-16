@@ -49,8 +49,18 @@ def main(argv: list[str] | None = None) -> int:
     runs = Path(".runs")
     runs.mkdir(exist_ok=True)
     record_out = runs / f"surfaceome_v2_{safe_id}.json"
+    timing_payload = [t.as_dict() for t in result.timing]
+    total_elapsed = round(sum(t.elapsed_s for t in result.timing), 3)
     if result.record is not None:
-        record_out.write_text(result.record.model_dump_json(indent=2))
+        # Merge timing into the record dump so the HTML viewer can render
+        # Section 0.5 without an extra file. SurfaceomeRecord doesn't carry
+        # a ``timing`` field, so we serialize the model first then add the
+        # key — readers that don't expect timing simply ignore the extra
+        # top-level field.
+        record_dict = result.record.model_dump(mode="json")
+        record_dict["timing"] = timing_payload
+        record_dict["total_elapsed_s"] = total_elapsed
+        record_out.write_text(json.dumps(record_dict, indent=2))
     else:
         record_out.write_text(
             json.dumps(
@@ -58,6 +68,8 @@ def main(argv: list[str] | None = None) -> int:
                     "gene": result.gene,
                     "error": result.error,
                     "blocks_used": result.blocks_used,
+                    "timing": timing_payload,
+                    "total_elapsed_s": total_elapsed,
                 },
                 indent=2,
             )
@@ -86,6 +98,17 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  synthesizer:              ${result.synthesizer_cost_usd:.4f}")
     print(f"  TOTAL:                    ${result.total_cost_usd:.4f}")
     print()
+    if result.timing:
+        print(f"--- step timing (total {total_elapsed:.1f}s, top 5 slowest) ---")
+        slowest = sorted(result.timing, key=lambda t: t.elapsed_s, reverse=True)[:5]
+        for t in slowest:
+            print(
+                f"  {t.elapsed_s:7.2f}s  {t.phase:24s} {t.step_name}"
+                + (
+                    f"  ({t.n_items} items)" if t.n_items is not None else ""
+                )
+            )
+        print()
     print(f"record_out:  {record_out}")
     print(f"meta_out:    {meta_out}")
     if result.annotation_path is not None:

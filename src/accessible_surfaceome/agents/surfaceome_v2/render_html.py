@@ -307,6 +307,119 @@ def _render_confidence(record: dict[str, Any]) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Section 0.5 — Step timeline (per-step wall clock)
+# ---------------------------------------------------------------------------
+
+
+_PHASE_KIND = {
+    "plan_trim_select_a1": "blue",
+    "plan_trim_select_a2": "lavender",
+    "plan_trim_select": "blue",
+    "builders_a1": "green",
+    "builders_a2": "amber",
+    "synthesizer": "red",
+    "post": "gray",
+}
+
+
+def _render_timing_section(record: dict[str, Any]) -> str:
+    """Section 0.5 — per-step wall-clock breakdown.
+
+    Reads ``record["timing"]`` (list of dicts emitted by
+    :class:`TimingRecorder`). Renders a stacked-bar overview (one row
+    per phase) above a detail table sorted by elapsed_s descending so
+    the bottleneck step is on top. Skips silently when no timing data
+    is present.
+    """
+    rows = record.get("timing") or []
+    if not rows:
+        return ""
+
+    total = sum(float(r.get("elapsed_s", 0.0)) for r in rows) or 1e-9
+    total_disp = float(record.get("total_elapsed_s") or total)
+
+    # Roll up per phase for the stacked bar.
+    by_phase: dict[str, float] = {}
+    for r in rows:
+        phase = r.get("phase") or "other"
+        by_phase[phase] = by_phase.get(phase, 0.0) + float(r.get("elapsed_s", 0.0))
+
+    bar_segments: list[str] = []
+    legend_items: list[str] = []
+    for phase, seconds in sorted(by_phase.items(), key=lambda kv: -kv[1]):
+        pct = 100.0 * seconds / total
+        kind = _PHASE_KIND.get(phase, "gray")
+        bar_segments.append(
+            f'<div class="bar-seg badge-{kind}" '
+            f'style="width:{pct:.2f}%" '
+            f'title="{html.escape(phase)} — {seconds:.1f}s ({pct:.1f}%)"></div>'
+        )
+        legend_items.append(
+            f'<span class="bar-legend">'
+            f'{_badge(phase, kind)} '
+            f'<span class="muted small">{seconds:.1f}s · {pct:.1f}%</span>'
+            f'</span>'
+        )
+
+    # Detail table — sort slowest first.
+    detail_rows: list[str] = []
+    for r in sorted(rows, key=lambda x: -float(x.get("elapsed_s", 0.0))):
+        elapsed = float(r.get("elapsed_s", 0.0))
+        pct = 100.0 * elapsed / total
+        n_items = r.get("n_items")
+        model = r.get("model") or "—"
+        out_tok = r.get("output_tokens")
+        in_tok = r.get("input_tokens")
+        cost = r.get("cost_usd")
+        token_disp = (
+            f"{in_tok:,} → {out_tok:,}"
+            if (in_tok is not None and out_tok is not None)
+            else "—"
+        )
+        cost_disp = f"${cost:.4f}" if cost is not None else "—"
+        items_disp = f"{n_items}" if n_items is not None else "—"
+        phase = r.get("phase") or "other"
+        phase_kind = _PHASE_KIND.get(phase, "gray")
+        detail_rows.append(
+            "<tr>"
+            f"<td><code>{html.escape(str(r.get('step_name', '?')))}</code></td>"
+            f"<td>{_badge(phase, phase_kind)}</td>"
+            f"<td class='num'>{elapsed:.2f}s</td>"
+            f"<td class='num small'>{pct:.1f}%</td>"
+            f"<td class='num small'>{items_disp}</td>"
+            f"<td class='small'>{html.escape(model)}</td>"
+            f"<td class='num small'>{token_disp}</td>"
+            f"<td class='num small'>{cost_disp}</td>"
+            "</tr>"
+        )
+
+    return f"""
+    <section class="block timing-block">
+      <h2>Step timeline · {total_disp:.1f}s wall clock</h2>
+      <div class="timing-bar" role="img"
+           aria-label="phase breakdown of {total_disp:.1f}s total runtime">
+        {''.join(bar_segments)}
+      </div>
+      <div class="bar-legend-row">{''.join(legend_items)}</div>
+      <details class="timing-detail">
+        <summary>per-step detail ({len(rows)} steps, sorted by elapsed)</summary>
+        <table class="compact timing-table">
+          <thead>
+            <tr>
+              <th>Step</th><th>Phase</th><th>Elapsed</th><th>%</th>
+              <th>Items</th><th>Model</th><th>Tokens (in→out)</th><th>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {''.join(detail_rows)}
+          </tbody>
+        </table>
+      </details>
+    </section>
+    """
+
+
+# ---------------------------------------------------------------------------
 # Section 1 — Surface Evidence
 # ---------------------------------------------------------------------------
 
@@ -1247,6 +1360,33 @@ a.evi-chip:hover { background: var(--accent); color: white; }
 ul.risks { margin: 0.3rem 0 0; padding-left: 1.2rem; }
 ul.risks li { font-size: 0.88rem; margin-bottom: 0.2rem; }
 
+/* ---- Timing section ---- */
+.timing-bar {
+  display: flex; width: 100%; height: 28px;
+  border-radius: 4px; overflow: hidden;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  margin: 0.5rem 0 0.4rem;
+}
+.bar-seg { height: 100%; }
+.bar-legend-row {
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+.bar-legend { display: inline-flex; align-items: center; gap: 0.3rem; }
+details.timing-detail { margin-top: 0.5rem; }
+details.timing-detail summary {
+  cursor: pointer; color: var(--fg-muted);
+  font-size: 0.86rem; padding: 0.3rem 0;
+}
+table.timing-table td.num, table.timing-table th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+table.timing-table code {
+  font-family: ui-monospace, monospace; font-size: 0.78rem;
+}
+
 footer {
   margin-top: 2rem; padding-top: 1rem;
   border-top: 1px solid var(--border);
@@ -1267,6 +1407,7 @@ def render_html(record: dict[str, Any]) -> str:
         _render_banner(record),
         _render_executive_summary(record),
         _render_confidence(record),
+        _render_timing_section(record),
         _render_surface_evidence(record),
         _render_biological_context(record),
         _render_deterministic(record),

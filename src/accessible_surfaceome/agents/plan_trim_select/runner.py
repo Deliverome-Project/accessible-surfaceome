@@ -29,6 +29,7 @@ import re
 import time
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal, cast
 
@@ -43,6 +44,7 @@ from accessible_surfaceome.agents._support.pricing import (
     record_from_response,
     summarize_usage,
 )
+from accessible_surfaceome.agents._support.timing import StepTiming, TimingRecorder
 from accessible_surfaceome.agents.plan_trim_select.schemas import (
     SearchPlan,
     SelectionResponse,
@@ -199,6 +201,9 @@ class PlanTrimSelectResult:
     # Free-text errors that didn't abort the run.
     warnings: list[str] = field(default_factory=list)
     elapsed_s: float = 0.0
+    # Per-step wall-clock audit, populated when a TimingRecorder is
+    # threaded through the run (orchestrator does this by default).
+    timing: list[StepTiming] = field(default_factory=list)
 
     @property
     def total_cost_usd(self) -> float:
@@ -388,7 +393,12 @@ def _call_with_repair(
 
 
 def _run_planner(
-    client: Anthropic, *, context: GeneContext, usage_sink: list[UsageRecord]
+    client: Anthropic,
+    *,
+    context: GeneContext,
+    usage_sink: list[UsageRecord],
+    timing: TimingRecorder | None = None,
+    timing_phase: str = "plan_trim_select",
 ) -> SearchPlan | None:
     system_prompt = PLAN_PROMPT_PATH.read_text()
     plan_schema = json.dumps(SearchPlan.model_json_schema(), indent=2)
@@ -400,16 +410,32 @@ def _run_planner(
         "Emit one fenced ```json block matching this SearchPlan schema:\n\n"
         f"```json\n{plan_schema}\n```\n"
     )
-    parsed, _, _ = _call_with_repair(
-        client,
-        model=SONNET_MODEL,
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        schema=SearchPlan,
-        max_tokens=MAX_TOKENS_PLAN,
-        usage_sink=usage_sink,
-        label="planner",
-    )
+    call_sink: list[UsageRecord] = []
+    if timing is None:
+        parsed, _, _ = _call_with_repair(
+            client,
+            model=SONNET_MODEL,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            schema=SearchPlan,
+            max_tokens=MAX_TOKENS_PLAN,
+            usage_sink=usage_sink,
+            label="planner",
+        )
+    else:
+        with timing.step("planner", phase=timing_phase, model=SONNET_MODEL) as h:
+            parsed, _, _ = _call_with_repair(
+                client,
+                model=SONNET_MODEL,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                schema=SearchPlan,
+                max_tokens=MAX_TOKENS_PLAN,
+                usage_sink=call_sink,
+                label="planner",
+            )
+            h.set_usage(call_sink, model=SONNET_MODEL)
+        usage_sink.extend(call_sink)
     return parsed if isinstance(parsed, SearchPlan) else None
 
 
@@ -424,6 +450,8 @@ def _execute_plan(
     context: GeneContext,
     http: CachedHTTP,
     retraction_index: RetractionIndex,
+    timing: TimingRecorder | None = None,
+    timing_phase: str = "plan_trim_select",
 ) -> tuple[
     dict[str, EvidenceClaimDraft],
     list[SearchLogEntry],
@@ -449,10 +477,16 @@ def _execute_plan(
 
     for req in plan.searches:
         t0 = time.time()
+        started_at = datetime.now(UTC)
         n_drafts = 0
         n_papers = 0
         err: str | None = None
         params: dict[str, Any] = {}
+        _search_step_name = (
+            f"search:{req.tool}"
+            if req.tool == "evidence_retrieval"
+            else f"search:{req.tool}:{getattr(req, 'mode', '?')}"
+        )
         try:
             if req.tool == "evidence_retrieval":
                 params = {"category": req.category, "uniprot_acc": acc}
@@ -555,6 +589,16 @@ def _execute_plan(
                 error=err,
             )
         )
+        if timing is not None:
+            timing.add(
+                StepTiming(
+                    step_name=_search_step_name,
+                    phase=timing_phase,
+                    started_at=started_at.isoformat().replace("+00:00", "Z"),
+                    elapsed_s=round(elapsed, 3),
+                    n_items=n_drafts if n_drafts else n_papers,
+                )
+            )
 
     return pool, search_log, dict(clips_by_source), discovered_papers
 
@@ -609,6 +653,9 @@ def _run_trim(
     gene: str,
     usage_sink: list[UsageRecord],
     trim_prompt_path: Path = TRIM_PROMPT_PATH,
+    timing: TimingRecorder | None = None,
+    timing_phase: str = "plan_trim_select",
+    timing_iteration: int = 0,
 ) -> dict[str, TrimResponse]:
     """One Haiku call per paper. Returns {source_id: TrimResponse}.
 
@@ -633,6 +680,8 @@ def _run_trim(
             numbered_clips=_format_clips_for_trim(bounded),
             schema=schema_str,
         )
+        _step_started = datetime.now(UTC)
+        _step_t0 = time.perf_counter()
         try:
             resp = client.messages.create(
                 model=HAIKU_MODEL,
@@ -641,8 +690,36 @@ def _run_trim(
             )
         except Exception as exc:  # noqa: BLE001
             logger.warning("trim call failed for %s: %s", source_id, exc)
+            if timing is not None:
+                timing.add(
+                    StepTiming(
+                        step_name=f"trim:iter{timing_iteration}:{source_id}",
+                        phase=timing_phase,
+                        started_at=_step_started.isoformat().replace("+00:00", "Z"),
+                        elapsed_s=round(time.perf_counter() - _step_t0, 3),
+                        n_items=len(bounded),
+                        model=HAIKU_PRICING_KEY,
+                    )
+                )
             continue
-        usage_sink.append(record_from_response(resp.usage, HAIKU_PRICING_KEY))
+        rec = record_from_response(resp.usage, HAIKU_PRICING_KEY)
+        usage_sink.append(rec)
+        if timing is not None:
+            timing.add(
+                StepTiming(
+                    step_name=f"trim:iter{timing_iteration}:{source_id}",
+                    phase=timing_phase,
+                    started_at=_step_started.isoformat().replace("+00:00", "Z"),
+                    elapsed_s=round(time.perf_counter() - _step_t0, 3),
+                    n_items=len(bounded),
+                    model=HAIKU_PRICING_KEY,
+                    input_tokens=rec.input_tokens,
+                    output_tokens=rec.output_tokens,
+                    cache_creation_input_tokens=rec.cache_creation_input_tokens,
+                    cache_read_input_tokens=rec.cache_read_input_tokens,
+                    cost_usd=round(rec.cost_usd, 6),
+                )
+            )
         text = "\n".join(
             b.text for b in resp.content if isinstance(b, TextBlock)
         ).strip()
@@ -782,6 +859,8 @@ def _run_selector(
     max_iterations: int,
     usage_sink: list[UsageRecord],
     select_prompt_path: Path = SELECT_PROMPT_PATH,
+    timing: TimingRecorder | None = None,
+    timing_phase: str = "plan_trim_select",
 ) -> SelectionResponse | None:
     system_prompt = select_prompt_path.read_text()
     schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
@@ -821,16 +900,37 @@ def _run_selector(
         "SelectionResponse schema:\n\n"
         f"```json\n{schema_str}\n```\n"
     )
-    parsed, _, _ = _call_with_repair(
-        client,
-        model=SONNET_MODEL,
-        system_prompt=system_prompt,
-        user_prompt=user_prompt,
-        schema=SelectionResponse,
-        max_tokens=MAX_TOKENS_SELECT,
-        usage_sink=usage_sink,
-        label="selector",
-    )
+    if timing is None:
+        parsed, _, _ = _call_with_repair(
+            client,
+            model=SONNET_MODEL,
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            schema=SelectionResponse,
+            max_tokens=MAX_TOKENS_SELECT,
+            usage_sink=usage_sink,
+            label="selector",
+        )
+    else:
+        call_sink: list[UsageRecord] = []
+        with timing.step(
+            f"selector:iter{iteration}",
+            phase=timing_phase,
+            n_items=n_kept,
+            model=SONNET_MODEL,
+        ) as h:
+            parsed, _, _ = _call_with_repair(
+                client,
+                model=SONNET_MODEL,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                schema=SelectionResponse,
+                max_tokens=MAX_TOKENS_SELECT,
+                usage_sink=call_sink,
+                label="selector",
+            )
+            h.set_usage(call_sink, model=SONNET_MODEL)
+        usage_sink.extend(call_sink)
     return parsed if isinstance(parsed, SelectionResponse) else None
 
 
@@ -924,6 +1024,7 @@ def run_plan_trim_select(
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
     agent_focus: AgentFocus | None = None,
+    timing: TimingRecorder | None = None,
 ) -> PlanTrimSelectResult:
     """Run plan → trim → select for one gene. Returns the full audit result.
 
@@ -958,6 +1059,13 @@ def run_plan_trim_select(
     trim_prompt_path, select_prompt_path, evidence_id_prefix = (
         _resolve_focus_prompts(agent_focus)
     )
+    timing_phase = (
+        f"plan_trim_select_{agent_focus}" if agent_focus else "plan_trim_select"
+    )
+    # Track the per-run timing slice so the result's ``timing`` field
+    # contains *only* this run's rows (the recorder may carry rows from
+    # the sibling A1/A2 run when called via the dual driver).
+    timing_start_index = len(timing.entries) if timing is not None else 0
 
     plan_usage: list[UsageRecord] = []
     trim_usage: list[UsageRecord] = []
@@ -985,7 +1093,13 @@ def run_plan_trim_select(
         logger.info("gene context built: %s → %s", gene, context.bundle.uniprot_acc)
 
         # Step 1 — initial planner call
-        initial_plan = _run_planner(client, context=context, usage_sink=plan_usage)
+        initial_plan = _run_planner(
+            client,
+            context=context,
+            usage_sink=plan_usage,
+            timing=timing,
+            timing_phase=timing_phase,
+        )
         if initial_plan is None:
             result.warnings.append("planner returned no valid SearchPlan; aborting")
             return result
@@ -1008,6 +1122,8 @@ def run_plan_trim_select(
                 context=context,
                 http=http,
                 retraction_index=retraction,
+                timing=timing,
+                timing_phase=timing_phase,
             )
             n_new_drafts = 0
             for draft in iter_pool.values():
@@ -1044,6 +1160,9 @@ def run_plan_trim_select(
                 gene=gene,
                 usage_sink=trim_usage,
                 trim_prompt_path=trim_prompt_path,
+                timing=timing,
+                timing_phase=timing_phase,
+                timing_iteration=iteration,
             )
             n_kept = sum(len(t.kept) for t in trim_results.values())
             logger.info(
@@ -1080,6 +1199,8 @@ def run_plan_trim_select(
                 max_iterations=MAX_PLAN_ITERATIONS,
                 usage_sink=select_usage,
                 select_prompt_path=select_prompt_path,
+                timing=timing,
+                timing_phase=timing_phase,
             )
             if sel_resp is None:
                 result.warnings.append(
@@ -1161,6 +1282,8 @@ def run_plan_trim_select(
         result.trim_usage = summarize_usage(trim_usage, HAIKU_PRICING_KEY)
         result.select_usage = summarize_usage(select_usage, SONNET_MODEL)
         result.elapsed_s = round(time.time() - t0, 1)
+        if timing is not None:
+            result.timing = list(timing.entries[timing_start_index:])
         if own_http:
             http.close()
 
@@ -1214,6 +1337,7 @@ def run_plan_trim_select_dual(
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
+    timing: TimingRecorder | None = None,
 ) -> DualPlanTrimSelectResult:
     """Phase 1's sequential-dual driver: A1 then A2, shared HTTP cache.
 
@@ -1243,6 +1367,7 @@ def run_plan_trim_select_dual(
             http=http,
             retraction_index=retraction,
             agent_focus="a1",
+            timing=timing,
         )
         logger.info(
             "=== dual run %s: A1 done (%d claims, %s anchored) — starting A2 ===",
@@ -1256,6 +1381,7 @@ def run_plan_trim_select_dual(
             http=http,
             retraction_index=retraction,
             agent_focus="a2",
+            timing=timing,
         )
         logger.info(
             "=== dual run %s: A2 done (%d claims, %s anchored) ===",
