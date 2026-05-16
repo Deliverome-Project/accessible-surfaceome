@@ -56,6 +56,15 @@ DB_FLAGS_5 = [
     ("cspa_surface_flag", "CSPA"),
 ]
 
+# Per-DB fixed colour assignment. Every label always renders with the
+# same colour across figures (UniProt = palette[0], GO CC = palette[1],
+# …). Match the standalone gist's PALETTE_BY_LABEL so the canonical
+# figure and the gist's live re-run produce identical colour-to-DB
+# mappings regardless of which DB happens to be the largest set.
+PALETTE_BY_LABEL = {
+    label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)
+}
+
 # Pin to an immutable commit SHA so the reproduction is traceable and
 # tamper-evident. Bump together with ``_EXPECTED_TSV_SHA256`` whenever
 # the upstream universe TSV is intentionally refreshed (and update the
@@ -114,10 +123,11 @@ def make_plot(out_dir: Path) -> None:
     sorted_sets = {k: sets[k] for k in sorted_keys}
 
     fig, ax = plt.subplots(figsize=(11, 10))
+    cmap = [PALETTE_BY_LABEL[k] for k in sorted_keys]
     venn(
         sorted_sets,
         ax=ax,
-        cmap=CATEGORICAL_PALETTE[: len(sorted_sets)],
+        cmap=cmap,
         fontsize=15,
         legend_loc=None,  # custom legend below so it doesn't overlap the ellipses
     )
@@ -132,8 +142,8 @@ def make_plot(out_dir: Path) -> None:
     # Legend with per-DB set size, anchored below the diagram. Fontsize
     # bumped to match the rest of the post-2026-05 plotting config.
     handles = [
-        plt.Rectangle((0, 0), 1, 1, color=CATEGORICAL_PALETTE[i], alpha=0.6)
-        for i in range(len(sorted_keys))
+        plt.Rectangle((0, 0), 1, 1, color=PALETTE_BY_LABEL[k], alpha=0.6)
+        for k in sorted_keys
     ]
     labels = [f"{k}  (n = {len(sets[k]):,})" for k in sorted_keys]
     ax.legend(
