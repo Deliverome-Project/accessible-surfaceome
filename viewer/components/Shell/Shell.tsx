@@ -35,6 +35,9 @@ export function Shell({ children }: ShellProps) {
             <Link className={styles.navLink} href="/prompts">
               Prompts
             </Link>
+            <Link className={styles.navLink} href="/reproducibility">
+              Reproducibility
+            </Link>
             <a
               className={styles.navLink}
               href="https://deliverome.org/"

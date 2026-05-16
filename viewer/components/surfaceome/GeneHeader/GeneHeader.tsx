@@ -91,10 +91,8 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
     <header className={styles.header}>
       <div className={styles.headerGrid}>
         <div className={styles.headerText}>
-          <p className={`label-mono ${styles.eyebrow}`}>
-            Surfaceome record · v{rec.schema_version}
-          </p>
-          <h1 className={`h-display ${styles.symbol}`}>{g.hgnc_symbol}</h1>
+          <p className={`label-mono ${styles.eyebrow}`}>Surfaceome record</p>
+          <h1 className={`h-gene ${styles.symbol}`}>{g.hgnc_symbol}</h1>
           {geneName?.name ? (
             <p className={styles.geneName}>
               {geneName.name}

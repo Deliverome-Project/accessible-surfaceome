@@ -25,11 +25,7 @@ export function IsoformsCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Isoforms"
-      title={
-        <>
-          The <em>topology</em> table
-        </>
-      }
+      title="Isoforms and predicted topology"
       meta={`Deterministic · UniProt + DeepTMHMM ${ct.tool_version}`}
       lede="Per-isoform transmembrane topology, ECD / ICD lengths, signal-peptide length. The canonical row mirrors what the 3D card renders."
     >

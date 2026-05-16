@@ -27,6 +27,12 @@ export interface StructureViewerData {
   signal_peptide_length: number;
   source_cohort: string;
   source_tool: string;
+  /** AlphaFold DB pdbUrl baked in at build time via the prediction API.
+   *  Saves a round-trip vs. re-querying at runtime; the runtime falls
+   *  back to a fresh prediction-API call if this URL ever 404s. */
+  pdb_url?: string | null;
+  /** AFDB model version at the time `pdb_url` was baked. Informational. */
+  latest_version?: number | null;
 }
 
 /**

@@ -45,11 +45,7 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Executive summary"
-      title={
-        <>
-          The <em>brief</em>
-        </>
-      }
+      title="Overview and headline call"
       meta="LLM synthesis · top-line accessibility judgment + headline risks"
     >
       <p className={styles.paragraph}>{e.one_paragraph}</p>

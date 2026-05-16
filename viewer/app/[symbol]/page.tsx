@@ -80,6 +80,19 @@ export default async function GenePage({ params }: PageProps) {
   return (
     <Shell>
       <article className={`${styles.page} page-width`}>
+        {/* Warm the AFDB TLS handshake so the StructureViewer's PDB
+            fetch starts as fast as possible once 3dmol mounts. React
+            19 hoists <link> into <head> automatically; no need for a
+            separate generateMetadata hop. Only rendered when this
+            gene actually has a structure to load. */}
+        {structureData ? (
+          <link
+            rel="preconnect"
+            href="https://alphafold.ebi.ac.uk"
+            crossOrigin="anonymous"
+          />
+        ) : null}
+
         <nav className={styles.crumbs} aria-label="Breadcrumb">
           <Link href="/" className={styles.crumbLink}>
             Surfaceome

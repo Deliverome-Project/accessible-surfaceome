@@ -16,7 +16,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  max-width: 64ch;
 }
 
 .title {
@@ -26,10 +25,9 @@
 .lede {
   margin: 0;
   font-family: var(--font-sans);
-  font-size: 0.98rem;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  line-height: 1.55;
   color: var(--muted);
-  max-width: 60ch;
   font-weight: 300;
 }
 
@@ -51,7 +49,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  max-width: 64ch;
 }
 
 .skillBody {
@@ -161,7 +158,6 @@
   line-height: 1.55;
   color: var(--ink-soft);
   overflow-x: auto;
-  max-width: 84ch;
 }
 
 /* Endpoint groupings — each group gets a label, blurb, and an indented
@@ -193,7 +189,6 @@
   font-size: 0.9rem;
   line-height: 1.55;
   color: var(--muted);
-  max-width: 72ch;
 }
 
 /* ============================================================
@@ -213,7 +208,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
-  max-width: 84ch;
 }
 
 .endpoint {
@@ -259,7 +253,6 @@
   font-size: 0.88rem;
   line-height: 1.55;
   color: var(--ink-soft);
-  max-width: 72ch;
 }
 
 .curl {
@@ -287,7 +280,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  max-width: 72ch;
   margin-top: var(--space-3);
 }
 

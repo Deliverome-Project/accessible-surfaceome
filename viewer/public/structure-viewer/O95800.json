@@ -1,5 +1,7 @@
 {
   "deeptmhmm_type": "TM",
+  "latest_version": 6,
+  "pdb_url": "https://alphafold.ebi.ac.uk/files/AF-O95800-F1-model_v6.pdb",
   "sequence_length": 540,
   "signal_peptide_length": 0,
   "source_cohort": "human_canonical_non_hla",

@@ -52,26 +52,39 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       type Mod3D = typeof import("3dmol");
       const Mod = (await import("3dmol")) as Mod3D & { default?: Mod3D };
       const $3Dmol: Mod3D = Mod.default ?? Mod;
-      // 1) Ask the AFDB API for the current latest pdbUrl. AFDB
-      //    occasionally bumps a UniProt to a new model version and
-      //    removes older versions from the file server, so a hard-
-      //    coded ``v4`` URL can 404 (observed for O95800 in 2025-08
-      //    when the model was promoted to v6). Fall back to the
-      //    legacy v4 URL if the API is unreachable.
-      let pdbUrl = alphafoldPdbUrl(data.uniprot_acc);
-      try {
-        const apiResp = await fetch(alphafoldPredictionApiUrl(data.uniprot_acc));
-        if (apiResp.ok) {
-          const entries = (await apiResp.json()) as AlphafoldPredictionEntry[];
-          if (entries[0]?.pdbUrl) {
-            pdbUrl = entries[0].pdbUrl;
+      // 1) Prefer the build-time-baked pdbUrl. Falls back to the
+      //    legacy v4 URL if the build script couldn't enrich this
+      //    entry (offline build, AFDB unreachable, etc.).
+      let pdbUrl = data.pdb_url ?? alphafoldPdbUrl(data.uniprot_acc);
+
+      // 2) Try the URL with aggressive HTTP caching — AlphaFold PDBs
+      //    are immutable per version, so force-cache is safe and
+      //    makes repeat visits free.
+      let pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
+
+      // 3) On 404 specifically, AFDB has bumped the version since the
+      //    last build (observed: O95800 went v4→v6 in 2025-08, with
+      //    v1–v5 removed from the file server). Re-query the
+      //    prediction API once for the current pdbUrl and retry.
+      //    Other errors propagate — no double-latency on hopeless
+      //    paths (CORS, 500, timeout).
+      if (pdbResp.status === 404) {
+        try {
+          const apiResp = await fetch(
+            alphafoldPredictionApiUrl(data.uniprot_acc),
+          );
+          if (apiResp.ok) {
+            const entries =
+              (await apiResp.json()) as AlphafoldPredictionEntry[];
+            if (entries[0]?.pdbUrl) {
+              pdbUrl = entries[0].pdbUrl;
+              pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
+            }
           }
+        } catch {
+          // Fall through to the status check below.
         }
-      } catch {
-        // Network blip → use the legacy URL; its 404 (if any) will
-        // surface in the next fetch with a clearer error.
       }
-      const pdbResp = await fetch(pdbUrl);
       if (!pdbResp.ok) {
         throw new Error(
           `AlphaFold DB returned ${pdbResp.status} for ${data.uniprot_acc}`,

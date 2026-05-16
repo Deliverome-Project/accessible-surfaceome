@@ -9,16 +9,16 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  max-width: 64ch;
 }
 
 .heroH1 {
-  font-size: clamp(2.4rem, 5.5vw, 4rem);
+  font-size: clamp(2rem, 4vw, 3rem);
+  line-height: 1.1;
 }
 
 .lede {
-  font-size: 1.05rem;
-  max-width: 60ch;
+  /* font-size inherited from globals .lede (0.92rem). */
+  max-width: none;
 }
 
 .code {
@@ -78,5 +78,4 @@
   white-space: pre-wrap;
   word-wrap: break-word;
   overflow-x: auto;
-  max-width: 90ch;
 }

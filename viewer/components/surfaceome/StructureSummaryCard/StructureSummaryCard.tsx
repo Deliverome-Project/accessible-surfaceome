@@ -21,11 +21,7 @@ export function StructureSummaryCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Structure summary"
-      title={
-        <>
-          The <em>AlphaFold</em> stats
-        </>
-      }
+      title="Predicted structure (AlphaFold + DeepTMHMM)"
       meta={`AlphaFold DB ${s.afdb_version} · ECD-region stats`}
     >
       <dl className={styles.stats}>

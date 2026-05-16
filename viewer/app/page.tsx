@@ -1,5 +1,4 @@
 import { Shell } from "../components/Shell/Shell";
-import { NumberedEyebrow } from "../components/NumberedEyebrow/NumberedEyebrow";
 import { CatalogTable } from "../components/CatalogTable/CatalogTable";
 import { loadCatalog } from "../lib/surfaceome";
 import styles from "./page.module.css";
@@ -19,36 +18,29 @@ export default async function HomePage() {
     <Shell>
       <section className={`${styles.page} page-width`}>
         <header className={styles.hero}>
-          <NumberedEyebrow n={1}>Surfaceome</NumberedEyebrow>
           <h1 className={`h-display ${styles.heroH1}`}>
-            A genome-wide table of <em>cell-surface candidates.</em>
+            Cell-surface candidates in the human genome.
           </h1>
           <p className={`lede ${styles.lede}`}>
-            Every protein-coding human gene, scored against five public
-            surface-membership databases, with the Haiku triage agent&apos;s
-            verdict where it has run and Sonnet deep-dive records where they
-            exist. Open accession, evidence-cited, agent-readable.
+            Roughly 10–20% of human proteins reach the cell surface, yet
+            over 65% of approved drugs target these molecules —
+            accessibility on the extracellular face of the plasma
+            membrane lets a drug act without crossing into the cell.
+            Five public databases (UniProt, GO Cellular Component, the
+            Human Protein Atlas, the Cell Surface Protein Atlas, and
+            SURFY) each catalog the surfaceome, but with different
+            definitions and methods, so their calls disagree more often
+            than they agree.
           </p>
-          <ul className={styles.stats} aria-label="Catalog stats">
-            <li className={styles.stat}>
-              <span className={styles.statN}>{catalog.n_rows.toLocaleString()}</span>
-              <span className={`label-mono ${styles.statK}`}>genes</span>
-            </li>
-            <li className={styles.stat}>
-              <span className={styles.statN}>{catalog.n_with_triage.toLocaleString()}</span>
-              <span className={`label-mono ${styles.statK}`}>triaged</span>
-            </li>
-            <li className={styles.stat}>
-              <span className={styles.statN}>
-                {catalog.n_with_deep_dive.toLocaleString()}
-              </span>
-              <span className={`label-mono ${styles.statK}`}>deep-dive</span>
-            </li>
-            <li className={styles.stat}>
-              <span className={styles.statN}>5</span>
-              <span className={`label-mono ${styles.statK}`}>DB sources</span>
-            </li>
-          </ul>
+          <p className={`lede ${styles.lede}`}>
+            This atlas reconciles them. An LLM triage agent scores
+            every protein-coding human gene against the union of the
+            five sources; a deep-dive agent then assembles the evidence
+            behind each strong candidate — surface-localization
+            methods, antibody validation, isoform topology,
+            accessibility caveats — into per-gene records. Open
+            accession, evidence-cited, agent-readable.
+          </p>
         </header>
 
         <CatalogTable
@@ -62,8 +54,8 @@ export default async function HomePage() {
 
         <footer className={styles.footnotes}>
           <p>
-            <span className="label-mono">DB columns ·</span> U UniProt · G GO ·
-            S SURFY · C CSPA · H HPA. Each cell is one source&apos;s vote on
+            <span className="label-mono">DB columns ·</span> UniProt · GO ·
+            SURFY · CSPA · HPA. Each cell is one source&apos;s vote on
             whether the protein reaches the cell surface; the{" "}
             <code>Sources</code> column is the count of those five (the M1
             universe gate). DeepTMHMM + COMPARTMENTS are tracked upstream as
@@ -86,10 +78,7 @@ export default async function HomePage() {
           <p className={styles.sourceLine}>
             <span className="label-mono">Source ·</span>{" "}
             live D1{" "}
-            <code>
-              {catalog.universe_version ?? "—"}
-              {catalog.bench_version ? ` · ${catalog.bench_version}` : null}
-            </code>
+            <code>{catalog.universe_version ?? "—"}</code>
           </p>
         </footer>
       </section>

@@ -66,17 +66,15 @@
 }
 
 .symbol {
-  font-size: clamp(3rem, 8vw, 5.6rem);
-  font-style: italic;
+  font-size: clamp(2.4rem, 5.5vw, 3.8rem);
 }
 
 .geneName {
   margin: calc(var(--space-3) * -1) 0 0;
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: 1.25rem;
-  line-height: 1.35;
-  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
   max-width: 60ch;
 }
 

@@ -53,11 +53,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Surface evidence"
-      title={
-        <>
-          Methods, antibodies, <em>observations</em>
-        </>
-      }
+      title="Plasma-membrane evidence"
       meta={`Evidence grade · ${prettyEnum(se.evidence_grade)} · ${se.methods.length} method block${
         se.methods.length === 1 ? "" : "s"
       }`}

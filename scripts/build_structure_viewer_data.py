@@ -45,6 +45,9 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
+import urllib.error
+import urllib.request
 from pathlib import Path
 from typing import TypedDict
 
@@ -62,6 +65,13 @@ DEFAULT_OUTPUT_DIR = ROOT / "viewer" / "public" / "structure-viewer"
 DEFAULT_SOURCE_COHORT = "human_canonical_non_hla"
 DEFAULT_SOURCE_TOOL = "deeptmhmm-1.0.24"
 
+# AFDB prediction API + on-disk cache. Bake-once semantics: if the
+# cache file exists, we use it verbatim and never re-fetch — pass
+# ``--refresh-afdb`` (or ``--refresh-afdb-acc {ACC}``) to force a
+# re-fetch when AFDB has bumped a version.
+AFDB_PREDICTION_URL = "https://alphafold.ebi.ac.uk/api/prediction/{acc}"
+AFDB_CACHE_DIR = ROOT / "data" / "cache" / "afdb_prediction"
+
 
 class TopologyRecord(TypedDict):
     uniprot_acc: str
@@ -73,6 +83,8 @@ class TopologyRecord(TypedDict):
     signal_peptide_length: int
     source_cohort: str
     source_tool: str
+    pdb_url: str | None
+    latest_version: int | None
 
 
 _HEADER_RE = re.compile(r"^>(?:sp|tr)\|([A-Z0-9-]+)\|\S+\s*\|\s*(\S+)\s*$")
@@ -131,6 +143,68 @@ def topology_ranges(topology: str) -> dict[str, list[list[int]]]:
     return ranges
 
 
+def fetch_afdb_prediction(
+    uniprot: str,
+    *,
+    cache_dir: Path = AFDB_CACHE_DIR,
+    refresh: bool = False,
+    timeout_s: float = 10.0,
+) -> tuple[str | None, int | None]:
+    """Return ``(pdb_url, latest_version)`` for ``uniprot`` from AFDB.
+
+    Bake-once cache: if ``{cache_dir}/{uniprot}.json`` exists and
+    ``refresh`` is False, the cached response is used verbatim — no
+    network call. On a cache miss (or ``refresh=True``), GET the AFDB
+    prediction API, store the raw JSON to disk, and return the fields
+    we care about.
+
+    On any network / parse failure with no cached fallback, returns
+    ``(None, None)`` and logs a warning to stderr. The runtime
+    StructureViewer falls back to the legacy ``v4`` URL if the baked
+    ``pdb_url`` is null.
+    """
+    cache_path = cache_dir / f"{uniprot}.json"
+    if cache_path.exists() and not refresh:
+        try:
+            payload = json.loads(cache_path.read_text())
+            return _extract_pdb_url(payload)
+        except (OSError, json.JSONDecodeError):
+            # Corrupt cache → fall through to a fresh fetch.
+            pass
+
+    url = AFDB_PREDICTION_URL.format(acc=uniprot)
+    try:
+        with urllib.request.urlopen(url, timeout=timeout_s) as resp:
+            raw = resp.read().decode("utf-8")
+        payload = json.loads(raw)
+    except (urllib.error.URLError, OSError, json.JSONDecodeError) as exc:
+        print(
+            f"[afdb] WARN: prediction fetch failed for {uniprot}: {exc}",
+            file=sys.stderr,
+        )
+        return (None, None)
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path.write_text(json.dumps(payload, indent=2) + "\n")
+    return _extract_pdb_url(payload)
+
+
+def _extract_pdb_url(payload: object) -> tuple[str | None, int | None]:
+    """AFDB returns an array; pull the first entry's pdbUrl/latestVersion."""
+    if not isinstance(payload, list) or not payload:
+        return (None, None)
+    first = payload[0]
+    if not isinstance(first, dict):
+        return (None, None)
+    pdb_url = first.get("pdbUrl")
+    latest_version = first.get("latestVersion")
+    if pdb_url is not None and not isinstance(pdb_url, str):
+        pdb_url = None
+    if latest_version is not None and not isinstance(latest_version, int):
+        latest_version = None
+    return (pdb_url, latest_version)
+
+
 def build_record(
     uniprot: str,
     deeptmhmm_type: str,
@@ -139,6 +213,8 @@ def build_record(
     *,
     source_cohort: str,
     source_tool: str,
+    pdb_url: str | None = None,
+    latest_version: int | None = None,
 ) -> TopologyRecord:
     ranges = topology_ranges(topology)
     signal_peptide_length = sum(end - start + 1 for start, end in ranges["S"])
@@ -152,6 +228,8 @@ def build_record(
         "signal_peptide_length": signal_peptide_length,
         "source_cohort": source_cohort,
         "source_tool": source_tool,
+        "pdb_url": pdb_url,
+        "latest_version": latest_version,
     }
 
 
@@ -167,6 +245,29 @@ def main() -> None:
         default=None,
         help="If provided, only emit JSONs for these UniProt accessions.",
     )
+    parser.add_argument(
+        "--refresh-afdb",
+        action="store_true",
+        help=(
+            "Force a fresh AFDB prediction-API fetch for every UniProt, "
+            "ignoring the on-disk cache. Use after AFDB version bumps."
+        ),
+    )
+    parser.add_argument(
+        "--refresh-afdb-acc",
+        nargs="*",
+        default=None,
+        help="Force re-fetch only for these UniProt accessions.",
+    )
+    parser.add_argument(
+        "--skip-afdb",
+        action="store_true",
+        help=(
+            "Skip the AFDB enrichment entirely (pdb_url + latest_version "
+            "left null). Useful for offline dev; the viewer's legacy v4 "
+            "URL fallback handles the missing field at runtime."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.topology_file.exists():
@@ -175,9 +276,14 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     only = set(args.only_uniprot) if args.only_uniprot else None
+    refresh_set = (
+        set(args.refresh_afdb_acc) if args.refresh_afdb_acc else None
+    )
     entries = parse_three_line(args.topology_file)
     written = 0
     skipped_no_tm = 0
+    enriched = 0
+    enrichment_missing = 0
     for uniprot, dtype, sequence, topology in entries:
         if only is not None and uniprot not in only:
             continue
@@ -186,6 +292,21 @@ def main() -> None:
         if dtype == "GLOB":
             skipped_no_tm += 1
             continue
+
+        pdb_url: str | None = None
+        latest_version: int | None = None
+        if not args.skip_afdb:
+            refresh = args.refresh_afdb or (
+                refresh_set is not None and uniprot in refresh_set
+            )
+            pdb_url, latest_version = fetch_afdb_prediction(
+                uniprot, refresh=refresh
+            )
+            if pdb_url is not None:
+                enriched += 1
+            else:
+                enrichment_missing += 1
+
         record = build_record(
             uniprot,
             dtype,
@@ -193,6 +314,8 @@ def main() -> None:
             topology,
             source_cohort=args.source_cohort,
             source_tool=args.source_tool,
+            pdb_url=pdb_url,
+            latest_version=latest_version,
         )
         out_path = args.output_dir / f"{uniprot}.json"
         out_path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
@@ -203,6 +326,8 @@ def main() -> None:
         "output_dir": str(args.output_dir.relative_to(ROOT)),
         "records_written": written,
         "skipped_globular": skipped_no_tm,
+        "afdb_enriched": enriched,
+        "afdb_missing": enrichment_missing,
         "source_cohort": args.source_cohort,
         "source_tool": args.source_tool,
     }

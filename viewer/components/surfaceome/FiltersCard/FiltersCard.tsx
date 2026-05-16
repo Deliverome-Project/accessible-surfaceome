@@ -109,11 +109,7 @@ export function FiltersCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Filters"
-      title={
-        <>
-          The <em>catalog facets</em>
-        </>
-      }
+      title="Catalog membership and source coverage"
       meta="D1-indexed facets · informational here; the catalog page owns interactive filtering"
     >
       <div className={styles.groups}>

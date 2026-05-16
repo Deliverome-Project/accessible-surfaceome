@@ -99,11 +99,7 @@ export function OrthologsCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Orthologs"
-      title={
-        <>
-          The <em>cross-species</em> table
-        </>
-      }
+      title="Cross-species orthologs"
       meta={`Deterministic · Ensembl Compara ${comparaVersion} + DeepTMHMM ${toolVersion}`}
       lede="Per-species canonical (and alternative) isoforms with ECD percent identity / similarity to the human canonical."
     >

@@ -22,7 +22,7 @@ const ROW_OVERSCAN = 12;
 // side-by-side so a reader can scan agreement across the three
 // models at a glance.
 const GRID_TEMPLATE =
-  "1.75rem 16rem 5.5rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem 4.4rem 4.4rem 4.4rem 6rem";
+  "1.75rem 14rem 5.5rem 3rem 4.2rem 3rem 4rem 3.6rem 3rem 6.5rem 7rem 6rem 5rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -338,8 +338,7 @@ export function CatalogTable({
               title={d.long}
               role="columnheader"
             >
-              <span aria-hidden="true">{d.short}</span>
-              <span className="sr-only">{d.long}</span>
+              {d.long}
             </div>
           ))}
           {CATALOG_MODELS.map((m) => (
@@ -349,8 +348,7 @@ export function CatalogTable({
               title={m.long}
               role="columnheader"
             >
-              {m.short}
-              <span className="sr-only"> · {m.long}</span>
+              {m.long.replace(" · ncbi", "")}
             </div>
           ))}
           <SortableHeader

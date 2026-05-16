@@ -10,6 +10,7 @@ import type {
   BenchmarkVariantResult,
 } from "../../lib/surfaceome-types";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
+import { RationaleDrawer, type SelectedCell } from "./RationaleDrawer";
 import styles from "./BenchmarkTable.module.css";
 
 const ROW_ESTIMATE_PX = 44;
@@ -19,9 +20,9 @@ const ROW_OVERSCAN = 12;
 // 3 model NCBI pills | class. Click `+` to expand into the full
 // model × variant grid + per-cell reasoning.
 const GRID_TEMPLATE =
-  "1.6rem 10rem 5rem 4rem " +
-  "1.4rem 1.4rem 1.4rem 1.4rem 1.4rem " +
-  "4.4rem 4.4rem 4.4rem " +
+  "1.6rem 12rem 5.5rem 4.5rem " +
+  "4.2rem 3rem 4rem 3.6rem 3rem " +
+  "6rem 6.5rem 5.6rem " +
   "minmax(8rem, 1fr)";
 
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
@@ -96,10 +97,11 @@ export function BenchmarkTable({
   const [filter, setFilter] = useState<TruthFilter>("all");
   // Row-level expand: shows the full model × variant grid for that gene.
   const [rowExpanded, setRowExpanded] = useState<Set<string>>(new Set());
-  // Cell-level expand: per (gene, model, variant) — shows the verdict
-  // reasoning text for that specific call. Independent of row expand;
-  // toggling a cell auto-opens its parent row so the panel is visible.
-  const [cellExpanded, setCellExpanded] = useState<Set<string>>(new Set());
+  // Cell selection: which (gene, model, variant) the right-side
+  // rationale drawer is showing. One cell at a time — drawer content
+  // swaps as the reader clicks through cells; clicking the same cell
+  // twice closes the drawer.
+  const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
 
   function toggleRow(symbol: string) {
     setRowExpanded((prev) => {
@@ -110,15 +112,14 @@ export function BenchmarkTable({
     });
   }
 
-  function toggleCell(symbol: string, model: string, variant: string) {
-    const key = `${symbol}|${model}|${variant}`;
-    setCellExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-    // Auto-expand the parent row so the panel is visible.
+  function handleSelectCell(symbol: string, model: string, variant: string) {
+    setSelectedCell((prev) =>
+      prev && prev.symbol === symbol && prev.model === model && prev.variant === variant
+        ? null
+        : { symbol, model, variant },
+    );
+    // Auto-expand the parent row so the selected cell stays visible
+    // when the reader closes the drawer or clicks a different cell.
     setRowExpanded((prev) => {
       if (prev.has(symbol)) return prev;
       const next = new Set(prev);
@@ -127,10 +128,20 @@ export function BenchmarkTable({
     });
   }
 
+  // ESC closes the drawer. Installed on the table, not the drawer, so
+  // we don't depend on drawer focus (the drawer is non-modal).
+  useEffect(() => {
+    if (!selectedCell) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedCell(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedCell]);
+
   function handleDownload() {
     const tsv = buildBenchmarkTsv(matrix);
-    const tag = matrix.bench_version?.slice(0, 8) ?? "snapshot";
-    downloadTextFile(`surfacebench-${tag}.tsv`, tsv);
+    downloadTextFile("surfacebench.tsv", tsv);
   }
 
   const counts = useMemo(() => {
@@ -182,14 +193,11 @@ export function BenchmarkTable({
   return (
     <div className={styles.wrap} style={gridStyle}>
       <p className={styles.meta}>
-        <span>
-          BENCH <code>{matrix.bench_version?.slice(0, 8) ?? "—"}</code>
-        </span>
-        <span className={styles.metaDot}>·</span>
-        <span>models {MODEL_LABELS.map((m) => m.long).join(" · ")}</span>
+        <span>Models: {MODEL_LABELS.map((m) => m.long).join(" · ")}</span>
         <span className={styles.metaDot}>·</span>
         <span>
-          ncbi headline · click <em>+</em> for all 4 variants + per-cell reasoning
+          Click a gene to compare all 4 prompt variants; click a verdict
+          cell to read the agent&apos;s reasoning.
         </span>
       </p>
 
@@ -271,8 +279,7 @@ export function BenchmarkTable({
               title={d.long}
               role="columnheader"
             >
-              <span aria-hidden="true">{d.short}</span>
-              <span className="sr-only">{d.long}</span>
+              {d.long}
             </div>
           ))}
           {MODEL_LABELS.map((m) => (
@@ -282,7 +289,7 @@ export function BenchmarkTable({
               title={`${m.long} · ncbi variant`}
               role="columnheader"
             >
-              {m.short}
+              {m.long}
             </div>
           ))}
           <div className={styles.headerCell} role="columnheader">Class</div>
@@ -314,8 +321,8 @@ export function BenchmarkTable({
                     virtualStart={item.start}
                     isExpanded={rowExpanded.has(r.gene_symbol)}
                     onToggleRow={toggleRow}
-                    cellExpanded={cellExpanded}
-                    onToggleCell={toggleCell}
+                    selectedCell={selectedCell}
+                    onSelectCell={handleSelectCell}
                     hasDeepDive={deepDiveGenes.has(r.gene_symbol)}
                     geneName={geneNames?.[r.gene_symbol]}
                   />
@@ -329,6 +336,16 @@ export function BenchmarkTable({
           ) : null}
         </div>
       </div>
+
+      <RationaleDrawer
+        selected={selectedCell}
+        matrix={matrix}
+        modelLabels={MODEL_LABELS}
+        variantLabels={VARIANT_LABELS}
+        deepDiveGenes={deepDiveGenes}
+        geneNames={geneNames}
+        onClose={() => setSelectedCell(null)}
+      />
     </div>
   );
 }
@@ -361,8 +378,8 @@ function BenchRowView({
   virtualStart,
   isExpanded,
   onToggleRow,
-  cellExpanded,
-  onToggleCell,
+  selectedCell,
+  onSelectCell,
   hasDeepDive,
   geneName,
 }: {
@@ -372,8 +389,8 @@ function BenchRowView({
   virtualStart?: number;
   isExpanded: boolean;
   onToggleRow: (symbol: string) => void;
-  cellExpanded: Set<string>;
-  onToggleCell: (symbol: string, model: string, variant: string) => void;
+  selectedCell: SelectedCell | null;
+  onSelectCell: (symbol: string, model: string, variant: string) => void;
   hasDeepDive: boolean;
   geneName?: string;
 }) {
@@ -387,22 +404,30 @@ function BenchRowView({
           transform: `translateY(${virtualStart}px)`,
         }
       : undefined;
-  const symbolHead = hasDeepDive ? (
-    <Link href={`/${row.gene_symbol}/`} className={styles.symbolLink}>
-      {row.gene_symbol}
-    </Link>
-  ) : (
-    <span className={styles.symbolText}>{row.gene_symbol}</span>
-  );
   const geneCell = (
-    <span className={styles.symbolStack}>
-      {symbolHead}
-      {geneName ? (
-        <span className={styles.symbolName} title={geneName}>
-          {geneName}
-        </span>
-      ) : null}
-    </span>
+    <button
+      type="button"
+      className={styles.symbolButton}
+      onClick={() => onToggleRow(row.gene_symbol)}
+      aria-expanded={isExpanded}
+      aria-label={
+        isExpanded
+          ? `Collapse ${row.gene_symbol}`
+          : `Expand ${row.gene_symbol}`
+      }
+    >
+      <span className={styles.symbolChevron} aria-hidden="true">
+        {isExpanded ? "▾" : "▸"}
+      </span>
+      <span className={styles.symbolStack}>
+        <span className={styles.symbolText}>{row.gene_symbol}</span>
+        {geneName ? (
+          <span className={styles.symbolName} title={geneName}>
+            {geneName}
+          </span>
+        ) : null}
+      </span>
+    </button>
   );
   return (
     <div
@@ -423,6 +448,7 @@ function BenchRowView({
               : `Expand model×variant grid for ${row.gene_symbol}`
           }
           aria-expanded={isExpanded}
+          tabIndex={-1}
         >
           {isExpanded ? "−" : "+"}
         </button>
@@ -494,10 +520,17 @@ function BenchRowView({
       </div>
       {isExpanded ? (
         <div className={styles.expandedBlock}>
+          {hasDeepDive ? (
+            <p className={styles.expandedActions}>
+              <Link href={`/${row.gene_symbol}/`} className={styles.deepDiveLink}>
+                ↗ Open the {row.gene_symbol} deep-dive page
+              </Link>
+            </p>
+          ) : null}
           <VariantGrid
             row={row}
-            cellExpanded={cellExpanded}
-            onToggleCell={onToggleCell}
+            selectedCell={selectedCell}
+            onSelectCell={onSelectCell}
           />
         </div>
       ) : null}
@@ -505,18 +538,16 @@ function BenchRowView({
   );
 }
 
-/** Expanded model × variant grid with per-cell `+` for reasoning.
- *  Three rows (one per model) × four columns (one per variant).
- *  Each cell shows a verdict pill; clicking the pill's `+` opens an
- *  inline reasoning panel for just that cell. */
+/** Expanded model × variant grid. Clicking any verdict cell opens
+ *  the side-rationale drawer with that cell's reasoning. */
 function VariantGrid({
   row,
-  cellExpanded,
-  onToggleCell,
+  selectedCell,
+  onSelectCell,
 }: {
   row: BenchmarkRow;
-  cellExpanded: Set<string>;
-  onToggleCell: (symbol: string, model: string, variant: string) => void;
+  selectedCell: SelectedCell | null;
+  onSelectCell: (symbol: string, model: string, variant: string) => void;
 }) {
   return (
     <div className={styles.variantGrid}>
@@ -527,7 +558,7 @@ function VariantGrid({
           className={styles.variantHeader}
           title={v.long}
         >
-          {v.short}
+          {v.long}
         </div>
       ))}
       {MODEL_LABELS.map((m) => (
@@ -535,8 +566,8 @@ function VariantGrid({
           key={`vrow-${m.id}`}
           row={row}
           model={m}
-          cellExpanded={cellExpanded}
-          onToggleCell={onToggleCell}
+          selectedCell={selectedCell}
+          onSelectCell={onSelectCell}
         />
       ))}
     </div>
@@ -546,13 +577,13 @@ function VariantGrid({
 function ModelVariantRow({
   row,
   model,
-  cellExpanded,
-  onToggleCell,
+  selectedCell,
+  onSelectCell,
 }: {
   row: BenchmarkRow;
   model: { id: string; short: string; long: string };
-  cellExpanded: Set<string>;
-  onToggleCell: (symbol: string, model: string, variant: string) => void;
+  selectedCell: SelectedCell | null;
+  onSelectCell: (symbol: string, model: string, variant: string) => void;
 }) {
   return (
     <>
@@ -560,66 +591,39 @@ function ModelVariantRow({
       {VARIANT_LABELS.map((v) => {
         const cell: BenchmarkVariantResult | null | undefined =
           row.verdicts?.[model.id]?.[v.id];
-        const key = `${row.gene_symbol}|${model.id}|${v.id}`;
-        const open = cellExpanded.has(key);
+        const isSelected =
+          selectedCell != null &&
+          selectedCell.symbol === row.gene_symbol &&
+          selectedCell.model === model.id &&
+          selectedCell.variant === v.id;
         return (
           <div
             key={`vcell-${model.id}-${v.id}`}
-            className={`${styles.variantCellWrap} ${open ? styles.variantCellOpen : ""}`}
+            className={styles.variantCellWrap}
           >
             {cell?.verdict ? (
               <button
                 type="button"
-                className={`${styles.variantCellBtn} ${verdictTone(cell.verdict)} ${
+                className={`${styles.variantCellBtn} ${
+                  isSelected ? styles.variantCellSelected : ""
+                } ${verdictTone(cell.verdict)} ${
                   isCorrect(cell.verdict, row.truth_verdict)
                     ? styles.verdictCorrect
                     : styles.verdictWrong
                 }`}
-                onClick={() => onToggleCell(row.gene_symbol, model.id, v.id)}
-                title={`${model.long} · ${v.id} → ${cell.verdict}${
+                onClick={() => onSelectCell(row.gene_symbol, model.id, v.id)}
+                aria-pressed={isSelected}
+                title={`${model.long} · ${v.long} → ${cell.verdict}${
                   cell.reason ? ` (${cell.reason.replace(/_/g, " ")})` : ""
-                }`}
+                } — click for full reasoning`}
               >
                 <span className={`${styles.verdictLabel} ${verdictTone(cell.verdict)}`}>
                   {cell.verdict}
-                </span>
-                <span className={styles.variantCellPlus} aria-hidden="true">
-                  {open ? "−" : "+"}
                 </span>
               </button>
             ) : (
               <span className={styles.variantCellMissing}>—</span>
             )}
-            {open && cell ? (
-              <div className={styles.variantCellPanel}>
-                <p className={styles.variantPanelMeta}>
-                  <strong>{model.long}</strong>
-                  <span className={styles.runDim}>·</span>
-                  <span>{v.id}</span>
-                  {cell.reason ? (
-                    <>
-                      <span className={styles.runDim}>·</span>
-                      <span>{cell.reason.replace(/_/g, " ")}</span>
-                    </>
-                  ) : null}
-                  {cell.confidence ? (
-                    <>
-                      <span className={styles.runDim}>·</span>
-                      <span>{cell.confidence} conf</span>
-                    </>
-                  ) : null}
-                </p>
-                {cell.reasoning ? (
-                  <p className={styles.variantPanelReasoning}>
-                    {cell.reasoning}
-                  </p>
-                ) : (
-                  <p className={styles.variantPanelEmpty}>
-                    (no free-text reasoning recorded — verdict only)
-                  </p>
-                )}
-              </div>
-            ) : null}
           </div>
         );
       })}

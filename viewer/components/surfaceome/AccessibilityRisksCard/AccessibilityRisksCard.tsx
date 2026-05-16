@@ -39,11 +39,7 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Accessibility risks"
-      title={
-        <>
-          The <em>caveats</em>
-        </>
-      }
+      title="Accessibility caveats"
       meta="Six subsections · severity + evidence-strength on each · cites point into the evidence ledger"
     >
       <div className={styles.subsection}>
