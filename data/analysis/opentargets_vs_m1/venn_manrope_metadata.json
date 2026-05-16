@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f47304df37085caae5563d8bcb4a202b5577c641cc611fd635d67cb08c2a577b
-size 629
+{
+  "font_file": "/Library/Fonts/Manrope-VariableFont_wght.ttf",
+  "font_name_resolved": "Manrope",
+  "files": [
+    "/Users/rebeccacarlson/Git/accessible-surfaceome/data/analysis/opentargets_vs_m1/m1_vs_opentargets_venn_triptych_manrope.png",
+    "/Users/rebeccacarlson/Git/accessible-surfaceome/data/analysis/opentargets_vs_m1/m1_vs_opentargets_venn_uniprot_manrope.png",
+    "/Users/rebeccacarlson/Git/accessible-surfaceome/data/analysis/opentargets_vs_m1/m1_vs_opentargets_venn_go_manrope.png",
+    "/Users/rebeccacarlson/Git/accessible-surfaceome/data/analysis/opentargets_vs_m1/m1_vs_opentargets_venn_hpa_manrope.png"
+  ]
+}

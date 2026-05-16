@@ -1,3 +1,137 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:85e7c89053d667bb7a5acd9520dae8b83d00cb107d4fe8dfcf6250117e678815
-size 3141
+{
+  "column_map": [
+    {
+      "output": "uniprot_accession",
+      "source": "UniProt accession"
+    },
+    {
+      "output": "uniprot_name",
+      "source": "UniProt name"
+    },
+    {
+      "output": "uniprot_description",
+      "source": "UniProt description"
+    },
+    {
+      "output": "gene_symbol",
+      "source": "UniProt gene"
+    },
+    {
+      "output": "ensembl_gene",
+      "source": "Ensembl gene"
+    },
+    {
+      "output": "ensembl_protein",
+      "source": "Ensembl protein"
+    },
+    {
+      "output": "entrez_gene_id",
+      "source": "GeneID"
+    },
+    {
+      "output": "cd_number",
+      "source": "CD number"
+    },
+    {
+      "output": "surfy_label",
+      "source": "Surfaceome Label"
+    },
+    {
+      "output": "surfy_label_source",
+      "source": "Surfaceome Label Source"
+    },
+    {
+      "output": "surfy_comment",
+      "source": "Comment"
+    },
+    {
+      "output": "surfy_ml_score",
+      "source": "MachineLearning score"
+    },
+    {
+      "output": "surfy_ml_fpr_class",
+      "source": "MachineLearning FPR class (1=1%, 2=5%, 3=15%)"
+    },
+    {
+      "output": "surfy_ml_trainingset",
+      "source": "MachineLearning trainingset"
+    },
+    {
+      "output": "protein_length",
+      "source": "length"
+    },
+    {
+      "output": "tm_domain_count",
+      "source": "TM domains"
+    },
+    {
+      "output": "signal_peptide",
+      "source": "signalpeptide"
+    },
+    {
+      "output": "topology_string",
+      "source": "topology"
+    },
+    {
+      "output": "topology_source",
+      "source": "topology source"
+    },
+    {
+      "output": "almen_main_class",
+      "source": "Membranome Almen main-class"
+    },
+    {
+      "output": "almen_sub_class",
+      "source": "Membranome Almen sub-class"
+    },
+    {
+      "output": "cspa_category",
+      "source": "CSPA category"
+    },
+    {
+      "output": "cspa_peptide_count",
+      "source": "CSPA peptide count"
+    },
+    {
+      "output": "uniprot_subcellular",
+      "source": "UniProt subcellular"
+    },
+    {
+      "output": "uniprot_keywords",
+      "source": "UniProt keywords"
+    },
+    {
+      "output": "hpa_antibody",
+      "source": "HPA antibody"
+    },
+    {
+      "output": "drugbank_ids",
+      "source": "DrugBank approved drug IDs"
+    }
+  ],
+  "dataset": "surfy",
+  "derived_columns": [
+    {
+      "name": "surfy_is_surface",
+      "rule": "1 iff lower(surfy_label) == 'surface' else 0"
+    }
+  ],
+  "generated_at_utc": "2026-04-17T03:04:20.099755+00:00",
+  "outputs": {
+    "surfy_human_snapshot.tsv": {
+      "local_path": "data/processed/surfy/surfy_human_snapshot.tsv",
+      "n_rows": 20193,
+      "primary_key": "uniprot_accession",
+      "sha256": "b56161caa187d66ca34910d4d8f37a5a6ec433361a1d21caa29d112cbb6cc603",
+      "size_bytes": 7807681
+    }
+  },
+  "script": "scripts/data_processing/build_surfy.py",
+  "source": {
+    "local_path": "data/raw/table_S3_surfaceome.xlsx",
+    "sha256": "2f1b8262463ce1c59a1f945d22f0e9638cb3bfbf5aabe197f43b562a62fb055a",
+    "sheet": "SurfaceomeMasterTable",
+    "size_bytes": 6864772,
+    "url": "http://wlab.ethz.ch/surfaceome/table_S3_surfaceome.xlsx"
+  }
+}

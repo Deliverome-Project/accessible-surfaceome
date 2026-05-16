@@ -1,3 +1,85 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9a828fb21c905c3ce943af3042fccf4da7573948a92fc28bc0ec139132db0eb8
-size 3329
+{
+  "dataset": "hpa",
+  "derived_columns": [
+    {
+      "name": "hpa_pm_in_{tier}",
+      "rule": "1 iff 'Plasma membrane' appears in the HPA '{tier}' column"
+    },
+    {
+      "name": "hpa_cj_in_{tier}",
+      "rule": "1 iff 'Cell Junctions' appears in the HPA '{tier}' column"
+    },
+    {
+      "name": "hpa_pm_reliability",
+      "rule": "highest tier (enhanced > supported > approved > uncertain) where PM appears, or ''"
+    },
+    {
+      "name": "hpa_junction_reliability",
+      "rule": "highest tier where Cell Junctions appears, or ''"
+    },
+    {
+      "name": "hpa_pm_accessible",
+      "rule": "1 iff PM is in Enhanced/Supported/Approved tier"
+    },
+    {
+      "name": "hpa_junctional",
+      "rule": "1 iff Cell Junctions is in Enhanced/Supported/Approved tier"
+    },
+    {
+      "name": "hpa_secreted_only",
+      "rule": "1 iff 'Extracellular location' is non-empty AND no PM/CJ evidence at any tier; HPA 'Extracellular location' is populated only by 'Predicted to be secreted' (SignalP-based), not IF evidence"
+    },
+    {
+      "name": "hpa_trafficking_associated",
+      "rule": "1 iff any of {Vesicles, Endosomes, Lysosomes} appears in Main/Additional location"
+    },
+    {
+      "name": "hpa_surface_flag",
+      "rule": "hpa_pm_accessible OR hpa_junctional"
+    },
+    {
+      "name": "hpa_low_confidence_only",
+      "rule": "1 iff hpa_surface_flag == 0 (row is in pool but not flagged; covers secreted-only and PM/CJ-only-in-Uncertain-tier cases)"
+    },
+    {
+      "name": "hpa_split_mapping_ambiguous",
+      "rule": "1 iff the source ENSG mapped to >=2 UniProt primaries"
+    }
+  ],
+  "ensembl_xref_mapping": {
+    "local_path": "data/external/uniprot_ensembl_xrefs/ensg_to_uniprot.tsv",
+    "sha256": "f75b5af0b76ba3962da9ab147a5d73d1213af7188dd7651d354465ffbde87cbc",
+    "size_bytes": 758369
+  },
+  "excluded_from_flag": [
+    {
+      "rule": "column is entirely populated by 'Predicted to be secreted' \u2014 a SignalP-based sequence prediction, not an HPA IF observation. Rows with only this signal (hpa_secreted_only == 1) stay in pool for provenance but do NOT set hpa_surface_flag",
+      "signal": "Extracellular location"
+    },
+    {
+      "rule": "carried via hpa_trafficking_associated for downstream LLM-stage adjudication; ABCB9-class false positives where these compartments appear as the ONLY signal are excluded from the pool entirely (no PM, no CJ)",
+      "signal": "Vesicles / Endosomes / Lysosomes"
+    },
+    {
+      "rule": "inner-leaflet scaffold; not extracellularly accessible on intact cells; no pool admission",
+      "signal": "Focal adhesion sites"
+    }
+  ],
+  "generated_at_utc": "2026-04-17T20:54:58.384810+00:00",
+  "outputs": {
+    "hpa_human_snapshot.tsv": {
+      "local_path": "data/processed/hpa/hpa_human_snapshot.tsv",
+      "n_rows": 3008,
+      "primary_key": "uniprot_accession + ensembl_gene_id (ENSG retained for provenance)",
+      "sha256": "a2e4381f3f68808103eea89ecb412c9ecaff8ef86642fdace3771582c5ad6ba4",
+      "size_bytes": 438926
+    }
+  },
+  "script": "scripts/data_processing/build_hpa.py",
+  "source": {
+    "license": "CC-BY-SA-3.0",
+    "local_path": "data/external/hpa_subcellular_location/subcellular_location.tsv",
+    "sha256": "19ee031772375318e75556e43a5103cd8d919f7757094ef3fd134fba134fc095",
+    "size_bytes": 2046017
+  }
+}

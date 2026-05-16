@@ -1,3 +1,140 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:ae5b8dc570ec14fd6ccf712fee9a7740254d0076accd11b52ad96a8764c20fca
-size 6696
+{
+  "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+  "extras": {
+    "cohorts": {
+      "cyno_ortholog_one2one_highconf_non_hla": {
+        "fasta_path": "data/external/deeptmhmm_surfaceome_inputs/cyno_ortholog_one2one_highconf_non_hla.fasta",
+        "metadata_path": "data/external/deeptmhmm_surfaceome_inputs/cyno_ortholog_one2one_highconf_non_hla_metadata.csv",
+        "n_rows_metadata": 1927,
+        "n_sequences": 1921,
+        "status_counts": {
+          "no_uniprot_candidate": 6,
+          "ok": 1921
+        }
+      },
+      "human_canonical_non_hla": {
+        "fasta_path": "data/external/deeptmhmm_surfaceome_inputs/human_canonical_non_hla.fasta",
+        "metadata_path": "data/external/deeptmhmm_surfaceome_inputs/human_canonical_non_hla_metadata.csv",
+        "n_rows_metadata": 2364,
+        "n_sequences": 2359,
+        "status_counts": {
+          "error": 5,
+          "ok": 2359
+        }
+      },
+      "human_isoforms_from_afdb_non_hla": {
+        "fasta_path": "data/external/deeptmhmm_surfaceome_inputs/human_isoforms_from_afdb_non_hla.fasta",
+        "metadata_path": "data/external/deeptmhmm_surfaceome_inputs/human_isoforms_from_afdb_non_hla_metadata.csv",
+        "n_rows_metadata": 3154,
+        "n_sequences": 3150,
+        "status_counts": {
+          "error": 4,
+          "ok": 3150
+        }
+      },
+      "mouse_ortholog_one2one_highconf_non_hla": {
+        "fasta_path": "data/external/deeptmhmm_surfaceome_inputs/mouse_ortholog_one2one_highconf_non_hla.fasta",
+        "metadata_path": "data/external/deeptmhmm_surfaceome_inputs/mouse_ortholog_one2one_highconf_non_hla_metadata.csv",
+        "n_rows_metadata": 1972,
+        "n_sequences": 1971,
+        "status_counts": {
+          "no_uniprot_candidate": 1,
+          "ok": 1971
+        }
+      }
+    }
+  },
+  "generated_at_utc": "2026-03-24T16:43:39.592968+00:00",
+  "n_files": 8,
+  "records": [
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.527910+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "human_canonical_non_hla.fasta",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/human_canonical_non_hla.fasta",
+      "note": "human_canonical_non_hla FASTA",
+      "sha256": "31219b860ad6f78a3328eb4b0c2dc2dd1d72f217314bd63473f0b4477e13ec8f",
+      "size_bytes": 1872344,
+      "source_url": "https://rest.uniprot.org/uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.528729+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "human_canonical_non_hla_metadata.csv",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/human_canonical_non_hla_metadata.csv",
+      "note": "human_canonical_non_hla metadata",
+      "sha256": "e05fe6e17d692843322484d8786a24f3f41111124645d29de03ba0840bd0fa1c",
+      "size_bytes": 224111,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search + /uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.553629+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "human_isoforms_from_afdb_non_hla.fasta",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/human_isoforms_from_afdb_non_hla.fasta",
+      "note": "human_isoforms_from_afdb_non_hla FASTA",
+      "sha256": "93ba62b41e6532e7c09ed57784b7d983edf0021b8fba212712d87675f13482ab",
+      "size_bytes": 2306472,
+      "source_url": "https://rest.uniprot.org/uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.554470+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "human_isoforms_from_afdb_non_hla_metadata.csv",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/human_isoforms_from_afdb_non_hla_metadata.csv",
+      "note": "human_isoforms_from_afdb_non_hla metadata",
+      "sha256": "01aa0e4af0d7bd12960c563b407f5eaff284bb6a4cd815fc690a859eef22b70c",
+      "size_bytes": 340069,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search + /uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.573754+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "mouse_ortholog_one2one_highconf_non_hla.fasta",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/mouse_ortholog_one2one_highconf_non_hla.fasta",
+      "note": "mouse_ortholog_one2one_highconf_non_hla FASTA",
+      "sha256": "522861162bee49edc5261b0c241439eaf1f7248898c4dba6f8ce0a256ccca314",
+      "size_bytes": 1620194,
+      "source_url": "https://rest.uniprot.org/uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.574211+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "mouse_ortholog_one2one_highconf_non_hla_metadata.csv",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/mouse_ortholog_one2one_highconf_non_hla_metadata.csv",
+      "note": "mouse_ortholog_one2one_highconf_non_hla metadata",
+      "sha256": "1b999526c2d60c786815f4af64710357b69950a010585a6346af7c3a76b81e7f",
+      "size_bytes": 788996,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search + /uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.591917+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "cyno_ortholog_one2one_highconf_non_hla.fasta",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/cyno_ortholog_one2one_highconf_non_hla.fasta",
+      "note": "cyno_ortholog_one2one_highconf_non_hla FASTA",
+      "sha256": "e13618a6b094266e3418ef34768fe32b5bef7a62db816836aa469760351b6a46",
+      "size_bytes": 1557478,
+      "source_url": "https://rest.uniprot.org/uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-03-24T16:43:39.592624+00:00",
+      "dataset": "DeepTMHMM_surfaceome_sequence_sets",
+      "file_name": "cyno_ortholog_one2one_highconf_non_hla_metadata.csv",
+      "local_path": "data/external/deeptmhmm_surfaceome_inputs/cyno_ortholog_one2one_highconf_non_hla_metadata.csv",
+      "note": "cyno_ortholog_one2one_highconf_non_hla metadata",
+      "sha256": "466526ac36dcc2d3e1e4b5b90484e17ff4800df2a6d0f8c73432f160f7916901",
+      "size_bytes": 784815,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search + /uniprotkb/{accession}.fasta",
+      "status": "downloaded"
+    }
+  ],
+  "script": "scripts/data_collection/download_deeptmhmm_surfaceome_sequence_sets.py"
+}

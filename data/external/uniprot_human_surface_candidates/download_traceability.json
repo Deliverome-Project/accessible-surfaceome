@@ -1,3 +1,66 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:53db14d39b1914e00d1cbb1994a101e98089f5a5997d7c63adac41485bdbe624
-size 2535
+{
+  "dataset": "uniprot_human_surface_candidates",
+  "extras": {
+    "fetch_finished_at_utc": "2026-04-17T01:51:20.714180+00:00",
+    "fetch_started_at_utc": "2026-04-17T01:50:52.266710+00:00",
+    "n_entries_written": 4817,
+    "page_size": 500,
+    "query": "organism_id:9606 AND reviewed:true AND (cc_scl_term:\"Cell membrane\" OR cc_scl_term:\"Cell surface\" OR cc_scl_term:\"Apical cell membrane\" OR cc_scl_term:\"Basolateral cell membrane\" OR cc_scl_term:\"GPI-anchor\" OR ft_topo_dom:Extracellular)",
+    "query_mode": "any",
+    "return_fields": [
+      "accession",
+      "id",
+      "protein_name",
+      "gene_primary",
+      "gene_names",
+      "organism_id",
+      "reviewed",
+      "length",
+      "protein_existence",
+      "cc_subcellular_location",
+      "ft_topo_dom",
+      "ft_transmem",
+      "ft_signal",
+      "ft_lipid",
+      "ft_carbohyd",
+      "keyword",
+      "xref_hgnc",
+      "xref_ensembl",
+      "xref_pdb"
+    ],
+    "server_total_results": "4817",
+    "uniprot_release": "2026_01",
+    "uniprot_release_date": "28-January-2026"
+  },
+  "generated_at_utc": "2026-04-17T01:51:20.714182+00:00",
+  "n_files": 2,
+  "records": [
+    {
+      "captured_at_utc": "2026-04-17T01:51:20.713314+00:00",
+      "dataset": "uniprot_human_surface_candidates",
+      "file_name": "uniprot_human_surface_candidates.jsonl.gz",
+      "local_path": "data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.jsonl.gz",
+      "note": "Full UniProt JSON entries (gzip-compacted JSONL).",
+      "sha256": "b76709f03f70f4d02a57ccb193f1cbc86d44fdeb693961c52eca556e75cb8e3f",
+      "size_bytes": 2173326,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search",
+      "species": "Homo sapiens",
+      "status": "downloaded",
+      "taxid": "9606"
+    },
+    {
+      "captured_at_utc": "2026-04-17T01:51:20.714164+00:00",
+      "dataset": "uniprot_human_surface_candidates",
+      "file_name": "uniprot_human_surface_candidates.tsv",
+      "local_path": "data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.tsv",
+      "note": "Flat TSV summary derived from the JSONL payload.",
+      "sha256": "b958c4c0681094e0d1b36bdf8e0616169909875b5b5c913852de740126297ce7",
+      "size_bytes": 2334196,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search",
+      "species": "Homo sapiens",
+      "status": "derived",
+      "taxid": "9606"
+    }
+  ],
+  "script": "/Users/msmallegan/code/deliverome/scripts/data_collection/download_uniprot_human_surface_candidates.py"
+}

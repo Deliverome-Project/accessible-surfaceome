@@ -1,3 +1,79 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:00261b89b45f1a7a8a6424fa3d7b648660240c00e5b2bfa81e434dff9ef465b8
-size 3335
+{
+  "dataset": "jensenlab_compartments",
+  "derived_columns": [
+    {
+      "name": "compartments_surface_flag",
+      "rule": "max(experiments_stars_max [HPA rows dropped], textmining_stars_max) >= 3"
+    },
+    {
+      "name": "compartments_low_confidence_only",
+      "rule": "experiments_stars_max == 0 AND textmining_stars_max in [1, 2]"
+    },
+    {
+      "name": "compartments_split_mapping_ambiguous",
+      "rule": "1 iff the source ENSP mapped to >=2 UniProt primaries"
+    }
+  ],
+  "ensembl_xref_mapping": {
+    "local_path": "data/external/uniprot_ensembl_xrefs/ensp_to_uniprot.tsv",
+    "sha256": "273f1c929bc7984df78322c7c8df065b8be7be8efb3f92a6bea54b0bf8571b8e",
+    "size_bytes": 1764664
+  },
+  "excluded_evidence": [
+    {
+      "channel": "experiments",
+      "rule": "rows where source == 'HPA' are dropped to avoid double-counting the first-class HPA source"
+    },
+    {
+      "channel": "knowledge",
+      "rule": "knowledge stars max is carried as provenance but does NOT contribute to compartments_surface_flag \u2014 the knowledge channel re-ingests GO and UniProt-SubCell, and would triple-count GO evidence in the merge"
+    },
+    {
+      "channel": "predictions",
+      "rule": "predictions stars max is carried as provenance but does NOT contribute to compartments_surface_flag \u2014 the predictions channel wraps WoLF PSORT + YLoc, sequence-based predictors in the same family as SURFY and DeepTMHMM which are already first-class sources. Including it would triple-count ML-predictor evidence."
+    }
+  ],
+  "generated_at_utc": "2026-05-05T20:57:08.291964+00:00",
+  "outputs": {
+    "jensenlab_compartments_human_snapshot.tsv": {
+      "local_path": "data/processed/jensenlab_compartments/jensenlab_compartments_human_snapshot.tsv",
+      "n_rows": 1964,
+      "primary_key": "uniprot_accession + ensembl_protein_id",
+      "sha256": "3363036048d8d543748df1d472e5dc8341dc811f55b6de0a062aa249a3a48b2d",
+      "size_bytes": 158125
+    }
+  },
+  "script": "src/accessible_surfaceome/sources/compartments.py",
+  "source_channels": {
+    "experiments": {
+      "local_path": "data/external/jensenlab_compartments/human_compartment_experiments_full.tsv",
+      "sha256": "6ce5142afdebe226ff2979ff5dd7c5b98c8ce97cb318eb4ec1a80c3c2509e526",
+      "size_bytes": 8631519
+    },
+    "integrated": {
+      "local_path": "data/external/jensenlab_compartments/human_compartment_integrated_full.tsv",
+      "sha256": "820df3762a0704601b6617890836cdb4fa83dc55f9133bef284b15a540355f50",
+      "size_bytes": 302430616
+    },
+    "knowledge": {
+      "local_path": "data/external/jensenlab_compartments/human_compartment_knowledge_full.tsv",
+      "sha256": "f489284ce64874c39be053afbecf0f28e151d3cff7eafc2c4cf250d205d040bd",
+      "size_bytes": 65844141
+    },
+    "predictions": {
+      "local_path": "data/external/jensenlab_compartments/human_compartment_predictions_full.tsv",
+      "sha256": "0fc7e3f31eaf72dad621fb41df6702700895b116e415152f65bbf61de02fbe03",
+      "size_bytes": 25602200
+    },
+    "textmining": {
+      "local_path": "data/external/jensenlab_compartments/human_compartment_textmining_full.tsv",
+      "sha256": "57d10e646c7ad728632dfc3d319b07b283ff5692ea54de361395699d86e5a6d7",
+      "size_bytes": 7334435
+    }
+  },
+  "surface_terms": [
+    "GO:0005887",
+    "GO:0009897",
+    "GO:0009986"
+  ]
+}

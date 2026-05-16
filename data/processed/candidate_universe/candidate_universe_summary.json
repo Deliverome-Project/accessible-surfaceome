@@ -1,3 +1,254 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:80a9689160047b74090d3cc796074a756b698811f03ba3f0deda234def589f75
-size 5606
+{
+  "accession_normalization": [
+    {
+      "deleted_rows_dropped": 0,
+      "input_rows": 3175,
+      "output_rows": 3175,
+      "secondary_rows_rewritten": 0,
+      "source": "uniprot",
+      "split_duplications": 0
+    },
+    {
+      "deleted_rows_dropped": 1,
+      "input_rows": 2557,
+      "output_rows": 2556,
+      "secondary_rows_rewritten": 0,
+      "source": "go",
+      "split_duplications": 0
+    },
+    {
+      "deleted_rows_dropped": 3,
+      "input_rows": 2886,
+      "output_rows": 2808,
+      "secondary_rows_rewritten": 83,
+      "source": "surfy",
+      "split_duplications": 4
+    },
+    {
+      "deleted_rows_dropped": 2,
+      "input_rows": 1500,
+      "output_rows": 1454,
+      "secondary_rows_rewritten": 46,
+      "source": "cspa",
+      "split_duplications": 1
+    },
+    {
+      "deleted_rows_dropped": 0,
+      "input_rows": 2360,
+      "output_rows": 2360,
+      "secondary_rows_rewritten": 0,
+      "source": "deeptmhmm",
+      "split_duplications": 0
+    },
+    {
+      "deleted_rows_dropped": 0,
+      "input_rows": 3004,
+      "output_rows": 3004,
+      "secondary_rows_rewritten": 0,
+      "source": "hpa",
+      "split_duplications": 0
+    },
+    {
+      "deleted_rows_dropped": 0,
+      "input_rows": 1963,
+      "output_rows": 1963,
+      "secondary_rows_rewritten": 0,
+      "source": "compartments",
+      "split_duplications": 0
+    }
+  ],
+  "agreement_counts": {
+    "0_of_5": 0,
+    "1_of_5": 2474,
+    "2_of_5": 1624,
+    "3_of_5": 923,
+    "4_of_5": 471,
+    "5_of_5": 188
+  },
+  "auxiliary_sources": [
+    "deeptmhmm",
+    "compartments"
+  ],
+  "gating_sources": [
+    "uniprot",
+    "go",
+    "surfy",
+    "cspa",
+    "hpa"
+  ],
+  "gene_symbol_resolution": {
+    "n_ambiguous": 5,
+    "n_exact": 7261,
+    "n_normalized_alias": 96,
+    "n_normalized_previous": 0,
+    "n_not_found": 4,
+    "n_query_symbols": 7366
+  },
+  "generated_at_utc": "2026-05-07T14:41:26.358032+00:00",
+  "n_compartments_supported": 148,
+  "n_compartments_unique": 0,
+  "n_gating_sources": 5,
+  "n_in_db_union": 5680,
+  "n_ml_only_edge_cases": 0,
+  "n_rows_total": 5680,
+  "n_with_all_5_gating_sources": 188,
+  "n_zero_support_rows_excluded": 1704,
+  "pairwise_overlap": {
+    "cspa__compartments": {
+      "jaccard": 0.07010785824345146,
+      "n_a": 1241,
+      "n_b": 148,
+      "n_intersect": 91,
+      "n_union": 1298
+    },
+    "cspa__deeptmhmm": {
+      "jaccard": 0.32427258805513015,
+      "n_a": 1241,
+      "n_b": 2218,
+      "n_intersect": 847,
+      "n_union": 2612
+    },
+    "cspa__hpa": {
+      "jaccard": 0.1179245283018868,
+      "n_a": 1241,
+      "n_b": 2077,
+      "n_intersect": 350,
+      "n_union": 2968
+    },
+    "deeptmhmm__compartments": {
+      "jaccard": 0.045053003533568906,
+      "n_a": 2218,
+      "n_b": 148,
+      "n_intersect": 102,
+      "n_union": 2264
+    },
+    "go__compartments": {
+      "jaccard": 0.0595703125,
+      "n_a": 2022,
+      "n_b": 148,
+      "n_intersect": 122,
+      "n_union": 2048
+    },
+    "go__cspa": {
+      "jaccard": 0.1779783393501805,
+      "n_a": 2022,
+      "n_b": 1241,
+      "n_intersect": 493,
+      "n_union": 2770
+    },
+    "go__deeptmhmm": {
+      "jaccard": 0.2709832134292566,
+      "n_a": 2022,
+      "n_b": 2218,
+      "n_intersect": 904,
+      "n_union": 3336
+    },
+    "go__hpa": {
+      "jaccard": 0.16086094590767488,
+      "n_a": 2022,
+      "n_b": 2077,
+      "n_intersect": 568,
+      "n_union": 3531
+    },
+    "go__surfy": {
+      "jaccard": 0.26065359477124184,
+      "n_a": 2022,
+      "n_b": 2800,
+      "n_intersect": 997,
+      "n_union": 3825
+    },
+    "hpa__compartments": {
+      "jaccard": 0.02581834946980175,
+      "n_a": 2077,
+      "n_b": 148,
+      "n_intersect": 56,
+      "n_union": 2169
+    },
+    "hpa__deeptmhmm": {
+      "jaccard": 0.16902558519324987,
+      "n_a": 2077,
+      "n_b": 2218,
+      "n_intersect": 621,
+      "n_union": 3674
+    },
+    "surfy__compartments": {
+      "jaccard": 0.038393800634026067,
+      "n_a": 2800,
+      "n_b": 148,
+      "n_intersect": 109,
+      "n_union": 2839
+    },
+    "surfy__cspa": {
+      "jaccard": 0.28653295128939826,
+      "n_a": 2800,
+      "n_b": 1241,
+      "n_intersect": 900,
+      "n_union": 3141
+    },
+    "surfy__deeptmhmm": {
+      "jaccard": 0.7788018433179723,
+      "n_a": 2800,
+      "n_b": 2218,
+      "n_intersect": 2197,
+      "n_union": 2821
+    },
+    "surfy__hpa": {
+      "jaccard": 0.1573327005220693,
+      "n_a": 2800,
+      "n_b": 2077,
+      "n_intersect": 663,
+      "n_union": 4214
+    },
+    "uniprot__compartments": {
+      "jaccard": 0.03584788029925187,
+      "n_a": 3175,
+      "n_b": 148,
+      "n_intersect": 115,
+      "n_union": 3208
+    },
+    "uniprot__cspa": {
+      "jaccard": 0.2229299363057325,
+      "n_a": 3175,
+      "n_b": 1241,
+      "n_intersect": 805,
+      "n_union": 3611
+    },
+    "uniprot__deeptmhmm": {
+      "jaccard": 0.5582201675816238,
+      "n_a": 3175,
+      "n_b": 2218,
+      "n_intersect": 1932,
+      "n_union": 3461
+    },
+    "uniprot__go": {
+      "jaccard": 0.29310773824334413,
+      "n_a": 3175,
+      "n_b": 2022,
+      "n_intersect": 1178,
+      "n_union": 4019
+    },
+    "uniprot__hpa": {
+      "jaccard": 0.1663335554075061,
+      "n_a": 3175,
+      "n_b": 2077,
+      "n_intersect": 749,
+      "n_union": 4503
+    },
+    "uniprot__surfy": {
+      "jaccard": 0.6694607432243643,
+      "n_a": 3175,
+      "n_b": 2800,
+      "n_intersect": 2396,
+      "n_union": 3579
+    }
+  },
+  "per_source_counts": {
+    "compartments": 148,
+    "cspa": 1241,
+    "deeptmhmm": 2218,
+    "go": 2022,
+    "hpa": 2077,
+    "surfy": 2800,
+    "uniprot": 3175
+  }
+}

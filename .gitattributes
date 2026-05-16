@@ -17,9 +17,23 @@ data/analysis/figures/*.md -filter -diff -merge text
 # directly means PR reviewers see the rendered artifacts inline
 # (LFS pointers render as text blobs in GitHub's diff view), and
 # raw.githubusercontent.com URLs embedded in PNG/PDF metadata
-# resolve to the actual bytes instead of an LFS pointer.
-data/analysis/figures/*.pdf -filter -diff -merge
-data/analysis/figures/*.png -filter -diff -merge
+# resolve to the actual bytes instead of an LFS pointer. The
+# `data/analysis/**` pattern catches per-analysis figure dirs
+# (opentargets_vs_m1, candidate_universe_agreement, etc.) too —
+# largest such file today is ~310 KB.
+data/analysis/**/*.pdf  -filter -diff -merge
+data/analysis/**/*.png  -filter -diff -merge
+data/analysis/**/*.jpeg -filter -diff -merge
+
+# Build / run metadata JSONs ship as plain git so PR diffs surface
+# changes to provenance + summary stats (LFS-pointer renders as a
+# ~130-byte text blob, hiding what actually changed). Each file is
+# <10 KB, total ~150 KB across ~35 files.
+**/*_summary.json    -filter -diff -merge text
+**/*.summary.json    -filter -diff -merge text
+**/*_traceability.json -filter -diff -merge text
+**/*_metadata.json   -filter -diff -merge text
+**/metadata.json     -filter -diff -merge text
 
 # Small reference TSVs that ship as plain git so a fresh `git clone`
 # can run the genome-wide sweeps without an LFS-hydration step. The

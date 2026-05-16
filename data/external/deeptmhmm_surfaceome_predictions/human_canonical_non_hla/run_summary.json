@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:9b9565daf2b482d22874b40916d8872863ac3d1154129dbbe0dff906b4496c31
-size 886
+{
+  "batch_metadata_csv": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/human_canonical_non_hla/batch_metadata.csv",
+  "cohort": "human_canonical_non_hla",
+  "generated_at_utc": "2026-03-25T00:11:41.548595+00:00",
+  "input_fasta": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_inputs/human_canonical_non_hla.fasta",
+  "log_path": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/logs/human_canonical_non_hla.log",
+  "max_sequences_per_batch": 250,
+  "merged_topologies_path": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/human_canonical_non_hla/predicted_topologies.3line",
+  "n_batches": 10,
+  "n_input_sequences": 2359,
+  "n_merged_topology_records": 2359
+}

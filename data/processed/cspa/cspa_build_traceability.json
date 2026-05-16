@@ -1,3 +1,49 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d92dc62c6c45328fb65d929f6f4457ab49de1681446f5c213ec33f65dcd13076
-size 1501
+{
+  "dataset": "cspa",
+  "derived_columns": [
+    {
+      "name": "cspa_is_detected",
+      "rule": "1 for all rows (presence in Table_A)"
+    },
+    {
+      "name": "cspa_is_high_confidence",
+      "rule": "1 iff 'high confidence' in cspa_category"
+    },
+    {
+      "name": "cspa_is_putative",
+      "rule": "1 iff 'putative' in cspa_category"
+    },
+    {
+      "name": "cspa_is_unspecific",
+      "rule": "1 iff 'unspecific' in cspa_category"
+    }
+  ],
+  "generated_at_utc": "2026-04-17T03:05:39.992230+00:00",
+  "outputs": {
+    "cspa_human_snapshot.tsv": {
+      "local_path": "data/processed/cspa/cspa_human_snapshot.tsv",
+      "n_rows": 1500,
+      "primary_key": "uniprot_accession",
+      "sha256": "40643f92af9ce4af2427b95cc846da979efb89620d63599657ae0d8bc1d83faf",
+      "size_bytes": 114234
+    },
+    "cspa_mouse_snapshot.tsv": {
+      "local_path": "data/processed/cspa/cspa_mouse_snapshot.tsv",
+      "n_rows": 1297,
+      "primary_key": "uniprot_accession",
+      "sha256": "1fa5239001f14ca0fbdf56507e26dccbda635d6560bafab3f7f2643ad91e48d0",
+      "size_bytes": 69614
+    }
+  },
+  "script": "scripts/data_processing/build_cspa.py",
+  "source": {
+    "local_path": "data/raw/S1_File.xlsx",
+    "sha256": "7502646155bf3f17e8c9b2a1edfbe9f27a169f83534baebe8d4c2e9a7206bf5a",
+    "sheets_used": [
+      "Table_A",
+      "Table_B"
+    ],
+    "size_bytes": 2721208,
+    "url": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0121314.s002&type=supplementary"
+  }
+}

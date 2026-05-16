@@ -1,3 +1,18 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fb92b2ee6eb6457346591909e3a386287f5bd6bc93d7bd69bc2fcd8447ed54a4
-size 575
+{
+  "generated_at_utc": "2026-04-17T03:04:20.099551+00:00",
+  "n_cspa_high_confidence": 968,
+  "n_rows": 20193,
+  "n_rows_with_gene_symbol": 19917,
+  "n_surface": 2886,
+  "n_unique_accession": 20193,
+  "sheet": "SurfaceomeMasterTable",
+  "source_file": "data/raw/table_S3_surfaceome.xlsx",
+  "source_sha256": "2f1b8262463ce1c59a1f945d22f0e9638cb3bfbf5aabe197f43b562a62fb055a",
+  "source_size_bytes": 6864772,
+  "source_url": "http://wlab.ethz.ch/surfaceome/table_S3_surfaceome.xlsx",
+  "surfy_label_counts": {
+    "": 15091,
+    "nonsurface": 2216,
+    "surface": 2886
+  }
+}

@@ -1,3 +1,113 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7683c52e89690a7d155f2ed32d1f69ff6df5b8e9e845606ad3ff8df2f186cd3b
-size 9856
+{
+  "dataset": "candidate_universe",
+  "flag_rules": {
+    "<source>_split_mapping_ambiguous": "1 iff the source's row for this primary arrived only via an accession-history split (one historical accession -> multiple current primaries) or, for HPA/compartments, via an ambiguous ENSG/ENSP -> UniProt mapping. Evidence may apply to at most one of the derived primaries; excluded from the per-source surface flag to avoid inflating agreement until manually resolved.",
+    "compartments_corroborated": "1 iff at least one of the five gating sources has independently flagged the protein as surface \u2014 i.e. uniprot_surface_flag OR go_surface_flag OR surfy_surface_flag OR cspa_surface_flag OR hpa_surface_flag equals 1. DeepTMHMM (also auxiliary in this milestone) is intentionally excluded from the corroborator set: an auxiliary source must not rescue another auxiliary source. Each gating source's own surface-flag rule encodes its 'this protein is membrane-accessible' predicate (go_surface_flag excludes pure-IEA, hpa_surface_flag requires PM/junctional at Enhanced/Supported/Approved tier, cspa_surface_flag requires high-confidence/putative, etc.), so requiring a gating source to have passed its own surface-flag bar is the correct corroboration threshold for therapeutic-delivery purposes. Looser predicates (raw pool membership, GO-IEA-only, HPA-Uncertain-tier) were tried and leaked false positives on cytokines / transcription factors / secreted proteins. Gates compartments_surface_flag.",
+    "compartments_surface_flag": "1 iff max(compartments_experiments_stars_max, compartments_textmining_stars_max) >= 3 over the surface GO terms {GO:0005886, GO:0009986, GO:0031225, GO:0005887} AND compartments_split_mapping_ambiguous == 0 AND compartments_corroborated == 1. Corroboration requires at least one of the five gating sources (uniprot, go, surfy, cspa, hpa) to have independently set its OWN surface_flag == 1 \u2014 see the compartments_corroborated entry for details. COMPARTMENTS is auxiliary in this milestone: its flag is emitted on every universe row but does not contribute to in_db_union, n_sources_surface, or the k-of-5 agreement count. Rationale: the JensenLab tagger's dictionary-based NER over Medline picks up literature co-occurrences with 'plasma membrane' for many contextually-mentioned non-surface proteins (TP53, MYC, ALB, INS, IFNG, IL1B, IL13, IL17A, NGF, FGF4, FGF8, BCL2, NFE2L2 etc.) that are not therapeutic-delivery targets. Requiring another gating source to have passed its own surface-flag bar is the tightest available corroboration and prevents these lone-textmining calls from entering the universe; looser predicates (raw pool membership, GO-IEA-only, HPA-Uncertain-tier) were tried and leaked false positives. Three of the four COMPARTMENTS channels are carried as provenance only: (a) knowledge re-ingests GO + UniProt-SubCell (would triple-count existing first-class GO evidence); (b) predictions wraps WoLF PSORT + YLoc, sequence-based predictors in the same family as SURFY + DeepTMHMM (would triple-count ML-predictor evidence; empirically drives ~73%% of pre-filter hits); (c) experiments rows with source == 'HPA' are dropped upstream to avoid double-counting first-class HPA IF evidence. See docs/reports/2026-04-17-jensenlab-compartments-integration.md.",
+    "cspa_mixed_category_conflict": "1 iff 2+ distinct CSPA categories were observed across pre-collapse rows that reconciled to the same current primary (headline cspa_category uses priority: high > putative > unspecific > blank; full pre-collapse evidence preserved in cspa_any_*_precollapse)",
+    "cspa_surface_flag": "1 iff cspa_any_high_confidence_precollapse == 1 OR cspa_any_putative_precollapse == 1 (boolean-OR of pre-collapse evidence; unspecific and blank-category detections stay with flag=0 for provenance) AND cspa_split_mapping_ambiguous == 0",
+    "deeptmhmm_surface_flag": "1 iff any DeepTMHMM cohort row has predicted_surface_membrane == 1 (label in {TM, SP+TM}; BETA excluded \u2014 human beta-barrels are mitochondrial outer membrane, not plasma-membrane) AND deeptmhmm_split_mapping_ambiguous == 0",
+    "go_surface_flag": "1 iff NOT go_low_confidence_only (i.e., has_experimental OR has_curated OR has_sequence; pure-IEA rows kept for provenance but do not count) AND go_split_mapping_ambiguous == 0",
+    "hpa_surface_flag": "1 iff (hpa_pm_accessible == 1 OR hpa_junctional == 1) AND hpa_split_mapping_ambiguous == 0. hpa_pm_accessible = 'Plasma membrane' appears in Enhanced / Supported / Approved tier (per-tier-specific reliability, NOT gene-wide Reliability \u2014 avoids overcalls where the gene's strong localization is nuclear/cytosolic while the PM call lands in Uncertain). hpa_junctional = 'Cell Junctions' appears in Enhanced / Supported / Approved tier (admits ADC-accessible epithelial junction proteins: cadherins, claudins, JAM, occludin, desmosomal cadherins). HPA's 'Extracellular location' column is populated entirely by 'Predicted to be secreted' (SignalP-based sequence prediction, not IF evidence) and does NOT contribute to the flag; secreted-only rows stay in the pool with hpa_secreted_only = 1 for provenance. Vesicles/Endosomes/Lysosomes are surfaced via hpa_trafficking_associated (provenance only; never a pool-admission signal on their own \u2014 that would reintroduce ABCB9-class false positives). See docs/reports/2026-04-17-hpa-therapeutic-delivery-refinement.md.",
+    "split_mapping_ambiguous_any_source": "1 iff any of the per-source split_mapping_ambiguous flags is set for this primary.",
+    "surfy_surface_flag": "1 iff surfy_is_surface == 1 (label == 'surface') AND surfy_split_mapping_ambiguous == 0",
+    "uniprot_surface_flag": "1 iff accession present in UniProt surface-candidate snapshot AND uniprot_split_mapping_ambiguous == 0"
+  },
+  "gene_symbol_resolution": {
+    "fallback": "none",
+    "fields": "symbol,alias,prev_symbol",
+    "method": "MyGene querymany over merged-symbol universe",
+    "scopes": "symbol,alias,prev_symbol",
+    "species": "human",
+    "stats": {
+      "n_ambiguous": 5,
+      "n_exact": 7261,
+      "n_normalized_alias": 96,
+      "n_normalized_previous": 0,
+      "n_not_found": 4,
+      "n_query_symbols": 7366
+    }
+  },
+  "generated_at_utc": "2026-05-07T14:41:26.358534+00:00",
+  "outputs": {
+    "candidate_universe.tsv": {
+      "filter": "in_db_union == 1 (at least one of uniprot/go/surfy/cspa/hpa flags surface; DeepTMHMM and COMPARTMENTS evidence is emitted on each row but does not contribute to universe membership)",
+      "local_path": "data/processed/candidate_universe/candidate_universe.tsv",
+      "n_rows": 5680,
+      "primary_key": "uniprot_accession",
+      "sha256": "2406464f3f86680e76844fe07e9aa32e5550960bc9fa5573137bb31c15ea3ef2",
+      "size_bytes": 1408119
+    },
+    "candidate_universe_zero_support.tsv": {
+      "filter": "in_db_union == 0 (accession present in a raw source but filtered out of every gating positive-flag rule, including ml_only_edge_case = DeepTMHMM-only rows and COMPARTMENTS-only-uncorroborated rows \u2014 retained for traceability only)",
+      "local_path": "data/processed/candidate_universe/candidate_universe_zero_support.tsv",
+      "n_rows": 1704,
+      "primary_key": "uniprot_accession",
+      "sha256": "fc5f2a035bfb8cb6323d9e4b7d527e2148b08122947d200a1ec2c8dae0af1465",
+      "size_bytes": 377472
+    }
+  },
+  "script": "src/accessible_surfaceome/merge/__init__.py",
+  "sources": [
+    {
+      "label": "uniprot",
+      "local_path": "data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.tsv",
+      "sha256": "b958c4c0681094e0d1b36bdf8e0616169909875b5b5c913852de740126297ce7",
+      "size_bytes": 2334196
+    },
+    {
+      "label": "go",
+      "local_path": "data/external/go_human_surface_annotations/go_human_surface_annotations_by_gene_product.tsv",
+      "sha256": "1253251c5e7514e9b6f924318e30dc4dd80d7f0ea3fbdb81ac0671116a09a05c",
+      "size_bytes": 366354
+    },
+    {
+      "label": "surfy",
+      "local_path": "data/processed/surfy/surfy_human_snapshot.tsv",
+      "sha256": "b56161caa187d66ca34910d4d8f37a5a6ec433361a1d21caa29d112cbb6cc603",
+      "size_bytes": 7807681
+    },
+    {
+      "label": "cspa",
+      "local_path": "data/processed/cspa/cspa_human_snapshot.tsv",
+      "sha256": "40643f92af9ce4af2427b95cc846da979efb89620d63599657ae0d8bc1d83faf",
+      "size_bytes": 114234
+    },
+    {
+      "label": "deeptmhmm_human_canonical",
+      "local_path": "data/processed/deeptmhmm/deeptmhmm_human_canonical.tsv",
+      "sha256": "10d905f453b3b98d1256e71b280d3b271126829d3571ad575beed5974864d39a",
+      "size_bytes": 139719
+    },
+    {
+      "label": "deeptmhmm_human_isoforms",
+      "local_path": "data/processed/deeptmhmm/deeptmhmm_human_isoforms.tsv",
+      "sha256": "e3bbcb3439802413b54e1b9724b89c576fa472a814f6f979fcb379c387ec5a94",
+      "size_bytes": 191651
+    },
+    {
+      "label": "hpa",
+      "local_path": "data/processed/hpa/hpa_human_snapshot.tsv",
+      "sha256": "a2e4381f3f68808103eea89ecb412c9ecaff8ef86642fdace3771582c5ad6ba4",
+      "size_bytes": 438926
+    },
+    {
+      "label": "jensenlab_compartments",
+      "local_path": "data/processed/jensenlab_compartments/jensenlab_compartments_human_snapshot.tsv",
+      "sha256": "3363036048d8d543748df1d472e5dc8341dc811f55b6de0a062aa249a3a48b2d",
+      "size_bytes": 158125
+    },
+    {
+      "label": "uniprot_sec_ac",
+      "local_path": "data/external/uniprot_accession_history/sec_ac.txt",
+      "sha256": "7ccf03fe34216fbe643ce991bb53c0890eaf654ba0aad26323ab3e9d06b6193a",
+      "size_bytes": 60521766
+    },
+    {
+      "label": "uniprot_delac_sp",
+      "local_path": "data/external/uniprot_accession_history/delac_sp.txt",
+      "sha256": "21e0e158c106d48699e670cb3d69e5b1b9be06fedfdf488884fe34a4eae8b64b",
+      "size_bytes": 14711
+    }
+  ]
+}
