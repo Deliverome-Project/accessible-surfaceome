@@ -165,6 +165,57 @@ STATEMENTS: list[tuple[str, str]] = [
         )
         """,
     ),
+    (
+        "compara_ortholog_ecd",
+        """
+        CREATE TABLE IF NOT EXISTS compara_ortholog_ecd (
+            ortholog_ecd_version     TEXT NOT NULL,
+            human_hgnc_id            TEXT NOT NULL,
+            human_uniprot_acc        TEXT,
+            human_ensembl_gene       TEXT,
+            human_gene_symbol        TEXT,
+            species                  TEXT NOT NULL,
+            ortholog_uniprot_acc     TEXT NOT NULL,
+            ortholog_ensembl_gene    TEXT,
+            ortholog_gene_symbol     TEXT,
+            biomart_percent_identity REAL,
+            ecd_pct_identity         REAL,
+            n_ecd_loops_compared     INTEGER,
+            compara_release          TEXT NOT NULL,
+            synced_at                TEXT NOT NULL DEFAULT (datetime('now')),
+            PRIMARY KEY (ortholog_ecd_version, human_hgnc_id, species, ortholog_uniprot_acc)
+        )
+        """,
+    ),
+    (
+        "idx_compara_ortholog_ecd_human_hgnc",
+        "CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_human_hgnc "
+        "ON compara_ortholog_ecd (human_hgnc_id)",
+    ),
+    (
+        "idx_compara_ortholog_ecd_species",
+        "CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_species "
+        "ON compara_ortholog_ecd (species)",
+    ),
+    (
+        "idx_compara_ortholog_ecd_ortholog_uniprot",
+        "CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_ortholog_uniprot "
+        "ON compara_ortholog_ecd (ortholog_uniprot_acc)",
+    ),
+    (
+        "compara_ortholog_ecd_release",
+        """
+        CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
+            ortholog_ecd_version TEXT PRIMARY KEY,
+            compara_release      TEXT NOT NULL,
+            n_pairs              INTEGER NOT NULL,
+            n_human_genes        INTEGER NOT NULL,
+            n_species            INTEGER NOT NULL,
+            computed_at          TEXT NOT NULL DEFAULT (datetime('now')),
+            notes                TEXT
+        )
+        """,
+    ),
 ]
 
 

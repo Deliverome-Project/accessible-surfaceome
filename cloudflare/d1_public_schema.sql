@@ -414,3 +414,56 @@ CREATE TABLE IF NOT EXISTS compara_paralog_release (
     source_url         TEXT,
     notes              TEXT
 );
+
+
+-- ---------------------------------------------------------------------------
+-- compara_ortholog_ecd — locally-computed per-loop ECD identity between
+-- a human canonical and its mouse/cyno one2one ortholog.
+--
+-- compara_ortholog (the BioMart row) gives us full-length percent_identity,
+-- which is biased AGAINST surface proteins — TM + cytoplasmic regions
+-- diverge faster than ECDs. This table carries the per-loop BLOSUM62
+-- length-weighted ECD identity computed against the DeepTMHMM topology
+-- of both proteins (see merge/paralog_ecd_identity.py — same algorithm,
+-- different input pair).
+--
+-- One row per (ortholog_ecd_version, human_hgnc_id, species,
+-- ortholog_uniprot_acc). species column is denormalized so consumers can
+-- filter without joining compara_ortholog.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS compara_ortholog_ecd (
+    ortholog_ecd_version     TEXT NOT NULL,
+    human_hgnc_id            TEXT NOT NULL,             -- stable join into gene_identifier_public
+    human_uniprot_acc        TEXT,
+    human_ensembl_gene       TEXT,
+    human_gene_symbol        TEXT,
+    species                  TEXT NOT NULL,             -- mouse | cynomolgus
+    ortholog_uniprot_acc     TEXT NOT NULL,
+    ortholog_ensembl_gene    TEXT,
+    ortholog_gene_symbol     TEXT,
+    biomart_percent_identity REAL,                      -- full-length, from compara_ortholog
+    ecd_pct_identity         REAL,                      -- per-loop BLOSUM62; NULL when no ECD
+    n_ecd_loops_compared     INTEGER,
+    compara_release          TEXT NOT NULL,             -- e.g. 'ensembl_compara_2026_05_12'
+    synced_at                TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (ortholog_ecd_version, human_hgnc_id, species, ortholog_uniprot_acc)
+);
+
+CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_human_hgnc
+    ON compara_ortholog_ecd (human_hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_species
+    ON compara_ortholog_ecd (species);
+CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_ortholog_uniprot
+    ON compara_ortholog_ecd (ortholog_uniprot_acc);
+
+
+CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
+    ortholog_ecd_version TEXT PRIMARY KEY,
+    compara_release      TEXT NOT NULL,
+    n_pairs              INTEGER NOT NULL,
+    n_human_genes        INTEGER NOT NULL,
+    n_species            INTEGER NOT NULL,
+    computed_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    notes                TEXT
+);

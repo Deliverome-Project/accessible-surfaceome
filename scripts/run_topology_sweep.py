@@ -940,6 +940,122 @@ def compute_paralog_records(
     return out
 
 
+def compute_ortholog_ecd_records(
+    *,
+    candidates: list[Candidate],
+    cohort_jsonl_paths: dict[str, Path],
+    ortholog_human_hgnc_maps: dict[str, dict[str, str]],
+    ortholog_ecd_version: str,
+    compara_release: str,
+) -> list[dict[str, Any]]:
+    """Compute per-loop BLOSUM62 ECD identity between each human canonical
+    and its mouse/cyno one2one ortholog.
+
+    Mirrors ``compute_paralog_records`` — same per-loop alignment algorithm,
+    same length-weighted aggregation. Input here is the cross-species join
+    rather than the within-species paralog pairs:
+
+      * human topology+sequence from cohort_jsonl_paths['human_canonical']
+        (keyed by uniprot_acc)
+      * ortholog topology+sequence from cohort_jsonl_paths[<ortholog_cohort>]
+        (keyed by uniprot_acc)
+      * ortholog→human mapping from ``ortholog_human_hgnc_maps`` (the
+        same dict the parser uses to stamp hgnc_id on ortholog topology rows)
+
+    Returns one row per (human_hgnc_id, species, ortholog_uniprot_acc). The
+    biomart_percent_identity column is left NULL here — that value lives
+    in the existing ``compara_ortholog`` row and can be joined on
+    (species, human_ensembl_gene, ortholog_ensembl_gene) at query time.
+    Storing it here would duplicate Compara state without adding info.
+    """
+    from accessible_surfaceome.merge.paralog_ecd_identity import compute_ecd_identity
+
+    # Build human topology index keyed by uniprot_acc.
+    human_topo: dict[str, dict[str, Any]] = {}
+    human_jsonl = cohort_jsonl_paths.get("human_canonical")
+    if human_jsonl is None or not human_jsonl.exists():
+        logger.warning("human_canonical JSONL missing — ortholog ECD = no rows")
+        return []
+    # Also index by hgnc_id for the human-side metadata (uniprot_acc, ensembl_gene)
+    human_topo_by_hgnc: dict[str, dict[str, Any]] = {}
+    with human_jsonl.open() as f:
+        for line in f:
+            rec = json.loads(line)
+            human_topo[rec["uniprot_accession"]] = rec
+            if rec.get("hgnc_id"):
+                human_topo_by_hgnc[rec["hgnc_id"]] = rec
+
+    # candidate hgnc_id → ensembl_gene + uniprot_acc (for output denormalization)
+    cand_by_hgnc: dict[str, Candidate] = {c.hgnc_id: c for c in candidates}
+
+    out: list[dict[str, Any]] = []
+    for ortholog_cohort, hgnc_map in ortholog_human_hgnc_maps.items():
+        if not hgnc_map:
+            continue
+        species = SPECIES_BY_COHORT[ortholog_cohort]  # 'mouse' or 'cynomolgus'
+        ortholog_jsonl = cohort_jsonl_paths.get(ortholog_cohort)
+        if ortholog_jsonl is None or not ortholog_jsonl.exists():
+            logger.warning("%s JSONL missing — skipping for ECD", ortholog_cohort)
+            continue
+        # Build ortholog topology index keyed by uniprot_acc.
+        ortho_topo: dict[str, dict[str, Any]] = {}
+        with ortholog_jsonl.open() as f:
+            for line in f:
+                rec = json.loads(line)
+                ortho_topo[rec["uniprot_accession"]] = rec
+
+        n_with_ecd = 0
+        n_no_topology = 0
+        for ortho_uniprot, human_hgnc in hgnc_map.items():
+            ortho_rec = ortho_topo.get(ortho_uniprot)
+            human_rec = human_topo_by_hgnc.get(human_hgnc)
+            cand = cand_by_hgnc.get(human_hgnc)
+
+            ecd_pct = None
+            n_loops = 0
+            if ortho_rec is not None and human_rec is not None:
+                result = compute_ecd_identity(
+                    human_topology=human_rec["per_residue_topology"],
+                    human_sequence=human_rec["sequence"],
+                    paralog_topology=ortho_rec["per_residue_topology"],
+                    paralog_sequence=ortho_rec["sequence"],
+                )
+                ecd_pct = result.ecd_pct_identity
+                n_loops = result.n_ecd_loops_compared
+                if ecd_pct is not None:
+                    n_with_ecd += 1
+            else:
+                n_no_topology += 1
+
+            out.append({
+                "ortholog_ecd_version": ortholog_ecd_version,
+                "human_hgnc_id": human_hgnc,
+                "human_uniprot_acc": (cand.uniprot_acc if cand else None),
+                "human_ensembl_gene": (cand.ensembl_gene if cand else None),
+                "human_gene_symbol": (cand.cohort_symbol if cand else None),
+                "species": species,
+                "ortholog_uniprot_acc": ortho_uniprot,
+                "ortholog_ensembl_gene": (ortho_rec or {}).get("uniprot_entry_name"),
+                "ortholog_gene_symbol": (ortho_rec or {}).get("uniprot_entry_name"),
+                "biomart_percent_identity": None,  # joined from compara_ortholog at query time
+                "ecd_pct_identity": ecd_pct,
+                "n_ecd_loops_compared": n_loops,
+                "compara_release": compara_release,
+            })
+        logger.info(
+            "ortholog ECD %s: %d rows, %d with ECD, %d missing topology",
+            ortholog_cohort, len(hgnc_map), n_with_ecd, n_no_topology,
+        )
+    return out
+
+
+def write_ortholog_ecd_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, sort_keys=True) + "\n")
+
+
 def write_paralog_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
@@ -1000,6 +1116,14 @@ def main() -> int:
         help="paralog_version stamp; defaults to paralog_<topology_version>",
     )
     ap.add_argument("--compara-version", default=DEFAULT_COMPARA_VERSION)
+    ap.add_argument(
+        "--cleanup-after-upload",
+        action="store_true",
+        help="After D1 upload completes, delete intermediate batch directories "
+             "(embeddings, plot.png, TMRs.gff3, deeptmhmm_results.md, _inputs/) "
+             "but keep predicted_topologies.3line as provenance. Keeps disk "
+             "usage to ~100 MB instead of ~2 GB peak.",
+    )
     args = ap.parse_args()
 
     cohorts = [c.strip() for c in args.cohorts.split(",") if c.strip()]
@@ -1266,6 +1390,32 @@ def main() -> int:
             n_with_ecd=n_with_ecd,
         )
 
+    # ----- Stage 5b: ortholog ECD identity (parallel to paralog ECD, but
+    # cross-species — each (human, mouse/cyno ortholog) pair gets per-loop
+    # BLOSUM62 ECD identity from the topology rows already in the JSONLs). -----
+    ortholog_ecd_jsonl: Path | None = None
+    has_ortholog_cohort = any(
+        c in cohort_jsonl_paths for c in ("mouse_ortholog", "cyno_ortholog")
+    )
+    if has_ortholog_cohort and "human_canonical" in cohort_jsonl_paths:
+        ortholog_ecd_version = f"orthologecd_{args.topology_version}"
+        ortholog_ecd_rows = compute_ortholog_ecd_records(
+            candidates=candidates,
+            cohort_jsonl_paths=cohort_jsonl_paths,
+            ortholog_human_hgnc_maps=ortholog_human_hgnc_maps,
+            ortholog_ecd_version=ortholog_ecd_version,
+            compara_release=args.compara_version,
+        )
+        ortholog_ecd_jsonl = jsonl_root / "ortholog_ecd_records.jsonl"
+        write_ortholog_ecd_jsonl(ortholog_ecd_jsonl, ortholog_ecd_rows)
+        n_with_ecd = sum(1 for r in ortholog_ecd_rows if r.get("ecd_pct_identity") is not None)
+        event(
+            "ortholog_ecd_records_written",
+            jsonl=str(ortholog_ecd_jsonl.relative_to(REPO_ROOT)),
+            n=len(ortholog_ecd_rows),
+            n_with_ecd=n_with_ecd,
+        )
+
     # ----- Stage 6: D1 upload -----
     if not args.skip_upload:
         import subprocess
@@ -1294,6 +1444,50 @@ def main() -> int:
             logger.info("uploading paralogs: %s", " ".join(cmd))
             subprocess.run(cmd, cwd=REPO_ROOT, check=True)
             event("paralogs_uploaded", paralog_version=paralog_version)
+
+        if ortholog_ecd_jsonl is not None:
+            ortholog_ecd_version = f"orthologecd_{args.topology_version}"
+            cmd = [
+                "uv", "run", "python", "scripts/upload_ortholog_ecd_to_d1.py",
+                "--ortholog-ecd-version", ortholog_ecd_version,
+                "--compara-release", args.compara_version,
+                "--jsonl", str(ortholog_ecd_jsonl),
+            ]
+            logger.info("uploading ortholog ECD: %s", " ".join(cmd))
+            subprocess.run(cmd, cwd=REPO_ROOT, check=True)
+            event("ortholog_ecd_uploaded", ortholog_ecd_version=ortholog_ecd_version)
+
+    # ----- Stage 7 (optional): clean up local intermediate files after upload -----
+    if args.cleanup_after_upload and not args.skip_upload:
+        import shutil
+        for cohort_dir in run_dir.iterdir():
+            if not cohort_dir.is_dir():
+                continue
+            # Keep predicted_topologies.3line as provenance; drop everything else.
+            for batch_dir in cohort_dir.iterdir():
+                if not batch_dir.is_dir():
+                    continue
+                # _inputs/ + batch_NNNN/{embeddings,plot.png,...}
+                if batch_dir.name == "_inputs":
+                    shutil.rmtree(batch_dir)
+                    continue
+                # Inside batch_NNNN/, keep only predicted_topologies.3line
+                three_line = batch_dir / "predicted_topologies.3line"
+                if three_line.exists():
+                    for child in batch_dir.iterdir():
+                        if child == three_line:
+                            continue
+                        if child.is_dir():
+                            shutil.rmtree(child)
+                        else:
+                            child.unlink()
+                else:
+                    # Failed batch — wipe the dir entirely.
+                    shutil.rmtree(batch_dir)
+        event("cleanup_after_upload", run_dir=str(run_dir.relative_to(REPO_ROOT)))
+        logger.info(
+            "cleanup complete — kept .3line files, removed embeddings/plot/gff/inputs"
+        )
 
     event("end", topology_version=args.topology_version)
     logger.info("done — events log at %s", events_log.relative_to(REPO_ROOT))
