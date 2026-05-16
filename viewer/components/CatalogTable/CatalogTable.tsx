@@ -17,12 +17,11 @@ const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
 // CSS Grid template — toggle | gene | uniprot | sources | 5 DB dots
-// | 3 model verdicts (H/S/O on the NCBI variant) | deep-dive flag.
-// Each LLM cell is a compact verdict pill (~4.4rem) and they sit
-// side-by-side so a reader can scan agreement across the three
-// models at a glance.
+// | Sonnet verdict (NCBI variant; the catalog's headline model) |
+// deep-dive flag. Haiku and Opus calls live on /benchmark so the
+// catalog stays a single-model surface.
 const GRID_TEMPLATE =
-  "1.75rem 14rem 5.5rem 3rem 4.2rem 3rem 4rem 3.6rem 3rem 6.5rem 7rem 6rem 5rem";
+  "1.75rem 16rem 5.5rem 3rem 4.5rem 3.2rem 4.5rem 4rem 3.2rem 8rem 5rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -66,13 +65,14 @@ const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = 
   { key: "hpa", short: "H", long: "HPA" },
 ];
 
-// Three models surfaced on the catalog page — order pinned to match
-// the Worker response (response.models). Each model's NCBI verdict
-// renders in its own column.
+// Sonnet 4.6 (NCBI variant) is the catalog's headline model — the one
+// run on every protein-coding gene with the headline prompt. Haiku
+// and Opus calls exist in the Worker response but only render on the
+// SurfaceBench benchmark, where the goal is cross-model comparison.
+// `idx` is the index in the Worker's `triage_by_model` array (still
+// fixed at Haiku=0, Sonnet=1, Opus=2 per Worker contract).
 const CATALOG_MODELS: { id: string; idx: number; short: string; long: string }[] = [
-  { id: "claude-haiku-4-5",  idx: 0, short: "H", long: "Haiku 4.5 · ncbi" },
   { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Sonnet 4.6 · ncbi" },
-  { id: "claude-opus-4-7",   idx: 2, short: "O", long: "Opus 4.7 · ncbi" },
 ];
 
 type SortKey = "symbol" | "uniprot" | "n_sources" | "triage_sonnet" | "deep_dive";

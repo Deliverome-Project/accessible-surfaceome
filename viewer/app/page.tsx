@@ -66,11 +66,15 @@ export default async function HomePage() {
             auxiliary signals but don&apos;t appear here.
           </p>
           <p>
-            <span className="label-mono">Triage ·</span> Haiku-only first pass.
-            Verdicts read as <em>yes</em> (constitutively on the surface),{" "}
+            <span className="label-mono">Triage ·</span> Sonnet 4.6 with an
+            NCBI context block, run on every protein-coding gene. Verdicts
+            read as <em>yes</em> (constitutively on the surface),{" "}
             <em>contextual</em> (conditional or rare surface), <em>no</em>{" "}
-            (no plasma-membrane presence). Sonnet deep-dive records linked from
-            the <em>view →</em> column override the triage call when present.
+            (no plasma-membrane presence). Sonnet deep-dive records linked
+            from the <em>view →</em> column override the triage call when
+            present. Haiku 4.5 and Opus 4.7 calls live on{" "}
+            <a href="/benchmark/" className={styles.surfaceBenchLink}>SurfaceBench</a>{" "}
+            for cross-model comparison.
           </p>
           <p>
             <span className="label-mono">API ·</span>{" "}

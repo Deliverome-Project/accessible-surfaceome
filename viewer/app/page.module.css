@@ -61,3 +61,14 @@
 .sourceLine {
   color: var(--ink-soft);
 }
+
+.surfaceBenchLink {
+  color: var(--accent);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.surfaceBenchLink:hover,
+.surfaceBenchLink:focus-visible {
+  border-bottom-color: var(--accent);
+}
