@@ -1,3 +1,42 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:aa5ef4cde809f5adcc3b043641fc7d2d89c496656059acdfa1f0b58df9cbcc23
-size 1407
+{
+  "flag_rule": "hpa_surface_flag = (hpa_pm_accessible OR hpa_junctional); hpa_pm_accessible = PM in Enhanced/Supported/Approved tier; hpa_junctional    = Cell Junctions in Enhanced/Supported/Approved tier",
+  "generated_at_utc": "2026-04-17T20:54:58.381550+00:00",
+  "junction_reliability_counts": {
+    "": 2682,
+    "approved": 168,
+    "enhanced": 20,
+    "supported": 88,
+    "uncertain": 50
+  },
+  "n_dropped_non_surface_pool": 10559,
+  "n_input_rows_after_pool_filter": 3044,
+  "n_input_rows_total": 13603,
+  "n_junctional": 276,
+  "n_low_confidence_only": 930,
+  "n_output_rows": 3008,
+  "n_pm_accessible": 1906,
+  "n_secreted_only": 572,
+  "n_split_ensg_rows": 3,
+  "n_split_mapping_ambiguous": 7,
+  "n_surface_flag": 2078,
+  "n_trafficking_associated": 705,
+  "n_unique_primaries": 3004,
+  "n_unmapped_ensg": 40,
+  "pm_reliability_counts": {
+    "": 773,
+    "approved": 1079,
+    "enhanced": 93,
+    "supported": 734,
+    "uncertain": 329
+  },
+  "pool_filter_rule": "keep row iff has PM in any tier OR has Cell Junctions in any tier OR Extracellular location is non-empty",
+  "reliability_counts": {
+    "Approved": 1737,
+    "Enhanced": 136,
+    "Supported": 972,
+    "Uncertain": 199
+  },
+  "source_file": "data/external/hpa_subcellular_location/subcellular_location.tsv",
+  "source_sha256": "19ee031772375318e75556e43a5103cd8d919f7757094ef3fd134fba134fc095",
+  "source_size_bytes": 2046017
+}

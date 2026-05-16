@@ -1,3 +1,20 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:79dbe0d927229571a3b57e7804e4f6901c28243d805de7c3fb45fd0fda3f0ce0
-size 913
+{
+  "output": "/Users/rebeccacarlson/Git/accessible-surfaceome-worktree/data/processed/controls/surfaceome_control_panel.tsv",
+  "n_rows": 133,
+  "n_positive_surfaceome": 62,
+  "n_negative_non_surfaceome": 69,
+  "n_missing_from_parent_surfaceome_2379": 46,
+  "n_present_in_m1_candidate_universe": 131,
+  "n_pinned_specified_negative_controls": 2,
+  "n_opencell_vesicles_grade3_negative_controls": 60,
+  "opencell_negative_tsv": "/Users/rebeccacarlson/Git/accessible-surfaceome-worktree/data/processed/controls/opencell_grade3_vesicles_non_membrane_in_m1.tsv",
+  "mygene_symbol_universe_tsv": "/Users/rebeccacarlson/Git/accessible-surfaceome-worktree/data/processed/candidate_universe/candidate_universe.tsv",
+  "mygene_stats": {
+    "n_query_symbols": 5669,
+    "n_hits_resolved": 5958,
+    "n_hits_notfound": 1,
+    "n_aliases_unique": 22606,
+    "n_aliases_ambiguous": 1098
+  },
+  "n_mygene_alias_matches": 0
+}

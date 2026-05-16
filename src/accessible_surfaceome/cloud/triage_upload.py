@@ -1,13 +1,16 @@
 """Upload triage agent runs to the Cloudflare D1 ``surfaceome_agents`` database.
 
-Walks ``data/eval/triage_subbench_v1/<model>/<variant>/<gene>_run<N>.json``
-records, looks up each one's prompt SHA (interning new prompt versions
-into ``prompt_version``), interns the benchmark snapshot into
-``benchmark_version``, and inserts one row per record into ``triage_run``.
+Provides :class:`D1RunSink` — a streaming sink wired into the triage
+runner's hot path. The sink is created before the worker pool starts,
+interns the prompt + benchmark snapshots once, then each worker calls
+:meth:`D1RunSink.insert` after a successful per-cell completion. Dedup
+is by (run_id, model, variant, gene_symbol, replicate, prompt_sha):
+existing rows are skipped, so re-runs of the same sweep are safe.
 
-Idempotent on (run_id, model, variant, gene_symbol, replicate, prompt_sha):
-existing rows with the same composite key are skipped. To force a re-upload,
-DELETE the matching rows first or use ``--run-id <new_value>``.
+The batch ``upload_subbench_runs`` helper that used to live here was
+removed when the 17-row sub-bench cohort was retired (2026-05-16);
+genome-scale and mainbench sweeps now go straight through ``D1RunSink``
+without ever materializing a per-cell JSON tree on disk.
 """
 
 from __future__ import annotations
@@ -17,12 +20,11 @@ import hashlib
 import json
 import logging
 import threading
-import uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from accessible_surfaceome.paths import DATA_DIR, REPO_ROOT
+from accessible_surfaceome.paths import REPO_ROOT
 from accessible_surfaceome.tools._shared.models import TRIAGE_SCHEMA_VERSION
 
 from .d1_client import D1Client
@@ -30,11 +32,9 @@ from .d1_client import D1Client
 logger = logging.getLogger(__name__)
 
 PROMPTS_DIR = REPO_ROOT / "src" / "accessible_surfaceome" / "agents" / "surface_triage" / "prompts"
-SUBBENCH_TSV = DATA_DIR / "eval" / "triage_subbench_v1.tsv"
-SUBBENCH_RUNS = DATA_DIR / "eval" / "triage_subbench_v1"
 
 # Maps the runner's variant slug → prompt filename. Keep in sync with
-# scripts/triage_subbench_runner.py:VARIANTS. Missing-variant entries
+# scripts/triage_runner.py:VARIANTS. Missing-variant entries
 # cause D1RunSink to silently skip cells under that variant — the
 # 2026-05-11 slim sweep was lost to D1 because this map was stale; the
 # log shows "D1RunSink: unknown variant 'slim'; skipping" repeated 147x.
@@ -62,18 +62,6 @@ class PromptInfo:
 
 def _sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
-def _load_prompt(variant: str) -> PromptInfo:
-    fname = VARIANT_TO_PROMPT[variant]
-    text = (PROMPTS_DIR / fname).read_text()
-    return PromptInfo(
-        sha=_sha256(text),
-        filename=fname,
-        text=text,
-        n_lines=len(text.splitlines()),
-        schema_version=TRIAGE_SCHEMA_VERSION,
-    )
 
 
 def _load_benchmark_rows(bench_tsv: Path) -> list[dict[str, str]]:
@@ -106,11 +94,10 @@ def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str
 
     Handles two input shapes:
 
-    * Labeled benchmark TSV (``triage_benchmark_v1.tsv``,
-      ``triage_subbench_v1.tsv``): has uniprot_acc + class +
-      ground_truth_* columns. Stored verbatim — the truth join from
-      triage_run → benchmark_version returns the ground truth that was
-      live at sweep time.
+    * Labeled benchmark TSV (``triage_benchmark_v1.tsv``): has
+      uniprot_acc + class + ground_truth_* columns. Stored verbatim —
+      the truth join from triage_run → benchmark_version returns the
+      ground truth that was live at sweep time.
 
     * Unlabeled gene-list TSV (``whole_genome_minus_m1.tsv``,
       genome-wide candidate sets): only gene_symbol guaranteed; truth
@@ -304,152 +291,6 @@ def _existing_keys(d1: D1Client, run_id: str) -> set[tuple[str, str, str, int, s
     }
 
 
-def upload_subbench_runs(
-    *,
-    bench_tsv: Path = SUBBENCH_TSV,
-    runs_root: Path = SUBBENCH_RUNS,
-    run_id: str | None = None,
-    dry_run: bool = False,
-    since_mtime: float | None = None,
-) -> dict[str, Any]:
-    """Upload every per-cell JSON under ``runs_root`` to D1.
-
-    Args:
-        bench_tsv: TSV with ground-truth labels matching the runs.
-        runs_root: directory containing ``<model>/<variant>/<gene>_run<N>.json``.
-        run_id: tag to group this upload. Defaults to a fresh uuid.
-        dry_run: print what would be uploaded, but don't insert.
-        since_mtime: if set, skip per-cell record files modified before this
-            POSIX timestamp. Lets you scope an upload to "the latest sweep"
-            without manually pruning the records directory.
-
-    Returns:
-        Counters dict — int counts for ``prompts``, ``bench_rows``,
-        ``runs_inserted``, ``runs_skipped``, plus the string fields
-        ``run_id`` and ``bench_version`` used by this upload.
-    """
-    run_id = run_id or str(uuid.uuid4())
-    bench_rows = _load_benchmark_rows(bench_tsv)
-    bench_version = _bench_version(bench_tsv)
-    bench_by_gene = {r["gene_symbol"]: r for r in bench_rows}
-
-    # Pre-load prompts for every variant we'll see.
-    prompts = {v: _load_prompt(v) for v in VARIANT_TO_PROMPT}
-
-    # Collect every run record, filtered by mtime if --since was passed.
-    # Skip directories whose names start with '_' (convention: backup /
-    # archival snapshots of prior prompt versions, e.g.
-    # ``_prev_naive_pre_gene_specific``). Those shouldn't go to D1 — they
-    # were committed for diff-history not for re-ingestion.
-    records: list[tuple[Path, dict[str, Any]]] = []
-    n_skipped_by_since = 0
-    n_skipped_by_backup_dir = 0
-    for path in sorted(runs_root.rglob("*_run*.json")):
-        if any(part.startswith("_") for part in path.relative_to(runs_root).parts):
-            n_skipped_by_backup_dir += 1
-            continue
-        if since_mtime is not None and path.stat().st_mtime < since_mtime:
-            n_skipped_by_since += 1
-            continue
-        try:
-            records.append((path, json.loads(path.read_text())))
-        except json.JSONDecodeError:
-            logger.warning("skipping unreadable %s", path)
-            continue
-
-    if n_skipped_by_backup_dir:
-        logger.info("backup-dir filter: skipped %d records under _*/ subdirs",
-                    n_skipped_by_backup_dir)
-
-    if since_mtime is not None:
-        logger.info(
-            "since filter: kept %d records, skipped %d older than %s",
-            len(records), n_skipped_by_since,
-            __import__("datetime").datetime.fromtimestamp(since_mtime).isoformat(),
-        )
-
-    if not records:
-        logger.warning("no run records under %s", runs_root)
-        return {"prompts": 0, "bench_rows": 0, "runs_inserted": 0, "runs_skipped": 0}
-
-    if dry_run:
-        return _summarize_dry(records, prompts, bench_version, bench_by_gene)
-
-    counters: dict[str, Any] = {
-        "prompts": 0, "bench_rows": 0,
-        "runs_inserted": 0, "runs_skipped": 0,
-    }
-    with D1Client() as d1:
-        # 1. intern prompt versions
-        for prompt in prompts.values():
-            _intern_prompt(d1, prompt)
-            counters["prompts"] += 1
-
-        # 2. intern benchmark snapshot
-        _intern_benchmark(d1, bench_version, bench_rows)
-        counters["bench_rows"] = len(bench_rows)
-
-        # 3. find what's already in this run_id so we don't double-insert
-        already = _existing_keys(d1, run_id)
-
-        # 4. insert runs
-        for path, rec in records:
-            variant = rec.get("variant")
-            if variant not in prompts:
-                logger.warning("unknown variant %r in %s; skipping", variant, path)
-                counters["runs_skipped"] += 1
-                continue
-            prompt = prompts[variant]
-            bench_row = bench_by_gene.get(rec["gene_symbol"])
-            uniprot_acc: str | None = bench_row.get("uniprot_acc") if bench_row else None
-            truth_class: str = (
-                bench_row.get("class", "") if bench_row else rec.get("truth_class", "") or ""
-            )
-            key = (
-                rec["gene_symbol"], rec["model"], variant,
-                int(rec.get("replicate", 0)), prompt.sha,
-            )
-            if key in already:
-                counters["runs_skipped"] += 1
-                continue
-            _insert_run(
-                d1,
-                run_id=run_id,
-                record=rec,
-                prompt_sha=prompt.sha,
-                bench_version=bench_version,
-                uniprot_acc=uniprot_acc,
-                truth_class=truth_class,
-            )
-            counters["runs_inserted"] += 1
-
-    counters["run_id"] = run_id
-    counters["bench_version"] = bench_version
-    return counters
-
-
-def _summarize_dry(
-    records: list[tuple[Path, dict[str, Any]]],
-    prompts: dict[str, PromptInfo],
-    bench_version: str,
-    bench_by_gene: dict[str, dict[str, str]],
-) -> dict[str, int]:
-    from collections import Counter
-    by_variant = Counter(rec.get("variant") for _, rec in records)
-    print("DRY RUN — would upload to D1")
-    print(f"  bench_version: {bench_version}")
-    print("  prompt SHAs to intern:")
-    for v, p in prompts.items():
-        print(f"    {v:10s} {p.filename:25s} sha={p.sha[:12]}…  ({p.n_lines} lines, {p.schema_version})")
-    print(f"  total run records: {len(records)}")
-    print("  by variant:")
-    for v, n in by_variant.most_common():
-        print(f"    {v:10s} {n}")
-    print(f"  benchmark rows: {len(bench_by_gene)}")
-    return {"prompts": len(prompts), "bench_rows": len(bench_by_gene),
-            "runs_inserted": 0, "runs_skipped": 0, "would_insert": len(records)}
-
-
 class D1RunSink:
     """Streaming sink that writes triage runs to D1 as they complete.
 
@@ -590,4 +431,4 @@ class D1RunSink:
         self.close()
 
 
-__all__ = ["upload_subbench_runs", "PromptInfo", "D1RunSink"]
+__all__ = ["PromptInfo", "D1RunSink"]

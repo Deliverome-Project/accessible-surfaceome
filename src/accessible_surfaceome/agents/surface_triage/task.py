@@ -9,7 +9,7 @@ session flow. The Managed Agents path was retired (Anthropic's
 ``beta.agents`` API does not yet expose ``cache_control``, so the live
 ``triage run`` path was paying ~$200 of avoidable cost per genome-wide
 sweep relative to the direct ``messages.create`` runner). The task
-renderer survived the cleanup because the sub-bench runner still uses
+renderer survived the cleanup because the triage runner still uses
 it to build the user message for the resolver-anchored variants.
 """
 

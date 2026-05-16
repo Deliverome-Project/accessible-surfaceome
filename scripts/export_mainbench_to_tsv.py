@@ -112,18 +112,73 @@ def main() -> int:
     ap.add_argument("--replicate", type=int, default=1,
                     help="filter to a single replicate (default: 1 — matches the historical TSV shape)")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="output TSV path")
+    ap.add_argument("--prefer-fix-run", default=None,
+                    help="Optional run_id whose rows should override --run-id for matching "
+                         "(gene_symbol, model, prompt_variant, replicate) tuples. Use this "
+                         "to fold a `*__resolver_v3_fix` correction run into the export "
+                         "without modifying the original sweep's rows. See the "
+                         "'run_id conventions' table in CLAUDE.md.")
     args = ap.parse_args()
 
-    sql = (
+    sql_base = (
         f"SELECT {', '.join(COLUMNS)} FROM triage_run_public "
         "WHERE run_id = ? AND replicate = ? "
         "ORDER BY model, prompt_variant, gene_symbol;"
     )
-    rows = _query_public(sql, [args.run_id, args.replicate])
-    out_path = REPO_ROOT / args.out if not args.out.startswith("/") else args.out
+    base_rows = _query_public(sql_base, [args.run_id, args.replicate])
+
+    if args.prefer_fix_run:
+        # Fold the fix-run's rows in, preferring them over the
+        # original where (model, prompt_variant, gene_symbol) match.
+        # D1 doesn't make a cross-run UPSERT one-shot easy, so we
+        # COALESCE in Python: pull the fix rows, key on the tuple,
+        # replace originals.
+        fix_rows = _query_public(sql_base, [args.prefer_fix_run, args.replicate])
+
+        def key_of(r: dict) -> tuple[str, str, str]:
+            return (r["model"], r["prompt_variant"], r["gene_symbol"])
+
+        fix_by_key = {key_of(r): r for r in fix_rows}
+        merged: list[dict] = []
+        for r in base_rows:
+            merged.append(fix_by_key.get(key_of(r), r))
+        # Unmatched fix rows (no matching key in the cohort) are SKIPPED,
+        # not appended — a fix run is scoped to its parent cohort, so any
+        # rows that don't intersect mean the wrong --prefer-fix-run was
+        # passed (e.g. a genome-cohort fix run against the 147-row main
+        # bench). Bloating the export with off-cohort rows would silently
+        # change the figures' denominator; the loud warning lets the
+        # operator notice + correct the invocation.
+        original_keys = {key_of(r) for r in base_rows}
+        unmatched = [r for r in fix_rows if key_of(r) not in original_keys]
+        replaced = sum(1 for r in base_rows if key_of(r) in fix_by_key)
+        msg = (
+            f"Merged {len(fix_rows):,} fix-run rows from {args.prefer_fix_run!r}; "
+            f"{replaced} rows replaced"
+        )
+        if unmatched:
+            msg += (
+                f"; SKIPPED {len(unmatched)} fix rows with no matching cohort "
+                f"row (e.g. {unmatched[0]['gene_symbol']}). Likely cause: the "
+                f"fix run was scoped to a different cohort than --run-id "
+                f"{args.run_id!r}. If you meant to export the fix run's "
+                f"parent cohort, pass --run-id <parent> too."
+            )
+        print(msg)
+        rows = merged
+    else:
+        rows = base_rows
+
+    from pathlib import Path
+    out_path = Path(args.out) if args.out.startswith("/") else REPO_ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    # ``lineterminator="\n"`` (not csv's RFC-4180 default of "\r\n") matches
+    # the on-repo TSV's line endings, so a re-export is byte-identical when
+    # the underlying D1 rows haven't changed. The gist + figure consumers
+    # don't care, but byte-equality keeps `git diff` quiet on cosmetic-only
+    # re-runs.
     with open(out_path, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLUMNS, delimiter="\t")
+        w = csv.DictWriter(fh, fieldnames=COLUMNS, delimiter="\t", lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     rel = out_path.relative_to(REPO_ROOT) if str(out_path).startswith(str(REPO_ROOT)) else out_path

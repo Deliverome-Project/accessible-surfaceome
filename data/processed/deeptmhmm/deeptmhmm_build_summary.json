@@ -1,3 +1,64 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e8b655ea75d2ce297377aa702e8c506868a30e4adc961be0825566a850b82a57
-size 1617
+{
+  "cohorts": {
+    "cyno_ortholog": {
+      "label_counts": {
+        "GLOB": 26,
+        "SP": 103,
+        "SP+TM": 808,
+        "TM": 984
+      },
+      "n_predicted_secreted": 103,
+      "n_predicted_surface_membrane": 1792,
+      "n_proteins": 1921,
+      "n_unique_accession_base": 1921,
+      "n_unique_accession_full": 1921
+    },
+    "human_canonical": {
+      "label_counts": {
+        "BETA": 1,
+        "GLOB": 8,
+        "SP": 135,
+        "SP+TM": 1202,
+        "TM": 1013
+      },
+      "n_predicted_secreted": 135,
+      "n_predicted_surface_membrane": 2215,
+      "n_proteins": 2359,
+      "n_unique_accession_base": 2359,
+      "n_unique_accession_full": 2359
+    },
+    "human_isoforms": {
+      "label_counts": {
+        "GLOB": 138,
+        "SP": 516,
+        "SP+TM": 1192,
+        "TM": 1304
+      },
+      "n_predicted_secreted": 516,
+      "n_predicted_surface_membrane": 2496,
+      "n_proteins": 3150,
+      "n_unique_accession_base": 1347,
+      "n_unique_accession_full": 3150
+    },
+    "mouse_ortholog": {
+      "label_counts": {
+        "BETA": 1,
+        "GLOB": 14,
+        "SP": 109,
+        "SP+TM": 982,
+        "TM": 865
+      },
+      "n_predicted_secreted": 109,
+      "n_predicted_surface_membrane": 1847,
+      "n_proteins": 1971,
+      "n_unique_accession_base": 1971,
+      "n_unique_accession_full": 1971
+    }
+  },
+  "generated_at_utc": "2026-04-19T02:16:13.724942+00:00",
+  "human_union": {
+    "description": "union of uniprot accessions across human_canonical + human_isoforms cohorts",
+    "n_unique_accession_base": 2360,
+    "n_unique_accession_full": 5509
+  }
+}

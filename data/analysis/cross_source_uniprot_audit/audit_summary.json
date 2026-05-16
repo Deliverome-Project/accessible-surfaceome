@@ -1,3 +1,66 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:cce549992f1fb9720dacb8c624e57517e96e5c60458d623a34f585e598ff0bf4
-size 1756
+{
+  "generated_at_utc": "2026-04-17T21:48:44.648841+00:00",
+  "merge_level_collisions": {
+    "n_collision_pairs": 0,
+    "n_distinct_primaries": 0,
+    "n_distinct_secondaries": 0
+  },
+  "notes": [
+    "TrEMBL deletions are not fetched by default; 'unknown' classifications are most likely deleted-TrEMBL accessions. Re-run the downloader with --include-trembl and extend parse_delac_tr() to resolve them."
+  ],
+  "per_source_counts": {
+    "compartments": {
+      "primary_current": 1559,
+      "primary_not_queried": 1826
+    },
+    "cspa": {
+      "deleted_swissprot": 2,
+      "primary_current": 942,
+      "primary_not_queried": 510,
+      "secondary": 46
+    },
+    "deeptmhmm": {
+      "primary_current": 2155,
+      "primary_not_queried": 205
+    },
+    "go": {
+      "deleted_swissprot": 2,
+      "primary_current": 2916,
+      "primary_not_queried": 696
+    },
+    "hpa": {
+      "primary_current": 1251,
+      "primary_not_queried": 1753
+    },
+    "surfy": {
+      "deleted_swissprot": 3,
+      "primary_current": 2606,
+      "primary_not_queried": 194,
+      "secondary": 83
+    },
+    "uniprot": {
+      "primary_current": 4817
+    }
+  },
+  "per_source_totals": {
+    "compartments": 3385,
+    "cspa": 1500,
+    "deeptmhmm": 2360,
+    "go": 3614,
+    "hpa": 3004,
+    "surfy": 2886,
+    "uniprot": 4817
+  },
+  "reference_files": {
+    "delac_sp": {
+      "n_entries": 1890,
+      "path": "data/external/uniprot_accession_history/delac_sp.txt",
+      "sha256": "21e0e158c106d48699e670cb3d69e5b1b9be06fedfdf488884fe34a4eae8b64b"
+    },
+    "sec_ac": {
+      "n_entries": 1415097,
+      "path": "data/external/uniprot_accession_history/sec_ac.txt",
+      "sha256": "7ccf03fe34216fbe643ce991bb53c0890eaf654ba0aad26323ab3e9d06b6193a"
+    }
+  }
+}

@@ -11,8 +11,8 @@
 
 LLM-only overall accuracy on the 147-gene bench, grouped by model
 (Haiku 4.5 / Sonnet 4.6 / Opus 4.7) with hatched bars for the
-within-model prompt variants (naive / + NCBI / + NCBI + web /
-+ NCBI + PubMed). Color encodes the model (Claude-orange walk);
+within-model prompt variants (naive / + IDs / + IDs + web /
++ IDs + PubMed). Color encodes the model (Claude-orange walk);
 hatch encodes the prompt variant.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
@@ -129,9 +129,9 @@ MODEL_ORDER = [
 # Variant display order + matplotlib hatch pattern.
 VARIANT_ORDER = [
     ("naive",        "naive",           ""),
-    ("ncbi",         "+ NCBI",          "//"),
-    ("web_ncbi",     "+ NCBI + web",    "xx"),
-    ("pubmed_ncbi",  "+ NCBI + PubMed", ".."),
+    ("ncbi",         "+ IDs",          "//"),
+    ("web_ncbi",     "+ IDs + web",    "xx"),
+    ("pubmed_ncbi",  "+ IDs + PubMed", ".."),
 ]
 
 

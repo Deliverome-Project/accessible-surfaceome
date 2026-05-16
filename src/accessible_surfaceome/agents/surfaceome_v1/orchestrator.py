@@ -8,7 +8,12 @@ DeepTMHMM / Compara / AlphaFold fetchers are deferred), and assembles a full
 
 Pipeline:
 
-    1. gene_lookup.resolve(symbol) → IdentifierBundle → GeneIdentifier
+    1. resolve identifiers via shape dispatch:
+       UniProt acc → ``gene_lookup.resolve`` (preserves existing path);
+       ``HGNC:N`` → ``gene_lookup.resolve_by_hgnc_id`` (canonical);
+       bare symbol → D1 ``gene_identifier`` lookup → ``resolve_by_hgnc_id``.
+       Symbol-only resolve was removed in resolver v3 (silently wrong for
+       ~0.2% of human genes — see ``CLAUDE.md`` "Gene identifier resolution").
     2. parallel dispatch A1 (Surface Evidence Compiler) ∥ A2 (Biology Compiler)
        — shared SourceTextStore + retraction_index across both agents
     3. promote EvidenceClaim → Evidence (substring-anchored against the
@@ -71,13 +76,95 @@ from accessible_surfaceome.tools._shared.models import (
     TriageSignal,
 )
 from accessible_surfaceome.tools._shared.source_text import SourceTextStore
-from accessible_surfaceome.tools.gene_lookup import resolve as _resolve
+from accessible_surfaceome.tools.gene_lookup import (
+    looks_like_uniprot_acc,
+    resolve as _resolve,
+    resolve_by_hgnc_id,
+)
 
 logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"  # all three agents currently run on Sonnet 4.6
 SCHEMA_VERSION_LITERAL = "1.0.0"
 RUNS_DIR = Path(".runs")
+
+
+def _resolve_input(gene: str, *, http: CachedHTTP):
+    """Dispatch identifier resolution by input shape.
+
+    Three input shapes are accepted:
+
+      * **UniProt accession** (``Q9UBP8``, ``P51679``) →
+        :func:`gene_lookup.resolve`. Stable; the resolver's documented
+        canonical path.
+      * **HGNC ID** (``HGNC:1234``) → :func:`gene_lookup.resolve_by_hgnc_id`.
+        Preferred whenever the caller already has the stable ID.
+      * **Bare symbol** (``GPR75``, ``CCR4``) → looks up the symbol's
+        HGNC ID in D1's ``gene_identifier`` table (the cached stable-ID
+        table built by ``scripts/build_gene_identifier_table.py``) and
+        then dispatches to ``resolve_by_hgnc_id``.
+
+    The symbol path no longer falls through to UniProt's symbol search
+    — that path silently returned wrong-protein context for ~0.2% of
+    human genes (COX1 → cyclo-oxygenase instead of mitochondrial
+    cytochrome c oxidase, WAS → an rRNA, etc.; see resolver v3 audit
+    at ``scripts/audit_resolver_hgnc_id_v3.py``). Symbols not in
+    ``gene_identifier`` raise ``LookupError`` with an actionable
+    message rather than producing a silently-wrong annotation.
+    """
+    raw = gene.strip()
+    if looks_like_uniprot_acc(raw):
+        return _resolve(raw, http=http)
+    if raw.upper().startswith("HGNC:"):
+        return resolve_by_hgnc_id(raw, http=http)
+    # Bare symbol — D1 lookup → HGNC ID → resolve_by_hgnc_id
+    hgnc_id = _hgnc_id_for_symbol(raw)
+    if hgnc_id is None:
+        raise LookupError(
+            f"unknown gene symbol {raw!r}: not found in D1 "
+            "gene_identifier.hgnc_symbol or cohort_symbol. If this is a "
+            "recently-added gene, rerun scripts/build_gene_identifier_table.py "
+            "to refresh the cache; if it's a typo or non-human gene, pass a "
+            "UniProt accession or HGNC ID directly."
+        )
+    return resolve_by_hgnc_id(hgnc_id, http=http)
+
+
+def _hgnc_id_for_symbol(symbol: str) -> str | None:
+    """Look up the HGNC ID for a symbol from D1 ``gene_identifier``.
+
+    Tries ``hgnc_symbol`` first (HGNC's official symbol) then
+    ``cohort_symbol`` (the symbol the M1 cohort row used) — those
+    sometimes diverge when HGNC has updated a symbol but the cohort
+    TSV hasn't been regenerated. Returns ``None`` for an unknown
+    symbol so the caller can raise its own ``LookupError`` with
+    domain context.
+    """
+    # Local import keeps the D1 dependency out of import-time for code
+    # paths that never need symbol lookup (most of the runner code).
+    from accessible_surfaceome.cloud.d1_client import D1Client, D1Error
+
+    try:
+        d1 = D1Client()
+    except D1Error:
+        # D1 credentials not configured — annotation can still run if
+        # the caller passes an accession or HGNC ID, so re-raise as
+        # LookupError with a migration hint instead of crashing the
+        # whole annotate() call.
+        raise LookupError(
+            f"cannot resolve symbol {symbol!r} without D1 credentials. "
+            "Either set CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN + "
+            "CLOUDFLARE_D1_SURFACEOME_AGENTS_ID, or pass a UniProt accession "
+            "(e.g. Q9UBP8) / HGNC ID (e.g. HGNC:4526) directly."
+        ) from None
+    rows = d1.query(
+        "SELECT hgnc_id FROM gene_identifier "
+        "WHERE hgnc_symbol = ? OR cohort_symbol = ? LIMIT 1;",
+        [symbol, symbol],
+    )
+    if not rows:
+        return None
+    return rows[0]["hgnc_id"]
 
 
 @dataclass
@@ -152,7 +239,7 @@ def _annotate(
     persist: bool,
 ) -> AnnotateResult:
     # ----------------------------- step 1: resolve identifiers -----------------------------
-    bundle = _resolve(gene, http=http)
+    bundle = _resolve_input(gene, http=http)
     gene_id = GeneIdentifier(
         hgnc_symbol=bundle.hgnc_symbol,
         hgnc_id=bundle.hgnc_id,

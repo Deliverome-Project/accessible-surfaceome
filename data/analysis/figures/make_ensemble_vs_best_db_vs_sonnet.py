@@ -11,7 +11,7 @@
 
 Six-bar comparison on the 147-gene bench:
 
-* Sonnet (+ NCBI)        — the Claude triage agent on its canonical
+* Sonnet (+ IDs)        — the Claude triage agent on its canonical
                            NCBI-resolver prompt variant
 * UniProt (TM+signal)    — best single classical DB, under its
                            bench-optimized cutoff (TM OR signal-peptide
@@ -191,7 +191,7 @@ def main() -> None:
     ].set_index("gene_symbol")["predicted_verdict"].to_dict()
 
     callers: list[tuple[str, callable, str]] = [
-        ("Sonnet (+ NCBI)",      lambda g: sonnet_ncbi.get(g) or "no",                              BRAND_CLAUDE_ORANGE),
+        ("Sonnet (+ IDs)",      lambda g: sonnet_ncbi.get(g) or "no",                              BRAND_CLAUDE_ORANGE),
         ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(acc_by_gene.get(g, "")).get("UniProt") else "no",
                                                                                                     BRAND_PALETTE[0]),
     ]

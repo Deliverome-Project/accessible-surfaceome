@@ -1,30 +1,44 @@
-"""Run the 4-variant × N-replicate triage sub-benchmark.
+"""Run the triage agent over a benchmark, sub-bench, or arbitrary gene list.
 
-Tests the 17-protein hard-case sub-benchmark across 4 prompt variants:
+The triage agent answers a single binary question — is this protein
+plausibly cell-surface in the way most therapeutics care about? — under
+4 prompt variants:
 
   1. naive      — system_naive.md         (no resolver, no tools)
   2. ncbi       — system.md               (resolver only, no tools)
   3. web_naive  — system_web_naive.md     (web_search, no resolver)
   4. web_ncbi   — system_web.md           (web_search + resolver)
 
-For each (variant × gene × replicate) cell, writes a per-run record at
-``data/eval/triage_subbench_v1/<variant>/<gene>_run<N>.json`` with the
-parsed verdict, reason, full verdict_reasoning prose, token counts,
-web-search count, latency, and dollar cost (computed from the model
-pricing table).
+This script runs all (variant × model × gene × replicate) cells in
+parallel and streams results both to per-cell JSON on disk and to D1's
+``triage_run`` via :class:`D1RunSink`.
+
+Input modes (mutually exclusive):
+
+  * ``--bench benchmark`` (default) — 147-row labeled mainbench at
+    ``data/eval/triage_benchmark_v1.tsv`` (the source of truth for
+    the cost-vs-accuracy figures).
+  * ``--gene-list <path>`` — arbitrary TSV with a ``gene_symbol``
+    column. Used for genome-scale sweeps (e.g.
+    ``data/processed/whole_genome_minus_m1.tsv``).
+
+The 17-row sub-bench was retired on 2026-05-16 — the bench TSV +
+output tree (``data/eval/triage_subbench_v1*``) were dropped from
+the repo. The 4-variant × 3-model matrix that made the sub-bench
+useful is now exercised against the 147-row mainbench instead.
 
 USAGE — note this script does NOT auto-execute. Invoke directly:
 
     # Single model:
-    uv run python scripts/triage_subbench_runner.py --model claude-haiku-4-5 --replicates 2
+    uv run python scripts/triage_runner.py --model claude-haiku-4-5 --replicates 2
 
     # All three models in one shot (shared thread pool, single cost report):
-    uv run python scripts/triage_subbench_runner.py \\
+    uv run python scripts/triage_runner.py \\
         --model claude-haiku-4-5 claude-sonnet-4-6 claude-opus-4-7 --replicates 2
 
 For a smoke test of one variant on one gene:
 
-    uv run python scripts/triage_subbench_runner.py \\
+    uv run python scripts/triage_runner.py \\
         --model claude-haiku-4-5 --replicates 1 \\
         --variants naive --genes HSPA1A
 """
@@ -50,18 +64,17 @@ from accessible_surfaceome.agents._support import client as _client_module
 from accessible_surfaceome.agents.surface_triage.task import render_task as _render_task
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.tools._shared.http import open_default_client
-from accessible_surfaceome.tools.gene_lookup import resolve
+from accessible_surfaceome.tools.gene_lookup import resolve, resolve_by_hgnc_id
 
 logger = logging.getLogger(__name__)
 ROOT = Path("/Users/rebeccacarlson/Git/accessible-surfaceome/.claude/worktrees/optimistic-goldwasser-ea19aa")
 BENCH_TSV_BY_NAME = {
-    "subbench": (ROOT / "data/eval/triage_subbench_v1.tsv", ROOT / "data/eval/triage_subbench_v1"),
     "benchmark": (ROOT / "data/eval/triage_benchmark_v1.tsv", ROOT / "data/eval/triage_bench_v1"),
 }
-# Defaults — overridable via --bench. Kept as module-level globals because
-# _persist() reads OUT_ROOT and we want a single source of truth.
-SUBBENCH_TSV = BENCH_TSV_BY_NAME["subbench"][0]
-OUT_ROOT = BENCH_TSV_BY_NAME["subbench"][1]
+# Defaults — overridable via --bench or --gene-list. Module-level globals
+# because _persist() reads OUT_ROOT and we want a single source of truth.
+BENCH_TSV = BENCH_TSV_BY_NAME["benchmark"][0]
+OUT_ROOT = BENCH_TSV_BY_NAME["benchmark"][1]
 PROMPTS_DIR = ROOT / "src/accessible_surfaceome/agents/surface_triage/prompts"
 
 # Per-million-token list pricing for input + output. Update as Anthropic
@@ -177,11 +190,44 @@ def _load_prompt(name: str) -> str:
     return (PROMPTS_DIR / name).read_text()
 
 
-def _resolve_task_text(gene: str) -> str:
+def _resolve_task_text(
+    gene: str,
+    hgnc_id: str | None = None,
+    uniprot_acc: str | None = None,
+) -> str:
     """Use the orchestrator's _render_task to format the task message
-    with HGNC + UniProt + NCBI + gene-group + CD designation context."""
-    bundle = resolve(gene, http=_http())
-    return _render_task(bundle)
+    with HGNC + UniProt + NCBI + gene-group + CD designation context.
+
+    Stable-identifier-keyed only. Symbol fallback was removed in
+    resolver v3 — the legacy symbol-keyed path silently returned
+    wrong-protein context for ~0.2% of cohort genes (see CLAUDE.md
+    "Gene identifier resolution").
+
+    Argument priority (most stable → least stable):
+      1. **hgnc_id** — preferred. Cohort TSVs carry it for every
+         row (100% coverage).
+      2. **uniprot_acc** — used when hgnc_id is absent. Benchmark
+         TSVs (`triage_benchmark_v1.tsv` etc.) historically carry
+         uniprot_acc, not hgnc_id, so this path keeps bench reruns
+         working without re-shaping their input TSV.
+
+    Raises LookupError when neither identifier is supplied. Cohort
+    rows missing hgnc_id usually indicate a stale cohort TSV — the
+    fix is to regenerate the cohort, not to fall back to symbol
+    search.
+    """
+    if hgnc_id:
+        bundle = resolve_by_hgnc_id(hgnc_id, http=_http())
+        return _render_task(bundle)
+    if uniprot_acc:
+        bundle = resolve(uniprot_acc, http=_http())
+        return _render_task(bundle)
+    raise LookupError(
+        f"_resolve_task_text({gene!r}) called without hgnc_id OR uniprot_acc — "
+        "symbol-only resolution was removed in resolver v3. The input row "
+        "must supply at least one stable identifier; if a bench TSV is "
+        "missing both, regenerate it from a stable-ID source."
+    )
 
 
 def _parse_json_response(text: str) -> dict[str, Any] | None:
@@ -315,13 +361,17 @@ def _run_one(
     replicate: int,
     truth_verdict: str,
     truth_class: str,
+    hgnc_id: str | None = None,
+    uniprot_acc: str | None = None,
 ) -> RunRecord:
     cfg = VARIANTS[variant]
     system_prompt = _load_prompt(cfg["prompt"])
 
     if cfg["resolver"]:
         try:
-            user_message = _resolve_task_text(gene_symbol)
+            user_message = _resolve_task_text(
+                gene_symbol, hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
+            )
         except Exception as exc:  # noqa: BLE001
             return RunRecord(
                 variant=variant, model=model, gene_symbol=gene_symbol,
@@ -587,6 +637,8 @@ def _run_one_with_retry(
     replicate: int,
     truth_verdict: str,
     truth_class: str,
+    hgnc_id: str | None = None,
+    uniprot_acc: str | None = None,
 ) -> RunRecord:
     """``_run_one`` with one automatic retry for transient failures
     or schema-mismatch emissions, plus a refusal-fallback to the
@@ -614,6 +666,7 @@ def _run_one_with_retry(
     first = _run_one(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+        hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
     )
 
     # Refusal fallback: when a resolver-context variant gets refused,
@@ -623,6 +676,7 @@ def _run_one_with_retry(
         naive_attempt = _run_one(
             variant="naive", model=model, gene_symbol=gene_symbol,
             replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+            hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
         )
         if naive_attempt.predicted_verdict is not None:
             return naive_attempt
@@ -635,6 +689,7 @@ def _run_one_with_retry(
     second = _run_one(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
+        hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
     )
     return second
 
@@ -710,22 +765,23 @@ def main() -> None:
                     choices=list(MODEL_PRICING.keys()),
                     help="Anthropic model id(s). Pass multiple to run all in one "
                          "invocation under a shared thread pool — outputs separate "
-                         "per-model directories under data/eval/triage_subbench_v1/.")
+                         "per-model directories under the configured --out-root.")
     ap.add_argument("--replicates", type=int, default=2,
                     help="How many times to run each (variant, gene) cell.")
     ap.add_argument("--variants", nargs="+", default=list(VARIANTS.keys()),
                     choices=list(VARIANTS.keys()),
                     help="Which variants to run (default: all 4).")
     ap.add_argument("--genes", nargs="*", default=None,
-                    help="Optional gene-symbol subset (default: full sub-benchmark).")
+                    help="Optional gene-symbol subset (default: every row in the input).")
     ap.add_argument("--concurrency", type=int, default=8,
                     help="ThreadPoolExecutor workers.")
     ap.add_argument("--dry-run", action="store_true",
                     help="Print the planned cells and exit without API calls.")
-    ap.add_argument("--bench", choices=list(BENCH_TSV_BY_NAME.keys()), default="subbench",
-                    help="Which benchmark to run: 'subbench' (17 persistent-error genes) "
-                         "or 'benchmark' (full 147-gene triage_benchmark_v1). Ignored "
-                         "when --gene-list is provided.")
+    ap.add_argument("--bench", choices=list(BENCH_TSV_BY_NAME.keys()), default="benchmark",
+                    help="Which benchmark to run. Currently only 'benchmark' (the "
+                         "147-gene triage_benchmark_v1) is wired up; the 17-row "
+                         "sub-bench was retired 2026-05-16. Ignored when "
+                         "--gene-list is provided.")
     ap.add_argument("--gene-list", default=None,
                     help="Path to a TSV with at least a 'gene_symbol' column — runs "
                          "the triage agent on every gene listed, with no ground truth. "
@@ -774,17 +830,17 @@ def main() -> None:
         print(f"🔒 SMOKE MODE — out_root={smoke_dir.relative_to(ROOT)}  run_id={args.run_id}")
         print()
 
-    global SUBBENCH_TSV, OUT_ROOT
+    global BENCH_TSV, OUT_ROOT
     if args.gene_list:
         # Unlabeled sweep — the "input TSV" is the gene-list itself.
-        SUBBENCH_TSV = Path(args.gene_list)
-        if not SUBBENCH_TSV.exists():
-            raise SystemExit(f"--gene-list path does not exist: {SUBBENCH_TSV}")
+        BENCH_TSV = Path(args.gene_list)
+        if not BENCH_TSV.exists():
+            raise SystemExit(f"--gene-list path does not exist: {BENCH_TSV}")
         # Derive out-root from the gene-list filename (drop .tsv suffix).
-        default_out = ROOT / "data" / "eval" / f"triage_{SUBBENCH_TSV.stem}_v1"
+        default_out = ROOT / "data" / "eval" / f"triage_{BENCH_TSV.stem}_v1"
         OUT_ROOT = Path(args.out_root) if args.out_root else default_out
     else:
-        SUBBENCH_TSV, OUT_ROOT = BENCH_TSV_BY_NAME[args.bench]
+        BENCH_TSV, OUT_ROOT = BENCH_TSV_BY_NAME[args.bench]
         if args.out_root:
             OUT_ROOT = Path(args.out_root)
 
@@ -794,12 +850,12 @@ def main() -> None:
     # export. Same precedence rules as the main CLI — see env.py.
     load_env()
 
-    with SUBBENCH_TSV.open() as f:
+    with BENCH_TSV.open() as f:
         rows = list(csv.DictReader(f, delimiter="\t"))
     if not rows:
-        raise SystemExit(f"{SUBBENCH_TSV} has no data rows")
+        raise SystemExit(f"{BENCH_TSV} has no data rows")
     if "gene_symbol" not in rows[0]:
-        raise SystemExit(f"{SUBBENCH_TSV} missing required 'gene_symbol' column")
+        raise SystemExit(f"{BENCH_TSV} missing required 'gene_symbol' column")
     if args.genes:
         rows = [r for r in rows if r["gene_symbol"] in set(args.genes)]
         if not rows:
@@ -822,7 +878,7 @@ def main() -> None:
     sweep_label = "Gene-list" if args.gene_list else f"{args.bench.capitalize()} bench"
     print(f"{sweep_label}: {len(rows)} proteins × {len(args.variants)} variants × "
           f"{args.replicates} replicates × {len(args.model)} model(s) = {len(cells)} cells")
-    print(f"Input:   {SUBBENCH_TSV}")
+    print(f"Input:   {BENCH_TSV}")
     print(f"Models:  {', '.join(args.model)}")
     print(f"Output:  {OUT_ROOT}")
     if args.gene_list:
@@ -844,7 +900,7 @@ def main() -> None:
         import uuid as _uuid
         from accessible_surfaceome.cloud.triage_upload import D1RunSink
         run_id = args.run_id or f"{datetime.now(UTC).strftime('%Y-%m-%dT%H%M%SZ')}_{_uuid.uuid4().hex[:8]}"
-        d1_sink = D1RunSink(run_id=run_id, bench_tsv=SUBBENCH_TSV)
+        d1_sink = D1RunSink(run_id=run_id, bench_tsv=BENCH_TSV)
         print(f"D1 streaming enabled: run_id={d1_sink.run_id}  bench_version={d1_sink.bench_version}")
         print()
 
@@ -882,6 +938,13 @@ def main() -> None:
                 variant=v, model=m, gene_symbol=row["gene_symbol"],
                 replicate=rep, truth_verdict=row["ground_truth_verdict"],
                 truth_class=row["class"],
+                # Pass-throughs to the resolver. Stable-identifier
+                # priority per CLAUDE.md "Gene identifier resolution":
+                # hgnc_id (cohort path) > uniprot_acc (bench TSV
+                # path) > raise. Symbol-only resolution was removed
+                # in resolver v3.
+                hgnc_id=(row.get("hgnc_id") or None),
+                uniprot_acc=(row.get("uniprot_acc") or None),
             ): (v, m, row["gene_symbol"], rep)
             for (v, m, row, rep) in cells
         }

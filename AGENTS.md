@@ -55,6 +55,105 @@ The registry is local (per-worktree, gitignored under `.runs/`). surface_triage 
 - `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`. The CLI loads it from the repo root at startup with shell-env precedence; see `.env.example` for documented keys (`ANTHROPIC_API_KEY`, `NCBI_API_KEY`).
 - Run `git lfs fsck` only after full data hydration.
 
+## Gene identifier resolution
+
+When writing any code that takes "a gene" as input — agent tool, sweep
+runner, figure generator, manual one-off — **the entry point must be a
+stable identifier, not a gene symbol.** Bare gene symbols silently
+resolve to the wrong protein for ~0.2% of human genes (~45 of 19k),
+including COX1 (cyclooxygenase vs the mitochondrial cytochrome c
+oxidase the cohort actually meant) and WAS (Wiskott-Aldrich protein vs
+the MT-RNR1 rRNA gene). See
+[`scripts/audit_resolver_hgnc_id_v3.py`](scripts/audit_resolver_hgnc_id_v3.py)
+for the audit pattern + the per-symbol divergence list at
+`data/analysis/resolver_definitive_audit_v3.tsv`.
+
+### Canonical resolver
+- [`src/accessible_surfaceome/tools/gene_lookup.py:resolve_by_hgnc_id`](src/accessible_surfaceome/tools/gene_lookup.py)
+  is the preferred entry point. Cohort-driven code calls it with
+  `resolve_by_hgnc_id(row["hgnc_id"], http=http)`. The cohort file
+  carries `hgnc_id` for every gene (100% coverage).
+- Legacy `resolve(symbol_or_acc)` stays for free-text agent tool calls;
+  it emits a `UserWarning` on the symbol path so misuse is auditable.
+
+### Stable-ID cache in D1
+Every gene's resolved (uniprot_acc, ensembl_gene, ncbi_gene_id,
+ensembl_canonical_protein) is materialized in D1's `gene_identifier`
+table (private) / `gene_identifier_public` (Worker mirror). Downstream
+tools query this directly:
+
+    SELECT uniprot_acc, ensembl_gene, ncbi_gene_id
+    FROM gene_identifier_public WHERE hgnc_id = ?;
+
+so they don't re-resolve from symbol. Rebuilt with
+`scripts/build_gene_identifier_table.py` after resolver or cohort
+changes; `resolver_version` column lets consumers detect staleness.
+
+### Downstream-identifier-per-source rule
+| Source | Identifier |
+|---|---|
+| AlphaFold DB / PDB / InterPro / Pfam / DrugBank / Reactome (protein) | `uniprot_acc` |
+| Ensembl / GTEx / HPA / Open Targets / STRING (gene) | `hgnc_id` or `ensembl_gene` |
+| PubMed / Europe PMC (free text) | OR of `aliases + previous_symbols + hgnc_symbol` |
+| dbSNP / ClinVar / OMIM | `ncbi_gene_id` or `hgnc_id` |
+
+Symbol-keyed queries to structured databases reintroduce the same bug
+class one layer down — don't.
+
+Regression tests at
+[`tests/test_gene_lookup_resolver.py`](tests/test_gene_lookup_resolver.py)
+pin BBC3, ND4, PRNP, TSPO, ABHD4, HSD17B8, SACK1A, CLMB, COX1, COX2,
+WAS — any picker / fallback regression breaks these.
+
+## Working with the D1 databases
+
+Two D1s: `surfaceome_agents` (private, full reasoning + costs) and
+`surfaceome_public` (column-whitelisted mirror the Worker reads).
+Schemas: [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
+[`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
+
+### Query from Python
+
+`accessible_surfaceome.cloud.d1_client.D1Client` speaks Cloudflare's
+REST API directly — no wrangler needed. Auth pulls from `.env`
+(`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`):
+
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.env import load_env
+    load_env()
+    with D1Client() as d1:
+        rows = d1.query("SELECT uniprot_acc FROM gene_identifier WHERE hgnc_id = ?;", ["HGNC:1234"])
+
+D1's HTTP API doesn't accept multi-statement batches; submit one
+statement per `query()` call (loop for bulk loads).
+
+### Applying DDL when wrangler isn't available
+
+Use `D1Client.query()` per `CREATE TABLE` / `CREATE INDEX`
+statement:
+
+    statements = ["CREATE TABLE ...;", "CREATE INDEX ...;"]
+    with D1Client() as d1:
+        for s in statements: d1.query(s, [])
+
+### Key tables
+
+| Table | Purpose | Primary lookup |
+|---|---|---|
+| `gene_identifier` | Stable-ID cache (per-gene canonical IDs). **Read here before re-resolving anything.** | `hgnc_id`, `hgnc_symbol`, `uniprot_acc` |
+| `triage_run` | Per-cell triage records. | `(run_id, gene_symbol, model, prompt_variant, replicate)` |
+| `deep_dive_run` | Surface-annotator deep-dive records. | `(run_id, gene_symbol)` |
+| `candidate_universe_public` | Catalog index. | `(universe_version, gene_symbol, uniprot_acc)` |
+| `benchmark_version` | Bench-snapshot symbol pinning. | `(bench_version, gene_symbol)` |
+
+### `run_id` conventions
+
+- `genome_full_sonnet_ncbi_v1` — canonical 2026-05-12 Sonnet sweep.
+- `*__resolver_v3_fix` suffix — corrected re-runs that supersede a
+  parent run for affected cells (originals preserved). Analytics
+  that should reflect the fix must COALESCE-prefer the fix run
+  over its parent; see CLAUDE.md for the canonical query.
+
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions
 and the rubric we use to assess diffs. Quick summary: Python 3.11+,
@@ -181,15 +280,17 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   `deep_dive_evidence`, `deep_dive_search_log`) plus 3 views. Triage
   and deep-dive share the DB so cross-table joins
   (`triage_vs_deep_dive`) are cheap.
-- **Upload**: `scripts/upload_triage_runs_to_d1.py` after any sweep
-  produces per-cell JSON records under `data/eval/triage_subbench_v1/`.
-- **Verify**: `scripts/d1_triage_verify.py` reconciles D1 vs on-disk
-  JSON; exits non-zero on divergence.
+- **Upload**: `scripts/triage_runner.py --d1 --run-id <tag>` streams
+  each completed cell into `triage_run` via `D1RunSink` as the sweep
+  progresses. No separate batch-upload step. Idempotent on
+  `(run_id, gene_symbol, model, prompt_variant, replicate, prompt_sha)`,
+  so restarting a crashed sweep with the same `--run-id` skips cells
+  that already landed.
 - **CI backup → R2**: every push to `main` that touches the relevant
-  paths (`cloudflare/d1_schema.sql`, `data/eval/triage_subbench_v1/**`,
-  `data/annotations/**`, `data/triage/**`,
-  `src/accessible_surfaceome/cloud/**`, the uploader / backup scripts
-  themselves) triggers `scripts/d1_export_to_r2.sh`, which runs
+  paths (`cloudflare/d1_schema.sql`, `data/annotations/**`,
+  `data/triage/**`, `src/accessible_surfaceome/cloud/**`, the
+  backup scripts themselves) triggers `scripts/d1_export_to_r2.sh`,
+  which runs
   `wrangler d1 export` and uploads to the R2 bucket
   `deliverome-d1-backups` under a dated key plus a stable
   `latest.sql` pointer.

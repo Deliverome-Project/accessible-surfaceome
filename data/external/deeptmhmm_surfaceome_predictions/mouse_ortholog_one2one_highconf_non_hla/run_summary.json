@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c5cc898b6cae25e78199bd3322f8bf76e03d4444a33755ed6e1db81b07f8914c
-size 965
+{
+  "batch_metadata_csv": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/mouse_ortholog_one2one_highconf_non_hla/batch_metadata.csv",
+  "cohort": "mouse_ortholog_one2one_highconf_non_hla",
+  "generated_at_utc": "2026-03-25T02:58:58.825757+00:00",
+  "input_fasta": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_inputs/mouse_ortholog_one2one_highconf_non_hla.fasta",
+  "log_path": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/logs/mouse_ortholog_one2one_highconf_non_hla.log",
+  "max_sequences_per_batch": 250,
+  "merged_topologies_path": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/mouse_ortholog_one2one_highconf_non_hla/predicted_topologies.3line",
+  "n_batches": 8,
+  "n_input_sequences": 1971,
+  "n_merged_topology_records": 1971
+}

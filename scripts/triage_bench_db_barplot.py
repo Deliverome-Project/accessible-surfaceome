@@ -12,7 +12,7 @@ Callers covered:
 * **1 routed LLM cell** — ``haiku/ncbi → sonnet/ncbi``: accept haiku's
   verdict when ``confidence == "high"``, otherwise escalate to
   sonnet/ncbi. Mirrors the lazy-ensemble Combined column in the
-  subbench by-variant plot.
+  triage bench by-variant plot.
 
 Correctness convention (binary: surface vs not-surface):
 
@@ -93,21 +93,21 @@ LLM_CELLS: list[tuple[str, str, str]] = [
 ]
 LLM_LABEL = {
     "_llm_haiku_naive":        "Haiku (naive)",
-    "_llm_haiku_ncbi":         "Haiku (+ NCBI)",
-    "_llm_haiku_pubmed_ncbi":  "Haiku (+ NCBI + PubMed)",
-    "_llm_haiku_web_ncbi":     "Haiku (+ NCBI + web)",
+    "_llm_haiku_ncbi":         "Haiku (+ IDs)",
+    "_llm_haiku_pubmed_ncbi":  "Haiku (+ IDs + PubMed)",
+    "_llm_haiku_web_ncbi":     "Haiku (+ IDs + web)",
     "_llm_sonnet_naive":       "Sonnet (naive)",
-    "_llm_sonnet_ncbi":        "Sonnet (+ NCBI)",
-    "_llm_sonnet_pubmed_ncbi": "Sonnet (+ NCBI + PubMed)",
-    "_llm_sonnet_web_ncbi":    "Sonnet (+ NCBI + web)",
+    "_llm_sonnet_ncbi":        "Sonnet (+ IDs)",
+    "_llm_sonnet_pubmed_ncbi": "Sonnet (+ IDs + PubMed)",
+    "_llm_sonnet_web_ncbi":    "Sonnet (+ IDs + web)",
     "_llm_opus_naive":         "Opus (naive)",
-    "_llm_opus_ncbi":          "Opus (+ NCBI)",
+    "_llm_opus_ncbi":          "Opus (+ IDs)",
     "_llm_combined":           "Combined (Haiku→Sonnet)",
 }
 
 # Combined cell: confidence-routed Haiku+NCBI → Sonnet+NCBI. Accept
 # Haiku when it emits `confidence == "high"`, otherwise escalate to
-# Sonnet. Mirrors the subbench by-variant Combined group.
+# Sonnet. Mirrors the triage bench by-variant Combined group.
 COMBINED_KEY = "_llm_combined"
 COMBINED_PRIMARY = ("_llm_haiku_ncbi", "_llm_sonnet_ncbi")  # (cheap, escalation)
 
@@ -116,7 +116,7 @@ LLM_KEYS = [k for k, _, _ in LLM_CELLS] + [COMBINED_KEY]
 # Palette — DBs use the brand categorical palette (5 distinct colors).
 # LLM cells get a sequential Claude-orange walk: lighter = less context /
 # smaller model, darker = more context / larger model. Same family as the
-# subbench by-variant plot. Base Claude orange is #d87851.
+# triage bench by-variant plot. Base Claude orange is #d87851.
 DB_PALETTE = {label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)}
 LLM_PALETTE = {
     "_llm_haiku_naive":        "#f7d8c4",   # tint 65%
@@ -144,11 +144,9 @@ BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
 CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 # Per-cell LLM predictions used to come from the JSON tree at
 # data/eval/triage_bench_v1/<model>/<variant>/<gene>_run1.json. Those
-# files are now sourced from D1 — uploaded by
-# ``scripts/upload_triage_runs_to_d1.py --run-id mainbench_canonical_v1
-# --bench-tsv data/eval/triage_benchmark_v1.tsv --runs-root
-# data/eval/triage_bench_v1``. Update this constant + re-upload if the
-# bench is re-run with a different prompt.
+# files are now sourced from D1 — populated by running the triage
+# runner with `--d1 --run-id mainbench_canonical_v1`. Update this
+# constant if the bench is re-run under a different run_id.
 MAINBENCH_D1_RUN_ID = "mainbench_canonical_v1"
 
 # When True, ``load_benchmark_with_votes`` rewrites the per-benchmark
@@ -510,7 +508,7 @@ def _draw_group_separators(
 
 
 def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_class") -> None:
-    """Per-class accuracy of Sonnet + NCBI vs the 5 M1 surface DBs.
+    """Per-class accuracy of Sonnet + IDs vs the 5 M1 surface DBs.
 
     Compares one canonical LLM cell against the five classical
     surface-flag sources across four columns:
@@ -657,9 +655,9 @@ def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall"
     VARIANT_ORDER = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"]
     VARIANT_LABEL = {
         "naive":        "naive",
-        "ncbi":         "+ NCBI",
-        "web_ncbi":     "+ NCBI + web",
-        "pubmed_ncbi":  "+ NCBI + PubMed",
+        "ncbi":         "+ IDs",
+        "web_ncbi":     "+ IDs + web",
+        "pubmed_ncbi":  "+ IDs + PubMed",
     }
     # Hatch by variant — solid for naive, denser diagonal / cross /
     # dots as more context is layered on.
@@ -812,7 +810,7 @@ def _llm_cost_per_call() -> dict[str, float]:
       sys_prompt + user_message and amortize the sys portion as if
       caching had been active across the session.
 
-    This makes "Sonnet (+ NCBI)" comparable to "Sonnet (+ NCBI + PubMed)"
+    This makes "Sonnet (+ IDs)" comparable to "Sonnet (+ IDs + PubMed)"
     on the same x-axis without one being unfairly boosted because its
     capture happened to disable caching.
     """

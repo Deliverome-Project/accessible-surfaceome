@@ -1,3 +1,51 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:1722bb1dcee288e6b7113208ac902c55f62d9c71b080b5d8c429014faf878fad
-size 1856
+{
+  "dataset": "uniprot_ensembl_xrefs",
+  "extras": {
+    "fetch_finished_at_utc": "2026-04-17T19:58:29.400589+00:00",
+    "fetch_started_at_utc": "2026-04-17T19:57:56.009933+00:00",
+    "n_ensg_pairs": 21811,
+    "n_ensp_pairs": 50864,
+    "n_entries_fetched": 20431,
+    "page_size": 500,
+    "query": "organism_id:9606 AND reviewed:true",
+    "return_fields": [
+      "accession",
+      "id",
+      "xref_ensembl"
+    ],
+    "server_total_results": "20431",
+    "uniprot_release": "2026_01",
+    "uniprot_release_date": "28-January-2026"
+  },
+  "generated_at_utc": "2026-04-17T19:58:29.400598+00:00",
+  "n_files": 2,
+  "records": [
+    {
+      "captured_at_utc": "2026-04-17T19:58:29.399620+00:00",
+      "dataset": "uniprot_ensembl_xrefs",
+      "file_name": "ensg_to_uniprot.tsv",
+      "local_path": "data/external/uniprot_ensembl_xrefs/ensg_to_uniprot.tsv",
+      "note": "Deduplicated (ENSG, UniProt primary, UniProt entry name).",
+      "sha256": "f75b5af0b76ba3962da9ab147a5d73d1213af7188dd7651d354465ffbde87cbc",
+      "size_bytes": 758369,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search",
+      "species": "Homo sapiens",
+      "status": "derived",
+      "taxid": "9606"
+    },
+    {
+      "captured_at_utc": "2026-04-17T19:58:29.400525+00:00",
+      "dataset": "uniprot_ensembl_xrefs",
+      "file_name": "ensp_to_uniprot.tsv",
+      "local_path": "data/external/uniprot_ensembl_xrefs/ensp_to_uniprot.tsv",
+      "note": "Deduplicated (ENSP, UniProt primary, UniProt entry name).",
+      "sha256": "273f1c929bc7984df78322c7c8df065b8be7be8efb3f92a6bea54b0bf8571b8e",
+      "size_bytes": 1764664,
+      "source_url": "https://rest.uniprot.org/uniprotkb/search",
+      "species": "Homo sapiens",
+      "status": "derived",
+      "taxid": "9606"
+    }
+  ],
+  "script": "scripts/data_collection/download_uniprot_ensembl_xrefs.py"
+}

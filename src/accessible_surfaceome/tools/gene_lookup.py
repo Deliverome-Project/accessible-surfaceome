@@ -149,53 +149,61 @@ def _ensure_acc(symbol_or_acc: str, *, http: CachedHTTP) -> str:
 
 
 def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
-    """Resolve a symbol or accession into a canonical identifier bundle.
+    """Resolve a **UniProt accession** into a canonical identifier bundle.
 
-    UniProt is the study's primary identifier. If we can't reach a reviewed
-    human UniProt accession from the input, we raise — the gene is out of scope
-    rather than a record with a null acc.
+    Symbol-input resolution was removed in resolver v3 because the
+    symbol-keyed lookup path silently returned the wrong protein for
+    ~0.2% of human genes (45 of 19k cohort symbols — COX1 → cyclo-
+    oxygenase instead of mitochondrial cytochrome c oxidase, WAS →
+    an rRNA instead of the Wiskott-Aldrich protein, etc. — see
+    ``scripts/audit_resolver_hgnc_id_v3.py`` for the documented
+    failure modes).
+
+    What to call instead, by input shape:
+
+      * **HGNC ID** (e.g. ``HGNC:1234``) →
+        ``resolve_by_hgnc_id(hgnc_id, http=http)``. The canonical
+        entry point. Cohort rows always have one (100% coverage).
+      * **Gene symbol** (e.g. ``CCR4``) → first look up its HGNC ID
+        from D1's ``gene_identifier_public`` table:
+            ``SELECT hgnc_id FROM gene_identifier_public WHERE hgnc_symbol = ?``
+        then call ``resolve_by_hgnc_id`` with the result. See
+        CLAUDE.md's "Gene identifier resolution" section.
+      * **UniProt accession** (e.g. ``P51679``) → this function. The
+        regex check filters out gene symbols that happen to match
+        the accession shape (P2RY10-14, B3GNT3-9, H2BC12, etc.) so
+        they raise here rather than silently round-tripping.
+
+    Raises ``LookupError`` with an actionable message when the input
+    isn't accession-shaped — callers must migrate to one of the two
+    paths above.
     """
 
-    # The UniProt-accession regex is structurally permissive — it accepts
-    # any string of the right shape, so gene symbols that happen to match
-    # the pattern (P2RY10-14, B3GNT3-9, H2BC12, etc.) get misrouted to the
-    # accession path and 404 on UniProt. When the accession lookup 404s,
-    # fall back to the symbol search before giving up.
     raw = symbol_or_acc.strip()
-    if looks_like_uniprot_acc(raw):
-        uniprot_acc = raw.upper()
-        try:
-            entry = _uniprot_entry(uniprot_acc, http=http)
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code != 404:
-                raise
-            # Coincidental regex match — try symbol search instead.
-            uniprot_acc = _uniprot_search_by_symbol(raw, http=http)
-            if uniprot_acc is None:
-                raise LookupError(
-                    f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — "
-                    "out of study scope (initial accession-shape lookup 404'd, "
-                    "symbol search also failed)"
-                )
-            entry = _uniprot_entry(uniprot_acc, http=http)
-    else:
-        uniprot_acc = _uniprot_search_by_symbol(raw, http=http)
-        if uniprot_acc is None:
-            # UniProt's symbol search misses newly-registered HGNC
-            # entries whose gene_name field hasn't propagated to
-            # UniProt's index yet (SACK1A-H series, MIMS1/2, MISO1,
-            # ZBED8L/11, etc. — confirmed against HGNC 2026-05). HGNC
-            # carries an explicit ``uniprot_ids`` cross-reference for
-            # these; consult it before giving up.
-            hgnc_xref = _hgnc_record(raw, http=http) or {}
-            xref_ids = hgnc_xref.get("uniprot_ids") or []
-            if xref_ids:
-                uniprot_acc = xref_ids[0]
-            else:
-                raise LookupError(
-                    f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — out of study scope"
-                )
+    if not looks_like_uniprot_acc(raw):
+        raise LookupError(
+            f"resolve() no longer accepts gene symbols (got {symbol_or_acc!r}). "
+            "Use resolve_by_hgnc_id(hgnc_id) instead, or look up the symbol's "
+            "HGNC ID via D1: SELECT hgnc_id FROM gene_identifier_public "
+            "WHERE hgnc_symbol = ?. See CLAUDE.md 'Gene identifier resolution' "
+            "section for the migration playbook."
+        )
+    uniprot_acc = raw.upper()
+    try:
         entry = _uniprot_entry(uniprot_acc, http=http)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        # Coincidental regex match against a gene symbol that happens
+        # to look like a UniProt acc. The legacy code used to fall
+        # back to symbol search here — we now require the caller to
+        # disambiguate by looking up the HGNC ID first.
+        raise LookupError(
+            f"{uniprot_acc!r} 404'd at UniProt and looks like it might be "
+            "a gene symbol matching the accession regex (e.g. P2RY10-14). "
+            "If so, route through resolve_by_hgnc_id — see the resolve() "
+            "docstring + CLAUDE.md."
+        ) from exc
     status, merged_into = _entry_status(entry)
 
     primary_symbol = _entry_primary_symbol(entry) or symbol_or_acc.strip()
@@ -653,6 +661,283 @@ def miss_diagnosis(uniprot_acc: str, *, http: CachedHTTP) -> MissDiagnosis:
 def _uniprot_entry(acc: str, *, http: CachedHTTP) -> dict[str, Any]:
     url = f"https://rest.uniprot.org/uniprotkb/{acc}.json"
     return http.get_json(url, source="uniprot", ttl_days=_TTL["uniprot"])
+
+
+def resolve_by_hgnc_id(hgnc_id: str, *, http: CachedHTTP) -> IdentifierBundle:
+    """Resolve directly from a stable HGNC ID — preferred over the
+    symbol-keyed ``resolve()`` whenever the cohort row carries one.
+
+    HGNC IDs are one-per-gene and never reassigned, so the three
+    residual failure modes documented in ``_uniprot_search_by_symbol``
+    don't apply here:
+
+      * **Primary-name collisions.** Two reviewed UniProt entries can
+        share a primary ``geneName.value`` (e.g. across HLA / Ig / TCR
+        gene-segment families); ``_uniprot_search_by_symbol`` returns
+        the first such hit, which is server-rank-dependent. By
+        contrast, HGNC's ``uniprot_ids`` xref is a closed set per
+        gene and we explicitly pick the canonical Swiss-Prot entry
+        from it.
+      * **HGNC fallback's ``uniprot_ids[0]``.** The legacy fallback
+        path silently took index 0 of HGNC's xref list when UniProt's
+        symbol search returned nothing; this picker iterates and
+        applies a canonicalization rule.
+      * **Symbol-reassignment drift.** When HGNC re-assigns a symbol
+        from one gene to another (rare but documented), a
+        symbol-keyed query returns the new gene; an HGNC-ID-keyed
+        query returns the gene the cohort actually meant.
+
+    Raises ``LookupError`` when the HGNC record has no
+    ``uniprot_ids`` xref — that gene is out of study scope (no
+    reviewed human protein), same contract as ``resolve``.
+    """
+
+    raw = hgnc_id.strip()
+    if not raw.upper().startswith("HGNC:"):
+        raw = f"HGNC:{raw}"
+    hgnc = _hgnc_record_by_id(raw, http=http)
+    if not hgnc:
+        raise LookupError(f"no HGNC record for {hgnc_id!r}")
+
+    primary_symbol = (hgnc.get("symbol") or "").strip()
+    uniprot_ids = list(hgnc.get("uniprot_ids") or [])
+    uniprot_acc: str | None = None
+
+    if uniprot_ids:
+        # Path A — HGNC has the xref. Pick canonical with the
+        # primary-name + age tiebreak.
+        uniprot_acc = _pick_canonical_uniprot(
+            uniprot_ids, http=http, prefer_primary_name=primary_symbol or None
+        )
+    elif primary_symbol:
+        # Path B — HGNC curates the gene but hasn't filled the
+        # UniProt xref yet (~8 of 19k cases in the audit: ABHD4,
+        # C10orf90, HSD17B8, LGTN, LRTOMT, PTPRZ2, RSC1A1, UBE2O).
+        # Fall back to UniProt symbol search using HGNC's primary
+        # symbol — that's the canonical name UniProt indexes
+        # against (more current than whatever the cohort row had).
+        uniprot_acc = _uniprot_search_by_symbol(primary_symbol, http=http)
+        # Path C — HGNC's primary symbol doesn't hit either (rare
+        # mid-rename windows). Try HGNC's previous symbols.
+        if uniprot_acc is None:
+            for prev in hgnc.get("prev_symbol") or []:
+                uniprot_acc = _uniprot_search_by_symbol(prev, http=http)
+                if uniprot_acc:
+                    break
+
+    if uniprot_acc is None:
+        raise LookupError(
+            f"HGNC {hgnc_id} (primary={primary_symbol!r}) has no "
+            "uniprot_ids xref and UniProt symbol search of the "
+            "primary + previous symbols returned nothing — out of "
+            "study scope"
+        )
+
+    entry = _uniprot_entry(uniprot_acc, http=http)
+    return _bundle_from_entry(
+        entry,
+        uniprot_acc=uniprot_acc,
+        hgnc=hgnc,
+        http=http,
+    )
+
+
+def _hgnc_record_by_id(hgnc_id: str, *, http: CachedHTTP) -> dict[str, Any] | None:
+    """Fetch an HGNC record by ID. ``hgnc_id`` must include the
+    ``HGNC:`` prefix (HGNC's REST API requires it). Same TTL +
+    cache-source as ``_hgnc_record`` so symbol- and ID-keyed
+    lookups share the cache."""
+
+    url = f"https://rest.genenames.org/fetch/hgnc_id/{hgnc_id}"
+    payload = http.get_json(
+        url, source="hgnc", ttl_days=_TTL["hgnc"], headers={"Accept": "application/json"}
+    )
+    docs = ((payload or {}).get("response") or {}).get("docs") or []
+    return docs[0] if docs else None
+
+
+def _pick_canonical_uniprot(
+    uniprot_ids: list[str],
+    *,
+    http: CachedHTTP,
+    prefer_primary_name: str | None = None,
+) -> str:
+    """Pick the canonical reviewed Swiss-Prot accession from an HGNC
+    ``uniprot_ids`` list, with the same accession-history reconciliation
+    the M1 candidate-universe merge applies (``merge/normalize.py``).
+
+    HGNC sometimes lists multiple UniProt accs for one gene (canonical
+    + isoform-specific reviewed entries; less commonly canonical +
+    a TrEMBL stub). HGNC's xref is also curated manually and lags
+    UniProt's monthly merges, so the list can include:
+
+      * **Secondary accs** that UniProt has merged into a current
+        primary. Mirroring ``normalize_accessions``' ``sec_ac.txt``
+        rewrite, follow the merge chain to the current primary.
+      * **Deleted Swiss-Prot accs**. Mirroring the ``delac_sp.txt``
+        drop, skip them entirely.
+
+    Canonical-pick tiebreak (each higher-priority field decides
+    before the next is consulted):
+
+      1. **reviewed Swiss-Prot** > unreviewed TrEMBL.
+      2. **primary ``geneName.value`` matches ``prefer_primary_name``**
+         > everything else. Lifts entries that name the gene as
+         primary above isoform-specific / fragment / variant
+         entries that share the symbol only as a synonym.
+      3. **canonical-isoform** (no ``-N`` suffix) > isoform-specific.
+      4. **earliest ``entryAudit.firstPublicDate``**. Swiss-Prot's
+         own canonical convention — the first reviewed entry is the
+         canonical record; later additions are usually variants,
+         fragments, or refined-annotation duplicates. Audit found
+         this consistently identifies the canonical (PRNP 1986 vs
+         2012, ND4 1986 vs 2026, TSPO 1993 vs 2009, BBC3 2004 vs
+         2012). The lex-sort tiebreak used previously got these all
+         wrong (lex order has no relation to canonical-ness).
+      5. **lexicographic accession** as final deterministic tie.
+
+    Raises ``LookupError`` when *every* listed acc resolves to
+    merged-with-no-target / deleted / 404 — same contract as the M1
+    merge's "no rows surface for this gene".
+    """
+
+    if not uniprot_ids:
+        raise ValueError("uniprot_ids is empty")
+
+    target = (prefer_primary_name or "").upper().strip()
+    candidates: list[tuple[int, int, int, str, str]] = []
+    for acc in uniprot_ids:
+        try:
+            entry = _uniprot_entry(acc, http=http)
+        except httpx.HTTPStatusError as exc:
+            if exc.response.status_code == 404:
+                continue
+            raise
+
+        status, merged_into = _entry_status(entry)
+        # Mirror M1 ``normalize_accessions`` secondary→primary rewrite:
+        # when HGNC's xref points at a merged acc, walk one hop to
+        # the current primary. UniProt itself returns a single hop
+        # at most (multi-hop merges are flattened to the final
+        # primary), so one re-fetch is sufficient.
+        if status == "merged" and merged_into:
+            try:
+                entry = _uniprot_entry(merged_into, http=http)
+            except httpx.HTTPStatusError as exc:
+                if exc.response.status_code == 404:
+                    continue
+                raise
+            status, _ = _entry_status(entry)
+            acc = merged_into
+
+        # Mirror M1's ``delac_sp.txt`` drop. Also drops any acc whose
+        # merged-into target is itself deleted.
+        if status == "deleted":
+            continue
+
+        reviewed_rank = (
+            0 if entry.get("entryType") == "UniProtKB reviewed (Swiss-Prot)" else 1
+        )
+        primary_name = (_entry_primary_symbol(entry) or "").upper().strip()
+        name_match_rank = 0 if (target and primary_name == target) else 1
+        isoform_rank = 1 if "-" in acc else 0
+        # ``firstPublicDate`` is ISO YYYY-MM-DD, so string sort is
+        # chronological. Missing dates sort last (treat as "never
+        # canonical" rather than "ancient").
+        first_public = (
+            (entry.get("entryAudit") or {}).get("firstPublicDate") or "9999-99-99"
+        )
+        candidates.append(
+            (reviewed_rank, name_match_rank, isoform_rank, first_public, acc)
+        )
+
+    if not candidates:
+        raise LookupError(
+            f"every uniprot_id in HGNC xref {uniprot_ids!r} resolved to "
+            "merged-with-no-target / deleted / 404 — out of study scope"
+        )
+    candidates.sort()
+    return candidates[0][4]
+
+
+def _bundle_from_entry(
+    entry: dict[str, Any],
+    *,
+    uniprot_acc: str,
+    hgnc: dict[str, Any] | None,
+    http: CachedHTTP,
+) -> IdentifierBundle:
+    """Shared bundle-assembly logic for ``resolve`` and
+    ``resolve_by_hgnc_id``. Lifted verbatim from the post-search tail
+    of ``resolve()`` so behavior matches when the same UniProt entry
+    is reached through either path. Caller supplies the resolved
+    UniProt entry + the HGNC record (None forces a symbol-keyed HGNC
+    lookup off the entry's primary symbol — same as the legacy path)."""
+
+    status, merged_into = _entry_status(entry)
+    primary_symbol = _entry_primary_symbol(entry) or ""
+    xrefs = _index_xrefs(entry)
+    ensembl_canonical_protein = _ensembl_canonical_protein(entry)
+
+    if hgnc is None:
+        hgnc = _hgnc_record(primary_symbol, http=http) or {}
+    hgnc_id = hgnc.get("hgnc_id") or (xrefs.get("HGNC") or [""])[0]
+    approved_name = hgnc.get("name")
+    hgnc_aliases = list(hgnc.get("alias_symbol") or [])
+    alias_names = list(hgnc.get("alias_name") or [])
+    previous_symbols = list(hgnc.get("prev_symbol") or [])
+    previous_names = list(hgnc.get("prev_name") or [])
+    hgnc_gene_groups = list(hgnc.get("gene_group") or [])
+    cd_designation_raw = hgnc.get("cd")
+    cd_designation = (
+        cd_designation_raw if isinstance(cd_designation_raw, str) and cd_designation_raw else None
+    )
+    entrez_id_raw = hgnc.get("entrez_id")
+    ensembl_gene = hgnc.get("ensembl_gene_id")
+    ncbi_gene_id = int(entrez_id_raw) if entrez_id_raw else None
+
+    ncbi = _ncbi_gene_summary(ncbi_gene_id, http=http) if ncbi_gene_id else None
+    ncbi_aliases = _parse_ncbi_aliases(ncbi)
+    aliases = _merge_aliases(
+        current=hgnc_aliases,
+        extras=[ncbi_aliases],
+        exclude={primary_symbol, *previous_symbols},
+    )
+
+    sequence_block = entry.get("sequence") or {}
+    length_aa = sequence_block.get("length")
+    isoform_count = _entry_isoform_count(entry)
+    alias_collision_risk = _alias_collision_risk(
+        primary_symbol, aliases, previous_symbols, http=http
+    )
+    ncbi_summary = _truncate(ncbi.get("summary") if ncbi else None, _NCBI_SUMMARY_CHARS)
+
+    # Use the HGNC primary symbol when available (canonical for the
+    # gene), otherwise the UniProt entry's primary, otherwise empty.
+    final_symbol = hgnc.get("symbol") or primary_symbol
+
+    return IdentifierBundle(
+        hgnc_symbol=final_symbol,
+        hgnc_id=hgnc_id,
+        approved_name=approved_name,
+        aliases=aliases,
+        alias_names=alias_names,
+        previous_symbols=previous_symbols,
+        previous_names=previous_names,
+        hgnc_gene_groups=hgnc_gene_groups,
+        cd_designation=cd_designation,
+        uniprot_acc=uniprot_acc,
+        uniprot_status=status,
+        uniprot_merged_into=merged_into,
+        ncbi_gene_id=ncbi_gene_id,
+        ensembl_gene=ensembl_gene,
+        ensembl_canonical_protein=ensembl_canonical_protein,
+        length_aa=length_aa,
+        isoform_count=isoform_count,
+        alias_collision_risk=alias_collision_risk,
+        open_targets_status=None,
+        ncbi_summary=ncbi_summary,
+    )
 
 
 def _uniprot_search_by_symbol(symbol: str, *, http: CachedHTTP) -> str | None:

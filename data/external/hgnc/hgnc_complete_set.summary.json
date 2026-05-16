@@ -1,3 +1,15 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:0b4a64ee9b43684dbd66fe4047a04ca47cea9887d5a85ee49d80e451f09a690a
-size 395
+{
+  "source_url": "https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt",
+  "fetched_utc": "2026-05-11T16:33:59Z",
+  "total_rows": 44986,
+  "approved_protein_coding": 19296,
+  "locus_group_counts": {
+    "protein-coding gene": 19296,
+    "pseudogene": 14650,
+    "non-coding RNA": 10036,
+    "other": 1004
+  },
+  "status_counts": {
+    "Approved": 44986
+  }
+}

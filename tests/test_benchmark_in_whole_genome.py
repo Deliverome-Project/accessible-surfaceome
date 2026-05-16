@@ -1,6 +1,6 @@
 """Validate that every benchmark gene is present in the trimmed whole-genome list.
 
-The whole-genome denominator used by the subbench cost extrapolation is
+The whole-genome denominator used by the triage bench cost extrapolation is
 ``data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv``
 (NCBI protein-coding ∩ has-HGNC-xref, 19,464 rows). If a benchmark gene
 is *not* in that list, either:

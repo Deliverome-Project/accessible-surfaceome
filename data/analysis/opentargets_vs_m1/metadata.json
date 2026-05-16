@@ -1,3 +1,10 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:5ef94e3ec72d597714b280071c95cf1d47b15a8c3e5953fcd6fdc904a2c3fa08
-size 405
+{
+  "id_type": "gene_symbol",
+  "plot_style": "seaborn + accessible_surfaceome.audit._plotting_config",
+  "font_preference": "Manrope",
+  "sources": {
+    "go_obo_url": "http://current.geneontology.org/ontology/go-basic.obo",
+    "go_gaf_url": "http://current.geneontology.org/annotations/goa_human.gaf.gz",
+    "hpa_zip_url": "https://www.proteinatlas.org/download/tsv/subcellular_location.tsv.zip"
+  }
+}

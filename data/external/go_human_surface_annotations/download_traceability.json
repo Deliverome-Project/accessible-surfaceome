@@ -1,3 +1,207 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:e53bc85c91ff6b2f4daa13b3c3da3b0cc388abdd27aa3e070e23aa3843daa67b
-size 7953
+{
+  "dataset": "go_human_surface_annotations",
+  "extras": {
+    "configured_roots": [
+      {
+        "configured_aspect": "cellular_component",
+        "configured_label": "cell surface",
+        "goId": "GO:0009986"
+      },
+      {
+        "configured_aspect": "cellular_component",
+        "configured_label": "external side of plasma membrane",
+        "goId": "GO:0009897"
+      },
+      {
+        "configured_aspect": "cellular_component",
+        "configured_label": "integral component of plasma membrane",
+        "goId": "GO:0005887"
+      }
+    ],
+    "descendant_expansion": "BFS closure over is_a (via term.children) + part_of (via term.relationship_rev)",
+    "evidence_filter": "none (downstream tiers via evidence_tier column)",
+    "evidence_tiers": {
+      "curated": [
+        "IBA",
+        "IBD",
+        "IC",
+        "IKR",
+        "IRD",
+        "NAS",
+        "TAS"
+      ],
+      "electronic": [
+        "IEA"
+      ],
+      "experimental": [
+        "EXP",
+        "HDA",
+        "HEP",
+        "HGI",
+        "HMP",
+        "HTP",
+        "IDA",
+        "IEP",
+        "IGI",
+        "IMP",
+        "IPI"
+      ],
+      "sequence": [
+        "IGC",
+        "ISA",
+        "ISM",
+        "ISO",
+        "ISS",
+        "RCA"
+      ]
+    },
+    "fetch_finished_at_utc": "2026-04-19T02:16:21.913801+00:00",
+    "fetch_started_at_utc": "2026-04-19T02:16:20.866960+00:00",
+    "gaf_header": {
+      "all_header_lines": [
+        "!gaf-version: 2.2",
+        "!",
+        "!generated-by: GOC",
+        "!",
+        "!date-generated: 2026-03-28T02:24",
+        "!",
+        "!Header from source association file:",
+        "!=================================",
+        "!",
+        "!generated-by: GOC",
+        "!",
+        "!date-generated: 2026-03-27T02:04",
+        "!",
+        "!Header from source association file:",
+        "!=================================",
+        "!",
+        "!generated-by: GOC",
+        "!",
+        "!date-generated: 2026-03-26T05:33",
+        "!",
+        "!Header from goa_human source association file:",
+        "!=================================",
+        "!generated-by: UniProt",
+        "!date-generated: 2026-03-04 14:02",
+        "!go-version: http://purl.obolibrary.org/obo/go/releases/2026-03-01/extensions/go-plus.ofn",
+        "!=================================",
+        "!",
+        "!Header copied from paint_goa_human_valid.gaf",
+        "!=================================",
+        "!Created on Mon Jan  5 19:04:13 2026.",
+        "!generated-by: PANTHER",
+        "!date-generated: 2026-01-05",
+        "!PANTHER version: v.19.0.",
+        "!GO version: 2025-10-05.",
+        "!",
+        "!=================================",
+        "!",
+        "!Documentation about this header can be found here: https://github.com/geneontology/go-site/blob/master/docs/gaf_validation.md",
+        "!"
+      ],
+      "date_generated": "!date-generated: 2026-03-28T02:24",
+      "gaf_version": "!gaf-version: 2.2",
+      "generated_by": "!generated-by: GOC"
+    },
+    "gaf_sha256": "17b3efdd0b59bec485f43d6b630267e4829ffafbd93a1c48fcbd8c19ca63dc55",
+    "n_annotations_retained": 8152,
+    "n_gene_products": 2557,
+    "n_union_go_ids": 426,
+    "negation_filter": "skip rows where Qualifier startswith NOT",
+    "note_obsolete_term_divergence": "Plan's GO:0031225 is obsolete; also GO:0046658, GO:0031226, GO:0005615. GPI-anchor signal sourced from UniProt ft_lipid; intrinsic-component PM covered by parent GO:0005886; extracellular space covered by parent GO:0005576.",
+    "obo_sha256": "a77e356737dab39a4f620dce35fc4d6eb531c4b6153af6cacaaa322b49b804bd",
+    "obsolete_terms_excluded": [
+      {
+        "disposition": "covered via UniProt ft_lipid",
+        "goId": "GO:0031225",
+        "name": "anchored component of membrane"
+      },
+      {
+        "disposition": "covered via UniProt ft_lipid",
+        "goId": "GO:0046658",
+        "name": "anchored component of plasma membrane"
+      },
+      {
+        "disposition": "parent GO:0005886 retained",
+        "goId": "GO:0031226",
+        "name": "intrinsic component of plasma membrane"
+      },
+      {
+        "disposition": "covered by parent GO:0005576",
+        "goId": "GO:0005615",
+        "name": "extracellular space"
+      }
+    ],
+    "source_urls": {
+      "gaf": "http://current.geneontology.org/annotations/goa_human.gaf.gz",
+      "obo": "http://current.geneontology.org/ontology/go-basic.obo"
+    },
+    "taxon_filter": "taxon:9606 (rows containing this token in column 13)"
+  },
+  "generated_at_utc": "2026-04-19T02:16:21.950496+00:00",
+  "n_files": 5,
+  "records": [
+    {
+      "captured_at_utc": "2026-04-19T02:16:21.926053+00:00",
+      "dataset": "go_human_surface_annotations",
+      "file_name": "go-basic.obo",
+      "local_path": "data/external/go_human_surface_annotations/go-basic.obo",
+      "note": "GO basic ontology (is_a + part_of + regulates closure; no cross-aspect xrefs).",
+      "sha256": "a77e356737dab39a4f620dce35fc4d6eb531c4b6153af6cacaaa322b49b804bd",
+      "size_bytes": 32126692,
+      "source_url": "http://current.geneontology.org/ontology/go-basic.obo",
+      "status": "reused"
+    },
+    {
+      "captured_at_utc": "2026-04-19T02:16:21.931796+00:00",
+      "dataset": "go_human_surface_annotations",
+      "file_name": "goa_human.gaf.gz",
+      "local_path": "data/external/go_human_surface_annotations/goa_human.gaf.gz",
+      "note": "Canonical human GO annotations (GAF v2.x).",
+      "sha256": "17b3efdd0b59bec485f43d6b630267e4829ffafbd93a1c48fcbd8c19ca63dc55",
+      "size_bytes": 14775581,
+      "source_url": "http://current.geneontology.org/annotations/goa_human.gaf.gz",
+      "species": "Homo sapiens",
+      "status": "reused",
+      "taxid": "9606"
+    },
+    {
+      "captured_at_utc": "2026-04-19T02:16:21.932594+00:00",
+      "dataset": "go_human_surface_annotations",
+      "file_name": "go_human_surface_annotations.tsv",
+      "local_path": "data/external/go_human_surface_annotations/go_human_surface_annotations.tsv",
+      "note": "One row per retained annotation; columns match GAF v2.2 plus configured_roots (|-joined root IDs this row rolls up to) and evidence_tier (experimental/curated/sequence/electronic/other).",
+      "sha256": "5e30d671c8c9131c083925f60e0afa5eff5a91f0246348ce8d85e9308a642740",
+      "size_bytes": 1852035,
+      "source_url": "derived from http://current.geneontology.org/annotations/goa_human.gaf.gz",
+      "species": "Homo sapiens",
+      "status": "derived",
+      "taxid": "9606"
+    },
+    {
+      "captured_at_utc": "2026-04-19T02:16:21.932787+00:00",
+      "dataset": "go_human_surface_annotations",
+      "file_name": "go_human_surface_annotations_by_gene_product.tsv",
+      "local_path": "data/external/go_human_surface_annotations/go_human_surface_annotations_by_gene_product.tsv",
+      "note": "One row per (DB, DB_Object_ID, DB_Object_Symbol); aggregates GO IDs, configured-roots hit, and per-tier evidence flags.",
+      "sha256": "1253251c5e7514e9b6f924318e30dc4dd80d7f0ea3fbdb81ac0671116a09a05c",
+      "size_bytes": 366354,
+      "source_url": "derived from http://current.geneontology.org/annotations/goa_human.gaf.gz",
+      "species": "Homo sapiens",
+      "status": "derived",
+      "taxid": "9606"
+    },
+    {
+      "captured_at_utc": "2026-04-19T02:16:21.932837+00:00",
+      "dataset": "go_human_surface_annotations",
+      "file_name": "go_term_metadata.json",
+      "local_path": "data/external/go_human_surface_annotations/go_term_metadata.json",
+      "note": "Per-root ontology metadata (name, namespace, obsolete flag, descendant count).",
+      "sha256": "33205b1152fd999dd338cf485a45b1c5b1f938e11a13731f43d0c2fdeeac6c24",
+      "size_bytes": 931,
+      "source_url": "derived from http://current.geneontology.org/ontology/go-basic.obo",
+      "status": "derived"
+    }
+  ],
+  "script": "/Users/msmallegan/code/deliverome/scripts/data_collection/download_go_human_surface_annotations.py"
+}

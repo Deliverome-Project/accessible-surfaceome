@@ -1,3 +1,35 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:fab0777e31f65708b3cc0d061db738abc5059d7fff4567e8de835dc94772e888
-size 959
+{
+  "generated_at_utc": "2026-05-05T20:57:08.142353+00:00",
+  "n_dropped_below_pool_threshold": 11848,
+  "n_ensps_after_pool_filter": 2094,
+  "n_ensps_with_any_surface_term_evidence": 13942,
+  "n_input_rows_per_channel": {
+    "experiments": 92113,
+    "integrated": 4860780,
+    "knowledge": 921411,
+    "predictions": 396516,
+    "textmining": 41419
+  },
+  "n_low_confidence_only": 4,
+  "n_output_rows": 1964,
+  "n_split_ensp_rows": 0,
+  "n_split_mapping_ambiguous": 0,
+  "n_surface_flag": 207,
+  "n_surface_term_rows_per_channel": {
+    "experiments": 0,
+    "experiments_hpa_rows_dropped": 0,
+    "integrated": 24895,
+    "knowledge": 2468,
+    "predictions": 0,
+    "textmining": 23531
+  },
+  "n_unique_primaries": 1963,
+  "n_unmapped_ensps": 130,
+  "pool_filter_rule": "keep ENSP iff max(experiments_stars_max, textmining_stars_max) >= 2.0",
+  "pool_threshold_stars": 2.0,
+  "surface_terms": [
+    "GO:0005887",
+    "GO:0009897",
+    "GO:0009986"
+  ]
+}

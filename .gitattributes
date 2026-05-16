@@ -7,19 +7,42 @@ data/analysis/** filter=lfs diff=lfs merge=lfs -text
 # plain git, not LFS — they're tiny (1–13 KB each) and CI needs to
 # read their contents directly (tests/test_figure_gists_styling.py
 # greps each script for the brand-style sentinel + palette anchors;
-# an LFS pointer there fails every assertion). The PNG / PDF figure
-# outputs alongside them stay LFS-tracked under the general rule above.
+# an LFS pointer there fails every assertion).
 data/analysis/figures/*.py -filter -diff -merge text
 data/analysis/figures/*.md -filter -diff -merge text
+
+# Figure outputs themselves ship as plain git too — each PDF is
+# 20–60 KB and each PNG is 130–500 KB, well under the CLAUDE.md
+# "LFS-track raster outputs ≥10 MB" threshold. Committing them
+# directly means PR reviewers see the rendered artifacts inline
+# (LFS pointers render as text blobs in GitHub's diff view), and
+# raw.githubusercontent.com URLs embedded in PNG/PDF metadata
+# resolve to the actual bytes instead of an LFS pointer. The
+# `data/analysis/**` pattern catches per-analysis figure dirs
+# (opentargets_vs_m1, candidate_universe_agreement, etc.) too —
+# largest such file today is ~310 KB.
+data/analysis/**/*.pdf  -filter -diff -merge
+data/analysis/**/*.png  -filter -diff -merge
+data/analysis/**/*.jpeg -filter -diff -merge
+
+# Build / run metadata JSONs ship as plain git so PR diffs surface
+# changes to provenance + summary stats (LFS-pointer renders as a
+# ~130-byte text blob, hiding what actually changed). Each file is
+# <10 KB, total ~150 KB across ~35 files.
+**/*_summary.json    -filter -diff -merge text
+**/*.summary.json    -filter -diff -merge text
+**/*_traceability.json -filter -diff -merge text
+**/*_metadata.json   -filter -diff -merge text
+**/metadata.json     -filter -diff -merge text
 
 # Small reference TSVs that ship as plain git so a fresh `git clone`
 # can run the genome-wide sweeps without an LFS-hydration step. The
 # 3.4 MB upstream NCBI protein-coding catalog is the canonical input
-# for the 19,464-gene sweep; the M1-subtracted view is computed from
-# it. Both well below GitHub's 50 MB soft limit.
+# for the 19,464-gene sweep; the .triageable view drops the 140
+# structural artifacts (readthrough fusions, pseudogenes, RNA-only,
+# HGNC-no-UniProt) — see scripts/build_triageable_catalog.py. Both
+# well below GitHub's 50 MB soft limit.
 data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv -filter -diff -merge text
-data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.cleaned.tsv -filter -diff -merge text
-data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.resolvable.tsv -filter -diff -merge text
 data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.tsv -filter -diff -merge text
 
 # Candidate-universe TSV is small (~1.4 MB) and the canonical data

@@ -82,7 +82,7 @@ project pointed at this repo's `viewer/` directory.
 - `src/accessible_surfaceome/cloud/` - D1 HTTP client + triage-run uploader.
 - `src/accessible_surfaceome/tools/` - shared per-tool helpers + Pydantic models.
 - `cloudflare/` - D1 schemas + Worker code for the public API.
-- `scripts/` - one-shot data refreshers (`refresh_compara.sh`, `upload_compara_to_d1.py`, `sync_public_d1.py`), eval runners (`triage_subbench_runner.py`, `triage_subbench_summary.py`), and per-eval render scripts.
+- `scripts/` - one-shot data refreshers (`refresh_compara.sh`, `upload_compara_to_d1.py`, `sync_public_d1.py`), the triage runner (`triage_runner.py`), and per-eval render scripts.
 - `viewer/` - SPA codebase.
 - `data/raw/` `data/external/` `data/processed/` `data/annotations/` - source snapshots, normalized tables, and agent outputs (annotations dir is gitignored; viewer/public/data/genes/ holds the published snapshot).
 - `docs/` - project plans, eval reports, decisions.
@@ -123,9 +123,8 @@ uv run accessible-surfaceome agents annotate HSPA1A
 # Audit the corpus round-trip + Sonnet entailment on a record:
 uv run accessible-surfaceome agents audit-corpus HSPA1A
 
-# Run the triage benchmark sweep:
-uv run python scripts/triage_subbench_runner.py --model claude-sonnet-4-6 --replicates 1
-uv run python -m scripts.triage_subbench_summary
+# Run the triage benchmark sweep (147-gene mainbench):
+uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --replicates 1 --d1
 ```
 
 ## D1 / public-mirror commands

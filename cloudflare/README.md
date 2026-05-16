@@ -74,7 +74,7 @@ env.SURFACEOME_AGENTS.prepare("SELECT * FROM triage_run WHERE ...").all();
 ```
 
 **This repo's Python tooling does NOT need the Pages binding** — the
-`scripts/upload_triage_runs_to_d1.py` uploader and the
+`triage_runner.py --d1` streaming sink and the
 `scripts/d1_export_to_r2.sh` backup script both call D1's HTTP API
 directly, authenticated by `CLOUDFLARE_API_TOKEN` and addressed by
 `CLOUDFLARE_D1_SURFACEOME_AGENTS_ID`. They work independently of any
@@ -105,22 +105,23 @@ Add these to your `.env` file at the repo root (template in `.env.example`).
 
 ### Uploading triage runs
 
-After running `scripts/triage_subbench_runner.py` (or any future runner
-that drops per-cell JSON records under `data/eval/triage_subbench_v1/`):
+`scripts/triage_runner.py --d1 --run-id <tag>` streams each completed
+cell into D1's `triage_run` table via `D1RunSink` as the sweep
+progresses, so there's no separate upload step. The sink is idempotent
+on `(run_id, gene_symbol, model, prompt_variant, replicate,
+prompt_sha)` — restarting a crashed sweep with the same `--run-id`
+skips cells that already landed.
 
 ```sh
-# Dry run — print what would be uploaded.
-uv run python scripts/upload_triage_runs_to_d1.py --dry-run
-
-# Actual upload, fresh run_id.
-uv run python scripts/upload_triage_runs_to_d1.py
-
-# Or tag the upload with a meaningful run_id so you can pivot on it later.
-uv run python scripts/upload_triage_runs_to_d1.py --run-id 2026-05-10_subbench_haiku_sonnet
+# Run the 147-row mainbench, streaming results to D1 under a meaningful run_id.
+uv run python scripts/triage_runner.py \
+    --model claude-sonnet-4-6 --replicates 2 \
+    --d1 --run-id 2026-05-16_mainbench_sonnet
 ```
 
-The uploader is idempotent on `(run_id, gene, model, variant, replicate,
-prompt_sha)` — re-running with the same `--run-id` skips duplicates.
+(The batch `upload_triage_runs_to_d1.py` helper was retired 2026-05-16
+when the 17-row sub-bench cohort was retired — the streaming sink
+covers every modern code path.)
 
 ### Schema overview
 
@@ -154,7 +155,7 @@ ORDER BY verdict_accuracy DESC;
 -- Pull the agent's reasoning for every Sonnet web_naive error on this run_id.
 SELECT t.gene_symbol, t.predicted_verdict, t.verdict_reasoning
 FROM triage_run t
-WHERE t.run_id = '2026-05-10_subbench_haiku_sonnet'
+WHERE t.run_id = '2026-05-10_mainbench_haiku_sonnet'
   AND t.model = 'claude-sonnet-4-6'
   AND t.prompt_variant = 'web_naive'
   AND t.correct = 0;
@@ -230,11 +231,10 @@ The GitHub workflow `.github/workflows/d1-backup.yml` triggers
 `scripts/d1_export_to_r2.sh` on every push to `main` that touches:
 
 - `cloudflare/d1_schema.sql` (schema changes)
-- `data/eval/triage_subbench_v1/**` (new triage run records)
 - `data/annotations/**` (new deep-dive records)
 - `data/triage/**` (production triage outputs)
 - `src/accessible_surfaceome/cloud/**` (uploader code)
-- `scripts/upload_triage_runs_to_d1.py` / `d1_export_to_r2.sh`
+- `scripts/d1_export_to_r2.sh`
 
 Each run produces an offsite SQL dump in the R2 bucket
 `deliverome-d1-backups` under the dated key
@@ -279,40 +279,21 @@ npx --yes wrangler d1 execute surfaceome_agents --remote --file=./latest.sql
 R2 is durable, cross-region, and outside the Time Travel window — this
 is the layer that protects against an account-level disaster.
 
-### Layer 3 — The on-disk JSON records (canonical source of truth)
+### Layer 3 — Per-cell JSON records (on-disk audit trail)
 
-D1 is a queryable mirror; the source of truth lives at
-`data/eval/triage_subbench_v1/<model>/<variant>/<gene>_run<N>.json` for
-every triage call we've ever made. These records are git-LFS-tracked
-and committed.
-
-If D1 is wiped catastrophically (lost auth, account closure, schema
-corruption), recovery is a single command:
-
-```sh
-uv run python scripts/upload_triage_runs_to_d1.py \
-    --run-id <whatever-tag-you-want-to-recover-under>
-```
-
-The uploader is idempotent on `(run_id, gene, model, variant, replicate,
-prompt_sha)` — re-uploads skip duplicates, fresh runs go in.
-
-To verify the on-disk records and D1 agree:
-
-```sh
-uv run python scripts/d1_triage_verify.py
-```
-
-This compares the union of all sweeps in D1 against every JSON record,
-flags missing keys and predicted-verdict disagreements, and exits
-non-zero if anything's out of sync.
+The triage runner streams each cell to D1 in real time via
+`D1RunSink`, but also drops a per-cell JSON under the configured
+`--out-root` (`data/eval/triage_bench_v1/<model>/<variant>/<gene>_run<N>.json`
+by default for `--bench benchmark`). These JSONs are the deeper-than-D1
+audit trail — if D1 is wiped, re-running the sweep with the same
+`--run-id` re-streams the cells back in (the sink is idempotent on
+`(run_id, gene_symbol, model, prompt_variant, replicate, prompt_sha)`).
 
 ### Suggested cadence
 
 | event | action |
 |---|---|
-| After every triage sweep | run uploader — records auto-flow to D1 |
+| After every triage sweep | nothing — `--d1` streams as you go |
 | Any commit touching D1 paths | **CI automatically runs `d1_export_to_r2.sh`** (see `.github/workflows/d1-backup.yml`) — fresh dump lands in R2 with a dated key + `latest.sql` pointer |
-| Before schema migration | run `d1_triage_verify.py`, `d1_triage_backup.sh`, migrate, verify again |
-| After noticing weirdness | run `d1_triage_verify.py` first |
-| Catastrophic D1 loss | restore from `r2://deliverome-d1-backups/d1-backups/.../latest.sql`, then re-run uploader for any post-backup runs (on-disk JSON is the deeper-than-D1 canonical source) |
+| Before schema migration | run `d1_triage_backup.sh`, migrate, smoke-test |
+| Catastrophic D1 loss | restore from `r2://deliverome-d1-backups/d1-backups/.../latest.sql`, then re-run the triage runner with the same `--run-id` to refill any post-backup rows from the on-disk JSON tree |

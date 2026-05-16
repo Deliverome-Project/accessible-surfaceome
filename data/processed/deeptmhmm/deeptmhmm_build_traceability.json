@@ -1,3 +1,90 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:0b15ca6136be3060e0bdd29438a66e9a59400b97bb37b5a74dae2f2d390ac7ac
-size 3333
+{
+  "dataset": "deeptmhmm",
+  "derived_columns": [
+    {
+      "name": "n_term_side",
+      "rule": "first topology char after skipping leading 'S'"
+    },
+    {
+      "name": "c_term_side",
+      "rule": "last topology char after skipping trailing 'S'"
+    },
+    {
+      "name": "predicted_surface_membrane",
+      "rule": "1 iff deeptmhmm_label in {TM, SP+TM} (BETA excluded \u2014 human beta-barrels are mitochondrial outer membrane, not plasma-membrane)"
+    },
+    {
+      "name": "predicted_secreted",
+      "rule": "1 iff deeptmhmm_label == 'SP'"
+    },
+    {
+      "name": "signal_peptide_length",
+      "rule": "count of leading 'S' residues in topology"
+    }
+  ],
+  "generated_at_utc": "2026-04-19T02:16:13.725646+00:00",
+  "label_vocabulary": [
+    "BETA",
+    "GLOB",
+    "SP",
+    "SP+TM",
+    "TM"
+  ],
+  "outputs": {
+    "deeptmhmm_cyno_ortholog.tsv": {
+      "local_path": "data/processed/deeptmhmm/deeptmhmm_cyno_ortholog.tsv",
+      "n_rows": 1921,
+      "primary_key": "uniprot_accession_full",
+      "sha256": "4160118d214b244e664630cf88c9d161f12955970469e1b60d4b8a835cc8cc96",
+      "size_bytes": 134579
+    },
+    "deeptmhmm_human_canonical.tsv": {
+      "local_path": "data/processed/deeptmhmm/deeptmhmm_human_canonical.tsv",
+      "n_rows": 2359,
+      "primary_key": "uniprot_accession_full",
+      "sha256": "10d905f453b3b98d1256e71b280d3b271126829d3571ad575beed5974864d39a",
+      "size_bytes": 139719
+    },
+    "deeptmhmm_human_isoforms.tsv": {
+      "local_path": "data/processed/deeptmhmm/deeptmhmm_human_isoforms.tsv",
+      "n_rows": 3150,
+      "primary_key": "uniprot_accession_full",
+      "sha256": "e3bbcb3439802413b54e1b9724b89c576fa472a814f6f979fcb379c387ec5a94",
+      "size_bytes": 191651
+    },
+    "deeptmhmm_mouse_ortholog.tsv": {
+      "local_path": "data/processed/deeptmhmm/deeptmhmm_mouse_ortholog.tsv",
+      "n_rows": 1971,
+      "primary_key": "uniprot_accession_full",
+      "sha256": "7069eadd4df29f8660e6231b058a8d576b0989ee7e076d56e95a0fed7bf94be0",
+      "size_bytes": 118641
+    }
+  },
+  "script": "scripts/data_processing/build_deeptmhmm.py",
+  "source_files": {
+    "cyno_ortholog": {
+      "local_path": "data/external/deeptmhmm_surfaceome_predictions/cyno_ortholog_one2one_highconf_non_hla/predicted_topologies.3line",
+      "n_sequences": 1921,
+      "sha256": "41369f5b593f093522586bc8b77146398f31bd8d25cbf742d18e4fb8d8b31036",
+      "size_bytes": 2722940
+    },
+    "human_canonical": {
+      "local_path": "data/external/deeptmhmm_surfaceome_predictions/human_canonical_non_hla/predicted_topologies.3line",
+      "n_sequences": 2359,
+      "sha256": "6a37c58d949fce3cc340890314cd96e5c5cd27a3e4e05bf847b19312f955ad87",
+      "size_bytes": 3307767
+    },
+    "human_isoforms": {
+      "local_path": "data/external/deeptmhmm_surfaceome_predictions/human_isoforms_from_afdb_non_hla/predicted_topologies.3line",
+      "n_sequences": 3150,
+      "sha256": "9cd8284cd06b73eaf3b21b5c8871f4b1d4c8c70b46655fb2abd2f9a2e9f38076",
+      "size_bytes": 3998153
+    },
+    "mouse_ortholog": {
+      "local_path": "data/external/deeptmhmm_surfaceome_predictions/mouse_ortholog_one2one_highconf_non_hla/predicted_topologies.3line",
+      "n_sequences": 1971,
+      "sha256": "9bf484dc732443cc22d03a2f601ff2879255372c1d63d101ada0fb59b773f076",
+      "size_bytes": 2870066
+    }
+  }
+}

@@ -234,3 +234,38 @@ CREATE TABLE IF NOT EXISTS candidate_universe_release (
     source_path         TEXT,                       -- relative path of source TSV
     notes               TEXT
 );
+
+
+-- ---------------------------------------------------------------------------
+-- gene_identifier_public — column-whitelisted mirror of the private
+-- gene_identifier table. Lets the public Worker (and the viewer) look up
+-- canonical stable IDs for any gene without re-resolving from symbol —
+-- which historically was where the resolver bugs entered the pipeline
+-- (see scripts/audit_resolver_hgnc_id_v3.py for the failure modes).
+--
+-- Synced from `surfaceome_agents.gene_identifier` by the same one-way
+-- script that mirrors candidate_universe + triage_run. Resolver-version
+-- carried through so consumers can detect when the resolver has been
+-- updated and a re-sync is needed.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS gene_identifier_public (
+    hgnc_id                   TEXT PRIMARY KEY,
+    hgnc_symbol               TEXT NOT NULL,
+    cohort_symbol             TEXT,
+    uniprot_acc               TEXT,
+    ncbi_gene_id              INTEGER,
+    ensembl_gene              TEXT,
+    ensembl_canonical_protein TEXT,
+    resolver_path             TEXT NOT NULL,
+    resolver_version          TEXT NOT NULL,
+    resolved_at               TEXT NOT NULL,
+    hgnc_xref_count           INTEGER NOT NULL DEFAULT 0,
+    needs_review              INTEGER NOT NULL DEFAULT 0,
+    synced_at                 TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_symbol  ON gene_identifier_public (hgnc_symbol);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_uniprot ON gene_identifier_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ncbi    ON gene_identifier_public (ncbi_gene_id);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ensembl ON gene_identifier_public (ensembl_gene);

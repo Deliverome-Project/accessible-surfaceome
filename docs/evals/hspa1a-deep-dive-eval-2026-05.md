@@ -11,7 +11,7 @@
 Curated hard case: stress-induced and immunogenic-cell-death-induced
 surface presentation of a canonically cytoplasmic chaperone. DB
 consensus votes false (8/8 M1 sources on the no side); naive haiku
-misses it in the triage sub-bench. The strongest single test of the
+misses it in the triage bench. The strongest single test of the
 conditional-surface path on the refocused v0.4.0 schema —
 `surface_status="conditional_surface"`, multiple `induced_presentation`
 entries with citations, primary-assay-required surface evidence, a

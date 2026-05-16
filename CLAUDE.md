@@ -101,6 +101,208 @@ Commits). A title that doesn't match fails the check and blocks merge.
   listed, update the workflow's `scopes:` block in the same PR — don't
   invent a new one.
 
+## Gene identifier resolution
+
+When writing any code that takes "a gene" as input — agent tool, sweep
+runner, figure generator, manual one-off — **the entry point must be a
+stable identifier, not a gene symbol.** Bare gene symbols silently
+resolve to the wrong protein for a small but real subset of human
+genes (~0.2% of the 19,464-row protein-coding cohort), including
+high-profile failures like **COX1** (cyclooxygenase-1 vs the
+mitochondrial cytochrome c oxidase the cohort actually meant) and
+**WAS** (Wiskott-Aldrich protein vs the MT-RNR1 rRNA gene). The audit
+that surfaced these lives at
+[`scripts/audit_resolver_hgnc_id_v3.py`](scripts/audit_resolver_hgnc_id_v3.py);
+the documented divergence list is at
+`data/analysis/resolver_definitive_audit_v3.tsv`.
+
+### The canonical resolver
+
+`src/accessible_surfaceome/tools/gene_lookup.py:resolve_by_hgnc_id` is
+the preferred entry point. Callers thread `hgnc_id` through from the
+cohort row:
+
+    bundle = resolve_by_hgnc_id(row["hgnc_id"], http=http)
+
+The cohort file
+[`data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv`](data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv)
+carries `hgnc_id` for every gene (100% coverage as of last refresh) —
+no symbol-keyed sweep should exist for cohort-driven code paths.
+
+The legacy `resolve(symbol_or_acc)` stays in the module for free-text
+agent tool calls (where only a symbol or accession-shape string is
+available); it emits a `UserWarning` on the symbol path so misuse is
+auditable in logs.
+
+### Stable-ID cache in D1
+
+Every gene's resolved identifiers are materialized in D1's
+`gene_identifier` table (private; public mirror at
+`gene_identifier_public`). Schema lives at
+[`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
+[`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
+Downstream tools query stable identifiers directly:
+
+    SELECT uniprot_acc, ensembl_gene, ncbi_gene_id, ensembl_canonical_protein
+    FROM gene_identifier_public WHERE hgnc_id = ?;
+
+This is the **only** path for stable-ID lookups by downstream code —
+no script should call `resolve_by_hgnc_id` at query time when it
+could read this table. Resolver upgrades change the `resolver_version`
+column; consumers detect staleness by comparing against the resolver
+SHA they expect.
+
+Rebuild with [`scripts/build_gene_identifier_table.py`](scripts/build_gene_identifier_table.py)
+after any resolver patch or cohort refresh — `--execute` to write to
+D1, otherwise dry-run. Idempotent UPSERT on `hgnc_id`; sub-5-minute on
+a warm cache.
+
+## Working with the D1 databases
+
+Two D1 databases:
+- **`surfaceome_agents`** (private) — full agent-run history with
+  prompts, costs, prose reasoning. Schema:
+  [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql).
+- **`surfaceome_public`** (mirror) — column-whitelisted subset the
+  Worker + viewer read. Schema:
+  [`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
+  Synced from the private DB by `scripts/d1_public_mirror_*.py`.
+
+### Querying D1 from Python
+
+`accessible_surfaceome.cloud.d1_client.D1Client` is the canonical
+client; it speaks Cloudflare's REST API directly (no wrangler
+needed). Auth pulls `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
++ the database UUID from `.env`. Pattern:
+
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.env import load_env
+    load_env()
+    with D1Client() as d1:
+        rows = d1.query(
+            "SELECT uniprot_acc FROM gene_identifier WHERE hgnc_id = ?;",
+            ["HGNC:1234"],
+        )
+        # rows → list[dict] — column names as keys
+
+For UPSERTs / mutations, the same `query()` method handles them — D1
+returns an empty result set for non-SELECT statements. **D1's HTTP
+API doesn't accept multi-statement batches**; submit one statement
+per call (loop chunked for bulk loads).
+
+### Applying schema changes when wrangler isn't handy
+
+The deprecated wrangler v1 on common install paths can't speak D1.
+Rather than installing the new wrangler in every fresh worktree,
+apply DDL by calling `D1Client.query()` with each `CREATE TABLE` /
+`CREATE INDEX` statement one at a time. Example used to bring up
+`gene_identifier`:
+
+    statements = ["CREATE TABLE IF NOT EXISTS gene_identifier (...);",
+                  "CREATE INDEX IF NOT EXISTS idx_gene_identifier_... ON ...;",
+                  ...]
+    with D1Client() as d1:
+        for s in statements:
+            d1.query(s, [])
+
+Same trick works for ad-hoc analytical SELECTs from a notebook /
+script — no need to install wrangler just to peek at row counts.
+
+### Key tables to know
+
+| Table | Purpose | Primary lookup |
+|---|---|---|
+| `gene_identifier` | **Stable-ID cache.** Per-gene canonical (uniprot_acc, ncbi_gene_id, ensembl_gene, ensembl_canonical_protein) resolved through the HGNC-ID path. **Read this before re-resolving from any other identifier.** | `hgnc_id`, `hgnc_symbol`, `uniprot_acc` |
+| `triage_run` | Per-(model × variant × replicate × gene) triage cells. | `(run_id, gene_symbol, model, prompt_variant, replicate)` |
+| `deep_dive_run` | Per-gene deep-dive (surface_annotator) records. | `(run_id, gene_symbol)` |
+| `candidate_universe_public` | Genome-wide DB-vote table (the catalog index). | `(universe_version, gene_symbol, uniprot_acc)` |
+| `benchmark_version` | Bench-snapshot symbol → uniprot pinning. | `(bench_version, gene_symbol)` |
+
+### `run_id` conventions
+
+- `genome_full_sonnet_ncbi_v1` — the canonical 2026-05-12 Sonnet
+  triage sweep over the cohort.
+- `genome_full_sonnet_ncbi_v1__resolver_v3_fix` — corrected re-runs
+  of the 45 cells the v3 resolver audit flagged. **Originals are
+  preserved**; analytics that should incorporate the fix should
+  COALESCE-prefer the fix run over the original (see the
+  Postgres-flavored snippet below).
+
+Composite-source SELECT that gives "latest verdict per (gene_symbol,
+model, variant), preferring fix rows over originals":
+
+    SELECT * FROM triage_run t
+    WHERE (t.run_id = 'genome_full_sonnet_ncbi_v1__resolver_v3_fix')
+       OR (t.run_id = 'genome_full_sonnet_ncbi_v1'
+           AND NOT EXISTS (
+               SELECT 1 FROM triage_run f
+               WHERE f.run_id = 'genome_full_sonnet_ncbi_v1__resolver_v3_fix'
+                 AND f.gene_symbol = t.gene_symbol
+                 AND f.model = t.model
+                 AND f.prompt_variant = t.prompt_variant
+           ));
+
+Anything else that reads `triage_run` should adopt this pattern
+until the fix run is mirrored back into the canonical run_id.
+
+### Failure modes the HGNC-ID path is designed to avoid
+
+Three classes of bug the symbol-keyed path has, all encoded in the
+audit's divergence buckets:
+
+1. **Primary-name collisions across reviewed UniProt entries**
+   (`multi_xref_canonical_pick_disagrees`) — when ≥2 reviewed
+   Swiss-Prot entries share a primary `geneName.value`, UniProt's
+   `gene_exact:` server-rank ordering decides the winner non-
+   deterministically. The HGNC-ID picker enumerates HGNC's
+   `uniprot_ids` xref explicitly and tiebreaks on `(reviewed,
+   primary-name-match, canonical-isoform, earliest firstPublicDate,
+   acc)` — pinning the canonical Swiss-Prot record.
+2. **HGNC xref empty** (`production_caught_hgnc_missed`) — HGNC
+   curates the gene but hasn't filled the UniProt xref. The
+   resolver falls back to UniProt symbol search via HGNC's primary
+   symbol, then HGNC's `prev_symbol` list, so these genes don't
+   drop out.
+3. **Symbol-reassignment drift** (`production_missed_hgnc_caught` +
+   `synonym_fallback_vs_canonical`) — HGNC re-assigns a symbol;
+   symbol-keyed lookup returns the gene the symbol points to *now*
+   (sometimes the wrong kingdom: WAS → MT-RNR1 rRNA). HGNC-ID
+   resolution returns the gene the cohort row actually meant.
+
+### Downstream searches: identifier-per-source
+
+Build any new tool by reading from the resolved `IdentifierBundle`,
+never by re-resolving from the symbol. Once the bundle is in hand:
+
+| Source | Identifier from the bundle |
+|---|---|
+| AlphaFold DB / PDB / InterPro / Pfam / DrugBank / Reactome (protein) | `bundle.uniprot_acc` |
+| Ensembl / GTEx / HPA / Open Targets / STRING (gene) | `bundle.hgnc_id` or `bundle.ensembl_gene` |
+| PubMed / Europe PMC (free text) | OR of `bundle.aliases + bundle.previous_symbols + bundle.hgnc_symbol` |
+| dbSNP / ClinVar / OMIM | `bundle.ncbi_gene_id` or `bundle.hgnc_id` |
+
+Symbol-keyed queries to structured databases reintroduce the same
+bug class one layer down — don't.
+
+### Refreshing the audit
+
+After any cohort regeneration, any UniProt or HGNC API behavior
+change, or any picker logic change, re-run the audit:
+
+    uv run python scripts/audit_resolver_hgnc_id_v3.py
+
+Sub-minute on a warm cache, ~60-90 min on a cold cache. Outputs
+`data/analysis/resolver_definitive_audit_v3.tsv` (per-symbol
+divergences) and `_d1_rows.tsv` / `_d1_rows_full.tsv` (affected D1
+rows for Phase-4-style targeted reruns). The
+`scripts/audit_resolver_hgnc_id_v3_extend.py` companion scans
+`triage_run`, `deep_dive_run`, and `benchmark_version` in one pass.
+
+Pinned regression cases (BBC3, ND4, PRNP, TSPO, ABHD4, HSD17B8,
+SACK1A, CLMB, COX1, COX2, WAS) live at
+[`tests/test_gene_lookup_resolver.py`](tests/test_gene_lookup_resolver.py)
+— any picker / fallback regression breaks these.
+
 ## Coding Style
 
 See [docs/coding-style.md](docs/coding-style.md) for the conventions we
@@ -238,14 +440,16 @@ a Pages binding.
 - **Schema**: `cloudflare/d1_schema.sql` — 6 tables, 3 views. Triage +
   deep-dive share the DB; cross-table joins (`triage_vs_deep_dive`)
   are the primary analytics target.
-- **Upload**: `scripts/upload_triage_runs_to_d1.py` after a runner
-  produces per-cell JSON records.
-- **Verify**: `scripts/d1_triage_verify.py` reconciles D1 vs on-disk
-  JSON; exits non-zero on divergence.
+- **Upload**: `scripts/triage_runner.py --d1 --run-id <tag>` streams
+  each completed cell into `triage_run` via `D1RunSink` as the sweep
+  progresses. No separate batch-upload step. Idempotent on
+  `(run_id, gene_symbol, model, prompt_variant, replicate, prompt_sha)`,
+  so restarting a crashed sweep with the same `--run-id` skips cells
+  that already landed.
 - **Backup to R2** is CI-driven: `.github/workflows/d1-backup.yml`
   runs `scripts/d1_export_to_r2.sh` on every push to `main` that
-  touches `cloudflare/d1_schema.sql`, `data/eval/triage_subbench_v1/**`,
-  `data/annotations/**`, `data/triage/**`, the uploader code, or the
+  touches `cloudflare/d1_schema.sql`, `data/annotations/**`,
+  `data/triage/**`, the uploader code, or the
   backup scripts themselves. Each run drops a timestamped SQL dump and
   a stable `latest.sql` pointer into the R2 bucket
   `deliverome-d1-backups`. Manual trigger via `workflow_dispatch`.

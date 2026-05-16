@@ -1,3 +1,27 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7d673504fe99f675e9d477a1fc74232681238357125becd785360483ced24ae6
-size 799
+{
+  "generated_at_utc": "2026-04-17T03:05:39.992079+00:00",
+  "human": {
+    "cspa_category_counts": {
+      "": 8,
+      "1 - high confidence": 1039,
+      "2 - putative": 247,
+      "3 - unspecific": 206
+    },
+    "n_high_confidence": 1039,
+    "n_proteins": 1500,
+    "n_putative": 247,
+    "n_unique_accession": 1500,
+    "n_unspecific": 206,
+    "n_with_category": 1492
+  },
+  "mouse": {
+    "n_proteins": 1297,
+    "n_unique_accession": 1297
+  },
+  "source_file": "data/raw/S1_File.xlsx",
+  "source_sha256": "7502646155bf3f17e8c9b2a1edfbe9f27a169f83534baebe8d4c2e9a7206bf5a",
+  "source_size_bytes": 2721208,
+  "source_url": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0121314.s002&type=supplementary",
+  "table_a_rows_total": 24445,
+  "table_b_rows_total": 1492
+}

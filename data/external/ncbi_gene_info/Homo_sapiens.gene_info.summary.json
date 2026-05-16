@@ -1,3 +1,21 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7fb24fed407c425562f492ab5a50185d1c4ca6f4a405eeecffcb22f0868e4f47
-size 547
+{
+  "source_url": "https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz",
+  "fetched_utc": "2026-05-11T16:25:18Z",
+  "total_human_gene_records": 193868,
+  "biotype_counts": {
+    "biological-region": 128261,
+    "ncRNA": 22584,
+    "protein-coding": 20624,
+    "pseudo": 17500,
+    "snoRNA": 1201,
+    "unknown": 1196,
+    "other": 844,
+    "rRNA": 785,
+    "tRNA": 701,
+    "snRNA": 168,
+    "scRNA": 4
+  },
+  "protein_coding_n": 20624,
+  "protein_coding_with_hgnc": 19464,
+  "protein_coding_with_ensembl": 19446
+}

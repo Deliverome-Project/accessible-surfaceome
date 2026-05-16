@@ -1,3 +1,12 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:f07b12350db858ff80ab89721d2b6e9651314ba79a66428d64787a5f37f27215
-size 960
+{
+  "batch_metadata_csv": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/cyno_ortholog_one2one_highconf_non_hla/batch_metadata.csv",
+  "cohort": "cyno_ortholog_one2one_highconf_non_hla",
+  "generated_at_utc": "2026-03-25T03:19:23.127516+00:00",
+  "input_fasta": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_inputs/cyno_ortholog_one2one_highconf_non_hla.fasta",
+  "log_path": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/logs/cyno_ortholog_one2one_highconf_non_hla.log",
+  "max_sequences_per_batch": 250,
+  "merged_topologies_path": "/Users/rebeccacarlson/.codex/worktrees/de0e/internalizers/data/external/deeptmhmm_surfaceome_predictions/cyno_ortholog_one2one_highconf_non_hla/predicted_topologies.3line",
+  "n_batches": 8,
+  "n_input_sequences": 1921,
+  "n_merged_topology_records": 1921
+}

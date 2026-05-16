@@ -1,3 +1,46 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:7683082a57800dc4a0feb978f459ab928f3ff058fbfb49ffceb3b387b29e2bbb
-size 1952
+{
+  "dataset": "uniprot_accession_history",
+  "extras": {
+    "base_url": "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/",
+    "include_trembl": false
+  },
+  "generated_at_utc": "2026-04-17T15:23:53.972811+00:00",
+  "n_files": 2,
+  "records": [
+    {
+      "captured_at_utc": "2026-04-17T15:23:53.816215+00:00",
+      "dataset": "uniprot_accession_history",
+      "file_name": "sec_ac.txt",
+      "local_path": "data/external/uniprot_accession_history/sec_ac.txt",
+      "note": "Secondary \u2192 primary accession map (Swiss-Prot + TrEMBL).",
+      "response_headers": {
+        "content_length_header": "60521766",
+        "content_type": "text/plain",
+        "etag": "\"39b7d26-6497ab31b1c00\"",
+        "last_modified": "Wed, 28 Jan 2026 23:00:00 GMT"
+      },
+      "sha256": "7ccf03fe34216fbe643ce991bb53c0890eaf654ba0aad26323ab3e9d06b6193a",
+      "size_bytes": 60521766,
+      "source_url": "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/sec_ac.txt",
+      "status": "downloaded"
+    },
+    {
+      "captured_at_utc": "2026-04-17T15:23:53.972771+00:00",
+      "dataset": "uniprot_accession_history",
+      "file_name": "delac_sp.txt",
+      "local_path": "data/external/uniprot_accession_history/delac_sp.txt",
+      "note": "Deleted Swiss-Prot accessions with reason/replacement.",
+      "response_headers": {
+        "content_length_header": "14711",
+        "content_type": "text/plain",
+        "etag": "\"3977-6497ab31b1c00\"",
+        "last_modified": "Wed, 28 Jan 2026 23:00:00 GMT"
+      },
+      "sha256": "21e0e158c106d48699e670cb3d69e5b1b9be06fedfdf488884fe34a4eae8b64b",
+      "size_bytes": 14711,
+      "source_url": "https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/docs/delac_sp.txt",
+      "status": "downloaded"
+    }
+  ],
+  "script": "scripts/data_collection/download_uniprot_accession_history.py"
+}

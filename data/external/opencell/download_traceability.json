@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:878c771ca504f7c770181ae94e4fb3798f308df00ac1fec5955b621eabc866e8
-size 598
+{
+  "dataset": "opencell_localization_annotations",
+  "generated_at_utc": "2026-05-06T21:23:32Z",
+  "notes": {
+    "provenance": "Copied from /Users/rebeccacarlson/Downloads/opencell-localization-annotations.csv"
+  },
+  "records": [
+    {
+      "captured_at_utc": "2026-05-06T21:23:32Z",
+      "path": "data/external/opencell/opencell-localization-annotations.csv",
+      "sha256": "14cf3536d9d3699460dd34e166d001a34e5430fb551488538b9468107f9f10b6",
+      "size_bytes": 61612,
+      "source_url": "local file provided by user"
+    }
+  ],
+  "script": "manual ingest from user-provided local file"
+}

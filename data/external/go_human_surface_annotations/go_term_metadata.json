@@ -1,3 +1,34 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:33205b1152fd999dd338cf485a45b1c5b1f938e11a13731f43d0c2fdeeac6c24
-size 931
+{
+  "terms": [
+    {
+      "configured_aspect": "cellular_component",
+      "configured_label": "cell surface",
+      "goId": "GO:0009986",
+      "isObsolete": false,
+      "n_including_self": 15,
+      "name": "cell surface",
+      "namespace": "cellular_component",
+      "status": "ok"
+    },
+    {
+      "configured_aspect": "cellular_component",
+      "configured_label": "external side of plasma membrane",
+      "goId": "GO:0009897",
+      "isObsolete": false,
+      "n_including_self": 5,
+      "name": "external side of plasma membrane",
+      "namespace": "cellular_component",
+      "status": "ok"
+    },
+    {
+      "configured_aspect": "cellular_component",
+      "configured_label": "integral component of plasma membrane",
+      "goId": "GO:0005887",
+      "isObsolete": false,
+      "n_including_self": 416,
+      "name": "plasma membrane",
+      "namespace": "cellular_component",
+      "status": "ok"
+    }
+  ]
+}

@@ -974,7 +974,7 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 ### 7. D1 + viewer
 
 - D1: drop `deep_dive_run` / `deep_dive_evidence` / `deep_dive_search_log` (mock data only), recreate them for the v1.0.0 shape, add NEW `deep_dive_features` storing the deterministic block as JSON for fast filter-by-topology queries.
-- Update [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql) + [scripts/upload_triage_runs_to_d1.py](scripts/upload_triage_runs_to_d1.py).
+- Update [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql) + [src/accessible_surfaceome/cloud/triage_upload.py](src/accessible_surfaceome/cloud/triage_upload.py).
 - Viewer: [viewer/](viewer/) — replace the existing gene detail page with a layout that follows the mockup section order. Update `viewer/lib/surfaceome.ts` types to match new `SurfaceomeRecord` v1.0.0.
 
 ### 8. Critical files to modify or create
@@ -988,7 +988,7 @@ Keep `gene_lookup` and `gene_literature`. **Remove `patent_lookup`** (was for th
 - [src/accessible_surfaceome/agents/surface_annotator/orchestrator.py](src/accessible_surfaceome/agents/surface_annotator/orchestrator.py) — add deterministic-prefetch phase, validate reference-FK fields resolve to `deterministic_features`, derive the `filters` block.
 - [src/accessible_surfaceome/agents/surface_annotator/agent.py](src/accessible_surfaceome/agents/surface_annotator/agent.py) — update agent definition (tools list, schema reference) so auto-sync pushes the new prompt to the Managed Agent.
 - [src/accessible_surfaceome/agents/surface_annotator/prompts/system.md](src/accessible_surfaceome/agents/surface_annotator/prompts/system.md) — full rewrite.
-- [scripts/upload_triage_runs_to_d1.py](scripts/upload_triage_runs_to_d1.py) — new payload shape, write to `deep_dive_features`.
+- [src/accessible_surfaceome/cloud/triage_upload.py](src/accessible_surfaceome/cloud/triage_upload.py) — new payload shape, write to `deep_dive_features`.
 - [viewer/lib/surfaceome.ts](viewer/lib/surfaceome.ts) + viewer page components.
 - CLAUDE.md + AGENTS.md — update the "Managed Agents" + "Cloudflare D1" sections to reflect the new schema version + dropped patent_lookup tool.
 
@@ -1069,7 +1069,7 @@ Single-shot replacement of the agent side. After this PR merges, `uv run accessi
 Once PR-α is producing v1.0.0 records on disk *and* the soak period has ratified the schema, this PR makes them visible end-to-end.
 
 - D1 schema: drop `deep_dive_run` / `deep_dive_evidence` / `deep_dive_search_log` (mock data only); recreate for the v1.0.0 shape; add `deep_dive_features` storing the deterministic block as JSON for fast filter-by-topology queries. Update [cloudflare/d1_schema.sql](cloudflare/d1_schema.sql).
-- [scripts/upload_triage_runs_to_d1.py](scripts/upload_triage_runs_to_d1.py) — new payload shape; write to `deep_dive_features`.
+- [src/accessible_surfaceome/cloud/triage_upload.py](src/accessible_surfaceome/cloud/triage_upload.py) — new payload shape; write to `deep_dive_features`.
 - Public Worker at `api.deliverome.org/surfaceome/v1/*` — new `/deep-dive/{symbol}` route reading from the new tables; same pattern as the `/benchmark/matrix` route added in [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25).
 - [viewer/lib/surfaceome.ts](viewer/lib/surfaceome.ts) — `SurfaceomeRecord` TypeScript types regenerated from the v1.0.0 Pydantic schema (or hand-rolled to match).
 - Viewer per-gene page rewrite — replace the current detail page with the section order from the §16 page mockup (header → executive → filters → §1 surface_evidence → §2 biological_context → §3 isoforms → §4 paralogs → §5 orthologs → §6 risks → structure appendix → ledger → data sources). Reuse the [StructureViewerCard](viewer/components/surfaceome/StructureViewerCard/StructureViewerCard.tsx) from [#24](https://github.com/Deliverome-Project/accessible-surfaceome/pull/24) for the structure appendix. Reuse the TSV-download pattern from [#25](https://github.com/Deliverome-Project/accessible-surfaceome/pull/25) for any per-gene downloads.
