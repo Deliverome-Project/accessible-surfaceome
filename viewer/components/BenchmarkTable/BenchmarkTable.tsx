@@ -22,7 +22,7 @@ const ROW_OVERSCAN = 12;
 // the prose class label ("secreted negative" etc.) competed visually
 // with the verdict pills without adding information.
 const GRID_TEMPLATE =
-  "1.6rem 12rem 5.5rem 4.5rem " +
+  "12rem 5.5rem 4.5rem " +
   "4.2rem 3rem 4rem 3.6rem 3rem " +
   "6rem 6.5rem 5.6rem";
 
@@ -269,7 +269,6 @@ export function BenchmarkTable({
         aria-rowcount={filtered.length + 1}
       >
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
-          <div className={styles.headerCell} aria-hidden="true" />
           <div className={styles.headerCell} role="columnheader">Gene</div>
           <div className={`${styles.headerCell} ${styles.headerMono}`} role="columnheader">
             UniProt
@@ -439,22 +438,6 @@ function BenchRowView({
       className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""}`}
       style={style}
     >
-      <div className={`${styles.cell} ${styles.toggleCell}`} role="cell">
-        <button
-          type="button"
-          className={styles.toggleBtn}
-          onClick={() => onToggleRow(row.gene_symbol)}
-          aria-label={
-            isExpanded
-              ? `Collapse model×variant grid for ${row.gene_symbol}`
-              : `Expand model×variant grid for ${row.gene_symbol}`
-          }
-          aria-expanded={isExpanded}
-          tabIndex={-1}
-        >
-          {isExpanded ? "−" : "+"}
-        </button>
-      </div>
       <div className={`${styles.cell} ${styles.geneCell}`} role="cell">
         {geneCell}
       </div>

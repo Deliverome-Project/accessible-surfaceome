@@ -63,9 +63,9 @@
 
 .searchInput {
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.35rem 0.65rem;
   font-family: var(--font-sans);
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   color: var(--ink);
   background: var(--bg-soft);
   border: 1px solid var(--line);
@@ -79,6 +79,17 @@
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* The default WebKit "clear" X glyph that appears inside type=search
+ * inputs reads as a heavy bright-blue circle against this soft-bg
+ * theme. Hide it; the search clears just fine via keyboard delete
+ * (and the chips already segment the dataset for browse-mode). */
+.searchInput::-webkit-search-cancel-button,
+.searchInput::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
 }
 
 .chips {
