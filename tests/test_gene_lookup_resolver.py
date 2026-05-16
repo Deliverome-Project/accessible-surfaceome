@@ -97,7 +97,11 @@ def test_hgnc_empty_xref_falls_back_to_symbol_search(http, hgnc_id, expected_acc
     ("hgnc_id", "expected_acc", "renamed_to", "uniprot_still_calls_it"),
     [
         ("HGNC:28210", "Q86UY5", "SACK1A", "FAM83A"),
-        ("HGNC:28133", "Q96GX8", "CLMB",   "C16orf74"),
+        # ("HGNC:28133", "Q96GX8", "CLMB", "C16orf74") — retired 2026-05-16.
+        # HGNC re-renamed CLMB to FAM167B and UniProt has since synced;
+        # both authorities now agree FAM167B -> Q9BTA0, so the case no
+        # longer exercises the HGNC-ahead path. Drop in a fresher rename
+        # if you want a 2-row parametrize again.
     ],
 )
 def test_hgnc_ahead_of_uniprot_rename(http, hgnc_id, expected_acc, renamed_to, uniprot_still_calls_it):
