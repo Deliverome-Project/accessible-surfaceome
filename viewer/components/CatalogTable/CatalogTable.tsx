@@ -159,6 +159,16 @@ function prettyReason(r: string): string {
   return r.replace(/_/g, " ");
 }
 
+/** Map a verdict bucket onto a CSS modifier class on the reason-
+ *  group label, so "yes" reads as green, "contextual" as amber, "no"
+ *  as maroon — matches the verdict-pill palette in the table. */
+function reasonGroupLabelToneClass(v: VerdictKey): string {
+  if (v === "yes") return styles.filterReasonGroupLabelYes;
+  if (v === "contextual") return styles.filterReasonGroupLabelContextual;
+  if (v === "no") return styles.filterReasonGroupLabelNo;
+  return styles.filterReasonGroupLabelAny;
+}
+
 /** Schema fields the advanced-filter panel could surface once the
  *  Worker payload extends — currently the catalog row doesn't carry
  *  `subcategory` or `headline_risks` (those live on the per-gene
@@ -232,11 +242,41 @@ export function CatalogTable({
     });
   }
   function toggleVerdictFilter(key: VerdictKey) {
-    setVerdictFilter((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
+    // Toggle the verdict, then prune `reasonFilter` so only reasons
+    // that belong to a still-selected verdict (or are "other", which
+    // is verdict-agnostic) survive. Computing `nextVerdict` outside
+    // the setter so we can reuse it for the prune step.
+    const nextVerdict = new Set(verdictFilter);
+    if (nextVerdict.has(key)) nextVerdict.delete(key);
+    else nextVerdict.add(key);
+    setVerdictFilter(nextVerdict);
+
+    // Unrestricted verdict filter ⇒ every reason still applies; no
+    // prune needed.
+    if (nextVerdict.size === 0) return;
+
+    const allowedVerdicts = new Set<VerdictKey>(
+      [...nextVerdict].filter((v) => v !== "none"),
+    );
+    // Only "no call" left ⇒ no triage reason applies (no-call rows
+    // carry a null reason). Clear the reason filter entirely.
+    if (allowedVerdicts.size === 0) {
+      setReasonFilter(new Set());
+      return;
+    }
+    setReasonFilter((prev) => {
+      const compatible = new Set<string>();
+      for (const r of prev) {
+        if (r === REASON_OTHER) {
+          compatible.add(r);
+          continue;
+        }
+        const group = REASON_GROUPS.find((g) => g.reasons.includes(r));
+        if (group && allowedVerdicts.has(group.verdict)) {
+          compatible.add(r);
+        }
+      }
+      return compatible;
     });
   }
   function toggleReasonFilter(key: string) {
@@ -266,6 +306,36 @@ export function CatalogTable({
     verdictFilter.size +
     reasonFilter.size +
     deepDiveFilter.size;
+
+  // Which reason groups make sense to surface, given the current
+  // verdict filter. The triage reason is constrained by the verdict
+  // (e.g. `gpi_anchored` only appears on yes-verdict rows), so we
+  // hide the yes-reasons block when the user has restricted to "no
+  // call" only, etc.
+  const visibleReasonGroups = useMemo<{
+    groups: typeof REASON_GROUPS;
+    showOther: boolean;
+    hint: string | null;
+  }>(() => {
+    if (verdictFilter.size === 0) {
+      return { groups: REASON_GROUPS, showOther: true, hint: null };
+    }
+    const allowed = new Set<VerdictKey>(
+      [...verdictFilter].filter((v) => v !== "none"),
+    );
+    if (allowed.size === 0) {
+      return {
+        groups: [],
+        showOther: false,
+        hint: "No reasons apply — \"no call\" rows have no triage reason on file.",
+      };
+    }
+    return {
+      groups: REASON_GROUPS.filter((g) => allowed.has(g.verdict)),
+      showOther: true,
+      hint: null,
+    };
+  }, [verdictFilter]);
   // Side-rationale drawer: one selected symbol at a time. Clicking the
   // same symbol again toggles the drawer off. The /v1/triage/{symbol}
   // fetch is lazy — kicked off the first time a symbol is selected,
@@ -559,6 +629,70 @@ export function CatalogTable({
             </span>
           </div>
 
+          <div className={styles.filterReason}>
+            <span className={styles.filterLabel}>Triage reason</span>
+            <div className={styles.filterReasonGroups}>
+              {visibleReasonGroups.hint ? (
+                <span className={styles.filterHint}>
+                  {visibleReasonGroups.hint}
+                </span>
+              ) : null}
+              {visibleReasonGroups.groups.map((g) => (
+                <div
+                  className={styles.filterReasonGroup}
+                  key={`rg-${g.verdict}`}
+                >
+                  <span
+                    className={`${styles.filterReasonGroupLabel} ${reasonGroupLabelToneClass(g.verdict)}`}
+                  >
+                    {g.label}
+                  </span>
+                  <div className={styles.filterChips}>
+                    {g.reasons.map((r) => {
+                      const on = reasonFilter.has(r);
+                      return (
+                        <button
+                          key={`rf-${r}`}
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleReasonFilter(r)}
+                          aria-pressed={on}
+                        >
+                          {prettyReason(r)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              {visibleReasonGroups.showOther ? (
+                <div className={styles.filterReasonGroup}>
+                  <span
+                    className={`${styles.filterReasonGroupLabel} ${styles.filterReasonGroupLabelAny}`}
+                  >
+                    any
+                  </span>
+                  <div className={styles.filterChips}>
+                    {(() => {
+                      const on = reasonFilter.has(REASON_OTHER);
+                      return (
+                        <button
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleReasonFilter(REASON_OTHER)}
+                          aria-pressed={on}
+                          title="Catch-all bucket the agent uses when nothing else fits"
+                        >
+                          other
+                        </button>
+                      );
+                    })()}
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
           <div className={styles.filterRow}>
             <span className={styles.filterLabel}>Deep dive</span>
             <div className={styles.filterChips}>
@@ -582,54 +716,6 @@ export function CatalogTable({
             <span className={styles.filterHint}>
               {`Has a deep-dive page — currently ${n_with_deep_dive} of ${n_rows.toLocaleString()} genes`}
             </span>
-          </div>
-
-          <div className={styles.filterReason}>
-            <span className={styles.filterLabel}>Reason</span>
-            <div className={styles.filterReasonGroups}>
-              {REASON_GROUPS.map((g) => (
-                <div className={styles.filterReasonGroup} key={`rg-${g.verdict}`}>
-                  <span className={styles.filterReasonGroupLabel}>
-                    {g.label}
-                  </span>
-                  <div className={styles.filterChips}>
-                    {g.reasons.map((r) => {
-                      const on = reasonFilter.has(r);
-                      return (
-                        <button
-                          key={`rf-${r}`}
-                          type="button"
-                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
-                          onClick={() => toggleReasonFilter(r)}
-                          aria-pressed={on}
-                        >
-                          {prettyReason(r)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-              <div className={styles.filterReasonGroup}>
-                <span className={styles.filterReasonGroupLabel}>any</span>
-                <div className={styles.filterChips}>
-                  {(() => {
-                    const on = reasonFilter.has(REASON_OTHER);
-                    return (
-                      <button
-                        type="button"
-                        className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
-                        onClick={() => toggleReasonFilter(REASON_OTHER)}
-                        aria-pressed={on}
-                        title="Catch-all bucket the agent uses when nothing else fits"
-                      >
-                        other
-                      </button>
-                    );
-                  })()}
-                </div>
-              </div>
-            </div>
           </div>
 
           {activeFilterCount > 0 ? (

@@ -301,6 +301,24 @@
   font-style: italic;
 }
 
+/* Group-label colors track the verdict palette so the relationship
+ * between reason groups and verdicts is visible at a glance. */
+.filterReasonGroupLabelYes {
+  color: var(--success);
+}
+
+.filterReasonGroupLabelContextual {
+  color: var(--amber-deepest);
+}
+
+.filterReasonGroupLabelNo {
+  color: var(--maroon-dark);
+}
+
+.filterReasonGroupLabelAny {
+  color: var(--muted);
+}
+
 .filterFoot {
   display: flex;
   justify-content: flex-end;
