@@ -119,15 +119,17 @@ EXTRA_FILES_RELATIVE: list[str] = [
 SEED_METADATA = {
     "metadata": {
         "upload_type": "dataset",
-        "title": "accessible-surfaceome — open atlas snapshot",
+        "title": "accessible-surfaceome — auxiliary data outputs",
         "description": (
-            "Snapshot of the accessible-surfaceome repository plus "
-            "large auxiliary data outputs (triage run with reasoning, "
-            "benchmark run with full reasoning, deep dives). The "
-            "repository itself is also archived continuously by "
-            "Software Heritage; this Zenodo deposit provides a "
-            "DOI-citeable bundle and a stable home for data files too "
-            "large to live in the repo."
+            "Large auxiliary data outputs for the accessible-surfaceome "
+            "project: triage runs with full reasoning, benchmark runs "
+            "with reasoning, and deep-dive analyses. These files are too "
+            "large to live in the repository directly. The repository "
+            "code itself is archived separately, both via the "
+            "GitHub-Zenodo auto-archive (one DOI per tagged release) "
+            "and via Software Heritage (continuous crawl, content-"
+            "addressed SWHIDs). This record is the supplementary "
+            "data layer."
         ),
         "creators": [
             {"name": "Carlson, Rebecca"},
@@ -140,6 +142,17 @@ SEED_METADATA = {
             "drug delivery",
             "reproducible figures",
             "open data",
+        ],
+        # Link this data record to the auto-archived code record(s).
+        # Fill in concept DOI(s) once the auto-archive has produced its
+        # first release; the link makes the relationship explicit in
+        # CrossRef/DataCite and Zenodo's UI.
+        "related_identifiers": [
+            # {
+            #     "identifier": "10.5281/zenodo.<CODE-CONCEPT-DOI>",
+            #     "relation": "isSupplementTo",
+            #     "scheme": "doi",
+            # },
         ],
     },
 }
@@ -350,17 +363,34 @@ def phase_audit_figures(*, dry_run: bool) -> bool:
         return False
 
 
-def phase_zenodo(*, dry_run: bool, token: str | None) -> None:
-    """Snapshot the repo, create Zenodo draft, upload artifacts."""
+def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool) -> None:
+    """Create Zenodo draft and upload artifacts.
+
+    By default this is a HEAVY-DATA deposit: just the files in
+    EXTRA_FILES_RELATIVE. The repo tarball is omitted because the
+    GitHub-Zenodo auto-archive handles routine code-release deposits
+    in a separate record series.
+
+    Pass --include-repo-tarball if you've DISABLED auto-archive and
+    want this script to be the single bundled record (code + data).
+    """
     announce("PHASE 3 — Zenodo: create draft deposit + upload artifacts")
 
     if not token and not dry_run:
         bail("ZENODO_TOKEN env var required for the Zenodo phase (or pass --dry-run)")
 
-    timestamp = time.strftime("%Y%m%d-%H%M%S")
-    tarball = REPO_ROOT / f"_release-snapshot-{timestamp}.tar.gz"
-    head_sha = git_archive_repo(tarball, dry_run=dry_run)
-    ok(f"repo tarball: {tarball.name} @ HEAD={head_sha[:12]}")
+    tarball: Path | None = None
+    head_sha: str | None = None
+    if include_repo_tarball:
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        tarball = REPO_ROOT / f"_release-snapshot-{timestamp}.tar.gz"
+        head_sha = git_archive_repo(tarball, dry_run=dry_run)
+        ok(f"repo tarball: {tarball.name} @ HEAD={head_sha[:12]}")
+    else:
+        ok(
+            "skipping repo tarball (auto-archive handles code-release "
+            "deposits — pass --include-repo-tarball to override)"
+        )
 
     deposit = zenodo_create_deposit(token or "", SEED_METADATA, dry_run=dry_run)
     deposit_id = deposit["id"]
@@ -373,9 +403,10 @@ def phase_zenodo(*, dry_run: bool, token: str | None) -> None:
 
     ok(f"draft created: id={deposit_id} doi={reserved_doi}")
 
-    # Upload repo tarball
-    announce(f"Uploading repo tarball to deposit {deposit_id}")
-    zenodo_upload_file(bucket, token or "", tarball, dry_run=dry_run)
+    # Upload repo tarball if requested
+    if include_repo_tarball and tarball is not None:
+        announce(f"Uploading repo tarball to deposit {deposit_id}")
+        zenodo_upload_file(bucket, token or "", tarball, dry_run=dry_run)
 
     # Upload extra heavy data files
     announce("Uploading heavy data files (EXTRA_FILES_RELATIVE)")
@@ -394,8 +425,8 @@ def phase_zenodo(*, dry_run: bool, token: str | None) -> None:
     for p in found:
         zenodo_upload_file(bucket, token or "", p, dry_run=dry_run)
 
-    # Cleanup local tarball
-    if not dry_run and tarball.exists():
+    # Cleanup local tarball (if we created one)
+    if tarball is not None and not dry_run and tarball.exists():
         tarball.unlink()
         ok(f"removed local snapshot {tarball.name}")
 
@@ -439,6 +470,16 @@ def main() -> int:
         action="store_true",
         help="skip Software Heritage submissions; only run audit + Zenodo phases",
     )
+    ap.add_argument(
+        "--include-repo-tarball",
+        action="store_true",
+        help=(
+            "snapshot the repo at HEAD as a tar.gz and include it in the Zenodo "
+            "deposit. OFF by default: assumes GitHub-Zenodo auto-archive handles "
+            "code-release deposits in a separate record series. Pass this flag "
+            "if you've disabled auto-archive and want one bundled record."
+        ),
+    )
     args = ap.parse_args()
 
     swh_results: dict[str, str | None] = {}
@@ -450,7 +491,11 @@ def main() -> int:
     phase_audit_figures(dry_run=args.dry_run)
 
     if not args.skip_zenodo:
-        phase_zenodo(dry_run=args.dry_run, token=os.environ.get("ZENODO_TOKEN"))
+        phase_zenodo(
+            dry_run=args.dry_run,
+            token=os.environ.get("ZENODO_TOKEN"),
+            include_repo_tarball=args.include_repo_tarball,
+        )
     else:
         warn("--skip-zenodo: skipping Zenodo deposit")
 

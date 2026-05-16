@@ -3,20 +3,39 @@
 One-shot rituals for promoting `accessible-surfaceome` to durable
 storage. Run manually, only when you're ready.
 
-## What's here
+## Architecture: two Zenodo record series
 
-### `publish-archive.py`
+The deliverome project uses two parallel Zenodo record series:
 
-Bundles three release tasks into one command:
+1. **Code releases** — handled automatically by the GitHub-Zenodo
+   integration (one DOI per tagged GitHub Release; the auto-archive
+   captures the repo tarball but **NOT** LFS bytes or content that
+   isn't in the repo). Enable at <https://zenodo.org/account/settings/github/>.
+   You do nothing per release once this is on.
+
+2. **Heavy data outputs** — handled by this script. Things like full
+   triage runs with reasoning, benchmark runs with reasoning, deep-dive
+   analyses — files too large for the repo or not committed at all.
+   Manual deposit each time you want to mint a fresh DOI for new data.
+
+The two series link to each other via `related_identifiers` metadata
+(this record `isSupplementTo` the code record). CrossRef/DataCite
+indexes the relationship and Zenodo's UI shows it.
+
+## What `publish-archive.py` does
+
+Three release tasks in one command:
 
 1. **Submit repo + every figure gist to Software Heritage** (free
    archive, content-addressed SWHIDs, no DOIs).
 2. **Audit every figure's embedded provenance** by deferring to
    `tests/test_figure_provenance.py`. Surfaces stale or malformed
    metadata before you commit to a Zenodo deposit.
-3. **Create a draft Zenodo deposit** containing the repo at HEAD as a
-   tarball plus any heavy data outputs listed in `EXTRA_FILES_RELATIVE`
-   at the top of the script.
+3. **Create a draft Zenodo deposit** containing the heavy data files
+   listed in `EXTRA_FILES_RELATIVE`. By default the repo tarball is
+   NOT included (auto-archive handles that); pass
+   `--include-repo-tarball` to bundle everything into one record if
+   you've disabled auto-archive.
 
 The Zenodo deposit is created as a **draft** — nothing is published
 until you click "Publish" in the Zenodo UI. Drafts can be deleted.
@@ -58,10 +77,41 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
 ZENODO_TOKEN='sandbox-token' ZENODO_SANDBOX=true \
   ./scripts/release/publish-archive.py
 
-# 4. The real thing
+# 4. The real thing — heavy data record (auto-archive handles code)
 ZENODO_TOKEN='real-token' \
   ./scripts/release/publish-archive.py
+
+# 5. One-bundled-record mode (only if you've disabled auto-archive)
+ZENODO_TOKEN='real-token' \
+  ./scripts/release/publish-archive.py --include-repo-tarball
 ```
+
+### Linking the data record back to the code record
+
+The first time you run this script, the resulting Zenodo data record
+won't yet know about the auto-archived code record (you may not have
+made a tagged release yet).
+
+After both records exist:
+
+1. Note the **concept DOI** of the code record series (the always-
+   latest one, found at the top of any auto-archived release's Zenodo
+   page).
+2. Edit `SEED_METADATA["metadata"]["related_identifiers"]` in
+   `publish-archive.py` to declare the link:
+   ```python
+   "related_identifiers": [
+       {
+           "identifier": "10.5281/zenodo.<CONCEPT-DOI>",
+           "relation": "isSupplementTo",
+           "scheme": "doi",
+       },
+   ],
+   ```
+3. Next time you mint a data record, it'll be linked in DataCite.
+4. For the data records you've already published, edit the metadata in
+   the Zenodo UI to add the same `related_identifiers` entry — Zenodo
+   lets you edit metadata after publication (just not files).
 
 ## After the script runs
 
@@ -79,42 +129,39 @@ ZENODO_TOKEN='real-token' \
    embedded metadata in `data/analysis/figures/*.{png,pdf}`.
 5. **Commit** the metadata bump.
 
-## Why this isn't automatic
+## Auto-archive vs this script — they're complementary
 
-The default GitHub-Zenodo integration auto-archives every release. This
-script intentionally doesn't — for several reasons:
+If you already have GitHub-Zenodo auto-archive enabled (recommended
+for code), you have **two parallel Zenodo record series** in flight:
 
-- **You want to control timing.** Some commits aren't releases. Some
-  versions are pre-publication and shouldn't have DOIs minted yet.
-- **You want to include heavy data files** that aren't in the repo.
-  GitHub auto-archive only contains the repo tarball.
-- **One bundled record is cleaner** than two (repo-only + heavy-data)
-  for citation purposes — paper readers click one DOI, get everything.
+| | Code series (auto) | Data series (this script) |
+|---|---|---|
+| Created by | GitHub release event | manual run of this script |
+| What's in it | Repo tarball at tag | Heavy data files outside the repo |
+| Cadence | Per release | Per data milestone |
+| Versioning | New version per GitHub release | New version per script run (manual) |
+| Concept DOI | One per series | One per series |
 
-The trade-off: each release is a manual ritual (~5 minutes of clicking
-in the Zenodo UI to finalize). For a once-or-twice-a-year publication
-cadence, that's the right call.
+The two are linked via `related_identifiers` metadata in the data
+record's spec. Citing the code DOI, citing the data DOI, or citing
+both gives readers the full picture.
 
-If you later prefer the auto-archive model, enable it at
-<https://zenodo.org/account/settings/github/> and stop using this
-script. The two approaches are mutually exclusive — running both
-creates two record series with different DOIs.
+### When NOT to use this script
 
-## Do I need a separate Zenodo record for heavy data files?
+- If your heavy data fits comfortably in the repo (e.g., everything
+  under ~100 MB total) AND you've committed it: auto-archive captures
+  it automatically. Skip this script entirely.
+- If you DON'T want to mint DOIs for data: just keep using SWHIDs via
+  the figure provenance schema. Software Heritage covers durability;
+  DOIs are about citation, which not all data needs.
 
-**No — this script puts everything in one record.** The repo tarball
-and the heavy data files (triage runs, benchmark runs, deep dives) all
-go into a single Zenodo deposit with a single DOI.
+### When to use this script
 
-The only case where you'd want two records:
-
-- You ALSO enable GitHub-release auto-archive on the repo (separate
-  record series for routine code releases)
-- AND keep this script for the heavy-data bundle (its own record
-  series)
-
-That's two concept DOIs to manage. The single-record model (this
-script's default) avoids that.
+- You have data outputs (triage runs, benchmark runs, deep dives)
+  that are too large for the repo, OR generated externally, OR
+  LFS-tracked (LFS bytes don't get included in auto-archive).
+- You want a citeable DOI for those data files, separate from any
+  paper they appear in.
 
 ## Safety reminders
 
