@@ -58,9 +58,16 @@ documents it.
 - `evidence_retrieval` — your primary literature source. One call per
   category; returns `evidence_claim_drafts` — pre-built EvidenceClaim
   skeletons with `quote` / `source_id` / `section` / `figure_or_table_id`
-  already filled. Read each draft's `context_excerpt` (≤500 chars,
-  adjacent sentences) to understand what the snippet says in situ.
+  already filled. Read each draft's `context_excerpt` (≤1500 chars,
+  surrounding sentences) to understand what the snippet says in situ.
 - `gene_literature` — recall fallback when `evidence_retrieval` is empty.
+  `fetch_abstract` and `fetch_fulltext` return `Paper` objects that
+  ALSO carry `evidence_claim_drafts` — pre-built EvidenceClaim skeletons
+  with (quote, source_id, section) locked, just like `evidence_retrieval`.
+  Adopt these drafts verbatim; do NOT retype prose from `paper.abstract`
+  or `paper.sections` into a `quote` field — that path produces
+  paraphrases that fail substring anchoring. (GPR75 audit, 2026-05-15:
+  6/6 unanchored rows came from this paraphrase path.)
 
 ## Citation discipline — use the drafts as-is
 
@@ -82,6 +89,24 @@ For every `EvidenceClaim` you emit from an `evidence_retrieval` result:
 If `evidence_retrieval` returns no drafts for a category, that's
 informative — represent absence honestly rather than reaching for weak
 evidence.
+
+## `evidence_tier` — demote shallow anchors
+
+A `quote` is a *meta-level breadcrumb* — not a finding — when it is:
+
+- A schematic / workflow caption ("Schematic of...", "Figure X. Schematic
+  diagram...", "Workflow for surfaceome profiling...").
+- A paper-aim or motivation statement ("We aimed to assess...", "Here we
+  report...", "The goal of this study was to..."). These describe what
+  the paper set out to do, not what it found.
+
+When a draft's `quote` matches one of these patterns, set
+`evidence_tier="secondary"` even when the source is PMC full-text. Prefer
+a results-section draft from the same paper when one is available — the
+snippet pile is sorted by score so a stronger draft usually sits above
+the meta-level one. If the meta-level snippet is the only anchor for a
+load-bearing paper, keep it but flag `secondary` so the synthesizer
+weights it correctly.
 
 ## Not your job
 

@@ -43,9 +43,15 @@ and `cross_reactivity_notes` whenever the paper reports them.
 - `evidence_retrieval` — your primary evidence source. One call per assay
   category; returns `evidence_claim_drafts` — pre-built EvidenceClaim
   skeletons with `quote` / `source_id` / `section` / `figure_or_table_id`
-  already filled. Read each draft's `context_excerpt` (≤500 chars,
-  adjacent sentences) to understand what the snippet says in situ.
+  already filled. Read each draft's `context_excerpt` (≤1500 chars,
+  surrounding sentences) to understand what the snippet says in situ.
 - `gene_literature` — recall fallback when `evidence_retrieval` is empty.
+  `fetch_abstract` and `fetch_fulltext` return `Paper` objects that
+  ALSO carry `evidence_claim_drafts` — pre-built EvidenceClaim skeletons
+  with (quote, source_id, section) locked, just like `evidence_retrieval`.
+  Adopt these drafts verbatim; do NOT retype prose from `paper.abstract`
+  or `paper.sections` into a `quote` field — that path produces
+  paraphrases that fail substring anchoring.
 - `web_search` / `web_fetch` — last resort.
 
 ## Citation discipline — use the drafts as-is
@@ -72,6 +78,29 @@ For every `EvidenceClaim` you emit from an `evidence_retrieval` result:
 If `evidence_retrieval` returns no drafts for a category, that's
 informative — say so in `grade_rationale` rather than reaching for weak
 evidence.
+
+## `evidence_tier` — demote shallow anchors
+
+A `quote` is a *meta-level breadcrumb* — not a finding — when it is:
+
+- A schematic / workflow caption ("Schematic of...", "Figure X. Schematic
+  diagram of the evaluation...", "Workflow for surfaceome profiling...").
+- A paper-aim or motivation statement ("We aimed to assess...", "Here we
+  report...", "The goal of this study was to..."). These describe what
+  the paper set out to do, not what it found.
+- An IHC / flow scoring rubric on its own ("1+ for weak membrane staining
+  in ≥10% of tumor cells, 2+ for moderate..."). The scheme implies the
+  readout is membranous but doesn't deliver the result.
+
+When a draft's `quote` matches one of these patterns, set
+`evidence_tier="secondary"` even when the source is PMC full-text and
+the assay is direct. Prefer a results-section draft from the same paper
+when one is available — the snippet pile is sorted by score so a stronger
+draft usually sits above the meta-level one. If the meta-level snippet
+is the only anchor available for a paper that *is* load-bearing for the
+narrative (e.g. the only mass-spec surfaceome paper on the gene), keep
+it — but `evidence_tier="secondary"` flags to the synthesizer that this
+claim doesn't carry primary-tier weight in the rollup.
 
 ## Not your job
 

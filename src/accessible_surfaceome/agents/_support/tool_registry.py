@@ -121,7 +121,15 @@ GENE_LITERATURE_DESCRIPTION = (
     "ONLY for PMC OA papers (is_pmc_oa==True) and only when an abstract is "
     "ambiguous — full text is capped at ~10k tokens with truncation flags. "
     "Every paper carries topic_tags, is_review, is_retracted, is_pmc_oa "
-    "computed before tokens reach you so you can prioritize cheaply."
+    "computed before tokens reach you so you can prioritize cheaply. "
+    "fetch_abstract and fetch_fulltext additionally return "
+    "evidence_claim_drafts: pre-built EvidenceClaim skeletons with "
+    "verbatim (quote, source_id, section) anchors pulled from each "
+    "sentence of the abstract / sections. Adopt these drafts verbatim "
+    "rather than retyping prose — copy-paste anchoring guarantees the "
+    "substring check at promotion passes by construction. gene2pubmed "
+    "and topic_search return paper enumerations only (no drafts) — "
+    "call fetch_abstract on any PMID you want to quote from."
 )
 
 GENE_LITERATURE_INPUT_SCHEMA: dict[str, Any] = {

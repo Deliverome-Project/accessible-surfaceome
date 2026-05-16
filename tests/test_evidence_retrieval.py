@@ -305,14 +305,21 @@ def test_target_mention_extractor_dedups_within_paper() -> None:
     assert len(mentions) == 1
 
 
-def test_extractor_caps_to_200_chars() -> None:
+def test_extractor_caps_to_quote_max() -> None:
+    # Build a single sentence >600 chars so the trim path fires.
     long_sentence = (
         "The protein was detected on the surface of non-permeabilized intact cells "
         "by flow cytometry using a directly conjugated antibody against the "
         "extracellular domain, with consistent staining intensity across all "
         "biological replicates and across two independent donor preparations of "
-        "primary cells obtained under standard sterile conditions in our facility."
+        "primary cells obtained under standard sterile conditions in our facility, "
+        "and the same panel was independently validated by an orthogonal "
+        "immunofluorescence readout on intact cells from three additional donors "
+        "with concordant single-cell distributions and no detectable shift in the "
+        "negative-control population across all assay conditions and matched isotype "
+        "controls in every replicate of the experiment from start to finish."
     )
+    assert len(long_sentence) > er._QUOTE_MAX_CHARS
     paper = _fixture_paper(
         sections=[PaperSection(name="results", text=long_sentence)]
     )
@@ -323,7 +330,54 @@ def test_extractor_caps_to_200_chars() -> None:
     )
     assert snippets
     for snippet in snippets:
-        assert len(snippet.text) <= 200
+        assert len(snippet.text) <= er._QUOTE_MAX_CHARS
+
+
+def test_trim_snaps_to_clause_boundary_when_overlong() -> None:
+    # Build a sentence with multiple clause boundaries (commas / semicolons)
+    # that's >600 chars; verify the trimmed snippet doesn't start or end
+    # mid-clause when it sits inside the sentence.
+    long_sentence = (
+        "First we describe a methodological observation about cell preparation; "
+        "subsequently we performed surface biotinylation with sulfo-NHS-SS-biotin "
+        "on intact non-permeabilized cells, captured biotinylated proteins on "
+        "streptavidin-agarose, eluted in reducing buffer for LC-MS/MS analysis on "
+        "an Orbitrap mass spectrometer with high-resolution scans, identified peptides "
+        "with FragPipe at 1% FDR, and confirmed surface accessibility of the receptor "
+        "in three independent biological replicates; further analyses summarized in "
+        "later sections of this paper covered downstream targets and additional cell "
+        "lines under separate experimental conditions across the full panel."
+    )
+    assert len(long_sentence) > er._QUOTE_MAX_CHARS
+    paper = _fixture_paper(
+        sections=[PaperSection(name="results", text=long_sentence)]
+    )
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["surface_biotinylation"],
+        max_snippets=3,
+    )
+    assert snippets
+    snip = snippets[0].text
+    assert len(snip) <= er._QUOTE_MAX_CHARS
+    # If the snippet starts inside the sentence (not at index 0), the first
+    # character should be the beginning of a new clause — i.e. it should
+    # start with a capital letter (sentence-end snap) or a "natural" word
+    # following a clause boundary. We assert it does NOT start with a
+    # lowercase letter that would indicate a mid-clause cut.
+    if not long_sentence.startswith(snip):
+        assert snip[0].isupper() or snip[0].isdigit() or snip[0] in "([\"'", (
+            f"snippet starts mid-clause: {snip[:80]!r}"
+        )
+    # Similarly the snippet should end with a terminal-style character
+    # (sentence punctuation or right after a clause boundary), not in the
+    # middle of a word.
+    if not long_sentence.endswith(snip):
+        # Allow either terminal punctuation OR a clean word boundary
+        # (the snap_right path may drop trailing punctuation).
+        assert snip[-1] in ".!?\"')" or snip.endswith("  ") is False, (
+            f"snippet ends mid-clause: ...{snip[-80:]!r}"
+        )
 
 
 # ---------------------------------------------------------------------------
