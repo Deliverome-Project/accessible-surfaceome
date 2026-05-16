@@ -586,7 +586,30 @@ function CatalogRowView({
   isSelected: boolean;
   onSelect: (symbol: string) => void;
 }) {
-  const symbolButton = (
+  // Genes with a deep-dive go straight to the rich deep-dive page on
+  // click — the side-rationale drawer is redundant for those (the
+  // deep-dive page carries the Sonnet reasoning plus everything else).
+  // Genes WITHOUT a deep-dive open the drawer instead, since that's
+  // the only place to read the Sonnet call's full text.
+  const symbolStack = (
+    <span className={styles.symbolStack}>
+      <span className={styles.symbolText}>{row.symbol}</span>
+      {row.name ? (
+        <span className={styles.symbolName} title={row.name}>
+          {row.name}
+        </span>
+      ) : null}
+    </span>
+  );
+  const symbolButton = row.deep_dive ? (
+    <Link
+      href={`/${row.symbol}/`}
+      className={styles.symbolButton}
+      aria-label={`Open the deep-dive page for ${row.symbol}`}
+    >
+      {symbolStack}
+    </Link>
+  ) : (
     <button
       type="button"
       className={styles.symbolButton}
@@ -594,14 +617,7 @@ function CatalogRowView({
       aria-pressed={isSelected}
       aria-label={`Open Sonnet reasoning for ${row.symbol}`}
     >
-      <span className={styles.symbolStack}>
-        <span className={styles.symbolText}>{row.symbol}</span>
-        {row.name ? (
-          <span className={styles.symbolName} title={row.name}>
-            {row.name}
-          </span>
-        ) : null}
-      </span>
+      {symbolStack}
     </button>
   );
   const style: React.CSSProperties | undefined =
