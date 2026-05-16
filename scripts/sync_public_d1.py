@@ -52,6 +52,7 @@ import json
 import logging
 import os
 import sys
+import time
 from datetime import UTC, datetime
 from dataclasses import dataclass
 from typing import Any
@@ -108,24 +109,37 @@ def _from_env(db_uuid_env: str) -> D1:
 
 
 def _query(d1: D1, sql: str, params: list[Any] | None = None, *, client: httpx.Client) -> list[dict[str, Any]]:
+    """Single D1 query with bounded retry on transient network errors.
+
+    Large SELECTs (the 19,464-row gene_identifier pull, for instance)
+    occasionally exceed the per-request timeout when the D1 edge is
+    slow; on a ReadTimeout we back off and retry up to 3 times rather
+    than abort the whole sync after a partial insert.
+    """
     body: dict[str, Any] = {"sql": sql}
     if params:
         body["params"] = list(params)
-    resp = client.post(
-        d1.url,
-        json=body,
-        headers={"Authorization": f"Bearer {d1.api_token}"},
-        timeout=60,
-    )
-    data = resp.json()
-    if not data.get("success"):
-        raise RuntimeError(f"D1 error on {d1.database_id}: {data}")
-    result = data.get("result")
-    if isinstance(result, list) and result:
-        return list(result[0].get("results") or [])
-    if isinstance(result, dict):
-        return list(result.get("results") or [])
-    return []
+    headers = {"Authorization": f"Bearer {d1.api_token}"}
+    last_exc: Exception | None = None
+    for attempt in range(3):
+        try:
+            resp = client.post(d1.url, json=body, headers=headers, timeout=300)
+            data = resp.json()
+            if not data.get("success"):
+                raise RuntimeError(f"D1 error on {d1.database_id}: {data}")
+            result = data.get("result")
+            if isinstance(result, list) and result:
+                return list(result[0].get("results") or [])
+            if isinstance(result, dict):
+                return list(result.get("results") or [])
+            return []
+        except (httpx.ReadTimeout, httpx.ConnectError, httpx.RemoteProtocolError) as exc:
+            last_exc = exc
+            wait = 2 ** attempt
+            logger.warning("D1 query attempt %d failed (%s); retrying in %ds",
+                           attempt + 1, type(exc).__name__, wait)
+            time.sleep(wait)
+    raise RuntimeError(f"D1 query failed after 3 attempts: {last_exc}") from last_exc
 
 
 def _multi_insert(
