@@ -179,5 +179,8 @@ def test_picker_drops_deleted_and_follows_merge_chains():
     the picker patch. Adding a deterministic unit-level test would require
     HTTP mocking that adds more brittleness than it removes."""
     # Empty list raises ValueError (programmer error, not LookupError).
+    # http=None is fine here because the empty-list guard short-circuits
+    # before any HTTP call. Both mypy and ty need explicit-ignore
+    # directives because the annotation is strictly typed.
     with pytest.raises(ValueError):
-        _pick_canonical_uniprot([], http=None)  # type: ignore[arg-type]
+        _pick_canonical_uniprot([], http=None)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
