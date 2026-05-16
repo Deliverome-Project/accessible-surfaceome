@@ -36,8 +36,8 @@ FIGURE_PROVENANCE: dict[str, dict[str, Any]] = {
     "db_overlap_venn": {
         "title": "M1 surface DB overlap — 5-way Venn",
         "gist_url": "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",
-        "gist_sha": None,        # set after gist edit; see Task 7
-        "swhid": None,            # set after Save Code Now; see Task 7
+        "gist_sha": "c1253926045bfd5aad70cc5cce7598b0024fcd31",
+        "swhid": "swh:1:snp:ab608a15f4ee00e602cbb317b3f43313214cec08",
         "zenodo_doi": None,
         "repo": "Deliverome-Project/accessible-surfaceome",
         "repo_path": "scripts/triage_bench_db_venn.py",
