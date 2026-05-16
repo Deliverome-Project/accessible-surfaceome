@@ -378,7 +378,55 @@ git add data/processed/triage_bench/mainbench_canonical_v1.tsv \
 git commit -m "chore(triage): refresh canonical TSVs from public D1 + augment stable IDs"
 ```
 
-**Why stable IDs in the figure TSVs:** per the "Gene identifier resolution" section above, `hgnc_id` is the canonical stable key — symbol-only joins silently misroute ~0.2% of human genes (the COX1 / WAS class). Carrying `hgnc_id` in the figure TSVs lets a reader cross-reference any other genes-keyed table without re-resolving from a fragile symbol. Bench + mainbench TSVs additionally carry `uniprot_acc` so readers can directly fetch UniProt features per row.
+### Figure-input TSV conventions
+
+Any TSV that drives a published figure (and lives under `data/processed/**` or `data/eval/**` for raw-GitHub fetch) must follow these conventions so external readers can reanalyze without re-resolving identifiers or doing multi-file joins for common questions.
+
+**1. Stable identifiers on every gene-keyed row.**
+
+Per the "Gene identifier resolution" section above, `hgnc_id` is the canonical stable key — symbol-only joins silently misroute ~0.2% of human genes (the COX1 / WAS class). Every per-gene or per-protein TSV row must carry:
+
+| Identifier | When required |
+|---|---|
+| `hgnc_id` | Always (for any gene-keyed row) |
+| `hgnc_symbol` | Always |
+| `uniprot_acc` | When the row is keyed on or otherwise references a protein |
+| `ensembl_gene` | Always |
+| `ncbi_gene_id` | Always |
+| `ensembl_canonical_protein` | When the row references a specific protein isoform |
+
+The `scripts/augment_figure_tsvs_with_stable_ids.py` script is the canonical place to backfill these by joining against `gene_identifier_public`. **Extend that script** (don't write a new one) when adding a new figure-input TSV — the join logic should live in one place.
+
+**2. Denormalize the most-common reanalysis questions.**
+
+A reader should be able to answer common questions in one filter, not a 3-way join. Concretely, the augment script also denormalizes:
+
+| TSV | Denormalized columns | Saves the join to |
+|---|---|---|
+| `candidate_universe.tsv` | `sonnet_verdict`, `sonnet_reason`, `has_deep_dive`, `is_bench_member` | catalog API / `surface_annotation` / bench TSV |
+| `triage_benchmark_v1.tsv` | `n_db_votes`, `sonnet_verdict`, `sonnet_reason` | candidate_universe / catalog API |
+| `mainbench_canonical_v1.tsv` | `ground_truth_verdict`, `ground_truth_class`, `is_match` (soft-credit), 5 per-DB `*_surface_flag`, `n_db_votes`, `has_deep_dive` | bench TSV / candidate_universe / `surface_annotation` |
+| `db_optimized_cutoffs.tsv` | All 5 canonical `*_surface_flag` columns + cutoff-variant flags (SURFY thresholds, HPA tiers, CSPA-with-unspecific, GO-experimental+curated) + `n_sources_surface`, `n_sources_optimized` | candidate_universe |
+
+Decide what to denormalize by asking: "Is this a join a typical reanalyst needs for an obvious question?" — if yes, add it. Don't denormalize speculatively.
+
+**3. Stay un-LFS, committable, and size-bounded.**
+
+Each figure TSV must be **LFS-exempted** (`-filter -diff -merge text` in `.gitattributes`) so `raw.githubusercontent.com` serves it as plain text rather than an LFS pointer. That puts a soft ceiling on file size:
+
+- **Hard cap**: GitHub's 100 MB per-file limit on non-LFS files.
+- **Practical cap**: ~5 MB per file. Beyond that, `git diff` review gets painful and `pd.read_csv(url)` over a slow link becomes annoying.
+- **Today's set** sums to ~2.4 MB across 4 TSVs (largest is `candidate_universe.tsv` at 1.85 MB / 5,680 rows × 84 cols). Plenty of headroom.
+
+If a planned addition would push a TSV over the practical cap, prefer (a) a separate sidecar TSV, (b) a derived summary file, or (c) writing to D1 and serving via the Worker — not a wider TSV.
+
+**4. Never include full reasoning prose.**
+
+The TSVs carry short coded reasons (`predicted_reason`, `sonnet_reason`, `ground_truth_signal`) — never the full `verdict_reasoning` or deep-dive notes. Full prose stays in private D1 and the Worker's per-gene endpoints. This keeps the TSVs small *and* keeps the citation-stable reanalysis files free of model-version-specific reasoning that doesn't transfer cleanly across model upgrades.
+
+**5. New figure → check the TSV list before adding a 6th TSV.**
+
+The current set is 4 augmented TSVs + 1 aggregate (`db_cutoff_tradeoff_points.tsv` — summary stats only, no gene IDs). When adding a new figure, first try to fit its data into one of the existing TSVs (most figures need a subset of what's already there). Only add a 6th TSV if the data is genuinely orthogonal — and if you do, add it to the augment script's coverage immediately so it stays in sync.
 
 CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
 
