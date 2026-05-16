@@ -34,7 +34,7 @@ back-compat.
   "gist_url":   "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",
   "gist_sha":   "<40-char hex>",
   "swhid":      "swh:1:snp:<40-char hex>",
-  "zenodo_doi": null,
+  "doi": null,
   "repo":       "Deliverome-Project/accessible-surfaceome",
   "repo_path":  "scripts/triage_bench_db_venn.py",
   "repo_ref":   "<40-char commit SHA>",
@@ -51,7 +51,7 @@ back-compat.
 ```
 
 All fields except `schema_version` and `title` are optional individually,
-but at least one durable identifier (`swhid`, `zenodo_doi`, or
+but at least one durable identifier (`swhid`, `doi`, or
 `repo + repo_path + repo_ref-as-commit-sha`) is required.
 
 ### Data durability (per `data[]` entry)
@@ -78,7 +78,7 @@ but mutable data, or vice versa, and each is reported on its own axis.
 1. **Provenance present** — the metadata slot holds a JSON blob with
    `schema_version: "1"`.
 2. **Code is locatable** — at least one of the code locators resolves:
-   `swhid`, `zenodo_doi`, `repo + repo_path + repo_ref`, or `gist_url`.
+   `swhid`, `doi`, `repo + repo_path + repo_ref`, or `gist_url`.
 3. **Code environment is pinned** — the resolved artifact carries PEP
    723 inline metadata, `requirements.txt`, `pyproject.toml`,
    `environment.yml`, `renv.lock`, or a `Dockerfile`.
@@ -86,7 +86,7 @@ but mutable data, or vice versa, and each is reported on its own axis.
    entry: the URL resolves AND at least one of `sha256` / `swhid` /
    `doi` is declared. URL-only entries are locatable but not
    content-verifiable (warn).
-5. **Code is durably stored** — `swhid` OR `zenodo_doi` is present at
+5. **Code is durably stored** — `swhid` OR `doi` is present at
    the top level. A bare commit SHA (repo or gist) is locatable but
    storage-fragile (the repo or gist can be deleted) — warns until the
    code is archived to Software Heritage or Zenodo.
@@ -95,7 +95,7 @@ but mutable data, or vice versa, and each is reported on its own axis.
    warns. Any entry with none of `sha256` / `swhid` / `doi` fails.
 
 Checks 2 and 5 reference the same set of code locators (`gist_url`,
-`gist_sha`, `swhid`, `zenodo_doi`, `repo + repo_path + repo_ref`), so a
+`gist_sha`, `swhid`, `doi`, `repo + repo_path + repo_ref`), so a
 "can I find the code?" answer is consistent with a "is the code
 durable?" answer — the distinction is whether the storage backing the
 locator is durable, not which fields you used to declare it.

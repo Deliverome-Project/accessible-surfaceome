@@ -32,7 +32,7 @@ def build_provenance(
     gist_url: str | None = None,
     gist_sha: str | None = None,
     swhid: str | None = None,
-    zenodo_doi: str | None = None,
+    doi: str | None = None,
     repo: str | None = None,
     repo_path: str | None = None,
     repo_ref: str | None = None,
@@ -52,7 +52,7 @@ def build_provenance(
         "gist_url": gist_url,
         "gist_sha": gist_sha,
         "swhid": swhid,
-        "zenodo_doi": zenodo_doi,
+        "doi": doi,
         "repo": repo,
         "repo_path": repo_path,
         "repo_ref": repo_ref,
@@ -69,12 +69,12 @@ def validate_provenance(blob: dict[str, Any]) -> None:
 
     * ``schema_version`` is the supported value.
     * ``title`` is a non-empty string.
-    * ``swhid``, ``zenodo_doi``, ``gist_sha``, ``repo_ref`` (when
+    * ``swhid``, ``doi``, ``gist_sha``, ``repo_ref`` (when
       present) match their respective formats.
     * Each entry in ``data`` has a string ``url``; if ``sha256`` is
       present it is 64 hex characters.
     * At least one durable identifier is present:
-      ``swhid``, ``zenodo_doi``, or ``repo`` + ``repo_path`` +
+      ``swhid``, ``doi``, or ``repo`` + ``repo_path`` +
       ``repo_ref``.
     """
     if blob.get("schema_version") != SCHEMA_VERSION:
@@ -91,9 +91,9 @@ def validate_provenance(blob: dict[str, Any]) -> None:
                 "swhid must start with 'swh:1:<cnt|dir|rev|rel|snp>:' followed by 40 hex chars"
             )
 
-    doi = blob.get("zenodo_doi")
+    doi = blob.get("doi")
     if doi is not None and not (isinstance(doi, str) and _DOI_RE.match(doi)):
-        raise ProvenanceError("zenodo_doi must match the DOI format 10.NNNN/...")
+        raise ProvenanceError("doi must match the DOI format 10.NNNN/...")
 
     repo_ref = blob.get("repo_ref")
     if repo_ref is not None and not (
@@ -146,6 +146,6 @@ def validate_provenance(blob: dict[str, Any]) -> None:
     )
     if not has_durable:
         raise ProvenanceError(
-            "at least one durable identifier required: swhid, zenodo_doi, or "
+            "at least one durable identifier required: swhid, doi, or "
             "(repo + repo_path + repo_ref-as-commit-sha)"
         )

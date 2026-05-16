@@ -21,7 +21,7 @@ A manual, run-when-ready release ritual. Each invocation:
         - extra heavy data files listed in EXTRA_FILES below
      The deposit is private until you click "Publish" in the Zenodo UI.
 
-After publication in the Zenodo UI, you populate `zenodo_doi` in
+After publication in the Zenodo UI, you populate `doi` in
 scripts/embed_figure_gist_metadata.py's FIGURE_PROVENANCE, re-run that
 script to refresh embedded metadata, and commit. The figures then claim
 durability via BOTH SWHID (per-figure) and Zenodo DOI (per-bundle).
@@ -442,7 +442,7 @@ def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool
     print("    2. Add ORCID IDs, affiliations, related identifiers, etc.")
     print("    3. When ready, click Publish")
     print(
-        "    4. After publishing, populate `zenodo_doi` in FIGURE_PROVENANCE "
+        "    4. After publishing, populate `doi` in FIGURE_PROVENANCE "
         "in scripts/embed_figure_gist_metadata.py and re-run that script"
     )
     print()

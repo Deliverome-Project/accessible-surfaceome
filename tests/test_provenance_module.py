@@ -68,17 +68,17 @@ def test_validate_provenance_rejects_swhid_with_wrong_prefix() -> None:
 def test_validate_provenance_requires_some_durable_identifier() -> None:
     fields = _minimal_fields()
     fields["swhid"] = None
-    fields["zenodo_doi"] = None
+    fields["doi"] = None
     fields["repo_ref"] = None
     with pytest.raises(ProvenanceError, match="durable identifier"):
         validate_provenance(build_provenance(**fields))
 
 
-def test_validate_provenance_accepts_zenodo_doi_only() -> None:
+def test_validate_provenance_accepts_doi_only() -> None:
     fields = _minimal_fields()
     fields["swhid"] = None
     fields["repo_ref"] = None
-    fields["zenodo_doi"] = "10.5281/zenodo.99999999"
+    fields["doi"] = "10.5281/zenodo.99999999"
     validate_provenance(build_provenance(**fields))
 
 

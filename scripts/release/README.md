@@ -123,7 +123,7 @@ After both records exist:
 2. **Click "Publish"** in the Zenodo UI when you're ready. The reserved
    DOI activates and the record is locked.
 3. **Update `FIGURE_PROVENANCE`** in
-   `scripts/embed_figure_gist_metadata.py`: set `zenodo_doi` on the
+   `scripts/embed_figure_gist_metadata.py`: set `doi` on the
    top-level entry for each figure that's covered by this deposit.
 4. **Re-run** `scripts/embed_figure_gist_metadata.py` to refresh the
    embedded metadata in `data/analysis/figures/*.{png,pdf}`.
