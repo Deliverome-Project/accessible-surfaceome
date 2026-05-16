@@ -12,7 +12,7 @@ figure file.
 from __future__ import annotations
 
 import re
-from typing import Any, Iterable
+from typing import Any, Iterable, cast
 
 SCHEMA_VERSION = "1"
 
@@ -113,9 +113,10 @@ def validate_provenance(blob: dict[str, Any]) -> None:
     if data is not None:
         if not isinstance(data, list):
             raise ProvenanceError("data must be a list")
-        for i, entry in enumerate(data):
-            if not isinstance(entry, dict):
+        for i, raw_entry in enumerate(data):
+            if not isinstance(raw_entry, dict):
                 raise ProvenanceError(f"data[{i}] must be an object")
+            entry = cast("dict[str, Any]", raw_entry)
             url = entry.get("url")
             if not (isinstance(url, str) and url.startswith(("http://", "https://"))):
                 raise ProvenanceError(f"data[{i}].url must be an http(s) URL")

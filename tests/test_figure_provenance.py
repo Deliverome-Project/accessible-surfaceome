@@ -31,7 +31,7 @@ from accessible_surfaceome._provenance import (
 # ``scripts/`` so add it to the path.
 SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(SCRIPTS_DIR))
-from embed_figure_gist_metadata import FIGURE_PROVENANCE, FIGURES_DIR  # noqa: E402
+from embed_figure_gist_metadata import FIGURE_PROVENANCE, FIGURES_DIR  # noqa: E402  # ty: ignore[unresolved-import]
 
 
 def _read_png_provenance(path: Path) -> dict:

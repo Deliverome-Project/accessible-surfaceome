@@ -6,6 +6,7 @@ any figure files on disk.
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import pytest
 
@@ -17,7 +18,7 @@ from accessible_surfaceome._provenance import (
 )
 
 
-def _minimal_fields() -> dict[str, object]:
+def _minimal_fields() -> dict[str, Any]:
     return {
         "title": "M1 surface DB overlap — 5-way Venn",
         "gist_url": "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",
