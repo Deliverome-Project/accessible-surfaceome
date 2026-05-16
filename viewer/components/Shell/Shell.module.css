@@ -26,9 +26,77 @@
   position: sticky;
   top: 0;
   z-index: 20;
-  background: rgba(254, 254, 254, 0.85);
+  background: rgba(254, 254, 254, 0.92);
   backdrop-filter: saturate(160%) blur(14px);
   border-bottom: 1px solid var(--line-soft);
+}
+
+/* Parent-site strip — the top row that links back to deliverome.org.
+ * Visually lighter than the local nav so the eye lands on Surfaceome's
+ * own brand first; the strip acts as a "you are inside Deliverome"
+ * affordance, not a competing nav. */
+.parentStrip {
+  border-bottom: 1px solid var(--line-soft);
+  background: var(--bg-soft);
+}
+
+.parentInner {
+  width: var(--page-width);
+  margin-inline: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0.55rem 0;
+}
+
+.parentBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1;
+  border-bottom: 1px solid transparent;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.parentBrand:hover,
+.parentBrand:focus-visible {
+  color: var(--accent);
+}
+
+.parentLogo {
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+.parentBrandText {
+  letter-spacing: 0.005em;
+}
+
+.parentNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.parentLink {
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.parentLink:hover,
+.parentLink:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
 .headerInner {
@@ -43,12 +111,12 @@
 
 .brand {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0.6rem;
   color: var(--ink);
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
 }
 
 .brandMark {
@@ -57,10 +125,35 @@
   border-radius: 999px;
   background: var(--accent);
   display: inline-block;
+  align-self: center;
 }
 
 .brandText {
   color: var(--ink);
+}
+
+.brandSubtitle {
+  font-family: var(--font-sans);
+  font-style: normal;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+@media (max-width: 720px) {
+  .parentNav {
+    gap: var(--space-3);
+  }
+  .parentLink {
+    font-size: 0.78rem;
+  }
+  .parentInner,
+  .headerInner {
+    padding-inline: var(--space-4);
+  }
+  .brandSubtitle {
+    display: none;
+  }
 }
 
 .nav {
@@ -119,8 +212,18 @@
   width: var(--page-width);
   margin-inline: auto;
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-6);
+}
+
+.footerCopyBlock {
+  display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  flex: 1 1 60ch;
+  min-width: 0;
 }
 
 .footerCopy {
@@ -138,6 +241,39 @@
   gap: var(--space-2);
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+.footerSocial {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.footerSocialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--bg-soft);
+  border: 1px solid var(--line-soft);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.footerSocialLink:hover,
+.footerSocialLink:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.footerSocialLink img {
+  display: block;
 }
 
 .metaSep {

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { NavDropdown } from "../NavDropdown/NavDropdown";
 import styles from "./Shell.module.css";
 
 interface ShellProps {
@@ -7,11 +8,41 @@ interface ShellProps {
 }
 
 /**
- * Shell — site-wide layout for surfaceome.deliverome.org. Thin
- * header + footer with a Deliverome cross-link, designed for a
- * sub-product shipping at its own subdomain. Doesn't try to
- * replicate the main deliverome.org SiteShell (funder strip, nav
- * dropdowns) — this site has one purpose and a small surface.
+ * Base URL for the parent deliverome.org site. Honors
+ * ``NEXT_PUBLIC_DELIVEROME_SITE_URL`` so the surfaceome viewer can be
+ * pointed at a staging preview (e.g. the PR24 branch preview at
+ * ``https://feat-site-partners-careers-r.deliverome.pages.dev``) without
+ * rebuilding the Shell. Default is production deliverome.org.
+ *
+ * Trailing slash trimmed so the link builder can concatenate paths
+ * starting with ``/`` cleanly.
+ */
+const PARENT_SITE = (
+  process.env.NEXT_PUBLIC_DELIVEROME_SITE_URL ?? "https://deliverome.org"
+).replace(/\/$/, "");
+
+function parentHref(path: string): string {
+  return `${PARENT_SITE}${path}`;
+}
+
+/**
+ * Shell — site-wide layout for surfaceome.deliverome.org.
+ *
+ * Two-row header so this subdomain reads as a tab inside the larger
+ * deliverome.org property rather than a standalone microsite:
+ *
+ *   Row 1 (parent-site strip) — Deliverome logo + NavDropdown menus
+ *                               (Platform → Overview / Progress;
+ *                               Company → Team / Updates / Careers) +
+ *                               Contact. Mirrors deliverome.org's
+ *                               SiteShell nav structure.
+ *   Row 2 (local nav)         — "Surfaceome" sub-brand + the four
+ *                               in-site sections (SurfaceBench, API,
+ *                               Prompts, GitHub icon).
+ *
+ * Keep both files in sync when the parent SiteShell rev's its nav.
+ * Parent ref: ``Deliverome-Project/deliverome-internal:site/components/
+ * site-shell.tsx``.
  */
 export function Shell({ children }: ShellProps) {
   return (
@@ -20,12 +51,52 @@ export function Shell({ children }: ShellProps) {
         Skip to main content
       </a>
       <header className={styles.header}>
+        <div className={styles.parentStrip}>
+          <div className={styles.parentInner}>
+            <a className={styles.parentBrand} href={parentHref("/")}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/assets/provisional_logo.svg"
+                alt=""
+                width={32}
+                height={32}
+                className={styles.parentLogo}
+              />
+              <span className={styles.parentBrandText}>
+                The Deliverome Project
+              </span>
+            </a>
+            <nav className={styles.parentNav} aria-label="Deliverome">
+              <NavDropdown
+                label="Platform"
+                items={[
+                  { label: "Overview", href: parentHref("/platform/") },
+                  { label: "Progress tracker", href: parentHref("/platform/progress/") },
+                ]}
+              />
+              <NavDropdown
+                label="Company"
+                items={[
+                  { label: "Team", href: parentHref("/team/") },
+                  { label: "Updates", href: parentHref("/updates/") },
+                  { label: "Careers", href: parentHref("/careers/") },
+                ]}
+              />
+              <a className={styles.parentLink} href={parentHref("/contact/")}>
+                Contact
+              </a>
+            </nav>
+          </div>
+        </div>
         <div className={styles.headerInner}>
           <Link href="/" className={styles.brand}>
             <span className={styles.brandMark} aria-hidden="true" />
             <span className={styles.brandText}>Surfaceome</span>
+            <span className={styles.brandSubtitle} aria-hidden="true">
+              · accessible surface proteome
+            </span>
           </Link>
-          <nav className={styles.nav} aria-label="Primary">
+          <nav className={styles.nav} aria-label="Surfaceome sections">
             <Link className={styles.navLink} href="/benchmark">
               SurfaceBench
             </Link>
@@ -38,14 +109,6 @@ export function Shell({ children }: ShellProps) {
             <Link className={styles.navLink} href="/reproducibility">
               Reproducibility
             </Link>
-            <a
-              className={styles.navLink}
-              href="https://deliverome.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Deliverome ↗
-            </a>
             <a
               className={`${styles.navLink} ${styles.navIconLink}`}
               href="https://github.com/Deliverome-Project/accessible-surfaceome"
@@ -82,28 +145,54 @@ export function Shell({ children }: ShellProps) {
 
       <footer className={styles.footer}>
         <div className={styles.footerInner}>
-          <p className={styles.footerCopy}>
-            A working atlas of cell-surface proteins. Schema, evidence, and
-            agents shipped from{" "}
+          <div className={styles.footerCopyBlock}>
+            <p className={styles.footerCopy}>
+              Surfaceome is part of{" "}
+              <a href={parentHref("/")} className={styles.footerLink}>
+                The Deliverome Project
+              </a>{" "}
+              — a nonprofit focused research organization. Schema, evidence,
+              and agents shipped from{" "}
+              <a
+                href="https://github.com/Deliverome-Project/accessible-surfaceome"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.footerLink}
+              >
+                Deliverome-Project/accessible-surfaceome
+              </a>
+              .
+            </p>
+            <p className={styles.footerMeta}>
+              <span>© {new Date().getFullYear()} Deliverome Bio</span>
+              <span aria-hidden="true" className={styles.metaSep}>·</span>
+              <a href="mailto:contact@deliverome.org" className={styles.footerLink}>
+                contact@deliverome.org
+              </a>
+            </p>
+          </div>
+          <div className={styles.footerSocial} aria-label="Social links">
             <a
-              href="https://github.com/Deliverome-Project/accessible-surfaceome"
+              className={styles.footerSocialLink}
+              href="https://x.com/deliverome"
               target="_blank"
               rel="noopener noreferrer"
-              className={styles.footerLink}
+              aria-label="Deliverome on X"
             >
-              Deliverome-Project/accessible-surfaceome
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/x.svg" alt="" width={18} height={18} />
             </a>
-            .
-          </p>
-          <p className={styles.footerMeta}>
-            <span>© {new Date().getFullYear()} Deliverome Bio</span>
-            <span aria-hidden="true" className={styles.metaSep}>
-              ·
-            </span>
-            <a href="mailto:contact@deliverome.org" className={styles.footerLink}>
-              contact@deliverome.org
+            <a
+              className={styles.footerSocialLink}
+              href="https://bsky.app/profile/deliverome.bsky.social"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Deliverome on Bluesky"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/bluesky.svg" alt="" width={19} height={19} />
             </a>
-          </p>
+          </div>
         </div>
       </footer>
     </div>

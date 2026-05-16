@@ -21,7 +21,7 @@
   max-width: none;
 }
 
-.code {
+.inlineCode {
   font-family: var(--font-mono);
   font-size: 0.86em;
   color: var(--ink);
@@ -39,7 +39,7 @@
 .promptBlock {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   padding-top: var(--space-8);
   border-top: 1px solid var(--line-soft);
 }
@@ -65,17 +65,215 @@
   color: var(--line);
 }
 
-.promptBody {
+/* Two-column layout with sticky TOC on the side — collapses to single
+ * column on narrow screens. */
+.promptLayout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 18rem;
+  gap: var(--space-8);
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .promptLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.toc {
+  position: sticky;
+  top: calc(var(--space-16) + var(--space-4));
+  font-size: 0.85rem;
+  border-left: 1px solid var(--line-soft);
+  padding-left: var(--space-4);
+  max-height: calc(100dvh - var(--space-20));
+  overflow-y: auto;
+}
+
+@media (max-width: 960px) {
+  .toc {
+    position: static;
+    border-left: none;
+    padding-left: 0;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--line-soft);
+  }
+}
+
+.tocLabel {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tocList {
+  list-style: none;
+  padding: 0;
   margin: 0;
-  padding: var(--space-5) var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tocItem[data-level="2"] {
+  padding-left: var(--space-3);
+}
+
+.tocItem[data-level="3"] {
+  padding-left: var(--space-6);
+}
+
+.tocLink {
+  color: var(--ink-soft);
+  border-bottom: 1px solid transparent;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  line-height: 1.4;
+}
+
+.tocLink:hover,
+.tocLink:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Rendered-markdown column. The "prose" tokens are styled here rather
+ * than in globals.css because they're prompt-specific (denser margins
+ * than a body-copy article, mono-friendly inline-code styling). */
+.promptBody {
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  line-height: 1.7;
+  color: var(--ink);
+  max-width: 80ch;
+}
+
+.promptBody p {
+  margin: 0 0 var(--space-3);
+}
+
+.promptBody a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--line);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.promptBody a:hover,
+.promptBody a:focus-visible {
+  border-bottom-color: var(--accent);
+}
+
+.promptBody ul,
+.promptBody ol {
+  margin: var(--space-3) 0 var(--space-4) 1.25rem;
+  padding: 0;
+}
+
+.promptBody li {
+  margin: 0.25rem 0;
+}
+
+.promptBody li > p {
+  margin: 0;
+}
+
+.promptBody blockquote {
+  margin: var(--space-4) 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--accent);
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.promptBody blockquote > p:last-child {
+  margin-bottom: 0;
+}
+
+.promptBody code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  color: var(--ink);
+  background: var(--bg-soft);
+  padding: 0.1em 0.35em;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-soft);
+}
+
+.promptBody pre {
+  margin: var(--space-4) 0;
+  padding: var(--space-4) var(--space-5);
   background: var(--bg-soft);
   border: 1px solid var(--line-soft);
   border-radius: var(--radius-sm);
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  line-height: 1.65;
-  color: var(--ink);
-  white-space: pre-wrap;
-  word-wrap: break-word;
   overflow-x: auto;
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.promptBody pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.promptBody hr {
+  border: none;
+  border-top: 1px solid var(--line-soft);
+  margin: var(--space-6) 0;
+}
+
+.promptBody table {
+  border-collapse: collapse;
+  margin: var(--space-4) 0;
+  width: 100%;
+  font-size: 0.9rem;
+}
+
+.promptBody th,
+.promptBody td {
+  border: 1px solid var(--line-soft);
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+}
+
+.promptBody th {
+  background: var(--bg-soft);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* Heading styling — the slug-ids are added by the components map in
+ * page.tsx so anchor links from the TOC scroll correctly. */
+.mdH1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  font-style: italic;
+  margin: var(--space-8) 0 var(--space-3);
+  line-height: 1.15;
+  scroll-margin-top: var(--space-12);
+}
+
+.mdH2 {
+  font-family: var(--font-display);
+  font-size: clamp(1.3rem, 2.4vw, 1.6rem);
+  font-style: italic;
+  margin: var(--space-6) 0 var(--space-3);
+  line-height: 1.2;
+  scroll-margin-top: var(--space-12);
+}
+
+.mdH3 {
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  margin: var(--space-5) 0 var(--space-2);
+  line-height: 1.3;
+  scroll-margin-top: var(--space-12);
 }
