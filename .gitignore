@@ -86,3 +86,24 @@ data/processed/cloudflare/d1_backups/
 # Scratch dir scripts/release/publish-archive.py uses to stage
 # API-fetched payloads + the deep-dives tarball before upload.
 _extra-download/
+
+# Per-run outputs from scripts/run_topology_sweep.py — topology JSONL,
+# events log, and DeepTMHMM batch staging. Each ``topo_<version>`` dir is
+# reproducible from candidate_universe.tsv + the legacy .3line + a fresh
+# DeepTMHMM run. The TSVs / JSONLs uploaded to D1 are the canonical
+# distribution channel.
+data/processed/topology_run_*/
+data/external/deeptmhmm_topology_run_*/
+
+# Ensembl Compara paralog BioMart pull (raw + per-gene CSV). Reproducible
+# from `python -m accessible_surfaceome.sources.ensembl_compara_paralogs
+# download` — same lifecycle as the existing ensembl_compara ortholog pull.
+data/external/ensembl_compara_paralogs/
+
+# UniProt FASTA cache populated by scripts/run_topology_sweep.py. Each
+# file is a single-protein FASTA at <acc>.fasta; reproducible from
+# UniProt's REST endpoint and intentionally not version-controlled.
+data/external/sequences/
+
+# Claude Code dev-server preview config — local-only, not for the repo.
+.claude/launch.json

@@ -125,7 +125,33 @@ OUTPUT_COLUMNS = [
     "c_term_intracellular",
     "predicted_surface_membrane",
     "predicted_secreted",
+    # ---- v0.5 additions (back-compat: existing consumers ignore extra columns)
+    "ecd_length_residues",
+    "icd_length_residues",
+    "n_terminal_orientation",
+    "c_terminal_orientation",
+    "per_residue_topology",
 ]
+
+# The full record set written to *.jsonl alongside the TSV. JSONL carries the
+# input sequence too, which the TSV deliberately doesn't (raw FASTA is large
+# and the TSV consumers don't need it).
+JSONL_EXTRA_COLUMNS = ["sequence"]
+
+
+def _translate_orientation(side: str) -> str:
+    """Map DeepTMHMM terminal-side char to IsoformTopology orientation enum.
+
+    Matches accessible_surfaceome.tools._shared.models.TerminalOrientation:
+    'extracellular' | 'cytoplasmic' | 'indeterminate'.
+    'B' is beta-strand outside; treat as extracellular (matches BETA-label
+    OMP topology where strands face the periplasm/outside).
+    """
+    if side == "O" or side == "B":
+        return "extracellular"
+    if side == "I":
+        return "cytoplasmic"
+    return "indeterminate"
 
 
 def _split_base_accession(acc: str) -> str:
@@ -217,9 +243,24 @@ def parse_3line(path: Path) -> list[dict]:
                 "c_term_intracellular": int(c_side == "I"),
                 "predicted_surface_membrane": int(label in SURFACE_MEMBRANE_LABELS),
                 "predicted_secreted": int(label == "SP"),
+                "ecd_length_residues": topology.count("O"),
+                "icd_length_residues": topology.count("I"),
+                "n_terminal_orientation": _translate_orientation(n_side),
+                "c_terminal_orientation": _translate_orientation(c_side),
+                "per_residue_topology": topology,
+                "sequence": sequence,
             }
         )
     return records
+
+
+def write_jsonl(records: list[dict], path: Path) -> None:
+    """Write records as JSONL — carries the full sequence and topology string."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    records_sorted = sorted(records, key=lambda r: r["uniprot_accession_full"])
+    with path.open("w", encoding="utf-8") as f:
+        for r in records_sorted:
+            f.write(json.dumps(r, sort_keys=True) + "\n")
 
 
 def write_tsv(records: list[dict], path: Path) -> None:
@@ -1072,6 +1113,219 @@ def main(argv: list[str] | None = None) -> None:
         download_main(remainder)
     elif args.command == "build":
         build_main(remainder)
+
+
+# ---------------------------------------------------------------------------
+# Sweep helpers — added for the topology + paralog pipeline.
+# These are used by scripts/run_topology_sweep.py to (a) fetch FASTAs into a
+# disk cache, (b) invoke DeepTMHMM on a batch FASTA, and (c) parse the
+# resulting .3line into rich JSONL records.
+# ---------------------------------------------------------------------------
+
+
+DEEPTMHMM_PACKAGE_DIR = ROOT / "data" / "external" / "deeptmhmm" / "DeepTMHMM-Academic-License-v1.0"
+DEEPTMHMM_VENV = ROOT / ".venv-deeptmhmm"
+DEEPTMHMM_TOOL_VERSION = "deeptmhmm-1.0.24"
+SEQUENCE_CACHE_DIR = ROOT / "data" / "external" / "sequences"
+# DeepTMHMM 1.0.24 OOMs on sequences much longer than this; titin is ~34000 aa.
+DEEPTMHMM_MAX_SEQUENCE_LENGTH = 8000
+
+
+def resolve_deeptmhmm_paths(root_override: Path | None = None) -> tuple[Path, Path]:
+    """Return ``(package_dir, venv_dir)`` for DeepTMHMM, honoring overrides.
+
+    Resolution order: explicit ``root_override`` arg, then ``DEEPTMHMM_ROOT``
+    env var, then this repo's ``data/external/deeptmhmm`` + ``.venv-deeptmhmm``.
+    ``root`` is the parent directory holding both the package dir and the venv —
+    matches the layout that ``install_deeptmhmm_academic.py`` produces and the
+    one used in ``deliverome-internal``::
+
+        <root>/data/external/deeptmhmm/DeepTMHMM-Academic-License-v1.0/predict.py
+        <root>/.venv-deeptmhmm/bin/python
+
+    The override can point at deliverome-internal directly when DeepTMHMM is
+    installed there:
+
+        DEEPTMHMM_ROOT=/Users/.../Git/deliverome-internal \\
+            uv run python scripts/run_topology_sweep.py ...
+    """
+    import os as _os
+
+    if root_override is None:
+        env_root = _os.environ.get("DEEPTMHMM_ROOT", "").strip()
+        if env_root:
+            root_override = Path(env_root).expanduser().resolve()
+
+    if root_override is None:
+        return DEEPTMHMM_PACKAGE_DIR, DEEPTMHMM_VENV
+
+    package_dir = root_override / "data" / "external" / "deeptmhmm" / "DeepTMHMM-Academic-License-v1.0"
+    venv_dir = root_override / ".venv-deeptmhmm"
+    return package_dir, venv_dir
+
+
+def fasta_cache_path(accession: str, cache_dir: Path = SEQUENCE_CACHE_DIR) -> Path:
+    """Disk path for the cached single-protein FASTA for ``accession``."""
+    return cache_dir / f"{accession}.fasta"
+
+
+def fetch_uniprot_fastas_to_cache(
+    accessions: list[str],
+    *,
+    cache_dir: Path = SEQUENCE_CACHE_DIR,
+    timeout: int = 30,
+    retry_max_attempts: int = 4,
+    min_request_interval_ms: int = 100,
+    max_workers: int = 8,
+    on_progress: "Any | None" = None,
+) -> dict[str, Path]:
+    """Concurrently fetch UniProt FASTAs and cache one file per accession.
+
+    Returns a mapping accession -> cached file path for every input accession
+    that resolved successfully. Accessions already on disk are skipped (the
+    cache is the source of truth). I/O-bound; threads not processes.
+
+    Raises if no accession resolves; logs but continues on per-accession errors.
+    """
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out: dict[str, Path] = {}
+
+    to_fetch: list[str] = []
+    for acc in accessions:
+        if not acc:
+            continue
+        path = fasta_cache_path(acc, cache_dir)
+        if path.exists() and path.stat().st_size > 0:
+            out[acc] = path
+            continue
+        to_fetch.append(acc)
+
+    if not to_fetch:
+        return out
+
+    def worker(acc: str) -> tuple[str, Path | None, str | None]:
+        try:
+            record = fetch_uniprot_fasta(
+                acc,
+                timeout=timeout,
+                retry_max_attempts=retry_max_attempts,
+                min_request_interval_ms=min_request_interval_ms,
+            )
+        except Exception as exc:  # noqa: BLE001 - we want every failure
+            return acc, None, str(exc)
+        path = fasta_cache_path(acc, cache_dir)
+        # Write back as plain UniProt-style FASTA so downstream parsers are
+        # happy. Preserve the original header (carries `sp|ACC|ENTRY_NAME`).
+        path.write_text(record.header + "\n" + record.sequence + "\n", encoding="utf-8")
+        return acc, path, None
+
+    n_done = 0
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        for acc, path, err in pool.map(worker, to_fetch):
+            n_done += 1
+            if path is None:
+                if on_progress is not None:
+                    on_progress("fetch_error", acc, err)
+                continue
+            out[acc] = path
+            if on_progress is not None and n_done % 50 == 0:
+                on_progress("fetch_progress", acc, f"{n_done}/{len(to_fetch)}")
+    return out
+
+
+def assemble_batch_fasta(
+    fasta_paths: list[Path], *, batch_path: Path, max_seq_length: int = DEEPTMHMM_MAX_SEQUENCE_LENGTH,
+) -> tuple[int, list[str]]:
+    """Concatenate ``fasta_paths`` into ``batch_path``, skipping over-long sequences.
+
+    Returns ``(n_written, skipped_accessions)``. The skip-list reason is
+    always "sequence_too_long" — callers are expected to log it themselves.
+    """
+    batch_path.parent.mkdir(parents=True, exist_ok=True)
+    skipped: list[str] = []
+    n_written = 0
+    with batch_path.open("w", encoding="utf-8") as out_f:
+        for src in fasta_paths:
+            text = src.read_text(encoding="utf-8")
+            lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+            if not lines or not lines[0].startswith(">"):
+                continue
+            header = lines[0]
+            sequence = "".join(lines[1:])
+            if len(sequence) > max_seq_length:
+                # Recover the bare accession from the header for the skip-list.
+                acc_full = header.split("|")[1] if "|" in header else header.lstrip(">")
+                skipped.append(acc_full)
+                continue
+            out_f.write(header + "\n" + sequence + "\n")
+            n_written += 1
+    return n_written, skipped
+
+
+def run_deeptmhmm_batch(
+    input_fasta: Path,
+    *,
+    output_dir: Path,
+    package_dir: Path = DEEPTMHMM_PACKAGE_DIR,
+    venv_dir: Path = DEEPTMHMM_VENV,
+    timeout_s: float = 7200.0,
+) -> Path:
+    """Run DeepTMHMM ``predict.py`` on one batch FASTA. Returns the .3line path.
+
+    Idempotent: if ``output_dir/predicted_topologies.3line`` already exists
+    and is non-empty, returns it without re-running. This is the checkpoint
+    mechanism for the overnight sweep.
+
+    Raises ``RuntimeError`` if the subprocess exits non-zero or the expected
+    output file is missing.
+    """
+    import subprocess
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    expected = output_dir / "predicted_topologies.3line"
+    if expected.exists() and expected.stat().st_size > 0:
+        return expected
+
+    predict_py = package_dir / "predict.py"
+    if not predict_py.exists():
+        raise RuntimeError(
+            f"DeepTMHMM not installed; predict.py missing at {predict_py}. "
+            "Run: uv run python -m accessible_surfaceome.tools.install_deeptmhmm_academic"
+        )
+    python_bin = venv_dir / "bin" / "python"
+    if not python_bin.exists():
+        raise RuntimeError(
+            f"DeepTMHMM venv missing at {venv_dir}. "
+            "Run: uv run python -m accessible_surfaceome.tools.install_deeptmhmm_academic"
+        )
+
+    cmd = [
+        str(python_bin),
+        str(predict_py),
+        "--fasta",
+        str(input_fasta.resolve()),
+        "--output-dir",
+        str(output_dir.resolve()),
+    ]
+    result = subprocess.run(
+        cmd,
+        cwd=str(package_dir),
+        capture_output=True,
+        text=True,
+        timeout=timeout_s,
+        check=False,
+    )
+    if result.returncode != 0:
+        # Surface stderr's tail so the orchestrator's error log is actionable.
+        tail = (result.stderr or "")[-2000:]
+        raise RuntimeError(
+            f"DeepTMHMM predict.py exited {result.returncode} on {input_fasta.name}: {tail!r}"
+        )
+    if not expected.exists() or expected.stat().st_size == 0:
+        raise RuntimeError(
+            f"DeepTMHMM finished but no output at {expected} (stdout tail: {result.stdout[-500:]!r})"
+        )
+    return expected
 
 
 if __name__ == "__main__":

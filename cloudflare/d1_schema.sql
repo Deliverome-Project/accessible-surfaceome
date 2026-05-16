@@ -413,3 +413,119 @@ CREATE INDEX IF NOT EXISTS idx_gene_identifier_uniprot    ON gene_identifier (un
 CREATE INDEX IF NOT EXISTS idx_gene_identifier_ncbi       ON gene_identifier (ncbi_gene_id);
 CREATE INDEX IF NOT EXISTS idx_gene_identifier_ensembl    ON gene_identifier (ensembl_gene);
 CREATE INDEX IF NOT EXISTS idx_gene_identifier_needs_rev  ON gene_identifier (needs_review);
+
+
+-- ---------------------------------------------------------------------------
+-- topology_public — per-isoform DeepTMHMM topology + input sequence.
+-- Mirror of the table in d1_public_schema.sql; the same schema lives in both
+-- DBs so the uploaders can write to both without conditional logic.
+--
+-- ``hgnc_id`` joins through gene_identifier (stable IDs only, per CLAUDE.md's
+-- "Gene identifier resolution" section). NULL on ortholog rows where the
+-- gene is mouse/cyno and HGNC IDs don't apply.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS topology_public (
+    topology_version           TEXT NOT NULL,
+    cohort                     TEXT NOT NULL,
+    hgnc_id                    TEXT,                 -- join key into gene_identifier (NULL for non-human cohorts)
+    uniprot_acc                TEXT NOT NULL,
+    uniprot_acc_full           TEXT NOT NULL,
+    isoform_id                 TEXT NOT NULL,
+    gene_symbol                TEXT,                 -- denormalized only — never join on this
+    species                    TEXT NOT NULL,
+    is_canonical               INTEGER NOT NULL,
+    sequence                   TEXT NOT NULL,
+    protein_length             INTEGER NOT NULL,
+    deeptmhmm_label            TEXT NOT NULL,
+    tm_helix_count             INTEGER NOT NULL,
+    beta_strand_count          INTEGER NOT NULL,
+    n_terminal_orientation     TEXT NOT NULL,
+    c_terminal_orientation     TEXT NOT NULL,
+    signal_peptide_length      INTEGER NOT NULL,
+    ecd_length_residues        INTEGER NOT NULL,
+    icd_length_residues        INTEGER NOT NULL,
+    per_residue_topology       TEXT NOT NULL,
+    predicted_surface_membrane INTEGER NOT NULL,
+    predicted_secreted         INTEGER NOT NULL,
+    tool_version               TEXT NOT NULL,
+    retrieved_at               TEXT NOT NULL,
+    synced_at                  TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (topology_version, cohort, uniprot_acc_full)
+);
+
+CREATE INDEX IF NOT EXISTS idx_topology_public_hgnc
+    ON topology_public (hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_topology_public_gene
+    ON topology_public (gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_topology_public_uniprot
+    ON topology_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_topology_public_canonical
+    ON topology_public (topology_version, cohort, is_canonical);
+
+
+CREATE TABLE IF NOT EXISTS topology_release (
+    topology_version    TEXT PRIMARY KEY,
+    n_rows              INTEGER NOT NULL,
+    cohorts_present     TEXT NOT NULL,
+    deeptmhmm_version   TEXT NOT NULL,
+    attribution         TEXT,
+    license_url         TEXT,
+    loaded_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    source_run_dir      TEXT,
+    notes               TEXT
+);
+
+
+-- ---------------------------------------------------------------------------
+-- compara_paralog — Ensembl Compara within-species paralogs.
+-- Mirror of d1_public_schema.sql; both DBs carry paralog data so internal
+-- joins (deep_dive_run x compara_paralog) work without a cross-DB query.
+--
+-- ``human_hgnc_id`` and ``paralog_hgnc_id`` denormalize the stable join
+-- keys into gene_identifier. Ensembl gene IDs are NOT resolver-stable
+-- across Ensembl release bumps — the HGNC IDs are. Both nullable when
+-- the resolver couldn't map a paralog Ensembl ID back to HGNC.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS compara_paralog (
+    paralog_version          TEXT NOT NULL,
+    human_hgnc_id            TEXT,
+    human_ensembl_gene       TEXT NOT NULL,
+    human_uniprot_acc        TEXT,
+    human_gene_symbol        TEXT,
+    paralog_hgnc_id          TEXT,
+    paralog_ensembl_gene     TEXT NOT NULL,
+    paralog_uniprot_acc      TEXT,
+    paralog_gene_symbol      TEXT,
+    family_id                TEXT,
+    biomart_percent_identity REAL,
+    ecd_pct_identity         REAL,
+    n_ecd_loops_compared     INTEGER,
+    rank_by_ecd_identity     INTEGER,
+    paralogy_type            TEXT,
+    is_high_confidence       INTEGER NOT NULL,
+    compara_version          TEXT NOT NULL,
+    synced_at                TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (paralog_version, human_ensembl_gene, paralog_ensembl_gene)
+);
+
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_human_hgnc
+    ON compara_paralog (human_hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_human_uniprot
+    ON compara_paralog (human_uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_human_symbol
+    ON compara_paralog (human_gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_version_human
+    ON compara_paralog (paralog_version, human_ensembl_gene);
+
+
+CREATE TABLE IF NOT EXISTS compara_paralog_release (
+    paralog_version    TEXT PRIMARY KEY,
+    compara_release    TEXT NOT NULL,
+    n_pairs            INTEGER NOT NULL,
+    n_human_genes      INTEGER NOT NULL,
+    fetched_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    source_url         TEXT,
+    notes              TEXT
+);
