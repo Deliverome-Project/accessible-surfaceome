@@ -1346,7 +1346,7 @@ def assemble_batch_fasta(
 def _ensure_thread_patched_predict(
     predict_py: Path,
     *,
-    torch_threads: int = 4,
+    torch_threads: int | None = None,
     torch_interop_threads: int = 1,
 ) -> Path:
     """Return path to a thread-bounded copy of ``predict.py``.
@@ -1354,12 +1354,20 @@ def _ensure_thread_patched_predict(
     Upstream's ``torch.set_num_threads(os.cpu_count())`` is fine on bare
     metal but wreaks havoc under a ProcessPool — every worker grabs all
     cores. We rewrite those two lines to use small constants and cache
-    the result next to the original so re-patching is a no-op after the
-    first call.
+    the result next to the original.
+
+    ``torch_threads`` resolves from (1) the explicit argument, (2) the
+    ``DEEPTMHMM_THREADS`` env var, or (3) a conservative default of 2.
+    The cache file embeds the resolved value in its name so changing
+    threads invalidates the cache (you can't share a 4-thread patch
+    with a 2-thread run).
 
     Mirror of deliverome-internal's ``run_deeptmhmm_predict.py`` patcher.
     """
-    patched = predict_py.with_name("predict_thread_patched.py")
+    if torch_threads is None:
+        torch_threads = int(__import__("os").environ.get("DEEPTMHMM_THREADS", "2"))
+
+    patched = predict_py.with_name(f"predict_thread_patched_t{torch_threads}.py")
     if patched.exists() and patched.stat().st_mtime >= predict_py.stat().st_mtime:
         return patched
 
@@ -1448,11 +1456,15 @@ def run_deeptmhmm_batch(
     ]
     # Also constrain BLAS thread pools — OpenMP/MKL/BLAS read these env
     # vars at library init time, before torch.set_num_threads can override.
+    # Honors DEEPTMHMM_THREADS (default 2) so the orchestrator can dial
+    # parallelism down on memory-constrained machines.
+    import os as _os
+    threads = _os.environ.get("DEEPTMHMM_THREADS", "2")
     env = {
-        **__import__("os").environ,
-        "OMP_NUM_THREADS": "4",
-        "MKL_NUM_THREADS": "4",
-        "OPENBLAS_NUM_THREADS": "4",
+        **_os.environ,
+        "OMP_NUM_THREADS": threads,
+        "MKL_NUM_THREADS": threads,
+        "OPENBLAS_NUM_THREADS": threads,
         "TOKENIZERS_PARALLELISM": "false",
     }
     result = subprocess.run(
