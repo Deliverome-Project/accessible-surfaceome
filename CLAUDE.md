@@ -360,9 +360,25 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 # data/processed/triage_bench/mainbench_canonical_v1.tsv. Identical shape
 # to /v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1.
 uv run python scripts/export_mainbench_to_tsv.py
-git add data/processed/triage_bench/mainbench_canonical_v1.tsv
-git commit -m "chore(triage): refresh canonical TSV from public D1"
+
+# Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) into
+# the figure TSVs by joining each row against gene_identifier_public. Run
+# after ANY of the four figure TSVs are regenerated; the script is
+# idempotent and only touches columns it owns:
+#   • data/processed/candidate_universe/candidate_universe.tsv
+#   • data/eval/triage_benchmark_v1.tsv
+#   • data/processed/triage_bench/mainbench_canonical_v1.tsv
+#   • data/processed/triage_bench/db_optimized_cutoffs.tsv
+uv run python scripts/augment_figure_tsvs_with_stable_ids.py
+
+git add data/processed/triage_bench/mainbench_canonical_v1.tsv \
+        data/processed/candidate_universe/candidate_universe.tsv \
+        data/eval/triage_benchmark_v1.tsv \
+        data/processed/triage_bench/db_optimized_cutoffs.tsv
+git commit -m "chore(triage): refresh canonical TSVs from public D1 + augment stable IDs"
 ```
+
+**Why stable IDs in the figure TSVs:** per the "Gene identifier resolution" section above, `hgnc_id` is the canonical stable key — symbol-only joins silently misroute ~0.2% of human genes (the COX1 / WAS class). Carrying `hgnc_id` in the figure TSVs lets a reader cross-reference any other genes-keyed table without re-resolving from a fragile symbol. Bench + mainbench TSVs additionally carry `uniprot_acc` so readers can directly fetch UniProt features per row.
 
 CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
 

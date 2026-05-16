@@ -352,6 +352,11 @@ async function handleCatalog(env) {
       // accordingly. v3 = per-model ncbi `tr` array replaces the
       // single `triage` object.
       row_schema: 3,
+      // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
+      // Self-describing for external reanalysts: decode with
+      //   const flags = db_keys.map((_, i) => (row.db >> i) & 1);
+      // Matches the encoding above + viewer/lib/surfaceome.ts.
+      db_keys: ["uniprot", "go", "surfy", "cspa", "hpa"],
       rows,
     },
     { ttl: CACHE_TTL_SHORT },
