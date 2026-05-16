@@ -161,6 +161,7 @@ def _upsert_release(
     n_pairs: int,
     n_human_genes: int,
     source_url: str,
+    notes: str | None,
     client: httpx.Client,
     dry_run: bool,
 ) -> None:
@@ -173,13 +174,14 @@ def _upsert_release(
         target,
         "INSERT INTO compara_paralog_release "
         "(paralog_version, compara_release, n_pairs, n_human_genes, source_url, notes) "
-        "VALUES (?, ?, ?, ?, ?, NULL) "
+        "VALUES (?, ?, ?, ?, ?, ?) "
         "ON CONFLICT (paralog_version) DO UPDATE SET "
         "  compara_release = excluded.compara_release, "
         "  n_pairs = excluded.n_pairs, "
         "  n_human_genes = excluded.n_human_genes, "
-        "  source_url = excluded.source_url",
-        [paralog_version, compara_release, n_pairs, n_human_genes, source_url],
+        "  source_url = excluded.source_url, "
+        "  notes = excluded.notes",
+        [paralog_version, compara_release, n_pairs, n_human_genes, source_url, notes],
         client=client,
     )
 
@@ -206,6 +208,11 @@ def main() -> int:
     ap.add_argument("--compara-release", required=True, help="e.g. 'Compara r112'")
     ap.add_argument("--jsonl", type=Path, action="append", required=True)
     ap.add_argument("--source-url", default="https://www.ensembl.org/biomart/martservice")
+    ap.add_argument(
+        "--notes",
+        default="",
+        help="Free-text / JSON written to compara_paralog_release.notes (provenance).",
+    )
     ap.add_argument("--public-only", action="store_true")
     ap.add_argument("--private-only", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
@@ -232,6 +239,7 @@ def main() -> int:
                 n_pairs=len(rows),
                 n_human_genes=n_human_genes,
                 source_url=args.source_url,
+                notes=(args.notes or None),
                 client=client,
                 dry_run=args.dry_run,
             )

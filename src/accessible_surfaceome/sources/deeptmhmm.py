@@ -1343,6 +1343,48 @@ def assemble_batch_fasta(
     return n_written, skipped
 
 
+def _ensure_thread_patched_predict(
+    predict_py: Path,
+    *,
+    torch_threads: int = 4,
+    torch_interop_threads: int = 1,
+) -> Path:
+    """Return path to a thread-bounded copy of ``predict.py``.
+
+    Upstream's ``torch.set_num_threads(os.cpu_count())`` is fine on bare
+    metal but wreaks havoc under a ProcessPool — every worker grabs all
+    cores. We rewrite those two lines to use small constants and cache
+    the result next to the original so re-patching is a no-op after the
+    first call.
+
+    Mirror of deliverome-internal's ``run_deeptmhmm_predict.py`` patcher.
+    """
+    patched = predict_py.with_name("predict_thread_patched.py")
+    if patched.exists() and patched.stat().st_mtime >= predict_py.stat().st_mtime:
+        return patched
+
+    source = predict_py.read_text(encoding="utf-8")
+    out = re.sub(
+        r"torch\.set_num_threads\(os\.cpu_count\(\)\)",
+        f"torch.set_num_threads({torch_threads})",
+        source,
+        count=1,
+    )
+    out = re.sub(
+        r"torch\.set_num_interop_threads\(os\.cpu_count\(\) \+ 2\)",
+        f"torch.set_num_interop_threads({torch_interop_threads})",
+        out,
+        count=1,
+    )
+    if out == source:
+        # The lines we expect weren't present — fall back to the original
+        # so we don't ship an unpatched copy. The wrapper's env-var BLAS
+        # caps still apply.
+        return predict_py
+    patched.write_text(out, encoding="utf-8")
+    return patched
+
+
 def run_deeptmhmm_batch(
     input_fasta: Path,
     *,
@@ -1389,14 +1431,30 @@ def run_deeptmhmm_batch(
             "Run: uv run python -m accessible_surfaceome.tools.install_deeptmhmm_academic"
         )
 
+    # Patch predict.py to use bounded thread counts (the upstream code
+    # calls torch.set_num_threads(os.cpu_count()) at module load, which
+    # under a ProcessPool with N workers would oversubscribe CPUs N-fold).
+    # Cached on disk next to the original so we don't re-patch every batch.
+    # Mirrors deliverome-internal/scripts/analysis/run_deeptmhmm_predict.py.
+    patched_predict = _ensure_thread_patched_predict(predict_py)
+
     cmd = [
         str(python_bin),
-        str(predict_py),
+        str(patched_predict),
         "--fasta",
         str(input_fasta.resolve()),
         "--output-dir",
         str(output_dir.resolve()),
     ]
+    # Also constrain BLAS thread pools — OpenMP/MKL/BLAS read these env
+    # vars at library init time, before torch.set_num_threads can override.
+    env = {
+        **__import__("os").environ,
+        "OMP_NUM_THREADS": "4",
+        "MKL_NUM_THREADS": "4",
+        "OPENBLAS_NUM_THREADS": "4",
+        "TOKENIZERS_PARALLELISM": "false",
+    }
     result = subprocess.run(
         cmd,
         cwd=str(package_dir),
@@ -1404,6 +1462,7 @@ def run_deeptmhmm_batch(
         text=True,
         timeout=timeout_s,
         check=False,
+        env=env,
     )
     if result.returncode != 0:
         # Surface stderr's tail so the orchestrator's error log is actionable.

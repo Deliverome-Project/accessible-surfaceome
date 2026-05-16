@@ -183,6 +183,7 @@ def _upsert_release(
     attribution: str,
     license_url: str,
     source_run_dir: str,
+    notes: str | None,
     client: httpx.Client,
     dry_run: bool,
 ) -> None:
@@ -194,16 +195,17 @@ def _upsert_release(
         "INSERT INTO topology_release "
         "(topology_version, n_rows, cohorts_present, deeptmhmm_version, attribution, "
         " license_url, source_run_dir, notes) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, NULL) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
         "ON CONFLICT (topology_version) DO UPDATE SET "
         "  n_rows = excluded.n_rows, "
         "  cohorts_present = excluded.cohorts_present, "
         "  deeptmhmm_version = excluded.deeptmhmm_version, "
         "  attribution = excluded.attribution, "
         "  license_url = excluded.license_url, "
-        "  source_run_dir = excluded.source_run_dir",
+        "  source_run_dir = excluded.source_run_dir, "
+        "  notes = excluded.notes",
         [topology_version, n_rows, cohorts_present, deeptmhmm_version,
-         attribution, license_url, source_run_dir],
+         attribution, license_url, source_run_dir, notes],
         client=client,
     )
 
@@ -235,6 +237,13 @@ def main() -> int:
     ap.add_argument("--attribution", default="DeepTMHMM 1.0.24 (DTU)")
     ap.add_argument("--license-url", default="https://dtu.biolib.com/DeepTMHMM/")
     ap.add_argument("--source-run-dir", default="")
+    ap.add_argument(
+        "--notes",
+        default="",
+        help="Free-text or JSON string written to topology_release.notes. "
+             "Used by run_topology_sweep.py to embed a provenance summary "
+             "(git SHA, resolver versions, library versions, manifest path).",
+    )
     ap.add_argument("--public-only", action="store_true")
     ap.add_argument("--private-only", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
@@ -263,6 +272,7 @@ def main() -> int:
                 attribution=args.attribution,
                 license_url=args.license_url,
                 source_run_dir=args.source_run_dir,
+                notes=(args.notes or None),
                 client=client,
                 dry_run=args.dry_run,
             )

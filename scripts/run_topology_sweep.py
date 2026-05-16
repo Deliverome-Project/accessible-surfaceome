@@ -1049,6 +1049,242 @@ def compute_ortholog_ecd_records(
     return out
 
 
+def _sha256_of_file(p: Path, chunk_size: int = 65536) -> str | None:
+    """Return SHA256 hex digest of a file, or None if it doesn't exist."""
+    import hashlib
+
+    if not p.exists():
+        return None
+    h = hashlib.sha256()
+    with p.open("rb") as f:
+        while True:
+            chunk = f.read(chunk_size)
+            if not chunk:
+                break
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _capture_git_provenance() -> dict[str, Any]:
+    """Capture git SHA, branch, and dirty-tree state for the manifest."""
+    import subprocess
+
+    def _run(cmd: list[str]) -> str:
+        try:
+            return subprocess.run(
+                cmd, capture_output=True, text=True, cwd=REPO_ROOT, timeout=15
+            ).stdout.strip()
+        except (subprocess.SubprocessError, OSError):
+            return ""
+
+    sha = _run(["git", "rev-parse", "HEAD"])
+    branch = _run(["git", "rev-parse", "--abbrev-ref", "HEAD"])
+    dirty = bool(_run(["git", "status", "--porcelain"]))
+    upstream = _run(["git", "rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{u}"])
+    return {
+        "sha": sha,
+        "branch": branch,
+        "upstream": upstream,
+        "dirty": dirty,
+        "remote_url": _run(["git", "config", "--get", "remote.origin.url"]),
+    }
+
+
+def _capture_library_versions() -> dict[str, str]:
+    """Versions of key external libraries embedded in the pipeline."""
+    versions: dict[str, str] = {"python": sys.version.split()[0]}
+    for mod_name in ("Bio", "httpx", "biopython"):
+        try:
+            import importlib
+
+            mod = importlib.import_module(mod_name)
+            versions[mod_name] = getattr(mod, "__version__", "")
+        except Exception:  # noqa: BLE001
+            pass
+    return versions
+
+
+def _query_resolver_versions_in_cohort(candidates: list[Candidate]) -> dict[str, int]:
+    """Aggregate resolver_version counts across the gene_identifier rows that
+    backed this candidate set. Captures which resolver SHA(s) the pipeline
+    consumed — if the cohort spans multiple resolver versions (e.g. after a
+    partial backfill), this row count surfaces it.
+    """
+    import os
+    import httpx
+    from collections import Counter
+
+    hgnc_ids = [c.hgnc_id for c in candidates if c.hgnc_id]
+    if not hgnc_ids:
+        return {}
+
+    account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+    db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "").strip()
+    if not (account and token and db):
+        return {}
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account}/d1/database/{db}/query"
+    counter: Counter[str] = Counter()
+    chunk_size = 500
+    with httpx.Client(timeout=120) as client:
+        for start in range(0, len(hgnc_ids), chunk_size):
+            chunk = hgnc_ids[start : start + chunk_size]
+            quoted = ",".join(f"'{h}'" for h in chunk)
+            sql = (
+                "SELECT resolver_version, COUNT(*) AS n FROM gene_identifier "
+                f"WHERE hgnc_id IN ({quoted}) GROUP BY resolver_version"
+            )
+            resp = client.post(
+                url, json={"sql": sql}, headers={"Authorization": f"Bearer {token}"}
+            )
+            body = resp.json()
+            if not body.get("success"):
+                continue
+            result = body.get("result") or []
+            if isinstance(result, dict):
+                result = [result]
+            for r in result:
+                for row in r.get("results") or []:
+                    rv = (row.get("resolver_version") or "").strip()
+                    counter[rv] += int(row.get("n") or 0)
+    return dict(counter)
+
+
+def build_run_manifest(
+    *,
+    args: argparse.Namespace,
+    candidate_set_path: Path,
+    candidates: list[Candidate],
+    cohort_jsonl_paths: dict[str, Path],
+    paralog_csv: Path | None,
+    paralog_jsonl: Path | None,
+    ortholog_ecd_jsonl: Path | None,
+    ortholog_human_hgnc_maps: dict[str, dict[str, str]],
+    run_dir: Path,
+    started_at: datetime,
+) -> dict[str, Any]:
+    """Build the cross-cutting provenance manifest for this sweep run.
+
+    Captures every piece of state a future reader needs to reproduce the
+    sweep: git SHA the code ran from, gene_identifier resolver versions,
+    Compara release, BioMart/UniProt source URLs, candidate set hash,
+    per-cohort JSONL counts + hashes, library versions, taxon IDs,
+    cleanup setting. Mirrored into ``topology_release.notes`` so the
+    manifest is queryable from D1.
+    """
+    git = _capture_git_provenance()
+    versions = _capture_library_versions()
+    resolver_versions = _query_resolver_versions_in_cohort(candidates)
+
+    by_reason: dict[str, int] = {}
+    by_verdict: dict[str, int] = {}
+    n_needs_review = 0
+    for c in candidates:
+        by_reason[c.selection_reason] = by_reason.get(c.selection_reason, 0) + 1
+        key = c.triage_verdict or "_no_triage"
+        by_verdict[key] = by_verdict.get(key, 0) + 1
+
+    cohort_summary: dict[str, dict[str, Any]] = {}
+    for cohort, jsonl_path in cohort_jsonl_paths.items():
+        n = 0
+        if jsonl_path.exists():
+            with jsonl_path.open() as f:
+                n = sum(1 for _ in f)
+        cohort_summary[cohort] = {
+            "jsonl_path": str(jsonl_path.relative_to(REPO_ROOT)),
+            "jsonl_sha256": _sha256_of_file(jsonl_path),
+            "n_rows": n,
+        }
+
+    paralog_summary: dict[str, Any] = {
+        "biomart_csv": (
+            str(paralog_csv.relative_to(REPO_ROOT)) if paralog_csv else None
+        ),
+        "biomart_csv_sha256": _sha256_of_file(paralog_csv) if paralog_csv else None,
+        "ecd_jsonl": (
+            str(paralog_jsonl.relative_to(REPO_ROOT)) if paralog_jsonl else None
+        ),
+        "ecd_jsonl_sha256": _sha256_of_file(paralog_jsonl) if paralog_jsonl else None,
+        "top_n_per_gene_cap": 50,  # default in ensembl_compara_paralogs.DEFAULT_TOP_N_PER_GENE
+    }
+    if paralog_jsonl and paralog_jsonl.exists():
+        import json as _json
+
+        with paralog_jsonl.open() as f:
+            rows = [_json.loads(line) for line in f if line.strip()]
+            paralog_summary["n_pairs"] = len(rows)
+            paralog_summary["n_with_ecd"] = sum(
+                1 for r in rows if r.get("ecd_pct_identity") is not None
+            )
+
+    ortholog_summary: dict[str, Any] = {
+        "ecd_jsonl": (
+            str(ortholog_ecd_jsonl.relative_to(REPO_ROOT))
+            if ortholog_ecd_jsonl
+            else None
+        ),
+        "ecd_jsonl_sha256": (
+            _sha256_of_file(ortholog_ecd_jsonl) if ortholog_ecd_jsonl else None
+        ),
+        "by_cohort": {},
+    }
+    for cohort, hgnc_map in ortholog_human_hgnc_maps.items():
+        taxon = ORTHOLOG_SPECIES[cohort][1]
+        ortholog_summary["by_cohort"][cohort] = {
+            "n_resolved_orthologs": len(hgnc_map),
+            "taxon_id": taxon,
+        }
+
+    return {
+        "topology_version": args.topology_version,
+        "paralog_version": args.paralog_version or f"paralog_{args.topology_version}",
+        "ortholog_ecd_version": f"orthologecd_{args.topology_version}",
+        "run_started_at": started_at.isoformat(),
+        "run_ended_at": datetime.now(UTC).isoformat(),
+        "wall_time_seconds": (datetime.now(UTC) - started_at).total_seconds(),
+        "git": git,
+        "library_versions": versions,
+        "deeptmhmm": {
+            "tool_version": DEEPTMHMM_TOOL_VERSION,
+            "root": os.environ.get("DEEPTMHMM_ROOT", ""),
+            "attribution": "DeepTMHMM 1.0.24 (DTU)",
+            "license_url": "https://dtu.biolib.com/DeepTMHMM/",
+            "max_sequence_length": DEEPTMHMM_MAX_SEQUENCE_LENGTH,
+        },
+        "compara": {
+            "release": args.compara_version,
+            "biomart_url": "https://www.ensembl.org/biomart/martservice",
+        },
+        "uniprot": {
+            "rest_url": "https://rest.uniprot.org/uniprotkb/",
+        },
+        "candidate_set": {
+            "tsv_path": str(candidate_set_path.relative_to(REPO_ROOT)),
+            "tsv_sha256": _sha256_of_file(candidate_set_path),
+            "n_candidates_before_paralog_expansion": "<see candidates_expanded_with_paralogs event>",
+            "n_candidates_total": len(candidates),
+            "by_selection_reason": by_reason,
+            "by_triage_verdict": by_verdict,
+            "n_needs_review": n_needs_review,
+        },
+        "resolver": {
+            "gene_identifier_resolver_versions": resolver_versions,
+            "note": (
+                "Counts of distinct resolver_version values across the "
+                "gene_identifier rows that backed this candidate set. "
+                "Single value = uniform resolver; multiple = cohort spans "
+                "a resolver upgrade and you may want to re-resolve."
+            ),
+        },
+        "cohorts": cohort_summary,
+        "paralog": paralog_summary,
+        "orthologs": ortholog_summary,
+        "run_dir": str(run_dir.relative_to(REPO_ROOT)),
+        "events_log": str((run_dir.parent / f"topology_run_{args.topology_version}" / "events.jsonl").relative_to(REPO_ROOT)),
+        "cleanup_after_upload": args.cleanup_after_upload,
+    }
+
+
 def write_ortholog_ecd_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8") as f:
@@ -1160,8 +1396,13 @@ def main() -> int:
             f.write(json.dumps(line) + "\n")
         logger.info("[%s] %s", stage, ", ".join(f"{k}={v}" for k, v in kv.items()))
 
+    run_started_at = datetime.now(UTC)
+    # Record git provenance at start so a Ctrl-C'd run still leaves an audit trail.
+    _git_provenance = _capture_git_provenance()
     event("start", topology_version=args.topology_version, cohorts=cohorts,
-          max_workers=args.max_workers)
+          max_workers=args.max_workers, git_sha=_git_provenance.get("sha"),
+          git_branch=_git_provenance.get("branch"),
+          git_dirty=_git_provenance.get("dirty"))
 
     candidates = load_candidate_set(candidate_set_path)
     event("candidate_set_loaded", n=len(candidates),
@@ -1419,6 +1660,24 @@ def main() -> int:
     # ----- Stage 6: D1 upload -----
     if not args.skip_upload:
         import subprocess
+
+        # Build a compact provenance JSON to stamp into each release row's
+        # ``notes`` column. Lets D1 queriers see git SHA + manifest path
+        # without having to read the run dir off disk.
+        notes_payload = {
+            "manifest_path": str(
+                (jsonl_root / "run_manifest.json").relative_to(REPO_ROOT)
+            ),
+            "git_sha": _git_provenance.get("sha", ""),
+            "git_branch": _git_provenance.get("branch", ""),
+            "git_dirty": _git_provenance.get("dirty", False),
+            "deeptmhmm_version": DEEPTMHMM_TOOL_VERSION,
+            "compara_release": args.compara_version,
+            "topology_version": args.topology_version,
+            "run_started_at": run_started_at.isoformat(),
+        }
+        notes_json = json.dumps(notes_payload, sort_keys=True)
+
         jsonl_args: list[str] = []
         for j in cohort_jsonl_paths.values():
             jsonl_args.extend(["--jsonl", str(j)])
@@ -1427,9 +1686,10 @@ def main() -> int:
             "--topology-version", args.topology_version,
             "--cohorts-present", ",".join(cohort_jsonl_paths.keys()),
             "--source-run-dir", str(run_dir.relative_to(REPO_ROOT)),
+            "--notes", notes_json,
             *jsonl_args,
         ]
-        logger.info("uploading topology: %s", " ".join(cmd))
+        logger.info("uploading topology")
         subprocess.run(cmd, cwd=REPO_ROOT, check=True)
         event("topology_uploaded", n_jsonl=len(cohort_jsonl_paths))
 
@@ -1440,8 +1700,9 @@ def main() -> int:
                 "--paralog-version", paralog_version,
                 "--compara-release", args.compara_version,
                 "--jsonl", str(paralog_jsonl),
+                "--notes", notes_json,
             ]
-            logger.info("uploading paralogs: %s", " ".join(cmd))
+            logger.info("uploading paralogs")
             subprocess.run(cmd, cwd=REPO_ROOT, check=True)
             event("paralogs_uploaded", paralog_version=paralog_version)
 
@@ -1452,45 +1713,104 @@ def main() -> int:
                 "--ortholog-ecd-version", ortholog_ecd_version,
                 "--compara-release", args.compara_version,
                 "--jsonl", str(ortholog_ecd_jsonl),
+                "--notes", notes_json,
             ]
-            logger.info("uploading ortholog ECD: %s", " ".join(cmd))
+            logger.info("uploading ortholog ECD")
             subprocess.run(cmd, cwd=REPO_ROOT, check=True)
             event("ortholog_ecd_uploaded", ortholog_ecd_version=ortholog_ecd_version)
 
-    # ----- Stage 7 (optional): clean up local intermediate files after upload -----
+    # ----- Stage 7: write the run manifest BEFORE optional cleanup so the
+    # manifest is the canonical provenance source even if the batch dirs
+    # get wiped. The manifest captures git SHA, resolver versions, library
+    # versions, Compara release, BioMart URLs, source hashes, per-cohort
+    # counts — everything a future reader needs to reproduce this sweep.
+    # ---------------------------------------------------------------------
+    manifest = build_run_manifest(
+        args=args,
+        candidate_set_path=candidate_set_path,
+        candidates=candidates,
+        cohort_jsonl_paths=cohort_jsonl_paths,
+        paralog_csv=paralog_csv,
+        paralog_jsonl=paralog_jsonl,
+        ortholog_ecd_jsonl=ortholog_ecd_jsonl,
+        ortholog_human_hgnc_maps=ortholog_human_hgnc_maps,
+        run_dir=run_dir,
+        started_at=run_started_at,
+    )
+    manifest_path = jsonl_root / "run_manifest.json"
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    event("run_manifest_written", path=str(manifest_path.relative_to(REPO_ROOT)),
+          sha256=_sha256_of_file(manifest_path))
+    logger.info("run manifest written to %s", manifest_path.relative_to(REPO_ROOT))
+
+    # ----- Stage 8 (optional): clean up large local intermediates after upload -----
+    # PRESERVED for provenance:
+    #   predicted_topologies.3line   — the raw DeepTMHMM output strings
+    #   TMRs.gff3                    — per-protein TM-region coordinates (small)
+    #   deeptmhmm_results.md         — DeepTMHMM's per-batch summary report
+    # REMOVED (rebuildable from DeepTMHMM + sequences):
+    #   embeddings/                  — per-residue ESM embeddings (~50 KB/protein, big)
+    #   plot.png                     — per-batch plot (visual, redundant with .3line)
+    #   _inputs/                     — batch FASTA inputs (rebuildable from sequence cache)
     if args.cleanup_after_upload and not args.skip_upload:
         import shutil
+
+        keep_files = {"predicted_topologies.3line", "TMRs.gff3", "deeptmhmm_results.md"}
+        bytes_removed = 0
         for cohort_dir in run_dir.iterdir():
             if not cohort_dir.is_dir():
                 continue
-            # Keep predicted_topologies.3line as provenance; drop everything else.
             for batch_dir in cohort_dir.iterdir():
                 if not batch_dir.is_dir():
                     continue
-                # _inputs/ + batch_NNNN/{embeddings,plot.png,...}
                 if batch_dir.name == "_inputs":
+                    try:
+                        size = sum(f.stat().st_size for f in batch_dir.rglob("*") if f.is_file())
+                    except OSError:
+                        size = 0
                     shutil.rmtree(batch_dir)
+                    bytes_removed += size
                     continue
-                # Inside batch_NNNN/, keep only predicted_topologies.3line
                 three_line = batch_dir / "predicted_topologies.3line"
                 if three_line.exists():
                     for child in batch_dir.iterdir():
-                        if child == three_line:
+                        if child.name in keep_files:
                             continue
+                        try:
+                            size = (
+                                sum(f.stat().st_size for f in child.rglob("*") if f.is_file())
+                                if child.is_dir()
+                                else child.stat().st_size
+                            )
+                        except OSError:
+                            size = 0
                         if child.is_dir():
                             shutil.rmtree(child)
                         else:
                             child.unlink()
+                        bytes_removed += size
                 else:
-                    # Failed batch — wipe the dir entirely.
+                    try:
+                        size = sum(f.stat().st_size for f in batch_dir.rglob("*") if f.is_file())
+                    except OSError:
+                        size = 0
                     shutil.rmtree(batch_dir)
-        event("cleanup_after_upload", run_dir=str(run_dir.relative_to(REPO_ROOT)))
+                    bytes_removed += size
+        event("cleanup_after_upload", run_dir=str(run_dir.relative_to(REPO_ROOT)),
+              bytes_removed=bytes_removed,
+              kept=sorted(keep_files))
         logger.info(
-            "cleanup complete — kept .3line files, removed embeddings/plot/gff/inputs"
+            "cleanup: kept .3line + TMRs.gff3 + deeptmhmm_results.md per batch; "
+            "removed embeddings + plot + _inputs (%.1f MB freed)",
+            bytes_removed / 1024 / 1024,
         )
 
-    event("end", topology_version=args.topology_version)
+    event("end", topology_version=args.topology_version,
+          run_manifest=str(manifest_path.relative_to(REPO_ROOT)))
     logger.info("done — events log at %s", events_log.relative_to(REPO_ROOT))
+    logger.info("run manifest at %s", manifest_path.relative_to(REPO_ROOT))
     return 0
 
 

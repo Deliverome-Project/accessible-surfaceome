@@ -154,6 +154,7 @@ def _upsert_release(
     n_pairs: int,
     n_human_genes: int,
     n_species: int,
+    notes: str | None,
     client: httpx.Client,
     dry_run: bool,
 ) -> None:
@@ -167,13 +168,14 @@ def _upsert_release(
         target,
         "INSERT INTO compara_ortholog_ecd_release "
         "(ortholog_ecd_version, compara_release, n_pairs, n_human_genes, n_species, notes) "
-        "VALUES (?, ?, ?, ?, ?, NULL) "
+        "VALUES (?, ?, ?, ?, ?, ?) "
         "ON CONFLICT (ortholog_ecd_version) DO UPDATE SET "
         "  compara_release = excluded.compara_release, "
         "  n_pairs = excluded.n_pairs, "
         "  n_human_genes = excluded.n_human_genes, "
-        "  n_species = excluded.n_species",
-        [ortholog_ecd_version, compara_release, n_pairs, n_human_genes, n_species],
+        "  n_species = excluded.n_species, "
+        "  notes = excluded.notes",
+        [ortholog_ecd_version, compara_release, n_pairs, n_human_genes, n_species, notes],
         client=client,
     )
 
@@ -203,6 +205,11 @@ def main() -> int:
         help="e.g. 'ensembl_compara_2026_05_12'",
     )
     ap.add_argument("--jsonl", type=Path, action="append", required=True)
+    ap.add_argument(
+        "--notes",
+        default="",
+        help="Free-text / JSON written to compara_ortholog_ecd_release.notes (provenance).",
+    )
     ap.add_argument("--public-only", action="store_true")
     ap.add_argument("--private-only", action="store_true")
     ap.add_argument("--dry-run", action="store_true")
@@ -233,6 +240,7 @@ def main() -> int:
                 n_pairs=len(rows),
                 n_human_genes=n_human_genes,
                 n_species=n_species,
+                notes=(args.notes or None),
                 client=client,
                 dry_run=args.dry_run,
             )
