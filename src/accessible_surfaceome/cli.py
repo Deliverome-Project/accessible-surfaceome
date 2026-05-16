@@ -40,8 +40,8 @@ def main(argv: list[str] | None = None) -> None:
     # ``beta.agents`` API doesn't expose ``cache_control`` blocks — at
     # genome scale that's roughly $200 of avoidable cost per sweep
     # relative to the direct ``messages.create`` runner. For sweeps,
-    # use ``scripts/triage_subbench_runner.py``; for benchmark eval,
-    # use ``accessible-surfaceome triage-bench`` below.
+    # use ``scripts/triage_runner.py``; for benchmark eval, use
+    # ``accessible-surfaceome triage-bench`` below.
 
     bench_parser = subparsers.add_parser(
         "triage-bench",

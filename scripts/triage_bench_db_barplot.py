@@ -12,7 +12,7 @@ Callers covered:
 * **1 routed LLM cell** — ``haiku/ncbi → sonnet/ncbi``: accept haiku's
   verdict when ``confidence == "high"``, otherwise escalate to
   sonnet/ncbi. Mirrors the lazy-ensemble Combined column in the
-  subbench by-variant plot.
+  triage bench by-variant plot.
 
 Correctness convention (binary: surface vs not-surface):
 
@@ -107,7 +107,7 @@ LLM_LABEL = {
 
 # Combined cell: confidence-routed Haiku+NCBI → Sonnet+NCBI. Accept
 # Haiku when it emits `confidence == "high"`, otherwise escalate to
-# Sonnet. Mirrors the subbench by-variant Combined group.
+# Sonnet. Mirrors the triage bench by-variant Combined group.
 COMBINED_KEY = "_llm_combined"
 COMBINED_PRIMARY = ("_llm_haiku_ncbi", "_llm_sonnet_ncbi")  # (cheap, escalation)
 
@@ -116,7 +116,7 @@ LLM_KEYS = [k for k, _, _ in LLM_CELLS] + [COMBINED_KEY]
 # Palette — DBs use the brand categorical palette (5 distinct colors).
 # LLM cells get a sequential Claude-orange walk: lighter = less context /
 # smaller model, darker = more context / larger model. Same family as the
-# subbench by-variant plot. Base Claude orange is #d87851.
+# triage bench by-variant plot. Base Claude orange is #d87851.
 DB_PALETTE = {label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)}
 LLM_PALETTE = {
     "_llm_haiku_naive":        "#f7d8c4",   # tint 65%
@@ -144,11 +144,9 @@ BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
 CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 # Per-cell LLM predictions used to come from the JSON tree at
 # data/eval/triage_bench_v1/<model>/<variant>/<gene>_run1.json. Those
-# files are now sourced from D1 — uploaded by
-# ``scripts/upload_triage_runs_to_d1.py --run-id mainbench_canonical_v1
-# --bench-tsv data/eval/triage_benchmark_v1.tsv --runs-root
-# data/eval/triage_bench_v1``. Update this constant + re-upload if the
-# bench is re-run with a different prompt.
+# files are now sourced from D1 — populated by running the triage
+# runner with `--d1 --run-id mainbench_canonical_v1`. Update this
+# constant if the bench is re-run under a different run_id.
 MAINBENCH_D1_RUN_ID = "mainbench_canonical_v1"
 
 # When True, ``load_benchmark_with_votes`` rewrites the per-benchmark

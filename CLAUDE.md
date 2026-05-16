@@ -440,14 +440,16 @@ a Pages binding.
 - **Schema**: `cloudflare/d1_schema.sql` — 6 tables, 3 views. Triage +
   deep-dive share the DB; cross-table joins (`triage_vs_deep_dive`)
   are the primary analytics target.
-- **Upload**: `scripts/upload_triage_runs_to_d1.py` after a runner
-  produces per-cell JSON records.
-- **Verify**: `scripts/d1_triage_verify.py` reconciles D1 vs on-disk
-  JSON; exits non-zero on divergence.
+- **Upload**: `scripts/triage_runner.py --d1 --run-id <tag>` streams
+  each completed cell into `triage_run` via `D1RunSink` as the sweep
+  progresses. No separate batch-upload step. Idempotent on
+  `(run_id, gene_symbol, model, prompt_variant, replicate, prompt_sha)`,
+  so restarting a crashed sweep with the same `--run-id` skips cells
+  that already landed.
 - **Backup to R2** is CI-driven: `.github/workflows/d1-backup.yml`
   runs `scripts/d1_export_to_r2.sh` on every push to `main` that
-  touches `cloudflare/d1_schema.sql`, `data/eval/triage_subbench_v1/**`,
-  `data/annotations/**`, `data/triage/**`, the uploader code, or the
+  touches `cloudflare/d1_schema.sql`, `data/annotations/**`,
+  `data/triage/**`, the uploader code, or the
   backup scripts themselves. Each run drops a timestamped SQL dump and
   a stable `latest.sql` pointer into the R2 bucket
   `deliverome-d1-backups`. Manual trigger via `workflow_dispatch`.

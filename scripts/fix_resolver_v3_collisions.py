@@ -28,7 +28,7 @@ Outputs:
     correction, so the originals are recoverable even though we
     aren't deleting them.
   * ``data/analysis/resolver_v3_rerun_input_<table>_<run_id>.tsv``
-    — per-cell rerun input fed to ``triage_subbench_runner.py``.
+    — per-cell rerun input fed to ``triage_runner.py``.
     Columns: ``gene_symbol``, ``hgnc_id``.
   * D1: new triage_run rows under ``<run_id>__resolver_v3_fix``.
 
@@ -69,7 +69,7 @@ AUDIT_TSV = (
     REPO_ROOT / "data/analysis/resolver_definitive_audit_v3_d1_rows_full.tsv"
 )
 ANALYSIS_DIR = REPO_ROOT / "data/analysis"
-RUNNER = REPO_ROOT / "scripts/triage_subbench_runner.py"
+RUNNER = REPO_ROOT / "scripts/triage_runner.py"
 FIX_SUFFIX = "__resolver_v3_fix"
 
 
@@ -162,7 +162,7 @@ def _write_rerun_inputs(affected: list[dict[str, str]]) -> list[tuple[str, str, 
     rerun-input TSV per group. Returns the list of (table, run_id,
     model, input_tsv_path, runner_kwargs) tuples for the executor.
 
-    Only triage_run rows are re-runnable via the triage_subbench_runner.
+    Only triage_run rows are re-runnable via the triage_runner.
     deep_dive_run / benchmark_version updates would need their own
     re-runners (deep-dive sweeps + bench-snapshot uploaders); audit
     shows zero affected deep_dive_run rows for the v3 set, so this
@@ -213,7 +213,7 @@ def _write_rerun_inputs(affected: list[dict[str, str]]) -> list[tuple[str, str, 
 
 
 def _run_runner(input_tsv: str, model: str, fix_run_id: str, *, execute: bool) -> int:
-    """Invoke triage_subbench_runner with the rerun input. The runner
+    """Invoke triage_runner with the rerun input. The runner
     must pick up hgnc_id from the input row (Phase 5 patch makes
     _resolve_task_text use it). Variant=ncbi is the canonical sweep
     variant; switch if needed.
@@ -310,7 +310,7 @@ def main() -> int:
     print()
 
     print(
-        f"Step 3 — rerun via triage_subbench_runner under fix_run_id "
+        f"Step 3 — rerun via triage_runner under fix_run_id "
         f"= <original>{FIX_SUFFIX} (insert-only, originals untouched):"
     )
     exit_code = 0

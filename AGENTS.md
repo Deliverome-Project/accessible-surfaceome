@@ -280,15 +280,17 @@ Record the gist URL in the canonical generator's module docstring under a `# Rep
   `deep_dive_evidence`, `deep_dive_search_log`) plus 3 views. Triage
   and deep-dive share the DB so cross-table joins
   (`triage_vs_deep_dive`) are cheap.
-- **Upload**: `scripts/upload_triage_runs_to_d1.py` after any sweep
-  produces per-cell JSON records under `data/eval/triage_subbench_v1/`.
-- **Verify**: `scripts/d1_triage_verify.py` reconciles D1 vs on-disk
-  JSON; exits non-zero on divergence.
+- **Upload**: `scripts/triage_runner.py --d1 --run-id <tag>` streams
+  each completed cell into `triage_run` via `D1RunSink` as the sweep
+  progresses. No separate batch-upload step. Idempotent on
+  `(run_id, gene_symbol, model, prompt_variant, replicate, prompt_sha)`,
+  so restarting a crashed sweep with the same `--run-id` skips cells
+  that already landed.
 - **CI backup → R2**: every push to `main` that touches the relevant
-  paths (`cloudflare/d1_schema.sql`, `data/eval/triage_subbench_v1/**`,
-  `data/annotations/**`, `data/triage/**`,
-  `src/accessible_surfaceome/cloud/**`, the uploader / backup scripts
-  themselves) triggers `scripts/d1_export_to_r2.sh`, which runs
+  paths (`cloudflare/d1_schema.sql`, `data/annotations/**`,
+  `data/triage/**`, `src/accessible_surfaceome/cloud/**`, the
+  backup scripts themselves) triggers `scripts/d1_export_to_r2.sh`,
+  which runs
   `wrangler d1 export` and uploads to the R2 bucket
   `deliverome-d1-backups` under a dated key plus a stable
   `latest.sql` pointer.

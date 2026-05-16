@@ -294,7 +294,7 @@ def test_no_tools_phrase_in_no_tool_variants(
 
 # --- Gene-name leakage -----------------------------------------------------
 
-# Genes from the subbench + main bench that have been discussed in
+# Genes from the triage bench that have been discussed in
 # conversations; if any of these symbols leak into the prompts, the
 # benchmark is no longer "fair against gene-symbol knowledge". This is
 # pattern-matching, not perfect — but it catches the obvious cases.

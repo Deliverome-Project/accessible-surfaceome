@@ -25,8 +25,7 @@ on:
     paths:
       # Schema / SQL — any change to the D1 schema triggers a fresh dump.
       - "cloudflare/d1_schema.sql"
-      # Eval data — new triage runs land here.
-      - "data/eval/triage_subbench_v1/**"
+      # Eval data — benchmark TSV + any live run output.
       - "data/eval/triage_benchmark_v1.tsv"
       - "data/eval/triage_haiku_live_run.tsv"
       # Deep-dive output — new SurfaceomeRecord persists here.
@@ -36,7 +35,6 @@ on:
       - "data/processed/candidate_universe/**"
       # Uploaders / backup / public-sync scripts.
       - "src/accessible_surfaceome/cloud/**"
-      - "scripts/upload_triage_runs_to_d1.py"
       - "scripts/sync_public_d1.py"
       - "scripts/d1_export_to_r2.sh"
       - "scripts/d1_triage_backup.sh"
