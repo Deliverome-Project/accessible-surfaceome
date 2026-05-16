@@ -142,26 +142,43 @@ def main() -> int:
         merged: list[dict] = []
         for r in base_rows:
             merged.append(fix_by_key.get(key_of(r), r))
-        # Any fix rows that don't have a corresponding original (rare —
-        # would mean the fix sweep covered cells the original sweep
-        # didn't) are appended.
+        # Unmatched fix rows (no matching key in the cohort) are SKIPPED,
+        # not appended — a fix run is scoped to its parent cohort, so any
+        # rows that don't intersect mean the wrong --prefer-fix-run was
+        # passed (e.g. a genome-cohort fix run against the 147-row main
+        # bench). Bloating the export with off-cohort rows would silently
+        # change the figures' denominator; the loud warning lets the
+        # operator notice + correct the invocation.
         original_keys = {key_of(r) for r in base_rows}
-        for r in fix_rows:
-            if key_of(r) not in original_keys:
-                merged.append(r)
+        unmatched = [r for r in fix_rows if key_of(r) not in original_keys]
         replaced = sum(1 for r in base_rows if key_of(r) in fix_by_key)
-        print(
+        msg = (
             f"Merged {len(fix_rows):,} fix-run rows from {args.prefer_fix_run!r}; "
-            f"{replaced} rows replaced, {len(merged) - len(base_rows)} added"
+            f"{replaced} rows replaced"
         )
+        if unmatched:
+            msg += (
+                f"; SKIPPED {len(unmatched)} fix rows with no matching cohort "
+                f"row (e.g. {unmatched[0]['gene_symbol']}). Likely cause: the "
+                f"fix run was scoped to a different cohort than --run-id "
+                f"{args.run_id!r}. If you meant to export the fix run's "
+                f"parent cohort, pass --run-id <parent> too."
+            )
+        print(msg)
         rows = merged
     else:
         rows = base_rows
 
-    out_path = REPO_ROOT / args.out if not args.out.startswith("/") else args.out
+    from pathlib import Path
+    out_path = Path(args.out) if args.out.startswith("/") else REPO_ROOT / args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
+    # ``lineterminator="\n"`` (not csv's RFC-4180 default of "\r\n") matches
+    # the on-repo TSV's line endings, so a re-export is byte-identical when
+    # the underlying D1 rows haven't changed. The gist + figure consumers
+    # don't care, but byte-equality keeps `git diff` quiet on cosmetic-only
+    # re-runs.
     with open(out_path, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLUMNS, delimiter="\t")
+        w = csv.DictWriter(fh, fieldnames=COLUMNS, delimiter="\t", lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
     rel = out_path.relative_to(REPO_ROOT) if str(out_path).startswith(str(REPO_ROOT)) else out_path

@@ -9,6 +9,7 @@ Tables synced:
   * compara_release       — full row (Ensembl Compara is inherently public)
   * compara_ortholog      — full row
   * benchmark_version     — full row (curated truth labels)
+  * gene_identifier       → gene_identifier_public (full row; stable-ID cache)
   * triage_run → triage_run_public
         - DROP: raw_text (the full model response — only the parsed
                 fields cross over)
@@ -65,11 +66,12 @@ logger = logging.getLogger(__name__)
 # so chunk multi-row INSERTs accordingly. compara_ortholog has 11 cols → 8 rows;
 # triage_run_public has 25 cols → 3 rows; benchmark has 8 cols → 12 rows.
 BATCH_BY_TABLE: dict[str, int] = {
-    "compara_release":     18,   # 5 cols → 90 params
-    "compara_ortholog":    8,    # 11 cols → 88 params
-    "benchmark_version":   9,    # 9 cols → 81 params (D1 rejected 12×9=108)
-    "triage_run_public":   3,    # 25 cols → 75 params (was 4×20=80; +5 cost cols)
-    "surface_annotation":  4,    # 11 cols → 44 params (annotation_json can be large)
+    "compara_release":         18,   # 5 cols → 90 params
+    "compara_ortholog":        8,    # 11 cols → 88 params
+    "benchmark_version":       9,    # 9 cols → 81 params (D1 rejected 12×9=108)
+    "triage_run_public":       3,    # 25 cols → 75 params (was 4×20=80; +5 cost cols)
+    "surface_annotation":      4,    # 11 cols → 44 params (annotation_json can be large)
+    "gene_identifier_public":  7,    # 12 cols → 84 params
 }
 
 API_ROOT = "https://api.cloudflare.com/client/v4"
@@ -183,6 +185,31 @@ def sync_compara(*, priv: D1, pub: D1, dry_run: bool, client: httpx.Client) -> N
     ]
     ortho_rows = [[r.get(c) for c in ortho_cols] for r in orthologs]
     _multi_insert(pub, "compara_ortholog", ortho_cols, ortho_rows, dry_run=dry_run, client=client)
+
+
+def sync_gene_identifier(*, priv: D1, pub: D1, dry_run: bool, client: httpx.Client) -> None:
+    """Sync gene_identifier → gene_identifier_public.
+
+    Full-row copy; the table is itself the column-whitelisted shape (no
+    operational fields to strip). OR REPLACE so a re-resolve (after a
+    resolver upgrade) propagates instead of being silently ignored.
+    """
+    logger.info("gene_identifier → gene_identifier_public")
+    rows = _query(priv, """
+        SELECT hgnc_id, hgnc_symbol, cohort_symbol, uniprot_acc, ncbi_gene_id,
+               ensembl_gene, ensembl_canonical_protein, resolver_path,
+               resolver_version, resolved_at, hgnc_xref_count, needs_review
+        FROM gene_identifier
+    """, client=client)
+    cols = [
+        "hgnc_id", "hgnc_symbol", "cohort_symbol", "uniprot_acc",
+        "ncbi_gene_id", "ensembl_gene", "ensembl_canonical_protein",
+        "resolver_path", "resolver_version", "resolved_at",
+        "hgnc_xref_count", "needs_review",
+    ]
+    out = [[r.get(c) for c in cols] for r in rows]
+    _multi_insert(pub, "gene_identifier_public", cols, out,
+                  dry_run=dry_run, client=client, on_conflict="REPLACE")
 
 
 def sync_benchmark(*, priv: D1, pub: D1, dry_run: bool, client: httpx.Client) -> None:
@@ -308,7 +335,7 @@ def sync_surface_annotations(*, pub: D1, dry_run: bool, client: httpx.Client) ->
 # ---------------------------------------------------------------------------
 
 
-_ALL_TABLES = ["compara", "benchmark", "triage_run", "surface_annotation"]
+_ALL_TABLES = ["compara", "benchmark", "gene_identifier", "triage_run", "surface_annotation"]
 
 
 def main() -> int:
@@ -333,6 +360,8 @@ def main() -> int:
             sync_compara(priv=priv, pub=pub, dry_run=args.dry_run, client=client)
         if "benchmark" in targets:
             sync_benchmark(priv=priv, pub=pub, dry_run=args.dry_run, client=client)
+        if "gene_identifier" in targets:
+            sync_gene_identifier(priv=priv, pub=pub, dry_run=args.dry_run, client=client)
         if "triage_run" in targets:
             sync_triage_runs(priv=priv, pub=pub, dry_run=args.dry_run, since=args.since, client=client)
         if "surface_annotation" in targets:
