@@ -50,7 +50,7 @@ FIGURE_PROVENANCE: dict[str, dict[str, Any]] = {
                     "accessible-surfaceome/898c743d9df4ec7497e7424b80d3408e5ad07c41/"
                     "data/processed/candidate_universe/candidate_universe.tsv"
                 ),
-                "sha256": "0000000000000000000000000000000000000000000000000000000000000000",  # placeholder; filled in Task 4
+                "sha256": "2406464f3f86680e76844fe07e9aa32e5550960bc9fa5573137bb31c15ea3ef2",
             }
         ],
     },

@@ -30,9 +30,12 @@ Outputs (PDF + PNG):
 from __future__ import annotations
 
 import csv
+import hashlib
+import io
 import os
 from pathlib import Path
 
+import httpx
 import matplotlib.pyplot as plt
 import pandas as pd
 import upsetplot
@@ -53,16 +56,51 @@ DB_FLAGS_5 = [
     ("cspa_surface_flag", "CSPA"),
 ]
 
+# Pin to an immutable commit SHA so the reproduction is traceable and
+# tamper-evident. Bump together with ``_EXPECTED_TSV_SHA256`` whenever
+# the upstream universe TSV is intentionally refreshed (and update the
+# matching ``data[0]`` entry in scripts/embed_figure_gist_metadata.py).
+_PINNED_COMMIT_SHA = "898c743d9df4ec7497e7424b80d3408e5ad07c41"
+_CAND_URL = (
+    "https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/"
+    f"{_PINNED_COMMIT_SHA}/data/processed/candidate_universe/candidate_universe.tsv"
+)
+_EXPECTED_TSV_SHA256 = (
+    "2406464f3f86680e76844fe07e9aa32e5550960bc9fa5573137bb31c15ea3ef2"
+)
+
+
+def _load_universe_bytes(path: Path) -> bytes:
+    """Return the universe TSV bytes from ``path`` if present, else fetch
+    them from the pinned commit URL. Verifies sha256 against the
+    pinned digest in either case and raises ``SystemExit`` on mismatch.
+    """
+
+    if path.is_file():
+        tsv_bytes = path.read_bytes()
+    else:
+        r = httpx.get(_CAND_URL, timeout=30)
+        r.raise_for_status()
+        tsv_bytes = r.content
+    got = hashlib.sha256(tsv_bytes).hexdigest()
+    if got != _EXPECTED_TSV_SHA256:
+        raise SystemExit(
+            f"candidate_universe.tsv sha256 mismatch: expected "
+            f"{_EXPECTED_TSV_SHA256}, got {got}. The pinned URL "
+            f"({_CAND_URL}) may be wrong, or upstream content changed."
+        )
+    return tsv_bytes
+
 
 def build_sets(path: Path) -> dict[str, set[str]]:
     sets: dict[str, set[str]] = {label: set() for _, label in DB_FLAGS_5}
-    with path.open() as fh:
-        reader = csv.DictReader(fh, delimiter="\t")
-        for row in reader:
-            acc = row["uniprot_accession"]
-            for flag, label in DB_FLAGS_5:
-                if row.get(flag, "0") == "1":
-                    sets[label].add(acc)
+    tsv_bytes = _load_universe_bytes(path)
+    reader = csv.DictReader(io.StringIO(tsv_bytes.decode("utf-8")), delimiter="\t")
+    for row in reader:
+        acc = row["uniprot_accession"]
+        for flag, label in DB_FLAGS_5:
+            if row.get(flag, "0") == "1":
+                sets[label].add(acc)
     return sets
 
 
