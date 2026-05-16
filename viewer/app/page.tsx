@@ -66,15 +66,20 @@ export default async function HomePage() {
             auxiliary signals but don&apos;t appear here.
           </p>
           <p>
-            <span className="label-mono">Triage ·</span> Sonnet 4.6 with an
-            NCBI context block, run on every protein-coding gene. Verdicts
-            read as <em>yes</em> (constitutively on the surface),{" "}
-            <em>contextual</em> (conditional or rare surface), <em>no</em>{" "}
-            (no plasma-membrane presence). Sonnet deep-dive records linked
-            from the <em>view →</em> column override the triage call when
-            present. Haiku 4.5 and Opus 4.7 calls live on{" "}
-            <a href="/benchmark/" className={styles.surfaceBenchLink}>SurfaceBench</a>{" "}
-            for cross-model comparison.
+            <span className="label-mono">Triage agent ·</span> a single
+            Claude call with an NCBI context block, run on every
+            protein-coding gene. Verdicts read as <em>yes</em>{" "}
+            (constitutively on the surface), <em>contextual</em>{" "}
+            (conditional or rare surface), <em>no</em> (no
+            plasma-membrane presence). Deep-dive records linked from
+            the <em>yes</em> column in the &ldquo;Deep dive&rdquo;
+            slot override the triage call when present. The alternative
+            models (Haiku 4.5, Opus 4.7) used in the manuscript
+            comparison live on{" "}
+            <a href="/benchmark/" className={styles.surfaceBenchLink}>
+              SurfaceBench
+            </a>
+            .
           </p>
           <p>
             <span className="label-mono">API ·</span>{" "}

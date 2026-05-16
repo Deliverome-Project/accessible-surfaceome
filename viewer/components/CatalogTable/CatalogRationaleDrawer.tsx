@@ -45,12 +45,14 @@ const HEADLINE_VARIANT = "ncbi";
 
 /**
  * CatalogRationaleDrawer — right-side non-modal panel that surfaces the
- * Sonnet 4.6 (NCBI-context) reasoning for a single catalog gene. Same
- * pattern as the SurfaceBench RationaleDrawer (focus-trap-free, bottom
- * sheet under 720 px, opacity fade under prefers-reduced-motion); the
- * implementation is independent because the data flow is — the
- * benchmark drawer reads from an in-memory matrix, this one waits on a
- * lazy /v1/triage/{symbol} fetch managed by the parent table.
+ * catalog's triage-agent (Sonnet 4.6 with an NCBI-context block, but
+ * deliberately labeled "Triage agent" in the UI) reasoning for a
+ * single gene. Same pattern as the SurfaceBench RationaleDrawer
+ * (focus-trap-free, bottom sheet under 720 px, opacity fade under
+ * prefers-reduced-motion); the implementation is independent because
+ * the data flow is — the benchmark drawer reads from an in-memory
+ * matrix, this one waits on a lazy /v1/triage/{symbol} fetch managed
+ * by the parent table.
  */
 export function CatalogRationaleDrawer({
   selectedSymbol,
@@ -93,7 +95,7 @@ export function CatalogRationaleDrawer({
             ×
           </button>
           <p className={`label-mono ${styles.drawerEyebrow}`}>
-            Sonnet 4.6 · NCBI context
+            Triage agent
           </p>
           <h2 className={styles.drawerTitle}>
             {selectedSymbol}
@@ -132,8 +134,8 @@ export function CatalogRationaleDrawer({
           ) : null}
           {detail?.status === "ready" && !reasoning ? (
             <p className={styles.drawerReasoningEmpty}>
-              (No free-text reasoning recorded for the latest Sonnet
-              NCBI run — verdict only.)
+              (No free-text reasoning recorded for the latest triage
+              run — verdict only.)
             </p>
           ) : null}
           {latestSonnet?.predicted_confidence ||

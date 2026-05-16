@@ -71,14 +71,15 @@ const DB_KEYS: { key: keyof CatalogRow["db"]; short: string; long: string }[] = 
   { key: "hpa", short: "H", long: "HPA" },
 ];
 
-// Sonnet 4.6 (NCBI variant) is the catalog's headline model — the one
-// run on every protein-coding gene with the headline prompt. Haiku
-// and Opus calls exist in the Worker response but only render on the
-// SurfaceBench benchmark, where the goal is cross-model comparison.
+// The catalog's headline call comes from the project's "triage agent"
+// — Sonnet 4.6 with an NCBI-context block, run on every protein-coding
+// gene. We surface it as "Triage agent" in the UI to keep the catalog
+// model-agnostic; the specific model identity is reserved for the
+// SurfaceBench benchmark, where cross-model comparison is the point.
 // `idx` is the index in the Worker's `triage_by_model` array (still
 // fixed at Haiku=0, Sonnet=1, Opus=2 per Worker contract).
 const CATALOG_MODELS: { id: string; idx: number; short: string; long: string }[] = [
-  { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Sonnet 4.6 · ncbi" },
+  { id: "claude-sonnet-4-6", idx: 1, short: "S", long: "Triage agent" },
 ];
 
 type SortKey = "symbol" | "uniprot" | "n_sources" | "triage_sonnet" | "deep_dive";
@@ -362,7 +363,7 @@ export function CatalogTable({
               title={m.long}
               role="columnheader"
             >
-              {m.long.replace(" · ncbi", "")}
+              {m.long}
             </div>
           ))}
           <SortableHeader
@@ -588,9 +589,9 @@ function CatalogRowView({
 }) {
   // Genes with a deep-dive go straight to the rich deep-dive page on
   // click — the side-rationale drawer is redundant for those (the
-  // deep-dive page carries the Sonnet reasoning plus everything else).
+  // deep-dive page carries the triage reasoning plus everything else).
   // Genes WITHOUT a deep-dive open the drawer instead, since that's
-  // the only place to read the Sonnet call's full text.
+  // the only place to read the triage call's full text.
   const symbolStack = (
     <span className={styles.symbolStack}>
       <span className={styles.symbolText}>{row.symbol}</span>
@@ -615,7 +616,7 @@ function CatalogRowView({
       className={styles.symbolButton}
       onClick={() => onSelect(row.symbol)}
       aria-pressed={isSelected}
-      aria-label={`Open Sonnet reasoning for ${row.symbol}`}
+      aria-label={`Open triage reasoning for ${row.symbol}`}
     >
       {symbolStack}
     </button>
