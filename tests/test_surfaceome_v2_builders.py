@@ -1,0 +1,863 @@
+"""Unit tests for the v2 block-builders.
+
+Each builder is exercised with a MagicMock Anthropic client that yields a
+prepared text body so the call() goes through ``_call_with_repair`` without
+touching the network. Coverage per builder:
+
+* Happy path: valid claims → valid block.
+* Empty input: no qualifying claims → empty / sane fallback.
+* Citation roundtrip: cited evidence_ids that aren't in the input ledger
+  get scrubbed by the builder.
+
+A schema-validation test at the bottom assembles a full SurfaceomeRecord
+from synthetic A1 + A2 fixtures + a mocked synthesizer/draft and confirms
+the assembled record validates.
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import UTC, datetime
+from typing import Any
+from unittest.mock import MagicMock
+
+import pytest
+from pydantic import BaseModel, ConfigDict
+
+from accessible_surfaceome.agents._support.pricing import UsageRecord
+from accessible_surfaceome.agents.surfaceome_v2.builders import (
+    EvidenceGradeBlock,
+    build_accessibility_modulation,
+    build_anatomical_accessibility,
+    build_cell_types,
+    build_contradictions,
+    build_evidence_grade,
+    build_methods,
+    build_subcellular_localization,
+    build_therapeutic_engagement,
+    build_tissues,
+)
+from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
+    _synthetic_source_store,
+)
+from accessible_surfaceome.tools._shared.models import (
+    AccessibilityModulationObservation,
+    AnatomicalAccessibilityObservation,
+    AssayContext,
+    BiologicalContext,
+    BiologicalContextDraft,
+    CellTypeContextV1,
+    Contradiction,
+    EvidenceClaim,
+    MethodObservation,
+    SubcellularLocalization,
+    SurfaceEvidence,
+    SurfaceEvidenceDraft,
+    TherapeuticEngagementContext,
+    TissueContext,
+)
+
+
+# ---------------------------------------------------------------------------
+# Test helpers
+# ---------------------------------------------------------------------------
+
+
+def _claim(
+    evi_id: str,
+    *,
+    prefix: str = "a1",
+    claim_type: str = "surface_expression",
+    evidence_type: str = "flow_cytometry",
+    direction: str = "supports",
+    quote: str = "Example verbatim quote.",
+    source_id: str = "PMID:11111",
+    section: str = "results",
+) -> EvidenceClaim:
+    return EvidenceClaim.model_validate(
+        {
+            "evidence_id": f"{prefix}_evi_{evi_id}",
+            "claim": f"Synthetic claim {evi_id}",
+            "claim_type": claim_type,
+            "direction": direction,
+            "evidence_type": evidence_type,
+            "evidence_tier": "primary",
+            "confidence": "moderate",
+            "assay_context": {
+                "species": "human",
+                "cell_type_or_line": "HEK293",
+                "permeabilized": False,
+            },
+            "source_id": source_id,
+            "quote": quote,
+            "section": section,
+        }
+    )
+
+
+def _mock_client(text_responses: list[str]) -> Any:
+    """Build a MagicMock Anthropic client whose ``messages.create`` yields
+    the given text bodies in order (one per call).
+
+    Each response has a TextBlock-like ``text`` attribute the builder
+    code reads and a ``usage`` block the pricing code reads. Stop
+    reason is always ``end_turn`` — use :func:`_mock_client_with_stops`
+    when you need to simulate ``max_tokens`` truncation.
+    """
+    return _mock_client_with_stops([(t, "end_turn") for t in text_responses])
+
+
+def _mock_client_with_stops(
+    text_and_stop: list[tuple[str, str]],
+) -> Any:
+    """Like ``_mock_client`` but lets each response carry a distinct
+    ``stop_reason`` — ``"end_turn"`` for clean completion,
+    ``"max_tokens"`` for truncation, etc."""
+    client = MagicMock()
+    iterator = iter(text_and_stop)
+
+    def _create(**_kwargs: Any) -> Any:
+        text, stop_reason = next(iterator)
+        block = MagicMock()
+        block.text = text
+        usage = MagicMock()
+        usage.input_tokens = 100
+        usage.output_tokens = 50
+        usage.cache_creation_input_tokens = 0
+        usage.cache_read_input_tokens = 0
+        resp = MagicMock()
+        resp.content = [block]
+        resp.usage = usage
+        resp.stop_reason = stop_reason
+        return resp
+
+    client.messages.create.side_effect = _create
+    return client
+
+
+@pytest.fixture(autouse=True)
+def _patch_text_block(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Patch ``isinstance(b, TextBlock)`` checks in the builder common
+    module + therapeutic-engagement builder so MagicMock content blocks
+    pass through."""
+
+    class _FakeTextBlock:  # noqa: D401 — marker class
+        """Marker for MagicMock content blocks."""
+
+    # Patch the TextBlock symbol in each module that uses it via
+    # ``isinstance(b, TextBlock)``.
+    from accessible_surfaceome.agents.surfaceome_v2.builders import (
+        _common as common_mod,
+    )
+    from accessible_surfaceome.agents.surfaceome_v2.builders import (
+        therapeutic_engagement as te_mod,
+    )
+
+    # Replace TextBlock with a tuple of (real TextBlock, MagicMock) so
+    # both real responses and mocked ones pass the isinstance check.
+    monkeypatch.setattr(
+        common_mod, "TextBlock", (common_mod.TextBlock, MagicMock), raising=True
+    )
+    monkeypatch.setattr(
+        te_mod, "TextBlock", (te_mod.TextBlock, MagicMock), raising=True
+    )
+
+
+def _fenced(body: str) -> str:
+    return f"```json\n{body}\n```"
+
+
+# ---------------------------------------------------------------------------
+# methods_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_methods_happy_path() -> None:
+    claims = [
+        _claim("01", evidence_type="flow_cytometry", quote="Live cells stained with anti-X."),
+        _claim("02", evidence_type="surface_biotinylation", quote="Biotinylated surface proteins."),
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [
+                {
+                    "name": "anti-X",
+                    "monoclonal_or_polyclonal": "monoclonal",
+                    "antibody_epitope_region": "extracellular",
+                    "validation_strategy": "unknown",
+                    "validation_strength": "unknown",
+                }
+            ],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(
+        claims, client=client, usage_sink=sink, context={"gene": "GPR75"}
+    )
+    assert len(rows) == 1
+    assert isinstance(rows[0], MethodObservation)
+    assert rows[0].cited_evidence_ids == ["a1_evi_01"]
+    assert len(sink) == 1
+
+
+def test_build_methods_empty_input() -> None:
+    claims = [_claim("01", claim_type="tissue_expression", evidence_type="rna_seq")]
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows == []
+    assert sink == []
+    # No model call — the builder filtered before dispatching.
+    client.messages.create.assert_not_called()
+
+
+def test_build_methods_scrubs_unknown_citations() -> None:
+    claims = [_claim("01", evidence_type="flow_cytometry")]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            # 99 isn't in input; should be scrubbed
+            "cited_evidence_ids": ["a1_evi_01", "a1_evi_99"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows[0].cited_evidence_ids == ["a1_evi_01"]
+
+
+# ---------------------------------------------------------------------------
+# therapeutic_engagement_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_therapeutic_engagement_happy() -> None:
+    claims = [_claim("05", quote="Phase 2 trial of zalu-mAb in MM.")]
+    output = {
+        "highest_stage": "in_clinical_trials",
+        "description": "zalu-mAb (anti-X) is in Phase 2 for multiple myeloma.",
+        "surface_form_rationale": "Drug binds the membrane-bound form on plasma cells.",
+        "cited_evidence_ids": ["a1_evi_05"],
+    }
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    block = build_therapeutic_engagement(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert isinstance(block, TherapeuticEngagementContext)
+    assert block.highest_stage == "in_clinical_trials"
+    assert block.cited_evidence_ids == ["a1_evi_05"]
+
+
+def test_build_therapeutic_engagement_null() -> None:
+    claims = [_claim("01")]
+    client = _mock_client([_fenced("null")])
+    sink: list[UsageRecord] = []
+    block = build_therapeutic_engagement(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert block is None
+
+
+def test_build_therapeutic_engagement_empty_input_returns_none() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    block = build_therapeutic_engagement(
+        [], client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert block is None
+    client.messages.create.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# contradiction_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_contradictions_happy() -> None:
+    claims = [
+        _claim(
+            "07",
+            claim_type="contradictory",
+            direction="refutes",
+            evidence_type="immunofluorescence",
+            quote="Permeabilized IF shows X is intracellular.",
+        )
+    ]
+    output = [
+        {
+            "claim": "Permeabilized IF shows X is dominantly intracellular.",
+            "contradiction_type": "intracellular_pool",
+            "severity_for_surface_accessibility": "moderate",
+            "likely_explanation": "Permeabilization reveals an ER pool.",
+            "cited_evidence_ids": ["a1_evi_07"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_contradictions(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert len(rows) == 1
+    assert isinstance(rows[0], Contradiction)
+
+
+def test_build_contradictions_empty_input() -> None:
+    claims = [_claim("01", claim_type="surface_expression", direction="supports")]
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_contradictions(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert rows == []
+    client.messages.create.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# evidence_grade_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_evidence_grade_happy() -> None:
+    claims = [
+        _claim("01", evidence_type="flow_cytometry"),
+        _claim("02", evidence_type="rt_qpcr", claim_type="tissue_expression"),
+    ]
+    output = {
+        "evidence_grade": "direct_single_method",
+        "grade_rationale": "One direct flow cytometry observation.",
+        "non_surface_expression": [
+            {
+                "context": "HEK293 cells",
+                "sample_type": "established_cell_line",
+                "measurement_type": "RNA",
+                "level": "moderate",
+                "cited_evidence_ids": ["a1_evi_02"],
+            }
+        ],
+    }
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    block = build_evidence_grade(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert isinstance(block, EvidenceGradeBlock)
+    assert block.evidence_grade == "direct_single_method"
+    assert len(block.non_surface_expression) == 1
+    assert block.non_surface_expression[0].cited_evidence_ids == ["a1_evi_02"]
+
+
+def test_build_evidence_grade_empty_input_returns_default() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    block = build_evidence_grade(
+        [], client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert block.evidence_grade == "weak"
+    assert block.non_surface_expression == []
+
+
+# ---------------------------------------------------------------------------
+# tissues_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_tissues_happy() -> None:
+    claims = [
+        _claim(
+            "01",
+            prefix="a2",
+            claim_type="tissue_expression",
+            evidence_type="immunohistochemistry",
+            source_id="PMID:222",
+        ),
+        _claim(
+            "02",
+            prefix="a2",
+            claim_type="tissue_expression",
+            evidence_type="rna_seq",
+            source_id="PMID:333",
+        ),
+    ]
+    output = [
+        {
+            "tissue": "cerebellum",
+            "present": "high",
+            "disease_context": "normal",
+            "cell_types": ["Purkinje neurons"],
+            "cell_states": [],
+            "cited_evidence_ids": ["a2_evi_01", "a2_evi_02"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_tissues(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert len(rows) == 1
+    assert isinstance(rows[0], TissueContext)
+    assert rows[0].tissue == "cerebellum"
+
+
+def test_build_tissues_empty_input() -> None:
+    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_tissues(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows == []
+    client.messages.create.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# cell_types_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_cell_types_forces_null_ontology() -> None:
+    claims = [_claim("01", prefix="a2")]
+    output = [
+        {
+            "cell_type": "Purkinje neurons",
+            "ontology_id": "CL:00000",  # should be scrubbed to null
+            "present_in_tissues": ["cerebellum"],
+            "cited_evidence_ids": ["a2_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_cell_types(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert len(rows) == 1
+    assert isinstance(rows[0], CellTypeContextV1)
+    assert rows[0].ontology_id is None
+
+
+def test_build_cell_types_empty_input() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_cell_types([], client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows == []
+    client.messages.create.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# subcellular_localization_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_subcellular_localization_happy() -> None:
+    claims = [_claim("01", prefix="a2")]
+    output = {
+        "primary_compartment": "plasma_membrane",
+        "dual_localization": [
+            {
+                "compartment": "endosome",
+                "fraction_estimate": 0.2,
+                "condition": "after agonist stim",
+                "cited_evidence_ids": ["a2_evi_01"],
+            }
+        ],
+        "membrane_subdomains": [
+            {"subdomain": "lipid raft", "cited_evidence_ids": ["a2_evi_01"]}
+        ],
+    }
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    block = build_subcellular_localization(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert isinstance(block, SubcellularLocalization)
+    assert block.primary_compartment == "plasma_membrane"
+    assert len(block.dual_localization) == 1
+    assert len(block.membrane_subdomains) == 1
+
+
+def test_build_subcellular_localization_empty_input_returns_pm_default() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    block = build_subcellular_localization(
+        [], client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert block.primary_compartment == "plasma_membrane"
+
+
+# ---------------------------------------------------------------------------
+# anatomical_accessibility_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_anatomical_accessibility_happy() -> None:
+    claims = [_claim("01", prefix="a2")]
+    output = [
+        {
+            "context": "intestinal epithelium",
+            "orientation": "apical",
+            "accessibility_implication": "restricted",
+            "rationale": "Apical surface is tight-junction protected from systemic delivery.",
+            "cited_evidence_ids": ["a2_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_anatomical_accessibility(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert len(rows) == 1
+    assert isinstance(rows[0], AnatomicalAccessibilityObservation)
+
+
+def test_build_anatomical_accessibility_empty_returns_empty() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_anatomical_accessibility(
+        [], client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert rows == []
+
+
+# ---------------------------------------------------------------------------
+# accessibility_modulation_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_accessibility_modulation_happy() -> None:
+    claims = [_claim("01", prefix="a2", quote="Activated T cells upregulate X.")]
+    output = [
+        {
+            "category": "activation_induced",
+            "category_other_label": None,
+            "cell_state_trigger": "antigen_stimulation",
+            "restricted_lineage": None,
+            "dual_loc_partner_compartment": None,
+            "baseline_context": "resting CD4 T cells",
+            "modulating_state": "TCR-stimulated CD4 T cells",
+            "change": "Surface X increases 5-fold within 24h of stimulation.",
+            "accessibility_implication": "Activation-restricted surface availability favors specificity for activated cells.",
+            "cited_evidence_ids": ["a2_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_accessibility_modulation(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert len(rows) == 1
+    assert isinstance(rows[0], AccessibilityModulationObservation)
+    assert rows[0].category == "activation_induced"
+    assert rows[0].cell_state_trigger == "antigen_stimulation"
+
+
+def test_build_accessibility_modulation_drops_mispaired() -> None:
+    """A row whose category-conditional pairing is invalid causes the whole
+    array's Pydantic validation to fail (call_builder repair loop). After
+    the repair budget is exhausted the builder returns []. Confirms the
+    pairing rules are enforced and no invalid row leaks through."""
+    claims = [_claim("01", prefix="a2")]
+    bad_output = [
+        # tissue_restricted_surface + cell_state_trigger → invalid pairing
+        {
+            "category": "tissue_restricted_surface",
+            "category_other_label": None,
+            "cell_state_trigger": "antigen_stimulation",
+            "restricted_lineage": "hematopoietic",
+            "dual_loc_partner_compartment": None,
+            "baseline_context": "non-hematopoietic",
+            "modulating_state": "hematopoietic lineage",
+            "change": "X is restricted to hematopoietic lineage.",
+            "accessibility_implication": "Restricted to hematopoietic surface.",
+            "cited_evidence_ids": ["a2_evi_01"],
+        },
+    ]
+    # Three responses to cover the MAX_REPAIRS=2 retries (initial + 2 repairs).
+    client = _mock_client(
+        [_fenced(json.dumps(bad_output))] * 3
+    )
+    sink: list[UsageRecord] = []
+    rows = build_accessibility_modulation(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    # All rows that survive must have valid category-conditional pairing.
+    for r in rows:
+        if r.category == "tissue_restricted_surface":
+            assert r.cell_state_trigger is None
+    # In this case no rows survive (all attempts were invalid).
+    assert rows == []
+
+
+def test_build_accessibility_modulation_empty() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_accessibility_modulation(
+        [], client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert rows == []
+
+
+# ---------------------------------------------------------------------------
+# Synthetic source store + draft assembly
+# ---------------------------------------------------------------------------
+
+
+def test_synthetic_source_store_supports_promote() -> None:
+    """Round-trip a claim through the synthetic store + promote_claim."""
+    from accessible_surfaceome.agents._support.evidence_promotion import promote_claim
+
+    claims = [
+        _claim("01", quote="X is expressed on the surface of HEK293 cells."),
+        _claim("02", quote="A second verbatim sentence from the same source.",
+               source_id="PMID:11111"),
+    ]
+    store = _synthetic_source_store(claims)
+    for c in claims:
+        ev = promote_claim(c, store=store)
+        assert ev.entailment_verified is True
+        assert len(ev.spans) == 1
+        assert ev.spans[0].quote == c.quote
+
+
+# ---------------------------------------------------------------------------
+# End-to-end schema validation — assemble a full SurfaceomeRecord
+# ---------------------------------------------------------------------------
+
+
+def test_surface_evidence_draft_validates_with_block_builder_outputs() -> None:
+    """If the block-builders return valid blocks for the input ledger,
+    the SurfaceEvidenceDraft wrapper should validate."""
+    a1_claims = [
+        _claim("01", evidence_type="flow_cytometry"),
+        _claim("02", evidence_type="surface_biotinylation"),
+    ]
+    se = SurfaceEvidence(
+        evidence_grade="direct_multi_method",
+        grade_rationale="Flow + biotinylation.",
+        methods=[
+            MethodObservation(
+                method_family="flow_cytometry",
+                method_subclass="live_cell_flow",
+                permeabilization="nonpermeabilized",
+                expression_system="endogenous",
+                antibodies=[],
+                accessibility_relevance="direct_surface_accessibility",
+                surface_claim_type="surface_accessible",
+                expression_observations=[],
+                cited_evidence_ids=["a1_evi_01", "a1_evi_02"],
+            )
+        ],
+        non_surface_expression=[],
+        therapeutic_engagement=None,
+        contradicting_evidence=[],
+    )
+    draft = SurfaceEvidenceDraft(surface_evidence=se, evidence_claims=a1_claims)
+    assert len(draft.surface_evidence.methods) == 1
+
+
+def test_biological_context_draft_validates_with_block_builder_outputs() -> None:
+    a2_claims = [
+        _claim("01", prefix="a2", claim_type="tissue_expression"),
+        _claim("02", prefix="a2"),
+    ]
+    bc = BiologicalContext(
+        tissues=[
+            TissueContext(
+                tissue="cerebellum",
+                present="high",
+                disease_context="normal",
+                cell_types=["Purkinje neurons"],
+                cell_states=[],
+                cited_evidence_ids=["a2_evi_01"],
+            )
+        ],
+        cell_types=[
+            CellTypeContextV1(
+                cell_type="Purkinje neurons",
+                ontology_id=None,
+                present_in_tissues=["cerebellum"],
+                cited_evidence_ids=["a2_evi_01"],
+            )
+        ],
+        cell_states=[],
+        subcellular_localization=SubcellularLocalization(
+            primary_compartment="plasma_membrane",
+            dual_localization=[],
+            membrane_subdomains=[],
+        ),
+        anatomical_accessibility=[],
+        accessibility_modulation=[],
+    )
+    draft = BiologicalContextDraft(
+        biological_context=bc, evidence_claims=a2_claims
+    )
+    assert len(draft.biological_context.tissues) == 1
+
+
+def test_block_counts_helper() -> None:
+    from accessible_surfaceome.agents.surfaceome_v2.orchestrator import _count_blocks
+
+    se = SurfaceEvidence(
+        evidence_grade="weak",
+        grade_rationale="rationale",
+        methods=[],
+        non_surface_expression=[],
+        therapeutic_engagement=None,
+        contradicting_evidence=[],
+    )
+    bc = BiologicalContext(
+        tissues=[],
+        cell_types=[],
+        cell_states=[],
+        subcellular_localization=SubcellularLocalization(
+            primary_compartment="plasma_membrane",
+            dual_localization=[],
+            membrane_subdomains=[],
+        ),
+        anatomical_accessibility=[],
+        accessibility_modulation=[],
+    )
+    counts = _count_blocks(se, bc)
+    assert counts["methods"] == 0
+    assert counts["tissues"] == 0
+    assert counts["therapeutic_engagement"] == 0
+
+
+# ---------------------------------------------------------------------------
+# max_tokens cutoff detection in call_builder repair loop
+# ---------------------------------------------------------------------------
+
+
+def test_call_builder_logs_max_tokens_truncation(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """When the first response is truncated by ``stop_reason="max_tokens"``,
+    the repair-loop log must say "output truncated at max_tokens" — not
+    the generic "no fenced JSON block" — so an operator immediately knows
+    to bump the per-builder token cap rather than chasing prompt issues.
+
+    Second response is a clean valid JSON object so the repair loop
+    recovers and ``call_builder`` returns the parsed model.
+    """
+    import logging
+
+    from accessible_surfaceome.agents.surfaceome_v2.builders._common import (
+        call_builder,
+    )
+    from accessible_surfaceome.tools._shared.models import EvidenceGrade
+
+    # Minimal Pydantic shape for the test — just need ANY validating model.
+    class _Block(BaseModel):
+        model_config = ConfigDict(extra="forbid")
+        evidence_grade: EvidenceGrade
+        grade_rationale: str
+
+    # First response: looks like the start of a fenced JSON block but
+    # was cut off before the closing fence — the realistic
+    # max_tokens-truncation shape.
+    truncated_text = (
+        '```json\n{\n  "evidence_grade": "direct_multi_method",\n'
+        '  "grade_rationale": "Strong evidence from multiple direct surface '
+    )
+    # Second response: clean valid JSON object.
+    clean_text = _fenced(
+        '{"evidence_grade": "direct_multi_method",'
+        ' "grade_rationale": "Strong evidence from multiple direct surface assays."}'
+    )
+    client = _mock_client_with_stops(
+        [
+            (truncated_text, "max_tokens"),
+            (clean_text, "end_turn"),
+        ]
+    )
+
+    with caplog.at_level(logging.WARNING):
+        parsed = call_builder(
+            client,
+            system_prompt="(test system prompt)",
+            user_prompt="(test user prompt)",
+            schema=_Block,
+            usage_sink=[],
+            label="test_builder",
+            max_tokens=512,
+        )
+
+    # call_builder recovered on retry.
+    assert isinstance(parsed, _Block)
+    assert parsed.evidence_grade == "direct_multi_method"
+
+    # The max_tokens-truncation log fired (this is the key contract:
+    # an operator reading the log sees "bump max_tokens", not
+    # "no fenced JSON block").
+    max_tokens_logs = [
+        rec.getMessage() for rec in caplog.records
+        if "max_tokens" in rec.getMessage().lower()
+    ]
+    assert max_tokens_logs, (
+        "expected a log mentioning max_tokens; got: "
+        f"{[r.getMessage() for r in caplog.records]}"
+    )
+    assert any("test_builder" in m for m in max_tokens_logs)
+
+
+def test_call_builder_no_false_max_tokens_warning_on_clean_completion() -> None:
+    """The max_tokens log path must NOT fire when stop_reason is
+    ``end_turn`` (the normal case). Verifies the if-guard."""
+    import logging
+
+    from accessible_surfaceome.agents.surfaceome_v2.builders._common import (
+        call_builder,
+    )
+    from accessible_surfaceome.tools._shared.models import EvidenceGrade
+
+    class _Block(BaseModel):
+        model_config = ConfigDict(extra="forbid")
+        evidence_grade: EvidenceGrade
+        grade_rationale: str
+
+    clean_text = _fenced(
+        '{"evidence_grade": "weak", "grade_rationale": "test rationale"}'
+    )
+    client = _mock_client([clean_text])
+
+    import io
+    log_stream = io.StringIO()
+    handler = logging.StreamHandler(log_stream)
+    handler.setLevel(logging.INFO)
+    logger = logging.getLogger(
+        "accessible_surfaceome.agents.surfaceome_v2.builders._common"
+    )
+    logger.addHandler(handler)
+    try:
+        parsed = call_builder(
+            client,
+            system_prompt="x",
+            user_prompt="x",
+            schema=_Block,
+            usage_sink=[],
+            label="quiet_builder",
+            max_tokens=1024,
+        )
+    finally:
+        logger.removeHandler(handler)
+
+    assert isinstance(parsed, _Block)
+    assert "max_tokens" not in log_stream.getvalue().lower()
+
+
+# Used only to silence ruff's unused-import warning for AssayContext (kept
+# for fixture clarity).
+_ = AssayContext
+_ = datetime  # used by mock helper future expansion
+_ = UTC

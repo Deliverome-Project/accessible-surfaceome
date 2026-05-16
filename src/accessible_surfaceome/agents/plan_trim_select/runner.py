@@ -30,7 +30,7 @@ import time
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from anthropic import Anthropic
 from anthropic.types import TextBlock
@@ -68,7 +68,9 @@ from accessible_surfaceome.tools.evidence_retrieval import evidence_retrieval
 from accessible_surfaceome.tools.gene_literature import gene_literature
 from accessible_surfaceome.tools.gene_lookup import (
     db_panel,
+    looks_like_uniprot_acc,
     resolve,
+    resolve_by_hgnc_id,
     uniprot_summary,
 )
 
@@ -79,6 +81,30 @@ logger = logging.getLogger(__name__)
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 PLAN_PROMPT_PATH = PROMPTS_DIR / "plan_system.md"
 SELECT_PROMPT_PATH = PROMPTS_DIR / "select_system.md"
+
+# Per-agent prompt variants (Phase 1). When ``agent_focus`` is None on the
+# entry point we use today's generic trim_system.md / select_system.md
+# (unified ledger, ``pts_evi_`` prefix). When ``agent_focus="a1"`` we swap
+# to the surface-evidence-focused trim + select prompts and use the
+# ``a1_evi_`` prefix that A1 block-builders downstream expect. The A2 pair
+# will be added in the next slice.
+TRIM_PROMPT_PATH = PROMPTS_DIR / "trim_system.md"
+A1_TRIM_PROMPT_PATH = PROMPTS_DIR / "a1_trim_system.md"
+A1_SELECT_PROMPT_PATH = PROMPTS_DIR / "a1_select_system.md"
+A2_TRIM_PROMPT_PATH = PROMPTS_DIR / "a2_trim_system.md"
+A2_SELECT_PROMPT_PATH = PROMPTS_DIR / "a2_select_system.md"
+
+AgentFocus = Literal["a1", "a2"]
+
+# evidence_id prefix per focus. The default ``pts_evi_`` is used when no
+# focus is set (the single-agent MVP path). Per-agent prefixes restore the
+# discipline that ``SurfaceEvidenceDraft._check_claim_id_prefix`` / the
+# matching A2 validator expect when Phase 2's block builders run.
+_EVIDENCE_ID_PREFIX: dict[str | None, str] = {
+    None: "pts_evi_",
+    "a1": "a1_evi_",
+    "a2": "a2_evi_",
+}
 
 SONNET_MODEL = "claude-sonnet-4-6"
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
@@ -144,6 +170,10 @@ class PlanTrimSelectResult:
     bundle: IdentifierBundle | None
     plan: SearchPlan | None
     selection_response: SelectionResponse | None
+    # ``None`` = unified-ledger MVP path; ``"a1"`` = surface-evidence focus,
+    # ``"a2"`` = biological-context focus. Threaded through so the audit
+    # JSON makes the focus explicit.
+    agent_focus: AgentFocus | None = None
     claims: list[EvidenceClaim] = field(default_factory=list)
     search_log: list[SearchLogEntry] = field(default_factory=list)
     iteration_log: list[IterationLogEntry] = field(default_factory=list)
@@ -207,9 +237,35 @@ class GeneContext:
 def _build_gene_context(
     gene: str, *, http: CachedHTTP, retraction_index: RetractionIndex
 ) -> GeneContext:
-    """Resolve gene + pull UniProt + DB-vote context for the planner."""
+    """Resolve gene + pull UniProt + DB-vote context for the planner.
 
-    bundle = resolve(symbol_or_acc=gene, http=http)
+    Accepts three input shapes (mirrors ``surfaceome_v1.orchestrator``'s
+    canonical dispatch, post-resolver-v3): a UniProt accession routes
+    through ``resolve``; an ``HGNC:N`` ID goes straight to
+    ``resolve_by_hgnc_id``; a bare gene symbol is looked up in D1's
+    ``gene_identifier`` table and then resolved by HGNC ID. The legacy
+    symbol-through-``resolve`` path was removed in resolver v3 because it
+    silently returned wrong-protein context for ~0.2% of human genes
+    (COX1 / WAS class). See CLAUDE.md 'Gene identifier resolution'.
+    """
+
+    raw = gene.strip()
+    if looks_like_uniprot_acc(raw):
+        bundle = resolve(symbol_or_acc=raw, http=http)
+    elif raw.upper().startswith("HGNC:"):
+        bundle = resolve_by_hgnc_id(raw, http=http)
+    else:
+        hgnc_id = _hgnc_id_for_symbol(raw)
+        if hgnc_id is None:
+            raise LookupError(
+                f"unknown gene symbol {raw!r}: not found in D1 "
+                "gene_identifier.hgnc_symbol or cohort_symbol. If this is "
+                "a recently-added gene, rerun "
+                "scripts/build_gene_identifier_table.py to refresh the "
+                "cache; if it's a typo or non-human gene, pass a UniProt "
+                "accession or HGNC ID directly."
+            )
+        bundle = resolve_by_hgnc_id(hgnc_id, http=http)
     if not bundle.uniprot_acc:
         raise LookupError(f"could not resolve {gene} to a UniProt accession")
 
@@ -222,6 +278,38 @@ def _build_gene_context(
         uniprot_summary_json=uniprot.model_dump_json(indent=2),
         db_panel_json=db.model_dump_json(indent=2),
     )
+
+
+def _hgnc_id_for_symbol(symbol: str) -> str | None:
+    """Look up the HGNC ID for a gene symbol from D1 ``gene_identifier``.
+
+    Tries ``hgnc_symbol`` first (HGNC's official symbol) then
+    ``cohort_symbol`` (the symbol the M1 cohort row used). Returns
+    ``None`` for an unknown symbol so the caller can raise a
+    domain-flavored ``LookupError``.
+    """
+
+    # Local import keeps the D1 dependency out of import time for code
+    # paths that never need symbol lookup.
+    from accessible_surfaceome.cloud.d1_client import D1Client, D1Error
+
+    try:
+        d1 = D1Client()
+    except D1Error:
+        raise LookupError(
+            f"cannot resolve symbol {symbol!r} without D1 credentials. "
+            "Either set CLOUDFLARE_ACCOUNT_ID + CLOUDFLARE_API_TOKEN + "
+            "CLOUDFLARE_D1_SURFACEOME_AGENTS_ID, or pass a UniProt "
+            "accession (e.g. Q9UBP8) / HGNC ID (e.g. HGNC:4526) directly."
+        ) from None
+    rows = d1.query(
+        "SELECT hgnc_id FROM gene_identifier "
+        "WHERE hgnc_symbol = ? OR cohort_symbol = ? LIMIT 1;",
+        [symbol, symbol],
+    )
+    if not rows:
+        return None
+    return rows[0]["hgnc_id"]
 
 
 # ---------------------------------------------------------------------------
@@ -505,47 +593,6 @@ def _add_to_pool(
 # ---------------------------------------------------------------------------
 
 
-TRIM_PROMPT = """You are reviewing pre-extracted verbatim clips from a scientific \
-paper to assemble an evidence corpus for a deep-dive surface-accessibility annotation \
-of the protein **{gene}**.
-
-For each clip below, decide whether it is load-bearing for one of these evidence \
-categories:
-
-* Surface expression / localization (cell-surface flow cytometry, surface \
-biotinylation, mass-spec surfaceome, non-permeabilized IF, IHC with membrane staining)
-* Topology (single-pass, multi-pass, 7-TM, GPI-anchored, ECD/ICD)
-* Subcellular localization including ciliary, junctional, basolateral, apical, \
-dual-localization
-* Tissue / cell-type expression for {gene}
-* State-dependent surface presence (internalization, recycling, ligand-driven)
-* Shed / secreted form
-* Epitope masking (glycan, partner protein, conformational)
-* Therapeutic engagement of the ECD (clinical-stage antibodies, ADCs)
-* Genetic / loss-of-function evidence connecting the protein to phenotype
-
-Drop clips that are:
-* Generic background / introduction not specifically about {gene}'s surface
-* Pure intracellular signaling unrelated to surface presentation
-* Acknowledgments, funding, conflicts of interest
-* Pure methods recipes with no result tied to {gene}
-* Figure schematics ("Schematic of...", "Workflow for...") without underlying data
-* Paper-aim statements ("We aimed to...", "Here we report...")
-
-Paper id: {paper_id}
-Clips ({n_clips}):
-
-{numbered_clips}
-
-Respond ONLY with one fenced ```json block matching this TrimResponse schema:
-
-```json
-{schema}
-```
-
-List ONLY the clip_ids to keep. Anything not listed is dropped. Reason ≤140 chars."""
-
-
 def _format_clips_for_trim(clips: list[EvidenceClaimDraft]) -> str:
     lines: list[str] = []
     for c in clips:
@@ -561,17 +608,25 @@ def _run_trim(
     clips_by_source: dict[str, list[EvidenceClaimDraft]],
     gene: str,
     usage_sink: list[UsageRecord],
+    trim_prompt_path: Path = TRIM_PROMPT_PATH,
 ) -> dict[str, TrimResponse]:
-    """One Haiku call per paper. Returns {source_id: TrimResponse}."""
+    """One Haiku call per paper. Returns {source_id: TrimResponse}.
+
+    ``trim_prompt_path`` loads the trim system prompt template (must contain
+    the placeholders ``{gene}`` ``{paper_id}`` ``{n_clips}``
+    ``{numbered_clips}`` ``{schema}``). Defaults to the generic A1+A2
+    template; per-agent paths narrow the trim focus.
+    """
 
     schema_str = json.dumps(TrimResponse.model_json_schema(), indent=2)
+    trim_prompt_template = trim_prompt_path.read_text()
     results: dict[str, TrimResponse] = {}
 
     for source_id, clips in clips_by_source.items():
         if not clips:
             continue
         bounded = sorted(clips, key=lambda c: c.score, reverse=True)[:MAX_CLIPS_PER_TRIM_CALL]
-        prompt = TRIM_PROMPT.format(
+        prompt = trim_prompt_template.format(
             gene=gene,
             paper_id=source_id,
             n_clips=len(bounded),
@@ -726,8 +781,9 @@ def _run_selector(
     iteration: int,
     max_iterations: int,
     usage_sink: list[UsageRecord],
+    select_prompt_path: Path = SELECT_PROMPT_PATH,
 ) -> SelectionResponse | None:
-    system_prompt = SELECT_PROMPT_PATH.read_text()
+    system_prompt = select_prompt_path.read_text()
     schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
     iters_left = max_iterations - iteration - 1
     iteration_banner = (
@@ -787,9 +843,15 @@ def _promote_selections(
     selection_response: SelectionResponse,
     *,
     pool: dict[str, EvidenceClaimDraft],
+    evidence_id_prefix: str = "pts_evi_",
 ) -> tuple[list[EvidenceClaim], list[str]]:
     """Build EvidenceClaim records from selections. Quote auto-filled from
     the pool's verbatim text — agent never typed it. Returns (claims, warnings).
+
+    ``evidence_id_prefix`` stamps the generated ``evidence_id`` values
+    (``{prefix}NN``). The default ``pts_evi_`` preserves the single-agent
+    MVP path; per-agent paths use ``a1_evi_`` / ``a2_evi_`` so downstream
+    block builders' ``_check_claim_id_prefix`` validators pass.
     """
 
     claims: list[EvidenceClaim] = []
@@ -803,7 +865,7 @@ def _promote_selections(
             )
             continue
         claim = EvidenceClaim(
-            evidence_id=f"pts_evi_{seq:02d}",
+            evidence_id=f"{evidence_id_prefix}{seq:02d}",
             claim=sel.claim,
             claim_type=sel.claim_type,
             direction=sel.direction,
@@ -826,14 +888,64 @@ def _promote_selections(
 # ---------------------------------------------------------------------------
 
 
+def _resolve_focus_prompts(
+    agent_focus: AgentFocus | None,
+) -> tuple[Path, Path, str]:
+    """Map agent_focus → (trim_prompt_path, select_prompt_path, evi_prefix).
+
+    Centralized so an unknown / not-yet-wired focus fails fast with a
+    clear error before any model call. A2 raises today because the A2
+    prompt pair lands in the next slice.
+    """
+
+    if agent_focus is None:
+        return TRIM_PROMPT_PATH, SELECT_PROMPT_PATH, _EVIDENCE_ID_PREFIX[None]
+    if agent_focus == "a1":
+        return (
+            A1_TRIM_PROMPT_PATH,
+            A1_SELECT_PROMPT_PATH,
+            _EVIDENCE_ID_PREFIX["a1"],
+        )
+    if agent_focus == "a2":
+        return (
+            A2_TRIM_PROMPT_PATH,
+            A2_SELECT_PROMPT_PATH,
+            _EVIDENCE_ID_PREFIX["a2"],
+        )
+    raise ValueError(
+        f"unknown agent_focus={agent_focus!r}; expected 'a1', 'a2', or None"
+    )
+
+
 def run_plan_trim_select(
     gene: str,
     *,
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
+    agent_focus: AgentFocus | None = None,
 ) -> PlanTrimSelectResult:
-    """Run plan → trim → select for one gene. Returns the full audit result."""
+    """Run plan → trim → select for one gene. Returns the full audit result.
+
+    ``agent_focus`` selects the trim + select prompt pair and the
+    ``evidence_id`` prefix:
+
+    * ``None`` — generic A1+A2 unified ledger (today's MVP behavior,
+      ``pts_evi_`` prefix). Backwards-compatible default.
+    * ``"a1"`` — surface-evidence focus (``a1_trim_system.md`` +
+      ``a1_select_system.md``, ``a1_evi_`` prefix). Selects clips that
+      feed `surface_evidence` block builders downstream.
+    * ``"a2"`` — biological-context focus (``a2_trim_system.md`` +
+      ``a2_select_system.md``, ``a2_evi_`` prefix). Selects clips that
+      feed `biological_context` block builders downstream.
+
+    The planner stage is *not* per-focus — joint planning gives both A1
+    and A2 the same shared clip pool to harvest from. Phase 1's
+    sequential-dual driver (``run_plan_trim_select_dual``) calls this
+    entry point twice (once with ``agent_focus="a1"``, once with
+    ``"a2"``) over the same warmed http cache so the planner + executor
+    cache hit on the second pass and the trim+select diverges per agent.
+    """
 
     t0 = time.time()
     client = client or get_client()
@@ -841,12 +953,22 @@ def run_plan_trim_select(
     http = http or open_default_client()
     retraction = retraction_index or _empty_retraction_index()
 
+    # Resolve the per-focus prompt + prefix triple up front so a typo or
+    # missing-prompt-file failure aborts before any model call.
+    trim_prompt_path, select_prompt_path, evidence_id_prefix = (
+        _resolve_focus_prompts(agent_focus)
+    )
+
     plan_usage: list[UsageRecord] = []
     trim_usage: list[UsageRecord] = []
     select_usage: list[UsageRecord] = []
 
     result = PlanTrimSelectResult(
-        gene=gene, bundle=None, plan=None, selection_response=None
+        gene=gene,
+        bundle=None,
+        plan=None,
+        selection_response=None,
+        agent_focus=agent_focus,
     )
 
     # Cumulative state across plan iterations.
@@ -921,6 +1043,7 @@ def run_plan_trim_select(
                 clips_by_source=dict(clips_by_source),
                 gene=gene,
                 usage_sink=trim_usage,
+                trim_prompt_path=trim_prompt_path,
             )
             n_kept = sum(len(t.kept) for t in trim_results.values())
             logger.info(
@@ -956,6 +1079,7 @@ def run_plan_trim_select(
                 iteration=iteration,
                 max_iterations=MAX_PLAN_ITERATIONS,
                 usage_sink=select_usage,
+                select_prompt_path=select_prompt_path,
             )
             if sel_resp is None:
                 result.warnings.append(
@@ -1016,7 +1140,9 @@ def run_plan_trim_select(
             return result
 
         # Step 5 — promote final selections
-        claims, promote_warnings = _promote_selections(sel_resp, pool=pool)
+        claims, promote_warnings = _promote_selections(
+            sel_resp, pool=pool, evidence_id_prefix=evidence_id_prefix
+        )
         result.claims = claims
         result.warnings.extend(promote_warnings)
         result.n_claims = len(claims)
@@ -1039,6 +1165,115 @@ def run_plan_trim_select(
             http.close()
 
     return result
+
+
+@dataclass
+class DualPlanTrimSelectResult:
+    """Output of one sequential dual run: A1 first, then A2 over the same
+    warmed HTTP cache.
+
+    The two sub-results carry their own claim ledgers and audit logs (the
+    A1 ledger keys ``a1_evi_NN``, the A2 ledger keys ``a2_evi_NN``); this
+    wrapper just stitches them together with shared identity + combined
+    spend so a single record can be rendered side-by-side for QC.
+
+    A2 sees every paper A1 fetched (via the cache + the joint planner
+    re-running cheaply on cache-hit). This is the "shared document
+    repository" the Phase 1 design calls for: one execution surface, two
+    per-agent trim+select passes over the resulting pool.
+    """
+
+    gene: str
+    bundle: IdentifierBundle | None
+    a1: PlanTrimSelectResult
+    a2: PlanTrimSelectResult
+    elapsed_s: float = 0.0
+
+    @property
+    def total_cost_usd(self) -> float:
+        return self.a1.total_cost_usd + self.a2.total_cost_usd
+
+    @property
+    def total_claims(self) -> int:
+        return self.a1.n_claims + self.a2.n_claims
+
+    @property
+    def total_anchored(self) -> int:
+        return self.a1.n_anchored + self.a2.n_anchored
+
+    @property
+    def pct_anchored(self) -> float | None:
+        if not self.total_claims:
+            return None
+        return 100.0 * self.total_anchored / self.total_claims
+
+
+def run_plan_trim_select_dual(
+    gene: str,
+    *,
+    client: Anthropic | None = None,
+    http: CachedHTTP | None = None,
+    retraction_index: RetractionIndex | None = None,
+) -> DualPlanTrimSelectResult:
+    """Phase 1's sequential-dual driver: A1 then A2, shared HTTP cache.
+
+    Runs ``agent_focus="a1"`` to completion, then ``"a2"`` over the same
+    ``CachedHTTP`` instance. The second pass re-runs the planner +
+    executor, but every HTTP call hits the disk cache, so the marginal
+    cost is the A2-specialized trim + select (Sonnet selector dominates).
+
+    Sequential rather than interleaved or parallel: A2 sees every paper
+    A1 pulled, which matters for biological-context recall in papers A1
+    fetched for surface methodology. Cost ceiling for the dual is the
+    sum of two single-focus runs — no double execution of the search
+    layer.
+    """
+
+    t0 = time.time()
+    client = client or get_client()
+    own_http = http is None
+    http = http or open_default_client()
+    retraction = retraction_index or _empty_retraction_index()
+
+    try:
+        logger.info("=== dual run %s: starting A1 ===", gene)
+        a1 = run_plan_trim_select(
+            gene,
+            client=client,
+            http=http,
+            retraction_index=retraction,
+            agent_focus="a1",
+        )
+        logger.info(
+            "=== dual run %s: A1 done (%d claims, %s anchored) — starting A2 ===",
+            gene,
+            a1.n_claims,
+            f"{a1.pct_anchored:.1f}%" if a1.pct_anchored is not None else "n/a",
+        )
+        a2 = run_plan_trim_select(
+            gene,
+            client=client,
+            http=http,
+            retraction_index=retraction,
+            agent_focus="a2",
+        )
+        logger.info(
+            "=== dual run %s: A2 done (%d claims, %s anchored) ===",
+            gene,
+            a2.n_claims,
+            f"{a2.pct_anchored:.1f}%" if a2.pct_anchored is not None else "n/a",
+        )
+    finally:
+        if own_http:
+            http.close()
+
+    return DualPlanTrimSelectResult(
+        gene=gene,
+        bundle=a1.bundle,  # same gene, same bundle either side
+        a1=a1,
+        a2=a2,
+        elapsed_s=round(time.time() - t0, 1),
+    )
 
 
 def _is_anchored(claim: EvidenceClaim, pool: dict[str, EvidenceClaimDraft]) -> bool:

@@ -1,0 +1,2980 @@
+{
+  "schema_version": "1.0.0",
+  "gene": {
+    "hgnc_symbol": "GPR75",
+    "hgnc_id": "HGNC:4526",
+    "uniprot_acc": "O95800",
+    "ncbi_gene_id": 10936,
+    "ensembl_gene": "ENSG00000119737"
+  },
+  "triage_signal": "unknown",
+  "executive_summary": {
+    "one_paragraph": "GPR75 is a canonical class A GPCR with 7TM topology predicted to reside at the plasma membrane, primary cilium, and vesicles (HPA/UniProt). Expression is high in CNS neurons and moderate in pancreatic islets; peripheral tissues are low/absent. No validated direct surface-accessibility assay exists: all anti-GPR75 antibodies fail KO-specificity testing, and cryo-EM reveals a collapsed ECD eliminating the classical orthosteric pocket. Surface accessibility is biologically plausible but evidentiary support is weak-grade, driven by computational topology, database annotations, and functional CCL5/beta-cell assays rather than direct surface proteomics or live-cell flow cytometry.",
+    "surface_accessibility": "moderate",
+    "evidence_grade_summary": "weak",
+    "confidence": "low",
+    "state_dependence": "moderate",
+    "subcategory": "GPCR",
+    "headline_risks": [
+      "antibody_validation_weak",
+      "restricted_subdomain",
+      "ecd_too_small"
+    ],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_03",
+      "a1_evi_04",
+      "a1_evi_05",
+      "a1_evi_11",
+      "a1_evi_12",
+      "a2_evi_01",
+      "a2_evi_06",
+      "a2_evi_07",
+      "a2_evi_19"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "moderate",
+    "confidence": "low",
+    "subcategory": "GPCR",
+    "evidence_grade": "weak",
+    "ecd_accessibility_class": "minimal",
+    "evidence_density": "high",
+    "expression_level": "moderate",
+    "expression_breadth": "restricted",
+    "surface_specificity": "mixed",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": true,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false
+  },
+  "surface_evidence": {
+    "evidence_grade": "weak",
+    "grade_rationale": "No direct surface-accessibility assays (live-cell flow cytometry, non-permeabilized IF, surface biotinylation, or membranous IHC with explicit non-permeabilization) are present in the ledger. Surface support rests entirely on: (1) computational 7TM topology predictions, (2) database annotations (HPA, SURFY, UniProt), (3) review assertions and drug-program mentions, and (4) N-glycosylation inference. A critical caveat further undermines any antibody-based surface claim: all commercial and custom anti-GPR75 antibodies show non-specific staining in global Gpr75-null mice (a1_evi_11), rendering IHC/IF-based surface localization unreliable. Additionally, cryo-EM reveals a collapsed extracellular domain (a1_evi_03), adding ambiguity about ECD accessibility. RNA and bulk-protein expression data qualify tissue/cell presence only. Overall, evidence is confined to db_annotations, review_assertions, and computational predictions with no validated direct surface assay.",
+    "methods": [
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-GPR75 antibody (western blot)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "Human pancreatic islets — GPR75 detected by western blotting",
+            "sample_type": "primary_human_tissue",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_06"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_06"
+        ]
+      },
+      {
+        "method_family": "immunohistochemistry",
+        "method_subclass": "IHC_membranous",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-GPR75 antibody (IHC)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "Human pancreatic islets — GPR75 detected by immunohistochemistry",
+            "sample_type": "primary_human_tissue",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_06"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_06"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "commercial and custom anti-GPR75 antibodies (multiple)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "genetic_KO",
+            "validation_strength": "strong",
+            "cross_reactivity_notes": "All commercial and custom GPR75 antibodies showed non-specific staining in global Gpr75 null mice; none are considered specific. KO validation revealed complete lack of specificity across all tested reagents."
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "Multiple tissues from global Gpr75 null mice used as negative controls — all anti-GPR75 antibodies produced non-specific staining, indicating no reliable antibody-based detection is possible",
+            "sample_type": "unknown",
+            "level": "absent",
+            "cited_evidence_ids": [
+              "a1_evi_11"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_11",
+          "a1_evi_12"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "HPA database annotation: GPR75 subcellular locations include plasma membrane, primary cilium, and vesicles in human samples",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_04",
+              "a1_evi_05"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_04",
+          "a1_evi_05"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Review assertion: AstraZeneca and other companies developing GPR75 antagonists for obesity indications, implying surface accessibility of extracellular domains",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_15"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_15"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Review assertion: ongoing drug development targeting GPR75 with small-molecule inhibitors, antibodies, and gene-silencing techniques presupposes surface accessibility",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_16"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_16"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "Human pancreatic islets — GPR75 protein detected by western blot and IHC; mRNA by RT-PCR",
+        "sample_type": "primary_human_tissue",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_06"
+        ]
+      },
+      {
+        "context": "Human retinal pigment epithelium and perivascular cells surrounding retinal arterioles — GPR75 mRNA by in situ hybridization and Northern blot",
+        "sample_type": "primary_human_tissue",
+        "measurement_type": "single_cell_RNA",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_07"
+        ]
+      },
+      {
+        "context": "Human brain — GPR75 mRNA (7 kb transcript) by Northern blot",
+        "sample_type": "primary_human_tissue",
+        "measurement_type": "RNA",
+        "level": "high",
+        "cited_evidence_ids": [
+          "a1_evi_08"
+        ]
+      },
+      {
+        "context": "Mouse CNS neurons — Gpr75 mRNA by RNAscope fluorescent in situ hybridization combined with IHC for cell-type identification",
+        "sample_type": "unknown",
+        "measurement_type": "single_cell_RNA",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_09"
+        ]
+      },
+      {
+        "context": "Mouse adipocytes — Gpr75 mRNA by RT-PCR and RNAscope (no reliable anti-mouse GPR75 antibodies available)",
+        "sample_type": "unknown",
+        "measurement_type": "RNA",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_10",
+          "a1_evi_12"
+        ]
+      }
+    ],
+    "therapeutic_engagement": {
+      "highest_stage": "unknown",
+      "description": "AstraZeneca and other companies have initiated development of GPR75 antagonists for obesity-related indications (a1_evi_15). Ongoing programs also explore small-molecule inhibitors, antibodies, and gene-silencing approaches targeting GPR75 (a1_evi_16). No clinical trial registration or preclinical in vivo efficacy data are documented in this ledger; stage is therefore unknown rather than confirmed preclinical_in_vivo.",
+      "surface_form_rationale": "GPR75 is a canonical class A GPCR with seven transmembrane domains anchored at the plasma membrane; only the membrane-embedded/surface form is known. No secreted or shed isoform is documented in this ledger. Antagonists and antibodies in development engage the extracellular face (N-terminus, extracellular loops) of this surface-resident receptor, noting that cryo-EM data reveal a collapsed orthosteric pocket that may alter small-molecule binding mode (a1_evi_03).",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a1_evi_02",
+        "a1_evi_03",
+        "a1_evi_04",
+        "a1_evi_05",
+        "a1_evi_15",
+        "a1_evi_16"
+      ]
+    },
+    "contradicting_evidence": [
+      {
+        "claim": "All commercial and custom anti-GPR75 antibodies tested in global Gpr75 null mice exhibited non-specific staining, making any antibody-based surface-localization claims (IHC, IF, flow cytometry) for GPR75 unreliable. No validated antibody reagents exist for mouse GPR75, forcing confirmation of expression to transcript- or genomic-level methods only. This fundamentally undermines the evidentiary basis for direct surface-accessibility measurements derived from antibody-based assays.",
+        "contradiction_type": "antibody_conflict",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "GPR75 is a poorly characterized GPCR with low expression levels; cross-reactivity of antibodies with structurally related GPCRs or other proteins is a common problem in this family. The absence of validated antibodies does not disprove surface localization but means that positive antibody-based staining results cannot be trusted without orthogonal validation (e.g., epitope-tagged constructs, mass spectrometry-based surface proteomics).",
+        "cited_evidence_ids": [
+          "a1_evi_11",
+          "a1_evi_12"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [
+      {
+        "tissue": "brain",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "GABAergic neurons",
+          "glutamatergic neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_06",
+          "a2_evi_07",
+          "a2_evi_10",
+          "a2_evi_13"
+        ]
+      },
+      {
+        "tissue": "retina",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "retinal pigment epithelium",
+          "perivascular cells surrounding retinal arterioles"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "retina (mouse)",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [
+          "photoreceptor inner segment cells",
+          "outer plexiform layer neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "tissue": "central nervous system",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_06",
+          "a2_evi_07",
+          "a2_evi_08"
+        ]
+      },
+      {
+        "tissue": "spinal cord",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_08"
+        ]
+      },
+      {
+        "tissue": "hippocampus",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      },
+      {
+        "tissue": "cerebellum",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "GABAergic neurons",
+          "glutamatergic neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_12",
+          "a2_evi_14"
+        ]
+      },
+      {
+        "tissue": "substantia nigra",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "dopaminergic neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "tissue": "ventral tegmental area",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "dopaminergic neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "tissue": "locus coeruleus",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "noradrenergic neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "tissue": "raphe nucleus",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [
+          "serotonergic neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "tissue": "hypothalamus",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_14",
+          "a2_evi_21"
+        ]
+      },
+      {
+        "tissue": "hypothalamus",
+        "present": "high",
+        "disease_context": "other_disease",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_22",
+          "a2_evi_23"
+        ]
+      },
+      {
+        "tissue": "brain stem",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_14"
+        ]
+      },
+      {
+        "tissue": "cerebrum",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_14"
+        ]
+      },
+      {
+        "tissue": "pituitary",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_14"
+        ]
+      },
+      {
+        "tissue": "pancreatic islet",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [
+          "islet cells",
+          "beta cells"
+        ],
+        "cell_states": [
+          "resting",
+          "CCL5-stimulated"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_17",
+          "a2_evi_18",
+          "a2_evi_19"
+        ]
+      },
+      {
+        "tissue": "pancreatic islet",
+        "present": "moderate",
+        "disease_context": "other_disease",
+        "cell_types": [
+          "islet cells",
+          "beta cells"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_20"
+        ]
+      },
+      {
+        "tissue": "muscle",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "heart",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "lung",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "stomach",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "spleen",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "kidney",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "small intestine",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "colon",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_15"
+        ]
+      },
+      {
+        "tissue": "testis",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_16"
+        ]
+      },
+      {
+        "tissue": "ovary",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_16"
+        ]
+      },
+      {
+        "tissue": "uterus",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_16"
+        ]
+      }
+    ],
+    "cell_types": [
+      {
+        "cell_type": "retinal pigment epithelium (RPE) cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "retina"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "cell_type": "perivascular cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "retina"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "cell_type": "photoreceptors (inner segment neurons)",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "retina"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "cell_type": "outer plexiform layer neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "retina"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "cell_type": "hippocampal neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "hippocampus"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      },
+      {
+        "cell_type": "GABAergic neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain",
+          "cerebellum"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_10",
+          "a2_evi_12"
+        ]
+      },
+      {
+        "cell_type": "glutamatergic neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain",
+          "cerebellum"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_10",
+          "a2_evi_12"
+        ]
+      },
+      {
+        "cell_type": "dopaminergic neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "substantia nigra",
+          "ventral tegmental area"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "cell_type": "noradrenergic neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "locus coeruleus"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "cell_type": "serotonergic neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "raphe nucleus"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "cell_type": "pancreatic islet cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "pancreatic islet"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_17",
+          "a2_evi_18",
+          "a2_evi_20"
+        ]
+      },
+      {
+        "cell_type": "pancreatic beta cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "pancreatic islet"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_19"
+        ]
+      }
+    ],
+    "cell_states": [],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "dual_localization": [
+        {
+          "compartment": "vesicles",
+          "fraction_estimate": null,
+          "condition": null,
+          "cited_evidence_ids": [
+            "a2_evi_01"
+          ]
+        }
+      ],
+      "membrane_subdomains": [
+        {
+          "subdomain": "primary cilium",
+          "cited_evidence_ids": [
+            "a2_evi_01"
+          ]
+        }
+      ]
+    },
+    "anatomical_accessibility": [
+      {
+        "context": "primary cilium (HPA annotation)",
+        "orientation": "ciliary",
+        "accessibility_implication": "restricted",
+        "rationale": "GPR75 localizes to the primary cilium per HPA. The ciliary membrane is separated from the general plasma membrane by the transition zone, limiting access for systemically delivered binders even when the cell surface is otherwise reachable.",
+        "cited_evidence_ids": [
+          "a2_evi_01"
+        ]
+      },
+      {
+        "context": "CNS neurons (brain-predominant expression behind blood-brain barrier)",
+        "orientation": "unknown",
+        "accessibility_implication": "restricted",
+        "rationale": "GPR75 is predominantly expressed in CNS neurons (hippocampus, hypothalamus, cerebellum, monoaminergic nuclei). The blood-brain barrier severely restricts systemic access of large-molecule binders to neuronal surface receptors.",
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_06",
+          "a2_evi_07",
+          "a2_evi_08",
+          "a2_evi_09",
+          "a2_evi_10",
+          "a2_evi_11",
+          "a2_evi_12",
+          "a2_evi_13",
+          "a2_evi_14"
+        ]
+      },
+      {
+        "context": "pancreatic islet beta cells",
+        "orientation": "blood_interstitial_facing",
+        "accessibility_implication": "favorable",
+        "rationale": "Pancreatic islets are highly vascularized without a tight epithelial barrier. GPR75 on beta cell plasma membranes is confirmed by IHC and functional calcium assays, making it accessible to systemically circulating binders.",
+        "cited_evidence_ids": [
+          "a2_evi_17",
+          "a2_evi_18",
+          "a2_evi_19",
+          "a2_evi_20"
+        ]
+      }
+    ],
+    "accessibility_modulation": [
+      {
+        "category": "tissue_restricted_surface",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": "neural",
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "peripheral tissues (muscle, heart, lung, spleen, kidney, gut) in rat/mouse",
+        "modulating_state": "CNS neurons (hippocampus, cerebellum, hypothalamus, monoaminergic nuclei) in mouse/rat/human",
+        "change": "GPR75 mRNA and protein are highly expressed across CNS neurons (GABAergic, glutamatergic, monoaminergic) but are very low or absent in peripheral tissues including muscle, heart, lung, stomach, spleen, kidney, and intestine.",
+        "accessibility_implication": "Surface-accessible GPR75 is effectively restricted to neural/CNS contexts; binders targeting GPR75 on the cell surface will primarily access it in neuronal populations rather than peripheral organ targets.",
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_06",
+          "a2_evi_07",
+          "a2_evi_08",
+          "a2_evi_09",
+          "a2_evi_10",
+          "a2_evi_11",
+          "a2_evi_12",
+          "a2_evi_13",
+          "a2_evi_14",
+          "a2_evi_15",
+          "a2_evi_16"
+        ]
+      },
+      {
+        "category": "dual_localization",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": "secretory_vesicle",
+        "baseline_context": "human cells under basal conditions (HPA database annotation)",
+        "modulating_state": "same cells; protein distributed across plasma membrane, primary cilium, and vesicular compartment",
+        "change": "GPR75 protein splits between the plasma membrane/primary cilium (surface-accessible) and an intracellular vesicular pool, indicating not all receptor molecules reside at the cell surface.",
+        "accessibility_implication": "The vesicular pool is inaccessible to extracellular binders; only the plasma membrane and ciliary fractions are targetable. Effective surface density may be lower than total cellular expression suggests.",
+        "cited_evidence_ids": [
+          "a2_evi_01"
+        ]
+      },
+      {
+        "category": "activation_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "cytokine_stimulation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "resting pancreatic beta cells (mouse/human islets, no exogenous CCL5)",
+        "modulating_state": "CCL5-stimulated pancreatic beta cells",
+        "change": "Exogenous CCL5 engages surface GPR75 on beta cells, triggering reversible intracellular calcium elevation via phospholipase C and calcium influx, demonstrating active receptor engagement at the cell surface upon ligand stimulation.",
+        "accessibility_implication": "GPR75 is functionally accessible on the beta cell surface under CCL5 stimulation; binders that mimic or block CCL5 engagement can access the receptor in this activation context.",
+        "cited_evidence_ids": [
+          "a2_evi_17",
+          "a2_evi_18",
+          "a2_evi_19"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "nutrient_deprivation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "lean normoglycemic mouse/rat islets and hypothalamus under normal chow",
+        "modulating_state": "ob/ob hyperglycemic/insulin-resistant mice or high-fat diet-fed rats",
+        "change": "GPR75-mediated CCL5 signalling promotes hyperphagia and metabolic dysregulation in obese/hyperglycemic animals; GPR75 KO protects against HFD-induced obesity, hyperglycemia, and hyperphagia, implicating altered GPR75 activity in the disease state.",
+        "accessibility_implication": "In the obese/hyperglycemic disease context, GPR75 on hypothalamic neurons and islet beta cells may be more relevant as a surface target; therapeutics engaging surface GPR75 could modulate feeding and glycemic control specifically in this metabolic disease state.",
+        "cited_evidence_ids": [
+          "a2_evi_20",
+          "a2_evi_21",
+          "a2_evi_22",
+          "a2_evi_23"
+        ]
+      }
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "O95800-1",
+      "uniprot_acc": "O95800",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 0,
+      "icd_length_residues": 0,
+      "per_residue_topology": "",
+      "tool_version": "stub-no-fetchers-v1.0.0",
+      "retrieved_at": "2026-05-16T19:45:50.549553Z"
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [],
+      "rat": [],
+      "cynomolgus": []
+    },
+    "paralogs": [],
+    "structure": {
+      "afdb_id": "AF-O95800-F1-model_v4",
+      "afdb_version": "v4",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (STUB — fetchers not yet built)",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "unknown",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "No trafficking or co-immunoprecipitation data in the ledger address whether a partner protein is required for GPR75 surface delivery. The receptor is a canonical single-subunit class A GPCR; no obligate chaperone or co-receptor for plasma-membrane trafficking has been documented for this target.",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a1_evi_02"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": true,
+      "domain": "ciliary",
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "rationale": "HPA annotates GPR75 to the primary cilium in addition to the general plasma membrane. The ciliary membrane is separated from the bulk plasma membrane by the transition zone, restricting access for systemically delivered large-molecule binders in ciliated cell types such as neurons and RPE cells.",
+      "cited_evidence_ids": [
+        "a1_evi_04",
+        "a2_evi_01"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "minimal",
+      "rationale": "GPR75 is a 7TM GPCR with an N-terminus of ~46 residues and three short extracellular loops. Cryo-EM reveals a completely collapsed extracellular domain eliminating the classical orthosteric pocket, making the accessible extracellular surface unusually restricted for antibody or large-molecule engagement.",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a1_evi_02",
+        "a1_evi_03"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "glycan",
+        "conformational"
+      ],
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "rationale": "N-glycosylation is predicted at N2, N12, and N25 in the short extracellular N-terminus, which may occlude antibody epitopes. The cryo-EM collapsed ECD conformation further limits accessible epitope surface. Combined, glycan shielding and the collapsed pocket pose a moderate epitope-masking risk for therapeutic binders.",
+      "cited_evidence_ids": [
+        "a1_evi_02",
+        "a1_evi_03"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "Computational sequence analysis of GPR75 predicts seven transmembrane domains, classifying it as a canonical class A GPCR with 7TM topology. This anchors the extracellular N-terminus (residues 1–46 per UniProt) as the accessible ECD face, with three extracellular loops and a cytoplasmic C-terminus (residues 372–540).",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "computational_prediction",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:10381362",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10381362/",
+            "title": "PMID:10381362",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "8e17f55115c7a75693453cd917b750616c9e5f9badc6d32f90a18f9f124e4abf",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Protein sequence analysis predicts the presence of seven transmembrane domains, a characteristic feature of GPRs.",
+          "quote_sha256": "44114f253ac6022df3936ee0b8116034f8a0661ead41c9c59b6220b0d678b8d1",
+          "char_offset": 0,
+          "normalized_source_sha256": "2228358faa14c66b5fa4088204f7a66f8d293587b160f8854aac9ea9117af95c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "GPR75 contains characteristic seven transmembrane spanning domains with N-glycosylation sites in the N-terminus and serine/threonine phosphorylation sites in the C-terminus. The N-terminal glycosylation (at N2, N12, N25 per UniProt) is consistent with extracellular exposure of the N-terminus and supports accessibility of the ECD to extracellular ligands and antibodies.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "GPR75 contains the characteristic seven transmembrane spanning domains, N‐glycosylation sites in the N‐terminus and several serine and threonine phosphorylation sites in the C‐terminus (Tarttelin et al. 1999 ).",
+          "quote_sha256": "15aa9641031b3b069b947308b62b2c37ec2029f9ae1067daab0f108b6833bc99",
+          "char_offset": 0,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "Cryo-EM structural data of GPR75 reveal a unique architectural feature: the extracellular domain is completely collapsed, eliminating the traditional orthosteric binding pocket seen in most class A GPCRs. This raises critical questions about previously reported small-molecule ligands and has direct implications for ECD accessibility and therapeutic antibody epitope targeting.",
+      "claim_type": "topology",
+      "direction": "ambiguous",
+      "evidence_type": "cryo_em",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41545757",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41545757/",
+            "title": "PMID:41545757",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "a627f9b3c8d8aa88b4de7b59598c845aa820e2eb09b22c31622604926928d5fc",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Our structures reveal unique architectural features: a completely collapsed extracellular domain eliminates the traditional orthosteric binding pocket, raising critical questions about previously reported small molecule ligands.",
+          "quote_sha256": "a627f9b3c8d8aa88b4de7b59598c845aa820e2eb09b22c31622604926928d5fc",
+          "char_offset": 0,
+          "normalized_source_sha256": "d16d95b8f2ef295c58ee92c3d61c4b583eab60cf229a7a2a9e773585cbb1ba95"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "HPA database annotation places GPR75 at the plasma membrane, primary cilium, and vesicles as subcellular locations. The plasma membrane annotation supports surface accessibility; the primary cilium location indicates a specialized membrane compartment that may restrict antibody access depending on cell type.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa",
+            "source_id": "HPA:GPR75",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/GPR75",
+            "title": "HPA:GPR75",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "5f132e4bd008a58f70819d303a335b171ed00dc53f07cce3d408106176fd7e3d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA subcellular locations: Plasma membrane;Primary cilium;Vesicles.",
+          "quote_sha256": "6b93aabaccaf6bf2765b893fac860dfd0e50422c5ac374cbf639d7432c90b3b5",
+          "char_offset": 0,
+          "normalized_source_sha256": "34278db492eca654733f6a935ec568467ddbc528e957752c698c7a919c4c5daa"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "HPA flags GPR75 as plasma-membrane accessible based on its internal annotation pipeline, providing a database-level surface-accessibility vote consistent with SURFY and UniProt annotations.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa",
+            "source_id": "HPA:GPR75",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/GPR75",
+            "title": "HPA:GPR75",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "5f132e4bd008a58f70819d303a335b171ed00dc53f07cce3d408106176fd7e3d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA flags this gene as plasma-membrane accessible.",
+          "quote_sha256": "8b3d7ff365c13f2fab52bb34cd5901ce0b35f9fa7873f1c45da313e7730c93b8",
+          "char_offset": 68,
+          "normalized_source_sha256": "34278db492eca654733f6a935ec568467ddbc528e957752c698c7a919c4c5daa"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "GPR75 protein expression in pancreatic islets was assessed by western blotting and immunohistochemistry (IHC), without explicit membrane fractionation or surface-specific assay. These are whole-cell/tissue protein detection methods providing evidence of GPR75 protein presence in islets but not definitive surface localization. mRNA expression was also quantified by quantitative RT-PCR. Together these constitute non-surface-method expression evidence qualifying the surface claim in islet tissue.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "pancreatic islets",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "pancreatic islet cells / beta cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "pancreatic islet",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:23979485",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/23979485/",
+            "title": "PMID:23979485",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "7c2c97b77a381695e71264685891701c288aa65db58413ef7f6d7535d27e647b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "GPR75 is coupled to Gq to elevate intracellular calcium, so we investigated whether islets express this receptor and whether its activation by CCL5 increases beta cell calcium levels and insulin secretion.<h4>Methods</h4>Islet CCL5 receptor mRNA expression was measured by quantitative RT-PCR and GPR75 was detected in islets by western blotting and immunohistochemistry.",
+          "quote_sha256": "57e7b64fadfb2566221d034887a468a16fe837f402fe472a5ff65fbc500058ba",
+          "char_offset": 0,
+          "normalized_source_sha256": "c79c084d4c67a77972c2093e0672bad1c90b6fa071fa1d6180fa277dfb91e657"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "GPR75 mRNA expression was assessed by in situ hybridization in human retina and Northern blot analysis of human RPE, localizing transcripts to the RPE and perivascular cells surrounding retinal arterioles. These are RNA-level methods with no surface protein validation; they qualify the surface claim as RNA-high in retina without demonstrating surface accessibility.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "retinal pigment epithelium; perivascular cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "retina / retinal pigment epithelium",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:10381362",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10381362/",
+            "title": "PMID:10381362",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "8e17f55115c7a75693453cd917b750616c9e5f9badc6d32f90a18f9f124e4abf",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In situ hybridisation to human retina and Northern blot analysis of human retinal pigment epithelium (RPE) showed localisation of this transcript to the RPE and cells surrounding retinal arterioles.",
+          "quote_sha256": "8863d84da6a298e9b0dbcb233f9029097ca6990cfa6449b2377c0b66e2385f29",
+          "char_offset": 114,
+          "normalized_source_sha256": "2228358faa14c66b5fa4088204f7a66f8d293587b160f8854aac9ea9117af95c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_08",
+      "claim": "Northern blot analysis of human tissues demonstrated a 7 kb GPR75 transcript highly expressed in the brain. This is an RNA-level observation with no surface protein validation; it establishes high brain mRNA abundance without demonstrating surface accessibility of the receptor protein.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "northern_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:10381362",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10381362/",
+            "title": "PMID:10381362",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "8e17f55115c7a75693453cd917b750616c9e5f9badc6d32f90a18f9f124e4abf",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Northern blot analysis demonstrated a 7 kb transcript highly expressed in the brain.",
+          "quote_sha256": "d56ccdc48a1cb5cbf3dadd38a1fb1a9b395c5e5454c7001e69e8d53fef6d103d",
+          "char_offset": 313,
+          "normalized_source_sha256": "2228358faa14c66b5fa4088204f7a66f8d293587b160f8854aac9ea9117af95c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_09",
+      "claim": "GPR75 mRNA expression in mouse CNS was quantified using RNAscope fluorescent in situ hybridization (FISH), combined with immunohistochemistry (IHC) to detect GPR75 transcripts in specific neuronal cell types. This is an RNA/transcript-detection approach (non-surface-method); IHC here is used for cell-type identification rather than surface protein localization. Feeds non_surface_expression list for CNS neurons.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "CNS neurons",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "central nervous system",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In this study, we quantified GPR75 mRNA expression in the mouse CNS using RNAscope fluorescent in situ hybridization (FISH) technology, combined with immunohistochemistry (IHC) to detect GPR75 transcripts in specific neuronal cell types.",
+          "quote_sha256": "b8588614a5a24651c92bd69dd8055c490c64ed043e0b123a5bbcb85f66227e70",
+          "char_offset": 211,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_10",
+      "claim": "Gpr75 mRNA expression in mouse adipocytes was assessed by RT-PCR and RNAscope (in situ hybridization), employed as surrogate validation tools because no reliable anti-mouse GPR75 antibodies exist. These are RNA-level methods; no surface protein localization was demonstrated. Feeds non_surface_expression list for adipocytes.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "adipocytes",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "adipocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12916076",
+            "pmc_id": "PMC12916076",
+            "url": "https://europepmc.org/article/PMC/PMC12916076",
+            "title": "PMC:PMC12916076",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "1c6336175a66fb864d5534a6bbb0c3234d06af6b5554ff7f1c351400849f915e",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "We employed the use of RT‐PCR and RNAscope to evaluate its gene expression level.",
+          "quote_sha256": "a04d78ec529d2de6357b9b7c80d58fe6eea324eb03ffce5626a7dec38622f03d",
+          "char_offset": 0,
+          "normalized_source_sha256": "9468631ef92e29719b6050400f45cfba19c338354d554088d06c054de6b04391"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_11",
+      "claim": "Critical antibody-specificity finding: all commercial and custom anti-GPR75 antibodies tested in global Gpr75 null mice exhibited non-specific staining, making protein-level surface localization by IHC or IF unreliable. Authors confirmed tissue-specific disruption only at transcript or genomic level. This is a major methodological caveat affecting the validity of any antibody-based surface-localization claims for GPR75.",
+      "claim_type": "contradictory",
+      "direction": "refutes",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "global knockout mouse tissue",
+          "cell_type": "multiple tissues from Gpr75 null mice",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12916076",
+            "pmc_id": "PMC12916076",
+            "url": "https://europepmc.org/article/PMC/PMC12916076",
+            "title": "PMC:PMC12916076",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "1c6336175a66fb864d5534a6bbb0c3234d06af6b5554ff7f1c351400849f915e",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "While the entire GPR75 coding sequence is excised in our global Gpr75 null mice, all commercial and custom GPR75 antibodies have non‐specific staining; therefore, confirmation of tissue‐specific disruption must be done either at the transcript or genomic level.",
+          "quote_sha256": "b689ad2f1135edf9f9a34a9e97344b4fb109405c7985145fda2dd91aafcc66ff",
+          "char_offset": 82,
+          "normalized_source_sha256": "9468631ef92e29719b6050400f45cfba19c338354d554088d06c054de6b04391"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_12",
+      "claim": "No reliable antibodies against mouse GPR75 exist; validation of adipocyte-specific Gpr75 targeting was performed by RT-PCR and RNAscope instead of antibody-based methods. This methodological note underscores that antibody-based surface-localization assays for GPR75 in mouse models lack validated reagents, limiting the evidence base for direct surface-accessibility measurements.",
+      "claim_type": "methodological",
+      "direction": "refutes",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "adipocytes",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "adipocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12916076",
+            "pmc_id": "PMC12916076",
+            "url": "https://europepmc.org/article/PMC/PMC12916076",
+            "title": "PMC:PMC12916076",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "1c6336175a66fb864d5534a6bbb0c3234d06af6b5554ff7f1c351400849f915e",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "Since there are no reliable antibodies against the mouse GPR75, validation of adipocyte targeting was done by RT‐PCR and RNAscope.",
+          "quote_sha256": "7a4b522a9f7582728a05140e95f981fafba7daed832734f99238fbba2f9d1211",
+          "char_offset": 344,
+          "normalized_source_sha256": "9468631ef92e29719b6050400f45cfba19c338354d554088d06c054de6b04391"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_13",
+      "claim": "GPR75 knockout (KO) mice were used as negative controls to validate specificity of the RNAscope hybridization assay for Gpr75 mRNA detection. This KO-validation approach is the methodological standard substitute for antibody KO-validation, confirming assay specificity at the transcript level in the absence of validated anti-GPR75 antibodies.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "GPR75 knockout mouse tissue",
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "CNS",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "GPR75 knockout (KO) mice were used as controls and specificity of hybridization.",
+          "quote_sha256": "0ae8d3b784531a2bb5e8047e9fed2e02cc0a47f973e8ddfc0d8b7f050ab9fd69",
+          "char_offset": 449,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_14",
+      "claim": "PCR genotyping confirmed GPR75 KO mouse line: expected 234-bp amplicon detected in WT tissue, no band in GPR75 KO samples. This validates the knockout allele and the KO mouse as a negative control for GPR75 assays, anchoring the specificity validation strategy used in place of antibody KO-controls.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "GPR75 knockout mouse tissue",
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "We observed the expected 234‐bp size of the GPR75 amplicon in WT tissue samples, and no band was detected in the GPR75 KO sample (Figure 1A ).",
+          "quote_sha256": "1b62177f9ba4bfc523c24b729adf1c32f8126bb6e1c1c0c80b6b25d39b45b10b",
+          "char_offset": 530,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_15",
+      "claim": "AstraZeneca and other companies have initiated development of GPR75 antagonists as novel therapeutic agents, targeting this receptor for obesity-related indications. This represents an active preclinical/early-stage drug program engaging the extracellular face of GPR75 at the cell surface, consistent with antagonist engagement of a 7TM GPCR.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12462478",
+            "pmc_id": "PMC12462478",
+            "url": "https://europepmc.org/article/PMC/PMC12462478",
+            "title": "PMC:PMC12462478",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "8892ff5fb2a91e916fe9b57e302509f2c1770ded905d0f4f14334e243cb7c41e",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "Notably, AstraZeneca and other companies have initiated the development of GPR75 antagonists as novel therapeutic agents 16 .",
+          "quote_sha256": "8892ff5fb2a91e916fe9b57e302509f2c1770ded905d0f4f14334e243cb7c41e",
+          "char_offset": 0,
+          "normalized_source_sha256": "204974945980a1463ed1c9ea421422d11a16adba50dfae6b76c45ca5de1b1897"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_16",
+      "claim": "Ongoing drug development programs are targeting GPR75 using small-molecule inhibitors, antibodies, and gene-silencing techniques, positioning GPR75 as a promising GPCR therapeutic target. The antibody and small-molecule inhibitor programs presuppose surface accessibility of GPR75's extracellular domains; this review assertion corroborates the therapeutic engagement landscape without specifying clinical stage.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12071931",
+            "pmc_id": "PMC12071931",
+            "url": "https://europepmc.org/article/PMC/PMC12071931",
+            "title": "PMC:PMC12071931",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "0752835085aa54b09c8dac936a9f4f37b6c2e4ab02ed6a39dff21eb9c62cf16b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Importantly, ongoing studies are targeting GPR75 for drug development, exploring small molecule inhibitors, antibodies, and gene silencing techniques, positioning GPR75 as a promising GPCR target for treating related diseases.",
+          "quote_sha256": "0752835085aa54b09c8dac936a9f4f37b6c2e4ab02ed6a39dff21eb9c62cf16b",
+          "char_offset": 0,
+          "normalized_source_sha256": "e18d3eaaab1c828780d4d996776ff5697dc99b8743dd3585de69ff3ea8b51f7f"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "HPA database annotates GPR75 protein subcellular localization to plasma membrane, primary cilium, and vesicles — supporting surface accessibility at the plasma membrane and ciliary membrane, with a vesicular (intracellular) component also present.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa",
+            "source_id": "HPA:GPR75",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/GPR75",
+            "title": "HPA:GPR75",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "5f132e4bd008a58f70819d303a335b171ed00dc53f07cce3d408106176fd7e3d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA subcellular locations: Plasma membrane;Primary cilium;Vesicles.",
+          "quote_sha256": "6b93aabaccaf6bf2765b893fac860dfd0e50422c5ac374cbf639d7432c90b3b5",
+          "char_offset": 0,
+          "normalized_source_sha256": "34278db492eca654733f6a935ec568467ddbc528e957752c698c7a919c4c5daa"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "Northern blot analysis of human tissues demonstrated a 7 kb GPR75 transcript highly expressed in the brain, establishing high brain-level expression at mRNA level in humans.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "northern_blot",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain tissue",
+        "permeabilized": true,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:10381362",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10381362/",
+            "title": "PMID:10381362",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "8e17f55115c7a75693453cd917b750616c9e5f9badc6d32f90a18f9f124e4abf",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Northern blot analysis demonstrated a 7 kb transcript highly expressed in the brain.",
+          "quote_sha256": "d56ccdc48a1cb5cbf3dadd38a1fb1a9b395c5e5454c7001e69e8d53fef6d103d",
+          "char_offset": 313,
+          "normalized_source_sha256": "2228358faa14c66b5fa4088204f7a66f8d293587b160f8854aac9ea9117af95c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "In situ hybridization of human retina and Northern blot of human retinal pigment epithelium (RPE) localized GPR75 transcript to the RPE and perivascular cells surrounding retinal arterioles — establishing human retina/RPE and retinal perivascular cell expression at mRNA level.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "retinal pigment epithelium; perivascular cells surrounding retinal arterioles",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "retina",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:10381362",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10381362/",
+            "title": "PMID:10381362",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "8e17f55115c7a75693453cd917b750616c9e5f9badc6d32f90a18f9f124e4abf",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In situ hybridisation to human retina and Northern blot analysis of human retinal pigment epithelium (RPE) showed localisation of this transcript to the RPE and cells surrounding retinal arterioles.",
+          "quote_sha256": "8863d84da6a298e9b0dbcb233f9029097ca6990cfa6449b2377c0b66e2385f29",
+          "char_offset": 114,
+          "normalized_source_sha256": "2228358faa14c66b5fa4088204f7a66f8d293587b160f8854aac9ea9117af95c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "In situ hybridization of mouse retina localized GPR75 transcript to photoreceptor inner segments and the outer plexiform layer — distinct from the human RPE/perivascular pattern, indicating species-specific retinal cell-type distribution.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "photoreceptor inner segments; outer plexiform layer neurons",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "retina",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:10381362",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/10381362/",
+            "title": "PMID:10381362",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "8e17f55115c7a75693453cd917b750616c9e5f9badc6d32f90a18f9f124e4abf",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In contrast, the transcript was localised to the photoreceptor inner segments and the outer plexiform layer in mouse sections.",
+          "quote_sha256": "712627324e030c4902d1a037fd3aa8d2b04485e3ae4af662cc249d895500cf95",
+          "char_offset": 398,
+          "normalized_source_sha256": "2228358faa14c66b5fa4088204f7a66f8d293587b160f8854aac9ea9117af95c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "GPR75 was originally characterized for its expression in the human retina, establishing retinal tissue as the founding biological context for this receptor.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "retina",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "retina",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "One GPCR that is considered an orphan receptor is GPCR 75 (GPR75), a 540 amino acid member of the G αq class of GPCRs, originally characterized for its expression in the human retina (Tarttelin et al. 1999 ; Sauer et al. 2001 ).",
+          "quote_sha256": "e28583aea794444c5c8dcc119d4d037104079b38460ddbc30655dc532de9fa3b",
+          "char_offset": 673,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "GPR75 mRNA expression is abundant in the central nervous system (CNS) more so than in peripheral tissues, establishing a CNS-predominant expression pattern.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "CNS tissue vs peripheral tissues",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "central nervous system",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "GPR75 expression is abundant in the central nervous system (CNS) more so than in the peripheral tissues; however, much remains unknown about the distribution and role of this receptor throughout the CNS.",
+          "quote_sha256": "a935ca7a24059d725aaa7dd2994ed92f860d529d6a08fdb5b9f597531dfc013b",
+          "char_offset": 906,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "GPR75 mRNA expression is significantly higher in CNS tissues compared to peripheral tissues including spleen, kidney, and heart, following the same pattern previously described in the Human Protein Atlas.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "CNS vs spleen, kidney, heart",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain, spinal cord, spleen, kidney, heart",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Further, GPR75 mRNA expression is significantly higher in the CNS when compared to peripheral tissues, such as spleen, kidney and heart (Figure 1C ), and follows a pattern similar to that previously described in the Human Protein Atlas.",
+          "quote_sha256": "842c87dfad0f0575c855694088e7eb2281ba243fb56fd63b35c781e341b67ca2",
+          "char_offset": 1110,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "All analyzed CNS areas express GPR75 mRNA with clear regional variation, particularly between brain areas and spinal cord, indicating broad but regionally variable CNS expression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "multiple CNS regions including brain areas and spinal cord",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain; spinal cord",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "All analysed CNS areas express GPR75 mRNA; however, there are clear fluctuations in the amount of expression, especially when comparing between brain areas and spinal cord (Figure 1B ).",
+          "quote_sha256": "d7a814606029dec07ea7d49a35281a3ad76589432211117e2d12107c39e6cd1e",
+          "char_offset": 1347,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "GPR75 mRNA is abundant in neurons of the mouse hippocampus, identifying hippocampal neurons as a key cell type expressing this receptor in the CNS.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "hippocampal neurons",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "neurons",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "hippocampus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "We have previously established that GPR75 mRNA is abundant in neurons of the mouse hippocampus (Speidell et al. 2023 ).",
+          "quote_sha256": "0a361deb6b486b29c6291ab801162a4babccff62ec4d40632910e78d373110c9",
+          "char_offset": 1533,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "GPR75 mRNA expression occurs in several neuronal populations in the mouse CNS including GABAergic and glutamatergic neurons, identifying these major inhibitory and excitatory neuron subtypes as key cellular contexts.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "GABAergic neurons; glutamatergic neurons",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "GABAergic neurons; glutamatergic neurons",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Our results show that GPR75 mRNA expression occurs in several neuronal populations including GABAergic and glutamatergic neurons.",
+          "quote_sha256": "13f57175d5078b1ac553b21c9f408472d3d019be369e18e3abdaf31bd8057646",
+          "char_offset": 1653,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "In select CNS areas — substantia nigra/ventral tegmental area, locus coeruleus, and raphe nucleus — GPR75 mRNA is highly expressed in monoaminergic neurons (dopaminergic, noradrenergic, and serotonergic, respectively), indicating enrichment in catecholaminergic and serotonergic neuron populations.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "monoaminergic neurons",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "monoaminergic neurons (dopaminergic, noradrenergic, serotonergic)",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "substantia nigra; ventral tegmental area; locus coeruleus; raphe nucleus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In select areas, such as the substantia nigra/ventral tegmental area, locus coeruleus and raphe nucleus, GPR75 mRNA is also highly expressed in monoaminergic neurons.",
+          "quote_sha256": "c96fe7e7f86a51ddbde2bd12ab3d092b95f2c4a52abf9de8cb08e8428736264c",
+          "char_offset": 1783,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "GPR75 mRNA is highly expressed in the cerebellum in both GABAergic and glutamatergic neurons, suggesting potential roles in motor and equilibrium activity.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "GABAergic neurons; glutamatergic neurons",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "GABAergic neurons; glutamatergic neurons",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "cerebellum",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12920073",
+            "pmc_id": "PMC12920073",
+            "url": "https://europepmc.org/article/PMC/PMC12920073",
+            "title": "PMC:PMC12920073",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "55e319ec710912a3de3a4a3234699bd74127dc28a0eb68b9534f48722ee5f4e8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Moreover, we found high expression of GPR75 mRNA in the cerebellum, in both GABAergic and glutamatergic neurons, suggesting a potential role for this receptor in motor/equilibrium activity.",
+          "quote_sha256": "6c372d72f33ac73ad34dd73f2240117f6d3be193e48423f604ac295e43927ba0",
+          "char_offset": 1950,
+          "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "GTEx portal tissue enrichment analysis demonstrates that GPR75 mRNA is highly expressed in the human brain, providing human transcriptomic atlas support for brain-predominant expression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain tissue (GTEx bulk RNA-seq)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12702673",
+            "pmc_id": "PMC12702673",
+            "url": "https://europepmc.org/article/PMC/PMC12702673",
+            "title": "PMC:PMC12702673",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "117ca44c78e4bab6c15ef96ab70017d193c219ab32bdd975b074a6cbd537c58f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "In the study, tissue enrichment analysis using the Genotype-Tissue Expression portal revealed that GPR75 mRNA is highly expressed in the human brain [ 4 ].",
+          "quote_sha256": "e623ea1657b253007f6e3d96f5d2f790efee10b5401391a6b944a211a1e0e612",
+          "char_offset": 0,
+          "normalized_source_sha256": "8619ae60d06d49e3823366bd9c68f73b45754c46c2defad7d0e301af3757095b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_14",
+      "claim": "Gpr75 mRNA is highly expressed across multiple hypothalamic nuclei (POA, AVPV, LHA, PVN, ARC, VMH), cerebrum, cerebellum, brain stem, and pituitary in both male and female rats, with no significant sex difference in hypothalamic expression levels.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "rat",
+        "cell_type_or_line": "hypothalamus (POA, AVPV, LHA, PVN, ARC, VMH); cerebrum; cerebellum; brain stem; pituitary",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "hypothalamus; cerebrum; cerebellum; brain stem; pituitary",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12702673",
+            "pmc_id": "PMC12702673",
+            "url": "https://europepmc.org/article/PMC/PMC12702673",
+            "title": "PMC:PMC12702673",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "117ca44c78e4bab6c15ef96ab70017d193c219ab32bdd975b074a6cbd537c58f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Gpr75 mRNA expression was highly expressed in the hypothalamus (the POA, AVPV, LHA, PVN, ARC, and VMH), cerebrum, cerebellum, brain stem, and pituitary in both male and female rats, and no significant differences were found in the hypothalamic expression levels between males and females ( Fig. 2 ).",
+          "quote_sha256": "eb4c1c9b3f338fd9231bba0749c74baccd17414d894004a3f62099962bf04b71",
+          "char_offset": 156,
+          "normalized_source_sha256": "8619ae60d06d49e3823366bd9c68f73b45754c46c2defad7d0e301af3757095b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_15",
+      "claim": "Gpr75 mRNA levels are very low in peripheral tissues — muscle, heart, lung, stomach, spleen, kidney, small intestine, and colon — in both male and female rats, confirming peripheral tissue low/absent expression.",
+      "claim_type": "tissue_expression",
+      "direction": "refutes",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "rat",
+        "cell_type_or_line": "muscle, heart, lung, stomach, spleen, kidney, small intestine, colon",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "muscle; heart; lung; stomach; spleen; kidney; small intestine; colon",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12702673",
+            "pmc_id": "PMC12702673",
+            "url": "https://europepmc.org/article/PMC/PMC12702673",
+            "title": "PMC:PMC12702673",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "117ca44c78e4bab6c15ef96ab70017d193c219ab32bdd975b074a6cbd537c58f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "However, Gpr75 mRNA levels were very low in peripheral tissues, such as the muscle, heart, lung, stomach, spleen, kidney, small intestine, and colon in both sexes.",
+          "quote_sha256": "57946776f2da3f1a95fee1ebee64ebc99a7f3958b0c23880a755275d415d3d6a",
+          "char_offset": 456,
+          "normalized_source_sha256": "8619ae60d06d49e3823366bd9c68f73b45754c46c2defad7d0e301af3757095b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_16",
+      "claim": "Gpr75 mRNA expression is low in reproductive organs — testis in male rats, and ovary and uterus in female rats — indicating minimal gonadal expression.",
+      "claim_type": "tissue_expression",
+      "direction": "refutes",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "rat",
+        "cell_type_or_line": "testis; ovary; uterus",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "testis; ovary; uterus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12702673",
+            "pmc_id": "PMC12702673",
+            "url": "https://europepmc.org/article/PMC/PMC12702673",
+            "title": "PMC:PMC12702673",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "117ca44c78e4bab6c15ef96ab70017d193c219ab32bdd975b074a6cbd537c58f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Additionally, Gpr75 expression was low in the reproductive organs, such as the testis in male rats and the ovary and uterus in female rats ( Fig. 2 ).",
+          "quote_sha256": "35c3be7c8f71354e6f5fb461522be4faee9aa585b9372b4350b1e81236253fe3",
+          "char_offset": 620,
+          "normalized_source_sha256": "8619ae60d06d49e3823366bd9c68f73b45754c46c2defad7d0e301af3757095b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_17",
+      "claim": "Both mouse and human pancreatic islets express GPR75 and its ligand CCL5, establishing islet-level expression in two species and supporting pancreatic beta-cell context for GPR75.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "pancreatic islets",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "islet cells (including beta cells)",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "pancreatic islet",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:23979485",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/23979485/",
+            "title": "PMID:23979485",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "7c2c97b77a381695e71264685891701c288aa65db58413ef7f6d7535d27e647b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Glucose homeostasis in lean and obese mice was determined by measuring glucose and insulin tolerance, and insulin secretion in vivo.<h4>Results</h4>Mouse and human islets express GPR75 and its ligand CCL5.",
+          "quote_sha256": "27a71ce6a15c1f0a428d50b3ace895da1b848a33394c61e032edbf599c96453e",
+          "char_offset": 372,
+          "normalized_source_sha256": "c79c084d4c67a77972c2093e0672bad1c90b6fa071fa1d6180fa277dfb91e657"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_18",
+      "claim": "GPR75 was detected in pancreatic islets by western blotting and immunohistochemistry at the protein level, and islet CCL5 receptor mRNA expression was confirmed by quantitative RT-PCR — providing multi-method protein and mRNA evidence for GPR75 in islets.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "pancreatic islets",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "islet cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "pancreatic islet",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:23979485",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/23979485/",
+            "title": "PMID:23979485",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "7c2c97b77a381695e71264685891701c288aa65db58413ef7f6d7535d27e647b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "GPR75 is coupled to Gq to elevate intracellular calcium, so we investigated whether islets express this receptor and whether its activation by CCL5 increases beta cell calcium levels and insulin secretion.<h4>Methods</h4>Islet CCL5 receptor mRNA expression was measured by quantitative RT-PCR and GPR75 was detected in islets by western blotting and immunohistochemistry.",
+          "quote_sha256": "57e7b64fadfb2566221d034887a468a16fe837f402fe472a5ff65fbc500058ba",
+          "char_offset": 0,
+          "normalized_source_sha256": "c79c084d4c67a77972c2093e0672bad1c90b6fa071fa1d6180fa277dfb91e657"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_19",
+      "claim": "CCL5 activation of GPR75 on pancreatic beta cells reversibly increased intracellular calcium via phospholipase C and calcium influx — cell-state modulation evidence demonstrating functional GPR75 signaling in resting vs CCL5-stimulated beta cells. Baseline: resting beta cells; modulating state: exogenous CCL5 stimulation; change: reversible intracellular calcium increase; implication: GPR75 functionally accessible on beta cell surface in stimulated state.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "pancreatic beta cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "beta cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "pancreatic islet",
+          "disease_state": "normal",
+          "activation_state": "CCL5-stimulated"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:23979485",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/23979485/",
+            "title": "PMID:23979485",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "7c2c97b77a381695e71264685891701c288aa65db58413ef7f6d7535d27e647b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Exogenous CCL5 reversibly increased intracellular calcium in beta cells via GPR75, this phenomenon being dependent on phospholipase C activation and calcium influx.",
+          "quote_sha256": "41a31c7138392949654876fe5321fd5936922b968aafea974e3310a67f16f84c",
+          "char_offset": 578,
+          "normalized_source_sha256": "c79c084d4c67a77972c2093e0672bad1c90b6fa071fa1d6180fa277dfb91e657"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_20",
+      "claim": "CCL5 stimulated insulin secretion from mouse and human islets in vitro and improved glucose tolerance in both lean mice and in an ob/ob hyperglycemic/insulin-resistant mouse model — disease-context modulation showing GPR75-mediated functional activity differs between normal and hyperglycemic metabolic states.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "pancreatic islets",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "islet cells (beta cells)",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "pancreatic islet",
+          "disease_state": "hyperglycemia/insulin resistance (ob/ob); lean normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:23979485",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/23979485/",
+            "title": "PMID:23979485",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "7c2c97b77a381695e71264685891701c288aa65db58413ef7f6d7535d27e647b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "CCL5 also stimulated insulin secretion from mouse and human islets in vitro, and improved glucose tolerance in lean mice and in a mouse model of hyperglycaemia and insulin resistance (ob/ob).",
+          "quote_sha256": "bbdcb4fb20bd160b1a66ac00fc9d500ca73d793b2c6f168f9feb841522834f6f",
+          "char_offset": 743,
+          "normalized_source_sha256": "c79c084d4c67a77972c2093e0672bad1c90b6fa071fa1d6180fa277dfb91e657"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_21",
+      "claim": "Gpr75 KO rats show significantly lower food intake, reduced feeding during the dark phase, and lower body weight than wild-type rats — loss-of-function phenotype demonstrating hypothalamic GPR75 role in feeding and energy regulation under normal chow conditions.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "rat",
+        "cell_type_or_line": "hypothalamus (whole animal KO)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "Gpr75 knockout rat",
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "hypothalamus",
+          "disease_state": "normal chow",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12702673",
+            "pmc_id": "PMC12702673",
+            "url": "https://europepmc.org/article/PMC/PMC12702673",
+            "title": "PMC:PMC12702673",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "117ca44c78e4bab6c15ef96ab70017d193c219ab32bdd975b074a6cbd537c58f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Gpr75 KO male and female rats exhibited significantly lower food intake, reduced feeding duration during the dark phase, and lower body weight (BW) than wild-type rats.",
+          "quote_sha256": "dea1a1d6dd6f084be17f41162a0d8d348722525d5c115b4dfa7c73e4b1be3bc3",
+          "char_offset": 771,
+          "normalized_source_sha256": "8619ae60d06d49e3823366bd9c68f73b45754c46c2defad7d0e301af3757095b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_22",
+      "claim": "Under high-fat diet (HFD) conditions, Gpr75 KO male rats show significantly lower food intake, body weight, and fat accumulation compared to wild-type, and are normoglycemic and normoinsulinemic — disease-state modulation demonstrating GPR75 involvement in HFD-induced obesity and hyperglycemia.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "rat",
+        "cell_type_or_line": "whole animal (hypothalamus-enriched expression context)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "Gpr75 knockout rat",
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "hypothalamus",
+          "disease_state": "high-fat diet-induced obesity/hyperglycemia",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12702673",
+            "pmc_id": "PMC12702673",
+            "url": "https://europepmc.org/article/PMC/PMC12702673",
+            "title": "PMC:PMC12702673",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "117ca44c78e4bab6c15ef96ab70017d193c219ab32bdd975b074a6cbd537c58f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "HFD-fed Gpr75 KO male rats exhibited significantly lower food intake, BW, and fat accumulation than wild-type rats and were normoglycemic and normoinsulinemic.",
+          "quote_sha256": "ccf601c709e870314620061e3fd9f3e262a88c9f74265d680906489a830197b7",
+          "char_offset": 940,
+          "normalized_source_sha256": "8619ae60d06d49e3823366bd9c68f73b45754c46c2defad7d0e301af3757095b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_23",
+      "claim": "Hypothalamic Ccl5 expression is significantly higher in HFD-fed Gpr75 KO male rats than in wild-type, suggesting compensatory upregulation of the GPR75 ligand CCL5 in the hypothalamus when GPR75 is absent — implicating hypothalamic CCL5-GPR75 axis in diet-induced hyperphagia.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "rat",
+        "cell_type_or_line": "hypothalamus",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "Gpr75 knockout rat",
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "hypothalamus",
+          "disease_state": "high-fat diet",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12702673",
+            "pmc_id": "PMC12702673",
+            "url": "https://europepmc.org/article/PMC/PMC12702673",
+            "title": "PMC:PMC12702673",
+            "retrieved_at": "2026-05-16T19:45:50.545084Z",
+            "content_sha256": "117ca44c78e4bab6c15ef96ab70017d193c219ab32bdd975b074a6cbd537c58f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-16T19:45:50.545084Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Notably, hypothalamic Ccl5 (encoding C-C motif chemokine ligand 5 [CCL5]) expression was significantly higher in Gpr75 KO male rats than in wild-type rats, suggesting that Gpr75 KO may prevent HFD-induced hyperphagia via central CCL5 signaling in rats.",
+          "quote_sha256": "fa46400ca93b0df3f2fb2dc2a0dac20a294e89654f057239d1dcf1e0d8981bea",
+          "char_offset": 1100,
+          "normalized_source_sha256": "8619ae60d06d49e3823366bd9c68f73b45754c46c2defad7d0e301af3757095b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    }
+  ],
+  "search_log": [],
+  "evidence_count": 39,
+  "primary_evidence_count": 26,
+  "secondary_evidence_count": 13,
+  "confidence": "low",
+  "confidence_reasoning": "A1 grades evidence as 'weak': no direct surface-accessibility assay (live-cell flow, non-permeabilized IF, surface biotinylation) is present. The single most damaging contradiction (a1_evi_11, severity=high) invalidates all antibody-based localization claims. The cryo-EM collapsed ECD (a1_evi_03) adds structural ambiguity. A2 contributes moderate state-dependence (ciliary localization, CCL5-activation context, disease-state modulation in obesity). Integrated: weak evidence grade + one high-severity contradiction + moderate state-dependence = low confidence. Surface accessibility is scored 'moderate' rather than 'low' solely because 7TM topology and functional CCL5/beta-cell calcium assays (a2_evi_19) biologically imply surface residency, but direct empirical support is absent.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-16T19:45:50.549976Z"
+}

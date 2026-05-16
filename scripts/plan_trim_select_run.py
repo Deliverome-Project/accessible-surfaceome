@@ -32,7 +32,13 @@ from accessible_surfaceome.env import load_env
 def _result_to_jsonable(result) -> dict:
     return {
         "gene": result.gene,
+        "agent_focus": result.agent_focus,
         "uniprot_acc": result.bundle.uniprot_acc if result.bundle else None,
+        # Full IdentifierBundle dump so the HTML renderer (and other
+        # downstream consumers) can construct identifier-shaped URLs for
+        # HPA (needs ensembl_gene + hgnc_symbol), Ensembl, etc., without
+        # re-resolving from the gene symbol.
+        "bundle": result.bundle.model_dump(mode="json") if result.bundle else None,
         "elapsed_s": result.elapsed_s,
         "n_iterations_run": result.n_iterations_run,
         "iteration_log": [asdict(e) for e in result.iteration_log],
@@ -83,17 +89,30 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser = argparse.ArgumentParser()
     parser.add_argument("gene", help="Gene symbol (e.g. GPR75)")
+    parser.add_argument(
+        "--focus",
+        choices=("a1", "a2"),
+        default=None,
+        help=(
+            "Per-agent focus. Default (omit) runs the unified-ledger MVP "
+            "(pts_evi_ prefix). 'a1' uses the surface-evidence trim+select "
+            "prompts (a1_evi_ prefix). 'a2' is not yet wired."
+        ),
+    )
     args = parser.parse_args(argv)
 
-    print(f"=== plan_trim_select: {args.gene} ===", flush=True)
-    result = run_plan_trim_select(args.gene)
+    focus_label = args.focus or "mvp"
+    print(f"=== plan_trim_select: {args.gene} (focus={focus_label}) ===", flush=True)
+    result = run_plan_trim_select(args.gene, agent_focus=args.focus)
 
-    out_path = Path(f".runs/plan_trim_select_{args.gene}.json")
+    suffix = f"_{args.focus}" if args.focus else ""
+    out_path = Path(f".runs/plan_trim_select_{args.gene}{suffix}.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(_result_to_jsonable(result), indent=2))
 
     print()
     print(f"gene:                   {result.gene}")
+    print(f"agent_focus:            {result.agent_focus or '(none — unified MVP)'}")
     print(f"uniprot_acc:            {result.bundle.uniprot_acc if result.bundle else '<unresolved>'}")
     print(f"elapsed:                {result.elapsed_s}s")
     print(f"iterations run:         {result.n_iterations_run}")
