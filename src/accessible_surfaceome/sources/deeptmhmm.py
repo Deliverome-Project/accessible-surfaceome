@@ -566,6 +566,87 @@ def parse_fasta(text: str, source_url: str, response_headers: dict[str, str]) ->
     )
 
 
+def resolve_uniprot_by_ensembl_gene(
+    ensembl_gene_id: str,
+    *,
+    organism_taxon_id: int,
+    ortholog_gene_symbol: str | None = None,
+    timeout: int = 30,
+    retry_max_attempts: int = 3,
+    min_request_interval_ms: int = 200,
+) -> str | None:
+    """Find the canonical UniProt accession for an Ensembl gene ID in a
+    given organism, falling back to a gene-symbol search when the
+    Ensembl-xref query returns no hits.
+
+    Used for mouse/cyno ortholog UniProt lookup when the Compara
+    ``ortholog`` table only carries Ensembl gene IDs. Query order:
+
+      1. ``xref:ensembl-<ENSG>+AND+organism_id:<taxon>+AND+reviewed:true``
+         — exact xref match, reviewed Swiss-Prot only.
+      2. Same xref but unreviewed (TrEMBL allowed). Cyno often only has
+         TrEMBL entries because few cyno proteins are manually curated.
+      3. ``gene_exact:<symbol>+AND+organism_id:<taxon>+AND+reviewed:true``
+         — last-resort symbol search when xref indexing is incomplete
+         (UniProt doesn't index cyno ENSMFAG xrefs by default). The
+         symbol here is the **ortholog's own symbol from Compara**, NOT
+         the human symbol — different failure mode from the within-species
+         symbol resolver bug PR #30 fixed.
+      4. Same gene_exact but unreviewed.
+
+    Returns the first hit or ``None``.
+    """
+    import json as _json
+
+    if not ensembl_gene_id:
+        return None
+
+    def _try_query(query: str) -> str | None:
+        url = (
+            "https://rest.uniprot.org/uniprotkb/search?"
+            f"query={query}&format=json&size=1&fields=accession,reviewed"
+        )
+        try:
+            text, _ = fetch_text_with_retries(
+                url,
+                timeout=timeout,
+                retry_max_attempts=retry_max_attempts,
+                min_request_interval_ms=min_request_interval_ms,
+            )
+            data = _json.loads(text)
+            results = data.get("results") or []
+            if results:
+                acc = (results[0].get("primaryAccession") or "").strip()
+                if acc:
+                    return acc
+        except (RuntimeError, ValueError):
+            return None
+        return None
+
+    # Tier 1: reviewed xref
+    if acc := _try_query(
+        f"xref:ensembl-{ensembl_gene_id}+AND+organism_id:{organism_taxon_id}+AND+reviewed:true"
+    ):
+        return acc
+    # Tier 2: unreviewed xref (TrEMBL fallback for cyno)
+    if acc := _try_query(
+        f"xref:ensembl-{ensembl_gene_id}+AND+organism_id:{organism_taxon_id}"
+    ):
+        return acc
+    # Tier 3+4: gene_exact symbol search when xref indexing fails (cyno)
+    sym = (ortholog_gene_symbol or "").strip()
+    if sym:
+        if acc := _try_query(
+            f"gene_exact:{sym}+AND+organism_id:{organism_taxon_id}+AND+reviewed:true"
+        ):
+            return acc
+        if acc := _try_query(
+            f"gene_exact:{sym}+AND+organism_id:{organism_taxon_id}"
+        ):
+            return acc
+    return None
+
+
 def fetch_uniprot_fasta(
     accession: str,
     *,

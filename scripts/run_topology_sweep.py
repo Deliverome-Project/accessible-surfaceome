@@ -51,7 +51,7 @@ import logging
 import os
 import sys
 from collections import defaultdict
-from concurrent.futures import ProcessPoolExecutor, as_completed
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -176,61 +176,210 @@ def load_candidate_set(path: Path) -> list[Candidate]:
 # ---------------------------------------------------------------------------
 
 
-def _resolve_ortholog_accessions(
-    candidates: list[Candidate], *, species_key: str
-) -> list[tuple[str, str]]:
-    """Return (acc_full, gene_symbol) pairs for mouse or cyno orthologs.
+@dataclass(frozen=True)
+class OrthologTarget:
+    """One ortholog target: ``(human_hgnc_id, ortholog_ensembl_gene)``.
 
-    Reads the BioMart ortholog CSV produced by sources/ensembl_compara.py.
-    Filters to one2one + high-confidence rows for the species. The Compara
-    CSV is symbol-keyed (the M1 merge predates PR #30); we join on
-    ``cohort_symbol`` — the resolver's snapshot of the cohort symbol at
-    build time. This is the legitimate symbol join: cohort_symbol IS the
-    symbol the merge wrote into ``input_gene_symbol``, so they're the
-    same string by construction. A follow-up refactor will rebuild the
-    Compara orthologs CSV keyed on Ensembl gene IDs to eliminate this
-    entirely.
+    The human HGNC ID is the join key that lets every ortholog topology
+    row link back to the human gene the prediction was triggered by.
+    Stamped onto the ortholog topology_public rows so a consumer can do
+    ``SELECT * FROM topology_public WHERE cohort='mouse_ortholog' AND
+    hgnc_id='HGNC:4526'`` to get GPR75's mouse ortholog topology.
     """
-    if not COMPARA_ORTHOLOG_CSV.exists():
+
+    human_hgnc_id: str
+    human_ensembl_gene: str
+    ortholog_ensembl_gene: str
+    ortholog_gene_symbol: str
+    species_taxon_id: int            # 10090=mouse, 9544=cynomolgus
+    percent_identity: float | None
+
+
+# Cohort → (D1 compara_ortholog.species value, UniProt organism_id).
+# NCBI taxon IDs:
+#   * Mus musculus (mouse) = 10090
+#   * Macaca fascicularis (cynomolgus, crab-eating macaque) = 9541
+#     NOT 9544 — that's Macaca mulatta (rhesus). Compara's "cynomolgus"
+#     species value refers to M. fascicularis (ENSMFAG Ensembl IDs).
+ORTHOLOG_SPECIES: dict[str, tuple[str, int]] = {
+    "mouse_ortholog": ("mouse", 10090),
+    "cyno_ortholog": ("cynomolgus", 9541),
+}
+
+
+def _resolve_ortholog_targets_from_d1(
+    candidates: list[Candidate], *, species_key: str
+) -> list[OrthologTarget]:
+    """Query ``compara_ortholog`` (private D1) for orthologs of the candidate set.
+
+    The public D1's compara_ortholog is populated (~9k rows, mouse+cyno,
+    release ``ensembl_compara_2026_05_12``); the private D1 carries the
+    same data. Filters to ``orthology_type='ortholog_one2one' AND
+    is_high_confidence=1`` and joins to the candidate set on
+    ``human_ensembl_gene`` (resolved via gene_identifier — the legitimate
+    stable-ID join).
+
+    Returns one ``OrthologTarget`` per (human_hgnc_id, ortholog_ensembl_gene);
+    no symbol-keyed paths.
+    """
+    import os
+    import httpx
+
+    species, taxon_id = ORTHOLOG_SPECIES[species_key]
+
+    # Build a {human_ensembl_gene → human_hgnc_id} map from the candidate set —
+    # the only thing we need to project HGNC IDs onto the ortholog rows.
+    ensg_to_hgnc: dict[str, str] = {}
+    for c in candidates:
+        if c.ensembl_gene and c.hgnc_id:
+            ensg_to_hgnc[c.ensembl_gene.upper()] = c.hgnc_id
+    if not ensg_to_hgnc:
         logger.warning(
-            "Compara ortholog CSV not found at %s; %s cohort will be empty. "
-            "Run: uv run python -m accessible_surfaceome.sources.ensembl_compara download",
-            COMPARA_ORTHOLOG_CSV.relative_to(REPO_ROOT), species_key,
+            "no candidates have ensembl_gene → %s cohort will be empty", species_key
         )
         return []
-    human_symbols = {c.cohort_symbol.upper() for c in candidates if c.cohort_symbol}
-    out: list[tuple[str, str]] = []
-    seen: set[str] = set()
-    # The Compara CSV columns include: input_gene_symbol, resolved_gene_symbol,
-    # plus species-specific *_homolog_associated_gene_name, *_orthology_type,
-    # *_orthology_confidence. We look up by gene_symbol_resolved and pull the
-    # UniProt accession via a separate UniProt query — but for the v1 sweep
-    # we only have ensembl IDs from the CSV. We resolve UniProt at fetch time.
-    pass_filter = (
-        "mmusculus" if species_key == "mouse_ortholog" else "mfascicularis"
+
+    account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+    db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "").strip()
+    if not (account and token and db):
+        logger.warning(
+            "D1 env vars missing → %s cohort will be empty", species_key
+        )
+        return []
+
+    # D1 has no IN-list size cap but per-statement payload is bounded; chunk to
+    # keep each request small. 500 IDs per chunk is well under SQLite/D1 limits.
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account}/d1/database/{db}/query"
+    ensg_list = sorted(ensg_to_hgnc)
+    out: list[OrthologTarget] = []
+    seen: set[tuple[str, str]] = set()
+    chunk_size = 500
+    with httpx.Client(timeout=120) as client:
+        for start in range(0, len(ensg_list), chunk_size):
+            chunk = ensg_list[start : start + chunk_size]
+            quoted = ",".join(f"'{e}'" for e in chunk)
+            sql = (
+                "SELECT human_ensembl_gene, ortholog_ensembl_gene, "
+                "ortholog_gene_symbol, percent_identity FROM compara_ortholog "
+                f"WHERE species = '{species}' AND orthology_type = 'ortholog_one2one' "
+                f"AND is_high_confidence = 1 AND human_ensembl_gene IN ({quoted})"
+            )
+            resp = client.post(
+                url, json={"sql": sql}, headers={"Authorization": f"Bearer {token}"}
+            )
+            body = resp.json()
+            if not body.get("success"):
+                logger.warning("D1 compara_ortholog query failed: %s", body)
+                continue
+            result = body.get("result") or []
+            if isinstance(result, dict):
+                result = [result]
+            for r in result:
+                for row in r.get("results") or []:
+                    h_ensg = (row.get("human_ensembl_gene") or "").upper()
+                    o_ensg = (row.get("ortholog_ensembl_gene") or "").upper()
+                    if not h_ensg or not o_ensg:
+                        continue
+                    h_hgnc = ensg_to_hgnc.get(h_ensg)
+                    if not h_hgnc:
+                        continue
+                    key = (h_hgnc, o_ensg)
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    pct_raw = row.get("percent_identity")
+                    pct = float(pct_raw) if pct_raw is not None else None
+                    out.append(
+                        OrthologTarget(
+                            human_hgnc_id=h_hgnc,
+                            human_ensembl_gene=h_ensg,
+                            ortholog_ensembl_gene=o_ensg,
+                            ortholog_gene_symbol=(row.get("ortholog_gene_symbol") or "").strip(),
+                            species_taxon_id=taxon_id,
+                            percent_identity=pct,
+                        )
+                    )
+    logger.info(
+        "compara_ortholog: %d %s targets for %d candidate Ensembl genes",
+        len(out), species_key, len(ensg_list),
     )
-    with COMPARA_ORTHOLOG_CSV.open() as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            sym_resolved = (row.get("resolved_gene_symbol") or "").strip().upper()
-            sym_input = (row.get("input_gene_symbol") or "").strip().upper()
-            if sym_resolved not in human_symbols and sym_input not in human_symbols:
-                continue
-            otype = (row.get(f"{pass_filter}_homolog_orthology_type") or "").strip()
-            conf = (row.get(f"{pass_filter}_homolog_orthology_confidence") or "").strip()
-            if otype != "ortholog_one2one" or conf not in {"1", "1.0"}:
-                continue
-            ortho_ensg = (row.get(f"{pass_filter}_homolog_ensembl_gene") or "").strip()
-            ortho_sym = (row.get(f"{pass_filter}_homolog_associated_gene_name") or "").strip()
-            if ortho_ensg and ortho_ensg not in seen:
-                seen.add(ortho_ensg)
-                # acc_full will be resolved at FASTA-fetch time from UniProt
-                # mapping; stash the Ensembl ID here so the caller can do the
-                # UniProt lookup later. For v1 we punt and skip — the existing
-                # ortholog FASTA pull in deeptmhmm.py:download_main already
-                # does this lookup; we mirror that on demand.
-                out.append((ortho_ensg, ortho_sym))
     return out
+
+
+def _resolve_ortholog_uniprots(
+    targets: list[OrthologTarget],
+    *,
+    cache_path: Path,
+    max_workers: int = 4,
+) -> dict[str, str]:
+    """Resolve ortholog Ensembl gene IDs to UniProt accessions via UniProt search.
+
+    The ``compara_ortholog`` D1 table has ``ortholog_uniprot_acc IS NULL``
+    everywhere — Compara only carries Ensembl xrefs. We resolve on demand
+    by hitting UniProt's REST search with ``xref:ensembl-<ensg>+AND+organism_id:<taxon>``.
+
+    Cached to disk at ``cache_path`` (TSV: ``ensembl_gene\\ttaxon_id\\tuniprot_acc``)
+    so repeated runs don't re-hit UniProt for the same orthologs. Cache is
+    keyed (ensembl_gene, taxon_id) so a follow-up run with a different
+    species doesn't clobber an existing resolution.
+    """
+    from accessible_surfaceome.sources.deeptmhmm import resolve_uniprot_by_ensembl_gene
+
+    cache: dict[tuple[str, int], str] = {}
+    if cache_path.exists():
+        with cache_path.open() as f:
+            reader = csv.DictReader(f, delimiter="\t")
+            for r in reader:
+                ensg = (r.get("ensembl_gene") or "").strip().upper()
+                taxon_raw = (r.get("taxon_id") or "").strip()
+                acc = (r.get("uniprot_acc") or "").strip().upper()
+                if ensg and taxon_raw and acc:
+                    cache[(ensg, int(taxon_raw))] = acc
+    logger.info("ortholog UniProt cache: %d hits already on disk", len(cache))
+
+    needed = [t for t in targets if (t.ortholog_ensembl_gene, t.species_taxon_id) not in cache]
+    if not needed:
+        return {t.ortholog_ensembl_gene: cache[(t.ortholog_ensembl_gene, t.species_taxon_id)] for t in targets if (t.ortholog_ensembl_gene, t.species_taxon_id) in cache}
+
+    logger.info(
+        "resolving %d ortholog Ensembl gene IDs → UniProt accs via REST", len(needed)
+    )
+    n_resolved = 0
+    n_unresolved = 0
+
+    def worker(target: OrthologTarget) -> tuple[OrthologTarget, str | None]:
+        acc = resolve_uniprot_by_ensembl_gene(
+            target.ortholog_ensembl_gene,
+            organism_taxon_id=target.species_taxon_id,
+            ortholog_gene_symbol=target.ortholog_gene_symbol,
+        )
+        return target, acc
+
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    # Append-mode write — preserves previously-resolved entries across cohorts/runs.
+    write_header = not cache_path.exists()
+    with cache_path.open("a", encoding="utf-8") as f:
+        if write_header:
+            f.write("ensembl_gene\ttaxon_id\tuniprot_acc\n")
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            for target, acc in pool.map(worker, needed):
+                if acc:
+                    cache[(target.ortholog_ensembl_gene, target.species_taxon_id)] = acc
+                    f.write(f"{target.ortholog_ensembl_gene}\t{target.species_taxon_id}\t{acc}\n")
+                    n_resolved += 1
+                else:
+                    n_unresolved += 1
+                if (n_resolved + n_unresolved) % 100 == 0:
+                    f.flush()
+    logger.info(
+        "ortholog UniProt resolution: %d new resolved, %d unresolved", n_resolved, n_unresolved
+    )
+
+    return {
+        t.ortholog_ensembl_gene: cache.get((t.ortholog_ensembl_gene, t.species_taxon_id), "")
+        for t in targets
+    }
 
 
 def _existing_canonical_predictions() -> set[str]:
@@ -323,22 +472,26 @@ def run_cohort_deeptmhmm(
     cohort_dir.mkdir(parents=True, exist_ok=True)
     skipped_too_long: list[str] = []
 
-    # Build batch FASTAs (deterministic chunking by sorted path).
+    # Build batch FASTAs (deterministic chunking by sorted path). Each batch
+    # produces a pair (input_fasta_path, output_dir). The input FASTA lives
+    # OUTSIDE output_dir so DeepTMHMM's predict.py can wipe + re-create
+    # output_dir without nuking the input.
+    inputs_dir = cohort_dir / "_inputs"
+    inputs_dir.mkdir(parents=True, exist_ok=True)
     fasta_paths_sorted = sorted(fasta_paths)
     batches: list[tuple[Path, Path]] = []
     for batch_idx in range(0, len(fasta_paths_sorted), batch_size):
         batch_files = fasta_paths_sorted[batch_idx : batch_idx + batch_size]
         batch_n = batch_idx // batch_size
-        batch_root = cohort_dir / f"batch_{batch_n:04d}"
-        batch_root.mkdir(parents=True, exist_ok=True)
-        batch_fasta = batch_root / "input.fasta"
+        batch_fasta = inputs_dir / f"batch_{batch_n:04d}.fasta"
+        output_dir = cohort_dir / f"batch_{batch_n:04d}"
         n_written, batch_skips = assemble_batch_fasta(
             batch_files, batch_path=batch_fasta, max_seq_length=DEEPTMHMM_MAX_SEQUENCE_LENGTH,
         )
         skipped_too_long.extend(batch_skips)
         if n_written == 0:
             continue
-        batches.append((batch_fasta, batch_root))
+        batches.append((batch_fasta, output_dir))
 
     logger.info("  %s: %d batches", cohort, len(batches))
 
@@ -380,19 +533,31 @@ def parse_cohort_to_jsonl(
     cohort_dir: Path,
     topology_version: str,
     candidate_by_acc: dict[str, Candidate],
+    ortholog_human_hgnc_by_acc: dict[str, str] | None = None,
 ) -> Path:
     """Parse all .3line outputs into one topology_records.jsonl for the cohort.
 
-    For human cohorts, filter records to just those whose base UniProt
-    accession is in the candidate set — keeps the JSONL row count aligned
-    with what the candidate set asked for, and makes 3-protein dry runs
-    actually output 3 rows instead of all 2,359 in the legacy .3line.
-    For ortholog cohorts (mouse/cyno), no candidate-accession filter is
-    applied — orthologs use different accessions and need a Compara-CSV
-    join to map back to the human candidate; that join lives elsewhere.
+    Stable-ID stamping per cohort type:
+
+      * **Human cohorts** (``human_canonical``, ``human_isoforms``) — filter
+        records to those whose base UniProt accession is a candidate; stamp
+        ``hgnc_id`` from the candidate's gene_identifier-resolved HGNC ID.
+        The legacy .3line is reused for accessions where DeepTMHMM has
+        already run; pre-PR-30 mis-resolutions get filtered out implicitly
+        because the candidate set was built from gene_identifier.
+
+      * **Ortholog cohorts** (``mouse_ortholog``, ``cyno_ortholog``) — filter
+        to records whose base UniProt accession is in
+        ``ortholog_human_hgnc_by_acc`` (the mouse/cyno UniProt accs resolved
+        via compara_ortholog joined to the candidate set's human Ensembl
+        genes). Stamp ``hgnc_id`` with the HUMAN HGNC ID that triggered
+        this ortholog's inclusion. Consumers join
+        ``WHERE cohort='mouse_ortholog' AND hgnc_id='HGNC:4526'`` to get
+        GPR75's mouse ortholog topology.
     """
     species = SPECIES_BY_COHORT[cohort]
     is_human_cohort = cohort in {"human_canonical", "human_isoforms"}
+    is_ortholog_cohort = cohort in {"mouse_ortholog", "cyno_ortholog"}
     out_path = cohort_dir / "topology_records.jsonl"
     cohort_dir.mkdir(parents=True, exist_ok=True)
     n_written = 0
@@ -403,15 +568,19 @@ def parse_cohort_to_jsonl(
         for src in output_3line_paths:
             for rec in parse_3line(src):
                 base = rec["uniprot_accession"]
+                # Cohort-specific filter
                 if is_human_cohort and candidate_by_acc and base not in candidate_by_acc:
                     n_filtered_out += 1
                     continue
+                if is_ortholog_cohort and ortholog_human_hgnc_by_acc is not None:
+                    if base not in ortholog_human_hgnc_by_acc:
+                        n_filtered_out += 1
+                        continue
                 # Dedupe across multiple legacy + fresh .3line files.
                 full = rec["uniprot_accession_full"]
                 if full in seen_full_accs:
                     continue
                 seen_full_accs.add(full)
-                cand = candidate_by_acc.get(base)
                 rec["topology_version"] = topology_version
                 rec["cohort"] = cohort
                 rec["species"] = species
@@ -419,15 +588,21 @@ def parse_cohort_to_jsonl(
                 rec["is_canonical"] = int(cohort == "human_canonical"
                                           or rec["uniprot_accession_full"].endswith("-1")
                                           or "-" not in rec["uniprot_accession_full"])
-                # Stable IDs from gene_identifier (via the candidate set).
-                # hgnc_id is the canonical key; gene_symbol is denormalized
-                # for offline reads only. Ortholog cohorts have no human
-                # HGNC ID per row — leave hgnc_id NULL there.
-                rec["hgnc_id"] = (
-                    cand.hgnc_id if (cand and cohort in {"human_canonical", "human_isoforms"})
-                    else None
-                )
-                rec["gene_symbol"] = cand.cohort_symbol if cand else ""
+                # Stable IDs from gene_identifier (via the candidate set or the
+                # ortholog→human map). hgnc_id is the canonical join key; on
+                # ortholog rows it's the HUMAN gene's HGNC ID.
+                if is_human_cohort:
+                    cand = candidate_by_acc.get(base)
+                    rec["hgnc_id"] = cand.hgnc_id if cand else None
+                    rec["gene_symbol"] = cand.cohort_symbol if cand else ""
+                elif is_ortholog_cohort and ortholog_human_hgnc_by_acc is not None:
+                    rec["hgnc_id"] = ortholog_human_hgnc_by_acc.get(base)
+                    # The ortholog's own symbol comes from the .3line header
+                    # (e.g., 'GPR75_MOUSE' → 'Gpr75'); preserve via uniprot_entry_name.
+                    rec["gene_symbol"] = rec.get("uniprot_entry_name", "")
+                else:
+                    rec["hgnc_id"] = None
+                    rec["gene_symbol"] = rec.get("uniprot_entry_name", "")
                 rec["tool_version"] = DEEPTMHMM_TOOL_VERSION
                 rec["retrieved_at"] = retrieved_at
                 f.write(json.dumps(rec, sort_keys=True) + "\n")
@@ -741,29 +916,57 @@ def main() -> int:
     candidate_by_acc = {c.uniprot_acc: c for c in candidates}
 
     # ----- Stage 2: Per-cohort accession lists -----
+    # cohort_accessions[cohort] is the list of UniProt accessions to feed to
+    # DeepTMHMM for that cohort. Built differently per cohort source:
+    #   * human_canonical → candidate set's resolved uniprot_acc
+    #   * human_isoforms → existing legacy .3line set (M1 cohort)
+    #   * mouse/cyno_ortholog → compara_ortholog (D1) + UniProt-by-Ensembl resolution
     cohort_accessions: dict[str, list[str]] = {}
+    # ortholog_human_hgnc_by_acc[cohort][ortholog_uniprot_acc] = human_hgnc_id.
+    # Used by parse_cohort_to_jsonl to stamp the human HGNC ID onto each
+    # ortholog topology row so consumers can join back to gene_identifier.
+    ortholog_human_hgnc_maps: dict[str, dict[str, str]] = {}
     if "human_canonical" in cohorts:
         cohort_accessions["human_canonical"] = [c.uniprot_acc for c in candidates]
     if "human_isoforms" in cohorts:
         # For v1 we use the existing human_isoforms cohort FASTA inputs
         # already produced under data/external/deeptmhmm_surfaceome_predictions/
-        # human_isoforms_from_afdb_non_hla/ — that set is curated by
-        # ensembl_compara/deeptmhmm.download_main. Resolving fresh isoforms
-        # for arbitrary candidates is out of scope for this orchestrator;
-        # the existing predictions land in D1 via reparse below. New
-        # candidates that need fresh isoform DeepTMHMM should re-run the
-        # download_main pipeline beforehand.
+        # human_isoforms_from_afdb_non_hla/. Resolving fresh isoforms for
+        # arbitrary candidates is out of scope for this orchestrator.
         cohort_accessions["human_isoforms"] = []
-    if "mouse_ortholog" in cohorts:
-        ortho_pairs = _resolve_ortholog_accessions(candidates, species_key="mouse_ortholog")
-        cohort_accessions["mouse_ortholog"] = []
-        logger.info("  mouse_ortholog: %d Ensembl IDs (UniProt resolution at fetch time TBD)",
-                    len(ortho_pairs))
-    if "cyno_ortholog" in cohorts:
-        ortho_pairs = _resolve_ortholog_accessions(candidates, species_key="cyno_ortholog")
-        cohort_accessions["cyno_ortholog"] = []
-        logger.info("  cyno_ortholog: %d Ensembl IDs (UniProt resolution at fetch time TBD)",
-                    len(ortho_pairs))
+
+    for ortholog_cohort in ("mouse_ortholog", "cyno_ortholog"):
+        if ortholog_cohort not in cohorts:
+            continue
+        targets = _resolve_ortholog_targets_from_d1(
+            candidates, species_key=ortholog_cohort
+        )
+        if not targets:
+            cohort_accessions[ortholog_cohort] = []
+            ortholog_human_hgnc_maps[ortholog_cohort] = {}
+            continue
+        # Resolve mouse/cyno Ensembl IDs → UniProt accs (cached on disk so
+        # subsequent runs don't re-hit UniProt). Cache is shared across
+        # cohorts because keying is (ensembl_gene, taxon_id).
+        cache_path = REPO_ROOT / "data" / "external" / "ortholog_uniprot_resolution.tsv"
+        ensg_to_acc = _resolve_ortholog_uniprots(
+            targets, cache_path=cache_path, max_workers=4
+        )
+        # Build ortholog_uniprot_acc → human_hgnc_id map (the stable
+        # join key for downstream topology_public consumers).
+        ortholog_human_hgnc: dict[str, str] = {}
+        for t in targets:
+            acc = ensg_to_acc.get(t.ortholog_ensembl_gene, "")
+            if acc and acc not in ortholog_human_hgnc:
+                # First-match wins on collisions (rare; usually a single
+                # mouse UniProt acc maps back to one human HGNC ID).
+                ortholog_human_hgnc[acc] = t.human_hgnc_id
+        cohort_accessions[ortholog_cohort] = sorted(ortholog_human_hgnc)
+        ortholog_human_hgnc_maps[ortholog_cohort] = ortholog_human_hgnc
+        logger.info(
+            "  %s: %d targets → %d resolved UniProt accs (cache hit + UniProt REST)",
+            ortholog_cohort, len(targets), len(ortholog_human_hgnc),
+        )
 
     # ----- Stage 3: Fetch FASTAs (human_canonical only for v1) -----
     # Ortholog and isoform FASTA-set construction reuses the existing
@@ -780,37 +983,70 @@ def main() -> int:
         event("fetch_complete", cohort="human_canonical",
               n_fetched=len(canonical_fasta_paths))
 
+    # Ortholog FASTAs: fetch up front so they're cached for DeepTMHMM. Each
+    # call returns {uniprot_acc: cached_fasta_path}. Empty when the cohort
+    # wasn't requested or compara_ortholog produced no targets.
+    ortholog_fasta_paths_by_cohort: dict[str, dict[str, Path]] = {}
+    for ortholog_cohort in ("mouse_ortholog", "cyno_ortholog"):
+        if ortholog_cohort not in cohorts or not cohort_accessions.get(ortholog_cohort):
+            continue
+        paths = fetch_sequences_for_accessions(
+            cohort_accessions[ortholog_cohort],
+            cache_dir=SEQUENCE_CACHE_DIR,
+            max_workers=args.fetch_workers,
+        )
+        ortholog_fasta_paths_by_cohort[ortholog_cohort] = paths
+        event(
+            "fetch_complete",
+            cohort=ortholog_cohort,
+            n_fetched=len(paths),
+            n_requested=len(cohort_accessions[ortholog_cohort]),
+        )
+
     # ----- Stage 4: DeepTMHMM run + parse, per cohort -----
     cohort_jsonl_paths: dict[str, Path] = {}
+    cohort_map_legacy = {
+        "human_canonical": "human_canonical_non_hla",
+        "human_isoforms": "human_isoforms_from_afdb_non_hla",
+        "mouse_ortholog": "mouse_ortholog_one2one_highconf_non_hla",
+        "cyno_ortholog": "cyno_ortholog_one2one_highconf_non_hla",
+    }
     for cohort in cohorts:
         cohort_dir = run_dir / cohort
         cohort_dir.mkdir(parents=True, exist_ok=True)
+        legacy_3line = (
+            REPO_ROOT / "data" / "external" / "deeptmhmm_surfaceome_predictions"
+            / cohort_map_legacy[cohort] / "predicted_topologies.3line"
+        )
+        already_predicted: set[str] = set()
+        if legacy_3line.exists():
+            try:
+                for rec in parse_3line(legacy_3line):
+                    already_predicted.add(rec["uniprot_accession"])
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("could not pre-scan legacy .3line %s: %s", cohort, exc)
 
         if cohort == "human_canonical":
-            # Skip DeepTMHMM for FASTAs whose base accession is already in the
-            # legacy .3line — that's the 2,359-protein backlog we don't need
-            # to re-predict. Only the gap (~3,321) goes through DeepTMHMM.
-            legacy_3line = (
-                REPO_ROOT / "data" / "external" / "deeptmhmm_surfaceome_predictions"
-                / "human_canonical_non_hla" / "predicted_topologies.3line"
-            )
-            already_predicted: set[str] = set()
-            if legacy_3line.exists():
-                try:
-                    for rec in parse_3line(legacy_3line):
-                        already_predicted.add(rec["uniprot_accession"])
-                except Exception as exc:  # noqa: BLE001
-                    logger.warning("could not pre-scan legacy .3line: %s", exc)
-            gap_fasta_paths = [
-                p for acc, p in canonical_fasta_paths.items()
-                if acc not in already_predicted
-            ]
-            logger.info(
-                "  %s: %d FASTAs total, %d already covered by legacy .3line, "
-                "%d going to DeepTMHMM", cohort, len(canonical_fasta_paths),
-                len(canonical_fasta_paths) - len(gap_fasta_paths),
-                len(gap_fasta_paths),
-            )
+            target_fasta_paths = canonical_fasta_paths
+        elif cohort in ortholog_fasta_paths_by_cohort:
+            target_fasta_paths = ortholog_fasta_paths_by_cohort[cohort]
+        else:
+            # human_isoforms or an ortholog cohort with no resolved targets:
+            # legacy-only path.
+            target_fasta_paths = {}
+
+        gap_fasta_paths = [
+            p for acc, p in target_fasta_paths.items() if acc not in already_predicted
+        ]
+        logger.info(
+            "  %s: %d FASTAs in scope, %d already in legacy .3line, "
+            "%d going to DeepTMHMM",
+            cohort, len(target_fasta_paths),
+            len(target_fasta_paths) - len(gap_fasta_paths),
+            len(gap_fasta_paths),
+        )
+        output_3line_paths: list[Path] = []
+        if gap_fasta_paths:
             output_3line_paths, skipped = run_cohort_deeptmhmm(
                 cohort=cohort,
                 cohort_dir=cohort_dir,
@@ -818,31 +1054,23 @@ def main() -> int:
                 max_workers=args.max_workers,
                 batch_size=args.batch_size,
             )
-            event("deeptmhmm_done", cohort=cohort,
-                  n_batches=len(output_3line_paths), n_skipped_too_long=len(skipped),
-                  n_reused_from_legacy=len(canonical_fasta_paths) - len(gap_fasta_paths))
-            # Append the legacy .3line so the JSONL ends with full coverage
-            # of any prior predictions in addition to the fresh batches.
-            if legacy_3line.exists():
-                output_3line_paths.append(legacy_3line)
-        else:
-            # Reuse pre-existing predictions for isoforms / orthologs in v1.
-            cohort_map = {
-                "human_isoforms": "human_isoforms_from_afdb_non_hla",
-                "mouse_ortholog": "mouse_ortholog_one2one_highconf_non_hla",
-                "cyno_ortholog": "cyno_ortholog_one2one_highconf_non_hla",
-            }
-            legacy = (
-                REPO_ROOT / "data" / "external" / "deeptmhmm_surfaceome_predictions"
-                / cohort_map[cohort] / "predicted_topologies.3line"
+            event(
+                "deeptmhmm_done", cohort=cohort,
+                n_batches=len(output_3line_paths),
+                n_skipped_too_long=len(skipped),
+                n_reused_from_legacy=len(target_fasta_paths) - len(gap_fasta_paths),
             )
-            if not legacy.exists():
-                logger.warning("  %s: legacy .3line not found at %s; cohort produces 0 rows",
-                               cohort, legacy.relative_to(REPO_ROOT))
-                continue
-            output_3line_paths = [legacy]
-            event("legacy_reuse", cohort=cohort,
-                  source=str(legacy.relative_to(REPO_ROOT)))
+        # Always include the legacy .3line so the JSONL ends with full coverage
+        # of any prior predictions in addition to the fresh batches.
+        if legacy_3line.exists():
+            output_3line_paths.append(legacy_3line)
+            if not gap_fasta_paths:
+                event("legacy_reuse", cohort=cohort,
+                      source=str(legacy_3line.relative_to(REPO_ROOT)))
+        if not output_3line_paths:
+            logger.warning("  %s: no .3line outputs (no fresh runs + no legacy) → 0 rows",
+                           cohort)
+            continue
 
         jsonl = parse_cohort_to_jsonl(
             cohort=cohort,
@@ -850,6 +1078,11 @@ def main() -> int:
             cohort_dir=jsonl_root / cohort,
             topology_version=args.topology_version,
             candidate_by_acc=candidate_by_acc,
+            ortholog_human_hgnc_by_acc=(
+                ortholog_human_hgnc_maps.get(cohort)
+                if cohort in ortholog_human_hgnc_maps
+                else None
+            ),
         )
         cohort_jsonl_paths[cohort] = jsonl
         event("cohort_parsed", cohort=cohort, jsonl=str(jsonl.relative_to(REPO_ROOT)))
