@@ -215,15 +215,40 @@
 }
 
 /* When ON, the toneClass applied at the call site (verdictYes /
- * verdictContextual / verdictNo / verdictUnknown) supplies the
- * matching background + text color via the rules at the bottom of
- * this file. We just clear the outline border so the colored fill
- * dominates. */
-.filterVerdictChip.verdictYes,
-.filterVerdictChip.verdictContextual,
-.filterVerdictChip.verdictNo,
-.filterVerdictChip.verdictUnknown {
+ * verdictContextual / verdictNo / verdictUnknown) paints the chip
+ * in the matching verdict-pill color. These selectors mirror the
+ * verdict-label colors defined further down this file — duplicated
+ * here because those rules are gated on `.verdictLabel`, which the
+ * filter chips don't carry. */
+.filterVerdictChip.verdictYes {
+  background: rgba(46, 122, 85, 0.14);
+  color: var(--success);
   border-color: transparent;
+}
+
+.filterVerdictChip.verdictNo {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+  border-color: transparent;
+}
+
+.filterVerdictChip.verdictContextual {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+  border-color: transparent;
+}
+
+.filterVerdictChip.verdictUnknown {
+  background: var(--bg-warm);
+  color: var(--muted);
+  border-color: transparent;
+}
+
+.filterVerdictChip.verdictYes:hover,
+.filterVerdictChip.verdictNo:hover,
+.filterVerdictChip.verdictContextual:hover,
+.filterVerdictChip.verdictUnknown:hover {
+  filter: brightness(0.94);
 }
 
 .downloadCount {
