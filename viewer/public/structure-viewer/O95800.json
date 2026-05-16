@@ -1,4 +1,5 @@
 {
+  "bcif_url": "https://alphafold.ebi.ac.uk/files/AF-O95800-F1-model_v6.bcif",
   "deeptmhmm_type": "TM",
   "latest_version": 6,
   "pdb_url": "https://alphafold.ebi.ac.uk/files/AF-O95800-F1-model_v6.pdb",

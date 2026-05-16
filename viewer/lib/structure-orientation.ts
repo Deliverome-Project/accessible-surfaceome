@@ -303,9 +303,113 @@ function applyOrientationTransform(
  *
  * Deterministic and side-effect-free; safe to call before
  * ``viewer.addModel(pdbText, "pdb")``.
+ *
+ * Used only by the legacy PDB-fallback path now. The primary path is
+ * ``orientLoadedStructure`` below, which mutates the already-parsed
+ * 3dmol atom array — that lets us drive the viewer from BCIF (no
+ * client-side text parsing).
  */
 export function orientPdbForTopology(pdbText: string, topology: string): string {
   const parsed = parsePdbForOrientation(pdbText);
   const transform = computeOrientationTransform(topology, parsed);
   return applyOrientationTransform(pdbText, transform);
+}
+
+/** Atom shape we read from 3dmol's `viewer.selectedAtoms({})`. We
+ *  only need x/y/z/atom/resi; AtomSpec has many more fields we ignore. */
+interface MutableAtom {
+  x?: number;
+  y?: number;
+  z?: number;
+  atom?: string;
+  resi?: number;
+}
+
+/**
+ * In-place orient an already-parsed structure so the membrane plane
+ * is horizontal, extracellular side up. Mutates each atom's x/y/z
+ * via the same I→O-onto-+Y rotation used by `orientPdbForTopology`,
+ * but reads the coords from 3dmol's atom array instead of from raw
+ * PDB text — so the viewer can accept BCIF (or any other format
+ * 3dmol parses natively) without us needing a JS PDB / mmCIF parser.
+ *
+ * Returns `true` when a meaningful transform was applied, `false`
+ * when topology / atom counts were too sparse and atoms were left
+ * unchanged. Callers should call `viewer.render()` after a `true`.
+ */
+export function orientLoadedStructure(
+  atoms: MutableAtom[],
+  topology: string,
+): boolean {
+  if (!topology || atoms.length === 0) return false;
+  // Build CA-by-residue map from the already-parsed atom array.
+  const caByResidue = new Map<number, Vec3>();
+  for (const a of atoms) {
+    if (a.atom !== "CA") continue;
+    if (
+      typeof a.resi !== "number" ||
+      a.resi < 1 ||
+      typeof a.x !== "number" ||
+      typeof a.y !== "number" ||
+      typeof a.z !== "number"
+    ) {
+      continue;
+    }
+    if (!caByResidue.has(a.resi)) {
+      caByResidue.set(a.resi, [a.x, a.y, a.z]);
+    }
+  }
+  if (caByResidue.size === 0) return false;
+
+  // Reuse the existing centroid + rotation math by handing it a
+  // ParsedPdb-shaped object (only `atoms` and `caByResidue` are read
+  // by computeOrientationTransform — `lines` is unused).
+  const parsedShim: ParsedPdb = { lines: [], atoms: [], caByResidue };
+  const transform = computeOrientationTransform(topology, parsedShim);
+  if (!transform) return false;
+
+  // First pass: apply rotation + flip + meanMY translation. Record
+  // tx/tz extremes so we can re-center horizontally in pass two.
+  let minX = Number.POSITIVE_INFINITY;
+  let maxX = Number.NEGATIVE_INFINITY;
+  let minZ = Number.POSITIVE_INFINITY;
+  let maxZ = Number.NEGATIVE_INFINITY;
+  const transformed: { atom: MutableAtom; t: Vec3 }[] = [];
+  for (const atom of atoms) {
+    if (
+      typeof atom.x !== "number" ||
+      typeof atom.y !== "number" ||
+      typeof atom.z !== "number"
+    ) {
+      continue;
+    }
+    const shifted = vectorSub(
+      [atom.x, atom.y, atom.z],
+      transform.membraneCenter,
+    );
+    const rotated = matrixVecMul(transform.rotateToY, shifted);
+    let tx = rotated[0];
+    let ty = rotated[1];
+    let tz = rotated[2];
+    if (transform.flipY) {
+      ty = -ty;
+      tz = -tz;
+    }
+    ty -= transform.meanMY;
+    transformed.push({ atom, t: [tx, ty, tz] });
+    if (tx < minX) minX = tx;
+    if (tx > maxX) maxX = tx;
+    if (tz < minZ) minZ = tz;
+    if (tz > maxZ) maxZ = tz;
+  }
+  const centerX =
+    Number.isFinite(minX) && Number.isFinite(maxX) ? (minX + maxX) / 2 : 0;
+  const centerZ =
+    Number.isFinite(minZ) && Number.isFinite(maxZ) ? (minZ + maxZ) / 2 : 0;
+  for (const { atom, t } of transformed) {
+    atom.x = t[0] - centerX;
+    atom.y = t[1];
+    atom.z = t[2] - centerZ;
+  }
+  return true;
 }

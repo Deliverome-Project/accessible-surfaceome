@@ -1,7 +1,10 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { orientPdbForTopology } from "../../../lib/structure-orientation";
+import {
+  orientLoadedStructure,
+  orientPdbForTopology,
+} from "../../../lib/structure-orientation";
 import {
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
@@ -52,6 +55,16 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       type Mod3D = typeof import("3dmol");
       const Mod = (await import("3dmol")) as Mod3D & { default?: Mod3D };
       const $3Dmol: Mod3D = Mod.default ?? Mod;
+      // BCIF (~22% smaller on the wire after gzip) was attempted but
+      // 3dmol's BCIF parser dereferences `cats.atom_site.getField(...)`
+      // without guarding against partial AFDB BCIF schemas — the
+      // current build fails with "Cannot read properties of undefined
+      // (reading 'getField')" on AF-* binaries. The `bcif_url` field
+      // is still baked into the per-UniProt JSON so a future viewer
+      // (or a patched 3dmol) can switch over without re-baking; the
+      // post-load `orientLoadedStructure` helper exists to drive that
+      // path.
+
       // 1) Prefer the build-time-baked pdbUrl. Falls back to the
       //    legacy v4 URL if the build script couldn't enrich this
       //    entry (offline build, AFDB unreachable, etc.).
@@ -92,12 +105,10 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       }
       const rawPdb = await pdbResp.text();
 
-      // Rotate the PDB so the membrane plane is horizontal,
-      // extracellular side up. Ported from the deliverome-internal
-      // structure-site viewer; uses DeepTMHMM's per-residue
-      // topology to find the M/O/I centroids, then rotates I→O onto
-      // +Y. Falls back to the raw PDB when topology is too sparse
-      // (small ECDs / soluble proteins).
+      // Rotate the PDB text up front so the membrane plane is
+      // horizontal, extracellular side up. (When BCIF lands, swap to
+      // `orientLoadedStructure(viewer.selectedAtoms({}), data.topology)`
+      // after `viewer.addModel(bcifBuf, "bcif")`.)
       const pdbText = orientPdbForTopology(rawPdb, data.topology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {

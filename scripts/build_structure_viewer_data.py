@@ -84,6 +84,7 @@ class TopologyRecord(TypedDict):
     source_cohort: str
     source_tool: str
     pdb_url: str | None
+    bcif_url: str | None
     latest_version: int | None
 
 
@@ -149,8 +150,8 @@ def fetch_afdb_prediction(
     cache_dir: Path = AFDB_CACHE_DIR,
     refresh: bool = False,
     timeout_s: float = 10.0,
-) -> tuple[str | None, int | None]:
-    """Return ``(pdb_url, latest_version)`` for ``uniprot`` from AFDB.
+) -> tuple[str | None, str | None, int | None]:
+    """Return ``(pdb_url, bcif_url, latest_version)`` for ``uniprot`` from AFDB.
 
     Bake-once cache: if ``{cache_dir}/{uniprot}.json`` exists and
     ``refresh`` is False, the cached response is used verbatim — no
@@ -159,9 +160,9 @@ def fetch_afdb_prediction(
     we care about.
 
     On any network / parse failure with no cached fallback, returns
-    ``(None, None)`` and logs a warning to stderr. The runtime
+    ``(None, None, None)`` and logs a warning to stderr. The runtime
     StructureViewer falls back to the legacy ``v4`` URL if the baked
-    ``pdb_url`` is null.
+    URLs are null.
     """
     cache_path = cache_dir / f"{uniprot}.json"
     if cache_path.exists() and not refresh:
@@ -182,27 +183,32 @@ def fetch_afdb_prediction(
             f"[afdb] WARN: prediction fetch failed for {uniprot}: {exc}",
             file=sys.stderr,
         )
-        return (None, None)
+        return (None, None, None)
 
     cache_dir.mkdir(parents=True, exist_ok=True)
     cache_path.write_text(json.dumps(payload, indent=2) + "\n")
     return _extract_pdb_url(payload)
 
 
-def _extract_pdb_url(payload: object) -> tuple[str | None, int | None]:
-    """AFDB returns an array; pull the first entry's pdbUrl/latestVersion."""
+def _extract_pdb_url(
+    payload: object,
+) -> tuple[str | None, str | None, int | None]:
+    """AFDB returns an array; pull the first entry's pdbUrl/bcifUrl/latestVersion."""
     if not isinstance(payload, list) or not payload:
-        return (None, None)
+        return (None, None, None)
     first = payload[0]
     if not isinstance(first, dict):
-        return (None, None)
+        return (None, None, None)
     pdb_url = first.get("pdbUrl")
+    bcif_url = first.get("bcifUrl")
     latest_version = first.get("latestVersion")
     if pdb_url is not None and not isinstance(pdb_url, str):
         pdb_url = None
+    if bcif_url is not None and not isinstance(bcif_url, str):
+        bcif_url = None
     if latest_version is not None and not isinstance(latest_version, int):
         latest_version = None
-    return (pdb_url, latest_version)
+    return (pdb_url, bcif_url, latest_version)
 
 
 def build_record(
@@ -214,6 +220,7 @@ def build_record(
     source_cohort: str,
     source_tool: str,
     pdb_url: str | None = None,
+    bcif_url: str | None = None,
     latest_version: int | None = None,
 ) -> TopologyRecord:
     ranges = topology_ranges(topology)
@@ -229,6 +236,7 @@ def build_record(
         "source_cohort": source_cohort,
         "source_tool": source_tool,
         "pdb_url": pdb_url,
+        "bcif_url": bcif_url,
         "latest_version": latest_version,
     }
 
@@ -294,12 +302,13 @@ def main() -> None:
             continue
 
         pdb_url: str | None = None
+        bcif_url: str | None = None
         latest_version: int | None = None
         if not args.skip_afdb:
             refresh = args.refresh_afdb or (
                 refresh_set is not None and uniprot in refresh_set
             )
-            pdb_url, latest_version = fetch_afdb_prediction(
+            pdb_url, bcif_url, latest_version = fetch_afdb_prediction(
                 uniprot, refresh=refresh
             )
             if pdb_url is not None:
@@ -315,6 +324,7 @@ def main() -> None:
             source_cohort=args.source_cohort,
             source_tool=args.source_tool,
             pdb_url=pdb_url,
+            bcif_url=bcif_url,
             latest_version=latest_version,
         )
         out_path = args.output_dir / f"{uniprot}.json"
