@@ -101,17 +101,36 @@ GIST_ORIGINS = [
 ]
 
 # Heavy data outputs to include in the Zenodo deposit alongside the
-# repo tarball. Paths are relative to REPO_ROOT. Uncomment / add as
-# the files become ready.
+# repo tarball. Each entry is either:
+#
+#   - a string starting with "https://" or "http://" — fetched from
+#     the URL at upload time; saved into the Zenodo deposit as the
+#     URL's basename (the last path segment)
+#
+#   - a dict {"url": "https://...", "filename": "name.ext"} — fetched
+#     from the URL, saved into the Zenodo deposit under the explicit
+#     filename. Use this when the URL doesn't end with a meaningful
+#     filename (e.g., an API path) or when you want a different
+#     destination name.
+#
+#   - any other string — treated as a path relative to REPO_ROOT;
+#     read from the local filesystem
 #
 # CONFIGURE BEFORE RUNNING. The default list is empty; if you run with
 # an empty list the script will warn and proceed without extras.
-EXTRA_FILES_RELATIVE: list[str] = [
+EXTRA_FILES: list[str | dict[str, str]] = [
+    # Local-file examples:
     # "data/analysis/triage/triage-run-complete-with-reasoning.json",
-    # "data/analysis/benchmark/benchmark-full-reasoning.json",
     # "data/analysis/deep_dives/deep_dive_1.json",
-    # "data/analysis/deep_dives/deep_dive_2.json",
-    # "data/analysis/deep_dives/deep_dive_3.json",
+    #
+    # API-fetch examples (string form — destination uses URL basename):
+    # "https://api.deliverome.org/triage/runs/latest.json",
+    #
+    # API-fetch with explicit destination filename (dict form):
+    # {
+    #     "url": "https://api.deliverome.org/benchmark/runs?format=jsonl&latest=1",
+    #     "filename": "benchmark-full-reasoning.jsonl",
+    # },
 ]
 
 # Seed metadata for the Zenodo deposit. The Zenodo UI lets you edit
@@ -234,6 +253,80 @@ def poll_swh_until_done(origin: str, *, max_wait_s: int = 1200) -> str | None:
 
 # ── Repo snapshot ──────────────────────────────────────────────────────
 
+def _resolve_extra_file(
+    entry: str | dict[str, str], *, dry_run: bool,
+) -> tuple[Path, bool] | None:
+    """Resolve one EXTRA_FILES entry to a (local_path, cleanup) pair.
+
+    Three input shapes:
+
+      - bare HTTP(S) URL: fetched to a tempfile, returned with
+        cleanup=True so the caller deletes it after upload. Destination
+        name is the URL's last path segment.
+
+      - {"url": "...", "filename": "..."} dict: same fetch behaviour
+        but destination name is the explicit filename.
+
+      - other string: treated as a path relative to REPO_ROOT. If the
+        local file doesn't exist, warns and returns None.
+
+    Raises on fetch errors so the caller can decide whether to skip.
+    """
+    # Bare URL
+    if isinstance(entry, str) and entry.startswith(("http://", "https://")):
+        return _download_to_tempfile(entry, filename=None, dry_run=dry_run), True
+
+    # Dict form: {url, filename}
+    if isinstance(entry, dict):
+        url = entry.get("url")
+        filename = entry.get("filename")
+        if not url:
+            raise ValueError("dict entry missing 'url'")
+        return _download_to_tempfile(url, filename=filename, dry_run=dry_run), True
+
+    # Local path
+    if isinstance(entry, str):
+        path = REPO_ROOT / entry
+        if not path.exists():
+            warn(f"  - missing local file (will skip): {entry}")
+            return None
+        return path, False
+
+    raise ValueError(f"unsupported entry type: {type(entry).__name__}")
+
+
+def _download_to_tempfile(
+    url: str, *, filename: str | None, dry_run: bool,
+) -> Path:
+    """Fetch `url` to a tempfile and return the local path.
+
+    `filename` overrides the destination name (otherwise derived from
+    the URL's last path segment). In dry-run mode, returns a fake Path
+    of length 0 without making any HTTP request.
+    """
+    name = filename or urllib.parse.unquote(
+        urllib.parse.urlparse(url).path.rsplit("/", 1)[-1]
+    ) or "download.bin"
+    if not name:
+        raise ValueError(f"could not derive filename from URL: {url}")
+
+    tmp_root = Path(REPO_ROOT) / "_extra-download"
+    if dry_run:
+        ok(f"[dry-run] would fetch {url}  → upload as {name}")
+        # Return a fake path; the upload step also dry-runs.
+        return tmp_root / name
+    tmp_root.mkdir(exist_ok=True)
+    out = tmp_root / name
+    with httpx.stream("GET", url, timeout=300, follow_redirects=True) as r:
+        r.raise_for_status()
+        with out.open("wb") as fh:
+            for chunk in r.iter_bytes(chunk_size=1 << 20):  # 1 MiB
+                fh.write(chunk)
+    size_mb = out.stat().st_size / 1024 / 1024
+    ok(f"fetched {url} ({size_mb:.1f} MB) → {out.name}")
+    return out
+
+
 def git_archive_repo(out_path: Path, *, dry_run: bool) -> str:
     """Snapshot the repo at HEAD as a tar.gz. Returns the HEAD commit SHA."""
     head_sha = subprocess.check_output(
@@ -290,20 +383,24 @@ def zenodo_create_deposit(token: str, metadata: dict, *, dry_run: bool) -> dict[
     return r.json()
 
 
-def zenodo_upload_file(bucket_url: str, token: str, local_path: Path, *, dry_run: bool) -> None:
+def zenodo_upload_file(
+    bucket_url: str, token: str, local_path: Path, *, dry_run: bool,
+    destination_name: str | None = None,
+) -> None:
+    dest = destination_name or local_path.name
     if dry_run:
         size_str = (
             f"{local_path.stat().st_size / 1024 / 1024:.1f} MB"
             if local_path.exists()
             else "size unknown — file not yet created"
         )
-        ok(f"[dry-run] would upload {local_path.name} ({size_str}) → {bucket_url}/{local_path.name}")
+        ok(f"[dry-run] would upload {local_path.name} ({size_str}) → {bucket_url}/{dest}")
         return
     size_mb = local_path.stat().st_size / 1024 / 1024
-    ok(f"uploading {local_path.name} ({size_mb:.1f} MB) → {bucket_url}/{local_path.name}")
+    ok(f"uploading {local_path.name} ({size_mb:.1f} MB) → {bucket_url}/{dest}")
     with local_path.open("rb") as fh:
         r = httpx.put(
-            f"{bucket_url}/{local_path.name}",
+            f"{bucket_url}/{dest}",
             content=fh.read(),
             headers={"Authorization": f"Bearer {token}"},
             timeout=900,  # 15 min for large files
@@ -379,7 +476,7 @@ def phase_audit_data_inputs() -> None:
     * If a ``swhid`` or ``doi`` is already set on the entry, treat it
       as durably referenced and skip.
 
-    This phase doesn't ADD anything to EXTRA_FILES_RELATIVE — it just
+    This phase doesn't ADD anything to EXTRA_FILES — it just
     surfaces a checklist for the operator. Adding to the deposit is a
     deliberate human step.
     """
@@ -458,7 +555,7 @@ def phase_audit_data_inputs() -> None:
     print()
     print(
         "  Review: any '⚠ review' rows above should probably be added to "
-        "EXTRA_FILES_RELATIVE (or deposited separately) before publishing.\n"
+        "EXTRA_FILES (or deposited separately) before publishing.\n"
         "  Edit the top of this script and re-run."
     )
     print()
@@ -468,7 +565,7 @@ def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool
     """Create Zenodo draft and upload artifacts.
 
     By default this is a HEAVY-DATA deposit: just the files in
-    EXTRA_FILES_RELATIVE. The repo tarball is omitted because the
+    EXTRA_FILES. The repo tarball is omitted because the
     GitHub-Zenodo auto-archive handles routine code-release deposits
     in a separate record series.
 
@@ -509,22 +606,34 @@ def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool
         announce(f"Uploading repo tarball to deposit {deposit_id}")
         zenodo_upload_file(bucket, token or "", tarball, dry_run=dry_run)
 
-    # Upload extra heavy data files
-    announce("Uploading heavy data files (EXTRA_FILES_RELATIVE)")
-    extra_paths = [REPO_ROOT / p for p in EXTRA_FILES_RELATIVE]
-    if not extra_paths:
+    # Upload extra heavy data files. Each entry in EXTRA_FILES is
+    # either a local path, a bare URL, or a {url, filename} dict.
+    announce("Uploading heavy data files (EXTRA_FILES)")
+    if not EXTRA_FILES:
         warn(
-            "EXTRA_FILES_RELATIVE is empty — uncomment / add paths in the "
+            "EXTRA_FILES is empty — uncomment / add entries in the "
             "config block at the top of this script to bundle heavy data."
         )
-    found = [p for p in extra_paths if p.exists()]
-    missing = [p for p in extra_paths if not p.exists()]
-    if missing:
-        warn("missing files (will skip):")
-        for p in missing:
-            warn(f"  - {p.relative_to(REPO_ROOT)}")
-    for p in found:
-        zenodo_upload_file(bucket, token or "", p, dry_run=dry_run)
+    for entry in EXTRA_FILES:
+        try:
+            resolved = _resolve_extra_file(entry, dry_run=dry_run)
+        except Exception as exc:
+            warn(f"skipping entry {entry!r}: {exc}")
+            continue
+        if resolved is None:
+            continue  # already warned (missing local file)
+        local_path, cleanup = resolved
+        try:
+            zenodo_upload_file(
+                bucket, token or "", local_path,
+                dry_run=dry_run, destination_name=local_path.name,
+            )
+        finally:
+            if cleanup:
+                try:
+                    local_path.unlink()
+                except FileNotFoundError:
+                    pass
 
     # Cleanup local tarball (if we created one)
     if tarball is not None and not dry_run and tarball.exists():
@@ -545,6 +654,101 @@ def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool
     print(
         "    4. After publishing, populate `doi` in FIGURE_PROVENANCE "
         "in scripts/embed_figure_gist_metadata.py and re-run that script"
+    )
+    print()
+
+
+def phase_github_release(tag: str, *, dry_run: bool) -> None:
+    """Tag HEAD, push the tag, and create a GitHub Release.
+
+    Once the GitHub Release is published, the Zenodo GitHub-archive
+    integration (assumed enabled) auto-deposits the repo tarball at
+    that tag as a new version in the code record series.
+
+    Pre-conditions checked:
+      - working tree is clean (or in dry-run mode)
+      - `gh` CLI is authenticated
+      - tag doesn't already exist locally (refuse to overwrite)
+    """
+    announce(f"PHASE 4 — Tag + GitHub Release: {tag}")
+
+    if dry_run:
+        ok(f"[dry-run] would run: git tag -a {tag} -m '<auto-generated>'")
+        ok(f"[dry-run] would run: git push origin {tag}")
+        ok(f"[dry-run] would run: gh release create {tag} --generate-notes")
+        ok("[dry-run] Zenodo auto-archive would fire on the release event")
+        return
+
+    # Working tree must be clean — refuse to tag on top of dirty state
+    status = subprocess.check_output(
+        ["git", "status", "--porcelain"], cwd=REPO_ROOT,
+    ).decode().strip()
+    if status:
+        bail(
+            f"working tree not clean — refusing to tag.\n"
+            f"  modified: {status.splitlines()[:5]}"
+        )
+
+    # Tag must not already exist
+    existing = subprocess.run(
+        ["git", "rev-parse", "--verify", "--quiet", f"refs/tags/{tag}"],
+        cwd=REPO_ROOT, capture_output=True,
+    )
+    if existing.returncode == 0:
+        bail(
+            f"tag {tag} already exists locally — refusing to overwrite.\n"
+            f"  delete it first with `git tag -d {tag}` if intentional."
+        )
+
+    # gh must be authed
+    gh_auth = subprocess.run(
+        ["gh", "auth", "status"], cwd=REPO_ROOT, capture_output=True,
+    )
+    if gh_auth.returncode != 0:
+        bail(
+            "`gh` CLI is not authenticated — run `gh auth login` first."
+        )
+
+    # Tag and push
+    subprocess.run(
+        ["git", "tag", "-a", tag, "-m", f"Release {tag}"],
+        cwd=REPO_ROOT, check=True,
+    )
+    ok(f"tagged {tag}")
+    subprocess.run(
+        ["git", "push", "origin", tag], cwd=REPO_ROOT, check=True,
+    )
+    ok(f"pushed {tag} to origin")
+
+    # Create the GitHub Release with auto-generated notes
+    subprocess.run(
+        ["gh", "release", "create", tag, "--generate-notes"],
+        cwd=REPO_ROOT, check=True,
+    )
+    ok(f"created GitHub Release {tag}")
+    print()
+    print(
+        "  Zenodo GitHub-archive integration should fire within a few "
+        "minutes. Visit https://zenodo.org/account/settings/github/ "
+        "to confirm, or watch for the new code-record DOI."
+    )
+    print()
+
+
+def _print_release_hint() -> None:
+    """If --gh-release wasn't passed, remind the operator how to do it."""
+    announce("Next step (optional): GitHub Release → Zenodo code-record")
+    print()
+    print(
+        "  To refresh the code-record DOI series, tag a release in this repo.\n"
+        "  Zenodo's GitHub-archive integration (must be enabled) auto-deposits.\n"
+    )
+    print("    git tag -a vX.Y.Z -m 'Release vX.Y.Z'")
+    print("    git push origin vX.Y.Z")
+    print("    gh release create vX.Y.Z --generate-notes")
+    print()
+    print(
+        "  Or re-run this script with --gh-release vX.Y.Z to do it automatically."
     )
     print()
 
@@ -581,6 +785,17 @@ def main() -> int:
             "if you've disabled auto-archive and want one bundled record."
         ),
     )
+    ap.add_argument(
+        "--gh-release",
+        metavar="TAG",
+        help=(
+            "after the Zenodo phase finishes, tag HEAD as TAG (e.g. v1.2.0), "
+            "push the tag, and create a GitHub Release with auto-generated notes. "
+            "Triggers the GitHub-Zenodo auto-archive to mint a code-record DOI. "
+            "OFF by default — the script prints the commands instead and lets "
+            "you decide when to tag."
+        ),
+    )
     args = ap.parse_args()
 
     swh_results: dict[str, str | None] = {}
@@ -600,6 +815,11 @@ def main() -> int:
         )
     else:
         warn("--skip-zenodo: skipping Zenodo deposit")
+
+    if args.gh_release:
+        phase_github_release(args.gh_release, dry_run=args.dry_run)
+    else:
+        _print_release_hint()
 
     # Final summary
     announce("DONE")
