@@ -110,6 +110,55 @@ const VERDICT_OPTIONS: { key: VerdictKey; label: string }[] = [
   { key: "none", label: "no call" },
 ];
 
+/** The canonical TriageReason enum from
+ *  ``src/accessible_surfaceome/tools/_shared/models.py`` (YesReason,
+ *  ContextualReason, NoReason). Grouped by verdict here so the filter
+ *  UI can render them under three subheads, but every group's "other"
+ *  collapses to the same wire value, so they share a filter state. */
+const REASON_GROUPS: { verdict: VerdictKey; label: string; reasons: string[] }[] = [
+  {
+    verdict: "yes",
+    label: "yes",
+    reasons: [
+      "classical_surface_receptor",
+      "gpi_anchored",
+      "multipass_with_exposed_loops",
+      "extracellular_face_protein",
+      "stable_complex_partner",
+    ],
+  },
+  {
+    verdict: "contextual",
+    label: "contextual",
+    reasons: [
+      "cell_state_induced",
+      "tissue_restricted_surface",
+      "lysosomal_exocytosis",
+      "dual_localization",
+      "stable_surface_attachment",
+    ],
+  },
+  {
+    verdict: "no",
+    label: "no",
+    reasons: [
+      "cytoplasmic",
+      "nuclear",
+      "mitochondrial_internal",
+      "endomembrane_resident",
+      "nuclear_envelope",
+      "inner_leaflet_anchored",
+      "secreted_only",
+      "pmhc_only_intracellular",
+    ],
+  },
+];
+const REASON_OTHER = "other";
+
+function prettyReason(r: string): string {
+  return r.replace(/_/g, " ");
+}
+
 /** Schema fields the advanced-filter panel could surface once the
  *  Worker payload extends — currently the catalog row doesn't carry
  *  `subcategory` or `headline_risks` (those live on the per-gene
@@ -159,18 +208,17 @@ export function CatalogTable({
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   // Advanced filters. `dbFilter` is AND-semantics: a row passes only
   // if every DB in the set voted yes (intersection of `DB ∈ filter`
-  // and `row.db[DB] === 1`). `verdictFilter` is OR-semantics: a row
-  // passes if its triage verdict (or "none" when no run on file) is
-  // in the set. `reasonQuery` is a case-insensitive substring match
-  // against `predicted_reason` (with underscores treated as spaces
-  // so the user can search "secreted only" or "secreted_only" and
-  // both work).
+  // and `row.db[DB] === 1`). `verdictFilter` and `reasonFilter` are
+  // both OR-semantics — a row passes if its verdict / reason is in
+  // the (non-empty) set. Reasons are a closed enum (TriageReason in
+  // models.py: 17 fixed values + "other"), so the UI is a chip
+  // multi-select grouped by verdict bucket, not a free-text input.
   const [showFilters, setShowFilters] = useState(false);
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
     new Set(),
   );
-  const [reasonQuery, setReasonQuery] = useState("");
+  const [reasonFilter, setReasonFilter] = useState<Set<string>>(new Set());
 
   function toggleDbFilter(key: DbKey) {
     setDbFilter((prev) => {
@@ -188,13 +236,21 @@ export function CatalogTable({
       return next;
     });
   }
+  function toggleReasonFilter(key: string) {
+    setReasonFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
   function clearAdvancedFilters() {
     setDbFilter(new Set());
     setVerdictFilter(new Set());
-    setReasonQuery("");
+    setReasonFilter(new Set());
   }
   const activeFilterCount =
-    dbFilter.size + verdictFilter.size + (reasonQuery.trim() ? 1 : 0);
+    dbFilter.size + verdictFilter.size + reasonFilter.size;
   // Side-rationale drawer: one selected symbol at a time. Clicking the
   // same symbol again toggles the drawer off. The /v1/triage/{symbol}
   // fetch is lazy — kicked off the first time a symbol is selected,
@@ -254,7 +310,6 @@ export function CatalogTable({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const reasonNeedle = reasonQuery.trim().toLowerCase().replace(/_/g, " ");
     const dbList = Array.from(dbFilter);
     return rows.filter((r) => {
       if (q) {
@@ -280,15 +335,13 @@ export function CatalogTable({
           v === "yes" || v === "contextual" || v === "no" ? v : "none";
         if (!verdictFilter.has(slot)) return false;
       }
-      if (reasonNeedle) {
-        const reason = (r.triage_by_model[1]?.reason ?? "")
-          .toLowerCase()
-          .replace(/_/g, " ");
-        if (!reason.includes(reasonNeedle)) return false;
+      if (reasonFilter.size > 0) {
+        const reason = r.triage_by_model[1]?.reason ?? "";
+        if (!reasonFilter.has(reason)) return false;
       }
       return true;
     });
-  }, [rows, query, quick, dbFilter, verdictFilter, reasonQuery]);
+  }, [rows, query, quick, dbFilter, verdictFilter, reasonFilter]);
 
   const sorted = useMemo(() => {
     const copy = filtered.slice();
@@ -448,17 +501,52 @@ export function CatalogTable({
             </span>
           </div>
 
-          <div className={styles.filterRow}>
+          <div className={styles.filterReason}>
             <span className={styles.filterLabel}>Reason</span>
-            <input
-              type="search"
-              className={styles.filterInput}
-              placeholder="substring match (e.g. multipass, secreted, gpcr)"
-              value={reasonQuery}
-              onChange={(e) => setReasonQuery(e.target.value)}
-              autoComplete="off"
-              spellCheck={false}
-            />
+            <div className={styles.filterReasonGroups}>
+              {REASON_GROUPS.map((g) => (
+                <div className={styles.filterReasonGroup} key={`rg-${g.verdict}`}>
+                  <span className={styles.filterReasonGroupLabel}>
+                    {g.label}
+                  </span>
+                  <div className={styles.filterChips}>
+                    {g.reasons.map((r) => {
+                      const on = reasonFilter.has(r);
+                      return (
+                        <button
+                          key={`rf-${r}`}
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleReasonFilter(r)}
+                          aria-pressed={on}
+                        >
+                          {prettyReason(r)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <div className={styles.filterReasonGroup}>
+                <span className={styles.filterReasonGroupLabel}>any</span>
+                <div className={styles.filterChips}>
+                  {(() => {
+                    const on = reasonFilter.has(REASON_OTHER);
+                    return (
+                      <button
+                        type="button"
+                        className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                        onClick={() => toggleReasonFilter(REASON_OTHER)}
+                        aria-pressed={on}
+                        title="Catch-all bucket the agent uses when nothing else fits"
+                      >
+                        other
+                      </button>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
           </div>
 
           {activeFilterCount > 0 ? (

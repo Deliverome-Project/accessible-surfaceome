@@ -191,29 +191,39 @@
   font-style: italic;
 }
 
-.filterInput {
-  flex: 1 1 16rem;
-  max-width: 28rem;
-  padding: 0.3rem 0.6rem;
-  font-family: var(--font-sans);
-  font-size: 0.8rem;
-  color: var(--ink);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+/* Reason filter — the TriageReason enum is closed (17 values + other),
+ * so the picker is a chip grid grouped by verdict. The whole row
+ * gets its own layout to align the label with the multi-group block. */
+.filterReason {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-2) var(--space-3);
 }
 
-.filterInput:focus-visible {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-soft);
+.filterReasonGroups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-.filterInput::-webkit-search-cancel-button,
-.filterInput::-webkit-search-decoration {
-  -webkit-appearance: none;
-  appearance: none;
-  display: none;
+.filterReasonGroup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+}
+
+.filterReasonGroupLabel {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 4.5rem;
+  font-style: italic;
 }
 
 .filterFoot {
