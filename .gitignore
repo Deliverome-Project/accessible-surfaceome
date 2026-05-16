@@ -105,5 +105,10 @@ data/external/ensembl_compara_paralogs/
 # UniProt's REST endpoint and intentionally not version-controlled.
 data/external/sequences/
 
+# Ortholog Ensembl→UniProt resolution cache, written incrementally by
+# scripts/run_topology_sweep.py during mouse + cyno ortholog stages.
+# Idempotent re-generation; not version-controlled.
+data/external/ortholog_uniprot_resolution.tsv
+
 # Claude Code dev-server preview config — local-only, not for the repo.
 .claude/launch.json
