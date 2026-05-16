@@ -857,14 +857,17 @@ def main() -> int:
     # ----- Stage 5: paralogs + ECD identity -----
     paralog_jsonl: Path | None = None
     if not args.skip_paralogs and "human_canonical" in cohort_jsonl_paths:
-        # Pass Ensembl gene IDs (stable, from gene_identifier) to the BioMart
-        # pull on small dry runs. The full sweep doesn't pass an override
-        # and the paralog module uses its default cohort input (which now
-        # also reads gene_identifier rather than the HGNC TSV).
-        override_ensembl_ids = (
-            [c.ensembl_gene for c in candidates if c.ensembl_gene]
-            if len(candidates) <= 25  # small dry-run heuristic
-            else []
+        # ALWAYS pass the candidate set's Ensembl gene IDs (resolved via
+        # gene_identifier) to the BioMart pull — no fallback to the legacy
+        # candidate_universe-TSV + HGNC-TSV path. The HGNC TSV isn't
+        # hydrated in this worktree and the legacy path's symbol-based
+        # resolution is exactly the bug class PR #30 fixes.
+        override_ensembl_ids = [
+            c.ensembl_gene for c in candidates if c.ensembl_gene
+        ]
+        logger.info(
+            "paralog pull: %d candidates → %d Ensembl gene IDs going to BioMart",
+            len(candidates), len(override_ensembl_ids),
         )
         paralog_csv = maybe_pull_paralogs(override_ensembl_ids=override_ensembl_ids)
         if paralog_csv is not None:
