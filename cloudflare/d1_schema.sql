@@ -348,3 +348,68 @@ SELECT
     d.created_at             AS deep_dive_at
 FROM triage_run t
 LEFT JOIN deep_dive_latest d ON d.gene_symbol = t.gene_symbol;
+
+
+-- ---------------------------------------------------------------------------
+-- gene_identifier — single source of truth for resolved stable identifiers
+-- per gene. Lets every downstream tool (D1 query, viewer, figure script,
+-- agent) look up the canonical (uniprot_acc, ensembl_gene, ncbi_gene_id)
+-- for a gene without re-resolving from a symbol — which was historically
+-- where the symbol-keyed resolver bugs (CCR4 → NOCT, COX1 → PTGS1, WAS →
+-- MT-RNR1, etc.) entered the pipeline.
+--
+-- Populated by scripts/build_gene_identifier_table.py, which iterates the
+-- cohort TSV (Homo_sapiens.protein_coding.with_hgnc.tsv) and calls
+-- resolve_by_hgnc_id() for every row. Resolver-version-pinned so a future
+-- resolver change can repopulate without losing the audit trail.
+--
+-- HGNC ID is the natural PK because it's the only identifier with all
+-- three properties: 1-per-gene (UniProt acc is per-protein, multiple per
+-- gene for HLA/Ig/TCR clusters), never reassigned (HGNC retires withdrawn
+-- IDs rather than reusing them), and the resolver's canonical entry point
+-- per CLAUDE.md's "Gene identifier resolution" section.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS gene_identifier (
+    hgnc_id                   TEXT PRIMARY KEY,    -- 'HGNC:1234'
+
+    -- Symbols. Stored for human readability + free-text search joins,
+    -- never as a query/join key. `hgnc_symbol` is HGNC's current primary;
+    -- `cohort_symbol` is whatever NCBI gene_info had at cohort build time
+    -- (the two disagree for ~27 of 19k cohort rows where HGNC has applied
+    -- a rename UniProt hasn't synced).
+    hgnc_symbol               TEXT NOT NULL,
+    cohort_symbol             TEXT,
+
+    -- Stable IDs derived from HGNC + UniProt at resolution time. Every
+    -- downstream tool keys on the most appropriate of these per
+    -- "Gene identifier resolution" → "Downstream searches" in CLAUDE.md.
+    uniprot_acc               TEXT,                -- canonical reviewed Swiss-Prot
+    ncbi_gene_id              INTEGER,             -- from HGNC entrez_id
+    ensembl_gene              TEXT,                -- ENSG; from HGNC
+    ensembl_canonical_protein TEXT,                -- ENSP; from UniProt xref
+
+    -- Provenance — which resolver path / version produced this row.
+    -- `resolver_path` ∈ {'hgnc_xref_primary_name_age', 'hgnc_xref_single',
+    -- 'hgnc_symbol_fallback', 'hgnc_prev_symbol_fallback'} — see
+    -- src/accessible_surfaceome/tools/gene_lookup.py::_pick_canonical_uniprot
+    -- and resolve_by_hgnc_id for the path definitions.
+    resolver_path             TEXT NOT NULL,
+    resolver_version          TEXT NOT NULL,       -- git SHA at resolve time
+    resolved_at               TEXT NOT NULL DEFAULT (datetime('now')),
+
+    -- Audit aids: hgnc_xref_count = how many UniProt accs HGNC listed
+    -- (1 → unambiguous; ≥2 → went through the primary-name+age picker;
+    -- 0 → went through the symbol-search fallback).
+    -- `needs_review` = the canonical pick's primary geneName differs from
+    -- HGNC's primary symbol (HGNC ahead of UniProt rename — usually
+    -- benign but worth eyeballing).
+    hgnc_xref_count           INTEGER NOT NULL DEFAULT 0,
+    needs_review              INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_symbol     ON gene_identifier (hgnc_symbol);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_uniprot    ON gene_identifier (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_ncbi       ON gene_identifier (ncbi_gene_id);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_ensembl    ON gene_identifier (ensembl_gene);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_needs_rev  ON gene_identifier (needs_review);

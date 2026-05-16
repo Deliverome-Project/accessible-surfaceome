@@ -55,6 +55,56 @@ The registry is local (per-worktree, gitignored under `.runs/`). surface_triage 
 - `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`. The CLI loads it from the repo root at startup with shell-env precedence; see `.env.example` for documented keys (`ANTHROPIC_API_KEY`, `NCBI_API_KEY`).
 - Run `git lfs fsck` only after full data hydration.
 
+## Gene identifier resolution
+
+When writing any code that takes "a gene" as input — agent tool, sweep
+runner, figure generator, manual one-off — **the entry point must be a
+stable identifier, not a gene symbol.** Bare gene symbols silently
+resolve to the wrong protein for ~0.2% of human genes (~45 of 19k),
+including COX1 (cyclooxygenase vs the mitochondrial cytochrome c
+oxidase the cohort actually meant) and WAS (Wiskott-Aldrich protein vs
+the MT-RNR1 rRNA gene). See
+[`scripts/audit_resolver_hgnc_id_v3.py`](scripts/audit_resolver_hgnc_id_v3.py)
+for the audit pattern + the per-symbol divergence list at
+`data/analysis/resolver_definitive_audit_v3.tsv`.
+
+### Canonical resolver
+- [`src/accessible_surfaceome/tools/gene_lookup.py:resolve_by_hgnc_id`](src/accessible_surfaceome/tools/gene_lookup.py)
+  is the preferred entry point. Cohort-driven code calls it with
+  `resolve_by_hgnc_id(row["hgnc_id"], http=http)`. The cohort file
+  carries `hgnc_id` for every gene (100% coverage).
+- Legacy `resolve(symbol_or_acc)` stays for free-text agent tool calls;
+  it emits a `UserWarning` on the symbol path so misuse is auditable.
+
+### Stable-ID cache in D1
+Every gene's resolved (uniprot_acc, ensembl_gene, ncbi_gene_id,
+ensembl_canonical_protein) is materialized in D1's `gene_identifier`
+table (private) / `gene_identifier_public` (Worker mirror). Downstream
+tools query this directly:
+
+    SELECT uniprot_acc, ensembl_gene, ncbi_gene_id
+    FROM gene_identifier_public WHERE hgnc_id = ?;
+
+so they don't re-resolve from symbol. Rebuilt with
+`scripts/build_gene_identifier_table.py` after resolver or cohort
+changes; `resolver_version` column lets consumers detect staleness.
+
+### Downstream-identifier-per-source rule
+| Source | Identifier |
+|---|---|
+| AlphaFold DB / PDB / InterPro / Pfam / DrugBank / Reactome (protein) | `uniprot_acc` |
+| Ensembl / GTEx / HPA / Open Targets / STRING (gene) | `hgnc_id` or `ensembl_gene` |
+| PubMed / Europe PMC (free text) | OR of `aliases + previous_symbols + hgnc_symbol` |
+| dbSNP / ClinVar / OMIM | `ncbi_gene_id` or `hgnc_id` |
+
+Symbol-keyed queries to structured databases reintroduce the same bug
+class one layer down — don't.
+
+Regression tests at
+[`tests/test_gene_lookup_resolver.py`](tests/test_gene_lookup_resolver.py)
+pin BBC3, ND4, PRNP, TSPO, ABHD4, HSD17B8, SACK1A, CLMB, COX1, COX2,
+WAS — any picker / fallback regression breaks these.
+
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions
 and the rubric we use to assess diffs. Quick summary: Python 3.11+,

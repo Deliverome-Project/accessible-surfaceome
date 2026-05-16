@@ -134,6 +134,29 @@ agent tool calls (where only a symbol or accession-shape string is
 available); it emits a `UserWarning` on the symbol path so misuse is
 auditable in logs.
 
+### Stable-ID cache in D1
+
+Every gene's resolved identifiers are materialized in D1's
+`gene_identifier` table (private; public mirror at
+`gene_identifier_public`). Schema lives at
+[`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
+[`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
+Downstream tools query stable identifiers directly:
+
+    SELECT uniprot_acc, ensembl_gene, ncbi_gene_id, ensembl_canonical_protein
+    FROM gene_identifier_public WHERE hgnc_id = ?;
+
+This is the **only** path for stable-ID lookups by downstream code —
+no script should call `resolve_by_hgnc_id` at query time when it
+could read this table. Resolver upgrades change the `resolver_version`
+column; consumers detect staleness by comparing against the resolver
+SHA they expect.
+
+Rebuild with [`scripts/build_gene_identifier_table.py`](scripts/build_gene_identifier_table.py)
+after any resolver patch or cohort refresh — `--execute` to write to
+D1, otherwise dry-run. Idempotent UPSERT on `hgnc_id`; sub-5-minute on
+a warm cache.
+
 ### Failure modes the HGNC-ID path is designed to avoid
 
 Three classes of bug the symbol-keyed path has, all encoded in the
