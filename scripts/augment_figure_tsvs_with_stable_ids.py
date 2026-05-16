@@ -293,15 +293,22 @@ def augment_triage_benchmark(
     by_uniprot: dict[str, StableID],
     by_symbol: dict[str, StableID],
     n_db_votes_by_acc: dict[str, int],
+    sonnet: dict[str, tuple[str, str]],
 ) -> tuple[int, int]:
-    """Add stable IDs (incl. ensembl_canonical_protein) + ``n_db_votes`` to
-    the bench TSV. Uses uniprot_acc as primary join (curated in the
-    bench), falls back to gene_symbol when a row's UniProt doesn't
-    appear in gene_identifier_public.
+    """Add stable IDs + ``n_db_votes`` + genome-sweep Sonnet verdict to the
+    bench TSV. Uses uniprot_acc as primary join (curated in the bench),
+    falls back to gene_symbol when a row's UniProt doesn't appear in
+    gene_identifier_public.
+
+    ``sonnet_verdict`` / ``sonnet_reason`` are pulled from the
+    ``genome_full_sonnet_ncbi_v1`` run (the same source the catalog
+    serves) — direct comparison against the curated truth without
+    joining mainbench.
     """
     fields, rows = _read_tsv(BENCH_TSV)
     add = ["hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene",
-           "ensembl_canonical_protein", "n_db_votes"]
+           "ensembl_canonical_protein", "n_db_votes",
+           "sonnet_verdict", "sonnet_reason"]
     fields = _drop_stale(fields, rows, add) + add
     matched = 0
     for r in rows:
@@ -325,6 +332,11 @@ def augment_triage_benchmark(
         # candidate_universe. Bench-only genes that aren't in the universe
         # (the "DB-zero rescues") get 0 — that's the analyst-friendly answer.
         r["n_db_votes"] = str(n_db_votes_by_acc.get(acc, 0))
+        # Genome-sweep Sonnet verdict for this bench gene.
+        sym = (r.get("gene_symbol") or "").strip()
+        v, why = sonnet.get(sym, ("", ""))
+        r["sonnet_verdict"] = v
+        r["sonnet_reason"] = why
     _write_tsv(BENCH_TSV, fields, rows)
     return len(rows), matched
 
@@ -332,9 +344,12 @@ def augment_triage_benchmark(
 def augment_mainbench(
     by_symbol: dict[str, StableID],
     bench: dict[str, dict[str, str]],
+    db_flags_by_acc: dict[str, dict[str, int]],
+    n_db_votes_by_acc: dict[str, int],
+    deep_dive: set[str],
 ) -> tuple[int, int]:
-    """Add stable IDs + ground-truth + per-cell soft-match flag to the
-    predictions TSV.
+    """Add stable IDs + ground-truth + per-cell soft-match flag + per-DB
+    membership flags to the predictions TSV.
 
     Adds:
       * uniprot_acc, hgnc_id, ncbi_gene_id, ensembl_gene — joined on
@@ -343,17 +358,26 @@ def augment_mainbench(
         from data/eval/triage_benchmark_v1.tsv.
       * is_match (0/1) — predicted_verdict matches truth under the
         soft-credit rule used by the bench figures: ``yes`` matches
-        ``yes`` or ``contextual``; ``no`` matches ``no`` only. Lets a
-        reader compute precision / recall in one groupby instead of a
-        manual recode + join.
+        ``yes`` or ``contextual``; ``no`` matches ``no`` only.
+      * uniprot/go/surfy/cspa/hpa_surface_flag — per-DB canonical
+        membership, joined on uniprot_acc via candidate_universe. Bench
+        rows whose UniProt isn't in the universe (the "DB-zero rescue"
+        class) get 0s.
+      * n_db_votes — 0–5 sum of the above.
+      * has_deep_dive — 1 if the gene has a published SurfaceomeRecord.
 
     Keyed by ``gene_symbol``. hgnc_symbol in gene_identifier_public is
     the authoritative join field — it survives symbol drift for the
     resolver-v3-fixed genes.
     """
     fields, rows = _read_tsv(MAINBENCH_TSV)
-    add = ["uniprot_acc", "hgnc_id", "ncbi_gene_id", "ensembl_gene",
-           "ground_truth_verdict", "ground_truth_class", "is_match"]
+    add = [
+        "uniprot_acc", "hgnc_id", "ncbi_gene_id", "ensembl_gene",
+        "ground_truth_verdict", "ground_truth_class", "is_match",
+        "uniprot_surface_flag", "go_surface_flag", "surfy_surface_flag",
+        "cspa_surface_flag", "hpa_surface_flag",
+        "n_db_votes", "has_deep_dive",
+    ]
     fields = _drop_stale(fields, rows, add) + add
     matched = 0
     for r in rows:
@@ -374,14 +398,45 @@ def augment_mainbench(
         r["is_match"] = str(_is_soft_match(
             r.get("predicted_verdict", ""), r["ground_truth_verdict"]
         ))
+        # Per-DB flags from candidate_universe (canonical cutoffs). Bench
+        # genes that aren't in the universe land all zeros.
+        acc = r["uniprot_acc"]
+        flags = db_flags_by_acc.get(acc, {})
+        for k in ("uniprot_surface_flag", "go_surface_flag",
+                  "surfy_surface_flag", "cspa_surface_flag",
+                  "hpa_surface_flag"):
+            r[k] = str(flags.get(k, 0))
+        r["n_db_votes"] = str(n_db_votes_by_acc.get(acc, 0))
+        r["has_deep_dive"] = "1" if sym in deep_dive else "0"
     _write_tsv(MAINBENCH_TSV, fields, rows)
     return len(rows), matched
 
 
-def augment_db_optimized_cutoffs(by_uniprot: dict[str, StableID]) -> tuple[int, int]:
-    """Add gene_symbol + stable IDs. Joins on ``accession`` (UniProt)."""
+def augment_db_optimized_cutoffs(
+    by_uniprot: dict[str, StableID],
+    db_flags_by_acc: dict[str, dict[str, int]],
+    n_db_votes_by_acc: dict[str, int],
+) -> tuple[int, int]:
+    """Add stable IDs + canonical per-DB membership alongside the existing
+    optimized flags. Joins on ``accession`` (UniProt).
+
+    After augmentation each row carries both the canonical-cutoff DB
+    votes (from candidate_universe) and the bench-optimized cutoffs
+    (the file's original purpose), so a reanalyst can read off
+    "canonical vs optimized" per (accession, DB) without joining
+    candidate_universe.
+
+    Note: only UniProt and CSPA have an optimized cutoff variant; GO,
+    SURFY, and HPA carry only their canonical flags (no `_optimized`
+    column exists for them, since their inclusion rules are binary).
+    """
     fields, rows = _read_tsv(CUTOFFS_TSV)
-    add = ["gene_symbol", "hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene"]
+    add = [
+        "gene_symbol", "hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene",
+        "uniprot_surface_flag", "go_surface_flag", "surfy_surface_flag",
+        "cspa_surface_flag", "hpa_surface_flag",
+        "n_sources_surface", "n_sources_optimized",
+    ]
     fields = _drop_stale(fields, rows, add) + add
     matched = 0
     for r in rows:
@@ -395,8 +450,28 @@ def augment_db_optimized_cutoffs(by_uniprot: dict[str, StableID]) -> tuple[int, 
             r["ncbi_gene_id"] = sid.ncbi_gene_id
             r["ensembl_gene"] = sid.ensembl_gene
         else:
-            for k in add:
+            for k in ("gene_symbol", "hgnc_id", "hgnc_symbol",
+                      "ncbi_gene_id", "ensembl_gene"):
                 r[k] = ""
+        # Canonical per-DB flags from candidate_universe.
+        flags = db_flags_by_acc.get(acc, {})
+        for k in ("uniprot_surface_flag", "go_surface_flag",
+                  "surfy_surface_flag", "cspa_surface_flag",
+                  "hpa_surface_flag"):
+            r[k] = str(flags.get(k, 0))
+        r["n_sources_surface"] = str(n_db_votes_by_acc.get(acc, 0))
+        # Optimized-cutoff count: uniprot_optimized + go + surfy +
+        # cspa_optimized + hpa (the three middle DBs have no optimized
+        # variant, so their canonical flag stands in).
+        try:
+            uo = int(r.get("uniprot_optimized") or 0)
+            co = int(r.get("cspa_optimized") or 0)
+        except ValueError:
+            uo = co = 0
+        go = int(flags.get("go_surface_flag", 0))
+        sy = int(flags.get("surfy_surface_flag", 0))
+        hp = int(flags.get("hpa_surface_flag", 0))
+        r["n_sources_optimized"] = str(uo + go + sy + co + hp)
     _write_tsv(CUTOFFS_TSV, fields, rows)
     return len(rows), matched
 
@@ -426,11 +501,16 @@ def main() -> int:
     bench = _load_bench_index()
     print(f"  {len(bench):,} curated bench rows")
 
-    # n_db_votes per uniprot_accession, computed from candidate_universe's
-    # n_sources_surface column. Used to populate the bench TSV's "DB baseline"
-    # column without re-deriving the count in every consumer.
+    # n_db_votes + per-DB flags per uniprot_accession, computed from
+    # candidate_universe's surface_flag columns. Used to denormalize the
+    # 5 gating-DB flags into bench / mainbench / cutoffs TSVs without
+    # forcing reanalysts to join against candidate_universe.
     _, cand_rows = _read_tsv(CAND_TSV)
     n_db_votes_by_acc: dict[str, int] = {}
+    db_flags_by_acc: dict[str, dict[str, int]] = {}
+    flag_cols = ("uniprot_surface_flag", "go_surface_flag",
+                 "surfy_surface_flag", "cspa_surface_flag",
+                 "hpa_surface_flag")
     for r in cand_rows:
         acc = (r.get("uniprot_accession") or "").strip()
         if not acc:
@@ -439,6 +519,13 @@ def main() -> int:
             n_db_votes_by_acc[acc] = int(r.get("n_sources_surface") or 0)
         except ValueError:
             n_db_votes_by_acc[acc] = 0
+        flags: dict[str, int] = {}
+        for k in flag_cols:
+            try:
+                flags[k] = int(r.get(k) or 0)
+            except ValueError:
+                flags[k] = 0
+        db_flags_by_acc[acc] = flags
 
     if args.dry_run:
         # Just read each TSV and report what coverage we'd see.
@@ -459,11 +546,17 @@ def main() -> int:
     summaries = []
     n, m = augment_candidate_universe(by_uniprot, sonnet, deep_dive, bench)
     summaries.append(("candidate_universe", n, m))
-    n, m = augment_triage_benchmark(by_uniprot, by_symbol, n_db_votes_by_acc)
+    n, m = augment_triage_benchmark(
+        by_uniprot, by_symbol, n_db_votes_by_acc, sonnet,
+    )
     summaries.append(("triage_benchmark_v1", n, m))
-    n, m = augment_mainbench(by_symbol, bench)
+    n, m = augment_mainbench(
+        by_symbol, bench, db_flags_by_acc, n_db_votes_by_acc, deep_dive,
+    )
     summaries.append(("mainbench_canonical_v1", n, m))
-    n, m = augment_db_optimized_cutoffs(by_uniprot)
+    n, m = augment_db_optimized_cutoffs(
+        by_uniprot, db_flags_by_acc, n_db_votes_by_acc,
+    )
     summaries.append(("db_optimized_cutoffs", n, m))
 
     print("\nAugmentation summary:")
