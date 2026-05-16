@@ -1,26 +1,32 @@
-"""Backfill HGNC ID + Ensembl gene + NCBI gene ID into the four figure TSVs.
+"""Backfill stable IDs + reanalysis-friendly denormalized columns into the
+four figure TSVs.
 
 The figure scripts under ``data/analysis/figures/`` read four TSVs over
 ``raw.githubusercontent.com``: ``candidate_universe.tsv``,
 ``mainbench_canonical_v1.tsv``, ``triage_benchmark_v1.tsv``, and
 ``db_optimized_cutoffs.tsv``. Originally only ``uniprot_accession`` (or
-``gene_symbol``) was carried; this script joins each TSV against the
-``gene_identifier_public`` D1 table to append the stable identifiers a
-reanalyst would need to cross-reference any other genes-keyed data
-source.
+``gene_symbol``) was carried; this script joins each TSV against:
+
+  * ``gene_identifier_public`` — adds ``hgnc_id``, ``hgnc_symbol``,
+    ``ncbi_gene_id``, ``ensembl_gene``, ``ensembl_canonical_protein``
+  * ``triage_run_public`` (Sonnet, ``genome_full_sonnet_ncbi_v1``,
+    prompt_variant=``ncbi``) — adds ``sonnet_verdict``, ``sonnet_reason``
+  * ``surface_annotation`` — adds ``has_deep_dive`` (0/1)
+  * the curated bench TSV — adds bench-member + truth flags where
+    relevant
 
 Per CLAUDE.md's "Gene identifier resolution" section, ``hgnc_id`` is the
 canonical stable key — symbol-only joins silently misroute ~0.2% of
-human genes (the COX1 / WAS class). Carrying ``hgnc_id`` lets a reader
-join figure inputs to any other table that follows the same convention
-without re-resolving from a fragile symbol.
+human genes (the COX1 / WAS class). Carrying it + the LLM verdict +
+deep-dive flag in the TSV row removes the most-common multi-file joins
+a reanalyst has to do today.
 
 Run::
 
     uv run python scripts/augment_figure_tsvs_with_stable_ids.py
     uv run python scripts/augment_figure_tsvs_with_stable_ids.py --dry-run
 
-Idempotent: re-running drops any pre-existing stable-ID columns and
+Idempotent: re-running drops any pre-existing augment-owned columns and
 re-derives them. Output is byte-stable apart from the added columns
 (``lineterminator='\n'``, preserved row order).
 """
@@ -110,6 +116,84 @@ def _load_gene_identifier_index() -> tuple[dict[str, StableID], dict[str, Stable
     return by_uniprot, by_symbol
 
 
+# ------------------------------ Sonnet verdict index -----------------------
+
+SONNET_RUN_ID = "genome_full_sonnet_ncbi_v1"
+SONNET_MODEL = "claude-sonnet-4-6"
+SONNET_VARIANT = "ncbi"
+
+
+def _load_sonnet_verdict_index() -> dict[str, tuple[str, str]]:
+    """Return ``{gene_symbol: (predicted_verdict, predicted_reason)}`` for the
+    canonical genome-wide Sonnet sweep. Public D1 already holds the
+    resolver-v3-fixed rows under the same run_id (verified — 45 fix-run
+    cells overwrote the originals in place), so no COALESCE is needed.
+    """
+    rows = _query_public(
+        "SELECT gene_symbol, predicted_verdict, predicted_reason "
+        "FROM triage_run_public "
+        "WHERE run_id = ? AND model = ? AND prompt_variant = ? AND replicate = 1",
+        [SONNET_RUN_ID, SONNET_MODEL, SONNET_VARIANT],
+    )
+    out: dict[str, tuple[str, str]] = {}
+    for r in rows:
+        sym = str(r.get("gene_symbol") or "").strip()
+        if not sym:
+            continue
+        out[sym] = (
+            str(r.get("predicted_verdict") or ""),
+            str(r.get("predicted_reason") or ""),
+        )
+    return out
+
+
+# ------------------------------ Deep-dive index ----------------------------
+
+def _load_deep_dive_index() -> set[str]:
+    """Return the set of gene_symbols with a published SurfaceomeRecord
+    (any schema_version) in ``surface_annotation``."""
+    rows = _query_public(
+        "SELECT DISTINCT gene_symbol FROM surface_annotation"
+    )
+    return {str(r.get("gene_symbol") or "").strip() for r in rows if r.get("gene_symbol")}
+
+
+# ------------------------------ Bench index --------------------------------
+
+def _load_bench_index() -> dict[str, dict[str, str]]:
+    """Return ``{gene_symbol: {class, ground_truth_verdict, n_db_votes_at_curation}}``
+    from the local triage_benchmark_v1.tsv. n_db_votes is computed later from
+    the candidate-universe row; this lookup only needs class + verdict.
+    """
+    _, rows = _read_tsv(BENCH_TSV)
+    out: dict[str, dict[str, str]] = {}
+    for r in rows:
+        sym = (r.get("gene_symbol") or "").strip()
+        if not sym:
+            continue
+        out[sym] = {
+            "class": r.get("class") or "",
+            "ground_truth_verdict": r.get("ground_truth_verdict") or "",
+        }
+    return out
+
+
+def _is_soft_match(predicted: str, truth: str) -> int:
+    """Soft-credit match rule used by the bench figures: predicted-yes
+    matches truth-yes-or-contextual, predicted-contextual matches
+    truth-yes-or-contextual, predicted-no matches truth-no only.
+    Returns 1 on match, 0 otherwise.
+    """
+    p, t = (predicted or "").strip(), (truth or "").strip()
+    if not p or not t:
+        return 0
+    if p == t:
+        return 1
+    if p in ("yes", "contextual") and t in ("yes", "contextual"):
+        return 1
+    return 0
+
+
 # ------------------------------ TSV I/O helper -----------------------------
 
 def _read_tsv(path: Path) -> tuple[list[str], list[dict[str, str]]]:
@@ -148,15 +232,42 @@ MAINBENCH_TSV = REPO_ROOT / "data/processed/triage_bench/mainbench_canonical_v1.
 CUTOFFS_TSV = REPO_ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 
 
-def augment_candidate_universe(by_uniprot: dict[str, StableID]) -> tuple[int, int]:
-    """Add stable IDs by joining on ``uniprot_accession``. Returns (n, n_matched)."""
+def augment_candidate_universe(
+    by_uniprot: dict[str, StableID],
+    sonnet: dict[str, tuple[str, str]],
+    deep_dive: set[str],
+    bench: dict[str, dict[str, str]],
+) -> tuple[int, int]:
+    """Augment candidate_universe.tsv.
+
+    Adds:
+      * Stable IDs (hgnc_id, hgnc_symbol, ncbi_gene_id, ensembl_gene,
+        ensembl_canonical_protein) — joined on uniprot_accession.
+      * Sonnet verdict + reason from triage_run_public.genome_full_sonnet_ncbi_v1
+        (joined on gene_symbol). Empty when Sonnet hasn't rated this row.
+      * has_deep_dive (0/1) — whether a SurfaceomeRecord exists.
+      * is_bench_member (0/1) — whether the gene is in triage_benchmark_v1.
+
+    Note: ``selection_reason`` (db_only / triage_only / both) was considered
+    but every row in this file has ``in_db_union=1`` by construction, so it
+    would always reduce to ``sonnet_verdict in ('yes','contextual')``. Use
+    the raw ``sonnet_verdict`` column for that filter instead.
+
+    Returns (n_rows, n_stable_id_matched).
+    """
     fields, rows = _read_tsv(CAND_TSV)
-    add = ["hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene",
-           "ensembl_canonical_protein"]
-    fields = _drop_stale(fields, rows, add) + add
+    add = [
+        "hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene",
+        "ensembl_canonical_protein",
+        "sonnet_verdict", "sonnet_reason",
+        "has_deep_dive", "is_bench_member",
+    ]
+    # Drop the legacy selection_reason if a prior run wrote it.
+    fields = _drop_stale(fields, rows, add + ["selection_reason"]) + add
     matched = 0
     for r in rows:
         acc = (r.get("uniprot_accession") or "").strip()
+        sym = (r.get("gene_symbol") or "").strip()
         sid = by_uniprot.get(acc)
         if sid:
             matched += 1
@@ -166,19 +277,31 @@ def augment_candidate_universe(by_uniprot: dict[str, StableID]) -> tuple[int, in
             r["ensembl_gene"] = sid.ensembl_gene
             r["ensembl_canonical_protein"] = sid.ensembl_canonical_protein
         else:
-            for k in add:
+            for k in ("hgnc_id", "hgnc_symbol", "ncbi_gene_id",
+                      "ensembl_gene", "ensembl_canonical_protein"):
                 r[k] = ""
+        v, why = sonnet.get(sym, ("", ""))
+        r["sonnet_verdict"] = v
+        r["sonnet_reason"] = why
+        r["has_deep_dive"] = "1" if sym in deep_dive else "0"
+        r["is_bench_member"] = "1" if sym in bench else "0"
     _write_tsv(CAND_TSV, fields, rows)
     return len(rows), matched
 
 
-def augment_triage_benchmark(by_uniprot: dict[str, StableID],
-                             by_symbol: dict[str, StableID]) -> tuple[int, int]:
-    """Add hgnc_id + ensembl + ncbi. Uses uniprot_acc as primary join (curated
-    in the bench), falls back to gene_symbol when a row's UniProt doesn't
-    appear in gene_identifier_public."""
+def augment_triage_benchmark(
+    by_uniprot: dict[str, StableID],
+    by_symbol: dict[str, StableID],
+    n_db_votes_by_acc: dict[str, int],
+) -> tuple[int, int]:
+    """Add stable IDs (incl. ensembl_canonical_protein) + ``n_db_votes`` to
+    the bench TSV. Uses uniprot_acc as primary join (curated in the
+    bench), falls back to gene_symbol when a row's UniProt doesn't
+    appear in gene_identifier_public.
+    """
     fields, rows = _read_tsv(BENCH_TSV)
-    add = ["hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene"]
+    add = ["hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene",
+           "ensembl_canonical_protein", "n_db_votes"]
     fields = _drop_stale(fields, rows, add) + add
     matched = 0
     for r in rows:
@@ -193,22 +316,44 @@ def augment_triage_benchmark(by_uniprot: dict[str, StableID],
             r["hgnc_symbol"] = sid.hgnc_symbol
             r["ncbi_gene_id"] = sid.ncbi_gene_id
             r["ensembl_gene"] = sid.ensembl_gene
+            r["ensembl_canonical_protein"] = sid.ensembl_canonical_protein
         else:
-            for k in add:
+            for k in ("hgnc_id", "hgnc_symbol", "ncbi_gene_id",
+                      "ensembl_gene", "ensembl_canonical_protein"):
                 r[k] = ""
+        # n_db_votes: count of 5 gating-DB surface_flag positives from
+        # candidate_universe. Bench-only genes that aren't in the universe
+        # (the "DB-zero rescues") get 0 — that's the analyst-friendly answer.
+        r["n_db_votes"] = str(n_db_votes_by_acc.get(acc, 0))
     _write_tsv(BENCH_TSV, fields, rows)
     return len(rows), matched
 
 
-def augment_mainbench(by_symbol: dict[str, StableID]) -> tuple[int, int]:
-    """Add uniprot_acc + hgnc_id + ensembl + ncbi to the predictions TSV.
+def augment_mainbench(
+    by_symbol: dict[str, StableID],
+    bench: dict[str, dict[str, str]],
+) -> tuple[int, int]:
+    """Add stable IDs + ground-truth + per-cell soft-match flag to the
+    predictions TSV.
 
-    Keyed by ``gene_symbol`` (the bench gene-symbol column). hgnc_symbol
-    in gene_identifier_public is the authoritative join field — it
-    survives symbol drift for the resolver-v3-fixed genes.
+    Adds:
+      * uniprot_acc, hgnc_id, ncbi_gene_id, ensembl_gene — joined on
+        gene_symbol via gene_identifier_public.
+      * ground_truth_verdict, ground_truth_class — joined on gene_symbol
+        from data/eval/triage_benchmark_v1.tsv.
+      * is_match (0/1) — predicted_verdict matches truth under the
+        soft-credit rule used by the bench figures: ``yes`` matches
+        ``yes`` or ``contextual``; ``no`` matches ``no`` only. Lets a
+        reader compute precision / recall in one groupby instead of a
+        manual recode + join.
+
+    Keyed by ``gene_symbol``. hgnc_symbol in gene_identifier_public is
+    the authoritative join field — it survives symbol drift for the
+    resolver-v3-fixed genes.
     """
     fields, rows = _read_tsv(MAINBENCH_TSV)
-    add = ["uniprot_acc", "hgnc_id", "ncbi_gene_id", "ensembl_gene"]
+    add = ["uniprot_acc", "hgnc_id", "ncbi_gene_id", "ensembl_gene",
+           "ground_truth_verdict", "ground_truth_class", "is_match"]
     fields = _drop_stale(fields, rows, add) + add
     matched = 0
     for r in rows:
@@ -221,8 +366,14 @@ def augment_mainbench(by_symbol: dict[str, StableID]) -> tuple[int, int]:
             r["ncbi_gene_id"] = sid.ncbi_gene_id
             r["ensembl_gene"] = sid.ensembl_gene
         else:
-            for k in add:
+            for k in ("uniprot_acc", "hgnc_id", "ncbi_gene_id", "ensembl_gene"):
                 r[k] = ""
+        b = bench.get(sym) or {}
+        r["ground_truth_verdict"] = b.get("ground_truth_verdict", "")
+        r["ground_truth_class"] = b.get("class", "")
+        r["is_match"] = str(_is_soft_match(
+            r.get("predicted_verdict", ""), r["ground_truth_verdict"]
+        ))
     _write_tsv(MAINBENCH_TSV, fields, rows)
     return len(rows), matched
 
@@ -263,6 +414,32 @@ def main() -> int:
     print(f"  {len(by_uniprot):,} UniProt-indexed rows  ·  "
           f"{len(by_symbol):,} HGNC-symbol-indexed rows")
 
+    print(f"Loading Sonnet verdicts ({SONNET_RUN_ID}, {SONNET_MODEL}/{SONNET_VARIANT}) ...")
+    sonnet = _load_sonnet_verdict_index()
+    print(f"  {len(sonnet):,} gene-symbol verdicts")
+
+    print("Loading deep-dive gene set from surface_annotation ...")
+    deep_dive = _load_deep_dive_index()
+    print(f"  {len(deep_dive):,} genes with a published SurfaceomeRecord")
+
+    print("Loading bench truth from local triage_benchmark_v1.tsv ...")
+    bench = _load_bench_index()
+    print(f"  {len(bench):,} curated bench rows")
+
+    # n_db_votes per uniprot_accession, computed from candidate_universe's
+    # n_sources_surface column. Used to populate the bench TSV's "DB baseline"
+    # column without re-deriving the count in every consumer.
+    _, cand_rows = _read_tsv(CAND_TSV)
+    n_db_votes_by_acc: dict[str, int] = {}
+    for r in cand_rows:
+        acc = (r.get("uniprot_accession") or "").strip()
+        if not acc:
+            continue
+        try:
+            n_db_votes_by_acc[acc] = int(r.get("n_sources_surface") or 0)
+        except ValueError:
+            n_db_votes_by_acc[acc] = 0
+
     if args.dry_run:
         # Just read each TSV and report what coverage we'd see.
         for label, path, key in [
@@ -280,11 +457,11 @@ def main() -> int:
         return 0
 
     summaries = []
-    n, m = augment_candidate_universe(by_uniprot)
+    n, m = augment_candidate_universe(by_uniprot, sonnet, deep_dive, bench)
     summaries.append(("candidate_universe", n, m))
-    n, m = augment_triage_benchmark(by_uniprot, by_symbol)
+    n, m = augment_triage_benchmark(by_uniprot, by_symbol, n_db_votes_by_acc)
     summaries.append(("triage_benchmark_v1", n, m))
-    n, m = augment_mainbench(by_symbol)
+    n, m = augment_mainbench(by_symbol, bench)
     summaries.append(("mainbench_canonical_v1", n, m))
     n, m = augment_db_optimized_cutoffs(by_uniprot)
     summaries.append(("db_optimized_cutoffs", n, m))
