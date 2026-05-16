@@ -144,3 +144,7 @@ Eval reports and design decisions live under `docs/evals/` and
 `docs/decisions/`. Latest reference annotations:
 [HSPA1A](docs/evals/hspa1a-deep-dive-eval-2026-05.md) (conditional-surface
 stress test) and TGOLN2 (trafficking_cycling test).
+
+## Documentation
+
+- [Figure reproducibility schema (v1)](docs/figure-reproducibility-schema.md) — what we embed in each figure so downstream tools can verify reproduction
