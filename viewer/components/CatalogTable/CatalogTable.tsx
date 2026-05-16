@@ -219,6 +219,9 @@ export function CatalogTable({
     new Set(),
   );
   const [reasonFilter, setReasonFilter] = useState<Set<string>>(new Set());
+  const [deepDiveFilter, setDeepDiveFilter] = useState<Set<"yes" | "no">>(
+    new Set(),
+  );
 
   function toggleDbFilter(key: DbKey) {
     setDbFilter((prev) => {
@@ -244,13 +247,25 @@ export function CatalogTable({
       return next;
     });
   }
+  function toggleDeepDiveFilter(key: "yes" | "no") {
+    setDeepDiveFilter((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
   function clearAdvancedFilters() {
     setDbFilter(new Set());
     setVerdictFilter(new Set());
     setReasonFilter(new Set());
+    setDeepDiveFilter(new Set());
   }
   const activeFilterCount =
-    dbFilter.size + verdictFilter.size + reasonFilter.size;
+    dbFilter.size +
+    verdictFilter.size +
+    reasonFilter.size +
+    deepDiveFilter.size;
   // Side-rationale drawer: one selected symbol at a time. Clicking the
   // same symbol again toggles the drawer off. The /v1/triage/{symbol}
   // fetch is lazy — kicked off the first time a symbol is selected,
@@ -339,9 +354,21 @@ export function CatalogTable({
         const reason = r.triage_by_model[1]?.reason ?? "";
         if (!reasonFilter.has(reason)) return false;
       }
+      if (deepDiveFilter.size > 0) {
+        const k = r.deep_dive ? "yes" : "no";
+        if (!deepDiveFilter.has(k)) return false;
+      }
       return true;
     });
-  }, [rows, query, quick, dbFilter, verdictFilter, reasonFilter]);
+  }, [
+    rows,
+    query,
+    quick,
+    dbFilter,
+    verdictFilter,
+    reasonFilter,
+    deepDiveFilter,
+  ]);
 
   const sorted = useMemo(() => {
     const copy = filtered.slice();
@@ -436,13 +463,30 @@ export function CatalogTable({
             type="button"
             className={styles.downloadBtn}
             onClick={() => {
-              const tsv = buildCatalogTsv(rows);
+              // Download what the reader is actually looking at — the
+              // current filtered + sorted view, not the full 19k-row
+              // catalog. Clear filters to download the whole thing.
+              const tsv = buildCatalogTsv(sorted);
               const tag = universe_version ?? "snapshot";
-              downloadTextFile(`surfaceome-catalog-${tag}.tsv`, tsv);
+              const filtered = sorted.length !== rows.length;
+              const suffix = filtered ? `-filtered-${sorted.length}` : "";
+              downloadTextFile(
+                `surfaceome-catalog-${tag}${suffix}.tsv`,
+                tsv,
+              );
             }}
-            title={`Download all ${rows.length.toLocaleString()} catalog rows as TSV`}
+            title={
+              sorted.length === rows.length
+                ? `Download all ${rows.length.toLocaleString()} catalog rows as TSV`
+                : `Download ${sorted.length.toLocaleString()} filtered rows as TSV (of ${rows.length.toLocaleString()} total)`
+            }
           >
-            TSV ↓
+            TSV ↓{" "}
+            <span className={styles.downloadCount}>
+              {sorted.length === rows.length
+                ? rows.length.toLocaleString()
+                : `${sorted.length.toLocaleString()}/${rows.length.toLocaleString()}`}
+            </span>
           </button>
         </div>
       </div>
@@ -483,11 +527,25 @@ export function CatalogTable({
             <div className={styles.filterChips}>
               {VERDICT_OPTIONS.map((v) => {
                 const on = verdictFilter.has(v.key);
+                // Verdict chips wear the same pill colors as the in-
+                // table verdict labels (verdictYes / verdictContextual
+                // / verdictNo / verdictUnknown). Combined with the
+                // filterVerdictChip styling — uppercase + tracking +
+                // pill shape — they read as the same vocabulary as
+                // the column verdicts.
+                const toneClass =
+                  v.key === "yes"
+                    ? styles.verdictYes
+                    : v.key === "contextual"
+                      ? styles.verdictContextual
+                      : v.key === "no"
+                        ? styles.verdictNo
+                        : styles.verdictUnknown;
                 return (
                   <button
                     key={`verdict-filter-${v.key}`}
                     type="button"
-                    className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                    className={`${styles.filterVerdictChip} ${on ? toneClass : ""}`}
                     onClick={() => toggleVerdictFilter(v.key)}
                     aria-pressed={on}
                   >
@@ -498,6 +556,31 @@ export function CatalogTable({
             </div>
             <span className={styles.filterHint}>
               Any of the checked verdicts
+            </span>
+          </div>
+
+          <div className={styles.filterRow}>
+            <span className={styles.filterLabel}>Deep dive</span>
+            <div className={styles.filterChips}>
+              {(["yes", "no"] as const).map((k) => {
+                const on = deepDiveFilter.has(k);
+                const toneClass =
+                  k === "yes" ? styles.verdictYes : styles.verdictUnknown;
+                return (
+                  <button
+                    key={`dd-filter-${k}`}
+                    type="button"
+                    className={`${styles.filterVerdictChip} ${on ? toneClass : ""}`}
+                    onClick={() => toggleDeepDiveFilter(k)}
+                    aria-pressed={on}
+                  >
+                    {k}
+                  </button>
+                );
+              })}
+            </div>
+            <span className={styles.filterHint}>
+              {`Has a deep-dive page — currently ${n_with_deep_dive} of ${n_rows.toLocaleString()} genes`}
             </span>
           </div>
 

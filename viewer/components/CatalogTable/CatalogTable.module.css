@@ -184,6 +184,56 @@
   border-color: var(--accent-deep);
 }
 
+/* Verdict + deep-dive chips wear the same color vocabulary as the
+ * in-table verdict pills (verdictYes / verdictContextual / verdictNo /
+ * verdictUnknown). Always uppercase + tracked, mirroring .verdictLabel
+ * in the table. Off state stays a neutral outline so the toggle
+ * affordance reads. */
+.filterVerdictChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.filterVerdictChip:hover {
+  color: var(--ink);
+  border-color: var(--ink-soft);
+}
+
+/* When ON, the toneClass applied at the call site (verdictYes /
+ * verdictContextual / verdictNo / verdictUnknown) supplies the
+ * matching background + text color via the rules at the bottom of
+ * this file. We just clear the outline border so the colored fill
+ * dominates. */
+.filterVerdictChip.verdictYes,
+.filterVerdictChip.verdictContextual,
+.filterVerdictChip.verdictNo,
+.filterVerdictChip.verdictUnknown {
+  border-color: transparent;
+}
+
+.downloadCount {
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  color: inherit;
+  opacity: 0.75;
+  margin-left: 0.05rem;
+}
+
 .filterHint {
   font-family: var(--font-sans);
   font-size: 0.74rem;
