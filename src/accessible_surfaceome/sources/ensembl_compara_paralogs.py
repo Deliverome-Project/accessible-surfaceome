@@ -372,28 +372,94 @@ def _download_parse_args(argv: list[str] | None) -> argparse.Namespace:
         type=str,
         default="",
         help="Comma-separated gene symbols. When set, the input TSV is filtered "
-             "to just these symbols (for dry-run testing).",
+             "to just these symbols (for dry-run testing). Legacy path; the "
+             "HGNC-keyed entry point is --override-ensembl-ids.",
+    )
+    p.add_argument(
+        "--override-ensembl-ids",
+        type=str,
+        default="",
+        help="Comma-separated Ensembl gene IDs (ENSG...). When set, skips "
+             "HGNC TSV loading and symbol resolution entirely — BioMart is "
+             "queried directly with these IDs. The HGNC-first orchestrator "
+             "passes its candidate set's ensembl_gene values through here.",
     )
     return p.parse_args(argv)
+
+
+def _resolve_with_override_ensembl_ids(
+    *, override_ensembl_ids: list[str]
+) -> tuple[list[InputRecord], dict[str, ResolvedGene]]:
+    """Build a minimal records + resolved-genes pair from raw Ensembl IDs.
+
+    No HGNC TSV, no UniProt lookup — just enough scaffolding to feed
+    ``fetch_all_paralogs`` and ``write_by_gene_csv``. The query_uniprot_acc
+    column in the output CSV will be empty in this path; downstream
+    consumers (``run_topology_sweep.compute_paralog_records``) resolve
+    paralog UniProt accessions via ``gene_identifier`` rather than reading
+    that column.
+    """
+    from accessible_surfaceome.sources.ensembl_compara import (
+        InputRecord as _InputRecord,
+        ResolvedGene as _ResolvedGene,
+    )
+
+    records: list[InputRecord] = []
+    resolved: dict[str, ResolvedGene] = {}
+    seen: set[str] = set()
+    for raw in override_ensembl_ids:
+        ensg = raw.strip().upper()
+        if not ensg or ensg in seen:
+            continue
+        seen.add(ensg)
+        # InputRecord uses gene_symbol as the dict key; with no HGNC TSV
+        # available, the Ensembl ID itself serves as a stand-in identity.
+        fake_symbol = ensg  # query-local placeholder, never written to TSV
+        records.append(
+            _InputRecord(
+                gene_symbol=fake_symbol,
+                input_uniprot_id="",
+                input_ensembl_gene_ids=[ensg],
+            )
+        )
+        resolved[fake_symbol] = _ResolvedGene(
+            input_gene_symbol=fake_symbol,
+            resolved_gene_symbol=fake_symbol,
+            mapping_status="override_ensembl_id",
+            resolver_ensembl_gene_ids=[ensg],
+            query_ensembl_gene_ids=[ensg],
+            input_records=[records[-1]],
+        )
+    return records, resolved
 
 
 def download_main(argv: list[str] | None = None) -> None:
     args = _download_parse_args(argv)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"loading input records from {args.input_tsv}")
-    records = load_input_records(args.input_tsv)
-    print(f"  loaded {len(records)} input rows")
+    override_ensembl = [
+        s.strip() for s in args.override_ensembl_ids.split(",") if s.strip()
+    ]
+    if override_ensembl:
+        # HGNC-first path: skip HGNC TSV + symbol resolution entirely.
+        print(f"using --override-ensembl-ids: {len(override_ensembl)} Ensembl IDs")
+        records, resolved = _resolve_with_override_ensembl_ids(
+            override_ensembl_ids=override_ensembl,
+        )
+    else:
+        print(f"loading input records from {args.input_tsv}")
+        records = load_input_records(args.input_tsv)
+        print(f"  loaded {len(records)} input rows")
 
-    override = {s.strip().upper() for s in args.override_genes.split(",") if s.strip()}
-    if override:
-        records = [r for r in records if r.gene_symbol in override]
-        print(f"  filtered to {len(records)} rows via --override-genes={sorted(override)}")
+        override = {s.strip().upper() for s in args.override_genes.split(",") if s.strip()}
+        if override:
+            records = [r for r in records if r.gene_symbol in override]
+            print(f"  filtered to {len(records)} rows via --override-genes={sorted(override)}")
 
-    print(f"loading HGNC maps from {args.hgnc_tsv}")
-    sym2ensg, alias2sym, prev2sym = load_hgnc_maps(args.hgnc_tsv)
-    resolved = build_resolved_genes(records, sym2ensg, alias2sym, prev2sym)
-    print(f"  resolved {len(resolved)} unique gene symbols")
+        print(f"loading HGNC maps from {args.hgnc_tsv}")
+        sym2ensg, alias2sym, prev2sym = load_hgnc_maps(args.hgnc_tsv)
+        resolved = build_resolved_genes(records, sym2ensg, alias2sym, prev2sym)
+        print(f"  resolved {len(resolved)} unique gene symbols")
 
     all_query_ids: list[str] = []
     seen: set[str] = set()

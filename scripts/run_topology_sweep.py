@@ -103,31 +103,36 @@ COMPARA_PARALOG_BY_GENE_CSV = (
 
 @dataclass(frozen=True)
 class Candidate:
-    """One candidate row — stable IDs from gene_identifier (PR #30 design).
+    """One candidate row — HGNC-ID-keyed, stable IDs from gene_identifier.
 
     ``hgnc_id`` is the canonical join key; ``uniprot_acc`` and ``ensembl_gene``
     are the resolved stable IDs the orchestrator hands to UniProt (FASTA
-    fetch) and BioMart (paralog/ortholog pulls) respectively. ``hgnc_symbol``
-    is denormalized for offline logs only — never used as a join key per
-    CLAUDE.md's "Gene identifier resolution" rules.
+    fetch) and BioMart (paralog/ortholog pulls) respectively.
+    ``cohort_symbol`` is the only symbol kept on the dataclass — it joins
+    against legacy symbol-keyed sources (``triage_run.gene_symbol``, the
+    Compara orthologs CSV's ``input_gene_symbol``) and is the resolver's
+    snapshot of the cohort symbol at build time, NOT a free-text symbol
+    lookup. ``hgnc_symbol`` lives in the TSV for human reading but isn't
+    threaded as a Python attribute to avoid accidental use as a join key.
     """
 
-    hgnc_id: str | None
-    hgnc_symbol: str
+    hgnc_id: str
     cohort_symbol: str
     uniprot_acc: str
     ensembl_gene: str | None
     ncbi_gene_id: int | None
     selection_reason: str       # db_only | triage_only | both | override
-    stable_id_source: str       # gene_identifier | fallback | override
     triage_verdict: str | None  # yes | contextual | None
 
 
 def load_candidate_set(path: Path) -> list[Candidate]:
     """Read the HGNC-keyed candidate accessions TSV emitted by
-    ``scripts/build_topology_candidate_set.py``. Supports the v1 schema
-    (uniprot_acc + gene_symbol) by silently falling back when columns are
-    missing — useful while older runs cohabit on disk.
+    ``scripts/build_topology_candidate_set.py``.
+
+    Hard-fails on rows that are missing ``hgnc_id`` or ``uniprot_acc`` —
+    the symbol-fallback codepath was deliberately removed after PR #30
+    landed. Every candidate must be resolved through ``gene_identifier``
+    upstream; the orchestrator never re-resolves from a free-text symbol.
     """
     if not path.exists():
         raise SystemExit(
@@ -138,9 +143,15 @@ def load_candidate_set(path: Path) -> list[Candidate]:
     with path.open() as f:
         reader = csv.DictReader(f, delimiter="\t")
         for r in reader:
+            hgnc_id = (r.get("hgnc_id") or "").strip()
             acc = (r.get("uniprot_acc") or "").strip().upper()
+            if not hgnc_id:
+                raise SystemExit(
+                    f"candidate row missing hgnc_id in {path}; rebuild with "
+                    f"the HGNC-first scripts/build_topology_candidate_set.py"
+                )
             if not acc:
-                continue
+                continue  # gene_identifier didn't resolve a uniprot_acc — drop, not a bug
             ncbi_raw = (r.get("ncbi_gene_id") or "").strip()
             try:
                 ncbi = int(ncbi_raw) if ncbi_raw else None
@@ -148,14 +159,12 @@ def load_candidate_set(path: Path) -> list[Candidate]:
                 ncbi = None
             rows.append(
                 Candidate(
-                    hgnc_id=(r.get("hgnc_id") or None) or None,
-                    hgnc_symbol=(r.get("hgnc_symbol") or r.get("gene_symbol") or "").strip(),
-                    cohort_symbol=(r.get("cohort_symbol") or r.get("gene_symbol") or "").strip(),
+                    hgnc_id=hgnc_id,
+                    cohort_symbol=(r.get("cohort_symbol") or "").strip(),
                     uniprot_acc=acc,
-                    ensembl_gene=(r.get("ensembl_gene") or None),
+                    ensembl_gene=(r.get("ensembl_gene") or None) or None,
                     ncbi_gene_id=ncbi,
                     selection_reason=(r.get("selection_reason") or "").strip(),
-                    stable_id_source=(r.get("stable_id_source") or "fallback").strip(),
                     triage_verdict=(r.get("triage_verdict") or None) or None,
                 )
             )
@@ -173,8 +182,14 @@ def _resolve_ortholog_accessions(
     """Return (acc_full, gene_symbol) pairs for mouse or cyno orthologs.
 
     Reads the BioMart ortholog CSV produced by sources/ensembl_compara.py.
-    Filters to one2one + high-confidence rows for the species, joining on
-    the human input gene symbol.
+    Filters to one2one + high-confidence rows for the species. The Compara
+    CSV is symbol-keyed (the M1 merge predates PR #30); we join on
+    ``cohort_symbol`` — the resolver's snapshot of the cohort symbol at
+    build time. This is the legitimate symbol join: cohort_symbol IS the
+    symbol the merge wrote into ``input_gene_symbol``, so they're the
+    same string by construction. A follow-up refactor will rebuild the
+    Compara orthologs CSV keyed on Ensembl gene IDs to eliminate this
+    entirely.
     """
     if not COMPARA_ORTHOLOG_CSV.exists():
         logger.warning(
@@ -183,7 +198,7 @@ def _resolve_ortholog_accessions(
             COMPARA_ORTHOLOG_CSV.relative_to(REPO_ROOT), species_key,
         )
         return []
-    human_symbols = {c.gene_symbol for c in candidates if c.gene_symbol}
+    human_symbols = {c.cohort_symbol.upper() for c in candidates if c.cohort_symbol}
     out: list[tuple[str, str]] = []
     seen: set[str] = set()
     # The Compara CSV columns include: input_gene_symbol, resolved_gene_symbol,
@@ -412,7 +427,7 @@ def parse_cohort_to_jsonl(
                     cand.hgnc_id if (cand and cohort in {"human_canonical", "human_isoforms"})
                     else None
                 )
-                rec["gene_symbol"] = cand.hgnc_symbol if cand else ""
+                rec["gene_symbol"] = cand.cohort_symbol if cand else ""
                 rec["tool_version"] = DEEPTMHMM_TOOL_VERSION
                 rec["retrieved_at"] = retrieved_at
                 f.write(json.dumps(rec, sort_keys=True) + "\n")
@@ -428,15 +443,23 @@ def parse_cohort_to_jsonl(
 # ---------------------------------------------------------------------------
 
 
-def maybe_pull_paralogs(*, override_genes: list[str]) -> Path | None:
-    """If the paralog CSV is missing, kick off a fresh BioMart pull. Returns CSV path."""
+def maybe_pull_paralogs(*, override_ensembl_ids: list[str]) -> Path | None:
+    """If the paralog CSV is missing, kick off a fresh BioMart pull.
+
+    Takes Ensembl gene IDs (resolved from ``gene_identifier`` by the
+    caller) instead of symbols. The downstream
+    ``ensembl_compara_paralogs.download_main`` understands the
+    ``--override-ensembl-ids`` flag and bypasses HGNC TSV loading entirely
+    when given a non-empty list, so the symbol-keyed fallback path is
+    never exercised.
+    """
     if COMPARA_PARALOG_BY_GENE_CSV.exists():
         return COMPARA_PARALOG_BY_GENE_CSV
     logger.info("paralog CSV missing; running ensembl_compara_paralogs download...")
     from accessible_surfaceome.sources.ensembl_compara_paralogs import download_main
     args: list[str] = []
-    if override_genes:
-        args += ["--override-genes", ",".join(override_genes)]
+    if override_ensembl_ids:
+        args += ["--override-ensembl-ids", ",".join(override_ensembl_ids)]
     download_main(args)
     if not COMPARA_PARALOG_BY_GENE_CSV.exists():
         logger.warning("paralog CSV still missing after download attempt")
@@ -547,28 +570,22 @@ def compute_paralog_records(
             biomart_pct = float(biomart_pct_raw) if biomart_pct_raw else None
             is_high_conf = int((row.get("is_high_confidence") or "0").strip() or "0")
 
-            # Stable-ID lookup via gene_identifier (HGNC-keyed). The Compara
-            # CSV's query_uniprot_acc / query_gene_symbol fields are
-            # fallback hints, not authoritative.
+            # Stable-ID lookup via gene_identifier (HGNC-keyed). Symbol
+            # fallbacks to the Compara CSV were removed after PR #30 landed
+            # — if gene_identifier doesn't resolve an Ensembl gene, the row
+            # ends up with NULL stable IDs and gets dropped downstream by
+            # the upload script. That's correct: pre-PR-30 symbol fallbacks
+            # were a known mis-resolution vector.
             human_gi = gi_by_ensg.get(human_ensg) or {}
             paralog_gi = gi_by_ensg.get(paralog_ensg) or {}
 
             human_hgnc_id = (human_gi.get("hgnc_id") or "").strip() or None
-            human_uniprot = (
-                (human_gi.get("uniprot_acc") or "").strip().upper()
-                or (row.get("query_uniprot_acc") or "").strip().upper()
-            )
-            human_sym = (
-                (human_gi.get("hgnc_symbol") or "").strip()
-                or (row.get("query_gene_symbol_resolved") or "").strip()
-            )
+            human_uniprot = (human_gi.get("uniprot_acc") or "").strip().upper() or None
+            human_sym = (human_gi.get("hgnc_symbol") or "").strip() or None
 
             paralog_hgnc_id = (paralog_gi.get("hgnc_id") or "").strip() or None
-            paralog_uniprot = (paralog_gi.get("uniprot_acc") or "").strip().upper()
-            paralog_sym = (
-                (paralog_gi.get("hgnc_symbol") or "").strip()
-                or (row.get("paralog_gene_symbol") or "").strip()
-            )
+            paralog_uniprot = (paralog_gi.get("uniprot_acc") or "").strip().upper() or None
+            paralog_sym = (paralog_gi.get("hgnc_symbol") or "").strip() or None
 
             human_record = topo_by_acc.get(human_uniprot) if human_uniprot else None
             paralog_record = (
@@ -840,15 +857,16 @@ def main() -> int:
     # ----- Stage 5: paralogs + ECD identity -----
     paralog_jsonl: Path | None = None
     if not args.skip_paralogs and "human_canonical" in cohort_jsonl_paths:
-        # Use the candidate set's gene symbols for the BioMart override list
-        # when on a small dry run; for the full sweep, the unfiltered
-        # candidate_universe-based pull is the right one.
-        override_genes = (
-            [c.gene_symbol for c in candidates if c.gene_symbol]
+        # Pass Ensembl gene IDs (stable, from gene_identifier) to the BioMart
+        # pull on small dry runs. The full sweep doesn't pass an override
+        # and the paralog module uses its default cohort input (which now
+        # also reads gene_identifier rather than the HGNC TSV).
+        override_ensembl_ids = (
+            [c.ensembl_gene for c in candidates if c.ensembl_gene]
             if len(candidates) <= 25  # small dry-run heuristic
             else []
         )
-        paralog_csv = maybe_pull_paralogs(override_genes=override_genes)
+        paralog_csv = maybe_pull_paralogs(override_ensembl_ids=override_ensembl_ids)
         if paralog_csv is not None:
             paralog_version = args.paralog_version or f"paralog_{args.topology_version}"
             paralog_rows = compute_paralog_records(
