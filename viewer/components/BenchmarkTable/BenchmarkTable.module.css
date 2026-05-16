@@ -143,17 +143,24 @@
   color: var(--muted);
 }
 
+.chipsActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
 .downloadBtn {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.34rem 0.7rem;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
   font-family: var(--font-sans);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.04em;
-  color: var(--ink-soft);
-  background: var(--bg-soft);
+  color: var(--muted);
+  background: transparent;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   cursor: pointer;
@@ -165,9 +172,9 @@
 
 .downloadBtn:hover,
 .downloadBtn:focus-visible {
-  color: var(--fg-on-dark);
-  background: var(--accent-fill);
-  border-color: var(--accent-fill);
+  color: var(--ink);
+  background: var(--bg-soft);
+  border-color: var(--ink-soft);
 }
 
 /* ============================================================

@@ -474,41 +474,43 @@ async function handleBenchmarkMatrix(env) {
     }
   }
 
-  // 4. Triage runs for the model/variant grid we care about. NO
-  // bench_version filter — runs uploaded against older bench_version
-  // SHAs are still valid predictions for the same (gene, model,
-  // variant) cell, and filtering them out leaves the matrix with
-  // ~half of the Opus and Haiku naive coverage that actually exists
-  // (the published figures load the same predictions from a static
-  // TSV and confirm 147/147 coverage on those cells). Restricting
-  // the 147 rows happens upstream via the benchmark_version join in
-  // the JS stitching step. Latest run wins per (gene, model, variant)
-  // by created_at; ROW_NUMBER() over a partition stays O(N) cold.
+  // 4. Triage runs for the model/variant grid we care about. The
+  // partition-and-rank used to scan the whole ~19k-row genome-wide
+  // sweep (~228k cells across all model×variant combinations) and
+  // then JS-filter down to the 147 benchmark genes — that's a hot
+  // ROW_NUMBER() window over D1 that exceeded Cloudflare's Worker
+  // CPU budget (HTTP 503, cf-error 1102). Joining inside the SQL
+  // against the benchmark_version table (just 1 bound parameter for
+  // bench_version) shrinks the partition-and-rank working set to
+  // 147 genes × 3 models × 4 variants ≈ 1.7k rows — well inside the
+  // CPU budget. Runs tagged against any bench_version still count
+  // (we don't filter triage_run_public by bench_version, only by
+  // gene_symbol membership in the current bench) so the matrix
+  // keeps full Opus/Haiku coverage from earlier sweeps.
   const wantedVariants = BENCH_MATRIX_VARIANTS;
   const variantPlaceholders = wantedVariants.map(() => "?").join(",");
   const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
-  // Build a Set of the 147 benchmark gene symbols so we can drop
-  // non-bench rows JS-side. D1's prepared-statement parameter cap
-  // (~100) makes a 147-element IN (...) infeasible in one query, and
-  // chunking forces N+1 round-trips. Since the model+variant filter
-  // already shrinks the universe to ~10 cells × 147 genes = ~1.5k
-  // rows post-rank, the JS-side filter is cheap.
-  const benchSymbolSet = new Set(truthRows.results.map((t) => t.gene_symbol));
   const triageRows = await env.DB.prepare(
-    `WITH ranked AS (
-       SELECT gene_symbol, model, prompt_variant, predicted_verdict,
-              predicted_reason, predicted_confidence, predicted_key_uncertainty,
-              verdict_reasoning,
-              correct, latency_s, n_web_searches, created_at, error,
-              cost_usd, prompt_tokens, completion_tokens,
-              cache_creation_tokens, cache_read_tokens,
+    `WITH bench_genes AS (
+       SELECT DISTINCT gene_symbol
+         FROM benchmark_version
+        WHERE bench_version = ?
+     ),
+     ranked AS (
+       SELECT t.gene_symbol, t.model, t.prompt_variant, t.predicted_verdict,
+              t.predicted_reason, t.predicted_confidence, t.predicted_key_uncertainty,
+              t.verdict_reasoning,
+              t.correct, t.latency_s, t.n_web_searches, t.created_at, t.error,
+              t.cost_usd, t.prompt_tokens, t.completion_tokens,
+              t.cache_creation_tokens, t.cache_read_tokens,
               ROW_NUMBER() OVER (
-                PARTITION BY gene_symbol, model, prompt_variant
-                ORDER BY created_at DESC
+                PARTITION BY t.gene_symbol, t.model, t.prompt_variant
+                ORDER BY t.created_at DESC
               ) AS rn
-         FROM triage_run_public
-        WHERE prompt_variant IN (${variantPlaceholders})
-          AND model IN (${modelPlaceholders})
+         FROM triage_run_public t
+         INNER JOIN bench_genes b ON t.gene_symbol = b.gene_symbol
+        WHERE t.prompt_variant IN (${variantPlaceholders})
+          AND t.model IN (${modelPlaceholders})
      )
      SELECT gene_symbol, model, prompt_variant, predicted_verdict,
             predicted_reason, predicted_confidence, predicted_key_uncertainty,
@@ -518,16 +520,13 @@ async function handleBenchmarkMatrix(env) {
             cache_creation_tokens, cache_read_tokens
        FROM ranked
       WHERE rn = 1`
-  ).bind(...wantedVariants, ...BENCH_MATRIX_MODELS).all();
+  ).bind(benchVersion, ...wantedVariants, ...BENCH_MATRIX_MODELS).all();
 
-  // Build a nested map: gene → model → variant → run. Skip rows
-  // that aren't in the 147 benchmark — the SQL pulls every cell
-  // across the genome-wide sweep (no gene_symbol filter possible
-  // within D1's parameter cap), so the bench-symbol Set is the
-  // gate that keeps the matrix to 147 genes.
+  // Build a nested map: gene → model → variant → run. The SQL JOIN
+  // above already restricts to benchmark genes, so no JS-side
+  // membership check is needed.
   const runMap = new Map();
   for (const r of triageRows.results) {
-    if (!benchSymbolSet.has(r.gene_symbol)) continue;
     let byModel = runMap.get(r.gene_symbol);
     if (!byModel) {
       byModel = new Map();

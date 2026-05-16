@@ -238,30 +238,44 @@ export function CatalogTable({
             spellCheck={false}
           />
         </div>
-        <div className={styles.chips} role="tablist" aria-label="Quick filters">
+        <div className={styles.chipsActions}>
+          <div className={styles.chips} role="tablist" aria-label="Quick filters">
+            <button
+              type="button"
+              className={`${styles.chip} ${quick === "all" ? styles.chipOn : ""}`}
+              onClick={() => setQuick("all")}
+              aria-pressed={quick === "all"}
+            >
+              All <span className={styles.chipCount}>{n_rows}</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.chip} ${quick === "deep_dive" ? styles.chipOn : ""}`}
+              onClick={() => setQuick("deep_dive")}
+              aria-pressed={quick === "deep_dive"}
+            >
+              Deep-dive <span className={styles.chipCount}>{n_with_deep_dive}</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.chip} ${quick === "n7" ? styles.chipOn : ""}`}
+              onClick={() => setQuick("n7")}
+              aria-pressed={quick === "n7"}
+            >
+              5-source consensus
+            </button>
+          </div>
           <button
             type="button"
-            className={`${styles.chip} ${quick === "all" ? styles.chipOn : ""}`}
-            onClick={() => setQuick("all")}
-            aria-pressed={quick === "all"}
+            className={styles.downloadBtn}
+            onClick={() => {
+              const tsv = buildCatalogTsv(rows);
+              const tag = universe_version ?? "snapshot";
+              downloadTextFile(`surfaceome-catalog-${tag}.tsv`, tsv);
+            }}
+            title={`Download all ${rows.length.toLocaleString()} catalog rows as TSV`}
           >
-            All <span className={styles.chipCount}>{n_rows}</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.chip} ${quick === "deep_dive" ? styles.chipOn : ""}`}
-            onClick={() => setQuick("deep_dive")}
-            aria-pressed={quick === "deep_dive"}
-          >
-            Deep-dive <span className={styles.chipCount}>{n_with_deep_dive}</span>
-          </button>
-          <button
-            type="button"
-            className={`${styles.chip} ${quick === "n7" ? styles.chipOn : ""}`}
-            onClick={() => setQuick("n7")}
-            aria-pressed={quick === "n7"}
-          >
-            5-source consensus
+            TSV ↓
           </button>
         </div>
       </div>
@@ -280,18 +294,6 @@ export function CatalogTable({
             </>
           ) : null}
         </p>
-        <button
-          type="button"
-          className={styles.downloadBtn}
-          onClick={() => {
-            const tsv = buildCatalogTsv(rows);
-            const tag = universe_version ?? "snapshot";
-            downloadTextFile(`surfaceome-catalog-${tag}.tsv`, tsv);
-          }}
-          title={`Download all ${rows.length.toLocaleString()} catalog rows as TSV`}
-        >
-          Download TSV ↓
-        </button>
       </div>
 
       <div

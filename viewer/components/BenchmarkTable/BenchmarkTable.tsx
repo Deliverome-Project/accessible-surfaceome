@@ -217,29 +217,39 @@ export function BenchmarkTable({
             spellCheck={false}
           />
         </div>
-        <div className={styles.chips} role="tablist" aria-label="Truth filters">
-          <FilterChip on={filter === "all"} onClick={() => setFilter("all")}>
-            All <span className={styles.chipCount}>{rows.length}</span>
-          </FilterChip>
-          <FilterChip on={filter === "yes"} onClick={() => setFilter("yes")}>
-            Yes <span className={styles.chipCount}>{counts.yes}</span>
-          </FilterChip>
-          <FilterChip
-            on={filter === "contextual"}
-            onClick={() => setFilter("contextual")}
+        <div className={styles.chipsActions}>
+          <div className={styles.chips} role="tablist" aria-label="Truth filters">
+            <FilterChip on={filter === "all"} onClick={() => setFilter("all")}>
+              All <span className={styles.chipCount}>{rows.length}</span>
+            </FilterChip>
+            <FilterChip on={filter === "yes"} onClick={() => setFilter("yes")}>
+              Yes <span className={styles.chipCount}>{counts.yes}</span>
+            </FilterChip>
+            <FilterChip
+              on={filter === "contextual"}
+              onClick={() => setFilter("contextual")}
+            >
+              Contextual <span className={styles.chipCount}>{counts.contextual}</span>
+            </FilterChip>
+            <FilterChip on={filter === "no"} onClick={() => setFilter("no")}>
+              No <span className={styles.chipCount}>{counts.no}</span>
+            </FilterChip>
+            <FilterChip
+              on={filter === "disagreements"}
+              onClick={() => setFilter("disagreements")}
+            >
+              Disagreements{" "}
+              <span className={styles.chipCount}>{counts.disagreements}</span>
+            </FilterChip>
+          </div>
+          <button
+            type="button"
+            className={styles.downloadBtn}
+            onClick={handleDownload}
+            title={`Download all ${rows.length} rows as TSV — every (model, variant) cell flattened to its own columns`}
           >
-            Contextual <span className={styles.chipCount}>{counts.contextual}</span>
-          </FilterChip>
-          <FilterChip on={filter === "no"} onClick={() => setFilter("no")}>
-            No <span className={styles.chipCount}>{counts.no}</span>
-          </FilterChip>
-          <FilterChip
-            on={filter === "disagreements"}
-            onClick={() => setFilter("disagreements")}
-          >
-            Disagreements{" "}
-            <span className={styles.chipCount}>{counts.disagreements}</span>
-          </FilterChip>
+            TSV ↓
+          </button>
         </div>
       </div>
 
@@ -249,14 +259,6 @@ export function BenchmarkTable({
             ? `${filtered.length} genes`
             : `${filtered.length} of ${rows.length} genes`}
         </p>
-        <button
-          type="button"
-          className={styles.downloadBtn}
-          onClick={handleDownload}
-          title={`Download all ${rows.length} rows as TSV — every (model, variant) cell flattened to its own columns`}
-        >
-          Download TSV ↓
-        </button>
       </div>
 
       <div
