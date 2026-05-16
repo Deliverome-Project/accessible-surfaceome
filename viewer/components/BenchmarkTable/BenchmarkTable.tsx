@@ -17,13 +17,14 @@ const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
 
 // Resting-grid template: toggle | gene | uniprot | truth | 5 DB dots |
-// 3 model NCBI pills | class. Click `+` to expand into the full
-// model × variant grid + per-cell reasoning.
+// 3 model NCBI pills. The truth_class column was dropped — `truth_verdict`
+// + the per-DB and per-model verdict pills carry the same signal, and
+// the prose class label ("secreted negative" etc.) competed visually
+// with the verdict pills without adding information.
 const GRID_TEMPLATE =
   "1.6rem 12rem 5.5rem 4.5rem " +
   "4.2rem 3rem 4rem 3.6rem 3rem " +
-  "6rem 6.5rem 5.6rem " +
-  "minmax(8rem, 1fr)";
+  "6rem 6.5rem 5.6rem";
 
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
@@ -294,7 +295,6 @@ export function BenchmarkTable({
               {m.long}
             </div>
           ))}
-          <div className={styles.headerCell} role="columnheader">Class</div>
         </div>
 
         <div
@@ -515,11 +515,6 @@ function BenchRowView({
           </div>
         );
       })}
-      <div className={`${styles.cell} ${styles.classCell}`} role="cell">
-        <span className={styles.classText} title={row.truth_reason.replace(/_/g, " ")}>
-          {row.class.replace(/_/g, " ")}
-        </span>
-      </div>
       {isExpanded ? (
         <div className={styles.expandedBlock}>
           {hasDeepDive ? (

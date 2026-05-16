@@ -5,6 +5,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CatalogRow, TriageCell } from "../../lib/surfaceome";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
+import {
+  CatalogRationaleDrawer,
+  type CatalogTriageDetailState,
+} from "./CatalogRationaleDrawer";
 import styles from "./CatalogTable.module.css";
 
 // Per-row height estimate fed to @tanstack/react-virtual. Rows with
@@ -16,12 +20,14 @@ import styles from "./CatalogTable.module.css";
 const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
-// CSS Grid template — toggle | gene | uniprot | sources | 5 DB dots
-// | Sonnet verdict (NCBI variant; the catalog's headline model) |
-// deep-dive flag. Haiku and Opus calls live on /benchmark so the
-// catalog stays a single-model surface.
+// CSS Grid template — gene | uniprot | sources | 5 DB dots | Sonnet
+// verdict (NCBI variant; the catalog's headline model) | deep-dive
+// flag. Haiku and Opus calls live on /benchmark so the catalog stays
+// a single-model surface. There's no row +/- toggle: clicking the
+// gene symbol or the verdict cell opens the right-side rationale
+// drawer.
 const GRID_TEMPLATE =
-  "1.75rem 16rem 5.5rem 3rem 4.5rem 3.2rem 4.5rem 4rem 3.2rem 8rem 5rem";
+  "16rem 5.5rem 3rem 4.5rem 3.2rem 4.5rem 4rem 3.2rem 8rem 5rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -115,23 +121,21 @@ export function CatalogTable({
   const [quick, setQuick] = useState<QuickFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("deep_dive");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  // Per-row "+" expander: tracks which symbols are open + the
-  // lazily-fetched /v1/triage/<symbol> response per symbol. We don't
-  // ship the full per-run reasoning in /v1/catalog (too big — 19k
-  // genes × ~1 KB reasoning = 20 MB) so the expand triggers a single
-  // small fetch and caches the result for the session.
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  // Side-rationale drawer: one selected symbol at a time. Clicking the
+  // same symbol again toggles the drawer off. The /v1/triage/{symbol}
+  // fetch is lazy — kicked off the first time a symbol is selected,
+  // cached for the rest of the session (we don't ship the full per-
+  // run reasoning in /v1/catalog: 19k genes × ~1 KB reasoning is too
+  // big to inline). The drawer reads the cached detail entry and
+  // falls back to the catalog row's headline verdict while the fetch
+  // is in flight.
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [triageDetails, setTriageDetails] = useState<
     Record<string, TriageDetailState>
   >({});
 
-  function toggleExpand(symbol: string) {
-    setExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(symbol)) next.delete(symbol);
-      else next.add(symbol);
-      return next;
-    });
+  function handleSelectSymbol(symbol: string) {
+    setSelectedSymbol((prev) => (prev === symbol ? null : symbol));
     if (triageDetails[symbol]) return;
     setTriageDetails((prev) => ({ ...prev, [symbol]: { status: "loading" } }));
     fetch(`${TRIAGE_API_BASE}/v1/triage/${symbol}`, { cache: "force-cache" })
@@ -150,6 +154,17 @@ export function CatalogTable({
         }));
       });
   }
+
+  // ESC closes the drawer. Installed at the table level so the
+  // non-modal drawer doesn't need focus to dismiss.
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSelectedSymbol(null);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedSymbol]);
 
   // `mounted` gates the virtualized body so the SSR pass renders an
   // empty body — the header, toolbar, and footnotes still hydrate
@@ -304,9 +319,6 @@ export function CatalogTable({
       >
         {/* Header row — sticky, identical grid template as every body row */}
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
-          {/* Leading toggle column. Empty header cell — every body row
-              has a `+` button in this slot to expand triage details. */}
-          <div className={styles.headerCell} aria-hidden="true" />
           <SortableHeader
             label="Symbol"
             k="symbol"
@@ -316,7 +328,7 @@ export function CatalogTable({
             align="left"
           />
           <SortableHeader
-            label="UniProt"
+            label="Accession"
             k="uniprot"
             sortKey={sortKey}
             sortDir={sortDir}
@@ -384,7 +396,7 @@ export function CatalogTable({
           {mounted && sorted.length > 0
             ? virtualItems.map((item) => {
                 const r = sorted[item.index];
-                const isExpanded = expanded.has(r.symbol);
+                const isSelected = selectedSymbol === r.symbol;
                 return (
                   <CatalogRowView
                     key={`${r.symbol}-${r.uniprot}`}
@@ -392,9 +404,8 @@ export function CatalogTable({
                     measureRef={virtualizer.measureElement}
                     dataIndex={item.index}
                     virtualStart={item.start}
-                    isExpanded={isExpanded}
-                    onToggleExpand={toggleExpand}
-                    detail={isExpanded ? triageDetails[r.symbol] : undefined}
+                    isSelected={isSelected}
+                    onSelect={handleSelectSymbol}
                   />
                 );
               })
@@ -406,8 +417,57 @@ export function CatalogTable({
           ) : null}
         </div>
       </div>
+
+      <CatalogRationaleDrawer
+        selectedSymbol={selectedSymbol}
+        detail={
+          selectedSymbol
+            ? (triageDetails[selectedSymbol] as
+                | CatalogTriageDetailState
+                | undefined)
+            : undefined
+        }
+        fallback={
+          selectedSymbol
+            ? fallbackFromRows(sorted, selectedSymbol)
+            : null
+        }
+        geneName={
+          selectedSymbol ? geneNameFromRows(sorted, selectedSymbol) : null
+        }
+        hasDeepDive={
+          selectedSymbol
+            ? Boolean(
+                sorted.find((r) => r.symbol === selectedSymbol)?.deep_dive,
+              )
+            : false
+        }
+        onClose={() => setSelectedSymbol(null)}
+      />
     </div>
   );
+}
+
+/** Headline NCBI Sonnet verdict from the catalog row — used as a
+ *  synchronous fallback while the drawer's lazy fetch is in flight. */
+function fallbackFromRows(
+  rows: CatalogRow[],
+  symbol: string,
+): { verdict: string | null; reason: string | null } | null {
+  const row = rows.find((r) => r.symbol === symbol);
+  if (!row) return null;
+  // idx 1 = Sonnet 4.6 in the Worker's triage_by_model array; see
+  // CATALOG_MODELS above for the contract.
+  const cell = row.triage_by_model[1];
+  return {
+    verdict: cell?.verdict ?? null,
+    reason: cell?.reason ?? null,
+  };
+}
+
+function geneNameFromRows(rows: CatalogRow[], symbol: string): string | null {
+  const row = rows.find((r) => r.symbol === symbol);
+  return row?.name ?? null;
 }
 
 /**
@@ -516,34 +576,33 @@ function CatalogRowView({
   measureRef,
   dataIndex,
   virtualStart,
-  isExpanded,
-  onToggleExpand,
-  detail,
+  isSelected,
+  onSelect,
 }: {
   row: CatalogRow;
   measureRef?: (el: HTMLDivElement | null) => void;
   dataIndex?: number;
   virtualStart?: number;
-  isExpanded: boolean;
-  onToggleExpand: (symbol: string) => void;
-  detail: TriageDetailState | undefined;
+  isSelected: boolean;
+  onSelect: (symbol: string) => void;
 }) {
-  const symbolHead = row.deep_dive ? (
-    <Link href={`/${row.symbol}/`} className={styles.symbolLink}>
-      {row.symbol}
-    </Link>
-  ) : (
-    <span className={styles.symbolText}>{row.symbol}</span>
-  );
-  const symbolCell = (
-    <span className={styles.symbolStack}>
-      {symbolHead}
-      {row.name ? (
-        <span className={styles.symbolName} title={row.name}>
-          {row.name}
-        </span>
-      ) : null}
-    </span>
+  const symbolButton = (
+    <button
+      type="button"
+      className={styles.symbolButton}
+      onClick={() => onSelect(row.symbol)}
+      aria-pressed={isSelected}
+      aria-label={`Open Sonnet reasoning for ${row.symbol}`}
+    >
+      <span className={styles.symbolStack}>
+        <span className={styles.symbolText}>{row.symbol}</span>
+        {row.name ? (
+          <span className={styles.symbolName} title={row.name}>
+            {row.name}
+          </span>
+        ) : null}
+      </span>
+    </button>
   );
   const style: React.CSSProperties | undefined =
     virtualStart != null
@@ -560,27 +619,12 @@ function CatalogRowView({
       ref={measureRef}
       data-index={dataIndex}
       role="row"
-      className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""}`}
+      className={`${styles.row} ${isSelected ? styles.rowSelected : ""}`}
       data-deep-dive={row.deep_dive || undefined}
       style={style}
     >
-      <div className={`${styles.cell} ${styles.toggleCell}`} role="cell">
-        <button
-          type="button"
-          className={styles.toggleBtn}
-          onClick={() => onToggleExpand(row.symbol)}
-          aria-label={
-            isExpanded
-              ? `Collapse triage details for ${row.symbol}`
-              : `Expand triage details for ${row.symbol}`
-          }
-          aria-expanded={isExpanded}
-        >
-          {isExpanded ? "−" : "+"}
-        </button>
-      </div>
       <div className={`${styles.cell} ${styles.symbolCell}`} role="cell">
-        {symbolCell}
+        {symbolButton}
       </div>
       <div className={`${styles.cell} ${styles.uniprotCell}`} role="cell">
         {row.uniprot}
@@ -615,12 +659,12 @@ function CatalogRowView({
               <button
                 type="button"
                 className={`${styles.verdictBtn} ${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)}`}
-                onClick={() => onToggleExpand(row.symbol)}
-                aria-expanded={isExpanded}
+                onClick={() => onSelect(row.symbol)}
+                aria-pressed={isSelected}
                 title={
                   cell.reason
-                    ? `${m.long}: ${cell.verdict} (${cell.reason.replace(/_/g, " ")})`
-                    : `${m.long}: ${cell.verdict}`
+                    ? `${m.long}: ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for reasoning`
+                    : `${m.long}: ${cell.verdict} — click for reasoning`
                 }
               >
                 {cell.verdict}
@@ -636,115 +680,15 @@ function CatalogRowView({
           <Link
             href={`/${row.symbol}/`}
             className={styles.deepBadge}
-            aria-label={`View deep-dive record for ${row.symbol}`}
+            aria-label={`Open the deep-dive record for ${row.symbol}`}
+            title={`Open the deep-dive record for ${row.symbol}`}
           >
-            view →
+            yes
           </Link>
         ) : (
           <span className={styles.dim}>—</span>
         )}
       </div>
-      {isExpanded ? (
-        <div className={styles.expandedBlock}>
-          <TriageDetail
-            symbol={row.symbol}
-            fallback={row.triage_by_model}
-            detail={detail}
-          />
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-function TriageDetail({
-  symbol,
-  fallback,
-  detail,
-}: {
-  symbol: string;
-  /** Per-model NCBI verdicts from the catalog row, used as the
-   *  fallback if the on-demand fetch fails. */
-  fallback: (TriageCell | null)[];
-  detail: TriageDetailState | undefined;
-}) {
-  if (!detail || detail.status === "loading") {
-    return (
-      <p className={styles.expandedMeta}>
-        Loading triage reasoning for <strong>{symbol}</strong>…
-      </p>
-    );
-  }
-  if (detail.status === "error") {
-    return (
-      <p className={styles.expandedMeta}>
-        Could not load triage details ({detail.message}).
-      </p>
-    );
-  }
-  // Render one card per CATALOG_MODELS slot — the latest NCBI-variant
-  // run with that model. The /v1/triage endpoint returns ALL runs
-  // (every variant + replicate) for a gene; we filter to ncbi and
-  // pick the most-recent per model.
-  const byModelLatest = new Map<string, TriageRun>();
-  for (const run of detail.runs) {
-    if (run.prompt_variant !== "ncbi") continue;
-    const prev = byModelLatest.get(run.model);
-    if (!prev || prev.created_at < run.created_at) {
-      byModelLatest.set(run.model, run);
-    }
-  }
-  return (
-    <div className={styles.triageDetailGrid}>
-      {CATALOG_MODELS.map((m) => {
-        const run = byModelLatest.get(m.id);
-        const cached = fallback[m.idx];
-        if (!run && !cached) {
-          return (
-            <article key={m.id} className={`${styles.triageDetailCard} ${styles.triageDetailMissing}`}>
-              <p className={styles.runMeta}>
-                <strong>{m.long}</strong>
-                <span className={styles.runDim}>· no run on file</span>
-              </p>
-            </article>
-          );
-        }
-        const verdict = run?.predicted_verdict ?? cached?.verdict ?? "";
-        const reason = run?.predicted_reason ?? cached?.reason ?? null;
-        return (
-          <article key={m.id} className={styles.triageDetailCard}>
-            <p className={styles.runMeta}>
-              <strong>{m.long}</strong>
-              <span className={styles.runDim}>·</span>
-              <span className={styles.runBadge} data-verdict={verdict}>
-                {verdict}
-              </span>
-              {reason ? (
-                <span>{reason.replace(/_/g, " ")}</span>
-              ) : null}
-              {run?.predicted_confidence ? (
-                <>
-                  <span className={styles.runDim}>·</span>
-                  <span className={styles.runDim}>
-                    conf {run.predicted_confidence}
-                  </span>
-                </>
-              ) : null}
-              {run?.created_at ? (
-                <>
-                  <span className={styles.runDim}>·</span>
-                  <span className={styles.runDim}>
-                    {run.created_at.slice(0, 10)}
-                  </span>
-                </>
-              ) : null}
-            </p>
-            {run?.verdict_reasoning ? (
-              <p className={styles.runReasoning}>{run.verdict_reasoning}</p>
-            ) : null}
-          </article>
-        );
-      })}
     </div>
   );
 }
