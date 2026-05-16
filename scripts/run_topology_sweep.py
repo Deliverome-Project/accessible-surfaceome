@@ -748,18 +748,52 @@ def _expand_candidates_with_paralogs(
 
 
 def maybe_pull_paralogs(*, override_ensembl_ids: list[str]) -> Path | None:
-    """If the paralog CSV is missing, kick off a fresh BioMart pull.
+    """Pull paralogs from BioMart, reusing the cached CSV only if it covers
+    all requested Ensembl IDs.
 
-    Takes Ensembl gene IDs (resolved from ``gene_identifier`` by the
-    caller) instead of symbols. The downstream
-    ``ensembl_compara_paralogs.download_main`` understands the
-    ``--override-ensembl-ids`` flag and bypasses HGNC TSV loading entirely
-    when given a non-empty list, so the symbol-keyed fallback path is
-    never exercised.
+    Coverage check: read the cached CSV's ``query_ensembl_gene`` column;
+    if every override_ensembl_id appears as a query in that CSV, the
+    cache is valid (same or bigger input set). Otherwise wipe the
+    cached output dir and re-pull fresh. Prevents the "cached from a
+    smaller dry-run input" failure mode where the orchestrator would
+    happily reuse a 3-protein paralog CSV for a 6,415-protein sweep.
+
+    The downstream ``ensembl_compara_paralogs.download_main`` understands
+    ``--override-ensembl-ids`` and bypasses the HGNC TSV path entirely.
     """
-    if COMPARA_PARALOG_BY_GENE_CSV.exists():
+    if COMPARA_PARALOG_BY_GENE_CSV.exists() and override_ensembl_ids:
+        cached_ensgs: set[str] = set()
+        try:
+            with COMPARA_PARALOG_BY_GENE_CSV.open() as f:
+                reader = csv.DictReader(f)
+                for row in reader:
+                    ensg = (row.get("query_ensembl_gene") or "").strip().upper()
+                    if ensg:
+                        cached_ensgs.add(ensg)
+        except OSError as exc:
+            logger.warning("could not read cached paralog CSV: %s", exc)
+            cached_ensgs = set()
+        wanted = {e.upper() for e in override_ensembl_ids if e}
+        missing = wanted - cached_ensgs
+        if not missing:
+            logger.info(
+                "paralog CSV cache valid (%d / %d requested ENSGs present); reusing",
+                len(wanted & cached_ensgs), len(wanted),
+            )
+            return COMPARA_PARALOG_BY_GENE_CSV
+        logger.info(
+            "paralog CSV cache STALE — %d of %d requested ENSGs missing "
+            "(e.g. %s); wiping and re-pulling",
+            len(missing), len(wanted), sorted(missing)[:5],
+        )
+        import shutil
+        shutil.rmtree(COMPARA_PARALOG_BY_GENE_CSV.parent)
+    elif COMPARA_PARALOG_BY_GENE_CSV.exists():
+        # No override list passed → trust the cache.
         return COMPARA_PARALOG_BY_GENE_CSV
-    logger.info("paralog CSV missing; running ensembl_compara_paralogs download...")
+
+    logger.info("running ensembl_compara_paralogs download (%d Ensembl IDs)",
+                len(override_ensembl_ids))
     from accessible_surfaceome.sources.ensembl_compara_paralogs import download_main
     args: list[str] = []
     if override_ensembl_ids:
