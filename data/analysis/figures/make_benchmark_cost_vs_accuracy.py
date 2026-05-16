@@ -136,15 +136,15 @@ WHOLE_GENOME_N = 19_324  # protein-coding human genes with a valid HGNC + UniPro
 # Per-cell label + Claude-orange sequential walk (light → dark = more-context cells).
 CELL_LABEL = {
     ("claude-haiku-4-5",  "naive"):       "Haiku (naive)",
-    ("claude-haiku-4-5",  "ncbi"):        "Haiku (+ NCBI)",
-    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku (+ NCBI + PubMed)",
-    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku (+ NCBI + web)",
+    ("claude-haiku-4-5",  "ncbi"):        "Haiku (+ IDs)",
+    ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku (+ IDs + PubMed)",
+    ("claude-haiku-4-5",  "web_ncbi"):    "Haiku (+ IDs + web)",
     ("claude-sonnet-4-6", "naive"):       "Sonnet (naive)",
-    ("claude-sonnet-4-6", "ncbi"):        "Sonnet (+ NCBI)",
-    ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet (+ NCBI + PubMed)",
-    ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet (+ NCBI + web)",
+    ("claude-sonnet-4-6", "ncbi"):        "Sonnet (+ IDs)",
+    ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet (+ IDs + PubMed)",
+    ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet (+ IDs + web)",
     ("claude-opus-4-7",   "naive"):       "Opus (naive)",
-    ("claude-opus-4-7",   "ncbi"):        "Opus (+ NCBI)",
+    ("claude-opus-4-7",   "ncbi"):        "Opus (+ IDs)",
 }
 CELL_COLOR = {
     ("claude-haiku-4-5",  "naive"):       "#f7d8c4",

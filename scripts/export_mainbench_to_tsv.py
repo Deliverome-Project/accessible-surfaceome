@@ -112,14 +112,52 @@ def main() -> int:
     ap.add_argument("--replicate", type=int, default=1,
                     help="filter to a single replicate (default: 1 — matches the historical TSV shape)")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="output TSV path")
+    ap.add_argument("--prefer-fix-run", default=None,
+                    help="Optional run_id whose rows should override --run-id for matching "
+                         "(gene_symbol, model, prompt_variant, replicate) tuples. Use this "
+                         "to fold a `*__resolver_v3_fix` correction run into the export "
+                         "without modifying the original sweep's rows. See the "
+                         "'run_id conventions' table in CLAUDE.md.")
     args = ap.parse_args()
 
-    sql = (
+    sql_base = (
         f"SELECT {', '.join(COLUMNS)} FROM triage_run_public "
         "WHERE run_id = ? AND replicate = ? "
         "ORDER BY model, prompt_variant, gene_symbol;"
     )
-    rows = _query_public(sql, [args.run_id, args.replicate])
+    base_rows = _query_public(sql_base, [args.run_id, args.replicate])
+
+    if args.prefer_fix_run:
+        # Fold the fix-run's rows in, preferring them over the
+        # original where (model, prompt_variant, gene_symbol) match.
+        # D1 doesn't make a cross-run UPSERT one-shot easy, so we
+        # COALESCE in Python: pull the fix rows, key on the tuple,
+        # replace originals.
+        fix_rows = _query_public(sql_base, [args.prefer_fix_run, args.replicate])
+
+        def key_of(r: dict) -> tuple[str, str, str]:
+            return (r["model"], r["prompt_variant"], r["gene_symbol"])
+
+        fix_by_key = {key_of(r): r for r in fix_rows}
+        merged: list[dict] = []
+        for r in base_rows:
+            merged.append(fix_by_key.get(key_of(r), r))
+        # Any fix rows that don't have a corresponding original (rare —
+        # would mean the fix sweep covered cells the original sweep
+        # didn't) are appended.
+        original_keys = {key_of(r) for r in base_rows}
+        for r in fix_rows:
+            if key_of(r) not in original_keys:
+                merged.append(r)
+        replaced = sum(1 for r in base_rows if key_of(r) in fix_by_key)
+        print(
+            f"Merged {len(fix_rows):,} fix-run rows from {args.prefer_fix_run!r}; "
+            f"{replaced} rows replaced, {len(merged) - len(base_rows)} added"
+        )
+        rows = merged
+    else:
+        rows = base_rows
+
     out_path = REPO_ROOT / args.out if not args.out.startswith("/") else args.out
     out_path.parent.mkdir(parents=True, exist_ok=True)
     with open(out_path, "w", newline="") as fh:

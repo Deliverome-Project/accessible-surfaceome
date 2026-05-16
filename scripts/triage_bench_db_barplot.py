@@ -93,15 +93,15 @@ LLM_CELLS: list[tuple[str, str, str]] = [
 ]
 LLM_LABEL = {
     "_llm_haiku_naive":        "Haiku (naive)",
-    "_llm_haiku_ncbi":         "Haiku (+ NCBI)",
-    "_llm_haiku_pubmed_ncbi":  "Haiku (+ NCBI + PubMed)",
-    "_llm_haiku_web_ncbi":     "Haiku (+ NCBI + web)",
+    "_llm_haiku_ncbi":         "Haiku (+ IDs)",
+    "_llm_haiku_pubmed_ncbi":  "Haiku (+ IDs + PubMed)",
+    "_llm_haiku_web_ncbi":     "Haiku (+ IDs + web)",
     "_llm_sonnet_naive":       "Sonnet (naive)",
-    "_llm_sonnet_ncbi":        "Sonnet (+ NCBI)",
-    "_llm_sonnet_pubmed_ncbi": "Sonnet (+ NCBI + PubMed)",
-    "_llm_sonnet_web_ncbi":    "Sonnet (+ NCBI + web)",
+    "_llm_sonnet_ncbi":        "Sonnet (+ IDs)",
+    "_llm_sonnet_pubmed_ncbi": "Sonnet (+ IDs + PubMed)",
+    "_llm_sonnet_web_ncbi":    "Sonnet (+ IDs + web)",
     "_llm_opus_naive":         "Opus (naive)",
-    "_llm_opus_ncbi":          "Opus (+ NCBI)",
+    "_llm_opus_ncbi":          "Opus (+ IDs)",
     "_llm_combined":           "Combined (Haiku→Sonnet)",
 }
 
@@ -510,7 +510,7 @@ def _draw_group_separators(
 
 
 def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_class") -> None:
-    """Per-class accuracy of Sonnet + NCBI vs the 5 M1 surface DBs.
+    """Per-class accuracy of Sonnet + IDs vs the 5 M1 surface DBs.
 
     Compares one canonical LLM cell against the five classical
     surface-flag sources across four columns:
@@ -657,9 +657,9 @@ def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall"
     VARIANT_ORDER = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"]
     VARIANT_LABEL = {
         "naive":        "naive",
-        "ncbi":         "+ NCBI",
-        "web_ncbi":     "+ NCBI + web",
-        "pubmed_ncbi":  "+ NCBI + PubMed",
+        "ncbi":         "+ IDs",
+        "web_ncbi":     "+ IDs + web",
+        "pubmed_ncbi":  "+ IDs + PubMed",
     }
     # Hatch by variant — solid for naive, denser diagonal / cross /
     # dots as more context is layered on.
@@ -812,7 +812,7 @@ def _llm_cost_per_call() -> dict[str, float]:
       sys_prompt + user_message and amortize the sys portion as if
       caching had been active across the session.
 
-    This makes "Sonnet (+ NCBI)" comparable to "Sonnet (+ NCBI + PubMed)"
+    This makes "Sonnet (+ IDs)" comparable to "Sonnet (+ IDs + PubMed)"
     on the same x-axis without one being unfairly boosted because its
     capture happened to disable caching.
     """

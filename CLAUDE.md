@@ -157,6 +157,94 @@ after any resolver patch or cohort refresh — `--execute` to write to
 D1, otherwise dry-run. Idempotent UPSERT on `hgnc_id`; sub-5-minute on
 a warm cache.
 
+## Working with the D1 databases
+
+Two D1 databases:
+- **`surfaceome_agents`** (private) — full agent-run history with
+  prompts, costs, prose reasoning. Schema:
+  [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql).
+- **`surfaceome_public`** (mirror) — column-whitelisted subset the
+  Worker + viewer read. Schema:
+  [`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
+  Synced from the private DB by `scripts/d1_public_mirror_*.py`.
+
+### Querying D1 from Python
+
+`accessible_surfaceome.cloud.d1_client.D1Client` is the canonical
+client; it speaks Cloudflare's REST API directly (no wrangler
+needed). Auth pulls `CLOUDFLARE_API_TOKEN` + `CLOUDFLARE_ACCOUNT_ID`
++ the database UUID from `.env`. Pattern:
+
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.env import load_env
+    load_env()
+    with D1Client() as d1:
+        rows = d1.query(
+            "SELECT uniprot_acc FROM gene_identifier WHERE hgnc_id = ?;",
+            ["HGNC:1234"],
+        )
+        # rows → list[dict] — column names as keys
+
+For UPSERTs / mutations, the same `query()` method handles them — D1
+returns an empty result set for non-SELECT statements. **D1's HTTP
+API doesn't accept multi-statement batches**; submit one statement
+per call (loop chunked for bulk loads).
+
+### Applying schema changes when wrangler isn't handy
+
+The deprecated wrangler v1 on common install paths can't speak D1.
+Rather than installing the new wrangler in every fresh worktree,
+apply DDL by calling `D1Client.query()` with each `CREATE TABLE` /
+`CREATE INDEX` statement one at a time. Example used to bring up
+`gene_identifier`:
+
+    statements = ["CREATE TABLE IF NOT EXISTS gene_identifier (...);",
+                  "CREATE INDEX IF NOT EXISTS idx_gene_identifier_... ON ...;",
+                  ...]
+    with D1Client() as d1:
+        for s in statements:
+            d1.query(s, [])
+
+Same trick works for ad-hoc analytical SELECTs from a notebook /
+script — no need to install wrangler just to peek at row counts.
+
+### Key tables to know
+
+| Table | Purpose | Primary lookup |
+|---|---|---|
+| `gene_identifier` | **Stable-ID cache.** Per-gene canonical (uniprot_acc, ncbi_gene_id, ensembl_gene, ensembl_canonical_protein) resolved through the HGNC-ID path. **Read this before re-resolving from any other identifier.** | `hgnc_id`, `hgnc_symbol`, `uniprot_acc` |
+| `triage_run` | Per-(model × variant × replicate × gene) triage cells. | `(run_id, gene_symbol, model, prompt_variant, replicate)` |
+| `deep_dive_run` | Per-gene deep-dive (surface_annotator) records. | `(run_id, gene_symbol)` |
+| `candidate_universe_public` | Genome-wide DB-vote table (the catalog index). | `(universe_version, gene_symbol, uniprot_acc)` |
+| `benchmark_version` | Bench-snapshot symbol → uniprot pinning. | `(bench_version, gene_symbol)` |
+
+### `run_id` conventions
+
+- `genome_full_sonnet_ncbi_v1` — the canonical 2026-05-12 Sonnet
+  triage sweep over the cohort.
+- `genome_full_sonnet_ncbi_v1__resolver_v3_fix` — corrected re-runs
+  of the 45 cells the v3 resolver audit flagged. **Originals are
+  preserved**; analytics that should incorporate the fix should
+  COALESCE-prefer the fix run over the original (see the
+  Postgres-flavored snippet below).
+
+Composite-source SELECT that gives "latest verdict per (gene_symbol,
+model, variant), preferring fix rows over originals":
+
+    SELECT * FROM triage_run t
+    WHERE (t.run_id = 'genome_full_sonnet_ncbi_v1__resolver_v3_fix')
+       OR (t.run_id = 'genome_full_sonnet_ncbi_v1'
+           AND NOT EXISTS (
+               SELECT 1 FROM triage_run f
+               WHERE f.run_id = 'genome_full_sonnet_ncbi_v1__resolver_v3_fix'
+                 AND f.gene_symbol = t.gene_symbol
+                 AND f.model = t.model
+                 AND f.prompt_variant = t.prompt_variant
+           ));
+
+Anything else that reads `triage_run` should adopt this pattern
+until the fix run is mirrored back into the canonical run_id.
+
 ### Failure modes the HGNC-ID path is designed to avoid
 
 Three classes of bug the symbol-keyed path has, all encoded in the

@@ -177,34 +177,44 @@ def _load_prompt(name: str) -> str:
     return (PROMPTS_DIR / name).read_text()
 
 
-def _resolve_task_text(gene: str, hgnc_id: str | None = None) -> str:
+def _resolve_task_text(
+    gene: str,
+    hgnc_id: str | None = None,
+    uniprot_acc: str | None = None,
+) -> str:
     """Use the orchestrator's _render_task to format the task message
     with HGNC + UniProt + NCBI + gene-group + CD designation context.
 
-    Resolution priority — stable-identifier-first per the policy
-    documented in ``CLAUDE.md``'s "Gene identifier resolution"
-    section. When ``hgnc_id`` is available (every row in
-    ``Homo_sapiens.protein_coding.with_hgnc.tsv`` carries one),
-    use the HGNC-ID-keyed path; this avoids the documented
-    symbol-keyed failure modes (primary-name collisions, HGNC
-    xref empty, symbol-reassignment drift — see
-    ``data/analysis/resolver_definitive_audit_v3.tsv``).
+    Stable-identifier-keyed only. Symbol fallback was removed in
+    resolver v3 — the legacy symbol-keyed path silently returned
+    wrong-protein context for ~0.2% of cohort genes (see CLAUDE.md
+    "Gene identifier resolution").
 
-    Symbol fallback exists for cells without an HGNC ID, but the
-    cohort has 100% HGNC coverage so this path should be effectively
-    dead for canonical sweeps.
+    Argument priority (most stable → least stable):
+      1. **hgnc_id** — preferred. Cohort TSVs carry it for every
+         row (100% coverage).
+      2. **uniprot_acc** — used when hgnc_id is absent. Benchmark
+         TSVs (`triage_benchmark_v1.tsv` etc.) historically carry
+         uniprot_acc, not hgnc_id, so this path keeps bench reruns
+         working without re-shaping their input TSV.
+
+    Raises LookupError when neither identifier is supplied. Cohort
+    rows missing hgnc_id usually indicate a stale cohort TSV — the
+    fix is to regenerate the cohort, not to fall back to symbol
+    search.
     """
     if hgnc_id:
-        try:
-            bundle = resolve_by_hgnc_id(hgnc_id, http=_http())
-            return _render_task(bundle)
-        except LookupError:
-            # HGNC's API returned no record for this ID (rare —
-            # ~1 of 19k cohort rows has a stale HGNC ID). Fall
-            # through to symbol search rather than failing the cell.
-            pass
-    bundle = resolve(gene, http=_http())
-    return _render_task(bundle)
+        bundle = resolve_by_hgnc_id(hgnc_id, http=_http())
+        return _render_task(bundle)
+    if uniprot_acc:
+        bundle = resolve(uniprot_acc, http=_http())
+        return _render_task(bundle)
+    raise LookupError(
+        f"_resolve_task_text({gene!r}) called without hgnc_id OR uniprot_acc — "
+        "symbol-only resolution was removed in resolver v3. The input row "
+        "must supply at least one stable identifier; if a bench TSV is "
+        "missing both, regenerate it from a stable-ID source."
+    )
 
 
 def _parse_json_response(text: str) -> dict[str, Any] | None:
@@ -339,13 +349,16 @@ def _run_one(
     truth_verdict: str,
     truth_class: str,
     hgnc_id: str | None = None,
+    uniprot_acc: str | None = None,
 ) -> RunRecord:
     cfg = VARIANTS[variant]
     system_prompt = _load_prompt(cfg["prompt"])
 
     if cfg["resolver"]:
         try:
-            user_message = _resolve_task_text(gene_symbol, hgnc_id=hgnc_id)
+            user_message = _resolve_task_text(
+                gene_symbol, hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
+            )
         except Exception as exc:  # noqa: BLE001
             return RunRecord(
                 variant=variant, model=model, gene_symbol=gene_symbol,
@@ -612,6 +625,7 @@ def _run_one_with_retry(
     truth_verdict: str,
     truth_class: str,
     hgnc_id: str | None = None,
+    uniprot_acc: str | None = None,
 ) -> RunRecord:
     """``_run_one`` with one automatic retry for transient failures
     or schema-mismatch emissions, plus a refusal-fallback to the
@@ -639,7 +653,7 @@ def _run_one_with_retry(
     first = _run_one(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
-        hgnc_id=hgnc_id,
+        hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
     )
 
     # Refusal fallback: when a resolver-context variant gets refused,
@@ -649,7 +663,7 @@ def _run_one_with_retry(
         naive_attempt = _run_one(
             variant="naive", model=model, gene_symbol=gene_symbol,
             replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
-            hgnc_id=hgnc_id,
+            hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
         )
         if naive_attempt.predicted_verdict is not None:
             return naive_attempt
@@ -662,7 +676,7 @@ def _run_one_with_retry(
     second = _run_one(
         variant=variant, model=model, gene_symbol=gene_symbol,
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
-        hgnc_id=hgnc_id,
+        hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
     )
     return second
 
@@ -910,12 +924,13 @@ def main() -> None:
                 variant=v, model=m, gene_symbol=row["gene_symbol"],
                 replicate=rep, truth_verdict=row["ground_truth_verdict"],
                 truth_class=row["class"],
-                # Pass-through to the resolver. Cohort TSVs carry
-                # hgnc_id per CLAUDE.md "Gene identifier resolution";
-                # rerun inputs (resolver-fix sweeps) carry it
-                # explicitly. Absent / empty when the input TSV
-                # doesn't supply one — falls back to symbol search.
+                # Pass-throughs to the resolver. Stable-identifier
+                # priority per CLAUDE.md "Gene identifier resolution":
+                # hgnc_id (cohort path) > uniprot_acc (bench TSV
+                # path) > raise. Symbol-only resolution was removed
+                # in resolver v3.
                 hgnc_id=(row.get("hgnc_id") or None),
+                uniprot_acc=(row.get("uniprot_acc") or None),
             ): (v, m, row["gene_symbol"], rep)
             for (v, m, row, rep) in cells
         }

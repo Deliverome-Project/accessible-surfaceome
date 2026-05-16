@@ -149,53 +149,61 @@ def _ensure_acc(symbol_or_acc: str, *, http: CachedHTTP) -> str:
 
 
 def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
-    """Resolve a symbol or accession into a canonical identifier bundle.
+    """Resolve a **UniProt accession** into a canonical identifier bundle.
 
-    UniProt is the study's primary identifier. If we can't reach a reviewed
-    human UniProt accession from the input, we raise — the gene is out of scope
-    rather than a record with a null acc.
+    Symbol-input resolution was removed in resolver v3 because the
+    symbol-keyed lookup path silently returned the wrong protein for
+    ~0.2% of human genes (45 of 19k cohort symbols — COX1 → cyclo-
+    oxygenase instead of mitochondrial cytochrome c oxidase, WAS →
+    an rRNA instead of the Wiskott-Aldrich protein, etc. — see
+    ``scripts/audit_resolver_hgnc_id_v3.py`` for the documented
+    failure modes).
+
+    What to call instead, by input shape:
+
+      * **HGNC ID** (e.g. ``HGNC:1234``) →
+        ``resolve_by_hgnc_id(hgnc_id, http=http)``. The canonical
+        entry point. Cohort rows always have one (100% coverage).
+      * **Gene symbol** (e.g. ``CCR4``) → first look up its HGNC ID
+        from D1's ``gene_identifier_public`` table:
+            ``SELECT hgnc_id FROM gene_identifier_public WHERE hgnc_symbol = ?``
+        then call ``resolve_by_hgnc_id`` with the result. See
+        CLAUDE.md's "Gene identifier resolution" section.
+      * **UniProt accession** (e.g. ``P51679``) → this function. The
+        regex check filters out gene symbols that happen to match
+        the accession shape (P2RY10-14, B3GNT3-9, H2BC12, etc.) so
+        they raise here rather than silently round-tripping.
+
+    Raises ``LookupError`` with an actionable message when the input
+    isn't accession-shaped — callers must migrate to one of the two
+    paths above.
     """
 
-    # The UniProt-accession regex is structurally permissive — it accepts
-    # any string of the right shape, so gene symbols that happen to match
-    # the pattern (P2RY10-14, B3GNT3-9, H2BC12, etc.) get misrouted to the
-    # accession path and 404 on UniProt. When the accession lookup 404s,
-    # fall back to the symbol search before giving up.
     raw = symbol_or_acc.strip()
-    if looks_like_uniprot_acc(raw):
-        uniprot_acc = raw.upper()
-        try:
-            entry = _uniprot_entry(uniprot_acc, http=http)
-        except httpx.HTTPStatusError as exc:
-            if exc.response.status_code != 404:
-                raise
-            # Coincidental regex match — try symbol search instead.
-            uniprot_acc = _uniprot_search_by_symbol(raw, http=http)
-            if uniprot_acc is None:
-                raise LookupError(
-                    f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — "
-                    "out of study scope (initial accession-shape lookup 404'd, "
-                    "symbol search also failed)"
-                )
-            entry = _uniprot_entry(uniprot_acc, http=http)
-    else:
-        uniprot_acc = _uniprot_search_by_symbol(raw, http=http)
-        if uniprot_acc is None:
-            # UniProt's symbol search misses newly-registered HGNC
-            # entries whose gene_name field hasn't propagated to
-            # UniProt's index yet (SACK1A-H series, MIMS1/2, MISO1,
-            # ZBED8L/11, etc. — confirmed against HGNC 2026-05). HGNC
-            # carries an explicit ``uniprot_ids`` cross-reference for
-            # these; consult it before giving up.
-            hgnc_xref = _hgnc_record(raw, http=http) or {}
-            xref_ids = hgnc_xref.get("uniprot_ids") or []
-            if xref_ids:
-                uniprot_acc = xref_ids[0]
-            else:
-                raise LookupError(
-                    f"no reviewed human UniProt accession for symbol {symbol_or_acc!r} — out of study scope"
-                )
+    if not looks_like_uniprot_acc(raw):
+        raise LookupError(
+            f"resolve() no longer accepts gene symbols (got {symbol_or_acc!r}). "
+            "Use resolve_by_hgnc_id(hgnc_id) instead, or look up the symbol's "
+            "HGNC ID via D1: SELECT hgnc_id FROM gene_identifier_public "
+            "WHERE hgnc_symbol = ?. See CLAUDE.md 'Gene identifier resolution' "
+            "section for the migration playbook."
+        )
+    uniprot_acc = raw.upper()
+    try:
         entry = _uniprot_entry(uniprot_acc, http=http)
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code != 404:
+            raise
+        # Coincidental regex match against a gene symbol that happens
+        # to look like a UniProt acc. The legacy code used to fall
+        # back to symbol search here — we now require the caller to
+        # disambiguate by looking up the HGNC ID first.
+        raise LookupError(
+            f"{uniprot_acc!r} 404'd at UniProt and looks like it might be "
+            "a gene symbol matching the accession regex (e.g. P2RY10-14). "
+            "If so, route through resolve_by_hgnc_id — see the resolve() "
+            "docstring + CLAUDE.md."
+        ) from exc
     status, merged_into = _entry_status(entry)
 
     primary_symbol = _entry_primary_symbol(entry) or symbol_or_acc.strip()

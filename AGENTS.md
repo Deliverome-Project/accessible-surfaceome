@@ -105,6 +105,55 @@ Regression tests at
 pin BBC3, ND4, PRNP, TSPO, ABHD4, HSD17B8, SACK1A, CLMB, COX1, COX2,
 WAS — any picker / fallback regression breaks these.
 
+## Working with the D1 databases
+
+Two D1s: `surfaceome_agents` (private, full reasoning + costs) and
+`surfaceome_public` (column-whitelisted mirror the Worker reads).
+Schemas: [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
+[`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
+
+### Query from Python
+
+`accessible_surfaceome.cloud.d1_client.D1Client` speaks Cloudflare's
+REST API directly — no wrangler needed. Auth pulls from `.env`
+(`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`):
+
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.env import load_env
+    load_env()
+    with D1Client() as d1:
+        rows = d1.query("SELECT uniprot_acc FROM gene_identifier WHERE hgnc_id = ?;", ["HGNC:1234"])
+
+D1's HTTP API doesn't accept multi-statement batches; submit one
+statement per `query()` call (loop for bulk loads).
+
+### Applying DDL when wrangler isn't available
+
+Use `D1Client.query()` per `CREATE TABLE` / `CREATE INDEX`
+statement:
+
+    statements = ["CREATE TABLE ...;", "CREATE INDEX ...;"]
+    with D1Client() as d1:
+        for s in statements: d1.query(s, [])
+
+### Key tables
+
+| Table | Purpose | Primary lookup |
+|---|---|---|
+| `gene_identifier` | Stable-ID cache (per-gene canonical IDs). **Read here before re-resolving anything.** | `hgnc_id`, `hgnc_symbol`, `uniprot_acc` |
+| `triage_run` | Per-cell triage records. | `(run_id, gene_symbol, model, prompt_variant, replicate)` |
+| `deep_dive_run` | Surface-annotator deep-dive records. | `(run_id, gene_symbol)` |
+| `candidate_universe_public` | Catalog index. | `(universe_version, gene_symbol, uniprot_acc)` |
+| `benchmark_version` | Bench-snapshot symbol pinning. | `(bench_version, gene_symbol)` |
+
+### `run_id` conventions
+
+- `genome_full_sonnet_ncbi_v1` — canonical 2026-05-12 Sonnet sweep.
+- `*__resolver_v3_fix` suffix — corrected re-runs that supersede a
+  parent run for affected cells (originals preserved). Analytics
+  that should reflect the fix must COALESCE-prefer the fix run
+  over its parent; see CLAUDE.md for the canonical query.
+
 ## Coding Style & Naming Conventions
 See [docs/coding-style.md](docs/coding-style.md) for the full conventions
 and the rubric we use to assess diffs. Quick summary: Python 3.11+,

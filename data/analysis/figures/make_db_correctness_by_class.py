@@ -157,7 +157,7 @@ DB_PALETTE = {
     "HPA":             BRAND_PALETTE[2],  # amber-bright
     "SURFY":           BRAND_PALETTE[3],  # lavender-bright
     "CSPA":            BRAND_PALETTE[4],  # maroon-dark
-    "Sonnet (+ NCBI)": BRAND_CLAUDE_ORANGE,
+    "Sonnet (+ IDs)": BRAND_CLAUDE_ORANGE,
 }
 COLUMNS = ["overall", "yes", "contextual", "no"]
 COLUMN_LABEL = {
@@ -223,7 +223,7 @@ def main() -> None:
     sonnet_ncbi = preds[
         (preds["model"] == "claude-sonnet-4-6") & (preds["prompt_variant"] == "ncbi")
     ].set_index("gene_symbol")["predicted_verdict"].to_dict()
-    sonnet_label = "Sonnet (+ NCBI)"
+    sonnet_label = "Sonnet (+ IDs)"
 
     def _overall_acc(caller_label: str) -> float:
         if caller_label == sonnet_label:
