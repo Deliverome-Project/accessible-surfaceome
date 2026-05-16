@@ -29,16 +29,9 @@ export interface StructureViewerData {
   source_tool: string;
   /** AlphaFold DB pdbUrl baked in at build time via the prediction API.
    *  Saves a round-trip vs. re-querying at runtime; the runtime falls
-   *  back to a fresh prediction-API call if this URL ever 404s.
-   *  Retained as the legacy fetch target — the viewer now prefers
-   *  `bcif_url` (binary CIF, ~5× smaller raw / ~22 % smaller post-
-   *  gzip). PDB stays as the 404-fallback path. */
+   *  back to a fresh prediction-API call if this URL ever 404s. */
   pdb_url?: string | null;
-  /** AlphaFold DB bcifUrl — binary CIF. 3dmol parses it natively via
-   *  `addModel(arrayBuffer, "bcif")`. Faster parse, smaller transfer.
-   *  Falls back to `pdb_url` when null. */
-  bcif_url?: string | null;
-  /** AFDB model version at the time the URLs were baked. Informational. */
+  /** AFDB model version at the time `pdb_url` was baked. Informational. */
   latest_version?: number | null;
 }
 
