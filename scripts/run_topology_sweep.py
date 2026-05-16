@@ -618,6 +618,135 @@ def parse_cohort_to_jsonl(
 # ---------------------------------------------------------------------------
 
 
+def _expand_candidates_with_paralogs(
+    candidates: list[Candidate],
+    paralog_csv: Path,
+) -> list[Candidate]:
+    """Augment the candidate list with paralog UniProt accs not already in it.
+
+    Drives the "Option A" coverage decision: every distinct paralog from the
+    BioMart pull gets DeepTMHMM topology so ECD identity is computable for
+    every (human, paralog) pair, regardless of full-length percent_identity
+    (which is the wrong metric to threshold on for surface proteins anyway).
+
+    Pipeline:
+      1. Read paralog_ensembl_gene values from the Compara CSV
+      2. Resolve each via ``gene_identifier`` (D1) → (hgnc_id, uniprot_acc,
+         ensembl_gene, ncbi_gene_id) — the same stable-ID flow as the
+         human_canonical cohort
+      3. Filter to UniProt accs not already in the candidate set
+      4. Append as virtual Candidate rows with ``selection_reason='paralog'``
+         and ``triage_verdict=None``
+
+    The returned list is the augmented set; the original ``candidates`` is
+    NOT mutated. ``parse_cohort_to_jsonl`` looks up each new entry via
+    ``candidate_by_acc[paralog_uniprot]`` and stamps the paralog's OWN
+    HGNC ID (not the human's), so topology_public has a row per protein.
+    """
+    import os
+    import httpx
+
+    existing_uniprots = {c.uniprot_acc for c in candidates}
+    existing_hgnc_ids = {c.hgnc_id for c in candidates}
+
+    # Read all distinct paralog Ensembl genes from the BioMart CSV.
+    paralog_ensgs: set[str] = set()
+    if not paralog_csv.exists():
+        logger.warning("paralog CSV missing at %s; no expansion possible", paralog_csv)
+        return candidates
+    with paralog_csv.open() as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            ensg = (row.get("paralog_ensembl_gene") or "").strip().upper()
+            if ensg:
+                paralog_ensgs.add(ensg)
+    if not paralog_ensgs:
+        return candidates
+    logger.info(
+        "paralog expansion: %d distinct paralog Ensembl genes in BioMart CSV",
+        len(paralog_ensgs),
+    )
+
+    # Bulk-resolve via gene_identifier (D1, private agents DB).
+    account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+    db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "").strip()
+    if not (account and token and db):
+        logger.warning(
+            "D1 env missing → paralog expansion skipped (rows will land with NULL ecd_pct_identity for non-candidate paralogs)"
+        )
+        return candidates
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account}/d1/database/{db}/query"
+    ensg_list = sorted(paralog_ensgs)
+    gi_by_ensg: dict[str, dict[str, Any]] = {}
+    chunk_size = 500
+    with httpx.Client(timeout=120) as client:
+        for start in range(0, len(ensg_list), chunk_size):
+            chunk = ensg_list[start : start + chunk_size]
+            quoted = ",".join(f"'{e}'" for e in chunk)
+            sql = (
+                "SELECT hgnc_id, hgnc_symbol, cohort_symbol, uniprot_acc, "
+                "ncbi_gene_id, ensembl_gene FROM gene_identifier "
+                f"WHERE ensembl_gene IN ({quoted}) AND uniprot_acc IS NOT NULL "
+                "AND uniprot_acc != ''"
+            )
+            resp = client.post(
+                url, json={"sql": sql}, headers={"Authorization": f"Bearer {token}"}
+            )
+            body = resp.json()
+            if not body.get("success"):
+                logger.warning("gene_identifier expansion query failed: %s", body)
+                continue
+            result = body.get("result") or []
+            if isinstance(result, dict):
+                result = [result]
+            for r in result:
+                for row in r.get("results") or []:
+                    ensg = (row.get("ensembl_gene") or "").strip().upper()
+                    if ensg:
+                        gi_by_ensg[ensg] = row
+
+    # Build virtual Candidate rows for paralogs not already in the set.
+    new_candidates: list[Candidate] = []
+    seen_uniprots: set[str] = set()
+    n_already_in_set = 0
+    n_no_gi_entry = 0
+    for ensg in ensg_list:
+        gi = gi_by_ensg.get(ensg)
+        if gi is None:
+            n_no_gi_entry += 1
+            continue
+        hgnc_id = (gi.get("hgnc_id") or "").strip()
+        uniprot_acc = (gi.get("uniprot_acc") or "").strip().upper()
+        if not hgnc_id or not uniprot_acc:
+            n_no_gi_entry += 1
+            continue
+        if uniprot_acc in existing_uniprots or hgnc_id in existing_hgnc_ids:
+            n_already_in_set += 1
+            continue
+        if uniprot_acc in seen_uniprots:
+            continue
+        seen_uniprots.add(uniprot_acc)
+        ncbi_raw = gi.get("ncbi_gene_id")
+        new_candidates.append(
+            Candidate(
+                hgnc_id=hgnc_id,
+                cohort_symbol=(gi.get("cohort_symbol") or gi.get("hgnc_symbol") or ""),
+                uniprot_acc=uniprot_acc,
+                ensembl_gene=(gi.get("ensembl_gene") or None) or None,
+                ncbi_gene_id=(int(ncbi_raw) if ncbi_raw else None),
+                selection_reason="paralog",
+                triage_verdict=None,
+            )
+        )
+    logger.info(
+        "paralog expansion: %d new candidates added (skipped %d already in set, "
+        "%d no gene_identifier entry)",
+        len(new_candidates), n_already_in_set, n_no_gi_entry,
+    )
+    return list(candidates) + new_candidates
+
+
 def maybe_pull_paralogs(*, override_ensembl_ids: list[str]) -> Path | None:
     """If the paralog CSV is missing, kick off a fresh BioMart pull.
 
@@ -913,6 +1042,30 @@ def main() -> int:
     candidates = load_candidate_set(candidate_set_path)
     event("candidate_set_loaded", n=len(candidates),
           source=str(candidate_set_path.relative_to(REPO_ROOT)))
+
+    # ----- Stage 1.5: paralog BioMart pull + candidate expansion (Option A) -----
+    # Pull paralogs BEFORE the cohort run so the candidate list can be
+    # augmented with paralog UniProts not already in the surface-DB / triage
+    # union. Every distinct paralog then gets DeepTMHMM topology, which means
+    # ECD identity is computable for every paralog pair downstream.
+    paralog_csv: Path | None = None
+    if not args.skip_paralogs:
+        override_ensembl_ids = [c.ensembl_gene for c in candidates if c.ensembl_gene]
+        logger.info(
+            "paralog pull: %d candidates → %d Ensembl gene IDs going to BioMart",
+            len(candidates), len(override_ensembl_ids),
+        )
+        paralog_csv = maybe_pull_paralogs(override_ensembl_ids=override_ensembl_ids)
+        if paralog_csv is not None:
+            n_before = len(candidates)
+            candidates = _expand_candidates_with_paralogs(candidates, paralog_csv)
+            event(
+                "candidates_expanded_with_paralogs",
+                n_before=n_before,
+                n_after=len(candidates),
+                n_paralog_added=len(candidates) - n_before,
+            )
+
     candidate_by_acc = {c.uniprot_acc: c for c in candidates}
 
     # ----- Stage 2: Per-cohort accession lists -----
@@ -1087,35 +1240,31 @@ def main() -> int:
         cohort_jsonl_paths[cohort] = jsonl
         event("cohort_parsed", cohort=cohort, jsonl=str(jsonl.relative_to(REPO_ROOT)))
 
-    # ----- Stage 5: paralogs + ECD identity -----
+    # ----- Stage 5: paralog ECD identity (paralog BioMart pull already
+    # happened in Stage 1.5; here we just compute ECD against the now-complete
+    # topology JSONL which includes both candidates AND paralog expansions). -----
     paralog_jsonl: Path | None = None
-    if not args.skip_paralogs and "human_canonical" in cohort_jsonl_paths:
-        # ALWAYS pass the candidate set's Ensembl gene IDs (resolved via
-        # gene_identifier) to the BioMart pull — no fallback to the legacy
-        # candidate_universe-TSV + HGNC-TSV path. The HGNC TSV isn't
-        # hydrated in this worktree and the legacy path's symbol-based
-        # resolution is exactly the bug class PR #30 fixes.
-        override_ensembl_ids = [
-            c.ensembl_gene for c in candidates if c.ensembl_gene
-        ]
-        logger.info(
-            "paralog pull: %d candidates → %d Ensembl gene IDs going to BioMart",
-            len(candidates), len(override_ensembl_ids),
+    if (
+        not args.skip_paralogs
+        and paralog_csv is not None
+        and "human_canonical" in cohort_jsonl_paths
+    ):
+        paralog_version = args.paralog_version or f"paralog_{args.topology_version}"
+        paralog_rows = compute_paralog_records(
+            paralog_csv=paralog_csv,
+            canonical_topology_jsonl=cohort_jsonl_paths["human_canonical"],
+            paralog_version=paralog_version,
+            compara_version=args.compara_version,
         )
-        paralog_csv = maybe_pull_paralogs(override_ensembl_ids=override_ensembl_ids)
-        if paralog_csv is not None:
-            paralog_version = args.paralog_version or f"paralog_{args.topology_version}"
-            paralog_rows = compute_paralog_records(
-                paralog_csv=paralog_csv,
-                canonical_topology_jsonl=cohort_jsonl_paths["human_canonical"],
-                paralog_version=paralog_version,
-                compara_version=args.compara_version,
-            )
-            paralog_jsonl = jsonl_root / "paralog_records.jsonl"
-            write_paralog_jsonl(paralog_jsonl, paralog_rows)
-            event("paralog_records_written",
-                  jsonl=str(paralog_jsonl.relative_to(REPO_ROOT)),
-                  n=len(paralog_rows))
+        paralog_jsonl = jsonl_root / "paralog_records.jsonl"
+        write_paralog_jsonl(paralog_jsonl, paralog_rows)
+        n_with_ecd = sum(1 for r in paralog_rows if r.get("ecd_pct_identity") is not None)
+        event(
+            "paralog_records_written",
+            jsonl=str(paralog_jsonl.relative_to(REPO_ROOT)),
+            n=len(paralog_rows),
+            n_with_ecd=n_with_ecd,
+        )
 
     # ----- Stage 6: D1 upload -----
     if not args.skip_upload:

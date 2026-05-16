@@ -263,19 +263,37 @@ def _load_triage_yes_hgnc_ids(
 ) -> dict[str, str]:
     """Translate triage 'yes'/'contextual' rows → ``{hgnc_id: verdict}``.
 
+    COALESCE-merges with the ``<run_id>__resolver_v3_fix`` rerun (per
+    CLAUDE.md's "Working with the D1 databases" → run_id conventions
+    section). For genes that the resolver v3 audit re-ran with the
+    corrected gene assignment, the FIX verdict wins. Otherwise we use
+    the original. This drops the ~3 fix-run verdict changes from the
+    candidate set:
+
+      * GPHRB:  yes        → no          (drops from set)
+      * SOFU1:  no         → contextual  (adds to set)
+      * WAS:    contextual → no          (drops from set)
+
     Join with gene_identifier is on ``cohort_symbol = triage_run.gene_symbol`` —
-    the resolver's snapshot of the input symbol at cohort build time, which
-    by construction matches what the triage agent saw.
+    the resolver's snapshot of the input symbol at cohort build time.
     """
     account, db, token = _from_env_agents()
     rows = _d1_query(
         account,
         db,
         token,
-        f"SELECT DISTINCT gene_symbol, predicted_verdict FROM triage_run "
-        f"WHERE run_id = '{run_id}' "
-        f"AND predicted_verdict IN ('yes', 'contextual') "
-        f"AND gene_symbol IS NOT NULL AND gene_symbol != ''",
+        # COALESCE with __resolver_v3_fix run; filter to yes/contextual.
+        # The fix run only has rows for genes that needed re-resolution
+        # (45 genes), so most rows fall through to the original verdict.
+        f"SELECT t.gene_symbol AS gene_symbol, "
+        f"       COALESCE(f.predicted_verdict, t.predicted_verdict) AS predicted_verdict "
+        f"FROM triage_run t "
+        f"LEFT JOIN triage_run f "
+        f"  ON f.gene_symbol = t.gene_symbol "
+        f"  AND f.run_id = '{run_id}__resolver_v3_fix' "
+        f"WHERE t.run_id = '{run_id}' "
+        f"  AND COALESCE(f.predicted_verdict, t.predicted_verdict) IN ('yes', 'contextual') "
+        f"  AND t.gene_symbol IS NOT NULL AND t.gene_symbol != ''",
         client=client,
     )
     out: dict[str, str] = {}
