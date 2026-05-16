@@ -103,12 +103,32 @@ COMPARA_PARALOG_BY_GENE_CSV = (
 
 @dataclass(frozen=True)
 class Candidate:
+    """One candidate row — stable IDs from gene_identifier (PR #30 design).
+
+    ``hgnc_id`` is the canonical join key; ``uniprot_acc`` and ``ensembl_gene``
+    are the resolved stable IDs the orchestrator hands to UniProt (FASTA
+    fetch) and BioMart (paralog/ortholog pulls) respectively. ``hgnc_symbol``
+    is denormalized for offline logs only — never used as a join key per
+    CLAUDE.md's "Gene identifier resolution" rules.
+    """
+
+    hgnc_id: str | None
+    hgnc_symbol: str
+    cohort_symbol: str
     uniprot_acc: str
-    gene_symbol: str
-    selection_reason: str
+    ensembl_gene: str | None
+    ncbi_gene_id: int | None
+    selection_reason: str       # db_only | triage_only | both | override
+    stable_id_source: str       # gene_identifier | fallback | override
+    triage_verdict: str | None  # yes | contextual | None
 
 
 def load_candidate_set(path: Path) -> list[Candidate]:
+    """Read the HGNC-keyed candidate accessions TSV emitted by
+    ``scripts/build_topology_candidate_set.py``. Supports the v1 schema
+    (uniprot_acc + gene_symbol) by silently falling back when columns are
+    missing — useful while older runs cohabit on disk.
+    """
     if not path.exists():
         raise SystemExit(
             f"candidate set not found at {path}; "
@@ -119,12 +139,26 @@ def load_candidate_set(path: Path) -> list[Candidate]:
         reader = csv.DictReader(f, delimiter="\t")
         for r in reader:
             acc = (r.get("uniprot_acc") or "").strip().upper()
-            if acc:
-                rows.append(Candidate(
+            if not acc:
+                continue
+            ncbi_raw = (r.get("ncbi_gene_id") or "").strip()
+            try:
+                ncbi = int(ncbi_raw) if ncbi_raw else None
+            except ValueError:
+                ncbi = None
+            rows.append(
+                Candidate(
+                    hgnc_id=(r.get("hgnc_id") or None) or None,
+                    hgnc_symbol=(r.get("hgnc_symbol") or r.get("gene_symbol") or "").strip(),
+                    cohort_symbol=(r.get("cohort_symbol") or r.get("gene_symbol") or "").strip(),
                     uniprot_acc=acc,
-                    gene_symbol=(r.get("gene_symbol") or "").strip(),
+                    ensembl_gene=(r.get("ensembl_gene") or None),
+                    ncbi_gene_id=ncbi,
                     selection_reason=(r.get("selection_reason") or "").strip(),
-                ))
+                    stable_id_source=(r.get("stable_id_source") or "fallback").strip(),
+                    triage_verdict=(r.get("triage_verdict") or None) or None,
+                )
+            )
     return rows
 
 
@@ -370,7 +404,15 @@ def parse_cohort_to_jsonl(
                 rec["is_canonical"] = int(cohort == "human_canonical"
                                           or rec["uniprot_accession_full"].endswith("-1")
                                           or "-" not in rec["uniprot_accession_full"])
-                rec["gene_symbol"] = cand.gene_symbol if cand else ""
+                # Stable IDs from gene_identifier (via the candidate set).
+                # hgnc_id is the canonical key; gene_symbol is denormalized
+                # for offline reads only. Ortholog cohorts have no human
+                # HGNC ID per row — leave hgnc_id NULL there.
+                rec["hgnc_id"] = (
+                    cand.hgnc_id if (cand and cohort in {"human_canonical", "human_isoforms"})
+                    else None
+                )
+                rec["gene_symbol"] = cand.hgnc_symbol if cand else ""
                 rec["tool_version"] = DEEPTMHMM_TOOL_VERSION
                 rec["retrieved_at"] = retrieved_at
                 f.write(json.dumps(rec, sort_keys=True) + "\n")
@@ -402,6 +444,53 @@ def maybe_pull_paralogs(*, override_genes: list[str]) -> Path | None:
     return COMPARA_PARALOG_BY_GENE_CSV
 
 
+def _load_gene_identifier_for_paralog_lookup() -> dict[str, dict[str, Any]]:
+    """Index ``gene_identifier`` by Ensembl gene for paralog-side lookup.
+
+    Both sides of a Compara paralog pair come back keyed on Ensembl gene IDs;
+    we need to map those to (hgnc_id, uniprot_acc) to (a) stamp paralog_hgnc_id
+    on every output row and (b) find the paralog's DeepTMHMM topology via
+    its UniProt accession.
+    """
+    import os
+    import httpx
+
+    account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+    db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "").strip()
+    if not (account and token and db):
+        logger.warning(
+            "gene_identifier lookup unavailable (missing D1 env vars); "
+            "paralog_hgnc_id columns will be NULL"
+        )
+        return {}
+    url = f"https://api.cloudflare.com/client/v4/accounts/{account}/d1/database/{db}/query"
+    out: dict[str, dict[str, Any]] = {}
+    with httpx.Client(timeout=120) as client:
+        resp = client.post(
+            url,
+            json={
+                "sql": "SELECT hgnc_id, hgnc_symbol, uniprot_acc, ensembl_gene, "
+                       "ncbi_gene_id FROM gene_identifier "
+                       "WHERE ensembl_gene IS NOT NULL AND ensembl_gene != ''",
+            },
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        body = resp.json()
+        if not body.get("success"):
+            logger.warning("gene_identifier query failed: %s", body)
+            return {}
+        result = body.get("result") or []
+        if isinstance(result, dict):
+            result = [result]
+        for r in result:
+            for row in r.get("results") or []:
+                ensg = (row.get("ensembl_gene") or "").strip().upper()
+                if ensg:
+                    out[ensg] = row
+    return out
+
+
 def compute_paralog_records(
     *,
     paralog_csv: Path,
@@ -411,30 +500,37 @@ def compute_paralog_records(
 ) -> list[dict[str, Any]]:
     """Compute ECD identity for every (human, paralog) pair in the CSV.
 
-    For each row in the paralog-by-gene CSV:
-      * Look up the human topology+sequence from the canonical-cohort JSONL.
-      * Fetch the paralog's FASTA from the cache (if available), run
-        DeepTMHMM on it (cached), then look up its topology.
-      * Compute ECD identity via merge.paralog_ecd_identity.compute_ecd_identity.
+    Pipeline (HGNC-keyed end to end):
+
+      * The Compara CSV gives us paralog Ensembl gene IDs (the BioMart key).
+      * ``gene_identifier`` resolves each Ensembl ID → (hgnc_id, uniprot_acc).
+      * Topology lookup goes through ``topology_records.jsonl`` indexed by
+        UniProt accession (stable across resolver versions).
+      * Output rows carry both ``human_hgnc_id`` and ``paralog_hgnc_id`` —
+        the stable join keys for the public mirror.
 
     For v1 we DON'T re-run DeepTMHMM on paralogs that aren't in our candidate
-    universe — we set ecd_pct_identity to NULL for those and rely on
-    biomart_percent_identity for ranking. The orchestrator stage assumes
-    the cohort sweep has already covered the universe's canonical isoforms.
+    universe — ``ecd_pct_identity`` is NULL for those and consumers rank
+    by ``biomart_percent_identity`` instead. The orchestrator assumes the
+    cohort sweep has already covered the universe's canonical isoforms.
     """
     from accessible_surfaceome.merge.paralog_ecd_identity import compute_ecd_identity
 
-    # Index canonical topology JSONL by base UniProt accession + by Ensembl
-    # (via gene_symbol → uniprot mapping carried in the records).
+    # 1. Topology index — keyed by base UniProt accession (the stable ID,
+    #    not gene_symbol, since the resolver fix is the whole point of this PR).
     topo_by_acc: dict[str, dict[str, Any]] = {}
-    topo_by_symbol: dict[str, dict[str, Any]] = {}
     with canonical_topology_jsonl.open() as f:
         for line in f:
             rec = json.loads(line)
             topo_by_acc[rec["uniprot_accession"]] = rec
-            sym = (rec.get("gene_symbol") or "").upper()
-            if sym:
-                topo_by_symbol[sym] = rec
+
+    # 2. gene_identifier index — keyed by Ensembl gene (the join key on the
+    #    BioMart side). Lets us turn paralog_ensembl_gene → hgnc_id +
+    #    uniprot_acc without re-resolving from symbol.
+    gi_by_ensg = _load_gene_identifier_for_paralog_lookup()
+    logger.info(
+        "gene_identifier loaded for paralog ENSG-resolution: %d rows", len(gi_by_ensg)
+    )
 
     out: list[dict[str, Any]] = []
     by_human_gene: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -442,10 +538,8 @@ def compute_paralog_records(
     with paralog_csv.open() as f:
         reader = csv.DictReader(f)
         for row in reader:
-            human_uniprot = (row.get("query_uniprot_acc") or "").strip().upper()
-            human_sym = (row.get("query_gene_symbol_resolved") or "").strip().upper()
+            # Compara CSV (output of ensembl_compara_paralogs.download_main)
             human_ensg = (row.get("query_ensembl_gene") or "").strip().upper()
-            paralog_sym = (row.get("paralog_gene_symbol") or "").strip().upper()
             paralog_ensg = (row.get("paralog_ensembl_gene") or "").strip().upper()
             family_id = (row.get("family_id") or "").strip()
             paralogy_type = (row.get("paralogy_type") or "").strip()
@@ -453,13 +547,35 @@ def compute_paralog_records(
             biomart_pct = float(biomart_pct_raw) if biomart_pct_raw else None
             is_high_conf = int((row.get("is_high_confidence") or "0").strip() or "0")
 
-            human_record = topo_by_acc.get(human_uniprot) or topo_by_symbol.get(human_sym)
-            paralog_record = topo_by_symbol.get(paralog_sym)
+            # Stable-ID lookup via gene_identifier (HGNC-keyed). The Compara
+            # CSV's query_uniprot_acc / query_gene_symbol fields are
+            # fallback hints, not authoritative.
+            human_gi = gi_by_ensg.get(human_ensg) or {}
+            paralog_gi = gi_by_ensg.get(paralog_ensg) or {}
+
+            human_hgnc_id = (human_gi.get("hgnc_id") or "").strip() or None
+            human_uniprot = (
+                (human_gi.get("uniprot_acc") or "").strip().upper()
+                or (row.get("query_uniprot_acc") or "").strip().upper()
+            )
+            human_sym = (
+                (human_gi.get("hgnc_symbol") or "").strip()
+                or (row.get("query_gene_symbol_resolved") or "").strip()
+            )
+
+            paralog_hgnc_id = (paralog_gi.get("hgnc_id") or "").strip() or None
+            paralog_uniprot = (paralog_gi.get("uniprot_acc") or "").strip().upper()
+            paralog_sym = (
+                (paralog_gi.get("hgnc_symbol") or "").strip()
+                or (row.get("paralog_gene_symbol") or "").strip()
+            )
+
+            human_record = topo_by_acc.get(human_uniprot) if human_uniprot else None
+            paralog_record = (
+                topo_by_acc.get(paralog_uniprot) if paralog_uniprot else None
+            )
 
             ecd_result = None
-            paralog_uniprot = ""
-            if paralog_record is not None:
-                paralog_uniprot = paralog_record["uniprot_accession"]
             if human_record is not None and paralog_record is not None:
                 ecd_result = compute_ecd_identity(
                     human_topology=human_record["per_residue_topology"],
@@ -470,9 +586,11 @@ def compute_paralog_records(
 
             row_out = {
                 "paralog_version": paralog_version,
+                "human_hgnc_id": human_hgnc_id,
                 "human_ensembl_gene": human_ensg,
                 "human_uniprot_acc": human_uniprot or None,
                 "human_gene_symbol": human_sym or None,
+                "paralog_hgnc_id": paralog_hgnc_id,
                 "paralog_ensembl_gene": paralog_ensg,
                 "paralog_uniprot_acc": paralog_uniprot or None,
                 "paralog_gene_symbol": paralog_sym or None,

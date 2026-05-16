@@ -45,6 +45,7 @@ STATEMENTS: list[tuple[str, str]] = [
         CREATE TABLE IF NOT EXISTS topology_public (
             topology_version           TEXT NOT NULL,
             cohort                     TEXT NOT NULL,
+            hgnc_id                    TEXT,
             uniprot_acc                TEXT NOT NULL,
             uniprot_acc_full           TEXT NOT NULL,
             isoform_id                 TEXT NOT NULL,
@@ -70,6 +71,10 @@ STATEMENTS: list[tuple[str, str]] = [
             PRIMARY KEY (topology_version, cohort, uniprot_acc_full)
         )
         """,
+    ),
+    (
+        "idx_topology_public_hgnc",
+        "CREATE INDEX IF NOT EXISTS idx_topology_public_hgnc ON topology_public (hgnc_id)",
     ),
     (
         "idx_topology_public_gene",
@@ -105,9 +110,11 @@ STATEMENTS: list[tuple[str, str]] = [
         """
         CREATE TABLE IF NOT EXISTS compara_paralog (
             paralog_version          TEXT NOT NULL,
+            human_hgnc_id            TEXT,
             human_ensembl_gene       TEXT NOT NULL,
             human_uniprot_acc        TEXT,
             human_gene_symbol        TEXT,
+            paralog_hgnc_id          TEXT,
             paralog_ensembl_gene     TEXT NOT NULL,
             paralog_uniprot_acc      TEXT,
             paralog_gene_symbol      TEXT,
@@ -123,6 +130,11 @@ STATEMENTS: list[tuple[str, str]] = [
             PRIMARY KEY (paralog_version, human_ensembl_gene, paralog_ensembl_gene)
         )
         """,
+    ),
+    (
+        "idx_compara_paralog_human_hgnc",
+        "CREATE INDEX IF NOT EXISTS idx_compara_paralog_human_hgnc "
+        "ON compara_paralog (human_hgnc_id)",
     ),
     (
         "idx_compara_paralog_human_uniprot",
@@ -245,11 +257,70 @@ def main() -> int:
     with httpx.Client(timeout=60) as client:
         for target in targets:
             logger.info("applying to %s (%s)", target.name, target.database_id[:8])
+            _ensure_columns(target, client=client)
             for name, sql in STATEMENTS:
                 _query(target, sql.strip(), client=client)
                 logger.info("  ✓ %s", name)
     logger.info("done — both DBs have topology_public + compara_paralog + release pointers")
     return 0
+
+
+def _table_columns(target: D1Target, table: str, *, client: httpx.Client) -> set[str]:
+    """Return the set of column names on ``table`` via PRAGMA. Empty set if
+    the table doesn't exist yet (CREATE TABLE will run after this)."""
+    url = target.url
+    resp = client.post(
+        url,
+        json={"sql": f"PRAGMA table_info({table})"},
+        headers={"Authorization": f"Bearer {target.api_token}"},
+        timeout=60,
+    )
+    data = resp.json()
+    if not data.get("success"):
+        return set()
+    result = data.get("result") or []
+    if isinstance(result, dict):
+        result = [result]
+    cols: set[str] = set()
+    for r in result:
+        for row in r.get("results") or []:
+            name = row.get("name")
+            if name:
+                cols.add(str(name))
+    return cols
+
+
+# (column_name, sqlite_type) pairs to add when missing. SQLite's
+# ``ADD COLUMN`` doesn't support ``IF NOT EXISTS``, so we PRAGMA-check first.
+TOPOLOGY_NEW_COLUMNS: list[tuple[str, str]] = [
+    ("hgnc_id", "TEXT"),
+]
+COMPARA_PARALOG_NEW_COLUMNS: list[tuple[str, str]] = [
+    ("human_hgnc_id", "TEXT"),
+    ("paralog_hgnc_id", "TEXT"),
+]
+
+
+def _ensure_columns(target: D1Target, *, client: httpx.Client) -> None:
+    """ALTER TABLE ADD COLUMN for the v0.5 stable-ID columns when missing.
+
+    Runs before the CREATE TABLE statements so the new columns exist on
+    pre-v0.5 schemas (where the table already existed without hgnc_id).
+    On fresh databases this is a no-op — PRAGMA returns empty, no ALTER
+    runs, then the CREATE TABLE creates the full schema.
+    """
+    for table, new_cols in [
+        ("topology_public", TOPOLOGY_NEW_COLUMNS),
+        ("compara_paralog", COMPARA_PARALOG_NEW_COLUMNS),
+    ]:
+        existing = _table_columns(target, table, client=client)
+        if not existing:
+            continue  # Table doesn't exist yet; CREATE TABLE will handle it.
+        for col, typ in new_cols:
+            if col in existing:
+                continue
+            logger.info("  + ALTER TABLE %s ADD COLUMN %s %s", table, col, typ)
+            _query(target, f"ALTER TABLE {table} ADD COLUMN {col} {typ}", client=client)
 
 
 if __name__ == "__main__":

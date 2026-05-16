@@ -32,15 +32,17 @@ from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
 
-# 16 columns * 6 rows = 96 placeholders, under D1's 100 cap.
-BATCH_SIZE = 6
+# 17 columns * 5 rows = 85 placeholders, under D1's 100 cap.
+BATCH_SIZE = 5
 API_ROOT = "https://api.cloudflare.com/client/v4"
 
 COLS = [
     "paralog_version",
+    "human_hgnc_id",          # PR #30 stable-ID join key
     "human_ensembl_gene",
     "human_uniprot_acc",
     "human_gene_symbol",
+    "paralog_hgnc_id",        # PR #30 stable-ID join key for the paralog
     "paralog_ensembl_gene",
     "paralog_uniprot_acc",
     "paralog_gene_symbol",
@@ -100,9 +102,11 @@ def _query(target: D1Target, sql: str, params: list[Any], *, client: httpx.Clien
 def _row_to_params(rec: dict[str, Any]) -> list[Any]:
     return [
         rec["paralog_version"],
+        rec.get("human_hgnc_id"),
         rec["human_ensembl_gene"],
         rec.get("human_uniprot_acc"),
         rec.get("human_gene_symbol"),
+        rec.get("paralog_hgnc_id"),
         rec["paralog_ensembl_gene"],
         rec.get("paralog_uniprot_acc"),
         rec.get("paralog_gene_symbol"),

@@ -37,13 +37,14 @@ from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
 
-# D1 caps placeholders at ~100 per statement. 23 columns * 4 rows = 92 → batch 4.
+# D1 caps placeholders at ~100 per statement. 24 columns * 4 rows = 96 → batch 4.
 BATCH_SIZE = 4
 API_ROOT = "https://api.cloudflare.com/client/v4"
 
 COLS = [
     "topology_version",
     "cohort",
+    "hgnc_id",                # PR #30 stable-ID join key into gene_identifier
     "uniprot_acc",
     "uniprot_acc_full",
     "isoform_id",
@@ -115,6 +116,7 @@ def _row_to_params(rec: dict[str, Any]) -> list[Any]:
     return [
         rec["topology_version"],
         rec["cohort"],
+        rec.get("hgnc_id") or None,
         rec["uniprot_accession"],
         rec["uniprot_accession_full"],
         rec.get("isoform_id") or rec["uniprot_accession_full"],
