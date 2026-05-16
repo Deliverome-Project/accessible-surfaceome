@@ -1,33 +1,33 @@
-"""Build the candidate set for the topology sweep — HGNC-ID-keyed.
+"""Build the topology-sweep candidate set keyed on HGNC ID.
 
-The "yes" set is the union of:
-  (a) every gene in ``candidate_universe.tsv`` with ``in_db_union == 1`` —
-      i.e. any of the 5 gating surface databases voted "yes" under that
-      source's optimized cutoff (see merge/__init__.py:GATING_FLAG_COLUMNS),
-  (b) every gene with ``triage_run.predicted_verdict IN ('yes', 'contextual')``
-      for the latest genome-wide Sonnet run.
+Driven from PR #30's ``gene_identifier`` D1 table — the canonical
+HGNC-ID-keyed source of truth for every protein-coding gene (19,464 rows
+at HEAD, 100% coverage of the M1 cohort). We iterate **HGNC IDs**, not
+symbols. Symbol-keyed legacy data sources are translated to HGNC IDs
+through ``gene_identifier.cohort_symbol`` — the resolver's snapshot of
+what symbol the cohort had at build time, which is the only legitimate
+join with ``triage_run.gene_symbol`` and ``candidate_universe.tsv``.
 
-Stable IDs from PR #30's ``gene_identifier`` table are joined onto every row
-so the orchestrator and uploaders never re-resolve from symbol. Output is
-keyed on HGNC ID and carries (hgnc_id, hgnc_symbol, uniprot_acc, ensembl_gene,
-ncbi_gene_id, ensembl_canonical_protein) — exactly the stable identifier set
-``gene_identifier`` exposes.
+The candidate set is the union of:
 
-When a candidate gene doesn't have a ``gene_identifier`` row yet (PR #30's
-build script is run separately and may not yet cover the full union), we
-fall back to the symbol → uniprot/ensembl mapping from
-``candidate_universe.tsv`` and emit a warning row with ``stable_id_source =
-'fallback'``. The orchestrator skips fallback rows by default to avoid
-silent resolver drift.
+  (a) ``candidate_universe.tsv`` with ``in_db_union = 1`` — i.e. any of
+      the 5 gating surface databases voted "yes" under that source's
+      optimized cutoff (see ``merge/__init__.py:GATING_FLAG_COLUMNS``;
+      cutoffs are baked into each per-source loader).
+  (b) ``triage_run.predicted_verdict IN ('yes', 'contextual')`` for the
+      latest genome-wide Sonnet run.
 
-Output: ``data/processed/topology_run_<version>/candidate_accessions.tsv``.
+Output: ``data/processed/topology_run_<version>/candidate_accessions.tsv``,
+keyed on ``hgnc_id``, carrying every stable identifier ``gene_identifier``
+exposes plus the (in_db_union, triage_verdict, selection_reason) audit
+columns.
 
 Usage::
 
     uv run python scripts/build_topology_candidate_set.py \\
         --topology-version topo_2026_05_16
 
-Override with explicit HGNC IDs (3-protein dry run)::
+Verification override — by HGNC ID, not symbol::
 
     uv run python scripts/build_topology_candidate_set.py \\
         --topology-version topo_test \\
@@ -64,21 +64,36 @@ TRIAGE_YES_VERDICTS = frozenset({"yes", "contextual"})
 
 
 @dataclass(frozen=True)
-class CandidateRow:
-    """One row of the candidate accessions TSV — stable-ID-keyed."""
+class GeneIdentifier:
+    """One row from D1's ``gene_identifier`` — the HGNC-keyed canonical record."""
 
-    hgnc_id: str | None
+    hgnc_id: str
     hgnc_symbol: str
-    uniprot_acc: str
+    cohort_symbol: str | None
+    uniprot_acc: str | None
+    ncbi_gene_id: int | None
+    ensembl_gene: str | None
+    ensembl_canonical_protein: str | None
+    resolver_version: str
+    needs_review: int
+
+
+@dataclass(frozen=True)
+class CandidateRow:
+    """One row of the candidate accessions TSV — HGNC-keyed."""
+
+    hgnc_id: str
+    hgnc_symbol: str
+    cohort_symbol: str
+    uniprot_acc: str            # required — DeepTMHMM input
     ensembl_gene: str | None
     ncbi_gene_id: int | None
     ensembl_canonical_protein: str | None
-    cohort_symbol: str           # symbol the M1 cohort used (for join-back to TSV)
-    in_db_union: int             # 1 iff in candidate_universe.tsv with in_db_union=1
-    triage_verdict: str | None   # 'yes' | 'contextual' | None (only yes+contextual carry through)
-    selection_reason: str        # db_only | triage_only | both
-    stable_id_source: str        # 'gene_identifier' | 'fallback' | 'override'
-    needs_review: int            # mirrored from gene_identifier when applicable
+    in_db_union: int
+    triage_verdict: str | None  # 'yes' | 'contextual' | None
+    selection_reason: str       # db_only | triage_only | both | override
+    needs_review: int           # mirrored from gene_identifier
+    resolver_version: str
 
 
 def _from_env_agents() -> tuple[str, str, str]:
@@ -108,7 +123,7 @@ def _d1_query(
         url,
         json={"sql": sql},
         headers={"Authorization": f"Bearer {token}"},
-        timeout=60,
+        timeout=120,
     )
     body = resp.json()
     if not body.get("success"):
@@ -122,43 +137,13 @@ def _d1_query(
     return rows
 
 
-def _load_candidate_universe(tsv: Path) -> dict[str, dict[str, Any]]:
-    """Return ``{symbol_upper: row}`` for every in_db_union=1 row, with the
-    best (highest n_sources_surface) UniProt per symbol kept on collision.
-    """
-    if not tsv.exists():
-        raise SystemExit(f"candidate_universe.tsv not found at {tsv}")
-    by_sym: dict[str, dict[str, Any]] = {}
-    with tsv.open() as f:
-        reader = csv.DictReader(f, delimiter="\t")
-        for r in reader:
-            in_db_union = (r.get("in_db_union") or "").strip()
-            if in_db_union not in {"1", "1.0", "true", "True"}:
-                continue
-            sym = (
-                r.get("gene_symbol_resolved") or r.get("gene_symbol") or ""
-            ).strip().upper()
-            if not sym:
-                continue
-            try:
-                n = int(float((r.get("n_sources_surface") or "0").strip() or "0"))
-            except ValueError:
-                n = 0
-            existing = by_sym.get(sym)
-            if existing is None or n > int(float(existing.get("_n", 0))):
-                r["_n"] = n
-                by_sym[sym] = r
-    return by_sym
+def _load_gene_identifier_cohort(*, client: httpx.Client) -> dict[str, GeneIdentifier]:
+    """Load ``gene_identifier`` keyed by HGNC ID — the cohort universe.
 
-
-def _load_gene_identifier_index(
-    *, client: httpx.Client
-) -> tuple[dict[str, dict[str, Any]], dict[str, dict[str, Any]]]:
-    """Return two indexes of ``gene_identifier``: by HGNC symbol, by cohort symbol.
-
-    The two often agree but diverge for the ~30 rename-drift cases where HGNC
-    has applied a primary-symbol change UniProt / NCBI hasn't synced. Lookups
-    fall back from cohort_symbol → hgnc_symbol so either spelling resolves.
+    This is the **primary key** of the pipeline. Every candidate row, every
+    upload row, every join in topology_public / compara_paralog is anchored
+    on the HGNC IDs in this dict. The 19,464-row cohort here corresponds
+    1:1 with ``data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv``.
     """
     account, db, token = _from_env_agents()
     rows = _d1_query(
@@ -167,24 +152,121 @@ def _load_gene_identifier_index(
         token,
         "SELECT hgnc_id, hgnc_symbol, cohort_symbol, uniprot_acc, "
         "ncbi_gene_id, ensembl_gene, ensembl_canonical_protein, "
-        "resolver_path, resolver_version, needs_review "
+        "resolver_version, needs_review "
         "FROM gene_identifier",
         client=client,
     )
-    by_hgnc_sym: dict[str, dict[str, Any]] = {}
-    by_cohort_sym: dict[str, dict[str, Any]] = {}
+    out: dict[str, GeneIdentifier] = {}
     for r in rows:
-        if (sym := (r.get("hgnc_symbol") or "").strip().upper()):
-            by_hgnc_sym[sym] = r
-        if (csym := (r.get("cohort_symbol") or "").strip().upper()):
-            by_cohort_sym[csym] = r
-    return by_hgnc_sym, by_cohort_sym
+        hid = (r.get("hgnc_id") or "").strip()
+        if not hid:
+            continue
+        out[hid] = GeneIdentifier(
+            hgnc_id=hid,
+            hgnc_symbol=(r.get("hgnc_symbol") or "").strip(),
+            cohort_symbol=(r.get("cohort_symbol") or None) or None,
+            uniprot_acc=(r.get("uniprot_acc") or None) or None,
+            ncbi_gene_id=(int(r["ncbi_gene_id"]) if r.get("ncbi_gene_id") else None),
+            ensembl_gene=(r.get("ensembl_gene") or None) or None,
+            ensembl_canonical_protein=(r.get("ensembl_canonical_protein") or None) or None,
+            resolver_version=(r.get("resolver_version") or "").strip(),
+            needs_review=int(r.get("needs_review") or 0),
+        )
+    return out
 
 
-def _load_triage_yes_contextual(
-    *, client: httpx.Client, run_id: str
+def _build_symbol_to_hgnc_index(
+    cohort: dict[str, GeneIdentifier],
 ) -> dict[str, str]:
-    """Return ``{cohort_symbol_upper: verdict}`` for triage 'yes' + 'contextual'."""
+    """Build symbol → hgnc_id lookup for translating legacy symbol-keyed sources.
+
+    Both ``cohort_symbol`` and ``hgnc_symbol`` map to the same HGNC ID
+    (one HGNC ID per gene). When a free-text symbol matches via either
+    path it resolves to that HGNC ID. Symbol-collision (two HGNC IDs
+    sharing a primary symbol — rare, the resolver bug class PR #30 fixed)
+    is broken by keeping the first match and warning; the pipeline never
+    silently picks the wrong gene.
+    """
+    sym_to_hgnc: dict[str, str] = {}
+    collisions: dict[str, list[str]] = {}
+    for hid, gi in cohort.items():
+        for sym_raw in (gi.hgnc_symbol, gi.cohort_symbol):
+            if not sym_raw:
+                continue
+            sym = sym_raw.strip().upper()
+            if not sym:
+                continue
+            if sym in sym_to_hgnc and sym_to_hgnc[sym] != hid:
+                collisions.setdefault(sym, [sym_to_hgnc[sym]]).append(hid)
+                continue
+            sym_to_hgnc[sym] = hid
+    if collisions:
+        logger.warning(
+            "symbol collisions in gene_identifier (kept first match): %d affected",
+            len(collisions),
+        )
+        # Log first few so they're auditable but don't flood.
+        for sym, hids in list(collisions.items())[:5]:
+            logger.warning("  %s → %s (extra: %s)", sym, hids[0], hids[1:])
+    return sym_to_hgnc
+
+
+def _load_db_yes_hgnc_ids(
+    tsv: Path, *, sym_to_hgnc: dict[str, str]
+) -> set[str]:
+    """Translate ``candidate_universe.tsv`` in_db_union=1 rows → set of HGNC IDs.
+
+    Each row in candidate_universe.tsv carries a gene_symbol_resolved (M1
+    merge's resolver output at build time). We map that symbol back to
+    its hgnc_id via the gene_identifier cohort. Rows whose symbol doesn't
+    resolve are logged and dropped — they're the resolver-drift cases
+    PR #30's fix-run already addressed.
+    """
+    if not tsv.exists():
+        raise SystemExit(f"candidate_universe.tsv not found at {tsv}")
+    db_yes: set[str] = set()
+    n_seen = 0
+    n_unresolved = 0
+    unresolved_examples: list[str] = []
+    with tsv.open() as f:
+        reader = csv.DictReader(f, delimiter="\t")
+        for r in reader:
+            in_db_union = (r.get("in_db_union") or "").strip()
+            if in_db_union not in {"1", "1.0", "true", "True"}:
+                continue
+            n_seen += 1
+            sym = (
+                r.get("gene_symbol_resolved") or r.get("gene_symbol") or ""
+            ).strip().upper()
+            if not sym:
+                continue
+            hid = sym_to_hgnc.get(sym)
+            if hid is None:
+                n_unresolved += 1
+                if len(unresolved_examples) < 10:
+                    unresolved_examples.append(sym)
+                continue
+            db_yes.add(hid)
+    logger.info(
+        "candidate_universe in_db_union=1: %d rows, %d resolved to HGNC, "
+        "%d unresolved (examples: %s)",
+        n_seen, len(db_yes), n_unresolved, unresolved_examples,
+    )
+    return db_yes
+
+
+def _load_triage_yes_hgnc_ids(
+    *,
+    client: httpx.Client,
+    run_id: str,
+    sym_to_hgnc: dict[str, str],
+) -> dict[str, str]:
+    """Translate triage 'yes'/'contextual' rows → ``{hgnc_id: verdict}``.
+
+    Join with gene_identifier is on ``cohort_symbol = triage_run.gene_symbol`` —
+    the resolver's snapshot of the input symbol at cohort build time, which
+    by construction matches what the triage agent saw.
+    """
     account, db, token = _from_env_agents()
     rows = _d1_query(
         account,
@@ -197,67 +279,61 @@ def _load_triage_yes_contextual(
         client=client,
     )
     out: dict[str, str] = {}
+    n_unresolved = 0
+    unresolved_examples: list[str] = []
     for r in rows:
         sym = (r.get("gene_symbol") or "").strip().upper()
         verdict = (r.get("predicted_verdict") or "").strip()
-        if sym and verdict in TRIAGE_YES_VERDICTS:
-            # contextual loses to yes if a gene somehow has both (it shouldn't,
-            # but defensive — sort puts 'yes' first lexicographically).
-            existing = out.get(sym)
-            if existing is None or (existing == "contextual" and verdict == "yes"):
-                out[sym] = verdict
+        if not sym or verdict not in TRIAGE_YES_VERDICTS:
+            continue
+        hid = sym_to_hgnc.get(sym)
+        if hid is None:
+            n_unresolved += 1
+            if len(unresolved_examples) < 10:
+                unresolved_examples.append(sym)
+            continue
+        existing = out.get(hid)
+        # 'yes' wins over 'contextual' if a gene has both verdicts (shouldn't,
+        # but be defensive).
+        if existing is None or (existing == "contextual" and verdict == "yes"):
+            out[hid] = verdict
+    logger.info(
+        "triage yes+contextual: %d rows from D1, %d resolved to HGNC, "
+        "%d unresolved (examples: %s)",
+        len(rows), len(out), n_unresolved, unresolved_examples,
+    )
     return out
-
-
-def _resolve_gene_identifier(
-    symbol_upper: str,
-    *,
-    by_hgnc_sym: dict[str, dict[str, Any]],
-    by_cohort_sym: dict[str, dict[str, Any]],
-) -> dict[str, Any] | None:
-    """Try gene_identifier lookup by HGNC primary symbol first, then cohort symbol."""
-    if (row := by_hgnc_sym.get(symbol_upper)) is not None:
-        return row
-    if (row := by_cohort_sym.get(symbol_upper)) is not None:
-        return row
-    return None
 
 
 def _build_from_override_hgnc_ids(
     hgnc_ids: list[str],
     *,
-    by_hgnc_sym: dict[str, dict[str, Any]],
-    by_cohort_sym: dict[str, dict[str, Any]],
+    cohort: dict[str, GeneIdentifier],
 ) -> list[CandidateRow]:
     """Build rows from explicit HGNC IDs (dry-run / verification path)."""
-    by_hgnc_id: dict[str, dict[str, Any]] = {
-        r["hgnc_id"]: r for r in by_hgnc_sym.values() if r.get("hgnc_id")
-    }
     rows: list[CandidateRow] = []
     for hid in hgnc_ids:
-        gi = by_hgnc_id.get(hid)
+        gi = cohort.get(hid)
         if gi is None:
             logger.warning("override HGNC ID %s not in gene_identifier — skipping", hid)
             continue
-        if not gi.get("uniprot_acc"):
+        if not gi.uniprot_acc:
             logger.warning("override HGNC ID %s has no uniprot_acc — skipping", hid)
             continue
         rows.append(
             CandidateRow(
-                hgnc_id=hid,
-                hgnc_symbol=(gi.get("hgnc_symbol") or "").strip(),
-                uniprot_acc=(gi.get("uniprot_acc") or "").strip(),
-                ensembl_gene=(gi.get("ensembl_gene") or None),
-                ncbi_gene_id=(
-                    int(gi["ncbi_gene_id"]) if gi.get("ncbi_gene_id") else None
-                ),
-                ensembl_canonical_protein=(gi.get("ensembl_canonical_protein") or None),
-                cohort_symbol=(gi.get("cohort_symbol") or gi.get("hgnc_symbol") or "").strip(),
+                hgnc_id=gi.hgnc_id,
+                hgnc_symbol=gi.hgnc_symbol,
+                cohort_symbol=(gi.cohort_symbol or gi.hgnc_symbol),
+                uniprot_acc=gi.uniprot_acc,
+                ensembl_gene=gi.ensembl_gene,
+                ncbi_gene_id=gi.ncbi_gene_id,
+                ensembl_canonical_protein=gi.ensembl_canonical_protein,
                 in_db_union=0,
                 triage_verdict=None,
                 selection_reason="override",
-                stable_id_source="override",
-                needs_review=int(gi.get("needs_review") or 0),
+                needs_review=gi.needs_review,
+                resolver_version=gi.resolver_version,
             )
         )
     return rows
@@ -268,47 +344,55 @@ def build_candidate_rows(
     candidate_universe_tsv: Path,
     triage_run_id: str,
     override_hgnc_ids: list[str] | None,
-    skip_d1: bool,
+    skip_d1_triage: bool,
 ) -> list[CandidateRow]:
-    """Union DB-yes + triage-yes/contextual, attach stable IDs from gene_identifier."""
-    with httpx.Client(timeout=60) as client:
-        by_hgnc_sym, by_cohort_sym = _load_gene_identifier_index(client=client)
-        logger.info(
-            "gene_identifier rows loaded: %d (by HGNC symbol), %d (by cohort symbol)",
-            len(by_hgnc_sym), len(by_cohort_sym),
-        )
+    """Drive from HGNC IDs in gene_identifier, then union DB-yes + triage-yes/contextual."""
+    with httpx.Client(timeout=120) as client:
+        cohort = _load_gene_identifier_cohort(client=client)
+        logger.info("gene_identifier cohort loaded: %d HGNC IDs", len(cohort))
 
         if override_hgnc_ids:
-            return _build_from_override_hgnc_ids(
-                override_hgnc_ids,
-                by_hgnc_sym=by_hgnc_sym,
-                by_cohort_sym=by_cohort_sym,
-            )
+            return _build_from_override_hgnc_ids(override_hgnc_ids, cohort=cohort)
 
-        db_yes_by_sym = _load_candidate_universe(candidate_universe_tsv)
-        logger.info("candidate_universe in_db_union=1: %d symbols", len(db_yes_by_sym))
+        sym_to_hgnc = _build_symbol_to_hgnc_index(cohort)
+        logger.info(
+            "symbol → HGNC index: %d entries (covers both hgnc_symbol and cohort_symbol)",
+            len(sym_to_hgnc),
+        )
+
+        db_yes_hgnc = _load_db_yes_hgnc_ids(
+            candidate_universe_tsv, sym_to_hgnc=sym_to_hgnc
+        )
 
         triage_yc: dict[str, str] = {}
-        if not skip_d1:
+        if not skip_d1_triage:
             try:
-                triage_yc = _load_triage_yes_contextual(client=client, run_id=triage_run_id)
-                logger.info(
-                    "triage yes+contextual (run_id=%s): %d symbols",
-                    triage_run_id, len(triage_yc),
+                triage_yc = _load_triage_yes_hgnc_ids(
+                    client=client, run_id=triage_run_id, sym_to_hgnc=sym_to_hgnc
                 )
             except Exception as exc:  # noqa: BLE001
-                logger.warning("triage query failed (continuing DB-only): %s", exc)
+                logger.warning("triage query failed (DB-only set): %s", exc)
 
-    all_symbols = set(db_yes_by_sym) | set(triage_yc)
+    # The candidate set is the union, iterated over HGNC IDs.
+    all_hids = sorted(db_yes_hgnc | set(triage_yc))
     rows: list[CandidateRow] = []
-    n_gi_hit = 0
-    n_fallback = 0
     n_dropped_no_uniprot = 0
+    n_not_in_cohort = 0
 
-    for sym in sorted(all_symbols):
-        in_db = sym in db_yes_by_sym
-        triage_verdict = triage_yc.get(sym)
+    for hid in all_hids:
+        gi = cohort.get(hid)
+        if gi is None:
+            # Impossible — by construction every hid here came from gene_identifier.
+            n_not_in_cohort += 1
+            continue
+        if not gi.uniprot_acc:
+            # Resolver couldn't pick a UniProt accession (e.g. HGNC gene with
+            # no Swiss-Prot xref). DeepTMHMM has nothing to predict on.
+            n_dropped_no_uniprot += 1
+            continue
 
+        in_db = hid in db_yes_hgnc
+        triage_verdict = triage_yc.get(hid)
         if in_db and triage_verdict is not None:
             reason = "both"
         elif in_db:
@@ -316,64 +400,27 @@ def build_candidate_rows(
         else:
             reason = "triage_only"
 
-        gi = _resolve_gene_identifier(
-            sym, by_hgnc_sym=by_hgnc_sym, by_cohort_sym=by_cohort_sym
-        )
-
-        if gi is not None and gi.get("uniprot_acc"):
-            n_gi_hit += 1
-            rows.append(
-                CandidateRow(
-                    hgnc_id=gi.get("hgnc_id"),
-                    hgnc_symbol=(gi.get("hgnc_symbol") or sym),
-                    uniprot_acc=(gi.get("uniprot_acc") or "").strip(),
-                    ensembl_gene=(gi.get("ensembl_gene") or None),
-                    ncbi_gene_id=(
-                        int(gi["ncbi_gene_id"]) if gi.get("ncbi_gene_id") else None
-                    ),
-                    ensembl_canonical_protein=(gi.get("ensembl_canonical_protein") or None),
-                    cohort_symbol=(gi.get("cohort_symbol") or sym),
-                    in_db_union=int(in_db),
-                    triage_verdict=triage_verdict,
-                    selection_reason=reason,
-                    stable_id_source="gene_identifier",
-                    needs_review=int(gi.get("needs_review") or 0),
-                )
-            )
-            continue
-
-        # Fallback: gene_identifier missing this gene (PR #30 builder not yet
-        # populated for it). Use candidate_universe.tsv's UniProt accession
-        # if we have one. The orchestrator can choose to skip fallback rows
-        # so the sweep never silently runs against the un-resolved gene.
-        fb = db_yes_by_sym.get(sym)
-        fb_uniprot = (fb.get("uniprot_accession") if fb else "") or ""
-        fb_uniprot = fb_uniprot.strip().upper()
-        if not fb_uniprot:
-            n_dropped_no_uniprot += 1
-            continue
-        n_fallback += 1
         rows.append(
             CandidateRow(
-                hgnc_id=None,
-                hgnc_symbol=sym,
-                uniprot_acc=fb_uniprot,
-                ensembl_gene=None,
-                ncbi_gene_id=None,
-                ensembl_canonical_protein=None,
-                cohort_symbol=sym,
+                hgnc_id=hid,
+                hgnc_symbol=gi.hgnc_symbol,
+                cohort_symbol=(gi.cohort_symbol or gi.hgnc_symbol),
+                uniprot_acc=gi.uniprot_acc,
+                ensembl_gene=gi.ensembl_gene,
+                ncbi_gene_id=gi.ncbi_gene_id,
+                ensembl_canonical_protein=gi.ensembl_canonical_protein,
                 in_db_union=int(in_db),
                 triage_verdict=triage_verdict,
                 selection_reason=reason,
-                stable_id_source="fallback",
-                needs_review=0,
+                needs_review=gi.needs_review,
+                resolver_version=gi.resolver_version,
             )
         )
 
     logger.info(
-        "candidate set: %d rows total (gene_identifier=%d, fallback=%d, "
-        "dropped-no-uniprot=%d)",
-        len(rows), n_gi_hit, n_fallback, n_dropped_no_uniprot,
+        "candidate set: %d rows (dropped: %d HGNC IDs missing from cohort, "
+        "%d with no resolved uniprot_acc)",
+        len(rows), n_not_in_cohort, n_dropped_no_uniprot,
     )
     return rows
 
@@ -391,8 +438,8 @@ def write_candidate_tsv(path: Path, rows: list[CandidateRow]) -> None:
         "in_db_union",
         "triage_verdict",
         "selection_reason",
-        "stable_id_source",
         "needs_review",
+        "resolver_version",
     ]
     with path.open("w", encoding="utf-8") as f:
         f.write("\t".join(cols) + "\n")
@@ -400,18 +447,18 @@ def write_candidate_tsv(path: Path, rows: list[CandidateRow]) -> None:
             f.write(
                 "\t".join(
                     [
-                        r.hgnc_id or "",
-                        r.hgnc_symbol or "",
-                        r.cohort_symbol or "",
-                        r.uniprot_acc or "",
+                        r.hgnc_id,
+                        r.hgnc_symbol,
+                        r.cohort_symbol,
+                        r.uniprot_acc,
                         r.ensembl_gene or "",
                         str(r.ncbi_gene_id) if r.ncbi_gene_id is not None else "",
                         r.ensembl_canonical_protein or "",
                         str(r.in_db_union),
                         r.triage_verdict or "",
                         r.selection_reason,
-                        r.stable_id_source,
                         str(r.needs_review),
+                        r.resolver_version,
                     ]
                 )
                 + "\n"
@@ -446,7 +493,7 @@ def main() -> int:
              "verification runs. Each ID is looked up in gene_identifier.",
     )
     ap.add_argument(
-        "--skip-d1",
+        "--skip-d1-triage",
         action="store_true",
         help="Skip the triage_run query (offline dry runs). gene_identifier "
              "is still required from D1.",
@@ -458,7 +505,7 @@ def main() -> int:
         candidate_universe_tsv=args.candidate_universe_tsv,
         triage_run_id=args.triage_run_id,
         override_hgnc_ids=override or None,
-        skip_d1=args.skip_d1,
+        skip_d1_triage=args.skip_d1_triage,
     )
 
     out_dir = Path("data/processed") / f"topology_run_{args.topology_version}"
@@ -466,17 +513,18 @@ def main() -> int:
     write_candidate_tsv(out_path, rows)
 
     by_reason: dict[str, int] = {}
-    by_source: dict[str, int] = {}
     by_verdict: dict[str, int] = {}
+    n_needs_review = 0
     for r in rows:
         by_reason[r.selection_reason] = by_reason.get(r.selection_reason, 0) + 1
-        by_source[r.stable_id_source] = by_source.get(r.stable_id_source, 0) + 1
         key = r.triage_verdict or "_no_triage"
         by_verdict[key] = by_verdict.get(key, 0) + 1
+        if r.needs_review:
+            n_needs_review += 1
     logger.info("wrote %d rows to %s", len(rows), out_path)
     logger.info("by selection_reason: %s", by_reason)
-    logger.info("by stable_id_source: %s", by_source)
     logger.info("by triage_verdict:   %s", by_verdict)
+    logger.info("needs_review flagged: %d", n_needs_review)
     return 0
 
 
