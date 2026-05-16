@@ -19,7 +19,11 @@ export default async function HomePage() {
       <section className={`${styles.page} page-width`}>
         <header className={styles.hero}>
           <h1 className={`h-display ${styles.heroH1}`}>
-            A consensus database of the accessible human surfaceome.
+            A consensus database of the{" "}
+            <span className={styles.heroAccent}>
+              accessible human surfaceome
+            </span>
+            .
           </h1>
           <p className={`lede ${styles.lede}`}>
             Roughly 10–20% of human proteins reach the cell surface, yet
