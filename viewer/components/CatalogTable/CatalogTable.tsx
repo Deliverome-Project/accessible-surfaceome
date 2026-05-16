@@ -93,21 +93,19 @@ type SortKey =
   | "triage"
   | "deep_dive";
 type SortDir = "asc" | "desc";
-// Triage filter was dropped — every gene in the universe has a triage
-// verdict (the one gap, SEA, is a resolver-failure outlier), so the
-// chip filtered ~all rows in and offered no signal. The "n7" / 5-source
-// consensus chip was also dropped — it's expressible via the advanced
-// filter panel ("require all 5 DBs"), so it doesn't need a chip slot.
-type QuickFilter = "all" | "deep_dive";
+// The "All" Quick chip was kept after the others were dropped because
+// it's the explicit "clear filters" affordance — clicking it restores
+// the unfiltered view. Deep-dive moved into the filter panel as a
+// proper binary radio so it doesn't AND-conflict with itself.
+type QuickFilter = "all";
 
 type DbKey = keyof CatalogRow["db"];
-type VerdictKey = "yes" | "contextual" | "no" | "none";
+type VerdictKey = "yes" | "contextual" | "no";
 
 const VERDICT_OPTIONS: { key: VerdictKey; label: string }[] = [
   { key: "yes", label: "yes" },
   { key: "contextual", label: "contextual" },
   { key: "no", label: "no" },
-  { key: "none", label: "no call" },
 ];
 
 /** The canonical TriageReason enum from
@@ -229,8 +227,12 @@ export function CatalogTable({
     new Set(),
   );
   const [reasonFilter, setReasonFilter] = useState<Set<string>>(new Set());
-  const [deepDiveFilter, setDeepDiveFilter] = useState<Set<"yes" | "no">>(
-    new Set(),
+  // Deep-dive is a binary attribute on each row, so the filter is a
+  // radio (yes / no / null=either) rather than a Set multi-select.
+  // The earlier multi-select form let users select both yes AND no
+  // (an empty intersection) without realizing it.
+  const [deepDiveFilter, setDeepDiveFilter] = useState<"yes" | "no" | null>(
+    null,
   );
 
   function toggleDbFilter(key: DbKey) {
@@ -244,26 +246,14 @@ export function CatalogTable({
   function toggleVerdictFilter(key: VerdictKey) {
     // Toggle the verdict, then prune `reasonFilter` so only reasons
     // that belong to a still-selected verdict (or are "other", which
-    // is verdict-agnostic) survive. Computing `nextVerdict` outside
-    // the setter so we can reuse it for the prune step.
+    // is verdict-agnostic) survive.
     const nextVerdict = new Set(verdictFilter);
     if (nextVerdict.has(key)) nextVerdict.delete(key);
     else nextVerdict.add(key);
     setVerdictFilter(nextVerdict);
-
     // Unrestricted verdict filter ⇒ every reason still applies; no
     // prune needed.
     if (nextVerdict.size === 0) return;
-
-    const allowedVerdicts = new Set<VerdictKey>(
-      [...nextVerdict].filter((v) => v !== "none"),
-    );
-    // Only "no call" left ⇒ no triage reason applies (no-call rows
-    // carry a null reason). Clear the reason filter entirely.
-    if (allowedVerdicts.size === 0) {
-      setReasonFilter(new Set());
-      return;
-    }
     setReasonFilter((prev) => {
       const compatible = new Set<string>();
       for (const r of prev) {
@@ -272,7 +262,7 @@ export function CatalogTable({
           continue;
         }
         const group = REASON_GROUPS.find((g) => g.reasons.includes(r));
-        if (group && allowedVerdicts.has(group.verdict)) {
+        if (group && nextVerdict.has(group.verdict)) {
           compatible.add(r);
         }
       }
@@ -288,30 +278,26 @@ export function CatalogTable({
     });
   }
   function toggleDeepDiveFilter(key: "yes" | "no") {
-    setDeepDiveFilter((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    // Radio: clicking the active chip clears the filter; clicking the
+    // other chip switches to it. yes/no are mutually exclusive.
+    setDeepDiveFilter((prev) => (prev === key ? null : key));
   }
   function clearAdvancedFilters() {
     setDbFilter(new Set());
     setVerdictFilter(new Set());
     setReasonFilter(new Set());
-    setDeepDiveFilter(new Set());
+    setDeepDiveFilter(null);
   }
   const activeFilterCount =
     dbFilter.size +
     verdictFilter.size +
     reasonFilter.size +
-    deepDiveFilter.size;
+    (deepDiveFilter !== null ? 1 : 0);
 
   // Which reason groups make sense to surface, given the current
   // verdict filter. The triage reason is constrained by the verdict
   // (e.g. `gpi_anchored` only appears on yes-verdict rows), so we
-  // hide the yes-reasons block when the user has restricted to "no
-  // call" only, etc.
+  // hide groups whose verdict isn't in the active filter.
   const visibleReasonGroups = useMemo<{
     groups: typeof REASON_GROUPS;
     showOther: boolean;
@@ -320,14 +306,12 @@ export function CatalogTable({
     if (verdictFilter.size === 0) {
       return { groups: REASON_GROUPS, showOther: true, hint: null };
     }
-    const allowed = new Set<VerdictKey>(
-      [...verdictFilter].filter((v) => v !== "none"),
-    );
+    const allowed = verdictFilter;
     if (allowed.size === 0) {
       return {
         groups: [],
         showOther: false,
-        hint: "No reasons apply — \"no call\" rows have no triage reason on file.",
+        hint: "No reasons apply — the verdict filter excluded every bucket.",
       };
     }
     return {
@@ -406,7 +390,6 @@ export function CatalogTable({
           `${r.symbol} ${r.uniprot} ${r.name ?? ""} ${syn}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
-      if (quick === "deep_dive" && !r.deep_dive) return false;
       // Advanced filters — AND across categories, semantics described
       // alongside the state declarations above.
       if (dbList.length > 0) {
@@ -416,17 +399,16 @@ export function CatalogTable({
       }
       if (verdictFilter.size > 0) {
         const v = r.triage_by_model[1]?.verdict;
-        const slot: VerdictKey =
-          v === "yes" || v === "contextual" || v === "no" ? v : "none";
-        if (!verdictFilter.has(slot)) return false;
+        if (v !== "yes" && v !== "contextual" && v !== "no") return false;
+        if (!verdictFilter.has(v)) return false;
       }
       if (reasonFilter.size > 0) {
         const reason = r.triage_by_model[1]?.reason ?? "";
         if (!reasonFilter.has(reason)) return false;
       }
-      if (deepDiveFilter.size > 0) {
+      if (deepDiveFilter !== null) {
         const k = r.deep_dive ? "yes" : "no";
-        if (!deepDiveFilter.has(k)) return false;
+        if (k !== deepDiveFilter) return false;
       }
       return true;
     });
@@ -506,14 +488,6 @@ export function CatalogTable({
               aria-pressed={quick === "all"}
             >
               All <span className={styles.chipCount}>{n_rows}</span>
-            </button>
-            <button
-              type="button"
-              className={`${styles.chip} ${quick === "deep_dive" ? styles.chipOn : ""}`}
-              onClick={() => setQuick("deep_dive")}
-              aria-pressed={quick === "deep_dive"}
-            >
-              Deep-dive <span className={styles.chipCount}>{n_with_deep_dive}</span>
             </button>
             <button
               type="button"
@@ -693,20 +667,25 @@ export function CatalogTable({
             </div>
           </div>
 
-          <div className={styles.filterRow}>
+          <div
+            className={styles.filterRow}
+            role="radiogroup"
+            aria-label="Deep dive presence"
+          >
             <span className={styles.filterLabel}>Deep dive</span>
             <div className={styles.filterChips}>
               {(["yes", "no"] as const).map((k) => {
-                const on = deepDiveFilter.has(k);
+                const on = deepDiveFilter === k;
                 const toneClass =
                   k === "yes" ? styles.verdictYes : styles.verdictUnknown;
                 return (
                   <button
                     key={`dd-filter-${k}`}
                     type="button"
+                    role="radio"
+                    aria-checked={on}
                     className={`${styles.filterVerdictChip} ${on ? toneClass : ""}`}
                     onClick={() => toggleDeepDiveFilter(k)}
-                    aria-pressed={on}
                   >
                     {k}
                   </button>
@@ -714,7 +693,7 @@ export function CatalogTable({
               })}
             </div>
             <span className={styles.filterHint}>
-              {`Has a deep-dive page — currently ${n_with_deep_dive} of ${n_rows.toLocaleString()} genes`}
+              {`Has a deep-dive page — currently ${n_with_deep_dive} of ${n_rows.toLocaleString()} genes. Click an active chip to clear.`}
             </span>
           </div>
 
