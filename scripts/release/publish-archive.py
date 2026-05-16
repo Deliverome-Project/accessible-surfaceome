@@ -75,6 +75,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -116,21 +117,70 @@ GIST_ORIGINS = [
 #   - any other string — treated as a path relative to REPO_ROOT;
 #     read from the local filesystem
 #
-# CONFIGURE BEFORE RUNNING. The default list is empty; if you run with
-# an empty list the script will warn and proceed without extras.
+# The defaults below are the served-from-D1 endpoints of the surfaceome
+# public API (cloudflare/workers/surfaceome_api/src/index.js), routed
+# under `api.deliverome.org/surfaceome/v1/*`. Each entry below is a
+# dict with an explicit destination filename so the resulting Zenodo
+# record has readable file names instead of API path basenames.
+#
+# Comment out entries you don't want in a given deposit, or add local
+# paths (relative to REPO_ROOT) for files that don't live behind the API.
 EXTRA_FILES: list[str | dict[str, str]] = [
-    # Local-file examples:
-    # "data/analysis/triage/triage-run-complete-with-reasoning.json",
-    # "data/analysis/deep_dives/deep_dive_1.json",
-    #
-    # API-fetch examples (string form — destination uses URL basename):
-    # "https://api.deliverome.org/triage/runs/latest.json",
-    #
-    # API-fetch with explicit destination filename (dict form):
-    # {
-    #     "url": "https://api.deliverome.org/benchmark/runs?format=jsonl&latest=1",
-    #     "filename": "benchmark-full-reasoning.jsonl",
-    # },
+    # ── Triage runs (with reasoning) ──────────────────────────────────
+    # Long-format TSV: one row per (model × variant × replicate × gene)
+    # API call. Includes verdict, verdict_reasoning, cost_usd, prompt/
+    # completion tokens, prompt_sha. Single source of truth for the
+    # benchmark_cost_vs_accuracy / db_correctness_* figures.
+    {
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv",
+        "filename": "triage-runs-with-reasoning.tsv",
+    },
+
+    # ── Benchmark truth labels ────────────────────────────────────────
+    # 7-column TSV: gene / uniprot / class / verdict / signal / reason /
+    # rationale. The curated truth set the triage runs are scored against.
+    {
+        "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
+        "filename": "triage-benchmark-truth-labels.tsv",
+    },
+
+    # ── Benchmark matrix (147-gene × all-DBs × all-models) ────────────
+    # JSON: per-gene truth label + per-DB flags + per-model headline +
+    # alt-LLM verdicts. The canonical artifact for benchmark comparison
+    # figures.
+    {
+        "url": "https://api.deliverome.org/surfaceome/v1/benchmark/matrix",
+        "filename": "triage-benchmark-matrix.json",
+    },
+
+    # ── Genome-wide catalog ───────────────────────────────────────────
+    # JSON: candidate-universe table with DB votes, latest triage, and
+    # deep-dive flags per gene. Backing data for the open-atlas viewer.
+    {
+        "url": "https://api.deliverome.org/surfaceome/v1/catalog",
+        "filename": "surfaceome-catalog.json",
+    },
+
+    # ── Deep-dive SurfaceomeRecords ───────────────────────────────────
+    # One file per gene that has a published deep-dive. Currently only
+    # GPR75 is published — the other planned deep dives will go here
+    # as they're released. Each file is the full SurfaceomeRecord with
+    # nested record_json (the agent's full evidence + reasoning).
+    {
+        "url": "https://api.deliverome.org/surfaceome/v1/genes/GPR75",
+        "filename": "deep_dive_GPR75.json",
+    },
+    # Add more as they publish, e.g.:
+    # {"url": "https://api.deliverome.org/surfaceome/v1/genes/<SYMBOL>", "filename": "deep_dive_<SYMBOL>.json"},
+    # {"url": "https://api.deliverome.org/surfaceome/v1/genes/<SYMBOL>", "filename": "deep_dive_<SYMBOL>.json"},
+
+    # ── Index of deep-dives published at the moment of deposit ────────
+    # Small JSON list of all currently-annotated genes — useful as a
+    # manifest alongside the per-gene files above.
+    {
+        "url": "https://api.deliverome.org/surfaceome/v1/genes",
+        "filename": "deep_dives_index.json",
+    },
 ]
 
 # Seed metadata for the Zenodo deposit. The Zenodo UI lets you edit
@@ -658,6 +708,109 @@ def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool
     print()
 
 
+def phase_update_figure_swhids(
+    swhid_results: dict[str, str | None], *, dry_run: bool,
+) -> None:
+    """Bake the newly-minted gist SWHIDs back into the figures.
+
+    Two side effects:
+
+      1. Edits ``scripts/embed_figure_gist_metadata.py`` in place,
+         replacing each managed figure's top-level ``"swhid"`` field
+         in FIGURE_PROVENANCE with the SWHID just minted by SWH for
+         that figure's gist. (Idempotent — same SWHID = no-op.)
+
+      2. Re-runs ``scripts/embed_figure_gist_metadata.py`` to refresh
+         the embedded ``provenance`` JSON in every managed figure's
+         PNG/PDF. This DOES NOT regenerate the figure pixels — only
+         the metadata chunks change (PIL/pikepdf opens, swaps the
+         chunk, writes back).
+
+    Skips silently if no gist URL in swhid_results matches a figure
+    in FIGURE_PROVENANCE.
+    """
+    announce("PHASE 1.5 — Bake new SWHIDs back into figure metadata")
+
+    target = REPO_ROOT / "scripts" / "embed_figure_gist_metadata.py"
+    if not target.is_file():
+        warn(f"can't find {target}; skipping")
+        return
+
+    source = target.read_text()
+    new_source = source
+    updates: list[tuple[str, str, str]] = []  # (gist_url, old, new)
+
+    for origin, new_swhid in swhid_results.items():
+        if not new_swhid:
+            continue
+        if not origin.startswith("https://gist.github.com/"):
+            continue  # repo SWHID isn't in FIGURE_PROVENANCE per-figure
+
+        # Locate the figure entry whose gist_url matches this origin.
+        url_pattern = re.escape(origin)
+        url_match = re.search(rf'"gist_url":\s*"{url_pattern}"', new_source)
+        if not url_match:
+            warn(f"  no FIGURE_PROVENANCE entry with gist_url = {origin}")
+            continue
+
+        # From the gist_url line, scan forward for the next "swhid":
+        # line within the same figure's entry. The pattern matches
+        # either `None` (no SWHID yet) or `"swh:..."` (existing SWHID).
+        after = new_source[url_match.end():]
+        swhid_match = re.search(r'("swhid":\s*)(None|"[^"]*")', after)
+        if not swhid_match:
+            warn(f"  found gist_url but no swhid field nearby for {origin}")
+            continue
+
+        old_literal = swhid_match.group(2)
+        new_literal = f'"{new_swhid}"'
+        if old_literal == new_literal:
+            ok(f"  swhid already up to date for {origin[:64]}…")
+            continue
+
+        # Splice in the new value at the absolute offset.
+        start = url_match.end() + swhid_match.start()
+        end = url_match.end() + swhid_match.end()
+        new_source = (
+            new_source[:start]
+            + swhid_match.group(1) + new_literal
+            + new_source[end:]
+        )
+        updates.append((origin, old_literal, new_swhid))
+
+    if not updates:
+        ok("no FIGURE_PROVENANCE swhid changes needed")
+        return
+
+    print()
+    print("  Updates to FIGURE_PROVENANCE.swhid:")
+    for origin, old, new in updates:
+        gist_id = origin.rsplit("/", 1)[-1]
+        print(f"    {gist_id}: {old}  →  \"{new}\"")
+    print()
+
+    if dry_run:
+        ok("[dry-run] would write the updated source file + re-embed")
+        return
+
+    target.write_text(new_source)
+    ok(f"wrote {target.relative_to(REPO_ROOT)} ({len(updates)} figure(s) updated)")
+
+    # Re-run the embed script to refresh PNG/PDF metadata chunks. This
+    # doesn't re-render the figures; PIL/pikepdf only modify the
+    # metadata chunks of the existing files.
+    announce("Re-running embed_figure_gist_metadata.py to refresh PNG/PDF metadata")
+    try:
+        subprocess.run(
+            ["uv", "run", "python", "scripts/embed_figure_gist_metadata.py"],
+            cwd=REPO_ROOT,
+            check=True,
+        )
+        ok("PNG/PDF metadata refreshed")
+    except subprocess.CalledProcessError as exc:
+        warn(f"embed re-run failed: {exc}")
+
+
 def phase_github_release(tag: str, *, dry_run: bool) -> None:
     """Tag HEAD, push the tag, and create a GitHub Release.
 
@@ -796,6 +949,18 @@ def main() -> int:
             "you decide when to tag."
         ),
     )
+    ap.add_argument(
+        "--update-figures",
+        action="store_true",
+        help=(
+            "after Phase 1 mints SWHIDs, edit FIGURE_PROVENANCE in "
+            "scripts/embed_figure_gist_metadata.py to set the new "
+            "swhid for each managed figure's gist, then re-run that "
+            "script to refresh the PNG/PDF provenance metadata in "
+            "place. No figure pixels are re-rendered. OFF by default "
+            "(idempotent — same SWHID = no-op anyway)."
+        ),
+    )
     args = ap.parse_args()
 
     swh_results: dict[str, str | None] = {}
@@ -803,6 +968,9 @@ def main() -> int:
         swh_results = phase_swh(dry_run=args.dry_run)
     else:
         warn("--skip-swh: skipping Software Heritage submissions")
+
+    if args.update_figures and swh_results:
+        phase_update_figure_swhids(swh_results, dry_run=args.dry_run)
 
     phase_audit_figures(dry_run=args.dry_run)
     phase_audit_data_inputs()
