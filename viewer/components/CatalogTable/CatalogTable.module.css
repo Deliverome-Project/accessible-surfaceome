@@ -584,79 +584,10 @@
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
-.expandedMeta {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--muted);
-  font-style: italic;
-}
-
-.runList {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
-
-.runItem {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-}
-
-.runMeta {
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem;
-  font-family: var(--font-sans);
-  font-size: 0.82rem;
-  color: var(--ink-soft);
-}
-
-.runBadge {
-  display: inline-flex;
-  padding: 0.15rem 0.5rem;
-  font-size: 0.72rem;
-  font-weight: var(--fw-medium);
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  border-radius: var(--radius-pill);
-  background: var(--bg-warm);
-  color: var(--ink);
-}
-
-.runBadge[data-verdict="yes"] {
-  background: rgba(46, 122, 85, 0.14);
-  color: var(--success);
-}
-
-.runBadge[data-verdict="no"] {
-  background: var(--maroon-blush);
-  color: var(--maroon-dark);
-}
-
-.runBadge[data-verdict="contextual"] {
-  background: var(--amber-tint);
-  color: var(--amber-deepest);
-}
-
-.runDim {
-  color: var(--muted);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-}
-
-.runReasoning {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.55;
-  color: var(--ink-soft);
-  max-width: 78ch;
-}
+/* Orphaned: .expandedMeta, .runList, .runItem, .runMeta, .runBadge,
+ * .runBadge[data-verdict=…], .runDim, .runReasoning — all belonged to
+ * the inline TriageDetail expansion that's been replaced by the
+ * CatalogRationaleDrawer. Removed in this PR. */
 
 /* ============================================================
  * Cell content (overrides only — column widths come from grid
@@ -694,31 +625,17 @@
   text-overflow: ellipsis;
 }
 
-.symbolLink {
-  font-family: var(--font-sans);
-  font-weight: var(--fw-medium);
-  font-size: 0.95rem;
-  color: var(--accent);
-  border-bottom: 1px solid transparent;
-  transition: border-color var(--dur-fast) var(--ease-out);
-}
-
-.symbolLink:hover,
-.symbolLink:focus-visible {
-  border-bottom-color: var(--accent);
-}
+/* Orphaned: .symbolLink — the gene symbol is always rendered via
+ * .symbolButton + .symbolText now (Link vs button chosen at the
+ * call site based on deep-dive presence). Removed in this PR.
+ * Orphaned: .uniprotCell — the accession column was dropped from
+ * the catalog. Removed too. */
 
 .symbolText {
   font-family: var(--font-sans);
   font-weight: var(--fw-medium);
   font-size: 0.95rem;
   color: var(--ink);
-}
-
-.uniprotCell {
-  font-family: var(--font-mono);
-  font-size: 0.82rem;
-  color: var(--muted);
 }
 
 .nCell {
@@ -868,33 +785,9 @@
   justify-content: center;
 }
 
-/* Row-expand triage detail — three cards (one per model) stacked
- * inline. Each shows verdict + reasoning if available. */
-.triageDetailGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-  gap: var(--space-3);
-}
-
-.triageDetailCard {
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-  padding: var(--space-3);
-  background: var(--bg);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--radius-sm);
-}
-
-.triageDetailMissing {
-  border-style: dashed;
-  opacity: 0.7;
-}
-
-.verdictReason {
-  color: var(--muted);
-  font-size: 0.8rem;
-}
+/* Orphaned: .triageDetailGrid + .triageDetailCard + .triageDetailMissing
+ * + .verdictReason — the inline row-expand TriageDetail grid was
+ * replaced by the CatalogRationaleDrawer. Removed in this PR. */
 
 .deepCell {
   justify-content: center;

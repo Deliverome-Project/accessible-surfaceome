@@ -13,6 +13,12 @@ __pycache__/
 # Claude Code local worktrees
 .claude/worktrees/
 
+# Claude Preview launch.json — per-worktree config for the local
+# preview tool; not meant to be committed. The `.claude/` line above
+# would catch it at the repo root, but worktrees have their own
+# `.claude/` and the rule there needs to be explicit.
+.claude/launch.json
+
 # OS
 .DS_Store
 
