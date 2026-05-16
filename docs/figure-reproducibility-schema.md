@@ -71,26 +71,38 @@ content-verifiable and storage-durable as orthogonal properties.
 
 ## Validation rules
 
-Five checks, applied in order:
+Six checks, applied in order. Code durability and data durability are
+treated as independent concerns — a figure can have durably stored code
+but mutable data, or vice versa, and each is reported on its own axis.
 
 1. **Provenance present** — the metadata slot holds a JSON blob with
    `schema_version: "1"`.
-2. **Provenance resolves** — `gist_url` / `swhid` / `zenodo_doi` returns
-   HTTP 200.
-3. **Code has pinned deps** — the resolved artifact carries PEP 723
-   inline metadata, `requirements.txt`, `pyproject.toml`,
+2. **Code is locatable** — at least one of the code locators resolves:
+   `swhid`, `zenodo_doi`, `repo + repo_path + repo_ref`, or `gist_url`.
+3. **Code environment is pinned** — the resolved artifact carries PEP
+   723 inline metadata, `requirements.txt`, `pyproject.toml`,
    `environment.yml`, `renv.lock`, or a `Dockerfile`.
-4. **Data reachable** — each entry in `data[]` has a URL that resolves,
-   or a DOI that resolves.
-5. **Durable identifier** — `swhid` OR `zenodo_doi` OR
-   (`repo + repo_path + repo_ref-as-commit-sha`) is set.
+4. **Data is locatable and content-verifiable** — for every `data[]`
+   entry: the URL resolves AND at least one of `sha256` / `swhid` /
+   `doi` is declared. URL-only entries are locatable but not
+   content-verifiable (warn).
+5. **Code is durably stored** — `swhid` OR `zenodo_doi` is present at
+   the top level. A bare commit SHA (repo or gist) is locatable but
+   storage-fragile (the repo or gist can be deleted) — warns until the
+   code is archived to Software Heritage or Zenodo.
+6. **Data is durably stored** — every `data[]` entry has `swhid` OR
+   `doi`. `sha256` alone is content-verifiable but storage-fragile —
+   warns. Any entry with none of `sha256` / `swhid` / `doi` fails.
 
-Checks 1–4 are must-pass for "reproducible." Check 5 is must-pass for
-"durably reproducible." A figure that passes 1–4 but fails 5 gets a
-⚠️ "mutable" warning.
+Checks 2 and 5 reference the same set of code locators (`gist_url`,
+`gist_sha`, `swhid`, `zenodo_doi`, `repo + repo_path + repo_ref`), so a
+"can I find the code?" answer is consistent with a "is the code
+durable?" answer — the distinction is whether the storage backing the
+locator is durable, not which fields you used to declare it.
 
-`repo_ref` must be a 40-character hex commit SHA for durability; tags
-are mutable and don't qualify (use `repo_tag` for the human-readable
+`repo_ref` must be a 40-character hex commit SHA for the locator to
+satisfy check 2's stable-id branch and check 5's storage-fragile warn
+branch; tags don't qualify (use `repo_tag` for the human-readable
 release tag).
 
 ## Durability tiers
