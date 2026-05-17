@@ -3,19 +3,24 @@
  * the viewer (queued-deep-dive pill, badges, etc.): uppercase sans
  * with light letter-spacing so chips read as labels, not body text. */
 
+/* The `font: 500 0.68rem/1 ...` shorthand is intentional belt-and-
+ * suspenders over `font-family + font-size + font-weight`. The
+ * shorthand RESETS every font longhand (font-style, font-variant,
+ * line-height) which is what we want — some browsers ship `<button>`
+ * with a UA-stylesheet font-shorthand (`font: -webkit-small-control`)
+ * that beats individual longhands set after `font: inherit`. Setting
+ * the shorthand directly here keeps the chip's typography stable. */
 .chip {
   display: inline-flex;
   align-items: center;
-  font-family: var(--font-sans);
-  font-size: 0.68rem;
-  font-weight: var(--fw-medium);
+  font: var(--fw-medium) 0.68rem/1 var(--font-sans);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--accent);
   background: var(--accent-soft, var(--maroon-soft));
   border: 0;
   border-radius: 3px;
-  padding: 0.1rem 0.45rem;
+  padding: 0.18rem 0.45rem;
   margin: 0;
   cursor: pointer;
   text-decoration: none;
@@ -49,11 +54,9 @@
 }
 
 .chipOverflow {
-  font-family: var(--font-sans);
-  font-size: 0.68rem;
-  font-weight: var(--fw-medium);
+  font: var(--fw-medium) 0.68rem/1 var(--font-sans);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--muted);
-  padding: 0.1rem 0.35rem;
+  padding: 0.18rem 0.35rem;
 }

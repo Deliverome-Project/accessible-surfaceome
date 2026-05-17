@@ -140,6 +140,32 @@
   font-style: italic;
 }
 
+/* Renders when the entailment auditor rejected the agent's quoted
+ * substring (typically because Unicode-normalization across HTML
+ * entities + ligatures didn't reconstruct the source verbatim).
+ * We don't silently drop the section — readers need to know the
+ * quote is missing and why. Amber bar matches StatusPill tone="amber". */
+.warningNote {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-3) var(--space-4);
+  border-left: 3px solid var(--amber, #c98a3a);
+  background: var(--bg-soft);
+  color: var(--ink-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.warningList {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-5);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
 .meta {
   margin: var(--space-2) 0 0;
   display: grid;

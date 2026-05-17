@@ -149,6 +149,8 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
     direction?: string;
     confidence?: string;
     entailment_verified?: boolean;
+    entailment_audit_passed?: boolean | null;
+    validation_warnings?: readonly string[];
     assay_context?: {
       species?: string;
       cell_type_or_line?: string;
@@ -157,6 +159,28 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
     };
   };
   const e = ev as EvidenceLite;
+  const warnings = e.validation_warnings ?? [];
+
+  // The agent emits the source PMC even when the entailment auditor
+  // rejects the verbatim quote (and so the span gets dropped). Pull
+  // PMC IDs out of any validation_warning so the drawer still shows
+  // *which paper* the claim is anchored to, even without a verifiable
+  // quote — otherwise the reader sees a bare claim with no source.
+  if (!sources.length && warnings.length) {
+    for (const w of warnings) {
+      const matches = w.match(/PMC\d{4,}/g);
+      if (!matches) continue;
+      for (const pmcId of matches) {
+        if (seenKeys.has(`pmc:${pmcId}`)) continue;
+        seenKeys.add(`pmc:${pmcId}`);
+        sources.push({
+          href: `https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcId}/`,
+          label: pmcId,
+          title: "Recovered from validation warning (quote not verifiable)",
+        });
+      }
+    }
+  }
 
   return (
     <div className={styles.drawerCard}>
@@ -195,6 +219,10 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
           <StatusPill tone="success" size="sm">
             entailment ✓
           </StatusPill>
+        ) : warnings.length || e.entailment_audit_passed === false ? (
+          <StatusPill tone="amber" size="sm">
+            quote unverified
+          </StatusPill>
         ) : null}
       </div>
       <h2 className={styles.title}>Agent&apos;s claim</h2>
@@ -203,6 +231,21 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
         <>
           <h3 className={styles.subhead}>Verbatim quote</h3>
           <blockquote className={styles.quote}>{headSpan.text}</blockquote>
+        </>
+      ) : warnings.length ? (
+        <>
+          <h3 className={styles.subhead}>Verbatim quote</h3>
+          <p className={styles.warningNote}>
+            The agent&apos;s quoted text could not be re-located in the source
+            after normalization, so the span was dropped by the entailment
+            auditor. The claim is shown above; the source paper is linked
+            below — verify against the source directly.
+          </p>
+          <ul className={styles.warningList}>
+            {warnings.map((w, i) => (
+              <li key={i}>{w}</li>
+            ))}
+          </ul>
         </>
       ) : null}
       {e.assay_context ? (
