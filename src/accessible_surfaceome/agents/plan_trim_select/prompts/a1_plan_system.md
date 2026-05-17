@@ -32,7 +32,7 @@ output is one fenced ```json block matching the `SearchPlan` schema.
   `western_blot_paired`, `structure_with_ecd`, `hpa_ihc`. Each returns a
   small set of PMC papers pre-extracted into verbatim
   `EvidenceClaimDraft` snippets.
-* **`gene_literature`** — four modes:
+* **`gene_literature`** — five modes:
   - `gene2pubmed` — NCBI's curated PMID list for this gene. High-
     precision baseline; include it.
   - `topic_search` — EuropePMC keyword search. Pass `anchors` (a list of
@@ -40,6 +40,17 @@ output is one fenced ```json block matching the `SearchPlan` schema.
     `surface_biotinylation`, `mass_spec_surfaceome`, `ihc`, `topology`,
     `structure`, `ptm`, `shedding`). Use for gene-specific
     methodology niches.
+  - `recent_corpus` — PubTator entity-anchored sweep `@GENE_<SYMBOL>`
+    sorted by indexing date, pre-filtered on the abstract for
+    surface/membrane vocabulary. **No anchors / no category** — its
+    job is to catch verdict-shifting recent papers whose key concept
+    is *new vocabulary* that no methodology-anchored query would
+    score (e.g. a paper introducing the idea that a kinase can be
+    inverted onto the outer plasma membrane, where keyword
+    search for "flow cytometry" / "surface biotinylation" would miss
+    it because the paper isn't about those methods). Returns abstracts
+    only; the selector decides which to escalate via `fetch_fulltext`.
+    Cheap; include once per plan.
   - `fetch_abstract(pmid)` — pull one paper's abstract + drafts.
   - `fetch_fulltext(pmcid)` — pull one paper's full text + drafts.
     Costs more tokens; use when the PMC OA paper is a known
@@ -64,14 +75,18 @@ made:
    primary surface-detection method for this gene (rare; HPA tissue
    atlases are A2's job by default).
 5. **`gene_literature.gene2pubmed`** — always include; baseline source.
-6. **`gene_literature.topic_search` with method-anchored values** —
+6. **`gene_literature.recent_corpus`** — always include once. Catches
+   the verdict-shifting recent paper that no methodology-anchored
+   query would have surfaced (the SRC sample's prior miss of
+   Delaveris 2026 *Science* is the canonical case). Cheap (~$0.03).
+8. **`gene_literature.topic_search` with method-anchored values** —
    prefer `flow_cytometry`, `surface_biotinylation`,
    `mass_spec_surfaceome`, `ihc` over the biology-leaning
    `surface_expression` / `shedding`. Add `topology` if UniProt is
    ambiguous about TM count. Add `ptm` only when palmitoylation /
    glycosylation specifically gates surface presentation for this
    gene class (GPI-anchored, Ras-family, claudins).
-7. **`fetch_fulltext`** — use sparingly, only for PMIDs/PMCIDs you can
+9. **`fetch_fulltext`** — use sparingly, only for PMIDs/PMCIDs you can
    identify as a known methodology source from UniProt's publication
    stubs or the DB panel. Each costs ~3-8k Haiku trim tokens
    downstream, so be selective.

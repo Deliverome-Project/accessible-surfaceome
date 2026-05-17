@@ -396,7 +396,13 @@ class Paper(BaseModel):
     evidence_claim_drafts: list["EvidenceClaimDraft"] = Field(default_factory=list)
 
 
-LiteratureMode = Literal["gene2pubmed", "topic_search", "fetch_abstract", "fetch_fulltext"]
+LiteratureMode = Literal[
+    "gene2pubmed",
+    "topic_search",
+    "fetch_abstract",
+    "fetch_fulltext",
+    "recent_corpus",
+]
 
 
 class LiteraturePack(BaseModel):

@@ -33,7 +33,7 @@ output is one fenced ```json block matching the `SearchPlan` schema.
   `western_blot_paired`, `structure_with_ecd`, `hpa_ihc`. Each returns a
   small set of PMC papers pre-extracted into verbatim
   `EvidenceClaimDraft` snippets.
-* **`gene_literature`** — four modes:
+* **`gene_literature`** — five modes:
   - `gene2pubmed` — NCBI's curated PMID list for this gene. High-
     precision baseline; include it.
   - `topic_search` — EuropePMC keyword search. Pass `anchors` (a list of
@@ -42,6 +42,12 @@ output is one fenced ```json block matching the `SearchPlan` schema.
     `structure`, `ptm`, `shedding`). The vocabulary is method-leaning,
     but several anchors (`surface_expression`, `shedding`, `ptm`,
     `ihc`) hit biology-rich review articles.
+  - `recent_corpus` — PubTator entity-anchored sweep `@GENE_<SYMBOL>`
+    sorted by indexing date, pre-filtered on the abstract for
+    surface/membrane vocabulary. **No anchors / no category.** A1
+    will also call this; A2 calling it adds biology-context recency
+    (recent disease-state, EV / shed-form, tissue-specific surface
+    reports). Cheap; include once.
   - `fetch_abstract(pmid)` — pull one paper's abstract + drafts.
   - `fetch_fulltext(pmcid)` — pull one paper's full text + drafts.
     Costs more tokens; use when the PMC OA paper is a known biology /
@@ -70,19 +76,24 @@ plan toward sources rich in WHERE/WHEN, not HOW:
    SKIP unless they're specifically how the tissue-distribution call
    for this gene was made.
 7. **`gene_literature.gene2pubmed`** — always include; baseline source.
-8. **`gene_literature.topic_search` with biology-leaning anchors** —
+8. **`gene_literature.recent_corpus`** — always include once. A1 will
+   also call it; A2's selector will pick the biology-leaning recent
+   papers out of the shared candidate pool (recent EV-associated
+   shed-form reports, recent disease-state surface induction
+   findings, etc.). Cheap (~$0.03).
+9. **`gene_literature.topic_search` with biology-leaning anchors** —
    prefer `surface_expression`, `shedding`, `ptm`, `ihc` over the
    method-specific anchors. Add multiple `topic_search` calls if the
    gene biology spans several niches (e.g. a claudin: one for
    `surface_expression` + `ihc` for tight-junction context, one for
    `shedding` if it's a shedding substrate, one for `ptm` if
    palmitoylation gates surface trafficking).
-9. **`fetch_fulltext` on KNOWN biology sources** — when UniProt
-   publication stubs include a high-density review on tissue / disease
-   distribution, or HPA snapshot flags a "enhanced" tissue group
-   backed by a specific paper, request `fetch_fulltext(pmcid)`
-   sparingly to pull that paper's body. Each costs ~3-8k Haiku trim
-   tokens downstream, so be selective.
+10. **`fetch_fulltext` on KNOWN biology sources** — when UniProt
+    publication stubs include a high-density review on tissue / disease
+    distribution, or HPA snapshot flags a "enhanced" tissue group
+    backed by a specific paper, request `fetch_fulltext(pmcid)`
+    sparingly to pull that paper's body. Each costs ~3-8k Haiku trim
+    tokens downstream, so be selective.
 
 ## What you should AVOID (A1 handles these)
 
