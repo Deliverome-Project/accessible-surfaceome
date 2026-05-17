@@ -365,13 +365,13 @@ export function BenchmarkTable({
             extraClass={styles.headerModelCell}
           />
           <SortHeader
-            label="# DBs"
+            label="DB votes"
             sortKey="n_db_surface"
             activeKey={sortKey}
             dir={sortDir}
             onClick={toggleSort}
             extraClass={styles.headerDbCell}
-            title="Count of the 5 gating DBs that voted yes for this gene. Click to sort rows by DB consensus."
+            title="Count of the 5 gating DBs that voted yes for this gene. Same column label as the homepage CatalogTable. Click to sort rows by DB consensus."
           />
           {DB_KEYS.map((d) => (
             <div

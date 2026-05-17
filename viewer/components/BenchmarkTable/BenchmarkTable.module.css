@@ -257,6 +257,12 @@
 
 .rowExpanded {
   align-items: stretch;
+  /* When expanded, force the whole row (cells + the expanded block
+   * below) onto a unified white background. Without this, the zebra
+   * stripe / maroon-hover bg lingers on the original cells while the
+   * expanded block uses bg-soft, which reads as a half-finished
+   * surface. Using !important to override the .row:nth-child stripe. */
+  background: var(--bg) !important;
 }
 
 .headerRow {
@@ -685,7 +691,10 @@
 .expandedBlock {
   grid-column: 1 / -1;
   padding: var(--space-4) var(--space-5) var(--space-5) 2rem;
-  background: var(--bg-soft);
+  /* Pure white to match .rowExpanded — the dashed top border carries
+   * the visual delineation between the resting cells and the
+   * variant grid below. */
+  background: var(--bg);
   border-top: 1px dashed var(--line-soft);
 }
 
