@@ -10,6 +10,7 @@ data/analysis/** filter=lfs diff=lfs merge=lfs -text
 # an LFS pointer there fails every assertion).
 data/analysis/figures/*.py -filter -diff -merge text
 data/analysis/figures/*.md -filter -diff -merge text
+data/analysis/figures/*.mmd -filter -diff -merge text
 
 # Figure outputs themselves ship as plain git too — each PDF is
 # 20–60 KB and each PNG is 130–500 KB, well under the CLAUDE.md

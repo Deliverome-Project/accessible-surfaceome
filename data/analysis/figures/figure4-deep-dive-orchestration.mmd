@@ -1,3 +1,51 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:784609457c8f6b0fdb9bfb44e14b7a7fad8273924d95bbcd5e760aa0a7e877d1
-size 2655
+---
+config:
+  flowchart:
+    curve: basis
+    htmlLabels: true
+    padding: 10
+  theme: base
+  themeVariables:
+    fontFamily: 'Manrope, -apple-system, sans-serif'
+    fontSize: 14px
+    primaryColor: '#fff4e0'
+    primaryTextColor: '#2a1d00'
+    primaryBorderColor: '#8b5a00'
+    lineColor: '#555'
+---
+flowchart TD
+    Gene([<b>Gene</b><br/>HGNC ID]):::input
+
+    Gene --> PTS["<b>Plan-Trim-Select</b> &nbsp;·&nbsp; dual<br/><i>Sonnet 4.6, tools enabled</i><br/>tools: gene_lookup · gene_literature"]:::llmTools
+
+    PTS -->|surface-evidence focus| A1L[/"A1 ledger<br/>EvidenceClaims<br/>verbatim source quotes"/]:::ledger
+    PTS -->|biology focus| A2L[/"A2 ledger<br/>EvidenceClaims<br/>verbatim source quotes"/]:::ledger
+
+    A1L --> A1B["<b>A1 block builders</b> &nbsp;×4<br/><i>Sonnet 4.6, no tools</i><br/>methods · evidence_grade<br/>therapeutic_engagement · contradictions"]:::llmBuilder
+    A2L --> A2B["<b>A2 block builders</b> &nbsp;×5<br/><i>Sonnet 4.6, no tools</i><br/>tissues · cell_types · subcellular_loc<br/>anatomical_access · access_modulation"]:::llmBuilder
+
+    A1B --> SE["SurfaceEvidence draft<br/><i>Pydantic-validated</i>"]:::draft
+    A2B --> BC["BiologicalContext draft<br/><i>Pydantic-validated</i>"]:::draft
+
+    SE --> SYNTH["<b>Synthesizer (B)</b><br/><i>Sonnet 4.6, no tools</i><br/>executive summary · accessibility risks<br/>filters · confidence"]:::llmTools
+    BC --> SYNTH
+
+    SYNTH --> EP["<b>Evidence promotion</b><br/><i>orchestrator, no LLM</i><br/>substring-match each quote<br/>→ SHA256 source anchor"]:::deterministic
+
+    DF[("<b>Deterministic features</b><br/><i>D1 pull, no LLM</i><br/>DeepTMHMM topology<br/>Compara orthologs<br/>AlphaFold structure")]:::deterministic
+
+    EP --> REC{{"<b>SurfaceomeRecord</b><br/>schema v1.0.0"}}:::record
+    DF --> REC
+
+    REC --> ANN[["data/annotations/<br/>{gene}.json"]]:::output
+    REC --> D1[("public D1 mirror")]:::output
+    REC --> VIEW[["viewer<br/>per-gene page"]]:::output
+
+    classDef input fill:#fafafa,stroke:#333,stroke-width:1.5px,color:#222
+    classDef llmTools fill:#fff4e0,stroke:#8b5a00,stroke-width:2px,color:#2a1d00
+    classDef llmBuilder fill:#efe5ff,stroke:#5a4b8b,stroke-width:1.5px,color:#241b3d
+    classDef ledger fill:#fdfaf2,stroke:#a07a30,stroke-width:1px,color:#3d2e10,stroke-dasharray: 4 2
+    classDef draft fill:#f5efff,stroke:#7e6db0,stroke-width:1px,color:#241b3d
+    classDef deterministic fill:#e6f5f3,stroke:#117a7a,stroke-width:1.5px,color:#0a3a3a
+    classDef record fill:#f5e8ee,stroke:#7a113a,stroke-width:2.5px,color:#3a081c
+    classDef output fill:#fdf2f6,stroke:#7a113a,stroke-width:1px,color:#3a081c
