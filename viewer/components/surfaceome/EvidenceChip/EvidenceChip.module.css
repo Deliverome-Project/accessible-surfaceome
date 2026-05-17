@@ -1,0 +1,53 @@
+/* EvidenceChip — matches the v2 sample's evi-chip pattern:
+ * monospace pill with accent-soft bg, hover flips to solid accent.
+ * Stays compact so a 12-chip strip fits inline under a paragraph. */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  background: var(--accent-soft, var(--maroon-soft));
+  border: 0;
+  border-radius: 3px;
+  padding: 0.05rem 0.42rem;
+  margin: 0;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.chip:hover,
+.chip:focus-visible {
+  color: var(--bg);
+  background: var(--accent);
+}
+
+.chipRow {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.chipRowLabel {
+  color: var(--muted);
+}
+
+.chips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.chipOverflow {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+  padding: 0.05rem 0.35rem;
+}

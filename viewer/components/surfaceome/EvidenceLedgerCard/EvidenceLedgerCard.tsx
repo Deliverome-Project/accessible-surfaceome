@@ -4,6 +4,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { EvidenceChip } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./EvidenceLedgerCard.module.css";
@@ -94,7 +95,14 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
               return (
                 <li key={e.evidence_id} className={styles.item}>
                   <div className={styles.head}>
-                    <span className={styles.id}>{e.evidence_id}</span>
+                    {/* The evidence_id pill IS the chip — click to open
+                     *  the global EvidenceDrawer with full claim +
+                     *  quote + sources, same drawer the per-section
+                     *  chip strips open. */}
+                    <EvidenceChip
+                      evidenceId={e.evidence_id}
+                      title={`Open evidence ${e.evidence_id} — ${e.claim.slice(0, 80)}…`}
+                    />
                     <StatusPill tone={tierTone(e.evidence_tier)} size="sm">
                       {prettyEnum(e.evidence_tier)}
                     </StatusPill>
