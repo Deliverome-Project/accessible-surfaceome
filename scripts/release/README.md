@@ -43,43 +43,53 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
 ## Before you run it
 
 1. **Review `EXTRA_FILES`** in `publish-archive.py`. The default set is
-   three data files plus a generated in-deposit README:
+   three data files plus a generated in-deposit README. All joins
+   happen server-side in the Cloudflare Worker — the publish script
+   just fetches pre-joined endpoints, so deposit bytes are atomic
+   snapshots:
    - `triage-runs-with-reasoning.tsv` — long format, Sonnet × ~19k
-     M1 candidate-universe genes; built by joining
-     `/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1` with
-     per-gene DB votes + uniprot_acc from `/v1/catalog`.
+     M1 candidate-universe genes, with DB votes + uniprot_acc joined
+     in by the Worker. From
+     `/v1/triage/export-enriched.tsv?run_id=genome_full_sonnet_ncbi_v1`.
    - `triage-benchmark-with-reasoning.tsv` — long format, Haiku +
-     Sonnet + Opus × 4 prompt variants × 147 bench genes; built by
-     joining `/v1/triage/export.tsv?run_id=mainbench_canonical_v1`
-     with the same DB votes plus curated truth labels from
-     `/v1/benchmark/export.tsv`.
+     Sonnet + Opus × 4 prompt variants × 147 bench genes, with DB
+     votes + truth labels joined in by the Worker. From
+     `/v1/benchmark/triage-enriched.tsv`.
    - `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
      per published `SurfaceomeRecord`; built by fetching `/v1/genes`
      for the index, then `/v1/genes/<SYMBOL>` per gene.
-   - `README.md` — generated at deposit time from the script;
-     documents every column of every file, the exact source-join
-     recipes, and the live-API endpoints that reproduce them. This
-     is what a Zenodo downloader reads alongside the data.
+   - `README.md` — generated at deposit time; documents every column
+     of every file and the live-API endpoint that produces it. Travels
+     with the data on Zenodo.
 
-   Each entry can be a `{"url", "filename"}` dict to fetch verbatim
-   from the public API, a path string relative to repo root for local
-   files, or one of the special builder shapes:
-   `{"enriched_triage": True, ...}` (joined TSV),
-   `{"deep_dives_bundle": True, ...}` (tarball),
-   `{"deposit_readme": True, ...}` (in-deposit README). Comment out
-   anything you don't want in this particular deposit.
+   Each entry is either a `{"url", "filename"}` dict (verbatim API
+   fetch), a path string relative to repo root (local file), or one
+   of the special builder shapes: `{"deep_dives_bundle": True, ...}`
+   (tarball), `{"deposit_readme": True, ...}` (in-deposit README).
+   Comment out anything you don't want in this particular deposit.
 
-2. **Edit `SEED_METADATA`** if the default title / description / author
+2. **Deploy the Worker** if you've changed any of the enriched
+   endpoints (`handleTriageExportEnriched` /
+   `handleBenchmarkTriageEnriched` in
+   `cloudflare/workers/surfaceome_api/src/index.js`) — the publish
+   script depends on them. Skip if you haven't touched that file
+   since the last deploy.
+
+   ```bash
+   cd cloudflare/workers/surfaceome_api && npx wrangler deploy
+   ```
+
+3. **Edit `SEED_METADATA`** if the default title / description / author
    list / keywords don't match what you want for this release. You can
    also edit metadata in the Zenodo UI after the draft is created — but
    getting it right here means less clicking later.
 
-3. **Generate a Zenodo Personal Access Token** at
+4. **Generate a Zenodo Personal Access Token** at
    <https://zenodo.org/account/settings/applications/tokens/new/>
    with the `deposit:write` scope. Add `deposit:actions` if you ever
    want to publish via API rather than the UI.
 
-4. **(Optional) Test in sandbox first.** Sign up at
+5. **(Optional) Test in sandbox first.** Sign up at
    <https://sandbox.zenodo.org/>, generate a sandbox token (separate
    account), and run with `ZENODO_SANDBOX=true`. Fake DOIs, real API,
    safe.

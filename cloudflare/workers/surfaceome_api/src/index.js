@@ -664,6 +664,158 @@ async function handleTriageExport(env, url) {
 }
 
 
+// Same shape as /v1/triage/export.tsv, but with per-source DB votes
+// and uniprot_acc joined in server-side from the latest candidate-
+// universe snapshot. Single source of truth for the
+// triage-with-reasoning Zenodo deposit file — clients fetch this one
+// URL instead of joining `/v1/triage/export.tsv` + `/v1/catalog`
+// themselves.
+//
+// LEFT JOIN preserves triage rows even for genes that aren't in the
+// current universe snapshot (db columns come out blank for those).
+async function handleTriageExportEnriched(env, url) {
+  const runId = url.searchParams.get("run_id") || DEFAULT_EXPORT_RUN_ID;
+  const replicate = url.searchParams.get("replicate");
+
+  // Pin DB votes to the latest universe_version (same rule the
+  // catalog handler uses).
+  const releaseRow = await env.DB.prepare(
+    `SELECT universe_version FROM candidate_universe_release
+      ORDER BY loaded_at DESC LIMIT 1`
+  ).first();
+  const universeVersion = releaseRow?.universe_version ?? "";
+
+  const sqlParts = [
+    `SELECT t.gene_symbol, c.uniprot_acc,`,
+    `       COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,`,
+    `       COALESCE(c.go_surface_flag, 0)      AS db_go,`,
+    `       COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,`,
+    `       COALESCE(c.cspa_surface_flag, 0)    AS db_cspa,`,
+    `       COALESCE(c.hpa_surface_flag, 0)     AS db_hpa,`,
+    `       COALESCE(c.n_sources_surface, 0)    AS n_db_surface,`,
+    `       ${EXPORT_COLUMNS.slice(1).map((c) => `t.${c}`).join(", ")}`,
+    `  FROM triage_run_public t`,
+    `  LEFT JOIN candidate_universe_public c`,
+    `         ON c.gene_symbol = t.gene_symbol`,
+    `        AND c.universe_version = ?`,
+    ` WHERE t.run_id = ?`,
+  ];
+  const params = [universeVersion, runId];
+  if (replicate != null) {
+    const r = parseInt(replicate, 10);
+    if (Number.isNaN(r)) return badRequest("invalid_replicate");
+    sqlParts.push(` AND t.replicate = ?`);
+    params.push(r);
+  }
+  sqlParts.push(` ORDER BY t.model, t.prompt_variant, t.gene_symbol`);
+  const rs = await env.DB.prepare(sqlParts.join("")).bind(...params).all();
+
+  const cols = [
+    "gene_symbol", "uniprot_acc",
+    "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
+    ...EXPORT_COLUMNS.slice(1),
+  ];
+  const headers = cols.join("\t");
+  const body = rs.results
+    .map((r) => cols.map((c) => tsvCell(r[c])).join("\t"))
+    .join("\n");
+  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+}
+
+
+// Long-format TSV: every benchmark gene × every model × every variant
+// (latest replicate per cell), with curated truth labels and per-
+// source DB votes joined in. Same data as `/v1/benchmark/matrix` but
+// reshaped from wide nested JSON to long flat TSV. Drives the
+// triage-benchmark-with-reasoning Zenodo deposit file.
+async function handleBenchmarkTriageEnriched(env) {
+  // 1. Canonical curated bench_version (same rule as the matrix
+  // handler — most labeled rows wins).
+  const benchRow = await env.DB.prepare(
+    `SELECT bench_version FROM benchmark_version
+      WHERE truth_verdict IS NOT NULL AND truth_verdict != ''
+      GROUP BY bench_version
+      ORDER BY COUNT(*) DESC, MAX(created_at) DESC
+      LIMIT 1`
+  ).first();
+  if (!benchRow) {
+    return tsv("gene_symbol\n", { ttl: CACHE_TTL_LONG });
+  }
+  const benchVersion = benchRow.bench_version;
+
+  // 2. Truth + DB + model output, joined inside SQL so a single round-
+  // trip returns everything. LEFT JOIN on candidate_universe_public
+  // so bench rows without a current-universe entry still appear (db
+  // columns come out 0).
+  const releaseRow = await env.DB.prepare(
+    `SELECT universe_version FROM candidate_universe_release
+      ORDER BY loaded_at DESC LIMIT 1`
+  ).first();
+  const universeVersion = releaseRow?.universe_version ?? "";
+
+  const variantPlaceholders = BENCH_MATRIX_VARIANTS.map(() => "?").join(",");
+  const modelPlaceholders = BENCH_MATRIX_MODELS.map(() => "?").join(",");
+  const rs = await env.DB.prepare(
+    `WITH ranked AS (
+       SELECT t.gene_symbol, t.model, t.prompt_variant, t.replicate,
+              t.predicted_verdict, t.predicted_reason, t.predicted_confidence,
+              t.prompt_tokens, t.completion_tokens,
+              t.cache_creation_tokens, t.cache_read_tokens,
+              t.n_web_searches, t.cost_usd, t.latency_s,
+              ROW_NUMBER() OVER (
+                PARTITION BY t.gene_symbol, t.model, t.prompt_variant
+                ORDER BY t.created_at DESC
+              ) AS rn
+         FROM triage_run_public t
+         INNER JOIN benchmark_version bv ON bv.gene_symbol = t.gene_symbol
+        WHERE bv.bench_version = ?
+          AND t.prompt_variant IN (${variantPlaceholders})
+          AND t.model IN (${modelPlaceholders})
+     )
+     SELECT r.gene_symbol, bv.uniprot_acc,
+            COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,
+            COALESCE(c.go_surface_flag, 0)      AS db_go,
+            COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,
+            COALESCE(c.cspa_surface_flag, 0)    AS db_cspa,
+            COALESCE(c.hpa_surface_flag, 0)     AS db_hpa,
+            COALESCE(c.n_sources_surface, 0)    AS n_db_surface,
+            bv.truth_verdict, bv.truth_signal, bv.truth_reason,
+            r.model, r.prompt_variant, r.replicate,
+            r.predicted_verdict, r.predicted_reason, r.predicted_confidence,
+            r.prompt_tokens, r.completion_tokens,
+            r.cache_creation_tokens, r.cache_read_tokens,
+            r.n_web_searches, r.cost_usd, r.latency_s
+       FROM ranked r
+       INNER JOIN benchmark_version bv
+               ON bv.gene_symbol = r.gene_symbol AND bv.bench_version = ?
+       LEFT  JOIN candidate_universe_public c
+               ON c.gene_symbol = r.gene_symbol AND c.universe_version = ?
+      WHERE r.rn = 1
+      ORDER BY r.gene_symbol, r.model, r.prompt_variant`
+  ).bind(
+    benchVersion,
+    ...BENCH_MATRIX_VARIANTS, ...BENCH_MATRIX_MODELS,
+    benchVersion, universeVersion,
+  ).all();
+
+  const cols = [
+    "gene_symbol", "uniprot_acc",
+    "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
+    "truth_verdict", "truth_signal", "truth_reason",
+    "model", "prompt_variant", "replicate",
+    "predicted_verdict", "predicted_reason", "predicted_confidence",
+    "prompt_tokens", "completion_tokens",
+    "cache_creation_tokens", "cache_read_tokens",
+    "n_web_searches", "cost_usd", "latency_s",
+  ];
+  const headers = cols.join("\t");
+  const body = rs.results
+    .map((r) => cols.map((c) => tsvCell(r[c])).join("\t"))
+    .join("\n");
+  return tsv(`${headers}\n${body}\n`, { ttl: CACHE_TTL_LONG });
+}
+
+
 async function handleTriage(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -716,7 +868,9 @@ export default {
     if (path === "/v1/benchmark") return handleBenchmarkList(env);
     if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
     if (path === "/v1/benchmark/export.tsv") return handleBenchmarkExport(env);
+    if (path === "/v1/benchmark/triage-enriched.tsv") return handleBenchmarkTriageEnriched(env);
     if (path === "/v1/triage/export.tsv") return handleTriageExport(env, url);
+    if (path === "/v1/triage/export-enriched.tsv") return handleTriageExportEnriched(env, url);
 
     let m;
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);

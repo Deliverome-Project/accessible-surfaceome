@@ -128,26 +128,30 @@ GIST_ORIGINS = [
 # Comment out entries you don't want in a given deposit, or add local
 # paths (relative to REPO_ROOT) for files that don't live behind the API.
 # Three files, each answering a distinct reader question. All TSV or
-# tar.gz; no nested JSON for analytics:
+# tar.gz; no nested JSON for analytics. Every join happens server-
+# side in the Cloudflare Worker — the publish script just fetches
+# pre-joined endpoints, so the deposit bytes are atomic snapshots
+# rather than client-side stitched approximations.
 #
 #   1. triage-runs-with-reasoning.tsv  →  "what did Sonnet say about
 #      every gene in the candidate universe, with reasoning + cost?"
 #      Long format, one row per (gene × variant × replicate). Pinned
 #      to run_id=genome_full_sonnet_ncbi_v1 (Sonnet on ~19k genes).
-#      Augmented at deposit time with: uniprot_acc + per-source DB
-#      votes (uniprot/go/surfy/cspa/hpa) joined from /v1/catalog. The
-#      headline figures pull from here.
+#      Server endpoint: /v1/triage/export-enriched.tsv — LEFT JOIN
+#      against the latest candidate_universe_public for uniprot_acc
+#      + 5 DB votes + n_db_surface, one SQL round-trip. The headline
+#      figures pull from here.
 #
 #   2. triage-benchmark-with-reasoning.tsv  →  "for each of the 147
 #      bench genes, what does every model variant say (Haiku / Sonnet /
 #      Opus × naive / ncbi / web_ncbi / pubmed_ncbi), with reasoning?
 #      And what does the curated truth say?"  Long format, one row per
-#      (bench gene × model × variant × replicate). Pinned to
-#      run_id=mainbench_canonical_v1 (the multi-model bench sweep).
-#      Augmented at deposit time with: uniprot_acc + DB votes (same as
-#      #1) + truth_verdict + truth_signal + truth_reason joined from
-#      /v1/benchmark/export.tsv. Haiku and Opus only appear here — the
-#      broad triage in #1 is Sonnet-only.
+#      (bench gene × model × variant). Server endpoint:
+#      /v1/benchmark/triage-enriched.tsv — bench-scoped, JOINs truth
+#      labels from benchmark_version + DB votes from
+#      candidate_universe_public + latest replicate per cell from
+#      triage_run_public. Haiku and Opus only appear here — the broad
+#      triage in #1 is Sonnet-only.
 #
 #   3. deep_dives_all.tar.gz  →  "every published SurfaceomeRecord
 #      with full evidence + reasoning."  Built at deposit time by
@@ -165,18 +169,18 @@ GIST_ORIGINS = [
 #     consistent format with #1, no nested objects).
 #   - the truth-labels-only TSV: every truth column is in #2 above
 #     denormalized into each row.
+#
+# IMPORTANT: the enriched endpoints used by #1 and #2 must be deployed
+# to the Worker BEFORE running this script. See scripts/release/README.md
+# for the deploy step.
 EXTRA_FILES: list[str | dict[str, Any]] = [
     {
-        "enriched_triage": True,
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export-enriched.tsv?run_id=genome_full_sonnet_ncbi_v1",
         "filename": "triage-runs-with-reasoning.tsv",
-        "run_id": "genome_full_sonnet_ncbi_v1",
-        "join_truth": False,
     },
     {
-        "enriched_triage": True,
+        "url": "https://api.deliverome.org/surfaceome/v1/benchmark/triage-enriched.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
-        "run_id": "mainbench_canonical_v1",
-        "join_truth": True,
     },
     {
         "deep_dives_bundle": True,
@@ -186,9 +190,9 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     },
     {
         # In-deposit README — documents every column of every file
-        # above, the source-join recipe used to construct them, and
-        # the live-API endpoints that reproduce them. Travels WITH
-        # the data on Zenodo so the bytes are self-explanatory.
+        # above and the live-API endpoint that produces them.
+        # Travels WITH the data on Zenodo so the bytes are self-
+        # explanatory.
         "deposit_readme": True,
         "filename": "README.md",
     },
@@ -334,26 +338,28 @@ def _resolve_extra_file(
 ) -> tuple[Path, bool] | None:
     """Resolve one EXTRA_FILES entry to a (local_path, cleanup) pair.
 
-    Five input shapes:
+    Four input shapes:
 
       - bare HTTP(S) URL: fetched to a tempfile, returned with
         cleanup=True so the caller deletes it after upload. Destination
         name is the URL's last path segment.
 
       - {"url": "...", "filename": "..."} dict: same fetch behaviour
-        but destination name is the explicit filename.
-
-      - {"enriched_triage": True, "filename": "...", "run_id": "...",
-        "join_truth": bool}: fetches /v1/triage/export.tsv for the
-        given run_id, joins per-source DB votes from /v1/catalog, and
-        (if join_truth) joins curated truth_verdict/signal/reason from
-        /v1/benchmark/export.tsv. Writes one enriched TSV locally.
+        but destination name is the explicit filename. The enriched
+        triage TSVs use this form pointing at the Worker's
+        `/v1/triage/export-enriched.tsv` and
+        `/v1/benchmark/triage-enriched.tsv` endpoints — all joins
+        happen server-side, atomic snapshot per round-trip.
 
       - {"deep_dives_bundle": True, "filename": "...", "index_url":
         "...", "gene_url_template": "..."}: special-case resolver that
         fetches the gene index from `index_url`, then for each entry
         fetches `gene_url_template.format(symbol=...)`, then tars all
         per-gene JSONs into a single gzipped archive.
+
+      - {"deposit_readme": True, "filename": "..."}: special-case
+        resolver that generates an in-deposit README at deposit time
+        documenting every file's columns + reproduction recipe.
 
       - other string: treated as a path relative to REPO_ROOT. If the
         local file doesn't exist, warns and returns None.
@@ -368,8 +374,6 @@ def _resolve_extra_file(
     if isinstance(entry, dict):
         if entry.get("deep_dives_bundle"):
             return _build_deep_dives_bundle(entry, dry_run=dry_run), True
-        if entry.get("enriched_triage"):
-            return _build_enriched_triage(entry, dry_run=dry_run), True
         if entry.get("deposit_readme"):
             return _build_deposit_readme(entry, dry_run=dry_run), True
         url = entry.get("url")
@@ -417,151 +421,12 @@ def _http_get_with_retry(
     raise RuntimeError(f"unreachable: exhausted retries for {url}")
 
 
-def _build_enriched_triage(
-    entry: dict[str, Any], *, dry_run: bool,
-) -> Path:
-    """Fetch /v1/triage/export.tsv for run_id, join DB votes from
-    /v1/catalog, optionally join truth labels from
-    /v1/benchmark/export.tsv. Emit one enriched TSV.
-
-    Why join client-side instead of changing the Worker: the public
-    triage endpoint stays a thin telemetry view, and the enrichment
-    cost only happens at deposit time. The resulting TSV is fully
-    self-contained — readers don't need to JOIN three URLs to get a
-    usable analysis frame.
-
-    Column order in the output:
-      gene_symbol, uniprot_acc,
-      db_uniprot, db_go, db_surfy, db_cspa, db_hpa, n_db_surface,
-      [truth_verdict, truth_signal, truth_reason]    ← if join_truth
-      model, prompt_variant, replicate,
-      predicted_verdict, predicted_reason, predicted_confidence,
-      prompt_tokens, completion_tokens, cache_creation_tokens,
-      cache_read_tokens, n_web_searches, cost_usd, latency_s
-    """
-    filename = entry["filename"]
-    run_id = entry["run_id"]
-    join_truth = bool(entry.get("join_truth"))
-
-    api_base = "https://api.deliverome.org/surfaceome/v1"
-    triage_url = f"{api_base}/triage/export.tsv?run_id={run_id}"
-    catalog_url = f"{api_base}/catalog"
-    truth_url = f"{api_base}/benchmark/export.tsv"
-
-    tmp_root = REPO_ROOT / "_extra-download"
-
-    if dry_run:
-        msg = (
-            f"[dry-run] would fetch {triage_url} + {catalog_url}"
-            + (f" + {truth_url}" if join_truth else "")
-            + f" → join client-side → {filename}"
-        )
-        ok(msg)
-        return tmp_root / filename
-
-    tmp_root.mkdir(exist_ok=True)
-
-    # 1. Fetch the triage TSV (with retry — the genome-wide export
-    # can 503 on a cold cache).
-    triage_resp = _http_get_with_retry(triage_url, timeout=300)
-    triage_text = triage_resp.text
-    triage_lines = triage_text.rstrip("\n").split("\n")
-    if len(triage_lines) < 2:
-        raise ValueError(f"triage export at {triage_url} returned no rows")
-    triage_header = triage_lines[0].split("\t")
-    if triage_header[0] != "gene_symbol":
-        raise ValueError(
-            f"unexpected first column in triage export: {triage_header[0]!r}"
-        )
-    ok(f"fetched triage export ({len(triage_lines) - 1:,} rows, run_id={run_id})")
-
-    # 2. Fetch the catalog (for DB votes + uniprot_acc).
-    catalog_resp = _http_get_with_retry(catalog_url, timeout=120)
-    catalog = catalog_resp.json()
-    db_keys = catalog.get("db_keys") or ["uniprot", "go", "surfy", "cspa", "hpa"]
-    # Build {symbol → (uniprot_acc, db_bitmask)} index.
-    cat_by_sym: dict[str, tuple[str, int]] = {}
-    for row in catalog.get("rows", []):
-        sym = row.get("symbol")
-        if not sym:
-            continue
-        cat_by_sym[sym] = (row.get("uniprot") or "", int(row.get("db") or 0))
-    ok(f"fetched catalog ({len(cat_by_sym):,} symbols, db_keys={db_keys})")
-
-    # 3. Optionally fetch truth labels.
-    truth_by_sym: dict[str, tuple[str, str, str]] = {}
-    if join_truth:
-        truth_resp = _http_get_with_retry(truth_url, timeout=60)
-        truth_lines = truth_resp.text.rstrip("\n").split("\n")
-        truth_header = truth_lines[0].split("\t")
-        # /v1/benchmark/export.tsv shape:
-        # gene gene_symbol uniprot class ground_truth_verdict
-        # ground_truth_signal ground_truth_reason rationale
-        idx = {name: i for i, name in enumerate(truth_header)}
-        sym_col: int | None = idx.get("gene_symbol", idx.get("gene"))
-        if sym_col is None:
-            raise ValueError(
-                f"truth export at {truth_url} has neither "
-                f"'gene_symbol' nor 'gene' column; got {truth_header}"
-            )
-        v_col = idx["ground_truth_verdict"]
-        s_col = idx["ground_truth_signal"]
-        r_col = idx["ground_truth_reason"]
-        for line in truth_lines[1:]:
-            cells = line.split("\t")
-            truth_by_sym[cells[sym_col]] = (cells[v_col], cells[s_col], cells[r_col])
-        ok(f"fetched truth labels ({len(truth_by_sym):,} bench genes)")
-
-    # 4. Compose enriched TSV. Column order: identity → DB votes →
-    # truth (optional) → model output telemetry.
-    db_cols = [f"db_{k}" for k in db_keys]
-    truth_cols = ["truth_verdict", "truth_signal", "truth_reason"] if join_truth else []
-    new_header = (
-        ["gene_symbol", "uniprot_acc"]
-        + db_cols
-        + ["n_db_surface"]
-        + truth_cols
-        + triage_header[1:]  # drop the original gene_symbol; everything after
-    )
-
-    out_path = tmp_root / filename
-    with out_path.open("w") as fh:
-        fh.write("\t".join(new_header) + "\n")
-        n_joined_db = 0
-        n_joined_truth = 0
-        for line in triage_lines[1:]:
-            cells = line.split("\t")
-            sym = cells[0]
-            uniprot_acc, db_mask = cat_by_sym.get(sym, ("", 0))
-            if sym in cat_by_sym:
-                n_joined_db += 1
-            db_votes = [str((db_mask >> i) & 1) for i in range(len(db_keys))]
-            n_db = sum(int(v) for v in db_votes)
-            prefix = [sym, uniprot_acc, *db_votes, str(n_db)]
-            if join_truth:
-                tv, ts, tr = truth_by_sym.get(sym, ("", "", ""))
-                if sym in truth_by_sym:
-                    n_joined_truth += 1
-                prefix += [tv, ts, tr]
-            fh.write("\t".join(prefix + cells[1:]) + "\n")
-
-    size_mb = out_path.stat().st_size / 1024 / 1024
-    msg = (
-        f"built {out_path.name} ({size_mb:.1f} MB, "
-        f"{len(triage_lines) - 1:,} rows, db-joined={n_joined_db:,}"
-    )
-    if join_truth:
-        msg += f", truth-joined={n_joined_truth:,}"
-    ok(msg + ")")
-    return out_path
-
 
 def _build_deposit_readme(
     entry: dict[str, Any], *, dry_run: bool,
 ) -> Path:
     """Generate the in-deposit README.md that documents every file's
-    columns, the source-join recipe used to construct each enriched
-    TSV, and the live-API endpoints that reproduce them.
+    columns and the live-API endpoint that reproduces it.
 
     This is what a Zenodo downloader sees alongside the data. It's
     the canonical user-facing description of what the bytes are —
@@ -609,36 +474,35 @@ covering Sonnet 4.6 inference across the **~19k-gene M1 candidate
 universe**. The single source of truth for the cost-vs-accuracy and
 db-correctness figures in the project.
 
-| Column | Source | Meaning |
-|---|---|---|
-| `gene_symbol` | triage export | HGNC gene symbol |
-| `uniprot_acc` | catalog join | UniProt accession (canonical isoform) |
-| `db_uniprot`, `db_go`, `db_surfy`, `db_cspa`, `db_hpa` | catalog join | 0/1 — does each surface-DB source vote "surface" for this gene? |
-| `n_db_surface` | derived | sum of the 5 DB votes (0–5) |
-| `model` | triage export | Anthropic model identifier (Sonnet only in this file) |
-| `prompt_variant` | triage export | which prompt variant was used (`ncbi` only in this file) |
-| `replicate` | triage export | replicate index within the sweep |
-| `predicted_verdict` | triage export | model verdict: `yes` / `contextual` / `no` |
-| `predicted_reason` | triage export | short controlled-vocab reason tag |
-| `predicted_confidence` | triage export | `low` / `medium` / `high` |
-| `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens` | triage export | per-call token counts |
-| `n_web_searches` | triage export | number of web tool calls in this run |
-| `cost_usd` | triage export | computed dollar cost of this call |
-| `latency_s` | triage export | wall-clock seconds for this call |
+| Column | Meaning |
+|---|---|
+| `gene_symbol` | HGNC gene symbol |
+| `uniprot_acc` | UniProt accession (canonical isoform) |
+| `db_uniprot`, `db_go`, `db_surfy`, `db_cspa`, `db_hpa` | 0/1 — does each surface-DB source vote "surface" for this gene? |
+| `n_db_surface` | sum of the 5 DB votes (0–5) |
+| `model` | Anthropic model identifier (Sonnet only in this file) |
+| `prompt_variant` | which prompt variant was used (`ncbi` only in this file) |
+| `replicate` | replicate index within the sweep |
+| `predicted_verdict` | model verdict: `yes` / `contextual` / `no` |
+| `predicted_reason` | short controlled-vocab reason tag |
+| `predicted_confidence` | `low` / `medium` / `high` |
+| `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens` | per-call token counts |
+| `n_web_searches` | number of web tool calls in this run |
+| `cost_usd` | computed dollar cost of this call |
+| `latency_s` | wall-clock seconds for this call |
 
-**Construction (source-join recipe):**
+**Reproducible from one endpoint** — the JOIN happens server-side in a
+single SQL round-trip, so the bytes are an atomic snapshot:
 
 ```bash
-# 1. The model output (long format, one row per call):
-curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1' > triage.tsv
-
-# 2. The DB-vote panel (per-gene 5-bit bitmask + uniprot_acc):
-curl 'https://api.deliverome.org/surfaceome/v1/catalog' > catalog.json
-#    catalog.rows[i].db is a 5-bit int; catalog.db_keys lists the bit order.
-
-# 3. LEFT JOIN catalog into triage on gene_symbol; decode the bitmask
-#    into 5 separate db_<source> columns plus n_db_surface = popcount(db).
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export-enriched.tsv?run_id=genome_full_sonnet_ncbi_v1' \\
+    > triage-runs-with-reasoning.tsv
 ```
+
+Source tables behind that endpoint: `triage_run_public` (the model
+output) `LEFT JOIN candidate_universe_public` (DB votes +
+`uniprot_acc`) on `gene_symbol`, filtered to the latest
+`universe_version`.
 
 ### 2. `triage-benchmark-with-reasoning.tsv`
 
@@ -648,27 +512,29 @@ production models (Haiku 4.5, Sonnet 4.6, Opus 4.7) and all 4 prompt
 variants (`naive`, `ncbi`, `web_ncbi`, `pubmed_ncbi`). Haiku and Opus
 only appear in this file — the broad triage in #1 is Sonnet-only.
 
-Same columns as #1, **plus** three truth-label columns joined from the
-curated bench:
+Same columns as #1, **plus** three curated truth-label columns:
 
-| Column | Source | Meaning |
-|---|---|---|
-| `truth_verdict` | bench export join | curated truth: `yes` / `contextual` / `no` |
-| `truth_signal` | bench export join | curated signal: `likely_accessible` / `unlikely` / etc. |
-| `truth_reason` | bench export join | curated reason tag (controlled vocab) |
+| Column | Meaning |
+|---|---|
+| `truth_verdict` | curated truth: `yes` / `contextual` / `no` |
+| `truth_signal` | curated signal: `likely_accessible` / `unlikely` / etc. |
+| `truth_reason` | curated reason tag (controlled vocab) |
 
-**Construction:**
+**Reproducible from one endpoint** — same atomic-snapshot guarantee
+as #1:
 
 ```bash
-# 1. Bench-restricted multi-model sweep:
-curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1' > triage_bench.tsv
-
-# 2. Same catalog as #1 above.
-# 3. Curated truth labels (7 cols: gene/uniprot/class/ground_truth_*):
-curl 'https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv' > truth.tsv
-
-# 4. LEFT JOIN catalog and truth into triage_bench on gene_symbol.
+curl 'https://api.deliverome.org/surfaceome/v1/benchmark/triage-enriched.tsv' \\
+    > triage-benchmark-with-reasoning.tsv
 ```
+
+Source tables behind that endpoint: `triage_run_public` (latest
+replicate per `gene × model × variant` cell via SQL window function)
+`INNER JOIN benchmark_version` (truth labels + `uniprot_acc`, scoped
+to the canonical curated `bench_version`) `LEFT JOIN
+candidate_universe_public` (DB votes), with the bench restriction
+filtering to ~1.7k rows before the join — well inside the Worker's
+CPU budget.
 
 ### 3. `deep_dives_all.tar.gz`
 
