@@ -91,7 +91,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/triage/export.tsv",
         summary:
-          "Long-format TSV of every triage run for one run_id. Default is mainbench_canonical_v1 (1,470 SurfaceBench rows); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet/NCBI sweep. Same 14-column shape that scripts/export_mainbench_to_tsv.py writes to data/processed/triage_bench/.",
+          "Long-format TSV of every triage run for one run_id, with per-source DB votes (uniprot/go/surfy/cspa/hpa) and uniprot_acc joined in server-side from the latest candidate-universe snapshot. 21 columns; one row per (gene × model × variant × replicate). Default run_id is mainbench_canonical_v1 (~1.5k bench rows × Haiku/Sonnet/Opus × 4 variants); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet sweep.",
         curl:
           "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1' | head -3",
       },
@@ -114,7 +114,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/benchmark/export.tsv",
         summary:
-          "Same 147 truth labels as /v1/benchmark, in 7-column TSV shape — mirrors data/eval/triage_benchmark_v1.tsv so figure scripts can pd.read_csv it directly.",
+          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) for the canonical bench_version. 24 columns — adds DB votes + truth_verdict / truth_signal / truth_reason on top of the triage export shape. Same data as /v1/benchmark/matrix but flat instead of nested. For truth labels alone, use /v1/benchmark (JSON) or filter to one model+variant.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv | head -3",
       },
