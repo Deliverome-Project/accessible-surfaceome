@@ -298,12 +298,15 @@
  * Cells
  * ============================================================ */
 
+/* Header typography matches CatalogTable's pattern exactly (mono 0.72rem,
+ * 0.04em letter-spacing, uppercase, muted color). The two tables read
+ * as siblings — a reader's eye moves between them without re-tuning. */
 .headerCell {
-  padding: 0.45rem 0.45rem;
-  font-family: var(--font-sans);
-  font-size: 0.68rem;
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   font-weight: var(--fw-medium);
-  letter-spacing: 0.14em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
   display: flex;
@@ -311,66 +314,52 @@
 }
 
 .headerMono {
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-  text-transform: none;
-  font-size: 0.7rem;
+  /* Already mono via .headerCell — kept as a noop hook so callers can
+   * pass it for emphasis if the column is mono-content (UniProt acc). */
+  letter-spacing: 0.06em;
 }
 
 .headerDbCell {
   justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  text-transform: none;
-  padding: 0.45rem 0.2rem;
+  padding: 0.5rem 0.3rem;
 }
 
 .headerModelCell {
   justify-content: center;
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: var(--fw-medium);
-  text-transform: none;
-  letter-spacing: 0.04em;
-  color: var(--ink);
 }
 
-/* Sort affordance — header cells become button-like when clickable.
- * Visual cue: an arrow appears for the active sort column and the
- * cell pill highlights on hover. Mirrors the CatalogTable behavior so
- * the two tables share a sort grammar. */
-.headerSortable {
-  cursor: pointer;
-  user-select: none;
+/* Inline sort button — replaces the prior background-hover pattern with
+ * CatalogTable's thBtn: hover/active color shift on the LABEL only,
+ * accent-colored arrow in a fixed-width slot to the right of the
+ * label. Same grammar both tables. */
+.thBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
   background: none;
   border: 0;
-  color: inherit;
-  font: inherit;
-  text-transform: inherit;
-  letter-spacing: inherit;
-  padding: 0.45rem 0.45rem;
-  border-radius: var(--radius-sm);
-  transition: background-color var(--dur-fast) var(--ease-out),
-              color var(--dur-fast) var(--ease-out);
+  padding: 0;
+  cursor: pointer;
 }
 
-.headerSortable:hover,
-.headerSortable:focus-visible {
-  background: var(--bg-warm);
-  color: var(--ink);
-}
-
-.headerSortActive {
-  color: var(--ink);
-}
-
-.headerSortArrow {
-  font-size: 0.62rem;
-  margin-left: 0.25rem;
+.thBtn:hover {
   color: var(--accent);
-  font-family: var(--font-mono);
+}
+
+.thBtnActive {
+  color: var(--ink);
+}
+
+.sortIndicator {
+  font-size: 0.7em;
+  color: var(--accent);
+  width: 0.7em;
+  display: inline-block;
+  text-align: center;
 }
 
 .cell {
@@ -504,15 +493,18 @@
   justify-content: flex-start;
 }
 
+/* DB cell + dot — matches CatalogTable exactly (8×8 px teal-mid dot
+ * when the source voted yes, transparent + line-color border otherwise).
+ * Keeps the two tables visually flush at the row-data level. */
 .dbCell {
   justify-content: center;
-  padding: 0.3rem 0.2rem;
+  padding: 0.4rem 0.3rem;
 }
 
 .dbDot {
   display: inline-block;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: transparent;
   border: 1px solid var(--line);

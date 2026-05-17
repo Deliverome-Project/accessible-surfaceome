@@ -496,7 +496,10 @@ export function BenchmarkTable({
   );
 }
 
-/** Click-to-sort column header. Renders an arrow when active. */
+/** Click-to-sort column header. Renders an inline `thBtn` (label + arrow
+ *  slot) inside a header cell — same shape as CatalogTable so the two
+ *  tables share a sort grammar. The arrow slot is always reserved (a
+ *  thin space when inactive) to avoid layout shift on toggle. */
 function SortHeader({
   label,
   sortKey,
@@ -516,23 +519,23 @@ function SortHeader({
 }) {
   const active = sortKey === activeKey;
   return (
-    <button
-      type="button"
+    <div
       role="columnheader"
       aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
-      onClick={() => onClick(sortKey)}
-      className={`${styles.headerCell} ${styles.headerSortable} ${
-        active ? styles.headerSortActive : ""
-      } ${extraClass ?? ""}`}
-      title={title ?? `Sort by ${label}`}
+      className={`${styles.headerCell} ${extraClass ?? ""}`}
     >
-      <span>{label}</span>
-      {active ? (
-        <span className={styles.headerSortArrow} aria-hidden="true">
-          {dir === "asc" ? "▲" : "▼"}
+      <button
+        type="button"
+        onClick={() => onClick(sortKey)}
+        className={`${styles.thBtn} ${active ? styles.thBtnActive : ""}`}
+        title={title ?? `Sort by ${label}`}
+      >
+        <span>{label}</span>
+        <span className={styles.sortIndicator} aria-hidden="true">
+          {active ? (dir === "asc" ? "▲" : "▼") : " "}
         </span>
-      ) : null}
-    </button>
+      </button>
+    </div>
   );
 }
 
