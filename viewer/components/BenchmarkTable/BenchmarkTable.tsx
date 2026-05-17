@@ -42,18 +42,15 @@ function verdictRank(v: string | null | undefined): number {
 const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
 
-// Resting-grid template: symbol | truth | 5 DB dots | 3 model NCBI pills.
-// truth_class + uniprot columns were dropped — truth_verdict + the
-// per-DB and per-model verdict pills carry the same signal, and the
-// UniProt accession is already in the drawer / TSV / per-gene page.
-// Truth + the 3 model verdict columns are sized ~30% wider than the
-// original layout so the "contextual" pill doesn't feel cramped. Sum
-// = 62.3rem (.wrap max-width matches this so rows end flush with Opus
-// instead of trailing whitespace).
+// Resting-grid template: symbol | truth | # DBs (nBubble) | 5 DB dots |
+// 3 model NCBI pills. Mirrors the CatalogTable layout exactly — the
+// nBubble count column sits before the per-DB dots, same widths +
+// styling as the homepage. .wrap max-width = grid sum + scrollbar.
 const GRID_TEMPLATE =
   "12rem 8rem " +
-  "4.2rem 3rem 4rem 3.6rem 3rem " +
-  "7.8rem 8.5rem 7.2rem";
+  "3.6rem " +                         // n_db_surface count bubble
+  "4.2rem 3rem 4rem 3.6rem 3rem " +   // 5 DB dot columns
+  "7.8rem 8.5rem 7.2rem";              // 3 model NCBI pills
 
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
@@ -125,8 +122,11 @@ export function BenchmarkTable({
   const { rows, models } = matrix;
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<TruthFilter>("all");
-  // Row-level expand: shows the full model × variant grid for that gene.
-  const [rowExpanded, setRowExpanded] = useState<Set<string>>(new Set());
+  // Row-level expand: a single gene's full model × variant grid is
+  // open at a time. Clicking another gene's chevron / verdict cell
+  // collapses the previous expansion — keeps the table scannable
+  // when the reader is moving through many rows.
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   // Cell selection: which (gene, model, variant) the right-side
   // rationale drawer is showing. One cell at a time — drawer content
   // swaps as the reader clicks through cells; clicking the same cell
@@ -157,12 +157,7 @@ export function BenchmarkTable({
   }
 
   function toggleRow(symbol: string) {
-    setRowExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(symbol)) next.delete(symbol);
-      else next.add(symbol);
-      return next;
-    });
+    setExpandedRow((prev) => (prev === symbol ? null : symbol));
   }
 
   function handleSelectCell(symbol: string, model: string, variant: string) {
@@ -173,12 +168,8 @@ export function BenchmarkTable({
     );
     // Auto-expand the parent row so the selected cell stays visible
     // when the reader closes the drawer or clicks a different cell.
-    setRowExpanded((prev) => {
-      if (prev.has(symbol)) return prev;
-      const next = new Set(prev);
-      next.add(symbol);
-      return next;
-    });
+    // Single-row only — collapses whatever else was open.
+    setExpandedRow(symbol);
   }
 
   // ESC closes the drawer. Installed on the table, not the drawer, so
@@ -193,8 +184,13 @@ export function BenchmarkTable({
   }, [selectedCell]);
 
   function handleDownload() {
-    const tsv = buildBenchmarkTsv(matrix);
-    downloadTextFile("surfacebench.tsv", tsv);
+    // Download the current filtered + sorted view (matches the
+    // CatalogTable pattern — what you see is what gets saved). Clear
+    // the search / chips to download the whole 147 rows.
+    const tsv = buildBenchmarkTsv(matrix, filtered);
+    const isFiltered = filtered.length !== rows.length;
+    const suffix = isFiltered ? `-filtered-${filtered.length}` : "";
+    downloadTextFile(`surfacebench${suffix}.tsv`, tsv);
   }
 
   const counts = useMemo(() => {
@@ -313,9 +309,18 @@ export function BenchmarkTable({
             type="button"
             className={styles.downloadBtn}
             onClick={handleDownload}
-            title={`Download all ${rows.length} rows as TSV — every (model, variant) cell flattened to its own columns`}
+            title={
+              filtered.length === rows.length
+                ? `Download all ${rows.length} bench rows as TSV — every (model, variant) cell flattened to its own columns`
+                : `Download ${filtered.length} filtered rows as TSV (of ${rows.length} total)`
+            }
           >
-            TSV ↓
+            TSV ↓{" "}
+            <span className={styles.downloadCount}>
+              {filtered.length === rows.length
+                ? rows.length
+                : `${filtered.length}/${rows.length}`}
+            </span>
           </button>
         </div>
       </div>
@@ -359,32 +364,24 @@ export function BenchmarkTable({
             onClick={toggleSort}
             extraClass={styles.headerModelCell}
           />
-          {DB_KEYS.map((d, i) => (
-            // First DB cell doubles as a "# DBs" sort target — click to
-            // order rows by gating-DB consensus count. Hover-tooltip
-            // documents that. Other 4 DB cells stay decorative since
-            // sorting "by UniProt vote" alone isn't a useful query.
-            i === 0 ? (
-              <SortHeader
-                key={`hdr-db-${d.key}`}
-                label={d.long}
-                sortKey="n_db_surface"
-                activeKey={sortKey}
-                dir={sortDir}
-                onClick={toggleSort}
-                extraClass={styles.headerDbCell}
-                title={`${d.long} (click to sort rows by total DB-yes count)`}
-              />
-            ) : (
-              <div
-                key={`hdr-db-${d.key}`}
-                className={`${styles.headerCell} ${styles.headerDbCell}`}
-                title={d.long}
-                role="columnheader"
-              >
-                {d.long}
-              </div>
-            )
+          <SortHeader
+            label="# DBs"
+            sortKey="n_db_surface"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerDbCell}
+            title="Count of the 5 gating DBs that voted yes for this gene. Click to sort rows by DB consensus."
+          />
+          {DB_KEYS.map((d) => (
+            <div
+              key={`hdr-db-${d.key}`}
+              className={`${styles.headerCell} ${styles.headerDbCell}`}
+              title={d.long}
+              role="columnheader"
+            >
+              {d.long}
+            </div>
           ))}
           <SortHeader
             label={MODEL_LABELS[0].long}
@@ -448,7 +445,7 @@ export function BenchmarkTable({
                     measureRef={virtualizer.measureElement}
                     dataIndex={item.index}
                     virtualStart={item.start}
-                    isExpanded={rowExpanded.has(r.gene_symbol)}
+                    isExpanded={expandedRow === r.gene_symbol}
                     onToggleRow={toggleRow}
                     selectedCell={selectedCell}
                     onSelectCell={handleSelectCell}
@@ -668,6 +665,13 @@ function BenchRowView({
           {row.truth_verdict}
         </span>
       </div>
+      {/* DB consensus count — same nBubble pattern as CatalogTable;
+       *  color-coded by data-n so high-consensus genes pop visually. */}
+      <div className={`${styles.cell} ${styles.nCell}`} role="cell">
+        <span className={styles.nBubble} data-n={row.n_db_surface ?? 0}>
+          {row.n_db_surface ?? 0}
+        </span>
+      </div>
       {DB_KEYS.map((d) => {
         const yes = row.db ? Boolean(row.db[d.key]) : false;
         return (
@@ -847,7 +851,12 @@ function ModelVariantRow({
 
 /** Wide TSV download — one row per gene, columns for every cell
  *  (model × variant) in the matrix. */
-function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
+function buildBenchmarkTsv(matrix: BenchmarkMatrix, rows?: BenchmarkRow[]): string {
+  // Optional `rows` arg lets the caller download a filtered + sorted
+  // subset (what they see in the table) instead of the full matrix.
+  // The header set + column order is always the same so a script
+  // pinning to this TSV's shape doesn't break.
+  const sourceRows = rows ?? matrix.rows;
   const headers: string[] = [
     "gene_symbol",
     "uniprot_acc",
@@ -872,7 +881,7 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
     }
   }
 
-  const body: TsvCell[][] = matrix.rows.map((r) => {
+  const body: TsvCell[][] = sourceRows.map((r) => {
     const row: TsvCell[] = [
       r.gene_symbol,
       r.uniprot_acc,

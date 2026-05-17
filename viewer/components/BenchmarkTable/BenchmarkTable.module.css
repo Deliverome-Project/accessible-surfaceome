@@ -18,10 +18,10 @@
   flex-direction: column;
   gap: var(--space-4);
   /* Width matches the grid template's intrinsic sum exactly
-   * (12 + 8 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 62.3rem) so
-   * rows end flush with the Opus column instead of trailing
+   * (12 + 8 + 3.6 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 65.9rem)
+   * so rows end flush with the Opus column instead of trailing
    * whitespace. Left-aligned (no margin-inline: auto). */
-  max-width: 63.5rem;
+  max-width: 67rem;
   width: 100%;
 }
 
@@ -215,6 +215,15 @@
   color: var(--ink);
   background: var(--bg-soft);
   border-color: var(--ink-soft);
+}
+
+/* Row count next to the TSV ↓ glyph — matches CatalogTable.
+ * Renders as either "147" (full) or "27/147" (filtered subset) so
+ * the user always sees what they're about to download. */
+.downloadCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
 }
 
 /* ============================================================
@@ -499,6 +508,44 @@
   /* Centered to match the model verdict columns; the truth pill reads
    * as a sibling of those (same verdict-tone styling). */
   justify-content: center;
+}
+
+/* # DBs count bubble — mirrors CatalogTable's .nBubble + .nCell
+ * exactly (same color ramp by data-n, same pill shape). Sits between
+ * the truth column and the 5 individual DB dots so a reader sees the
+ * consensus number first, then the per-source breakdown. */
+.nCell {
+  justify-content: center;
+}
+
+.nBubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-pill);
+  background: var(--bg-warm);
+  color: var(--muted);
+}
+
+.nBubble[data-n="0"] {
+  opacity: 0.45;
+}
+
+.nBubble[data-n="3"],
+.nBubble[data-n="4"] {
+  background: var(--teal-tint);
+  color: var(--teal-deepest);
+}
+
+.nBubble[data-n="5"] {
+  background: var(--teal-mid);
+  color: var(--fg-on-dark);
 }
 
 /* DB cell + dot — matches CatalogTable exactly (8×8 px teal-mid dot
