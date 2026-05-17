@@ -187,6 +187,16 @@ def _upsert_release(
     client: httpx.Client,
     dry_run: bool,
 ) -> None:
+    """Upsert the release pointer.
+
+    On a partial / supplemental re-upload (e.g. running the giants
+    after the main sweep), the caller-supplied ``n_rows`` /
+    ``cohorts_present`` reflect only the current batch, not the full
+    table state. Honor the existing release row when it's bigger so the
+    pointer doesn't silently shrink. The CASE expressions take the max
+    of (current vs supplied) for n_rows, and the union of cohort
+    strings.
+    """
     if dry_run:
         logger.info("[DRY %s] release(topology_version=%s, n_rows=%d)", target.name, topology_version, n_rows)
         return
@@ -197,8 +207,17 @@ def _upsert_release(
         " license_url, source_run_dir, notes) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
         "ON CONFLICT (topology_version) DO UPDATE SET "
-        "  n_rows = excluded.n_rows, "
-        "  cohorts_present = excluded.cohorts_present, "
+        # Never let the row count shrink: a supplemental batch keeps the
+        # bigger value.
+        "  n_rows = MAX(excluded.n_rows, topology_release.n_rows), "
+        # Union the cohort strings (comma-separated) so a giants
+        # upload doesn't drop mouse/cyno from a prior 3-cohort run.
+        "  cohorts_present = CASE "
+        "    WHEN ',' || topology_release.cohorts_present || ',' "
+        "         LIKE '%,' || excluded.cohorts_present || ',%' "
+        "      THEN topology_release.cohorts_present "
+        "    ELSE topology_release.cohorts_present || ',' || excluded.cohorts_present "
+        "  END, "
         "  deeptmhmm_version = excluded.deeptmhmm_version, "
         "  attribution = excluded.attribution, "
         "  license_url = excluded.license_url, "
