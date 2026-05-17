@@ -453,3 +453,73 @@ def test_trim_concurrency_recovers_from_one_paper_failing() -> None:
 # Silence "unused import" — we use it in the assert above but ruff
 # tracks this defensively.
 _ = MethodObservation
+
+
+# ---------------------------------------------------------------------------
+# Per-focus planner routing
+# ---------------------------------------------------------------------------
+
+
+def test_resolve_focus_prompts_returns_quadruple_with_plan_path() -> None:
+    """``_resolve_focus_prompts`` must surface a per-focus planner prompt
+    path so the dual driver runs A1- and A2-specific planners instead
+    of one joint plan."""
+    from accessible_surfaceome.agents.plan_trim_select.runner import (
+        A1_PLAN_PROMPT_PATH,
+        A2_PLAN_PROMPT_PATH,
+        PLAN_PROMPT_PATH,
+        _resolve_focus_prompts,
+    )
+
+    # Single-agent path falls back to the joint planner.
+    _, _, _, plan_none = _resolve_focus_prompts(None)
+    assert plan_none == PLAN_PROMPT_PATH
+
+    # A1 path uses the surface-evidence-focused planner.
+    _, _, prefix_a1, plan_a1 = _resolve_focus_prompts("a1")
+    assert plan_a1 == A1_PLAN_PROMPT_PATH
+    assert plan_a1.exists(), "a1_plan_system.md must ship with the package"
+    assert prefix_a1 == "a1_evi_"
+
+    # A2 path uses the biological-context-focused planner.
+    _, _, prefix_a2, plan_a2 = _resolve_focus_prompts("a2")
+    assert plan_a2 == A2_PLAN_PROMPT_PATH
+    assert plan_a2.exists(), "a2_plan_system.md must ship with the package"
+    assert prefix_a2 == "a2_evi_"
+
+    # The three planner prompts are distinct files (different focus
+    # guidance — A2 leans on hpa_ihc + biology anchors, A1 leans on
+    # method categories).
+    assert len({plan_none, plan_a1, plan_a2}) == 3
+
+
+def test_a1_plan_prompt_emphasizes_methodology() -> None:
+    """Tripwire: prompt content should mention the methodology
+    categories A1's block builders need. Catches accidental file
+    truncation / swap on copy-paste."""
+    from accessible_surfaceome.agents.plan_trim_select.runner import (
+        A1_PLAN_PROMPT_PATH,
+    )
+
+    body = A1_PLAN_PROMPT_PATH.read_text().lower()
+    assert "surface-evidence" in body or "surface evidence" in body
+    # A1 explicitly recommends the 5 method-centric categories.
+    for category in (
+        "flow_cytometry",
+        "surface_biotinylation",
+        "mass_spec_surfaceome",
+    ):
+        assert category in body, f"A1 planner should mention {category!r}"
+
+
+def test_a2_plan_prompt_emphasizes_biology() -> None:
+    """Tripwire mirror of the A1 test."""
+    from accessible_surfaceome.agents.plan_trim_select.runner import (
+        A2_PLAN_PROMPT_PATH,
+    )
+
+    body = A2_PLAN_PROMPT_PATH.read_text().lower()
+    assert "biological-context" in body or "biological context" in body
+    # A2 should mention the biology-leaning categories + downstream blocks.
+    for token in ("hpa_ihc", "tissuecontext", "anatomicalaccessibility"):
+        assert token.lower() in body, f"A2 planner should mention {token!r}"

@@ -49,26 +49,36 @@ the timing PR.
 
 ## Headline comparison
 
+The CD81 + CLDN18 columns reflect the **parallel pipeline + per-focus
+planner** combination shipped in PR #35. GPR75 + EGFR predate both
+changes. See the "Per-focus planner findings" section below for the
+joint-vs-focused planner side-by-side that motivated the prompt-pair
+split.
+
 | Block | GPR75 | EGFR | CD81 | CLDN18 |
 |---|---|---|---|---|
 | Verdict | sa=moderate, grade=weak, conf=low | sa=high, grade=direct_multi_method, conf=high | sa=high, grade=direct_multi_method, conf=high | sa=high, grade=direct_multi_method, conf=high |
-| Evidence claims | 39 (26 primary) | 80 (66 primary) | 55 (48 primary) | 52 (31 primary) |
-| Methods | 6 | 19 | 15 | 12 |
-| Tissues | 29 | 14 | 6 | 22 |
-| Cell types | 12 | 13 | 12 | 17 |
-| Subcellular dual_loc / subdomains | 1 / 1 | 4 / 5 | 2 / 0 | 0 / 2 |
-| Anatomical accessibility | 3 | 4 | 0 | 4 |
-| Accessibility modulation | 4 | 9 | 7 | 11 |
+| Evidence claims | 39 (26 primary) | 80 (66 primary) | 63 (52 primary) | 52 (32 primary) |
+| Methods | 6 | 19 | 18 | 12 |
+| Tissues | 29 | 14 | 10 | 18 |
+| Cell types | 12 | 13 | 22 | 5 |
+| Subcellular dual_loc / subdomains | 1 / 1 | 4 / 5 | 3 / 1 | 0 / 2 |
+| Anatomical accessibility | 3 | 4 | 0 | 5 |
+| Accessibility modulation | 4 | 9 | 10 | 11 |
 | Therapeutic engagement | 1 | 1 | 0 | 1 |
-| Contradictions | 1 | 1 | 0 | 2 |
-| Anchored | 100% (39/39) | 100% (80/80) | 100% (55/55) | 100% (52/52) |
-| Spend (info only) | $1.24 | $3.05 | $1.84 | $1.68 |
-| Wall clock (info only) | n/a | n/a | **9m 23s** | **9m 33s** |
+| Contradictions | 1 | 1 | 0 | 0 |
+| Anchored | 100% (39/39) | 100% (80/80) | 100% (63/63) | 100% (52/52) |
+| Spend (info only) | $1.24 | $3.05 | $2.07 | $1.77 |
+| Wall clock (info only) | n/a | n/a | **11m 51s** | **9m 23s** |
 
-The CD81 + CLDN18 wall-clock numbers reflect the **parallel** pipeline
-(builders + per-paper Haiku trim concurrent). Sequential baselines
-were CD81 17m 48s and CLDN18 15m 28s, so the speedup is ~1.9× and
-~1.6× respectively.
+Sequential baselines (no concurrency, joint planner) were CD81
+17m 48s / $1.84 and CLDN18 15m 28s / $1.68. The shipped pipeline
+parallelizes builders + per-paper trim AND uses per-focus planners
+(A1 = surface-evidence focus, A2 = biological-context focus). Cost
+went UP on CD81 because the per-focus planner pulls more relevant
+papers (+13 evidence rows, mostly A2 biology). Wall clock still
+dropped ~33% on CD81 vs the sequential baseline; on CLDN18 the
+focused planner happens to converge to similar wall clock as joint.
 
 ## Where the time goes — bottleneck snapshot (CD81 + CLDN18)
 
@@ -87,8 +97,64 @@ Headline: **the Sonnet selector calls in plan-trim-select still dominate
 wall clock** (~370s of the ~470s plan-trim-select bucket). Next
 biggest fixable win: parallelize A1 and A2 themselves after a shared
 search-warmup pass — estimated additional ~200s saving. The current
-PR (#35) lands the two cheapest wins (builder concurrency + per-paper
-Haiku trim concurrency) which together cut wall clock ~40-50%.
+PR (#35) lands the two cheapest concurrency wins (builder + per-paper
+Haiku trim) plus the per-focus planner split below.
+
+## Per-focus planner findings (CD81 + CLDN18)
+
+Before #35 the planner ran twice per gene with the **identical** prompt
++ context (the joint `plan_system.md`), producing two near-identical
+SearchPlans. We split it into two focused prompts —
+`a1_plan_system.md` (surface-evidence focus: methodology categories,
+flow / surface biotinylation / mass-spec / IHC / WB) and
+`a2_plan_system.md` (biological-context focus: HPA + tissue / cell-type
+/ dynamics + apical/basolateral / disease-state) — and the dual
+driver now runs each agent with its own planner prompt.
+
+The shared HTTP cache still de-dupes the overlap; per-focus planners
+add ~30-50% more searches (mostly cheap cache hits at this point,
+since both A1 and A2 still see the union via their respective
+trim+select passes). 2-gene comparison vs the joint-planner baseline:
+
+| Field | CD81 joint | CD81 focused | Δ | CLDN18 joint | CLDN18 focused | Δ |
+|---|---|---|---|---|---|---|
+| **Verdict** | unchanged | unchanged | — | unchanged | unchanged | — |
+| **Anchored rate** | 100% | 100% | — | 100% | 100% | — |
+| Evidence count | 50 | 63 | **+13** | 48 | 52 | +4 |
+| A2 claims | 17 | 29 | **+12** | 23 | 30 | +7 |
+| Methods | 13 | 18 | +5 | 16 | 12 | -4 |
+| Tissues | 5 | 10 | **+5** | 18 | 18 | 0 |
+| Cell types | 10 | 22 | **+12** | 14 | 5 | -9 |
+| Subcellular dual_loc / subdomains | 2 / 0 | 3 / 1 | +1 / +1 | 0 / 2 | 0 / 2 | — |
+| Anatomical accessibility | 0 | 0 | 0 | 3 | 5 | +2 |
+| Accessibility modulation | 5 | 10 | **+5** | 8 | 11 | +3 |
+| Cost | $1.74 | $2.07 | +$0.33 (+19%) | $1.72 | $1.77 | +$0.04 (+2%) |
+| Wall clock | 563s | 711s | +148s | 573s | 563s | -10s |
+
+**Eye-audit of the CLDN18 cell_types -9 "regression":** the joint
+planner's 14 rows were almost entirely **tumor cell types** (pancreatic
+ductal adenocarcinoma, esophageal/ovarian/lung/colorectal tumor cells,
+cholangiocarcinoma, bile-duct lesions). CLDN18 is a hot oncology
+target, so joint pulled tumor-IHC papers and joint A2 kept them as
+`cell_types`. The focused planner's 5 rows are the **baseline
+epithelial taxonomy** (gastric epithelial cells, alveolar
+pneumocytes, embryonic lung epithelial cells, differentiated gastric
+epithelial cells). The tumor biology didn't vanish — it re-categorized
+into `accessibility_modulation` (+3) and `anatomical_accessibility`
+(+2), which is arguably where disease-state surface presence belongs.
+
+**Eye-audit of the CD81 cell_types +12 win:** joint kept generic
+cancer cell lines (THP-1, K562, HeLa, MCF7); focused surfaces real
+immune-cell biology (B cells, T cells incl. naïve/memory/Treg/CD8/CD4,
+monocytes, NK cells). CD81 is a canonical immune-cell tetraspanin
+marker, so this is the correct biology.
+
+Net: per-focus planner is a clear A2-recall win without quality loss
+(same headline verdicts, same anchored rate, biologically defensible
+classification shifts). Cost lift is bounded ($0.04-$0.33/gene)
+because the shared HTTP cache + selector-side dedupe absorb most of
+the search-mix expansion. Tradeoff favors quality per CLAUDE.md
+"quality over cost for plan-trim-select" rule.
 
 ## Refreshing these samples
 

@@ -96,6 +96,13 @@ A1_TRIM_PROMPT_PATH = PROMPTS_DIR / "a1_trim_system.md"
 A1_SELECT_PROMPT_PATH = PROMPTS_DIR / "a1_select_system.md"
 A2_TRIM_PROMPT_PATH = PROMPTS_DIR / "a2_trim_system.md"
 A2_SELECT_PROMPT_PATH = PROMPTS_DIR / "a2_select_system.md"
+# Per-focus planner variants (added 2026-05-16). When ``agent_focus`` is
+# set, the planner sees a prompt that explicitly biases its search-mix
+# toward A1's methodology-dense corpus or A2's tissue/biology corpus
+# instead of producing one joint plan. The two passes still share an
+# HTTP cache, so overlapping searches cost-hit once.
+A1_PLAN_PROMPT_PATH = PROMPTS_DIR / "a1_plan_system.md"
+A2_PLAN_PROMPT_PATH = PROMPTS_DIR / "a2_plan_system.md"
 
 AgentFocus = Literal["a1", "a2"]
 
@@ -408,10 +415,11 @@ def _run_planner(
     *,
     context: GeneContext,
     usage_sink: list[UsageRecord],
+    plan_prompt_path: Path = PLAN_PROMPT_PATH,
     timing: TimingRecorder | None = None,
     timing_phase: str = "plan_trim_select",
 ) -> SearchPlan | None:
-    system_prompt = PLAN_PROMPT_PATH.read_text()
+    system_prompt = plan_prompt_path.read_text()
     plan_schema = json.dumps(SearchPlan.model_json_schema(), indent=2)
     user_prompt = (
         f"# Gene: {context.gene}\n\n"
@@ -1085,27 +1093,39 @@ def _promote_selections(
 
 def _resolve_focus_prompts(
     agent_focus: AgentFocus | None,
-) -> tuple[Path, Path, str]:
-    """Map agent_focus → (trim_prompt_path, select_prompt_path, evi_prefix).
+) -> tuple[Path, Path, str, Path]:
+    """Map agent_focus → (trim_prompt_path, select_prompt_path, evi_prefix,
+    plan_prompt_path).
 
     Centralized so an unknown / not-yet-wired focus fails fast with a
-    clear error before any model call. A2 raises today because the A2
-    prompt pair lands in the next slice.
+    clear error before any model call.
+
+    The fourth element (plan prompt path) was added 2026-05-16 so the
+    dual driver can run a per-focus planner instead of the joint
+    planner. ``agent_focus=None`` keeps the legacy joint
+    ``plan_system.md`` for the single-agent MVP path.
     """
 
     if agent_focus is None:
-        return TRIM_PROMPT_PATH, SELECT_PROMPT_PATH, _EVIDENCE_ID_PREFIX[None]
+        return (
+            TRIM_PROMPT_PATH,
+            SELECT_PROMPT_PATH,
+            _EVIDENCE_ID_PREFIX[None],
+            PLAN_PROMPT_PATH,
+        )
     if agent_focus == "a1":
         return (
             A1_TRIM_PROMPT_PATH,
             A1_SELECT_PROMPT_PATH,
             _EVIDENCE_ID_PREFIX["a1"],
+            A1_PLAN_PROMPT_PATH,
         )
     if agent_focus == "a2":
         return (
             A2_TRIM_PROMPT_PATH,
             A2_SELECT_PROMPT_PATH,
             _EVIDENCE_ID_PREFIX["a2"],
+            A2_PLAN_PROMPT_PATH,
         )
     raise ValueError(
         f"unknown agent_focus={agent_focus!r}; expected 'a1', 'a2', or None"
@@ -1149,11 +1169,14 @@ def run_plan_trim_select(
     http = http or open_default_client()
     retraction = retraction_index or _empty_retraction_index()
 
-    # Resolve the per-focus prompt + prefix triple up front so a typo or
+    # Resolve the per-focus prompt quadruple up front so a typo or
     # missing-prompt-file failure aborts before any model call.
-    trim_prompt_path, select_prompt_path, evidence_id_prefix = (
-        _resolve_focus_prompts(agent_focus)
-    )
+    (
+        trim_prompt_path,
+        select_prompt_path,
+        evidence_id_prefix,
+        plan_prompt_path,
+    ) = _resolve_focus_prompts(agent_focus)
     timing_phase = (
         f"plan_trim_select_{agent_focus}" if agent_focus else "plan_trim_select"
     )
@@ -1187,11 +1210,13 @@ def run_plan_trim_select(
         result.bundle = context.bundle
         logger.info("gene context built: %s → %s", gene, context.bundle.uniprot_acc)
 
-        # Step 1 — initial planner call
+        # Step 1 — initial planner call (per-focus prompt when
+        # ``agent_focus`` is set; joint prompt otherwise)
         initial_plan = _run_planner(
             client,
             context=context,
             usage_sink=plan_usage,
+            plan_prompt_path=plan_prompt_path,
             timing=timing,
             timing_phase=timing_phase,
         )
