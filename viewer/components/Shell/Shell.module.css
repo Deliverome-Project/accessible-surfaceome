@@ -80,7 +80,9 @@
   padding: 0.55rem 0.4rem 0.55rem 0;
   margin-left: -0.4rem;
   font-family: var(--font-display);
-  font-style: italic;
+  /* Matches PR24's brand wordmark exactly — Playfair Display semibold
+   * upright (not italic). The italic was a misread of the parent's
+   * Header.tsx style on my first pass. */
   font-weight: var(--fw-semibold);
   font-size: 1.1rem;
   line-height: 1;
@@ -108,27 +110,27 @@
 }
 
 /* The "/" separator carries the URL-hierarchy metaphor (deliverome.org
- * → surfaceome.deliverome.org → /path). Subtle: lighter than the
- * brand text so the eye treats it as connective tissue, not nav. */
+ * → surfaceome.deliverome.org → /path). Substantial enough to read as
+ * a real separator — was too faded (var(--line)) before. Now uses
+ * muted-ink at full size so it scans as part of the lockup. */
 .brandSep {
-  font-family: var(--font-display);
-  font-size: 1.4rem;
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
   font-weight: var(--fw-light, 300);
-  color: var(--line);
+  color: var(--muted);
   line-height: 1;
-  margin-inline: 0.05rem;
+  margin-inline: 0.1rem;
   user-select: none;
 }
 
-/* "Surfaceome" sub-brand — slightly smaller than the parent wordmark
- * so the hierarchy reads at a glance. Same Playfair italic so the
- * two halves of the lockup share a typographic voice. */
+/* "Surfaceome" sub-brand — same family + weight as the parent wordmark,
+ * slightly smaller so the hierarchy still reads. Upright (not italic)
+ * to match PR24. */
 .brandLocal {
   display: inline-flex;
   align-items: baseline;
   text-decoration: none;
   font-family: var(--font-display);
-  font-style: italic;
   font-weight: var(--fw-semibold);
   font-size: 1.05rem;
   line-height: 1;

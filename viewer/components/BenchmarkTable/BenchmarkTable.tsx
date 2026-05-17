@@ -16,10 +16,9 @@ import styles from "./BenchmarkTable.module.css";
 
 // Sortable column key. Matches the keys we surface in the header row;
 // numeric sorts (per-DB / per-model) use n_db_surface and a verdict-rank
-// derived from the row.
+// derived from the row. UniProt sort dropped with the column.
 type SortKey =
   | "gene_symbol"
-  | "uniprot_acc"
   | "truth"
   | "n_db_surface"
   | "haiku_ncbi"
@@ -43,13 +42,13 @@ function verdictRank(v: string | null | undefined): number {
 const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
 
-// Resting-grid template: toggle | gene | uniprot | truth | 5 DB dots |
-// 3 model NCBI pills. The truth_class column was dropped — `truth_verdict`
-// + the per-DB and per-model verdict pills carry the same signal, and
-// the prose class label ("secreted negative" etc.) competed visually
-// with the verdict pills without adding information.
+// Resting-grid template: symbol | truth | 5 DB dots | 3 model NCBI pills.
+// truth_class + uniprot columns were dropped — truth_verdict + the
+// per-DB and per-model verdict pills carry the same signal, and the
+// UniProt accession is already in the drawer / TSV / per-gene page.
+// Total ~50rem so the table doesn't claim the full viewport.
 const GRID_TEMPLATE =
-  "12rem 5.5rem 4.5rem " +
+  "12rem 4.5rem " +
   "4.2rem 3rem 4rem 3.6rem 3rem " +
   "6rem 6.5rem 5.6rem";
 
@@ -301,8 +300,9 @@ export function BenchmarkTable({
             <FilterChip
               on={filter === "disagreements"}
               onClick={() => setFilter("disagreements")}
+              title="Rows where at least one LLM (any model × any prompt variant) disagrees with the curated truth verdict. Not LLM-vs-LLM — strictly LLM-vs-truth."
             >
-              Disagreements{" "}
+              LLM ≠ truth{" "}
               <span className={styles.chipCount}>{counts.disagreements}</span>
             </FilterChip>
           </div>
@@ -342,19 +342,11 @@ export function BenchmarkTable({
       >
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
           <SortHeader
-            label="Gene"
+            label="Symbol"
             sortKey="gene_symbol"
             activeKey={sortKey}
             dir={sortDir}
             onClick={toggleSort}
-          />
-          <SortHeader
-            label="UniProt"
-            sortKey="uniprot_acc"
-            activeKey={sortKey}
-            dir={sortDir}
-            onClick={toggleSort}
-            extraClass={styles.headerMono}
           />
           <SortHeader
             label="Truth"
@@ -546,8 +538,6 @@ function sortValue(r: BenchmarkRow, key: SortKey): string | number {
   switch (key) {
     case "gene_symbol":
       return r.gene_symbol.toUpperCase();
-    case "uniprot_acc":
-      return r.uniprot_acc.toUpperCase();
     case "truth":
       return verdictRank(r.truth_verdict);
     case "n_db_surface":
@@ -565,10 +555,12 @@ function FilterChip({
   on,
   onClick,
   children,
+  title,
 }: {
   on: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  title?: string;
 }) {
   return (
     <button
@@ -576,6 +568,7 @@ function FilterChip({
       className={`${styles.chip} ${on ? styles.chipOn : ""}`}
       onClick={onClick}
       aria-pressed={on}
+      title={title}
     >
       {children}
     </button>
@@ -662,9 +655,6 @@ function BenchRowView({
             queued
           </span>
         ) : null}
-      </div>
-      <div className={`${styles.cell} ${styles.uniprotCell}`} role="cell">
-        {row.uniprot_acc}
       </div>
       <div className={`${styles.cell} ${styles.truthCell}`} role="cell">
         <span
