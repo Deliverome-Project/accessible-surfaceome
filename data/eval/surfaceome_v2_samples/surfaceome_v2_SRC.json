@@ -1,0 +1,3104 @@
+{
+  "schema_version": "1.0.0",
+  "gene": {
+    "hgnc_symbol": "SRC",
+    "hgnc_id": "HGNC:11283",
+    "uniprot_acc": "P12931",
+    "ncbi_gene_id": 6714,
+    "ensembl_gene": "ENSG00000197122"
+  },
+  "triage_signal": "unknown",
+  "executive_summary": {
+    "one_paragraph": "SRC is an N-myristoylated non-receptor tyrosine kinase anchored to the cytoplasmic face of the plasma membrane with no extracellular domain. Direct IHC evidence classifies SRC staining as cytoplasmic (not membranous) in human tumor tissue. A2 adds surfaceome MS detection in chondrogenic cells and HPA junctional/PM annotations, but these reflect inner-leaflet association or detection methodology caveats, not extracellular accessibility. No extracellular domain exists for conventional antibody or therapeutic engagement from the cell exterior, making SRC a low surface-accessibility target.",
+    "surface_accessibility": "low",
+    "evidence_grade_summary": "conflicting",
+    "confidence": "moderate",
+    "state_dependence": "moderate",
+    "subcategory": "other",
+    "headline_risks": [
+      "ecd_too_small",
+      "restricted_subdomain",
+      "isoform_decoy"
+    ],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a2_evi_01",
+      "a2_evi_02",
+      "a2_evi_06",
+      "a2_evi_07",
+      "a2_evi_05"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "low",
+    "confidence": "moderate",
+    "subcategory": "other",
+    "evidence_grade": "weak",
+    "ecd_accessibility_class": "none",
+    "evidence_density": "moderate",
+    "expression_level": "moderate",
+    "expression_breadth": "broad",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": true,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false
+  },
+  "surface_evidence": {
+    "evidence_grade": "weak",
+    "grade_rationale": "Neither claim provides direct evidence of SRC extracellular surface accessibility. Evidence a1_evi_01 is an IHC study using permeabilized tissue that explicitly classifies SRC staining as cytoplasmic (not membranous), actively refuting surface exposure. Evidence a1_evi_02 is a functional assay (phosphorylation readout) in mouse MC3T3-E1 cells showing cytoplasmic kinase activity, with no surface localization measurement. No live-cell flow cytometry, non-permeabilized IF, surface biotinylation, or membranous IHC data support extracellular accessibility. The ledger contains no supporting direct surface assays, only contradictory or ambiguous indirect observations. Grade is 'weak' as the only direct assay (IHC) refutes surface localization.",
+    "methods": [
+      {
+        "method_family": "immunohistochemistry",
+        "method_subclass": "unknown",
+        "permeabilization": "permeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-SRC",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "intracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "expression_only",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "SRC staining scored as cytoplasmic (not membranous) in human tumor tissue sections using a four-tiered system (negative=0, weak=1, moderate=2, strong=3)",
+            "sample_type": "primary_human_tissue",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_01"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_01"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "Human tumor tissue sections scored for SRC cytoplasmic staining intensity by IHC (permeabilized/fixed)",
+        "sample_type": "primary_human_tissue",
+        "measurement_type": "IHC_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_01"
+        ]
+      }
+    ],
+    "therapeutic_engagement": null,
+    "contradicting_evidence": [
+      {
+        "claim": "IHC scoring of SRC in human tumor tissue sections classifies SRC staining as cytoplasmic rather than membranous, in contrast to AXL and c-MET which are scored for membranous staining intensity. This is consistent with SRC's known biology as an N-myristoylated kinase anchored to the inner leaflet of the plasma membrane with no extracellular domain, and directly refutes plasma membrane surface accessibility in the extracellular sense relevant for therapeutic targeting.",
+        "contradiction_type": "intracellular_pool",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "SRC lacks an extracellular domain and is attached to the cytoplasmic face of the plasma membrane via N-myristoylation. IHC performed on permeabilized, fixed tissue detects this cytoplasmic/inner-leaflet pool, which is not accessible from the extracellular space. The 'membranous' scoring used for AXL and c-MET reflects their true type-I transmembrane topology with exposed extracellular domains, a topology SRC does not share.",
+        "cited_evidence_ids": [
+          "a1_evi_01"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [
+      {
+        "tissue": "brain",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [
+          "neurons"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "lung",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "tissue": "liver",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "tissue": "placenta",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "tissue": "bone",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [
+          "osteoblast-like cells"
+        ],
+        "cell_states": [
+          "fluid shear stress stimulation",
+          "constitutively active Src (Y527F)"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_10",
+          "a2_evi_11"
+        ]
+      },
+      {
+        "tissue": "skin (epidermis)",
+        "present": "low",
+        "disease_context": "other_disease",
+        "cell_types": [
+          "basal keratinocytes"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_14"
+        ]
+      }
+    ],
+    "cell_types": [
+      {
+        "cell_type": "neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_05"
+        ]
+      },
+      {
+        "cell_type": "chondrocytes",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "limb bud cartilage"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_06",
+          "a2_evi_07"
+        ]
+      },
+      {
+        "cell_type": "thyroid epithelial cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "thyroid"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_08",
+          "a2_evi_09"
+        ]
+      },
+      {
+        "cell_type": "osteoblast-like cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "bone"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_10",
+          "a2_evi_11"
+        ]
+      },
+      {
+        "cell_type": "neutrophils",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "blood"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_12"
+        ]
+      },
+      {
+        "cell_type": "keratinocytes",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "skin (epidermis)"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_13"
+        ]
+      },
+      {
+        "cell_type": "basal keratinocytes",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "skin (epidermis)"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_14"
+        ]
+      }
+    ],
+    "cell_states": [],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "dual_localization": [
+        {
+          "compartment": "vesicles",
+          "fraction_estimate": null,
+          "condition": null,
+          "cited_evidence_ids": [
+            "a2_evi_01"
+          ]
+        },
+        {
+          "compartment": "cytosol",
+          "fraction_estimate": null,
+          "condition": "upstream kinase activity in signaling pathways",
+          "cited_evidence_ids": [
+            "a2_evi_09"
+          ]
+        }
+      ],
+      "membrane_subdomains": [
+        {
+          "subdomain": "cell junction",
+          "cited_evidence_ids": [
+            "a2_evi_01",
+            "a2_evi_02",
+            "a2_evi_13",
+            "a2_evi_14"
+          ]
+        },
+        {
+          "subdomain": "lipid raft",
+          "cited_evidence_ids": [
+            "a2_evi_12"
+          ]
+        }
+      ]
+    },
+    "anatomical_accessibility": [
+      {
+        "context": "epithelial and endothelial barrier tissues (general)",
+        "orientation": "junction_restricted",
+        "accessibility_implication": "restricted",
+        "rationale": "HPA flags SRC as junctional and localizes it to cell junctions. In polarized epithelial/endothelial barriers, junctional domains are shielded by tight junctions, limiting access of systemically delivered binders.",
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02"
+        ]
+      },
+      {
+        "context": "skin epidermis (keratinocytes)",
+        "orientation": "junction_restricted",
+        "accessibility_implication": "restricted",
+        "rationale": "SRC associates with E-cadherin at cell junctions in human keratinocytes, and its junctional activity depends on desmosomal context (Dsg3). Lateral junctional localization in stratified epidermis limits systemic binder access.",
+        "cited_evidence_ids": [
+          "a2_evi_13",
+          "a2_evi_14"
+        ]
+      },
+      {
+        "context": "human neutrophils (blood)",
+        "orientation": "blood_interstitial_facing",
+        "accessibility_implication": "favorable",
+        "rationale": "SRC-family kinase activity operates at flotillin-rich lipid raft domains on the plasma membrane of circulating neutrophils. Blood-exposed cells are directly accessible to systemically delivered binders without barrier restriction.",
+        "cited_evidence_ids": [
+          "a2_evi_12"
+        ]
+      }
+    ],
+    "accessibility_modulation": [
+      {
+        "category": "stress_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "mechanical_stress",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Resting osteoblast-like MC3T3-E1 cells without mechanical stimulation",
+        "modulating_state": "MC3T3-E1 cells subjected to fluid shear stress",
+        "change": "Fluid shear stress increases c-Src Tyr416 phosphorylation (activation) and promotes redistribution of membrane cargo (RANKL) toward the cell periphery and membrane fraction, indicating SRC acts as a mechanosensor driving surface-proximal trafficking.",
+        "accessibility_implication": "Mechanical stimulation activates SRC and enhances membrane-proximal localization of SRC-regulated cargo; SRC itself is more active at the PM under shear stress, potentially increasing accessibility of SRC-associated surface complexes.",
+        "cited_evidence_ids": [
+          "a2_evi_10",
+          "a2_evi_11"
+        ]
+      },
+      {
+        "category": "activation_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "immune_activation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Resting human neutrophils with SRC distributed across the plasma membrane",
+        "modulating_state": "Human neutrophils activated by CLEC12A cross-linking or uric acid crystal stimulation",
+        "change": "SRC-family kinase activity concentrates in flotillin-rich lipid raft membrane microdomains upon CLEC12A cross-linking, where it phosphorylates ITIM motifs; SRC redistributes from bulk PM to raft subdomains.",
+        "accessibility_implication": "Activation-driven raft clustering of SRC restricts its PM localization to specialized microdomains; binders targeting SRC may need raft-compatible access, and epitope accessibility could be modulated by raft partitioning.",
+        "cited_evidence_ids": [
+          "a2_evi_12"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "other",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal human skin basal keratinocytes with intact Dsg3 expression and SRC active at E-cadherin junctions",
+        "modulating_state": "Pemphigus vulgaris (PV) basal keratinocytes with reduced Dsg3 expression",
+        "change": "In PV, reduced Dsg3 leads to loss of E-cadherin junctional localisation and decreased pSrc (phospho-Src) signalling at cell junctions; SRC junction-associated surface activity is diminished compared to normal skin.",
+        "accessibility_implication": "In PV disease state, SRC is less concentrated at junctional surface domains, reducing accessibility of active SRC at the epithelial surface; therapeutics targeting junctional-active SRC would have reduced target engagement in PV lesions.",
+        "cited_evidence_ids": [
+          "a2_evi_13",
+          "a2_evi_14"
+        ]
+      },
+      {
+        "category": "tissue_restricted_surface",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": "neural",
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Non-neural human tissues (lung, liver, placenta) expressing ubiquitous c-Src isoform",
+        "modulating_state": "Human brain neurons expressing the neuron-specific n-Src isoform (18 extra bases, 6 additional amino acids in kinase domain loop)",
+        "change": "A neuron-specific alternatively spliced isoform of C-SRC (n-Src) is expressed exclusively in brain, producing a structurally distinct SRC protein with an extended kinase domain loop absent in peripheral tissues.",
+        "accessibility_implication": "The neural-specific isoform presents a unique extracellular/surface-proximal epitope configuration in neurons; binders or antibodies designed against ubiquitous SRC may have differential affinity or accessibility for n-Src at the neuronal surface.",
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_03",
+          "a2_evi_04"
+        ]
+      },
+      {
+        "category": "developmental_stage",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Early-stage chondrogenic cells (day 1 of micromass culture, pre-differentiation)",
+        "modulating_state": "Chondrogenic cells at later differentiation stages (days 3, 6, 10, 15 of micromass culture)",
+        "change": "SRC kinase is detected in the surfaceome of embryonic chondrogenic cells across five sequential differentiation stages; surface presence was profiled across the full chondrogenic differentiation timeline suggesting stage-dependent variation in SRC surface abundance.",
+        "accessibility_implication": "SRC surface accessibility in cartilage tissue is gated by chondrogenic differentiation stage; targeting SRC at the chondrogenic cell surface would require consideration of the specific differentiation window for optimal engagement.",
+        "cited_evidence_ids": [
+          "a2_evi_06",
+          "a2_evi_07"
+        ]
+      },
+      {
+        "category": "dual_localization",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": "secretory_vesicle",
+        "baseline_context": "General human cells under baseline conditions",
+        "modulating_state": "Human cells as annotated by HPA with multi-compartment SRC distribution",
+        "change": "HPA annotation places SRC protein at plasma membrane, cell junctions, AND vesicles simultaneously, indicating a constitutive split between surface-exposed domains and an intracellular vesicular pool.",
+        "accessibility_implication": "Only the PM and junctional fractions of SRC are accessible to extracellular binders; the vesicular pool is inaccessible without permeabilization. The junctional localization may further restrict access to cell-cell contact zones.",
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02"
+        ]
+      }
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "P12931-1",
+      "uniprot_acc": "P12931",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 0,
+      "icd_length_residues": 0,
+      "per_residue_topology": "",
+      "tool_version": "stub-no-fetchers-v1.0.0",
+      "retrieved_at": "2026-05-17T17:34:05.809508Z"
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [],
+      "rat": [],
+      "cynomolgus": []
+    },
+    "paralogs": [],
+    "structure": {
+      "afdb_id": "AF-P12931-F1-model_v4",
+      "afdb_version": "v4",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
+      "license": "CC BY 4.0",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "No evidence in the ledger indicates SRC requires a partner protein for membrane anchoring. Its N-myristoylation is an intrinsic lipid modification. Partners such as Dsg3/E-cadherin modulate junctional activity but are not required for PM attachment.",
+      "cited_evidence_ids": [
+        "a2_evi_13",
+        "a2_evi_14"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": true,
+      "domain": "junctional",
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "rationale": "HPA flags SRC as junctional, and functional evidence in keratinocytes shows SRC associates with E-cadherin at cell junctions. In polarized epithelial/endothelial barriers, junctional domains are shielded by tight junctions, reducing access for systemic binders. In neutrophils, SRC activity concentrates in flotillin-rich lipid rafts upon activation.",
+      "cited_evidence_ids": [
+        "a2_evi_01",
+        "a2_evi_02",
+        "a2_evi_12",
+        "a2_evi_13",
+        "a2_evi_14"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "none",
+      "rationale": "SRC is an N-myristoylated kinase with no transmembrane domain and no extracellular domain. IHC explicitly classifies SRC as cytoplasmic in tumor tissue. Surfaceome MS detection likely reflects capture of membrane-proximal cytoplasmic pools or non-classical surface association, not a canonical ECD.",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a2_evi_06",
+        "a2_evi_07"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "conformational",
+        "partner"
+      ],
+      "severity": "high",
+      "evidence_strength": "moderate",
+      "rationale": "Because SRC presents no extracellular domain, any surface-proximal epitope is on the cytoplasmic face, masked by the lipid bilayer. Junctional localization via E-cadherin/Dsg3 complexes further buries SRC in protein-protein interfaces. The neural-specific n-Src isoform adds structural divergence relevant to isoform-selective epitope access.",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a2_evi_01",
+        "a2_evi_13",
+        "a2_evi_14",
+        "a2_evi_05"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "IHC scoring rubric for AXL, SRC, and c-MET in tumor tissue explicitly classifies SRC staining as cytoplasmic (not membranous), in contrast to AXL and c-MET which are scored for membranous staining intensity. This directly supports that SRC protein localizes intracellularly in tumor tissue sections, consistent with its known N-myristoylated inner-leaflet membrane attachment and lack of extracellular domain, and refutes plasma membrane surface accessibility in the extracellular sense.",
+      "claim_type": "contradictory",
+      "direction": "refutes",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "tumor tissue",
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12012843",
+            "pmc_id": "PMC12012843",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12012843/",
+            "title": "PMC:PMC12012843",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "9bcd7642586e9eabefbfe8925c4cedd5584de17489ffc87ea228a3e911bb8f63",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "AXL, SRC, and c\u2010MET staining was scored in a four\u2010tiered scoring system, evaluating membranous staining intensity for AXL and c\u2010MET, and cytoplasmic staining intensity for SRC as negative (score = 0), weak (score = 1), moderate (score = 2), or strong (score = 3).",
+          "quote_sha256": "9bcd7642586e9eabefbfe8925c4cedd5584de17489ffc87ea228a3e911bb8f63",
+          "char_offset": 0,
+          "normalized_source_sha256": "82407363992e6def688a0ff384ceed9a591906587510185276739382e4d701c5"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "Fluid shear stress activates c-Src (measured by Tyr416 phosphorylation) in osteoblast-like MC3T3-E1 cells and promotes RANKL redistribution toward the cell periphery/membrane fraction. c-Src activation is a functional readout here, not a direct surface-localization measurement of SRC itself; SRC is acting as a cytoplasmic signaling kinase at the inner leaflet rather than as an extracellularly accessible surface protein.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": "MC3T3-E1",
+          "cellosaurus_id": null,
+          "tissue": "bone",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13054614",
+            "pmc_id": "PMC13054614",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/",
+            "title": "PMC:PMC13054614",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "8adf6bd7170a5ba6c4dd64f54650cc030b273f6292ca5b6d6ce0eb45022c6c78",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, accompanied by an increase of RANKL in the membrane fraction.",
+          "quote_sha256": "33360252f7c8009aac9b4777f9a98034ef4dee68a08d7f03ce2590940f19d325",
+          "char_offset": 0,
+          "normalized_source_sha256": "959be1aa44df6295f46f07c568520b4a44227b244db5392b19fb212cb6810c40"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "HPA database annotation places SRC protein at the plasma membrane, cell junctions, and vesicles in human cells, supporting multi-compartment localization including the cell surface.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa",
+            "source_id": "HPA:SRC",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/SRC",
+            "title": "HPA:SRC",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "a6c65170cff70eaf0d08dd24ab5ec4c88e9b88047a2a05b89dcf89ed84b4b408",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA subcellular locations: Cell Junctions;Plasma membrane;Vesicles.",
+          "quote_sha256": "469a86e1e51886f1a5344abcb74bd8547cfbe2d70a76da2517908cac3ea6d38e",
+          "char_offset": 0,
+          "normalized_source_sha256": "70340b4a6553edc772373f57d9a6203b80e67b46d3e1371424bb87452f0ed7bf"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "HPA flags SRC as junctional, indicating cell-junction-restricted surface localization relevant to anatomical accessibility in epithelial and endothelial barrier tissues.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa",
+            "source_id": "HPA:SRC",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/SRC",
+            "title": "HPA:SRC",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "a6c65170cff70eaf0d08dd24ab5ec4c88e9b88047a2a05b89dcf89ed84b4b408",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA flags this gene as junctional.",
+          "quote_sha256": "c4ce66f2ef1927d238838052b25856c3fe696bd335fbfc17328a3c2573b9adf5",
+          "char_offset": 68,
+          "normalized_source_sha256": "70340b4a6553edc772373f57d9a6203b80e67b46d3e1371424bb87452f0ed7bf"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "SRC (C-SRC) is expressed in human neural tissues, sharing expression with the related kinases C-YES and FYN in brain.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "northern_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "neural tissues / brain",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:2681803",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/2681803/",
+            "title": "PMID:2681803",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "1d5fa6c3517de7881dafb190b82268bf8bd4af1643485714eb9264f8bdd8a0b4",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The C-SRC, C-YES, and FYN genes encode three closely related tyrosine protein kinases that are expressed in human neural tissues.",
+          "quote_sha256": "9a111177dce1af5bdfe9788f0925d3b81475865716cd998fddf9cadb8f9c5099",
+          "char_offset": 0,
+          "normalized_source_sha256": "ee3b3e5949a54f64d5da4bd335b415e805c2ef56a72f55c5f735c78774a9b89d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "C-SRC RNA expression has been profiled across human lung, liver, brain, and placenta; SRC is expressed in all four tissues at the RNA level.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "northern_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "lung, liver, brain, placenta",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "multiple tissues",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:2681803",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/2681803/",
+            "title": "PMID:2681803",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "1d5fa6c3517de7881dafb190b82268bf8bd4af1643485714eb9264f8bdd8a0b4",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In this study we have compared the expression of C-SRC, C-YES, and FYN RNAs in human lung, liver, brain, and placenta tissues and prepared cDNA clones spanning exons 3 and 4 for each of these genes from the different tissues.",
+          "quote_sha256": "3d9d1790ce57f2e111ca94cdc46489dfbdb04f4f2e30d345f1b745cc854e04ad",
+          "char_offset": 130,
+          "normalized_source_sha256": "ee3b3e5949a54f64d5da4bd335b415e805c2ef56a72f55c5f735c78774a9b89d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "A neuron-specific alternative-splice isoform of C-SRC (containing 18 additional bases encoding six amino acids) is expressed exclusively in human brain tissue, consistent with enriched SRC expression in neurons relative to other tissues.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "northern_blot",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain neurons",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": "neural-specific isoform (n-Src)",
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:2681803",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/2681803/",
+            "title": "PMID:2681803",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "1d5fa6c3517de7881dafb190b82268bf8bd4af1643485714eb9264f8bdd8a0b4",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Sequence analysis of these cDNA clones revealed that the splicing patterns for the FYN and C-YES genes were the same among the various tissues, whereas C-SRC cDNAs isolated from brain contained 18 additional bases with the capacity to code for the same six amino acids present in the neural-specific forms of avian and murine pp60c-src.",
+          "quote_sha256": "3661d306747bd325c82aabb4ba50a3d9c75429ba5763dd6d8bb91d27f725563c",
+          "char_offset": 356,
+          "normalized_source_sha256": "ee3b3e5949a54f64d5da4bd335b415e805c2ef56a72f55c5f735c78774a9b89d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "SRC kinase is detected in the surfaceome of chondrogenic cells (embryonic limb bud-derived chondrocytes) with a noted role in chondrocyte phenotype control, placing SRC at the cell surface in cartilage/chondrogenic tissue context.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "embryonic chondrogenic cells (chicken limb bud micromass culture)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "limb bud cartilage",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "PMC:PMC12777226",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "2997b979acefcc567853aa17df2f59277fcb0632c4d6df628fbd8dca53433655",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "including RECK (a membrane-anchored matrix metalloprotease inhibitor [ 45 ]), FGFR2 (fibroblast growth factor receptor 2; regulates chondrocyte proliferation/differentiation signaling [ 46 ]), multiple ephrin receptors (EPHA7, EPHB2, EPHB1, EPHB3 with potential roles in cartilage morphogenesis [ 47 ]), SRC kinase (chondrocyte phenotype control [ 48 ]), and GPC1 (glypical-1; a proteoglycan and cell surface co-receptor involved in growth factor pathway modulation [ 49 ]), highlighting surfaceome mechanisms in cartilage development and regeneration.",
+          "quote_sha256": "fd180f7156fef266f7602c53865127fc59bac365e6d47c1fd57c4b0399384443",
+          "char_offset": 0,
+          "normalized_source_sha256": "979255b672ec9ecbf899390de52ffd6c57d33e9a9aedbd3500db46faaf8d672a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "SRC surfaceome presence in chondrogenic cells was profiled across five stages of differentiation (days 1, 3, 6, 10, 15 of micromass culture), enabling state-dependent surface accessibility assessment across chondrogenic differentiation.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "chondrogenic cells at days 1/3/6/10/15 of differentiation",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "limb bud cartilage",
+          "disease_state": null,
+          "activation_state": "staged chondrogenic differentiation"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "PMC:PMC12777226",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "2997b979acefcc567853aa17df2f59277fcb0632c4d6df628fbd8dca53433655",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "Temporal proteomic profiling was conducted at days 1, 3, 6, 10, and 15 of micromass culture corresponding to key histodifferentiation stages [ 17 , 18 ], combining sialoglycoprotein enrichment via aminooxy-biotin conjugation with high-resolution LC-MS/MS on 3 biological replicates ( n = 3).",
+          "quote_sha256": "3a978f8e2bedf26f5548d3850b56e0229e7973d37c82b64b3b9f1afa71fe01f4",
+          "char_offset": 553,
+          "normalized_source_sha256": "979255b672ec9ecbf899390de52ffd6c57d33e9a9aedbd3500db46faaf8d672a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "SRC (proto-oncogene tyrosine-protein kinase Src) is identified as one of four key regulatory proteins in a plasma-membrane trafficking interaction network controlling NIS (sodium-iodide symporter) surface retention, suggesting SRC participates in modulating PM accessibility of cargo proteins in thyroid epithelial context.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "thyroid epithelial / NIS-expressing cells",
+        "permeabilized": false,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "thyroid epithelial",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "thyroid",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC8582450",
+            "pmc_id": "PMC8582450",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8582450/",
+            "title": "PMC:PMC8582450",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "e77f05eb8aa516933be49d0f681edceed1eaa5dbc0cbf17bee76f640f09bed41",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Further analysis with STRING software revealed that the 29 top-scoring NIS-PM candidates formed a tight interaction subnetwork around cytoplasmic actin (ACTB) and four of the regulatory proteins on the hsa04810 pathway ( Figure 3 A): the small GTPase RAC1 (RAS-related C3 botulinum toxin substrate 1), the proto-oncogene tyrosine-protein kinase Src (SRC), the actin-nucleating ARP 2/3 complex subunit 4 (ARPC4), and the actin-binding adaptor protein ezrin (EZRIN).",
+          "quote_sha256": "e77f05eb8aa516933be49d0f681edceed1eaa5dbc0cbf17bee76f640f09bed41",
+          "char_offset": 0,
+          "normalized_source_sha256": "6eabd33a2d8eba548d0348424777502fc82cca3c2269542585ad1ce5f3aee36c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "SRC is a key upstream kinase in the SRC/RAC1/PAK1/PIP5K/EZRIN pathway that regulates actin-cytoskeleton anchoring of NIS at the plasma membrane in thyroid cells; SRC activity thus modulates surface retention of membrane proteins in epithelial cells.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "thyroid epithelial cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "thyroid epithelial",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "thyroid",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9659096",
+            "pmc_id": "PMC9659096",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9659096/",
+            "title": "PMC:PMC9659096",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "86981a211fef7f470c7bfcaf7507613f853e1df6b3a248c8bf7f66df5eaa9fa9",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Biochemical and functional analysis allowed us to establish the SRC/RAC1/PAK1/PIP5K/EZRIN pathway as a key regulator of NIS actin-cytoskeleton anchoring and retention at the PM [ 10 ].",
+          "quote_sha256": "86981a211fef7f470c7bfcaf7507613f853e1df6b3a248c8bf7f66df5eaa9fa9",
+          "char_offset": 0,
+          "normalized_source_sha256": "e82cb0b6ee18f8ab0b5cf93796d4c2f9b065624dc01436958b3fe1a3c68dc2eb"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "In osteoblast-like MC3T3-E1 cells, fluid shear stress increases c-Src activation (Tyr416 phosphorylation) and promotes redistribution of RANKL toward the cell periphery and membrane fraction; activated SRC is a mechanosensor that modulates surface presentation of membrane cargo in osteoblastic lineage cells under mechanical stimulation.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1",
+        "permeabilized": true,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "bone",
+          "disease_state": null,
+          "activation_state": "fluid shear stress stimulation"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13054614",
+            "pmc_id": "PMC13054614",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/",
+            "title": "PMC:PMC13054614",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "8adf6bd7170a5ba6c4dd64f54650cc030b273f6292ca5b6d6ce0eb45022c6c78",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, accompanied by an increase of RANKL in the membrane fraction.",
+          "quote_sha256": "33360252f7c8009aac9b4777f9a98034ef4dee68a08d7f03ce2590940f19d325",
+          "char_offset": 0,
+          "normalized_source_sha256": "959be1aa44df6295f46f07c568520b4a44227b244db5392b19fb212cb6810c40"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "Constitutively active c-Src (Y527F mutant) promotes RANKL peripheral localization to the plasma membrane in osteoblast-like cells even without mechanical stimulation, confirming SRC's role in membrane-proximal trafficking in osteoblastic lineage cells.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "bone",
+          "disease_state": null,
+          "activation_state": "constitutively active Src (Y527F)"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13054614",
+            "pmc_id": "PMC13054614",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/",
+            "title": "PMC:PMC13054614",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "8adf6bd7170a5ba6c4dd64f54650cc030b273f6292ca5b6d6ce0eb45022c6c78",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Moreover, constitutively active c-Src (Y527F) enhanced peripheral localization of RANKL even in the absence of shear stress.",
+          "quote_sha256": "edb7cf65a38b9679d3cfa2326bc3a4605e9c6d5ff7a7f7be9a64836bbe444e2e",
+          "char_offset": 197,
+          "normalized_source_sha256": "959be1aa44df6295f46f07c568520b4a44227b244db5392b19fb212cb6810c40"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "In human neutrophils, Src-family kinase activity (Src-dependent ITIM phosphorylation) operates at flotillin-rich lipid raft membrane domains, indicating SRC localizes to specialized lipid raft subdomains of the plasma membrane in activated neutrophils.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "human neutrophils",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "neutrophils",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "blood",
+          "disease_state": null,
+          "activation_state": "CLEC12A cross-linking / uric acid crystal stimulation"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC8256872",
+            "pmc_id": "PMC8256872",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8256872/",
+            "title": "PMC:PMC8256872",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "6dfc5b3c98283e3d4872d61ab8b01d47733f377f22aa1ecbe0ae58440a00ed11",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "CLEC12A cross-linking induced its translocation to flotillin-rich membrane domains where its ITIM was phosphorylated in a Src-dependent manner.",
+          "quote_sha256": "6dfc5b3c98283e3d4872d61ab8b01d47733f377f22aa1ecbe0ae58440a00ed11",
+          "char_offset": 0,
+          "normalized_source_sha256": "8455401a87f918d1b2076668257db2aed091979c930f7a9180b7482d6798199c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "In human skin keratinocytes, Dsg3 levels regulate Src activity and its association with E-cadherin at cell junctions; SRC operates at the plasma membrane junctional domain in skin epithelial cells, with its activity modulated by desmosomal adhesion context.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "keratinocytes",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "keratinocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "skin (epidermis)",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:22294297",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/22294297/",
+            "title": "PMID:22294297",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "cc4cfbf399c22165a28bd9fb6709124371363a12ae5d81dbaecd3dcb12521bc5",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Modulation of Dsg3 levels, either by Dsg3 silencing or over-expression, alters Src activity and its association with E-cadherin.",
+          "quote_sha256": "9fca2441c92539e5715693729642140150929ef79687ec2f217051993312ef8b",
+          "char_offset": 0,
+          "normalized_source_sha256": "496072b72985d2328967a717747904f2cae55bcd338c7d31dce14d451deaec96"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_14",
+      "claim": "In pemphigus vulgaris (PV) basal keratinocytes, reduced Dsg3 expression is accompanied by loss of E-cadherin junctional localisation and decreased pSrc signalling, indicating SRC junction-associated surface activity is reduced in PV disease state compared to normal skin.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "basal keratinocytes",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "basal keratinocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "skin (epidermis)",
+          "disease_state": "pemphigus vulgaris",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:22294297",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/22294297/",
+            "title": "PMID:22294297",
+            "retrieved_at": "2026-05-17T17:34:05.802268Z",
+            "content_sha256": "cc4cfbf399c22165a28bd9fb6709124371363a12ae5d81dbaecd3dcb12521bc5",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T17:34:05.802268Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Along with the reduced expression of Dsg3, loss and disruption of E-cadherin and a concomitant decreased pSrc signalling was identified in the basal keratinocytes surrounding the blisters in PV.",
+          "quote_sha256": "7d0a598a7cb21a52f8a6e2e71635ba039e2dc8edd7d2dcd85614ec6f0ada2d08",
+          "char_offset": 129,
+          "normalized_source_sha256": "496072b72985d2328967a717747904f2cae55bcd338c7d31dce14d451deaec96"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    }
+  ],
+  "search_log": [],
+  "evidence_count": 16,
+  "primary_evidence_count": 12,
+  "secondary_evidence_count": 4,
+  "confidence": "moderate",
+  "confidence_reasoning": "A1's evidence_grade is 'weak' with a single high-severity contradicting observation (IHC cytoplasmic classification). A2 introduces surfaceome MS in chondrogenic cells (non-permeabilized, avian model) and HPA junctional annotations that nominally support some PM presence, upgrading evidence_grade_summary to 'conflicting' rather than pure 'weak'. However, none of A2's supporting entries establish an extracellular domain; they reflect inner-leaflet or junctional cytoplasmic-face association. State-dependence is moderate (isoform, mechanical stress, disease context all modulate). Overall confidence is moderate because the biological picture is consistent but the key surface-accessibility claim remains unresolved by any direct extracellular assay.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-17T17:34:05.809831Z",
+  "timing": [
+    {
+      "step_name": "planner",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:09.345807Z",
+      "elapsed_s": 17.155,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 4791,
+      "output_tokens": 1012,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.029553
+    },
+    {
+      "step_name": "search:gene_literature:gene2pubmed",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:26.501471Z",
+      "elapsed_s": 0.005,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:26.506158Z",
+      "elapsed_s": 0.229,
+      "n_items": 4
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:26.734705Z",
+      "elapsed_s": 0.046,
+      "n_items": 16
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:26.781111Z",
+      "elapsed_s": 0.055,
+      "n_items": 15
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:26.835711Z",
+      "elapsed_s": 0.058,
+      "n_items": 1
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:26.893408Z",
+      "elapsed_s": 0.069,
+      "n_items": 1
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:26.962167Z",
+      "elapsed_s": 3.215,
+      "n_items": 12
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:30.177359Z",
+      "elapsed_s": 5.869,
+      "n_items": 1
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:36.045996Z",
+      "elapsed_s": 0.641,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:36.687127Z",
+      "elapsed_s": 0.863,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:37.550359Z",
+      "elapsed_s": 0.765,
+      "n_items": 25
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12834970",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.315843Z",
+      "elapsed_s": 1.54,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2346,
+      "output_tokens": 103,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002861
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12220233",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.316053Z",
+      "elapsed_s": 3.71,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2397,
+      "output_tokens": 185,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003322
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12929915",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.316477Z",
+      "elapsed_s": 5.226,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2420,
+      "output_tokens": 374,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00429
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9659096",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.316934Z",
+      "elapsed_s": 4.126,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2841,
+      "output_tokens": 335,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004516
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8582450",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.317191Z",
+      "elapsed_s": 3.438,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2552,
+      "output_tokens": 251,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003807
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8516413",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.317423Z",
+      "elapsed_s": 3.548,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2730,
+      "output_tokens": 311,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004285
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9396412",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.317648Z",
+      "elapsed_s": 1.903,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2459,
+      "output_tokens": 155,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003234
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9407219",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.318061Z",
+      "elapsed_s": 2.695,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2586,
+      "output_tokens": 197,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003571
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12777226",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.318500Z",
+      "elapsed_s": 6.658,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2855,
+      "output_tokens": 512,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005415
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12022999",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:38.318829Z",
+      "elapsed_s": 4.188,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2556,
+      "output_tokens": 337,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004241
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10855178",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:39.856077Z",
+      "elapsed_s": 1.843,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2310,
+      "output_tokens": 127,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002945
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10356899",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:40.220568Z",
+      "elapsed_s": 5.677,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2763,
+      "output_tokens": 391,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004718
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9237123",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:41.013332Z",
+      "elapsed_s": 1.404,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2597,
+      "output_tokens": 99,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003092
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12012843",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:41.698868Z",
+      "elapsed_s": 1.433,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2384,
+      "output_tokens": 103,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002899
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11909415",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:41.755652Z",
+      "elapsed_s": 5.064,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2334,
+      "output_tokens": 326,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003964
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12749419",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:41.865950Z",
+      "elapsed_s": 2.086,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2496,
+      "output_tokens": 230,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003646
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10093020",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:42.025896Z",
+      "elapsed_s": 1.152,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2348,
+      "output_tokens": 105,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002873
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11969063",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:42.417281Z",
+      "elapsed_s": 2.559,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2339,
+      "output_tokens": 142,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003049
+    },
+    {
+      "step_name": "selector:iter0",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:28:46.827870Z",
+      "elapsed_s": 23.465,
+      "n_items": 19,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 17086,
+      "output_tokens": 1260,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.070158
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:10.293740Z",
+      "elapsed_s": 0.523,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:10.816285Z",
+      "elapsed_s": 0.1,
+      "n_items": 16
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:10.916112Z",
+      "elapsed_s": 0.085,
+      "n_items": 1
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12834970",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.003078Z",
+      "elapsed_s": 1.259,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2346,
+      "output_tokens": 101,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002851
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12220233",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.003648Z",
+      "elapsed_s": 2.388,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2397,
+      "output_tokens": 166,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003227
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12929915",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.004504Z",
+      "elapsed_s": 4.385,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2420,
+      "output_tokens": 374,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00429
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9659096",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.004857Z",
+      "elapsed_s": 1.846,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2841,
+      "output_tokens": 171,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003696
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8582450",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.005276Z",
+      "elapsed_s": 3.622,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2552,
+      "output_tokens": 245,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003777
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8516413",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.006104Z",
+      "elapsed_s": 5.469,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2730,
+      "output_tokens": 299,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004225
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9396412",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.006961Z",
+      "elapsed_s": 1.934,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2459,
+      "output_tokens": 162,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003269
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9407219",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.007820Z",
+      "elapsed_s": 3.741,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2586,
+      "output_tokens": 256,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003866
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12777226",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.008320Z",
+      "elapsed_s": 3.801,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2855,
+      "output_tokens": 293,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00432
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12022999",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:11.008995Z",
+      "elapsed_s": 1.409,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2556,
+      "output_tokens": 106,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003086
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10855178",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:12.261974Z",
+      "elapsed_s": 2.392,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2310,
+      "output_tokens": 163,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003125
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10356899",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:12.418597Z",
+      "elapsed_s": 5.355,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2763,
+      "output_tokens": 400,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004763
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9237123",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:12.851089Z",
+      "elapsed_s": 4.676,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2597,
+      "output_tokens": 412,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004657
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12012843",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:12.940842Z",
+      "elapsed_s": 1.321,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2384,
+      "output_tokens": 103,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002899
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11909415",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:13.391544Z",
+      "elapsed_s": 10.71,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2334,
+      "output_tokens": 172,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003194
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12749419",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:14.262243Z",
+      "elapsed_s": 1.925,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2496,
+      "output_tokens": 227,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003631
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10093020",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:14.627128Z",
+      "elapsed_s": 1.487,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2348,
+      "output_tokens": 104,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002868
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11969063",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:14.653737Z",
+      "elapsed_s": 2.633,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2339,
+      "output_tokens": 168,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003179
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13054614",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:14.749155Z",
+      "elapsed_s": 2.382,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2881,
+      "output_tokens": 268,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004221
+    },
+    {
+      "step_name": "selector:iter1",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:24.107199Z",
+      "elapsed_s": 28.429,
+      "n_items": 23,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 17554,
+      "output_tokens": 1814,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.079872
+    },
+    {
+      "step_name": "search:gene_literature:fetch_fulltext",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.536626Z",
+      "elapsed_s": 0.006,
+      "n_items": 30
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.542543Z",
+      "elapsed_s": 0.052,
+      "n_items": 16
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.595016Z",
+      "elapsed_s": 0.08,
+      "n_items": 1
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC12834970",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.675556Z",
+      "elapsed_s": 2.748,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2346,
+      "output_tokens": 120,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002946
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC12220233",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.675721Z",
+      "elapsed_s": 2.439,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2397,
+      "output_tokens": 171,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003252
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC12929915",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.676098Z",
+      "elapsed_s": 3.881,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2420,
+      "output_tokens": 323,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004035
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC9659096",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.676531Z",
+      "elapsed_s": 4.236,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2841,
+      "output_tokens": 339,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004536
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC8582450",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.676779Z",
+      "elapsed_s": 3.266,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2552,
+      "output_tokens": 218,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003642
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC8516413",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.677029Z",
+      "elapsed_s": 1.971,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2730,
+      "output_tokens": 221,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003835
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC9396412",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.677250Z",
+      "elapsed_s": 1.901,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2459,
+      "output_tokens": 148,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003199
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC9407219",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.677556Z",
+      "elapsed_s": 2.438,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2586,
+      "output_tokens": 177,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003471
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC12777226",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.677871Z",
+      "elapsed_s": 4.19,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2855,
+      "output_tokens": 334,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004525
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC12022999",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:52.678198Z",
+      "elapsed_s": 2.63,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2556,
+      "output_tokens": 220,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003656
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC10855178",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:54.578096Z",
+      "elapsed_s": 2.999,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2310,
+      "output_tokens": 206,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00334
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC10356899",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:54.648305Z",
+      "elapsed_s": 5.314,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2763,
+      "output_tokens": 508,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005303
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC9237123",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:55.114794Z",
+      "elapsed_s": 1.439,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2597,
+      "output_tokens": 102,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003107
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC12012843",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:55.115956Z",
+      "elapsed_s": 1.44,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2384,
+      "output_tokens": 103,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002899
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC11909415",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:55.307881Z",
+      "elapsed_s": 4.344,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2334,
+      "output_tokens": 323,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003949
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC12749419",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:55.424193Z",
+      "elapsed_s": 2.05,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2496,
+      "output_tokens": 223,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003611
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC10093020",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:55.942685Z",
+      "elapsed_s": 1.219,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2348,
+      "output_tokens": 108,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002888
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC11969063",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:56.554227Z",
+      "elapsed_s": 3.523,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2339,
+      "output_tokens": 236,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003519
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC13054614",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:56.556326Z",
+      "elapsed_s": 2.456,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2881,
+      "output_tokens": 211,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003936
+    },
+    {
+      "step_name": "trim:iter2:PMC:PMC13094285",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:29:56.557444Z",
+      "elapsed_s": 4.708,
+      "n_items": 30,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 4357,
+      "output_tokens": 280,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005757
+    },
+    {
+      "step_name": "selector:iter2",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T17:30:01.274097Z",
+      "elapsed_s": 33.298,
+      "n_items": 22,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 17493,
+      "output_tokens": 1545,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.075654
+    },
+    {
+      "step_name": "planner",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:34.626412Z",
+      "elapsed_s": 20.94,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 5207,
+      "output_tokens": 1221,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.033936
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.566753Z",
+      "elapsed_s": 0.008,
+      "n_items": 6
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.575164Z",
+      "elapsed_s": 0.083,
+      "n_items": 1
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.658270Z",
+      "elapsed_s": 0.067,
+      "n_items": 1
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.724817Z",
+      "elapsed_s": 0.064,
+      "n_items": 4
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.788955Z",
+      "elapsed_s": 0.078,
+      "n_items": 15
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.866816Z",
+      "elapsed_s": 0.041,
+      "n_items": 16
+    },
+    {
+      "step_name": "search:gene_literature:gene2pubmed",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.907772Z",
+      "elapsed_s": 0.002,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:55.910033Z",
+      "elapsed_s": 1.432,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:57.341592Z",
+      "elapsed_s": 0.577,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:57.918926Z",
+      "elapsed_s": 0.702,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:58.621194Z",
+      "elapsed_s": 0.005,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:58.626531Z",
+      "elapsed_s": 0.115,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:58.741600Z",
+      "elapsed_s": 0.124,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:58.865908Z",
+      "elapsed_s": 0.143,
+      "n_items": 7
+    },
+    {
+      "step_name": "trim:iter0:HPA:SRC",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.010790Z",
+      "elapsed_s": 5.166,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2800,
+      "output_tokens": 433,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004965
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12012843",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.011153Z",
+      "elapsed_s": 8.027,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2662,
+      "output_tokens": 176,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003542
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11909415",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.012050Z",
+      "elapsed_s": 2.935,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2612,
+      "output_tokens": 194,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003582
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12834970",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.013172Z",
+      "elapsed_s": 7.911,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2624,
+      "output_tokens": 303,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004139
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12220233",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.014053Z",
+      "elapsed_s": 3.697,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2675,
+      "output_tokens": 174,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003545
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12929915",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.014509Z",
+      "elapsed_s": 3.579,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2698,
+      "output_tokens": 308,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004238
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12777226",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.014938Z",
+      "elapsed_s": 2.931,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3133,
+      "output_tokens": 283,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004548
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12022999",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.015240Z",
+      "elapsed_s": 3.399,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2834,
+      "output_tokens": 285,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004259
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10855178",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.015572Z",
+      "elapsed_s": 1.83,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2588,
+      "output_tokens": 129,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003233
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10356899",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:30:59.015957Z",
+      "elapsed_s": 5.728,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3041,
+      "output_tokens": 493,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005506
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9237123",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:00.845345Z",
+      "elapsed_s": 7.557,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2875,
+      "output_tokens": 420,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004975
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9659096",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:01.945708Z",
+      "elapsed_s": 6.167,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3119,
+      "output_tokens": 592,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.006079
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8582450",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:01.947691Z",
+      "elapsed_s": 3.608,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2830,
+      "output_tokens": 309,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004375
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8516413",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:02.414900Z",
+      "elapsed_s": 5.644,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3008,
+      "output_tokens": 529,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005653
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9396412",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:02.594101Z",
+      "elapsed_s": 5.029,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2737,
+      "output_tokens": 403,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004752
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9407219",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:02.711335Z",
+      "elapsed_s": 3.372,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2650,
+      "output_tokens": 223,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003765
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8256872",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:04.176563Z",
+      "elapsed_s": 5.322,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3109,
+      "output_tokens": 482,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005519
+    },
+    {
+      "step_name": "trim:iter0:PMID:22294297",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:04.743777Z",
+      "elapsed_s": 1.808,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3129,
+      "output_tokens": 201,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004134
+    },
+    {
+      "step_name": "trim:iter0:PMID:2681803",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:05.555657Z",
+      "elapsed_s": 2.067,
+      "n_items": 7,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3092,
+      "output_tokens": 245,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004317
+    },
+    {
+      "step_name": "selector:iter0",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:09.507298Z",
+      "elapsed_s": 49.693,
+      "n_items": 26,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 18066,
+      "output_tokens": 3785,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.110973
+    },
+    {
+      "step_name": "search:gene_literature:fetch_fulltext",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.201116Z",
+      "elapsed_s": 0.712,
+      "n_items": 30
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.912934Z",
+      "elapsed_s": 0.001,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.914158Z",
+      "elapsed_s": 0.004,
+      "n_items": 25
+    },
+    {
+      "step_name": "trim:iter1:HPA:SRC",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.919049Z",
+      "elapsed_s": 3.659,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2800,
+      "output_tokens": 366,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00463
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12012843",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.919937Z",
+      "elapsed_s": 3.333,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2662,
+      "output_tokens": 227,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003797
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11909415",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.920590Z",
+      "elapsed_s": 2.983,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2612,
+      "output_tokens": 201,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003617
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12834970",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.921174Z",
+      "elapsed_s": 1.461,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2624,
+      "output_tokens": 111,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003179
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12220233",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.921937Z",
+      "elapsed_s": 2.561,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2675,
+      "output_tokens": 177,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00356
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12929915",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.922519Z",
+      "elapsed_s": 3.48,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2698,
+      "output_tokens": 295,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004173
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12777226",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.923182Z",
+      "elapsed_s": 2.608,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3133,
+      "output_tokens": 289,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004578
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12022999",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.923736Z",
+      "elapsed_s": 3.494,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2834,
+      "output_tokens": 282,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004244
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10855178",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.924289Z",
+      "elapsed_s": 2.138,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2588,
+      "output_tokens": 139,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003283
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10356899",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:31:59.924870Z",
+      "elapsed_s": 6.271,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3041,
+      "output_tokens": 535,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005716
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9237123",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:01.382601Z",
+      "elapsed_s": 4.996,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2875,
+      "output_tokens": 425,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9659096",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:02.062172Z",
+      "elapsed_s": 1.505,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3119,
+      "output_tokens": 162,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003929
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8582450",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:02.482895Z",
+      "elapsed_s": 3.909,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2830,
+      "output_tokens": 299,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004325
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8516413",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:02.531171Z",
+      "elapsed_s": 7.188,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3008,
+      "output_tokens": 609,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.006053
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9396412",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:02.903574Z",
+      "elapsed_s": 4.488,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2737,
+      "output_tokens": 364,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004557
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9407219",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:03.253188Z",
+      "elapsed_s": 3.186,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2650,
+      "output_tokens": 235,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003825
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8256872",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:03.402475Z",
+      "elapsed_s": 5.386,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3109,
+      "output_tokens": 516,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005689
+    },
+    {
+      "step_name": "trim:iter1:PMID:22294297",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:03.417973Z",
+      "elapsed_s": 1.892,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3129,
+      "output_tokens": 224,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004249
+    },
+    {
+      "step_name": "trim:iter1:PMID:2681803",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:03.567021Z",
+      "elapsed_s": 4.983,
+      "n_items": 7,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3092,
+      "output_tokens": 449,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005337
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13054614",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:03.578037Z",
+      "elapsed_s": 5.982,
+      "n_items": 30,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 4741,
+      "output_tokens": 877,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.009126
+    },
+    {
+      "step_name": "selector:iter1",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T17:32:09.725169Z",
+      "elapsed_s": 60.187,
+      "n_items": 40,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 19906,
+      "output_tokens": 4025,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.120093
+    },
+    {
+      "step_name": "builder:subcellular_localization",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T17:33:09.914758Z",
+      "elapsed_s": 4.282,
+      "n_items": 14,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 7177,
+      "output_tokens": 257,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.025386
+    },
+    {
+      "step_name": "builder:methods",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T17:33:09.913602Z",
+      "elapsed_s": 4.656,
+      "n_items": 2,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 4377,
+      "output_tokens": 344,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.018291
+    },
+    {
+      "step_name": "builder:therapeutic_engagement",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T17:33:09.913892Z",
+      "elapsed_s": 4.777,
+      "n_items": 2,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 1926,
+      "output_tokens": 9,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005913
+    },
+    {
+      "step_name": "builder:tissues",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T17:33:09.914455Z",
+      "elapsed_s": 4.994,
+      "n_items": 14,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 3430,
+      "output_tokens": 478,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.01746
+    },
+    {
+      "step_name": "builder:cell_types",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T17:33:09.914596Z",
+      "elapsed_s": 5.127,
+      "n_items": 14,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 6501,
+      "output_tokens": 480,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.026703
+    },
+    {
+      "step_name": "builder:contradictions",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T17:33:09.914026Z",
+      "elapsed_s": 6.498,
+      "n_items": 2,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 1437,
+      "output_tokens": 302,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.008841
+    },
+    {
+      "step_name": "builder:evidence_grade",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T17:33:09.914183Z",
+      "elapsed_s": 6.823,
+      "n_items": 2,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 2605,
+      "output_tokens": 327,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.01272
+    },
+    {
+      "step_name": "builder:anatomical_accessibility",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T17:33:09.919004Z",
+      "elapsed_s": 9.0,
+      "n_items": 14,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 6700,
+      "output_tokens": 396,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.02604
+    },
+    {
+      "step_name": "builder:accessibility_modulation",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T17:33:09.923202Z",
+      "elapsed_s": 31.507,
+      "n_items": 14,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 8391,
+      "output_tokens": 1655,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.049998
+    },
+    {
+      "step_name": "synthesizer",
+      "phase": "synthesizer",
+      "started_at": "2026-05-17T17:33:41.431777Z",
+      "elapsed_s": 24.37,
+      "n_items": 16,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 2,
+      "output_tokens": 1456,
+      "cache_creation_input_tokens": 17038,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.085738
+    },
+    {
+      "step_name": "evidence_promotion",
+      "phase": "post",
+      "started_at": "2026-05-17T17:34:05.802231Z",
+      "elapsed_s": 0.002,
+      "n_items": 16
+    },
+    {
+      "step_name": "deterministic_features",
+      "phase": "post",
+      "started_at": "2026-05-17T17:34:05.804700Z",
+      "elapsed_s": 0.005
+    },
+    {
+      "step_name": "filters_derivation",
+      "phase": "post",
+      "started_at": "2026-05-17T17:34:05.809612Z",
+      "elapsed_s": 0.0,
+      "n_items": 16
+    }
+  ],
+  "total_elapsed_s": 356.464,
+  "total_step_seconds": 693.484
+}
