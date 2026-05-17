@@ -10,8 +10,35 @@ import type {
   BenchmarkVariantResult,
 } from "../../lib/surfaceome-types";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
+import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import { RationaleDrawer, type SelectedCell } from "./RationaleDrawer";
 import styles from "./BenchmarkTable.module.css";
+
+// Sortable column key. Matches the keys we surface in the header row;
+// numeric sorts (per-DB / per-model) use n_db_surface and a verdict-rank
+// derived from the row.
+type SortKey =
+  | "gene_symbol"
+  | "uniprot_acc"
+  | "truth"
+  | "n_db_surface"
+  | "haiku_ncbi"
+  | "sonnet_ncbi"
+  | "opus_ncbi";
+
+type SortDir = "asc" | "desc";
+
+// Maps verdict strings to a numeric rank for stable sorting. Order is
+// yes (3) > contextual (2) > no (1) > unknown / null (0), so DESC puts
+// the "yes" rows on top — matches the figure-style narrative.
+const VERDICT_RANK: Record<string, number> = {
+  yes: 3,
+  contextual: 2,
+  no: 1,
+};
+function verdictRank(v: string | null | undefined): number {
+  return v ? (VERDICT_RANK[v] ?? 0) : 0;
+}
 
 const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
@@ -103,6 +130,29 @@ export function BenchmarkTable({
   // swaps as the reader clicks through cells; clicking the same cell
   // twice closes the drawer.
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
+  // Sort state — defaults to gene_symbol ASC so the resting view
+  // matches the figure-style alphabetical scan.
+  const [sortKey, setSortKey] = useState<SortKey>("gene_symbol");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  function toggleSort(key: SortKey) {
+    setSortKey((prev) => {
+      if (prev === key) {
+        // Same column → flip direction.
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+        return prev;
+      }
+      // New column → reset to a sensible default (text ASC, numeric DESC).
+      const isNumeric =
+        key === "n_db_surface" ||
+        key === "haiku_ncbi" ||
+        key === "sonnet_ncbi" ||
+        key === "opus_ncbi" ||
+        key === "truth";
+      setSortDir(isNumeric ? "desc" : "asc");
+      return key;
+    });
+  }
 
   function toggleRow(symbol: string) {
     setRowExpanded((prev) => {
@@ -158,7 +208,7 @@ export function BenchmarkTable({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
+    const passing = rows.filter((r) => {
       if (q) {
         const hay =
           `${r.gene_symbol} ${r.uniprot_acc} ${r.class} ${r.truth_reason}`.toLowerCase();
@@ -172,7 +222,20 @@ export function BenchmarkTable({
       }
       return true;
     });
-  }, [rows, query, filter, models]);
+    // Apply sort on a copy so the source `rows` order is preserved
+    // (matters when the user clears the sort by switching to a column
+    // and then back, expecting alphabetical default).
+    const dir = sortDir === "asc" ? 1 : -1;
+    const sorted = [...passing].sort((a, b) => {
+      const av = sortValue(a, sortKey);
+      const bv = sortValue(b, sortKey);
+      if (typeof av === "string" && typeof bv === "string") {
+        return av.localeCompare(bv) * dir;
+      }
+      return ((av as number) - (bv as number)) * dir;
+    });
+    return sorted;
+  }, [rows, query, filter, models, sortKey, sortDir]);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -278,38 +341,98 @@ export function BenchmarkTable({
         aria-rowcount={filtered.length + 1}
       >
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
-          <div className={styles.headerCell} role="columnheader">Gene</div>
-          <div className={`${styles.headerCell} ${styles.headerMono}`} role="columnheader">
-            UniProt
-          </div>
-          <div className={styles.headerCell} role="columnheader">Truth</div>
-          {DB_KEYS.map((d) => (
-            <div
-              key={`hdr-db-${d.key}`}
-              className={`${styles.headerCell} ${styles.headerDbCell}`}
-              title={d.long}
-              role="columnheader"
-            >
-              {d.long}
-            </div>
+          <SortHeader
+            label="Gene"
+            sortKey="gene_symbol"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+          />
+          <SortHeader
+            label="UniProt"
+            sortKey="uniprot_acc"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerMono}
+          />
+          <SortHeader
+            label="Truth"
+            sortKey="truth"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+          />
+          {DB_KEYS.map((d, i) => (
+            // First DB cell doubles as a "# DBs" sort target — click to
+            // order rows by gating-DB consensus count. Hover-tooltip
+            // documents that. Other 4 DB cells stay decorative since
+            // sorting "by UniProt vote" alone isn't a useful query.
+            i === 0 ? (
+              <SortHeader
+                key={`hdr-db-${d.key}`}
+                label={d.long}
+                sortKey="n_db_surface"
+                activeKey={sortKey}
+                dir={sortDir}
+                onClick={toggleSort}
+                extraClass={styles.headerDbCell}
+                title={`${d.long} (click to sort rows by total DB-yes count)`}
+              />
+            ) : (
+              <div
+                key={`hdr-db-${d.key}`}
+                className={`${styles.headerCell} ${styles.headerDbCell}`}
+                title={d.long}
+                role="columnheader"
+              >
+                {d.long}
+              </div>
+            )
           ))}
-          {MODEL_LABELS.map((m) => (
-            <div
-              key={`hdr-mdl-${m.id}`}
-              className={`${styles.headerCell} ${styles.headerModelCell}`}
-              title={`${m.long} · ncbi variant`}
-              role="columnheader"
-            >
-              {m.long}
-            </div>
-          ))}
+          <SortHeader
+            label={MODEL_LABELS[0].long}
+            sortKey="haiku_ncbi"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerModelCell}
+            title={`${MODEL_LABELS[0].long} · ncbi variant`}
+          />
+          <SortHeader
+            label={MODEL_LABELS[1].long}
+            sortKey="sonnet_ncbi"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerModelCell}
+            title={`${MODEL_LABELS[1].long} · ncbi variant`}
+          />
+          <SortHeader
+            label={MODEL_LABELS[2].long}
+            sortKey="opus_ncbi"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerModelCell}
+            title={`${MODEL_LABELS[2].long} · ncbi variant`}
+          />
         </div>
 
         <div
           className={styles.body}
           style={
             mounted && filtered.length > 0
-              ? { height: totalSize, position: "relative" }
+              ? {
+                  // `minHeight` (not `height`) so when a single-gene
+                  // search match has content taller than the
+                  // estimateSize (e.g. a 2-line gene name +
+                  // synonyms), the row doesn't get clipped. The
+                  // virtualizer's measureElement still drives the
+                  // accurate per-row positioning above this.
+                  minHeight: totalSize,
+                  position: "relative",
+                }
               : undefined
           }
           role="rowgroup"
@@ -334,6 +457,10 @@ export function BenchmarkTable({
                     selectedCell={selectedCell}
                     onSelectCell={handleSelectCell}
                     hasDeepDive={deepDiveGenes.has(r.gene_symbol)}
+                    isQueuedDeepDive={isQueuedDeepDive(
+                      r.gene_symbol,
+                      deepDiveGenes.has(r.gene_symbol),
+                    )}
                     geneName={geneNames?.[r.gene_symbol]}
                   />
                 );
@@ -347,6 +474,15 @@ export function BenchmarkTable({
         </div>
       </div>
 
+      {/* Backdrop overlay — click anywhere off the drawer to close.
+       *  ESC also works (handler installed above). Stays under the
+       *  drawer's z-index so the drawer itself stays interactive. */}
+      <div
+        className={`${styles.backdrop} ${selectedCell ? styles.backdropOpen : ""}`}
+        aria-hidden="true"
+        onClick={() => setSelectedCell(null)}
+      />
+
       <RationaleDrawer
         selected={selectedCell}
         matrix={matrix}
@@ -358,6 +494,68 @@ export function BenchmarkTable({
       />
     </div>
   );
+}
+
+/** Click-to-sort column header. Renders an arrow when active. */
+function SortHeader({
+  label,
+  sortKey,
+  activeKey,
+  dir,
+  onClick,
+  extraClass,
+  title,
+}: {
+  label: string;
+  sortKey: SortKey;
+  activeKey: SortKey;
+  dir: SortDir;
+  onClick: (k: SortKey) => void;
+  extraClass?: string;
+  title?: string;
+}) {
+  const active = sortKey === activeKey;
+  return (
+    <button
+      type="button"
+      role="columnheader"
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+      onClick={() => onClick(sortKey)}
+      className={`${styles.headerCell} ${styles.headerSortable} ${
+        active ? styles.headerSortActive : ""
+      } ${extraClass ?? ""}`}
+      title={title ?? `Sort by ${label}`}
+    >
+      <span>{label}</span>
+      {active ? (
+        <span className={styles.headerSortArrow} aria-hidden="true">
+          {dir === "asc" ? "▲" : "▼"}
+        </span>
+      ) : null}
+    </button>
+  );
+}
+
+/** Map a benchmark row + sort key onto a primitive that the sort
+ *  function can compare. Strings get .localeCompare; numbers go
+ *  straight to subtraction. */
+function sortValue(r: BenchmarkRow, key: SortKey): string | number {
+  switch (key) {
+    case "gene_symbol":
+      return r.gene_symbol.toUpperCase();
+    case "uniprot_acc":
+      return r.uniprot_acc.toUpperCase();
+    case "truth":
+      return verdictRank(r.truth_verdict);
+    case "n_db_surface":
+      return r.n_db_surface ?? 0;
+    case "haiku_ncbi":
+      return verdictRank(r.verdicts?.["claude-haiku-4-5"]?.ncbi?.verdict);
+    case "sonnet_ncbi":
+      return verdictRank(r.verdicts?.["claude-sonnet-4-6"]?.ncbi?.verdict);
+    case "opus_ncbi":
+      return verdictRank(r.verdicts?.["claude-opus-4-7"]?.ncbi?.verdict);
+  }
 }
 
 function FilterChip({
@@ -391,6 +589,7 @@ function BenchRowView({
   selectedCell,
   onSelectCell,
   hasDeepDive,
+  isQueuedDeepDive,
   geneName,
 }: {
   row: BenchmarkRow;
@@ -402,6 +601,7 @@ function BenchRowView({
   selectedCell: SelectedCell | null;
   onSelectCell: (symbol: string, model: string, variant: string) => void;
   hasDeepDive: boolean;
+  isQueuedDeepDive: boolean;
   geneName?: string;
 }) {
   const style: React.CSSProperties | undefined =
@@ -444,11 +644,21 @@ function BenchRowView({
       ref={measureRef}
       data-index={dataIndex}
       role="row"
-      className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""}`}
+      className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""} ${
+        isQueuedDeepDive ? styles.rowQueuedDeepDive : ""
+      }`}
       style={style}
     >
       <div className={`${styles.cell} ${styles.geneCell}`} role="cell">
         {geneCell}
+        {isQueuedDeepDive ? (
+          <span
+            className={styles.queuedDeepDivePill}
+            title="Queued for deep-dive run — agent hasn't been executed yet. See viewer/lib/queued-deep-dives.ts."
+          >
+            queued
+          </span>
+        ) : null}
       </div>
       <div className={`${styles.cell} ${styles.uniprotCell}`} role="cell">
         {row.uniprot_acc}

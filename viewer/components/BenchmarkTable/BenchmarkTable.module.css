@@ -265,6 +265,35 @@
   background: var(--maroon-soft);
 }
 
+/* Queued deep dive — gene has been marked for a deep-dive run but
+ * the agent hasn't run yet (e.g., manually added to the staging list
+ * before $/gene Sonnet calls). Stamped with an orange left-edge so
+ * the reader can spot pending work in the table. Strong enough to
+ * read on top of zebra striping; soft enough not to dominate. */
+.rowQueuedDeepDive {
+  background: rgba(217, 119, 6, 0.08) !important;
+  box-shadow: inset 3px 0 0 var(--amber-deepest);
+}
+
+.rowQueuedDeepDive:hover:not(.headerRow):not(.loadingRow):not(.empty) {
+  background: rgba(217, 119, 6, 0.14) !important;
+}
+
+.queuedDeepDivePill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber-deepest);
+  background: var(--amber-tint);
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
 /* ============================================================
  * Cells
  * ============================================================ */
@@ -306,6 +335,42 @@
   text-transform: none;
   letter-spacing: 0.04em;
   color: var(--ink);
+}
+
+/* Sort affordance — header cells become button-like when clickable.
+ * Visual cue: an arrow appears for the active sort column and the
+ * cell pill highlights on hover. Mirrors the CatalogTable behavior so
+ * the two tables share a sort grammar. */
+.headerSortable {
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  padding: 0.45rem 0.45rem;
+  border-radius: var(--radius-sm);
+  transition: background-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+
+.headerSortable:hover,
+.headerSortable:focus-visible {
+  background: var(--bg-warm);
+  color: var(--ink);
+}
+
+.headerSortActive {
+  color: var(--ink);
+}
+
+.headerSortArrow {
+  font-size: 0.62rem;
+  margin-left: 0.25rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
 }
 
 .cell {
@@ -592,21 +657,29 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.18rem 0.4rem;
-  background: none;
-  border: 1px solid transparent;
+  padding: 0.22rem 0.5rem;
+  /* Solid card background so each cell reads as a discrete element
+   * against the expanded block. Previously bg=none, which left the
+   * verdict pill (at 14% opacity tint) as the only visible mass — for
+   * genes like B4GALT1 / BAX with sparse contrast, the cells faded
+   * into the bg-soft surface. */
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
   border-radius: var(--radius-pill);
   cursor: pointer;
   font: inherit;
   color: inherit;
   text-align: left;
   align-self: flex-start;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
 }
 
 .variantCellBtn:hover,
 .variantCellBtn:focus-visible {
   outline: 2px solid var(--accent-soft);
   outline-offset: 1px;
+  background: var(--bg);
 }
 
 .variantCellPlus {
@@ -720,6 +793,26 @@
  * narrow viewports). Slides in via transform; non-blocking so
  * readers can keep clicking around the table.
  * ============================================================ */
+
+/* Backdrop — semi-transparent overlay behind the drawer. Captures
+ * outside-clicks to close (the drawer itself is non-modal so the
+ * backdrop must be a sibling, not a parent). Pointer-events on
+ * .backdrop, off on .backdropClosed so the table is interactive
+ * when the drawer is shut. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 24, 0.18);
+  opacity: 0;
+  transition: opacity 220ms var(--ease-out);
+  z-index: 35;
+  pointer-events: none;
+}
+
+.backdropOpen {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .drawer {
   position: fixed;

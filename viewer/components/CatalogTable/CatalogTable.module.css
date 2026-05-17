@@ -603,6 +603,36 @@
   box-shadow: inset 3px 0 0 var(--accent);
 }
 
+/* Queued deep dive — gene listed in viewer/lib/queued-deep-dives.ts
+ * but the agent hasn't produced a surface_annotation record yet.
+ * Orange left-edge + chip in the symbol cell so the reader can spot
+ * pending work at a glance. Falls off automatically once the record
+ * lands (the helper checks row.deep_dive). */
+.rowQueuedDeepDive {
+  background: rgba(217, 119, 6, 0.07);
+  box-shadow: inset 3px 0 0 var(--amber-deepest);
+}
+
+.rowQueuedDeepDive:hover {
+  background: rgba(217, 119, 6, 0.12);
+}
+
+.queuedDeepDivePill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber-deepest);
+  background: var(--amber-tint);
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  vertical-align: middle;
+}
+
 /* Orphaned: .expandedMeta, .runList, .runItem, .runMeta, .runBadge,
  * .runBadge[data-verdict=…], .runDim, .runReasoning — all belonged to
  * the inline TriageDetail expansion that's been replaced by the
