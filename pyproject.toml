@@ -6,12 +6,14 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.99.0",
+    "biopython>=1.84",
     "goatools>=1.6.4",
     "httpx>=0.28.0",
     "matplotlib==3.9.4",
     "mygene>=3.2.2",
     "openpyxl>=3.1.5",
     "pandas>=2.3.0,<3",
+    "pikepdf>=10.6.0",
     "polars>=1.39.0",
     "pydantic>=2.11.0",
     "pydantic-ai>=0.0.16",
@@ -48,3 +50,8 @@ root = ["./src"]
 
 [tool.ty.src]
 include = ["src", "tests"]
+
+[tool.pytest.ini_options]
+markers = [
+    "network: tests that require external network (gated by --run-network)",
+]

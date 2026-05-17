@@ -12,10 +12,13 @@ Read-only public API serving the `surfaceome_public` D1 mirror.
 | `GET` | `/v1/orthologs/:symbol` | Mouse + cyno ortholog identity from latest Compara release |
 | `GET` | `/v1/benchmark` | Full benchmark truth labels (latest bench_version) |
 | `GET` | `/v1/benchmark/:symbol` | Single gene's truth label |
+| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV: bench-restricted multi-model sweep (gene × model × variant), 24 cols including truth labels + per-source DB votes joined in. Flat shape of `/v1/benchmark/matrix`. |
+| `GET` | `/v1/benchmark/matrix` | Wide nested JSON: per-gene truth + DB votes + per-model verdicts across all prompt variants. Drives the benchmark figures. |
 | `GET` | `/v1/catalog` | Genome-wide table — candidate-universe rows × DB flags × latest triage × deep-dive flag (drives the viewer's index) |
 | `GET` | `/v1/triage/:symbol` | Triage agent verdicts across (model × variant × replicate) — no costs |
+| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, 21 cols including DB votes + `uniprot_acc` joined server-side. Default `run_id=mainbench_canonical_v1`; pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene sweep. |
 
-All responses are JSON. CORS open (`*`). Cache-Control: `public, max-age=60` on list endpoints, `public, max-age=86400` on per-gene records.
+All responses are JSON (or TSV where noted). CORS open (`*`). Cache-Control: `public, max-age=60` on list endpoints, `public, max-age=86400` on per-gene records and exports.
 
 ## Deploy
 

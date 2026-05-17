@@ -6,6 +6,7 @@ import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
+import { EvidenceDrawer } from "../../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
 import { EvidenceLedgerCard } from "../../components/surfaceome/EvidenceLedgerCard/EvidenceLedgerCard";
 import { ExecutiveSummaryCard } from "../../components/surfaceome/ExecutiveSummaryCard/ExecutiveSummaryCard";
 import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
@@ -140,13 +141,24 @@ export default async function GenePage({ params }: PageProps) {
 
         <Reveal className={styles.confidence}>
           <p className={`label-mono ${styles.confidenceEyebrow}`}>
-            Confidence · {rec.confidence.toFixed(2)}
+            Confidence ·{" "}
+            {typeof rec.confidence === "number"
+              ? rec.confidence.toFixed(2)
+              : String(rec.confidence ?? "—")}
           </p>
           <p className={styles.confidenceLine}>{rec.confidence_reasoning}</p>
         </Reveal>
 
         <DataSourcesFooter rec={rec} />
       </article>
+
+      {/* Global EvidenceDrawer — listens for the `surfaceome:open-evidence`
+       *  CustomEvent dispatched by any <EvidenceChip> in the tree
+       *  (executive-summary cited_evidence_ids, per-method chips,
+       *  per-tissue chips, the EvidenceLedger items themselves). Renders
+       *  one drawer for the whole page so it persists across section
+       *  scrolls and chip clicks. */}
+      <EvidenceDrawer evidence={rec.evidence} />
     </Shell>
   );
 }

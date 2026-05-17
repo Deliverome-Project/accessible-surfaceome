@@ -269,3 +269,201 @@ CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_symbol  ON gene_identifier
 CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_uniprot ON gene_identifier_public (uniprot_acc);
 CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ncbi    ON gene_identifier_public (ncbi_gene_id);
 CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ensembl ON gene_identifier_public (ensembl_gene);
+
+
+-- ---------------------------------------------------------------------------
+-- topology_public — per-isoform DeepTMHMM topology + input sequence.
+--
+-- One row per (topology_version, cohort, uniprot_acc_full). Stores the full
+-- per-residue topology string + the canonical UniProt sequence so consumers
+-- can re-derive any topology feature (loop bounds, ECD boundaries, helix
+-- positions) without re-fetching FASTAs or re-running DeepTMHMM.
+--
+-- Stable-ID join target: ``hgnc_id`` is denormalized into every row so the
+-- viewer / agents / SQL consumers can join through ``gene_identifier_public``
+-- without ever touching ``gene_symbol``. The (uniprot_acc, gene_symbol)
+-- columns stay for backwards compatibility with the M1 merge artifacts,
+-- but ``hgnc_id`` is the canonical key after PR #30.
+--
+-- Cohort distinguishes which input bundle the prediction came from:
+--   human_canonical | human_isoforms | mouse_ortholog | cyno_ortholog
+-- See sources/deeptmhmm.py:COHORTS for the authoritative list.
+--
+-- predicted_surface_membrane is 1 iff deeptmhmm_label in {TM, SP+TM} — matches
+-- the rule in sources/deeptmhmm.py (BETA explicitly excluded; human BETA hits
+-- are mitochondrial outer-membrane barrels, not plasma-membrane).
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS topology_public (
+    topology_version           TEXT NOT NULL,
+    cohort                     TEXT NOT NULL,        -- human_canonical | human_isoforms | mouse_ortholog | cyno_ortholog
+    hgnc_id                    TEXT,                 -- stable join key into gene_identifier_public (NULL for ortholog rows — non-human gene IDs)
+    uniprot_acc                TEXT NOT NULL,        -- base accession (e.g. O95800)
+    uniprot_acc_full           TEXT NOT NULL,        -- with isoform suffix (e.g. O95800-1)
+    isoform_id                 TEXT NOT NULL,
+    gene_symbol                TEXT,                 -- denormalized from gene_identifier for offline reads; NEVER use as a join key
+    species                    TEXT NOT NULL,        -- human | mouse | cynomolgus
+    is_canonical               INTEGER NOT NULL,
+    sequence                   TEXT NOT NULL,        -- input UniProt FASTA sequence
+    protein_length             INTEGER NOT NULL,
+    deeptmhmm_label            TEXT NOT NULL,        -- TM | SP | SP+TM | BETA | GLOB
+    tm_helix_count             INTEGER NOT NULL,
+    beta_strand_count          INTEGER NOT NULL,
+    n_terminal_orientation     TEXT NOT NULL,        -- extracellular | cytoplasmic | indeterminate
+    c_terminal_orientation     TEXT NOT NULL,
+    signal_peptide_length      INTEGER NOT NULL,
+    ecd_length_residues        INTEGER NOT NULL,     -- count of 'O' chars in per_residue_topology
+    icd_length_residues        INTEGER NOT NULL,     -- count of 'I' chars
+    per_residue_topology       TEXT NOT NULL,        -- O/M/I/S/B chars; len == protein_length
+    predicted_surface_membrane INTEGER NOT NULL,     -- 1 iff label in {TM, SP+TM}
+    predicted_secreted         INTEGER NOT NULL,     -- 1 iff label == SP
+    tool_version               TEXT NOT NULL,        -- e.g. 'deeptmhmm-1.0.24'
+    retrieved_at               TEXT NOT NULL,        -- ISO 8601 timestamp
+    synced_at                  TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (topology_version, cohort, uniprot_acc_full)
+);
+
+CREATE INDEX IF NOT EXISTS idx_topology_public_hgnc
+    ON topology_public (hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_topology_public_gene
+    ON topology_public (gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_topology_public_uniprot
+    ON topology_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_topology_public_canonical
+    ON topology_public (topology_version, cohort, is_canonical);
+
+
+-- ---------------------------------------------------------------------------
+-- topology_release — pointer to the active topology_version so the Worker
+-- doesn't have to MAX() over a 30k-row table to find "latest".
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS topology_release (
+    topology_version    TEXT PRIMARY KEY,
+    n_rows              INTEGER NOT NULL,
+    cohorts_present     TEXT NOT NULL,                -- comma-separated cohort list
+    deeptmhmm_version   TEXT NOT NULL,                -- e.g. 'deeptmhmm-1.0.24'
+    attribution         TEXT,                         -- e.g. 'DeepTMHMM 1.0.24 (DTU)'
+    license_url         TEXT,                         -- DeepTMHMM license URL
+    loaded_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    source_run_dir      TEXT,                         -- relative path of source run dir
+    notes               TEXT
+);
+
+
+-- ---------------------------------------------------------------------------
+-- compara_paralog — Ensembl Compara within-species paralogs.
+--
+-- One row per (paralog_version, human_ensembl_gene, paralog_ensembl_gene).
+-- biomart_percent_identity carries the BioMart full-length value verbatim;
+-- ecd_pct_identity is computed locally as a per-loop BLOSUM62 length-weighted
+-- average (see merge/paralog_ecd_identity.py). NULL when either protein has
+-- no extracellular residues per its DeepTMHMM topology.
+--
+-- Per-gene cap: top 50 paralogs by biomart_percent_identity DESC. Families
+-- like IG / TCR have hundreds of members and would explode this table.
+--
+-- Stable-ID join target: ``human_hgnc_id`` and ``paralog_hgnc_id`` are
+-- denormalized for the same reason as topology_public. Ensembl gene IDs
+-- (ENSG...) are the actual Compara primary keys but are not resolver-stable
+-- across Ensembl release bumps — the HGNC IDs are.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS compara_paralog (
+    paralog_version          TEXT NOT NULL,
+    human_hgnc_id            TEXT,                    -- stable join key (NULL when gene_identifier lookup fails)
+    human_ensembl_gene       TEXT NOT NULL,           -- Compara primary input key
+    human_uniprot_acc        TEXT,
+    human_gene_symbol        TEXT,
+    paralog_hgnc_id          TEXT,                    -- stable join key for the paralog
+    paralog_ensembl_gene     TEXT NOT NULL,
+    paralog_uniprot_acc      TEXT,
+    paralog_gene_symbol      TEXT,
+    family_id                TEXT,                    -- ENSFM... Compara family / clade subtype
+    biomart_percent_identity REAL,                    -- from BioMart, full-length
+    ecd_pct_identity         REAL,                    -- per-loop BLOSUM62 length-weighted; NULL when no ECD
+    n_ecd_loops_compared     INTEGER,                 -- # loop pairs aligned
+    rank_by_ecd_identity     INTEGER,                 -- 1=closest paralog; NULLs sort last
+    paralogy_type            TEXT,                    -- within_species_paralog | other_paralog | gene_split
+    is_high_confidence       INTEGER NOT NULL,
+    compara_version          TEXT NOT NULL,           -- e.g. 'Compara r112'
+    synced_at                TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (paralog_version, human_ensembl_gene, paralog_ensembl_gene)
+);
+
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_human_hgnc
+    ON compara_paralog (human_hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_human_uniprot
+    ON compara_paralog (human_uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_human_symbol
+    ON compara_paralog (human_gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_compara_paralog_version_human
+    ON compara_paralog (paralog_version, human_ensembl_gene);
+
+
+-- ---------------------------------------------------------------------------
+-- compara_paralog_release — pointer to the active paralog_version.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS compara_paralog_release (
+    paralog_version    TEXT PRIMARY KEY,
+    compara_release    TEXT NOT NULL,                  -- e.g. 'Compara r112'
+    n_pairs            INTEGER NOT NULL,
+    n_human_genes      INTEGER NOT NULL,
+    fetched_at         TEXT NOT NULL DEFAULT (datetime('now')),
+    source_url         TEXT,
+    notes              TEXT
+);
+
+
+-- ---------------------------------------------------------------------------
+-- compara_ortholog_ecd — locally-computed per-loop ECD identity between
+-- a human canonical and its mouse/cyno one2one ortholog.
+--
+-- compara_ortholog (the BioMart row) gives us full-length percent_identity,
+-- which is biased AGAINST surface proteins — TM + cytoplasmic regions
+-- diverge faster than ECDs. This table carries the per-loop BLOSUM62
+-- length-weighted ECD identity computed against the DeepTMHMM topology
+-- of both proteins (see merge/paralog_ecd_identity.py — same algorithm,
+-- different input pair).
+--
+-- One row per (ortholog_ecd_version, human_hgnc_id, species,
+-- ortholog_uniprot_acc). species column is denormalized so consumers can
+-- filter without joining compara_ortholog.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS compara_ortholog_ecd (
+    ortholog_ecd_version     TEXT NOT NULL,
+    human_hgnc_id            TEXT NOT NULL,             -- stable join into gene_identifier_public
+    human_uniprot_acc        TEXT,
+    human_ensembl_gene       TEXT,
+    human_gene_symbol        TEXT,
+    species                  TEXT NOT NULL,             -- mouse | cynomolgus
+    ortholog_uniprot_acc     TEXT NOT NULL,
+    ortholog_ensembl_gene    TEXT,
+    ortholog_gene_symbol     TEXT,
+    biomart_percent_identity REAL,                      -- full-length, from compara_ortholog
+    ecd_pct_identity         REAL,                      -- per-loop BLOSUM62; NULL when no ECD
+    n_ecd_loops_compared     INTEGER,
+    compara_release          TEXT NOT NULL,             -- e.g. 'ensembl_compara_2026_05_12'
+    synced_at                TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (ortholog_ecd_version, human_hgnc_id, species, ortholog_uniprot_acc)
+);
+
+CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_human_hgnc
+    ON compara_ortholog_ecd (human_hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_species
+    ON compara_ortholog_ecd (species);
+CREATE INDEX IF NOT EXISTS idx_compara_ortholog_ecd_ortholog_uniprot
+    ON compara_ortholog_ecd (ortholog_uniprot_acc);
+
+
+CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
+    ortholog_ecd_version TEXT PRIMARY KEY,
+    compara_release      TEXT NOT NULL,
+    n_pairs              INTEGER NOT NULL,
+    n_human_genes        INTEGER NOT NULL,
+    n_species            INTEGER NOT NULL,
+    computed_at          TEXT NOT NULL DEFAULT (datetime('now')),
+    notes                TEXT
+);

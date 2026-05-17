@@ -23,3 +23,9 @@ CLAUDE.md
 #
 public/structure-viewer/*
 !public/structure-viewer/O95800.json
+# SRC (P12931, GLOB by DeepTMHMM — myristoyl-anchored cytoplasmic
+# kinase). Generated with `--include-globular` because most truly
+# soluble proteins should skip the membrane-topology viewer, but
+# lipid-anchored cytoplasmic proteins belong on the surfaceome and the
+# AFDB structure is still informative for the reader.
+!public/structure-viewer/P12931.json

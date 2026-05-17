@@ -4,6 +4,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { EvidenceChip } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./EvidenceLedgerCard.module.css";
@@ -19,14 +20,36 @@ function tierTone(t: EvidenceTier) {
   return "neutral" as const;
 }
 
+// Schema-tolerant source extraction.
+// v1.0.0 records: evidence[i].spans[j].source carries pmc_id / pmid / doi / url
+//   (snake_case, multiple spans per evidence claim).
+// Legacy records: evidence[i].source carries pmcid / pmid / doi / url
+//   (single, top-level).
+function firstSource(e: Evidence): Record<string, unknown> | null {
+  type LegacyEvidence = Evidence & { source?: Record<string, unknown> };
+  type SpanWithSource = { source?: Record<string, unknown> };
+  if (Array.isArray(e.spans) && e.spans.length) {
+    for (const sp of e.spans as SpanWithSource[]) {
+      if (sp?.source) return sp.source;
+    }
+  }
+  const legacy = (e as LegacyEvidence).source;
+  return legacy ?? null;
+}
+function pmcIdOf(src: Record<string, unknown> | null): string | null {
+  if (!src) return null;
+  return (src.pmc_id as string | undefined) ?? (src.pmcid as string | undefined) ?? null;
+}
 function sourceLink(e: Evidence) {
-  const s = e.source;
-  if (s.url) return { href: s.url, label: s.url };
+  const s = firstSource(e);
+  if (!s) return null;
+  if (s.url) return { href: s.url as string, label: s.url as string };
   if (s.doi) return { href: `https://doi.org/${s.doi}`, label: `doi:${s.doi}` };
-  if (s.pmcid) {
+  const pmcId = pmcIdOf(s);
+  if (pmcId) {
     return {
-      href: `https://www.ncbi.nlm.nih.gov/pmc/articles/${s.pmcid}/`,
-      label: s.pmcid,
+      href: `https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcId}/`,
+      label: pmcId,
     };
   }
   if (s.pmid) {
@@ -47,7 +70,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
     if (e.evidence_tier === "primary") primary += 1;
     else if (e.evidence_tier === "secondary") secondary += 1;
     else if (e.evidence_tier === "tertiary") tertiary += 1;
-    if (e.source.pmcid) pmcOa += 1;
+    if (pmcIdOf(firstSource(e))) pmcOa += 1;
   }
   const total = rec.evidence.length;
 
@@ -72,7 +95,14 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
               return (
                 <li key={e.evidence_id} className={styles.item}>
                   <div className={styles.head}>
-                    <span className={styles.id}>{e.evidence_id}</span>
+                    {/* The evidence_id pill IS the chip — click to open
+                     *  the global EvidenceDrawer with full claim +
+                     *  quote + sources, same drawer the per-section
+                     *  chip strips open. */}
+                    <EvidenceChip
+                      evidenceId={e.evidence_id}
+                      title={`Open evidence ${e.evidence_id} — ${e.claim.slice(0, 80)}…`}
+                    />
                     <StatusPill tone={tierTone(e.evidence_tier)} size="sm">
                       {prettyEnum(e.evidence_tier)}
                     </StatusPill>

@@ -30,9 +30,12 @@ Outputs (PDF + PNG):
 from __future__ import annotations
 
 import csv
+import hashlib
+import io
 import os
 from pathlib import Path
 
+import httpx
 import matplotlib.pyplot as plt
 import pandas as pd
 import upsetplot
@@ -53,16 +56,60 @@ DB_FLAGS_5 = [
     ("cspa_surface_flag", "CSPA"),
 ]
 
+# Per-DB fixed colour assignment. Every label always renders with the
+# same colour across figures (UniProt = palette[0], GO CC = palette[1],
+# …). Match the standalone gist's PALETTE_BY_LABEL so the canonical
+# figure and the gist's live re-run produce identical colour-to-DB
+# mappings regardless of which DB happens to be the largest set.
+PALETTE_BY_LABEL = {
+    label: CATEGORICAL_PALETTE[i] for i, (_, label) in enumerate(DB_FLAGS_5)
+}
+
+# Pin to an immutable commit SHA so the reproduction is traceable and
+# tamper-evident. Bump together with ``_EXPECTED_TSV_SHA256`` whenever
+# the upstream universe TSV is intentionally refreshed (and update the
+# matching ``data[0]`` entry in scripts/embed_figure_gist_metadata.py).
+_PINNED_COMMIT_SHA = "898c743d9df4ec7497e7424b80d3408e5ad07c41"
+_CAND_URL = (
+    "https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/"
+    f"{_PINNED_COMMIT_SHA}/data/processed/candidate_universe/candidate_universe.tsv"
+)
+_EXPECTED_TSV_SHA256 = (
+    "2406464f3f86680e76844fe07e9aa32e5550960bc9fa5573137bb31c15ea3ef2"
+)
+
+
+def _load_universe_bytes(path: Path) -> bytes:
+    """Return the universe TSV bytes from ``path`` if present, else fetch
+    them from the pinned commit URL. Verifies sha256 against the
+    pinned digest in either case and raises ``SystemExit`` on mismatch.
+    """
+
+    if path.is_file():
+        tsv_bytes = path.read_bytes()
+    else:
+        r = httpx.get(_CAND_URL, timeout=30)
+        r.raise_for_status()
+        tsv_bytes = r.content
+    got = hashlib.sha256(tsv_bytes).hexdigest()
+    if got != _EXPECTED_TSV_SHA256:
+        raise SystemExit(
+            f"candidate_universe.tsv sha256 mismatch: expected "
+            f"{_EXPECTED_TSV_SHA256}, got {got}. The pinned URL "
+            f"({_CAND_URL}) may be wrong, or upstream content changed."
+        )
+    return tsv_bytes
+
 
 def build_sets(path: Path) -> dict[str, set[str]]:
     sets: dict[str, set[str]] = {label: set() for _, label in DB_FLAGS_5}
-    with path.open() as fh:
-        reader = csv.DictReader(fh, delimiter="\t")
-        for row in reader:
-            acc = row["uniprot_accession"]
-            for flag, label in DB_FLAGS_5:
-                if row.get(flag, "0") == "1":
-                    sets[label].add(acc)
+    tsv_bytes = _load_universe_bytes(path)
+    reader = csv.DictReader(io.StringIO(tsv_bytes.decode("utf-8")), delimiter="\t")
+    for row in reader:
+        acc = row["uniprot_accession"]
+        for flag, label in DB_FLAGS_5:
+            if row.get(flag, "0") == "1":
+                sets[label].add(acc)
     return sets
 
 
@@ -76,10 +123,11 @@ def make_plot(out_dir: Path) -> None:
     sorted_sets = {k: sets[k] for k in sorted_keys}
 
     fig, ax = plt.subplots(figsize=(11, 10))
+    cmap = [PALETTE_BY_LABEL[k] for k in sorted_keys]
     venn(
         sorted_sets,
         ax=ax,
-        cmap=CATEGORICAL_PALETTE[: len(sorted_sets)],
+        cmap=cmap,
         fontsize=15,
         legend_loc=None,  # custom legend below so it doesn't overlap the ellipses
     )
@@ -94,8 +142,8 @@ def make_plot(out_dir: Path) -> None:
     # Legend with per-DB set size, anchored below the diagram. Fontsize
     # bumped to match the rest of the post-2026-05 plotting config.
     handles = [
-        plt.Rectangle((0, 0), 1, 1, color=CATEGORICAL_PALETTE[i], alpha=0.6)
-        for i in range(len(sorted_keys))
+        plt.Rectangle((0, 0), 1, 1, color=PALETTE_BY_LABEL[k], alpha=0.6)
+        for k in sorted_keys
     ]
     labels = [f"{k}  (n = {len(sets[k]):,})" for k in sorted_keys]
     ax.legend(

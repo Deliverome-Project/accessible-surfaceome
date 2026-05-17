@@ -40,14 +40,14 @@ Do **not** invoke this skill for non-human genes, for general protein-biology qu
 |---|---|---|---|
 | `GET` | `/v1/catalog` | Per-gene-per-source DB-vote matrix (5 DBs) + latest triage verdict + deep-dive flag | 60s |
 | `GET` | `/v1/triage/{SYMBOL}` | Every triage run for one gene — model × variant × replicate, with cost + token counts | 60s |
-| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`. Default `mainbench_canonical_v1` (1,470 SurfaceBench rows); pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene sweep. | 1d |
+| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side (21 cols). Default `mainbench_canonical_v1` (~1.5k bench rows × Haiku/Sonnet/Opus × 4 variants); pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene Sonnet sweep. | 1d |
 
 ### SurfaceBench (147-gene labeled eval)
 
 | Method | Path | Returns | TTL |
 |---|---|---|---|
 | `GET` | `/v1/benchmark` | 147 ground-truth labels (JSON) for the current bench_version | 1d |
-| `GET` | `/v1/benchmark/export.tsv` | Same 147 labels in 7-column TSV shape | 1d |
+| `GET` | `/v1/benchmark/export.tsv` | Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) with truth labels + DB votes joined in (24 cols). Flat version of `/v1/benchmark/matrix`. | 1d |
 | `GET` | `/v1/benchmark/{SYMBOL}` | Single gene's truth label | 1d |
 | `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 7 per-DB flags + per-model LLM verdicts (headline + 3 alts) | 1d |
 
@@ -135,7 +135,7 @@ print(record["targetability"]["tier"])
 
 ## Example: rebuild the canonical predictions table
 
-`/v1/triage/export.tsv` returns the same 14-column long-format TSV that the figure scripts and gists consume — the public source of truth for every published figure.
+`/v1/triage/export.tsv` returns a 21-column long-format TSV — the public source of truth for every published figure. Each row carries the per-source DB votes (uniprot/go/surfy/cspa/hpa) and `uniprot_acc` joined from the latest candidate-universe snapshot, so figure scripts don't need a second fetch to compare model verdicts against DB consensus.
 
 ```bash
 curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1' \

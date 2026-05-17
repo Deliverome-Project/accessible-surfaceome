@@ -17,6 +17,11 @@ function plddtTone(plddt: number) {
 
 export function StructureSummaryCard({ rec, n }: Props) {
   const s = rec.deterministic_features.structure;
+  // The AFDB pLDDT fetcher is deferred — the orchestrator emits a
+  // labeled placeholder with source string starting "AlphaFold DB
+  // (placeholder ...)". Detect that explicitly so the card doesn't
+  // misrepresent "0.0 pLDDT" as a real measurement.
+  const isPlaceholder = s.source.toLowerCase().includes("placeholder");
   return (
     <SectionCard
       n={n}
@@ -41,14 +46,24 @@ export function StructureSummaryCard({ rec, n }: Props) {
         <div className={styles.stat}>
           <dt className={`label-mono ${styles.k}`}>ECD mean pLDDT</dt>
           <dd className={styles.v}>
-            <StatusPill tone={plddtTone(s.ecd_mean_plddt)} size="md">
-              {s.ecd_mean_plddt.toFixed(1)}
-            </StatusPill>
+            {isPlaceholder ? (
+              <StatusPill tone="neutral" size="md">
+                fetcher pending
+              </StatusPill>
+            ) : (
+              <StatusPill tone={plddtTone(s.ecd_mean_plddt)} size="md">
+                {s.ecd_mean_plddt.toFixed(1)}
+              </StatusPill>
+            )}
           </dd>
         </div>
         <div className={styles.stat}>
           <dt className={`label-mono ${styles.k}`}>ECD disordered fraction</dt>
-          <dd className={styles.v}>{(s.ecd_disordered_fraction * 100).toFixed(1)}%</dd>
+          <dd className={styles.v}>
+            {isPlaceholder
+              ? "fetcher pending"
+              : `${(s.ecd_disordered_fraction * 100).toFixed(1)}%`}
+          </dd>
         </div>
         {/* ecd_solvent_accessible_fraction was considered + dropped
             in PR23 round 9 — would have required a new SASA dep
