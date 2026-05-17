@@ -63,22 +63,32 @@ the timing PR.
 | Contradictions | 1 | 1 | 0 | 2 |
 | Anchored | 100% (39/39) | 100% (80/80) | 100% (55/55) | 100% (52/52) |
 | Spend (info only) | $1.24 | $3.05 | $1.84 | $1.68 |
-| Wall clock (info only) | n/a | n/a | 17m 48s | 15m 28s |
+| Wall clock (info only) | n/a | n/a | **9m 23s** | **9m 33s** |
+
+The CD81 + CLDN18 wall-clock numbers reflect the **parallel** pipeline
+(builders + per-paper Haiku trim concurrent). Sequential baselines
+were CD81 17m 48s and CLDN18 15m 28s, so the speedup is ~1.9× and
+~1.6× respectively.
 
 ## Where the time goes — bottleneck snapshot (CD81 + CLDN18)
 
-| Phase | CD81 | CLDN18 | Notes |
-|---|---|---|---|
-| plan-trim-select dual (A1 + A2) | ~770s | ~700s | Dominant cost: 2 iterations × 2 agents × selector ~80–120s each. Selector iter1 alone is 100+s. |
-| 9 block builders | ~110s | ~135s | `methods` + `accessibility_modulation` are the heaviest (~40–60s each). |
-| synthesizer (B) | ~30s | ~30s | Single Sonnet call over merged A1+A2 ledger. |
-| evidence promotion + features + filters | <1s | <1s | Pure local work — substring matching + dict assembly. |
+Two columns per gene: **sum-of-steps** (the total Sonnet + Haiku work,
+useful for cost attribution) and **wall clock** (what the user
+actually waited for; lower than sum when steps run concurrently).
 
-Headline: **the selector calls in plan-trim-select dominate wall
-clock**. Two fixable angles: (a) parallelize A1 and A2 (today they're
-sequential to share the HTTP cache), (b) lower `MAX_PLAN_ITERATIONS`
-when the iteration-0 selection is already mature. Both are
-follow-up PRs.
+| Phase | CD81 sum | CD81 wall | CLDN18 sum | CLDN18 wall | Notes |
+|---|---|---|---|---|---|
+| plan-trim-select dual (A1 + A2) | 863s | 470s | 730s | 460s | A1 and A2 still sequential; within each, per-paper Haiku trim is now concurrent (10-way pool) — collapses from ~110s to ~14s per iteration. |
+| 9 block builders | 127s | 65s | 135s | 75s | All 9 builders dispatched concurrently (9-way pool); wall clock = slowest single builder (usually `methods`). |
+| synthesizer (B) | 28s | 28s | 30s | 30s | Single Sonnet call over merged A1+A2 ledger — no parallelism available. |
+| evidence promotion + features + filters | <1s | <1s | <1s | <1s | Pure local work. |
+
+Headline: **the Sonnet selector calls in plan-trim-select still dominate
+wall clock** (~370s of the ~470s plan-trim-select bucket). Next
+biggest fixable win: parallelize A1 and A2 themselves after a shared
+search-warmup pass — estimated additional ~200s saving. The current
+PR (#35) lands the two cheapest wins (builder concurrency + per-paper
+Haiku trim concurrency) which together cut wall clock ~40-50%.
 
 ## Refreshing these samples
 

@@ -335,8 +335,24 @@ def _render_timing_section(record: dict[str, Any]) -> str:
     if not rows:
         return ""
 
-    total = sum(float(r.get("elapsed_s", 0.0)) for r in rows) or 1e-9
-    total_disp = float(record.get("total_elapsed_s") or total)
+    # Two distinct totals to surface honestly:
+    # * sum_steps = sum(elapsed_s) — what we use to compute "% of work"
+    #   per phase in the stacked bar (each pixel represents one second
+    #   of model/CPU work, regardless of who was waiting on whom).
+    # * wall_clock = max(end) - min(start) over all rows — what the
+    #   user actually waited for. With concurrency this is < sum_steps.
+    sum_steps = sum(float(r.get("elapsed_s", 0.0)) for r in rows) or 1e-9
+    wall_clock = float(
+        record.get("total_elapsed_s")
+        or record.get("total_step_seconds")
+        or sum_steps
+    )
+    sum_step_seconds = float(record.get("total_step_seconds") or sum_steps)
+    parallelism = (sum_step_seconds / wall_clock) if wall_clock > 0 else 0.0
+    # The bar segments use sum_steps as the denominator so phase
+    # percentages reflect work allocation; the title shows wall clock.
+    total = sum_steps
+    total_disp = wall_clock
 
     # Roll up per phase for the stacked bar.
     by_phase: dict[str, float] = {}
@@ -395,7 +411,11 @@ def _render_timing_section(record: dict[str, Any]) -> str:
 
     return f"""
     <section class="block timing-block">
-      <h2>Step timeline · {total_disp:.1f}s wall clock</h2>
+      <h2>Step timeline · {total_disp:.1f}s wall clock
+          <span class="muted small">
+            (sum-of-steps {sum_step_seconds:.1f}s · parallelism {parallelism:.1f}×)
+          </span>
+      </h2>
       <div class="timing-bar" role="img"
            aria-label="phase breakdown of {total_disp:.1f}s total runtime">
         {''.join(bar_segments)}

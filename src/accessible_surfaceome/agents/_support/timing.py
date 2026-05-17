@@ -131,6 +131,33 @@ class TimingRecorder:
     def to_jsonable(self) -> list[dict[str, Any]]:
         return [e.as_dict() for e in self.entries]
 
+    @property
+    def wall_clock_s(self) -> float:
+        """End-to-end wall clock across all recorded steps.
+
+        Computed as ``max(end) - min(start)`` over ``self.entries``.
+        Distinct from ``sum(elapsed_s)`` — when steps run concurrently
+        the summed elapsed overstates the user-visible runtime by a
+        factor equal to the achieved parallelism. Returns ``0.0`` when
+        no entries have been recorded yet.
+        """
+        if not self.entries:
+            return 0.0
+        starts: list[float] = []
+        ends: list[float] = []
+        for e in self.entries:
+            try:
+                t = datetime.fromisoformat(
+                    e.started_at.replace("Z", "+00:00")
+                ).timestamp()
+            except ValueError:
+                continue
+            starts.append(t)
+            ends.append(t + e.elapsed_s)
+        if not starts:
+            return 0.0
+        return round(max(ends) - min(starts), 3)
+
 
 @dataclass
 class _StepHandle:

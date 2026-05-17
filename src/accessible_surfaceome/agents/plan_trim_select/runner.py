@@ -28,6 +28,7 @@ import logging
 import re
 import time
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -121,6 +122,16 @@ TRIM_PREVIEW_CHARS = 700
 # Cap per-paper clip pool size sent to Haiku trim. Above this, sort by score
 # (evidence_retrieval drafts carry a score; paper_level drafts default to ~1).
 MAX_CLIPS_PER_TRIM_CALL = 60
+
+# Maximum concurrent Haiku trim calls. Per-paper trims are independent
+# (each is one ``messages.create`` against an independent prompt), so we
+# fan them out across this many threads. ``10`` was chosen as the
+# conservative ceiling that (a) keeps us well under the per-org request
+# rate limit even for a 60-paper gene and (b) saturates the typical
+# Haiku tail latency (~3-8s/call) without piling up requests behind
+# slow ones. Raise if you confirm rate-limit headroom; lower if you
+# observe 429s.
+TRIM_CONCURRENCY = 10
 
 # How many plan iterations the loop runs in total: 1 initial plan + up to
 # (MAX_PLAN_ITERATIONS - 1) follow-ups requested via needs_more_searches.
@@ -646,6 +657,129 @@ def _format_clips_for_trim(clips: list[EvidenceClaimDraft]) -> str:
     return "\n\n".join(lines)
 
 
+@dataclass
+class _TrimOutcome:
+    """One paper's trim result + token usage + timing row, returned by
+    the per-paper worker so the orchestrator merges them on the main
+    thread (avoids shared mutation inside the worker)."""
+
+    source_id: str
+    response: TrimResponse
+    usage_record: UsageRecord | None
+    timing_row: StepTiming | None
+
+
+def _trim_one_paper(
+    client: Anthropic,
+    *,
+    source_id: str,
+    clips: list[EvidenceClaimDraft],
+    gene: str,
+    schema_str: str,
+    trim_prompt_template: str,
+    timing_phase: str,
+    timing_iteration: int,
+    emit_timing: bool,
+) -> _TrimOutcome:
+    """Worker: trim one paper's clip pool via a single Haiku call.
+
+    Pure: reads no shared mutable state, writes only to the returned
+    ``_TrimOutcome``. The orchestrator merges the outcome into the
+    shared ``usage_sink`` / ``TimingRecorder`` / results dict on the
+    main thread.
+    """
+    bounded = sorted(clips, key=lambda c: c.score, reverse=True)[
+        :MAX_CLIPS_PER_TRIM_CALL
+    ]
+    prompt = trim_prompt_template.format(
+        gene=gene,
+        paper_id=source_id,
+        n_clips=len(bounded),
+        numbered_clips=_format_clips_for_trim(bounded),
+        schema=schema_str,
+    )
+    started_at = datetime.now(UTC)
+    t0 = time.perf_counter()
+    try:
+        resp = client.messages.create(
+            model=HAIKU_MODEL,
+            max_tokens=MAX_TOKENS_TRIM,
+            messages=cast("Any", [{"role": "user", "content": prompt}]),
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("trim call failed for %s: %s", source_id, exc)
+        timing_row = (
+            StepTiming(
+                step_name=f"trim:iter{timing_iteration}:{source_id}",
+                phase=timing_phase,
+                started_at=started_at.isoformat().replace("+00:00", "Z"),
+                elapsed_s=round(time.perf_counter() - t0, 3),
+                n_items=len(bounded),
+                model=HAIKU_PRICING_KEY,
+            )
+            if emit_timing
+            else None
+        )
+        return _TrimOutcome(
+            source_id=source_id,
+            response=TrimResponse(paper_id=source_id, kept=[]),
+            usage_record=None,
+            timing_row=timing_row,
+        )
+
+    rec = record_from_response(resp.usage, HAIKU_PRICING_KEY)
+    elapsed = round(time.perf_counter() - t0, 3)
+    timing_row = (
+        StepTiming(
+            step_name=f"trim:iter{timing_iteration}:{source_id}",
+            phase=timing_phase,
+            started_at=started_at.isoformat().replace("+00:00", "Z"),
+            elapsed_s=elapsed,
+            n_items=len(bounded),
+            model=HAIKU_PRICING_KEY,
+            input_tokens=rec.input_tokens,
+            output_tokens=rec.output_tokens,
+            cache_creation_input_tokens=rec.cache_creation_input_tokens,
+            cache_read_input_tokens=rec.cache_read_input_tokens,
+            cost_usd=round(rec.cost_usd, 6),
+        )
+        if emit_timing
+        else None
+    )
+
+    text = "\n".join(
+        b.text for b in resp.content if isinstance(b, TextBlock)
+    ).strip()
+    raw = _extract_json(text)
+    if raw is None:
+        logger.warning(
+            "trim for %s emitted no JSON; treating as no keeps", source_id
+        )
+        response = TrimResponse(paper_id=source_id, kept=[])
+    else:
+        try:
+            tr = TrimResponse.model_validate(raw)
+            # The model sometimes echoes the paper_id; normalize it.
+            tr = tr.model_copy(update={"paper_id": source_id})
+            # Filter out kept ids that aren't in our submitted clip set —
+            # the model occasionally hallucinates ids.
+            known_ids = {c.suggested_evidence_id for c in bounded}
+            tr = tr.model_copy(
+                update={"kept": [k for k in tr.kept if k.clip_id in known_ids]}
+            )
+            response = tr
+        except ValidationError as exc:
+            logger.warning("trim validation failed for %s: %s", source_id, exc)
+            response = TrimResponse(paper_id=source_id, kept=[])
+
+    return _TrimOutcome(
+        source_id=source_id,
+        response=response,
+        usage_record=rec,
+        timing_row=timing_row,
+    )
+
+
 def _run_trim(
     client: Anthropic,
     *,
@@ -657,10 +791,16 @@ def _run_trim(
     timing_phase: str = "plan_trim_select",
     timing_iteration: int = 0,
 ) -> dict[str, TrimResponse]:
-    """One Haiku call per paper. Returns {source_id: TrimResponse}.
+    """One Haiku call per paper, fanned out across a thread pool.
 
-    ``trim_prompt_path`` loads the trim system prompt template (must contain
-    the placeholders ``{gene}`` ``{paper_id}`` ``{n_clips}``
+    Each paper's trim is independent (its own prompt, its own response,
+    its own validation slot in the result dict). Concurrency is capped
+    at :data:`TRIM_CONCURRENCY` to stay well under per-org Anthropic
+    rate limits even when a gene pulls 60+ papers; raising the cap
+    further mostly trades rate-limit headroom for marginal latency.
+
+    ``trim_prompt_path`` loads the trim system prompt template (must
+    contain the placeholders ``{gene}`` ``{paper_id}`` ``{n_clips}``
     ``{numbered_clips}`` ``{schema}``). Defaults to the generic A1+A2
     template; per-agent paths narrow the trim focus.
     """
@@ -668,80 +808,35 @@ def _run_trim(
     schema_str = json.dumps(TrimResponse.model_json_schema(), indent=2)
     trim_prompt_template = trim_prompt_path.read_text()
     results: dict[str, TrimResponse] = {}
+    non_empty = [(sid, clips) for sid, clips in clips_by_source.items() if clips]
+    if not non_empty:
+        return results
 
-    for source_id, clips in clips_by_source.items():
-        if not clips:
-            continue
-        bounded = sorted(clips, key=lambda c: c.score, reverse=True)[:MAX_CLIPS_PER_TRIM_CALL]
-        prompt = trim_prompt_template.format(
-            gene=gene,
-            paper_id=source_id,
-            n_clips=len(bounded),
-            numbered_clips=_format_clips_for_trim(bounded),
-            schema=schema_str,
-        )
-        _step_started = datetime.now(UTC)
-        _step_t0 = time.perf_counter()
-        try:
-            resp = client.messages.create(
-                model=HAIKU_MODEL,
-                max_tokens=MAX_TOKENS_TRIM,
-                messages=cast("Any", [{"role": "user", "content": prompt}]),
+    emit_timing = timing is not None
+
+    with ThreadPoolExecutor(max_workers=TRIM_CONCURRENCY) as executor:
+        futures = [
+            executor.submit(
+                _trim_one_paper,
+                client,
+                source_id=sid,
+                clips=clips,
+                gene=gene,
+                schema_str=schema_str,
+                trim_prompt_template=trim_prompt_template,
+                timing_phase=timing_phase,
+                timing_iteration=timing_iteration,
+                emit_timing=emit_timing,
             )
-        except Exception as exc:  # noqa: BLE001
-            logger.warning("trim call failed for %s: %s", source_id, exc)
-            if timing is not None:
-                timing.add(
-                    StepTiming(
-                        step_name=f"trim:iter{timing_iteration}:{source_id}",
-                        phase=timing_phase,
-                        started_at=_step_started.isoformat().replace("+00:00", "Z"),
-                        elapsed_s=round(time.perf_counter() - _step_t0, 3),
-                        n_items=len(bounded),
-                        model=HAIKU_PRICING_KEY,
-                    )
-                )
-            continue
-        rec = record_from_response(resp.usage, HAIKU_PRICING_KEY)
-        usage_sink.append(rec)
-        if timing is not None:
-            timing.add(
-                StepTiming(
-                    step_name=f"trim:iter{timing_iteration}:{source_id}",
-                    phase=timing_phase,
-                    started_at=_step_started.isoformat().replace("+00:00", "Z"),
-                    elapsed_s=round(time.perf_counter() - _step_t0, 3),
-                    n_items=len(bounded),
-                    model=HAIKU_PRICING_KEY,
-                    input_tokens=rec.input_tokens,
-                    output_tokens=rec.output_tokens,
-                    cache_creation_input_tokens=rec.cache_creation_input_tokens,
-                    cache_read_input_tokens=rec.cache_read_input_tokens,
-                    cost_usd=round(rec.cost_usd, 6),
-                )
-            )
-        text = "\n".join(
-            b.text for b in resp.content if isinstance(b, TextBlock)
-        ).strip()
-        raw = _extract_json(text)
-        if raw is None:
-            logger.warning("trim for %s emitted no JSON; treating as no keeps", source_id)
-            results[source_id] = TrimResponse(paper_id=source_id, kept=[])
-            continue
-        try:
-            tr = TrimResponse.model_validate(raw)
-            # The model sometimes echoes the paper_id; normalize it.
-            tr = tr.model_copy(update={"paper_id": source_id})
-            # Filter out kept ids that aren't in our submitted clip set —
-            # the model occasionally hallucinates ids.
-            known_ids = {c.suggested_evidence_id for c in bounded}
-            tr = tr.model_copy(
-                update={"kept": [k for k in tr.kept if k.clip_id in known_ids]}
-            )
-            results[source_id] = tr
-        except ValidationError as exc:
-            logger.warning("trim validation failed for %s: %s", source_id, exc)
-            results[source_id] = TrimResponse(paper_id=source_id, kept=[])
+            for sid, clips in non_empty
+        ]
+        for fut in futures:
+            outcome = fut.result()
+            if outcome.usage_record is not None:
+                usage_sink.append(outcome.usage_record)
+            if outcome.timing_row is not None and timing is not None:
+                timing.add(outcome.timing_row)
+            results[outcome.source_id] = outcome.response
 
     return results
 

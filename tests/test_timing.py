@@ -159,6 +159,37 @@ def test_summarize_usage_for_step_handles_empty() -> None:
     assert summarize_usage_for_step([], None) == {}
 
 
+def test_recorder_wall_clock_distinct_from_sum_when_concurrent() -> None:
+    """``wall_clock_s`` measures user-visible runtime (max(end) -
+    min(start)), distinct from ``sum(elapsed_s)`` which sums per-step
+    work. Two overlapping steps should report wall clock < sum."""
+    import threading
+
+    rec = TimingRecorder()
+
+    def _step(name: str) -> None:
+        with rec.step(name, phase="post"):
+            time.sleep(0.1)
+
+    threads = [threading.Thread(target=_step, args=(f"step_{i}",)) for i in range(3)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    summed = sum(e.elapsed_s for e in rec.entries)
+    wall = rec.wall_clock_s
+    # 3 concurrent 0.1s steps → summed ≈ 0.3s, wall ≈ 0.1s.
+    assert summed >= 0.3, f"summed should reflect total work, got {summed:.3f}s"
+    assert wall < 0.25, f"wall clock should be ~0.1s, got {wall:.3f}s"
+    assert wall < summed
+
+
+def test_recorder_wall_clock_empty_returns_zero() -> None:
+    rec = TimingRecorder()
+    assert rec.wall_clock_s == 0.0
+
+
 def test_recorder_to_jsonable_returns_list_of_dicts() -> None:
     rec = TimingRecorder()
     with rec.step("a", phase="post"):

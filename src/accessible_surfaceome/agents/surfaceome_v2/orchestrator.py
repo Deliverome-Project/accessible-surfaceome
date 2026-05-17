@@ -26,6 +26,8 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -85,6 +87,44 @@ AGENT_MODEL = "claude-sonnet-4-6"
 SCHEMA_VERSION_LITERAL = "1.0.0"
 RUNS_DIR = Path(".runs")
 
+# Maximum block-builders to dispatch concurrently. There are 9 builders
+# total (4 A1 + 5 A2); they consume independent claim slices and each
+# makes a single Sonnet call, so a worker pool sized to ``9`` lets every
+# builder kick off immediately. The Anthropic client is thread-safe
+# (httpx underneath) and each builder writes to its own ``usage_sink``
+# list so there's no shared mutable state across workers. The shared
+# ``TimingRecorder`` appends rows from multiple threads — CPython's
+# ``list.append`` is atomic under the GIL, so the list stays
+# well-formed; the resulting timing-row order is non-deterministic but
+# the viewer sorts by ``elapsed_s`` anyway.
+BUILDER_CONCURRENCY = 9
+
+
+def _wall_clock_for_timing(timing: list[StepTiming]) -> float:
+    """End-to-end wall clock for a timing list.
+
+    Same semantics as :attr:`TimingRecorder.wall_clock_s`: parses each
+    row's ``started_at`` ISO string and returns ``max(end) - min(start)``.
+    Used by ``write_summary_meta`` because it operates on a frozen
+    ``list[StepTiming]`` snapshot rather than the live recorder.
+    """
+    if not timing:
+        return 0.0
+    starts: list[float] = []
+    ends: list[float] = []
+    for e in timing:
+        try:
+            t = datetime.fromisoformat(
+                e.started_at.replace("Z", "+00:00")
+            ).timestamp()
+        except ValueError:
+            continue
+        starts.append(t)
+        ends.append(t + e.elapsed_s)
+    if not starts:
+        return 0.0
+    return round(max(ends) - min(starts), 3)
+
 
 @dataclass
 class BlockBuilderUsage:
@@ -100,6 +140,77 @@ class BlockBuilderUsage:
     @property
     def n_calls(self) -> int:
         return len(self.records)
+
+
+@dataclass
+class _BuilderSpec:
+    """One block-builder invocation packaged for concurrent dispatch.
+
+    Carries the builder callable + its claim slice + the gene context
+    dict the builder expects. ``phase`` is the timing-bucket label so
+    the HTML viewer's Section 0.5 can color A1 vs A2 builders distinctly.
+    """
+
+    name: str
+    phase: str  # "builders_a1" or "builders_a2"
+    fn: Callable[..., Any]
+    claims: list[EvidenceClaim]
+    ctx: dict[str, Any]
+
+
+def _run_builders_concurrently(
+    specs: list[_BuilderSpec],
+    *,
+    client: Anthropic,
+    timing: TimingRecorder,
+    builder_usage: dict[str, BlockBuilderUsage],
+) -> dict[str, Any]:
+    """Dispatch every builder spec on a thread pool, gather results.
+
+    Side effects:
+      * Populates ``builder_usage[spec.name]`` with the per-builder
+        UsageRecord list (so the existing cost-rollup properties keep
+        working).
+      * Appends one ``StepTiming`` row per builder to ``timing``.
+
+    Concurrency invariants:
+      * The Anthropic client object is shared across workers — that's
+        safe (the SDK uses httpx with connection pooling).
+      * Each builder writes only to its own ``UsageRecord`` list, so
+        token-accounting state is per-thread.
+      * Two threads never race on the same ``builder_usage`` key (each
+        spec has a unique ``name``); CPython's GIL makes the individual
+        dict ``__setitem__`` atomic.
+      * Reads from ``builder_usage`` happen only after every future has
+        resolved, eliminating publication races.
+
+    A worker exception propagates through ``Future.result()`` and
+    aborts the whole annotate run — matches the pre-parallel behavior
+    where a builder failure raised out of the orchestrator.
+    """
+
+    def _runner(spec: _BuilderSpec) -> tuple[str, Any, list[UsageRecord]]:
+        records: list[UsageRecord] = []
+        with timing.step(
+            f"builder:{spec.name}",
+            phase=spec.phase,
+            n_items=len(spec.claims),
+            model=AGENT_MODEL,
+        ) as handle:
+            result = spec.fn(
+                spec.claims, client=client, usage_sink=records, context=spec.ctx
+            )
+            handle.set_usage(records, model=AGENT_MODEL)
+        return spec.name, result, records
+
+    outputs: dict[str, Any] = {}
+    with ThreadPoolExecutor(max_workers=BUILDER_CONCURRENCY) as executor:
+        futures = [executor.submit(_runner, spec) for spec in specs]
+        for fut in futures:
+            name, result, records = fut.result()
+            outputs[name] = result
+            builder_usage[name] = BlockBuilderUsage(name, records)
+    return outputs
 
 
 @dataclass
@@ -211,153 +322,83 @@ def _annotate(
         dual.total_cost_usd,
     )
 
-    # ---- step 2: A1-side block builders ------------------------------------
+    # ---- steps 2+3: A1+A2 block builders (parallel dispatch) ---------------
+    # All 9 builders consume independent claim slices and emit independent
+    # blocks, so we fan them out concurrently. The Anthropic SDK client
+    # is thread-safe; each builder writes only into its own ``usage_sink``;
+    # the shared TimingRecorder uses CPython's atomic ``list.append``.
     a1_ctx = {"gene": gene_id.hgnc_symbol}
-
-    methods_records: list[UsageRecord] = []
-    builder_usage["methods"] = BlockBuilderUsage("methods", methods_records)
-    with timing.step(
-        "builder:methods",
-        phase="builders_a1",
-        n_items=len(a1_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        methods = build_methods(
-            a1_claims, client=client, usage_sink=methods_records, context=a1_ctx
-        )
-        _h.set_usage(methods_records, model=AGENT_MODEL)
-
-    te_records: list[UsageRecord] = []
-    builder_usage["therapeutic_engagement"] = BlockBuilderUsage(
-        "therapeutic_engagement", te_records
+    a2_ctx = {"gene": gene_id.hgnc_symbol}
+    specs: list[_BuilderSpec] = [
+        _BuilderSpec("methods", "builders_a1", build_methods, a1_claims, a1_ctx),
+        _BuilderSpec(
+            "therapeutic_engagement",
+            "builders_a1",
+            build_therapeutic_engagement,
+            a1_claims,
+            a1_ctx,
+        ),
+        _BuilderSpec(
+            "contradictions",
+            "builders_a1",
+            build_contradictions,
+            a1_claims,
+            a1_ctx,
+        ),
+        _BuilderSpec(
+            "evidence_grade",
+            "builders_a1",
+            build_evidence_grade,
+            a1_claims,
+            a1_ctx,
+        ),
+        _BuilderSpec("tissues", "builders_a2", build_tissues, a2_claims, a2_ctx),
+        _BuilderSpec(
+            "cell_types", "builders_a2", build_cell_types, a2_claims, a2_ctx
+        ),
+        _BuilderSpec(
+            "subcellular_localization",
+            "builders_a2",
+            build_subcellular_localization,
+            a2_claims,
+            a2_ctx,
+        ),
+        _BuilderSpec(
+            "anatomical_accessibility",
+            "builders_a2",
+            build_anatomical_accessibility,
+            a2_claims,
+            a2_ctx,
+        ),
+        _BuilderSpec(
+            "accessibility_modulation",
+            "builders_a2",
+            build_accessibility_modulation,
+            a2_claims,
+            a2_ctx,
+        ),
+    ]
+    outputs = _run_builders_concurrently(
+        specs, client=client, timing=timing, builder_usage=builder_usage
     )
-    with timing.step(
-        "builder:therapeutic_engagement",
-        phase="builders_a1",
-        n_items=len(a1_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        therapeutic = build_therapeutic_engagement(
-            a1_claims, client=client, usage_sink=te_records, context=a1_ctx
-        )
-        _h.set_usage(te_records, model=AGENT_MODEL)
-
-    contr_records: list[UsageRecord] = []
-    builder_usage["contradictions"] = BlockBuilderUsage("contradictions", contr_records)
-    with timing.step(
-        "builder:contradictions",
-        phase="builders_a1",
-        n_items=len(a1_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        contradictions = build_contradictions(
-            a1_claims, client=client, usage_sink=contr_records, context=a1_ctx
-        )
-        _h.set_usage(contr_records, model=AGENT_MODEL)
-
-    grade_records: list[UsageRecord] = []
-    builder_usage["evidence_grade"] = BlockBuilderUsage("evidence_grade", grade_records)
-    with timing.step(
-        "builder:evidence_grade",
-        phase="builders_a1",
-        n_items=len(a1_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        grade_block: EvidenceGradeBlock = build_evidence_grade(
-            a1_claims, client=client, usage_sink=grade_records, context=a1_ctx
-        )
-        _h.set_usage(grade_records, model=AGENT_MODEL)
+    grade_block: EvidenceGradeBlock = outputs["evidence_grade"]
 
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,
         grade_rationale=grade_block.grade_rationale,
-        methods=methods,
+        methods=outputs["methods"],
         non_surface_expression=grade_block.non_surface_expression,
-        therapeutic_engagement=therapeutic,
-        contradicting_evidence=contradictions,
+        therapeutic_engagement=outputs["therapeutic_engagement"],
+        contradicting_evidence=outputs["contradictions"],
     )
-
-    # ---- step 3: A2-side block builders ------------------------------------
-    a2_ctx = {"gene": gene_id.hgnc_symbol}
-
-    tissues_records: list[UsageRecord] = []
-    builder_usage["tissues"] = BlockBuilderUsage("tissues", tissues_records)
-    with timing.step(
-        "builder:tissues",
-        phase="builders_a2",
-        n_items=len(a2_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        tissues = build_tissues(
-            a2_claims, client=client, usage_sink=tissues_records, context=a2_ctx
-        )
-        _h.set_usage(tissues_records, model=AGENT_MODEL)
-
-    cell_types_records: list[UsageRecord] = []
-    builder_usage["cell_types"] = BlockBuilderUsage("cell_types", cell_types_records)
-    with timing.step(
-        "builder:cell_types",
-        phase="builders_a2",
-        n_items=len(a2_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        cell_types = build_cell_types(
-            a2_claims, client=client, usage_sink=cell_types_records, context=a2_ctx
-        )
-        _h.set_usage(cell_types_records, model=AGENT_MODEL)
-
-    subloc_records: list[UsageRecord] = []
-    builder_usage["subcellular_localization"] = BlockBuilderUsage(
-        "subcellular_localization", subloc_records
-    )
-    with timing.step(
-        "builder:subcellular_localization",
-        phase="builders_a2",
-        n_items=len(a2_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        subloc = build_subcellular_localization(
-            a2_claims, client=client, usage_sink=subloc_records, context=a2_ctx
-        )
-        _h.set_usage(subloc_records, model=AGENT_MODEL)
-
-    anat_records: list[UsageRecord] = []
-    builder_usage["anatomical_accessibility"] = BlockBuilderUsage(
-        "anatomical_accessibility", anat_records
-    )
-    with timing.step(
-        "builder:anatomical_accessibility",
-        phase="builders_a2",
-        n_items=len(a2_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        anatomical = build_anatomical_accessibility(
-            a2_claims, client=client, usage_sink=anat_records, context=a2_ctx
-        )
-        _h.set_usage(anat_records, model=AGENT_MODEL)
-
-    mod_records: list[UsageRecord] = []
-    builder_usage["accessibility_modulation"] = BlockBuilderUsage(
-        "accessibility_modulation", mod_records
-    )
-    with timing.step(
-        "builder:accessibility_modulation",
-        phase="builders_a2",
-        n_items=len(a2_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        modulation = build_accessibility_modulation(
-            a2_claims, client=client, usage_sink=mod_records, context=a2_ctx
-        )
-        _h.set_usage(mod_records, model=AGENT_MODEL)
 
     biological_context = BiologicalContext(
-        tissues=tissues,
-        cell_types=cell_types,
+        tissues=outputs["tissues"],
+        cell_types=outputs["cell_types"],
         cell_states=[],  # v1 schema field; no builder for v2 — empty.
-        subcellular_localization=subloc,
-        anatomical_accessibility=anatomical,
-        accessibility_modulation=modulation,
+        subcellular_localization=outputs["subcellular_localization"],
+        anatomical_accessibility=outputs["anatomical_accessibility"],
+        accessibility_modulation=outputs["accessibility_modulation"],
     )
 
     # ---- step 4: wrap into per-agent drafts --------------------------------
@@ -651,7 +692,8 @@ def write_summary_meta(result: AnnotateResultV2, *, runs_dir: Path = RUNS_DIR) -
         "builders_cost_usd": round(result.builders_cost_usd, 6),
         "synthesizer_cost_usd": round(result.synthesizer_cost_usd, 6),
         "total_cost_usd": round(result.total_cost_usd, 6),
-        "total_elapsed_s": round(
+        "total_elapsed_s": _wall_clock_for_timing(result.timing),
+        "total_step_seconds": round(
             sum(t.elapsed_s for t in result.timing), 3
         ),
         "timing": [t.as_dict() for t in result.timing],
