@@ -1,0 +1,4533 @@
+{
+  "schema_version": "1.0.0",
+  "gene": {
+    "hgnc_symbol": "HSPA5",
+    "hgnc_id": "HGNC:5238",
+    "uniprot_acc": "P11021",
+    "ncbi_gene_id": 3309,
+    "ensembl_gene": "ENSG00000044574"
+  },
+  "triage_signal": "unknown",
+  "executive_summary": {
+    "one_paragraph": "HSPA5/GRP78 is a stress-induced ER chaperone that translocates to the plasma membrane in cancer cells under ER stress, yielding robust, multi-method surface-accessibility evidence across leukemia, glioblastoma, and solid tumor contexts. Cell-surface biotinylation MS (AML/leukemia lines), non-permeabilized IF, flow cytometry, and functional studies with surface-selective inhibitors CBT100/200/300 collectively confirm extracellular epitope accessibility. Surface expression is state-dependent\u2014largely absent on resting normal cells\u2014and a secreted/EV-associated pool creates a decoy risk for systemic therapeutics.",
+    "surface_accessibility": "moderate",
+    "evidence_grade_summary": "direct_multi_method",
+    "confidence": "moderate",
+    "state_dependence": "high",
+    "subcategory": "other",
+    "headline_risks": [
+      "secreted_form",
+      "shed_form",
+      "other"
+    ],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_03",
+      "a1_evi_10",
+      "a1_evi_11",
+      "a1_evi_12",
+      "a1_evi_13",
+      "a1_evi_15",
+      "a1_evi_16",
+      "a1_evi_17",
+      "a2_evi_01",
+      "a2_evi_02",
+      "a2_evi_11",
+      "a2_evi_12",
+      "a2_evi_14",
+      "a2_evi_18",
+      "a2_evi_19"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "moderate",
+    "confidence": "moderate",
+    "subcategory": "other",
+    "evidence_grade": "direct_multi_method",
+    "ecd_accessibility_class": "large",
+    "evidence_density": "high",
+    "expression_level": "moderate",
+    "expression_breadth": "restricted",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": true,
+    "has_secreted_form": true,
+    "requires_coreceptor_for_expression": false,
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": true,
+    "has_restricted_subdomain": false,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false
+  },
+  "surface_evidence": {
+    "evidence_grade": "direct_multi_method",
+    "grade_rationale": "HSPA5/GRP78 surface accessibility is supported by multiple independent direct methods across independent sources. (1) Cell-surface biotinylation + mass spectrometry on live, non-permeabilized AML and non-AML leukemia cell lines (PMC12849903; a1_evi_01\u201303). (2) Non-permeabilized immunofluorescence on intact cells with explicit statement that cells were not permeabilized (PMC7801745; a1_evi_15). (3) Surface biotinylation of anti-GRP78 antibodies exploiting extracellular epitope accessibility for targeted delivery (PMC9954741; a1_evi_16). Additional corroboration comes from functional assays showing surface GRP78 binds transmembrane partners (PMC13052156; a1_evi_12) and review assertions citing flow cytometry and WB surface confirmation in glioma lines (PMC12772127; a1_evi_08). A minor conflicting signal exists: IHC on a clinical cohort found only one case with detectable surface localization (a1_evi_14), and a1_evi_17 notes HSPA5 in conditioned medium (ambiguous). These do not negate the robust multi-method, multi-source direct surface evidence.",
+    "methods": [
+      {
+        "method_family": "biotinylation",
+        "method_subclass": "cell_surface_capture",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "AML cell lines (MV4-11, Molm13) and non-AML leukemia (RS4;11) and PBMC \u2014 surfaceome MS detected HSPA5; datasets of 993, 960, 925, 932 proteins respectively",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_01",
+              "a1_evi_02",
+              "a1_evi_03"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_01",
+          "a1_evi_02",
+          "a1_evi_03"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "cell_surface_capture",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Cancer cell-derived extracellular vesicle surfaceome integrated with published MS-derived cell surface protein atlas; ER chaperones including HSPA5 identified",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_06"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_05",
+          "a1_evi_06"
+        ]
+      },
+      {
+        "method_family": "immunohistochemistry",
+        "method_subclass": "IHC_membranous",
+        "permeabilization": "fixed_unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Human cancer cohort (tissue) \u2014 only one case with few cells showed cell-surface BiP/HSPA5 localization; surface expression rare in this cohort",
+            "sample_type": "primary_human_tissue",
+            "level": "low",
+            "cited_evidence_ids": [
+              "a1_evi_14"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_14"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "nonpermeabilized_IF",
+        "permeabilization": "nonpermeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-GRP78 (goat polyclonal)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "polyclonal",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Non-permeabilized intact cells stained with goat polyclonal anti-GRP78 antibody; surface GRP78 signal detected confirming surface accessibility",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_15"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_15"
+        ]
+      },
+      {
+        "method_family": "biotinylation",
+        "method_subclass": "surface_biotinylation",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-GRP78 (biotinylated for microbubble conjugation)",
+            "clone": null,
+            "vendor": "Abcam",
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [],
+        "cited_evidence_ids": [
+          "a1_evi_16"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "HSPA5 antibody",
+            "clone": null,
+            "vendor": "Cell Signaling",
+            "catalog": "3177",
+            "rrid": "AB_2119845",
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "vendor_claim_only",
+            "validation_strength": "weak",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "secreted_or_shed",
+        "expression_observations": [
+          {
+            "context": "HSPA5/GRP78 detected in conditioned medium associated with shed transmembrane protein variant sTM536; ambiguous as co-secretion with client rather than stable plasma membrane residence",
+            "sample_type": "established_cell_line",
+            "level": "low",
+            "cited_evidence_ids": [
+              "a1_evi_17"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_05",
+          "a1_evi_17"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "expression_only",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "High-grade glioma clinical samples \u2014 MS-based proteome quantification of GRP78/HSPA5 among seven ER chaperones; no surface fractionation performed",
+            "sample_type": "primary_human_tissue",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_18"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_18"
+        ]
+      },
+      {
+        "method_family": "flow_cytometry",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Adult high-grade glioma (aHGG) cell lines \u2014 GRP78/HSPA5 confirmed at surface by other groups using flow cytometry and Western blot (cross-paper corroboration)",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_08"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_07",
+          "a1_evi_08"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Brain tumor stem cells \u2014 surface-bound GRP78 acts as survival factor essential for tumor stem cell expansion; surface-selective inhibitors CBT100/CBT200/CBT300 developed targeting surface form",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_10",
+              "a1_evi_12",
+              "a1_evi_13"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_10",
+          "a1_evi_12",
+          "a1_evi_13"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "High-grade glioma clinical samples \u2014 whole-proteome MS (non-surface-enriched) quantifying GRP78/HSPA5 protein levels",
+        "sample_type": "primary_human_tissue",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_18"
+        ]
+      },
+      {
+        "context": "Unspecified cancer cohort \u2014 IHC on tissue sections assessing subcellular localization of BiP/HSPA5; only one case showed few cells with surface localization; majority intracellular",
+        "sample_type": "patient_sample",
+        "measurement_type": "IHC_protein",
+        "level": "low",
+        "cited_evidence_ids": [
+          "a1_evi_14"
+        ]
+      }
+    ],
+    "therapeutic_engagement": {
+      "highest_stage": "preclinical_in_vivo",
+      "description": "Multiple preclinical programs target cell-surface HSPA5/GRP78: (1) surface-selective small-molecule inhibitors CBT100, CBT200, and CBT300, developed to specifically engage only the cell-surface form on brain tumor cells (PMC13052156); (2) anti-BiP/GRP78 antibodies reported in pre-clinical trials across cancer indications (PMC9777260); (3) anti-GRP78 antibodies conjugated to streptavidin-bearing microbubbles for targeted delivery (PMC9954741); and (4) broader preclinical chemical/antibody drug candidates targeting surface GRP78 in leukemias and solid tumors (PMC12849903).",
+      "surface_form_rationale": "HSPA5/GRP78 exists as an ER-lumenal chaperone and a stress-induced cell-surface form. All documented therapeutic programs explicitly target the cell-surface form: CBT100/200/300 were designed to inhibit only surface GRP78 (not ER-resident GRP78); anti-GRP78 antibodies exploit surface-accessible epitopes confirmed by non-permeabilized IF and biotinylation assays. A secreted/shed form co-purified with client proteins in conditioned medium is noted but is not the therapeutic target.",
+      "cited_evidence_ids": [
+        "a1_evi_04",
+        "a1_evi_10",
+        "a1_evi_11",
+        "a1_evi_12",
+        "a1_evi_13",
+        "a1_evi_14",
+        "a1_evi_15",
+        "a1_evi_16",
+        "a1_evi_17"
+      ]
+    },
+    "contradicting_evidence": [
+      {
+        "claim": "Surface HSPA5/GRP78 detected by cell-surface proteomics (biotinylation + MS) on non-AML RS4;11 leukemia cells as well as AML cells, demonstrating that surface HSPA5 expression is not restricted to AML. This contradicts any assumption of AML-specific surface presentation and suggests that HSPA5 surface accessibility is a broader leukemia phenomenon rather than an AML-selective feature.",
+        "contradiction_type": "other",
+        "severity_for_surface_accessibility": "low",
+        "likely_explanation": "The finding actually confirms surface accessibility of HSPA5 across leukemia cell types; the contradiction here is against AML-specificity rather than against surface expression per se. HSPA5 is a stress-induced chaperone known to translocate to the plasma membrane under ER stress conditions common to many cancer cell lines, explaining its broad surface presence.",
+        "cited_evidence_ids": [
+          "a1_evi_03"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [
+      {
+        "tissue": "brain",
+        "present": "high",
+        "disease_context": "tumor",
+        "cell_types": [],
+        "cell_states": [
+          "mesenchymal subtype (highest expression)",
+          "mesenchymal vs. proneural cell state"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_06",
+          "a2_evi_07",
+          "a2_evi_09",
+          "a2_evi_10"
+        ]
+      },
+      {
+        "tissue": "brain",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_04",
+          "a2_evi_10"
+        ]
+      }
+    ],
+    "cell_types": [
+      {
+        "cell_type": "glioblastoma tumor cells (mesenchymal subtype)",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_06",
+          "a2_evi_07"
+        ]
+      },
+      {
+        "cell_type": "high-grade glioma cells (adult and pediatric)",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_09",
+          "a2_evi_10"
+        ]
+      },
+      {
+        "cell_type": "acute myeloid leukemia (AML) cells",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "cited_evidence_ids": [
+          "a2_evi_11",
+          "a2_evi_12",
+          "a2_evi_14"
+        ]
+      },
+      {
+        "cell_type": "B-cell leukemia cells",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "cell_type": "breast cancer cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "breast"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_15",
+          "a2_evi_16"
+        ]
+      },
+      {
+        "cell_type": "ovarian cancer cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "ovary"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_17"
+        ]
+      },
+      {
+        "cell_type": "pancreatic cancer cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "pancreas"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_17"
+        ]
+      },
+      {
+        "cell_type": "vascular smooth muscle cells",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "cited_evidence_ids": [
+          "a2_evi_13"
+        ]
+      },
+      {
+        "cell_type": "platelets",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "blood"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_13"
+        ]
+      },
+      {
+        "cell_type": "blood-derived extracellular vesicle-producing cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "blood"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_19"
+        ]
+      }
+    ],
+    "cell_states": [],
+    "subcellular_localization": {
+      "primary_compartment": "ER",
+      "dual_localization": [
+        {
+          "compartment": "plasma membrane",
+          "fraction_estimate": null,
+          "condition": "ER stress conditions; cancer cells (leukemia, breast cancer, ovarian cancer, pancreatic cancer, GBM)",
+          "cited_evidence_ids": [
+            "a2_evi_02",
+            "a2_evi_08",
+            "a2_evi_11",
+            "a2_evi_12",
+            "a2_evi_13",
+            "a2_evi_14",
+            "a2_evi_15",
+            "a2_evi_17"
+          ]
+        },
+        {
+          "compartment": "mitochondrion",
+          "fraction_estimate": null,
+          "condition": "under ER stress",
+          "cited_evidence_ids": [
+            "a2_evi_02"
+          ]
+        },
+        {
+          "compartment": "nucleus",
+          "fraction_estimate": null,
+          "condition": "under ER stress",
+          "cited_evidence_ids": [
+            "a2_evi_02"
+          ]
+        },
+        {
+          "compartment": "extracellular vesicles (large oncosomes / large EVs)",
+          "fraction_estimate": null,
+          "condition": "cancer cells; blood-derived large EVs",
+          "cited_evidence_ids": [
+            "a2_evi_18",
+            "a2_evi_19"
+          ]
+        }
+      ],
+      "membrane_subdomains": []
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": [
+      {
+        "category": "dual_localization",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": "ER",
+        "baseline_context": "Normal, unstressed cells \u2014 HSPA5/GRP78 is predominantly retained in the ER lumen as a resident chaperone",
+        "modulating_state": "ER stress conditions (various stressors) \u2014 HSPA5 redistributes to the plasma membrane, mitochondria, and nucleus",
+        "change": "Under ER stress, HSPA5 relocates from its predominant ER-lumenal pool to the cell surface (and other compartments). Baseline surface expression is low; stress drives a shift in steady-state distribution toward the plasma membrane.",
+        "accessibility_implication": "Surface HSPA5 becomes accessible to extracellular binders (antibodies, ligands) only after ER stress-driven redistribution. In resting cells the protein is largely sequestered in the ER lumen and inaccessible to non-permeable agents.",
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02",
+          "a2_evi_21"
+        ]
+      },
+      {
+        "category": "stress_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "ER_stress",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Unstressed cells with low baseline surface HSPA5",
+        "modulating_state": "Cells experiencing ER stress (e.g. cancer cells with chronic unfolded protein load, thapsigargin-treated cells)",
+        "change": "ER stress triggers translocation of HSPA5 from the ER lumen to the plasma membrane, substantially increasing surface-accessible HSPA5 protein levels.",
+        "accessibility_implication": "ER stress selectively exposes HSPA5 epitopes on the outer leaflet of the plasma membrane, making it a targetable antigen specifically in stressed or malignant cells while normal unstressed cells present minimal surface HSPA5.",
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_12",
+          "a2_evi_14"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal hematopoietic or non-malignant cells (e.g. PBMCs) with low or absent surface HSPA5",
+        "modulating_state": "AML cell lines (MV4;11, Molm13) and B-cell leukemia cells (RS4;11) exhibiting chronic ER stress as part of their malignant phenotype",
+        "change": "Surface proteomics of leukemia cell lines detects HSPA5 on the plasma membrane, enriched in AML cells relative to non-malignant PBMCs. The surface signature is linked to ER-stress adaptation in the malignant state.",
+        "accessibility_implication": "Surface HSPA5 is preferentially accessible on leukemic cells, providing a potential therapeutic window for antibody or drug targeting in hematologic malignancies relative to normal blood cells.",
+        "cited_evidence_ids": [
+          "a2_evi_11",
+          "a2_evi_12",
+          "a2_evi_13",
+          "a2_evi_14"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal brain tissue with low HSPA5 expression",
+        "modulating_state": "Glioblastoma (GBM) tumor tissue, particularly mesenchymal subtype, with markedly elevated HSPA5 mRNA and protein",
+        "change": "HSPA5 mRNA and protein are upregulated in GBM relative to normal brain, most prominently in the mesenchymal GBM subtype, and high expression correlates with poor prognosis.",
+        "accessibility_implication": "Elevated HSPA5 in GBM tumors, especially mesenchymal subtype, increases the probability of surface-accessible HSPA5 on tumor cells, supporting its potential as a surface target in this aggressive glioma subtype.",
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_06",
+          "a2_evi_07",
+          "a2_evi_08",
+          "a2_evi_09"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal breast tissue or non-malignant breast epithelial cells",
+        "modulating_state": "Breast cancer cells (PR-positive and triple-negative subtypes) with documented surface BiP/HSPA5 expression",
+        "change": "Surface HSPA5 (BiP) is reported on breast cancer cell surfaces across subtypes. However, surface staining is variable \u2014 one IHC cohort found surface BiP in only a single case, suggesting heterogeneous surface presentation across individual tumors.",
+        "accessibility_implication": "Surface HSPA5 accessibility in breast cancer is inconsistent across tumors; targeting strategies must account for variable surface exposure. When present, surface BiP may be a prognostic marker and therapeutic target.",
+        "cited_evidence_ids": [
+          "a2_evi_15",
+          "a2_evi_16"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal ovarian and pancreatic tissue",
+        "modulating_state": "Ovarian cancer and pancreatic cancer tumor sections",
+        "change": "Membranous (surface) HSPA5 staining was observed in only a few ovarian and pancreatic cancer cases, indicating that surface HSPA5 expression is a rare rather than ubiquitous feature in these solid tumor types.",
+        "accessibility_implication": "Surface HSPA5 accessibility in ovarian and pancreatic cancer is low-frequency; antibody or drug strategies targeting surface HSPA5 would reach only a small subset of these tumors, limiting broad therapeutic utility.",
+        "cited_evidence_ids": [
+          "a2_evi_17"
+        ]
+      },
+      {
+        "category": "other",
+        "category_other_label": "extracellular_vesicle_surface_association",
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Cancer cell lines and blood cells under basal conditions",
+        "modulating_state": "Large extracellular vesicles (large oncosomes / large EVs) shed by cancer cells or present in blood",
+        "change": "HSPA5 is enriched on the surface of large extracellular vesicles derived from multiple cancer cell types and from blood, representing a pool of extracellular HSPA5 distinct from the cell-surface pool on intact cells.",
+        "accessibility_implication": "EV-associated HSPA5 is accessible to extracellular binders in the tumor microenvironment or circulation. This vesicle-bound pool may serve as a decoy or diagnostic biomarker but complicates cell-targeted therapeutic strategies.",
+        "cited_evidence_ids": [
+          "a2_evi_18",
+          "a2_evi_19"
+        ]
+      }
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "P11021-1",
+      "uniprot_acc": "P11021",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 0,
+      "icd_length_residues": 0,
+      "per_residue_topology": "",
+      "tool_version": "stub-no-fetchers-v1.0.0",
+      "retrieved_at": "2026-05-17T02:55:48.896694Z"
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [],
+      "rat": [],
+      "cynomolgus": []
+    },
+    "paralogs": [],
+    "structure": {
+      "afdb_id": "AF-P11021-F1-model_v4",
+      "afdb_version": "v4",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
+      "license": "CC BY 4.0",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [
+        "ROR1",
+        "Cripto",
+        "PD-L1"
+      ],
+      "evidence_basis": "co_expression_only",
+      "rationale": "No obligate co-receptor for HSPA5 surface trafficking has been identified in the ledger. Surface GRP78 binds ROR1, Cripto, and PD-L1 at the plasma membrane but these interactions reflect downstream partner stabilization, not a trafficking requirement for HSPA5 itself to reach the surface.",
+      "cited_evidence_ids": [
+        "a1_evi_12"
+      ]
+    },
+    "shed_form": {
+      "present": true,
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "mechanism": "Co-secretion with client proteins (sTM536) into conditioned medium; EV-associated large oncosome shedding from cancer cells and blood",
+      "sheddase_if_known": null,
+      "cited_evidence_ids": [
+        "a1_evi_17",
+        "a2_evi_18",
+        "a2_evi_19"
+      ]
+    },
+    "secreted_form": {
+      "present": true,
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "ratio_to_membrane": null,
+      "source": "unknown",
+      "cited_evidence_ids": [
+        "a1_evi_17",
+        "a2_evi_18",
+        "a2_evi_19"
+      ]
+    },
+    "restricted_subdomain": {
+      "present": false,
+      "domain": "unknown",
+      "severity": "low",
+      "evidence_strength": "weak",
+      "rationale": "No evidence in the merged ledger restricts surface HSPA5 to a specific membrane subdomain (apical, junctional, raft, etc.). Biotinylation and IF data detect it broadly over the plasma membrane in cancer cell lines.",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a1_evi_15"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "large",
+      "rationale": "HSPA5/GRP78 is a ~78 kDa protein. When surface-displayed, the bulk of the protein faces the extracellular space as it lacks a canonical transmembrane domain, providing a large extracellular footprint accessible to antibodies and small molecules\u2014confirmed by multiple surface-selective inhibitors and antibody conjugates.",
+      "cited_evidence_ids": [
+        "a1_evi_12",
+        "a1_evi_13",
+        "a1_evi_16"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "partner",
+        "conformational"
+      ],
+      "severity": "moderate",
+      "evidence_strength": "inferred",
+      "rationale": "Surface GRP78 binds multiple transmembrane partners (ROR1, Cripto, PD-L1), potentially occluding epitopes at protein-protein interfaces. Additionally, stress-induced conformational changes may alter accessible epitopes. No direct glycan-masking or cleavage data in ledger; masking is inferred from complex formation.",
+      "cited_evidence_ids": [
+        "a1_evi_12",
+        "a1_evi_11"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "Cell-surface biotinylation coupled with mass spectrometry (surfaceome MS) was used to identify proteins on the surface of AML cell lines (MV4-11, Molm13) and non-AML (RS4;11) cells; HSPA5/GRP78 was among the proteins detected. The workflow involved a biotinylation labeling step for cell-surface proteins followed by MS-based quantification. This is the primary methodological description anchoring the surface-detection approach for HSPA5 in this study.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "MV4-11, Molm13, RS4;11, PBMC",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "acute myeloid leukemia",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "AML",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Cell\u2010surface proteomic approach for the identification of potential AML neoantigens. a) Schematic of the biotinylation principle for labeling cell\u2010surface proteins in a mass spectrometry experiment. b) Workflow illustrating the cell\u2010surface labeling assay used to identify unique cell\u2010surface proteins in AML cells through mass spectrometry analysis. c) Venn diagram depicting the overlap of cell\u2010surface proteins identified in AML (MV4\u201011 and Molm13), non\u2010AML (RS4;11), and PBMC proteomic datasets.",
+          "quote_sha256": "4a923f2d401be57f8130ea9fa7c538de1575d098fddc9f2912aad7065cf53046",
+          "char_offset": 0,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "Cell-surface biotinylation coupled with mass spectrometry generated extensive surfaceome datasets (993\u2013932 proteins per cell line) from AML and non-AML leukemia cell lines, confirming feasibility of detecting HSPA5/GRP78 at the cell surface in this context. The dataset coverage provides quantitative depth for the surface-detection claim.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "MV4-11, Molm13, RS4;11, PBMC",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "leukemia cell lines",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "AML",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The analysis generated extensive cell\u2010surface proteomic datasets, including 993, 960, 925, and 932 proteins from MV4\u201011, Molm13, RS4;11, and PBMC samples, respectively (Figure S1c and Dataset S1 , Supporting Information).",
+          "quote_sha256": "e864d826c118629723b5f9d86fafde43579826a94d5c232ee2a25f7daaf8698e",
+          "char_offset": 500,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "HSPA5/GRP78 protein was detected on the cell surface of AML cells (reported in a prior study) and was also found at the surface of non-AML RS4;11 leukemia cells, indicating that surface GRP78 is not restricted to AML. Method implied is cell-surface proteomics (biotinylation + MS). This finding contradicts the assumption of AML-specificity and signals that surface HSPA5 is more broadly expressed across leukemia cell lines.",
+      "claim_type": "contradictory",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "RS4;11, AML cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "leukemia",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "AML / non-AML leukemia",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Of note, a previous study has reported that GRP78 (HSPA5) protein was presented on the cell surface of AML cells; [ 48 ] however, we found this protein was also detected on the surface of RS4;11 cells (Figure S1d,e , Supporting Information), suggesting that GRP78 may not be the unique cell\u2010surface marker for AML cells.",
+          "quote_sha256": "e1ee3db42e6c28b38db4be94292e7961c16de10ea24993aca85b191adaaa1797",
+          "char_offset": 722,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "HSPA5/GRP78 has been investigated as a potential therapeutic target on the cell surface of leukemias and solid tumors, with preclinical development of chemical or antibody drug candidates targeting surface GRP78 underway across multiple cancer types. This constitutes a therapeutic engagement claim for surface-expressed HSPA5 at the preclinical stage.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "leukemia and solid tumor cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "[ 13 , 53 , 54 , 55 ] For instance, surface\u2010expressed P4HB has been identified in various malignant and normal cell types, including leukemic cells, vascular smooth muscle cells, and platelets, where it performs critical biological functions. [ 47 ] Similarly, HSPA5 has been investigated as a potential therapeutic target on the cell surface of some leukemias and solid tumors. [ 48 , 56 , 57 ] Preclinical development of chemical or antibody drug candidates targeting HSP90B1 is underway across multiple cancer types, such as breast and colorectal cancers.",
+          "quote_sha256": "7c30f19e45f6cef2d8f242caa4949d03644b96fd203ccdcd61d7c35523409915",
+          "char_offset": 1043,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "Antibody reagent table from a study using HSPA5 antibody (Cell Signaling Cat# 3177; RRID: AB_2119845) alongside organelle-marker antibodies (TSG101, CD9, Cav-1, GM-130, HSP60, CD81). This provides antibody clone and RRID for HSPA5 detection used in extracellular vesicle / surface proteomics context.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12281359",
+            "pmc_id": "PMC12281359",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12281359/",
+            "title": "PMC:PMC12281359",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "bc0c48eba86b08a085d037ff9f13e244cf70970514070cac6753d09ba187d3c5",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "REAGENT or RESOURCE SOURCE IDENTIFIER Antibodies HSPA5 antibody Cell Signaling Cat# 3177; RRID: AB_2119845 Cytochrome c antibody Cell Signaling Cat# 4280; RRID: AB_1039672 TSG101 antibody Santa Cruz Cat# sc-7964; RRID: AB_671473 CD9 antibody Santa Cruz Cat# sc-13118; RRID: AB_627245 Cav-1 antibody Santa Cruz Cat# sc-894; RRID: AB_631407 KRT18 antibody Abcam Cat# ab93741; RRID: AB_10563566 GM-130 antibody Santa Cruz Cat# sc-55591; RRID: AB_630303 HSP60 antibody Cell Signaling Cat# 4870S; RRID: AB_2085240 CD81 antibody Abcam Cat# ab79559",
+          "quote_sha256": "4aaad55a20715e86a3431afd7cd1de84a3f987d1b62b4933331193a18fe60dc2",
+          "char_offset": 0,
+          "normalized_source_sha256": "fd20064a9b725a9a05b4db3285802bff379f79b0b943341f0074020cd6a31424"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "A published MS-derived cell surface protein atlas was integrated with proteomic data from cancer-cell-derived extracellular vesicles (EV surfaceome), enabling identification of surface proteins including ER chaperones. This places HSPA5 in the context of an MS-based surfaceome atlas\u2014supporting surface-accessible detection as a methodological anchor.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12281359",
+            "pmc_id": "PMC12281359",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12281359/",
+            "title": "PMC:PMC12281359",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "bc0c48eba86b08a085d037ff9f13e244cf70970514070cac6753d09ba187d3c5",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Using a published MS-derived cell surface protein atlas, 32 we then integrated the current proteomic dataset with this \u201cEV surfaceome\u201d and identified several surface proteins in LOs and S-EVs from all three cancer cell types.",
+          "quote_sha256": "d411ee408678332fb8cdc059d8afbc9c6140ac510c7e7f4034c4c302abb965cb",
+          "char_offset": 542,
+          "normalized_source_sha256": "fd20064a9b725a9a05b4db3285802bff379f79b0b943341f0074020cd6a31424"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "A review-level assertion cites literature evidence that GRP78/HSPA5, along with other ER chaperones (CALR, CANX, GRP94, GRP170, HSP47, PDIA1), has been detected at the surface of cancer cells. This is a secondary citation aggregating multiple primary surface-detection studies.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cancer cells (various)",
+        "permeabilized": false,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12772127",
+            "pmc_id": "PMC12772127",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12772127/",
+            "title": "PMC:PMC12772127",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "771b25467d0eda94c93f2c5f51d5705cae3f76bd7624bb3e1dd414d8f3a301de",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Among the ER chaperone family, CALR, CANX, GRP78, GRP94, GRP170, HSP47, and PDIA1 ( Table ) have been detected at the surface of cancer cells (reviewed in refs , , ).",
+          "quote_sha256": "c4950dd80b87671367d3e9157722ee2f8928039f56d216e7df398f1faaad6dcd",
+          "char_offset": 0,
+          "normalized_source_sha256": "fc8eec994c67dc16f3af1c087cfa4fc33b446c852fd7afa353bbe42c480eda1e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_08",
+      "claim": "GRP78/HSPA5 has been confirmed at the surface of adult high-grade glioma (aHGG) cell lines by other groups using Western blot and flow cytometry. This is a cross-paper corroboration claim with two distinct method families (WB and flow cytometry) both supporting surface detection, with the discussion noting variability in surfaceome detection methods as a methodological caveat.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "aHGG cell lines",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "glioma",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "high-grade glioma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12772127",
+            "pmc_id": "PMC12772127",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12772127/",
+            "title": "PMC:PMC12772127",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "771b25467d0eda94c93f2c5f51d5705cae3f76bd7624bb3e1dd414d8f3a301de",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Additionally, specific ER chaperones, such as GRP78 and PDIA1, have been confirmed at the surface of aHGG cell lines by other groups using different techniques ( e.g. , Western blot or flow cytometry). , Notably, variability in surfaceome detection methods must be carefully considered, as experimental techniques can influence the detection and quantification of cell surface proteins.",
+          "quote_sha256": "d04e4a94dff9f9b5eaab8221746cd3902e3ec20b399af9031ffdafc0b9bee1d9",
+          "char_offset": 167,
+          "normalized_source_sha256": "fc8eec994c67dc16f3af1c087cfa4fc33b446c852fd7afa353bbe42c480eda1e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_09",
+      "claim": "A surface proteomic analysis of high-grade gliomas found poor association between mRNA levels and surface protein presence for noncanonical membrane proteins including HSPA5, highlighting that RNA-seq or transcriptomic data cannot be used as a surrogate for surface accessibility. This is a methodological caveat that motivates protein-level surface assays.",
+      "claim_type": "methodological",
+      "direction": "ambiguous",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "HGG cell lines",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "glioma",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "high-grade glioma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12772127",
+            "pmc_id": "PMC12772127",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12772127/",
+            "title": "PMC:PMC12772127",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "771b25467d0eda94c93f2c5f51d5705cae3f76bd7624bb3e1dd414d8f3a301de",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Moreover, the transcriptomic and proteomic analyses confirmed a poor association between mRNA and the surface presence of these noncanonical membrane proteins.",
+          "quote_sha256": "1dd82d4fcff3532d8708dfab67e4b8417c5dd0e135f2db7dbfa0b9af456f3f95",
+          "char_offset": 554,
+          "normalized_source_sha256": "fc8eec994c67dc16f3af1c087cfa4fc33b446c852fd7afa353bbe42c480eda1e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_10",
+      "claim": "Surface-bound GRP78/HSPA5 is described as a survival factor essential for tumor stem cell expansion. This is a primary-paper abstract assertion establishing surface GRP78 as a distinct functional entity at the cell surface of brain tumor cells.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "brain tumor stem cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "brain tumor",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13052156",
+            "pmc_id": "PMC13052156",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13052156/",
+            "title": "PMC:PMC13052156",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "6ded0937272736088dc75f9835d8aae0831b1aba2d6fab05c32990a23142cf27",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Surface-bound glucose-regulated protein 78 (GRP78) is a survival factor that is essential for tumor stem cell expansion.",
+          "quote_sha256": "e8f7fa5d57a06e891c6d3b2ffa0cf74e3d2548180981e6b65e0d18e3ab6b55ed",
+          "char_offset": 0,
+          "normalized_source_sha256": "991f2727c809bd2b2d180c50431195fa08b24cc68af4c164824c5648d2e55707"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_11",
+      "claim": "Cell surface GRP78/HSPA5, compared to ER-resident GRP78, is defined as a stress-induced form that promotes aggressive growth, chemoresistance, radioresistance, and stem cell expansion in brain tumors. This topology-relevant distinction separates the surface isoform from the canonical ER-lumenal pool.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "brain tumor stem cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "brain tumor",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13052156",
+            "pmc_id": "PMC13052156",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13052156/",
+            "title": "PMC:PMC13052156",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "6ded0937272736088dc75f9835d8aae0831b1aba2d6fab05c32990a23142cf27",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Cell surface GRP78, compared to endoplasmic reticulum-resident GRP78, has been defined as a stress-induced factor that can cause aggressive growth, chemoresistance, radioresistance, and stem cell expansion in brain tumors.",
+          "quote_sha256": "3dd8163a02ba18fc5fccb5256263f8e748033b086efd5f38e850e6a644c9e369",
+          "char_offset": 121,
+          "normalized_source_sha256": "991f2727c809bd2b2d180c50431195fa08b24cc68af4c164824c5648d2e55707"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_12",
+      "claim": "Surface GRP78/HSPA5 on brain tumor cells binds and stabilizes ROR1, Cripto, and PD-L1 at the cell surface, acting as a transmembrane interactor. This supports surface accessibility of GRP78's extracellular face and documents functional engagement at the plasma membrane with oncology-relevant binding partners.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "brain tumor stem cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "brain tumor",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13052156",
+            "pmc_id": "PMC13052156",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13052156/",
+            "title": "PMC:PMC13052156",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "6ded0937272736088dc75f9835d8aae0831b1aba2d6fab05c32990a23142cf27",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Herein, our data show that surface GRP78 binds and stabilizes a novel transmembrane tyrosine kinase called receptor tyrosine kinase-like orphan receptor-1, an oncofetal factor called Cripto, and a checkpoint protein called programed death-ligand 1 in brain tumor cells.",
+          "quote_sha256": "70a97c6a56952ca280ec52d47755eeed8355a43be1f3b039cb187881cae3c9e6",
+          "char_offset": 344,
+          "normalized_source_sha256": "991f2727c809bd2b2d180c50431195fa08b24cc68af4c164824c5648d2e55707"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_13",
+      "claim": "Therapeutic engagement of cell surface GRP78/HSPA5: surface-selective GRP78 inhibitors CBT100, CBT200, and CBT300 were created and tested to specifically target only the cell surface form. This represents a preclinical drug program engaging the extracellular/surface-accessible form of HSPA5 on brain tumor cells.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "brain tumor stem cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "brain tumor",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13052156",
+            "pmc_id": "PMC13052156",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13052156/",
+            "title": "PMC:PMC13052156",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "6ded0937272736088dc75f9835d8aae0831b1aba2d6fab05c32990a23142cf27",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "To specifically inhibit only cell surface GRP78, we created and tested several GRP78 inhibitors, CBT100, CBT200, and CBT300.",
+          "quote_sha256": "38ae768c4281b95f3124dd7d39abba02f525f35d71a46769e26f88042405db7d",
+          "char_offset": 614,
+          "normalized_source_sha256": "991f2727c809bd2b2d180c50431195fa08b24cc68af4c164824c5648d2e55707"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_14",
+      "claim": "Anti-BiP/GRP78 antibodies are in pre-clinical trials, engaging cell surface HSPA5 as a therapeutic target. However, in the study's cohort (IHC on tissue), only one case showed few cells with cell-surface BiP localization, indicating that surface HSPA5 is infrequent in that tissue context. This dual observation\u2014therapeutic engagement with preclinical antibody programs AND low surface-frequency in clinical IHC\u2014constitutes both a therapeutic engagement claim and a methodological caveat on surface-detection frequency.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer (cohort not specified)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9777260",
+            "pmc_id": "PMC9777260",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9777260/",
+            "title": "PMC:PMC9777260",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "4b82e422777be7a649c624c24d79ae659a4b42241448e0207c1ac3c6886d33ea",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Although BiP cell surface expression is of specific relevance as there are currently anti-BiP antibodies in pre-clinical trials [ 68 ] in our cohort, we only found one case with few cells showing this subcellular localization.",
+          "quote_sha256": "a73991f39cb41cf7fe60ec19e7bd9f9d8118e94b1e80e4013ae7e42ef8ba04b2",
+          "char_offset": 0,
+          "normalized_source_sha256": "695a67d1fcebaf2af76efcd46ca1eb67a95eb1347cf3b891abbb2bbd7e0093cf"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_15",
+      "claim": "Non-permeabilized immunofluorescence on intact cells was used to detect surface GRP78/HSPA5 using a goat polyclonal anti-GRP78 antibody (alongside a mouse monoclonal pan-flavivirus E protein antibody). This is an IF-based surface detection method where permeabilization was explicitly withheld, confirming that the GRP78 signal is surface-accessible.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC7801745",
+            "pmc_id": "PMC7801745",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7801745/",
+            "title": "PMC:PMC7801745",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "6af6a66669664bab914db8ab90f1dd95f9a5334a04c5039f5188dc1017dbe8b2",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The non-permeabilized cells were incubated with a mouse monoclonal pan-specific anti-flavivirus E protein and a goat polyclonal anti GRP78 antibody.",
+          "quote_sha256": "6af6a66669664bab914db8ab90f1dd95f9a5334a04c5039f5188dc1017dbe8b2",
+          "char_offset": 0,
+          "normalized_source_sha256": "d36aa8e985e5cde58d6b758efe3c9003eb653a8880f7b93370317c322d4376be"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_16",
+      "claim": "Anti-GRP78/HSPA5 antibodies were biotinylated using a biotinylation kit and conjugated to streptavidin-bearing microbubbles for targeted surface imaging. This method exploits surface accessibility of GRP78 for antibody-based targeted delivery, confirming the extracellular/surface-accessible epitope of HSPA5.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "surface_biotinylation",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9954741",
+            "pmc_id": "PMC9954741",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9954741/",
+            "title": "PMC:PMC9954741",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "f5c695f5ba958abaa2b1dab2cd8eb8fc2bc30655db2eb5f659576cc706939719",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "Briefly, anti-GRP78 antibodies were biotinylated using biotinylation kit (Abcam, Cambridge, MA, USA) and then conjugated with microbubbles containing streptavidin (Targeson, Inc., San Diego, CA, USA).",
+          "quote_sha256": "f5c695f5ba958abaa2b1dab2cd8eb8fc2bc30655db2eb5f659576cc706939719",
+          "char_offset": 0,
+          "normalized_source_sha256": "0f042ccd14c60f2c25a585059cc0e539266af29a63f3c7fef0cba0b8b1fe1ee1"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_17",
+      "claim": "sTM536 (a shed transmembrane protein variant) was found associated with the ER chaperone HSPA5/GRP78 in conditioned medium (CM), suggesting that soluble/secreted forms of client proteins can carry HSPA5 into the extracellular space. This HSPA5 interaction with an intraluminal ER/Golgi species and its appearance in CM is ambiguous evidence: HSPA5 may be co-secreted with shed client proteins rather than residing stably at the plasma membrane.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11532747",
+            "pmc_id": "PMC11532747",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11532747/",
+            "title": "PMC:PMC11532747",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "f2b4866968349b476f98c84f4fd29fcc1d50a16be729e44d9da031e1bbaea019",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The proportion of intraluminal TM 536 was higher than that of TM WT ( Figure 5 E), implying that sTM 536 exists in the lumen of the ER and/or Golgi.\nsTM 536 contained in the CM was found to be associated with the ER protein chaperone heat shock protein family A (Hsp70) member 5 (HSPA5) ( Figure 6 A), and this interaction was barely detected with RHBDL2-cleaved sTM 536 , which lacks IMD.",
+          "quote_sha256": "f2b4866968349b476f98c84f4fd29fcc1d50a16be729e44d9da031e1bbaea019",
+          "char_offset": 0,
+          "normalized_source_sha256": "b7d331cbf4d9b81bbc0258cfd878b316b2b0dd4c5c63622f78f84d5784326459"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_18",
+      "claim": "Protein levels of seven ER chaperones including GRP78/HSPA5 were quantified in high-grade glioma using MS-based proteomes from clinical samples, without surface fractionation. This is a whole-proteome (non-surface-enriched) mass spectrometry measurement that establishes protein abundance but does not confirm surface localization.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "high-grade glioma",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "high-grade glioma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12772127",
+            "pmc_id": "PMC12772127",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12772127/",
+            "title": "PMC:PMC12772127",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "771b25467d0eda94c93f2c5f51d5705cae3f76bd7624bb3e1dd414d8f3a301de",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Therefore, we investigated the protein levels of seven ER chaperones in HGG using publicly available mass spectrometry (MS)-based proteomes derived from clinical samples.",
+          "quote_sha256": "2c13e161aa9c9bfa8a68078e0eef122d467041e8725adb63e3f345408f4aa690",
+          "char_offset": 714,
+          "normalized_source_sha256": "fc8eec994c67dc16f3af1c087cfa4fc33b446c852fd7afa353bbe42c480eda1e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "HSPA5 (GRP78/BiP) is predominantly localized to the endoplasmic reticulum (ER) lumen under normal conditions, establishing the ER as its primary subcellular compartment.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12895041",
+            "pmc_id": "PMC12895041",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12895041/",
+            "title": "PMC:PMC12895041",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "114231c30db406a613e94da6e56c8e55260d5d6dc3cfd4b11434276c951d441d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "Heat shock protein family A (HSP70) member 5 ( HSPA5 ), also known as GRP78 or Bip, is predominantly localized to the endoplasmic reticulum (ER) [ 13 ].",
+          "quote_sha256": "079827b56b2e725445d7f0f3e215620e1117b6bbc8d55172b01a3fb6b9c7281a",
+          "char_offset": 0,
+          "normalized_source_sha256": "e3724e2a51aa2b42d2f8104109666696c28d33ec4fffdb528cc46c5e4326e533"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "Under various ER stress conditions, HSPA5 relocates from the ER to the cell surface, mitochondria, or nucleus. This stress-induced redistribution to the plasma membrane represents the primary mechanism by which HSPA5 achieves cell-surface accessibility, with baseline surface expression being low.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "ER stress-induced"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12895041",
+            "pmc_id": "PMC12895041",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12895041/",
+            "title": "PMC:PMC12895041",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "114231c30db406a613e94da6e56c8e55260d5d6dc3cfd4b11434276c951d441d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "Under various ER stress, HSPA5 relocates to the cell surface, mitochondria, nucleus, or forms complexes with other proteins to perform its functions [ 14 , 15 ].",
+          "quote_sha256": "3dbdfa8bd8955ad239e1fdd5269d5989199cbef3c724f6202290811fb7de9ecd",
+          "char_offset": 153,
+          "normalized_source_sha256": "e3724e2a51aa2b42d2f8104109666696c28d33ec4fffdb528cc46c5e4326e533"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "HSPA5 is identified as a differentially expressed gene in glioblastoma (GBM) tumor tissue by analysis of TCGA and Gulou GBM datasets, marking it as upregulated in the GBM disease context.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "TCGA and Gulou GBM tumor cohorts",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "glioblastoma (GBM)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12895041",
+            "pmc_id": "PMC12895041",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12895041/",
+            "title": "PMC:PMC12895041",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "114231c30db406a613e94da6e56c8e55260d5d6dc3cfd4b11434276c951d441d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "To identify potential HSP70 family proteins involved in PMT of GBM, we conducted differential expression analysis of TCGA and Gulou GBM datasets, which identified HSPA5 and HSPA6 as key candidates (Fig. 1A, B ).",
+          "quote_sha256": "a5b410fca4dfffa3b10afe51fe7ee25a3f4294e0202b82abfd4fcd819412a50c",
+          "char_offset": 315,
+          "normalized_source_sha256": "e3724e2a51aa2b42d2f8104109666696c28d33ec4fffdb528cc46c5e4326e533"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "HSPA5 mRNA expression is elevated in GBM tumor tissue compared to normal brain tissue, with highest expression in the mesenchymal (MES) subtype. This represents disease-state-induced upregulation in glioblastoma.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "GBM tumor tissue (TCGA cohort)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "glioblastoma, mesenchymal subtype",
+          "activation_state": "mesenchymal vs. proneural subtype"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12895041",
+            "pmc_id": "PMC12895041",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12895041/",
+            "title": "PMC:PMC12895041",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "114231c30db406a613e94da6e56c8e55260d5d6dc3cfd4b11434276c951d441d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Compared to normal tissue, HSPA5 and HSPA6 expression levels were elevated in GBM tissues, especially in MES subtype (Figs. 1C\u2013F and S 1A, B ).",
+          "quote_sha256": "5ff1f4fc5d57c9a3d5025075c67da7141573246f1b5db201b16c04e2fac24d58",
+          "char_offset": 527,
+          "normalized_source_sha256": "e3724e2a51aa2b42d2f8104109666696c28d33ec4fffdb528cc46c5e4326e533"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "IHC on GBM tumor sections confirms that HSPA5 protein expression is highest in the mesenchymal subtype of GBM, corroborating mRNA-level findings at the protein level in primary tumor tissue.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "GBM primary tumor sections",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "glioblastoma, mesenchymal subtype",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12895041",
+            "pmc_id": "PMC12895041",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12895041/",
+            "title": "PMC:PMC12895041",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "114231c30db406a613e94da6e56c8e55260d5d6dc3cfd4b11434276c951d441d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Immunohistochemistry (IHC) analysis further confirmed that HSPA5 expression was highest in MES subtype (Figs. 1G and S 1C ).",
+          "quote_sha256": "e95d0dc405977de067a75ef7386a84d0e901525ec5ca16a7c25c446d0c9f0f7d",
+          "char_offset": 671,
+          "normalized_source_sha256": "e3724e2a51aa2b42d2f8104109666696c28d33ec4fffdb528cc46c5e4326e533"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "High HSPA5 expression in GBM tumor tissue is significantly associated with poor patient prognosis, supporting HSPA5 as a clinically relevant marker in glioblastoma.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "GBM tumor cohort (TCGA)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "glioblastoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12895041",
+            "pmc_id": "PMC12895041",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12895041/",
+            "title": "PMC:PMC12895041",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "114231c30db406a613e94da6e56c8e55260d5d6dc3cfd4b11434276c951d441d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Moreover, high HSPA5 expression was significantly associated with poor prognosis, whereas HSPA6 expression was not associated with prognosis (Fig. 1H, I ).",
+          "quote_sha256": "21d5a5b370fec4dfd8f23e513313eb0a21754fa816e30717c7e3bbe2aef29f6f",
+          "char_offset": 796,
+          "normalized_source_sha256": "e3724e2a51aa2b42d2f8104109666696c28d33ec4fffdb528cc46c5e4326e533"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "GSEA analysis of GBM datasets shows HSPA5 expression is strongly associated with the mesenchymal transcriptional program (GLIOBLASTOMA_MESENCHYMAL pathway) and negatively correlated with the proneural program, defining a cell-state-specific expression context within GBM.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "GBM tumor tissue",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "glioblastoma",
+          "activation_state": "mesenchymal vs. proneural cell state"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12895041",
+            "pmc_id": "PMC12895041",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12895041/",
+            "title": "PMC:PMC12895041",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "114231c30db406a613e94da6e56c8e55260d5d6dc3cfd4b11434276c951d441d",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Gene Set Enrichment Analysis (GSEA) revealed that HSPA5 expression was strongly associated with GLIOBLASTOMA_MESENCHYMAL pathway, and negatively correlated with GLIOBLASTOMA_PRONEURAL pathway (Fig. 1J ).",
+          "quote_sha256": "eaacfa24988ec9b3da2bd83be3063f02d528fa5cea1e5847c5da0b7053f89798",
+          "char_offset": 952,
+          "normalized_source_sha256": "e3724e2a51aa2b42d2f8104109666696c28d33ec4fffdb528cc46c5e4326e533"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "GRP78 (HSPA5) has been detected at the cell surface of cancer cells in multiple cancer types, placing it among the ER chaperones observed at the plasma membrane in tumor contexts. This is a consensus review-level summary covering multiple cancer types.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cancer cells (multiple types)",
+        "permeabilized": false,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer (multiple types)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12772127",
+            "pmc_id": "PMC12772127",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12772127/",
+            "title": "PMC:PMC12772127",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "771b25467d0eda94c93f2c5f51d5705cae3f76bd7624bb3e1dd414d8f3a301de",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Among the ER chaperone family, CALR, CANX, GRP78, GRP94, GRP170, HSP47, and PDIA1 ( Table ) have been detected at the surface of cancer cells (reviewed in refs , , ).",
+          "quote_sha256": "c4950dd80b87671367d3e9157722ee2f8928039f56d216e7df398f1faaad6dcd",
+          "char_offset": 0,
+          "normalized_source_sha256": "fc8eec994c67dc16f3af1c087cfa4fc33b446c852fd7afa353bbe42c480eda1e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "GRP78 (HSPA5) is identified as one of the most abundant ER chaperones and most studied tumor surface targets. Its mRNA expression was evaluated in adult high-grade glioma (aHGG) and pediatric high-grade glioma (pHGG) tumor samples as a candidate surface target.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "aHGG and pHGG tumor samples",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "high-grade glioma (adult and pediatric)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12772127",
+            "pmc_id": "PMC12772127",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12772127/",
+            "title": "PMC:PMC12772127",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "771b25467d0eda94c93f2c5f51d5705cae3f76bd7624bb3e1dd414d8f3a301de",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "GRP78, GRP94, CALR, and PDIA1 represent some of the most abundant ER chaperones (key players in protein folding and ER stress signaling pathways) and are the most studied tumor surface targets. \u2212 In contrast, less abundant but functionally significant members, such as GRP170 and HSP47, have been less studied as surface proteins but are frequently upregulated in cancer and play key roles in tumor angiogenesis and progression, respectively. , Therefore, using publicly available data sets, we evaluated the mRNA expression of these 7 ER chaperone genes in aHGG and pHGG tumor samples",
+          "quote_sha256": "f82fc2712b6af24d3a3a9365b3dfc8f81e60185f47b5cf7c030392cb9a9d2a90",
+          "char_offset": 885,
+          "normalized_source_sha256": "fc8eec994c67dc16f3af1c087cfa4fc33b446c852fd7afa353bbe42c480eda1e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "HSPA5 mRNA expression does not show significant overexpression in pediatric high-grade glioma (pHGG) compared to normal neonatal brain (NNB), in contrast to HSP90B1 and CANX which are significantly upregulated. This indicates HSPA5 is not transcriptionally induced in pHGG.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "pHGG tumor samples vs. normal neonatal brain",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "pediatric high-grade glioma vs. normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12772127",
+            "pmc_id": "PMC12772127",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12772127/",
+            "title": "PMC:PMC12772127",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "771b25467d0eda94c93f2c5f51d5705cae3f76bd7624bb3e1dd414d8f3a301de",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "A significant overexpression of HSP90B1 ( p < 0.01), and CANX ( p < 0.0001) in pHGG compared to NNB was determined, while HSPA5 , P4HB , HYOU1 , and SERPINH1 remained unchanged ( Figure H,I,K\u2013N).",
+          "quote_sha256": "9a19f778fb83fdde846b071b208d5c755288f4ce5ca225c01c95c7069bafbe7c",
+          "char_offset": 1471,
+          "normalized_source_sha256": "fc8eec994c67dc16f3af1c087cfa4fc33b446c852fd7afa353bbe42c480eda1e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "GRP78 (HSPA5) protein is present on the cell surface of AML cell lines (MV4;11, Molm13) as previously reported, but was also detected on the surface of non-AML B-cell leukemia cells (RS4;11), indicating that surface GRP78 is not restricted to AML and may be a broader feature of hematologic malignancies under ER stress.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "AML cell lines (MV4;11, Molm13) and B-cell leukemia (RS4;11)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": "MV4;11, Molm13, RS4;11",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "acute myeloid leukemia / B-cell leukemia",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Of note, a previous study has reported that GRP78 (HSPA5) protein was presented on the cell surface of AML cells; [ 48 ] however, we found this protein was also detected on the surface of RS4;11 cells (Figure S1d,e , Supporting Information), suggesting that GRP78 may not be the unique cell\u2010surface marker for AML cells.",
+          "quote_sha256": "e1ee3db42e6c28b38db4be94292e7961c16de10ea24993aca85b191adaaa1797",
+          "char_offset": 722,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "In AML cells undergoing chronic ER stress, surface proteome GO term analysis shows significant enrichment for 'response to ER stress', encompassing HSPA5 among key chaperones (HSP90B1, P4HB, CANX, CALR). This links HSPA5 surface detection in AML to an ER-stress-induced cell state.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "AML cell lines (MV4;11, Molm13)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "acute myeloid leukemia",
+          "activation_state": "chronic ER stress"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "These analyses demonstrated a significant enrichment of GO terms related to \u201cresponse to ER stress,\u201d which encompassed specific chaperones, including HSP90B1, HSPA5, P4HB, CANX, and CALR (Figure 3h\u2013j ).",
+          "quote_sha256": "9c13177bab195e35532c74613513735e48bd61981c48981419acafdeb32157e9",
+          "char_offset": 1602,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "HSPA5 surface expression has been investigated as a potential therapeutic target across multiple cancer types including leukemias (various subtypes) and solid tumors, with surface HSPA5 identified in both malignant and some normal cell contexts (vascular smooth muscle cells, platelets). This review-level claim spans a broad tissue/cell-type range.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "leukemic cells, vascular smooth muscle cells, platelets, solid tumor cells",
+        "permeabilized": false,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer (leukemia and solid tumors)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "[ 13 , 53 , 54 , 55 ] For instance, surface\u2010expressed P4HB has been identified in various malignant and normal cell types, including leukemic cells, vascular smooth muscle cells, and platelets, where it performs critical biological functions. [ 47 ] Similarly, HSPA5 has been investigated as a potential therapeutic target on the cell surface of some leukemias and solid tumors. [ 48 , 56 , 57 ] Preclinical development of chemical or antibody drug candidates targeting HSP90B1 is underway across multiple cancer types, such as breast and colorectal cancers.",
+          "quote_sha256": "7c30f19e45f6cef2d8f242caa4949d03644b96fd203ccdcd61d7c35523409915",
+          "char_offset": 1043,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_14",
+      "claim": "AML cells (MV4;11 and Molm13) exhibit a distinct surface proteomic signature enriched in ER-associated proteins including HSPA5 compared to non-AML cells (RS4;11) and PBMCs, implicating stress adaptation as a driver of HSPA5 surface presentation in AML.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "AML cells (MV4;11, Molm13) vs. RS4;11, PBMC",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": "MV4;11, Molm13",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "acute myeloid leukemia",
+          "activation_state": "ER stress / stress adaptation"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12849903",
+            "pmc_id": "PMC12849903",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12849903/",
+            "title": "PMC:PMC12849903",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "000cf143f284a7742438c2a707b3274bdce59e06602a7b9cb9b0c7b503aa8ec7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Taken together, these findings suggest that AML cells, particularly MV4\u201011 and Molm13, exhibit a distinct surface proteomic signature characterized by elevated or specific expression of ER\u2010associated proteins, implicating stress adaptation mechanisms in their biology.",
+          "quote_sha256": "3f7b5f09959eb68ea4eed82554a622fdf76d3705215c6ad0be2a4857a5c0c4aa",
+          "char_offset": 1805,
+          "normalized_source_sha256": "0405a7f2af237de12472a9ff433f776b025481be252afb8583dbd71708a86eef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_15",
+      "claim": "BiP (GRP78/HSPA5) has been reported at the cell surface of breast cancer cells. In hormone receptor-positive (PR+) breast cancer, surface BiP expression is associated with good prognosis and chemotherapy response. In triple-negative breast cancer (TNBC), surface BiP is also reported but with controversial prognostic value. This represents two distinct disease-state contexts for surface HSPA5 in breast cancer.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "breast cancer cells (PR+ and TNBC subtypes)",
+        "permeabilized": false,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "breast",
+          "disease_state": "breast cancer (PR+ and TNBC)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9777260",
+            "pmc_id": "PMC9777260",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9777260/",
+            "title": "PMC:PMC9777260",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "4b82e422777be7a649c624c24d79ae659a4b42241448e0207c1ac3c6886d33ea",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "BiP has been described in the cell surface of breast cancer cells; however, its prognostic value remains controversial: cell surface expression was associated with good prognosis and response to chemotherapy in PR+ breast cancers [ 12 ] and triple-negative breast cancer [ 13 , 66 ].",
+          "quote_sha256": "c5cc5cd5e31a480e378b5889dd5e64b003b553a37c424631f456ce24b6047c45",
+          "char_offset": 227,
+          "normalized_source_sha256": "695a67d1fcebaf2af76efcd46ca1eb67a95eb1347cf3b891abbb2bbd7e0093cf"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_16",
+      "claim": "In a breast cancer cohort examined in this study, surface BiP (HSPA5) was found in only one case with few positive cells, indicating that cell-surface BiP is rare or low in this particular breast cancer tissue cohort, in contrast to prior reports.",
+      "claim_type": "contradictory",
+      "direction": "refutes",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "breast cancer primary tumor tissue",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "breast",
+          "disease_state": "breast cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9777260",
+            "pmc_id": "PMC9777260",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9777260/",
+            "title": "PMC:PMC9777260",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "4b82e422777be7a649c624c24d79ae659a4b42241448e0207c1ac3c6886d33ea",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Although BiP cell surface expression is of specific relevance as there are currently anti-BiP antibodies in pre-clinical trials [ 68 ] in our cohort, we only found one case with few cells showing this subcellular localization.",
+          "quote_sha256": "a73991f39cb41cf7fe60ec19e7bd9f9d8118e94b1e80e4013ae7e42ef8ba04b2",
+          "char_offset": 0,
+          "normalized_source_sha256": "695a67d1fcebaf2af76efcd46ca1eb67a95eb1347cf3b891abbb2bbd7e0093cf"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_17",
+      "claim": "Membranous HSPA5 staining was observed in only a few cases of ovarian cancer and pancreatic cancer, suggesting that cell-surface HSPA5 protein expression at the plasma membrane is a rare event in these solid tumor types, not a general feature.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "ovarian cancer and pancreatic cancer tumor sections",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "ovary / pancreas",
+          "disease_state": "ovarian cancer and pancreatic cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC7975696",
+            "pmc_id": "PMC7975696",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC7975696/",
+            "title": "PMC:PMC7975696",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "e98625464b08f45d061d8bd5e53c4d708ceed8dc20399647b03b042f6ed79ef4",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Membranous staining was observed in a few cases of ovarian and pancreatic cancers (Data not shown).",
+          "quote_sha256": "e98625464b08f45d061d8bd5e53c4d708ceed8dc20399647b03b042f6ed79ef4",
+          "char_offset": 0,
+          "normalized_source_sha256": "59fa55cef56eb27519c5f46a96360ea494bc8b847ec9d47d74bcb18a34f3a4de"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_18",
+      "claim": "HSPA5 (GRP78) protein is enriched in low- and medium-speed centrifugation fractions (large oncosomes / extracellular vesicles) derived from multiple cancer cell types, indicating HSPA5 is associated with the extracellular vesicle surface proteome of cancer cells.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "multiple cancer cell lines",
+        "permeabilized": false,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer (multiple types)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12281359",
+            "pmc_id": "PMC12281359",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12281359/",
+            "title": "PMC:PMC12281359",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "bc0c48eba86b08a085d037ff9f13e244cf70970514070cac6753d09ba187d3c5",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Immunoblotting demonstrated enrichment of previously identified LO proteins, including from different cancer cell types, such as heat shock protein family A5 (HSPA5) and keratin 18 (KRT18) 7 , 13 , 26 in the low- and medium-speed fractions versus high-speed fractions.",
+          "quote_sha256": "cbb1f1dadb26151b935ac842d8e13a473fee21569632422b49994cb05f85a83a",
+          "char_offset": 768,
+          "normalized_source_sha256": "fd20064a9b725a9a05b4db3285802bff379f79b0b943341f0074020cd6a31424"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_19",
+      "claim": "HSPA5 is identified as a marker of large extracellular vesicles (large EVs). Its presence in stored blood-derived large EVs is gradually depleted over 20 years of storage, indicating HSPA5 is part of the large EV surface proteome and is subject to time-dependent degradation.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "blood-derived large extracellular vesicles",
+        "permeabilized": false,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "blood",
+          "disease_state": "normal (archived blood samples)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13032548",
+            "pmc_id": "PMC13032548",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13032548/",
+            "title": "PMC:PMC13032548",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "18190ab578499b46f64dda40b0099bc0c0daceba52ab54486443dc7f7a8cf46b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Large EV markers, like HSPA5, ITGB1, and ITGB6, were gradually depleted, while ACTN4, VAMP3, and HLA-B were irregularly identified after 20 years (Fig. 2 C).",
+          "quote_sha256": "18190ab578499b46f64dda40b0099bc0c0daceba52ab54486443dc7f7a8cf46b",
+          "char_offset": 0,
+          "normalized_source_sha256": "951aacbf28078e793190dd30964c2e2f433250c5199b72caa5ed96e2ace47053"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_20",
+      "claim": "HSPA5 (GRP78) interacts with a truncated thrombomodulin isoform (sTM536) that is present in the ER lumen, as demonstrated by co-immunoprecipitation from conditioned medium. This interaction places HSPA5 in the ER lumen, consistent with its chaperone role in that compartment.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cells expressing truncated TM536",
+        "permeabilized": true,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "ER stress / unfolded protein response"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11532747",
+            "pmc_id": "PMC11532747",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11532747/",
+            "title": "PMC:PMC11532747",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "f2b4866968349b476f98c84f4fd29fcc1d50a16be729e44d9da031e1bbaea019",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The proportion of intraluminal TM 536 was higher than that of TM WT ( Figure 5 E), implying that sTM 536 exists in the lumen of the ER and/or Golgi.\nsTM 536 contained in the CM was found to be associated with the ER protein chaperone heat shock protein family A (Hsp70) member 5 (HSPA5) ( Figure 6 A), and this interaction was barely detected with RHBDL2-cleaved sTM 536 , which lacks IMD.",
+          "quote_sha256": "f2b4866968349b476f98c84f4fd29fcc1d50a16be729e44d9da031e1bbaea019",
+          "char_offset": 0,
+          "normalized_source_sha256": "b7d331cbf4d9b81bbc0258cfd878b316b2b0dd4c5c63622f78f84d5784326459"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_21",
+      "claim": "BiP (GRP78/HSPA5) is enriched in the ER-enriched S1R-Apex proximity proteome, confirming its presence as a known sigma-1 receptor interacting partner in the ER, consistent with its predominant ER lumenal localization.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "S1R-Apex proximity labeling cell model",
+        "permeabilized": true,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "basal / ER-enriched proximity label"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10284605",
+            "pmc_id": "PMC10284605",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10284605/",
+            "title": "PMC:PMC10284605",
+            "retrieved_at": "2026-05-17T02:55:48.890834Z",
+            "content_sha256": "f6919dd2996ff11892a54dc168042e138eb5f030728972f3463fb53c195ee41f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:55:48.890834Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "In addition, the ER chaperone BiP (GRP78), a known S1R interacting partner, was also specifically enriched in the S1R-Apex pellet ( Figure 2A ) ( Hayashi and Su, 2007 ).",
+          "quote_sha256": "f6919dd2996ff11892a54dc168042e138eb5f030728972f3463fb53c195ee41f",
+          "char_offset": 0,
+          "normalized_source_sha256": "f880d098fefe33fa11d744c96b29f25ec97157d642c9ec5ca89324e9a8a57047"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    }
+  ],
+  "search_log": [],
+  "evidence_count": 39,
+  "primary_evidence_count": 26,
+  "secondary_evidence_count": 13,
+  "confidence": "moderate",
+  "confidence_reasoning": "A1 grades evidence as direct_multi_method (biotinylation MS, non-permeabilized IF, flow cytometry, functional assays), which nominally supports high confidence. However, two factors drag overall confidence to moderate: (1) strong state-dependence\u2014A2 documents that surface HSPA5 is an ER-stress/oncogenic-transformation-induced phenotype largely absent from resting normal cells, creating high inter-tumor variability; (2) IHC on clinical cohorts (a1_evi_14, a2_evi_16, a2_evi_17) found membranous localization in only rare cases across breast, ovarian, and pancreatic cancers, indicating that cell-line-based direct evidence may not translate uniformly to primary tumors. The secreted/EV-associated pool (a1_evi_17, a2_evi_18, a2_evi_19) further complicates therapeutic engagement. Taken together, surface accessibility is real but highly context-dependent, warranting moderate rather than high confidence.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-17T02:55:48.897076Z",
+  "timing": [
+    {
+      "step_name": "planner",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:47:51.091259Z",
+      "elapsed_s": 22.978,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 5162,
+      "output_tokens": 1285,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.034761
+    },
+    {
+      "step_name": "search:gene_literature:gene2pubmed",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:14.069671Z",
+      "elapsed_s": 1.319,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:15.389052Z",
+      "elapsed_s": 5.958,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:21.347303Z",
+      "elapsed_s": 2.752,
+      "n_items": 16
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:24.098898Z",
+      "elapsed_s": 2.826,
+      "n_items": 24
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:26.925180Z",
+      "elapsed_s": 4.088,
+      "n_items": 9
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:31.013152Z",
+      "elapsed_s": 5.147,
+      "n_items": 3
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:36.160160Z",
+      "elapsed_s": 1.743,
+      "n_items": 13
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:37.902837Z",
+      "elapsed_s": 5.501,
+      "n_items": 10
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:43.403949Z",
+      "elapsed_s": 0.644,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:44.048141Z",
+      "elapsed_s": 0.37,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:44.418546Z",
+      "elapsed_s": 0.445,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:44.863266Z",
+      "elapsed_s": 0.501,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.364060Z",
+      "elapsed_s": 0.11,
+      "n_items": 8
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12657239",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.475105Z",
+      "elapsed_s": 1.378,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2335,
+      "output_tokens": 104,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002855
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12894898",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.476137Z",
+      "elapsed_s": 2.253,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2563,
+      "output_tokens": 240,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003763
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13104480",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.476561Z",
+      "elapsed_s": 3.877,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2509,
+      "output_tokens": 349,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004254
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13042447",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.476892Z",
+      "elapsed_s": 3.468,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2401,
+      "output_tokens": 222,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003511
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12353789",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.477217Z",
+      "elapsed_s": 4.677,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2568,
+      "output_tokens": 314,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004138
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9954741",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.477524Z",
+      "elapsed_s": 4.896,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2511,
+      "output_tokens": 397,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004496
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12772127",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.477811Z",
+      "elapsed_s": 4.458,
+      "n_items": 9,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3303,
+      "output_tokens": 439,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005498
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11532747",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.478090Z",
+      "elapsed_s": 6.082,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2754,
+      "output_tokens": 561,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005559
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10284605",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.478373Z",
+      "elapsed_s": 4.452,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2770,
+      "output_tokens": 342,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00448
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12281359",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:45.478641Z",
+      "elapsed_s": 5.058,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3114,
+      "output_tokens": 404,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005134
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13032548",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:46.853051Z",
+      "elapsed_s": 4.974,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2639,
+      "output_tokens": 436,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004819
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12849903",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:47.729452Z",
+      "elapsed_s": 5.244,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3022,
+      "output_tokens": 427,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005157
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12130849",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:48.944617Z",
+      "elapsed_s": 3.992,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2432,
+      "output_tokens": 101,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002937
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC7801745",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:49.354024Z",
+      "elapsed_s": 1.323,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2342,
+      "output_tokens": 95,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002817
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12670121",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:49.930264Z",
+      "elapsed_s": 3.417,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2670,
+      "output_tokens": 206,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.0037
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12967245",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:49.936273Z",
+      "elapsed_s": 2.163,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2323,
+      "output_tokens": 142,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003033
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12679549",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:50.154843Z",
+      "elapsed_s": 3.461,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2454,
+      "output_tokens": 290,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003904
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13090131",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:50.373829Z",
+      "elapsed_s": 2.975,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2329,
+      "output_tokens": 212,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003389
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC7975696",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:50.537052Z",
+      "elapsed_s": 3.091,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2324,
+      "output_tokens": 178,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003214
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9777260",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:50.677010Z",
+      "elapsed_s": 4.076,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2447,
+      "output_tokens": 319,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004042
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11506777",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:51.560509Z",
+      "elapsed_s": 4.608,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2595,
+      "output_tokens": 164,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003415
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9953368",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:51.827197Z",
+      "elapsed_s": 3.159,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2326,
+      "output_tokens": 217,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003411
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8922431",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:52.099479Z",
+      "elapsed_s": 2.844,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2601,
+      "output_tokens": 263,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003916
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12574954",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:52.937225Z",
+      "elapsed_s": 5.43,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2591,
+      "output_tokens": 419,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004686
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11468914",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:52.973670Z",
+      "elapsed_s": 1.981,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2550,
+      "output_tokens": 209,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003595
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11892322",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:53.347841Z",
+      "elapsed_s": 1.376,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2388,
+      "output_tokens": 117,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002973
+    },
+    {
+      "step_name": "trim:iter0:PMID:11160188",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:53.349220Z",
+      "elapsed_s": 5.358,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2809,
+      "output_tokens": 363,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004624
+    },
+    {
+      "step_name": "selector:iter0",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:48:58.715134Z",
+      "elapsed_s": 58.512,
+      "n_items": 36,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 19946,
+      "output_tokens": 3983,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.119583
+    },
+    {
+      "step_name": "search:gene_literature:fetch_fulltext",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.227014Z",
+      "elapsed_s": 0.012,
+      "n_items": 30
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.239506Z",
+      "elapsed_s": 0.621,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.860600Z",
+      "elapsed_s": 0.11,
+      "n_items": 8
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12657239",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.972317Z",
+      "elapsed_s": 1.485,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2335,
+      "output_tokens": 119,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00293
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12894898",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.972684Z",
+      "elapsed_s": 2.13,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2563,
+      "output_tokens": 230,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003713
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13104480",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.973181Z",
+      "elapsed_s": 4.452,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2509,
+      "output_tokens": 346,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004239
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13042447",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.973438Z",
+      "elapsed_s": 2.388,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2401,
+      "output_tokens": 166,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003231
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12353789",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.973793Z",
+      "elapsed_s": 3.771,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2568,
+      "output_tokens": 225,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003693
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9954741",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.974010Z",
+      "elapsed_s": 6.15,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2511,
+      "output_tokens": 430,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004661
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12772127",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.974258Z",
+      "elapsed_s": 3.266,
+      "n_items": 37,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 5793,
+      "output_tokens": 332,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.007453
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11532747",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.974512Z",
+      "elapsed_s": 4.289,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2754,
+      "output_tokens": 338,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004444
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10284605",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.974786Z",
+      "elapsed_s": 5.599,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2770,
+      "output_tokens": 537,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005455
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12281359",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:57.975245Z",
+      "elapsed_s": 7.932,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3114,
+      "output_tokens": 669,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.006459
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13032548",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:49:59.457747Z",
+      "elapsed_s": 5.087,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2639,
+      "output_tokens": 457,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004924
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12849903",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:00.103134Z",
+      "elapsed_s": 5.526,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3022,
+      "output_tokens": 458,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005312
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12130849",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:00.362062Z",
+      "elapsed_s": 1.351,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2432,
+      "output_tokens": 108,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002972
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC7801745",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:01.240027Z",
+      "elapsed_s": 1.338,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2342,
+      "output_tokens": 113,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002907
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12670121",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:01.713201Z",
+      "elapsed_s": 3.623,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2670,
+      "output_tokens": 218,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00376
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12967245",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:01.744576Z",
+      "elapsed_s": 1.869,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2323,
+      "output_tokens": 136,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003003
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12679549",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:02.263674Z",
+      "elapsed_s": 3.074,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2454,
+      "output_tokens": 286,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003884
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13090131",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:02.424910Z",
+      "elapsed_s": 2.933,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2329,
+      "output_tokens": 183,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003244
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC7975696",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:02.577749Z",
+      "elapsed_s": 2.427,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2324,
+      "output_tokens": 159,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003119
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9777260",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:03.574329Z",
+      "elapsed_s": 4.321,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2447,
+      "output_tokens": 308,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003987
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11506777",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:03.613294Z",
+      "elapsed_s": 3.053,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2595,
+      "output_tokens": 172,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003455
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9953368",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:04.124362Z",
+      "elapsed_s": 3.257,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2326,
+      "output_tokens": 227,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003461
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8922431",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:04.545258Z",
+      "elapsed_s": 4.169,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2601,
+      "output_tokens": 382,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004511
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12574954",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:05.004690Z",
+      "elapsed_s": 4.222,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2591,
+      "output_tokens": 362,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004401
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11468914",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:05.336419Z",
+      "elapsed_s": 2.244,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2550,
+      "output_tokens": 207,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003585
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11892322",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:05.337831Z",
+      "elapsed_s": 1.363,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2388,
+      "output_tokens": 106,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002918
+    },
+    {
+      "step_name": "trim:iter1:PMID:11160188",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:05.358284Z",
+      "elapsed_s": 6.121,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2809,
+      "output_tokens": 449,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005054
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13052156",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:05.628847Z",
+      "elapsed_s": 2.617,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2807,
+      "output_tokens": 296,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004287
+    },
+    {
+      "step_name": "selector:iter1",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:50:11.487464Z",
+      "elapsed_s": 85.301,
+      "n_items": 41,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 20615,
+      "output_tokens": 5549,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.14508
+    },
+    {
+      "step_name": "planner",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:36.840962Z",
+      "elapsed_s": 19.395,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 5578,
+      "output_tokens": 1151,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.033999
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.236697Z",
+      "elapsed_s": 0.018,
+      "n_items": 0
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.255064Z",
+      "elapsed_s": 0.082,
+      "n_items": 3
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.336677Z",
+      "elapsed_s": 0.078,
+      "n_items": 9
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.414233Z",
+      "elapsed_s": 0.118,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.532534Z",
+      "elapsed_s": 0.045,
+      "n_items": 16
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.577112Z",
+      "elapsed_s": 0.044,
+      "n_items": 24
+    },
+    {
+      "step_name": "search:gene_literature:gene2pubmed",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.621415Z",
+      "elapsed_s": 0.002,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:56.623688Z",
+      "elapsed_s": 1.282,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:57.905436Z",
+      "elapsed_s": 0.403,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.308058Z",
+      "elapsed_s": 0.497,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.804868Z",
+      "elapsed_s": 0.001,
+      "n_items": 8
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC7975696",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.806620Z",
+      "elapsed_s": 1.32,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2602,
+      "output_tokens": 93,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003067
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9777260",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.806812Z",
+      "elapsed_s": 2.888,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2725,
+      "output_tokens": 248,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003965
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC7801745",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.807508Z",
+      "elapsed_s": 2.753,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2620,
+      "output_tokens": 190,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00357
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12670121",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.807893Z",
+      "elapsed_s": 2.76,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2948,
+      "output_tokens": 173,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003813
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12967245",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.808076Z",
+      "elapsed_s": 3.174,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2601,
+      "output_tokens": 179,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003496
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12679549",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.808564Z",
+      "elapsed_s": 4.591,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2732,
+      "output_tokens": 383,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004647
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13090131",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.808832Z",
+      "elapsed_s": 3.078,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2607,
+      "output_tokens": 194,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003577
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12657239",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.809887Z",
+      "elapsed_s": 2.378,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2613,
+      "output_tokens": 122,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003223
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12894898",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.810296Z",
+      "elapsed_s": 4.493,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2841,
+      "output_tokens": 396,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004821
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13104480",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:51:58.810646Z",
+      "elapsed_s": 2.837,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2787,
+      "output_tokens": 207,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003822
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13042447",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:00.126507Z",
+      "elapsed_s": 2.696,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2679,
+      "output_tokens": 227,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003814
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12353789",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:01.187766Z",
+      "elapsed_s": 3.444,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2846,
+      "output_tokens": 180,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003746
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9954741",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:01.560678Z",
+      "elapsed_s": 4.839,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2789,
+      "output_tokens": 358,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004579
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12772127",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:01.568070Z",
+      "elapsed_s": 5.317,
+      "n_items": 9,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3581,
+      "output_tokens": 595,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.006556
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11532747",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:01.648121Z",
+      "elapsed_s": 4.618,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3032,
+      "output_tokens": 423,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005147
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10284605",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:01.694569Z",
+      "elapsed_s": 3.223,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2756,
+      "output_tokens": 295,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004231
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12281359",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:01.887665Z",
+      "elapsed_s": 6.126,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3392,
+      "output_tokens": 486,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005822
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC13032548",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:01.982632Z",
+      "elapsed_s": 3.966,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2917,
+      "output_tokens": 411,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004972
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12849903",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:02.823121Z",
+      "elapsed_s": 3.026,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3300,
+      "output_tokens": 328,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00494
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12130849",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:03.303703Z",
+      "elapsed_s": 3.588,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2710,
+      "output_tokens": 321,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004315
+    },
+    {
+      "step_name": "trim:iter0:PMID:11160188",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:03.400088Z",
+      "elapsed_s": 6.332,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3087,
+      "output_tokens": 493,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005552
+    },
+    {
+      "step_name": "selector:iter0",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:52:09.740827Z",
+      "elapsed_s": 60.742,
+      "n_items": 25,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 18705,
+      "output_tokens": 4101,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.11763
+    },
+    {
+      "step_name": "search:gene_literature:fetch_fulltext",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:10.483214Z",
+      "elapsed_s": 0.011,
+      "n_items": 30
+    },
+    {
+      "step_name": "search:gene_literature:fetch_fulltext",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:10.494522Z",
+      "elapsed_s": 0.741,
+      "n_items": 30
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.235645Z",
+      "elapsed_s": 0.114,
+      "n_items": 8
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC7975696",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.351151Z",
+      "elapsed_s": 9.394,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2602,
+      "output_tokens": 250,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003852
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9777260",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.351518Z",
+      "elapsed_s": 5.678,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2725,
+      "output_tokens": 157,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00351
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC7801745",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.352378Z",
+      "elapsed_s": 2.731,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2620,
+      "output_tokens": 223,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003735
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12670121",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.352815Z",
+      "elapsed_s": 3.187,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2948,
+      "output_tokens": 193,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003913
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12967245",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.353294Z",
+      "elapsed_s": 2.297,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2601,
+      "output_tokens": 135,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003276
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12679549",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.353655Z",
+      "elapsed_s": 4.916,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2732,
+      "output_tokens": 443,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004947
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13090131",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.353768Z",
+      "elapsed_s": 2.757,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2607,
+      "output_tokens": 185,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003532
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12657239",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.354068Z",
+      "elapsed_s": 2.977,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2613,
+      "output_tokens": 215,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003688
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12894898",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.354408Z",
+      "elapsed_s": 4.117,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2841,
+      "output_tokens": 401,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004846
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13104480",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:11.354899Z",
+      "elapsed_s": 4.841,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2787,
+      "output_tokens": 288,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004227
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13042447",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:13.650530Z",
+      "elapsed_s": 2.39,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2679,
+      "output_tokens": 171,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003534
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12353789",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:14.082981Z",
+      "elapsed_s": 2.49,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2846,
+      "output_tokens": 139,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003541
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9954741",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:14.110705Z",
+      "elapsed_s": 3.527,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2789,
+      "output_tokens": 306,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004319
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12772127",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:14.330755Z",
+      "elapsed_s": 3.212,
+      "n_items": 9,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3581,
+      "output_tokens": 393,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005546
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11532747",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:14.540237Z",
+      "elapsed_s": 4.848,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3032,
+      "output_tokens": 485,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005457
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10284605",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:15.471543Z",
+      "elapsed_s": 3.408,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2756,
+      "output_tokens": 287,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004191
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12281359",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:16.040426Z",
+      "elapsed_s": 4.963,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3392,
+      "output_tokens": 401,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005397
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC13032548",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:16.195937Z",
+      "elapsed_s": 5.218,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2917,
+      "output_tokens": 475,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005292
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12849903",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:16.270078Z",
+      "elapsed_s": 3.117,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3300,
+      "output_tokens": 338,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00499
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12130849",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:16.572708Z",
+      "elapsed_s": 4.167,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2710,
+      "output_tokens": 323,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004325
+    },
+    {
+      "step_name": "trim:iter1:PMID:11160188",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:17.029880Z",
+      "elapsed_s": 4.12,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3087,
+      "output_tokens": 289,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004532
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12895041",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:17.542524Z",
+      "elapsed_s": 4.577,
+      "n_items": 30,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 4737,
+      "output_tokens": 626,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.007867
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12720419",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:17.638223Z",
+      "elapsed_s": 3.499,
+      "n_items": 30,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 5164,
+      "output_tokens": 393,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.007129
+    },
+    {
+      "step_name": "trim:iter1:PMID:41240217",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:18.879508Z",
+      "elapsed_s": 5.508,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3145,
+      "output_tokens": 459,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00544
+    },
+    {
+      "step_name": "selector:iter1",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:53:24.411133Z",
+      "elapsed_s": 82.333,
+      "n_items": 43,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 20884,
+      "output_tokens": 6074,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.153762
+    },
+    {
+      "step_name": "builder:anatomical_accessibility",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:54:46.752533Z",
+      "elapsed_s": 2.235,
+      "n_items": 21,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 10033,
+      "output_tokens": 9,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.030234
+    },
+    {
+      "step_name": "builder:subcellular_localization",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:54:46.752344Z",
+      "elapsed_s": 6.125,
+      "n_items": 21,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 10510,
+      "output_tokens": 376,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.03717
+    },
+    {
+      "step_name": "builder:contradictions",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:54:46.746963Z",
+      "elapsed_s": 6.57,
+      "n_items": 18,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 1445,
+      "output_tokens": 252,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.008115
+    },
+    {
+      "step_name": "builder:tissues",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:54:46.751857Z",
+      "elapsed_s": 7.118,
+      "n_items": 21,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 4058,
+      "output_tokens": 676,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.022314
+    },
+    {
+      "step_name": "builder:cell_types",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:54:46.752041Z",
+      "elapsed_s": 8.725,
+      "n_items": 21,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 9834,
+      "output_tokens": 706,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.040092
+    },
+    {
+      "step_name": "builder:therapeutic_engagement",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:54:46.746783Z",
+      "elapsed_s": 10.025,
+      "n_items": 18,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 9140,
+      "output_tokens": 452,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.0342
+    },
+    {
+      "step_name": "builder:evidence_grade",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:54:46.747244Z",
+      "elapsed_s": 10.688,
+      "n_items": 18,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 9819,
+      "output_tokens": 563,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.037902
+    },
+    {
+      "step_name": "builder:accessibility_modulation",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:54:46.756631Z",
+      "elapsed_s": 29.728,
+      "n_items": 21,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 11724,
+      "output_tokens": 2019,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.065457
+    },
+    {
+      "step_name": "builder:methods",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:54:46.746357Z",
+      "elapsed_s": 31.631,
+      "n_items": 18,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 11640,
+      "output_tokens": 2365,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.070395
+    },
+    {
+      "step_name": "synthesizer",
+      "phase": "synthesizer",
+      "started_at": "2026-05-17T02:55:18.378476Z",
+      "elapsed_s": 30.512,
+      "n_items": 39,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 2,
+      "output_tokens": 1601,
+      "cache_creation_input_tokens": 30472,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.138291
+    },
+    {
+      "step_name": "evidence_promotion",
+      "phase": "post",
+      "started_at": "2026-05-17T02:55:48.890817Z",
+      "elapsed_s": 0.006,
+      "n_items": 39
+    },
+    {
+      "step_name": "deterministic_features",
+      "phase": "post",
+      "started_at": "2026-05-17T02:55:48.896672Z",
+      "elapsed_s": 0.0
+    },
+    {
+      "step_name": "filters_derivation",
+      "phase": "post",
+      "started_at": "2026-05-17T02:55:48.896805Z",
+      "elapsed_s": 0.0,
+      "n_items": 39
+    }
+  ],
+  "total_elapsed_s": 477.806,
+  "total_step_seconds": 883.721
+}

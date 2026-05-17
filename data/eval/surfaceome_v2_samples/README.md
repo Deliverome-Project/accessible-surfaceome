@@ -1,12 +1,12 @@
 # surfaceome_v2 sample records
 
-Sixteen committed artifacts from the v2 pipeline so reviewers can see
+Eighteen committed artifacts from the v2 pipeline so reviewers can see
 what the new pipeline produces without re-running it. Drop the `.html`
 files into a browser — they're self-contained, no external assets, no
 build step. Open the `.json` files in any editor or pipe through `jq`.
 
-The **CD81** + **CLDN18** + **VIM** + **WT1** + **ATP5F1B** samples
-were generated with per-step timing instrumentation (PR #35), so their
+The **CD81** + **CLDN18** + **VIM** + **WT1** + **ATP5F1B** + **HSPA5**
+samples were generated with per-step timing instrumentation (PR #35), so their
 HTMLs include a **Section 0.5 step timeline** — a stacked phase bar
 plus a detail table sorted slowest-first, so the bottleneck step is on
 top. GPR75 + EGFR predate the timing PR.
@@ -27,6 +27,8 @@ top. GPR75 + EGFR predate the timing PR.
 | `surfaceome_v2_WT1.json` | Same as raw JSON | same |
 | `surfaceome_v2_ATP5F1B.html` | **ATP5F1B / ATP5B** (mitochondrial ATP synthase β-subunit with controversial "ectopic surface ATP synthase / eATP synthase" literature) — **hard-gene test**: pipeline lands `sa=moderate, primary_compartment=mitochondrion, dual_localization=plasma_membrane`, surfaces CSPA/SURFY negative annotation as a contradiction | `scripts/surfaceome_v2_annotate.py HGNC:830` |
 | `surfaceome_v2_ATP5F1B.json` | Same as raw JSON | same |
+| `surfaceome_v2_HSPA5.html` | **HSPA5 / GRP78** (ER chaperone with deeply controversial "cell-surface GRP78 / csGRP78" literature in cancer; >20-year debate) — **hard-gene test**: pipeline lands `sa=moderate, primary_compartment=ER, dual_localization=4` (plasma_membrane / mitochondrion / nucleus / EVs), confidence reasoning explicitly hedges on state-dependence + rare clinical membranous IHC | `scripts/surfaceome_v2_annotate.py HGNC:5238` |
+| `surfaceome_v2_HSPA5.json` | Same as raw JSON | same |
 | `GPR75_plan_trim_select_dual.html` | Just the Phase-1 A1+A2 `EvidenceClaim` ledger for GPR75 — what the dual driver emits before block builders run | `scripts/plan_trim_select_dual_run.py HGNC:4526` |
 | `GPR75_plan_trim_select_dual.json` | Same dual ledger as raw JSON | same |
 
@@ -173,6 +175,7 @@ in the face of clinical-target hype. Three contrasting cases were run:
 | **VIM** (vimentin) | Cytoplasmic intermediate-filament protein. "Cell-surface vimentin" (CSV) is widely reported in cancer / apoptosis / senescence but mechanistically contested; Pritumumab targets it in trials. | `sa=moderate`, `conf=moderate`, `state_dependence=high`, primary compartment ≠ plasma_membrane, multiple `dual_localization` rows tagged by stress context. | `sa=moderate, conf=moderate, state_dependence=high, primary_compartment=cytosol`, **3 dual_localization rows** (cancer cell lines, apoptotic neutrophils, senescent chondrocytes — the canonical CSV contexts), `headline_risks=[restricted_subdomain, antibody_validation_weak, other]`. | ✅ |
 | **WT1** (Wilms tumor 1) | Nuclear transcription factor. Active CAR-T target — but the receptor surface presence is the MHC-I-presented WT1 peptide (pMHC), not the intact WT1 protein. Should NOT be graded as surface-accessible. | `sa=low`, `conf=moderate`, `evidence_grade=weak`, primary compartment = nucleus, explicit acknowledgment that "surface" refers to pMHC not the protein. | `sa=low, conf=moderate, grade=weak, primary_compartment=nucleus`. **Executive summary explicitly distinguishes WT1 protein from WT1-pMHC**: "All surface-engagement evidence in the ledger concerns processed WT1 peptide fragments presented via MHC-I at extremely low density (<100 sites/cell), not the WT1 protein itself." | ✅ |
 | **ATP5F1B** (ATP synthase β) | Mitochondrial inner-membrane F1 subunit. "Ectopic surface ATP synthase / eATP synthase" reports in cancer / sperm. CSPA/SURFY surfaceome databases mark it as NOT surface. | `sa=moderate` (not `high`), `conf=moderate` (not `high`), `primary_compartment=mitochondrion`, dual_localization with `plasma_membrane`, contradicting_evidence captures the CSPA/SURFY negatives. | `sa=moderate, conf=moderate, primary_compartment=mitochondrion`, **1 dual_localization row** (eATP synthase, fixed-cell + bovine sperm contexts), **1 contradiction** capturing CSPA/SURFY negative annotation. Confidence reasoning explicitly hedges on the surface-fraction quantification gap. | ✅ |
+| **HSPA5 / GRP78** | Canonical ER chaperone (KDEL-tagged). "Cell-surface GRP78" (csGRP78) has 20+ years of cancer literature on one side and "artifactual / KDEL escape under stress" on the other. Active clinical-target work (CBT100/200/300). Tier-1 hard test from the original handoff. | `sa=moderate` (not `high`), `conf=moderate` (not `high`), `primary_compartment=ER`, multiple `dual_localization` rows (plasma_membrane, EVs at minimum), `accessibility_modulation` with `stress_induced` + `disease_state_induced` categories, ≥1 contradiction. | `sa=moderate, conf=moderate, primary_compartment=ER`, **4 dual_localization rows** (plasma_membrane, mitochondrion, nucleus, EVs — full csGRP78 + organelle-translocation literature), 7 modulation rows, 1 contradiction. Confidence reasoning explicitly cites: "strong state-dependence — surface HSPA5 is an ER-stress/oncogenic-transformation-induced phenotype largely absent from resting normal cells" + "IHC on clinical cohorts found membranous localization in only rare cases." | ✅ |
 
 **Headline finding:** all three records hold the line on honest hedging.
 The synthesizer never grades these `high` confidence despite each having
@@ -200,6 +203,7 @@ Specifically:
 | VIM | 7m 16s | $1.32 | 20 (15 primary) | 12 / 8 | 6 | 1 | 5 | 3 | 3 | 0 |
 | WT1 | 5m 55s | $1.03 | 23 (17 primary) | 12 / 11 | 5 | 4 | 8 | 1 | 4 | 1 |
 | ATP5F1B | 5m 31s | $0.95 | 17 (14 primary) | 11 / 6 | 6 | 6 | 3 | 1 | 3 | 1 |
+| HSPA5 | 7m 58s | $1.51 | 39 (24 primary) | 18 / 21 | 9 | 2 | 10 | 4 | 7 | 1 |
 
 All three runs are faster + cheaper than CD81/CLDN18 because the
 methodology corpus for each is genuinely thinner — the planner honors
