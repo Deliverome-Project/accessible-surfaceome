@@ -82,7 +82,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "Human pancreatic islets — GPR75 detected by western blotting",
+            "context": "Human pancreatic islets \u2014 GPR75 detected by western blotting",
             "sample_type": "primary_human_tissue",
             "level": "moderate",
             "cited_evidence_ids": [
@@ -117,7 +117,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "Human pancreatic islets — GPR75 detected by immunohistochemistry",
+            "context": "Human pancreatic islets \u2014 GPR75 detected by immunohistochemistry",
             "sample_type": "primary_human_tissue",
             "level": "moderate",
             "cited_evidence_ids": [
@@ -152,7 +152,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "Multiple tissues from global Gpr75 null mice used as negative controls — all anti-GPR75 antibodies produced non-specific staining, indicating no reliable antibody-based detection is possible",
+            "context": "Multiple tissues from global Gpr75 null mice used as negative controls \u2014 all anti-GPR75 antibodies produced non-specific staining, indicating no reliable antibody-based detection is possible",
             "sample_type": "unknown",
             "level": "absent",
             "cited_evidence_ids": [
@@ -236,7 +236,7 @@
     ],
     "non_surface_expression": [
       {
-        "context": "Human pancreatic islets — GPR75 protein detected by western blot and IHC; mRNA by RT-PCR",
+        "context": "Human pancreatic islets \u2014 GPR75 protein detected by western blot and IHC; mRNA by RT-PCR",
         "sample_type": "primary_human_tissue",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -245,7 +245,7 @@
         ]
       },
       {
-        "context": "Human retinal pigment epithelium and perivascular cells surrounding retinal arterioles — GPR75 mRNA by in situ hybridization and Northern blot",
+        "context": "Human retinal pigment epithelium and perivascular cells surrounding retinal arterioles \u2014 GPR75 mRNA by in situ hybridization and Northern blot",
         "sample_type": "primary_human_tissue",
         "measurement_type": "single_cell_RNA",
         "level": "moderate",
@@ -254,7 +254,7 @@
         ]
       },
       {
-        "context": "Human brain — GPR75 mRNA (7 kb transcript) by Northern blot",
+        "context": "Human brain \u2014 GPR75 mRNA (7 kb transcript) by Northern blot",
         "sample_type": "primary_human_tissue",
         "measurement_type": "RNA",
         "level": "high",
@@ -263,7 +263,7 @@
         ]
       },
       {
-        "context": "Mouse CNS neurons — Gpr75 mRNA by RNAscope fluorescent in situ hybridization combined with IHC for cell-type identification",
+        "context": "Mouse CNS neurons \u2014 Gpr75 mRNA by RNAscope fluorescent in situ hybridization combined with IHC for cell-type identification",
         "sample_type": "unknown",
         "measurement_type": "single_cell_RNA",
         "level": "moderate",
@@ -272,7 +272,7 @@
         ]
       },
       {
-        "context": "Mouse adipocytes — Gpr75 mRNA by RT-PCR and RNAscope (no reliable anti-mouse GPR75 antibodies available)",
+        "context": "Mouse adipocytes \u2014 Gpr75 mRNA by RT-PCR and RNAscope (no reliable anti-mouse GPR75 antibodies available)",
         "sample_type": "unknown",
         "measurement_type": "RNA",
         "level": "moderate",
@@ -941,9 +941,9 @@
       "afdb_version": "v4",
       "ecd_mean_plddt": 0.0,
       "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (STUB — fetchers not yet built)",
+      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
       "license": "CC BY 4.0",
-      "attribution": "© DeepMind / EMBL-EBI",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1014,7 +1014,7 @@
   "evidence": [
     {
       "evidence_id": "a1_evi_01",
-      "claim": "Computational sequence analysis of GPR75 predicts seven transmembrane domains, classifying it as a canonical class A GPCR with 7TM topology. This anchors the extracellular N-terminus (residues 1–46 per UniProt) as the accessible ECD face, with three extracellular loops and a cytoplasmic C-terminus (residues 372–540).",
+      "claim": "Computational sequence analysis of GPR75 predicts seven transmembrane domains, classifying it as a canonical class A GPCR with 7TM topology. This anchors the extracellular N-terminus (residues 1\u201346 per UniProt) as the accessible ECD face, with three extracellular loops and a cytoplasmic C-terminus (residues 372\u2013540).",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "computational_prediction",
@@ -1088,7 +1088,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "GPR75 contains the characteristic seven transmembrane spanning domains, N‐glycosylation sites in the N‐terminus and several serine and threonine phosphorylation sites in the C‐terminus (Tarttelin et al. 1999 ).",
+          "quote": "GPR75 contains the characteristic seven transmembrane spanning domains, N\u2010glycosylation sites in the N\u2010terminus and several serine and threonine phosphorylation sites in the C\u2010terminus (Tarttelin et al. 1999 ).",
           "quote_sha256": "15aa9641031b3b069b947308b62b2c37ec2029f9ae1067daab0f108b6833bc99",
           "char_offset": 0,
           "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
@@ -1425,7 +1425,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "In this study, we quantified GPR75 mRNA expression in the mouse CNS using RNAscope fluorescent in situ hybridization (FISH) technology, combined with immunohistochemistry (IHC) to detect GPR75 transcripts in specific neuronal cell types.",
+          "quote": "In this study, we quantified GPR75 mRNA expression in the mouse CNS using RNAscope fluorescent in\u00a0situ hybridization (FISH) technology, combined with immunohistochemistry (IHC) to detect GPR75 transcripts in specific neuronal cell types.",
           "quote_sha256": "b8588614a5a24651c92bd69dd8055c490c64ed043e0b123a5bbcb85f66227e70",
           "char_offset": 211,
           "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
@@ -1477,7 +1477,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "We employed the use of RT‐PCR and RNAscope to evaluate its gene expression level.",
+          "quote": "We employed the use of RT\u2010PCR and RNAscope to evaluate its gene expression level.",
           "quote_sha256": "a04d78ec529d2de6357b9b7c80d58fe6eea324eb03ffce5626a7dec38622f03d",
           "char_offset": 0,
           "normalized_source_sha256": "9468631ef92e29719b6050400f45cfba19c338354d554088d06c054de6b04391"
@@ -1529,7 +1529,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "While the entire GPR75 coding sequence is excised in our global Gpr75 null mice, all commercial and custom GPR75 antibodies have non‐specific staining; therefore, confirmation of tissue‐specific disruption must be done either at the transcript or genomic level.",
+          "quote": "While the entire GPR75 coding sequence is excised in our global Gpr75 null mice, all commercial and custom GPR75 antibodies have non\u2010specific staining; therefore, confirmation of tissue\u2010specific disruption must be done either at the transcript or genomic level.",
           "quote_sha256": "b689ad2f1135edf9f9a34a9e97344b4fb109405c7985145fda2dd91aafcc66ff",
           "char_offset": 82,
           "normalized_source_sha256": "9468631ef92e29719b6050400f45cfba19c338354d554088d06c054de6b04391"
@@ -1581,7 +1581,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Since there are no reliable antibodies against the mouse GPR75, validation of adipocyte targeting was done by RT‐PCR and RNAscope.",
+          "quote": "Since there are no reliable antibodies against the mouse GPR75, validation of adipocyte targeting was done by RT\u2010PCR and RNAscope.",
           "quote_sha256": "7a4b522a9f7582728a05140e95f981fafba7daed832734f99238fbba2f9d1211",
           "char_offset": 344,
           "normalized_source_sha256": "9468631ef92e29719b6050400f45cfba19c338354d554088d06c054de6b04391"
@@ -1685,7 +1685,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "We observed the expected 234‐bp size of the GPR75 amplicon in WT tissue samples, and no band was detected in the GPR75 KO sample (Figure 1A ).",
+          "quote": "We observed the expected 234\u2010bp size of the GPR75 amplicon in WT tissue samples, and no band was detected in the GPR75 KO sample (Figure 1A ).",
           "quote_sha256": "1b62177f9ba4bfc523c24b729adf1c32f8126bb6e1c1c0c80b6b25d39b45b10b",
           "char_offset": 530,
           "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
@@ -1783,7 +1783,7 @@
     },
     {
       "evidence_id": "a2_evi_01",
-      "claim": "HPA database annotates GPR75 protein subcellular localization to plasma membrane, primary cilium, and vesicles — supporting surface accessibility at the plasma membrane and ciliary membrane, with a vesicular (intracellular) component also present.",
+      "claim": "HPA database annotates GPR75 protein subcellular localization to plasma membrane, primary cilium, and vesicles \u2014 supporting surface accessibility at the plasma membrane and ciliary membrane, with a vesicular (intracellular) component also present.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "db_annotation",
@@ -1878,7 +1878,7 @@
     },
     {
       "evidence_id": "a2_evi_03",
-      "claim": "In situ hybridization of human retina and Northern blot of human retinal pigment epithelium (RPE) localized GPR75 transcript to the RPE and perivascular cells surrounding retinal arterioles — establishing human retina/RPE and retinal perivascular cell expression at mRNA level.",
+      "claim": "In situ hybridization of human retina and Northern blot of human retinal pigment epithelium (RPE) localized GPR75 transcript to the RPE and perivascular cells surrounding retinal arterioles \u2014 establishing human retina/RPE and retinal perivascular cell expression at mRNA level.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "in_situ_hybridization",
@@ -1930,7 +1930,7 @@
     },
     {
       "evidence_id": "a2_evi_04",
-      "claim": "In situ hybridization of mouse retina localized GPR75 transcript to photoreceptor inner segments and the outer plexiform layer — distinct from the human RPE/perivascular pattern, indicating species-specific retinal cell-type distribution.",
+      "claim": "In situ hybridization of mouse retina localized GPR75 transcript to photoreceptor inner segments and the outer plexiform layer \u2014 distinct from the human RPE/perivascular pattern, indicating species-specific retinal cell-type distribution.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "in_situ_hybridization",
@@ -2022,7 +2022,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "One GPCR that is considered an orphan receptor is GPCR 75 (GPR75), a 540 amino acid member of the G αq class of GPCRs, originally characterized for its expression in the human retina (Tarttelin et al. 1999 ; Sauer et al. 2001 ).",
+          "quote": "One GPCR that is considered an orphan receptor is GPCR 75 (GPR75), a 540 amino acid member of the G \u03b1q class of GPCRs, originally characterized for its expression in the human retina (Tarttelin et al. 1999 ; Sauer et al. 2001 ).",
           "quote_sha256": "e28583aea794444c5c8dcc119d4d037104079b38460ddbc30655dc532de9fa3b",
           "char_offset": 673,
           "normalized_source_sha256": "bb5c46a2b7667397163e7df14bb222023567eb7195dcdf162414aec2b6cd4270"
@@ -2294,7 +2294,7 @@
     },
     {
       "evidence_id": "a2_evi_11",
-      "claim": "In select CNS areas — substantia nigra/ventral tegmental area, locus coeruleus, and raphe nucleus — GPR75 mRNA is highly expressed in monoaminergic neurons (dopaminergic, noradrenergic, and serotonergic, respectively), indicating enrichment in catecholaminergic and serotonergic neuron populations.",
+      "claim": "In select CNS areas \u2014 substantia nigra/ventral tegmental area, locus coeruleus, and raphe nucleus \u2014 GPR75 mRNA is highly expressed in monoaminergic neurons (dopaminergic, noradrenergic, and serotonergic, respectively), indicating enrichment in catecholaminergic and serotonergic neuron populations.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "in_situ_hybridization",
@@ -2502,7 +2502,7 @@
     },
     {
       "evidence_id": "a2_evi_15",
-      "claim": "Gpr75 mRNA levels are very low in peripheral tissues — muscle, heart, lung, stomach, spleen, kidney, small intestine, and colon — in both male and female rats, confirming peripheral tissue low/absent expression.",
+      "claim": "Gpr75 mRNA levels are very low in peripheral tissues \u2014 muscle, heart, lung, stomach, spleen, kidney, small intestine, and colon \u2014 in both male and female rats, confirming peripheral tissue low/absent expression.",
       "claim_type": "tissue_expression",
       "direction": "refutes",
       "evidence_type": "rt_qpcr",
@@ -2554,7 +2554,7 @@
     },
     {
       "evidence_id": "a2_evi_16",
-      "claim": "Gpr75 mRNA expression is low in reproductive organs — testis in male rats, and ovary and uterus in female rats — indicating minimal gonadal expression.",
+      "claim": "Gpr75 mRNA expression is low in reproductive organs \u2014 testis in male rats, and ovary and uterus in female rats \u2014 indicating minimal gonadal expression.",
       "claim_type": "tissue_expression",
       "direction": "refutes",
       "evidence_type": "rt_qpcr",
@@ -2658,7 +2658,7 @@
     },
     {
       "evidence_id": "a2_evi_18",
-      "claim": "GPR75 was detected in pancreatic islets by western blotting and immunohistochemistry at the protein level, and islet CCL5 receptor mRNA expression was confirmed by quantitative RT-PCR — providing multi-method protein and mRNA evidence for GPR75 in islets.",
+      "claim": "GPR75 was detected in pancreatic islets by western blotting and immunohistochemistry at the protein level, and islet CCL5 receptor mRNA expression was confirmed by quantitative RT-PCR \u2014 providing multi-method protein and mRNA evidence for GPR75 in islets.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "immunohistochemistry",
@@ -2710,7 +2710,7 @@
     },
     {
       "evidence_id": "a2_evi_19",
-      "claim": "CCL5 activation of GPR75 on pancreatic beta cells reversibly increased intracellular calcium via phospholipase C and calcium influx — cell-state modulation evidence demonstrating functional GPR75 signaling in resting vs CCL5-stimulated beta cells. Baseline: resting beta cells; modulating state: exogenous CCL5 stimulation; change: reversible intracellular calcium increase; implication: GPR75 functionally accessible on beta cell surface in stimulated state.",
+      "claim": "CCL5 activation of GPR75 on pancreatic beta cells reversibly increased intracellular calcium via phospholipase C and calcium influx \u2014 cell-state modulation evidence demonstrating functional GPR75 signaling in resting vs CCL5-stimulated beta cells. Baseline: resting beta cells; modulating state: exogenous CCL5 stimulation; change: reversible intracellular calcium increase; implication: GPR75 functionally accessible on beta cell surface in stimulated state.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2762,7 +2762,7 @@
     },
     {
       "evidence_id": "a2_evi_20",
-      "claim": "CCL5 stimulated insulin secretion from mouse and human islets in vitro and improved glucose tolerance in both lean mice and in an ob/ob hyperglycemic/insulin-resistant mouse model — disease-context modulation showing GPR75-mediated functional activity differs between normal and hyperglycemic metabolic states.",
+      "claim": "CCL5 stimulated insulin secretion from mouse and human islets in vitro and improved glucose tolerance in both lean mice and in an ob/ob hyperglycemic/insulin-resistant mouse model \u2014 disease-context modulation showing GPR75-mediated functional activity differs between normal and hyperglycemic metabolic states.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2814,7 +2814,7 @@
     },
     {
       "evidence_id": "a2_evi_21",
-      "claim": "Gpr75 KO rats show significantly lower food intake, reduced feeding during the dark phase, and lower body weight than wild-type rats — loss-of-function phenotype demonstrating hypothalamic GPR75 role in feeding and energy regulation under normal chow conditions.",
+      "claim": "Gpr75 KO rats show significantly lower food intake, reduced feeding during the dark phase, and lower body weight than wild-type rats \u2014 loss-of-function phenotype demonstrating hypothalamic GPR75 role in feeding and energy regulation under normal chow conditions.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "loss_of_function_phenotype",
@@ -2866,7 +2866,7 @@
     },
     {
       "evidence_id": "a2_evi_22",
-      "claim": "Under high-fat diet (HFD) conditions, Gpr75 KO male rats show significantly lower food intake, body weight, and fat accumulation compared to wild-type, and are normoglycemic and normoinsulinemic — disease-state modulation demonstrating GPR75 involvement in HFD-induced obesity and hyperglycemia.",
+      "claim": "Under high-fat diet (HFD) conditions, Gpr75 KO male rats show significantly lower food intake, body weight, and fat accumulation compared to wild-type, and are normoglycemic and normoinsulinemic \u2014 disease-state modulation demonstrating GPR75 involvement in HFD-induced obesity and hyperglycemia.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "loss_of_function_phenotype",
@@ -2918,7 +2918,7 @@
     },
     {
       "evidence_id": "a2_evi_23",
-      "claim": "Hypothalamic Ccl5 expression is significantly higher in HFD-fed Gpr75 KO male rats than in wild-type, suggesting compensatory upregulation of the GPR75 ligand CCL5 in the hypothalamus when GPR75 is absent — implicating hypothalamic CCL5-GPR75 axis in diet-induced hyperphagia.",
+      "claim": "Hypothalamic Ccl5 expression is significantly higher in HFD-fed Gpr75 KO male rats than in wild-type, suggesting compensatory upregulation of the GPR75 ligand CCL5 in the hypothalamus when GPR75 is absent \u2014 implicating hypothalamic CCL5-GPR75 axis in diet-induced hyperphagia.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "loss_of_function_phenotype",

@@ -49,8 +49,36 @@ def main(argv: list[str] | None = None) -> int:
     runs = Path(".runs")
     runs.mkdir(exist_ok=True)
     record_out = runs / f"surfaceome_v2_{safe_id}.json"
+    timing_payload = [t.as_dict() for t in result.timing]
+    # Two distinct numbers:
+    # * ``total_elapsed_s`` = end-to-end wall clock (max(end) - min(start)).
+    #   This is what users want to see for "how long did this gene take".
+    # * ``total_step_seconds`` = sum of every step's elapsed_s. With
+    #   concurrency this can be > wall clock by a factor equal to the
+    #   achieved parallelism; it's the right number for cost-attribution
+    #   spreadsheets but not for runtime reporting.
+    from datetime import datetime as _dt
+    def _ts(s: str) -> float:
+        return _dt.fromisoformat(s.replace("Z", "+00:00")).timestamp()
+    if result.timing:
+        starts = [_ts(t.started_at) for t in result.timing]
+        ends = [_ts(t.started_at) + t.elapsed_s for t in result.timing]
+        wall_clock = round(max(ends) - min(starts), 3)
+    else:
+        wall_clock = 0.0
+    total_step_seconds = round(sum(t.elapsed_s for t in result.timing), 3)
+    total_elapsed = wall_clock
     if result.record is not None:
-        record_out.write_text(result.record.model_dump_json(indent=2))
+        # Merge timing into the record dump so the HTML viewer can render
+        # Section 0.5 without an extra file. SurfaceomeRecord doesn't carry
+        # a ``timing`` field, so we serialize the model first then add the
+        # key — readers that don't expect timing simply ignore the extra
+        # top-level field.
+        record_dict = result.record.model_dump(mode="json")
+        record_dict["timing"] = timing_payload
+        record_dict["total_elapsed_s"] = total_elapsed
+        record_dict["total_step_seconds"] = total_step_seconds
+        record_out.write_text(json.dumps(record_dict, indent=2))
     else:
         record_out.write_text(
             json.dumps(
@@ -58,6 +86,9 @@ def main(argv: list[str] | None = None) -> int:
                     "gene": result.gene,
                     "error": result.error,
                     "blocks_used": result.blocks_used,
+                    "timing": timing_payload,
+                    "total_elapsed_s": total_elapsed,
+                    "total_step_seconds": total_step_seconds,
                 },
                 indent=2,
             )
@@ -86,6 +117,22 @@ def main(argv: list[str] | None = None) -> int:
     print(f"  synthesizer:              ${result.synthesizer_cost_usd:.4f}")
     print(f"  TOTAL:                    ${result.total_cost_usd:.4f}")
     print()
+    if result.timing:
+        speedup = (total_step_seconds / total_elapsed) if total_elapsed > 0 else 0.0
+        print(
+            f"--- step timing (wall clock {total_elapsed:.1f}s; "
+            f"sum-of-steps {total_step_seconds:.1f}s; parallelism {speedup:.1f}x; "
+            f"top 5 slowest) ---"
+        )
+        slowest = sorted(result.timing, key=lambda t: t.elapsed_s, reverse=True)[:5]
+        for t in slowest:
+            print(
+                f"  {t.elapsed_s:7.2f}s  {t.phase:24s} {t.step_name}"
+                + (
+                    f"  ({t.n_items} items)" if t.n_items is not None else ""
+                )
+            )
+        print()
     print(f"record_out:  {record_out}")
     print(f"meta_out:    {meta_out}")
     if result.annotation_path is not None:

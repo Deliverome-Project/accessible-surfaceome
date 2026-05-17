@@ -26,6 +26,8 @@ from __future__ import annotations
 import hashlib
 import json
 import logging
+from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -37,6 +39,7 @@ from pydantic import ValidationError
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.evidence_promotion import promote_claim
 from accessible_surfaceome.agents._support.pricing import UsageRecord, UsageSummary
+from accessible_surfaceome.agents._support.timing import StepTiming, TimingRecorder
 from accessible_surfaceome.agents.plan_trim_select import (
     DualPlanTrimSelectResult,
     run_plan_trim_select_dual,
@@ -47,6 +50,7 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
 )
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _derive_filters,
+    scrub_headline_risks,
     _load_triage_signal,
     _stub_deterministic_features,
 )
@@ -84,6 +88,44 @@ AGENT_MODEL = "claude-sonnet-4-6"
 SCHEMA_VERSION_LITERAL = "1.0.0"
 RUNS_DIR = Path(".runs")
 
+# Maximum block-builders to dispatch concurrently. There are 9 builders
+# total (4 A1 + 5 A2); they consume independent claim slices and each
+# makes a single Sonnet call, so a worker pool sized to ``9`` lets every
+# builder kick off immediately. The Anthropic client is thread-safe
+# (httpx underneath) and each builder writes to its own ``usage_sink``
+# list so there's no shared mutable state across workers. The shared
+# ``TimingRecorder`` appends rows from multiple threads — CPython's
+# ``list.append`` is atomic under the GIL, so the list stays
+# well-formed; the resulting timing-row order is non-deterministic but
+# the viewer sorts by ``elapsed_s`` anyway.
+BUILDER_CONCURRENCY = 9
+
+
+def _wall_clock_for_timing(timing: list[StepTiming]) -> float:
+    """End-to-end wall clock for a timing list.
+
+    Same semantics as :attr:`TimingRecorder.wall_clock_s`: parses each
+    row's ``started_at`` ISO string and returns ``max(end) - min(start)``.
+    Used by ``write_summary_meta`` because it operates on a frozen
+    ``list[StepTiming]`` snapshot rather than the live recorder.
+    """
+    if not timing:
+        return 0.0
+    starts: list[float] = []
+    ends: list[float] = []
+    for e in timing:
+        try:
+            t = datetime.fromisoformat(
+                e.started_at.replace("Z", "+00:00")
+            ).timestamp()
+        except ValueError:
+            continue
+        starts.append(t)
+        ends.append(t + e.elapsed_s)
+    if not starts:
+        return 0.0
+    return round(max(ends) - min(starts), 3)
+
 
 @dataclass
 class BlockBuilderUsage:
@@ -99,6 +141,77 @@ class BlockBuilderUsage:
     @property
     def n_calls(self) -> int:
         return len(self.records)
+
+
+@dataclass
+class _BuilderSpec:
+    """One block-builder invocation packaged for concurrent dispatch.
+
+    Carries the builder callable + its claim slice + the gene context
+    dict the builder expects. ``phase`` is the timing-bucket label so
+    the HTML viewer's Section 0.5 can color A1 vs A2 builders distinctly.
+    """
+
+    name: str
+    phase: str  # "builders_a1" or "builders_a2"
+    fn: Callable[..., Any]
+    claims: list[EvidenceClaim]
+    ctx: dict[str, Any]
+
+
+def _run_builders_concurrently(
+    specs: list[_BuilderSpec],
+    *,
+    client: Anthropic,
+    timing: TimingRecorder,
+    builder_usage: dict[str, BlockBuilderUsage],
+) -> dict[str, Any]:
+    """Dispatch every builder spec on a thread pool, gather results.
+
+    Side effects:
+      * Populates ``builder_usage[spec.name]`` with the per-builder
+        UsageRecord list (so the existing cost-rollup properties keep
+        working).
+      * Appends one ``StepTiming`` row per builder to ``timing``.
+
+    Concurrency invariants:
+      * The Anthropic client object is shared across workers — that's
+        safe (the SDK uses httpx with connection pooling).
+      * Each builder writes only to its own ``UsageRecord`` list, so
+        token-accounting state is per-thread.
+      * Two threads never race on the same ``builder_usage`` key (each
+        spec has a unique ``name``); CPython's GIL makes the individual
+        dict ``__setitem__`` atomic.
+      * Reads from ``builder_usage`` happen only after every future has
+        resolved, eliminating publication races.
+
+    A worker exception propagates through ``Future.result()`` and
+    aborts the whole annotate run — matches the pre-parallel behavior
+    where a builder failure raised out of the orchestrator.
+    """
+
+    def _runner(spec: _BuilderSpec) -> tuple[str, Any, list[UsageRecord]]:
+        records: list[UsageRecord] = []
+        with timing.step(
+            f"builder:{spec.name}",
+            phase=spec.phase,
+            n_items=len(spec.claims),
+            model=AGENT_MODEL,
+        ) as handle:
+            result = spec.fn(
+                spec.claims, client=client, usage_sink=records, context=spec.ctx
+            )
+            handle.set_usage(records, model=AGENT_MODEL)
+        return spec.name, result, records
+
+    outputs: dict[str, Any] = {}
+    with ThreadPoolExecutor(max_workers=BUILDER_CONCURRENCY) as executor:
+        futures = [executor.submit(_runner, spec) for spec in specs]
+        for fut in futures:
+            name, result, records = fut.result()
+            outputs[name] = result
+            builder_usage[name] = BlockBuilderUsage(name, records)
+    return outputs
 
 
 @dataclass
@@ -119,6 +232,10 @@ class AnnotateResultV2:
     builder_usage: dict[str, BlockBuilderUsage] = field(default_factory=dict)
     annotation_path: Path | None = None
     error: str | None = None
+    # Per-step wall-clock audit: every model call + post-process step,
+    # in execution order. Empty when ``annotate`` was invoked with
+    # ``timing=None`` (legacy path).
+    timing: list[StepTiming] = field(default_factory=list)
 
     @property
     def plan_trim_select_cost_usd(self) -> float:
@@ -147,13 +264,21 @@ def annotate(
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
     persist: bool = False,
+    timing: TimingRecorder | None = None,
 ) -> AnnotateResultV2:
-    """Run the v2 deep-dive pipeline on one gene."""
+    """Run the v2 deep-dive pipeline on one gene.
+
+    A fresh :class:`TimingRecorder` is allocated when ``timing`` is
+    ``None`` so every annotate run captures the per-step wall-clock
+    trace by default. Pass an externally-owned recorder to merge into a
+    larger audit (e.g. a sweep over multiple genes).
+    """
     own_http = http is None
     client = client or get_client()
     http = http or open_default_client()
+    timing = timing if timing is not None else TimingRecorder()
     try:
-        return _annotate(client, http, gene, persist=persist)
+        return _annotate(client, http, gene, persist=persist, timing=timing)
     finally:
         if own_http:
             http.close()
@@ -165,12 +290,13 @@ def _annotate(
     gene: str,
     *,
     persist: bool,
+    timing: TimingRecorder,
 ) -> AnnotateResultV2:
     builder_usage: dict[str, BlockBuilderUsage] = {}
 
     # ---- step 1: plan-trim-select dual -------------------------------------
     logger.info("v2 orchestrator: running plan-trim-select dual for %s", gene)
-    dual = run_plan_trim_select_dual(gene, client=client, http=http)
+    dual = run_plan_trim_select_dual(gene, client=client, http=http, timing=timing)
     if dual.bundle is None:
         return AnnotateResultV2(
             gene=gene,
@@ -178,6 +304,7 @@ def _annotate(
             dual=dual,
             synthesizer=None,
             error="plan-trim-select did not resolve a gene bundle",
+            timing=list(timing.entries),
         )
     gene_id = GeneIdentifier(
         hgnc_symbol=dual.bundle.hgnc_symbol,
@@ -196,90 +323,83 @@ def _annotate(
         dual.total_cost_usd,
     )
 
-    # ---- step 2: A1-side block builders ------------------------------------
+    # ---- steps 2+3: A1+A2 block builders (parallel dispatch) ---------------
+    # All 9 builders consume independent claim slices and emit independent
+    # blocks, so we fan them out concurrently. The Anthropic SDK client
+    # is thread-safe; each builder writes only into its own ``usage_sink``;
+    # the shared TimingRecorder uses CPython's atomic ``list.append``.
     a1_ctx = {"gene": gene_id.hgnc_symbol}
-
-    methods_records: list[UsageRecord] = []
-    builder_usage["methods"] = BlockBuilderUsage("methods", methods_records)
-    methods = build_methods(
-        a1_claims, client=client, usage_sink=methods_records, context=a1_ctx
+    a2_ctx = {"gene": gene_id.hgnc_symbol}
+    specs: list[_BuilderSpec] = [
+        _BuilderSpec("methods", "builders_a1", build_methods, a1_claims, a1_ctx),
+        _BuilderSpec(
+            "therapeutic_engagement",
+            "builders_a1",
+            build_therapeutic_engagement,
+            a1_claims,
+            a1_ctx,
+        ),
+        _BuilderSpec(
+            "contradictions",
+            "builders_a1",
+            build_contradictions,
+            a1_claims,
+            a1_ctx,
+        ),
+        _BuilderSpec(
+            "evidence_grade",
+            "builders_a1",
+            build_evidence_grade,
+            a1_claims,
+            a1_ctx,
+        ),
+        _BuilderSpec("tissues", "builders_a2", build_tissues, a2_claims, a2_ctx),
+        _BuilderSpec(
+            "cell_types", "builders_a2", build_cell_types, a2_claims, a2_ctx
+        ),
+        _BuilderSpec(
+            "subcellular_localization",
+            "builders_a2",
+            build_subcellular_localization,
+            a2_claims,
+            a2_ctx,
+        ),
+        _BuilderSpec(
+            "anatomical_accessibility",
+            "builders_a2",
+            build_anatomical_accessibility,
+            a2_claims,
+            a2_ctx,
+        ),
+        _BuilderSpec(
+            "accessibility_modulation",
+            "builders_a2",
+            build_accessibility_modulation,
+            a2_claims,
+            a2_ctx,
+        ),
+    ]
+    outputs = _run_builders_concurrently(
+        specs, client=client, timing=timing, builder_usage=builder_usage
     )
-
-    te_records: list[UsageRecord] = []
-    builder_usage["therapeutic_engagement"] = BlockBuilderUsage(
-        "therapeutic_engagement", te_records
-    )
-    therapeutic = build_therapeutic_engagement(
-        a1_claims, client=client, usage_sink=te_records, context=a1_ctx
-    )
-
-    contr_records: list[UsageRecord] = []
-    builder_usage["contradictions"] = BlockBuilderUsage("contradictions", contr_records)
-    contradictions = build_contradictions(
-        a1_claims, client=client, usage_sink=contr_records, context=a1_ctx
-    )
-
-    grade_records: list[UsageRecord] = []
-    builder_usage["evidence_grade"] = BlockBuilderUsage("evidence_grade", grade_records)
-    grade_block: EvidenceGradeBlock = build_evidence_grade(
-        a1_claims, client=client, usage_sink=grade_records, context=a1_ctx
-    )
+    grade_block: EvidenceGradeBlock = outputs["evidence_grade"]
 
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,
         grade_rationale=grade_block.grade_rationale,
-        methods=methods,
+        methods=outputs["methods"],
         non_surface_expression=grade_block.non_surface_expression,
-        therapeutic_engagement=therapeutic,
-        contradicting_evidence=contradictions,
-    )
-
-    # ---- step 3: A2-side block builders ------------------------------------
-    a2_ctx = {"gene": gene_id.hgnc_symbol}
-
-    tissues_records: list[UsageRecord] = []
-    builder_usage["tissues"] = BlockBuilderUsage("tissues", tissues_records)
-    tissues = build_tissues(
-        a2_claims, client=client, usage_sink=tissues_records, context=a2_ctx
-    )
-
-    cell_types_records: list[UsageRecord] = []
-    builder_usage["cell_types"] = BlockBuilderUsage("cell_types", cell_types_records)
-    cell_types = build_cell_types(
-        a2_claims, client=client, usage_sink=cell_types_records, context=a2_ctx
-    )
-
-    subloc_records: list[UsageRecord] = []
-    builder_usage["subcellular_localization"] = BlockBuilderUsage(
-        "subcellular_localization", subloc_records
-    )
-    subloc = build_subcellular_localization(
-        a2_claims, client=client, usage_sink=subloc_records, context=a2_ctx
-    )
-
-    anat_records: list[UsageRecord] = []
-    builder_usage["anatomical_accessibility"] = BlockBuilderUsage(
-        "anatomical_accessibility", anat_records
-    )
-    anatomical = build_anatomical_accessibility(
-        a2_claims, client=client, usage_sink=anat_records, context=a2_ctx
-    )
-
-    mod_records: list[UsageRecord] = []
-    builder_usage["accessibility_modulation"] = BlockBuilderUsage(
-        "accessibility_modulation", mod_records
-    )
-    modulation = build_accessibility_modulation(
-        a2_claims, client=client, usage_sink=mod_records, context=a2_ctx
+        therapeutic_engagement=outputs["therapeutic_engagement"],
+        contradicting_evidence=outputs["contradictions"],
     )
 
     biological_context = BiologicalContext(
-        tissues=tissues,
-        cell_types=cell_types,
+        tissues=outputs["tissues"],
+        cell_types=outputs["cell_types"],
         cell_states=[],  # v1 schema field; no builder for v2 — empty.
-        subcellular_localization=subloc,
-        anatomical_accessibility=anatomical,
-        accessibility_modulation=modulation,
+        subcellular_localization=outputs["subcellular_localization"],
+        anatomical_accessibility=outputs["anatomical_accessibility"],
+        accessibility_modulation=outputs["accessibility_modulation"],
     )
 
     # ---- step 4: wrap into per-agent drafts --------------------------------
@@ -300,6 +420,7 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"SurfaceEvidenceDraft validation failed: {exc}",
+            timing=list(timing.entries),
         )
     try:
         a2_draft = BiologicalContextDraft(
@@ -315,16 +436,34 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"BiologicalContextDraft validation failed: {exc}",
+            timing=list(timing.entries),
         )
 
     # ---- step 5: synthesizer (B) ------------------------------------------
     logger.info("v2 orchestrator: dispatching synthesizer for %s", gene_id.hgnc_symbol)
-    b = run_synthesizer_with_drafts(
-        gene_id.hgnc_symbol,
-        a1_draft=a1_draft,
-        a2_draft=a2_draft,
-        client=client,
-    )
+    with timing.step(
+        "synthesizer",
+        phase="synthesizer",
+        n_items=len(a1_claims) + len(a2_claims),
+        model=AGENT_MODEL,
+    ) as _h:
+        b = run_synthesizer_with_drafts(
+            gene_id.hgnc_symbol,
+            a1_draft=a1_draft,
+            a2_draft=a2_draft,
+            client=client,
+        )
+        _h.model = b.usage.model
+        # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a
+        # one-shot UsageRecord-shaped record so ``set_usage`` rolls it.
+        synth_rec = UsageRecord(
+            input_tokens=b.usage.input_tokens,
+            output_tokens=b.usage.output_tokens,
+            cache_creation_input_tokens=b.usage.cache_creation_input_tokens,
+            cache_read_input_tokens=b.usage.cache_read_input_tokens,
+            cost_usd=b.usage.cost_usd,
+        )
+        _h.set_usage([synth_rec], model=b.usage.model)
     if b.draft is None:
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
@@ -334,28 +473,75 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"synthesizer returned no valid draft: {b.validation_error}",
+            timing=list(timing.entries),
         )
+
+    # ---- step 5.5: scrub headline_risks for structured coherence ---------
+    # Reviewers (CD81 audit) caught the synthesizer over-claiming
+    # ``co_receptor`` / ``epitope_masked`` in headline_risks even when
+    # the corresponding structured risk field doesn't back it. The
+    # structured fields are the canonical signal; drop unbacked entries
+    # from the list before they reach the record. ``b.draft`` is
+    # non-None here (guarded above); take a narrowed local handle that
+    # downstream code reads from instead of ``b.draft``.
+    synth_draft = b.draft
+    assert synth_draft is not None  # for ty — narrowed by the guard above
+    synth_draft = synth_draft.model_copy(
+        update={
+            "executive_summary": scrub_headline_risks(
+                synth_draft.executive_summary, synth_draft.accessibility_risks
+            )
+        }
+    )
 
     # ---- step 6: promote claims → Evidence (synthetic source store) -------
     merged_claims = a1_claims + a2_claims
-    source_store = _synthetic_source_store(merged_claims)
-    evidence: list[Evidence] = [
-        promote_claim(c, store=source_store) for c in merged_claims
-    ]
+    with timing.step(
+        "evidence_promotion",
+        phase="post",
+        n_items=len(merged_claims),
+    ):
+        source_store = _synthetic_source_store(merged_claims)
+        evidence: list[Evidence] = [
+            promote_claim(c, store=source_store) for c in merged_claims
+        ]
 
     # ---- step 7: deterministic features stub (reused from v1) -------------
-    det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+    # Pull the real DeepTMHMM topology + Compara paralog + cross-species
+    # ortholog ECD rows from public D1 (uploaded by PR #29's
+    # ``scripts/run_topology_sweep.py``). Falls back to the labeled
+    # stub if D1 is unreachable (no creds in the worktree) or the gene
+    # isn't in this sweep's coverage. Mirrors the v1 orchestrator's
+    # try/D1/fallback pattern landed in PR #29.
+    with timing.step("deterministic_features", phase="post"):
+        try:
+            from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+                fetch_deterministic_features,
+            )
+            det_features = fetch_deterministic_features(gene_id.uniprot_acc)
+        except Exception as exc:  # noqa: BLE001 — keep the run going if D1 is down
+            logger.warning(
+                "DeterministicFeatures D1 fetch failed for %s (%s); using stub",
+                gene_id.uniprot_acc,
+                exc,
+            )
+            det_features = _stub_deterministic_features(gene_id.uniprot_acc)
 
     # ---- step 8: derive filters (reused from v1) --------------------------
-    filters = _derive_filters(
-        executive_summary=b.draft.executive_summary,
-        surface_evidence=surface_evidence,
-        biological_context=biological_context,
-        accessibility_risks=b.draft.accessibility_risks,
-        filters_llm=b.draft.filters_llm,
-        deterministic_features=det_features,
-        n_evidence=len(evidence),
-    )
+    with timing.step(
+        "filters_derivation",
+        phase="post",
+        n_items=len(evidence),
+    ):
+        filters = _derive_filters(
+            executive_summary=synth_draft.executive_summary,
+            surface_evidence=surface_evidence,
+            biological_context=biological_context,
+            accessibility_risks=synth_draft.accessibility_risks,
+            filters_llm=synth_draft.filters_llm,
+            deterministic_features=det_features,
+            n_evidence=len(evidence),
+        )
 
     # ---- step 9: assemble SurfaceomeRecord --------------------------------
     primary = sum(1 for e in evidence if e.evidence_tier == "primary")
@@ -365,19 +551,19 @@ def _annotate(
             schema_version=SCHEMA_VERSION_LITERAL,
             gene=gene_id,
             triage_signal=_load_triage_signal(gene_id.hgnc_symbol),
-            executive_summary=b.draft.executive_summary,
+            executive_summary=synth_draft.executive_summary,
             filters=filters,
             surface_evidence=surface_evidence,
             biological_context=biological_context,
             deterministic_features=det_features,
-            accessibility_risks=b.draft.accessibility_risks,
+            accessibility_risks=synth_draft.accessibility_risks,
             evidence=evidence,
             search_log=[],
             evidence_count=len(evidence),
             primary_evidence_count=primary,
             secondary_evidence_count=secondary,
-            confidence=b.draft.confidence,
-            confidence_reasoning=b.draft.confidence_reasoning,
+            confidence=synth_draft.confidence,
+            confidence_reasoning=synth_draft.confidence_reasoning,
             model_path=AGENT_MODEL,
             record_generated_at=datetime.now(UTC),
         )
@@ -390,6 +576,7 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"SurfaceomeRecord assembly failed: {exc}",
+            timing=list(timing.entries),
         )
 
     annotation_path: Path | None = None
@@ -406,6 +593,7 @@ def _annotate(
         blocks_used=_count_blocks(surface_evidence, biological_context),
         builder_usage=builder_usage,
         annotation_path=annotation_path,
+        timing=list(timing.entries),
     )
 
 
@@ -501,8 +689,15 @@ def _infer_url_and_type(source_id: str) -> tuple[str, SourceType]:
         pmid = source_id.split(":", 1)[1]
         return (f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/", "pubmed")
     if source_id.startswith("PMC:"):
+        # NCBI PMC's path requires the ``PMC`` prefix on the accession.
+        # Source ids come in two flavors (``PMC:PMC12345`` /
+        # ``PMC:12345``); normalize before formatting. Linking to
+        # ncbi.nlm.nih.gov rather than europepmc.org because the latter
+        # has had availability issues.
         pmc = source_id.split(":", 1)[1]
-        return (f"https://europepmc.org/article/PMC/{pmc}", "pmc")
+        if not pmc.upper().startswith("PMC"):
+            pmc = f"PMC{pmc}"
+        return (f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmc}/", "pmc")
     if source_id.startswith("UniProt:"):
         acc = source_id.split(":", 1)[1]
         return (f"https://www.uniprot.org/uniprotkb/{acc}/entry", "uniprot")
@@ -540,6 +735,11 @@ def write_summary_meta(result: AnnotateResultV2, *, runs_dir: Path = RUNS_DIR) -
         "builders_cost_usd": round(result.builders_cost_usd, 6),
         "synthesizer_cost_usd": round(result.synthesizer_cost_usd, 6),
         "total_cost_usd": round(result.total_cost_usd, 6),
+        "total_elapsed_s": _wall_clock_for_timing(result.timing),
+        "total_step_seconds": round(
+            sum(t.elapsed_s for t in result.timing), 3
+        ),
+        "timing": [t.as_dict() for t in result.timing],
         "annotation_path": str(result.annotation_path)
         if result.annotation_path is not None
         else None,

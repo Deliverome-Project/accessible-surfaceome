@@ -1,0 +1,2686 @@
+{
+  "schema_version": "1.0.0",
+  "gene": {
+    "hgnc_symbol": "ATP5F1B",
+    "hgnc_id": "HGNC:830",
+    "uniprot_acc": "P06576",
+    "ncbi_gene_id": 506,
+    "ensembl_gene": "ENSG00000110955"
+  },
+  "triage_signal": "unknown",
+  "executive_summary": {
+    "one_paragraph": "ATP5F1B (ATP synthase \u03b2-subunit) is canonically a mitochondrial inner-membrane F1 subunit but is also detected at the plasma membrane as part of ectopic ATP synthase (eATP synthase). Multiple direct methods\u2014surface biotinylation MS, non-permeabilized IF with orthogonal controls, live-cell flow cytometry, and super-resolution live-cell imaging\u2014support genuine surface accessibility. Surface expression appears conditional (not ubiquitous), with highest confidence in specific cell types; CSPA/SURFY databases do not annotate it as a surface protein, reflecting its non-conventional trafficking origin.",
+    "surface_accessibility": "moderate",
+    "evidence_grade_summary": "direct_multi_method",
+    "confidence": "moderate",
+    "state_dependence": "moderate",
+    "subcategory": "other",
+    "headline_risks": [
+      "restricted_subdomain",
+      "low_endogenous_expression",
+      "epitope_masked"
+    ],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_03",
+      "a1_evi_06",
+      "a1_evi_07",
+      "a1_evi_08",
+      "a1_evi_09",
+      "a1_evi_10",
+      "a1_evi_11",
+      "a2_evi_03",
+      "a2_evi_04"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "moderate",
+    "confidence": "moderate",
+    "subcategory": "other",
+    "evidence_grade": "direct_multi_method",
+    "ecd_accessibility_class": "moderate",
+    "evidence_density": "moderate",
+    "expression_level": "moderate",
+    "expression_breadth": "broad",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": true,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false
+  },
+  "surface_evidence": {
+    "evidence_grade": "direct_multi_method",
+    "grade_rationale": "ATP5F1B surface localization is supported by multiple direct method types from independent sources. From PMC10113393: (1) surface biotinylation enrichment + mass spectrometry identified ATP5F1B in the plasma membrane proteome; (2) non-permeabilized immunofluorescence demonstrated cell-surface ATP synthase staining distinct from mitochondrial pattern, with appropriate controls (cyclophilin D negative, ANT positive); (3) live-cell flow cytometry detected eATP synthase on intact cells; (4) super-resolution live-cell imaging confirmed mitochondrial membrane fusion to PM. From PMC11852025: surface biotinylation MS in bovine spermatozoa also captured ATP5F1B. One contradictory claim (a1_evi_11) notes CSPA/SURFY databases do not list ATP5F1B as a surface protein, but this is a computational annotation conflict that does not negate the multiple direct experimental observations. Overall, \u22652 direct method types (surface biotinylation and non-permeabilized IF/flow) from independent sources support surface accessibility.",
+    "methods": [
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "plasma_membrane_fractionation",
+        "permeabilization": "nonpermeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "membrane_fraction_enriched",
+        "expression_observations": [
+          {
+            "context": "Plasma membrane proteome purification identified 378 proteins including ATP synthase complex subunits (eATP synthase, including ATP5F1B); integrative spatial proteomics comparing mitochondrial and PM compartments",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_01",
+              "a1_evi_02"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_01",
+          "a1_evi_02"
+        ]
+      },
+      {
+        "method_family": "biotinylation",
+        "method_subclass": "surface_biotinylation",
+        "permeabilization": "nonpermeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "ATP synthase beta subunit (ATP5F1B) identified in plasma membrane proteins enriched by biotinylated purification (cited prior study, PMC10113393 source)",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_03"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_03"
+        ]
+      },
+      {
+        "method_family": "flow_cytometry",
+        "method_subclass": "fixed_cell_flow",
+        "permeabilization": "fixed_unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-ATP synthase complex antibody",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          },
+          {
+            "name": "control mouse IgG",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "Isotype control used as negative reference"
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "eATP synthase cell surface expression analyzed via flow cytometry using antibodies for the ATP synthase complex or control mouse IgG; n=20 biological replicates, data as mean \u00b1 SD",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_04"
+            ]
+          },
+          {
+            "context": "Prior studies demonstrated eATP synthase presence on cell surface of fixed cells using flow cytometry (cited as established prior evidence)",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_05"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_04",
+          "a1_evi_05"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "nonpermeabilized_IF",
+        "permeabilization": "nonpermeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-ATP synthase antibody (surface IF)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "orthogonal_method",
+            "validation_strength": "moderate",
+            "cross_reactivity_notes": "Specificity supported by negative control (Cyclophilin D rarely detected at PM) and positive control (ANT detected at PM surface)"
+          },
+          {
+            "name": "anti-Cyclophilin D antibody (negative control)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "Used as mitochondria-only negative control in non-permeabilized IF; rarely detected at PM confirming assay specificity"
+          },
+          {
+            "name": "anti-ANT (adenine nucleotide translocase) antibody (positive control)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "orthogonal_method",
+            "validation_strength": "moderate",
+            "cross_reactivity_notes": "Used as positive control; ANT known to reside at PM, detected on cell surface of non-permeabilized cells"
+          }
+        ],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Non-permeabilized IF of eATP synthase (ATP5F1B-containing complex) showing surface staining pattern distinct from mitochondrial ATP synthase; Cyclophilin D (mitochondria-only) rarely detected at PM as negative control; ANT detected at PM as positive control",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_06",
+              "a1_evi_07",
+              "a1_evi_09"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_06",
+          "a1_evi_07",
+          "a1_evi_09"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "nonpermeabilized_IF",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Super-resolution imaging and real-time mitochondria-PM fusion assay in live cells demonstrating mitochondrial membrane fusion to plasma membrane, mechanistically explaining ATP synthase (ATP5F1B) anchoring at cell surface",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_08"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_08"
+        ]
+      },
+      {
+        "method_family": "biotinylation",
+        "method_subclass": "surface_biotinylation",
+        "permeabilization": "nonpermeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Mass spectrometry-based surface proteome analysis with cell-surface biotinylation enrichment applied to bovine spermatozoa; ATP5F1B detected as a surface protein in sperm",
+            "sample_type": "primary_human_cell",
+            "level": "low",
+            "cited_evidence_ids": [
+              "a1_evi_10"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_10"
+        ]
+      }
+    ],
+    "non_surface_expression": [],
+    "therapeutic_engagement": null,
+    "contradicting_evidence": [
+      {
+        "claim": "ATP5F1B is not listed as a surface protein by either the Cell Surface Protein Atlas (CSPA) or the surfaceome predictor SURFY, both of which are curated/predicted references for bona fide surface-accessible proteins. This negative vote from two orthogonal surface-protein classification resources argues against ATP5F1B being a genuine cell-surface protein.",
+        "contradiction_type": "proteomics_conflict",
+        "severity_for_surface_accessibility": "moderate",
+        "likely_explanation": "ATP5F1B is canonically a mitochondrial inner-membrane ATP synthase subunit. Its occasional detection on cell surfaces or in extracellular vesicles is widely attributed to non-conventional trafficking or membrane contamination, which would explain its absence from curated surfaceome databases that apply stringent surface-verification criteria.",
+        "cited_evidence_ids": [
+          "a1_evi_11"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [
+      {
+        "tissue": "heart",
+        "present": "high",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "skeletal muscle",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "liver",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "kidney",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "brain",
+        "present": "unknown",
+        "disease_context": "other_disease",
+        "cell_types": [
+          "neurons"
+        ],
+        "cell_states": [
+          "ischemia/reperfusion injury"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "motor neurons (iPSC-derived)",
+        "present": "unknown",
+        "disease_context": "other_disease",
+        "cell_types": [
+          "motor neurons"
+        ],
+        "cell_states": [
+          "hypermetabolism",
+          "MT-ATP6 mutation"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      }
+    ],
+    "cell_types": [
+      {
+        "cell_type": "spermatozoa",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "cell_type": "neurons",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "cell_type": "motor neurons",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      }
+    ],
+    "cell_states": [],
+    "subcellular_localization": {
+      "primary_compartment": "mitochondrion",
+      "dual_localization": [
+        {
+          "compartment": "plasma_membrane",
+          "fraction_estimate": null,
+          "condition": "ectopic surface expression (eATP synthase), detected on fixed cells and bovine spermatozoa",
+          "cited_evidence_ids": [
+            "a2_evi_03",
+            "a2_evi_04"
+          ]
+        }
+      ],
+      "membrane_subdomains": []
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": [
+      {
+        "category": "dual_localization",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": "mitochondrion",
+        "baseline_context": "Typical cell with ATP5F1B residing in the mitochondrial inner membrane as part of the F1 ATP synthase complex",
+        "modulating_state": "Cells expressing ectopic ATP synthase (eATP synthase) at the plasma membrane surface",
+        "change": "ATP5F1B, canonically a mitochondrial inner-membrane protein, is additionally present at the cell surface (ectopic ATP synthase), as confirmed by flow cytometry and immunofluorescence on fixed non-permeabilized cells.",
+        "accessibility_implication": "A pool of ATP5F1B is accessible on the extracellular face of the plasma membrane in at least some cell types, making it a potential target for surface-directed binders, though the fraction at the surface versus mitochondria is unquantified.",
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "category": "tissue_restricted_surface",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": "germline_reproductive",
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Y-chromosome-bearing (BY) bovine spermatozoa surface proteome",
+        "modulating_state": "Unsexed (BU) bovine spermatozoa surface proteome",
+        "change": "ATP5F1B is significantly upregulated at the cell surface of BU spermatozoa compared to BY spermatozoa, as detected by surface biotinylation-coupled mass spectrometry on live cells.",
+        "accessibility_implication": "Surface accessibility of ATP5F1B on sperm is subpopulation-dependent; binders targeting surface ATP5F1B would preferentially engage BU over BY spermatozoa, suggesting sperm-subtype-selective exposure.",
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "other",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal mouse cerebral/neuronal tissue with intact mitochondrial Complex V (ATP synthase) activity",
+        "modulating_state": "Mouse cerebral tissue under ischemia/reperfusion injury with Cend1 deficiency",
+        "change": "Ischemia/reperfusion injury modulates Complex V (ATP synthase, including ATP5F1B) activity and mitochondrial membrane potential in brain tissue, indicating disease-state-dependent alteration of ATP5F1B functional status.",
+        "accessibility_implication": "Although direct surface redistribution is not demonstrated, disease-associated disruption of ATP5F1B complex activity in neural tissue may accompany altered membrane dynamics; surface accessibility in ischemic brain is uncertain but potentially increased under stress-mediated membrane perturbation.",
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      }
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "P06576-1",
+      "uniprot_acc": "P06576",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 0,
+      "icd_length_residues": 0,
+      "per_residue_topology": "",
+      "tool_version": "stub-no-fetchers-v1.0.0",
+      "retrieved_at": "2026-05-17T02:40:20.856746Z"
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [],
+      "rat": [],
+      "cynomolgus": []
+    },
+    "paralogs": [],
+    "structure": {
+      "afdb_id": "AF-P06576-F1-model_v4",
+      "afdb_version": "v4",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
+      "license": "CC BY 4.0",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "unknown",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "ATP5F1B reaches the plasma membrane as part of the intact ATP synthase complex via mitochondria-PM membrane fusion. Whether specific partner subunits are required for surface trafficking beyond complex assembly is not established in the ledger. The whole-complex nature of eATP synthase implies co-dependency on other subunits but no single gating partner is identified.",
+      "cited_evidence_ids": [
+        "a1_evi_08",
+        "a2_evi_03"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": true,
+      "domain": "other",
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "rationale": "Surface ATP5F1B arises from mitochondria-PM fusion, anchoring the complex at discrete PM foci rather than as a uniformly distributed surface protein. Additionally, sperm surface expression is subpopulation-dependent (BU > BY), indicating further restriction by cell type and state. A systemic binder may encounter low epitope density on most cell types.",
+      "cited_evidence_ids": [
+        "a1_evi_08",
+        "a2_evi_04"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "moderate",
+      "rationale": "ATP5F1B is a ~52 kDa globular F1 subunit. When ectopically surface-exposed via mitochondria-PM fusion, substantial portions of the catalytic head domain face extracellularly, providing moderate surface area for binder engagement. However, orientation and which regions are accessible in the eATP synthase complex context are unquantified.",
+      "cited_evidence_ids": [
+        "a1_evi_06",
+        "a1_evi_08"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "partner",
+        "conformational"
+      ],
+      "severity": "moderate",
+      "evidence_strength": "inferred",
+      "rationale": "ATP5F1B in the eATP synthase complex is embedded within a multi-subunit assembly; alpha and other F1 subunits likely occlude portions of the beta subunit surface. The orientation of the complex when anchored via mitochondria-PM fusion may further restrict accessible epitopes. No direct epitope-mapping data are in the ledger; risk is inferred from complex structure.",
+      "cited_evidence_ids": [
+        "a1_evi_08",
+        "a2_evi_03"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "Spatial proteomics integrative analysis was conducted comparing mitochondrial and plasma membrane proteomes to identify ATP synthase complex subunits present at both compartments, providing methodological framework for surface-localization claim of eATP synthase (ATP5F1B included).",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "To further examine whether the whole mitochondrial ATP synthase complex was routed to the PM, we conducted an integrative analysis of the spatial proteomes and identified the proteins located on both mitochondria and the PM (Fig. 1a ).",
+          "quote_sha256": "8589d3463fd636468f4924fb034f0aa67b4a3bff27526a8e7a1f36baf6e57e28",
+          "char_offset": 0,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "Mass spectrometry of purified plasma membrane proteome identified 378 proteins, including ATP synthase complex members (ectopic ATP synthase / eATP synthase), supporting surface localization of the complex including the beta subunit (ATP5F1B).",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Altogether, 739 proteins were identified from purified mitochondria, and 378 were identified in the PM proteome (Fig. 1b and Supplementary Data 1 , 2 ).",
+          "quote_sha256": "fb031769322fc251cf96d5e8f35cc522e17bcd102282207fb15991f5d56e0a56",
+          "char_offset": 236,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "The ATP synthase beta subunit (ATP5F1B) has been identified in plasma membrane protein fractions enriched by biotinylated purification, directly evidencing surface localization of this canonical mitochondrial protein.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "surface_biotinylation",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Furthermore, the ATP synthase \u03b2 subunit has also been identified in plasma membrane proteins enriched by biotinylated purification 29 .",
+          "quote_sha256": "7c13dd736405a4dd2aae3f444c1f52ca402f9a85636871ab3780e780992bca86",
+          "char_offset": 389,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "Flow cytometry was performed on cells using antibodies against the ATP synthase complex (detecting eATP synthase / ectopic surface ATP synthase) with control mouse IgG, to quantify surface expression of the complex. Data from n=20 biological replicates reported as mean \u00b1 SD.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "figure_legend",
+          "figure_or_table_id": null,
+          "quote": "Data presented are mean \u00b1 SD ( n = 20). c The expression of eATP synthase on the cell surface was analyzed via flow cytometry, using antibodies for the ATP synthase complex or control mouse IgG.",
+          "quote_sha256": "47ced3c24c2bc444b19e6cf3ae90153f88029adc2ccc507714eaa1ca5bf3abca",
+          "char_offset": 528,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "Previous studies from this group demonstrated presence of ectopic ATP synthase (eATP synthase, including the beta subunit ATP5F1B) on the cell surface of fixed cells using flow cytometry and immunofluorescence, cited as established prior evidence for plasma membrane localization.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Our previous studies have demonstrated the presence of eATP synthase on the cell surface of fixed cells using flow cytometry and immunofluorescence 29 .",
+          "quote_sha256": "87d1c8c0f5c4cbd16bae12ad38df49c5d03de02d1ebf9317ece6d6e8384dc062",
+          "char_offset": 723,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "Non-permeabilized immunofluorescence assay was used specifically to detect cell-surface ATP synthase; the antibody recognizes only plasma-membrane-exposed ATP synthase without permeabilization, producing a staining pattern distinct from mitochondrial ATP synthase. This validates the non-permeabilized IF as a surface-specificity control for eATP synthase (ATP5F1B-containing complex).",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Without permeabilization, the antibody can only recognize the cell-surface ATP synthase, which distribution pattern showed a great difference from mitochondrial ATP synthase 17 .",
+          "quote_sha256": "5a99738f40c66eb80d07819b6a758b24a0c794838902aabc28c65e57bd5033eb",
+          "char_offset": 876,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "Cyclophilin D, a mitochondria-only protein, was rarely detected at the plasma membrane in non-permeabilized cells, serving as a negative control to validate the specificity of non-permeabilized immunofluorescence for detecting genuine surface-localized mitochondrial proteins such as eATP synthase (ATP5F1B).",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "In contrast, Cyclophilin D, which is located only in mitochondria, was rarely found on the PM (Supplementary Fig. 1b ).",
+          "quote_sha256": "0303445155ba217a32040ab956e6d6550a2bac4f4abd809b6464cbe30a7c05c5",
+          "char_offset": 1055,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_08",
+      "claim": "Super-resolution imaging and real-time mitochondria-plasma membrane fusion assay in live cells demonstrated that mitochondrial membranes fuse to the plasma membrane, providing a mechanistic explanation for how ATP synthase (including ATP5F1B) becomes anchored at the cell surface.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "We further demonstrate that the mitochondrial membrane fuses to the plasma membrane in turn to anchor ATP syntheses on the cell surface using super-resolution imaging and real-time fusion assay in live cells.",
+          "quote_sha256": "938aac69dbde7e61d4168d53551e24e1f0286cdb9b6d16252f5ac3d1475a0aae",
+          "char_offset": 1175,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_09",
+      "claim": "Adenine nucleotide translocase (ANT), another canonical mitochondrial protein, was detected on the cell surface of non-permeabilized cells by immunostaining, serving as a positive control validating the non-permeabilized IF assay used to detect surface-localized eATP synthase (ATP5F1B).",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The immunostaining images showed that adenine nucleotide translocase (ANT), another mitochondrial protein known to be reported resident at the PM 37 , 38 , was detected on the cell surface of non-permeabilized cells (Supplementary Fig. 1a ).",
+          "quote_sha256": "3f957fa1a2b0e010f5207fdf1330c58cd74dd27812499812abcb484b3afe6eba",
+          "char_offset": 1384,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_10",
+      "claim": "Mass spectrometry-based surface proteome analysis using cell-surface biotinylation enrichment was applied to bovine spermatozoa to identify surface proteins; this method captured ATP5F1B as a detected surface protein in sperm, contributing surface-biotinylation evidence for PM localization of the beta subunit.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "surface_biotinylation",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "bovine spermatozoa",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "spermatozoa",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "sperm",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11852025",
+            "pmc_id": "PMC11852025",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11852025/",
+            "title": "PMC:PMC11852025",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "f052bb4959405e4454e39331fc31c09dc4086c4ee2fd109a4c9597825239311c",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "To investigate the surface proteome of bovine spermatozoa and identify possible targets of X-sperm and Y-sperm, we utilized a mass spectrometry-based proteome analysis coupled with biotinylation for the enrichment of cell surface proteins.",
+          "quote_sha256": "39db790721a2d18c7b6c4e96b73a4b0f3cf0cdda1c7ea4dcb7bcff6e6681418e",
+          "char_offset": 0,
+          "normalized_source_sha256": "812224e72952740df8b1167f8fa330eaa4acba0da8dfa7707d4b79d825dbb949"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_11",
+      "claim": "Experimentally verified cell-surface proteins (CSPA database) and surfaceome predictor (SURFY) were mapped onto extracellular vesicle protein profiles; ATP5F1B is noted in relation to this EV surfaceome framework. The CSPA/SURFY mapping methodology serves as a secondary reference for surface-protein classification but does not directly verify ATP5F1B surface presence \u2014 ATP5F1B is not listed by SURFY or CSPA as a surface protein (votes negative in the DB panel).",
+      "claim_type": "contradictory",
+      "direction": "refutes",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC8612312",
+            "pmc_id": "PMC8612312",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8612312/",
+            "title": "PMC:PMC8612312",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "c190dd3eb1be579d287612e3f770216171b265e888aa16a5a9d490330c8236ef",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "We mapped experimentally verified cell\u2010surface proteins (CSPA) (Bausch\u2010Fluck et al., 2015 ) and surfaceome proteins based on cell surfaceome predictor SURFY (Bausch\u2010Fluck et al., 2018 ) onto global EV protein profiles.",
+          "quote_sha256": "c190dd3eb1be579d287612e3f770216171b265e888aa16a5a9d490330c8236ef",
+          "char_offset": 0,
+          "normalized_source_sha256": "74f920987f55eae7b84729df742e96242e16de0bf927972c7d867196469b6384"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "ATP5F1B (ATP synthase beta subunit) mRNA is expressed at highest levels in heart, at lower levels in skeletal muscle, and at lowest levels in liver and kidney, indicating marked tissue-level variation in expression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "northern_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "heart, skeletal muscle, liver, kidney tissue",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "heart, skeletal muscle, liver, kidney",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:2687158",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/2687158/",
+            "title": "PMID:2687158",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "bc1a1f6e0766268a577ad30f40a4c6a0ca0e413930351dbe24aaec1b368c5c3a",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The highest levels are found in heart, lower levels in skeletal muscle, and the lowest levels in liver and kidney.",
+          "quote_sha256": "1f118872ea4b18754e708a40cce248ab8edb83a57c6fd05431dfe43242ba2417",
+          "char_offset": 0,
+          "normalized_source_sha256": "f9ff4bc8d4d45a69cb11c1783940e6442b853fca0a33db4ffda5eaa893e09c3c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "Beta subunit mRNA levels show marked differences among tissues, indicating that ATP5F1B tissue expression is not ubiquitous or uniform but varies substantially across tissue types.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "northern_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "multiple human tissues",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:2687158",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/2687158/",
+            "title": "PMID:2687158",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "bc1a1f6e0766268a577ad30f40a4c6a0ca0e413930351dbe24aaec1b368c5c3a",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Analysis of the beta subunit mRNA levels reveals marked differences among tissues.",
+          "quote_sha256": "8a4884b46cc5a4a27ac7e70386ef799eb66419b2f400ee078139edeec1ae68ae",
+          "char_offset": 115,
+          "normalized_source_sha256": "f9ff4bc8d4d45a69cb11c1783940e6442b853fca0a33db4ffda5eaa893e09c3c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "Ectopic ATP synthase (eATP synthase), including the beta subunit, is present at the cell surface of fixed cells as confirmed by flow cytometry and immunofluorescence, supporting plasma membrane localization of this mitochondrial protein in a non-canonical surface context.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": false,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10113393",
+            "pmc_id": "PMC10113393",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/",
+            "title": "PMC:PMC10113393",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "ef871e77297978425ebdd5326188e4c258b276f57744e696a83e4973a1eedc38",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Our previous studies have demonstrated the presence of eATP synthase on the cell surface of fixed cells using flow cytometry and immunofluorescence 29 .",
+          "quote_sha256": "87d1c8c0f5c4cbd16bae12ad38df49c5d03de02d1ebf9317ece6d6e8384dc062",
+          "char_offset": 723,
+          "normalized_source_sha256": "621a8cacb319e2839d48ad22c2abfec64ddcf2c6116370705a426241f5cd7c55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "ATP5F1B protein is upregulated at the cell surface of bovine unsexed (BU) spermatozoa compared to Y-chromosome-bearing (BY) spermatozoa, as detected by surface biotinylation-coupled mass spectrometry, indicating cell-state/subtype-dependent differential surface presence across sperm populations.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "bovine spermatozoa (unsexed vs Y-sperm)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "spermatozoa",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11852025",
+            "pmc_id": "PMC11852025",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11852025/",
+            "title": "PMC:PMC11852025",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "f052bb4959405e4454e39331fc31c09dc4086c4ee2fd109a4c9597825239311c",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "figure_legend",
+          "figure_or_table_id": null,
+          "quote": "significantly upregulated in BU samples compared to BX samples (SCGB2A2, CRISP3, LOC107131803, ANXA1, P54281 , LTF, A0A3Q1LK79, P4HB, NPPC, LOC104975830, KRT14, MSMB, ELSPBP1, KRT13, and CAST), 35 proteins were upregulated in BU samples compared to BY samples (IDH2, GLIPR1L1, ADAM2, SLC16A1, ATP5F1B, LOC112443487, HSPD1, ENO1, ACRBP, ADAM32, PEBP1, HSPA1A, HSPA1L, AKAP3, ACR, SCGB2A2, CRISP3, LOC107131803, ANXA1, P54281 , LTF, A0A3Q1LK79, P4HB, NPPC, LOC104975830, MSMB, ELSPBP1, KRT13, CAST, SCEL, PITRM1, LOC104970193, ENTPD1, AHNAK, and SFN)",
+          "quote_sha256": "d5f8458e76488d4ce2bbaa0f26101005524ff4b87978e5c4d0ff029fbe140c16",
+          "char_offset": 240,
+          "normalized_source_sha256": "812224e72952740df8b1167f8fa330eaa4acba0da8dfa7707d4b79d825dbb949"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "In a mouse model of cerebral ischemia/reperfusion injury, Cend1 deficiency alters mitochondrial membrane potential and Complex V (ATP synthase) activity, implying that ATP5F1B function in brain/neuronal tissue is modulated by ischemic cell state \u2014 specifically by ischemia/reperfusion injury.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "cerebral tissue / neurons",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "cerebral ischemia/reperfusion injury",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12902099",
+            "pmc_id": "PMC12902099",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12902099/",
+            "title": "PMC:PMC12902099",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "dc61dfcd85b99eec865165f6cd26939861667b922c1a2c4f59ddc0d2cf6f9a43",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Using Cend1 knockout (KO) mice, Cend1 deficiency was shown to exacerbate cerebral ischemia/reperfusion injury, as evidenced by enlarged infarct volume, worsened neurological deficits in motor coordination and grip strength, together with alterations in mitochondrial membrane potential (\u0394\u03a8m), mPTP opening, ATP content, and the activities of respiratory Complex I and V.",
+          "quote_sha256": "dc61dfcd85b99eec865165f6cd26939861667b922c1a2c4f59ddc0d2cf6f9a43",
+          "char_offset": 0,
+          "normalized_source_sha256": "7555dde61a96e5621fba2fe3b08f5ace5f3f4ed90e20e02dc41e9c31e82a79e6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "ATP synthase assembly (including the beta subunit ATP5F1B) is studied in human motor neurons harboring a heteroplasmic MT-ATP6 mutation, indicating that iPSC-derived human motor neurons are a relevant cell type for ATP5F1B biology under disease (mitochondrial mutation/hypermetabolism) conditions.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "human motor neurons (iPSC-derived) with MT-ATP6 mutation",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "ipsc_derived",
+          "material_kind_other_label": null,
+          "cell_type": "motor neurons",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "MT-ATP6 mutation / hypermetabolism",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12698834",
+            "pmc_id": "PMC12698834",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12698834/",
+            "title": "PMC:PMC12698834",
+            "retrieved_at": "2026-05-17T02:40:20.854804Z",
+            "content_sha256": "6ce536e3f9f927b1441ba798c18d27f89b3b5de58034f83e33f62af42f395a22",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T02:40:20.854804Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Here we studied the consequences of hypermetabolism in human motor neurons harboring a heteroplasmic mutation in MT-ATP6, which impairs ATP synthase assembly.",
+          "quote_sha256": "6ce536e3f9f927b1441ba798c18d27f89b3b5de58034f83e33f62af42f395a22",
+          "char_offset": 0,
+          "normalized_source_sha256": "28bebce9312329efcdf1344df88a4580aafa04c5a6edef952e780729456b868d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    }
+  ],
+  "search_log": [],
+  "evidence_count": 17,
+  "primary_evidence_count": 14,
+  "secondary_evidence_count": 3,
+  "confidence": "moderate",
+  "confidence_reasoning": "A1 grades evidence as direct_multi_method with convergent surface biotinylation, non-permeabilized IF (with orthogonal controls), flow cytometry, and live super-resolution imaging\u2014a strong experimental base. However, one moderate-severity contradiction exists (CSPA/SURFY negative annotation, a1_evi_11), and A2 confirms moderate state-dependence: surface expression is cell-type-conditional (sperm subpopulations, fixed-cell contexts) with the fraction of surface vs. mitochondrial pool unquantified. These factors together\u2014one contradiction plus moderate state dependence\u2014preclude high confidence and yield moderate.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-17T02:40:20.856978Z",
+  "timing": [
+    {
+      "step_name": "planner",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:34:49.944537Z",
+      "elapsed_s": 19.665,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 4914,
+      "output_tokens": 1019,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.030027
+    },
+    {
+      "step_name": "search:gene_literature:gene2pubmed",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:09.609553Z",
+      "elapsed_s": 1.169,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:10.778161Z",
+      "elapsed_s": 6.771,
+      "n_items": 2
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:17.549102Z",
+      "elapsed_s": 3.632,
+      "n_items": 15
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:21.180865Z",
+      "elapsed_s": 2.08,
+      "n_items": 15
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:23.260853Z",
+      "elapsed_s": 4.968,
+      "n_items": 0
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:28.228971Z",
+      "elapsed_s": 3.503,
+      "n_items": 9
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:31.732063Z",
+      "elapsed_s": 1.244,
+      "n_items": 11
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:32.976501Z",
+      "elapsed_s": 3.192,
+      "n_items": 0
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:36.168180Z",
+      "elapsed_s": 0.322,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:36.490414Z",
+      "elapsed_s": 0.416,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:36.905987Z",
+      "elapsed_s": 0.316,
+      "n_items": 25
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10113393",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.223180Z",
+      "elapsed_s": 2.836,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2673,
+      "output_tokens": 363,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004488
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12359183",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.223486Z",
+      "elapsed_s": 4.583,
+      "n_items": 7,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3068,
+      "output_tokens": 408,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005108
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10629159",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.224180Z",
+      "elapsed_s": 3.861,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2741,
+      "output_tokens": 336,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004421
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC7663848",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.224474Z",
+      "elapsed_s": 4.632,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2853,
+      "output_tokens": 336,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004533
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9515456",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.225323Z",
+      "elapsed_s": 2.627,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2376,
+      "output_tokens": 171,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003231
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC6945718",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.226049Z",
+      "elapsed_s": 4.211,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2705,
+      "output_tokens": 387,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00464
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12281359",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.226439Z",
+      "elapsed_s": 1.367,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2519,
+      "output_tokens": 96,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002999
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11852025",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.227007Z",
+      "elapsed_s": 6.921,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3124,
+      "output_tokens": 342,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004834
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8612312",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.227385Z",
+      "elapsed_s": 3.592,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2855,
+      "output_tokens": 286,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004285
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9237123",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:37.227704Z",
+      "elapsed_s": 5.786,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2447,
+      "output_tokens": 349,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004192
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9455612",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:38.593976Z",
+      "elapsed_s": 2.681,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2301,
+      "output_tokens": 165,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003126
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10310848",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:39.852133Z",
+      "elapsed_s": 2.495,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2532,
+      "output_tokens": 177,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003417
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10316767",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:40.059720Z",
+      "elapsed_s": 3.249,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2309,
+      "output_tokens": 210,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003359
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12128983",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:40.819381Z",
+      "elapsed_s": 2.009,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2352,
+      "output_tokens": 155,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003127
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC4537497",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:41.085003Z",
+      "elapsed_s": 1.297,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2361,
+      "output_tokens": 103,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002876
+    },
+    {
+      "step_name": "selector:iter0",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:35:44.153853Z",
+      "elapsed_s": 45.512,
+      "n_items": 20,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 17064,
+      "output_tokens": 2484,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.088452
+    },
+    {
+      "step_name": "search:gene_literature:fetch_fulltext",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:29.666357Z",
+      "elapsed_s": 0.011,
+      "n_items": 30
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:29.677552Z",
+      "elapsed_s": 0.873,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.550744Z",
+      "elapsed_s": 0.105,
+      "n_items": 8
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10113393",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.657950Z",
+      "elapsed_s": 4.93,
+      "n_items": 35,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 5054,
+      "output_tokens": 713,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.008619
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12359183",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.659082Z",
+      "elapsed_s": 5.711,
+      "n_items": 7,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3068,
+      "output_tokens": 466,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005398
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10629159",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.660122Z",
+      "elapsed_s": 5.772,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2741,
+      "output_tokens": 554,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005511
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC7663848",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.661544Z",
+      "elapsed_s": 6.03,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2853,
+      "output_tokens": 413,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004918
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9515456",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.661969Z",
+      "elapsed_s": 2.272,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2376,
+      "output_tokens": 162,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003186
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC6945718",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.662365Z",
+      "elapsed_s": 3.449,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2705,
+      "output_tokens": 333,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00437
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12281359",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.662764Z",
+      "elapsed_s": 4.742,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2519,
+      "output_tokens": 368,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004359
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11852025",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.663117Z",
+      "elapsed_s": 5.752,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3124,
+      "output_tokens": 426,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005254
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8612312",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.663507Z",
+      "elapsed_s": 2.13,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2855,
+      "output_tokens": 161,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00366
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9237123",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:30.663793Z",
+      "elapsed_s": 3.87,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2447,
+      "output_tokens": 270,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003797
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9455612",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:32.793349Z",
+      "elapsed_s": 2.378,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2301,
+      "output_tokens": 152,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003061
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10310848",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:32.933660Z",
+      "elapsed_s": 3.234,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2532,
+      "output_tokens": 202,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003542
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10316767",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:34.111865Z",
+      "elapsed_s": 2.237,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2309,
+      "output_tokens": 165,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003134
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12128983",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:34.534033Z",
+      "elapsed_s": 2.877,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2352,
+      "output_tokens": 210,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003402
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC4537497",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:35.171433Z",
+      "elapsed_s": 1.368,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2361,
+      "output_tokens": 103,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.002876
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12902099",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:35.404790Z",
+      "elapsed_s": 3.839,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2870,
+      "output_tokens": 234,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00404
+    },
+    {
+      "step_name": "selector:iter1",
+      "phase": "plan_trim_select_a1",
+      "started_at": "2026-05-17T02:36:39.247550Z",
+      "elapsed_s": 49.454,
+      "n_items": 28,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 17928,
+      "output_tokens": 3209,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.101919
+    },
+    {
+      "step_name": "planner",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:28.745080Z",
+      "elapsed_s": 20.076,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 5330,
+      "output_tokens": 1041,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.031605
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:48.821433Z",
+      "elapsed_s": 0.009,
+      "n_items": 0
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:48.830307Z",
+      "elapsed_s": 0.131,
+      "n_items": 0
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:48.961134Z",
+      "elapsed_s": 0.084,
+      "n_items": 9
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:49.044742Z",
+      "elapsed_s": 0.083,
+      "n_items": 2
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:49.128157Z",
+      "elapsed_s": 0.04,
+      "n_items": 15
+    },
+    {
+      "step_name": "search:evidence_retrieval",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:49.168260Z",
+      "elapsed_s": 0.063,
+      "n_items": 15
+    },
+    {
+      "step_name": "search:gene_literature:gene2pubmed",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:49.230884Z",
+      "elapsed_s": 0.003,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:49.234103Z",
+      "elapsed_s": 1.007,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:50.241588Z",
+      "elapsed_s": 0.327,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:50.568926Z",
+      "elapsed_s": 0.466,
+      "n_items": 25
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.034696Z",
+      "elapsed_s": 0.119,
+      "n_items": 8
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9455612",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.155518Z",
+      "elapsed_s": 6.378,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2584,
+      "output_tokens": 146,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003314
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10310848",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.155792Z",
+      "elapsed_s": 3.14,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2815,
+      "output_tokens": 191,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00377
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10316767",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.156958Z",
+      "elapsed_s": 2.345,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2592,
+      "output_tokens": 157,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003377
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10113393",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.157715Z",
+      "elapsed_s": 4.886,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2956,
+      "output_tokens": 405,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004981
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12128983",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.158285Z",
+      "elapsed_s": 2.216,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2635,
+      "output_tokens": 166,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003465
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12281359",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.158793Z",
+      "elapsed_s": 4.122,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2802,
+      "output_tokens": 328,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004442
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC11852025",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.159266Z",
+      "elapsed_s": 4.493,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3407,
+      "output_tokens": 293,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004872
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC8612312",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.159700Z",
+      "elapsed_s": 4.186,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3138,
+      "output_tokens": 314,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004708
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9237123",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.160017Z",
+      "elapsed_s": 3.749,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2730,
+      "output_tokens": 277,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004115
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC12359183",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:51.160206Z",
+      "elapsed_s": 3.296,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3085,
+      "output_tokens": 190,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004035
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC10629159",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:53.374077Z",
+      "elapsed_s": 4.647,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2924,
+      "output_tokens": 404,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004944
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC7663848",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:53.501839Z",
+      "elapsed_s": 3.711,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2726,
+      "output_tokens": 261,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004031
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC9515456",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:54.295755Z",
+      "elapsed_s": 3.974,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2659,
+      "output_tokens": 297,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004144
+    },
+    {
+      "step_name": "trim:iter0:PMC:PMC6945718",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:54.456277Z",
+      "elapsed_s": 2.013,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2800,
+      "output_tokens": 148,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00354
+    },
+    {
+      "step_name": "trim:iter0:PMID:2687158",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:37:54.909866Z",
+      "elapsed_s": 5.149,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3013,
+      "output_tokens": 368,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004853
+    },
+    {
+      "step_name": "selector:iter0",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:00.061622Z",
+      "elapsed_s": 39.603,
+      "n_items": 9,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 15871,
+      "output_tokens": 2479,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.084798
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:39.664676Z",
+      "elapsed_s": 0.005,
+      "n_items": 8
+    },
+    {
+      "step_name": "search:gene_literature:fetch_abstract",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:39.670076Z",
+      "elapsed_s": 0.519,
+      "n_items": 7
+    },
+    {
+      "step_name": "search:gene_literature:topic_search",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.188778Z",
+      "elapsed_s": 0.008,
+      "n_items": 25
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9455612",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.198642Z",
+      "elapsed_s": 3.312,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2584,
+      "output_tokens": 183,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003499
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10310848",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.199070Z",
+      "elapsed_s": 4.419,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2815,
+      "output_tokens": 307,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00435
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10316767",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.199911Z",
+      "elapsed_s": 3.193,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2592,
+      "output_tokens": 201,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003597
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10113393",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.200517Z",
+      "elapsed_s": 5.536,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2956,
+      "output_tokens": 354,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004726
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12128983",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.200848Z",
+      "elapsed_s": 3.48,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2635,
+      "output_tokens": 197,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00362
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12281359",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.201309Z",
+      "elapsed_s": 2.978,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2802,
+      "output_tokens": 235,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003977
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC11852025",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.201829Z",
+      "elapsed_s": 4.75,
+      "n_items": 6,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3407,
+      "output_tokens": 346,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.005137
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC8612312",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.202194Z",
+      "elapsed_s": 3.551,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3138,
+      "output_tokens": 203,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004153
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9237123",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.202653Z",
+      "elapsed_s": 3.616,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2730,
+      "output_tokens": 291,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004185
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12359183",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:40.203259Z",
+      "elapsed_s": 4.708,
+      "n_items": 5,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3085,
+      "output_tokens": 331,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.00474
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC10629159",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:43.179733Z",
+      "elapsed_s": 4.05,
+      "n_items": 4,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2924,
+      "output_tokens": 365,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004749
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC7663848",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:43.392819Z",
+      "elapsed_s": 5.703,
+      "n_items": 2,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2726,
+      "output_tokens": 378,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004616
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC9515456",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:43.511041Z",
+      "elapsed_s": 2.654,
+      "n_items": 1,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2659,
+      "output_tokens": 179,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003554
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC6945718",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:43.680886Z",
+      "elapsed_s": 3.314,
+      "n_items": 3,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 2800,
+      "output_tokens": 235,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.003975
+    },
+    {
+      "step_name": "trim:iter1:PMID:2687158",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:43.752954Z",
+      "elapsed_s": 4.228,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3013,
+      "output_tokens": 383,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004928
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12902099",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:43.819046Z",
+      "elapsed_s": 6.957,
+      "n_items": 8,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3153,
+      "output_tokens": 363,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004968
+    },
+    {
+      "step_name": "trim:iter1:PMC:PMC12698834",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:44.618745Z",
+      "elapsed_s": 4.568,
+      "n_items": 7,
+      "model": "claude-haiku-4-5",
+      "input_tokens": 3028,
+      "output_tokens": 322,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.004638
+    },
+    {
+      "step_name": "selector:iter1",
+      "phase": "plan_trim_select_a2",
+      "started_at": "2026-05-17T02:38:50.779446Z",
+      "elapsed_s": 37.153,
+      "n_items": 12,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 16257,
+      "output_tokens": 1893,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.077166
+    },
+    {
+      "step_name": "builder:anatomical_accessibility",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:39:27.942033Z",
+      "elapsed_s": 1.776,
+      "n_items": 6,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 3585,
+      "output_tokens": 9,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.01089
+    },
+    {
+      "step_name": "builder:therapeutic_engagement",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:39:27.934599Z",
+      "elapsed_s": 2.059,
+      "n_items": 11,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 5383,
+      "output_tokens": 9,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.016284
+    },
+    {
+      "step_name": "builder:cell_types",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:39:27.940654Z",
+      "elapsed_s": 2.885,
+      "n_items": 6,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 3386,
+      "output_tokens": 180,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.012858
+    },
+    {
+      "step_name": "builder:subcellular_localization",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:39:27.941862Z",
+      "elapsed_s": 4.538,
+      "n_items": 6,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 4062,
+      "output_tokens": 131,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.014151
+    },
+    {
+      "step_name": "builder:tissues",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:39:27.939015Z",
+      "elapsed_s": 5.527,
+      "n_items": 6,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 2632,
+      "output_tokens": 483,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.015141
+    },
+    {
+      "step_name": "builder:contradictions",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:39:27.934883Z",
+      "elapsed_s": 5.639,
+      "n_items": 11,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 1421,
+      "output_tokens": 230,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.007713
+    },
+    {
+      "step_name": "builder:evidence_grade",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:39:27.936995Z",
+      "elapsed_s": 7.94,
+      "n_items": 11,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 6062,
+      "output_tokens": 298,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.022656
+    },
+    {
+      "step_name": "builder:accessibility_modulation",
+      "phase": "builders_a2",
+      "started_at": "2026-05-17T02:39:27.942874Z",
+      "elapsed_s": 14.396,
+      "n_items": 6,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 5276,
+      "output_tokens": 812,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.028008
+    },
+    {
+      "step_name": "builder:methods",
+      "phase": "builders_a1",
+      "started_at": "2026-05-17T02:39:27.934322Z",
+      "elapsed_s": 28.809,
+      "n_items": 11,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 7818,
+      "output_tokens": 2195,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.056379
+    },
+    {
+      "step_name": "synthesizer",
+      "phase": "synthesizer",
+      "started_at": "2026-05-17T02:39:56.744939Z",
+      "elapsed_s": 24.11,
+      "n_items": 17,
+      "model": "claude-sonnet-4-6",
+      "input_tokens": 2,
+      "output_tokens": 1409,
+      "cache_creation_input_tokens": 17416,
+      "cache_read_input_tokens": 0,
+      "cost_usd": 0.086451
+    },
+    {
+      "step_name": "evidence_promotion",
+      "phase": "post",
+      "started_at": "2026-05-17T02:40:20.854792Z",
+      "elapsed_s": 0.002,
+      "n_items": 17
+    },
+    {
+      "step_name": "deterministic_features",
+      "phase": "post",
+      "started_at": "2026-05-17T02:40:20.856739Z",
+      "elapsed_s": 0.0
+    },
+    {
+      "step_name": "filters_derivation",
+      "phase": "post",
+      "started_at": "2026-05-17T02:40:20.856865Z",
+      "elapsed_s": 0.0,
+      "n_items": 17
+    }
+  ],
+  "total_elapsed_s": 330.912,
+  "total_step_seconds": 582.67
+}

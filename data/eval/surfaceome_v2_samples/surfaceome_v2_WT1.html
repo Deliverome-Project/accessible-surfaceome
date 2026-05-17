@@ -1,0 +1,1079 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>surfaceome_v2 · WT1</title>
+  <style>
+:root {
+  --bg: #fafaf7;
+  --bg-card: #ffffff;
+  --bg-muted: #f1f0eb;
+  --fg: #222;
+  --fg-muted: #6b6b6b;
+  --border: #e2e0d8;
+  --accent: #7a1d3f;
+  --accent-soft: #f3e2e8;
+  --quote-bg: #f7f4ee;
+  --quote-border: #c8a35e;
+  --ok: #2c6e4b; --ok-bg: #e0f0e6;
+  --warn: #8a5a00; --warn-bg: #fbeed1;
+  --bad: #8a1d1d; --bad-bg: #f7d8d8;
+  --info: #1d4f8a; --info-bg: #d8e6f7;
+  --gray: #555; --gray-bg: #e8e8e3;
+  --lav: #4e3c8a; --lav-bg: #e5dcf7;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--fg);
+  margin: 0; padding: 1.5rem; line-height: 1.5;
+}
+main { max-width: 1200px; margin: 0 auto; }
+
+/* ---- Banner ---- */
+.record-banner {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+}
+.record-banner h1 { font-size: 2rem; margin: 0; color: var(--accent); }
+.id-row {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  margin: 0.5rem 0 1rem; font-size: 0.88rem; color: var(--fg-muted);
+}
+.id-key {
+  color: var(--fg-muted); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.3rem;
+}
+.id { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.verdict-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border);
+}
+.verdict .verdict-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin-bottom: 0.25rem;
+}
+.verdict .verdict-val { font-size: 0.95rem; }
+.verdict .verdict-val.big { font-size: 1.5rem; font-weight: 600; }
+.verdict .verdict-val.small { font-size: 0.82rem; }
+.verdict .verdict-sub {
+  font-size: 0.74rem; color: var(--fg-muted); margin-top: 0.2rem;
+}
+
+/* ---- Section block ---- */
+section.block {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem 1.5rem 1.5rem; margin-bottom: 1.25rem;
+}
+section.block > h2 {
+  font-size: 1.2rem; color: var(--accent); margin: 0.5rem 0 1rem;
+  padding-bottom: 0.4rem; border-bottom: 2px solid var(--accent-soft);
+}
+section.block > h3 {
+  font-size: 1rem; margin: 1.25rem 0 0.5rem;
+  color: var(--fg); font-weight: 600;
+}
+
+/* ---- Generic badge ---- */
+.badge {
+  display: inline-block;
+  font-size: 0.74rem; padding: 0.1rem 0.5rem;
+  border-radius: 3px; font-weight: 500;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.badge-green { background: var(--ok-bg); color: var(--ok); }
+.badge-amber { background: var(--warn-bg); color: var(--warn); }
+.badge-red { background: var(--bad-bg); color: var(--bad); }
+.badge-blue { background: var(--info-bg); color: var(--info); }
+.badge-gray { background: var(--gray-bg); color: var(--gray); }
+.badge-lavender { background: var(--lav-bg); color: var(--lav); }
+
+/* ---- Sub-grid (used in multiple sections) ---- */
+.sub-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem; margin-bottom: 1rem;
+}
+.sub.wide { grid-column: span 2; }
+.sub-label, .verdict-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin-bottom: 0.25rem;
+}
+.sub-val { font-size: 0.95rem; }
+.sub-val.big { font-size: 1.4rem; font-weight: 600; }
+.sub-sub { font-size: 0.78rem; color: var(--fg-muted); margin-top: 0.2rem; }
+
+/* ---- Prose block ---- */
+.prose-block {
+  background: var(--bg-muted); padding: 0.6rem 0.9rem;
+  border-radius: 4px; font-size: 0.92rem; margin: 0.3rem 0;
+}
+.prose-block .reasoning { margin-left: 0.5rem; }
+.quote-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin: 0.5rem 0 0.2rem;
+}
+blockquote.quote {
+  margin: 0; padding: 0.6rem 0.9rem;
+  background: var(--quote-bg); border-left: 3px solid var(--quote-border);
+  border-radius: 0 4px 4px 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.94rem; white-space: pre-wrap; word-wrap: break-word;
+}
+.claim-text { margin: 0.3rem 0 0; }
+
+/* ---- Tables ---- */
+table.compact {
+  width: 100%; border-collapse: collapse;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+  font-size: 0.86rem; margin: 0.5rem 0;
+}
+table.compact th, table.compact td {
+  text-align: left; padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border); vertical-align: top;
+}
+table.compact th {
+  background: var(--bg-muted); font-weight: 600;
+  font-size: 0.74rem; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--fg-muted);
+}
+table.compact tbody tr:last-child td { border-bottom: 0; }
+table.compact td.small, td.small { font-size: 0.82rem; color: var(--fg-muted); }
+.compact-list { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+.compact-list li { font-size: 0.88rem; margin-bottom: 0.25rem; }
+
+/* ---- Method cards ---- */
+.method-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--info); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.75rem;
+}
+.method-head, .te-head, .contra-head, .anat-head, .mod-head {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem;
+}
+.abs { margin: 0.5rem 0; }
+.ab {
+  font-size: 0.85rem; padding: 0.3rem 0.5rem;
+  background: var(--bg-muted); border-radius: 3px;
+  margin-bottom: 0.25rem;
+}
+.obs { margin: 0.4rem 0; }
+.te-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--warn); border-radius: 4px;
+  padding: 0.75rem 1rem; margin: 0.5rem 0;
+}
+.contra-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--bad); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+}
+.anat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--info); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+}
+.mod-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--lav); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.75rem;
+}
+.mod-states {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 0.6rem; margin: 0.5rem 0;
+}
+.state-cell {
+  background: var(--bg-muted); padding: 0.45rem 0.7rem; border-radius: 4px;
+}
+.state-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin-bottom: 0.2rem;
+}
+.state-val { font-size: 0.88rem; }
+.state-arrow { font-size: 1.5rem; color: var(--accent); text-align: center; }
+
+/* ---- Filters ---- */
+.filters-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.4rem 1rem;
+}
+.filter-row {
+  display: flex; justify-content: space-between;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px dashed var(--border); align-items: center;
+  font-size: 0.85rem;
+}
+.filter-key { color: var(--fg-muted); font-family: ui-monospace, monospace; }
+
+/* ---- Risks ---- */
+.risks-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+.risk-card {
+  background: var(--bg-muted); border-radius: 4px;
+  padding: 0.75rem 1rem;
+}
+.risk-row {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+  margin-bottom: 0.4rem;
+}
+.risk-label { font-weight: 600; font-size: 0.92rem; }
+.risk-detail {
+  font-size: 0.82rem; color: var(--fg); margin: 0.3rem 0;
+}
+
+/* ---- Evidence cards ---- */
+.evidence-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent); border-radius: 6px;
+  padding: 0.9rem 1.2rem; margin-bottom: 1rem;
+  scroll-margin-top: 1.5rem;
+}
+.evi-header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem; }
+.evi-id-row {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  align-items: center; font-size: 0.9rem;
+}
+.evi-id {
+  font-family: ui-monospace, monospace; font-weight: 600;
+  background: var(--accent-soft); color: var(--accent);
+  padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.85rem;
+}
+.section {
+  color: var(--fg-muted); font-size: 0.83rem; font-style: italic;
+}
+.section code { font-style: normal; font-family: ui-monospace, monospace; }
+.badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+a.src {
+  text-decoration: none; color: var(--accent);
+  font-family: ui-monospace, monospace; font-size: 0.85rem;
+}
+a.src:hover { text-decoration: underline; }
+span.src {
+  font-family: ui-monospace, monospace; font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+/* ---- Citation chips ---- */
+.evi-chips { display: inline-flex; flex-wrap: wrap; gap: 0.2rem; }
+a.evi-chip {
+  background: var(--accent-soft); color: var(--accent);
+  font-family: ui-monospace, monospace; font-size: 0.74rem;
+  padding: 0.05rem 0.35rem; border-radius: 3px;
+  text-decoration: none;
+}
+a.evi-chip:hover { background: var(--accent); color: white; }
+.citations { margin-top: 0.4rem; }
+.muted { color: var(--fg-muted); }
+.muted.small, .small { font-size: 0.82rem; }
+
+/* ---- Risks list ---- */
+ul.risks { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+ul.risks li { font-size: 0.88rem; margin-bottom: 0.2rem; }
+
+/* ---- Timing section ---- */
+.timing-bar {
+  display: flex; width: 100%; height: 28px;
+  border-radius: 4px; overflow: hidden;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  margin: 0.5rem 0 0.4rem;
+}
+.bar-seg { height: 100%; }
+.bar-legend-row {
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+.bar-legend { display: inline-flex; align-items: center; gap: 0.3rem; }
+details.timing-detail { margin-top: 0.5rem; }
+details.timing-detail summary {
+  cursor: pointer; color: var(--fg-muted);
+  font-size: 0.86rem; padding: 0.3rem 0;
+}
+table.timing-table td.num, table.timing-table th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+table.timing-table code {
+  font-family: ui-monospace, monospace; font-size: 0.78rem;
+}
+
+footer {
+  margin-top: 2rem; padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--fg-muted); font-size: 0.78rem; text-align: center;
+}
+</style>
+</head>
+<body>
+<main>
+  
+    <header class="record-banner">
+      <h1>WT1</h1>
+      <div class="id-row">
+        <span class="id"><span class="id-key">UniProt</span> P19544</span>
+        <span class="id"><span class="id-key">HGNC</span> HGNC:12796</span>
+        <span class="id"><span class="id-key">Ensembl</span> ENSG00000184937</span>
+        <span class="id"><span class="id-key">NCBI</span> 7490</span>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict">
+          <div class="verdict-label">surface accessibility</div>
+          <div class="verdict-val"><span class="badge badge-red">low</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">evidence grade</div>
+          <div class="verdict-val"><span class="badge badge-red">weak</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">confidence</div>
+          <div class="verdict-val"><span class="badge badge-amber">moderate</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">subcategory</div>
+          <div class="verdict-val"><span class="badge badge-blue">other</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">evidence rows</div>
+          <div class="verdict-val big">23</div>
+          <div class="verdict-sub">17 primary · 6 secondary</div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">generated</div>
+          <div class="verdict-val small">2026-05-17 02:40 UTC</div>
+          <div class="verdict-sub">claude-sonnet-4-6</div>
+        </div>
+      </div>
+    </header>
+    
+
+    <section class="block">
+      <h2>Executive summary</h2>
+      <div class="prose-block">WT1 is a nuclear/cytoplasmic transcription factor with no credible direct surface protein accessibility. All surface-engagement evidence in the ledger concerns processed WT1 peptide fragments presented via MHC-I (pMHC) at extremely low density (&lt;100 sites/cell by flow cytometry), not the WT1 protein itself. A2 confirms exclusively nuclear/cytoplasmic localization across podocytes, mesothelial cells, and CAFs—all detected only with permeabilization. There is no transmembrane domain, no shed or secreted form, and no surface subdomain evidence. Therapeutic strategies target the pMHC complex, not WT1 protein directly.</div>
+      <div class="sub-grid">
+        <div class="sub">
+          <div class="sub-label">state dependence</div>
+          <div class="sub-val">low</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">evidence grade summary</div>
+          <div class="sub-val">weak</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">headline risks</div>
+          <div class="sub-val"><ul class='risks'><li>low_endogenous_expression</li><li>other</li><li>antibody_validation_weak</li></ul></div>
+        </div>
+      </div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a></span></div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Confidence reasoning</h2>
+      <div class="prose-block">
+        <span class="badge badge-amber">moderate</span>
+        <span class="reasoning">A1 grades evidence as &#x27;weak&#x27;: no validated direct surface protein detection, one direct flow cytometry result explicitly refuting measurable surface pMHC density (&lt;100 sites/cell), and only secondary/methodological mass-spec and review claims. A2 adds strong multi-tissue IHC/IF showing exclusively nuclear/cytoplasmic localization in all relevant cell types (permeabilized assays only). No A2 contradiction upgrades the verdict. State dependence is low—WT1 remains intracellular regardless of developmental stage or disease state. Confidence is &#x27;moderate&#x27; rather than &#x27;low&#x27; because the biology is well-characterized (consistent nuclear TF identity across multiple primary-tissue studies) and the &#x27;weak&#x27; surface evidence grade reflects absence of surface evidence rather than conflicting findings.</span>
+      </div>
+    </section>
+    
+
+    <section class="block timing-block">
+      <h2>Step timeline · 355.3s wall clock · $1.0284
+          <span class="muted small">
+            (sum-of-steps 615.1s · parallelism 1.7×)
+          </span>
+      </h2>
+      <div class="timing-bar" role="img"
+           aria-label="phase breakdown of 355.3s total runtime">
+        <div class="bar-seg badge-blue" style="width:48.72%" title="plan_trim_select_a1 — 299.7s (48.7%) · $0.3757"></div><div class="bar-seg badge-lavender" style="width:30.18%" title="plan_trim_select_a2 — 185.7s (30.2%) · $0.2985"></div><div class="bar-seg badge-green" style="width:9.20%" title="builders_a1 — 56.6s (9.2%) · $0.1192"></div><div class="bar-seg badge-amber" style="width:8.14%" title="builders_a2 — 50.1s (8.1%) · $0.1367"></div><div class="bar-seg badge-red" style="width:3.75%" title="synthesizer — 23.1s (3.8%) · $0.0983"></div><div class="bar-seg badge-gray" style="width:0.00%" title="post — 0.0s (0.0%) · $0.0000"></div>
+      </div>
+      <div class="bar-legend-row"><span class="bar-legend"><span class="badge badge-blue">plan_trim_select_a1</span> <span class="muted small">299.7s · 48.7% · $0.3757 (36.5%)</span></span><span class="bar-legend"><span class="badge badge-lavender">plan_trim_select_a2</span> <span class="muted small">185.7s · 30.2% · $0.2985 (29.0%)</span></span><span class="bar-legend"><span class="badge badge-green">builders_a1</span> <span class="muted small">56.6s · 9.2% · $0.1192 (11.6%)</span></span><span class="bar-legend"><span class="badge badge-amber">builders_a2</span> <span class="muted small">50.1s · 8.1% · $0.1367 (13.3%)</span></span><span class="bar-legend"><span class="badge badge-red">synthesizer</span> <span class="muted small">23.1s · 3.8% · $0.0983 (9.6%)</span></span><span class="bar-legend"><span class="badge badge-gray">post</span> <span class="muted small">0.0s · 0.0% · $0.0000 (0.0%)</span></span></div>
+      <details class="timing-detail">
+        <summary>per-step detail (108 steps, sorted by elapsed)</summary>
+        <table class="compact timing-table">
+          <thead>
+            <tr>
+              <th>Step</th><th>Phase</th><th>Elapsed</th><th>%</th>
+              <th>Items</th><th>Model</th><th>Tokens (in→out)</th><th>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>selector:iter1</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>62.95s</td><td class='num small'>10.2%</td><td class='num small'>21</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>17,079 → 3,959</td><td class='num small'>$0.1106</td></tr><tr><td><code>selector:iter1</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>51.12s</td><td class='num small'>8.3%</td><td class='num small'>19</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>16,854 → 3,553</td><td class='num small'>$0.1039</td></tr><tr><td><code>selector:iter0</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>48.41s</td><td class='num small'>7.9%</td><td class='num small'>15</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>16,403 → 2,766</td><td class='num small'>$0.0907</td></tr><tr><td><code>builder:accessibility_modulation</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>30.34s</td><td class='num small'>4.9%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>7,367 → 1,720</td><td class='num small'>$0.0479</td></tr><tr><td><code>builder:methods</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>27.74s</td><td class='num small'>4.5%</td><td class='num small'>12</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>9,149 → 1,969</td><td class='num small'>$0.0570</td></tr><tr><td><code>selector:iter0</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>24.26s</td><td class='num small'>3.9%</td><td class='num small'>5</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>15,250 → 1,079</td><td class='num small'>$0.0619</td></tr><tr><td><code>synthesizer</code></td><td><span class="badge badge-red">synthesizer</span></td><td class='num'>23.10s</td><td class='num small'>3.8%</td><td class='num small'>23</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>2 → 1,312</td><td class='num small'>$0.0983</td></tr><tr><td><code>planner</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>22.07s</td><td class='num small'>3.6%</td><td class='num small'>—</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>4,808 → 1,076</td><td class='num small'>$0.0306</td></tr><tr><td><code>planner</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>19.06s</td><td class='num small'>3.1%</td><td class='num small'>—</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>5,224 → 959</td><td class='num small'>$0.0301</td></tr><tr><td><code>builder:therapeutic_engagement</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>10.81s</td><td class='num small'>1.8%</td><td class='num small'>12</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>6,239 → 506</td><td class='num small'>$0.0263</td></tr><tr><td><code>builder:evidence_grade</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>10.65s</td><td class='num small'>1.7%</td><td class='num small'>12</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>6,918 → 449</td><td class='num small'>$0.0275</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>8.13s</td><td class='num small'>1.3%</td><td class='num small'>5</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>builder:cell_types</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>7.84s</td><td class='num small'>1.3%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>5,477 → 634</td><td class='num small'>$0.0259</td></tr><tr><td><code>builder:tissues</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>7.82s</td><td class='num small'>1.3%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>5,773 → 558</td><td class='num small'>$0.0257</td></tr><tr><td><code>trim:iter1:PMC:PMC12996584</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>7.69s</td><td class='num small'>1.2%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,815 → 401</td><td class='num small'>$0.0048</td></tr><tr><td><code>builder:contradictions</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>7.41s</td><td class='num small'>1.2%</td><td class='num small'>12</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>1,363 → 289</td><td class='num small'>$0.0084</td></tr><tr><td><code>trim:iter1:PMC:PMC11782696</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>6.12s</td><td class='num small'>1.0%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,059 → 413</td><td class='num small'>$0.0051</td></tr><tr><td><code>trim:iter1:PMC:PMC12229403</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>6.00s</td><td class='num small'>1.0%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,672 → 174</td><td class='num small'>$0.0035</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.97s</td><td class='num small'>1.0%</td><td class='num small'>3</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter0:PMC:PMC11782696</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.93s</td><td class='num small'>1.0%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,059 → 414</td><td class='num small'>$0.0051</td></tr><tr><td><code>trim:iter1:PMC:PMC13059331</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>5.80s</td><td class='num small'>0.9%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,077 → 473</td><td class='num small'>$0.0054</td></tr><tr><td><code>trim:iter0:PMC:PMC10262054</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.67s</td><td class='num small'>0.9%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,466 → 172</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter1:PMC:PMC12815101</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.55s</td><td class='num small'>0.9%</td><td class='num small'>31</td><td class='small'>claude-haiku-4-5</td><td class='num small'>5,282 → 397</td><td class='num small'>$0.0073</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.54s</td><td class='num small'>0.9%</td><td class='num small'>1</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.48s</td><td class='num small'>0.9%</td><td class='num small'>0</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter0:PMC:PMC12307914</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.33s</td><td class='num small'>0.9%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,495 → 435</td><td class='num small'>$0.0047</td></tr><tr><td><code>trim:iter0:PMC:PMC13059331</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>5.09s</td><td class='num small'>0.8%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,077 → 413</td><td class='num small'>$0.0051</td></tr><tr><td><code>trim:iter1:PMC:PMC12307914</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.63s</td><td class='num small'>0.8%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,495 → 357</td><td class='num small'>$0.0043</td></tr><tr><td><code>trim:iter1:PMC:PMC12307914</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.61s</td><td class='num small'>0.7%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,773 → 353</td><td class='num small'>$0.0045</td></tr><tr><td><code>trim:iter0:PMC:PMC12307914</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.48s</td><td class='num small'>0.7%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,773 → 388</td><td class='num small'>$0.0047</td></tr><tr><td><code>trim:iter1:PMC:PMC10275365</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.29s</td><td class='num small'>0.7%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,660 → 354</td><td class='num small'>$0.0044</td></tr><tr><td><code>trim:iter1:PMC:PMC12699215</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.10s</td><td class='num small'>0.7%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,677 → 279</td><td class='num small'>$0.0041</td></tr><tr><td><code>trim:iter1:PMC:PMC9400735</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.97s</td><td class='num small'>0.6%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,663 → 214</td><td class='num small'>$0.0037</td></tr><tr><td><code>trim:iter1:PMC:PMC13026238</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.92s</td><td class='num small'>0.6%</td><td class='num small'>30</td><td class='small'>claude-haiku-4-5</td><td class='num small'>4,776 → 205</td><td class='num small'>$0.0058</td></tr><tr><td><code>trim:iter0:PMC:PMC13059331</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.90s</td><td class='num small'>0.6%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,799 → 306</td><td class='num small'>$0.0043</td></tr><tr><td><code>trim:iter0:PMC:PMC12996584</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.90s</td><td class='num small'>0.6%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,537 → 315</td><td class='num small'>$0.0041</td></tr><tr><td><code>trim:iter0:PMC:PMC11021511</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.83s</td><td class='num small'>0.6%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,700 → 255</td><td class='num small'>$0.0040</td></tr><tr><td><code>trim:iter1:PMC:PMC12809115</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.79s</td><td class='num small'>0.6%</td><td class='num small'>30</td><td class='small'>claude-haiku-4-5</td><td class='num small'>4,637 → 505</td><td class='num small'>$0.0072</td></tr><tr><td><code>trim:iter1:PMC:PMC12887804</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.70s</td><td class='num small'>0.6%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,345 → 175</td><td class='num small'>$0.0032</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.66s</td><td class='num small'>0.6%</td><td class='num small'>11</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter1:PMC:PMC12229403</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.55s</td><td class='num small'>0.6%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,394 → 282</td><td class='num small'>$0.0038</td></tr><tr><td><code>trim:iter0:PMC:PMC12434405</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.51s</td><td class='num small'>0.6%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,449 → 240</td><td class='num small'>$0.0036</td></tr><tr><td><code>trim:iter0:PMC:PMC12136047</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.40s</td><td class='num small'>0.6%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,328 → 253</td><td class='num small'>$0.0036</td></tr><tr><td><code>trim:iter0:PMC:PMC12887804</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.38s</td><td class='num small'>0.5%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,345 → 186</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter0:PMC:PMC12815101</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.37s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,618 → 261</td><td class='num small'>$0.0039</td></tr><tr><td><code>trim:iter1:PMC:PMC13059331</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.35s</td><td class='num small'>0.5%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,799 → 296</td><td class='num small'>$0.0043</td></tr><tr><td><code>trim:iter0:PMC:PMC12699215</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.32s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,399 → 227</td><td class='num small'>$0.0035</td></tr><tr><td><code>search:gene_literature:gene2pubmed</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.31s</td><td class='num small'>0.5%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter0:PMC:PMC12229403</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.29s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,394 → 261</td><td class='num small'>$0.0037</td></tr><tr><td><code>trim:iter1:PMID:41313003</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.25s</td><td class='num small'>0.5%</td><td class='num small'>8</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,153 → 399</td><td class='num small'>$0.0051</td></tr><tr><td><code>trim:iter1:PMC:PMC12996584</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.24s</td><td class='num small'>0.5%</td><td class='num small'>33</td><td class='small'>claude-haiku-4-5</td><td class='num small'>5,139 → 350</td><td class='num small'>$0.0069</td></tr><tr><td><code>trim:iter1:PMC:PMC12699215</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.15s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,399 → 192</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC11021511</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.11s</td><td class='num small'>0.5%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,700 → 188</td><td class='num small'>$0.0036</td></tr><tr><td><code>trim:iter1:PMC:PMC12136047</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.07s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,328 → 225</td><td class='num small'>$0.0035</td></tr><tr><td><code>trim:iter0:PMC:PMC8983142</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.92s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,335 → 203</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC12815101</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.89s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,618 → 151</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC12434405</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.88s</td><td class='num small'>0.5%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,449 → 176</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter0:PMC:PMC12136047</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.87s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,606 → 209</td><td class='num small'>$0.0037</td></tr><tr><td><code>trim:iter1:PMC:PMC11264588</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.86s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,351 → 183</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter0:PMC:PMC9400735</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.81s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,385 → 174</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter0:PMC:PMC11264588</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.81s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,351 → 197</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter0:PMC:PMC12956013</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.80s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,610 → 181</td><td class='num small'>$0.0035</td></tr><tr><td><code>trim:iter0:PMC:PMC12229403</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.75s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,672 → 212</td><td class='num small'>$0.0037</td></tr><tr><td><code>builder:subcellular_localization</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>2.65s</td><td class='num small'>0.4%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>6,153 → 100</td><td class='num small'>$0.0200</td></tr><tr><td><code>trim:iter0:PMC:PMC12956013</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.62s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,332 → 175</td><td class='num small'>$0.0032</td></tr><tr><td><code>trim:iter0:PMC:PMC12042868</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.48s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,609 → 132</td><td class='num small'>$0.0033</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.47s</td><td class='num small'>0.4%</td><td class='num small'>13</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter1:PMC:PMC12136047</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.47s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,606 → 162</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC12956013</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.38s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,332 → 157</td><td class='num small'>$0.0031</td></tr><tr><td><code>trim:iter1:PMC:PMC12042868</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.35s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,609 → 132</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter1:PMC:PMC9400735</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.31s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,385 → 153</td><td class='num small'>$0.0032</td></tr><tr><td><code>trim:iter0:PMC:PMC12699215</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.25s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,677 → 145</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC12956013</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.24s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,610 → 153</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter0:PMC:PMC12996584</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.22s</td><td class='num small'>0.4%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,815 → 226</td><td class='num small'>$0.0039</td></tr><tr><td><code>trim:iter0:PMC:PMC10275365</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.20s</td><td class='num small'>0.4%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,660 → 227</td><td class='num small'>$0.0038</td></tr><tr><td><code>trim:iter1:PMC:PMC8983142</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.19s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,335 → 164</td><td class='num small'>$0.0032</td></tr><tr><td><code>trim:iter0:PMC:PMC9400735</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.15s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,663 → 160</td><td class='num small'>$0.0035</td></tr><tr><td><code>trim:iter1:PMC:PMC12042868</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.11s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,331 → 135</td><td class='num small'>$0.0030</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.04s</td><td class='num small'>0.3%</td><td class='num small'>8</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter0:PMC:PMC11264588</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.04s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,629 → 97</td><td class='num small'>$0.0031</td></tr><tr><td><code>trim:iter1:PMC:PMC10262054</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.86s</td><td class='num small'>0.3%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,466 → 162</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter0:PMC:PMC12042868</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.83s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,331 → 127</td><td class='num small'>$0.0030</td></tr><tr><td><code>trim:iter0:PMC:PMC12815101</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.78s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,340 → 103</td><td class='num small'>$0.0029</td></tr><tr><td><code>trim:iter1:PMC:PMC7299427</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.70s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,354 → 106</td><td class='num small'>$0.0029</td></tr><tr><td><code>trim:iter1:PMC:PMC11264588</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>1.67s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,629 → 98</td><td class='num small'>$0.0031</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>1.62s</td><td class='num small'>0.3%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.60s</td><td class='num small'>0.3%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>builder:anatomical_accessibility</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>1.41s</td><td class='num small'>0.2%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>5,676 → 9</td><td class='num small'>$0.0172</td></tr><tr><td><code>trim:iter0:PMC:PMC7299427</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.18s</td><td class='num small'>0.2%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,354 → 102</td><td class='num small'>$0.0029</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.11s</td><td class='num small'>0.2%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.80s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.75s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.47s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_fulltext</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.46s</td><td class='num small'>0.1%</td><td class='num small'>30</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_abstract</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.41s</td><td class='num small'>0.1%</td><td class='num small'>8</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.40s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.11s</td><td class='num small'>0.0%</td><td class='num small'>3</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.08s</td><td class='num small'>0.0%</td><td class='num small'>11</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.08s</td><td class='num small'>0.0%</td><td class='num small'>5</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.06s</td><td class='num small'>0.0%</td><td class='num small'>0</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_fulltext</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.01s</td><td class='num small'>0.0%</td><td class='num small'>30</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.01s</td><td class='num small'>0.0%</td><td class='num small'>0</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_fulltext</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.01s</td><td class='num small'>0.0%</td><td class='num small'>30</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:gene2pubmed</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_fulltext</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>30</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>evidence_promotion</code></td><td><span class="badge badge-gray">post</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>23</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>deterministic_features</code></td><td><span class="badge badge-gray">post</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>—</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>filters_derivation</code></td><td><span class="badge badge-gray">post</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>23</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr>
+          </tbody>
+        </table>
+      </details>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 1 — Surface evidence</h2>
+      <div class="sub-grid">
+        <div class="sub">
+          <div class="sub-label">evidence grade</div>
+          <div class="sub-val"><span class="badge badge-red">weak</span></div>
+        </div>
+        <div class="sub wide">
+          <div class="sub-label">grade rationale</div>
+          <div class="sub-val">No claim in this ledger directly demonstrates WT1 protein surface accessibility via a validated direct method (live-cell flow cytometry of native WT1, surface biotinylation, non-permeabilized IF, or IHC membranous staining). The critical flow cytometry claim (a1_evi_01) explicitly REFUTES surface detection of WT1 peptide/MHC-I complexes at physiological densities. All other flow cytometry evidence concerns CAR constructs or HLA-A2 on effector cells—not WT1 protein itself. The mass spectrometry surfaceome references (a1_evi_09, a1_evi_10, a1_evi_12) are secondary/methodological framings with no primary WT1-specific surface result. The immunofluorescence antibody reference (a1_evi_11) explicitly uses permeabilized/fixed tissue, indicating intracellular detection. The sole positive claim is a weak review assertion (a1_evi_08). The overall picture is that WT1 is a nuclear transcription factor with no credible direct surface protein evidence; all therapeutic engagement occurs via peptide/MHC-I presentation, not surface WT1 protein.</div>
+        </div>
+      </div>
+
+      <h3>Methods (5)</h3>
+      
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">flow_cytometry</span>
+        <span class="badge badge-blue">live_cell_flow</span>
+        <span class="badge badge-gray">perm: live_cell</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-amber">weak_or_ambiguous</span>
+        <span class="badge badge-amber">claim: unclear</span>
+      </div>
+      <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Tumor cells (unspecified line) — endogenous WT1 peptide/MHC-I complex density below flow cytometry detection threshold (~&lt;100 sites per cell)</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-gray">absent</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">flow_cytometry</span>
+        <span class="badge badge-blue">live_cell_flow</span>
+        <span class="badge badge-gray">perm: live_cell</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-green">direct_surface_accessibility</span>
+        <span class="badge badge-amber">claim: surface_accessible</span>
+      </div>
+      <div class="abs"><div class='ab'><strong>ESK3</strong> · monoclonal · epitope: conformational · x-react: TCR-mimic antibody recognizing WT1 peptide/MHC-I complex (not WT1 protein directly); mouse IgG1 isotype. Targets peptide-MHC surface complex, not intracellular WT1.</div></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>T2 cells (TAP-deficient APCs) pulsed with WT1 wild-type VLD or mutated peptides; binding of ESK3 antibody to surface peptide/MHC-I complexes measured by flow cytometry</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">flow_cytometry</span>
+        <span class="badge badge-blue">live_cell_flow</span>
+        <span class="badge badge-gray">perm: live_cell</span>
+        <span class="badge badge-gray">system: overexpression</span>
+        <span class="badge badge-amber">weak_or_ambiguous</span>
+        <span class="badge badge-amber">claim: unclear</span>
+      </div>
+      <div class="abs"><div class='ab'><strong>anti-HLA-A2</strong> · epitope: extracellular</div><div class='ab'><strong>anti-CAR-WT1 (F(ab&#x27;)2)</strong> · epitope: extracellular · x-react: Detects surface-expressed CAR construct targeting WT1 peptide/MHC-I; not detecting WT1 protein itself.</div></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>NK-92 cells confirmed for surface HLA-A2 expression by flow cytometry; used as platform for CAR-WT1 engineering</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr><tr><td>NK-92 cells transduced with CAR-WT1; surface CAR expression required presence of human CD3 complex; FACS enrichment of CAR-WT1+ cells performed with or without surface CD3</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></td></tr><tr><td>CAR-WT1 T cells (primary human T cells engineered with CAR-WT1); surface CAR expression confirmed by F(ab&#x27;)2 antibody flow cytometry</td><td><span class="badge badge-gray">primary_human_cell</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">mass_spec</span>
+        <span class="badge badge-blue">whole_cell_proteomics</span>
+        <span class="badge badge-gray">perm: unknown</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-amber">weak_or_ambiguous</span>
+        <span class="badge badge-amber">claim: unclear</span>
+      </div>
+      <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>AML patient blasts — surface antigen candidates including WT1-related targets identified by mining flow cytometry and mass spectrometry surfaceome data from large AML cohort; WT1 referenced as candidate therapeutic antigen. Genetic alterations in AML alter blast surfaceome; surface antigen abundance relevant for CAR-T/ADC design.</td><td><span class="badge badge-gray">patient_sample</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">immunofluorescence</span>
+        <span class="badge badge-blue">permeabilized_IF</span>
+        <span class="badge badge-gray">perm: permeabilized</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-amber">expression_only</span>
+        <span class="badge badge-amber">claim: intracellular_pool</span>
+      </div>
+      <div class="abs"><div class='ab'><strong>anti-WT1 (ab89901)</strong> · clone ab89901 · Abcam · monoclonal · validation: vendor_claim_only (weak) · x-react: Rabbit monoclonal anti-WT1, used at 1:500 dilution for IF or 1:1500 for western blotting; no surface-specific fractionation noted. Detects intracellular WT1 in gonadal/germ cell biology context.</div></div>
+      <div class="obs"><em class='muted small'>no expression observations</em></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_11">a1_evi_11</a></span></div>
+    </div>
+    
+
+      <h3>Non-surface expression (1)</h3>
+      <div class="muted small">RNA / bulk-protein / non-fractionated observations — held
+      separately so expression isn't read as accessibility.</div>
+      <table class='compact'><thead><tr><th>context</th><th>sample</th><th>measurement</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Immunofluorescence/western blot detection of WT1 protein in gonadal/germ cell biology tissue sections using rabbit monoclonal anti-WT1 (ab89901, Abcam) with permeabilization—intracellular detection only</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-lavender">IHC_protein</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_11">a1_evi_11</a></span></td></tr></tbody></table>
+
+      <h3>Therapeutic engagement</h3>
+      
+    <div class="te-card">
+      <div class="te-head">
+        <span class="badge badge-amber">stage: preclinical_in_vivo</span>
+      </div>
+      <div class="quote-label">description</div>
+      <div class="prose-block">WT1 is targeted as a tumor-associated intracellular antigen via TCR-mimic strategies. The ledger documents: (1) CAR-T cells bearing an anti-WT1 TCR-mimic CAR (targeting WT1 peptide/MHC-I complexes) engineered in both T cells and NK-92 cells (PMC12996584); (2) the TCR-mimic antibody ESK3 (mouse IgG1) used to detect WT1 peptide/HLA-A2 complexes (PMC12815101); (3) WT1 listed as a promising CAR-T target for AML alongside other antigens (PMC12229403); (4) AML surfaceomics atlases incorporating WT1 as a candidate immunotherapy target (PMC13059331). No approved drug or named clinical trial is cited in the ledger.</div>
+      <div class="quote-label">surface-form rationale</div>
+      <div class="prose-block">WT1 is a nuclear transcription factor with no transmembrane or secreted isoform documented in this ledger. Therapeutics engage it exclusively via processed WT1 peptide fragments presented by MHC-I (HLA-A2) at the tumor cell surface — a pMHC complex, not the WT1 protein itself. Endogenous antigen density is below flow cytometry detection (~&lt;100 sites/cell), underscoring that only the pMHC surface form is the drug-accessible target.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a></span></div>
+    </div>
+    
+
+      <h3>Contradicting evidence (1)</h3>
+      
+    <div class="contra-card">
+      <div class="contra-head">
+        <span class="badge badge-red">other</span>
+        <span class="badge badge-amber">severity: moderate</span>
+      </div>
+      <div class="prose-block">Flow cytometry on live tumor cells failed to detect WT1-derived peptide/MHC-I complexes at the cell surface, with endogenous antigen density estimated to be below ~100 sites per cell — the sensitivity floor of flow cytometry. This indicates that physiological WT1 surface presentation is too sparse to be measured by standard flow-based methods, raising a meaningful caveat for claims of surface accessibility.</div>
+      <div class='quote-label'>likely explanation</div><div class='prose-block'>WT1 is a nuclear transcription factor expressed at low levels; the peptide/MHC-I complexes it generates at the cell surface reflect normal antigen-processing turnover and are likely present but at sub-detection densities (&lt;100 copies/cell). This is a sensitivity limitation of flow cytometry rather than proof of complete absence — TCR-based or mass-spectrometry immunopeptidomics approaches can detect such low-density targets — but it does temper enthusiasm for antibody- or ADC-based surface targeting strategies that require higher epitope copy numbers.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></div>
+    </div>
+    
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 2 — Biological context</h2>
+
+      <h3>Tissues (4)</h3>
+      <table class='compact'><thead><tr><th>tissue</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>kidney glomerulus</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>mature podocytes, parietal epithelial cells (PEC) and progenitors, cap mesenchyme, primordial podocytes</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>kidney glomerulus</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>parietal epithelial cells (activated), glomerular cells</td><td class='small'>activated into spindle cell crescents (crescentic glomerulonephritis), podocyte hyperplasia (collapsing glomerulopathy)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>mesothelial cells, fibroblasts, fibroblast-like cells (PDGFRα/β+)</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'>cancer-associated fibroblasts (CAFs), inflammatory cancer-associated fibroblasts (iCAFs)</td><td class='small'>inflammatory/activated CAF state</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
+
+      <h3>Cell types (8)</h3>
+      <table class='compact'><thead><tr><th>cell type</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>podocytes</strong></td><td><code>—</code></td><td class='small'>kidney glomerulus, kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>cap mesenchyme</strong></td><td><code>—</code></td><td class='small'>kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a></span></td></tr><tr><td><strong>parietal epithelial cells</strong></td><td><code>—</code></td><td class='small'>kidney glomerulus</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>tubular epithelial cells</strong></td><td><code>—</code></td><td class='small'>kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>mesothelial cells</strong></td><td><code>—</code></td><td class='small'>pancreas, pancreas (mesothelial edge)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a></span></td></tr><tr><td><strong>fibroblasts</strong></td><td><code>—</code></td><td class='small'>pancreas, pancreas (stromal edge)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>cancer-associated fibroblasts (CAFs)</strong></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr><tr><td><strong>inflammatory cancer-associated fibroblasts (iCAFs)</strong></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
+
+
+
+      <h3>Subcellular localization</h3>
+      
+    <div class="sub-grid">
+      <div class="sub">
+        <div class="sub-label">primary compartment</div>
+        <div class="sub-val"><span class="badge badge-amber">nucleus</span></div>
+      </div>
+      <div class="sub wide">
+        <div class="sub-label">dual localization</div>
+        <ul class="compact-list"><li>cytosol — in mature podocytes <span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a></span></li></ul>
+      </div>
+      <div class="sub wide">
+        <div class="sub-label">membrane subdomains</div>
+        <ul class="compact-list"><li class='muted small'>none</li></ul>
+      </div>
+    </div>
+    
+
+      <h3>Anatomical accessibility (0)</h3>
+      <em class='muted'>no anatomical-accessibility observations</em>
+
+      <h3>Accessibility modulation (4)</h3>
+      
+    <div class="mod-card">
+      <div class="mod-head">
+        <span class="badge badge-blue">developmental_stage</span>
+        
+      </div>
+      <div class="mod-states">
+        <div class="state-cell">
+          <div class="state-label">baseline</div>
+          <div class="state-val">Cap mesenchyme and tubular epithelial precursors in fetal kidney (mesonephros/metanephros)</div>
+        </div>
+        <div class="state-arrow">→</div>
+        <div class="state-cell">
+          <div class="state-label">modulating state</div>
+          <div class="state-val">Mature glomerular podocytes and parietal epithelial cells in adult kidney</div>
+        </div>
+      </div>
+      <div class="quote-label">change</div>
+      <div class="prose-block">WT1 expression is present from cap mesenchyme stage through podocyte maturation and persists in adult podocytes and PECs; expression is gated across developmental windows from fetal to adult kidney.</div>
+      <div class="quote-label">accessibility implication</div>
+      <div class="prose-block">WT1 is a nuclear/cytoplasmic transcription factor detected only in permeabilized/fixed tissue; binder access is restricted to permeabilized cells at all developmental stages. No surface exposure is documented.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></div>
+    </div>
+    
+    <div class="mod-card">
+      <div class="mod-head">
+        <span class="badge badge-blue">tissue_restricted_surface</span>
+        <span class="badge badge-blue">lineage: epithelial</span>
+      </div>
+      <div class="mod-states">
+        <div class="state-cell">
+          <div class="state-label">baseline</div>
+          <div class="state-val">Non-podocyte, non-mesothelial cells; most somatic tissues lack WT1 expression</div>
+        </div>
+        <div class="state-arrow">→</div>
+        <div class="state-cell">
+          <div class="state-label">modulating state</div>
+          <div class="state-val">Mature glomerular podocytes and peritoneal mesothelial cells (kidney and pancreas)</div>
+        </div>
+      </div>
+      <div class="quote-label">change</div>
+      <div class="prose-block">WT1 protein expression is restricted to glomerular podocytes, parietal epithelial cells, and mesothelial cells; absent from most other cell types in kidney tubules and pancreatic parenchyma.</div>
+      <div class="quote-label">accessibility implication</div>
+      <div class="prose-block">As an intracellular transcription factor (nuclear and cytoplasmic), WT1 is inaccessible at the cell surface in any lineage; tissue restriction defines which permeabilized cell populations are targetable, not surface accessibility.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></div>
+    </div>
+    
+    <div class="mod-card">
+      <div class="mod-head">
+        <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
+      </div>
+      <div class="mod-states">
+        <div class="state-cell">
+          <div class="state-label">baseline</div>
+          <div class="state-val">Normal mouse/human pancreas: WT1+ cells confined to mesothelial layer at tissue edge and rare PDGFRα/β+ stromal fibroblasts</div>
+        </div>
+        <div class="state-arrow">→</div>
+        <div class="state-cell">
+          <div class="state-label">modulating state</div>
+          <div class="state-val">Pancreatic ductal adenocarcinoma (PDAC) tumor microenvironment with expanded WT1+ cancer-associated fibroblasts (iCAFs)</div>
+        </div>
+      </div>
+      <div class="quote-label">change</div>
+      <div class="prose-block">WT1+ mesothelial/fibroblast progenitors expand and differentiate into inflammatory CAFs (iCAFs) in PDAC; the WT1-expressing cell population increases markedly relative to normal pancreas.</div>
+      <div class="quote-label">accessibility implication</div>
+      <div class="prose-block">WT1 remains an intracellular transcription factor in CAFs; no surface exposure is documented. Expansion of WT1+ iCAFs in tumor stroma increases the number of cells targetable by permeabilized-cell assays or in tumor biopsies.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></div>
+    </div>
+    
+    <div class="mod-card">
+      <div class="mod-head">
+        <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-lavender">trigger: immune_activation</span>
+      </div>
+      <div class="mod-states">
+        <div class="state-cell">
+          <div class="state-label">baseline</div>
+          <div class="state-val">Normal adult human kidney glomerulus with WT1+ quiescent podocytes and parietal epithelial cells (PECs)</div>
+        </div>
+        <div class="state-arrow">→</div>
+        <div class="state-cell">
+          <div class="state-label">modulating state</div>
+          <div class="state-val">Crescentic glomerulonephritis (CreGN) or collapsing glomerulopathy (ColGN) with activated PECs forming spindle cell crescents or hyperplastic podocytes</div>
+        </div>
+      </div>
+      <div class="quote-label">change</div>
+      <div class="prose-block">In inflammatory/sclerosing glomerular disease, WT1-expressing PECs are activated and proliferate into pathological cell populations (crescents in CreGN; hyperplastic podocytes in ColGN), altering the distribution and abundance of WT1+ cells.</div>
+      <div class="quote-label">accessibility implication</div>
+      <div class="prose-block">WT1 is nuclear/cytoplasmic and requires permeabilization for antibody access; disease-driven PEC activation expands the WT1+ cell population in glomeruli but does not create new surface exposure of WT1 protein.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></div>
+    </div>
+    
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 3 — Deterministic features</h2>
+      <div class="sub-grid">
+        <div class="sub">
+          <div class="sub-label">TM helix count</div>
+          <div class="sub-val big">0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">ECD length (aa)</div>
+          <div class="sub-val big">0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">ICD length (aa)</div>
+          <div class="sub-val big">0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">N / C terminus</div>
+          <div class="sub-val">
+            extracellular /
+            cytoplasmic
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">AFDB structure</div>
+          <div class="sub-val">AF-P19544-F1-model_v4</div>
+          <div class="sub-sub">
+            mean pLDDT 0.0 ·
+            disorder 0.0
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">orthologs (m / r / c)</div>
+          <div class="sub-val">0 / 0 / 0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">paralogs</div>
+          <div class="sub-val big">0</div>
+        </div>
+      </div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 4 — Filters (catalog rollups)</h2>
+      <div class="filters-grid"><div class="filter-row"><span class="filter-key">surface_accessibility</span><span class="badge badge-red">low</span></div><div class="filter-row"><span class="filter-key">evidence_grade</span><span class="badge badge-red">weak</span></div><div class="filter-row"><span class="filter-key">confidence</span><span class="badge badge-amber">moderate</span></div><div class="filter-row"><span class="filter-key">subcategory</span><span class="badge badge-gray">other</span></div><div class="filter-row"><span class="filter-key">expression_level</span><span class="badge badge-gray">moderate</span></div><div class="filter-row"><span class="filter-key">expression_breadth</span><span class="badge badge-gray">restricted</span></div><div class="filter-row"><span class="filter-key">surface_specificity</span><span class="badge badge-gray">mostly_intracellular</span></div><div class="filter-row"><span class="filter-key">evidence_density</span><span class="badge badge-gray">moderate</span></div><div class="filter-row"><span class="filter-key">ecd_accessibility_class</span><span class="badge badge-gray">none</span></div><div class="filter-row"><span class="filter-key">has_shed_form</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">has_secreted_form</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">has_restricted_subdomain</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">has_epitope_masking</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">requires_coreceptor</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">n-term extracellular</span><span class="badge badge-gray">True</span></div><div class="filter-row"><span class="filter-key">c-term extracellular</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">mouse ECD %id</span><span class="badge badge-gray">—</span></div><div class="filter-row"><span class="filter-key">cyno ECD %id</span><span class="badge badge-gray">—</span></div><div class="filter-row"><span class="filter-key">max paralog ECD %id</span><span class="badge badge-gray">—</span></div></div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 5 — Accessibility risks</h2>
+      <div class="risks-grid">
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>shed form</div><span class="badge badge-gray">absent</span><span class="badge badge-blue">severity: low</span><span class="badge badge-gray">strength: weak</span></div><div class='citations'><span class="muted small">(no citations)</span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>secreted form</div><span class="badge badge-gray">absent</span><span class="badge badge-blue">severity: low</span><span class="badge badge-gray">strength: weak</span></div><div class='citations'><span class="muted small">(no citations)</span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>epitope masking</div><span class="badge badge-gray">absent</span><span class="badge badge-amber">mechanism: —</span><span class="badge badge-gray">severity: none</span></div><div class='citations'><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>restricted subdomain</div><span class="badge badge-gray">absent</span><span class="badge badge-amber">domain: unknown</span><span class="badge badge-gray">severity: unknown</span></div><div class='risk-detail'>WT1 localizes to nucleus and cytoplasm in all documented cell types; no membrane subdomain localization (apical, junctional, etc.) is reported in the merged ledger. The question of subdomain restriction is moot given the absence of any surface form.</div><div class='citations'><span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a></span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>co-receptor</div><span class="badge badge-amber">none</span><span class="badge badge-gray">basis: co_expression_only</span></div><div class='risk-detail'>partners: —</div><div class='risk-detail'>WT1 is a nuclear transcription factor with no known surface-trafficking co-receptor requirement. The CD3 dependency observed for CAR-WT1 constructs in NK-92 cells pertains to the engineered CAR, not to WT1 protein itself. No evidence in the ledger implicates a co-receptor for WT1 protein surface expression.</div><div class='citations'><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a></span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>ECD size assessment</div><span class="badge badge-blue">—</span></div><div class='risk-detail'>WT1 is a nuclear transcription factor with no transmembrane domain documented in this ledger. There is no extracellular domain; any surface exposure occurs only as processed peptide fragments in MHC-I complexes, not as WT1 protein with an ECD.</div></div>
+      </div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 6 — Evidence ledger (23)</h2>
+      
+    <article class="evidence-card" id="a1_evi_01">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_01</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12815101/" target="_blank" rel="noopener">PMC:PMC12815101 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-red">refutes</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>This was likely due to the expected extremely low antigenic density naturally presented on the cell surface, which is below the sensitivity of flow cytometry (~&lt;100 sites per cell).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Flow cytometry was attempted to detect WT1-derived peptide/MHC-I complexes on the cell surface of tumor cells, but endogenous antigen density was found to be below the detection threshold of flow cytometry (~&lt;100 sites per cell), indicating that WT1 protein does not present measurable surface-accessible epitopes at physiological expression levels by this method. This is a critical methodological caveat for surface-accessibility claims.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_02">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_02</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12815101/" target="_blank" rel="noopener">PMC:PMC12815101 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Seven mutated peptides or wild-type VLD peptides were pulsed onto T2 cells, and the binding of the ESK3 mouse IgG1 was measured by flow cytometric analysis.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Flow cytometric analysis was used to measure binding of anti-WT1 TCR mimic antibody ESK3 (mouse IgG1) to WT1 peptide/MHC-I complexes pulsed onto T2 cells (TAP-deficient antigen-presenting cells). This is a surface-accessible peptide/MHC complex measurement, not direct WT1 protein surface expression—WT1 is intracellular and only surface-accessible as processed peptide fragments presented by MHC-I. Antibody: ESK3, mouse IgG1. No permeabilization.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_03">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_03</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12996584/" target="_blank" rel="noopener">PMC:PMC12996584 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>We confirmed the surface expression of HLA-A2 by flow cytometry (Suppl.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Surface expression of HLA-A2 confirmed by flow cytometry on NK-92 cells used as the platform for CAR-WT1 engineering; this confirms the surface readout methodology is functional in this experimental system. WT1 itself is the intracellular tumor antigen targeted via TCR-mimic CAR, not a surface protein per se.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_04">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_04</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12996584/" target="_blank" rel="noopener">PMC:PMC12996584 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Data are mean ± SD (n = 6). *** P &lt; 0.001 versus NTD NK-92 cells; two-sided Student’s t -test
+Second, CD3 NK-92 cells were transduced with CAR-WT1 and subsequently followed by FACS enrichment of CAR-WT1 + cells, either with or without surface CD3 (Fig. 3 D).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">FACS enrichment of CAR-WT1+ NK-92 cells with or without surface CD3 was performed. This demonstrates that CAR-WT1 constructs can be surface-expressed on NK cells when CD3 complex is present, providing indirect evidence of surface accessibility of WT1-targeting immune constructs. WT1 protein itself is intracellular; the CAR construct targets WT1 peptide/MHC.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_05">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_05</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12996584/" target="_blank" rel="noopener">PMC:PMC12996584 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>C Flow cytometric analysis of surface CAR expression in CAR-WT1 T cells using F(ab’)2 antibody.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Surface CAR expression in CAR-WT1 T cells was measured by flow cytometry using F(ab&#x27;)2 antibody, confirming surface accessibility of the CAR construct targeting WT1 peptide/MHC complexes. This is a methodological validation of the anti-WT1 immunotherapeutic approach—WT1 protein itself localizes intracellularly.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_06">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_06</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12996584/" target="_blank" rel="noopener">PMC:PMC12996584 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-amber">ambiguous</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Interestingly, we found that surface expression of CAR-WT1 in NK-92 cells required the presence of human CD3 complex, as observed for full-length TCRs.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Surface expression of CAR-WT1 construct in NK-92 cells required the presence of human CD3 complex, analogous to full-length TCRs. This demonstrates that WT1-targeting immune therapeutics can achieve surface localization only under specific co-receptor conditions. WT1 protein itself is a nuclear transcription factor, not a surface protein; this reflects therapeutic engagement via peptide/MHC-I presentation.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_07">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_07</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12996584/" target="_blank" rel="noopener">PMC:PMC12996584 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Once CAR-WT1 was expressed on NK-92 cell surface, surface CD3 appeared dispensable for NK cytotoxicity.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Once CAR-WT1 was expressed on NK-92 cell surface, surface CD3 was dispensable for NK cytotoxicity, confirming successful surface localization of the CAR construct. This is relevant to therapeutic engagement of WT1-derived peptide/MHC-I complexes on tumor cell surfaces (not WT1 protein surface expression itself).</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_08">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_08</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12229403/" target="_blank" rel="noopener">PMC:PMC12229403 ↗</a>
+          <span class="section">figure_legend</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">review_assertion</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Figure created with Biorender.com
+
+Folate Receptor (FR), Wilm Tumor 1 (WT1), Leukocytic immunoglobulin-like receptor (LILRB4), CD84, Siglec-6, and T-cell immunoglobulin mucin-3 (TIM-3) are antigens that show promising features for CAR-T cell targeting.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">WT1 (Wilms Tumor 1) is listed among antigens showing promising features for CAR-T cell targeting in a review/figure context, alongside FR, LILRB4, CD84, Siglec-6, and TIM-3. This represents a therapeutic engagement claim for WT1 as an immunotherapeutic target—WT1 is targeted as an intracellular antigen presented via MHC-I (not as a transmembrane surface protein). No specific sponsor or clinical stage is stated in this clip.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_09">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_09</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13059331/" target="_blank" rel="noopener">PMC:PMC13059331 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Antigen targets were selected by mining existing surface expression flow cytometry and mass spectrometry data from a large cohort of AML patient samples 18 , 19 (see STAR Methods ).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Antigen targets for AML immunotherapy were selected by mining existing surface expression flow cytometry and mass spectrometry data from a large cohort of AML patient samples. WT1 is referenced in this context as a candidate antigen. This is a secondary assertion from a review/methods framing; WT1 surface expression is inferred from population-level AML surfaceomics data rather than a dedicated primary experiment in this paper.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_10">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_10</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13059331/" target="_blank" rel="noopener">PMC:PMC13059331 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>In addition to molecular heterogeneity, genetic alterations in AML have also been shown to alter the surfaceome of blasts, which has implications in developing immunotherapies that exhibit broad efficacy across patients with AML. 20 Since different therapeutic modalities such as CAR-T therapy and ADCs, have a range of sensitivity to the number of target cell surface antigens, 8 it is important to consider the surface abundance of the target antigen when designing these modalities.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">A multimodal AML atlas paper discusses the importance of surface antigen abundance for CAR-T and ADC therapy design, noting that genetic alterations in AML alter the surfaceome of blasts. This is a methodological/contextual framing clip establishing that WT1-related surface antigen abundance in AML was assessed by surfaceome profiling—relevant to therapeutic engagement context and surfaceome heterogeneity across patients.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_11">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_11</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11782696/" target="_blank" rel="noopener">PMC:PMC11782696 ↗</a>
+          <span class="section">methods</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-amber">secondary</span><span class="badge badge-amber">ambiguous</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>#AF2944; R&amp;D Systems); goat polyclonal anti-LIN28A (1:300; #AF3757; R&amp;D Systems); goat polyclonal anti-KIT (1:300; #AF1356; R&amp;D Systems); rabbit polyclonal anti-SCP3 (1:300; #ab15093; Abcam); rabbit polyclonal anti-DDX4 (1:500; #ab13840; Abcam); rabbit monoclonal anti-WT1 (1:500; #ab89901; Abcam); rabbit polyclonal anti-SCF (1:100 for immunofluorescence or 1:1500 for western blotting; #ab64677; Abcam; characterized in Supplementary Fig.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Antibody validation detail: rabbit monoclonal anti-WT1 (clone ab89901, Abcam, 1:500 dilution) used for immunofluorescence or western blotting in a study of gonadal/germ cell biology. This is a methodological rigor row identifying an antibody used to detect WT1 protein in tissue sections or cells. No surface-specific fractionation is noted; this is a standard antibody reference for intracellular WT1 detection.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_12">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_12</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13059331/" target="_blank" rel="noopener">PMC:PMC13059331 ↗</a>
+          <span class="section">methods</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Literature review of preclinical and clinical studies and proteomics mass spectrometry studies 18 , 19 , 54 were used to generate a list of antigens expressed on AML patient samples.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Literature review and proteomics mass spectrometry studies were used to generate a list of antigens expressed on AML patient samples as part of a multimodal immunotherapy atlas. This is a methodological framing clip confirming that surface proteomics MS was applied to AML samples to identify surface antigens including WT1-related targets. Evidence tier is secondary as this is a methods-rationale statement, not a primary result.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_01">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_01</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/41313003/" target="_blank" rel="noopener">PMID:41313003 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">review_assertion</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Paired box 8 (PAX8) and Wilms&#x27; tumor 1 (WT1) of cap mesenchyme play important roles in tubular epithelial transition and podocyte maturation of the kidney.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">WT1 plays important roles in tubular epithelial transition and podocyte maturation in the kidney, with expression in cap mesenchyme during development. This establishes kidney (glomerular podocytes and developmental precursors) as a primary tissue of WT1 expression.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_02">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_02</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/41313003/" target="_blank" rel="noopener">PMID:41313003 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>PAX8 showed continuous nuclear expression in the parietal epithelium of mesonephros/metanephros, adult kidneys, &amp; primordial podocytes, and consistent positivity in all renal tubules.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">PAX8 (but context also references WT1 co-expression study) shows continuous nuclear expression in parietal epithelium of mesonephros/metanephros and adult kidneys, and in primordial podocytes, with consistent positivity in all renal tubules. This contextualizes WT1 expression across developmental stages of the kidney.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_03">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_03</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/41313003/" target="_blank" rel="noopener">PMID:41313003 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>WT1 showed strong nuclear and cytoplasmic expression within mature podocytes at all stages, despite some staining of WT1 in parietal epithelium.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">WT1 shows strong nuclear and cytoplasmic expression within mature podocytes at all developmental stages (mesonephros, metanephros, adult), with some staining of parietal epithelium. The cytoplasmic component indicates WT1 protein is not exclusively nuclear in podocytes. This confirms WT1 as a robust podocyte marker across development.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_04">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_04</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/41313003/" target="_blank" rel="noopener">PMID:41313003 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Parietal epithelial cells (PEC) progenitors demonstrate activity of these two factors in mature glomeruli.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Parietal epithelial cell (PEC) progenitors demonstrate activity of PAX8 and WT1 transcription factors in mature glomeruli, indicating WT1 is expressed in PECs and their progenitors within the adult human glomerulus.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_05">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_05</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/41313003/" target="_blank" rel="noopener">PMID:41313003 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>PECs can be activated into spindle cell crescents in crescentic glomerulonephritis (CreGN) or into podocyte hyperplasia in collapsing glomerulopathy (ColGN) based on histologic evidence.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">In disease states, WT1-expressing parietal epithelial cells (PECs) can be activated into spindle cell crescents in crescentic glomerulonephritis (CreGN) or into podocyte hyperplasia in collapsing glomerulopathy (ColGN). This identifies WT1 expression in activated PECs in inflammatory/sclerosing glomerular disease contexts.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_06">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_06</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12809115/" target="_blank" rel="noopener">PMC:PMC12809115 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Expression of the transcription factor Wilms tumor 1 (WT1) marks mesothelial cells as well as a transcriptionally distinct population of fibroblasts in the normal pancreas.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">WT1 marks mesothelial cells as well as a transcriptionally distinct population of fibroblasts in the normal pancreas, establishing WT1 expression in non-tumor stromal cells of normal pancreatic tissue.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_07">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_07</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12809115/" target="_blank" rel="noopener">PMC:PMC12809115 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>We observed WT1 staining in PDPN + , PDGFRα/β − cells at the edge of the normal mouse pancreas, consistent with the mesothelial layer ( Fig. 1A ).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">WT1 staining is observed in PDPN+/PDGFRα/β− cells at the edge of the normal mouse pancreas, consistent with the mesothelial layer. This localizes WT1 expression specifically to the peritoneal mesothelial coat of the pancreas.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_08">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_08</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12809115/" target="_blank" rel="noopener">PMC:PMC12809115 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>We also observed WT1 staining in a small number of PDGFRα/β + fibroblast-like cells near the outer edges of the tissue but away from the mesothelial layer.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">WT1 staining is also observed in a small number of PDGFRα/β+ fibroblast-like cells near the outer edges of the normal mouse pancreas but away from the mesothelial layer, indicating WT1 marks a minor fibroblast subpopulation in normal pancreatic stroma.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_09">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_09</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12809115/" target="_blank" rel="noopener">PMC:PMC12809115 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>WT1 expression also identifies a population of CAFs in both human and mouse pancreatic cancers.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">WT1 expression identifies a population of cancer-associated fibroblasts (CAFs) in both human and mouse pancreatic cancers, establishing WT1 as a marker of a CAF subpopulation in pancreatic ductal adenocarcinoma tumor microenvironment.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_10">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_10</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12809115/" target="_blank" rel="noopener">PMC:PMC12809115 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Lineage tracing revealed that WT1+ cells expand in pancreatic cancer, giving rise to a population of inflammatory CAFs.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Lineage tracing reveals that WT1+ cells expand in pancreatic cancer, giving rise to a population of inflammatory CAFs (iCAFs). This indicates a cell-state transition: WT1+ mesothelial/fibroblast progenitors in normal pancreas expand and differentiate into inflammatory CAFs in the tumor microenvironment.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_11">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_11</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/41313003/" target="_blank" rel="noopener">PMID:41313003 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Expressive patterns of PAX8 and WT1 in mesonephros/early fetal kidneys, adult kidneys, and aberrant glomerular changes were evaluated.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">The study evaluates WT1 and PAX8 expression patterns across mesonephros/early fetal kidneys, adult kidneys, and aberrant glomerular disease states (e.g., crescentic glomerulonephritis, collapsing glomerulopathy), providing a developmental and pathological tissue expression map for WT1 in the kidney.</p>
+    </article>
+    
+    </section>
+    
+  <footer>
+    surfaceome_v2 QC viewer · schema 1.0.0 ·
+    23 evidence rows
+  </footer>
+</main>
+</body>
+</html>
