@@ -82,3 +82,7 @@ viewer/node_modules/
 # The canonical copies live in R2 (deliverome-d1-backups). The local
 # copies are convenience-only; reproducible from R2 at any time.
 data/processed/cloudflare/d1_backups/
+
+# Scratch dir scripts/release/publish-archive.py uses to stage
+# API-fetched payloads + the deep-dives tarball before upload.
+_extra-download/

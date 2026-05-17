@@ -78,6 +78,8 @@ import os
 import re
 import subprocess
 import sys
+import tarfile
+import tempfile
 import time
 import urllib.parse
 from pathlib import Path
@@ -125,61 +127,51 @@ GIST_ORIGINS = [
 #
 # Comment out entries you don't want in a given deposit, or add local
 # paths (relative to REPO_ROOT) for files that don't live behind the API.
-EXTRA_FILES: list[str | dict[str, str]] = [
-    # ── Triage runs (with reasoning) ──────────────────────────────────
-    # Long-format TSV: one row per (model × variant × replicate × gene)
-    # API call. Includes verdict, verdict_reasoning, cost_usd, prompt/
-    # completion tokens, prompt_sha. Single source of truth for the
-    # benchmark_cost_vs_accuracy / db_correctness_* figures.
+# Three files, each answering a distinct reader question:
+#
+#   1. triage-runs-with-reasoning.tsv  →  "what did every model say
+#      about every gene, with reasoning + cost?"  Long format, one row
+#      per (gene × model × variant × replicate).  Single source of
+#      truth for the cost-vs-accuracy / db-correctness figures.
+#
+#   2. triage-benchmark-matrix.json  →  "for each of the 147 bench
+#      genes, what does the truth say vs each DB vs each model variant,
+#      with reasoning?"  Wide, pre-joined.  The figure-ready shape.
+#      (Truth labels alone are a strict subset of this file — derive
+#      them by projecting the truth_* columns if you want them
+#      separate.)
+#
+#   3. deep_dives_all.tar.gz  →  "give me every published
+#      SurfaceomeRecord with full evidence + reasoning."  Built at
+#      deposit time by fetching the gene index + every per-gene
+#      endpoint and tarring them.  ~24 MB at current scale (GPR75
+#      ~16 KB × ~6k projected genes, gzipped); even at 5× per-record
+#      growth, ~120 MB.  One bundle in the Zenodo UI; individual
+#      records are still grep-able with `tar -tf`.
+#
+# What's deliberately NOT here:
+#   - the catalog (/v1/catalog): fully derivable from candidate_universe.tsv
+#     (in-repo, with sonnet_verdict + deep-dive flag + stable IDs since
+#     PR #29's augmentation) + triage-runs-with-reasoning.tsv (Haiku /
+#     Opus verdicts) + deep_dives_all.tar.gz (the records themselves).
+#     Keep using the live API for it.
+#   - the truth-labels-only TSV: every column is in the matrix above.
+#   - the single-gene GPR75 JSON + the gene index: both subsumed by the
+#     bundle (tarball filenames are the index).
+EXTRA_FILES: list[str | dict[str, Any]] = [
     {
         "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv",
         "filename": "triage-runs-with-reasoning.tsv",
     },
-
-    # ── Benchmark truth labels ────────────────────────────────────────
-    # 7-column TSV: gene / uniprot / class / verdict / signal / reason /
-    # rationale. The curated truth set the triage runs are scored against.
-    {
-        "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
-        "filename": "triage-benchmark-truth-labels.tsv",
-    },
-
-    # ── Benchmark matrix (147-gene × all-DBs × all-models) ────────────
-    # JSON: per-gene truth label + per-DB flags + per-model headline +
-    # alt-LLM verdicts. The canonical artifact for benchmark comparison
-    # figures.
     {
         "url": "https://api.deliverome.org/surfaceome/v1/benchmark/matrix",
         "filename": "triage-benchmark-matrix.json",
     },
-
-    # ── Genome-wide catalog ───────────────────────────────────────────
-    # JSON: candidate-universe table with DB votes, latest triage, and
-    # deep-dive flags per gene. Backing data for the open-atlas viewer.
     {
-        "url": "https://api.deliverome.org/surfaceome/v1/catalog",
-        "filename": "surfaceome-catalog.json",
-    },
-
-    # ── Deep-dive SurfaceomeRecords ───────────────────────────────────
-    # One file per gene that has a published deep-dive. Currently only
-    # GPR75 is published — the other planned deep dives will go here
-    # as they're released. Each file is the full SurfaceomeRecord with
-    # nested record_json (the agent's full evidence + reasoning).
-    {
-        "url": "https://api.deliverome.org/surfaceome/v1/genes/GPR75",
-        "filename": "deep_dive_GPR75.json",
-    },
-    # Add more as they publish, e.g.:
-    # {"url": "https://api.deliverome.org/surfaceome/v1/genes/<SYMBOL>", "filename": "deep_dive_<SYMBOL>.json"},
-    # {"url": "https://api.deliverome.org/surfaceome/v1/genes/<SYMBOL>", "filename": "deep_dive_<SYMBOL>.json"},
-
-    # ── Index of deep-dives published at the moment of deposit ────────
-    # Small JSON list of all currently-annotated genes — useful as a
-    # manifest alongside the per-gene files above.
-    {
-        "url": "https://api.deliverome.org/surfaceome/v1/genes",
-        "filename": "deep_dives_index.json",
+        "deep_dives_bundle": True,
+        "filename": "deep_dives_all.tar.gz",
+        "index_url": "https://api.deliverome.org/surfaceome/v1/genes",
+        "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
     },
 ]
 
@@ -304,11 +296,11 @@ def poll_swh_until_done(origin: str, *, max_wait_s: int = 1200) -> str | None:
 # ── Repo snapshot ──────────────────────────────────────────────────────
 
 def _resolve_extra_file(
-    entry: str | dict[str, str], *, dry_run: bool,
+    entry: str | dict[str, Any], *, dry_run: bool,
 ) -> tuple[Path, bool] | None:
     """Resolve one EXTRA_FILES entry to a (local_path, cleanup) pair.
 
-    Three input shapes:
+    Four input shapes:
 
       - bare HTTP(S) URL: fetched to a tempfile, returned with
         cleanup=True so the caller deletes it after upload. Destination
@@ -316,6 +308,12 @@ def _resolve_extra_file(
 
       - {"url": "...", "filename": "..."} dict: same fetch behaviour
         but destination name is the explicit filename.
+
+      - {"deep_dives_bundle": True, "filename": "...", "index_url":
+        "...", "gene_url_template": "..."}: special-case resolver that
+        fetches the gene index from `index_url`, then for each entry
+        fetches `gene_url_template.format(symbol=...)`, then tars all
+        per-gene JSONs into a single gzipped archive.
 
       - other string: treated as a path relative to REPO_ROOT. If the
         local file doesn't exist, warns and returns None.
@@ -326,8 +324,10 @@ def _resolve_extra_file(
     if isinstance(entry, str) and entry.startswith(("http://", "https://")):
         return _download_to_tempfile(entry, filename=None, dry_run=dry_run), True
 
-    # Dict form: {url, filename}
+    # Dict forms
     if isinstance(entry, dict):
+        if entry.get("deep_dives_bundle"):
+            return _build_deep_dives_bundle(entry, dry_run=dry_run), True
         url = entry.get("url")
         filename = entry.get("filename")
         if not url:
@@ -343,6 +343,68 @@ def _resolve_extra_file(
         return path, False
 
     raise ValueError(f"unsupported entry type: {type(entry).__name__}")
+
+
+def _build_deep_dives_bundle(
+    entry: dict[str, Any], *, dry_run: bool,
+) -> Path:
+    """Fetch the gene index, fetch each per-gene record, tar.gz them all.
+
+    Each tar member is named ``<SYMBOL>.json`` so ``tar -tf`` doubles as
+    the index. The gzipped tarball is written under the same temp dir
+    `_download_to_tempfile` uses so cleanup is symmetric.
+    """
+    filename = entry["filename"]
+    index_url = entry["index_url"]
+    gene_url_template = entry["gene_url_template"]
+
+    tmp_root = REPO_ROOT / "_extra-download"
+
+    if dry_run:
+        ok(
+            f"[dry-run] would fetch {index_url}, then per-gene "
+            f"records via {gene_url_template}, then tar.gz → {filename}"
+        )
+        return tmp_root / filename
+
+    tmp_root.mkdir(exist_ok=True)
+
+    # 1. Fetch the index.
+    idx_resp = httpx.get(index_url, timeout=60)
+    idx_resp.raise_for_status()
+    idx = idx_resp.json()
+    genes = idx.get("genes") if isinstance(idx, dict) else idx
+    if not isinstance(genes, list):
+        raise ValueError(
+            f"deep-dives index at {index_url} did not return a list "
+            f"of genes (got {type(genes).__name__})"
+        )
+    symbols = [g["gene_symbol"] for g in genes if isinstance(g, dict) and g.get("gene_symbol")]
+    if not symbols:
+        raise ValueError(f"deep-dives index at {index_url} is empty")
+
+    ok(f"deep-dives bundle: index has {len(symbols)} gene(s)")
+
+    # 2. Fetch each per-gene record into a staging dir, then tar it.
+    out_path = tmp_root / filename
+    with tempfile.TemporaryDirectory(prefix="deep_dives_", dir=tmp_root) as stage_dir:
+        stage = Path(stage_dir)
+        for i, sym in enumerate(symbols, 1):
+            gene_url = gene_url_template.format(symbol=sym)
+            r = httpx.get(gene_url, timeout=120)
+            r.raise_for_status()
+            (stage / f"{sym}.json").write_bytes(r.content)
+            if i % 100 == 0 or i == len(symbols):
+                ok(f"  fetched {i}/{len(symbols)} deep-dive records")
+
+        # 3. tar.gz the staging dir contents (flat layout — no parent dir).
+        with tarfile.open(out_path, "w:gz") as tar:
+            for json_path in sorted(stage.glob("*.json")):
+                tar.add(json_path, arcname=json_path.name)
+
+    size_mb = out_path.stat().st_size / 1024 / 1024
+    ok(f"built {out_path.name} ({size_mb:.1f} MB, {len(symbols)} records)")
+    return out_path
 
 
 def _download_to_tempfile(

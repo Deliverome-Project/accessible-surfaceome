@@ -32,7 +32,7 @@ Three release tasks in one command:
    `tests/test_figure_provenance.py`. Surfaces stale or malformed
    metadata before you commit to a Zenodo deposit.
 3. **Create a draft Zenodo deposit** containing the heavy data files
-   listed in `EXTRA_FILES_RELATIVE`. By default the repo tarball is
+   listed in `EXTRA_FILES`. By default the repo tarball is
    NOT included (auto-archive handles that); pass
    `--include-repo-tarball` to bundle everything into one record if
    you've disabled auto-archive.
@@ -42,12 +42,20 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
 
 ## Before you run it
 
-1. **Edit `EXTRA_FILES_RELATIVE`** in `publish-archive.py`. Uncomment
-   or add paths (relative to repo root) for any heavy data outputs you
-   want to bundle: triage runs, benchmark runs, deep dives, etc. The
-   default list is empty — running with it empty just bundles the repo
-   tarball alone (which is fine, but probably not what you want for a
-   real release).
+1. **Review `EXTRA_FILES`** in `publish-archive.py`. The default set is
+   three files:
+   - `triage-runs-with-reasoning.tsv` (long format, every gene × model ×
+     variant × replicate, with reasoning + cost)
+   - `triage-benchmark-matrix.json` (147 bench genes wide, truth + DB
+     votes + every model variant's verdict and reasoning)
+   - `deep_dives_all.tar.gz` (every published `SurfaceomeRecord`,
+     bundled at deposit time)
+
+   Each entry can be a `{"url", "filename"}` dict to fetch from the
+   public API, a path string relative to repo root for local files, or
+   the special `{"deep_dives_bundle": True, ...}` shape used for the
+   tarball. Comment out anything you don't want in this particular
+   deposit.
 
 2. **Edit `SEED_METADATA`** if the default title / description / author
    list / keywords don't match what you want for this release. You can
@@ -155,9 +163,9 @@ When you're ready to publish a new version of the project:
 ```bash
 # 1. Audit + run the data deposit (this script).
 ZENODO_TOKEN='...' ./scripts/release/publish-archive.py
-# → drafts a Zenodo record with EXTRA_FILES_RELATIVE contents
+# → drafts a Zenodo record with EXTRA_FILES contents
 # → audit phase 2.5 surfaces any data inputs the gists reference
-#   that aren't already deposited — fix EXTRA_FILES_RELATIVE if needed
+#   that aren't already deposited — fix EXTRA_FILES if needed
 
 # 2. Open the draft URL the script printed, review, click Publish.
 #    Note the new data record DOI (e.g. 10.5281/zenodo.NEW_DATA).
