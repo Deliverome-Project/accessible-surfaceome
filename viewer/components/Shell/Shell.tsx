@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { NavLink } from "./NavLink";
 import styles from "./Shell.module.css";
 
 interface ShellProps {
@@ -80,24 +81,23 @@ export function Shell({ children }: ShellProps) {
             </Link>
           </div>
           <nav id="primary-nav" className={styles.nav} aria-label="Surfaceome sections">
-            <Link className={styles.navLink} href="/benchmark">
+            <NavLink href="/benchmark" matchPrefix>
               SurfaceBench
-            </Link>
-            <Link className={styles.navLink} href="/api">
+            </NavLink>
+            <NavLink href="/api" matchPrefix>
               API
-            </Link>
-            <Link className={styles.navLink} href="/prompts">
+            </NavLink>
+            <NavLink href="/prompts" matchPrefix>
               Prompts
-            </Link>
-            <Link className={styles.navLink} href="/reproducibility">
+            </NavLink>
+            <NavLink href="/reproducibility" matchPrefix>
               Reproducibility
-            </Link>
-            <a
-              className={`${styles.navLink} ${styles.navIconLink}`}
+            </NavLink>
+            <NavLink
               href="https://github.com/Deliverome-Project/accessible-surfaceome"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="GitHub — Deliverome-Project/accessible-surfaceome"
+              external
+              extraClass={styles.navIconLink}
+              ariaLabel="GitHub — Deliverome-Project/accessible-surfaceome"
               title="GitHub — Deliverome-Project/accessible-surfaceome"
             >
               {/* Inline GitHub mark — public-domain octocat path from
@@ -118,7 +118,7 @@ export function Shell({ children }: ShellProps) {
                 />
               </svg>
               <span className="sr-only">GitHub</span>
-            </a>
+            </NavLink>
           </nav>
         </div>
       </header>
