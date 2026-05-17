@@ -354,27 +354,43 @@ def _render_timing_section(record: dict[str, Any]) -> str:
     total = sum_steps
     total_disp = wall_clock
 
-    # Roll up per phase for the stacked bar.
-    by_phase: dict[str, float] = {}
+    # Roll up per phase for the stacked bar — track BOTH elapsed work
+    # (for the % bar) AND cost in USD (for the legend) so the reader
+    # sees seconds + spend side by side. ``cost_usd`` may be None on
+    # non-LLM rows (search/promotion/features/filters), which sum to $0.
+    by_phase_seconds: dict[str, float] = {}
+    by_phase_cost: dict[str, float] = {}
     for r in rows:
         phase = r.get("phase") or "other"
-        by_phase[phase] = by_phase.get(phase, 0.0) + float(r.get("elapsed_s", 0.0))
+        by_phase_seconds[phase] = by_phase_seconds.get(phase, 0.0) + float(
+            r.get("elapsed_s", 0.0)
+        )
+        by_phase_cost[phase] = by_phase_cost.get(phase, 0.0) + float(
+            r.get("cost_usd") or 0.0
+        )
+    total_cost = sum(by_phase_cost.values())
 
     bar_segments: list[str] = []
     legend_items: list[str] = []
-    for phase, seconds in sorted(by_phase.items(), key=lambda kv: -kv[1]):
+    for phase, seconds in sorted(by_phase_seconds.items(), key=lambda kv: -kv[1]):
         pct = 100.0 * seconds / total
+        cost = by_phase_cost.get(phase, 0.0)
+        cost_pct = (100.0 * cost / total_cost) if total_cost > 0 else 0.0
         kind = _PHASE_KIND.get(phase, "gray")
         bar_segments.append(
             f'<div class="bar-seg badge-{kind}" '
             f'style="width:{pct:.2f}%" '
-            f'title="{html.escape(phase)} — {seconds:.1f}s ({pct:.1f}%)"></div>'
+            f'title="{html.escape(phase)} — {seconds:.1f}s '
+            f'({pct:.1f}%) · ${cost:.4f}"></div>'
         )
         legend_items.append(
             f'<span class="bar-legend">'
             f'{_badge(phase, kind)} '
-            f'<span class="muted small">{seconds:.1f}s · {pct:.1f}%</span>'
-            f'</span>'
+            f'<span class="muted small">{seconds:.1f}s · {pct:.1f}% · '
+            f'${cost:.4f}'
+            + (f" ({cost_pct:.1f}%)" if total_cost > 0 else "")
+            + "</span>"
+            "</span>"
         )
 
     # Detail table — sort slowest first.
@@ -411,7 +427,7 @@ def _render_timing_section(record: dict[str, Any]) -> str:
 
     return f"""
     <section class="block timing-block">
-      <h2>Step timeline · {total_disp:.1f}s wall clock
+      <h2>Step timeline · {total_disp:.1f}s wall clock · ${total_cost:.4f}
           <span class="muted small">
             (sum-of-steps {sum_step_seconds:.1f}s · parallelism {parallelism:.1f}×)
           </span>
