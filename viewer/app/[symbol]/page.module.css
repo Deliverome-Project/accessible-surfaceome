@@ -3,14 +3,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
-  /* Per-gene deep-dive pages override the default page-width utility
-   * (capped at 1280px) and take more of the viewport — denser
-   * scientific-report layout vs the marketing-narrower marketing
-   * pages. Reading-width caps (max-width: 60ch on prose, etc.) stay
-   * inside individual cards so paragraphs don't stretch into
-   * eye-fatigue territory; tables / structure / topology blocks now
-   * get the full canvas. */
-  --page-width: min(1480px, calc(100vw - 3rem));
   font-size: 0.92rem;
   line-height: 1.55;
 }
