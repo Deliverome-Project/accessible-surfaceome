@@ -41,6 +41,7 @@ from accessible_surfaceome.tools._shared.models import (
     Orthologs,
     ParalogEntry,
     StructureFeatures,
+    TerminalOrientation,
 )
 
 logger = logging.getLogger(__name__)
@@ -151,8 +152,8 @@ def _fetch_canonical_topology(uniprot_acc: str, topology_version: str) -> Isofor
         isoform_id=r.get("isoform_id") or f"{uniprot_acc}-1",
         uniprot_acc=r["uniprot_acc_full"] or uniprot_acc,
         tm_helix_count=int(r["tm_helix_count"] or 0),
-        n_terminal_orientation=r["n_terminal_orientation"] or "indeterminate",
-        c_terminal_orientation=r["c_terminal_orientation"] or "indeterminate",
+        n_terminal_orientation=_coerce_orientation(r["n_terminal_orientation"]),
+        c_terminal_orientation=_coerce_orientation(r["c_terminal_orientation"]),
         signal_peptide_length=int(r["signal_peptide_length"] or 0),
         ecd_length_residues=int(r["ecd_length_residues"] or 0),
         icd_length_residues=int(r["icd_length_residues"] or 0),
@@ -186,8 +187,8 @@ def _fetch_isoform_topologies(uniprot_acc: str, topology_version: str) -> list[I
                 isoform_id=r.get("isoform_id") or r["uniprot_acc_full"],
                 uniprot_acc=r["uniprot_acc_full"] or uniprot_acc,
                 tm_helix_count=int(r["tm_helix_count"] or 0),
-                n_terminal_orientation=r["n_terminal_orientation"] or "indeterminate",
-                c_terminal_orientation=r["c_terminal_orientation"] or "indeterminate",
+                n_terminal_orientation=_coerce_orientation(r["n_terminal_orientation"]),
+                c_terminal_orientation=_coerce_orientation(r["c_terminal_orientation"]),
                 signal_peptide_length=int(r["signal_peptide_length"] or 0),
                 ecd_length_residues=int(r["ecd_length_residues"] or 0),
                 icd_length_residues=int(r["icd_length_residues"] or 0),
@@ -322,6 +323,20 @@ def _parse_iso(s: str | None) -> datetime:
         return datetime.now(UTC)
 
 
+def _coerce_orientation(s: str | None) -> TerminalOrientation:
+    """Map DB orientation strings onto the TerminalOrientation Literal.
+
+    The schema only allows ``extracellular`` / ``cytoplasmic``. The DB
+    additionally carries ``indeterminate`` for 2 of 20,102 rows (GLOB
+    proteins where neither end is membrane-resident — DeepTMHMM has no
+    clear side call). Map those + NULL to ``cytoplasmic`` (the
+    conservative default for soluble / non-membrane proteins).
+    """
+    if s == "extracellular":
+        return "extracellular"
+    return "cytoplasmic"
+
+
 # ---------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------
@@ -367,8 +382,8 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
             isoform_id=f"{uniprot_acc}-1",
             uniprot_acc=uniprot_acc,
             tm_helix_count=0,
-            n_terminal_orientation="indeterminate",
-            c_terminal_orientation="indeterminate",
+            n_terminal_orientation="cytoplasmic",
+            c_terminal_orientation="cytoplasmic",
             signal_peptide_length=0,
             ecd_length_residues=0,
             icd_length_residues=0,

@@ -187,8 +187,12 @@ function md(rec, structureData, canonicalSequence) {
   lines.push(
     `| Risks | shed=${f.has_shed_form} · secreted=${f.has_secreted_form} · coreceptor=${f.requires_coreceptor_for_expression} · masking=${f.has_epitope_masking} · subdomain=${f.has_restricted_subdomain} |`,
   );
+  // Cross-species fields are nullable in v1.0.0 (a gene with no
+  // mouse/cyno ortholog row in compara_ortholog_ecd lands NULL here).
+  const mouseId = f.mouse_ortholog_ecd_pct_identity;
+  const cynoId = f.cyno_ortholog_ecd_pct_identity;
   lines.push(
-    `| Cross-species | mouse=${f.mouse_ortholog_ecd_pct_identity.toFixed(1)}% · cyno=${f.cyno_ortholog_ecd_pct_identity.toFixed(1)}% |`,
+    `| Cross-species | mouse=${mouseId == null ? "—" : `${mouseId.toFixed(1)}%`} · cyno=${cynoId == null ? "—" : `${cynoId.toFixed(1)}%`} |`,
   );
   lines.push(
     `| Paralogs | max %ECD identity = ${
@@ -443,12 +447,29 @@ function md(rec, structureData, canonicalSequence) {
   // + per-section rationales.
 
   // --- Evidence ledger ---
+  // Schema-tolerant evidence-source extraction.
+  // v1.0.0 records: evidence[i].spans[j].source carries pmc_id / pmid / doi / url
+  //   (snake_case keys, multiple spans per evidence claim).
+  // Legacy: evidence[i].source carries pmcid / pmid / doi / url (single, top-level).
+  // Walk every span's source for citation extraction, deduping by pmc_id/pmid.
+  function evidenceSources(ev) {
+    if (ev.spans && ev.spans.length) {
+      return ev.spans
+        .map((sp) => sp.source)
+        .filter((s) => s != null);
+    }
+    return ev.source ? [ev.source] : [];
+  }
+  function pmcIdOf(src) {
+    return src?.pmc_id || src?.pmcid || null;
+  }
+
   let primary = 0, secondary = 0, tertiary = 0, pmcOa = 0;
   for (const ev of rec.evidence) {
     if (ev.evidence_tier === "primary") primary += 1;
     else if (ev.evidence_tier === "secondary") secondary += 1;
     else if (ev.evidence_tier === "tertiary") tertiary += 1;
-    if (ev.source.pmcid) pmcOa += 1;
+    if (evidenceSources(ev).some((s) => pmcIdOf(s))) pmcOa += 1;
   }
   lines.push("## 10. Evidence ledger");
   lines.push("");
@@ -457,12 +478,30 @@ function md(rec, structureData, canonicalSequence) {
   );
   lines.push("");
   for (const ev of rec.evidence) {
-    const src = ev.source;
+    const sources = evidenceSources(ev);
+    const seen = new Set();
     const linkParts = [];
-    if (src.doi) linkParts.push(`[doi:${src.doi}](https://doi.org/${src.doi})`);
-    if (src.pmid) linkParts.push(`[PMID ${src.pmid}](https://pubmed.ncbi.nlm.nih.gov/${src.pmid}/)`);
-    if (src.pmcid) linkParts.push(`[${src.pmcid}](https://www.ncbi.nlm.nih.gov/pmc/articles/${src.pmcid}/)`);
-    if (src.url && !linkParts.length) linkParts.push(src.url);
+    for (const src of sources) {
+      const doi = src.doi;
+      const pmid = src.pmid;
+      const pmcid = pmcIdOf(src);
+      const url = src.url;
+      if (doi && !seen.has(`doi:${doi}`)) {
+        linkParts.push(`[doi:${doi}](https://doi.org/${doi})`);
+        seen.add(`doi:${doi}`);
+      }
+      if (pmid && !seen.has(`pmid:${pmid}`)) {
+        linkParts.push(`[PMID ${pmid}](https://pubmed.ncbi.nlm.nih.gov/${pmid}/)`);
+        seen.add(`pmid:${pmid}`);
+      }
+      if (pmcid && !seen.has(`pmc:${pmcid}`)) {
+        linkParts.push(`[${pmcid}](https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcid}/)`);
+        seen.add(`pmc:${pmcid}`);
+      }
+      if (url && !linkParts.length) {
+        linkParts.push(url);
+      }
+    }
     lines.push(
       `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}*${ev.entailment_verified ? " · entailment ✓" : ""} — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
     );
@@ -548,8 +587,14 @@ function md(rec, structureData, canonicalSequence) {
   lines.push(`- DeepTMHMM topology — ${ct.tool_version} · DTU Health Tech (Hallgren et al. 2022; academic-use service)`);
   lines.push(`- UniProt — CC BY 4.0 (UniProt Consortium)`);
   lines.push("");
+  // confidence: legacy schema = float 0-1; v1.0.0 = enum string ("low" /
+  // "moderate" / "high" / "strong"). Render whichever shape is present.
+  const confidenceStr =
+    typeof rec.confidence === "number"
+      ? rec.confidence.toFixed(2)
+      : String(rec.confidence ?? "—");
   lines.push(
-    `*Confidence ${rec.confidence.toFixed(2)} — ${rec.confidence_reasoning}*`,
+    `*Confidence ${confidenceStr} — ${rec.confidence_reasoning ?? ""}*`,
   );
   lines.push("");
 

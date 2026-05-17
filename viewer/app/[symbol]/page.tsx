@@ -140,7 +140,10 @@ export default async function GenePage({ params }: PageProps) {
 
         <Reveal className={styles.confidence}>
           <p className={`label-mono ${styles.confidenceEyebrow}`}>
-            Confidence · {rec.confidence.toFixed(2)}
+            Confidence ·{" "}
+            {typeof rec.confidence === "number"
+              ? rec.confidence.toFixed(2)
+              : String(rec.confidence ?? "—")}
           </p>
           <p className={styles.confidenceLine}>{rec.confidence_reasoning}</p>
         </Reveal>
