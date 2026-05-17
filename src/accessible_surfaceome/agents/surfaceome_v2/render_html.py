@@ -768,6 +768,9 @@ def _render_biological_context(record: dict[str, Any]) -> str:
         if cell_types
         else "<em class='muted'>no cell-type rows</em>"
     )
+    # v2 records hardcode cell_states=[] (legacy v1 field; modulation
+    # block subsumes it). Hide the subsection entirely when empty so
+    # the viewer doesn't show a perpetually-zero "Cell states (0)".
     cell_states_html = (
         "<ul class='compact-list'>"
         + "".join(
@@ -779,6 +782,11 @@ def _render_biological_context(record: dict[str, Any]) -> str:
         + "</ul>"
         if cell_states
         else "<em class='muted'>no cell-state rows</em>"
+    )
+    cell_states_block = (
+        f"<h3>Cell states ({len(cell_states)})</h3>\n      {cell_states_html}"
+        if cell_states
+        else ""
     )
     anat_html = (
         "".join(_render_anat(a) for a in anat)
@@ -801,8 +809,7 @@ def _render_biological_context(record: dict[str, Any]) -> str:
       <h3>Cell types ({len(cell_types)})</h3>
       {cell_types_html}
 
-      <h3>Cell states ({len(cell_states)})</h3>
-      {cell_states_html}
+{cell_states_block}
 
       <h3>Subcellular localization</h3>
       {_render_subcellular(sub)}

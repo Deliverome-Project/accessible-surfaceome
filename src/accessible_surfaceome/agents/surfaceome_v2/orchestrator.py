@@ -50,6 +50,7 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
 )
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _derive_filters,
+    scrub_headline_risks,
     _load_triage_signal,
     _stub_deterministic_features,
 )
@@ -475,6 +476,24 @@ def _annotate(
             timing=list(timing.entries),
         )
 
+    # ---- step 5.5: scrub headline_risks for structured coherence ---------
+    # Reviewers (CD81 audit) caught the synthesizer over-claiming
+    # ``co_receptor`` / ``epitope_masked`` in headline_risks even when
+    # the corresponding structured risk field doesn't back it. The
+    # structured fields are the canonical signal; drop unbacked entries
+    # from the list before they reach the record. ``b.draft`` is
+    # non-None here (guarded above); take a narrowed local handle that
+    # downstream code reads from instead of ``b.draft``.
+    synth_draft = b.draft
+    assert synth_draft is not None  # for ty — narrowed by the guard above
+    synth_draft = synth_draft.model_copy(
+        update={
+            "executive_summary": scrub_headline_risks(
+                synth_draft.executive_summary, synth_draft.accessibility_risks
+            )
+        }
+    )
+
     # ---- step 6: promote claims → Evidence (synthetic source store) -------
     merged_claims = a1_claims + a2_claims
     with timing.step(
@@ -488,8 +507,25 @@ def _annotate(
         ]
 
     # ---- step 7: deterministic features stub (reused from v1) -------------
+    # Pull the real DeepTMHMM topology + Compara paralog + cross-species
+    # ortholog ECD rows from public D1 (uploaded by PR #29's
+    # ``scripts/run_topology_sweep.py``). Falls back to the labeled
+    # stub if D1 is unreachable (no creds in the worktree) or the gene
+    # isn't in this sweep's coverage. Mirrors the v1 orchestrator's
+    # try/D1/fallback pattern landed in PR #29.
     with timing.step("deterministic_features", phase="post"):
-        det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+        try:
+            from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+                fetch_deterministic_features,
+            )
+            det_features = fetch_deterministic_features(gene_id.uniprot_acc)
+        except Exception as exc:  # noqa: BLE001 — keep the run going if D1 is down
+            logger.warning(
+                "DeterministicFeatures D1 fetch failed for %s (%s); using stub",
+                gene_id.uniprot_acc,
+                exc,
+            )
+            det_features = _stub_deterministic_features(gene_id.uniprot_acc)
 
     # ---- step 8: derive filters (reused from v1) --------------------------
     with timing.step(
@@ -498,11 +534,11 @@ def _annotate(
         n_items=len(evidence),
     ):
         filters = _derive_filters(
-            executive_summary=b.draft.executive_summary,
+            executive_summary=synth_draft.executive_summary,
             surface_evidence=surface_evidence,
             biological_context=biological_context,
-            accessibility_risks=b.draft.accessibility_risks,
-            filters_llm=b.draft.filters_llm,
+            accessibility_risks=synth_draft.accessibility_risks,
+            filters_llm=synth_draft.filters_llm,
             deterministic_features=det_features,
             n_evidence=len(evidence),
         )
@@ -515,19 +551,19 @@ def _annotate(
             schema_version=SCHEMA_VERSION_LITERAL,
             gene=gene_id,
             triage_signal=_load_triage_signal(gene_id.hgnc_symbol),
-            executive_summary=b.draft.executive_summary,
+            executive_summary=synth_draft.executive_summary,
             filters=filters,
             surface_evidence=surface_evidence,
             biological_context=biological_context,
             deterministic_features=det_features,
-            accessibility_risks=b.draft.accessibility_risks,
+            accessibility_risks=synth_draft.accessibility_risks,
             evidence=evidence,
             search_log=[],
             evidence_count=len(evidence),
             primary_evidence_count=primary,
             secondary_evidence_count=secondary,
-            confidence=b.draft.confidence,
-            confidence_reasoning=b.draft.confidence_reasoning,
+            confidence=synth_draft.confidence,
+            confidence_reasoning=synth_draft.confidence_reasoning,
             model_path=AGENT_MODEL,
             record_generated_at=datetime.now(UTC),
         )

@@ -16,7 +16,6 @@
     "state_dependence": "moderate",
     "subcategory": "tetraspanin",
     "headline_risks": [
-      "co_receptor",
       "epitope_masked",
       "restricted_subdomain"
     ],

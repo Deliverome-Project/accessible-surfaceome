@@ -517,6 +517,66 @@ def _evidence_density(n: int) -> EvidenceDensity:
     return "low"
 
 
+def scrub_headline_risks(
+    executive_summary: "ExecutiveSummary",
+    accessibility_risks: "AccessibilityRisks",
+) -> "ExecutiveSummary":
+    """Drop ``headline_risks`` entries whose structured field disagrees.
+
+    The synthesizer occasionally writes a ``headline_risks`` list that
+    over-claims relative to the structured ``accessibility_risks`` block
+    it produced in the same call — e.g. listing ``co_receptor`` while
+    setting ``co_receptor_requirements.surface_expression_dependency =
+    "modulatory"`` (not ``"required"``), or listing ``epitope_masked``
+    while ``epitope_masking.severity = "none"``. Reviewers spotted this
+    on CD81. The structured fields are the canonical signal — the
+    headline_risks list is a free-text reading. We scrub the list to
+    match the structured fields, never the other way around.
+
+    Returns a new :class:`ExecutiveSummary` with the cleaned list.
+    Logs (info) when entries are dropped.
+    """
+
+    risks = list(executive_summary.headline_risks)
+    dropped: list[str] = []
+
+    em_sev = accessibility_risks.epitope_masking.severity
+    if "epitope_masked" in risks and em_sev in ("none", "low"):
+        dropped.append("epitope_masked")
+
+    if (
+        "shed_form" in risks
+        and not accessibility_risks.shed_form.present
+    ):
+        dropped.append("shed_form")
+
+    if (
+        "secreted_form" in risks
+        and not accessibility_risks.secreted_form.present
+    ):
+        dropped.append("secreted_form")
+
+    if (
+        "restricted_subdomain" in risks
+        and not accessibility_risks.restricted_subdomain.present
+    ):
+        dropped.append("restricted_subdomain")
+
+    cr_dep = accessibility_risks.co_receptor_requirements.surface_expression_dependency
+    if "co_receptor" in risks and cr_dep != "required":
+        dropped.append("co_receptor")
+
+    if not dropped:
+        return executive_summary
+    cleaned = [r for r in risks if r not in dropped]
+    logger.info(
+        "scrubbed headline_risks (no structured backing): dropped=%s; kept=%s",
+        dropped,
+        cleaned,
+    )
+    return executive_summary.model_copy(update={"headline_risks": cleaned})
+
+
 def _derive_filters(
     *,
     executive_summary: ExecutiveSummary,
