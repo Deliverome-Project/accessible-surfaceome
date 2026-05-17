@@ -54,10 +54,16 @@ def _source_url(
 
     if source_id.startswith("PMID:"):
         return f"https://pubmed.ncbi.nlm.nih.gov/{source_id[5:].strip()}/"
-    if source_id.startswith("PMC:PMC"):
-        return f"https://europepmc.org/article/PMC/{source_id[4:].strip()}"
     if source_id.startswith("PMC:"):
-        return f"https://europepmc.org/article/PMC/{source_id[4:].strip()}"
+        # NCBI PMC's path requires the ``PMC`` prefix on the accession;
+        # source_ids come in two flavors (``PMC:PMC12345`` and
+        # ``PMC:12345``) so normalize before formatting. Linking to
+        # ncbi.nlm.nih.gov rather than europepmc.org because the latter
+        # has had availability issues.
+        accession = source_id[4:].strip()
+        if not accession.upper().startswith("PMC"):
+            accession = f"PMC{accession}"
+        return f"https://www.ncbi.nlm.nih.gov/pmc/articles/{accession}/"
     if source_id.startswith("HPA:"):
         # Prefer the canonical {ensembl_gene}-{symbol} gene-page URL when
         # we have the resolved identifiers; the source_id's tail is just

@@ -653,8 +653,15 @@ def _infer_url_and_type(source_id: str) -> tuple[str, SourceType]:
         pmid = source_id.split(":", 1)[1]
         return (f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/", "pubmed")
     if source_id.startswith("PMC:"):
+        # NCBI PMC's path requires the ``PMC`` prefix on the accession.
+        # Source ids come in two flavors (``PMC:PMC12345`` /
+        # ``PMC:12345``); normalize before formatting. Linking to
+        # ncbi.nlm.nih.gov rather than europepmc.org because the latter
+        # has had availability issues.
         pmc = source_id.split(":", 1)[1]
-        return (f"https://europepmc.org/article/PMC/{pmc}", "pmc")
+        if not pmc.upper().startswith("PMC"):
+            pmc = f"PMC{pmc}"
+        return (f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmc}/", "pmc")
     if source_id.startswith("UniProt:"):
         acc = source_id.split(":", 1)[1]
         return (f"https://www.uniprot.org/uniprotkb/{acc}/entry", "uniprot")

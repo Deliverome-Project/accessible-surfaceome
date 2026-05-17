@@ -274,6 +274,33 @@ a.evi-chip:hover { background: var(--accent); color: white; }
 ul.risks { margin: 0.3rem 0 0; padding-left: 1.2rem; }
 ul.risks li { font-size: 0.88rem; margin-bottom: 0.2rem; }
 
+/* ---- Timing section ---- */
+.timing-bar {
+  display: flex; width: 100%; height: 28px;
+  border-radius: 4px; overflow: hidden;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  margin: 0.5rem 0 0.4rem;
+}
+.bar-seg { height: 100%; }
+.bar-legend-row {
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+.bar-legend { display: inline-flex; align-items: center; gap: 0.3rem; }
+details.timing-detail { margin-top: 0.5rem; }
+details.timing-detail summary {
+  cursor: pointer; color: var(--fg-muted);
+  font-size: 0.86rem; padding: 0.3rem 0;
+}
+table.timing-table td.num, table.timing-table th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+table.timing-table code {
+  font-family: ui-monospace, monospace; font-size: 0.78rem;
+}
+
 footer {
   margin-top: 2rem; padding-top: 1rem;
   border-top: 1px solid var(--border);
@@ -352,6 +379,7 @@ footer {
       </div>
     </section>
     
+
 
     <section class="block">
       <h2>Section 1 — Surface evidence</h2>
@@ -730,7 +758,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_02</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">introduction</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">review_assertion</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -835,7 +863,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_09</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">in_situ_hybridization</span><span class="badge badge-amber">secondary</span><span class="badge badge-amber">ambiguous</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -850,7 +878,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_10</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12916076" target="_blank" rel="noopener">PMC:PMC12916076 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12916076/" target="_blank" rel="noopener">PMC:PMC12916076 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-amber">secondary</span><span class="badge badge-amber">ambiguous</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -865,7 +893,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_11</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12916076" target="_blank" rel="noopener">PMC:PMC12916076 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12916076/" target="_blank" rel="noopener">PMC:PMC12916076 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">contradictory</span><span class="badge badge-lavender">western_blot</span><span class="badge badge-green">primary</span><span class="badge badge-red">refutes</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -880,7 +908,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_12</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12916076" target="_blank" rel="noopener">PMC:PMC12916076 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12916076/" target="_blank" rel="noopener">PMC:PMC12916076 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-red">refutes</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -895,7 +923,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_13</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -910,7 +938,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_14</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -925,7 +953,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_15</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12462478" target="_blank" rel="noopener">PMC:PMC12462478 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12462478/" target="_blank" rel="noopener">PMC:PMC12462478 ↗</a>
           <span class="section">introduction</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">review_assertion</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -940,7 +968,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_16</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12071931" target="_blank" rel="noopener">PMC:PMC12071931 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12071931/" target="_blank" rel="noopener">PMC:PMC12071931 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">review_assertion</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
@@ -1015,7 +1043,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_05</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">introduction</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">review_assertion</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1030,7 +1058,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_06</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rna_seq</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1045,7 +1073,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_07</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1060,7 +1088,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_08</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1075,7 +1103,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_09</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1090,7 +1118,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_10</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">in_situ_hybridization</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1105,7 +1133,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_11</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">in_situ_hybridization</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1120,7 +1148,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_12</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12920073" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/" target="_blank" rel="noopener">PMC:PMC12920073 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">in_situ_hybridization</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1135,7 +1163,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_13</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702673" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
           <span class="section">introduction</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rna_seq</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1150,7 +1178,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_14</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702673" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1165,7 +1193,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_15</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702673" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-red">refutes</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1180,7 +1208,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_16</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702673" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-red">refutes</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1255,7 +1283,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_21</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702673" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1270,7 +1298,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_22</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702673" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1285,7 +1313,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_23</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702673" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/" target="_blank" rel="noopener">PMC:PMC12702673 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>

@@ -274,6 +274,33 @@ a.evi-chip:hover { background: var(--accent); color: white; }
 ul.risks { margin: 0.3rem 0 0; padding-left: 1.2rem; }
 ul.risks li { font-size: 0.88rem; margin-bottom: 0.2rem; }
 
+/* ---- Timing section ---- */
+.timing-bar {
+  display: flex; width: 100%; height: 28px;
+  border-radius: 4px; overflow: hidden;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  margin: 0.5rem 0 0.4rem;
+}
+.bar-seg { height: 100%; }
+.bar-legend-row {
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+.bar-legend { display: inline-flex; align-items: center; gap: 0.3rem; }
+details.timing-detail { margin-top: 0.5rem; }
+details.timing-detail summary {
+  cursor: pointer; color: var(--fg-muted);
+  font-size: 0.86rem; padding: 0.3rem 0;
+}
+table.timing-table td.num, table.timing-table th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+table.timing-table code {
+  font-family: ui-monospace, monospace; font-size: 0.78rem;
+}
+
 footer {
   margin-top: 2rem; padding-top: 1rem;
   border-top: 1px solid var(--border);
@@ -352,6 +379,7 @@ footer {
       </div>
     </section>
     
+
 
     <section class="block">
       <h2>Section 1 — Surface evidence</h2>
@@ -1067,7 +1095,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_04</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12858401" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12858401/" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1082,7 +1110,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_05</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13010625" target="_blank" rel="noopener">PMC:PMC13010625 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13010625/" target="_blank" rel="noopener">PMC:PMC13010625 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1097,7 +1125,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_06</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11965450" target="_blank" rel="noopener">PMC:PMC11965450 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11965450/" target="_blank" rel="noopener">PMC:PMC11965450 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">crystal_structure</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1112,7 +1140,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_07</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10948148" target="_blank" rel="noopener">PMC:PMC10948148 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10948148/" target="_blank" rel="noopener">PMC:PMC10948148 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">cryo_em</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1127,7 +1155,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_08</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10948148" target="_blank" rel="noopener">PMC:PMC10948148 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10948148/" target="_blank" rel="noopener">PMC:PMC10948148 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">cryo_em</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1142,7 +1170,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_09</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12827627" target="_blank" rel="noopener">PMC:PMC12827627 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12827627/" target="_blank" rel="noopener">PMC:PMC12827627 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">crystal_structure</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1157,7 +1185,7 @@ footer {
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_10</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC8887186" target="_blank" rel="noopener">PMC:PMC8887186 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8887186/" target="_blank" rel="noopener">PMC:PMC8887186 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">topology</span><span class="badge badge-lavender">crystal_structure</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1173,7 +1201,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_11</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12827627" target="_blank" rel="noopener">PMC:PMC12827627 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12827627/" target="_blank" rel="noopener">PMC:PMC12827627 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">crystal_structure</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1188,7 +1216,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_12</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12827627" target="_blank" rel="noopener">PMC:PMC12827627 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12827627/" target="_blank" rel="noopener">PMC:PMC12827627 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">cryo_em</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1203,7 +1231,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_13</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13054837" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1218,7 +1246,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_14</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13054837" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1233,7 +1261,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_15</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13088391" target="_blank" rel="noopener">PMC:PMC13088391 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13088391/" target="_blank" rel="noopener">PMC:PMC13088391 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1248,7 +1276,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_16</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13088391" target="_blank" rel="noopener">PMC:PMC13088391 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13088391/" target="_blank" rel="noopener">PMC:PMC13088391 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1263,7 +1291,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_17</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13096901" target="_blank" rel="noopener">PMC:PMC13096901 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13096901/" target="_blank" rel="noopener">PMC:PMC13096901 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-red">refutes</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1278,7 +1306,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_18</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13096901" target="_blank" rel="noopener">PMC:PMC13096901 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13096901/" target="_blank" rel="noopener">PMC:PMC13096901 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1293,7 +1321,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_19</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13102911" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13102911/" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1308,7 +1336,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_20</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13102911" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13102911/" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1323,7 +1351,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_21</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1338,7 +1366,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_22</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1353,7 +1381,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_23</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9038772" target="_blank" rel="noopener">PMC:PMC9038772 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9038772/" target="_blank" rel="noopener">PMC:PMC9038772 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1368,7 +1396,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_24</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12674851" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1383,7 +1411,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_25</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12674851" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1398,7 +1426,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_26</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12674851" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1413,7 +1441,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_27</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1428,7 +1456,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_28</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1443,7 +1471,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_29</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10337807" target="_blank" rel="noopener">PMC:PMC10337807 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10337807/" target="_blank" rel="noopener">PMC:PMC10337807 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1458,7 +1486,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_30</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10696767" target="_blank" rel="noopener">PMC:PMC10696767 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10696767/" target="_blank" rel="noopener">PMC:PMC10696767 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1473,7 +1501,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_31</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10696767" target="_blank" rel="noopener">PMC:PMC10696767 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10696767/" target="_blank" rel="noopener">PMC:PMC10696767 ↗</a>
           <span class="section">introduction</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1488,7 +1516,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_32</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10958106" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1503,7 +1531,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_33</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10958106" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1518,7 +1546,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_34</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11964241" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1533,7 +1561,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_35</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11964241" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1548,7 +1576,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_36</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11964241" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1563,7 +1591,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_37</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12022999" target="_blank" rel="noopener">PMC:PMC12022999 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12022999/" target="_blank" rel="noopener">PMC:PMC12022999 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1578,7 +1606,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_38</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9788433" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1593,7 +1621,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_39</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9788433" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1608,7 +1636,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_40</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12765945" target="_blank" rel="noopener">PMC:PMC12765945 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12765945/" target="_blank" rel="noopener">PMC:PMC12765945 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1623,7 +1651,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_41</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9890520" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1638,7 +1666,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_42</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9890520" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">western_blot</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1653,7 +1681,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_43</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9890520" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">western_blot</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1668,7 +1696,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_44</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9890520" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1683,7 +1711,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_45</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12749419" target="_blank" rel="noopener">PMC:PMC12749419 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12749419/" target="_blank" rel="noopener">PMC:PMC12749419 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1698,7 +1726,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_46</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12749419" target="_blank" rel="noopener">PMC:PMC12749419 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12749419/" target="_blank" rel="noopener">PMC:PMC12749419 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">western_blot</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1713,7 +1741,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_47</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12858401" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12858401/" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1728,7 +1756,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_48</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12858401" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12858401/" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1743,7 +1771,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_49</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12858401" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12858401/" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1758,7 +1786,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_50</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12858401" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12858401/" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1773,7 +1801,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_51</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12858401" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12858401/" target="_blank" rel="noopener">PMC:PMC12858401 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1788,7 +1816,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_52</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13010625" target="_blank" rel="noopener">PMC:PMC13010625 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13010625/" target="_blank" rel="noopener">PMC:PMC13010625 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">western_blot</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1803,7 +1831,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_53</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13010625" target="_blank" rel="noopener">PMC:PMC13010625 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13010625/" target="_blank" rel="noopener">PMC:PMC13010625 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">western_blot</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1818,7 +1846,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_54</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13028177" target="_blank" rel="noopener">PMC:PMC13028177 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13028177/" target="_blank" rel="noopener">PMC:PMC13028177 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1833,7 +1861,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a1_evi_55</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11964241" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-amber">secondary</span><span class="badge badge-amber">ambiguous</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1878,7 +1906,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_03</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12674851" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1893,7 +1921,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_04</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12674851" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/" target="_blank" rel="noopener">PMC:PMC12674851 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1908,7 +1936,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_05</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1923,7 +1951,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_06</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">immunohistochemistry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1938,7 +1966,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_07</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1953,7 +1981,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_08</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13039422" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13039422/" target="_blank" rel="noopener">PMC:PMC13039422 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rna_seq</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -1968,7 +1996,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_09</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13054837" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1983,7 +2011,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_10</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13054837" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/" target="_blank" rel="noopener">PMC:PMC13054837 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -1998,7 +2026,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_11</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13102911" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13102911/" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2013,7 +2041,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_12</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13102911" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13102911/" target="_blank" rel="noopener">PMC:PMC13102911 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2028,7 +2056,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_13</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13088391" target="_blank" rel="noopener">PMC:PMC13088391 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13088391/" target="_blank" rel="noopener">PMC:PMC13088391 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -2043,7 +2071,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_14</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9788433" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2058,7 +2086,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_15</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9788433" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/" target="_blank" rel="noopener">PMC:PMC9788433 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2073,7 +2101,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_16</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10958106" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-green">conf: strong</span><span class="badge badge-green">anchored</span></div>
@@ -2088,7 +2116,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_17</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10958106" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/" target="_blank" rel="noopener">PMC:PMC10958106 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2103,7 +2131,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_18</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12765945" target="_blank" rel="noopener">PMC:PMC12765945 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12765945/" target="_blank" rel="noopener">PMC:PMC12765945 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2118,7 +2146,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_19</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC13068435" target="_blank" rel="noopener">PMC:PMC13068435 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13068435/" target="_blank" rel="noopener">PMC:PMC13068435 ↗</a>
           <span class="section">abstract</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2133,7 +2161,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_20</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC12702325" target="_blank" rel="noopener">PMC:PMC12702325 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702325/" target="_blank" rel="noopener">PMC:PMC12702325 ↗</a>
           <span class="section">figure_legend</span>
         </div>
         <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2148,7 +2176,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_21</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11964241" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2163,7 +2191,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_22</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11964241" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">rt_qpcr</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2178,7 +2206,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_23</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC11964241" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/" target="_blank" rel="noopener">PMC:PMC11964241 ↗</a>
           <span class="section">results</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2193,7 +2221,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_24</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC10377392" target="_blank" rel="noopener">PMC:PMC10377392 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10377392/" target="_blank" rel="noopener">PMC:PMC10377392 ↗</a>
           <span class="section">discussion</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
@@ -2208,7 +2236,7 @@ To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then d
       <header class="evi-header">
         <div class="evi-id-row">
           <span class="evi-id">a2_evi_25</span>
-          <a class="src" href="https://europepmc.org/article/PMC/PMC9890520" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/" target="_blank" rel="noopener">PMC:PMC9890520 ↗</a>
           <span class="section">methods</span>
         </div>
         <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">western_blot</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
