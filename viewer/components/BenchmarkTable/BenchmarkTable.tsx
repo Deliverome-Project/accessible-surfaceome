@@ -46,9 +46,11 @@ const ROW_OVERSCAN = 12;
 // truth_class + uniprot columns were dropped — truth_verdict + the
 // per-DB and per-model verdict pills carry the same signal, and the
 // UniProt accession is already in the drawer / TSV / per-gene page.
-// Total ~50rem so the table doesn't claim the full viewport.
+// Truth column is sized to fit "contextual" (10 chars) comfortably.
+// Total ~55rem — the .wrap max-width matches this exactly so the
+// rows end flush with the Opus column instead of trailing white-space.
 const GRID_TEMPLATE =
-  "12rem 4.5rem " +
+  "12rem 6rem " +
   "4.2rem 3rem 4rem 3.6rem 3rem " +
   "6rem 6.5rem 5.6rem";
 
@@ -354,6 +356,7 @@ export function BenchmarkTable({
             activeKey={sortKey}
             dir={sortDir}
             onClick={toggleSort}
+            extraClass={styles.headerModelCell}
           />
           {DB_KEYS.map((d, i) => (
             // First DB cell doubles as a "# DBs" sort target — click to

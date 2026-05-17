@@ -17,12 +17,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
-  /* The grid is intrinsically ~52rem wide (10 columns at ~5rem avg).
-   * Cap the wrap to ~60rem so the table doesn't stretch across a full
-   * 1400px viewport — easier to scan when content has a comfortable
-   * reading width. Stays full-width below 980px so narrow viewports
-   * still get the whole grid. */
-  max-width: 60rem;
+  /* Width matches the grid template's intrinsic sum exactly
+   * (12 + 6 + 4.2 + 3 + 4 + 3.6 + 3 + 6 + 6.5 + 5.6 ≈ 53.9rem) so
+   * rows end flush with the Opus column instead of trailing
+   * whitespace. Left-aligned (no margin-inline: auto) — centering
+   * the table on the page made the layout feel orphaned vs the
+   * left-aligned hero / lede above it. */
+  max-width: 55rem;
   width: 100%;
 }
 
@@ -497,7 +498,9 @@
 }
 
 .truthCell {
-  justify-content: flex-start;
+  /* Centered to match the model verdict columns; the truth pill reads
+   * as a sibling of those (same verdict-tone styling). */
+  justify-content: center;
 }
 
 /* DB cell + dot — matches CatalogTable exactly (8×8 px teal-mid dot
