@@ -191,11 +191,15 @@ CONTEXTUAL_CALLOUTS = [
 ]
 
 
-def _fetch_catalog() -> list[dict]:
+def _fetch_catalog() -> tuple[list[dict], list[str]]:
+    """Return (rows, models). Catalog ``row_schema=3`` emits per-row triage
+    as ``tr: [variant_0, variant_1, ...]`` indexed by ``models``.
+    """
     print(f"Fetching {CATALOG_URL} ...")
     r = httpx.get(CATALOG_URL, timeout=60.0)
     r.raise_for_status()
-    return r.json()["rows"]
+    body = r.json()
+    return body["rows"], body.get("models") or []
 
 
 def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, y_max):
@@ -270,16 +274,26 @@ def _draw_callouts(ax, callouts, palette, title):
 def main() -> None:
     _apply_brand_style()
 
-    rows = _fetch_catalog()
-    print(f"  fetched {len(rows):,} rows")
+    rows, models = _fetch_catalog()
+    # Resolve Sonnet variant index from the models array (canonical figure
+    # uses claude-sonnet-4-6). Falls back to index 1 (historic default).
+    sonnet_idx = next(
+        (i for i, m in enumerate(models) if "sonnet" in (m or "").lower()),
+        1,
+    )
+    print(f"  fetched {len(rows):,} rows; sonnet = "
+          f"{models[sonnet_idx] if sonnet_idx < len(models) else '?'}")
 
     zero_db = [r for r in rows if r.get("db", 0) == 0]
     print(f"\nZero-DB universe: {len(zero_db):,} / {len(rows):,} "
           f"({100*len(zero_db)/len(rows):.1f}%)")
 
     def verdict_reason(row):
-        t = row.get("triage") or {}
-        return (t.get("verdict") or "unknown"), (t.get("reason") or "other")
+        tr = row.get("tr") or []
+        entry = tr[sonnet_idx] if 0 <= sonnet_idx < len(tr) else None
+        if entry and isinstance(entry, list) and len(entry) >= 2:
+            return (entry[0] or "unknown"), (entry[1] or "other")
+        return "unknown", "other"
 
     yes_counts: Counter = Counter()
     ctx_counts: Counter = Counter()

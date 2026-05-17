@@ -10,21 +10,47 @@ import type {
   BenchmarkVariantResult,
 } from "../../lib/surfaceome-types";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
+import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import { RationaleDrawer, type SelectedCell } from "./RationaleDrawer";
 import styles from "./BenchmarkTable.module.css";
+
+// Sortable column key. Matches the keys we surface in the header row;
+// numeric sorts (per-DB / per-model) use n_db_surface and a verdict-rank
+// derived from the row. UniProt sort dropped with the column.
+type SortKey =
+  | "gene_symbol"
+  | "truth"
+  | "n_db_surface"
+  | "haiku_ncbi"
+  | "sonnet_ncbi"
+  | "opus_ncbi";
+
+type SortDir = "asc" | "desc";
+
+// Maps verdict strings to a numeric rank for stable sorting. Order is
+// yes (3) > contextual (2) > no (1) > unknown / null (0), so DESC puts
+// the "yes" rows on top — matches the figure-style narrative.
+const VERDICT_RANK: Record<string, number> = {
+  yes: 3,
+  contextual: 2,
+  no: 1,
+};
+function verdictRank(v: string | null | undefined): number {
+  return v ? (VERDICT_RANK[v] ?? 0) : 0;
+}
 
 const ROW_ESTIMATE_PX = 44;
 const ROW_OVERSCAN = 12;
 
-// Resting-grid template: toggle | gene | uniprot | truth | 5 DB dots |
-// 3 model NCBI pills. The truth_class column was dropped — `truth_verdict`
-// + the per-DB and per-model verdict pills carry the same signal, and
-// the prose class label ("secreted negative" etc.) competed visually
-// with the verdict pills without adding information.
+// Resting-grid template: symbol | truth | # DBs (nBubble) | 5 DB dots |
+// 3 model NCBI pills. Mirrors the CatalogTable layout exactly — the
+// nBubble count column sits before the per-DB dots, same widths +
+// styling as the homepage. .wrap max-width = grid sum + scrollbar.
 const GRID_TEMPLATE =
-  "12rem 5.5rem 4.5rem " +
-  "4.2rem 3rem 4rem 3.6rem 3rem " +
-  "6rem 6.5rem 5.6rem";
+  "12rem 8rem " +
+  "3.6rem " +                         // n_db_surface count bubble
+  "4.2rem 3rem 4rem 3.6rem 3rem " +   // 5 DB dot columns
+  "7.8rem 8.5rem 7.2rem";              // 3 model NCBI pills
 
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
@@ -96,21 +122,42 @@ export function BenchmarkTable({
   const { rows, models } = matrix;
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<TruthFilter>("all");
-  // Row-level expand: shows the full model × variant grid for that gene.
-  const [rowExpanded, setRowExpanded] = useState<Set<string>>(new Set());
+  // Row-level expand: a single gene's full model × variant grid is
+  // open at a time. Clicking another gene's chevron / verdict cell
+  // collapses the previous expansion — keeps the table scannable
+  // when the reader is moving through many rows.
+  const [expandedRow, setExpandedRow] = useState<string | null>(null);
   // Cell selection: which (gene, model, variant) the right-side
   // rationale drawer is showing. One cell at a time — drawer content
   // swaps as the reader clicks through cells; clicking the same cell
   // twice closes the drawer.
   const [selectedCell, setSelectedCell] = useState<SelectedCell | null>(null);
+  // Sort state — defaults to gene_symbol ASC so the resting view
+  // matches the figure-style alphabetical scan.
+  const [sortKey, setSortKey] = useState<SortKey>("gene_symbol");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  function toggleSort(key: SortKey) {
+    setSortKey((prev) => {
+      if (prev === key) {
+        // Same column → flip direction.
+        setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+        return prev;
+      }
+      // New column → reset to a sensible default (text ASC, numeric DESC).
+      const isNumeric =
+        key === "n_db_surface" ||
+        key === "haiku_ncbi" ||
+        key === "sonnet_ncbi" ||
+        key === "opus_ncbi" ||
+        key === "truth";
+      setSortDir(isNumeric ? "desc" : "asc");
+      return key;
+    });
+  }
 
   function toggleRow(symbol: string) {
-    setRowExpanded((prev) => {
-      const next = new Set(prev);
-      if (next.has(symbol)) next.delete(symbol);
-      else next.add(symbol);
-      return next;
-    });
+    setExpandedRow((prev) => (prev === symbol ? null : symbol));
   }
 
   function handleSelectCell(symbol: string, model: string, variant: string) {
@@ -121,12 +168,8 @@ export function BenchmarkTable({
     );
     // Auto-expand the parent row so the selected cell stays visible
     // when the reader closes the drawer or clicks a different cell.
-    setRowExpanded((prev) => {
-      if (prev.has(symbol)) return prev;
-      const next = new Set(prev);
-      next.add(symbol);
-      return next;
-    });
+    // Single-row only — collapses whatever else was open.
+    setExpandedRow(symbol);
   }
 
   // ESC closes the drawer. Installed on the table, not the drawer, so
@@ -141,8 +184,13 @@ export function BenchmarkTable({
   }, [selectedCell]);
 
   function handleDownload() {
-    const tsv = buildBenchmarkTsv(matrix);
-    downloadTextFile("surfacebench.tsv", tsv);
+    // Download the current filtered + sorted view (matches the
+    // CatalogTable pattern — what you see is what gets saved). Clear
+    // the search / chips to download the whole 147 rows.
+    const tsv = buildBenchmarkTsv(matrix, filtered);
+    const isFiltered = filtered.length !== rows.length;
+    const suffix = isFiltered ? `-filtered-${filtered.length}` : "";
+    downloadTextFile(`surfacebench${suffix}.tsv`, tsv);
   }
 
   const counts = useMemo(() => {
@@ -158,7 +206,7 @@ export function BenchmarkTable({
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return rows.filter((r) => {
+    const passing = rows.filter((r) => {
       if (q) {
         const hay =
           `${r.gene_symbol} ${r.uniprot_acc} ${r.class} ${r.truth_reason}`.toLowerCase();
@@ -172,7 +220,20 @@ export function BenchmarkTable({
       }
       return true;
     });
-  }, [rows, query, filter, models]);
+    // Apply sort on a copy so the source `rows` order is preserved
+    // (matters when the user clears the sort by switching to a column
+    // and then back, expecting alphabetical default).
+    const dir = sortDir === "asc" ? 1 : -1;
+    const sorted = [...passing].sort((a, b) => {
+      const av = sortValue(a, sortKey);
+      const bv = sortValue(b, sortKey);
+      if (typeof av === "string" && typeof bv === "string") {
+        return av.localeCompare(bv) * dir;
+      }
+      return ((av as number) - (bv as number)) * dir;
+    });
+    return sorted;
+  }, [rows, query, filter, models, sortKey, sortDir]);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -238,8 +299,9 @@ export function BenchmarkTable({
             <FilterChip
               on={filter === "disagreements"}
               onClick={() => setFilter("disagreements")}
+              title="Rows where at least one LLM (any model × any prompt variant) disagrees with the curated truth verdict. Not LLM-vs-LLM — strictly LLM-vs-truth."
             >
-              Disagreements{" "}
+              LLM ≠ truth{" "}
               <span className={styles.chipCount}>{counts.disagreements}</span>
             </FilterChip>
           </div>
@@ -247,9 +309,18 @@ export function BenchmarkTable({
             type="button"
             className={styles.downloadBtn}
             onClick={handleDownload}
-            title={`Download all ${rows.length} rows as TSV — every (model, variant) cell flattened to its own columns`}
+            title={
+              filtered.length === rows.length
+                ? `Download all ${rows.length} bench rows as TSV — every (model, variant) cell flattened to its own columns`
+                : `Download ${filtered.length} filtered rows as TSV (of ${rows.length} total)`
+            }
           >
-            TSV ↓
+            TSV ↓{" "}
+            <span className={styles.downloadCount}>
+              {filtered.length === rows.length
+                ? rows.length
+                : `${filtered.length}/${rows.length}`}
+            </span>
           </button>
         </div>
       </div>
@@ -278,11 +349,30 @@ export function BenchmarkTable({
         aria-rowcount={filtered.length + 1}
       >
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
-          <div className={styles.headerCell} role="columnheader">Gene</div>
-          <div className={`${styles.headerCell} ${styles.headerMono}`} role="columnheader">
-            UniProt
-          </div>
-          <div className={styles.headerCell} role="columnheader">Truth</div>
+          <SortHeader
+            label="Symbol"
+            sortKey="gene_symbol"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+          />
+          <SortHeader
+            label="Truth"
+            sortKey="truth"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerModelCell}
+          />
+          <SortHeader
+            label="DB votes"
+            sortKey="n_db_surface"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerDbCell}
+            title="Count of the 5 gating DBs that voted yes for this gene. Same column label as the homepage CatalogTable. Click to sort rows by DB consensus."
+          />
           {DB_KEYS.map((d) => (
             <div
               key={`hdr-db-${d.key}`}
@@ -293,23 +383,49 @@ export function BenchmarkTable({
               {d.long}
             </div>
           ))}
-          {MODEL_LABELS.map((m) => (
-            <div
-              key={`hdr-mdl-${m.id}`}
-              className={`${styles.headerCell} ${styles.headerModelCell}`}
-              title={`${m.long} · ncbi variant`}
-              role="columnheader"
-            >
-              {m.long}
-            </div>
-          ))}
+          <SortHeader
+            label={MODEL_LABELS[0].long}
+            sortKey="haiku_ncbi"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerModelCell}
+            title={`${MODEL_LABELS[0].long} · ncbi variant`}
+          />
+          <SortHeader
+            label={MODEL_LABELS[1].long}
+            sortKey="sonnet_ncbi"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerModelCell}
+            title={`${MODEL_LABELS[1].long} · ncbi variant`}
+          />
+          <SortHeader
+            label={MODEL_LABELS[2].long}
+            sortKey="opus_ncbi"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            extraClass={styles.headerModelCell}
+            title={`${MODEL_LABELS[2].long} · ncbi variant`}
+          />
         </div>
 
         <div
           className={styles.body}
           style={
             mounted && filtered.length > 0
-              ? { height: totalSize, position: "relative" }
+              ? {
+                  // `minHeight` (not `height`) so when a single-gene
+                  // search match has content taller than the
+                  // estimateSize (e.g. a 2-line gene name +
+                  // synonyms), the row doesn't get clipped. The
+                  // virtualizer's measureElement still drives the
+                  // accurate per-row positioning above this.
+                  minHeight: totalSize,
+                  position: "relative",
+                }
               : undefined
           }
           role="rowgroup"
@@ -329,11 +445,15 @@ export function BenchmarkTable({
                     measureRef={virtualizer.measureElement}
                     dataIndex={item.index}
                     virtualStart={item.start}
-                    isExpanded={rowExpanded.has(r.gene_symbol)}
+                    isExpanded={expandedRow === r.gene_symbol}
                     onToggleRow={toggleRow}
                     selectedCell={selectedCell}
                     onSelectCell={handleSelectCell}
                     hasDeepDive={deepDiveGenes.has(r.gene_symbol)}
+                    isQueuedDeepDive={isQueuedDeepDive(
+                      r.gene_symbol,
+                      deepDiveGenes.has(r.gene_symbol),
+                    )}
                     geneName={geneNames?.[r.gene_symbol]}
                   />
                 );
@@ -346,6 +466,15 @@ export function BenchmarkTable({
           ) : null}
         </div>
       </div>
+
+      {/* Backdrop overlay — click anywhere off the drawer to close.
+       *  ESC also works (handler installed above). Stays under the
+       *  drawer's z-index so the drawer itself stays interactive. */}
+      <div
+        className={`${styles.backdrop} ${selectedCell ? styles.backdropOpen : ""}`}
+        aria-hidden="true"
+        onClick={() => setSelectedCell(null)}
+      />
 
       <RationaleDrawer
         selected={selectedCell}
@@ -360,14 +489,79 @@ export function BenchmarkTable({
   );
 }
 
+/** Click-to-sort column header. Renders an inline `thBtn` (label + arrow
+ *  slot) inside a header cell — same shape as CatalogTable so the two
+ *  tables share a sort grammar. The arrow slot is always reserved (a
+ *  thin space when inactive) to avoid layout shift on toggle. */
+function SortHeader({
+  label,
+  sortKey,
+  activeKey,
+  dir,
+  onClick,
+  extraClass,
+  title,
+}: {
+  label: string;
+  sortKey: SortKey;
+  activeKey: SortKey;
+  dir: SortDir;
+  onClick: (k: SortKey) => void;
+  extraClass?: string;
+  title?: string;
+}) {
+  const active = sortKey === activeKey;
+  return (
+    <div
+      role="columnheader"
+      aria-sort={active ? (dir === "asc" ? "ascending" : "descending") : "none"}
+      className={`${styles.headerCell} ${extraClass ?? ""}`}
+    >
+      <button
+        type="button"
+        onClick={() => onClick(sortKey)}
+        className={`${styles.thBtn} ${active ? styles.thBtnActive : ""}`}
+        title={title ?? `Sort by ${label}`}
+      >
+        <span>{label}</span>
+        <span className={styles.sortIndicator} aria-hidden="true">
+          {active ? (dir === "asc" ? "▲" : "▼") : " "}
+        </span>
+      </button>
+    </div>
+  );
+}
+
+/** Map a benchmark row + sort key onto a primitive that the sort
+ *  function can compare. Strings get .localeCompare; numbers go
+ *  straight to subtraction. */
+function sortValue(r: BenchmarkRow, key: SortKey): string | number {
+  switch (key) {
+    case "gene_symbol":
+      return r.gene_symbol.toUpperCase();
+    case "truth":
+      return verdictRank(r.truth_verdict);
+    case "n_db_surface":
+      return r.n_db_surface ?? 0;
+    case "haiku_ncbi":
+      return verdictRank(r.verdicts?.["claude-haiku-4-5"]?.ncbi?.verdict);
+    case "sonnet_ncbi":
+      return verdictRank(r.verdicts?.["claude-sonnet-4-6"]?.ncbi?.verdict);
+    case "opus_ncbi":
+      return verdictRank(r.verdicts?.["claude-opus-4-7"]?.ncbi?.verdict);
+  }
+}
+
 function FilterChip({
   on,
   onClick,
   children,
+  title,
 }: {
   on: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  title?: string;
 }) {
   return (
     <button
@@ -375,6 +569,7 @@ function FilterChip({
       className={`${styles.chip} ${on ? styles.chipOn : ""}`}
       onClick={onClick}
       aria-pressed={on}
+      title={title}
     >
       {children}
     </button>
@@ -391,6 +586,7 @@ function BenchRowView({
   selectedCell,
   onSelectCell,
   hasDeepDive,
+  isQueuedDeepDive,
   geneName,
 }: {
   row: BenchmarkRow;
@@ -402,6 +598,7 @@ function BenchRowView({
   selectedCell: SelectedCell | null;
   onSelectCell: (symbol: string, model: string, variant: string) => void;
   hasDeepDive: boolean;
+  isQueuedDeepDive: boolean;
   geneName?: string;
 }) {
   const style: React.CSSProperties | undefined =
@@ -444,14 +641,21 @@ function BenchRowView({
       ref={measureRef}
       data-index={dataIndex}
       role="row"
-      className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""}`}
+      className={`${styles.row} ${isExpanded ? styles.rowExpanded : ""} ${
+        isQueuedDeepDive ? styles.rowQueuedDeepDive : ""
+      }`}
       style={style}
     >
       <div className={`${styles.cell} ${styles.geneCell}`} role="cell">
         {geneCell}
-      </div>
-      <div className={`${styles.cell} ${styles.uniprotCell}`} role="cell">
-        {row.uniprot_acc}
+        {isQueuedDeepDive ? (
+          <span
+            className={styles.queuedDeepDivePill}
+            title="Queued for deep-dive run — agent hasn't been executed yet. See viewer/lib/queued-deep-dives.ts."
+          >
+            queued
+          </span>
+        ) : null}
       </div>
       <div className={`${styles.cell} ${styles.truthCell}`} role="cell">
         <span
@@ -459,6 +663,13 @@ function BenchRowView({
           title={row.truth_reason.replace(/_/g, " ")}
         >
           {row.truth_verdict}
+        </span>
+      </div>
+      {/* DB consensus count — same nBubble pattern as CatalogTable;
+       *  color-coded by data-n so high-consensus genes pop visually. */}
+      <div className={`${styles.cell} ${styles.nCell}`} role="cell">
+        <span className={styles.nBubble} data-n={row.n_db_surface ?? 0}>
+          {row.n_db_surface ?? 0}
         </span>
       </div>
       {DB_KEYS.map((d) => {
@@ -475,9 +686,18 @@ function BenchRowView({
         );
       })}
       {MODEL_LABELS.map((m) => {
-        // Headline column: NCBI verdict for this model.
+        // Headline column: NCBI verdict for this model. Clickable —
+        // opens the rationale drawer for this (gene, model, ncbi)
+        // cell. Same drawer the expanded-row variant grid opens, so
+        // a reader doesn't have to expand the row to read the
+        // reasoning for the headline NCBI verdict.
         const cell: BenchmarkVariantResult | null | undefined =
           row.verdicts?.[m.id]?.ncbi;
+        const isSelected =
+          selectedCell != null &&
+          selectedCell.symbol === row.gene_symbol &&
+          selectedCell.model === m.id &&
+          selectedCell.variant === "ncbi";
         return (
           <div
             key={`${m.id}-ncbi`}
@@ -485,20 +705,29 @@ function BenchRowView({
             role="cell"
           >
             {cell?.verdict ? (
-              <span
-                className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
-                  isCorrect(cell.verdict, row.truth_verdict)
-                    ? styles.verdictCorrect
-                    : styles.verdictWrong
+              <button
+                type="button"
+                onClick={() => onSelectCell(row.gene_symbol, m.id, "ncbi")}
+                aria-pressed={isSelected}
+                className={`${styles.modelVerdictBtn} ${
+                  isSelected ? styles.modelVerdictBtnSelected : ""
                 }`}
                 title={
                   cell.reason
-                    ? `${m.long} · ncbi → ${cell.verdict} (${cell.reason.replace(/_/g, " ")})`
-                    : `${m.long} · ncbi → ${cell.verdict}`
+                    ? `${m.long} · ncbi → ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for full reasoning`
+                    : `${m.long} · ncbi → ${cell.verdict} — click for full reasoning`
                 }
               >
-                {cell.verdict}
-              </span>
+                <span
+                  className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
+                    isCorrect(cell.verdict, row.truth_verdict)
+                      ? styles.verdictCorrect
+                      : styles.verdictWrong
+                  }`}
+                >
+                  {cell.verdict}
+                </span>
+              </button>
             ) : (
               <span className={styles.dim} title={`${m.long} · ncbi: no run on file`}>
                 —
@@ -622,7 +851,12 @@ function ModelVariantRow({
 
 /** Wide TSV download — one row per gene, columns for every cell
  *  (model × variant) in the matrix. */
-function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
+function buildBenchmarkTsv(matrix: BenchmarkMatrix, rows?: BenchmarkRow[]): string {
+  // Optional `rows` arg lets the caller download a filtered + sorted
+  // subset (what they see in the table) instead of the full matrix.
+  // The header set + column order is always the same so a script
+  // pinning to this TSV's shape doesn't break.
+  const sourceRows = rows ?? matrix.rows;
   const headers: string[] = [
     "gene_symbol",
     "uniprot_acc",
@@ -647,7 +881,7 @@ function buildBenchmarkTsv(matrix: BenchmarkMatrix): string {
     }
   }
 
-  const body: TsvCell[][] = matrix.rows.map((r) => {
+  const body: TsvCell[][] = sourceRows.map((r) => {
     const row: TsvCell[] = [
       r.gene_symbol,
       r.uniprot_acc,

@@ -184,8 +184,18 @@ def main() -> None:
     print(f"Fetching {CATALOG_URL} ...")
     r = httpx.get(CATALOG_URL, timeout=60)
     r.raise_for_status()
-    catalog_rows = r.json()["rows"]
-    print(f"  fetched {len(catalog_rows):,} catalog rows")
+    body = r.json()
+    catalog_rows = body["rows"]
+    models = body.get("models") or []
+    # Catalog ``row_schema=3`` emits ``tr: [variant_0, ..., variant_N]`` per
+    # row. Canonical figure uses claude-sonnet-4-6 — resolve its index from
+    # the models array, fallback to 1.
+    sonnet_idx = next(
+        (i for i, m in enumerate(models) if "sonnet" in (m or "").lower()),
+        1,
+    )
+    print(f"  fetched {len(catalog_rows):,} catalog rows; sonnet = "
+          f"{models[sonnet_idx] if sonnet_idx < len(models) else '?'}")
 
     cand = _fetch_tsv(CAND_TSV).set_index("uniprot_accession")
     opt = _fetch_tsv(OPT_CUTOFFS_TSV)
@@ -207,8 +217,9 @@ def main() -> None:
 
     records = []
     for row in catalog_rows:
-        t = row.get("triage") or {}
-        v = t.get("verdict")
+        tr = row.get("tr") or []
+        entry = tr[sonnet_idx] if 0 <= sonnet_idx < len(tr) else None
+        v = entry[0] if entry and isinstance(entry, list) and entry else None
         if v not in ("yes", "contextual", "no"):
             continue
         acc = row.get("uniprot") or ""

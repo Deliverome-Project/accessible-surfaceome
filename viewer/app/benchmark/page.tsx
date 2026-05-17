@@ -20,7 +20,7 @@ import styles from "./page.module.css";
 export const metadata = {
   title: "SurfaceBench · 147-gene triage benchmark",
   description:
-    "SurfaceBench — per-gene comparison of seven surface-membership databases against three LLM triage variants on a 147-gene benchmark.",
+    "SurfaceBench — per-gene comparison of five surface-membership databases against three LLM triage variants on a 147-gene benchmark.",
 };
 
 export default async function BenchmarkPage() {
@@ -41,7 +41,7 @@ export default async function BenchmarkPage() {
       <section className={`${styles.page} page-width`}>
         <header className={styles.head}>
           <h1 className={`h-data ${styles.title}`}>
-            147 genes, seven databases, three models.
+            147 genes, five databases, three models.
           </h1>
           <p className={styles.lede}>
             <strong>SurfaceBench</strong> is a 147-protein benchmark

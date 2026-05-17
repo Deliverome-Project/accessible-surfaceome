@@ -22,8 +22,13 @@ interface GeneHeaderProps {
   geneName?: { name: string; synonyms: string[] } | null;
   /** DeepTMHMM topology data for the canonical UniProt. Loaded
    *  server-side via ``loadStructureViewerData(uniprot_acc)``;
-   *  ``null`` for soluble proteins (DeepTMHMM has no membrane
-   *  topology) — header collapses back to single-column. */
+   *  ``null`` when no JSON exists for the UniProt — header
+   *  collapses back to single-column. Membrane-anchored cytoplasmic
+   *  proteins (DeepTMHMM type GLOB, e.g. SRC, myristoyl-anchored)
+   *  CAN still have a JSON when emitted via the build script's
+   *  ``--include-globular`` flag; the viewer paints them uniformly
+   *  intracellular and the caption is adjusted to describe the
+   *  membrane-anchoring rather than a transmembrane orientation. */
   structureData?: StructureViewerData | null;
 }
 
@@ -140,8 +145,17 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
                 className={styles.structureLink}
               >
                 AlphaFold DB
-              </a>{" "}
-              · DeepTMHMM topology · membrane horizontal, extracellular up
+              </a>
+              {structureData.deeptmhmm_type === "GLOB" ? (
+                <>
+                  {" "}· soluble cytoplasmic (DeepTMHMM ={" "}
+                  <span style={{ fontFamily: "var(--font-mono)" }}>GLOB</span>)
+                  · membrane-association via lipid anchor / interaction, not a
+                  TM helix
+                </>
+              ) : (
+                <> · DeepTMHMM topology · membrane horizontal, extracellular up</>
+              )}
             </p>
           </aside>
         ) : null}

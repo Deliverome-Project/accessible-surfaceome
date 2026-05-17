@@ -213,9 +213,38 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 # data/processed/triage_bench/mainbench_canonical_v1.tsv. Identical shape
 # to /v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1.
 uv run python scripts/export_mainbench_to_tsv.py
-git add data/processed/triage_bench/mainbench_canonical_v1.tsv
-git commit -m "chore(triage): refresh canonical TSV from public D1"
+
+# Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) into
+# the figure TSVs by joining each row against gene_identifier_public. Run
+# after ANY of the four figure TSVs are regenerated; idempotent.
+uv run python scripts/augment_figure_tsvs_with_stable_ids.py
+
+git add data/processed/triage_bench/mainbench_canonical_v1.tsv \
+        data/processed/candidate_universe/candidate_universe.tsv \
+        data/eval/triage_benchmark_v1.tsv \
+        data/processed/triage_bench/db_optimized_cutoffs.tsv
+git commit -m "chore(triage): refresh canonical TSVs from public D1 + augment stable IDs"
 ```
+
+### Figure-input TSV conventions
+
+Any TSV that drives a published figure must follow these conventions so external readers can reanalyze without re-resolving identifiers or doing multi-file joins for common questions.
+
+**1. Stable identifiers on every gene-keyed row.** Always carry `hgnc_id`, `hgnc_symbol`, `ensembl_gene`, `ncbi_gene_id`. Add `uniprot_acc` whenever the row references a protein, and `ensembl_canonical_protein` for isoform-specific rows. Per "Gene identifier resolution" above, `hgnc_id` is the canonical stable key — symbol-only joins silently misroute ~0.2% of human genes (COX1 / WAS class).
+
+**2. Denormalize common reanalysis questions** — a reader should answer typical questions in one filter, not a 3-way join. The augment script already denormalizes:
+- `candidate_universe.tsv` ← Sonnet verdict, deep-dive + bench-membership flags
+- `triage_benchmark_v1.tsv` ← `n_db_votes`, Sonnet verdict
+- `mainbench_canonical_v1.tsv` ← ground truth, `is_match`, 5 per-DB flags, `has_deep_dive`
+- `db_optimized_cutoffs.tsv` ← all 5 canonical surface_flags + cutoff variants + summary counts
+
+Decide by asking "is this a join a typical reanalyst needs for an obvious question?" — yes → add it.
+
+**3. Stay un-LFS and size-bounded.** Each figure TSV must be LFS-exempted (`-filter -diff -merge text` in `.gitattributes`) so `raw.githubusercontent.com` serves it as text. Practical cap ~5 MB; today's set is 2.4 MB across 4 TSVs. If a planned addition would blow the cap, prefer a sidecar / summary file / D1+Worker — not a wider TSV.
+
+**4. Never include full reasoning prose** — short coded reasons only (`predicted_reason`, `sonnet_reason`). Full `verdict_reasoning` stays in private D1.
+
+**5. New figure → fit data into existing TSVs first.** Only add a 6th TSV if the data is genuinely orthogonal, and if you do, immediately extend `scripts/augment_figure_tsvs_with_stable_ids.py` to cover it.
 
 CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
 

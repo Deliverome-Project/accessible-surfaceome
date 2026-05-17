@@ -275,6 +275,23 @@ async function handleCatalog(env) {
   ).all();
   const deepSet = new Set(deepRows.results.map((r) => r.gene_symbol));
 
+  // HGNC ID lookup keyed on the authoritative hgnc_symbol. Lets us
+  // attach hgnc_id to every catalog row so external reanalysts can
+  // cross-reference any other HGNC-keyed table without re-resolving
+  // from the (fragile) gene symbol — see CLAUDE.md "Gene identifier
+  // resolution". ~190 KB on the wire for 19k rows; small relative to
+  // the catalog's 5 MB payload.
+  const hgncByGene = new Map();
+  const hgncRows = await env.DB.prepare(
+    `SELECT hgnc_symbol, hgnc_id FROM gene_identifier_public
+      WHERE hgnc_id IS NOT NULL AND hgnc_id != ''`
+  ).all();
+  for (const r of hgncRows.results) {
+    if (r.hgnc_symbol && r.hgnc_id) {
+      hgncByGene.set(r.hgnc_symbol, r.hgnc_id);
+    }
+  }
+
   // Track which genes we've emitted so we can append deep-dive-only
   // genes (e.g. HSPA1A — conditional surface, doesn't pass the
   // universe gate) at the bottom.
@@ -314,6 +331,8 @@ async function handleCatalog(env) {
       db,
     };
     if (u.uniprot_acc) row.uniprot = u.uniprot_acc;
+    const hgnc = hgncByGene.get(u.gene_symbol);
+    if (hgnc) row.hgnc_id = hgnc;
     const t = packTriage(u.gene_symbol);
     if (t) row.tr = t;
     if (deepSet.has(u.gene_symbol)) row.deep_dive = true;
@@ -324,6 +343,8 @@ async function handleCatalog(env) {
   for (const sym of deepSet) {
     if (covered.has(sym)) continue;
     const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
+    const hgnc = hgncByGene.get(sym);
+    if (hgnc) row.hgnc_id = hgnc;
     const t = packTriage(sym);
     if (t) row.tr = t;
     rows.push(row);
@@ -352,6 +373,11 @@ async function handleCatalog(env) {
       // accordingly. v3 = per-model ncbi `tr` array replaces the
       // single `triage` object.
       row_schema: 3,
+      // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
+      // Self-describing for external reanalysts: decode with
+      //   const flags = db_keys.map((_, i) => (row.db >> i) & 1);
+      // Matches the encoding above + viewer/lib/surfaceome.ts.
+      db_keys: ["uniprot", "go", "surfy", "cspa", "hpa"],
       rows,
     },
     { ttl: CACHE_TTL_SHORT },

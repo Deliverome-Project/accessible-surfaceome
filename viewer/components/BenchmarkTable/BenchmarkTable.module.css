@@ -17,6 +17,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  /* Width matches the grid template's intrinsic sum exactly
+   * (12 + 8 + 3.6 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 65.9rem)
+   * so rows end flush with the Opus column instead of trailing
+   * whitespace. Left-aligned (no margin-inline: auto). */
+  max-width: 67rem;
+  width: 100%;
 }
 
 .meta {
@@ -211,6 +217,15 @@
   border-color: var(--ink-soft);
 }
 
+/* Row count next to the TSV ↓ glyph — matches CatalogTable.
+ * Renders as either "147" (full) or "27/147" (filtered subset) so
+ * the user always sees what they're about to download. */
+.downloadCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
 /* ============================================================
  * Table grid
  * ============================================================ */
@@ -242,6 +257,12 @@
 
 .rowExpanded {
   align-items: stretch;
+  /* When expanded, force the whole row (cells + the expanded block
+   * below) onto a unified white background. Without this, the zebra
+   * stripe / maroon-hover bg lingers on the original cells while the
+   * expanded block uses bg-soft, which reads as a half-finished
+   * surface. Using !important to override the .row:nth-child stripe. */
+  background: var(--bg) !important;
 }
 
 .headerRow {
@@ -265,16 +286,48 @@
   background: var(--maroon-soft);
 }
 
+/* Queued deep dive — gene has been marked for a deep-dive run but
+ * the agent hasn't run yet (e.g., manually added to the staging list
+ * before $/gene Sonnet calls). Stamped with an orange left-edge so
+ * the reader can spot pending work in the table. Strong enough to
+ * read on top of zebra striping; soft enough not to dominate. */
+.rowQueuedDeepDive {
+  background: rgba(217, 119, 6, 0.08) !important;
+  box-shadow: inset 3px 0 0 var(--amber-deepest);
+}
+
+.rowQueuedDeepDive:hover:not(.headerRow):not(.loadingRow):not(.empty) {
+  background: rgba(217, 119, 6, 0.14) !important;
+}
+
+.queuedDeepDivePill {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--amber-deepest);
+  background: var(--amber-tint);
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+}
+
 /* ============================================================
  * Cells
  * ============================================================ */
 
+/* Header typography matches CatalogTable's pattern exactly (mono 0.72rem,
+ * 0.04em letter-spacing, uppercase, muted color). The two tables read
+ * as siblings — a reader's eye moves between them without re-tuning. */
 .headerCell {
-  padding: 0.45rem 0.45rem;
-  font-family: var(--font-sans);
-  font-size: 0.68rem;
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
   font-weight: var(--fw-medium);
-  letter-spacing: 0.14em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--muted);
   display: flex;
@@ -282,30 +335,52 @@
 }
 
 .headerMono {
-  font-family: var(--font-mono);
-  letter-spacing: 0.04em;
-  text-transform: none;
-  font-size: 0.7rem;
+  /* Already mono via .headerCell — kept as a noop hook so callers can
+   * pass it for emphasis if the column is mono-content (UniProt acc). */
+  letter-spacing: 0.06em;
 }
 
 .headerDbCell {
   justify-content: center;
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-  text-transform: none;
-  padding: 0.45rem 0.2rem;
+  padding: 0.5rem 0.3rem;
 }
 
 .headerModelCell {
   justify-content: center;
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: var(--fw-medium);
-  text-transform: none;
-  letter-spacing: 0.04em;
+}
+
+/* Inline sort button — replaces the prior background-hover pattern with
+ * CatalogTable's thBtn: hover/active color shift on the LABEL only,
+ * accent-colored arrow in a fixed-width slot to the right of the
+ * label. Same grammar both tables. */
+.thBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.thBtn:hover {
+  color: var(--accent);
+}
+
+.thBtnActive {
   color: var(--ink);
+}
+
+.sortIndicator {
+  font-size: 0.7em;
+  color: var(--accent);
+  width: 0.7em;
+  display: inline-block;
+  text-align: center;
 }
 
 .cell {
@@ -436,18 +511,61 @@
 }
 
 .truthCell {
-  justify-content: flex-start;
+  /* Centered to match the model verdict columns; the truth pill reads
+   * as a sibling of those (same verdict-tone styling). */
+  justify-content: center;
 }
 
+/* # DBs count bubble — mirrors CatalogTable's .nBubble + .nCell
+ * exactly (same color ramp by data-n, same pill shape). Sits between
+ * the truth column and the 5 individual DB dots so a reader sees the
+ * consensus number first, then the per-source breakdown. */
+.nCell {
+  justify-content: center;
+}
+
+.nBubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 1.6rem;
+  padding: 0 0.45rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-pill);
+  background: var(--bg-warm);
+  color: var(--muted);
+}
+
+.nBubble[data-n="0"] {
+  opacity: 0.45;
+}
+
+.nBubble[data-n="3"],
+.nBubble[data-n="4"] {
+  background: var(--teal-tint);
+  color: var(--teal-deepest);
+}
+
+.nBubble[data-n="5"] {
+  background: var(--teal-mid);
+  color: var(--fg-on-dark);
+}
+
+/* DB cell + dot — matches CatalogTable exactly (8×8 px teal-mid dot
+ * when the source voted yes, transparent + line-color border otherwise).
+ * Keeps the two tables visually flush at the row-data level. */
 .dbCell {
   justify-content: center;
-  padding: 0.3rem 0.2rem;
+  padding: 0.4rem 0.3rem;
 }
 
 .dbDot {
   display: inline-block;
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 999px;
   background: transparent;
   border: 1px solid var(--line);
@@ -461,6 +579,32 @@
 .modelCell {
   justify-content: center;
   padding: 0.3rem 0.1rem;
+}
+
+/* The headline NCBI verdict in each main row — a button wrapping the
+ * verdict-mini pill so clicking opens the rationale drawer (same
+ * drawer the expanded-row variant grid opens). Transparent button
+ * so the pill's verdict-tone background reads first. */
+.modelVerdictBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+  transition: outline-color var(--dur-fast) var(--ease-out);
+}
+
+.modelVerdictBtn:hover,
+.modelVerdictBtn:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.modelVerdictBtnSelected {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* Mini verdict pill — the three per-model NCBI cells on each row.
@@ -547,7 +691,10 @@
 .expandedBlock {
   grid-column: 1 / -1;
   padding: var(--space-4) var(--space-5) var(--space-5) 2rem;
-  background: var(--bg-soft);
+  /* Pure white to match .rowExpanded — the dashed top border carries
+   * the visual delineation between the resting cells and the
+   * variant grid below. */
+  background: var(--bg);
   border-top: 1px dashed var(--line-soft);
 }
 
@@ -592,21 +739,29 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.18rem 0.4rem;
-  background: none;
-  border: 1px solid transparent;
+  padding: 0.22rem 0.5rem;
+  /* Solid card background so each cell reads as a discrete element
+   * against the expanded block. Previously bg=none, which left the
+   * verdict pill (at 14% opacity tint) as the only visible mass — for
+   * genes like B4GALT1 / BAX with sparse contrast, the cells faded
+   * into the bg-soft surface. */
+  background: var(--bg);
+  border: 1px solid var(--line-soft);
   border-radius: var(--radius-pill);
   cursor: pointer;
   font: inherit;
   color: inherit;
   text-align: left;
   align-self: flex-start;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              background-color var(--dur-fast) var(--ease-out);
 }
 
 .variantCellBtn:hover,
 .variantCellBtn:focus-visible {
   outline: 2px solid var(--accent-soft);
   outline-offset: 1px;
+  background: var(--bg);
 }
 
 .variantCellPlus {
@@ -720,6 +875,26 @@
  * narrow viewports). Slides in via transform; non-blocking so
  * readers can keep clicking around the table.
  * ============================================================ */
+
+/* Backdrop — semi-transparent overlay behind the drawer. Captures
+ * outside-clicks to close (the drawer itself is non-modal so the
+ * backdrop must be a sibling, not a parent). Pointer-events on
+ * .backdrop, off on .backdropClosed so the table is interactive
+ * when the drawer is shut. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 20, 24, 0.18);
+  opacity: 0;
+  transition: opacity 220ms var(--ease-out);
+  z-index: 35;
+  pointer-events: none;
+}
+
+.backdropOpen {
+  opacity: 1;
+  pointer-events: auto;
+}
 
 .drawer {
   position: fixed;
@@ -872,6 +1047,39 @@
   margin: var(--space-2) 0 0;
   font-size: 0.82rem;
   color: var(--ink-soft);
+}
+
+/* Ground-truth panel in the drawer — the curator's call surfaced
+ * next to the model's so the reader can compare directly. Uses
+ * bg-soft for the subtle card lift; rationale is the full prose
+ * (1–3 sentences). */
+.drawerTruthBlock {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--teal-mid);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.drawerTruthEyebrow {
+  margin: 0;
+  color: var(--muted);
+}
+
+.drawerTruthLine {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.drawerTruthRationale {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink);
 }
 
 .drawerReasoning {

@@ -7,10 +7,13 @@
  * over HTTP at ``/structure-viewer/{UNIPROT}.json`` for any future
  * client-side loaders.
  *
- * Returns ``null`` when no DeepTMHMM record exists for the UniProt
- * (e.g. soluble cytoplasmic proteins with no membrane topology). The
- * per-gene page skips the structure card in that case rather than
- * rendering an empty placeholder.
+ * Returns ``null`` when no JSON exists for the UniProt. The per-gene
+ * page skips the structure card in that case rather than rendering
+ * an empty placeholder. Most truly-soluble proteins are skipped at
+ * build time (DeepTMHMM type GLOB) so they don't get a misleading
+ * "membrane topology" viewer; opt them in via the build script's
+ * ``--include-globular`` flag when the protein belongs in the
+ * surfaceome via lipid anchor (e.g. SRC's N-terminal myristoyl).
  *
  * Browser-safe constants (TOPOLOGY_COLORS, alphafoldPdbUrl) live in
  * ``./structure-viewer-types`` so the client component doesn't drag

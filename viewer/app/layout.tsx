@@ -28,6 +28,16 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   applicationName: "Surfaceome",
+  // Favicons + iOS home-screen icon — same provisional Deliverome logo
+  // we use as the brand mark in the Shell, so a browser tab / bookmark
+  // shows the Deliverome glyph that visitors associate with the parent
+  // property. Matches deliverome-internal:site/app/layout.tsx's icons
+  // block exactly so the two sites share their tab-strip glyph.
+  icons: {
+    icon: "/assets/provisional_logo.svg",
+    shortcut: "/assets/provisional_logo.svg",
+    apple: "/assets/provisional_logo.svg",
+  },
   openGraph: {
     type: "website",
     siteName: SITE_TITLE,

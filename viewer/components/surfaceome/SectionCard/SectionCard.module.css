@@ -5,11 +5,16 @@
  * structural weight, with the body filling the page-width column.
  */
 
+/* Scientific-report rhythm: tighter vertical spacing + slightly
+ * smaller Manrope so a reader can scan multiple sections per
+ * viewport. Reading-width caps stay (60ch on lede / prose) so
+ * paragraphs don't stretch wider than ~75 chars even on a wide
+ * canvas — eye fatigue cap, not a layout choice. */
 .section {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
-  padding: var(--space-12) 0;
+  gap: var(--space-5);
+  padding: var(--space-10) 0;
   border-top: 1px solid var(--line-soft);
 }
 
@@ -20,29 +25,30 @@
 .head {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  max-width: 56ch;
+  gap: var(--space-2);
+  max-width: 64ch;
 }
 
 .title {
-  font-size: clamp(1.55rem, 2.6vw, 2.2rem);
-  line-height: 1.1;
+  font-size: clamp(1.35rem, 2.2vw, 1.85rem);
+  line-height: 1.15;
 }
 
 .meta {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--muted);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 .lede {
-  font-size: 1rem;
-  max-width: 60ch;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  max-width: 75ch;
 }
 
 .body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-5);
 }

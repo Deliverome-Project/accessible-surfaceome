@@ -319,7 +319,22 @@ def _annotate(
     )
 
     # ----------------------------- step 5: derive filters ----------------------------------
-    det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+    # Pull the real DeepTMHMM + Compara paralog + cross-species ortholog
+    # ECD rows from public D1 (uploaded by scripts/run_topology_sweep.py).
+    # Falls back to a clearly-labeled placeholder if the gene isn't in
+    # this sweep's coverage (the 3 length-skipped giants + anything not
+    # in the candidate set).
+    try:
+        from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+            fetch_deterministic_features,
+        )
+        det_features = fetch_deterministic_features(gene_id.uniprot_acc)
+    except Exception as exc:  # noqa: BLE001 — keep the run going if D1 is unreachable
+        logger.warning(
+            "DeterministicFeatures D1 fetch failed for %s (%s); using stub",
+            gene_id.uniprot_acc, exc,
+        )
+        det_features = _stub_deterministic_features(gene_id.uniprot_acc)
     filters = _derive_filters(
         executive_summary=b.draft.executive_summary,
         surface_evidence=a1.draft.surface_evidence,

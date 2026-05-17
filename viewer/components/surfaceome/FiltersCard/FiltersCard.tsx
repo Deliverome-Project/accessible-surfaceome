@@ -71,11 +71,25 @@ export function FiltersCard({ rec, n }: Props) {
     {
       label: "Cross-species (deterministic)",
       pills: [
-        <StatusPill key="m" tone="teal" size="sm">
-          mouse · {f.mouse_ortholog_ecd_pct_identity.toFixed(1)}%
+        <StatusPill
+          key="m"
+          tone={f.mouse_ortholog_ecd_pct_identity == null ? "neutral" : "teal"}
+          size="sm"
+        >
+          mouse ·{" "}
+          {f.mouse_ortholog_ecd_pct_identity == null
+            ? "no Compara ortholog"
+            : `${f.mouse_ortholog_ecd_pct_identity.toFixed(1)}%`}
         </StatusPill>,
-        <StatusPill key="c" tone="teal" size="sm">
-          cyno · {f.cyno_ortholog_ecd_pct_identity.toFixed(1)}%
+        <StatusPill
+          key="c"
+          tone={f.cyno_ortholog_ecd_pct_identity == null ? "neutral" : "teal"}
+          size="sm"
+        >
+          cyno ·{" "}
+          {f.cyno_ortholog_ecd_pct_identity == null
+            ? "no Compara ortholog"
+            : `${f.cyno_ortholog_ecd_pct_identity.toFixed(1)}%`}
         </StatusPill>,
       ],
     },

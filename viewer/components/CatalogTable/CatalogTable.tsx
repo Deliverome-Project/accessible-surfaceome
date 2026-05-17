@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { CatalogRow, TriageCell } from "../../lib/surfaceome";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
+import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import {
   CatalogRationaleDrawer,
   type CatalogTriageDetailState,
@@ -1067,17 +1068,34 @@ function CatalogRowView({
           transform: `translateY(${virtualStart}px)`,
         }
       : undefined;
+  // Queued for deep dive but not yet run — show an orange marker so
+  // the reader can spot pending work in the catalog. The check defers
+  // to viewer/lib/queued-deep-dives.ts; the helper only fires when
+  // the gene has no existing surface_annotation row, so an actual run
+  // automatically demotes the queue marker.
+  const queued = isQueuedDeepDive(row.symbol, Boolean(row.deep_dive));
   return (
     <div
       ref={measureRef}
       data-index={dataIndex}
       role="row"
-      className={`${styles.row} ${isSelected ? styles.rowSelected : ""}`}
+      className={`${styles.row} ${isSelected ? styles.rowSelected : ""} ${
+        queued ? styles.rowQueuedDeepDive : ""
+      }`}
       data-deep-dive={row.deep_dive || undefined}
+      data-queued-deep-dive={queued || undefined}
       style={style}
     >
       <div className={`${styles.cell} ${styles.symbolCell}`} role="cell">
         {symbolButton}
+        {queued ? (
+          <span
+            className={styles.queuedDeepDivePill}
+            title="Queued for deep-dive run — agent hasn't been executed yet. See viewer/lib/queued-deep-dives.ts."
+          >
+            queued
+          </span>
+        ) : null}
       </div>
       <div className={`${styles.cell} ${styles.nCell}`} role="cell">
         <span className={styles.nBubble} data-n={row.n_sources}>

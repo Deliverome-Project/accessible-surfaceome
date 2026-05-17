@@ -1,6 +1,6 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { CiteCount } from "../CiteCount/CiteCount";
+import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./ExecutiveSummaryCard.module.css";
@@ -82,15 +82,22 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
           <span className={styles.risksValue}>
             {e.headline_risks.map((r) => prettyEnum(r)).join(" · ")}
           </span>
-          <CiteCount ids={e.cited_evidence_ids} label="Executive summary" />
         </p>
       ) : (
         <p className={styles.risks}>
           <span className={`label-mono ${styles.risksLabel}`}>Headline risks</span>
           <span className={styles.risksValue}>None flagged.</span>
-          <CiteCount ids={e.cited_evidence_ids} label="Executive summary" />
         </p>
       )}
+
+      {/* Inline citation chips — click any chip to open the global
+       *  EvidenceDrawer with that evidence's full claim + verbatim
+       *  quote + source links. Mirrors the v2 sample's per-block
+       *  citations strip (data/eval/surfaceome_v2_samples). */}
+      <EvidenceChipList
+        ids={e.cited_evidence_ids}
+        label="Cited evidence"
+      />
     </SectionCard>
   );
 }

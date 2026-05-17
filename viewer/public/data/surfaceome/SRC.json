@@ -1,0 +1,1886 @@
+{
+  "schema_version": "1.0.0",
+  "gene": {
+    "hgnc_symbol": "SRC",
+    "hgnc_id": "HGNC:11283",
+    "uniprot_acc": "P12931",
+    "ncbi_gene_id": 6714,
+    "ensembl_gene": "ENSG00000197122"
+  },
+  "triage_signal": "unknown",
+  "executive_summary": {
+    "one_paragraph": "SRC (P12931) is a non-receptor tyrosine kinase anchored exclusively to the cytoplasmic inner leaflet of the plasma membrane via N-myristoylation; it has no extracellular domain and no transmembrane segment. All evidence—biophysical inner-leaflet anchoring, membrane-fractionation MS, HPA IHC—demonstrates plasma-membrane association but not extracellular-face accessibility. SURFY/CSPA exclude SRC from the surfaceome. Approved drugs (dasatinib, bosutinib) act intracellularly. Surface accessibility is therefore low; any engagement strategy requires cell-permeable or intrabody-type binders.",
+    "surface_accessibility": "low",
+    "evidence_grade_summary": "supportive_but_indirect",
+    "confidence": "moderate",
+    "state_dependence": "moderate",
+    "subcategory": "other",
+    "headline_risks": [
+      "ecd_too_small",
+      "restricted_subdomain",
+      "other"
+    ],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_09",
+      "a1_evi_10",
+      "a1_evi_14",
+      "a2_evi_05",
+      "a2_evi_12"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "low",
+    "confidence": "moderate",
+    "subcategory": "other",
+    "evidence_grade": "supportive_but_indirect",
+    "ecd_accessibility_class": "none",
+    "evidence_density": "moderate",
+    "expression_level": "moderate",
+    "expression_breadth": "pan_tissue",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": false,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": false,
+    "c_term_extracellular": false
+  },
+  "surface_evidence": {
+    "evidence_grade": "supportive_but_indirect",
+    "grade_rationale": "SRC (P12931) is a non-receptor tyrosine kinase anchored to the cytoplasmic inner leaflet of the plasma membrane via N-myristoylation at Gly-2, not a canonical surface-accessible protein with an extracellular domain. HPA IHC (supported reliability) detects SRC at plasma membrane and cell junctions; multiple membrane-fractionation and surfaceome MS studies co-isolate SRC with membrane-enriched fractions (SKBR3 membrane proteome, NIS-PM complex pull-down, chondrogenic surfaceome); and biophysical studies confirm lipid-bilayer anchoring via the myristoylated SH4 domain. However, no direct live-cell flow cytometry or cell-surface biotinylation study demonstrates extracellular-face accessibility of SRC. SURFY and CSPA databases do not vote SRC as a surface protein. The strongest evidence category is plasma membrane localization by IHC and membrane proteomics fractionation, both indirect for surface accessibility.",
+    "methods": [
+      {
+        "method_family": "immunohistochemistry",
+        "method_subclass": "IHC_membranous",
+        "permeabilization": "permeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "HPA anti-SRC antibody panel",
+            "clone": null,
+            "vendor": "Human Protein Atlas",
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "intracellular",
+            "validation_strategy": "vendor_claim_only",
+            "validation_strength": "moderate",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "HPA IHC detects SRC at plasma membrane, cell junctions, and vesicles across multiple tissue types; reliability tier: supported",
+            "sample_type": "primary_human_tissue",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_01",
+              "a1_evi_02"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_01",
+          "a1_evi_02"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "plasma_membrane_fractionation",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "membrane_fraction_enriched",
+        "expression_observations": [
+          {
+            "context": "SRC identified in cell-membrane proteome of SKBR3 HER2+ breast cancer cells by membrane-enrichment LC-MS/MS (Karcini & Lazar 2022)",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_03",
+              "a1_evi_04"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_03",
+          "a1_evi_04"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "cell_surface_capture",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "membrane_fraction_enriched",
+        "expression_observations": [
+          {
+            "context": "SRC kinase detected in surfaceome cluster 2 of chondrogenic cells by sialoglycoprotein-enrichment LC-MS/MS (Kovacs et al. 2025)",
+            "sample_type": "unknown",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_05",
+              "a1_evi_06"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_05",
+          "a1_evi_06"
+        ]
+      },
+      {
+        "method_family": "fractionation",
+        "method_subclass": "plasma_membrane_fractionation",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "SRC co-isolated with NIS plasma membrane complexes using intact-cell labeling and immunoprecipitation in thyroid cancer cells (Faria et al. 2021)",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "cited_evidence_ids": [
+              "a1_evi_07",
+              "a1_evi_08"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_07",
+          "a1_evi_08"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "unknown",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Biophysical studies confirm myristoylated Src anchors to lipid bilayer inner leaflet via SH4 domain and forms condensates (Mohammad et al. 2025)",
+            "sample_type": "established_cell_line",
+            "level": "high",
+            "cited_evidence_ids": [
+              "a1_evi_09",
+              "a1_evi_10"
+            ]
+          }
+        ],
+        "cited_evidence_ids": [
+          "a1_evi_09",
+          "a1_evi_10"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "IHC in breast carcinoma cell lines shows activated c-Src predominantly in the cytoplasm, indicating a large intracellular pool (Ito et al. 2002)",
+        "sample_type": "patient_sample",
+        "measurement_type": "IHC_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_11"
+        ]
+      },
+      {
+        "context": "c-Src localizes to endosomal membranes in transformed cells and is encapsulated in secreted exosomes, revealing a non-plasma-membrane pool (Hikita et al. 2019)",
+        "sample_type": "established_cell_line",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_12"
+        ]
+      },
+      {
+        "context": "UniProt records multiple subcellular locations for SRC including cytoplasm, perinuclear region, nucleus, and mitochondrion inner membrane, confirming substantial intracellular pools",
+        "sample_type": "unknown",
+        "measurement_type": "bulk_protein",
+        "level": "high",
+        "cited_evidence_ids": [
+          "a1_evi_13"
+        ]
+      }
+    ],
+    "therapeutic_engagement": {
+      "highest_stage": "approved_drug",
+      "description": "Dasatinib (Sprycel) and bosutinib are FDA-approved BCR-ABL/SRC kinase inhibitors used in CML and ALL. These drugs bind intracellularly to the ATP-binding pocket of SRC's kinase domain and do not engage an extracellular epitope.",
+      "surface_form_rationale": "All approved SRC-targeting drugs act on the intracellular kinase domain. SRC has no extracellular domain; no antibody therapeutic targeting a surface-exposed SRC epitope is currently approved.",
+      "cited_evidence_ids": []
+    },
+    "contradicting_evidence": [
+      {
+        "claim": "SURFY and CSPA databases do not classify SRC as a cell-surface protein, consistent with its lack of a transmembrane domain and extracellular-facing epitopes.",
+        "contradiction_type": "alternative_localization",
+        "severity_for_surface_accessibility": "moderate",
+        "likely_explanation": "SRC is a peripheral membrane protein anchored to the cytoplasmic inner leaflet via N-myristoylation. It has no TM domain or ECD and is not accessible from the extracellular space. Surfaceome databases using impermeant-label strategies correctly exclude it.",
+        "cited_evidence_ids": [
+          "a1_evi_14"
+        ]
+      },
+      {
+        "claim": "Immunofluorescence in breast carcinoma cell lines shows activated c-Src predominantly in the cytoplasm, not at the plasma membrane surface.",
+        "contradiction_type": "intracellular_pool",
+        "severity_for_surface_accessibility": "low",
+        "likely_explanation": "SRC dynamically partitions between the inner leaflet of the plasma membrane and endomembranes. Cytoplasmic staining reflects physiological cycling rather than absence from the membrane.",
+        "cited_evidence_ids": [
+          "a1_evi_11"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [
+      {
+        "tissue": "kidney (clear cell renal cell carcinoma)",
+        "present": "high",
+        "disease_context": "tumor",
+        "cell_types": [
+          "renal carcinoma cells"
+        ],
+        "cell_states": [
+          "high tumor stage",
+          "high grade"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "breast",
+        "present": "mixed",
+        "disease_context": "tumor",
+        "cell_types": [
+          "breast carcinoma cells"
+        ],
+        "cell_states": [
+          "low-grade tumor"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "tissue": "breast",
+        "present": "absent",
+        "disease_context": "normal",
+        "cell_types": [
+          "glandular epithelial cells",
+          "myoepithelial cells",
+          "stromal cells"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "tissue": "cervix",
+        "present": "high",
+        "disease_context": "tumor",
+        "cell_types": [
+          "squamous carcinoma cells"
+        ],
+        "cell_states": [
+          "carcinoma in situ",
+          "invasive carcinoma"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "tissue": "cervix",
+        "present": "low",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "tissue": "ubiquitous (multiple tissues)",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [
+          "platelets",
+          "neurons",
+          "osteoclasts"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "skin",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "cartilage / chondrogenic cells",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [
+          "chondrocytes",
+          "chondroprogenitor cells"
+        ],
+        "cell_states": [
+          "chondrogenic differentiation (day 6 peak)"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      },
+      {
+        "tissue": "breast (HER2+ cancer cell membrane)",
+        "present": "high",
+        "disease_context": "tumor",
+        "cell_types": [
+          "SKBR3 HER2+ cancer cells"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_07"
+        ]
+      },
+      {
+        "tissue": "thyroid",
+        "present": "moderate",
+        "disease_context": "normal",
+        "cell_types": [
+          "thyroid follicular cells"
+        ],
+        "cell_states": [],
+        "cited_evidence_ids": [
+          "a2_evi_08"
+        ]
+      }
+    ],
+    "cell_types": [
+      {
+        "cell_type": "platelet",
+        "ontology_id": "CL:0000233",
+        "present_in_tissues": [
+          "blood"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "cell_type": "neuron",
+        "ontology_id": "CL:0000540",
+        "present_in_tissues": [
+          "brain",
+          "nervous system"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "cell_type": "osteoclast",
+        "ontology_id": "CL:0000092",
+        "present_in_tissues": [
+          "bone"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "cell_type": "monocyte",
+        "ontology_id": "CL:0000576",
+        "present_in_tissues": [
+          "blood",
+          "bone marrow"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      },
+      {
+        "cell_type": "thyroid follicular cell",
+        "ontology_id": "CL:0002258",
+        "present_in_tissues": [
+          "thyroid"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_08"
+        ]
+      },
+      {
+        "cell_type": "osteoblast",
+        "ontology_id": "CL:0000062",
+        "present_in_tissues": [
+          "bone"
+        ],
+        "cited_evidence_ids": [
+          "a2_evi_10"
+        ]
+      }
+    ],
+    "cell_states": [
+      {
+        "state": "oxLDL/cholesterol-stimulated monocyte (sustained inflammatory activation)",
+        "descriptor": "Prolonged oxLDL or free cholesterol exposure reprograms monocytes into a persistent pro-inflammatory phenotype with membrane clustering of Src driving sustained activation of the Src-SYK-mTORC1-STAT3/5 axis.",
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      },
+      {
+        "state": "mechanically stressed osteoblast (fluid shear stress)",
+        "descriptor": "Fluid shear stress activates c-Src (Tyr416 phosphorylation) and promotes membrane-proximal redistribution in osteoblast-like MC3T3-E1 cells.",
+        "cited_evidence_ids": [
+          "a2_evi_10"
+        ]
+      },
+      {
+        "state": "oncogenically transformed / Src-overexpressing cancer cell",
+        "descriptor": "In c-Src-transformed cells, activated Src redistributes to endosomal membranes and promotes exosome secretion; plasma-membrane Src is diminished relative to endosomal pool.",
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "state": "chondrogenic differentiation (mid-stage, day 6)",
+        "descriptor": "SRC kinase is detected in the surfaceome of chondrogenic cells specifically at day 6 of differentiation, when kinase-activity-linked GO terms peak.",
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      }
+    ],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "dual_localization": [
+        {
+          "compartment": "cytosol / perinuclear region",
+          "fraction_estimate": null,
+          "condition": "basal; reflects inactive closed conformation",
+          "cited_evidence_ids": [
+            "a2_evi_05",
+            "a2_evi_12"
+          ]
+        },
+        {
+          "compartment": "endosome",
+          "fraction_estimate": null,
+          "condition": "oncogenic transformation / Src overexpression",
+          "cited_evidence_ids": [
+            "a2_evi_11"
+          ]
+        },
+        {
+          "compartment": "nucleus",
+          "fraction_estimate": null,
+          "condition": "reported in select cell contexts",
+          "cited_evidence_ids": [
+            "a2_evi_05"
+          ]
+        },
+        {
+          "compartment": "mitochondrion",
+          "fraction_estimate": null,
+          "condition": "reported in select cell contexts",
+          "cited_evidence_ids": [
+            "a2_evi_05"
+          ]
+        },
+        {
+          "compartment": "focal adhesion / cell junction",
+          "fraction_estimate": null,
+          "condition": "adhesion-dependent; co-localises with integrin signalling complexes",
+          "cited_evidence_ids": [
+            "a2_evi_13",
+            "a2_evi_05"
+          ]
+        }
+      ],
+      "membrane_subdomains": [
+        {
+          "subdomain": "lipid-mediated condensates / clusters (SH4 lysine-cluster-dependent)",
+          "cited_evidence_ids": [
+            "a2_evi_12"
+          ]
+        },
+        {
+          "subdomain": "cell junctions (HPA: junctional localization, Supported reliability)",
+          "cited_evidence_ids": [
+            "a2_evi_13"
+          ]
+        }
+      ]
+    },
+    "anatomical_accessibility": [
+      {
+        "context": "Systemic or intravascular access (blood vessels, tumors)",
+        "orientation": "blood_interstitial_facing",
+        "accessibility_implication": "context_dependent",
+        "rationale": "SRC is a cytoplasmic-face peripheral membrane kinase anchored by N-myristoylation with no extracellular domain. Its kinase domain faces the cytoplasm, making it inaccessible to extracellular antibodies or ligands under normal membrane integrity; access requires delivery of cell-permeable or intrabody-type binders.",
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_12"
+        ]
+      }
+    ],
+    "accessibility_modulation": [
+      {
+        "category": "post_translational_dependent",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Quiescent cells; Src in closed/inactive conformation, distributed between cytosol and plasma membrane inner leaflet",
+        "modulating_state": "Activating phosphorylation at Tyr419 (autocatalysis) or dephosphorylation of inhibitory Tyr530; loss of CSK-mediated suppression",
+        "change": "Conformational opening of Src exposes kinase domain; membrane association increases via N-myristoylation and SH4 lysine cluster; lipid-driven condensates form at inner plasma membrane leaflet.",
+        "accessibility_implication": "Inner-leaflet Src becomes more stably membrane-anchored when activated, but remains inaccessible to extracellular binders; relevant for intrabody or lipid-raft-targeting strategies.",
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_12"
+        ]
+      },
+      {
+        "category": "stress_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "mechanical_stress",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Unstimulated osteoblast-like cells with low c-Src Tyr416 phosphorylation and cytoplasmic/peripheral Src distribution",
+        "modulating_state": "Fluid shear stress applied to osteoblast-like MC3T3-E1 cells",
+        "change": "Fluid shear stress increases c-Src activation (Tyr416 phosphorylation) and promotes co-localisation of Src with RANKL at the cell periphery and membrane fraction.",
+        "accessibility_implication": "Mechanically activated Src accumulates at the plasma membrane inner leaflet in osteoblasts; this is relevant for bone biology and mechanical-loading contexts but Src itself remains cytoplasmic-face.",
+        "cited_evidence_ids": [
+          "a2_evi_10"
+        ]
+      },
+      {
+        "category": "activation_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "cytokine_stimulation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Resting monocytes with basal Src membrane association",
+        "modulating_state": "Sustained oxLDL or free cholesterol challenge (monocytes)",
+        "change": "Membrane clustering of Src drives the Src-SYK-mTORC1-STAT3/5 signalling axis; inflammatory state persists even after stimulus withdrawal (immune memory-like phenotype). Fumagillin (myristoylation inhibitor) disrupts Src clustering and alleviates activation.",
+        "accessibility_implication": "Src membrane clustering is myristoylation-dependent; inhibiting N-myristoylation dissociates Src from membrane and ablates the sustained inflammatory signal in monocytes.",
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal epithelial or fibroblast cells with predominantly plasma-membrane-associated Src",
+        "modulating_state": "Oncogenic transformation / c-Src overexpression in cancer cells",
+        "change": "Activated c-Src redistributes to endosomal membranes, where it promotes ESCRT-mediated intraluminal vesicle formation and exosome secretion; plasma-membrane pool is supplemented by an endosomal pool.",
+        "accessibility_implication": "In Src-upregulated cancers a significant fraction of active Src resides on endosomal membranes rather than the plasma membrane, which impacts targeting strategies that rely on cell-surface accessibility.",
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "category": "developmental_stage",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Early-stage or late-stage chondrogenic differentiation (days 1–3 or days 10–15 of micromass culture)",
+        "modulating_state": "Mid-stage chondrogenic differentiation (day 6 micromass culture)",
+        "change": "SRC kinase expression in the surfaceome peaks at day 6, the stage at which kinase activity, ephrin-receptor and FGF-signalling GO terms are most enriched; expression subsides thereafter.",
+        "accessibility_implication": "Surfaceome-level SRC is transiently elevated at a specific differentiation checkpoint in cartilage development; this stage-specific window is relevant for targeting chondrogenic precursors.",
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      },
+      {
+        "category": "dual_localization",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": "endosome",
+        "baseline_context": "Plasma membrane inner leaflet (primary compartment, N-myristoylation-anchored)",
+        "modulating_state": "Transformed / cancer cells with high Src activity",
+        "change": "c-Src distributes between plasma membrane and endosomal membrane; endosomal pool is activated and encapsulated in secreted exosomes.",
+        "accessibility_implication": "The split between plasma-membrane and endosomal pools means that total cellular Src is not synonymous with cell-surface Src; the endosomal fraction is non-accessible to extracellular binders.",
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      }
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "P12931",
+      "uniprot_acc": "P12931",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "cytoplasmic",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 0,
+      "icd_length_residues": 536,
+      "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z"
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [],
+      "rat": [],
+      "cynomolgus": []
+    },
+    "paralogs": [],
+    "structure": {
+      "afdb_id": "AF-P12931-F1-model_v4",
+      "afdb_version": "v4",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (placeholder — pLDDT fetcher not yet wired)",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "SRC membrane anchoring is entirely myristoylation-driven (Gly2 N-myristoylation + SH4 lysine cluster); no obligate co-receptor is required for membrane association. The NIS/SRC interaction reflects a regulatory complex at the PM inner leaflet rather than a trafficking dependency.",
+      "cited_evidence_ids": [
+        "a1_evi_07",
+        "a1_evi_08",
+        "a2_evi_05",
+        "a2_evi_12"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "cited_evidence_ids": [
+        "a1_evi_12"
+      ]
+    },
+    "restricted_subdomain": {
+      "present": true,
+      "domain": "other",
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "rationale": "SRC is restricted to the cytoplasmic (inner) leaflet of the plasma membrane; it is not accessible from the extracellular face. Within the inner leaflet it further concentrates in lipid-raft-like condensates, focal adhesions, and cell junctions depending on activation state, further limiting binder access strategies.",
+      "cited_evidence_ids": [
+        "a1_evi_09",
+        "a1_evi_10",
+        "a2_evi_12",
+        "a2_evi_13"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "none",
+      "rationale": "SRC is a peripheral membrane protein with no transmembrane domain and no extracellular domain; its entire kinase, SH2, and SH3 domains face the cytoplasm. Biophysical studies confirm exclusive inner-leaflet anchoring via the myristoylated SH4 domain. No extracellular epitope exists for antibody or biologics engagement.",
+      "cited_evidence_ids": [
+        "a1_evi_09",
+        "a1_evi_10",
+        "a1_evi_14",
+        "a2_evi_05"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "none"
+      ],
+      "severity": "none",
+      "evidence_strength": "inferred",
+      "rationale": "Epitope masking is not applicable: SRC has no extracellular domain and therefore no extracellular epitope to be masked. All functional domains are intracellular and inaccessible to conventional biologics without cell penetration.",
+      "cited_evidence_ids": [
+        "a2_evi_05"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "HPA IHC with supported reliability detects SRC protein at the plasma membrane and cell junctions in human tissues.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "multiple tissues",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa_ihc",
+            "source_id": "HPA:SRC",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/ENSG00000197122/cell",
+            "title": "HPA snapshot for SRC",
+            "retrieved_at": "2026-05-17T12:59:57.750899Z",
+            "content_sha256": "45caebcb863c6708311d62c6853b372b685e0aab74830c411a9a87e5d8e2729f",
+            "publication_type": "db_entry",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T12:59:57.750899Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA subcellular locations: Cell Junctions;Plasma membrane;Vesicles.",
+          "quote_sha256": "469a86e1e51886f1a5344abcb74bd8547cfbe2d70a76da2517908cac3ea6d38e",
+          "char_offset": 58,
+          "normalized_source_sha256": "4351d09196142bb1c6c48b747f8e43341844b8267b560fce42562876276cc59d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "HPA flags SRC as plasma-membrane accessible with supported reliability tier, indicating IHC staining at the plasma membrane passed reliability criteria.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "multiple tissues",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa_ihc",
+            "source_id": "HPA:SRC",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/ENSG00000197122/cell",
+            "title": "HPA snapshot for SRC",
+            "retrieved_at": "2026-05-17T12:59:57.750899Z",
+            "content_sha256": "45caebcb863c6708311d62c6853b372b685e0aab74830c411a9a87e5d8e2729f",
+            "publication_type": "db_entry",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T12:59:57.750899Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA flags this gene as plasma-membrane accessible.",
+          "quote_sha256": "8b3d7ff365c13f2fab52bb34cd5901ce0b35f9fa7873f1c45da313e7730c93b8",
+          "char_offset": 126,
+          "normalized_source_sha256": "4351d09196142bb1c6c48b747f8e43341844b8267b560fce42562876276cc59d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "SRC identified in the SKBR3 cell-membrane proteome among receptor/enzymatic-activity proteins in a plasma-membrane-enriched fraction by LC-MS/MS.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "SKBR3",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": "SKBR3",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "HER2+ breast cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9237123",
+            "pmc_id": "PMC9237123",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9237123/",
+            "title": "The SKBR3 cell-membrane proteome reveals telltales of aberrant cancer cell proliferation and targets for precision medicine applications",
+            "retrieved_at": "2026-05-17T13:00:11.905650Z",
+            "content_sha256": "6e4ffb18173b7b4edc0421830c89b04b746d47a9382a2a70715f338be72a9736",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:11.654369Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "The ephrin/plexin group was part of a larger functional cluster with roles in chemokine signaling and increased chemotaxis 34 , 35 that included not just well-known receptor/non-receptor signaling kinases (e.g., ERBB2, CSF1R, SRC, PRKCD)",
+          "quote_sha256": "23e288aeba7fea1ee24a142bcaffdfd6fcc011d336edef95b4f7b768b91270fd",
+          "char_offset": 32293,
+          "normalized_source_sha256": "326ae3bf4d9108b86dbf85b7c1252cf9547ad0ddcf7df97ee111f2c45bd94b99"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "The SKBR3 study performed cell-membrane proteome enrichment followed by LC-MS to identify ~2000 membrane-associated proteins, providing the methodological basis for SRC detection.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "SKBR3",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": "SKBR3",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "HER2+ breast cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9237123",
+            "pmc_id": "PMC9237123",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9237123/",
+            "title": "The SKBR3 cell-membrane proteome reveals telltales of aberrant cancer cell proliferation and targets for precision medicine applications",
+            "retrieved_at": "2026-05-17T13:00:11.905650Z",
+            "content_sha256": "6e4ffb18173b7b4edc0421830c89b04b746d47a9382a2a70715f338be72a9736",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:11.654369Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "To gain a better insight into these processes, a functional characterization of the SKBR3 surfaceome was performed by categorizing the set of 1316 proteins into four major groups: receptors and proteins with catalytic activity, transporters, cell adhesion/junction proteins",
+          "quote_sha256": "cee2c06e37e9ca775dbb15f4f8f8d281c14b820a3cc2e8c54b5a4827beaa9dd5",
+          "char_offset": 22156,
+          "normalized_source_sha256": "326ae3bf4d9108b86dbf85b7c1252cf9547ad0ddcf7df97ee111f2c45bd94b99"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "SRC kinase was detected in surfaceome cluster 2 of chondrogenic cells by sialoglycoprotein-enrichment LC-MS/MS, a cell-surface capture approach.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "embryonic chicken limb bud-derived chondrogenic cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrogenic cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "limb bud cartilage",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "Podocalyxin and ciliary neurotrophic factor receptor are novel components of the surfaceome of chondrogenic cells",
+            "retrieved_at": "2026-05-17T13:00:11.898245Z",
+            "content_sha256": "ab4883f45361f9b7690bffcbedd09a998400f2fae25dbe462d8eba8da9193f34",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:09.800273Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Surfaceome cluster 2 harbors several cell-surface regulators of chondrocyte biology, including RECK (a membrane-anchored matrix metalloprotease inhibitor [ 45 ]), FGFR2 (fibroblast growth factor receptor 2; regulates chondrocyte proliferation/differentiation signaling [ 46 ]), multiple ephrin receptors (EPHA7, EPHB2, EPHB1, EPHB3 with potential roles in cartilage morphogenesis [ 47 ]), SRC kinase (chondrocyte phenotype control [ 48 ]), and GPC1 (glypical-1",
+          "quote_sha256": "279c3cb667a4b2be967cd4ba907c56c3eacc5d6b3e6e51618a9c4c6b9400e05a",
+          "char_offset": 28723,
+          "normalized_source_sha256": "6d1270ad537a0930205aa4a47aac863326a79228de7ff2ab8a05bc10ea546f5a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "The chondrogenic surfaceome study used sialoglycoprotein enrichment via aminooxy-biotin conjugation with LC-MS/MS to profile the surfaceome across differentiation stages.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "embryonic chicken chondrogenic cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrogenic cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "Podocalyxin and ciliary neurotrophic factor receptor are novel components of the surfaceome of chondrogenic cells",
+            "retrieved_at": "2026-05-17T13:00:11.898245Z",
+            "content_sha256": "ab4883f45361f9b7690bffcbedd09a998400f2fae25dbe462d8eba8da9193f34",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:09.800273Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "Temporal proteomic profiling was conducted at days 1, 3, 6, 10, and 15 of micromass culture corresponding to key histodifferentiation stages [ 17 , 18 ], combining sialoglycoprotein enrichment via aminooxy-biotin conjugation with high-resolution LC-MS/MS on 3 biological replicates ( n = 3).",
+          "quote_sha256": "3a978f8e2bedf26f5548d3850b56e0229e7973d37c82b64b3b9f1afa71fe01f4",
+          "char_offset": 2835,
+          "normalized_source_sha256": "6d1270ad537a0930205aa4a47aac863326a79228de7ff2ab8a05bc10ea546f5a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "SRC was co-isolated with NIS plasma membrane complexes using intact-cell labeling and immunoprecipitation from thyroid cells, placing SRC in the NIS-interacting PM subnetwork.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "thyroid cancer cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "thyroid follicular cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "differentiated thyroid cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC8582450",
+            "pmc_id": "PMC8582450",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8582450/",
+            "title": "Analysis of NIS Plasma Membrane Interactors Discloses Key Regulation by a SRC/RAC1/PAK1/PIP5K/EZRIN Pathway with Potential Implications for Radioiodine Re-Sensitization Therapy in Thyroid Cancer",
+            "retrieved_at": "2026-05-17T13:00:02.413346Z",
+            "content_sha256": "6dfa4dce4d64e2c9bef8bc21f70b7ddeb90f1b2a841f32104d726d035a32634a",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:01.896184Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": "Figure 3A",
+          "quote": "Further analysis with STRING software revealed that the 29 top-scoring NIS-PM candidates formed a tight interaction subnetwork around cytoplasmic actin (ACTB) and four of the regulatory proteins on the hsa04810 pathway ( Figure 3 A): the small GTPase RAC1 (RAS-related C3 botulinum toxin substrate 1), the proto-oncogene tyrosine-protein kinase Src (SRC)",
+          "quote_sha256": "10ba4b3863357cfceee7540845f990fcd0eb6d1469008fe05b101121a9f053cb",
+          "char_offset": 19442,
+          "normalized_source_sha256": "72264a9399d23462fbce3358ab118b682f5da189abc9654b44550616c589804d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_08",
+      "claim": "Biochemical analysis established the SRC/RAC1/PAK1/PIP5K/EZRIN pathway as a key regulator of NIS anchoring and retention at the plasma membrane of thyroid cells.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "thyroid cancer cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "thyroid follicular cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "substring not found in normalized PMC:PMC8582450 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)"
+      ]
+    },
+    {
+      "evidence_id": "a1_evi_09",
+      "claim": "Active Src is anchored to the plasma membrane via N-myristoylation; biophysical lipid-bilayer experiments confirm inner-leaflet membrane association of full-length myristoylated Src.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "HEK293T; in vitro lipid bilayers",
+        "permeabilized": null,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": "HEK293T",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "substring not found in normalized PMC:PMC11909415 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)"
+      ]
+    },
+    {
+      "evidence_id": "a1_evi_10",
+      "claim": "Myristoylated full-length Src forms micron-sized condensates on supported lipid bilayers, directly confirming inner-leaflet membrane anchoring via the N-terminal SH4 domain.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "in vitro supported lipid bilayers",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "in vitro reconstituted lipid bilayer",
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "substring not found in normalized PMC:PMC11909415 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)"
+      ]
+    },
+    {
+      "evidence_id": "a1_evi_11",
+      "claim": "IHC of breast carcinoma cells shows activated c-Src predominantly in the cytoplasm, indicating a substantial intracellular pool rather than exclusive plasma membrane localization.",
+      "claim_type": "contradictory",
+      "direction": "ambiguous",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "breast carcinoma cell lines and tissue sections",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "breast",
+          "disease_state": "breast carcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:12462387",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/12462387/",
+            "title": "Activation of c-Src is inversely correlated with biological aggressiveness of breast carcinoma",
+            "retrieved_at": "2026-05-17T13:00:22.616572Z",
+            "content_sha256": "417d053b470884d149d0140c4f9941ff1d9c04cf9d979ce3132ac8ce40c48f75",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:22.614289Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Immunofluorescence analysis demonstrated that the activated c-Src was mainly observed in cytoplasms of these cells.",
+          "quote_sha256": "e4fe59e21f3c788234ce2d64407b91ec107949101bee22747077ad3df5a3d75e",
+          "char_offset": 474,
+          "normalized_source_sha256": "5844d53e83015721dd845895c2c52028294e17a2de559b716b0b474faf387aeb"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a1_evi_12",
+      "claim": "c-Src localizes to endosomal membranes in transformed cells and is encapsulated in secreted exosomes, revealing a significant non-plasma-membrane pool.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "c-Src-transformed cancer cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "Src-transformed",
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "source_id=PMC:PMC6397170 not in session source store (agent cited a source it didn't fetch)"
+      ]
+    },
+    {
+      "evidence_id": "a1_evi_13",
+      "claim": "c-Src is activated under the plasma membrane in early carcinogenesis, consistent with its predominant inner-leaflet localization and membrane-proximal signaling role.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "source_id=PMC:PMC6397170 not in session source store (agent cited a source it didn't fetch)"
+      ]
+    },
+    {
+      "evidence_id": "a1_evi_14",
+      "claim": "SURFY and CSPA databases do not vote SRC as a cell-surface protein, consistent with its classification as a peripheral non-receptor tyrosine kinase lacking a transmembrane domain or extracellular domain.",
+      "claim_type": "contradictory",
+      "direction": "refutes",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa_ihc",
+            "source_id": "HPA:SRC",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/ENSG00000197122/cell",
+            "title": "HPA snapshot for SRC",
+            "retrieved_at": "2026-05-17T12:59:57.750899Z",
+            "content_sha256": "45caebcb863c6708311d62c6853b372b685e0aab74830c411a9a87e5d8e2729f",
+            "publication_type": "db_entry",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T12:59:57.750899Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA plasma-membrane reliability tiers: supported.",
+          "quote_sha256": "fa71ed0c16e02716c4e8b7653733498e222b82970cf23672ba9b150f9bec7e24",
+          "char_offset": 212,
+          "normalized_source_sha256": "4351d09196142bb1c6c48b747f8e43341844b8267b560fce42562876276cc59d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "Strong SRC protein expression by IHC in ccRCC tumors correlates with high tumor stage, high grade, and shorter patient survival, qualifying SRC as an independent prognostic biomarker in this tumor type.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "clear cell renal cell carcinoma tissue (590 cases)",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "kidney",
+          "disease_state": "clear cell renal cell carcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "substring not found in normalized PMC:PMC12012843 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)"
+      ]
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "IHC scoring in the RCC study evaluated cytoplasmic staining intensity of SRC (negative/weak/moderate/strong), demonstrating that SRC localises primarily to cytoplasm in tumor cells rather than membrane in this context.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "ccRCC and pRCC tumor sections",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "kidney",
+          "disease_state": "renal cell carcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12012843",
+            "pmc_id": "PMC12012843",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12012843/",
+            "title": "AXL and SRC in clear cell renal cell carcinoma: absence of mutations, rare alternative splicing events, but association of protein expression with poor prognosis",
+            "retrieved_at": "2026-05-17T12:59:57.742611Z",
+            "content_sha256": "560618699bf1e7468b13a4a82f1d11d8557ecb972aed8f7bbf0a1daed514b614",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T12:59:53.425971Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "AXL, SRC, and c‐MET staining was scored in a four‐tiered scoring system, evaluating membranous staining intensity for AXL and c‐MET, and cytoplasmic staining intensity for SRC as negative (score = 0), weak (score = 1), moderate (score = 2), or strong (score = 3).",
+          "quote_sha256": "9bcd7642586e9eabefbfe8925c4cedd5584de17489ffc87ea228a3e911bb8f63",
+          "char_offset": 7724,
+          "normalized_source_sha256": "d61abcccc27c695370b8df6b7ed0caa17bdbd8f97c321e92b3010c511a34140f"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "Activated c-Src (phospho-Src) is expressed in ~51% of human breast carcinoma tissues but is absent from normal glandular epithelial, myoepithelial, and stromal cells; expression is cytoplasmic and inversely correlated with aggressiveness markers.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "breast carcinoma tissue (73 cases)",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "breast",
+          "disease_state": "breast carcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:12462387",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/12462387/",
+            "title": "Activation of c-Src is inversely correlated with biological aggressiveness of breast carcinoma",
+            "retrieved_at": "2026-05-17T13:00:22.616572Z",
+            "content_sha256": "417d053b470884d149d0140c4f9941ff1d9c04cf9d979ce3132ac8ce40c48f75",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:22.614289Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Glandular epithelial and myoepithelial cells in normal mammary glands adjacent to carcinoma nests and infiltrating stromal cells were negative for activated c-Src.",
+          "quote_sha256": "7ba494d3a04f6db909da550ac21c92d6f168bf9dc88a5d59cf22cef18794b652",
+          "char_offset": 677,
+          "normalized_source_sha256": "5844d53e83015721dd845895c2c52028294e17a2de559b716b0b474faf387aeb"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "Phospho-Src expression in human cervical specimens increases from normal cervix to carcinoma in situ to invasive squamous cell carcinoma (CSCC), and is an independent predictor of recurrence-free survival by IHC.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cervical squamous cell carcinoma tissue (127 specimens)",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "cervix",
+          "disease_state": "cervical squamous cell carcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "source_id=PMC:PMC3657365 not in session source store (agent cited a source it didn't fetch)"
+      ]
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "SRC is ubiquitously expressed at the protein level, with platelets, neurons, and osteoclasts expressing 5–200-fold higher levels than most tissues; UniProt annotates subcellular localisation to cell membrane, mitochondrial inner membrane, nucleus, cytosol/perinuclear region, focal adhesions, and cell junctions; N-myristoylation at Gly2 is the primary membrane anchor.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "db_annotation",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "source_id=PMID:22294297 not in session source store (agent cited a source it didn't fetch)"
+      ]
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "SRC kinase was identified in the surfaceome of chondrogenic cells (Cluster 2) peaking at differentiation day 6 by sialoglycoprotein-enrichment LC-MS/MS, indicating stage-specific surface association during chondrogenic differentiation.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "embryonic chick limb-bud chondrogenic cells (micromass culture)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrogenic cells / chondrocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "cartilage",
+          "disease_state": null,
+          "activation_state": "day 6 chondrogenic differentiation"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "Podocalyxin and ciliary neurotrophic factor receptor are novel components of the surfaceome of chondrogenic cells",
+            "retrieved_at": "2026-05-17T13:00:11.898245Z",
+            "content_sha256": "ab4883f45361f9b7690bffcbedd09a998400f2fae25dbe462d8eba8da9193f34",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:09.800273Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Surfaceome cluster 2 harbors several cell-surface regulators of chondrocyte biology, including RECK (a membrane-anchored matrix metalloprotease inhibitor [ 45 ]), FGFR2 (fibroblast growth factor receptor 2; regulates chondrocyte proliferation/differentiation signaling [ 46 ]), multiple ephrin receptors (EPHA7, EPHB2, EPHB1, EPHB3 with potential roles in cartilage morphogenesis [ 47 ]), SRC kinase (chondrocyte phenotype control [ 48 ]), and GPC1 (glypical-1",
+          "quote_sha256": "279c3cb667a4b2be967cd4ba907c56c3eacc5d6b3e6e51618a9c4c6b9400e05a",
+          "char_offset": 28723,
+          "normalized_source_sha256": "6d1270ad537a0930205aa4a47aac863326a79228de7ff2ab8a05bc10ea546f5a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "SRC was detected in the cell-membrane proteome of HER2+ SKBR3 breast cancer cells by membrane enrichment and mass spectrometry; it was classified among receptor/enzymatic activity proteins mediating chemokine signalling and chemotaxis.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "SKBR3 (HER2+ breast cancer cell line)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": "SKBR3",
+          "cellosaurus_id": null,
+          "tissue": "breast",
+          "disease_state": "HER2+ breast cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9237123",
+            "pmc_id": "PMC9237123",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9237123/",
+            "title": "The SKBR3 cell-membrane proteome reveals telltales of aberrant cancer cell proliferation and targets for precision medicine applications",
+            "retrieved_at": "2026-05-17T13:00:11.905650Z",
+            "content_sha256": "6e4ffb18173b7b4edc0421830c89b04b746d47a9382a2a70715f338be72a9736",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:11.654369Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "The ephrin/plexin group was part of a larger functional cluster with roles in chemokine signaling and increased chemotaxis 34 , 35 that included not just well-known receptor/non-receptor signaling kinases (e.g., ERBB2, CSF1R, SRC, PRKCD), but also proteins with functionally diverse activities (i.e., proteins with roles in immune response, cell adhesion cell-ECM binding molecules, and transport).",
+          "quote_sha256": "e14a31e8c582d871c0753b417c27d9446c7f87267ee7419c84403e44195643d2",
+          "char_offset": 32293,
+          "normalized_source_sha256": "326ae3bf4d9108b86dbf85b7c1252cf9547ad0ddcf7df97ee111f2c45bd94b99"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "SRC was identified as a plasma-membrane interactor of the sodium-iodide symporter (NIS) in thyroid cells by intact-cell labelling/immunoprecipitation and mass spectrometry; the SRC/RAC1/PAK1/PIP5K/EZRIN pathway regulates NIS retention at the plasma membrane.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "thyroid follicular cells / thyroid cancer cell lines",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "thyroid follicular cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "thyroid",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC8582450",
+            "pmc_id": "PMC8582450",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8582450/",
+            "title": "Analysis of NIS Plasma Membrane Interactors Discloses Key Regulation by a SRC/RAC1/PAK1/PIP5K/EZRIN Pathway with Potential Implications for Radioiodine Re-Sensitization Therapy in Thyroid Cancer",
+            "retrieved_at": "2026-05-17T13:00:02.413346Z",
+            "content_sha256": "6dfa4dce4d64e2c9bef8bc21f70b7ddeb90f1b2a841f32104d726d035a32634a",
+            "publication_type": "primary_research",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T13:00:01.896184Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": "Figure 3",
+          "quote": "Further analysis with STRING software revealed that the 29 top-scoring NIS-PM candidates formed a tight interaction subnetwork around cytoplasmic actin (ACTB) and four of the regulatory proteins on the hsa04810 pathway ( Figure 3 A): the small GTPase RAC1 (RAS-related C3 botulinum toxin substrate 1), the proto-oncogene tyrosine-protein kinase Src (SRC), the actin-nucleating ARP 2/3 complex subunit 4 (ARPC4), and the actin-binding adaptor protein ezrin (EZRIN).",
+          "quote_sha256": "e77f05eb8aa516933be49d0f681edceed1eaa5dbc0cbf17bee76f640f09bed41",
+          "char_offset": 19442,
+          "normalized_source_sha256": "72264a9399d23462fbce3358ab118b682f5da189abc9654b44550616c589804d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "Membrane clustering of Src is responsible for sustained inflammatory activation in monocytes persistently challenged with oxLDL or free cholesterol; the Src-SYK-mTORC1-STAT3/5 axis drives a memory-like pro-inflammatory phenotype, and fumagillin (myristoylation inhibitor) disrupts Src clustering and alleviates monocyte activation.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "bone marrow-derived monocytes",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "monocyte",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "persistent oxLDL/cholesterol stimulation"
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "substring not found in normalized PMC:PMC12929915 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)"
+      ]
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "Fluid shear stress activates c-Src (Tyr416 phosphorylation) in osteoblast-like MC3T3-E1 cells and promotes membrane-proximal redistribution of Src; constitutively active Src (Y527F) mimics this peripheral localisation even without shear.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1 (osteoblast-like)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": "MC3T3-E1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "fluid shear stress"
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "source_id=PMC:PMC13054614 not in session source store (agent cited a source it didn't fetch)"
+      ]
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "In c-Src-transformed cells, activated c-Src localised to endosomal membranes promotes exosome secretion via ESCRT/Alix; a correlation between Src upregulation, endosomal Src pool, and malignant phenotype is reported in cancer cells.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "Src-transformed NIH3T3 and cancer cell lines",
+        "permeabilized": false,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "fibroblast / cancer cell line",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "oncogenic transformation",
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "source_id=PMC:PMC6397170 not in session source store (agent cited a source it didn't fetch)"
+      ]
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "Src self-associates via a lysine cluster in its SH4 region through lipid-mediated interactions, forming micron-sized condensates anchored to the plasma membrane inner leaflet; this lipid-driven self-association is an additional regulatory mechanism that modulates Src membrane residence and transforming capacity.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "human cells; in vitro supported lipid bilayers",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "unspecified human cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [],
+      "entailment_verified": false,
+      "entailment_audit_passed": null,
+      "validation_warnings": [
+        "substring not found in normalized PMC:PMC11909415 text after normalization (NFKC + Greek + HTML + whitespace + lowercase)"
+      ]
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "HPA IHC (Supported reliability) localises SRC to plasma membrane, cell junctions, and vesicles in human tissue samples; HPA annotates SRC as plasma-membrane accessible with junctional localization.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "hpa_ihc",
+            "source_id": "HPA:SRC",
+            "pmc_id": null,
+            "url": "https://www.proteinatlas.org/ENSG00000197122/cell",
+            "title": "HPA snapshot for SRC",
+            "retrieved_at": "2026-05-17T12:59:57.750899Z",
+            "content_sha256": "45caebcb863c6708311d62c6853b372b685e0aab74830c411a9a87e5d8e2729f",
+            "publication_type": "db_entry",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-17T12:59:57.750899Z",
+            "license": "unknown"
+          },
+          "section": "other",
+          "figure_or_table_id": null,
+          "quote": "HPA subcellular locations: Cell Junctions;Plasma membrane;Vesicles.",
+          "quote_sha256": "469a86e1e51886f1a5344abcb74bd8547cfbe2d70a76da2517908cac3ea6d38e",
+          "char_offset": 58,
+          "normalized_source_sha256": "4351d09196142bb1c6c48b747f8e43341844b8267b560fce42562876276cc59d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": []
+    }
+  ],
+  "search_log": [],
+  "evidence_count": 27,
+  "primary_evidence_count": 13,
+  "secondary_evidence_count": 14,
+  "confidence": "moderate",
+  "confidence_reasoning": "A1 grades evidence as 'supportive_but_indirect' and this synthesis tracks that grade. The topology is unambiguous—inner-leaflet peripheral kinase, no ECD—supported by strong biophysical primary data (a1_evi_09, a1_evi_10, a2_evi_12) and consistent database exclusion from surfaceome calls (a1_evi_14). However, multiple membrane-fractionation MS studies superficially detect SRC in surface fractions, creating mild conflicting signal. State-dependence is moderate: PM association is modulated by activation state, oncogenic transformation (endosomal redistribution), and differentiation stage (chondrogenic day-6 peak). Confidence is 'moderate' rather than 'high' because the surface-fraction MS detections require careful interpretation and state-dependent variability is real.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-17T13:05:27.108512Z"
+}
