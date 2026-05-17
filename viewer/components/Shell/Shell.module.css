@@ -1,9 +1,24 @@
+/*
+ * Shell — single-row header for surfaceome.deliverome.org. Mirrors
+ * deliverome-internal:site/components/SiteShell/Header.tsx so the
+ * sub-site reads as a sibling of the parent property without claiming
+ * a separate nav strip for it.
+ *
+ * Token sources that should track the parent SiteShell when it rev's:
+ *   • brand mark dimensions (40×40 px)
+ *   • brand wordmark — Playfair Display semibold 1.1rem
+ *   • headerInner — page-width container, flex-row, space-between
+ *   • header padding — 1rem top / 0.55rem bottom (resting)
+ */
+
 .shell {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
+/* Keyboard skip link — visually hidden until focused. Standard
+ * a11y pattern, matches deliverome-internal's SiteShell. */
 .skipLink {
   position: absolute;
   left: 1rem;
@@ -22,271 +37,274 @@
   transform: translateY(0);
 }
 
+/* ---------- header (single row) ---------- */
+
 .header {
   position: sticky;
   top: 0;
   z-index: 20;
+  width: 100%;
   background: rgba(254, 254, 254, 0.92);
   backdrop-filter: saturate(160%) blur(14px);
-  border-bottom: 1px solid var(--line-soft);
-}
-
-/* Parent-site strip — the top row that links back to deliverome.org.
- * Visually lighter than the local nav so the eye lands on Surfaceome's
- * own brand first; the strip acts as a "you are inside Deliverome"
- * affordance, not a competing nav. */
-.parentStrip {
-  border-bottom: 1px solid var(--line-soft);
-  background: var(--bg-soft);
-}
-
-.parentInner {
-  width: var(--page-width);
-  margin-inline: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  padding: 0.55rem 0;
-}
-
-.parentBrand {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  color: var(--ink);
-  font-family: var(--font-display);
-  font-size: 0.95rem;
-  line-height: 1;
-  border-bottom: 1px solid transparent;
-  transition: color var(--dur-fast) var(--ease-out);
-}
-
-.parentBrand:hover,
-.parentBrand:focus-visible {
-  color: var(--accent);
-}
-
-.parentLogo {
-  width: 26px;
-  height: 26px;
-  display: block;
-}
-
-.parentBrandText {
-  letter-spacing: 0.005em;
-}
-
-.parentNav {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.parentLink {
-  font-family: var(--font-sans);
-  font-size: 0.84rem;
-  color: var(--ink-soft);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  padding: 1rem 0 0.55rem;
   border-bottom: 1px solid transparent;
   transition:
-    color var(--dur-fast) var(--ease-out),
+    padding var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out);
-}
-
-.parentLink:hover,
-.parentLink:focus-visible {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
 }
 
 .headerInner {
-  width: var(--page-width);
-  margin-inline: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
-  padding: 0.85rem 0;
+  gap: var(--space-6, 1.5rem);
+  width: var(--page-width, min(1200px, calc(100vw - 2rem)));
+  margin-inline: auto;
 }
 
-.brand {
+/* Brand lockup — Deliverome (parent) + "/" + Surfaceome (local).
+ * The parent half is a link back to deliverome.org; the local half
+ * is a Next.js Link to the surfaceome root. */
+.brandLockup {
   display: inline-flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  color: var(--ink);
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.brandParent {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.55rem 0.4rem 0.55rem 0;
+  margin-left: -0.4rem;
   font-family: var(--font-display);
   font-style: italic;
-  font-size: 1.25rem;
+  font-weight: var(--fw-semibold);
+  font-size: 1.1rem;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    font-size var(--dur-fast) var(--ease-out);
+}
+
+.brandParent:hover,
+.brandParent:focus-visible {
+  color: var(--accent);
 }
 
 .brandMark {
-  width: 12px;
-  height: 12px;
-  border-radius: 999px;
-  background: var(--accent);
-  display: inline-block;
-  align-self: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
 }
 
-.brandText {
+.brandParentText {
+  white-space: nowrap;
+}
+
+/* The "/" separator carries the URL-hierarchy metaphor (deliverome.org
+ * → surfaceome.deliverome.org → /path). Subtle: lighter than the
+ * brand text so the eye treats it as connective tissue, not nav. */
+.brandSep {
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  font-weight: var(--fw-light, 300);
+  color: var(--line);
+  line-height: 1;
+  margin-inline: 0.05rem;
+  user-select: none;
+}
+
+/* "Surfaceome" sub-brand — slightly smaller than the parent wordmark
+ * so the hierarchy reads at a glance. Same Playfair italic so the
+ * two halves of the lockup share a typographic voice. */
+.brandLocal {
+  display: inline-flex;
+  align-items: baseline;
+  text-decoration: none;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: var(--fw-semibold);
+  font-size: 1.05rem;
+  line-height: 1;
+  letter-spacing: -0.005em;
   color: var(--ink);
+  padding: 0.55rem 0.3rem;
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
-.brandSubtitle {
-  font-family: var(--font-sans);
-  font-style: normal;
-  font-size: 0.78rem;
-  color: var(--muted);
-  letter-spacing: 0.01em;
+.brandLocal:hover,
+.brandLocal:focus-visible {
+  color: var(--accent);
 }
 
-@media (max-width: 720px) {
-  .parentNav {
-    gap: var(--space-3);
-  }
-  .parentLink {
-    font-size: 0.78rem;
-  }
-  .parentInner,
-  .headerInner {
-    padding-inline: var(--space-4);
-  }
-  .brandSubtitle {
-    display: none;
-  }
+.brandLocalText {
+  white-space: nowrap;
 }
+
+/* ---------- primary nav ---------- */
 
 .nav {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-5);
+  gap: 0.35rem;
 }
 
 .navLink {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.92rem;
+  font-weight: var(--fw-medium);
   color: var(--ink-soft);
-  border-bottom: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
   transition:
     color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
+    background-color var(--dur-fast) var(--ease-out);
 }
 
 .navLink:hover,
 .navLink:focus-visible {
   color: var(--accent);
-  border-bottom-color: var(--accent);
+  background: var(--bg-warm);
 }
 
-/* Icon-only nav link (the GitHub octocat). The underline-on-hover
- * trick from .navLink looks awkward under an SVG, so we suppress
- * the border there and lean on the colour-shift alone for hover
- * affordance. */
 .navIconLink {
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-  border-bottom: none;
+  padding: 0.5rem;
 }
 
-.navIconLink:hover,
-.navIconLink:focus-visible {
-  border-bottom-color: transparent;
-}
+/* ---------- main ---------- */
 
 .main {
-  flex: 1;
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
 }
 
+.main:focus,
 .main:focus-visible {
   outline: none;
 }
 
+/* ---------- footer ---------- */
+
 .footer {
-  margin-top: var(--space-16);
-  border-top: 1px solid var(--line-soft);
-  padding: var(--space-8) 0 var(--space-12);
+  margin-top: var(--space-12, 3rem);
+  padding: var(--space-8, 2rem) 0 var(--space-10, 2.5rem);
+  background: var(--bg-soft);
+  border-top: 1px solid var(--line);
 }
 
 .footerInner {
-  width: var(--page-width);
-  margin-inline: auto;
   display: flex;
-  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-6);
+  gap: var(--space-8, 2rem);
+  width: var(--page-width, min(1200px, calc(100vw - 2rem)));
+  margin-inline: auto;
+  flex-wrap: wrap;
 }
 
 .footerCopyBlock {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  flex: 1 1 60ch;
-  min-width: 0;
+  gap: 0.6rem;
+  max-width: 56rem;
 }
 
 .footerCopy {
   margin: 0;
-  font-size: 0.95rem;
-  color: var(--muted);
-  max-width: 60ch;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
   line-height: 1.55;
+}
+
+.footerLink {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.footerLink:hover,
+.footerLink:focus-visible {
+  border-bottom-color: var(--accent);
 }
 
 .footerMeta {
   margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--muted);
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: 0.85rem;
-  color: var(--muted);
-}
-
-.footerSocial {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.footerSocialLink {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  color: var(--ink-soft);
-  background: var(--bg-soft);
-  border: 1px solid var(--line-soft);
-  transition:
-    color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
-}
-
-.footerSocialLink:hover,
-.footerSocialLink:focus-visible {
-  color: var(--accent);
-  border-color: var(--accent);
-  transform: translateY(-1px);
-}
-
-.footerSocialLink img {
-  display: block;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .metaSep {
   color: var(--line);
 }
 
-.footerLink {
-  border-bottom: 1px dotted var(--line);
-  color: var(--ink-soft);
-  transition: color var(--dur-fast) var(--ease-out);
+.footerSocial {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.footerLink:hover,
-.footerLink:focus-visible {
+.footerSocialLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-pill);
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--line);
+  text-decoration: none;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.footerSocialLink:hover,
+.footerSocialLink:focus-visible {
   color: var(--accent);
+  background: var(--bg-warm);
+  border-color: var(--accent-soft, var(--line));
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 760px) {
+  .headerInner {
+    flex-wrap: wrap;
+    row-gap: 0.5rem;
+  }
+  .brandLockup {
+    gap: 0.45rem;
+  }
+  .brandParentText {
+    /* Drop the wordmark on narrow screens — keep just the logo and
+     * the "/ Surfaceome" sub-brand. */
+    display: none;
+  }
+  .brandSep {
+    display: none;
+  }
+  .nav {
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
 }

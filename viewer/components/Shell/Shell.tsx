@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { NavDropdown } from "../NavDropdown/NavDropdown";
 import styles from "./Shell.module.css";
 
 interface ShellProps {
@@ -13,9 +12,6 @@ interface ShellProps {
  * pointed at a staging preview (e.g. the PR24 branch preview at
  * ``https://feat-site-partners-careers-r.deliverome.pages.dev``) without
  * rebuilding the Shell. Default is production deliverome.org.
- *
- * Trailing slash trimmed so the link builder can concatenate paths
- * starting with ``/`` cleanly.
  */
 const PARENT_SITE = (
   process.env.NEXT_PUBLIC_DELIVEROME_SITE_URL ?? "https://deliverome.org"
@@ -28,21 +24,28 @@ function parentHref(path: string): string {
 /**
  * Shell — site-wide layout for surfaceome.deliverome.org.
  *
- * Two-row header so this subdomain reads as a tab inside the larger
- * deliverome.org property rather than a standalone microsite:
+ * Single-row header (Pattern B in the sub-site shell taxonomy):
+ *   • Brand lockup on the left — Deliverome logo + "The Deliverome Project"
+ *     wordmark in Playfair Display italic, sized + spaced to match
+ *     ``deliverome-internal:site/components/SiteShell/Header.tsx``. The
+ *     wordmark is a link back to deliverome.org.
+ *   • A `/` separator + "Surfaceome" sub-brand so the URL hierarchy
+ *     reads inline ("Deliverome / Surfaceome") without a second nav row.
+ *   • Right side: local Surfaceome nav (Catalog · SurfaceBench · API ·
+ *     Prompts · Reproducibility) + GitHub icon. Mirrors the spacing /
+ *     typography of the parent's primary nav (`Team · News · Careers ·
+ *     Contact`) so the two sites visually share a header shape.
  *
- *   Row 1 (parent-site strip) — Deliverome logo + NavDropdown menus
- *                               (Platform → Overview / Progress;
- *                               Company → Team / Updates / Careers) +
- *                               Contact. Mirrors deliverome.org's
- *                               SiteShell nav structure.
- *   Row 2 (local nav)         — "Surfaceome" sub-brand + the four
- *                               in-site sections (SurfaceBench, API,
- *                               Prompts, GitHub icon).
+ * Why single-row instead of the prior two-row shell: a sub-site doesn't
+ * need to claim a whole nav strip for the parent's links — visitors
+ * arriving at surfaceome.deliverome.org are deep-link readers, not
+ * marketing browsers. The brand lockup on the left is enough parent
+ * context. Cleaner than the borrowed two-row design and removes the
+ * competing nav contexts. See PR24 ref:
+ *   github.com/Deliverome-Project/deliverome-internal/pull/24
  *
- * Keep both files in sync when the parent SiteShell rev's its nav.
- * Parent ref: ``Deliverome-Project/deliverome-internal:site/components/
- * site-shell.tsx``.
+ * Keep the brand-lockup sizing in sync with that file when it rev's
+ * (font-size, gap, logo dimensions).
  */
 export function Shell({ children }: ShellProps) {
   return (
@@ -51,52 +54,32 @@ export function Shell({ children }: ShellProps) {
         Skip to main content
       </a>
       <header className={styles.header}>
-        <div className={styles.parentStrip}>
-          <div className={styles.parentInner}>
-            <a className={styles.parentBrand} href={parentHref("/")}>
+        <div className={styles.headerInner}>
+          <div className={styles.brandLockup}>
+            {/* Parent-site anchor — clicking the Deliverome wordmark
+             *  returns to deliverome.org (or whatever
+             *  NEXT_PUBLIC_DELIVEROME_SITE_URL is pointed at). */}
+            <a className={styles.brandParent} href={parentHref("/")}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
+                className={styles.brandMark}
                 src="/assets/provisional_logo.svg"
                 alt=""
-                width={32}
-                height={32}
-                className={styles.parentLogo}
+                width={40}
+                height={40}
               />
-              <span className={styles.parentBrandText}>
+              <span className={styles.brandParentText}>
                 The Deliverome Project
               </span>
             </a>
-            <nav className={styles.parentNav} aria-label="Deliverome">
-              <NavDropdown
-                label="Platform"
-                items={[
-                  { label: "Overview", href: parentHref("/platform/") },
-                  { label: "Progress tracker", href: parentHref("/platform/progress/") },
-                ]}
-              />
-              <NavDropdown
-                label="Company"
-                items={[
-                  { label: "Team", href: parentHref("/team/") },
-                  { label: "Updates", href: parentHref("/updates/") },
-                  { label: "Careers", href: parentHref("/careers/") },
-                ]}
-              />
-              <a className={styles.parentLink} href={parentHref("/contact/")}>
-                Contact
-              </a>
-            </nav>
-          </div>
-        </div>
-        <div className={styles.headerInner}>
-          <Link href="/" className={styles.brand}>
-            <span className={styles.brandMark} aria-hidden="true" />
-            <span className={styles.brandText}>Surfaceome</span>
-            <span className={styles.brandSubtitle} aria-hidden="true">
-              · accessible surface proteome
+            <span className={styles.brandSep} aria-hidden="true">
+              /
             </span>
-          </Link>
-          <nav className={styles.nav} aria-label="Surfaceome sections">
+            <Link href="/" className={styles.brandLocal}>
+              <span className={styles.brandLocalText}>Surfaceome</span>
+            </Link>
+          </div>
+          <nav id="primary-nav" className={styles.nav} aria-label="Surfaceome sections">
             <Link className={styles.navLink} href="/benchmark">
               SurfaceBench
             </Link>
@@ -117,9 +100,10 @@ export function Shell({ children }: ShellProps) {
               aria-label="GitHub — Deliverome-Project/accessible-surfaceome"
               title="GitHub — Deliverome-Project/accessible-surfaceome"
             >
-              {/* Inline GitHub mark — keeps the icon a single self-contained
-                  React element with no asset pipeline. Path lifted from
-                  github.com/logos (public-domain octocat). */}
+              {/* Inline GitHub mark — public-domain octocat path from
+                  github.com/logos. Kept inline so the icon ships in
+                  the same React tree as the rest of the nav, no asset
+                  pipeline. */}
               <svg
                 viewBox="0 0 24 24"
                 role="img"
