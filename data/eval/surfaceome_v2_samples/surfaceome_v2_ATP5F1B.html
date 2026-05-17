@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>surfaceome_v2 · ATP5F1B</title>
+  <style>
+:root {
+  --bg: #fafaf7;
+  --bg-card: #ffffff;
+  --bg-muted: #f1f0eb;
+  --fg: #222;
+  --fg-muted: #6b6b6b;
+  --border: #e2e0d8;
+  --accent: #7a1d3f;
+  --accent-soft: #f3e2e8;
+  --quote-bg: #f7f4ee;
+  --quote-border: #c8a35e;
+  --ok: #2c6e4b; --ok-bg: #e0f0e6;
+  --warn: #8a5a00; --warn-bg: #fbeed1;
+  --bad: #8a1d1d; --bad-bg: #f7d8d8;
+  --info: #1d4f8a; --info-bg: #d8e6f7;
+  --gray: #555; --gray-bg: #e8e8e3;
+  --lav: #4e3c8a; --lav-bg: #e5dcf7;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg); color: var(--fg);
+  margin: 0; padding: 1.5rem; line-height: 1.5;
+}
+main { max-width: 1200px; margin: 0 auto; }
+
+/* ---- Banner ---- */
+.record-banner {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+}
+.record-banner h1 { font-size: 2rem; margin: 0; color: var(--accent); }
+.id-row {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  margin: 0.5rem 0 1rem; font-size: 0.88rem; color: var(--fg-muted);
+}
+.id-key {
+  color: var(--fg-muted); font-size: 0.72rem;
+  text-transform: uppercase; letter-spacing: 0.05em; margin-right: 0.3rem;
+}
+.id { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+.verdict-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border);
+}
+.verdict .verdict-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin-bottom: 0.25rem;
+}
+.verdict .verdict-val { font-size: 0.95rem; }
+.verdict .verdict-val.big { font-size: 1.5rem; font-weight: 600; }
+.verdict .verdict-val.small { font-size: 0.82rem; }
+.verdict .verdict-sub {
+  font-size: 0.74rem; color: var(--fg-muted); margin-top: 0.2rem;
+}
+
+/* ---- Section block ---- */
+section.block {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 1rem 1.5rem 1.5rem; margin-bottom: 1.25rem;
+}
+section.block > h2 {
+  font-size: 1.2rem; color: var(--accent); margin: 0.5rem 0 1rem;
+  padding-bottom: 0.4rem; border-bottom: 2px solid var(--accent-soft);
+}
+section.block > h3 {
+  font-size: 1rem; margin: 1.25rem 0 0.5rem;
+  color: var(--fg); font-weight: 600;
+}
+
+/* ---- Generic badge ---- */
+.badge {
+  display: inline-block;
+  font-size: 0.74rem; padding: 0.1rem 0.5rem;
+  border-radius: 3px; font-weight: 500;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+}
+.badge-green { background: var(--ok-bg); color: var(--ok); }
+.badge-amber { background: var(--warn-bg); color: var(--warn); }
+.badge-red { background: var(--bad-bg); color: var(--bad); }
+.badge-blue { background: var(--info-bg); color: var(--info); }
+.badge-gray { background: var(--gray-bg); color: var(--gray); }
+.badge-lavender { background: var(--lav-bg); color: var(--lav); }
+
+/* ---- Sub-grid (used in multiple sections) ---- */
+.sub-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem; margin-bottom: 1rem;
+}
+.sub.wide { grid-column: span 2; }
+.sub-label, .verdict-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin-bottom: 0.25rem;
+}
+.sub-val { font-size: 0.95rem; }
+.sub-val.big { font-size: 1.4rem; font-weight: 600; }
+.sub-sub { font-size: 0.78rem; color: var(--fg-muted); margin-top: 0.2rem; }
+
+/* ---- Prose block ---- */
+.prose-block {
+  background: var(--bg-muted); padding: 0.6rem 0.9rem;
+  border-radius: 4px; font-size: 0.92rem; margin: 0.3rem 0;
+}
+.prose-block .reasoning { margin-left: 0.5rem; }
+.quote-label {
+  font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin: 0.5rem 0 0.2rem;
+}
+blockquote.quote {
+  margin: 0; padding: 0.6rem 0.9rem;
+  background: var(--quote-bg); border-left: 3px solid var(--quote-border);
+  border-radius: 0 4px 4px 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 0.94rem; white-space: pre-wrap; word-wrap: break-word;
+}
+.claim-text { margin: 0.3rem 0 0; }
+
+/* ---- Tables ---- */
+table.compact {
+  width: 100%; border-collapse: collapse;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 4px; overflow: hidden;
+  font-size: 0.86rem; margin: 0.5rem 0;
+}
+table.compact th, table.compact td {
+  text-align: left; padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border); vertical-align: top;
+}
+table.compact th {
+  background: var(--bg-muted); font-weight: 600;
+  font-size: 0.74rem; text-transform: uppercase;
+  letter-spacing: 0.04em; color: var(--fg-muted);
+}
+table.compact tbody tr:last-child td { border-bottom: 0; }
+table.compact td.small, td.small { font-size: 0.82rem; color: var(--fg-muted); }
+.compact-list { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+.compact-list li { font-size: 0.88rem; margin-bottom: 0.25rem; }
+
+/* ---- Method cards ---- */
+.method-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--info); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.75rem;
+}
+.method-head, .te-head, .contra-head, .anat-head, .mod-head {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem;
+}
+.abs { margin: 0.5rem 0; }
+.ab {
+  font-size: 0.85rem; padding: 0.3rem 0.5rem;
+  background: var(--bg-muted); border-radius: 3px;
+  margin-bottom: 0.25rem;
+}
+.obs { margin: 0.4rem 0; }
+.te-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--warn); border-radius: 4px;
+  padding: 0.75rem 1rem; margin: 0.5rem 0;
+}
+.contra-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--bad); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+}
+.anat-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--info); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.5rem;
+}
+.mod-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--lav); border-radius: 4px;
+  padding: 0.75rem 1rem; margin-bottom: 0.75rem;
+}
+.mod-states {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center; gap: 0.6rem; margin: 0.5rem 0;
+}
+.state-cell {
+  background: var(--bg-muted); padding: 0.45rem 0.7rem; border-radius: 4px;
+}
+.state-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--fg-muted); margin-bottom: 0.2rem;
+}
+.state-val { font-size: 0.88rem; }
+.state-arrow { font-size: 1.5rem; color: var(--accent); text-align: center; }
+
+/* ---- Filters ---- */
+.filters-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.4rem 1rem;
+}
+.filter-row {
+  display: flex; justify-content: space-between;
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px dashed var(--border); align-items: center;
+  font-size: 0.85rem;
+}
+.filter-key { color: var(--fg-muted); font-family: ui-monospace, monospace; }
+
+/* ---- Risks ---- */
+.risks-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+.risk-card {
+  background: var(--bg-muted); border-radius: 4px;
+  padding: 0.75rem 1rem;
+}
+.risk-row {
+  display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+  margin-bottom: 0.4rem;
+}
+.risk-label { font-weight: 600; font-size: 0.92rem; }
+.risk-detail {
+  font-size: 0.82rem; color: var(--fg); margin: 0.3rem 0;
+}
+
+/* ---- Evidence cards ---- */
+.evidence-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent); border-radius: 6px;
+  padding: 0.9rem 1.2rem; margin-bottom: 1rem;
+  scroll-margin-top: 1.5rem;
+}
+.evi-header { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.6rem; }
+.evi-id-row {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  align-items: center; font-size: 0.9rem;
+}
+.evi-id {
+  font-family: ui-monospace, monospace; font-weight: 600;
+  background: var(--accent-soft); color: var(--accent);
+  padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.85rem;
+}
+.section {
+  color: var(--fg-muted); font-size: 0.83rem; font-style: italic;
+}
+.section code { font-style: normal; font-family: ui-monospace, monospace; }
+.badges { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+a.src {
+  text-decoration: none; color: var(--accent);
+  font-family: ui-monospace, monospace; font-size: 0.85rem;
+}
+a.src:hover { text-decoration: underline; }
+span.src {
+  font-family: ui-monospace, monospace; font-size: 0.85rem;
+  color: var(--fg-muted);
+}
+
+/* ---- Citation chips ---- */
+.evi-chips { display: inline-flex; flex-wrap: wrap; gap: 0.2rem; }
+a.evi-chip {
+  background: var(--accent-soft); color: var(--accent);
+  font-family: ui-monospace, monospace; font-size: 0.74rem;
+  padding: 0.05rem 0.35rem; border-radius: 3px;
+  text-decoration: none;
+}
+a.evi-chip:hover { background: var(--accent); color: white; }
+.citations { margin-top: 0.4rem; }
+.muted { color: var(--fg-muted); }
+.muted.small, .small { font-size: 0.82rem; }
+
+/* ---- Risks list ---- */
+ul.risks { margin: 0.3rem 0 0; padding-left: 1.2rem; }
+ul.risks li { font-size: 0.88rem; margin-bottom: 0.2rem; }
+
+/* ---- Timing section ---- */
+.timing-bar {
+  display: flex; width: 100%; height: 28px;
+  border-radius: 4px; overflow: hidden;
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  margin: 0.5rem 0 0.4rem;
+}
+.bar-seg { height: 100%; }
+.bar-legend-row {
+  display: flex; flex-wrap: wrap; gap: 0.6rem 1rem;
+  margin-bottom: 0.4rem;
+  align-items: center;
+}
+.bar-legend { display: inline-flex; align-items: center; gap: 0.3rem; }
+details.timing-detail { margin-top: 0.5rem; }
+details.timing-detail summary {
+  cursor: pointer; color: var(--fg-muted);
+  font-size: 0.86rem; padding: 0.3rem 0;
+}
+table.timing-table td.num, table.timing-table th.num {
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+table.timing-table code {
+  font-family: ui-monospace, monospace; font-size: 0.78rem;
+}
+
+footer {
+  margin-top: 2rem; padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--fg-muted); font-size: 0.78rem; text-align: center;
+}
+</style>
+</head>
+<body>
+<main>
+  
+    <header class="record-banner">
+      <h1>ATP5F1B</h1>
+      <div class="id-row">
+        <span class="id"><span class="id-key">UniProt</span> P06576</span>
+        <span class="id"><span class="id-key">HGNC</span> HGNC:830</span>
+        <span class="id"><span class="id-key">Ensembl</span> ENSG00000110955</span>
+        <span class="id"><span class="id-key">NCBI</span> 506</span>
+      </div>
+      <div class="verdict-row">
+        <div class="verdict">
+          <div class="verdict-label">surface accessibility</div>
+          <div class="verdict-val"><span class="badge badge-amber">moderate</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">evidence grade</div>
+          <div class="verdict-val"><span class="badge badge-green">direct_multi_method</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">confidence</div>
+          <div class="verdict-val"><span class="badge badge-amber">moderate</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">subcategory</div>
+          <div class="verdict-val"><span class="badge badge-blue">other</span></div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">evidence rows</div>
+          <div class="verdict-val big">17</div>
+          <div class="verdict-sub">14 primary · 3 secondary</div>
+        </div>
+        <div class="verdict">
+          <div class="verdict-label">generated</div>
+          <div class="verdict-val small">2026-05-17 02:40 UTC</div>
+          <div class="verdict-sub">claude-sonnet-4-6</div>
+        </div>
+      </div>
+    </header>
+    
+
+    <section class="block">
+      <h2>Executive summary</h2>
+      <div class="prose-block">ATP5F1B (ATP synthase β-subunit) is canonically a mitochondrial inner-membrane F1 subunit but is also detected at the plasma membrane as part of ectopic ATP synthase (eATP synthase). Multiple direct methods—surface biotinylation MS, non-permeabilized IF with orthogonal controls, live-cell flow cytometry, and super-resolution live-cell imaging—support genuine surface accessibility. Surface expression appears conditional (not ubiquitous), with highest confidence in specific cell types; CSPA/SURFY databases do not annotate it as a surface protein, reflecting its non-conventional trafficking origin.</div>
+      <div class="sub-grid">
+        <div class="sub">
+          <div class="sub-label">state dependence</div>
+          <div class="sub-val">moderate</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">evidence grade summary</div>
+          <div class="sub-val">direct_multi_method</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">headline risks</div>
+          <div class="sub-val"><ul class='risks'><li>restricted_subdomain</li><li>low_endogenous_expression</li><li>epitope_masked</li></ul></div>
+        </div>
+      </div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_11">a1_evi_11</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Confidence reasoning</h2>
+      <div class="prose-block">
+        <span class="badge badge-amber">moderate</span>
+        <span class="reasoning">A1 grades evidence as direct_multi_method with convergent surface biotinylation, non-permeabilized IF (with orthogonal controls), flow cytometry, and live super-resolution imaging—a strong experimental base. However, one moderate-severity contradiction exists (CSPA/SURFY negative annotation, a1_evi_11), and A2 confirms moderate state-dependence: surface expression is cell-type-conditional (sperm subpopulations, fixed-cell contexts) with the fraction of surface vs. mitochondrial pool unquantified. These factors together—one contradiction plus moderate state dependence—preclude high confidence and yield moderate.</span>
+      </div>
+    </section>
+    
+
+    <section class="block timing-block">
+      <h2>Step timeline · 330.9s wall clock · $0.9483
+          <span class="muted small">
+            (sum-of-steps 582.7s · parallelism 1.8×)
+          </span>
+      </h2>
+      <div class="timing-bar" role="img"
+           aria-label="phase breakdown of 330.9s total runtime">
+        <div class="bar-seg badge-blue" style="width:43.93%" title="plan_trim_select_a1 — 256.0s (43.9%) · $0.3482"></div><div class="bar-seg badge-lavender" style="width:39.30%" title="plan_trim_select_a2 — 229.0s (39.3%) · $0.3296"></div><div class="bar-seg badge-green" style="width:7.63%" title="builders_a1 — 44.4s (7.6%) · $0.1030"></div><div class="bar-seg badge-amber" style="width:5.00%" title="builders_a2 — 29.1s (5.0%) · $0.0810"></div><div class="bar-seg badge-red" style="width:4.14%" title="synthesizer — 24.1s (4.1%) · $0.0865"></div><div class="bar-seg badge-gray" style="width:0.00%" title="post — 0.0s (0.0%) · $0.0000"></div>
+      </div>
+      <div class="bar-legend-row"><span class="bar-legend"><span class="badge badge-blue">plan_trim_select_a1</span> <span class="muted small">256.0s · 43.9% · $0.3482 (36.7%)</span></span><span class="bar-legend"><span class="badge badge-lavender">plan_trim_select_a2</span> <span class="muted small">229.0s · 39.3% · $0.3296 (34.8%)</span></span><span class="bar-legend"><span class="badge badge-green">builders_a1</span> <span class="muted small">44.4s · 7.6% · $0.1030 (10.9%)</span></span><span class="bar-legend"><span class="badge badge-amber">builders_a2</span> <span class="muted small">29.1s · 5.0% · $0.0810 (8.5%)</span></span><span class="bar-legend"><span class="badge badge-red">synthesizer</span> <span class="muted small">24.1s · 4.1% · $0.0865 (9.1%)</span></span><span class="bar-legend"><span class="badge badge-gray">post</span> <span class="muted small">0.0s · 0.0% · $0.0000 (0.0%)</span></span></div>
+      <details class="timing-detail">
+        <summary>per-step detail (110 steps, sorted by elapsed)</summary>
+        <table class="compact timing-table">
+          <thead>
+            <tr>
+              <th>Step</th><th>Phase</th><th>Elapsed</th><th>%</th>
+              <th>Items</th><th>Model</th><th>Tokens (in→out)</th><th>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>selector:iter1</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>49.45s</td><td class='num small'>8.5%</td><td class='num small'>28</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>17,928 → 3,209</td><td class='num small'>$0.1019</td></tr><tr><td><code>selector:iter0</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>45.51s</td><td class='num small'>7.8%</td><td class='num small'>20</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>17,064 → 2,484</td><td class='num small'>$0.0885</td></tr><tr><td><code>selector:iter0</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>39.60s</td><td class='num small'>6.8%</td><td class='num small'>9</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>15,871 → 2,479</td><td class='num small'>$0.0848</td></tr><tr><td><code>selector:iter1</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>37.15s</td><td class='num small'>6.4%</td><td class='num small'>12</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>16,257 → 1,893</td><td class='num small'>$0.0772</td></tr><tr><td><code>builder:methods</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>28.81s</td><td class='num small'>4.9%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>7,818 → 2,195</td><td class='num small'>$0.0564</td></tr><tr><td><code>synthesizer</code></td><td><span class="badge badge-red">synthesizer</span></td><td class='num'>24.11s</td><td class='num small'>4.1%</td><td class='num small'>17</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>2 → 1,409</td><td class='num small'>$0.0865</td></tr><tr><td><code>planner</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>20.08s</td><td class='num small'>3.4%</td><td class='num small'>—</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>5,330 → 1,041</td><td class='num small'>$0.0316</td></tr><tr><td><code>planner</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>19.66s</td><td class='num small'>3.4%</td><td class='num small'>—</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>4,914 → 1,019</td><td class='num small'>$0.0300</td></tr><tr><td><code>builder:accessibility_modulation</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>14.40s</td><td class='num small'>2.5%</td><td class='num small'>6</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>5,276 → 812</td><td class='num small'>$0.0280</td></tr><tr><td><code>builder:evidence_grade</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>7.94s</td><td class='num small'>1.4%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>6,062 → 298</td><td class='num small'>$0.0227</td></tr><tr><td><code>trim:iter1:PMC:PMC12902099</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>6.96s</td><td class='num small'>1.2%</td><td class='num small'>8</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,153 → 363</td><td class='num small'>$0.0050</td></tr><tr><td><code>trim:iter0:PMC:PMC11852025</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>6.92s</td><td class='num small'>1.2%</td><td class='num small'>6</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,124 → 342</td><td class='num small'>$0.0048</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>6.77s</td><td class='num small'>1.2%</td><td class='num small'>2</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter0:PMC:PMC9455612</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>6.38s</td><td class='num small'>1.1%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,584 → 146</td><td class='num small'>$0.0033</td></tr><tr><td><code>trim:iter1:PMC:PMC7663848</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>6.03s</td><td class='num small'>1.0%</td><td class='num small'>6</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,853 → 413</td><td class='num small'>$0.0049</td></tr><tr><td><code>trim:iter0:PMC:PMC9237123</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.79s</td><td class='num small'>1.0%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,447 → 349</td><td class='num small'>$0.0042</td></tr><tr><td><code>trim:iter1:PMC:PMC10629159</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.77s</td><td class='num small'>1.0%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,741 → 554</td><td class='num small'>$0.0055</td></tr><tr><td><code>trim:iter1:PMC:PMC11852025</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.75s</td><td class='num small'>1.0%</td><td class='num small'>6</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,124 → 426</td><td class='num small'>$0.0053</td></tr><tr><td><code>trim:iter1:PMC:PMC12359183</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>5.71s</td><td class='num small'>1.0%</td><td class='num small'>7</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,068 → 466</td><td class='num small'>$0.0054</td></tr><tr><td><code>trim:iter1:PMC:PMC7663848</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>5.70s</td><td class='num small'>1.0%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,726 → 378</td><td class='num small'>$0.0046</td></tr><tr><td><code>builder:contradictions</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>5.64s</td><td class='num small'>1.0%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>1,421 → 230</td><td class='num small'>$0.0077</td></tr><tr><td><code>trim:iter1:PMC:PMC10113393</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>5.54s</td><td class='num small'>1.0%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,956 → 354</td><td class='num small'>$0.0047</td></tr><tr><td><code>builder:tissues</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>5.53s</td><td class='num small'>0.9%</td><td class='num small'>6</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>2,632 → 483</td><td class='num small'>$0.0151</td></tr><tr><td><code>trim:iter0:PMID:2687158</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>5.15s</td><td class='num small'>0.9%</td><td class='num small'>8</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,013 → 368</td><td class='num small'>$0.0049</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.97s</td><td class='num small'>0.9%</td><td class='num small'>0</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter1:PMC:PMC10113393</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.93s</td><td class='num small'>0.8%</td><td class='num small'>35</td><td class='small'>claude-haiku-4-5</td><td class='num small'>5,054 → 713</td><td class='num small'>$0.0086</td></tr><tr><td><code>trim:iter0:PMC:PMC10113393</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.89s</td><td class='num small'>0.8%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,956 → 405</td><td class='num small'>$0.0050</td></tr><tr><td><code>trim:iter1:PMC:PMC11852025</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.75s</td><td class='num small'>0.8%</td><td class='num small'>6</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,407 → 346</td><td class='num small'>$0.0051</td></tr><tr><td><code>trim:iter1:PMC:PMC12281359</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.74s</td><td class='num small'>0.8%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,519 → 368</td><td class='num small'>$0.0044</td></tr><tr><td><code>trim:iter1:PMC:PMC12359183</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.71s</td><td class='num small'>0.8%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,085 → 331</td><td class='num small'>$0.0047</td></tr><tr><td><code>trim:iter0:PMC:PMC10629159</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.65s</td><td class='num small'>0.8%</td><td class='num small'>4</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,924 → 404</td><td class='num small'>$0.0049</td></tr><tr><td><code>trim:iter0:PMC:PMC7663848</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.63s</td><td class='num small'>0.8%</td><td class='num small'>6</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,853 → 336</td><td class='num small'>$0.0045</td></tr><tr><td><code>trim:iter0:PMC:PMC12359183</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.58s</td><td class='num small'>0.8%</td><td class='num small'>7</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,068 → 408</td><td class='num small'>$0.0051</td></tr><tr><td><code>trim:iter1:PMC:PMC12698834</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.57s</td><td class='num small'>0.8%</td><td class='num small'>7</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,028 → 322</td><td class='num small'>$0.0046</td></tr><tr><td><code>builder:subcellular_localization</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>4.54s</td><td class='num small'>0.8%</td><td class='num small'>6</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>4,062 → 131</td><td class='num small'>$0.0142</td></tr><tr><td><code>trim:iter0:PMC:PMC11852025</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.49s</td><td class='num small'>0.8%</td><td class='num small'>6</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,407 → 293</td><td class='num small'>$0.0049</td></tr><tr><td><code>trim:iter1:PMC:PMC10310848</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.42s</td><td class='num small'>0.8%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,815 → 307</td><td class='num small'>$0.0043</td></tr><tr><td><code>trim:iter1:PMID:2687158</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.23s</td><td class='num small'>0.7%</td><td class='num small'>8</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,013 → 383</td><td class='num small'>$0.0049</td></tr><tr><td><code>trim:iter0:PMC:PMC6945718</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>4.21s</td><td class='num small'>0.7%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,705 → 387</td><td class='num small'>$0.0046</td></tr><tr><td><code>trim:iter0:PMC:PMC8612312</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.19s</td><td class='num small'>0.7%</td><td class='num small'>4</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,138 → 314</td><td class='num small'>$0.0047</td></tr><tr><td><code>trim:iter0:PMC:PMC12281359</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.12s</td><td class='num small'>0.7%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,802 → 328</td><td class='num small'>$0.0044</td></tr><tr><td><code>trim:iter1:PMC:PMC10629159</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>4.05s</td><td class='num small'>0.7%</td><td class='num small'>4</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,924 → 365</td><td class='num small'>$0.0047</td></tr><tr><td><code>trim:iter0:PMC:PMC9515456</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.97s</td><td class='num small'>0.7%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,659 → 297</td><td class='num small'>$0.0041</td></tr><tr><td><code>trim:iter1:PMC:PMC9237123</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.87s</td><td class='num small'>0.7%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,447 → 270</td><td class='num small'>$0.0038</td></tr><tr><td><code>trim:iter0:PMC:PMC10629159</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.86s</td><td class='num small'>0.7%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,741 → 336</td><td class='num small'>$0.0044</td></tr><tr><td><code>trim:iter1:PMC:PMC12902099</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.84s</td><td class='num small'>0.7%</td><td class='num small'>8</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,870 → 234</td><td class='num small'>$0.0040</td></tr><tr><td><code>trim:iter0:PMC:PMC9237123</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.75s</td><td class='num small'>0.6%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,730 → 277</td><td class='num small'>$0.0041</td></tr><tr><td><code>trim:iter0:PMC:PMC7663848</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.71s</td><td class='num small'>0.6%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,726 → 261</td><td class='num small'>$0.0040</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.63s</td><td class='num small'>0.6%</td><td class='num small'>15</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter1:PMC:PMC9237123</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.62s</td><td class='num small'>0.6%</td><td class='num small'>2</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,730 → 291</td><td class='num small'>$0.0042</td></tr><tr><td><code>trim:iter0:PMC:PMC8612312</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.59s</td><td class='num small'>0.6%</td><td class='num small'>4</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,855 → 286</td><td class='num small'>$0.0043</td></tr><tr><td><code>trim:iter1:PMC:PMC8612312</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.55s</td><td class='num small'>0.6%</td><td class='num small'>4</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,138 → 203</td><td class='num small'>$0.0042</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.50s</td><td class='num small'>0.6%</td><td class='num small'>9</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter1:PMC:PMC12128983</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.48s</td><td class='num small'>0.6%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,635 → 197</td><td class='num small'>$0.0036</td></tr><tr><td><code>trim:iter1:PMC:PMC6945718</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.45s</td><td class='num small'>0.6%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,705 → 333</td><td class='num small'>$0.0044</td></tr><tr><td><code>trim:iter1:PMC:PMC6945718</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.31s</td><td class='num small'>0.6%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,800 → 235</td><td class='num small'>$0.0040</td></tr><tr><td><code>trim:iter1:PMC:PMC9455612</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.31s</td><td class='num small'>0.6%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,584 → 183</td><td class='num small'>$0.0035</td></tr><tr><td><code>trim:iter0:PMC:PMC12359183</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.30s</td><td class='num small'>0.6%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>3,085 → 190</td><td class='num small'>$0.0040</td></tr><tr><td><code>trim:iter0:PMC:PMC10316767</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.25s</td><td class='num small'>0.6%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,309 → 210</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC10310848</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.23s</td><td class='num small'>0.6%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,532 → 202</td><td class='num small'>$0.0035</td></tr><tr><td><code>trim:iter1:PMC:PMC10316767</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.19s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,592 → 201</td><td class='num small'>$0.0036</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>3.19s</td><td class='num small'>0.5%</td><td class='num small'>0</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>trim:iter0:PMC:PMC10310848</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>3.14s</td><td class='num small'>0.5%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,815 → 191</td><td class='num small'>$0.0038</td></tr><tr><td><code>trim:iter1:PMC:PMC12281359</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.98s</td><td class='num small'>0.5%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,802 → 235</td><td class='num small'>$0.0040</td></tr><tr><td><code>builder:cell_types</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>2.88s</td><td class='num small'>0.5%</td><td class='num small'>6</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>3,386 → 180</td><td class='num small'>$0.0129</td></tr><tr><td><code>trim:iter1:PMC:PMC12128983</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.88s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,352 → 210</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter0:PMC:PMC10113393</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.84s</td><td class='num small'>0.5%</td><td class='num small'>5</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,673 → 363</td><td class='num small'>$0.0045</td></tr><tr><td><code>trim:iter0:PMC:PMC9455612</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.68s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,301 → 165</td><td class='num small'>$0.0031</td></tr><tr><td><code>trim:iter1:PMC:PMC9515456</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.65s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,659 → 179</td><td class='num small'>$0.0036</td></tr><tr><td><code>trim:iter0:PMC:PMC9515456</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.63s</td><td class='num small'>0.5%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,376 → 171</td><td class='num small'>$0.0032</td></tr><tr><td><code>trim:iter0:PMC:PMC10310848</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.50s</td><td class='num small'>0.4%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,532 → 177</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC9455612</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.38s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,301 → 152</td><td class='num small'>$0.0031</td></tr><tr><td><code>trim:iter0:PMC:PMC10316767</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.35s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,592 → 157</td><td class='num small'>$0.0034</td></tr><tr><td><code>trim:iter1:PMC:PMC9515456</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.27s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,376 → 162</td><td class='num small'>$0.0032</td></tr><tr><td><code>trim:iter1:PMC:PMC10316767</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.24s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,309 → 165</td><td class='num small'>$0.0031</td></tr><tr><td><code>trim:iter0:PMC:PMC12128983</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.22s</td><td class='num small'>0.4%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,635 → 166</td><td class='num small'>$0.0035</td></tr><tr><td><code>trim:iter1:PMC:PMC8612312</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.13s</td><td class='num small'>0.4%</td><td class='num small'>4</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,855 → 161</td><td class='num small'>$0.0037</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.08s</td><td class='num small'>0.4%</td><td class='num small'>15</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>builder:therapeutic_engagement</code></td><td><span class="badge badge-green">builders_a1</span></td><td class='num'>2.06s</td><td class='num small'>0.4%</td><td class='num small'>11</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>5,383 → 9</td><td class='num small'>$0.0163</td></tr><tr><td><code>trim:iter0:PMC:PMC6945718</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>2.01s</td><td class='num small'>0.3%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,800 → 148</td><td class='num small'>$0.0035</td></tr><tr><td><code>trim:iter0:PMC:PMC12128983</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>2.01s</td><td class='num small'>0.3%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,352 → 155</td><td class='num small'>$0.0031</td></tr><tr><td><code>builder:anatomical_accessibility</code></td><td><span class="badge badge-amber">builders_a2</span></td><td class='num'>1.78s</td><td class='num small'>0.3%</td><td class='num small'>6</td><td class='small'>claude-sonnet-4-6</td><td class='num small'>3,585 → 9</td><td class='num small'>$0.0109</td></tr><tr><td><code>trim:iter1:PMC:PMC4537497</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.37s</td><td class='num small'>0.2%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,361 → 103</td><td class='num small'>$0.0029</td></tr><tr><td><code>trim:iter0:PMC:PMC12281359</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.37s</td><td class='num small'>0.2%</td><td class='num small'>3</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,519 → 96</td><td class='num small'>$0.0030</td></tr><tr><td><code>trim:iter0:PMC:PMC4537497</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.30s</td><td class='num small'>0.2%</td><td class='num small'>1</td><td class='small'>claude-haiku-4-5</td><td class='num small'>2,361 → 103</td><td class='num small'>$0.0029</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.24s</td><td class='num small'>0.2%</td><td class='num small'>11</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:gene2pubmed</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>1.17s</td><td class='num small'>0.2%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>1.01s</td><td class='num small'>0.2%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.87s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_abstract</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.52s</td><td class='num small'>0.1%</td><td class='num small'>7</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.47s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.42s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.33s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.32s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.32s</td><td class='num small'>0.1%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.13s</td><td class='num small'>0.0%</td><td class='num small'>0</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_abstract</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.12s</td><td class='num small'>0.0%</td><td class='num small'>8</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_abstract</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.10s</td><td class='num small'>0.0%</td><td class='num small'>8</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.08s</td><td class='num small'>0.0%</td><td class='num small'>9</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.08s</td><td class='num small'>0.0%</td><td class='num small'>2</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.06s</td><td class='num small'>0.0%</td><td class='num small'>15</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.04s</td><td class='num small'>0.0%</td><td class='num small'>15</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_fulltext</code></td><td><span class="badge badge-blue">plan_trim_select_a1</span></td><td class='num'>0.01s</td><td class='num small'>0.0%</td><td class='num small'>30</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:evidence_retrieval</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.01s</td><td class='num small'>0.0%</td><td class='num small'>0</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:topic_search</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.01s</td><td class='num small'>0.0%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:fetch_abstract</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.01s</td><td class='num small'>0.0%</td><td class='num small'>8</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>search:gene_literature:gene2pubmed</code></td><td><span class="badge badge-lavender">plan_trim_select_a2</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>25</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>evidence_promotion</code></td><td><span class="badge badge-gray">post</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>17</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>deterministic_features</code></td><td><span class="badge badge-gray">post</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>—</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr><tr><td><code>filters_derivation</code></td><td><span class="badge badge-gray">post</span></td><td class='num'>0.00s</td><td class='num small'>0.0%</td><td class='num small'>17</td><td class='small'>—</td><td class='num small'>—</td><td class='num small'>—</td></tr>
+          </tbody>
+        </table>
+      </details>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 1 — Surface evidence</h2>
+      <div class="sub-grid">
+        <div class="sub">
+          <div class="sub-label">evidence grade</div>
+          <div class="sub-val"><span class="badge badge-green">direct_multi_method</span></div>
+        </div>
+        <div class="sub wide">
+          <div class="sub-label">grade rationale</div>
+          <div class="sub-val">ATP5F1B surface localization is supported by multiple direct method types from independent sources. From PMC10113393: (1) surface biotinylation enrichment + mass spectrometry identified ATP5F1B in the plasma membrane proteome; (2) non-permeabilized immunofluorescence demonstrated cell-surface ATP synthase staining distinct from mitochondrial pattern, with appropriate controls (cyclophilin D negative, ANT positive); (3) live-cell flow cytometry detected eATP synthase on intact cells; (4) super-resolution live-cell imaging confirmed mitochondrial membrane fusion to PM. From PMC11852025: surface biotinylation MS in bovine spermatozoa also captured ATP5F1B. One contradictory claim (a1_evi_11) notes CSPA/SURFY databases do not list ATP5F1B as a surface protein, but this is a computational annotation conflict that does not negate the multiple direct experimental observations. Overall, ≥2 direct method types (surface biotinylation and non-permeabilized IF/flow) from independent sources support surface accessibility.</div>
+        </div>
+      </div>
+
+      <h3>Methods (6)</h3>
+      
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">mass_spec</span>
+        <span class="badge badge-blue">plasma_membrane_fractionation</span>
+        <span class="badge badge-gray">perm: nonpermeabilized</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-blue">supports_membrane_association</span>
+        <span class="badge badge-amber">claim: membrane_fraction_enriched</span>
+      </div>
+      <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Plasma membrane proteome purification identified 378 proteins including ATP synthase complex subunits (eATP synthase, including ATP5F1B); integrative spatial proteomics comparing mitochondrial and PM compartments</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">biotinylation</span>
+        <span class="badge badge-blue">surface_biotinylation</span>
+        <span class="badge badge-gray">perm: nonpermeabilized</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-green">direct_surface_accessibility</span>
+        <span class="badge badge-amber">claim: plasma_membrane_localized</span>
+      </div>
+      <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>ATP synthase beta subunit (ATP5F1B) identified in plasma membrane proteins enriched by biotinylated purification (cited prior study, PMC10113393 source)</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">flow_cytometry</span>
+        <span class="badge badge-blue">fixed_cell_flow</span>
+        <span class="badge badge-gray">perm: fixed_unknown</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-amber">weak_or_ambiguous</span>
+        <span class="badge badge-amber">claim: surface_accessible</span>
+      </div>
+      <div class="abs"><div class='ab'><strong>anti-ATP synthase complex antibody</strong></div><div class='ab'><strong>control mouse IgG</strong> · x-react: Isotype control used as negative reference</div></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>eATP synthase cell surface expression analyzed via flow cytometry using antibodies for the ATP synthase complex or control mouse IgG; n=20 biological replicates, data as mean ± SD</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a></span></td></tr><tr><td>Prior studies demonstrated eATP synthase presence on cell surface of fixed cells using flow cytometry (cited as established prior evidence)</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">immunofluorescence</span>
+        <span class="badge badge-blue">nonpermeabilized_IF</span>
+        <span class="badge badge-gray">perm: nonpermeabilized</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-blue">supports_surface_localization</span>
+        <span class="badge badge-amber">claim: plasma_membrane_localized</span>
+      </div>
+      <div class="abs"><div class='ab'><strong>anti-ATP synthase antibody (surface IF)</strong> · epitope: extracellular · validation: orthogonal_method (moderate) · x-react: Specificity supported by negative control (Cyclophilin D rarely detected at PM) and positive control (ANT detected at PM surface)</div><div class='ab'><strong>anti-Cyclophilin D antibody (negative control)</strong> · x-react: Used as mitochondria-only negative control in non-permeabilized IF; rarely detected at PM confirming assay specificity</div><div class='ab'><strong>anti-ANT (adenine nucleotide translocase) antibody (positive control)</strong> · validation: orthogonal_method (moderate) · x-react: Used as positive control; ANT known to reside at PM, detected on cell surface of non-permeabilized cells</div></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Non-permeabilized IF of eATP synthase (ATP5F1B-containing complex) showing surface staining pattern distinct from mitochondrial ATP synthase; Cyclophilin D (mitochondria-only) rarely detected at PM as negative control; ANT detected at PM as positive control</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">immunofluorescence</span>
+        <span class="badge badge-blue">nonpermeabilized_IF</span>
+        <span class="badge badge-gray">perm: live_cell</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-blue">supports_surface_localization</span>
+        <span class="badge badge-amber">claim: plasma_membrane_localized</span>
+      </div>
+      <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Super-resolution imaging and real-time mitochondria-PM fusion assay in live cells demonstrating mitochondrial membrane fusion to plasma membrane, mechanistically explaining ATP synthase (ATP5F1B) anchoring at cell surface</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></div>
+    </div>
+    
+    <div class="method-card">
+      <div class="method-head">
+        <span class="badge badge-blue">biotinylation</span>
+        <span class="badge badge-blue">surface_biotinylation</span>
+        <span class="badge badge-gray">perm: nonpermeabilized</span>
+        <span class="badge badge-gray">system: endogenous</span>
+        <span class="badge badge-green">direct_surface_accessibility</span>
+        <span class="badge badge-amber">claim: plasma_membrane_localized</span>
+      </div>
+      <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Mass spectrometry-based surface proteome analysis with cell-surface biotinylation enrichment applied to bovine spermatozoa; ATP5F1B detected as a surface protein in sperm</td><td><span class="badge badge-gray">primary_human_cell</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></td></tr></tbody></table></div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></div>
+    </div>
+    
+
+      <h3>Non-surface expression (0)</h3>
+      <div class="muted small">RNA / bulk-protein / non-fractionated observations — held
+      separately so expression isn't read as accessibility.</div>
+      <em class='muted'>no non-surface expression rows</em>
+
+      <h3>Therapeutic engagement</h3>
+      <em class='muted'>no therapeutic engagement evidence</em>
+
+      <h3>Contradicting evidence (1)</h3>
+      
+    <div class="contra-card">
+      <div class="contra-head">
+        <span class="badge badge-red">proteomics_conflict</span>
+        <span class="badge badge-amber">severity: moderate</span>
+      </div>
+      <div class="prose-block">ATP5F1B is not listed as a surface protein by either the Cell Surface Protein Atlas (CSPA) or the surfaceome predictor SURFY, both of which are curated/predicted references for bona fide surface-accessible proteins. This negative vote from two orthogonal surface-protein classification resources argues against ATP5F1B being a genuine cell-surface protein.</div>
+      <div class='quote-label'>likely explanation</div><div class='prose-block'>ATP5F1B is canonically a mitochondrial inner-membrane ATP synthase subunit. Its occasional detection on cell surfaces or in extracellular vesicles is widely attributed to non-conventional trafficking or membrane contamination, which would explain its absence from curated surfaceome databases that apply stringent surface-verification criteria.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_11">a1_evi_11</a></span></div>
+    </div>
+    
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 2 — Biological context</h2>
+
+      <h3>Tissues (6)</h3>
+      <table class='compact'><thead><tr><th>tissue</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>heart</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>skeletal muscle</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>liver</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>kidney</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>brain</strong></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>neurons</td><td class='small'>ischemia/reperfusion injury</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a></span></td></tr><tr><td><strong>motor neurons (iPSC-derived)</strong></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>motor neurons</td><td class='small'>hypermetabolism, MT-ATP6 mutation</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a></span></td></tr></tbody></table>
+
+      <h3>Cell types (3)</h3>
+      <table class='compact'><thead><tr><th>cell type</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>spermatozoa</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></td></tr><tr><td><strong>neurons</strong></td><td><code>—</code></td><td class='small'>brain</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a></span></td></tr><tr><td><strong>motor neurons</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a></span></td></tr></tbody></table>
+
+      <h3>Cell states (0)</h3>
+      <em class='muted'>no cell-state rows</em>
+
+      <h3>Subcellular localization</h3>
+      
+    <div class="sub-grid">
+      <div class="sub">
+        <div class="sub-label">primary compartment</div>
+        <div class="sub-val"><span class="badge badge-amber">mitochondrion</span></div>
+      </div>
+      <div class="sub wide">
+        <div class="sub-label">dual localization</div>
+        <ul class="compact-list"><li>plasma_membrane — ectopic surface expression (eATP synthase), detected on fixed cells and bovine spermatozoa <span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></li></ul>
+      </div>
+      <div class="sub wide">
+        <div class="sub-label">membrane subdomains</div>
+        <ul class="compact-list"><li class='muted small'>none</li></ul>
+      </div>
+    </div>
+    
+
+      <h3>Anatomical accessibility (0)</h3>
+      <em class='muted'>no anatomical-accessibility observations</em>
+
+      <h3>Accessibility modulation (3)</h3>
+      
+    <div class="mod-card">
+      <div class="mod-head">
+        <span class="badge badge-amber">dual_localization</span>
+        <span class="badge badge-amber">partner: mitochondrion</span>
+      </div>
+      <div class="mod-states">
+        <div class="state-cell">
+          <div class="state-label">baseline</div>
+          <div class="state-val">Typical cell with ATP5F1B residing in the mitochondrial inner membrane as part of the F1 ATP synthase complex</div>
+        </div>
+        <div class="state-arrow">→</div>
+        <div class="state-cell">
+          <div class="state-label">modulating state</div>
+          <div class="state-val">Cells expressing ectopic ATP synthase (eATP synthase) at the plasma membrane surface</div>
+        </div>
+      </div>
+      <div class="quote-label">change</div>
+      <div class="prose-block">ATP5F1B, canonically a mitochondrial inner-membrane protein, is additionally present at the cell surface (ectopic ATP synthase), as confirmed by flow cytometry and immunofluorescence on fixed non-permeabilized cells.</div>
+      <div class="quote-label">accessibility implication</div>
+      <div class="prose-block">A pool of ATP5F1B is accessible on the extracellular face of the plasma membrane in at least some cell types, making it a potential target for surface-directed binders, though the fraction at the surface versus mitochondria is unquantified.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a></span></div>
+    </div>
+    
+    <div class="mod-card">
+      <div class="mod-head">
+        <span class="badge badge-blue">tissue_restricted_surface</span>
+        <span class="badge badge-blue">lineage: germline_reproductive</span>
+      </div>
+      <div class="mod-states">
+        <div class="state-cell">
+          <div class="state-label">baseline</div>
+          <div class="state-val">Y-chromosome-bearing (BY) bovine spermatozoa surface proteome</div>
+        </div>
+        <div class="state-arrow">→</div>
+        <div class="state-cell">
+          <div class="state-label">modulating state</div>
+          <div class="state-val">Unsexed (BU) bovine spermatozoa surface proteome</div>
+        </div>
+      </div>
+      <div class="quote-label">change</div>
+      <div class="prose-block">ATP5F1B is significantly upregulated at the cell surface of BU spermatozoa compared to BY spermatozoa, as detected by surface biotinylation-coupled mass spectrometry on live cells.</div>
+      <div class="quote-label">accessibility implication</div>
+      <div class="prose-block">Surface accessibility of ATP5F1B on sperm is subpopulation-dependent; binders targeting surface ATP5F1B would preferentially engage BU over BY spermatozoa, suggesting sperm-subtype-selective exposure.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></div>
+    </div>
+    
+    <div class="mod-card">
+      <div class="mod-head">
+        <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-lavender">trigger: other</span>
+      </div>
+      <div class="mod-states">
+        <div class="state-cell">
+          <div class="state-label">baseline</div>
+          <div class="state-val">Normal mouse cerebral/neuronal tissue with intact mitochondrial Complex V (ATP synthase) activity</div>
+        </div>
+        <div class="state-arrow">→</div>
+        <div class="state-cell">
+          <div class="state-label">modulating state</div>
+          <div class="state-val">Mouse cerebral tissue under ischemia/reperfusion injury with Cend1 deficiency</div>
+        </div>
+      </div>
+      <div class="quote-label">change</div>
+      <div class="prose-block">Ischemia/reperfusion injury modulates Complex V (ATP synthase, including ATP5F1B) activity and mitochondrial membrane potential in brain tissue, indicating disease-state-dependent alteration of ATP5F1B functional status.</div>
+      <div class="quote-label">accessibility implication</div>
+      <div class="prose-block">Although direct surface redistribution is not demonstrated, disease-associated disruption of ATP5F1B complex activity in neural tissue may accompany altered membrane dynamics; surface accessibility in ischemic brain is uncertain but potentially increased under stress-mediated membrane perturbation.</div>
+      <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a></span></div>
+    </div>
+    
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 3 — Deterministic features</h2>
+      <div class="sub-grid">
+        <div class="sub">
+          <div class="sub-label">TM helix count</div>
+          <div class="sub-val big">0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">ECD length (aa)</div>
+          <div class="sub-val big">0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">ICD length (aa)</div>
+          <div class="sub-val big">0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">N / C terminus</div>
+          <div class="sub-val">
+            extracellular /
+            cytoplasmic
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">AFDB structure</div>
+          <div class="sub-val">AF-P06576-F1-model_v4</div>
+          <div class="sub-sub">
+            mean pLDDT 0.0 ·
+            disorder 0.0
+          </div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">orthologs (m / r / c)</div>
+          <div class="sub-val">0 / 0 / 0</div>
+        </div>
+        <div class="sub">
+          <div class="sub-label">paralogs</div>
+          <div class="sub-val big">0</div>
+        </div>
+      </div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 4 — Filters (catalog rollups)</h2>
+      <div class="filters-grid"><div class="filter-row"><span class="filter-key">surface_accessibility</span><span class="badge badge-amber">moderate</span></div><div class="filter-row"><span class="filter-key">evidence_grade</span><span class="badge badge-green">direct_multi_method</span></div><div class="filter-row"><span class="filter-key">confidence</span><span class="badge badge-amber">moderate</span></div><div class="filter-row"><span class="filter-key">subcategory</span><span class="badge badge-gray">other</span></div><div class="filter-row"><span class="filter-key">expression_level</span><span class="badge badge-gray">moderate</span></div><div class="filter-row"><span class="filter-key">expression_breadth</span><span class="badge badge-gray">broad</span></div><div class="filter-row"><span class="filter-key">surface_specificity</span><span class="badge badge-gray">mostly_intracellular</span></div><div class="filter-row"><span class="filter-key">evidence_density</span><span class="badge badge-gray">moderate</span></div><div class="filter-row"><span class="filter-key">ecd_accessibility_class</span><span class="badge badge-gray">moderate</span></div><div class="filter-row"><span class="filter-key">has_shed_form</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">has_secreted_form</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">has_restricted_subdomain</span><span class="badge badge-gray">True</span></div><div class="filter-row"><span class="filter-key">has_epitope_masking</span><span class="badge badge-gray">True</span></div><div class="filter-row"><span class="filter-key">requires_coreceptor</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">n-term extracellular</span><span class="badge badge-gray">True</span></div><div class="filter-row"><span class="filter-key">c-term extracellular</span><span class="badge badge-gray">False</span></div><div class="filter-row"><span class="filter-key">mouse ECD %id</span><span class="badge badge-gray">—</span></div><div class="filter-row"><span class="filter-key">cyno ECD %id</span><span class="badge badge-gray">—</span></div><div class="filter-row"><span class="filter-key">max paralog ECD %id</span><span class="badge badge-gray">—</span></div></div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 5 — Accessibility risks</h2>
+      <div class="risks-grid">
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>shed form</div><span class="badge badge-gray">absent</span><span class="badge badge-blue">severity: low</span><span class="badge badge-gray">strength: weak</span></div><div class='citations'><span class="muted small">(no citations)</span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>secreted form</div><span class="badge badge-gray">absent</span><span class="badge badge-blue">severity: low</span><span class="badge badge-gray">strength: weak</span></div><div class='citations'><span class="muted small">(no citations)</span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>epitope masking</div><span class="badge badge-gray">absent</span><span class="badge badge-amber">mechanism: —</span><span class="badge badge-amber">severity: moderate</span></div><div class='citations'><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a></span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>restricted subdomain</div><span class="badge badge-red">present</span><span class="badge badge-amber">domain: other</span><span class="badge badge-amber">severity: moderate</span></div><div class='risk-detail'>Surface ATP5F1B arises from mitochondria-PM fusion, anchoring the complex at discrete PM foci rather than as a uniformly distributed surface protein. Additionally, sperm surface expression is subpopulation-dependent (BU &gt; BY), indicating further restriction by cell type and state. A systemic binder may encounter low epitope density on most cell types.</div><div class='citations'><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>co-receptor</div><span class="badge badge-amber">unknown</span><span class="badge badge-gray">basis: co_expression_only</span></div><div class='risk-detail'>partners: —</div><div class='risk-detail'>ATP5F1B reaches the plasma membrane as part of the intact ATP synthase complex via mitochondria-PM membrane fusion. Whether specific partner subunits are required for surface trafficking beyond complex assembly is not established in the ledger. The whole-complex nature of eATP synthase implies co-dependency on other subunits but no single gating partner is identified.</div><div class='citations'><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a></span></div></div>
+        <div class="risk-card"><div class='risk-row'><div class='risk-label'>ECD size assessment</div><span class="badge badge-blue">—</span></div><div class='risk-detail'>ATP5F1B is a ~52 kDa globular F1 subunit. When ectopically surface-exposed via mitochondria-PM fusion, substantial portions of the catalytic head domain face extracellularly, providing moderate surface area for binder engagement. However, orientation and which regions are accessible in the eATP synthase complex context are unquantified.</div></div>
+      </div>
+    </section>
+    
+
+    <section class="block">
+      <h2>Section 6 — Evidence ledger (17)</h2>
+      
+    <article class="evidence-card" id="a1_evi_01">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_01</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>To further examine whether the whole mitochondrial ATP synthase complex was routed to the PM, we conducted an integrative analysis of the spatial proteomes and identified the proteins located on both mitochondria and the PM (Fig. 1a ).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Spatial proteomics integrative analysis was conducted comparing mitochondrial and plasma membrane proteomes to identify ATP synthase complex subunits present at both compartments, providing methodological framework for surface-localization claim of eATP synthase (ATP5F1B included).</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_02">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_02</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Altogether, 739 proteins were identified from purified mitochondria, and 378 were identified in the PM proteome (Fig. 1b and Supplementary Data 1 , 2 ).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Mass spectrometry of purified plasma membrane proteome identified 378 proteins, including ATP synthase complex members (ectopic ATP synthase / eATP synthase), supporting surface localization of the complex including the beta subunit (ATP5F1B).</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_03">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_03</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Furthermore, the ATP synthase β subunit has also been identified in plasma membrane proteins enriched by biotinylated purification 29 .</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">The ATP synthase beta subunit (ATP5F1B) has been identified in plasma membrane protein fractions enriched by biotinylated purification, directly evidencing surface localization of this canonical mitochondrial protein.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_04">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_04</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">figure_legend</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Data presented are mean ± SD ( n = 20). c The expression of eATP synthase on the cell surface was analyzed via flow cytometry, using antibodies for the ATP synthase complex or control mouse IgG.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Flow cytometry was performed on cells using antibodies against the ATP synthase complex (detecting eATP synthase / ectopic surface ATP synthase) with control mouse IgG, to quantify surface expression of the complex. Data from n=20 biological replicates reported as mean ± SD.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_05">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_05</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Our previous studies have demonstrated the presence of eATP synthase on the cell surface of fixed cells using flow cytometry and immunofluorescence 29 .</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Previous studies from this group demonstrated presence of ectopic ATP synthase (eATP synthase, including the beta subunit ATP5F1B) on the cell surface of fixed cells using flow cytometry and immunofluorescence, cited as established prior evidence for plasma membrane localization.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_06">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_06</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Without permeabilization, the antibody can only recognize the cell-surface ATP synthase, which distribution pattern showed a great difference from mitochondrial ATP synthase 17 .</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Non-permeabilized immunofluorescence assay was used specifically to detect cell-surface ATP synthase; the antibody recognizes only plasma-membrane-exposed ATP synthase without permeabilization, producing a staining pattern distinct from mitochondrial ATP synthase. This validates the non-permeabilized IF as a surface-specificity control for eATP synthase (ATP5F1B-containing complex).</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_07">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_07</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>In contrast, Cyclophilin D, which is located only in mitochondria, was rarely found on the PM (Supplementary Fig. 1b ).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Cyclophilin D, a mitochondria-only protein, was rarely detected at the plasma membrane in non-permeabilized cells, serving as a negative control to validate the specificity of non-permeabilized immunofluorescence for detecting genuine surface-localized mitochondrial proteins such as eATP synthase (ATP5F1B).</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_08">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_08</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>We further demonstrate that the mitochondrial membrane fuses to the plasma membrane in turn to anchor ATP syntheses on the cell surface using super-resolution imaging and real-time fusion assay in live cells.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Super-resolution imaging and real-time mitochondria-plasma membrane fusion assay in live cells demonstrated that mitochondrial membranes fuse to the plasma membrane, providing a mechanistic explanation for how ATP synthase (including ATP5F1B) becomes anchored at the cell surface.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_09">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_09</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">methodological</span><span class="badge badge-lavender">immunofluorescence</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>The immunostaining images showed that adenine nucleotide translocase (ANT), another mitochondrial protein known to be reported resident at the PM 37 , 38 , was detected on the cell surface of non-permeabilized cells (Supplementary Fig. 1a ).</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Adenine nucleotide translocase (ANT), another canonical mitochondrial protein, was detected on the cell surface of non-permeabilized cells by immunostaining, serving as a positive control validating the non-permeabilized IF assay used to detect surface-localized eATP synthase (ATP5F1B).</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_10">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_10</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11852025/" target="_blank" rel="noopener">PMC:PMC11852025 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">surface_biotinylation</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>To investigate the surface proteome of bovine spermatozoa and identify possible targets of X-sperm and Y-sperm, we utilized a mass spectrometry-based proteome analysis coupled with biotinylation for the enrichment of cell surface proteins.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Mass spectrometry-based surface proteome analysis using cell-surface biotinylation enrichment was applied to bovine spermatozoa to identify surface proteins; this method captured ATP5F1B as a detected surface protein in sperm, contributing surface-biotinylation evidence for PM localization of the beta subunit.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a1_evi_11">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a1_evi_11</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8612312/" target="_blank" rel="noopener">PMC:PMC8612312 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">contradictory</span><span class="badge badge-lavender">db_annotation</span><span class="badge badge-amber">secondary</span><span class="badge badge-red">refutes</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>We mapped experimentally verified cell‐surface proteins (CSPA) (Bausch‐Fluck et al., 2015 ) and surfaceome proteins based on cell surfaceome predictor SURFY (Bausch‐Fluck et al., 2018 ) onto global EV protein profiles.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Experimentally verified cell-surface proteins (CSPA database) and surfaceome predictor (SURFY) were mapped onto extracellular vesicle protein profiles; ATP5F1B is noted in relation to this EV surfaceome framework. The CSPA/SURFY mapping methodology serves as a secondary reference for surface-protein classification but does not directly verify ATP5F1B surface presence — ATP5F1B is not listed by SURFY or CSPA as a surface protein (votes negative in the DB panel).</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_01">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_01</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/2687158/" target="_blank" rel="noopener">PMID:2687158 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">northern_blot</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>The highest levels are found in heart, lower levels in skeletal muscle, and the lowest levels in liver and kidney.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">ATP5F1B (ATP synthase beta subunit) mRNA is expressed at highest levels in heart, at lower levels in skeletal muscle, and at lowest levels in liver and kidney, indicating marked tissue-level variation in expression.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_02">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_02</span>
+          <a class="src" href="https://pubmed.ncbi.nlm.nih.gov/2687158/" target="_blank" rel="noopener">PMID:2687158 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">northern_blot</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Analysis of the beta subunit mRNA levels reveals marked differences among tissues.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Beta subunit mRNA levels show marked differences among tissues, indicating that ATP5F1B tissue expression is not ubiquitous or uniform but varies substantially across tissue types.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_03">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_03</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10113393/" target="_blank" rel="noopener">PMC:PMC10113393 ↗</a>
+          <span class="section">results</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">flow_cytometry</span><span class="badge badge-amber">secondary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Our previous studies have demonstrated the presence of eATP synthase on the cell surface of fixed cells using flow cytometry and immunofluorescence 29 .</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">Ectopic ATP synthase (eATP synthase), including the beta subunit, is present at the cell surface of fixed cells as confirmed by flow cytometry and immunofluorescence, supporting plasma membrane localization of this mitochondrial protein in a non-canonical surface context.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_04">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_04</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11852025/" target="_blank" rel="noopener">PMC:PMC11852025 ↗</a>
+          <span class="section">figure_legend</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">surface_expression</span><span class="badge badge-lavender">mass_spec_surfaceome</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-amber">conf: moderate</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>significantly upregulated in BU samples compared to BX samples (SCGB2A2, CRISP3, LOC107131803, ANXA1, P54281 , LTF, A0A3Q1LK79, P4HB, NPPC, LOC104975830, KRT14, MSMB, ELSPBP1, KRT13, and CAST), 35 proteins were upregulated in BU samples compared to BY samples (IDH2, GLIPR1L1, ADAM2, SLC16A1, ATP5F1B, LOC112443487, HSPD1, ENO1, ACRBP, ADAM32, PEBP1, HSPA1A, HSPA1L, AKAP3, ACR, SCGB2A2, CRISP3, LOC107131803, ANXA1, P54281 , LTF, A0A3Q1LK79, P4HB, NPPC, LOC104975830, MSMB, ELSPBP1, KRT13, CAST, SCEL, PITRM1, LOC104970193, ENTPD1, AHNAK, and SFN)</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">ATP5F1B protein is upregulated at the cell surface of bovine unsexed (BU) spermatozoa compared to Y-chromosome-bearing (BY) spermatozoa, as detected by surface biotinylation-coupled mass spectrometry, indicating cell-state/subtype-dependent differential surface presence across sperm populations.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_05">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_05</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12902099/" target="_blank" rel="noopener">PMC:PMC12902099 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">loss_of_function_phenotype</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Using Cend1 knockout (KO) mice, Cend1 deficiency was shown to exacerbate cerebral ischemia/reperfusion injury, as evidenced by enlarged infarct volume, worsened neurological deficits in motor coordination and grip strength, together with alterations in mitochondrial membrane potential (ΔΨm), mPTP opening, ATP content, and the activities of respiratory Complex I and V.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">In a mouse model of cerebral ischemia/reperfusion injury, Cend1 deficiency alters mitochondrial membrane potential and Complex V (ATP synthase) activity, implying that ATP5F1B function in brain/neuronal tissue is modulated by ischemic cell state — specifically by ischemia/reperfusion injury.</p>
+    </article>
+    
+
+    <article class="evidence-card" id="a2_evi_06">
+      <header class="evi-header">
+        <div class="evi-id-row">
+          <span class="evi-id">a2_evi_06</span>
+          <a class="src" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12698834/" target="_blank" rel="noopener">PMC:PMC12698834 ↗</a>
+          <span class="section">abstract</span>
+        </div>
+        <div class="badges"><span class="badge badge-blue">tissue_expression</span><span class="badge badge-lavender">functional_assay</span><span class="badge badge-green">primary</span><span class="badge badge-green">supports</span><span class="badge badge-red">conf: weak</span><span class="badge badge-green">anchored</span></div>
+      </header>
+      <div class='quote-label'>verbatim quote</div><blockquote class='quote'>Here we studied the consequences of hypermetabolism in human motor neurons harboring a heteroplasmic mutation in MT-ATP6, which impairs ATP synthase assembly.</blockquote>
+      <div class="quote-label">agent's claim</div>
+      <p class="claim-text">ATP synthase assembly (including the beta subunit ATP5F1B) is studied in human motor neurons harboring a heteroplasmic MT-ATP6 mutation, indicating that iPSC-derived human motor neurons are a relevant cell type for ATP5F1B biology under disease (mitochondrial mutation/hypermetabolism) conditions.</p>
+    </article>
+    
+    </section>
+    
+  <footer>
+    surfaceome_v2 QC viewer · schema 1.0.0 ·
+    17 evidence rows
+  </footer>
+</main>
+</body>
+</html>
