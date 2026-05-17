@@ -268,6 +268,19 @@ def main() -> None:
             "URL fallback handles the missing field at runtime."
         ),
     )
+    parser.add_argument(
+        "--include-globular",
+        action="store_true",
+        help=(
+            "Also emit JSONs for DeepTMHMM type=GLOB (soluble) proteins. "
+            "Off by default — most GLOB proteins are not on the surface. "
+            "Turn on for membrane-anchored cytoplasmic proteins (e.g. SRC, "
+            "myristoyl-anchored to the inner leaflet) that belong in the "
+            "surfaceome via post-translational lipid modification rather "
+            "than a TM helix. Without this flag, GLOB proteins get no "
+            "structure viewer on their per-gene page."
+        ),
+    )
     args = parser.parse_args()
 
     if not args.topology_file.exists():
@@ -287,9 +300,15 @@ def main() -> None:
     for uniprot, dtype, sequence, topology in entries:
         if only is not None and uniprot not in only:
             continue
-        # Soluble proteins (GLOB) carry no membrane topology — emitting a
-        # record for them would mislead the viewer. Skip.
-        if dtype == "GLOB":
+        # GLOB = no membrane topology by DeepTMHMM. By default we skip
+        # these because most truly soluble proteins shouldn't have a
+        # "membrane topology" viewer at all. Override with
+        # ``--include-globular`` for membrane-anchored cytoplasmic
+        # proteins (myristoylated kinases like SRC) — the resulting
+        # viewer renders the AFDB structure with the whole protein
+        # colored as intracellular (``I`` state), which is biologically
+        # correct for inner-leaflet anchors.
+        if dtype == "GLOB" and not args.include_globular:
             skipped_no_tm += 1
             continue
 
