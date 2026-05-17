@@ -18,12 +18,10 @@
   flex-direction: column;
   gap: var(--space-4);
   /* Width matches the grid template's intrinsic sum exactly
-   * (12 + 6 + 4.2 + 3 + 4 + 3.6 + 3 + 6 + 6.5 + 5.6 ≈ 53.9rem) so
+   * (12 + 8 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 62.3rem) so
    * rows end flush with the Opus column instead of trailing
-   * whitespace. Left-aligned (no margin-inline: auto) — centering
-   * the table on the page made the layout feel orphaned vs the
-   * left-aligned hero / lede above it. */
-  max-width: 55rem;
+   * whitespace. Left-aligned (no margin-inline: auto). */
+  max-width: 63.5rem;
   width: 100%;
 }
 
@@ -530,6 +528,32 @@
   padding: 0.3rem 0.1rem;
 }
 
+/* The headline NCBI verdict in each main row — a button wrapping the
+ * verdict-mini pill so clicking opens the rationale drawer (same
+ * drawer the expanded-row variant grid opens). Transparent button
+ * so the pill's verdict-tone background reads first. */
+.modelVerdictBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+  transition: outline-color var(--dur-fast) var(--ease-out);
+}
+
+.modelVerdictBtn:hover,
+.modelVerdictBtn:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 1px;
+}
+
+.modelVerdictBtnSelected {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 /* Mini verdict pill — the three per-model NCBI cells on each row.
  * Compact so 3 pills + the row chrome fit comfortably. */
 .verdictMini {
@@ -967,6 +991,39 @@
   margin: var(--space-2) 0 0;
   font-size: 0.82rem;
   color: var(--ink-soft);
+}
+
+/* Ground-truth panel in the drawer — the curator's call surfaced
+ * next to the model's so the reader can compare directly. Uses
+ * bg-soft for the subtle card lift; rationale is the full prose
+ * (1–3 sentences). */
+.drawerTruthBlock {
+  margin: var(--space-3) 0 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--teal-mid);
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.drawerTruthEyebrow {
+  margin: 0;
+  color: var(--muted);
+}
+
+.drawerTruthLine {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+
+.drawerTruthRationale {
+  margin: 0.2rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink);
 }
 
 .drawerReasoning {

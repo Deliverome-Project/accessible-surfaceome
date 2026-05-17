@@ -114,9 +114,41 @@ export function RationaleDrawer({
                   : "disagrees with truth"}
             </span>
           </div>
+          {/* Ground-truth panel — what the human curator said when they
+           *  labeled this gene. Surfaces signal + reason + the full
+           *  rationale prose so the reader can read the curator's
+           *  reasoning side-by-side with the model's. */}
+          {(data.truth_reason || data.truth_signal || data.rationale || data.bench_class) ? (
+            <div className={styles.drawerTruthBlock}>
+              <p className={`label-mono ${styles.drawerTruthEyebrow}`}>
+                Ground truth
+              </p>
+              {data.bench_class ? (
+                <p className={styles.drawerTruthLine}>
+                  <span className="label-mono">Class · </span>
+                  {data.bench_class.replace(/_/g, " ")}
+                </p>
+              ) : null}
+              {data.truth_signal ? (
+                <p className={styles.drawerTruthLine}>
+                  <span className="label-mono">Signal · </span>
+                  {data.truth_signal.replace(/_/g, " ")}
+                </p>
+              ) : null}
+              {data.truth_reason ? (
+                <p className={styles.drawerTruthLine}>
+                  <span className="label-mono">Reason · </span>
+                  {data.truth_reason.replace(/_/g, " ")}
+                </p>
+              ) : null}
+              {data.rationale ? (
+                <p className={styles.drawerTruthRationale}>{data.rationale}</p>
+              ) : null}
+            </div>
+          ) : null}
           {data.cell?.reason ? (
             <p className={styles.drawerReason}>
-              <span className="label-mono">Reason code · </span>
+              <span className="label-mono">Model reason code · </span>
               {data.cell.reason.replace(/_/g, " ")}
             </p>
           ) : null}
@@ -169,6 +201,10 @@ interface LookupResult {
   variant: LabelDef;
   cell: BenchmarkVariantResult | null;
   truth_verdict: string;
+  truth_signal: string;
+  truth_reason: string;
+  rationale: string;
+  bench_class: string;
   correct: boolean | null;
 }
 
@@ -188,12 +224,29 @@ function lookup(
     cell?.verdict == null
       ? null
       : isCorrect(cell.verdict, row.truth_verdict);
+  // The bench TSV carries the curator's full reasoning per gene in
+  // `rationale` (1–3 sentences) plus a short coded `truth_reason`
+  // (e.g. "classical_surface_receptor") + `truth_signal` (e.g.
+  // "likely_accessible"). Show all three in the drawer so the
+  // model's call can be compared against the curated context, not
+  // just the bare yes/no/contextual verdict.
+  type RowWithExtras = typeof row & {
+    truth_signal?: string;
+    truth_reason?: string;
+    rationale?: string;
+    class?: string;
+  };
+  const r = row as RowWithExtras;
   return {
     symbol: row.gene_symbol,
     model,
     variant,
     cell,
     truth_verdict: row.truth_verdict,
+    truth_signal: r.truth_signal ?? "",
+    truth_reason: r.truth_reason ?? "",
+    rationale: r.rationale ?? "",
+    bench_class: r.class ?? "",
     correct,
   };
 }

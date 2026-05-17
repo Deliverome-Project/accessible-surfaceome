@@ -46,13 +46,14 @@ const ROW_OVERSCAN = 12;
 // truth_class + uniprot columns were dropped — truth_verdict + the
 // per-DB and per-model verdict pills carry the same signal, and the
 // UniProt accession is already in the drawer / TSV / per-gene page.
-// Truth column is sized to fit "contextual" (10 chars) comfortably.
-// Total ~55rem — the .wrap max-width matches this exactly so the
-// rows end flush with the Opus column instead of trailing white-space.
+// Truth + the 3 model verdict columns are sized ~30% wider than the
+// original layout so the "contextual" pill doesn't feel cramped. Sum
+// = 62.3rem (.wrap max-width matches this so rows end flush with Opus
+// instead of trailing whitespace).
 const GRID_TEMPLATE =
-  "12rem 6rem " +
+  "12rem 8rem " +
   "4.2rem 3rem 4rem 3.6rem 3rem " +
-  "6rem 6.5rem 5.6rem";
+  "7.8rem 8.5rem 7.2rem";
 
 const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
   { key: "uniprot", short: "U", long: "UniProt" },
@@ -681,9 +682,18 @@ function BenchRowView({
         );
       })}
       {MODEL_LABELS.map((m) => {
-        // Headline column: NCBI verdict for this model.
+        // Headline column: NCBI verdict for this model. Clickable —
+        // opens the rationale drawer for this (gene, model, ncbi)
+        // cell. Same drawer the expanded-row variant grid opens, so
+        // a reader doesn't have to expand the row to read the
+        // reasoning for the headline NCBI verdict.
         const cell: BenchmarkVariantResult | null | undefined =
           row.verdicts?.[m.id]?.ncbi;
+        const isSelected =
+          selectedCell != null &&
+          selectedCell.symbol === row.gene_symbol &&
+          selectedCell.model === m.id &&
+          selectedCell.variant === "ncbi";
         return (
           <div
             key={`${m.id}-ncbi`}
@@ -691,20 +701,29 @@ function BenchRowView({
             role="cell"
           >
             {cell?.verdict ? (
-              <span
-                className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
-                  isCorrect(cell.verdict, row.truth_verdict)
-                    ? styles.verdictCorrect
-                    : styles.verdictWrong
+              <button
+                type="button"
+                onClick={() => onSelectCell(row.gene_symbol, m.id, "ncbi")}
+                aria-pressed={isSelected}
+                className={`${styles.modelVerdictBtn} ${
+                  isSelected ? styles.modelVerdictBtnSelected : ""
                 }`}
                 title={
                   cell.reason
-                    ? `${m.long} · ncbi → ${cell.verdict} (${cell.reason.replace(/_/g, " ")})`
-                    : `${m.long} · ncbi → ${cell.verdict}`
+                    ? `${m.long} · ncbi → ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for full reasoning`
+                    : `${m.long} · ncbi → ${cell.verdict} — click for full reasoning`
                 }
               >
-                {cell.verdict}
-              </span>
+                <span
+                  className={`${styles.verdictLabel} ${styles.verdictMini} ${verdictTone(cell.verdict)} ${
+                    isCorrect(cell.verdict, row.truth_verdict)
+                      ? styles.verdictCorrect
+                      : styles.verdictWrong
+                  }`}
+                >
+                  {cell.verdict}
+                </span>
+              </button>
             ) : (
               <span className={styles.dim} title={`${m.long} · ncbi: no run on file`}>
                 —
