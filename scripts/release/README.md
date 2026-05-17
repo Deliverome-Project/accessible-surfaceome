@@ -50,11 +50,11 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
    - `triage-runs-with-reasoning.tsv` — long format, Sonnet × ~19k
      M1 candidate-universe genes, with DB votes + uniprot_acc joined
      in by the Worker. From
-     `/v1/triage/export-enriched.tsv?run_id=genome_full_sonnet_ncbi_v1`.
+     `/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1`.
    - `triage-benchmark-with-reasoning.tsv` — long format, Haiku +
      Sonnet + Opus × 4 prompt variants × 147 bench genes, with DB
      votes + truth labels joined in by the Worker. From
-     `/v1/benchmark/triage-enriched.tsv`.
+     `/v1/benchmark/export.tsv`.
    - `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
      per published `SurfaceomeRecord`; built by fetching `/v1/genes`
      for the index, then `/v1/genes/<SYMBOL>` per gene.
@@ -68,12 +68,11 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
    (tarball), `{"deposit_readme": True, ...}` (in-deposit README).
    Comment out anything you don't want in this particular deposit.
 
-2. **Deploy the Worker** if you've changed any of the enriched
-   endpoints (`handleTriageExportEnriched` /
-   `handleBenchmarkTriageEnriched` in
-   `cloudflare/workers/surfaceome_api/src/index.js`) — the publish
-   script depends on them. Skip if you haven't touched that file
-   since the last deploy.
+2. **Deploy the Worker** if you've changed `handleTriageExport` or
+   `handleBenchmarkExport` in
+   `cloudflare/workers/surfaceome_api/src/index.js` — the publish
+   script depends on the JOINs those handlers do. Skip if you
+   haven't touched that file since the last deploy.
 
    ```bash
    cd cloudflare/workers/surfaceome_api && npx wrangler deploy

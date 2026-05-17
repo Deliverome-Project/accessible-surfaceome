@@ -137,21 +137,20 @@ GIST_ORIGINS = [
 #      every gene in the candidate universe, with reasoning + cost?"
 #      Long format, one row per (gene × variant × replicate). Pinned
 #      to run_id=genome_full_sonnet_ncbi_v1 (Sonnet on ~19k genes).
-#      Server endpoint: /v1/triage/export-enriched.tsv — LEFT JOIN
-#      against the latest candidate_universe_public for uniprot_acc
-#      + 5 DB votes + n_db_surface, one SQL round-trip. The headline
-#      figures pull from here.
+#      Server endpoint: /v1/triage/export.tsv — LEFT JOIN against
+#      the latest candidate_universe_public for uniprot_acc + 5 DB
+#      votes + n_db_surface, one SQL round-trip. The headline figures
+#      pull from here.
 #
 #   2. triage-benchmark-with-reasoning.tsv  →  "for each of the 147
 #      bench genes, what does every model variant say (Haiku / Sonnet /
 #      Opus × naive / ncbi / web_ncbi / pubmed_ncbi), with reasoning?
 #      And what does the curated truth say?"  Long format, one row per
 #      (bench gene × model × variant). Server endpoint:
-#      /v1/benchmark/triage-enriched.tsv — bench-scoped, JOINs truth
-#      labels from benchmark_version + DB votes from
-#      candidate_universe_public + latest replicate per cell from
-#      triage_run_public. Haiku and Opus only appear here — the broad
-#      triage in #1 is Sonnet-only.
+#      /v1/benchmark/export.tsv — bench-scoped, JOINs truth labels
+#      from benchmark_version + DB votes from candidate_universe_public
+#      + latest replicate per cell from triage_run_public. Haiku and
+#      Opus only appear here — the broad triage in #1 is Sonnet-only.
 #
 #   3. deep_dives_all.tar.gz  →  "every published SurfaceomeRecord
 #      with full evidence + reasoning."  Built at deposit time by
@@ -175,11 +174,11 @@ GIST_ORIGINS = [
 # for the deploy step.
 EXTRA_FILES: list[str | dict[str, Any]] = [
     {
-        "url": "https://api.deliverome.org/surfaceome/v1/triage/export-enriched.tsv?run_id=genome_full_sonnet_ncbi_v1",
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1",
         "filename": "triage-runs-with-reasoning.tsv",
     },
     {
-        "url": "https://api.deliverome.org/surfaceome/v1/benchmark/triage-enriched.tsv",
+        "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
     },
     {
@@ -345,11 +344,11 @@ def _resolve_extra_file(
         name is the URL's last path segment.
 
       - {"url": "...", "filename": "..."} dict: same fetch behaviour
-        but destination name is the explicit filename. The enriched
-        triage TSVs use this form pointing at the Worker's
-        `/v1/triage/export-enriched.tsv` and
-        `/v1/benchmark/triage-enriched.tsv` endpoints — all joins
-        happen server-side, atomic snapshot per round-trip.
+        but destination name is the explicit filename. The triage
+        TSVs use this form pointing at the Worker's
+        `/v1/triage/export.tsv` and `/v1/benchmark/export.tsv`
+        endpoints — all joins happen server-side, atomic snapshot
+        per round-trip.
 
       - {"deep_dives_bundle": True, "filename": "...", "index_url":
         "...", "gene_url_template": "..."}: special-case resolver that
@@ -495,7 +494,7 @@ db-correctness figures in the project.
 single SQL round-trip, so the bytes are an atomic snapshot:
 
 ```bash
-curl 'https://api.deliverome.org/surfaceome/v1/triage/export-enriched.tsv?run_id=genome_full_sonnet_ncbi_v1' \\
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1' \\
     > triage-runs-with-reasoning.tsv
 ```
 
@@ -524,7 +523,7 @@ Same columns as #1, **plus** three curated truth-label columns:
 as #1:
 
 ```bash
-curl 'https://api.deliverome.org/surfaceome/v1/benchmark/triage-enriched.tsv' \\
+curl 'https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv' \\
     > triage-benchmark-with-reasoning.tsv
 ```
 
