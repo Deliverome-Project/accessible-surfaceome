@@ -184,6 +184,14 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "index_url": "https://api.deliverome.org/surfaceome/v1/genes",
         "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
     },
+    {
+        # In-deposit README — documents every column of every file
+        # above, the source-join recipe used to construct them, and
+        # the live-API endpoints that reproduce them. Travels WITH
+        # the data on Zenodo so the bytes are self-explanatory.
+        "deposit_readme": True,
+        "filename": "README.md",
+    },
 ]
 
 # Seed metadata for the Zenodo deposit. The Zenodo UI lets you edit
@@ -193,15 +201,30 @@ SEED_METADATA = {
         "upload_type": "dataset",
         "title": "accessible-surfaceome — auxiliary data outputs",
         "description": (
-            "Large auxiliary data outputs for the accessible-surfaceome "
-            "project: triage runs with full reasoning, benchmark runs "
-            "with reasoning, and deep-dive analyses. These files are too "
-            "large to live in the repository directly. The repository "
-            "code itself is archived separately, both via the "
+            "Auxiliary data outputs for the accessible-surfaceome "
+            "project — files too large or too operational to live in "
+            "the repository directly. Three data files plus an in-"
+            "deposit README that documents every column and the source-"
+            "join recipe used to construct each file:<br><br>"
+            "<b>triage-runs-with-reasoning.tsv</b> — Sonnet 4.6 verdicts "
+            "with full reasoning across the ~19k-gene M1 candidate "
+            "universe, joined with per-source DB votes (UniProt / GO / "
+            "SURFY / CSPA / HPA) from the catalog.<br><br>"
+            "<b>triage-benchmark-with-reasoning.tsv</b> — Haiku 4.5 / "
+            "Sonnet 4.6 / Opus 4.7 verdicts (4 prompt variants each) on "
+            "the 147-gene curated benchmark, joined with the same DB "
+            "votes plus curated truth labels.<br><br>"
+            "<b>deep_dives_all.tar.gz</b> — every published per-gene "
+            "SurfaceomeRecord with full evidence chain and per-claim "
+            "verbatim quotes.<br><br>"
+            "All files are reproducible end-to-end from the public read-"
+            "only API at https://api.deliverome.org/surfaceome/v1/ ; "
+            "the included README.md documents the exact endpoint joins. "
+            "The repository code itself is archived separately via the "
             "GitHub-Zenodo auto-archive (one DOI per tagged release) "
             "and via Software Heritage (continuous crawl, content-"
-            "addressed SWHIDs). This record is the supplementary "
-            "data layer."
+            "addressed SWHIDs). This record is the supplementary data "
+            "layer; the related-identifiers field links the two."
         ),
         "creators": [
             {"name": "Carlson, Rebecca"},
@@ -347,6 +370,8 @@ def _resolve_extra_file(
             return _build_deep_dives_bundle(entry, dry_run=dry_run), True
         if entry.get("enriched_triage"):
             return _build_enriched_triage(entry, dry_run=dry_run), True
+        if entry.get("deposit_readme"):
+            return _build_deposit_readme(entry, dry_run=dry_run), True
         url = entry.get("url")
         filename = entry.get("filename")
         if not url:
@@ -528,6 +553,169 @@ def _build_enriched_triage(
     if join_truth:
         msg += f", truth-joined={n_joined_truth:,}"
     ok(msg + ")")
+    return out_path
+
+
+def _build_deposit_readme(
+    entry: dict[str, Any], *, dry_run: bool,
+) -> Path:
+    """Generate the in-deposit README.md that documents every file's
+    columns, the source-join recipe used to construct each enriched
+    TSV, and the live-API endpoints that reproduce them.
+
+    This is what a Zenodo downloader sees alongside the data. It's
+    the canonical user-facing description of what the bytes are —
+    the inline docstrings in this script are for maintainers; this
+    README is for readers.
+    """
+    filename = entry["filename"]
+    tmp_root = REPO_ROOT / "_extra-download"
+
+    if dry_run:
+        ok(f"[dry-run] would generate in-deposit {filename}")
+        return tmp_root / filename
+
+    tmp_root.mkdir(exist_ok=True)
+    out_path = tmp_root / filename
+
+    # Capture the repo commit so this README pins itself to a specific
+    # version of publish-archive.py + the EXTRA_FILES list.
+    try:
+        head_sha = subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], cwd=REPO_ROOT,
+        ).decode().strip()
+    except subprocess.CalledProcessError:
+        head_sha = "(unknown)"
+
+    body = f"""# accessible-surfaceome — Zenodo deposit
+
+This deposit contains the auxiliary data outputs for the
+[accessible-surfaceome](https://github.com/Deliverome-Project/accessible-surfaceome)
+project — files too large or too operational to live in the
+repository directly. The repository code itself is archived separately
+(GitHub-Zenodo auto-archive + Software Heritage continuous crawl).
+
+All three data files were assembled at deposit time by the
+[`scripts/release/publish-archive.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{head_sha}/scripts/release/publish-archive.py)
+script in the repo at commit `{head_sha[:12]}`. Anyone can regenerate
+them from the public read-only API documented below.
+
+## Files
+
+### 1. `triage-runs-with-reasoning.tsv`
+
+Long-format TSV, one row per (gene × prompt variant × replicate),
+covering Sonnet 4.6 inference across the **~19k-gene M1 candidate
+universe**. The single source of truth for the cost-vs-accuracy and
+db-correctness figures in the project.
+
+| Column | Source | Meaning |
+|---|---|---|
+| `gene_symbol` | triage export | HGNC gene symbol |
+| `uniprot_acc` | catalog join | UniProt accession (canonical isoform) |
+| `db_uniprot`, `db_go`, `db_surfy`, `db_cspa`, `db_hpa` | catalog join | 0/1 — does each surface-DB source vote "surface" for this gene? |
+| `n_db_surface` | derived | sum of the 5 DB votes (0–5) |
+| `model` | triage export | Anthropic model identifier (Sonnet only in this file) |
+| `prompt_variant` | triage export | which prompt variant was used (`ncbi` only in this file) |
+| `replicate` | triage export | replicate index within the sweep |
+| `predicted_verdict` | triage export | model verdict: `yes` / `contextual` / `no` |
+| `predicted_reason` | triage export | short controlled-vocab reason tag |
+| `predicted_confidence` | triage export | `low` / `medium` / `high` |
+| `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens` | triage export | per-call token counts |
+| `n_web_searches` | triage export | number of web tool calls in this run |
+| `cost_usd` | triage export | computed dollar cost of this call |
+| `latency_s` | triage export | wall-clock seconds for this call |
+
+**Construction (source-join recipe):**
+
+```bash
+# 1. The model output (long format, one row per call):
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1' > triage.tsv
+
+# 2. The DB-vote panel (per-gene 5-bit bitmask + uniprot_acc):
+curl 'https://api.deliverome.org/surfaceome/v1/catalog' > catalog.json
+#    catalog.rows[i].db is a 5-bit int; catalog.db_keys lists the bit order.
+
+# 3. LEFT JOIN catalog into triage on gene_symbol; decode the bitmask
+#    into 5 separate db_<source> columns plus n_db_surface = popcount(db).
+```
+
+### 2. `triage-benchmark-with-reasoning.tsv`
+
+Long-format TSV, one row per (bench gene × model × prompt variant ×
+replicate), covering the **147-gene curated benchmark** across all 3
+production models (Haiku 4.5, Sonnet 4.6, Opus 4.7) and all 4 prompt
+variants (`naive`, `ncbi`, `web_ncbi`, `pubmed_ncbi`). Haiku and Opus
+only appear in this file — the broad triage in #1 is Sonnet-only.
+
+Same columns as #1, **plus** three truth-label columns joined from the
+curated bench:
+
+| Column | Source | Meaning |
+|---|---|---|
+| `truth_verdict` | bench export join | curated truth: `yes` / `contextual` / `no` |
+| `truth_signal` | bench export join | curated signal: `likely_accessible` / `unlikely` / etc. |
+| `truth_reason` | bench export join | curated reason tag (controlled vocab) |
+
+**Construction:**
+
+```bash
+# 1. Bench-restricted multi-model sweep:
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1' > triage_bench.tsv
+
+# 2. Same catalog as #1 above.
+# 3. Curated truth labels (7 cols: gene/uniprot/class/ground_truth_*):
+curl 'https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv' > truth.tsv
+
+# 4. LEFT JOIN catalog and truth into triage_bench on gene_symbol.
+```
+
+### 3. `deep_dives_all.tar.gz`
+
+Gzipped tarball, one `<SYMBOL>.json` member per published deep-dive
+`SurfaceomeRecord`. Members are flat (no parent directory); `tar -tf`
+doubles as the index.
+
+Each per-gene JSON is the full `SurfaceomeRecord` v0.5.0+ as described
+in
+[`src/accessible_surfaceome/tools/_shared/models.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{head_sha}/src/accessible_surfaceome/tools/_shared/models.py)
+— surface_evidence, biological_context, accessibility_risks, evidence
+chain with verbatim quotes + char offsets, search_log, confidence
+reasoning.
+
+**Construction:**
+
+```bash
+# 1. List published deep-dives:
+curl 'https://api.deliverome.org/surfaceome/v1/genes' | jq -r '.genes[].gene_symbol'
+
+# 2. For each symbol, fetch the full record:
+curl 'https://api.deliverome.org/surfaceome/v1/genes/<SYMBOL>' > <SYMBOL>.json
+
+# 3. tar -czf deep_dives_all.tar.gz *.json   (flat layout)
+```
+
+## Repository, code archive, related identifiers
+
+- **Source code:** <https://github.com/Deliverome-Project/accessible-surfaceome>
+- **Pinned to commit:** `{head_sha}`
+- **Code release archive:** the GitHub-Zenodo auto-archive mints one
+  DOI per tagged release; the latest is linked from this record's
+  *Related identifiers*.
+- **Continuous source archive:** Software Heritage. The repo's SWHID
+  is in this record's *Related identifiers* (relation `isSupplementTo`).
+
+## License
+
+CC-BY-4.0 for the data in this deposit. Same as the upstream
+constituent sources (UniProt, GO, HPA — all CC-BY; HPA is CC-BY-SA).
+SURFY and CSPA are published academic resources used under their
+respective terms; see the upstream papers.
+"""
+
+    out_path.write_text(body)
+    size_kb = out_path.stat().st_size / 1024
+    ok(f"generated {out_path.name} ({size_kb:.1f} KB, pinned to {head_sha[:12]})")
     return out_path
 
 

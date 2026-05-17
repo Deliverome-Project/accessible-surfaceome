@@ -43,19 +43,31 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
 ## Before you run it
 
 1. **Review `EXTRA_FILES`** in `publish-archive.py`. The default set is
-   three files:
-   - `triage-runs-with-reasoning.tsv` (long format, every gene × model ×
-     variant × replicate, with reasoning + cost)
-   - `triage-benchmark-matrix.json` (147 bench genes wide, truth + DB
-     votes + every model variant's verdict and reasoning)
-   - `deep_dives_all.tar.gz` (every published `SurfaceomeRecord`,
-     bundled at deposit time)
+   three data files plus a generated in-deposit README:
+   - `triage-runs-with-reasoning.tsv` — long format, Sonnet × ~19k
+     M1 candidate-universe genes; built by joining
+     `/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1` with
+     per-gene DB votes + uniprot_acc from `/v1/catalog`.
+   - `triage-benchmark-with-reasoning.tsv` — long format, Haiku +
+     Sonnet + Opus × 4 prompt variants × 147 bench genes; built by
+     joining `/v1/triage/export.tsv?run_id=mainbench_canonical_v1`
+     with the same DB votes plus curated truth labels from
+     `/v1/benchmark/export.tsv`.
+   - `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
+     per published `SurfaceomeRecord`; built by fetching `/v1/genes`
+     for the index, then `/v1/genes/<SYMBOL>` per gene.
+   - `README.md` — generated at deposit time from the script;
+     documents every column of every file, the exact source-join
+     recipes, and the live-API endpoints that reproduce them. This
+     is what a Zenodo downloader reads alongside the data.
 
-   Each entry can be a `{"url", "filename"}` dict to fetch from the
-   public API, a path string relative to repo root for local files, or
-   the special `{"deep_dives_bundle": True, ...}` shape used for the
-   tarball. Comment out anything you don't want in this particular
-   deposit.
+   Each entry can be a `{"url", "filename"}` dict to fetch verbatim
+   from the public API, a path string relative to repo root for local
+   files, or one of the special builder shapes:
+   `{"enriched_triage": True, ...}` (joined TSV),
+   `{"deep_dives_bundle": True, ...}` (tarball),
+   `{"deposit_readme": True, ...}` (in-deposit README). Comment out
+   anything you don't want in this particular deposit.
 
 2. **Edit `SEED_METADATA`** if the default title / description / author
    list / keywords don't match what you want for this release. You can
