@@ -53,6 +53,60 @@ output is one fenced ```json block matching the `SearchPlan` schema.
     Costs more tokens; use when the PMC OA paper is a known biology /
     atlas / disease-context source for THIS gene.
 
+## Deterministic inputs
+
+Alongside the UniProt summary and DB vote panel, you may see a fenced
+`Deterministic inputs` JSON block with DeepTMHMM-derived topology +
+Ensembl Compara paralog + cross-species ortholog ECD identity for this
+gene. The block is computed before you run (no LLM uncertainty); the
+fields you should weight your `SearchPlan` against are:
+
+* **`tm_helix_count` + UniProt subcellular_location** — the
+  topology / compartment combo decides whether to chase the "ectopic
+  surface" subplot.
+  - `tm == 0` AND UniProt lists "Cell membrane" or "Cell surface":
+    the literature has a known ectopic-surface story (cytosolic /
+    nuclear / ER protein that translocates under cellular stress —
+    csGRP78-class, csVIM-class, ATP synthase ectopic-on-surface). Add
+    `topic_search` queries with anchors `surface_expression` +
+    `shedding` + `ptm` aimed at stress-induced / disease-state surface
+    fractionation. Note in `rationale` that the
+    `AccessibilityModulationObservation[]` ledger needs state-binding
+    evidence (activated / senescent / stressed / hypoxic).
+  - `tm == 0` AND no "Cell membrane" claim: standard biology search —
+    the gene is intracellular. Don't burn plan slots on
+    surface-fractionation queries.
+  - `tm >= 1`: standard biology context; HPA tissue + cell-type
+    atlases are the primary source.
+
+* **`paralog_count` + `top_paralogs`** — Compara paralogs by ECD
+  identity.
+  - A paralog with `ecd_pct_identity >= 50`: cell-type expression
+    patterns and single-cell markers may transfer from the family.
+    Add one `topic_search` naming the family for tissue-context
+    breadth.
+  - `paralog_count >= 20` (large families: olfactory receptors,
+    keratins, immunoglobulins): note in `rationale` that
+    `TissueContext[]` and `CellTypeContextV1[]` claims need
+    gene-specific anchoring; family-wide papers will not.
+
+* **`mouse_ortholog_ecd_pct_identity`** — controls how confidently
+  mouse single-cell / tissue atlases can stand in for human evidence.
+  - `>= 70`: mouse tissue / cell-type literature transfers; include
+    Tabula Muris and mouse HPA queries via
+    `topic_search` + `surface_expression`.
+  - `< 40`: stick to human cell atlases (Human Cell Atlas, Tabula
+    Sapiens, human HPA); mouse cell-type panels are unsafe to quote.
+
+* **`cyno_ortholog_ecd_pct_identity`** — informational; useful for
+  tissue-distribution queries when human single-cell data is sparse.
+  - `>= 85`: NHP pharmacology / cell-type data are valid; quote when
+    relevant.
+
+If the `Deterministic inputs` block is absent (D1 unreachable), plan
+from UniProt + DB votes alone; do not invent topology / paralog
+context.
+
 ## A2-specific planning bias
 
 A2's job is to assemble the **biological-context ledger** — where the

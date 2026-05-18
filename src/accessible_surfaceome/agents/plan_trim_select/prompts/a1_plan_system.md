@@ -56,6 +56,62 @@ output is one fenced ```json block matching the `SearchPlan` schema.
     Costs more tokens; use when the PMC OA paper is a known
     high-density methodology source for THIS gene.
 
+## Deterministic inputs
+
+Alongside the UniProt summary and DB vote panel, you may see a fenced
+`Deterministic inputs` JSON block with DeepTMHMM-derived topology +
+Ensembl Compara paralog + cross-species ortholog ECD identity for this
+gene. The block is computed before you run (no LLM uncertainty); the
+fields you should weight your `SearchPlan` against are:
+
+* **`tm_helix_count`** — transmembrane helices in the canonical isoform.
+  - `tm == 0` AND UniProt subcellular_location does NOT include
+    "Cell membrane" / "Cell surface": the gene is not a canonical
+    surface protein. Down-weight `structure_with_ecd` and
+    `surface_biotinylation` queries unless the gene has documented
+    ectopic / stress-induced surface translocation (csGRP78-class,
+    cell-surface vimentin-class, ectopic ATP synthase-class). Up-weight
+    `flow_cytometry` and `ihc` queries that report surface-vs-total
+    fractionation rather than bulk localization.
+  - `tm >= 1`: standard methodology mix.
+  - `tm >= 5`: GPCR / MFS-class topology — radioligand binding, BRET,
+    and pharmacology literature is rich. Add `topic_search` with
+    `surface_expression` + `topology` anchors.
+
+* **`ecd_length_residues`** — extracellular-domain length in residues.
+  - `<= 30`: short ECD. Antibody epitope space is small; down-weight
+    `structure_with_ecd` (limited structural literature) and up-weight
+    `flow_cytometry`.
+  - `>= 200`: large ECD. Up-weight `structure_with_ecd` — there's
+    almost certainly a published structural model.
+
+* **`signal_peptide_length`** — `>= 15` is a canonical signal peptide.
+  - Absent AND `tm == 0`: the protein is non-secretory; treat surface
+    claims with extra scrutiny.
+
+* **`paralog_count` + `top_paralogs`** — within-species Compara
+  paralogs by ECD identity.
+  - Top paralog `ecd_pct_identity >= 60`: high antibody / drug
+    cross-reactivity risk. Add a `topic_search` query for the paralog
+    class (e.g. the family name) to surface cross-reactivity literature.
+  - `paralog_count >= 20` (large family — olfactory receptors, KRTs,
+    immunoglobulins): note in your `rationale` that family-wide claims
+    in the literature need gene-specific anchoring.
+
+* **`mouse_ortholog_ecd_pct_identity`** and
+  **`cyno_ortholog_ecd_pct_identity`** — cross-species ECD conservation.
+  - Mouse identity `>= 70`: mouse methodology literature (Tabula Muris
+    surface markers, mouse HPA, mouse CRISPR screens) is a valid
+    source; include relevant `topic_search` queries.
+  - Mouse identity `< 40`: restrict `ihc` / `flow_cytometry` queries
+    to human samples — mouse surface biology won't transfer.
+  - Cyno identity `>= 90` is typical; informational confirmation that
+    NHP pharmacology translates.
+
+If the `Deterministic inputs` block is absent (D1 unreachable), plan
+from UniProt + DB votes alone; do not invent topology / paralog
+context.
+
 ## A1-specific planning bias
 
 A1's job is to assemble **methodologically watertight** surface-evidence

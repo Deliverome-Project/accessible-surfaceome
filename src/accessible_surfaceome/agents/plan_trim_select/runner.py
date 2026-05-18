@@ -53,10 +53,12 @@ from accessible_surfaceome.agents.plan_trim_select.schemas import (
 )
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
+    DeterministicFeatures,
     EvidenceClaim,
     EvidenceClaimDraft,
     IdentifierBundle,
     LiteraturePack,
+    OrthologEntry,
     Paper,
 )
 from accessible_surfaceome.tools._shared.normalize import (
@@ -249,12 +251,69 @@ class GeneContext:
 
     HPA evidence is rolled into ``db_panel_json`` (the DBVotePanel carries
     HPA's main location + reliability flag alongside the SURFY/CSPA votes).
+
+    ``deterministic_summary_json`` is a compact JSON snapshot of the
+    DeepTMHMM topology + Compara paralog + cross-species ortholog ECD
+    identity rows fetched from public D1 — see
+    :func:`_summarize_deterministic_for_planner`. Falls back to ``None``
+    when D1 is unreachable; planner prompts treat the missing block as
+    "no deterministic data available" and omit it from the user prompt.
     """
 
     gene: str
     bundle: IdentifierBundle
     uniprot_summary_json: str
     db_panel_json: str
+    deterministic_summary_json: str | None = None
+
+
+def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str:
+    """Compact JSON summary handed to the A1/A2 planners.
+
+    Keeps the field set small enough that planners can scan it inline,
+    while exposing the four signals A1/A2 prompts reference to weight
+    their search plans: TM count + ECD length + signal peptide
+    (methodology choice), top paralogs by ECD identity (paralog-class
+    search opportunity), and mouse / cyno ortholog ECD identity
+    (cross-species literature confidence). The canonical ortholog
+    isoform is preferred when multiple isoforms are returned per
+    species.
+    """
+
+    canon = features.canonical_topology
+    top = sorted(features.paralogs, key=lambda p: p.ecd_pct_identity, reverse=True)[:5]
+
+    def _canonical(entries: list[OrthologEntry]) -> OrthologEntry | None:
+        for entry in entries:
+            if entry.is_canonical:
+                return entry
+        return entries[0] if entries else None
+
+    mouse = _canonical(list(features.orthologs.mouse))
+    cyno = _canonical(list(features.orthologs.cynomolgus))
+    payload: dict[str, Any] = {
+        "tm_helix_count": canon.tm_helix_count,
+        "n_terminal_orientation": canon.n_terminal_orientation,
+        "c_terminal_orientation": canon.c_terminal_orientation,
+        "ecd_length_residues": canon.ecd_length_residues,
+        "icd_length_residues": canon.icd_length_residues,
+        "signal_peptide_length": canon.signal_peptide_length,
+        "paralog_count": len(features.paralogs),
+        "top_paralogs": [
+            {"symbol": p.paralog_symbol, "ecd_pct_identity": p.ecd_pct_identity}
+            for p in top
+        ],
+        "mouse_ortholog_symbol": mouse.ortholog_symbol if mouse else None,
+        "mouse_ortholog_ecd_pct_identity": (
+            mouse.ecd_pct_identity_to_human_canonical if mouse else None
+        ),
+        "cyno_ortholog_symbol": cyno.ortholog_symbol if cyno else None,
+        "cyno_ortholog_ecd_pct_identity": (
+            cyno.ecd_pct_identity_to_human_canonical if cyno else None
+        ),
+        "tool_version": canon.tool_version,
+    }
+    return json.dumps(payload, indent=2)
 
 
 def _build_gene_context(
@@ -295,11 +354,37 @@ def _build_gene_context(
     uniprot = uniprot_summary(uniprot_acc=bundle.uniprot_acc, http=http)
     db = db_panel(uniprot_acc=bundle.uniprot_acc, http=http)
 
+    # DeepTMHMM topology + Compara paralog + cross-species ortholog ECD
+    # identity from public D1 (uploaded by PR #29's
+    # ``scripts/run_topology_sweep.py``). Folded into a compact summary
+    # the A1/A2 planners can scan inline. Failures here are non-fatal —
+    # log a warning and continue with UniProt-only planning (the
+    # planner prompts treat the missing block as "no deterministic data
+    # available"). Local import keeps the D1 dependency out of import
+    # time for code paths that don't run the planner.
+    deterministic_summary: str | None
+    try:
+        from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+            fetch_deterministic_features,
+        )
+
+        features = fetch_deterministic_features(bundle.uniprot_acc)
+        deterministic_summary = _summarize_deterministic_for_planner(features)
+    except Exception as exc:  # noqa: BLE001 — keep planning even if D1 is down
+        logger.warning(
+            "deterministic-features D1 fetch failed for %s (%s); "
+            "planner will run without the deterministic block",
+            bundle.uniprot_acc,
+            exc,
+        )
+        deterministic_summary = None
+
     return GeneContext(
         gene=gene,
         bundle=bundle,
         uniprot_summary_json=uniprot.model_dump_json(indent=2),
         db_panel_json=db.model_dump_json(indent=2),
+        deterministic_summary_json=deterministic_summary,
     )
 
 
@@ -426,6 +511,14 @@ def _run_planner(
         f"UniProt summary:\n```json\n{context.uniprot_summary_json}\n```\n\n"
         f"DB vote panel (includes HPA main_location + reliability):\n"
         f"```json\n{context.db_panel_json}\n```\n\n"
+    )
+    if context.deterministic_summary_json:
+        user_prompt += (
+            "Deterministic inputs (DeepTMHMM topology + Compara paralogs + "
+            "cross-species ortholog ECD identity, from public D1):\n"
+            f"```json\n{context.deterministic_summary_json}\n```\n\n"
+        )
+    user_prompt += (
         "Emit one fenced ```json block matching this SearchPlan schema:\n\n"
         f"```json\n{plan_schema}\n```\n"
     )
@@ -997,12 +1090,20 @@ def _run_selector(
         )
         + "\n\n"
     )
+    deterministic_block = ""
+    if context.deterministic_summary_json:
+        deterministic_block = (
+            "Deterministic inputs (DeepTMHMM topology + Compara paralogs + "
+            "cross-species ortholog ECD identity, for context):\n"
+            f"```json\n{context.deterministic_summary_json}\n```\n\n"
+        )
     user_prompt = (
         f"# Gene: {context.gene}\n\n"
         f"{iteration_banner}"
         f"UniProt summary (for context):\n```json\n{context.uniprot_summary_json}\n```\n\n"
         f"DB vote panel (HPA + SURFY/CSPA, for context):\n"
         f"```json\n{context.db_panel_json}\n```\n\n"
+        f"{deterministic_block}"
         f"## Trimmed clip menu ({n_kept} clips across multiple sources)\n\n"
         f"{menu_markdown}\n\n"
         f"## Discovered papers not yet deep-dived ({n_unfetched} papers)\n\n"
