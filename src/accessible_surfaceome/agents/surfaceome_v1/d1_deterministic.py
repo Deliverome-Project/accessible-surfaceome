@@ -250,30 +250,15 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
     BioMart is always populated so the reader can still see how conserved
     the ortholog is.
     """
-    # NOTE: full-length BioMart % identity lives in compara_ortholog.percent_identity,
-    # not in compara_ortholog_ecd.biomart_percent_identity (the latter is intentionally
-    # NULL — see compute_ortholog_ecd_records in scripts/run_topology_sweep.py).
-    # We can't join on (release_version, ortholog_ensembl_gene) because:
-    #   (a) compara_ortholog.release_version (e.g. 'ensembl_compara_2026_05_12') and
-    #       compara_ortholog_ecd.compara_release (e.g. 'Compara r112') use different
-    #       naming conventions today, and
-    #   (b) compara_ortholog_ecd.ortholog_ensembl_gene currently stores UniProt entry
-    #       names (e.g. 'SRC_MOUSE') instead of real Ensembl gene IDs (producer bug
-    #       in scripts/run_topology_sweep.py:1072 — TODO fix separately).
-    # The upstream Compara CSV is one2one + high-confidence filtered, so there is
-    # exactly one compara_ortholog row per (human_ensembl_gene, species); joining on
-    # that pair is unambiguous today. Use MAX(percent_identity) defensively in case
-    # multiple release_versions ever coexist — they'll all carry the same value for
-    # the same one2one ortholog pair.
+    # Full-length BioMart % identity lives in compara_ortholog.percent_identity,
+    # not in compara_ortholog_ecd.biomart_percent_identity (the latter is
+    # intentionally NULL — see compute_ortholog_ecd_records in
+    # scripts/run_topology_sweep.py). Join on the proper composite FK:
+    # (release_version, human_ensembl_gene, species, ortholog_ensembl_gene).
     rows = _query_public(
         "SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene, "
         "eo.ortholog_gene_symbol, eo.ecd_pct_identity, "
-        "( "
-        "  SELECT MAX(co.percent_identity) FROM compara_ortholog co "
-        "  WHERE co.human_ensembl_gene = eo.human_ensembl_gene "
-        "    AND co.species = eo.species "
-        "    AND co.is_high_confidence = 1 "
-        ") AS full_length_pct_identity, "
+        "co.percent_identity AS full_length_pct_identity, "
         "tp.tm_helix_count, tp.ecd_length_residues, "
         "eo.compara_release "
         "FROM compara_ortholog_ecd eo "
@@ -284,6 +269,11 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
         "    (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR "
         "    (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog') "
         "  ) "
+        "LEFT JOIN compara_ortholog co "
+        "  ON co.release_version = eo.compara_release "
+        "  AND co.human_ensembl_gene = eo.human_ensembl_gene "
+        "  AND co.species = eo.species "
+        "  AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene "
         "WHERE eo.human_uniprot_acc = ? "
         "  AND eo.ortholog_ecd_version = ? "
         "ORDER BY eo.species ASC",

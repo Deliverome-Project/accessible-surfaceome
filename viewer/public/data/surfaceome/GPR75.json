@@ -574,34 +574,34 @@
         {
           "is_canonical": true,
           "isoform_id": "Q6X632",
-          "ensembl_id": "GPR75_MOUSE",
+          "ensembl_id": "ENSMUSG00000043999",
           "ortholog_uniprot_acc": "Q6X632",
-          "ortholog_symbol": "GPR75_MOUSE",
+          "ortholog_symbol": "Gpr75",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 74.15730337078652,
           "ecd_pct_similarity_to_human_canonical": 74.15730337078652,
           "full_length_pct_identity_to_human_canonical": 87.963,
           "ecd_length_residues": 90,
           "tm_helix_count": 7,
-          "compara_version": "Compara r112",
-          "retrieved_at": "2026-05-18T12:47:54.279470Z"
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-18T19:46:58.797037Z"
         }
       ],
       "cynomolgus": [
         {
           "is_canonical": true,
           "isoform_id": "A0A7N9DAV0",
-          "ensembl_id": "A0A7N9DAV0_MACFA",
+          "ensembl_id": "ENSMFAG00000064656",
           "ortholog_uniprot_acc": "A0A7N9DAV0",
-          "ortholog_symbol": "A0A7N9DAV0_MACFA",
+          "ortholog_symbol": "GPR75",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 98.87640449438202,
           "ecd_pct_similarity_to_human_canonical": 98.87640449438202,
           "full_length_pct_identity_to_human_canonical": 99.0741,
           "ecd_length_residues": 89,
           "tm_helix_count": 7,
-          "compara_version": "Compara r112",
-          "retrieved_at": "2026-05-18T12:47:54.278716Z"
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-18T19:46:58.795861Z"
         }
       ]
     },

@@ -534,6 +534,7 @@ def parse_cohort_to_jsonl(
     topology_version: str,
     candidate_by_acc: dict[str, Candidate],
     ortholog_human_hgnc_by_acc: dict[str, str] | None = None,
+    ortholog_metadata_by_acc: dict[str, dict[str, str]] | None = None,
 ) -> Path:
     """Parse all .3line outputs into one topology_records.jsonl for the cohort.
 
@@ -597,9 +598,14 @@ def parse_cohort_to_jsonl(
                     rec["gene_symbol"] = cand.cohort_symbol if cand else ""
                 elif is_ortholog_cohort and ortholog_human_hgnc_by_acc is not None:
                     rec["hgnc_id"] = ortholog_human_hgnc_by_acc.get(base)
-                    # The ortholog's own symbol comes from the .3line header
-                    # (e.g., 'GPR75_MOUSE' → 'Gpr75'); preserve via uniprot_entry_name.
-                    rec["gene_symbol"] = rec.get("uniprot_entry_name", "")
+                    # Prefer the real species gene symbol from BioMart
+                    # (e.g. 'Gpr75' for mouse). Fall back to UniProt entry name
+                    # if the metadata dict is absent (back-compat for older callers).
+                    meta = (ortholog_metadata_by_acc or {}).get(base) or {}
+                    rec["gene_symbol"] = (
+                        meta.get("ortholog_gene_symbol")
+                        or rec.get("uniprot_entry_name", "")
+                    )
                 else:
                     rec["hgnc_id"] = None
                     rec["gene_symbol"] = rec.get("uniprot_entry_name", "")
@@ -979,6 +985,7 @@ def compute_ortholog_ecd_records(
     candidates: list[Candidate],
     cohort_jsonl_paths: dict[str, Path],
     ortholog_human_hgnc_maps: dict[str, dict[str, str]],
+    ortholog_metadata_maps: dict[str, dict[str, dict[str, str]]] | None = None,
     ortholog_ecd_version: str,
     compara_release: str,
 ) -> list[dict[str, Any]]:
@@ -1027,6 +1034,7 @@ def compute_ortholog_ecd_records(
         if not hgnc_map:
             continue
         species = SPECIES_BY_COHORT[ortholog_cohort]  # 'mouse' or 'cynomolgus'
+        meta_map = (ortholog_metadata_maps or {}).get(ortholog_cohort, {})
         ortholog_jsonl = cohort_jsonl_paths.get(ortholog_cohort)
         if ortholog_jsonl is None or not ortholog_jsonl.exists():
             logger.warning("%s JSONL missing — skipping for ECD", ortholog_cohort)
@@ -1061,6 +1069,7 @@ def compute_ortholog_ecd_records(
             else:
                 n_no_topology += 1
 
+            meta = meta_map.get(ortho_uniprot, {})
             out.append({
                 "ortholog_ecd_version": ortholog_ecd_version,
                 "human_hgnc_id": human_hgnc,
@@ -1069,8 +1078,12 @@ def compute_ortholog_ecd_records(
                 "human_gene_symbol": (cand.cohort_symbol if cand else None),
                 "species": species,
                 "ortholog_uniprot_acc": ortho_uniprot,
-                "ortholog_ensembl_gene": (ortho_rec or {}).get("uniprot_entry_name"),
-                "ortholog_gene_symbol": (ortho_rec or {}).get("uniprot_entry_name"),
+                # Real species Ensembl gene ID + gene symbol from BioMart
+                # (via compara_ortholog → OrthologTarget). The .3line header's
+                # uniprot_entry_name (e.g. SRC_MOUSE) is NOT a gene symbol —
+                # using it caused the FK to compara_ortholog to never join.
+                "ortholog_ensembl_gene": meta.get("ortholog_ensembl_gene"),
+                "ortholog_gene_symbol": meta.get("ortholog_gene_symbol"),
                 "biomart_percent_identity": None,  # joined from compara_ortholog at query time
                 "ecd_pct_identity": ecd_pct,
                 "n_ecd_loops_compared": n_loops,
@@ -1477,7 +1490,11 @@ def main() -> int:
     # ortholog_human_hgnc_by_acc[cohort][ortholog_uniprot_acc] = human_hgnc_id.
     # Used by parse_cohort_to_jsonl to stamp the human HGNC ID onto each
     # ortholog topology row so consumers can join back to gene_identifier.
+    # ortholog_metadata_maps carries the real BioMart ortholog_ensembl_gene +
+    # ortholog_gene_symbol (e.g. Src) so we don't fall back to UniProt entry
+    # names (SRC_MOUSE) in compara_ortholog_ecd / topology_public rows.
     ortholog_human_hgnc_maps: dict[str, dict[str, str]] = {}
+    ortholog_metadata_maps: dict[str, dict[str, dict[str, str]]] = {}
     if "human_canonical" in cohorts:
         cohort_accessions["human_canonical"] = [c.uniprot_acc for c in candidates]
     if "human_isoforms" in cohorts:
@@ -1505,16 +1522,23 @@ def main() -> int:
             targets, cache_path=cache_path, max_workers=4
         )
         # Build ortholog_uniprot_acc → human_hgnc_id map (the stable
-        # join key for downstream topology_public consumers).
+        # join key for downstream topology_public consumers), plus a
+        # parallel metadata map carrying the real BioMart ENSG + symbol.
         ortholog_human_hgnc: dict[str, str] = {}
+        ortholog_metadata: dict[str, dict[str, str]] = {}
         for t in targets:
             acc = ensg_to_acc.get(t.ortholog_ensembl_gene, "")
             if acc and acc not in ortholog_human_hgnc:
                 # First-match wins on collisions (rare; usually a single
                 # mouse UniProt acc maps back to one human HGNC ID).
                 ortholog_human_hgnc[acc] = t.human_hgnc_id
+                ortholog_metadata[acc] = {
+                    "ortholog_ensembl_gene": t.ortholog_ensembl_gene,
+                    "ortholog_gene_symbol": t.ortholog_gene_symbol,
+                }
         cohort_accessions[ortholog_cohort] = sorted(ortholog_human_hgnc)
         ortholog_human_hgnc_maps[ortholog_cohort] = ortholog_human_hgnc
+        ortholog_metadata_maps[ortholog_cohort] = ortholog_metadata
         logger.info(
             "  %s: %d targets → %d resolved UniProt accs (cache hit + UniProt REST)",
             ortholog_cohort, len(targets), len(ortholog_human_hgnc),
@@ -1635,6 +1659,7 @@ def main() -> int:
                 if cohort in ortholog_human_hgnc_maps
                 else None
             ),
+            ortholog_metadata_by_acc=ortholog_metadata_maps.get(cohort),
         )
         cohort_jsonl_paths[cohort] = jsonl
         event("cohort_parsed", cohort=cohort, jsonl=str(jsonl.relative_to(REPO_ROOT)))
@@ -1678,6 +1703,7 @@ def main() -> int:
             candidates=candidates,
             cohort_jsonl_paths=cohort_jsonl_paths,
             ortholog_human_hgnc_maps=ortholog_human_hgnc_maps,
+            ortholog_metadata_maps=ortholog_metadata_maps,
             ortholog_ecd_version=ortholog_ecd_version,
             compara_release=args.compara_version,
         )
