@@ -35,11 +35,10 @@ interface PromptGroup {
  * always the file the agents actually run with.
  *
  * Coverage:
- *  - Surface triage (Haiku, the genome-wide first pass).
- *  - Deep dive Phase 1 — ``plan_trim_select`` literature agent. Today
- *    every gene runs through the per-focus A1+A2 driver; the joint
- *    prompts are kept for the single-agent legacy entry point but
- *    rarely used.
+ *  - Surface triage — Haiku genome-wide first pass.
+ *  - Deep dive Phase 1 — ``plan_trim_select`` literature agent
+ *    (per-focus A1/A2 plan-trim-select, plus joint single-agent
+ *    plan-trim-select).
  *  - Deep dive Phase 2 — 10 block builders that turn the A1/A2 ledger
  *    into the SurfaceomeRecord sub-blocks.
  *  - Deep dive Phase 3 — synthesizer that assembles the executive
@@ -67,10 +66,10 @@ const PROMPT_GROUPS: PromptGroup[] = [
     description:
       "Three Sonnet / Haiku passes per agent focus: plan the searches, " +
       "trim each paper's candidate clips down to load-bearing ones, then " +
-      "select the final EvidenceClaim ledger. The per-focus A1 + A2 prompts " +
-      "(active path today) split into a surface-evidence-methodology run " +
-      "and a biology-context run; the joint prompts are kept for the " +
-      "single-agent MVP path and rarely fired post-PR #35.",
+      "select the final EvidenceClaim ledger. The per-focus A1 + A2 " +
+      "prompts split into a surface-evidence-methodology run and a " +
+      "biology-context run; the joint plan-trim-select prompts run the " +
+      "same loop on a unified ledger.",
     prompts: [
       {
         id: "pts-a1-plan",
@@ -129,21 +128,20 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "pts-joint-plan",
-        label: "Joint planner (single-agent MVP path)",
+        label: "Joint — planner",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/plan_system.md",
         blurb:
-          "Used only when an entry point doesn't request the A1+A2 dual " +
-          "driver. Kept for backward compatibility; the dual driver is the " +
-          "default since PR #35.",
+          "Single-agent variant of the planner — emits one SearchPlan over " +
+          "a unified ledger instead of splitting into A1 + A2 passes.",
       },
       {
         id: "pts-joint-trim",
-        label: "Joint per-paper trim (legacy)",
+        label: "Joint — per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/trim_system.md",
       },
       {
         id: "pts-joint-select",
-        label: "Joint selector (legacy)",
+        label: "Joint — final selector",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/select_system.md",
       },
     ],
@@ -209,13 +207,11 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-cell-states",
-        label: "A2 — cell_states builder ★",
+        label: "A2 — cell_states builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/cell_states_builder_system.md",
         blurb:
-          "★ Added in PR #38. Cell-state modulation: activation / " +
-          "exhaustion / EMT / ER stress / hypoxia / senescence / " +
-          "polarization / disease state. The csGRP78 (HSPA5) worked " +
-          "example proved this end-to-end with 6 StateContext rows.",
+          "Cell-state modulation: activation, exhaustion, EMT, ER stress, " +
+          "hypoxia, senescence, polarization, disease state.",
       },
       {
         id: "builder-subcellular-localization",
