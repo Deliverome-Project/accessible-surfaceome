@@ -58,6 +58,7 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
     build_anatomical_accessibility,
+    build_cell_states,
     build_cell_types,
     build_contradictions,
     build_evidence_grade,
@@ -358,6 +359,9 @@ def _annotate(
             "cell_types", "builders_a2", build_cell_types, a2_claims, a2_ctx
         ),
         _BuilderSpec(
+            "cell_states", "builders_a2", build_cell_states, a2_claims, a2_ctx
+        ),
+        _BuilderSpec(
             "subcellular_localization",
             "builders_a2",
             build_subcellular_localization,
@@ -396,7 +400,7 @@ def _annotate(
     biological_context = BiologicalContext(
         tissues=outputs["tissues"],
         cell_types=outputs["cell_types"],
-        cell_states=[],  # v1 schema field; no builder for v2 — empty.
+        cell_states=outputs["cell_states"],
         subcellular_localization=outputs["subcellular_localization"],
         anatomical_accessibility=outputs["anatomical_accessibility"],
         accessibility_modulation=outputs["accessibility_modulation"],

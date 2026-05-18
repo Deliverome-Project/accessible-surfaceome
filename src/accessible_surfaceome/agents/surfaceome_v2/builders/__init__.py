@@ -13,6 +13,7 @@ A1 side (surface_evidence sub-blocks):
 A2 side (biological_context sub-blocks):
 - :func:`build_tissues` → ``list[TissueContext]``
 - :func:`build_cell_types` → ``list[CellTypeContextV1]``
+- :func:`build_cell_states` → ``list[StateContext]`` (10th builder, csGRP78-class)
 - :func:`build_subcellular_localization` → ``SubcellularLocalization``
 - :func:`build_anatomical_accessibility` → ``list[AnatomicalAccessibilityObservation]``
 - :func:`build_accessibility_modulation` → ``list[AccessibilityModulationObservation]``
@@ -23,6 +24,9 @@ from accessible_surfaceome.agents.surfaceome_v2.builders.accessibility_modulatio
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders.anatomical_accessibility import (
     build_anatomical_accessibility,
+)
+from accessible_surfaceome.agents.surfaceome_v2.builders.cell_states import (
+    build_cell_states,
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders.cell_types import (
     build_cell_types,
@@ -47,6 +51,7 @@ __all__ = [
     "EvidenceGradeBlock",
     "build_accessibility_modulation",
     "build_anatomical_accessibility",
+    "build_cell_states",
     "build_cell_types",
     "build_contradictions",
     "build_evidence_grade",

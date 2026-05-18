@@ -29,6 +29,7 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
     build_anatomical_accessibility,
+    build_cell_states,
     build_cell_types,
     build_contradictions,
     build_evidence_grade,
@@ -50,6 +51,7 @@ from accessible_surfaceome.tools._shared.models import (
     Contradiction,
     EvidenceClaim,
     MethodObservation,
+    StateContext,
     SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
@@ -453,6 +455,72 @@ def test_build_cell_types_empty_input() -> None:
     rows = build_cell_types([], client=client, usage_sink=sink, context={"gene": "X"})
     assert rows == []
     client.messages.create.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# cell_states_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_cell_states_happy() -> None:
+    """A claim binding ER stress to surface translocation should emit a
+    StateContext row with the state, descriptor, and evidence id."""
+    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
+    output = [
+        {
+            "state": "ER stress",
+            "descriptor": (
+                "Tunicamycin- and thapsigargin-induced UPR translocates a "
+                "fraction to the plasma membrane in tumor cells."
+            ),
+            "cited_evidence_ids": ["a2_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states(
+        claims, client=client, usage_sink=sink, context={"gene": "HSPA5"}
+    )
+    assert len(rows) == 1
+    assert isinstance(rows[0], StateContext)
+    assert rows[0].state == "ER stress"
+    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
+
+
+def test_build_cell_states_scrubs_unknown_evidence_ids() -> None:
+    """Builder must drop cited_evidence_ids the input ledger doesn't carry."""
+    claims = [_claim("01", prefix="a2")]
+    output = [
+        {
+            "state": "EMT",
+            "descriptor": "EMT-induced surface fraction.",
+            "cited_evidence_ids": ["a2_evi_01", "a2_evi_99"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states(
+        claims, client=client, usage_sink=sink, context={"gene": "VIM"}
+    )
+    assert len(rows) == 1
+    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
+
+
+def test_build_cell_states_empty_input() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states([], client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows == []
+    client.messages.create.assert_not_called()
+
+
+def test_build_cell_states_empty_array_is_valid() -> None:
+    """Most genes don't have state-modulated surface — empty array is normal."""
+    claims = [_claim("01", prefix="a2")]
+    client = _mock_client([_fenced("[]")])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows == []
 
 
 # ---------------------------------------------------------------------------
