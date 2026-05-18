@@ -9,7 +9,7 @@
   },
   "triage_signal": "unknown",
   "executive_summary": {
-    "one_paragraph": "SRC (P12931) is a non-receptor tyrosine kinase anchored exclusively to the cytoplasmic inner leaflet of the plasma membrane via N-myristoylation; it has no extracellular domain and no transmembrane segment. All evidence—biophysical inner-leaflet anchoring, membrane-fractionation MS, HPA IHC—demonstrates plasma-membrane association but not extracellular-face accessibility. SURFY/CSPA exclude SRC from the surfaceome. Approved drugs (dasatinib, bosutinib) act intracellularly. Surface accessibility is therefore low; any engagement strategy requires cell-permeable or intrabody-type binders.",
+    "one_paragraph": "SRC (P12931) is a non-receptor tyrosine kinase anchored exclusively to the cytoplasmic inner leaflet of the plasma membrane via N-myristoylation; it has no extracellular domain and no transmembrane segment. All evidence\u2014biophysical inner-leaflet anchoring, membrane-fractionation MS, HPA IHC\u2014demonstrates plasma-membrane association but not extracellular-face accessibility. SURFY/CSPA exclude SRC from the surfaceome. Approved drugs (dasatinib, bosutinib) act intracellularly. Surface accessibility is therefore low; any engagement strategy requires cell-permeable or intrabody-type binders.",
     "surface_accessibility": "low",
     "evidence_grade_summary": "supportive_but_indirect",
     "confidence": "moderate",
@@ -611,7 +611,7 @@
         "cell_state_trigger": null,
         "restricted_lineage": null,
         "dual_loc_partner_compartment": null,
-        "baseline_context": "Early-stage or late-stage chondrogenic differentiation (days 1–3 or days 10–15 of micromass culture)",
+        "baseline_context": "Early-stage or late-stage chondrogenic differentiation (days 1\u20133 or days 10\u201315 of micromass culture)",
         "modulating_state": "Mid-stage chondrogenic differentiation (day 6 micromass culture)",
         "change": "SRC kinase expression in the surfaceome peaks at day 6, the stage at which kinase activity, ephrin-receptor and FGF-signalling GO terms are most enriched; expression subsides thereafter.",
         "accessibility_implication": "Surfaceome-level SRC is transiently elevated at a specific differentiation checkpoint in cartilage development; this stage-specific window is relevant for targeting chondrogenic precursors.",
@@ -651,9 +651,40 @@
     },
     "isoform_topologies": [],
     "orthologs": {
-      "mouse": [],
-      "rat": [],
-      "cynomolgus": []
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "P05480",
+          "ensembl_id": "SRC_MOUSE",
+          "ortholog_uniprot_acc": "P05480",
+          "ortholog_symbol": "SRC_MOUSE",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": null,
+          "ecd_pct_similarity_to_human_canonical": null,
+          "full_length_pct_identity_to_human_canonical": 98.8806,
+          "ecd_length_residues": 0,
+          "tm_helix_count": 0,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-18T12:47:54.478474Z"
+        }
+      ],
+      "cynomolgus": [
+        {
+          "is_canonical": true,
+          "isoform_id": "A0A7N9CC30",
+          "ensembl_id": "A0A7N9CC30_MACFA",
+          "ortholog_uniprot_acc": "A0A7N9CC30",
+          "ortholog_symbol": "A0A7N9CC30_MACFA",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": null,
+          "ecd_pct_similarity_to_human_canonical": null,
+          "full_length_pct_identity_to_human_canonical": 92.5373,
+          "ecd_length_residues": 0,
+          "tm_helix_count": 0,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-18T12:47:54.478421Z"
+        }
+      ]
     },
     "paralogs": [],
     "structure": {
@@ -661,9 +692,9 @@
       "afdb_version": "v4",
       "ecd_mean_plddt": 0.0,
       "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (placeholder — pLDDT fetcher not yet wired)",
+      "source": "AlphaFold DB (placeholder \u2014 pLDDT fetcher not yet wired)",
       "license": "CC BY 4.0",
-      "attribution": "© DeepMind / EMBL-EBI",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1421,7 +1452,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "AXL, SRC, and c‐MET staining was scored in a four‐tiered scoring system, evaluating membranous staining intensity for AXL and c‐MET, and cytoplasmic staining intensity for SRC as negative (score = 0), weak (score = 1), moderate (score = 2), or strong (score = 3).",
+          "quote": "AXL, SRC, and c\u2010MET staining was scored in a four\u2010tiered scoring system, evaluating membranous staining intensity for AXL and c\u2010MET, and cytoplasmic staining intensity for SRC as negative (score = 0), weak (score = 1), moderate (score = 2), or strong (score = 3).",
           "quote_sha256": "9bcd7642586e9eabefbfe8925c4cedd5584de17489ffc87ea228a3e911bb8f63",
           "char_offset": 7724,
           "normalized_source_sha256": "d61abcccc27c695370b8df6b7ed0caa17bdbd8f97c321e92b3010c511a34140f"
@@ -1517,7 +1548,7 @@
     },
     {
       "evidence_id": "a2_evi_05",
-      "claim": "SRC is ubiquitously expressed at the protein level, with platelets, neurons, and osteoclasts expressing 5–200-fold higher levels than most tissues; UniProt annotates subcellular localisation to cell membrane, mitochondrial inner membrane, nucleus, cytosol/perinuclear region, focal adhesions, and cell junctions; N-myristoylation at Gly2 is the primary membrane anchor.",
+      "claim": "SRC is ubiquitously expressed at the protein level, with platelets, neurons, and osteoclasts expressing 5\u2013200-fold higher levels than most tissues; UniProt annotates subcellular localisation to cell membrane, mitochondrial inner membrane, nucleus, cytosol/perinuclear region, focal adhesions, and cell junctions; N-myristoylation at Gly2 is the primary membrane anchor.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "db_annotation",
@@ -1880,7 +1911,7 @@
   "primary_evidence_count": 13,
   "secondary_evidence_count": 14,
   "confidence": "moderate",
-  "confidence_reasoning": "A1 grades evidence as 'supportive_but_indirect' and this synthesis tracks that grade. The topology is unambiguous—inner-leaflet peripheral kinase, no ECD—supported by strong biophysical primary data (a1_evi_09, a1_evi_10, a2_evi_12) and consistent database exclusion from surfaceome calls (a1_evi_14). However, multiple membrane-fractionation MS studies superficially detect SRC in surface fractions, creating mild conflicting signal. State-dependence is moderate: PM association is modulated by activation state, oncogenic transformation (endosomal redistribution), and differentiation stage (chondrogenic day-6 peak). Confidence is 'moderate' rather than 'high' because the surface-fraction MS detections require careful interpretation and state-dependent variability is real.",
+  "confidence_reasoning": "A1 grades evidence as 'supportive_but_indirect' and this synthesis tracks that grade. The topology is unambiguous\u2014inner-leaflet peripheral kinase, no ECD\u2014supported by strong biophysical primary data (a1_evi_09, a1_evi_10, a2_evi_12) and consistent database exclusion from surfaceome calls (a1_evi_14). However, multiple membrane-fractionation MS studies superficially detect SRC in surface fractions, creating mild conflicting signal. State-dependence is moderate: PM association is modulated by activation state, oncogenic transformation (endosomal redistribution), and differentiation stage (chondrogenic day-6 peak). Confidence is 'moderate' rather than 'high' because the surface-fraction MS detections require careful interpretation and state-dependent variability is real.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-17T13:05:27.108512Z"
 }

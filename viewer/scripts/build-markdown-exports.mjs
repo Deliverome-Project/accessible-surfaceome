@@ -368,16 +368,17 @@ function md(rec, structureData, canonicalSequence) {
   // --- Orthologs ---
   lines.push("## 7. Orthologs");
   lines.push("");
-  for (const species of ["mouse", "rat", "cynomolgus"]) {
+  const fmtPct = (v) => (v == null ? "—" : `${v.toFixed(1)}%`);
+  for (const species of ["mouse", "cynomolgus"]) {
     const entries = df.orthologs[species];
     if (!entries.length) continue;
     lines.push(`**${species.charAt(0).toUpperCase() + species.slice(1)}**`);
     lines.push("");
-    lines.push("| Canonical | Isoform | Symbol | UniProt | Type | ECD %id | ECD %sim | ECD len | TM |");
-    lines.push("|---|---|---|---|---|---|---|---|---|");
+    lines.push("| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |");
+    lines.push("|---|---|---|---|---|---|---|---|---|---|");
     for (const o of entries) {
       lines.push(
-        `| ${o.is_canonical ? "✓" : "alt"} | ${o.isoform_id} | ${o.ortholog_symbol} | ${o.ortholog_uniprot_acc} | ${prettyEnum(o.type)} | ${o.ecd_pct_identity_to_human_canonical.toFixed(1)}% | ${o.ecd_pct_similarity_to_human_canonical.toFixed(1)}% | ${o.ecd_length_residues} aa | ${o.tm_helix_count} |`,
+        `| ${o.is_canonical ? "✓" : "alt"} | ${o.isoform_id} | ${o.ortholog_symbol} | ${o.ortholog_uniprot_acc} | ${prettyEnum(o.type)} | ${fmtPct(o.full_length_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_similarity_to_human_canonical)} | ${o.ecd_length_residues} aa | ${o.tm_helix_count} |`,
       );
     }
     lines.push("");

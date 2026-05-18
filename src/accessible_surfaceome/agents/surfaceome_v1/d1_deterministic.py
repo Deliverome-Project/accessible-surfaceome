@@ -236,13 +236,44 @@ def _fetch_paralogs(uniprot_acc: str, paralog_version: str) -> list[ParalogEntry
 
 def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                      ortholog_ecd_version: str) -> Orthologs:
-    """Mouse + cyno ortholog entries. Joins topology_public on the
-    ortholog UniProt (filtered to the same topology_version + matching
-    species cohort) to populate ecd_length + tm_helix_count so the
-    OrthologEntry schema is satisfied."""
+    """Mouse + cyno ortholog entries.
+
+    Reads from ``compara_ortholog_ecd`` (which carries both the full-length
+    BioMart % identity and the per-loop BLOSUM62 ECD % identity). Joins
+    ``topology_public`` on the ortholog UniProt (filtered to the same
+    ``topology_version`` + matching species cohort) to populate
+    ``ecd_length`` + ``tm_helix_count``.
+
+    Returns one entry per ortholog. ECD %identity is left None when the
+    human protein has no ECD to compare (inner-leaflet, soluble,
+    GPI-anchored without surface loops); the full-length identity from
+    BioMart is always populated so the reader can still see how conserved
+    the ortholog is.
+    """
+    # NOTE: full-length BioMart % identity lives in compara_ortholog.percent_identity,
+    # not in compara_ortholog_ecd.biomart_percent_identity (the latter is intentionally
+    # NULL — see compute_ortholog_ecd_records in scripts/run_topology_sweep.py).
+    # We can't join on (release_version, ortholog_ensembl_gene) because:
+    #   (a) compara_ortholog.release_version (e.g. 'ensembl_compara_2026_05_12') and
+    #       compara_ortholog_ecd.compara_release (e.g. 'Compara r112') use different
+    #       naming conventions today, and
+    #   (b) compara_ortholog_ecd.ortholog_ensembl_gene currently stores UniProt entry
+    #       names (e.g. 'SRC_MOUSE') instead of real Ensembl gene IDs (producer bug
+    #       in scripts/run_topology_sweep.py:1072 — TODO fix separately).
+    # The upstream Compara CSV is one2one + high-confidence filtered, so there is
+    # exactly one compara_ortholog row per (human_ensembl_gene, species); joining on
+    # that pair is unambiguous today. Use MAX(percent_identity) defensively in case
+    # multiple release_versions ever coexist — they'll all carry the same value for
+    # the same one2one ortholog pair.
     rows = _query_public(
         "SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene, "
         "eo.ortholog_gene_symbol, eo.ecd_pct_identity, "
+        "( "
+        "  SELECT MAX(co.percent_identity) FROM compara_ortholog co "
+        "  WHERE co.human_ensembl_gene = eo.human_ensembl_gene "
+        "    AND co.species = eo.species "
+        "    AND co.is_high_confidence = 1 "
+        ") AS full_length_pct_identity, "
         "tp.tm_helix_count, tp.ecd_length_residues, "
         "eo.compara_release "
         "FROM compara_ortholog_ecd eo "
@@ -255,7 +286,6 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
         "  ) "
         "WHERE eo.human_uniprot_acc = ? "
         "  AND eo.ortholog_ecd_version = ? "
-        "  AND eo.ecd_pct_identity IS NOT NULL "
         "ORDER BY eo.species ASC",
         [topology_version, uniprot_acc, ortholog_ecd_version],
     )
@@ -263,7 +293,11 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
     cyno: list[OrthologEntry] = []
     for r in rows:
         species = (r.get("species") or "").lower()
+        ecd_raw = r.get("ecd_pct_identity")
+        full_raw = r.get("full_length_pct_identity")
         try:
+            ecd_pct = float(ecd_raw) if ecd_raw is not None else None
+            full_pct = float(full_raw) if full_raw is not None else None
             entry = OrthologEntry(
                 is_canonical=True,
                 isoform_id=r.get("ortholog_uniprot_acc") or "",
@@ -271,10 +305,10 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                 ortholog_uniprot_acc=r.get("ortholog_uniprot_acc") or "",
                 ortholog_symbol=r.get("ortholog_gene_symbol") or "",
                 type="one2one",
-                ecd_pct_identity_to_human_canonical=float(r["ecd_pct_identity"]),
-                # We compute identity locally; similarity not yet wired —
-                # default to identity as a conservative placeholder.
-                ecd_pct_similarity_to_human_canonical=float(r["ecd_pct_identity"]),
+                ecd_pct_identity_to_human_canonical=ecd_pct,
+                # Similarity not yet wired — mirror identity when present.
+                ecd_pct_similarity_to_human_canonical=ecd_pct,
+                full_length_pct_identity_to_human_canonical=full_pct,
                 ecd_length_residues=int(r.get("ecd_length_residues") or 0),
                 tm_helix_count=int(r.get("tm_helix_count") or 0),
                 compara_version=r.get("compara_release") or "",

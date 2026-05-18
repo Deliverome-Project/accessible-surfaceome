@@ -61,3 +61,7 @@
 .link:hover {
   border-bottom-color: var(--accent);
 }
+
+.muted {
+  color: var(--muted);
+}

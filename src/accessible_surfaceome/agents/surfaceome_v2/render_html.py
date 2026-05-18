@@ -835,7 +835,7 @@ def _render_deterministic(record: dict[str, Any]) -> str:
     paralogs = det.get("paralogs") or []
     orthos = det.get("orthologs") or {}
     o_counts = {
-        sp: len(orthos.get(sp) or []) for sp in ("mouse", "rat", "cynomolgus")
+        sp: len(orthos.get(sp) or []) for sp in ("mouse", "cynomolgus")
     }
     return f"""
     <section class="block">
@@ -869,8 +869,8 @@ def _render_deterministic(record: dict[str, Any]) -> str:
           </div>
         </div>
         <div class="sub">
-          <div class="sub-label">orthologs (m / r / c)</div>
-          <div class="sub-val">{o_counts['mouse']} / {o_counts['rat']} / {o_counts['cynomolgus']}</div>
+          <div class="sub-label">orthologs (m / c)</div>
+          <div class="sub-val">{o_counts['mouse']} / {o_counts['cynomolgus']}</div>
         </div>
         <div class="sub">
           <div class="sub-label">paralogs</div>
