@@ -90,11 +90,13 @@ def test_recent_corpus_sends_sort_date_desc_to_every_page() -> None:
     )
     assert isinstance(pack, LiteraturePack)
     # Every PubTator call must request date-sorted results — that's what
-    # the entire mode exists to do.
+    # the entire mode exists to do. The query suffix is a one-word
+    # surface-vocabulary term that biases PubTator's relevance ranking
+    # toward surface-relevant papers without starving orphan-gene results.
     assert http.pubtator_calls, "no PubTator calls were issued"
     for call in http.pubtator_calls:
         assert call["params"]["sort"] == "date desc", call
-        assert call["params"]["text"] == "@GENE_SRC"
+        assert call["params"]["text"] == "@GENE_SRC surface"
 
 
 def test_recent_corpus_bails_early_when_page_returns_no_new_pmids() -> None:
@@ -179,4 +181,4 @@ def test_recent_corpus_resolves_uniprot_to_hgnc_when_only_acc_given(monkeypatch)
     )
     assert isinstance(pack, LiteraturePack)
     assert pack.hgnc_symbol == "SRC"
-    assert http.pubtator_calls[0]["params"]["text"] == "@GENE_SRC"
+    assert http.pubtator_calls[0]["params"]["text"] == "@GENE_SRC surface"

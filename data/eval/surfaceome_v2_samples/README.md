@@ -29,7 +29,7 @@ bottleneck step is on top. GPR75 + EGFR predate the timing PR.
 | `surfaceome_v2_ATP5F1B.json` | Same as raw JSON | same |
 | `surfaceome_v2_HSPA5.html` | **HSPA5 / GRP78** (ER chaperone with deeply controversial "cell-surface GRP78 / csGRP78" literature in cancer; >20-year debate) — **hard-gene test**: pipeline lands `sa=moderate, primary_compartment=ER, dual_localization=4` (plasma_membrane / mitochondrion / nucleus / EVs), confidence reasoning explicitly hedges on state-dependence + rare clinical membranous IHC | `scripts/surfaceome_v2_annotate.py HGNC:5238` |
 | `surfaceome_v2_HSPA5.json` | Same as raw JSON | same |
-| `surfaceome_v2_SRC.html` | **SRC** (non-receptor tyrosine kinase, N-myristoylated; classically a cytoplasmic-leaflet kinase but **with the 2026 Delaveris *Science* finding that cancer cells topologically invert SRC onto the OUTER plasma membrane via autophagolysosomal exocytosis (ALE)**, the verdict for SRC has flipped). **Hard-gene test + recency-tool regression test** (recent_corpus mode, PR adding the date-sorted PubTator sweep). Pipeline now lands `sa=moderate, conf=moderate, state_dependence=high, dual_localization=5` (cytosol-normal / cell junctions / vesicles / outer-leaflet-cancer-via-ALE / sEVs). Executive summary explicitly captures: "in cancer cells [SRC] undergoes topological inversion onto the outer plasma membrane leaflet (eSrc) via autophagolysosomal exocytosis (ALE)." | `scripts/surfaceome_v2_annotate.py HGNC:11283` |
+| `surfaceome_v2_SRC.html` | **SRC** (non-receptor tyrosine kinase, N-myristoylated; classically a cytoplasmic-leaflet kinase but **with the 2026 Delaveris *Science* finding that cancer cells topologically invert SRC onto the OUTER plasma membrane via autophagolysosomal exocytosis (ALE)**, the verdict for SRC has flipped). **Hard-gene test + recency-tool regression test** (recent_corpus mode, PR adding the surface-anchored, date-sorted PubTator sweep). Pipeline now lands `sa=high, conf=moderate, state_dependence=high, grade=direct_multi_method, dual_localization=3` (vesicles / cytosol-normal / outer-leaflet-cancer-via-ALE). Executive summary explicitly captures: "in cancer cells [SRC] undergoes topological inversion via autophagolysosomal exocytosis (ALE), exposing its kinase domain on the extracellular face of the plasma membrane as eSrc." | `scripts/surfaceome_v2_annotate.py HGNC:11283` |
 | `surfaceome_v2_SRC.json` | Same as raw JSON | same |
 | `GPR75_plan_trim_select_dual.html` | Just the Phase-1 A1+A2 `EvidenceClaim` ledger for GPR75 — what the dual driver emits before block builders run | `scripts/plan_trim_select_dual_run.py HGNC:4526` |
 | `GPR75_plan_trim_select_dual.json` | Same dual ledger as raw JSON | same |
@@ -178,7 +178,7 @@ in the face of clinical-target hype. Five contrasting cases were run:
 | **WT1** (Wilms tumor 1) | Nuclear transcription factor. Active CAR-T target — but the receptor surface presence is the MHC-I-presented WT1 peptide (pMHC), not the intact WT1 protein. Should NOT be graded as surface-accessible. | `sa=low`, `conf=moderate`, `evidence_grade=weak`, primary compartment = nucleus, explicit acknowledgment that "surface" refers to pMHC not the protein. | `sa=low, conf=moderate, grade=weak, primary_compartment=nucleus`. **Executive summary explicitly distinguishes WT1 protein from WT1-pMHC**: "All surface-engagement evidence in the ledger concerns processed WT1 peptide fragments presented via MHC-I at extremely low density (<100 sites/cell), not the WT1 protein itself." | ✅ |
 | **ATP5F1B** (ATP synthase β) | Mitochondrial inner-membrane F1 subunit. "Ectopic surface ATP synthase / eATP synthase" reports in cancer / sperm. CSPA/SURFY surfaceome databases mark it as NOT surface. | `sa=moderate` (not `high`), `conf=moderate` (not `high`), `primary_compartment=mitochondrion`, dual_localization with `plasma_membrane`, contradicting_evidence captures the CSPA/SURFY negatives. | `sa=moderate, conf=moderate, primary_compartment=mitochondrion`, **1 dual_localization row** (eATP synthase, fixed-cell + bovine sperm contexts), **1 contradiction** capturing CSPA/SURFY negative annotation. Confidence reasoning explicitly hedges on the surface-fraction quantification gap. | ✅ |
 | **HSPA5 / GRP78** | Canonical ER chaperone (KDEL-tagged). "Cell-surface GRP78" (csGRP78) has 20+ years of cancer literature on one side and "artifactual / KDEL escape under stress" on the other. Active clinical-target work (CBT100/200/300). Tier-1 hard test from the original handoff. | `sa=moderate` (not `high`), `conf=moderate` (not `high`), `primary_compartment=ER`, multiple `dual_localization` rows (plasma_membrane, EVs at minimum), `accessibility_modulation` with `stress_induced` + `disease_state_induced` categories, ≥1 contradiction. | `sa=moderate, conf=moderate, primary_compartment=ER`, **4 dual_localization rows** (plasma_membrane, mitochondrion, nucleus, EVs — full csGRP78 + organelle-translocation literature), 7 modulation rows, 1 contradiction. Confidence reasoning explicitly cites: "strong state-dependence — surface HSPA5 is an ER-stress/oncogenic-transformation-induced phenotype largely absent from resting normal cells" + "IHC on clinical cohorts found membranous localization in only rare cases." | ✅ |
-| **SRC** (c-src kinase) | Non-receptor tyrosine kinase, N-terminally myristoylated. **Classically** intracellular on the cytoplasmic leaflet — but **Delaveris et al. 2026 (*Science*, PMID 41818370)** demonstrated topological inversion of SRC onto the OUTER plasma membrane via autophagolysosomal exocytosis (ALE) in cancer cells. So the right verdict is *not* "low surface accessibility" — it's the same shape as ATP5F1B / HSPA5: low in normal cells, state-dependent surface accessibility induced by the cancer phenotype. **Also a regression test for the recency-pull tool** (`gene_literature.recent_corpus`) added in this PR — without it, the date-blind methodology-anchored queries score Delaveris too low to surface (the keyword chicken-and-egg problem: "autophagolysosomal exocytosis" and "inverts" are concepts the paper *introduces*, so no pre-defined methodology category catches them). | `sa=moderate` (not `low`), `conf=moderate` (not `high`), `state_dependence=high`, primary_compartment = `plasma_membrane`, ≥1 `dual_localization` row tagged for cancer-state-induced outer-leaflet presence, executive summary names the eSrc / ALE mechanism. | `sa=moderate, conf=moderate, state_dependence=high, grade=direct_single_method, primary_compartment=plasma_membrane`, **5 dual_localization rows** (cytosol/inner-leaflet normal cells, cell junctions, vesicles, **outer plasma membrane leaflet via ALE in cancer cells**, small EVs in invadopodia-active GBM cells). Executive summary opens: "in cancer cells [SRC] undergoes topological inversion onto the outer plasma membrane leaflet (eSrc) via autophagolysosomal exocytosis (ALE). eSrc is detected in primary human tumors and xenografts; anti-Src antibodies mediate tumor cell killing in vitro and in vivo." A1 went from 2 → 6 claims with the recent_corpus enabled; both the Delaveris primary paper and its accompanying *Science* perspective (PMID 41818382) were pulled and cited. | ✅ |
+| **SRC** (c-src kinase) | Non-receptor tyrosine kinase, N-terminally myristoylated. **Classically** intracellular on the cytoplasmic leaflet — but **Delaveris et al. 2026 (*Science*, PMID 41818370)** demonstrated topological inversion of SRC onto the OUTER plasma membrane via autophagolysosomal exocytosis (ALE) in cancer cells. So the right verdict is *not* "low surface accessibility" — it's the cancer-state-dependent surface presence that's the new headline. **Also a regression test for the recency-pull tool** (`gene_literature.recent_corpus`) added in this PR — without it, the methodology-anchored queries score Delaveris too low to surface (the keyword chicken-and-egg problem: "autophagolysosomal exocytosis" and "inverts" are concepts the paper *introduces*, so no pre-defined methodology category catches them). | `sa=high` or `moderate` (not `low`), `conf=moderate` (not `high`), `state_dependence=high`, primary_compartment = `plasma_membrane`, ≥1 `dual_localization` row tagged for cancer-state-induced outer-leaflet presence, executive summary names the eSrc / ALE mechanism. | `sa=high, conf=moderate, state_dependence=high, grade=direct_multi_method, primary_compartment=plasma_membrane`, **3 dual_localization rows** (vesicles, cytosol/inner-leaflet normal cells, **outer plasma membrane leaflet via ALE in cancer**). Executive summary: "in cancer cells [SRC] undergoes topological inversion via autophagolysosomal exocytosis (ALE), exposing its kinase domain on the extracellular face of the plasma membrane as eSrc. This cancer-selective surface form is directly supported by live-cell functional assays, surface biotinylation (U251 MG; WB+MS dual readout), and in vivo xenograft antibody-killing studies." A1 went from 2 → 19 claims with the recent_corpus enabled; both the Delaveris primary paper and its accompanying *Science* perspective (PMID 41818382) were pulled and cited. | ✅ |
 
 **Headline finding:** all five records hold the line on honest hedging.
 The synthesizer never grades these `high` confidence despite each having
@@ -206,26 +206,33 @@ Specifically:
 * **SRC** integrates the 2026 verdict-shifter (Delaveris *Science* on
   cancer-cell topological inversion of SRC onto the outer plasma
   membrane leaflet via autophagolysosomal exocytosis) into a
-  state-dependent `sa=moderate` verdict. The dual_localization block
-  carries five rows: the canonical cytosolic / inner-leaflet
-  localization for normal cells, the eSrc outer-leaflet localization
-  for cancer cells, plus cell junctions, vesicles, and small EVs in
-  invadopodia-active GBM cells. The executive summary explicitly
-  names the eSrc / ALE mechanism. **This is also the recency-tool
-  regression test** — an earlier version of this sample with the
-  date-blind methodology queries alone (PR #37, pre-recent_corpus)
-  produced `sa=low, primary_compartment=plasma_membrane (inner
-  leaflet)` because the planner's keyword-anchored PubTator queries
-  could not surface Delaveris (the paper's headline concepts —
-  "autophagolysosomal exocytosis", "inverts" — are *new vocabulary*
-  the paper introduces, so they don't match any pre-defined
-  methodology category). The recent_corpus mode pulls
-  ``@GENE_<SYMBOL>`` sorted by indexing date with no topic narrowing,
-  pre-filters abstracts for surface/membrane vocabulary, and feeds
-  the result into the same trim/select pool. With it enabled,
-  Delaveris (rank #174 in the 200-page SRC date-sorted stream) lands
-  in the A1 ledger and the synthesizer integrates correctly. The D1
-  deterministic block still falls back to the labeled stub
+  state-dependent `sa=high` verdict with `grade=direct_multi_method`.
+  The dual_localization block carries three rows: vesicles (general
+  trafficking), cytosol/inner-leaflet for normal cells, and the
+  outer plasma membrane leaflet via ALE for cancer cells. The
+  executive summary explicitly names the eSrc / ALE mechanism and
+  enumerates the convergent methodology stack — live-cell functional
+  assays, surface biotinylation with WB+MS dual readout, and in vivo
+  xenograft antibody-killing studies. **This is also the recency-tool
+  regression test** — the first version of this sample (no
+  recent_corpus, commit `ef887d0`) produced `sa=low, primary=plasma
+  membrane (inner leaflet)` because the planner's keyword-anchored
+  PubTator queries could not surface Delaveris (the paper's headline
+  concepts — "autophagolysosomal exocytosis", "inverts" — are *new
+  vocabulary* the paper introduces, so they don't match any
+  pre-defined methodology category). The recent_corpus mode pulls
+  ``@GENE_<SYMBOL> surface`` sorted by indexing date — the one-word
+  surface-vocabulary suffix biases PubTator's relevance ranking
+  toward surface-relevant papers without starving orphan genes
+  (GPR75 still returns 99 hits, ATP5F1B 522). 5 pages of 10
+  candidates each is plenty: Delaveris ranks #38 in the SRC
+  ``@GENE_SRC surface`` date-sorted stream (vs rank #174 in the
+  bare ``@GENE_SRC`` stream — a 4.5× ranking improvement just from
+  the one-word topic anchor). A1 jumped from 2 → 19 claims; the
+  selector kept the eSrc primary paper, the accompanying *Science*
+  perspective, two independent surface biotinylation studies, and
+  several supporting NIS-trafficking and shear-stress papers. The
+  D1 deterministic block still falls back to the labeled stub
   (`tool_version: stub-no-fetchers-v1.0.0`) — `CLOUDFLARE_*` env vars
   weren't present in this worktree — but the stub's GLOB shape (tm=0,
   ecd=0, paralogs=0, orthologs=0) matches what the real D1 path would
@@ -238,7 +245,7 @@ Specifically:
 | WT1 | 5m 55s | $1.03 | 23 (17 primary) | 12 / 11 | 5 | 4 | 8 | 1 | 4 | 1 |
 | ATP5F1B | 5m 31s | $0.95 | 17 (14 primary) | 11 / 6 | 6 | 6 | 3 | 1 | 3 | 1 |
 | HSPA5 | 7m 58s | $1.51 | 39 (24 primary) | 18 / 21 | 9 | 2 | 10 | 4 | 7 | 1 |
-| SRC | 6m 56s | $1.37 | 20 (17 primary) | 6 / 14 | 3 | 3 | 5 | 5 | 6 | 0 |
+| SRC | 7m 56s | $1.57 | 33 (24 primary) | 19 / 14 | 13 | 4 | 4 | 3 | 5 | 0 |
 
 All five runs are faster + cheaper than CD81/CLDN18 because the
 methodology corpus for each is genuinely thinner — the planner honors

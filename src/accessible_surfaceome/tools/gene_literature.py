@@ -68,25 +68,30 @@ _NCBI_TTL = 30
 _NCBI_ELINK = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
 
 
-# recent_corpus tuning. The page count is the critical knob — too few
-# and prolific-gene verdict-shifters fall outside the window, too many
-# and we pay for irrelevant abstracts. Empirical calibration:
+# recent_corpus tuning. The query uses ``@GENE_<SYMBOL> surface`` (not
+# bare ``@GENE_<SYMBOL>``) so PubTator's per-token relevance scoring
+# biases the date-sorted return toward surface-relevant papers. Empirical
+# calibration over the hard-gene set (SRC, WT1, CD81, GPR75, ATP5F1B,
+# HSPA5, EGFR, VIM, CLDN18):
 #
-# * For SRC (~55k PubTator-indexed papers, ~14 new/day in 2026) the
-#   Delaveris 2026 *Science* verdict-shifter (PMID 41818370, indexed
-#   2026-03-12, two months before today's simulated 2026-05-17) appears
-#   at rank #174 in the date-sorted ``@GENE_SRC`` stream.
-# * 20 pages × 10 hits = 200 candidates safely covers it.
-# * On a quiet gene (~50-500 papers/year) 200 candidates spans the full
-#   18-month verdict-shift window we care about. The empty-page early-
-#   exit below means quiet genes don't waste pages.
+# * The one-term suffix shrinks SRC's PubTator hit count from 55,418
+#   → 22,646 *and* moves the Delaveris 2026 *Science* verdict-shifter
+#   (PMID 41818370) from rank #174 → rank #38. Five pages × 10 hits =
+#   50 candidates safely covers it.
+# * Adding *more* terms (``surface membrane extracellular shed
+#   exocytosis ectodomain``) is counterproductive — PubTator collapses
+#   to multi-topic review papers that hit every term, and Delaveris
+#   drops out of the top 20. One term is the sweet spot.
+# * On quiet/orphan genes the suffix doesn't starve results: GPR75
+#   still returns 99 hits, ATP5F1B 522, CLDN18 640 — plenty to fill
+#   50 candidates without needing a bare-gene fallback.
 #
-# The surface/membrane abstract filter typically keeps 15-25% of the
-# pulled abstracts; the filter is a coarse cost-control gate on the
-# downstream Sonnet selector, not a quality gate. False positives are
-# cheaper than false negatives — a paper the selector discards is far
-# cheaper than a verdict-shifting paper the selector never sees.
-_RECENT_CORPUS_PAGES = 20
+# The abstract filter below is a coarse safety net (defense-in-depth
+# against papers PubTator ranks in for ``surface`` reasons unrelated
+# to surface biology — e.g. a paper about "tumor surface area") but
+# is mostly a no-op now that the query itself is surface-biased.
+_RECENT_CORPUS_PAGES = 5
+_RECENT_CORPUS_QUERY_SUFFIX = "surface"
 _RECENT_CORPUS_SURFACE_FILTER = re.compile(
     r"\b(surface|membrane|extracellular|"
     r"surfaceome|ectopic|inverted|externaliz|"
@@ -253,21 +258,17 @@ def gene_literature(
             )
             return paper
         if mode == "recent_corpus":
-            # recent_corpus pulls ~_RECENT_CORPUS_PAGES × 10 candidates,
-            # then filters by abstract-keyword. The cap below is on the
-            # POST-FILTER returned set; bumping it above the
-            # DEFAULT_PAGE_SIZE (25) gives the selector enough room to
-            # see the verdict-shifting paper even when 25 noisier
-            # surface-relevant papers appear earlier in the date stream.
-            # 60 is empirically enough for SRC (Delaveris was rank #174
-            # raw; with a 15-25% filter pass rate, ~26-43 matches up to
-            # that position).
+            # Default cap = DEFAULT_PAGE_SIZE (25). The surface-anchored
+            # PubTator query + 5 pages caps the upstream candidate pool
+            # at ~50; the abstract filter passes most of them since the
+            # query is already surface-biased; 25 returned papers is
+            # plenty for the selector to see the verdict-shifter.
             return _recent_corpus(
                 http=client,
                 uniprot_acc=uniprot_acc,
                 hgnc_symbol=hgnc_symbol,
                 aliases=aliases,
-                max_results=max(max_results, 60),
+                max_results=max_results,
                 retraction_index=index,
             )
         raise ValueError(f"unknown mode: {mode!r}")
@@ -416,7 +417,7 @@ def _recent_corpus(
         if aliases is None:
             aliases = list(bundle.aliases)
 
-    query = build_gene_entity_query(hgnc_symbol)
+    query = build_gene_entity_query(hgnc_symbol, _RECENT_CORPUS_QUERY_SUFFIX)
     pmids: list[int] = []
     seen: set[int] = set()
     for page in range(1, _RECENT_CORPUS_PAGES + 1):
