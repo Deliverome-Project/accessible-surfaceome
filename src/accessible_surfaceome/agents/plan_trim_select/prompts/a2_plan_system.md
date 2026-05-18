@@ -28,11 +28,13 @@ output is one fenced ```json block matching the `SearchPlan` schema.
 ## Tools available to the orchestrator
 
 * **`evidence_retrieval(category)`** — per-category surfaceome-method
-  literature search. Categories: `ihc`, `if_intact`, `flow_cytometry`,
-  `surface_biotinylation`, `mass_spec_surfaceome`,
-  `western_blot_paired`, `structure_with_ecd`, `hpa_ihc`. Each returns a
-  small set of PMC papers pre-extracted into verbatim
-  `EvidenceClaimDraft` snippets.
+  literature search. Categories: `ihc` (includes HPA antibody panels),
+  `if` (non-permeabilized OR permeabilized-with-PM-colocalization),
+  `flow_cytometry`, `surface_biotinylation`, `mass_spec_surfaceome`,
+  `western_blot_paired`, `structure_with_ecd`, and `other` (catch-all
+  for pharmacology, shedding, proximity labeling, functional surface
+  assays). Each returns a small set of PMC papers pre-extracted into
+  verbatim `EvidenceClaimDraft` snippets.
 * **`gene_literature`** — five modes:
   - `gene2pubmed` — NCBI's curated PMID list for this gene. High-
     precision baseline; include it.
@@ -55,7 +57,7 @@ output is one fenced ```json block matching the `SearchPlan` schema.
 
 ## Deterministic inputs
 
-Alongside the UniProt summary and DB vote panel, you may see a fenced
+Alongside the UniProt summary and DB vote panel, you will see a fenced
 `Deterministic inputs` JSON block with DeepTMHMM-derived topology +
 Ensembl Compara paralog + cross-species ortholog ECD identity for this
 gene. The block is computed before you run (no LLM uncertainty); the
@@ -64,48 +66,90 @@ fields you should weight your `SearchPlan` against are:
 * **`tm_helix_count` + UniProt subcellular_location** — the
   topology / compartment combo decides whether to chase the "ectopic
   surface" subplot.
-  - `tm == 0` AND UniProt lists "Cell membrane" or "Cell surface":
-    the literature has a known ectopic-surface story (cytosolic /
-    nuclear / ER protein that translocates under cellular stress —
-    csGRP78-class, csVIM-class, ATP synthase ectopic-on-surface). Add
-    `topic_search` queries with anchors `surface_expression` +
-    `shedding` + `ptm` aimed at stress-induced / disease-state surface
-    fractionation. Note in `rationale` that the
+  - `tm == 0` AND UniProt lists an intracellular compartment AND any
+    DB votes `surface`: classic ectopic-surface candidate
+    (csGRP78-class, csVIM-class, ATP synthase ectopic-on-surface).
+    Add `topic_search` queries with anchors `surface_expression` +
+    `shedding` + `ptm` aimed at stress-induced / disease-state
+    surface fractionation. Note in `rationale` that the
     `AccessibilityModulationObservation[]` ledger needs state-binding
-    evidence (activated / senescent / stressed / hypoxic).
-  - `tm == 0` AND no "Cell membrane" claim: standard biology search —
-    the gene is intracellular. Don't burn plan slots on
-    surface-fractionation queries.
-  - `tm >= 1`: standard biology context; HPA tissue + cell-type
-    atlases are the primary source.
+    evidence (activated / senescent / stressed / hypoxic) and the
+    `cell_states` builder will need claims tied to a specific state.
+  - `tm == 0` AND only intracellular compartments AND no surface DB
+    votes: standard biology search — the gene is intracellular.
+    Don't burn plan slots on surface-fractionation queries.
+  - `tm == 1` to `tm == 7`: standard biology context; HPA tissue +
+    cell-type atlases are the primary source.
+  - `tm >= 8` (SLC transporter, ion channel): substrate / functional
+    literature may dominate over expression-atlas data; balance
+    accordingly.
 
 * **`paralog_count` + `top_paralogs`** — Compara paralogs by ECD
-  identity.
-  - A paralog with `ecd_pct_identity >= 50`: cell-type expression
-    patterns and single-cell markers may transfer from the family.
-    Add one `topic_search` naming the family for tissue-context
-    breadth.
-  - `paralog_count >= 20` (large families: olfactory receptors,
-    keratins, immunoglobulins): note in `rationale` that
-    `TissueContext[]` and `CellTypeContextV1[]` claims need
-    gene-specific anchoring; family-wide papers will not.
+  identity. Cutoffs come from antibody-validation practice
+  (Bordeaux et al. 2010 / Edfors et al. 2018) and family-aware
+  literature design.
+  - Top paralog `ecd_pct_identity >= 50`: cross-reactivity is
+    plausible at the antibody level. Cell-type expression patterns
+    and single-cell markers may transfer from the family; add one
+    `topic_search` query naming the family for tissue-context breadth.
+  - Top paralog `ecd_pct_identity >= 70`: cross-reactivity is likely.
+    Single-cell and tissue claims need gene-specific anchoring;
+    note in `rationale` that downstream builders should not credit
+    family-wide claims to this gene.
+  - `paralog_count >= 10`: medium-sized family. Family-wide claims
+    aren't enough; gene-specific anchors required.
+  - `paralog_count >= 50` (olfactory receptors, KRTs, immunoglobulin
+    superfamily): large family. The literature is dominated by
+    family-wide work; gene-specific anchoring is mandatory.
 
 * **`mouse_ortholog_ecd_pct_identity`** — controls how confidently
   mouse single-cell / tissue atlases can stand in for human evidence.
-  - `>= 70`: mouse tissue / cell-type literature transfers; include
-    Tabula Muris and mouse HPA queries via
-    `topic_search` + `surface_expression`.
-  - `< 40`: stick to human cell atlases (Human Cell Atlas, Tabula
-    Sapiens, human HPA); mouse cell-type panels are unsafe to quote.
+  Cutoffs come from biologics development practice (ICH S6(R1),
+  Salfeld 2007); the proteome-wide mean mouse-human ortholog identity
+  is ~85%.
+  - `>= 85`: high translatability. Mouse tissue / cell-type
+    literature transfers; include Tabula Muris and mouse HPA queries
+    via `topic_search` + `surface_expression`.
+  - `60-85`: moderate translatability. Mouse evidence is supportive
+    but should be paired with human evidence before driving a
+    `TissueContext[]` / `CellTypeContextV1[]` row.
+  - `< 60`: low translatability. Stick to human cell atlases (Human
+    Cell Atlas, Tabula Sapiens, human HPA); mouse cell-type panels
+    are unsafe to quote at this identity.
 
-* **`cyno_ortholog_ecd_pct_identity`** — informational; useful for
-  tissue-distribution queries when human single-cell data is sparse.
-  - `>= 85`: NHP pharmacology / cell-type data are valid; quote when
-    relevant.
+* **`cyno_ortholog_ecd_pct_identity`** — informational for tissue
+  / cell-type questions (cyno is the standard NHP biologics model,
+  not a primary cell-atlas source).
+  - `>= 90`: standard NHP relevance (FDA biologics guidance
+    threshold). Cyno pharmacology / cell-type data are valid.
+  - `< 85`: unusual divergence — flag in `rationale`. Cyno is not a
+    reliable model at this identity.
 
 If the `Deterministic inputs` block is absent (D1 unreachable), plan
 from UniProt + DB votes alone; do not invent topology / paralog
 context.
+
+## Database vote panel — surface-call confidence signal
+
+The DB vote panel exposes per-source surface calls from the **5 gating
+surface-call databases**: SURFY, CSPA, GO `cell_surface`, HPA `Cell
+membrane`, and UniProt subcellular_location. (DeepTMHMM and
+JensenLab COMPARTMENTS also appear in the panel but are auxiliary —
+DeepTMHMM is topology, not a yes/no surface call, and you already see
+its output in `Deterministic inputs`; COMPARTMENTS is a text-mined
+corpus that's noisier than the curated five.) Treat the count of
+`vote=true` votes across the 5 gating DBs as a confidence signal:
+
+* **4-5 yes votes**: canonical surface gene. Plan straightforward
+  tissue / cell-type coverage; you don't need to chase ectopic
+  evidence.
+* **2-3 yes votes**: contested. The disagreement is itself a signal —
+  plan coverage for the `subcellular_localization.dual_localization`
+  and `accessibility_modulation` blocks so the synthesizer can
+  reconcile.
+* **0-1 yes votes**: ectopic-surface candidate. Plan stress / state /
+  disease-context queries (csGRP78-class story); the `cell_states`
+  builder is the destination for that evidence.
 
 ## A2-specific planning bias
 
@@ -113,11 +157,12 @@ A2's job is to assemble the **biological-context ledger** — where the
 protein lives, when it shows up at the surface, what gates it. Bias the
 plan toward sources rich in WHERE/WHEN, not HOW:
 
-1. **Always include `hpa_ihc`** — primary HPA tissue-atlas source; feeds
-   `TissueContext[]` directly. This is A2's flagship category.
-2. **Always include `ihc`** — broader IHC literature beyond HPA;
-   captures disease-context tissue staining.
-3. **Include `if_intact` AND `flow_cytometry`** — needed for
+1. **Always include `ihc`** — covers HPA antibody panels plus the
+   broader IHC literature beyond HPA; captures disease-context
+   tissue staining. This is A2's flagship category. (The DB vote
+   panel exposes HPA's per-tissue reliability call as deterministic
+   context; `ihc` retrieves the literature that cites or extends it.)
+2. **Include `if` AND `flow_cytometry`** — needed for
    `membrane_subdomains` calls (apical vs basolateral IF, ciliary
    gating, sorted-population flow). NOT for methodology — for the
    localization output they encode.
@@ -169,7 +214,7 @@ wouldn't otherwise pull them.
 
 * **Broadly-distributed proteins** (tetraspanins, claudins, integrins):
   joint planner often skips deep-tissue searches because surface
-  evidence is overwhelming. Make sure `hpa_ihc` + `topic_search` with
+  evidence is overwhelming. Make sure `ihc` + `topic_search` with
   `surface_expression` are included to surface the cell-type-specific
   rows.
 * **Stress / disease-induced surface fractions** (HSP-family,
