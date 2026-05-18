@@ -432,10 +432,23 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         _fetch_paralogs(uniprot_acc, paralog_version)
         if paralog_version else []
     )
+    # Pull real AFDB pLDDT — ECD-restricted when the canonical isoform
+    # has a per-residue topology with extracellular residues, otherwise
+    # falls back to the whole-protein metric with a labeled source so
+    # downstream readers don't conflate it with the ECD-restricted
+    # measurement. ``fetch_afdb_plddt`` never raises — on network /
+    # parse failure it returns its own labeled placeholder.
+    from accessible_surfaceome.tools.afdb_plddt import fetch_afdb_plddt
+
+    structure = fetch_afdb_plddt(
+        uniprot_acc,
+        per_residue_topology=canonical.per_residue_topology or None,
+    )
+
     return DeterministicFeatures(
         canonical_topology=canonical,
         isoform_topologies=isoforms,
         orthologs=orthologs,
         paralogs=paralogs,
-        structure=_stub_structure(uniprot_acc),
+        structure=structure,
     )

@@ -112,3 +112,11 @@ data/external/ortholog_uniprot_resolution.tsv
 
 # Claude Code dev-server preview config — local-only, not for the repo.
 .claude/launch.json
+
+# AFDB structure files (CIF) — populated on demand by
+# src/accessible_surfaceome/tools/afdb_plddt.py, idempotent from
+# alphafold.ebi.ac.uk. Each is 200KB-1.1MB; cumulatively chunky and
+# adds nothing reviewers can't re-fetch in seconds. The matching JSON
+# metadata files stay tracked — they're 3KB each and give readers a
+# quick view of what pLDDT bucket distribution AFDB reports.
+data/cache/afdb_prediction/*.cif
