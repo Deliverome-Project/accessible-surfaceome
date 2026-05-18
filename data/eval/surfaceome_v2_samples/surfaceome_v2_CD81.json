@@ -88,8 +88,8 @@
             "cited_evidence_ids": [
               "a1_evi_01"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -137,8 +137,8 @@
             "cited_evidence_ids": [
               "a1_evi_02"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -261,8 +261,8 @@
               "a1_evi_13",
               "a1_evi_15"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "Total AML study cohort (n=290) quantified by flow cytometry; CBF AML (n=26) vs. non-CBF AML (n=226); high CD81 surface expression associated with relapse and adverse outcome in non-CBF AML",
@@ -272,8 +272,8 @@
               "a1_evi_13",
               "a1_evi_16"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "CD81 mRNA correlated with cell-surface protein abundance by flow cytometry (r\u00b2=0.51, n=47 AML samples) validated across two independent cohorts",
@@ -282,8 +282,8 @@
             "cited_evidence_ids": [
               "a1_evi_14"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -356,8 +356,8 @@
             "cited_evidence_ids": [
               "a1_evi_18"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -406,8 +406,8 @@
             "cited_evidence_ids": [
               "a1_evi_19"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -443,8 +443,8 @@
             "cited_evidence_ids": [
               "a1_evi_20"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -468,8 +468,8 @@
               "a1_evi_21",
               "a1_evi_22"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "CD81 used as EV surface marker and loading control in western blot of HeLa whole-cell lysates, total EVs, and EV surface protein (biotinylated) preparations; enriched in surface fraction",
@@ -529,8 +529,8 @@
               "a1_evi_25",
               "a1_evi_26"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -604,8 +604,8 @@
             "cited_evidence_ids": [
               "a1_evi_28"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -641,8 +641,8 @@
             "cited_evidence_ids": [
               "a1_evi_29"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -665,8 +665,8 @@
             "cited_evidence_ids": [
               "a1_evi_30"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -728,8 +728,8 @@
             "cited_evidence_ids": [
               "a1_evi_34"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -752,8 +752,8 @@
             "cited_evidence_ids": [
               "a1_evi_03"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -776,8 +776,8 @@
             "cited_evidence_ids": [
               "a1_evi_33"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -835,8 +835,8 @@
           "a2_evi_09",
           "a2_evi_12"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "blood",
@@ -852,8 +852,8 @@
           "a2_evi_12",
           "a2_evi_14"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "bone marrow",
@@ -869,8 +869,8 @@
           "a2_evi_03",
           "a2_evi_04"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "bone marrow",
@@ -887,8 +887,8 @@
         "cited_evidence_ids": [
           "a2_evi_23"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "lung",
@@ -920,8 +920,8 @@
           "a2_evi_10",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "tissue": "liver",
@@ -934,8 +934,8 @@
         "cited_evidence_ids": [
           "a2_evi_17"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "retinal organoid",
@@ -950,8 +950,8 @@
         "cited_evidence_ids": [
           "a2_evi_25"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "testis (seminiferous tubules)",
@@ -964,8 +964,8 @@
         "cited_evidence_ids": [
           "a2_evi_26"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "ovary",
@@ -978,8 +978,8 @@
         "cited_evidence_ids": [
           "a2_evi_27"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_types": [
@@ -996,8 +996,8 @@
           "a2_evi_15",
           "a2_evi_16"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "T cells",
@@ -1011,8 +1011,8 @@
           "a2_evi_06",
           "a2_evi_14"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "naive T cells",
@@ -1023,8 +1023,8 @@
         "cited_evidence_ids": [
           "a2_evi_06"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "memory T cells",
@@ -1035,8 +1035,8 @@
         "cited_evidence_ids": [
           "a2_evi_06"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "regulatory T cells (Tregs)",
@@ -1047,8 +1047,8 @@
         "cited_evidence_ids": [
           "a2_evi_06"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "CD8+ T cells",
@@ -1061,8 +1061,8 @@
           "a2_evi_04",
           "a2_evi_05"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "CD4+ T cells",
@@ -1073,8 +1073,8 @@
         "cited_evidence_ids": [
           "a2_evi_05"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "monocytes",
@@ -1090,8 +1090,8 @@
           "a2_evi_08",
           "a2_evi_09"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "dendritic cells",
@@ -1102,8 +1102,8 @@
         "cited_evidence_ids": [
           "a2_evi_02"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "M2 macrophages",
@@ -1115,8 +1115,8 @@
           "a2_evi_03",
           "a2_evi_04"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "alveolar macrophages",
@@ -1141,8 +1141,8 @@
         "cited_evidence_ids": [
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "cell_type": "leukocytes",
@@ -1153,8 +1153,8 @@
         "cited_evidence_ids": [
           "a2_evi_12"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "B lymphocytes",
@@ -1166,8 +1166,8 @@
           "a2_evi_15",
           "a2_evi_16"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "hepatocytes",
@@ -1179,8 +1179,8 @@
           "a2_evi_17",
           "a2_evi_18"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "AML blasts",
@@ -1193,8 +1193,8 @@
           "a2_evi_21",
           "a2_evi_22"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "hematogones (normal B-cell precursors)",
@@ -1205,8 +1205,8 @@
         "cited_evidence_ids": [
           "a2_evi_20"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "leukemia stem cells (LSCs)",
@@ -1217,8 +1217,8 @@
         "cited_evidence_ids": [
           "a2_evi_23"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "photoreceptor precursors",
@@ -1230,8 +1230,8 @@
           "a2_evi_24",
           "a2_evi_25"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "germ cells",
@@ -1242,8 +1242,8 @@
         "cited_evidence_ids": [
           "a2_evi_26"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "ovarian cancer cells",
@@ -1254,8 +1254,8 @@
         "cited_evidence_ids": [
           "a2_evi_27"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "glioblastoma cells",
@@ -1266,8 +1266,8 @@
         "cited_evidence_ids": [
           "a2_evi_28"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_states": [],
@@ -1324,8 +1324,8 @@
         "cited_evidence_ids": [
           "a2_evi_01"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "dual_localization",
@@ -1341,8 +1341,8 @@
           "a2_evi_15",
           "a2_evi_16"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "cell_state_induced",
@@ -1357,8 +1357,8 @@
         "cited_evidence_ids": [
           "a2_evi_07"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "cell_state_induced",
@@ -1373,8 +1373,8 @@
         "cited_evidence_ids": [
           "a2_evi_08"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "cell_state_induced",
@@ -1389,8 +1389,8 @@
         "cited_evidence_ids": [
           "a2_evi_06"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1408,8 +1408,8 @@
           "a2_evi_22",
           "a2_evi_23"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "stress_induced",
@@ -1424,8 +1424,8 @@
         "cited_evidence_ids": [
           "a2_evi_28"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1459,8 +1459,8 @@
           "a2_evi_24",
           "a2_evi_25"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "post_translational_dependent",
@@ -1477,8 +1477,8 @@
           "a2_evi_15",
           "a2_evi_16"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ]
   },

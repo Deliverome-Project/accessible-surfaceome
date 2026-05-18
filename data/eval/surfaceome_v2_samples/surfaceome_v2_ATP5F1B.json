@@ -274,8 +274,8 @@
             "cited_evidence_ids": [
               "a1_evi_10"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "other",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -309,8 +309,8 @@
           "a2_evi_01",
           "a2_evi_02"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "skeletal muscle",
@@ -322,8 +322,8 @@
           "a2_evi_01",
           "a2_evi_02"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "liver",
@@ -335,8 +335,8 @@
           "a2_evi_01",
           "a2_evi_02"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "kidney",
@@ -348,8 +348,8 @@
           "a2_evi_01",
           "a2_evi_02"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "brain",
@@ -364,8 +364,8 @@
         "cited_evidence_ids": [
           "a2_evi_05"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "tissue": "motor neurons (iPSC-derived)",
@@ -381,8 +381,8 @@
         "cited_evidence_ids": [
           "a2_evi_06"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_types": [
@@ -393,8 +393,8 @@
         "cited_evidence_ids": [
           "a2_evi_04"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "other",
+        "species_inferred": true
       },
       {
         "cell_type": "neurons",
@@ -405,8 +405,8 @@
         "cited_evidence_ids": [
           "a2_evi_05"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "cell_type": "motor neurons",
@@ -415,8 +415,8 @@
         "cited_evidence_ids": [
           "a2_evi_06"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_states": [],
@@ -466,8 +466,8 @@
         "cited_evidence_ids": [
           "a2_evi_04"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "other",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -482,8 +482,8 @@
         "cited_evidence_ids": [
           "a2_evi_05"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       }
     ]
   },

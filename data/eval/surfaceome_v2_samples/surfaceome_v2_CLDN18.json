@@ -91,8 +91,8 @@
             "cited_evidence_ids": [
               "a1_evi_01"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -128,8 +128,8 @@
             "cited_evidence_ids": [
               "a1_evi_02"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -177,8 +177,8 @@
             "cited_evidence_ids": [
               "a1_evi_03"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -214,8 +214,8 @@
             "cited_evidence_ids": [
               "a1_evi_04"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -251,8 +251,8 @@
             "cited_evidence_ids": [
               "a1_evi_07"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -290,8 +290,8 @@
             "cited_evidence_ids": [
               "a1_evi_08"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "Gastric/gastroesophageal junction adenocarcinoma; clinical trial eligibility required \u226575% tumor cells with moderate-to-strong membranous CLDN18 IHC staining (SPOTLIGHT and GLOW trials)",
@@ -300,8 +300,8 @@
             "cited_evidence_ids": [
               "a1_evi_10"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -379,8 +379,8 @@
               "a1_evi_13",
               "a1_evi_14"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -417,8 +417,8 @@
             "cited_evidence_ids": [
               "a1_evi_18"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "PATU8988S (pancreatic cancer) xenograft; day 6 mean tumor uptake: 36.6 \u00b1 10.1 %ID/g",
@@ -427,8 +427,8 @@
             "cited_evidence_ids": [
               "a1_evi_18"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "HUPT-4 (pancreatic cancer) xenograft; day 6 mean tumor uptake: 16.48 \u00b1 4.7 %ID/g",
@@ -437,8 +437,8 @@
             "cited_evidence_ids": [
               "a1_evi_18"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -475,8 +475,8 @@
             "cited_evidence_ids": [
               "a1_evi_20"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "Normal gastric mucosa; on-target off-tumor recognition of CLDN18.2 by CAR-T cells causing gastrointestinal adverse events in early-phase trials, confirming surface accessibility in normal epithelium",
@@ -485,8 +485,8 @@
             "cited_evidence_ids": [
               "a1_evi_21"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -523,8 +523,8 @@
             "cited_evidence_ids": [
               "a1_evi_22"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -625,8 +625,8 @@
           "a2_evi_07",
           "a2_evi_08"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "stomach",
@@ -639,8 +639,8 @@
           "a2_evi_15",
           "a2_evi_16"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "lung",
@@ -652,8 +652,8 @@
           "a2_evi_12",
           "a2_evi_14"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "lung (mucinous adenocarcinoma)",
@@ -666,8 +666,8 @@
           "a2_evi_18",
           "a2_evi_26"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "pancreas",
@@ -684,8 +684,8 @@
           "a2_evi_24",
           "a2_evi_26"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "pancreas",
@@ -697,8 +697,8 @@
           "a2_evi_23",
           "a2_evi_24"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "esophagus",
@@ -710,8 +710,8 @@
           "a2_evi_10",
           "a2_evi_26"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "esophagus (gastroesophageal junction)",
@@ -722,8 +722,8 @@
         "cited_evidence_ids": [
           "a2_evi_29"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "gastroesophageal junction (GEJ)",
@@ -734,8 +734,8 @@
         "cited_evidence_ids": [
           "a2_evi_30"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "ovary",
@@ -748,8 +748,8 @@
           "a2_evi_25",
           "a2_evi_26"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "biliary tract",
@@ -763,8 +763,8 @@
           "a2_evi_18",
           "a2_evi_21"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "bile duct",
@@ -775,8 +775,8 @@
         "cited_evidence_ids": [
           "a2_evi_19"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "small intestine",
@@ -788,8 +788,8 @@
           "a2_evi_15",
           "a2_evi_16"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "colorectum",
@@ -800,8 +800,8 @@
         "cited_evidence_ids": [
           "a2_evi_18"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "cervix",
@@ -812,8 +812,8 @@
         "cited_evidence_ids": [
           "a2_evi_20"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "duodenum",
@@ -824,8 +824,8 @@
         "cited_evidence_ids": [
           "a2_evi_23"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "liver",
@@ -836,8 +836,8 @@
         "cited_evidence_ids": [
           "a2_evi_23"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_types": [
@@ -861,8 +861,8 @@
           "a2_evi_01",
           "a2_evi_03"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "cell_type": "gastric epithelial cells (gastrocytes)",
@@ -875,8 +875,8 @@
           "a2_evi_08",
           "a2_evi_09"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "alveolar epithelial cells (pneumocytes)",
@@ -888,8 +888,8 @@
           "a2_evi_11",
           "a2_evi_12"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "differentiated gastric epithelial cells",
@@ -900,8 +900,8 @@
         "cited_evidence_ids": [
           "a2_evi_08"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_states": [],
@@ -996,8 +996,8 @@
           "a2_evi_07",
           "a2_evi_08"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "tissue_restricted_surface",
@@ -1031,8 +1031,8 @@
         "cited_evidence_ids": [
           "a2_evi_08"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1049,8 +1049,8 @@
           "a2_evi_15",
           "a2_evi_16"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1069,8 +1069,8 @@
           "a2_evi_25",
           "a2_evi_26"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1088,8 +1088,8 @@
           "a2_evi_24",
           "a2_evi_27"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1106,8 +1106,8 @@
           "a2_evi_19",
           "a2_evi_21"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1122,8 +1122,8 @@
         "cited_evidence_ids": [
           "a2_evi_20"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1140,8 +1140,8 @@
           "a2_evi_13",
           "a2_evi_14"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -1157,8 +1157,8 @@
           "a2_evi_29",
           "a2_evi_30"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "other",
@@ -1173,8 +1173,8 @@
         "cited_evidence_ids": [
           "a2_evi_28"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ]
   },

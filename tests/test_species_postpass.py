@@ -18,14 +18,32 @@ from accessible_surfaceome.agents.surfaceome_v2.species_postpass import (
 )
 from accessible_surfaceome.tools._shared.models import (
     AccessibilityModulationObservation,
+    AssayContext,
     BiologicalContext,
     CellTypeContextV1,
+    Evidence,
     ExpressionObservation,
     MethodObservation,
+    Species,
     SubcellularLocalization,
     SurfaceEvidence,
     TissueContext,
 )
+
+
+def _evidence(eid: str, species: Species) -> Evidence:
+    return Evidence(
+        evidence_id=eid,
+        claim="test claim",
+        claim_type="surface_expression",
+        direction="supports",
+        evidence_type="surface_biotinylation",
+        evidence_tier="primary",
+        confidence="moderate",
+        assay_context=AssayContext(species=species),
+        spans=[],
+        entailment_verified=False,
+    )
 
 
 def _bio(
@@ -149,3 +167,120 @@ def test_post_pass_skips_ambiguous_multi_species_row() -> None:
     stats = apply_species_post_pass(biological_context=bio, surface_evidence=_surf())
     assert stats.cell_types_filled == 0
     assert bio.cell_types[0].species == "unspecified"
+
+
+def test_cite_aggregation_fills_abstract_row_when_all_cites_agree() -> None:
+    # "bone" doesn't contain a cell-line token, but its cited evidence
+    # (a single mouse-tagged paper) populates assay_context.species=mouse
+    # → cite-aggregation pass fills the row.
+    bio = _bio(
+        tissues=[
+            TissueContext(
+                tissue="bone",
+                present="moderate",
+                disease_context="normal",
+                cell_types=["osteoblast"],
+                cited_evidence_ids=["e_mouse_1"],
+            ),
+        ]
+    )
+    evidence = [_evidence("e_mouse_1", "mouse")]
+    stats = apply_species_post_pass(
+        biological_context=bio, surface_evidence=_surf(), evidence=evidence
+    )
+    assert stats.tissues_filled == 1
+    assert stats.filled_by_cite_aggregation == 1
+    assert stats.filled_by_gazetteer == 0
+    assert bio.tissues[0].species == "mouse"
+    assert bio.tissues[0].species_inferred is True
+
+
+def test_cite_aggregation_skips_row_when_cites_disagree() -> None:
+    # Two cited evidence rows with different species → ambiguous, leave alone.
+    bio = _bio(
+        tissues=[
+            TissueContext(
+                tissue="bone",
+                present="moderate",
+                disease_context="normal",
+                cited_evidence_ids=["e_mouse_1", "e_human_1"],
+            ),
+        ]
+    )
+    evidence = [
+        _evidence("e_mouse_1", "mouse"),
+        _evidence("e_human_1", "human"),
+    ]
+    stats = apply_species_post_pass(
+        biological_context=bio, surface_evidence=_surf(), evidence=evidence
+    )
+    assert stats.tissues_filled == 0
+    assert bio.tissues[0].species == "unspecified"
+
+
+def test_cite_aggregation_ignores_unspecified_cites() -> None:
+    # Two cited rows, one unspecified + one mouse → the unspecified gets
+    # filtered, mouse wins, row fills with mouse.
+    bio = _bio(
+        tissues=[
+            TissueContext(
+                tissue="bone",
+                present="moderate",
+                disease_context="normal",
+                cited_evidence_ids=["e_unspec_1", "e_mouse_1"],
+            ),
+        ]
+    )
+    evidence = [
+        _evidence("e_unspec_1", "unspecified"),
+        _evidence("e_mouse_1", "mouse"),
+    ]
+    stats = apply_species_post_pass(
+        biological_context=bio, surface_evidence=_surf(), evidence=evidence
+    )
+    assert stats.tissues_filled == 1
+    assert bio.tissues[0].species == "mouse"
+
+
+def test_cite_aggregation_skipped_when_evidence_is_none() -> None:
+    # No evidence arg → pass 2 doesn't run, row stays unspecified.
+    bio = _bio(
+        tissues=[
+            TissueContext(
+                tissue="bone",
+                present="moderate",
+                disease_context="normal",
+                cited_evidence_ids=["e_mouse_1"],
+            ),
+        ]
+    )
+    stats = apply_species_post_pass(
+        biological_context=bio, surface_evidence=_surf(), evidence=None
+    )
+    assert stats.tissues_filled == 0
+    assert bio.tissues[0].species == "unspecified"
+
+
+def test_gazetteer_pass_runs_before_cite_aggregation() -> None:
+    # Row has a cell-line token in cell_types AND cited evidence with
+    # a different species. The gazetteer pass fires first; pass 2
+    # skips the row because species is no longer unspecified.
+    bio = _bio(
+        tissues=[
+            TissueContext(
+                tissue="bone",
+                present="moderate",
+                disease_context="normal",
+                cell_types=["MC3T3-E1 osteoblast"],
+                cited_evidence_ids=["e_human_1"],  # different species
+            ),
+        ]
+    )
+    evidence = [_evidence("e_human_1", "human")]
+    stats = apply_species_post_pass(
+        biological_context=bio, surface_evidence=_surf(), evidence=evidence
+    )
+    assert stats.tissues_filled == 1
+    assert stats.filled_by_gazetteer == 1
+    assert stats.filled_by_cite_aggregation == 0
+    assert bio.tissues[0].species == "mouse"  # gazetteer won

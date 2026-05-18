@@ -86,6 +86,45 @@ def _obs_haystack(row: dict[str, Any]) -> str:
     return row.get("context", "")
 
 
+def _aggregate_cited_species(
+    cited_ids: list[str], evidence_by_id: dict[str, dict[str, Any]]
+) -> str | None:
+    """Pass-2 helper: aggregate ``species`` across cited evidence rows.
+
+    Returns the unique non-unspecified species if all cited rows agree,
+    otherwise ``None``. Same single-value-set policy as the in-orchestrator
+    post-pass.
+    """
+    seen: set[str] = set()
+    for eid in cited_ids:
+        e = evidence_by_id.get(eid)
+        if not e:
+            continue
+        sp = (e.get("assay_context") or {}).get("species") or "unspecified"
+        if sp != "unspecified":
+            seen.add(sp)
+    if len(seen) == 1:
+        return next(iter(seen))
+    return None
+
+
+def _fill_row_from_cites(
+    row: dict[str, Any], evidence_by_id: dict[str, dict[str, Any]]
+) -> bool:
+    """Pass-2 fill on rows still unspecified after the gazetteer pass."""
+    current = row.get("species") or "unspecified"
+    if current != "unspecified":
+        return False
+    inferred = _aggregate_cited_species(
+        row.get("cited_evidence_ids") or [], evidence_by_id
+    )
+    if inferred is None:
+        return False
+    row["species"] = inferred
+    row["species_inferred"] = True
+    return True
+
+
 def process_one(json_path: Path) -> tuple[str, dict[str, int]]:
     payload = json.loads(json_path.read_text())
     payload["schema_version"] = "1.1.0"
@@ -95,22 +134,55 @@ def process_one(json_path: Path) -> tuple[str, dict[str, int]]:
         "cell_types_filled": 0,
         "modulation_filled": 0,
         "expression_obs_filled": 0,
+        "filled_by_gazetteer": 0,
+        "filled_by_cite_aggregation": 0,
     }
     bc = payload.get("biological_context") or {}
+
+    # ---- Pass 1: cell-line gazetteer ----
     for t in bc.get("tissues") or []:
         if _fill_row(t, _tissue_haystack(t)):
             stats["tissues_filled"] += 1
+            stats["filled_by_gazetteer"] += 1
     for c in bc.get("cell_types") or []:
         if _fill_row(c, _cell_type_haystack(c)):
             stats["cell_types_filled"] += 1
+            stats["filled_by_gazetteer"] += 1
     for m in bc.get("accessibility_modulation") or []:
         if _fill_row(m, _mod_haystack(m)):
             stats["modulation_filled"] += 1
+            stats["filled_by_gazetteer"] += 1
     for method in (payload.get("surface_evidence") or {}).get("methods") or []:
         for obs in method.get("expression_observations") or []:
             if _fill_row(obs, _obs_haystack(obs)):
                 stats["expression_obs_filled"] += 1
-    stats["total_filled"] = sum(stats.values())
+                stats["filled_by_gazetteer"] += 1
+
+    # ---- Pass 2: cite-aggregation ----
+    evidence_by_id = {
+        e["evidence_id"]: e for e in (payload.get("evidence") or [])
+    }
+    for t in bc.get("tissues") or []:
+        if _fill_row_from_cites(t, evidence_by_id):
+            stats["tissues_filled"] += 1
+            stats["filled_by_cite_aggregation"] += 1
+    for c in bc.get("cell_types") or []:
+        if _fill_row_from_cites(c, evidence_by_id):
+            stats["cell_types_filled"] += 1
+            stats["filled_by_cite_aggregation"] += 1
+    for m in bc.get("accessibility_modulation") or []:
+        if _fill_row_from_cites(m, evidence_by_id):
+            stats["modulation_filled"] += 1
+            stats["filled_by_cite_aggregation"] += 1
+    for method in (payload.get("surface_evidence") or {}).get("methods") or []:
+        for obs in method.get("expression_observations") or []:
+            if _fill_row_from_cites(obs, evidence_by_id):
+                stats["expression_obs_filled"] += 1
+                stats["filled_by_cite_aggregation"] += 1
+
+    stats["total_filled"] = (
+        stats["filled_by_gazetteer"] + stats["filled_by_cite_aggregation"]
+    )
 
     json_path.write_text(json.dumps(payload, indent=2) + "\n")
     html_path = json_path.with_suffix(".html")
@@ -128,9 +200,10 @@ def main() -> int:
     print()
     print(
         f"{'gene':<10s} {'tissues':>8s} {'cell_types':>11s} "
-        f"{'modulation':>11s} {'expr_obs':>9s} {'total':>6s}"
+        f"{'modulation':>11s} {'expr_obs':>9s} {'gazet':>6s} {'cite':>5s} "
+        f"{'total':>6s}"
     )
-    print("-" * 60)
+    print("-" * 72)
     grand_total = 0
     for json_path in samples:
         try:
@@ -144,10 +217,15 @@ def main() -> int:
             f"{stats['cell_types_filled']:>11d} "
             f"{stats['modulation_filled']:>11d} "
             f"{stats['expression_obs_filled']:>9d} "
+            f"{stats['filled_by_gazetteer']:>6d} "
+            f"{stats['filled_by_cite_aggregation']:>5d} "
             f"{stats['total_filled']:>6d}"
         )
-    print("-" * 60)
-    print(f"{'TOTAL':<10s} {'':>8s} {'':>11s} {'':>11s} {'':>9s} {grand_total:>6d}")
+    print("-" * 72)
+    print(
+        f"{'TOTAL':<10s} {'':>8s} {'':>11s} {'':>11s} {'':>9s} {'':>6s} {'':>5s} "
+        f"{grand_total:>6d}"
+    )
     return 0
 
 

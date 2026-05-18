@@ -89,8 +89,8 @@
             "cited_evidence_ids": [
               "a1_evi_06"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -178,8 +178,8 @@
             "cited_evidence_ids": [
               "a1_evi_10"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -253,8 +253,8 @@
               "a1_evi_13",
               "a1_evi_14"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -317,8 +317,8 @@
             "cited_evidence_ids": [
               "a1_evi_16"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "mouse",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -464,8 +464,8 @@
             "cited_evidence_ids": [
               "a1_evi_19"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "mouse",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -502,8 +502,8 @@
               "a1_evi_01",
               "a1_evi_03"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "Mouse xenograft tumor models: extracellular membrane-associated Src (eSrc) found in primary tumors; anti-Src antibody-based therapies mediate tumor cell killing in xenograft models",
@@ -512,8 +512,8 @@
             "cited_evidence_ids": [
               "a1_evi_04"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "Cancer cells (secondary source/commentary): Src exposed at outer surface via exocytosis, poised for therapeutic targeting",
@@ -522,8 +522,8 @@
             "cited_evidence_ids": [
               "a1_evi_05"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -570,8 +570,8 @@
         "cited_evidence_ids": [
           "a2_evi_05"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "cartilage",
@@ -589,8 +589,8 @@
           "a2_evi_09",
           "a2_evi_10"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "other",
+        "species_inferred": true
       },
       {
         "tissue": "bone",
@@ -605,8 +605,8 @@
         "cited_evidence_ids": [
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "tissue": "thyroid",
@@ -619,8 +619,8 @@
         "cited_evidence_ids": [
           "a2_evi_13"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_types": [
@@ -637,8 +637,8 @@
           "a2_evi_06",
           "a2_evi_07"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "chondrocyte / chondrogenic cell",
@@ -651,8 +651,8 @@
           "a2_evi_09",
           "a2_evi_10"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "other",
+        "species_inferred": true
       },
       {
         "cell_type": "osteoblast",
@@ -664,8 +664,8 @@
           "a2_evi_11",
           "a2_evi_12"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "cell_type": "thyroid epithelial cell",
@@ -677,8 +677,8 @@
           "a2_evi_13",
           "a2_evi_14"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_states": [],
@@ -771,8 +771,8 @@
           "a2_evi_05",
           "a2_evi_06"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "lysosomal_exocytosis",
@@ -788,8 +788,8 @@
           "a2_evi_04",
           "a2_evi_07"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "dual_localization",
@@ -805,8 +805,8 @@
           "a2_evi_01",
           "a2_evi_02"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "developmental_stage",
@@ -823,8 +823,8 @@
           "a2_evi_09",
           "a2_evi_10"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "other",
+        "species_inferred": true
       },
       {
         "category": "cell_state_induced",

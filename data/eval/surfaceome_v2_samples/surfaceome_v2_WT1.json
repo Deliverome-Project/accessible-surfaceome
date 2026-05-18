@@ -70,8 +70,8 @@
             "cited_evidence_ids": [
               "a1_evi_01"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -107,8 +107,8 @@
             "cited_evidence_ids": [
               "a1_evi_02"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -156,8 +156,8 @@
             "cited_evidence_ids": [
               "a1_evi_03"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "NK-92 cells transduced with CAR-WT1; surface CAR expression required presence of human CD3 complex; FACS enrichment of CAR-WT1+ cells performed with or without surface CD3",
@@ -168,8 +168,8 @@
               "a1_evi_06",
               "a1_evi_07"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           },
           {
             "context": "CAR-WT1 T cells (primary human T cells engineered with CAR-WT1); surface CAR expression confirmed by F(ab')2 antibody flow cytometry",
@@ -178,8 +178,8 @@
             "cited_evidence_ids": [
               "a1_evi_05"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -208,8 +208,8 @@
               "a1_evi_10",
               "a1_evi_12"
             ],
-            "species": "unspecified",
-            "species_inferred": false
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -306,8 +306,8 @@
           "a2_evi_04",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "kidney glomerulus",
@@ -325,8 +325,8 @@
           "a2_evi_05",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "pancreas",
@@ -343,8 +343,8 @@
           "a2_evi_07",
           "a2_evi_08"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "tissue": "pancreas",
@@ -379,8 +379,8 @@
           "a2_evi_03",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "cap mesenchyme",
@@ -391,8 +391,8 @@
         "cited_evidence_ids": [
           "a2_evi_01"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "parietal epithelial cells",
@@ -407,8 +407,8 @@
           "a2_evi_05",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "tubular epithelial cells",
@@ -420,8 +420,8 @@
           "a2_evi_02",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "mesothelial cells",
@@ -434,8 +434,8 @@
           "a2_evi_06",
           "a2_evi_07"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "cell_type": "fibroblasts",
@@ -448,8 +448,8 @@
           "a2_evi_06",
           "a2_evi_08"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "cell_type": "cancer-associated fibroblasts (CAFs)",
@@ -473,8 +473,8 @@
         "cited_evidence_ids": [
           "a2_evi_10"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "mouse",
+        "species_inferred": true
       }
     ],
     "cell_states": [],
@@ -511,8 +511,8 @@
           "a2_evi_04",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "tissue_restricted_surface",
@@ -567,8 +567,8 @@
           "a2_evi_05",
           "a2_evi_11"
         ],
-        "species": "unspecified",
-        "species_inferred": false
+        "species": "human",
+        "species_inferred": true
       }
     ]
   },
