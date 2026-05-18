@@ -64,7 +64,7 @@ export function Shell({ children }: ShellProps) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 className={styles.brandMark}
-                src="/assets/provisional_logo.svg"
+                src="/assets/internalization_logo.svg"
                 alt=""
                 width={40}
                 height={40}
