@@ -89,6 +89,12 @@ section.block > h3 {
 .badge-gray { background: var(--gray-bg); color: var(--gray); }
 .badge-lavender { background: var(--lav-bg); color: var(--lav); }
 
+/* ---- Species counter (above tissue / cell-type / modulation tables) ---- */
+.species-counter {
+  font-size: 0.78rem; color: var(--fg-muted);
+  margin: 0.25rem 0 0.5rem 0; letter-spacing: 0.01em;
+}
+
 /* ---- Sub-grid (used in multiple sections) ---- */
 .sub-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -433,7 +439,7 @@ footer {
         <span class="badge badge-amber">claim: membrane_fraction_enriched</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Plasma membrane proteome purification identified 378 proteins including ATP synthase complex subunits (eATP synthase, including ATP5F1B); integrative spatial proteomics comparing mitochondrial and PM compartments</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Plasma membrane proteome purification identified 378 proteins including ATP synthase complex subunits (eATP synthase, including ATP5F1B); integrative spatial proteomics comparing mitochondrial and PM compartments</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></div>
     </div>
     
@@ -447,7 +453,7 @@ footer {
         <span class="badge badge-amber">claim: plasma_membrane_localized</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>ATP synthase beta subunit (ATP5F1B) identified in plasma membrane proteins enriched by biotinylated purification (cited prior study, PMC10113393 source)</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>ATP synthase beta subunit (ATP5F1B) identified in plasma membrane proteins enriched by biotinylated purification (cited prior study, PMC10113393 source)</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></div>
     </div>
     
@@ -461,7 +467,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-ATP synthase complex antibody</strong></div><div class='ab'><strong>control mouse IgG</strong> · x-react: Isotype control used as negative reference</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>eATP synthase cell surface expression analyzed via flow cytometry using antibodies for the ATP synthase complex or control mouse IgG; n=20 biological replicates, data as mean ± SD</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a></span></td></tr><tr><td>Prior studies demonstrated eATP synthase presence on cell surface of fixed cells using flow cytometry (cited as established prior evidence)</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>eATP synthase cell surface expression analyzed via flow cytometry using antibodies for the ATP synthase complex or control mouse IgG; n=20 biological replicates, data as mean ± SD</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a></span></td></tr><tr><td>Prior studies demonstrated eATP synthase presence on cell surface of fixed cells using flow cytometry (cited as established prior evidence)</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></div>
     </div>
     
@@ -475,7 +481,7 @@ footer {
         <span class="badge badge-amber">claim: plasma_membrane_localized</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-ATP synthase antibody (surface IF)</strong> · epitope: extracellular · validation: orthogonal_method (moderate) · x-react: Specificity supported by negative control (Cyclophilin D rarely detected at PM) and positive control (ANT detected at PM surface)</div><div class='ab'><strong>anti-Cyclophilin D antibody (negative control)</strong> · x-react: Used as mitochondria-only negative control in non-permeabilized IF; rarely detected at PM confirming assay specificity</div><div class='ab'><strong>anti-ANT (adenine nucleotide translocase) antibody (positive control)</strong> · validation: orthogonal_method (moderate) · x-react: Used as positive control; ANT known to reside at PM, detected on cell surface of non-permeabilized cells</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Non-permeabilized IF of eATP synthase (ATP5F1B-containing complex) showing surface staining pattern distinct from mitochondrial ATP synthase; Cyclophilin D (mitochondria-only) rarely detected at PM as negative control; ANT detected at PM as positive control</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Non-permeabilized IF of eATP synthase (ATP5F1B-containing complex) showing surface staining pattern distinct from mitochondrial ATP synthase; Cyclophilin D (mitochondria-only) rarely detected at PM as negative control; ANT detected at PM as positive control</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a></span></div>
     </div>
     
@@ -489,7 +495,7 @@ footer {
         <span class="badge badge-amber">claim: plasma_membrane_localized</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Super-resolution imaging and real-time mitochondria-PM fusion assay in live cells demonstrating mitochondrial membrane fusion to plasma membrane, mechanistically explaining ATP synthase (ATP5F1B) anchoring at cell surface</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Super-resolution imaging and real-time mitochondria-PM fusion assay in live cells demonstrating mitochondrial membrane fusion to plasma membrane, mechanistically explaining ATP synthase (ATP5F1B) anchoring at cell surface</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></div>
     </div>
     
@@ -503,7 +509,7 @@ footer {
         <span class="badge badge-amber">claim: plasma_membrane_localized</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Mass spectrometry-based surface proteome analysis with cell-surface biotinylation enrichment applied to bovine spermatozoa; ATP5F1B detected as a surface protein in sperm</td><td><span class="badge badge-gray">primary_human_cell</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Mass spectrometry-based surface proteome analysis with cell-surface biotinylation enrichment applied to bovine spermatozoa; ATP5F1B detected as a surface protein in sperm</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_cell</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></div>
     </div>
     
@@ -535,10 +541,12 @@ footer {
       <h2>Section 2 — Biological context</h2>
 
       <h3>Tissues (6)</h3>
-      <table class='compact'><thead><tr><th>tissue</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>heart</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>skeletal muscle</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>liver</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>kidney</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>brain</strong></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>neurons</td><td class='small'>ischemia/reperfusion injury</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a></span></td></tr><tr><td><strong>motor neurons (iPSC-derived)</strong></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>motor neurons</td><td class='small'>hypermetabolism, MT-ATP6 mutation</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 6</div>
+      <table class='compact'><thead><tr><th>tissue</th><th>species</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>heart</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>skeletal muscle</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>liver</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>kidney</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a></span></td></tr><tr><td><strong>brain</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>neurons</td><td class='small'>ischemia/reperfusion injury</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a></span></td></tr><tr><td><strong>motor neurons (iPSC-derived)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>motor neurons</td><td class='small'>hypermetabolism, MT-ATP6 mutation</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a></span></td></tr></tbody></table>
 
       <h3>Cell types (3)</h3>
-      <table class='compact'><thead><tr><th>cell type</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>spermatozoa</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></td></tr><tr><td><strong>neurons</strong></td><td><code>—</code></td><td class='small'>brain</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a></span></td></tr><tr><td><strong>motor neurons</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 3</div>
+      <table class='compact'><thead><tr><th>cell type</th><th>species</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>spermatozoa</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></td></tr><tr><td><strong>neurons</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>brain</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a></span></td></tr><tr><td><strong>motor neurons</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a></span></td></tr></tbody></table>
 
 
 
@@ -564,10 +572,12 @@ footer {
       <em class='muted'>no anatomical-accessibility observations</em>
 
       <h3>Accessibility modulation (3)</h3>
+      <div class='species-counter'>Unspecified: 3</div>
       
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-amber">dual_localization</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-amber">partner: mitochondrion</span>
       </div>
       <div class="mod-states">
@@ -591,6 +601,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-blue">tissue_restricted_surface</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-blue">lineage: germline_reproductive</span>
       </div>
       <div class="mod-states">
@@ -614,6 +625,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: other</span>
       </div>
       <div class="mod-states">
@@ -958,7 +970,7 @@ footer {
     </section>
     
   <footer>
-    surfaceome_v2 QC viewer · schema 1.0.0 ·
+    surfaceome_v2 QC viewer · schema 1.1.0 ·
     17 evidence rows
   </footer>
 </main>

@@ -85,7 +85,7 @@ from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTe
 logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"
-SCHEMA_VERSION_LITERAL = "1.0.0"
+SCHEMA_VERSION_LITERAL = "1.1.0"
 RUNS_DIR = Path(".runs")
 
 # Maximum block-builders to dispatch concurrently. There are 9 builders
@@ -401,6 +401,23 @@ def _annotate(
         anatomical_accessibility=outputs["anatomical_accessibility"],
         accessibility_modulation=outputs["accessibility_modulation"],
     )
+
+    # ---- step 3.5: deterministic species post-pass ------------------------
+    # Block-builders default ``species`` to "unspecified". Scan each row's
+    # free-text fields for known cell-line tokens (MC3T3-E1 → mouse, U251 MG
+    # → human, FRTL-5 → rat) and fill species deterministically when there's
+    # no ambiguity. Doesn't override anything the builders set explicitly.
+    # Quiet on no-op; logs one INFO line summarizing fill counts when
+    # something landed.
+    with timing.step("species_post_pass", phase="post"):
+        from accessible_surfaceome.agents.surfaceome_v2.species_postpass import (
+            apply_species_post_pass,
+        )
+
+        apply_species_post_pass(
+            biological_context=biological_context,
+            surface_evidence=surface_evidence,
+        )
 
     # ---- step 4: wrap into per-agent drafts --------------------------------
     # Per-agent validators (_check_citations_resolve) enforce that every

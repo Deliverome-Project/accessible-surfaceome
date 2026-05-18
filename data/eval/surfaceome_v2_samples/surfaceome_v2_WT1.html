@@ -89,6 +89,12 @@ section.block > h3 {
 .badge-gray { background: var(--gray-bg); color: var(--gray); }
 .badge-lavender { background: var(--lav-bg); color: var(--lav); }
 
+/* ---- Species counter (above tissue / cell-type / modulation tables) ---- */
+.species-counter {
+  font-size: 0.78rem; color: var(--fg-muted);
+  margin: 0.25rem 0 0.5rem 0; letter-spacing: 0.01em;
+}
+
 /* ---- Sub-grid (used in multiple sections) ---- */
 .sub-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -433,7 +439,7 @@ footer {
         <span class="badge badge-amber">claim: unclear</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Tumor cells (unspecified line) — endogenous WT1 peptide/MHC-I complex density below flow cytometry detection threshold (~&lt;100 sites per cell)</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-gray">absent</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Tumor cells (unspecified line) — endogenous WT1 peptide/MHC-I complex density below flow cytometry detection threshold (~&lt;100 sites per cell)</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-gray">absent</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></div>
     </div>
     
@@ -447,7 +453,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>ESK3</strong> · monoclonal · epitope: conformational · x-react: TCR-mimic antibody recognizing WT1 peptide/MHC-I complex (not WT1 protein directly); mouse IgG1 isotype. Targets peptide-MHC surface complex, not intracellular WT1.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>T2 cells (TAP-deficient APCs) pulsed with WT1 wild-type VLD or mutated peptides; binding of ESK3 antibody to surface peptide/MHC-I complexes measured by flow cytometry</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>T2 cells (TAP-deficient APCs) pulsed with WT1 wild-type VLD or mutated peptides; binding of ESK3 antibody to surface peptide/MHC-I complexes measured by flow cytometry</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></div>
     </div>
     
@@ -461,7 +467,7 @@ footer {
         <span class="badge badge-amber">claim: unclear</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-HLA-A2</strong> · epitope: extracellular</div><div class='ab'><strong>anti-CAR-WT1 (F(ab&#x27;)2)</strong> · epitope: extracellular · x-react: Detects surface-expressed CAR construct targeting WT1 peptide/MHC-I; not detecting WT1 protein itself.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>NK-92 cells confirmed for surface HLA-A2 expression by flow cytometry; used as platform for CAR-WT1 engineering</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr><tr><td>NK-92 cells transduced with CAR-WT1; surface CAR expression required presence of human CD3 complex; FACS enrichment of CAR-WT1+ cells performed with or without surface CD3</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></td></tr><tr><td>CAR-WT1 T cells (primary human T cells engineered with CAR-WT1); surface CAR expression confirmed by F(ab&#x27;)2 antibody flow cytometry</td><td><span class="badge badge-gray">primary_human_cell</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>NK-92 cells confirmed for surface HLA-A2 expression by flow cytometry; used as platform for CAR-WT1 engineering</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr><tr><td>NK-92 cells transduced with CAR-WT1; surface CAR expression required presence of human CD3 complex; FACS enrichment of CAR-WT1+ cells performed with or without surface CD3</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></td></tr><tr><td>CAR-WT1 T cells (primary human T cells engineered with CAR-WT1); surface CAR expression confirmed by F(ab&#x27;)2 antibody flow cytometry</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_cell</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></div>
     </div>
     
@@ -475,7 +481,7 @@ footer {
         <span class="badge badge-amber">claim: unclear</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>AML patient blasts — surface antigen candidates including WT1-related targets identified by mining flow cytometry and mass spectrometry surfaceome data from large AML cohort; WT1 referenced as candidate therapeutic antigen. Genetic alterations in AML alter blast surfaceome; surface antigen abundance relevant for CAR-T/ADC design.</td><td><span class="badge badge-gray">patient_sample</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>AML patient blasts — surface antigen candidates including WT1-related targets identified by mining flow cytometry and mass spectrometry surfaceome data from large AML cohort; WT1 referenced as candidate therapeutic antigen. Genetic alterations in AML alter blast surfaceome; surface antigen abundance relevant for CAR-T/ADC design.</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">patient_sample</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a></span></div>
     </div>
     
@@ -532,10 +538,12 @@ footer {
       <h2>Section 2 — Biological context</h2>
 
       <h3>Tissues (4)</h3>
-      <table class='compact'><thead><tr><th>tissue</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>kidney glomerulus</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>mature podocytes, parietal epithelial cells (PEC) and progenitors, cap mesenchyme, primordial podocytes</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>kidney glomerulus</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>parietal epithelial cells (activated), glomerular cells</td><td class='small'>activated into spindle cell crescents (crescentic glomerulonephritis), podocyte hyperplasia (collapsing glomerulopathy)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>mesothelial cells, fibroblasts, fibroblast-like cells (PDGFRα/β+)</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'>cancer-associated fibroblasts (CAFs), inflammatory cancer-associated fibroblasts (iCAFs)</td><td class='small'>inflammatory/activated CAF state</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 4</div>
+      <table class='compact'><thead><tr><th>tissue</th><th>species</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>kidney glomerulus</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>mature podocytes, parietal epithelial cells (PEC) and progenitors, cap mesenchyme, primordial podocytes</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>kidney glomerulus</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'>parietal epithelial cells (activated), glomerular cells</td><td class='small'>activated into spindle cell crescents (crescentic glomerulonephritis), podocyte hyperplasia (collapsing glomerulopathy)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>mesothelial cells, fibroblasts, fibroblast-like cells (PDGFRα/β+)</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'>cancer-associated fibroblasts (CAFs), inflammatory cancer-associated fibroblasts (iCAFs)</td><td class='small'>inflammatory/activated CAF state</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
 
       <h3>Cell types (8)</h3>
-      <table class='compact'><thead><tr><th>cell type</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>podocytes</strong></td><td><code>—</code></td><td class='small'>kidney glomerulus, kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>cap mesenchyme</strong></td><td><code>—</code></td><td class='small'>kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a></span></td></tr><tr><td><strong>parietal epithelial cells</strong></td><td><code>—</code></td><td class='small'>kidney glomerulus</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>tubular epithelial cells</strong></td><td><code>—</code></td><td class='small'>kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>mesothelial cells</strong></td><td><code>—</code></td><td class='small'>pancreas, pancreas (mesothelial edge)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a></span></td></tr><tr><td><strong>fibroblasts</strong></td><td><code>—</code></td><td class='small'>pancreas, pancreas (stromal edge)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>cancer-associated fibroblasts (CAFs)</strong></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr><tr><td><strong>inflammatory cancer-associated fibroblasts (iCAFs)</strong></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 8</div>
+      <table class='compact'><thead><tr><th>cell type</th><th>species</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>podocytes</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>kidney glomerulus, kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>cap mesenchyme</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a></span></td></tr><tr><td><strong>parietal epithelial cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>kidney glomerulus</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>tubular epithelial cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>kidney</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>mesothelial cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>pancreas, pancreas (mesothelial edge)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a></span></td></tr><tr><td><strong>fibroblasts</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>pancreas, pancreas (stromal edge)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>cancer-associated fibroblasts (CAFs)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr><tr><td><strong>inflammatory cancer-associated fibroblasts (iCAFs)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
 
 
 
@@ -561,10 +569,12 @@ footer {
       <em class='muted'>no anatomical-accessibility observations</em>
 
       <h3>Accessibility modulation (4)</h3>
+      <div class='species-counter'>Unspecified: 4</div>
       
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-blue">developmental_stage</span>
+        <span class="badge badge-gray">sp?</span>
         
       </div>
       <div class="mod-states">
@@ -588,6 +598,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-blue">tissue_restricted_surface</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-blue">lineage: epithelial</span>
       </div>
       <div class="mod-states">
@@ -611,6 +622,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -634,6 +646,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: immune_activation</span>
       </div>
       <div class="mod-states">
@@ -1071,7 +1084,7 @@ Folate Receptor (FR), Wilm Tumor 1 (WT1), Leukocytic immunoglobulin-like recepto
     </section>
     
   <footer>
-    surfaceome_v2 QC viewer · schema 1.0.0 ·
+    surfaceome_v2 QC viewer · schema 1.1.0 ·
     23 evidence rows
   </footer>
 </main>

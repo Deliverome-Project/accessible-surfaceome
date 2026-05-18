@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "gene": {
     "hgnc_symbol": "EGFR",
     "hgnc_id": "HGNC:3236",
@@ -92,6 +92,8 @@
             "context": "GSC83 glioblastoma stem cells \u2014 high EGFR/EGFRvIII; uniform surface decoration confirmed by live-cell flow cytometry",
             "sample_type": "established_cell_line",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_13",
               "a1_evi_14"
@@ -101,6 +103,8 @@
             "context": "U373VIII glioma cells \u2014 high EGFR/EGFRvIII surface expression detected uniformly",
             "sample_type": "established_cell_line",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_13"
             ]
@@ -109,6 +113,8 @@
             "context": "U373 glioma cells \u2014 low EGFR/EGFRvIII surface expression",
             "sample_type": "established_cell_line",
             "level": "low",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_13"
             ]
@@ -157,6 +163,8 @@
             "context": "GSC83 adherent glioblastoma cells \u2014 intact vs permeabilized confocal IF for EGFR (red) and CD9 (green)",
             "sample_type": "established_cell_line",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_13"
             ]
@@ -192,6 +200,8 @@
             "context": "BxPC-3 pancreatic cancer cells \u2014 EGFR surface binding confirmed by flow cytometry using therapeutic bispecific antibody construct",
             "sample_type": "established_cell_line",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_15"
             ]
@@ -200,6 +210,8 @@
             "context": "Multiple pancreatic cancer cell lines \u2014 heterogeneous but positive EGFR surface expression by flow cytometry histograms",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_16"
             ]
@@ -236,6 +248,8 @@
             "context": "HCT 116 colorectal cancer cells \u2014 minimal surface EGFR (negative control); CCLE log2[TPM+1]=0.0",
             "sample_type": "established_cell_line",
             "level": "absent",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_17"
             ]
@@ -244,6 +258,8 @@
             "context": "NCI-H1930 lung cancer cells \u2014 positive surface EGFR by live-cell flow cytometry despite granular/diffuse IHC pattern",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_18"
             ]
@@ -280,6 +296,8 @@
             "context": "U-87 MG glioblastoma cells \u2014 high EGFR and TfR1 surface expression; quantified after 24h incubation with HFn6-ZEGFR construct",
             "sample_type": "established_cell_line",
             "level": "high",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_19"
             ]
@@ -288,6 +306,8 @@
             "context": "MDA-MB-231 breast cancer cells \u2014 EGFR surface levels measured by flow with orthogonal detection antibody after HFn6-ZEGFR treatment",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_20"
             ]
@@ -324,6 +344,8 @@
             "context": "44 cancer cell lines of various solid tumor types \u2014 large-scale surface EGFR protein expression survey confirming plasma membrane accessibility",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_21"
             ]
@@ -359,6 +381,8 @@
             "context": "Cancer cells \u2014 IF co-localization of EGFR with B7-H3 on cell surface",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_22"
             ]
@@ -394,6 +418,8 @@
             "context": "Cell surface EGFR in non-permeabilized cells vs intracellular EGFR in permeabilized cells; quantified n=2 experiments, mean\u00b1SD, p<0.01",
             "sample_type": "unknown",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_23"
             ]
@@ -441,6 +467,8 @@
             "context": "Sinonasal inverted papilloma tumor cases \u2014 EGFR positive plasma membrane staining in 31/32 cases (97%); scored positive = moderate/strong membranous staining in >10% tumor cells",
             "sample_type": "patient_sample",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_24"
             ]
@@ -449,6 +477,8 @@
             "context": "Sinonasal inverted papilloma tumor cases \u2014 p-EGFR positive plasma membrane staining in 22/32 cases (69%)",
             "sample_type": "patient_sample",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_25"
             ]
@@ -486,6 +516,8 @@
             "context": "Lung squamous carcinoma patient tissue \u2014 EGFR and B7-H3 co-expressed; membranous staining in tumor but not normal lung",
             "sample_type": "patient_sample",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_27"
             ]
@@ -494,6 +526,8 @@
             "context": "Normal skin tissue \u2014 EGFR expressed (unlike B7-H3); surface EGFR not tumor-restricted",
             "sample_type": "primary_human_tissue",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_28"
             ]
@@ -530,6 +564,8 @@
             "context": "NSCLC tumor tissue \u2014 EGFR membranous IHC scored 1 (weak), 2 (complete moderate), 3 (complete strong); score 2-3 defines positive surface expression",
             "sample_type": "patient_sample",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_54"
             ]
@@ -565,6 +601,8 @@
             "context": "DCDMLs (ductal carcinoma-derived mammary-like cells) \u2014 ErbB kinases including EGFR detected in streptavidin-bead surface fraction by 4G10 phosphotyrosine WB",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_29"
             ]
@@ -587,6 +625,8 @@
             "context": "Prostate cancer cells \u2014 EGFR detected by sBioSITe surface biotinylation + LC-MS with 19 biotinylation sites; known marker of prostate cancer bone dissemination",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_30"
             ]
@@ -623,6 +663,8 @@
             "context": "HPV16 E7-expressing NIKS keratinocytes \u2014 higher total EGFR at cell surface vs wild-type NIKS by streptavidin bead + WB",
             "sample_type": "established_cell_line",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_32"
             ]
@@ -631,6 +673,8 @@
             "context": "SiHa (HPV16+) and HeLa (HPV18+) cervical cancer cells after E6/E7 knockdown \u2014 plasma membrane protein biotinylation + WB methodology applied",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_33"
             ]
@@ -654,6 +698,8 @@
             "context": "iPSC-derived sensory-like neurons (FD patients and healthy controls) \u2014 EGFR detected among 1,508 surface proteins by sulfo-NHS-SS-biotin + NanoLC-MS/MS on Orbitrap Fusion, 3 independent experiments",
             "sample_type": "iPSC_derived",
             "level": "low",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_36"
             ]
@@ -703,6 +749,8 @@
             "context": "EGFR.Fc recombinant ECD \u2014 biotinylated by BirA*-affibody (ZEGFR:1907) proximity labeling; confirmed by streptavidin-HRP WB (BioLegend 1:2500) and anti-EGFR.HRP (Abcam 1:5000)",
             "sample_type": "unknown",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_41",
               "a1_evi_42",
@@ -742,6 +790,8 @@
             "context": "LNCaP and PC3-PSMA prostate cancer cells \u2014 EGFR detected by WB and MS in streptavidin-enriched surface biotinylation fraction; part of GCPII/EGFR surface co-complex study",
             "sample_type": "established_cell_line",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_45",
               "a1_evi_46"
@@ -779,6 +829,8 @@
             "context": "A549 lung adenocarcinoma cells transfected with Flag-EGFR and EGFR-HaloTag \u2014 significant anti-Flag surface signal for both constructs confirmed by flow cytometry",
             "sample_type": "established_cell_line",
             "level": "high",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_47"
             ]
@@ -818,6 +870,8 @@
             "context": "Purified hEGFR(25-645)-Avi ECD protein \u2014 biotinylation by BirA enzyme confirmed by anti-biotin HRP WB; validates ECD accessibility for phage display screening",
             "sample_type": "unknown",
             "level": "high",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_52",
               "a1_evi_53"
@@ -921,6 +975,8 @@
           "sinonasal epithelial tumor cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_03",
           "a2_evi_04"
@@ -935,6 +991,8 @@
           "lung adenocarcinoma cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_05",
           "a2_evi_06",
@@ -948,6 +1006,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_05"
         ]
@@ -960,6 +1020,8 @@
           "keratinocytes"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_06"
         ]
@@ -972,6 +1034,8 @@
           "mixed tumor cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_08"
         ]
@@ -984,6 +1048,8 @@
           "pancreatic cancer cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_08",
           "a2_evi_13"
@@ -997,6 +1063,8 @@
           "mixed tumor cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_08"
         ]
@@ -1009,6 +1077,8 @@
           "mixed tumor cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_08"
         ]
@@ -1021,6 +1091,8 @@
           "mixed tumor cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_08"
         ]
@@ -1035,6 +1107,8 @@
           "glioma stem cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_09",
           "a2_evi_11",
@@ -1050,6 +1124,8 @@
           "breast adenocarcinoma cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_12",
           "a2_evi_25"
@@ -1063,6 +1139,8 @@
           "sensory-like neurons"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_21",
           "a2_evi_22",
@@ -1077,6 +1155,8 @@
           "squamous epithelial cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_24"
         ]
@@ -1089,6 +1169,8 @@
           "ovarian cancer cells"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_25"
         ]
@@ -1101,6 +1183,8 @@
         "present_in_tissues": [
           "sinonasal (upper respiratory tract)"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_03",
           "a2_evi_04"
@@ -1112,6 +1196,8 @@
         "present_in_tissues": [
           "lung"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_05",
           "a2_evi_07"
@@ -1125,6 +1211,8 @@
           "skin/epithelium",
           "glans/penis"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_06",
           "a2_evi_16",
@@ -1143,6 +1231,8 @@
           "thyroid",
           "kidney"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_08"
         ]
@@ -1153,6 +1243,8 @@
         "present_in_tissues": [
           "brain"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_09",
           "a2_evi_11",
@@ -1165,6 +1257,8 @@
         "present_in_tissues": [
           "brain"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_10"
         ]
@@ -1175,6 +1269,8 @@
         "present_in_tissues": [
           "pancreas"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_13"
         ]
@@ -1185,6 +1281,8 @@
         "present_in_tissues": [
           "kidney (epithelial model)"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_14",
           "a2_evi_15"
@@ -1196,6 +1294,8 @@
         "present_in_tissues": [
           "lung"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_18"
         ]
@@ -1206,6 +1306,8 @@
         "present_in_tissues": [
           "peripheral nervous system"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_21",
           "a2_evi_22",
@@ -1218,6 +1320,8 @@
         "present_in_tissues": [
           "glans/penis"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_24"
         ]
@@ -1228,6 +1332,8 @@
         "present_in_tissues": [
           "breast"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_12",
           "a2_evi_25"
@@ -1239,6 +1345,8 @@
         "present_in_tissues": [
           "ovary"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_25"
         ]
@@ -1369,6 +1477,8 @@
         "modulating_state": "Lung squamous cell carcinoma tumor tissue",
         "change": "EGFR and B7-H3 are co-expressed at the surface of lung squamous carcinoma cells; EGFR is present in normal skin but B7-H3 is absent there, and neither is co-expressed in normal lung.",
         "accessibility_implication": "EGFR surface co-expression with B7-H3 is tumor-specific in lung squamous carcinoma, making dual-targeting strategies accessible specifically in the tumor context while EGFR alone remains accessible in normal epithelium.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_05",
           "a2_evi_06",
@@ -1385,6 +1495,8 @@
         "modulating_state": "Sinonasal inverted papilloma (SIP) tumor tissue",
         "change": "97% of SIP cases show positive plasma membrane EGFR staining; 69% show phosphorylated (activated) EGFR at the surface, indicating both upregulated total and activated EGFR surface presence in this tumor type.",
         "accessibility_implication": "Very high EGFR surface accessibility in SIP tumors; activated p-EGFR at the surface in the majority of cases further confirms accessible, signaling-competent receptor for therapeutic targeting.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_03",
           "a2_evi_04"
@@ -1400,6 +1512,8 @@
         "modulating_state": "NIKS keratinocytes expressing HPV16 E7 oncoprotein",
         "change": "HPV16 E7 expression modestly upregulates surface EGFR via an AP2-tyrosine binding motif-dependent mechanism that alters endocytic recycling, increasing total surface EGFR levels as measured by surface biotinylation.",
         "accessibility_implication": "HPV-driven viral oncogene expression increases EGFR surface density in keratinocytes, enhancing binder accessibility at the plasma membrane in HPV-infected/transformed epithelial cells.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_16",
           "a2_evi_17"
@@ -1415,6 +1529,8 @@
         "modulating_state": "ZNRF3 overexpression (reduces surface EGFR) or ZNRF3/RNF43 knockout (increases surface EGFR and tumorigenesis)",
         "change": "ZNRF3/RNF43-mediated ubiquitination regulates EGFR surface levels: overexpression reduces surface EGFR, while knockout increases surface EGFR signaling, demonstrating E3 ligase-dependent post-translational control of surface abundance.",
         "accessibility_implication": "EGFR surface availability is dynamically controlled by ubiquitin-mediated trafficking; loss of ZNRF3/RNF43 in tumors elevates surface EGFR density, increasing accessibility for therapeutic binders.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_19"
         ]
@@ -1429,6 +1545,8 @@
         "modulating_state": "EGFR TKI treatment (gefitinib or osimertinib) in EGFR-mutant LUAD cells",
         "change": "EGFR TKI treatment remodels the surfaceome of EGFR-mutant LUAD cells, altering the spectrum of surface-accessible proteins including changes relevant to combination therapy opportunities.",
         "accessibility_implication": "TKI-induced surfaceome remodeling may expose or obscure epitopes on EGFR and co-expressed surface targets, with implications for selecting combination therapy partners based on post-TKI surface accessibility.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_18"
         ]
@@ -1443,6 +1561,8 @@
         "modulating_state": "EGF ligand stimulation",
         "change": "EGF binding triggers EGFR internalization and lysosomal degradation, reducing surface EGFR levels. Inhibition of lysosomal function (e.g., chloroquine) rescues surface EGFR by blocking degradation.",
         "accessibility_implication": "Ligand-induced internalization transiently reduces surface EGFR accessibility; in high-EGF microenvironments (e.g., tumors), surface EGFR may be dynamically depleted, affecting binder engagement.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_20"
         ]
@@ -1457,6 +1577,8 @@
         "modulating_state": "Polarized MDCK epithelial cells forming apical-basolateral membrane domains",
         "change": "In polarized MDCK epithelial cells, EGFR distributes with an approximately 40:60 apicobasal ratio, showing slight basolateral enrichment but substantial presence on both membrane faces \u2014 less strongly polarized than many RTK interaction partners.",
         "accessibility_implication": "EGFR is accessible from both apical and basolateral surfaces in polarized epithelium, but slight basolateral enrichment suggests basolateral access is marginally favored; binders delivered luminally (apically) still encounter meaningful receptor.",
+        "species": "dog",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_14",
           "a2_evi_15"
@@ -1472,6 +1594,8 @@
         "modulating_state": "Same cells \u2014 steady-state distribution includes both plasma membrane and Golgi apparatus pools; secreted isoform also predicted",
         "change": "HPA annotation places EGFR at plasma membrane, cell junctions, primary cilium, basal body, and Golgi apparatus, with a predicted secreted form, indicating a split between surface and intracellular/secreted pools.",
         "accessibility_implication": "The intracellular Golgi pool and secreted isoform are not accessible to surface-targeted binders; only the plasma membrane, junctional, and ciliary pools are targetable from outside the cell, potentially reducing effective surface density.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_01",
           "a2_evi_02"
@@ -1487,6 +1611,8 @@
         "modulating_state": "Familial dysautonomia (FD) patient iPSC-derived sensory-like neurons",
         "change": "EGFR is among the most significantly deregulated proteins (p<0.01) in the plasma membrane proteome of FD sensory-like neurons compared to healthy controls, with transcriptional differences confirmed by qPCR.",
         "accessibility_implication": "Altered EGFR surface levels in FD neurons suggest disease-state-dependent changes in neuronal EGFR accessibility; this may be relevant for neuro-targeted therapeutics in hereditary sensory neuropathy contexts.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_21",
           "a2_evi_22",

@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "gene": {
     "hgnc_symbol": "VIM",
     "hgnc_id": "HGNC:12692",
@@ -84,7 +84,9 @@
             "cited_evidence_ids": [
               "a1_evi_01",
               "a1_evi_02"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -122,7 +124,9 @@
               "a1_evi_03",
               "a1_evi_04",
               "a1_evi_12"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -160,7 +164,9 @@
             "cited_evidence_ids": [
               "a1_evi_05",
               "a1_evi_06"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -223,7 +229,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_07"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -246,7 +254,9 @@
             "cited_evidence_ids": [
               "a1_evi_08",
               "a1_evi_09"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -274,7 +284,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_08"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       }
     ],
     "cell_types": [
@@ -285,7 +297,9 @@
         "cited_evidence_ids": [
           "a2_evi_01",
           "a2_evi_02"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "cell_type": "hepatoma / hepatocellular carcinoma cells",
@@ -293,7 +307,9 @@
         "present_in_tissues": [],
         "cited_evidence_ids": [
           "a2_evi_03"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "cell_type": "neutrophils",
@@ -303,7 +319,9 @@
           "a2_evi_04",
           "a2_evi_05",
           "a2_evi_06"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "cell_type": "chondrocytes",
@@ -311,7 +329,9 @@
         "present_in_tissues": [],
         "cited_evidence_ids": [
           "a2_evi_07"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "cell_type": "CD8+ T cells",
@@ -321,7 +341,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_08"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       }
     ],
     "cell_states": [],
@@ -375,7 +397,9 @@
           "a2_evi_04",
           "a2_evi_05",
           "a2_evi_06"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "category": "cell_state_induced",
@@ -389,7 +413,9 @@
         "accessibility_implication": "Vimentin becomes accessible at the extracellular surface of senescent chondrocytes, enabling selective targeting of senescent cells with vimentin-directed binders without requiring cell permeabilization.",
         "cited_evidence_ids": [
           "a2_evi_07"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "category": "disease_state_induced",
@@ -405,7 +431,9 @@
           "a2_evi_01",
           "a2_evi_02",
           "a2_evi_03"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       }
     ]
   },

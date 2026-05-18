@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "gene": {
     "hgnc_symbol": "SRC",
     "hgnc_id": "HGNC:11283",
@@ -88,7 +88,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_06"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -124,7 +126,9 @@
             "cited_evidence_ids": [
               "a1_evi_07",
               "a1_evi_08"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -173,7 +177,9 @@
             "level": "high",
             "cited_evidence_ids": [
               "a1_evi_10"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -208,7 +214,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_12"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -244,7 +252,9 @@
             "cited_evidence_ids": [
               "a1_evi_13",
               "a1_evi_14"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -306,7 +316,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_16"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -353,7 +365,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_17"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -412,7 +426,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_18"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -447,7 +463,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_19"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -483,7 +501,9 @@
             "cited_evidence_ids": [
               "a1_evi_01",
               "a1_evi_03"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           },
           {
             "context": "Mouse xenograft tumor models: extracellular membrane-associated Src (eSrc) found in primary tumors; anti-Src antibody-based therapies mediate tumor cell killing in xenograft models",
@@ -491,7 +511,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_04"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           },
           {
             "context": "Cancer cells (secondary source/commentary): Src exposed at outer surface via exocytosis, poised for therapeutic targeting",
@@ -499,7 +521,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_05"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -545,7 +569,9 @@
         "cell_states": [],
         "cited_evidence_ids": [
           "a2_evi_05"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "tissue": "cartilage",
@@ -562,7 +588,9 @@
           "a2_evi_08",
           "a2_evi_09",
           "a2_evi_10"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "tissue": "bone",
@@ -576,7 +604,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_11"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "tissue": "thyroid",
@@ -588,7 +618,9 @@
         "cell_states": [],
         "cited_evidence_ids": [
           "a2_evi_13"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       }
     ],
     "cell_types": [
@@ -604,7 +636,9 @@
           "a2_evi_05",
           "a2_evi_06",
           "a2_evi_07"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "cell_type": "chondrocyte / chondrogenic cell",
@@ -616,7 +650,9 @@
           "a2_evi_08",
           "a2_evi_09",
           "a2_evi_10"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "cell_type": "osteoblast",
@@ -627,7 +663,9 @@
         "cited_evidence_ids": [
           "a2_evi_11",
           "a2_evi_12"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "cell_type": "thyroid epithelial cell",
@@ -638,7 +676,9 @@
         "cited_evidence_ids": [
           "a2_evi_13",
           "a2_evi_14"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       }
     ],
     "cell_states": [],
@@ -730,7 +770,9 @@
           "a2_evi_03",
           "a2_evi_05",
           "a2_evi_06"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "category": "lysosomal_exocytosis",
@@ -745,7 +787,9 @@
         "cited_evidence_ids": [
           "a2_evi_04",
           "a2_evi_07"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "category": "dual_localization",
@@ -760,7 +804,9 @@
         "cited_evidence_ids": [
           "a2_evi_01",
           "a2_evi_02"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "category": "developmental_stage",
@@ -776,7 +822,9 @@
           "a2_evi_08",
           "a2_evi_09",
           "a2_evi_10"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "category": "cell_state_induced",
@@ -791,7 +839,9 @@
         "cited_evidence_ids": [
           "a2_evi_11",
           "a2_evi_12"
-        ]
+        ],
+        "species": "mouse",
+        "species_inferred": true
       }
     ]
   },

@@ -89,6 +89,12 @@ section.block > h3 {
 .badge-gray { background: var(--gray-bg); color: var(--gray); }
 .badge-lavender { background: var(--lav-bg); color: var(--lav); }
 
+/* ---- Species counter (above tissue / cell-type / modulation tables) ---- */
+.species-counter {
+  font-size: 0.78rem; color: var(--fg-muted);
+  margin: 0.25rem 0 0.5rem 0; letter-spacing: 0.01em;
+}
+
 /* ---- Sub-grid (used in multiple sections) ---- */
 .sub-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -433,7 +439,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-CLDN18.2 monoclonal antibody (isoform-specific)</strong> · monoclonal · epitope: extracellular · validation: isoform_specific_KO (strong) · x-react: Demonstrated to bind CLDN18.2 but not CLDN18.1 (lung-specific splice variant); isoform selectivity confirmed in the original 2008 Sahin et al. study.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Cancer cell lines (unspecified) expressing CLDN18.2; antibody binds antigen on the surface of cancer cells</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Cancer cell lines (unspecified) expressing CLDN18.2; antibody binds antigen on the surface of cancer cells</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a></span></div>
     </div>
     
@@ -447,7 +453,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>pan-specific anti-CLDN18 antibody (recognizing CLDN18.1 and CLDN18.2)</strong> · epitope: extracellular · validation: overexpression_reference (moderate) · x-react: Pan-specific; recognizes both isoforms (CLDN18.1 and CLDN18.2); used on cells ectopically expressing each isoform.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>N87 gastric cancer cells ectopically expressing human CLDN18.1 and CLDN18.2; surface expression of both isoforms confirmed by flow cytometry</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>N87 gastric cancer cells ectopically expressing human CLDN18.1 and CLDN18.2; surface expression of both isoforms confirmed by flow cytometry</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a></span></div>
     </div>
     
@@ -461,7 +467,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-CLDN18.2 test antibodies (serial dilution cell binding assay)</strong> · epitope: extracellular</div><div class='ab'><strong>Secondary antibody (anti-primary)</strong> · Thermo Fisher Scientific · <code>RRID:AB_2535862</code></div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>CLDN18.2-expressing target cancer cell lines; serial dilution antibody binding assay with live/dead gating</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>CLDN18.2-expressing target cancer cell lines; serial dilution antibody binding assay with live/dead gating</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></div>
     </div>
     
@@ -475,7 +481,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-CLDN18.2 antibodies (FACS-based surface screening)</strong> · epitope: extracellular</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>CLDN18.2-expressing cancer cells; live-cell FACS used to directly measure antibody binding to cell-surface CLDN18.2</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>CLDN18.2-expressing cancer cells; live-cell FACS used to directly measure antibody binding to cell-surface CLDN18.2</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_04">a1_evi_04</a></span></div>
     </div>
     
@@ -489,7 +495,7 @@ footer {
         <span class="badge badge-amber">claim: plasma_membrane_localized</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-CLDN18 antibody (SPOTLIGHT/GLOW trial-aligned IHC)</strong> · x-react: Scoring criterion: ≥75% of tumor cells with moderate-to-strong membranous staining; cytoplasmic staining excluded from positivity.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Biliary tract cancer (BTC) primary tumor tissue; 237 samples; CLDN18 expression in 29.5% of cases; CLDN18 positivity (≥75% moderate-to-strong membranous) in 5.5% of BTCs</td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Biliary tract cancer (BTC) primary tumor tissue; 237 samples; CLDN18 expression in 29.5% of cases; CLDN18 positivity (≥75% moderate-to-strong membranous) in 5.5% of BTCs</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a></span></div>
     </div>
     
@@ -503,7 +509,7 @@ footer {
         <span class="badge badge-amber">claim: plasma_membrane_localized</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-CLDN18 antibody clone 43-14A</strong> · clone 43-14A · monoclonal · x-react: IHC scoring for 1+ vs. 2+ membranous staining intensity described as not well-defined; guideline ambiguity noted in PDAC cohort context.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Pancreatic ductal adenocarcinoma (PDAC) primary tumor tissue; cases with 2+ or 3+ membranous staining in 40–75% range identified; scoring ambiguity for 1+ vs. 2+ intensity noted</td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></td></tr><tr><td>Gastric/gastroesophageal junction adenocarcinoma; clinical trial eligibility required ≥75% tumor cells with moderate-to-strong membranous CLDN18 IHC staining (SPOTLIGHT and GLOW trials)</td><td><span class="badge badge-gray">patient_sample</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Pancreatic ductal adenocarcinoma (PDAC) primary tumor tissue; cases with 2+ or 3+ membranous staining in 40–75% range identified; scoring ambiguity for 1+ vs. 2+ intensity noted</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></td></tr><tr><td>Gastric/gastroesophageal junction adenocarcinoma; clinical trial eligibility required ≥75% tumor cells with moderate-to-strong membranous CLDN18 IHC staining (SPOTLIGHT and GLOW trials)</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">patient_sample</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a><a class="evi-chip" href="#a1_evi_09">a1_evi_09</a><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a></span></div>
     </div>
     
@@ -545,7 +551,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Ovarian tumor primary tissue vs. normal tissue; CLDN18 identified among adhesion proteins with extracellular antigenic epitopes showing highest differential expression (alongside EpCAM and CLDN1); Cell Surface Protein Atlas (CSPA) mass spectrometry-based annotation</td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_13">a1_evi_13</a><a class="evi-chip" href="#a1_evi_14">a1_evi_14</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Ovarian tumor primary tissue vs. normal tissue; CLDN18 identified among adhesion proteins with extracellular antigenic epitopes showing highest differential expression (alongside EpCAM and CLDN1); Cell Surface Protein Atlas (CSPA) mass spectrometry-based annotation</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_13">a1_evi_13</a><a class="evi-chip" href="#a1_evi_14">a1_evi_14</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_13">a1_evi_13</a><a class="evi-chip" href="#a1_evi_14">a1_evi_14</a></span></div>
     </div>
     
@@ -559,7 +565,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>89Zr-labeled zolbetuximab (anti-CLDN18.2 monoclonal antibody)</strong> · monoclonal · epitope: extracellular · validation: orthogonal_method (moderate) · x-react: Specificity confirmed by comparison to [89Zr]Zr-DFO-IgG isotype control; tumor-specific uptake significantly higher than control (P=0.0029 in GSU model).</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>GSU (gastric cancer) xenograft; day 6 mean tumor uptake: 24.4 ± 7.8 %ID/g vs. IgG control 4.8 ± 1.9 %ID/g (P=0.0029)</td><td><span class="badge badge-gray">xenograft</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr><tr><td>PATU8988S (pancreatic cancer) xenograft; day 6 mean tumor uptake: 36.6 ± 10.1 %ID/g</td><td><span class="badge badge-gray">xenograft</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr><tr><td>HUPT-4 (pancreatic cancer) xenograft; day 6 mean tumor uptake: 16.48 ± 4.7 %ID/g</td><td><span class="badge badge-gray">xenograft</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>GSU (gastric cancer) xenograft; day 6 mean tumor uptake: 24.4 ± 7.8 %ID/g vs. IgG control 4.8 ± 1.9 %ID/g (P=0.0029)</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">xenograft</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr><tr><td>PATU8988S (pancreatic cancer) xenograft; day 6 mean tumor uptake: 36.6 ± 10.1 %ID/g</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">xenograft</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr><tr><td>HUPT-4 (pancreatic cancer) xenograft; day 6 mean tumor uptake: 16.48 ± 4.7 %ID/g</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">xenograft</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_17">a1_evi_17</a><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></div>
     </div>
     
@@ -573,7 +579,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>CLDN18.2-targeted CAR-T cell receptor (therapeutic engagement)</strong> · epitope: extracellular · x-react: On-target off-tumor toxicity in gastric mucosa confirms surface accessibility of CLDN18.2 in normal gastric epithelium.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Gastric cancer patients treated with CLDN18.2-targeted CAR-T therapy; promising clinical efficacy reported in early-phase trials</td><td><span class="badge badge-gray">patient_sample</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_20">a1_evi_20</a></span></td></tr><tr><td>Normal gastric mucosa; on-target off-tumor recognition of CLDN18.2 by CAR-T cells causing gastrointestinal adverse events in early-phase trials, confirming surface accessibility in normal epithelium</td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_21">a1_evi_21</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Gastric cancer patients treated with CLDN18.2-targeted CAR-T therapy; promising clinical efficacy reported in early-phase trials</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">patient_sample</span></td><td><span class="badge badge-green">high</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_20">a1_evi_20</a></span></td></tr><tr><td>Normal gastric mucosa; on-target off-tumor recognition of CLDN18.2 by CAR-T cells causing gastrointestinal adverse events in early-phase trials, confirming surface accessibility in normal epithelium</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_21">a1_evi_21</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_20">a1_evi_20</a><a class="evi-chip" href="#a1_evi_21">a1_evi_21</a></span></div>
     </div>
     
@@ -587,7 +593,7 @@ footer {
         <span class="badge badge-amber">claim: unclear</span>
       </div>
       <div class="abs"><div class='ab'><strong>Zolbetuximab (anti-CLDN18.2 monoclonal antibody, review context)</strong> · monoclonal · epitope: extracellular · x-react: In CLDN18-ARHGAP26 fusion protein context, surface localization of the fusion protein requires further confirmation; standard CLDN18.2 surface accessibility may not apply.</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Tumors with CLDN18-ARHGAP26 fusion protein; surface localization of fusion protein uncertain; additional localization studies required</td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_22">a1_evi_22</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Tumors with CLDN18-ARHGAP26 fusion protein; surface localization of fusion protein uncertain; additional localization studies required</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_22">a1_evi_22</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_16">a1_evi_16</a><a class="evi-chip" href="#a1_evi_22">a1_evi_22</a></span></div>
     </div>
     
@@ -620,10 +626,12 @@ footer {
       <h2>Section 2 — Biological context</h2>
 
       <h3>Tissues (18)</h3>
-      <table class='compact'><thead><tr><th>tissue</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>lung</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>alveolar epithelial cell (pneumocyte)</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a></span></td></tr><tr><td><strong>stomach (gastric mucosa)</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>differentiated gastric epithelial cells, gastrocyte</td><td class='small'>differentiated (not stem cell zone)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>stomach</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a></span></td></tr><tr><td><strong>lung</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a><a class="evi-chip" href="#a2_evi_14">a2_evi_14</a></span></td></tr><tr><td><strong>lung (mucinous adenocarcinoma)</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_18">a2_evi_18</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a><a class="evi-chip" href="#a2_evi_22">a2_evi_22</a><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a><a class="evi-chip" href="#a2_evi_24">a2_evi_24</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a><a class="evi-chip" href="#a2_evi_24">a2_evi_24</a></span></td></tr><tr><td><strong>esophagus</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>esophagus (gastroesophageal junction)</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_29">a2_evi_29</a></span></td></tr><tr><td><strong>gastroesophageal junction (GEJ)</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_30">a2_evi_30</a></span></td></tr><tr><td><strong>ovary</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_25">a2_evi_25</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>biliary tract</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a><a class="evi-chip" href="#a2_evi_18">a2_evi_18</a><a class="evi-chip" href="#a2_evi_21">a2_evi_21</a></span></td></tr><tr><td><strong>bile duct</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_19">a2_evi_19</a></span></td></tr><tr><td><strong>small intestine</strong></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a></span></td></tr><tr><td><strong>colorectum</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_18">a2_evi_18</a></span></td></tr><tr><td><strong>cervix</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_20">a2_evi_20</a></span></td></tr><tr><td><strong>duodenum</strong></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a></span></td></tr><tr><td><strong>liver</strong></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 18</div>
+      <table class='compact'><thead><tr><th>tissue</th><th>species</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>lung</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>alveolar epithelial cell (pneumocyte)</td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a></span></td></tr><tr><td><strong>stomach (gastric mucosa)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'>differentiated gastric epithelial cells, gastrocyte</td><td class='small'>differentiated (not stem cell zone)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_02">a2_evi_02</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr><tr><td><strong>stomach</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a></span></td></tr><tr><td><strong>lung</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a><a class="evi-chip" href="#a2_evi_14">a2_evi_14</a></span></td></tr><tr><td><strong>lung (mucinous adenocarcinoma)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_18">a2_evi_18</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a><a class="evi-chip" href="#a2_evi_22">a2_evi_22</a><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a><a class="evi-chip" href="#a2_evi_24">a2_evi_24</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>pancreas</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a><a class="evi-chip" href="#a2_evi_24">a2_evi_24</a></span></td></tr><tr><td><strong>esophagus</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>esophagus (gastroesophageal junction)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_29">a2_evi_29</a></span></td></tr><tr><td><strong>gastroesophageal junction (GEJ)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_30">a2_evi_30</a></span></td></tr><tr><td><strong>ovary</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a><a class="evi-chip" href="#a2_evi_25">a2_evi_25</a><a class="evi-chip" href="#a2_evi_26">a2_evi_26</a></span></td></tr><tr><td><strong>biliary tract</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a><a class="evi-chip" href="#a2_evi_18">a2_evi_18</a><a class="evi-chip" href="#a2_evi_21">a2_evi_21</a></span></td></tr><tr><td><strong>bile duct</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">other_disease</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_19">a2_evi_19</a></span></td></tr><tr><td><strong>small intestine</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a></span></td></tr><tr><td><strong>colorectum</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_18">a2_evi_18</a></span></td></tr><tr><td><strong>cervix</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_20">a2_evi_20</a></span></td></tr><tr><td><strong>duodenum</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a></span></td></tr><tr><td><strong>liver</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">unknown</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_23">a2_evi_23</a></span></td></tr></tbody></table>
 
       <h3>Cell types (5)</h3>
-      <table class='compact'><thead><tr><th>cell type</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>epithelial cells</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></td></tr><tr><td><strong>embryonic lung epithelial cells</strong></td><td><code>—</code></td><td class='small'>lung</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a></span></td></tr><tr><td><strong>gastric epithelial cells (gastrocytes)</strong></td><td><code>—</code></td><td class='small'>stomach (gastric mucosa)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a></span></td></tr><tr><td><strong>alveolar epithelial cells (pneumocytes)</strong></td><td><code>—</code></td><td class='small'>lung (alveolar epithelium)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a></span></td></tr><tr><td><strong>differentiated gastric epithelial cells</strong></td><td><code>—</code></td><td class='small'>stomach (gastric mucosa)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 5</div>
+      <table class='compact'><thead><tr><th>cell type</th><th>species</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>epithelial cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a></span></td></tr><tr><td><strong>embryonic lung epithelial cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>lung</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_01">a2_evi_01</a><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a></span></td></tr><tr><td><strong>gastric epithelial cells (gastrocytes)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>stomach (gastric mucosa)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a></span></td></tr><tr><td><strong>alveolar epithelial cells (pneumocytes)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>lung (alveolar epithelium)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a></span></td></tr><tr><td><strong>differentiated gastric epithelial cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>stomach (gastric mucosa)</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_08">a2_evi_08</a></span></td></tr></tbody></table>
 
 
 
@@ -699,10 +707,12 @@ footer {
     
 
       <h3>Accessibility modulation (11)</h3>
+      <div class='species-counter'>Unspecified: 11</div>
       
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-blue">tissue_restricted_surface</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-blue">lineage: epithelial</span>
       </div>
       <div class="mod-states">
@@ -726,6 +736,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-blue">tissue_restricted_surface</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-blue">lineage: epithelial</span>
       </div>
       <div class="mod-states">
@@ -749,6 +760,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-blue">developmental_stage</span>
+        <span class="badge badge-gray">sp?</span>
         
       </div>
       <div class="mod-states">
@@ -772,6 +784,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -795,6 +808,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -818,6 +832,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -841,6 +856,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -864,6 +880,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -887,6 +904,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -910,6 +928,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -933,6 +952,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-gray">other</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-gray">other: gene_fusion_localization_uncertainty</span>
       </div>
       <div class="mod-states">
@@ -1803,7 +1823,7 @@ The presence and pattern of intratumoral heterogeneity was assessed only in case
     </section>
     
   <footer>
-    surfaceome_v2 QC viewer · schema 1.0.0 ·
+    surfaceome_v2 QC viewer · schema 1.1.0 ·
     52 evidence rows
   </footer>
 </main>

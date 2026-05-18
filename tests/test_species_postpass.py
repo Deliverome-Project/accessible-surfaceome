@@ -1,0 +1,151 @@
+"""Tests for the deterministic species post-pass over BiologicalContext + SurfaceEvidence.
+
+Three behaviors:
+
+1. Rows with ``species="unspecified"`` get filled from cell-line tokens
+   in their free-text fields.
+2. Rows where the agent already set ``species`` to anything other than
+   "unspecified" are NOT overwritten by the post-pass — the agent had
+   paper context the post-pass doesn't.
+3. ``species_inferred`` is set ``True`` exactly when the post-pass did
+   the filling.
+"""
+
+from __future__ import annotations
+
+from accessible_surfaceome.agents.surfaceome_v2.species_postpass import (
+    apply_species_post_pass,
+)
+from accessible_surfaceome.tools._shared.models import (
+    AccessibilityModulationObservation,
+    BiologicalContext,
+    CellTypeContextV1,
+    ExpressionObservation,
+    MethodObservation,
+    SubcellularLocalization,
+    SurfaceEvidence,
+    TissueContext,
+)
+
+
+def _bio(
+    tissues: list[TissueContext] | None = None,
+    cell_types: list[CellTypeContextV1] | None = None,
+    modulation: list[AccessibilityModulationObservation] | None = None,
+) -> BiologicalContext:
+    return BiologicalContext(
+        tissues=tissues or [],
+        cell_types=cell_types or [],
+        cell_states=[],
+        subcellular_localization=SubcellularLocalization(
+            primary_compartment="plasma_membrane",
+        ),
+        anatomical_accessibility=[],
+        accessibility_modulation=modulation or [],
+    )
+
+
+def _surf(methods: list[MethodObservation] | None = None) -> SurfaceEvidence:
+    return SurfaceEvidence(
+        evidence_grade="supportive_but_indirect",
+        grade_rationale="test stub",
+        methods=methods or [],
+        non_surface_expression=[],
+        therapeutic_engagement=None,
+        contradicting_evidence=[],
+    )
+
+
+def _method(observations: list[ExpressionObservation]) -> MethodObservation:
+    return MethodObservation(
+        method_family="flow_cytometry",
+        method_subclass="live_cell_flow",
+        permeabilization="live_cell",
+        expression_system="endogenous",
+        antibodies=[],
+        accessibility_relevance="supports_surface_localization",
+        surface_claim_type="surface_accessible",
+        expression_observations=observations,
+    )
+
+
+def test_post_pass_fills_tissue_species_from_cell_line() -> None:
+    bio = _bio(
+        tissues=[
+            TissueContext(
+                tissue="bone",
+                present="moderate",
+                disease_context="normal",
+                cell_types=["osteoblast (MC3T3-E1)"],
+            ),
+        ]
+    )
+    surf = _surf()
+    stats = apply_species_post_pass(biological_context=bio, surface_evidence=surf)
+    assert stats.tissues_filled == 1
+    assert bio.tissues[0].species == "mouse"
+    assert bio.tissues[0].species_inferred is True
+
+
+def test_post_pass_fills_expression_obs_from_context() -> None:
+    surf = _surf(methods=[
+        _method([
+            ExpressionObservation(
+                context="U251 MG glioblastoma cells; sulfo-NHS biotin labeling",
+                sample_type="established_cell_line",
+                level="moderate",
+            ),
+        ])
+    ])
+    stats = apply_species_post_pass(biological_context=_bio(), surface_evidence=surf)
+    assert stats.expression_obs_filled == 1
+    obs = surf.methods[0].expression_observations[0]
+    assert obs.species == "human"
+    assert obs.species_inferred is True
+
+
+def test_post_pass_does_not_overwrite_agent_set_species() -> None:
+    # Agent explicitly set species="human" — the post-pass must NOT touch
+    # it even if the text contains a mouse-cell-line token.
+    bio = _bio(
+        cell_types=[
+            CellTypeContextV1(
+                cell_type="primary osteoblast (compared to NIH-3T3 mouse fibroblast)",
+                species="human",  # agent's call: this is the human row
+            ),
+        ]
+    )
+    stats = apply_species_post_pass(biological_context=bio, surface_evidence=_surf())
+    assert stats.cell_types_filled == 0
+    assert bio.cell_types[0].species == "human"
+    assert bio.cell_types[0].species_inferred is False
+
+
+def test_post_pass_skips_row_with_no_cell_line_match() -> None:
+    bio = _bio(
+        tissues=[
+            TissueContext(
+                tissue="solid tumor (primary)",
+                present="moderate",
+                disease_context="tumor",
+            ),
+        ]
+    )
+    stats = apply_species_post_pass(biological_context=bio, surface_evidence=_surf())
+    assert stats.tissues_filled == 0
+    assert bio.tissues[0].species == "unspecified"
+    assert bio.tissues[0].species_inferred is False
+
+
+def test_post_pass_skips_ambiguous_multi_species_row() -> None:
+    # Both a human and a mouse cell line mentioned → ambiguous, leave alone.
+    bio = _bio(
+        cell_types=[
+            CellTypeContextV1(
+                cell_type="osteoblast (HeLa control vs MC3T3-E1)",
+            ),
+        ]
+    )
+    stats = apply_species_post_pass(biological_context=bio, surface_evidence=_surf())
+    assert stats.cell_types_filled == 0
+    assert bio.cell_types[0].species == "unspecified"

@@ -89,6 +89,12 @@ section.block > h3 {
 .badge-gray { background: var(--gray-bg); color: var(--gray); }
 .badge-lavender { background: var(--lav-bg); color: var(--lav); }
 
+/* ---- Species counter (above tissue / cell-type / modulation tables) ---- */
+.species-counter {
+  font-size: 0.78rem; color: var(--fg-muted);
+  margin: 0.25rem 0 0.5rem 0; letter-spacing: 0.01em;
+}
+
 /* ---- Sub-grid (used in multiple sections) ---- */
 .sub-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -433,7 +439,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>AML cell lines (MV4-11, Molm13) and non-AML leukemia (RS4;11) and PBMC — surfaceome MS detected HSPA5; datasets of 993, 960, 925, 932 proteins respectively</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>AML cell lines (MV4-11, Molm13) and non-AML leukemia (RS4;11) and PBMC — surfaceome MS detected HSPA5; datasets of 993, 960, 925, 932 proteins respectively</td><td><span class="badge badge-green">human†</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_01">a1_evi_01</a><a class="evi-chip" href="#a1_evi_02">a1_evi_02</a><a class="evi-chip" href="#a1_evi_03">a1_evi_03</a></span></div>
     </div>
     
@@ -447,7 +453,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Cancer cell-derived extracellular vesicle surfaceome integrated with published MS-derived cell surface protein atlas; ER chaperones including HSPA5 identified</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Cancer cell-derived extracellular vesicle surfaceome integrated with published MS-derived cell surface protein atlas; ER chaperones including HSPA5 identified</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a><a class="evi-chip" href="#a1_evi_06">a1_evi_06</a></span></div>
     </div>
     
@@ -461,7 +467,7 @@ footer {
         <span class="badge badge-amber">claim: plasma_membrane_localized</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Human cancer cohort (tissue) — only one case with few cells showed cell-surface BiP/HSPA5 localization; surface expression rare in this cohort</td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_14">a1_evi_14</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Human cancer cohort (tissue) — only one case with few cells showed cell-surface BiP/HSPA5 localization; surface expression rare in this cohort</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_14">a1_evi_14</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_14">a1_evi_14</a></span></div>
     </div>
     
@@ -475,7 +481,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><div class='ab'><strong>anti-GRP78 (goat polyclonal)</strong> · polyclonal · epitope: extracellular</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Non-permeabilized intact cells stained with goat polyclonal anti-GRP78 antibody; surface GRP78 signal detected confirming surface accessibility</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_15">a1_evi_15</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Non-permeabilized intact cells stained with goat polyclonal anti-GRP78 antibody; surface GRP78 signal detected confirming surface accessibility</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_15">a1_evi_15</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_15">a1_evi_15</a></span></div>
     </div>
     
@@ -503,7 +509,7 @@ footer {
         <span class="badge badge-amber">claim: secreted_or_shed</span>
       </div>
       <div class="abs"><div class='ab'><strong>HSPA5 antibody</strong> · Cell Signaling · <code>AB_2119845</code> · validation: vendor_claim_only (weak)</div></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>HSPA5/GRP78 detected in conditioned medium associated with shed transmembrane protein variant sTM536; ambiguous as co-secretion with client rather than stable plasma membrane residence</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_17">a1_evi_17</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>HSPA5/GRP78 detected in conditioned medium associated with shed transmembrane protein variant sTM536; ambiguous as co-secretion with client rather than stable plasma membrane residence</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-amber">low</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_17">a1_evi_17</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_05">a1_evi_05</a><a class="evi-chip" href="#a1_evi_17">a1_evi_17</a></span></div>
     </div>
     
@@ -517,7 +523,7 @@ footer {
         <span class="badge badge-amber">claim: unclear</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>High-grade glioma clinical samples — MS-based proteome quantification of GRP78/HSPA5 among seven ER chaperones; no surface fractionation performed</td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>High-grade glioma clinical samples — MS-based proteome quantification of GRP78/HSPA5 among seven ER chaperones; no surface fractionation performed</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">primary_human_tissue</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_18">a1_evi_18</a></span></div>
     </div>
     
@@ -531,7 +537,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Adult high-grade glioma (aHGG) cell lines — GRP78/HSPA5 confirmed at surface by other groups using flow cytometry and Western blot (cross-paper corroboration)</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Adult high-grade glioma (aHGG) cell lines — GRP78/HSPA5 confirmed at surface by other groups using flow cytometry and Western blot (cross-paper corroboration)</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_07">a1_evi_07</a><a class="evi-chip" href="#a1_evi_08">a1_evi_08</a></span></div>
     </div>
     
@@ -545,7 +551,7 @@ footer {
         <span class="badge badge-amber">claim: surface_accessible</span>
       </div>
       <div class="abs"><em class='muted small'>no antibodies recorded</em></div>
-      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Brain tumor stem cells — surface-bound GRP78 acts as survival factor essential for tumor stem cell expansion; surface-selective inhibitors CBT100/CBT200/CBT300 developed targeting surface form</td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a><a class="evi-chip" href="#a1_evi_13">a1_evi_13</a></span></td></tr></tbody></table></div>
+      <div class="obs"><table class='compact'><thead><tr><th>context</th><th>species</th><th>sample</th><th>level</th><th>cites</th></tr></thead><tbody><tr><td>Brain tumor stem cells — surface-bound GRP78 acts as survival factor essential for tumor stem cell expansion; surface-selective inhibitors CBT100/CBT200/CBT300 developed targeting surface form</td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-gray">established_cell_line</span></td><td><span class="badge badge-blue">moderate</span></td><td><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a><a class="evi-chip" href="#a1_evi_13">a1_evi_13</a></span></td></tr></tbody></table></div>
       <div class="citations"><span class="evi-chips"><a class="evi-chip" href="#a1_evi_10">a1_evi_10</a><a class="evi-chip" href="#a1_evi_12">a1_evi_12</a><a class="evi-chip" href="#a1_evi_13">a1_evi_13</a></span></div>
     </div>
     
@@ -588,10 +594,12 @@ footer {
       <h2>Section 2 — Biological context</h2>
 
       <h3>Tissues (2)</h3>
-      <table class='compact'><thead><tr><th>tissue</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>brain</strong></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'>mesenchymal subtype (highest expression), mesenchymal vs. proneural cell state</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr><tr><td><strong>brain</strong></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 2</div>
+      <table class='compact'><thead><tr><th>tissue</th><th>species</th><th>presence</th><th>disease</th><th>cell types</th><th>cell states</th><th>cites</th></tr></thead><tbody><tr><td><strong>brain</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-green">high</span></td><td><span class="badge badge-gray">tumor</span></td><td class='small'></td><td class='small'>mesenchymal subtype (highest expression), mesenchymal vs. proneural cell state</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr><tr><td><strong>brain</strong></td><td><span class="badge badge-gray">sp?</span></td><td><span class="badge badge-amber">low</span></td><td><span class="badge badge-gray">normal</span></td><td class='small'></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr></tbody></table>
 
       <h3>Cell types (10)</h3>
-      <table class='compact'><thead><tr><th>cell type</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>glioblastoma tumor cells (mesenchymal subtype)</strong></td><td><code>—</code></td><td class='small'>brain</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a></span></td></tr><tr><td><strong>high-grade glioma cells (adult and pediatric)</strong></td><td><code>—</code></td><td class='small'>brain</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr><tr><td><strong>acute myeloid leukemia (AML) cells</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a><a class="evi-chip" href="#a2_evi_14">a2_evi_14</a></span></td></tr><tr><td><strong>B-cell leukemia cells</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>breast cancer cells</strong></td><td><code>—</code></td><td class='small'>breast</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a></span></td></tr><tr><td><strong>ovarian cancer cells</strong></td><td><code>—</code></td><td class='small'>ovary</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_17">a2_evi_17</a></span></td></tr><tr><td><strong>pancreatic cancer cells</strong></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_17">a2_evi_17</a></span></td></tr><tr><td><strong>vascular smooth muscle cells</strong></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_13">a2_evi_13</a></span></td></tr><tr><td><strong>platelets</strong></td><td><code>—</code></td><td class='small'>blood</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_13">a2_evi_13</a></span></td></tr><tr><td><strong>blood-derived extracellular vesicle-producing cells</strong></td><td><code>—</code></td><td class='small'>blood</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_19">a2_evi_19</a></span></td></tr></tbody></table>
+      <div class='species-counter'>Unspecified: 10</div>
+      <table class='compact'><thead><tr><th>cell type</th><th>species</th><th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody><tr><td><strong>glioblastoma tumor cells (mesenchymal subtype)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>brain</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_03">a2_evi_03</a><a class="evi-chip" href="#a2_evi_04">a2_evi_04</a><a class="evi-chip" href="#a2_evi_05">a2_evi_05</a><a class="evi-chip" href="#a2_evi_06">a2_evi_06</a><a class="evi-chip" href="#a2_evi_07">a2_evi_07</a></span></td></tr><tr><td><strong>high-grade glioma cells (adult and pediatric)</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>brain</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_09">a2_evi_09</a><a class="evi-chip" href="#a2_evi_10">a2_evi_10</a></span></td></tr><tr><td><strong>acute myeloid leukemia (AML) cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a><a class="evi-chip" href="#a2_evi_12">a2_evi_12</a><a class="evi-chip" href="#a2_evi_14">a2_evi_14</a></span></td></tr><tr><td><strong>B-cell leukemia cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_11">a2_evi_11</a></span></td></tr><tr><td><strong>breast cancer cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>breast</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_15">a2_evi_15</a><a class="evi-chip" href="#a2_evi_16">a2_evi_16</a></span></td></tr><tr><td><strong>ovarian cancer cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>ovary</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_17">a2_evi_17</a></span></td></tr><tr><td><strong>pancreatic cancer cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>pancreas</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_17">a2_evi_17</a></span></td></tr><tr><td><strong>vascular smooth muscle cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'></td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_13">a2_evi_13</a></span></td></tr><tr><td><strong>platelets</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>blood</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_13">a2_evi_13</a></span></td></tr><tr><td><strong>blood-derived extracellular vesicle-producing cells</strong></td><td><span class="badge badge-gray">sp?</span></td><td><code>—</code></td><td class='small'>blood</td><td><span class="evi-chips"><a class="evi-chip" href="#a2_evi_19">a2_evi_19</a></span></td></tr></tbody></table>
 
 
 
@@ -617,10 +625,12 @@ footer {
       <em class='muted'>no anatomical-accessibility observations</em>
 
       <h3>Accessibility modulation (7)</h3>
+      <div class='species-counter'>Human: 1 · Unspecified: 6</div>
       
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-amber">dual_localization</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-amber">partner: ER</span>
       </div>
       <div class="mod-states">
@@ -644,6 +654,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-lavender">stress_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: ER_stress</span>
       </div>
       <div class="mod-states">
@@ -667,6 +678,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-green">human†</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -690,6 +702,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -713,6 +726,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -736,6 +750,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-red">disease_state_induced</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-lavender">trigger: oncogenic_transformation</span>
       </div>
       <div class="mod-states">
@@ -759,6 +774,7 @@ footer {
     <div class="mod-card">
       <div class="mod-head">
         <span class="badge badge-gray">other</span>
+        <span class="badge badge-gray">sp?</span>
         <span class="badge badge-gray">other: extracellular_vesicle_surface_association</span>
       </div>
       <div class="mod-states">
@@ -1435,7 +1451,7 @@ sTM 536 contained in the CM was found to be associated with the ER protein chape
     </section>
     
   <footer>
-    surfaceome_v2 QC viewer · schema 1.0.0 ·
+    surfaceome_v2 QC viewer · schema 1.1.0 ·
     39 evidence rows
   </footer>
 </main>
