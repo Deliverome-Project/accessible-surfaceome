@@ -54,11 +54,11 @@
     "has_shed_form": false,
     "has_secreted_form": true,
     "requires_coreceptor_for_expression": false,
-    "max_paralog_ecd_pct_identity": null,
+    "max_paralog_ecd_pct_identity": 48.470209339774556,
     "has_epitope_masking": true,
     "has_restricted_subdomain": true,
-    "mouse_ortholog_ecd_pct_identity": null,
-    "cyno_ortholog_ecd_pct_identity": null,
+    "mouse_ortholog_ecd_pct_identity": 88.72785829307568,
+    "cyno_ortholog_ecd_pct_identity": 97.58454106280193,
     "n_term_extracellular": true,
     "c_term_extracellular": false
   },
@@ -1623,31 +1623,412 @@
   },
   "deterministic_features": {
     "canonical_topology": {
-      "isoform_id": "P00533-1",
+      "isoform_id": "P00533",
       "uniprot_acc": "P00533",
-      "tm_helix_count": 0,
+      "tm_helix_count": 1,
       "n_terminal_orientation": "extracellular",
       "c_terminal_orientation": "cytoplasmic",
-      "signal_peptide_length": 0,
-      "ecd_length_residues": 0,
-      "icd_length_residues": 0,
-      "per_residue_topology": "",
-      "tool_version": "stub-no-fetchers-v1.0.0",
-      "retrieved_at": "2026-05-16T20:30:14.549105Z"
+      "signal_peptide_length": 24,
+      "ecd_length_residues": 621,
+      "icd_length_residues": 543,
+      "per_residue_topology": "SSSSSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z"
     },
     "isoform_topologies": [],
     "orthologs": {
-      "mouse": [],
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "Q01279",
+          "ensembl_id": "EGFR_MOUSE",
+          "ortholog_uniprot_acc": "Q01279",
+          "ortholog_symbol": "EGFR_MOUSE",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 88.72785829307568,
+          "ecd_pct_similarity_to_human_canonical": 88.72785829307568,
+          "ecd_length_residues": 623,
+          "tm_helix_count": 1,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-18T12:40:16.461923Z"
+        }
+      ],
       "rat": [],
-      "cynomolgus": []
+      "cynomolgus": [
+        {
+          "is_canonical": true,
+          "isoform_id": "A0A2K5WKD8",
+          "ensembl_id": "A0A2K5WKD8_MACFA",
+          "ortholog_uniprot_acc": "A0A2K5WKD8",
+          "ortholog_symbol": "A0A2K5WKD8_MACFA",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 97.58454106280193,
+          "ecd_pct_similarity_to_human_canonical": 97.58454106280193,
+          "ecd_length_residues": 680,
+          "tm_helix_count": 0,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-18T12:40:16.461870Z"
+        }
+      ]
     },
-    "paralogs": [],
+    "paralogs": [
+      {
+        "paralog_symbol": "ERBB4",
+        "paralog_uniprot_acc": "Q15303",
+        "ecd_pct_identity": 48.470209339774556,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "ERBB3",
+        "paralog_uniprot_acc": "P21860",
+        "ecd_pct_identity": 45.73268921095008,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "ERBB2",
+        "paralog_uniprot_acc": "P04626",
+        "ecd_pct_identity": 44.28341384863124,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "INSR",
+        "paralog_uniprot_acc": "P06213",
+        "ecd_pct_identity": 32.52818035426731,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "ROS1",
+        "paralog_uniprot_acc": "P08922",
+        "ecd_pct_identity": 31.40096618357488,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "IGF1R",
+        "paralog_uniprot_acc": "P08069",
+        "ecd_pct_identity": 29.468599033816425,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "INSRR",
+        "paralog_uniprot_acc": "P14616",
+        "ecd_pct_identity": 29.468599033816425,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "LTK",
+        "paralog_uniprot_acc": "P29376",
+        "ecd_pct_identity": 28.817733990147783,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "FGFR3",
+        "paralog_uniprot_acc": "P22607",
+        "ecd_pct_identity": 28.53107344632768,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "FGFR4",
+        "paralog_uniprot_acc": "P22455",
+        "ecd_pct_identity": 28.448275862068968,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "FGFR2",
+        "paralog_uniprot_acc": "P21802",
+        "ecd_pct_identity": 27.52808988764045,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "NTRK2",
+        "paralog_uniprot_acc": "Q16620",
+        "ecd_pct_identity": 27.114427860696516,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "FGFR1",
+        "paralog_uniprot_acc": "P11362",
+        "ecd_pct_identity": 26.628895184135974,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "NTRK3",
+        "paralog_uniprot_acc": "Q16288",
+        "ecd_pct_identity": 26.368159203980102,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "DDR2",
+        "paralog_uniprot_acc": "Q16832",
+        "ecd_pct_identity": 26.329787234042552,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "AXL",
+        "paralog_uniprot_acc": "P30530",
+        "ecd_pct_identity": 26.014319809069214,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "ALK",
+        "paralog_uniprot_acc": "Q9UM73",
+        "ecd_pct_identity": 25.925925925925924,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "TYRO3",
+        "paralog_uniprot_acc": "Q06418",
+        "ecd_pct_identity": 25.575447570332482,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "ROR1",
+        "paralog_uniprot_acc": "Q01973",
+        "ecd_pct_identity": 25.13368983957219,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "NTRK1",
+        "paralog_uniprot_acc": "P04629",
+        "ecd_pct_identity": 25.0,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHB3",
+        "paralog_uniprot_acc": "P54753",
+        "ecd_pct_identity": 24.760076775431862,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "TIE1",
+        "paralog_uniprot_acc": "P35590",
+        "ecd_pct_identity": 24.637681159420293,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHB2",
+        "paralog_uniprot_acc": "P29323",
+        "ecd_pct_identity": 24.236641221374043,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "DDR1",
+        "paralog_uniprot_acc": "Q08345",
+        "ecd_pct_identity": 24.181360201511335,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "MET",
+        "paralog_uniprot_acc": "P08581",
+        "ecd_pct_identity": 23.993558776167472,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA5",
+        "paralog_uniprot_acc": "P54756",
+        "ecd_pct_identity": 23.93822393822394,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "MERTK",
+        "paralog_uniprot_acc": "Q12866",
+        "ecd_pct_identity": 23.84937238493724,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "MST1R",
+        "paralog_uniprot_acc": "Q04912",
+        "ecd_pct_identity": 23.832528180354267,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHB4",
+        "paralog_uniprot_acc": "P54760",
+        "ecd_pct_identity": 23.809523809523807,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "FLT3",
+        "paralog_uniprot_acc": "P36888",
+        "ecd_pct_identity": 23.73540856031128,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "ROR2",
+        "paralog_uniprot_acc": "Q01974",
+        "ecd_pct_identity": 23.513513513513516,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "TEK",
+        "paralog_uniprot_acc": "Q02763",
+        "ecd_pct_identity": 23.510466988727856,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA4",
+        "paralog_uniprot_acc": "P54764",
+        "ecd_pct_identity": 23.440453686200378,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CSF1R",
+        "paralog_uniprot_acc": "P07333",
+        "ecd_pct_identity": 22.8,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA1",
+        "paralog_uniprot_acc": "P21709",
+        "ecd_pct_identity": 22.796934865900383,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "FLT1",
+        "paralog_uniprot_acc": "P17948",
+        "ecd_pct_identity": 22.705314009661837,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "FLT4",
+        "paralog_uniprot_acc": "P35916",
+        "ecd_pct_identity": 22.705314009661837,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "PDGFRB",
+        "paralog_uniprot_acc": "P09619",
+        "ecd_pct_identity": 22.44488977955912,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "KIT",
+        "paralog_uniprot_acc": "P10721",
+        "ecd_pct_identity": 22.44488977955912,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "KDR",
+        "paralog_uniprot_acc": "P35968",
+        "ecd_pct_identity": 22.383252818035427,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA3",
+        "paralog_uniprot_acc": "P29320",
+        "ecd_pct_identity": 22.264875239923224,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "PDGFRA",
+        "paralog_uniprot_acc": "P16234",
+        "ecd_pct_identity": 22.22222222222222,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "MUSK",
+        "paralog_uniprot_acc": "O15146",
+        "ecd_pct_identity": 22.151898734177212,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA2",
+        "paralog_uniprot_acc": "P29317",
+        "ecd_pct_identity": 22.05029013539652,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA6",
+        "paralog_uniprot_acc": "Q9UF33",
+        "ecd_pct_identity": 21.84557438794727,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA10",
+        "paralog_uniprot_acc": "Q5JZY3",
+        "ecd_pct_identity": 21.804511278195488,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "RET",
+        "paralog_uniprot_acc": "P07949",
+        "ecd_pct_identity": 21.217105263157894,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHB1",
+        "paralog_uniprot_acc": "P54762",
+        "ecd_pct_identity": 20.84130019120459,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA7",
+        "paralog_uniprot_acc": "Q15375",
+        "ecd_pct_identity": 20.37735849056604,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "EPHA8",
+        "paralog_uniprot_acc": "P29322",
+        "ecd_pct_identity": 20.233463035019454,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112"
+      }
+    ],
     "structure": {
-      "afdb_id": "AF-P00533-F1-model_v4",
+      "afdb_id": "AF-P00533-F1",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 0.0,
-      "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
+      "ecd_mean_plddt": 90.97761674718197,
+      "ecd_disordered_fraction": 0.0322061191626409,
+      "source": "AlphaFold DB (ECD-restricted pLDDT, n=621)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [

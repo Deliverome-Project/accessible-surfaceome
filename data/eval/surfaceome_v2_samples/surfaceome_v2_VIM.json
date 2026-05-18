@@ -48,7 +48,7 @@
     "has_restricted_subdomain": true,
     "mouse_ortholog_ecd_pct_identity": null,
     "cyno_ortholog_ecd_pct_identity": null,
-    "n_term_extracellular": true,
+    "n_term_extracellular": false,
     "c_term_extracellular": false
   },
   "surface_evidence": {
@@ -439,17 +439,17 @@
   },
   "deterministic_features": {
     "canonical_topology": {
-      "isoform_id": "P08670-1",
+      "isoform_id": "P08670",
       "uniprot_acc": "P08670",
       "tm_helix_count": 0,
-      "n_terminal_orientation": "extracellular",
+      "n_terminal_orientation": "cytoplasmic",
       "c_terminal_orientation": "cytoplasmic",
       "signal_peptide_length": 0,
       "ecd_length_residues": 0,
-      "icd_length_residues": 0,
-      "per_residue_topology": "",
-      "tool_version": "stub-no-fetchers-v1.0.0",
-      "retrieved_at": "2026-05-17T02:41:53.289404Z"
+      "icd_length_residues": 466,
+      "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z"
     },
     "isoform_topologies": [],
     "orthologs": {
@@ -459,11 +459,11 @@
     },
     "paralogs": [],
     "structure": {
-      "afdb_id": "AF-P08670-F1-model_v4",
+      "afdb_id": "AF-P08670-F1",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 0.0,
-      "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
+      "ecd_mean_plddt": 77.06,
+      "ecd_disordered_fraction": 0.304,
+      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [

@@ -47,7 +47,7 @@
     "has_restricted_subdomain": false,
     "mouse_ortholog_ecd_pct_identity": null,
     "cyno_ortholog_ecd_pct_identity": null,
-    "n_term_extracellular": true,
+    "n_term_extracellular": false,
     "c_term_extracellular": false
   },
   "surface_evidence": {
@@ -577,14 +577,14 @@
       "isoform_id": "P19544-1",
       "uniprot_acc": "P19544",
       "tm_helix_count": 0,
-      "n_terminal_orientation": "extracellular",
+      "n_terminal_orientation": "cytoplasmic",
       "c_terminal_orientation": "cytoplasmic",
       "signal_peptide_length": 0,
       "ecd_length_residues": 0,
       "icd_length_residues": 0,
       "per_residue_topology": "",
-      "tool_version": "stub-no-fetchers-v1.0.0",
-      "retrieved_at": "2026-05-17T02:40:39.732762Z"
+      "tool_version": "placeholder-no-d1-row",
+      "retrieved_at": "2026-05-18T12:40:21.337824Z"
     },
     "isoform_topologies": [],
     "orthologs": {
@@ -594,11 +594,11 @@
     },
     "paralogs": [],
     "structure": {
-      "afdb_id": "AF-P19544-F1-model_v4",
+      "afdb_id": "AF-P19544-F1",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 0.0,
-      "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
+      "ecd_mean_plddt": 50.78,
+      "ecd_disordered_fraction": 0.7170000000000001,
+      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [

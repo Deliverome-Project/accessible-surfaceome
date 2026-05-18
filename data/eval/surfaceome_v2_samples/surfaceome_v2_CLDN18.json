@@ -50,12 +50,12 @@
     "has_shed_form": false,
     "has_secreted_form": false,
     "requires_coreceptor_for_expression": false,
-    "max_paralog_ecd_pct_identity": null,
+    "max_paralog_ecd_pct_identity": 40.78947368421053,
     "has_epitope_masking": true,
     "has_restricted_subdomain": true,
-    "mouse_ortholog_ecd_pct_identity": null,
-    "cyno_ortholog_ecd_pct_identity": null,
-    "n_term_extracellular": true,
+    "mouse_ortholog_ecd_pct_identity": 96.47058823529412,
+    "cyno_ortholog_ecd_pct_identity": 100.0,
+    "n_term_extracellular": false,
     "c_term_extracellular": false
   },
   "surface_evidence": {
@@ -1180,31 +1180,216 @@
   },
   "deterministic_features": {
     "canonical_topology": {
-      "isoform_id": "P56856-1",
+      "isoform_id": "P56856",
       "uniprot_acc": "P56856",
-      "tm_helix_count": 0,
-      "n_terminal_orientation": "extracellular",
+      "tm_helix_count": 4,
+      "n_terminal_orientation": "cytoplasmic",
       "c_terminal_orientation": "cytoplasmic",
       "signal_peptide_length": 0,
-      "ecd_length_residues": 0,
-      "icd_length_residues": 0,
-      "per_residue_topology": "",
-      "tool_version": "stub-no-fetchers-v1.0.0",
-      "retrieved_at": "2026-05-17T00:31:25.525707Z"
+      "ecd_length_residues": 85,
+      "icd_length_residues": 91,
+      "per_residue_topology": "IIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z"
     },
     "isoform_topologies": [],
     "orthologs": {
-      "mouse": [],
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "P56857",
+          "ensembl_id": "CLD18_MOUSE",
+          "ortholog_uniprot_acc": "P56857",
+          "ortholog_symbol": "CLD18_MOUSE",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 96.47058823529412,
+          "ecd_pct_similarity_to_human_canonical": 96.47058823529412,
+          "ecd_length_residues": 89,
+          "tm_helix_count": 4,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-18T12:40:14.492197Z"
+        }
+      ],
       "rat": [],
-      "cynomolgus": []
+      "cynomolgus": [
+        {
+          "is_canonical": true,
+          "isoform_id": "A0A2K5VVB4",
+          "ensembl_id": "A0A2K5VVB4_MACFA",
+          "ortholog_uniprot_acc": "A0A2K5VVB4",
+          "ortholog_symbol": "A0A2K5VVB4_MACFA",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 100.0,
+          "ecd_pct_similarity_to_human_canonical": 100.0,
+          "ecd_length_residues": 85,
+          "tm_helix_count": 4,
+          "compara_version": "Compara r112",
+          "retrieved_at": "2026-05-18T12:40:14.492159Z"
+        }
+      ]
     },
-    "paralogs": [],
+    "paralogs": [
+      {
+        "paralog_symbol": "CLDN1",
+        "paralog_uniprot_acc": "O95832",
+        "ecd_pct_identity": 40.78947368421053,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN19",
+        "paralog_uniprot_acc": "Q8N6F1",
+        "ecd_pct_identity": 38.666666666666664,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN4",
+        "paralog_uniprot_acc": "O14493",
+        "ecd_pct_identity": 37.83783783783784,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN7",
+        "paralog_uniprot_acc": "O95471",
+        "ecd_pct_identity": 36.84210526315789,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN5",
+        "paralog_uniprot_acc": "O00501",
+        "ecd_pct_identity": 36.84210526315789,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN3",
+        "paralog_uniprot_acc": "O15551",
+        "ecd_pct_identity": 36.486486486486484,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN14",
+        "paralog_uniprot_acc": "O95500",
+        "ecd_pct_identity": 35.526315789473685,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN6",
+        "paralog_uniprot_acc": "P56747",
+        "ecd_pct_identity": 35.13513513513514,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN8",
+        "paralog_uniprot_acc": "P56748",
+        "ecd_pct_identity": 35.064935064935064,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN11",
+        "paralog_uniprot_acc": "O75508",
+        "ecd_pct_identity": 33.84615384615385,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN9",
+        "paralog_uniprot_acc": "O95484",
+        "ecd_pct_identity": 33.78378378378378,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN2",
+        "paralog_uniprot_acc": "P57739",
+        "ecd_pct_identity": 31.57894736842105,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN24",
+        "paralog_uniprot_acc": "A6NM45",
+        "ecd_pct_identity": 30.263157894736842,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN22",
+        "paralog_uniprot_acc": "Q8N7P3",
+        "ecd_pct_identity": 30.263157894736842,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN23",
+        "paralog_uniprot_acc": "Q96B33",
+        "ecd_pct_identity": 30.0,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN10",
+        "paralog_uniprot_acc": "P78369",
+        "ecd_pct_identity": 28.37837837837838,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN15",
+        "paralog_uniprot_acc": "P56746",
+        "ecd_pct_identity": 28.169014084507044,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN25",
+        "paralog_uniprot_acc": "C9JDP6",
+        "ecd_pct_identity": 28.000000000000004,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN20",
+        "paralog_uniprot_acc": "P56880",
+        "ecd_pct_identity": 27.631578947368425,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN16",
+        "paralog_uniprot_acc": "Q9Y5I7",
+        "ecd_pct_identity": 27.631578947368425,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN34",
+        "paralog_uniprot_acc": "H7C241",
+        "ecd_pct_identity": 26.506024096385545,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "CLDN17",
+        "paralog_uniprot_acc": "P56750",
+        "ecd_pct_identity": 26.31578947368421,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112"
+      }
+    ],
     "structure": {
-      "afdb_id": "AF-P56856-F1-model_v4",
+      "afdb_id": "AF-P56856-F1",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 0.0,
-      "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
+      "ecd_mean_plddt": 72.2738823529412,
+      "ecd_disordered_fraction": 0.4117647058823529,
+      "source": "AlphaFold DB (ECD-restricted pLDDT, n=85)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
