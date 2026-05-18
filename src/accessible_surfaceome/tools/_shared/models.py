@@ -434,13 +434,13 @@ class LiteraturePack(BaseModel):
 # can distinguish "absent" from "not retrieved".
 EvidenceCategory = Literal[
     "ihc",
-    "if_intact",
+    "if",
     "flow_cytometry",
     "surface_biotinylation",
     "mass_spec_surfaceome",
     "western_blot_paired",
     "structure_with_ecd",
-    "hpa_ihc",
+    "other",
 ]
 
 

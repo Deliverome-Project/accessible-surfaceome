@@ -17,15 +17,26 @@ substring check normalizes against).
 Categories
 ----------
 
-``ihc``, ``if_intact``, ``flow_cytometry``, ``surface_biotinylation``,
+``ihc``, ``if``, ``flow_cytometry``, ``surface_biotinylation``,
 ``mass_spec_surfaceome``, ``western_blot_paired``, ``structure_with_ecd``,
-``hpa_ihc``.
+``other``.
 
-``hpa_ihc`` short-circuits HTTP and reads the cached HPA snapshot at
-``data/processed/hpa/hpa_human_snapshot.tsv``. The synthetic ``HPA:<symbol>``
-source body is registered with the SourceTextStore by the orchestrator's
-source-registration shim, so substring validation works the same way as
-for PMC quotes.
+* ``ihc`` covers all immunohistochemistry, including HPA antibody panels
+  and stand-alone IHC literature. HPA's per-tissue reliability call is
+  already exposed deterministically via the ``db_panel`` HPA SourceVote;
+  ``ihc`` retrieves the broader literature that cites or extends HPA.
+* ``if`` covers immunofluorescence in two shapes: non-permeabilized IF
+  (only surface epitopes visible) AND permeabilized confocal IF with
+  explicit PM-marker colocalization (Na+/K+-ATPase, E-cadherin,
+  β1-integrin, pan-cadherin, ZO-1, GM1) — the colocalization is what
+  distinguishes "surface" from "generic membranous".
+* ``other`` is a catch-all for surface evidence that doesn't fit the
+  methodology-specific buckets — pharmacology / radioligand binding /
+  BRET for receptor classes, shedding / soluble-form detection,
+  proximity labeling (APEX2 / TurboID / BioID), live-cell tomography,
+  functional surface assays. Used heavily for tm=7 GPCRs (where the
+  bulk of the literature is pharmacology) and shedding-prone
+  type-I membrane proteins.
 
 Why a separate tool from ``gene_literature``: the contract is different
 (retrieval + extraction, not just bibliography). Keeping the per-category
@@ -36,12 +47,11 @@ heuristics evolve independently.
 
 from __future__ import annotations
 
-import csv
 import logging
 import re
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Literal, get_args
+from typing import get_args
 
 from ._shared.europepmc import (
     SectionName,
@@ -66,7 +76,6 @@ from ._shared.models import (
     Paper,
     PaperSection,
     PaperSection_,
-    SyntheticSource,
 )
 from ._shared.pubtator import build_gene_entity_query, pubtator_search
 from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
@@ -181,14 +190,20 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
         ),
         section_weights=_DEFAULT_ANTIBODY_WEIGHTS,
     ),
-    "if_intact": _CategorySpec(
+    "if": _CategorySpec(
         query_clauses=(
-            '("immunofluorescence" OR "confocal" OR "live-cell imaging")',
+            '("immunofluorescence" OR "confocal" OR "live-cell imaging" '
+            'OR "IF microscopy")',
             '("non-permeabilized" OR "non permeabilized" OR "unpermeabilized" '
-            'OR "live cells" OR "intact cells" OR "surface staining")',
+            'OR "live cells" OR "intact cells" OR "surface staining" '
+            'OR "Na/K-ATPase" OR "Na+/K+-ATPase" OR "Na,K-ATPase" '
+            'OR "E-cadherin" OR "β1-integrin" OR "beta-1 integrin" '
+            'OR "pan-cadherin" OR "ZO-1" OR "GM1" '
+            'OR "membrane colocalization" OR "plasma membrane marker")',
         ),
         pubtator_terms="immunofluorescence",
         hallmark_patterns=(
+            # Non-permeabilized IF — surface epitopes only.
             re.compile(
                 r"(non[-\s]?permeabili[sz]ed|unpermeabili[sz]ed|intact|live)\s+(cells|t\s*cells|"
                 r"lymphocytes|leukocytes|tumou?r\s*cells)",
@@ -196,6 +211,21 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             ),
             re.compile(
                 r"surface\s+(staining|expression|labeling|fluorescen|signal)",
+                re.IGNORECASE,
+            ),
+            # Permeabilized confocal IF with PM-marker colocalization.
+            re.compile(
+                r"(colocali[sz]|co[-\s]?localizat|merge[ds]?\s+with|co[-\s]?staining\s+with)"
+                r"[^.]{0,150}?(Na\+?[/,]?K\+?[-\s]?ATPase|"
+                r"E[-\s]?cadherin|β1[-\s]?integrin|beta[-\s]?1[-\s]?integrin|"
+                r"pan[-\s]?cadherin|ZO[-\s]?1|GM1\s+ganglioside|"
+                r"plasma\s+membrane\s+marker|cell[-\s]?surface\s+marker)",
+                re.IGNORECASE,
+            ),
+            re.compile(
+                r"(Na\+?[/,]?K\+?[-\s]?ATPase|E[-\s]?cadherin|β1[-\s]?integrin|"
+                r"beta[-\s]?1[-\s]?integrin|pan[-\s]?cadherin|ZO[-\s]?1)"
+                r"[^.]{0,150}?(colocali[sz]|co[-\s]?localizat|merge[ds]?|co[-\s]?staining)",
                 re.IGNORECASE,
             ),
         ),
@@ -308,24 +338,62 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
         ),
         section_weights=_DEFAULT_STRUCT_WEIGHTS,
     ),
-    # hpa_ihc has no literature query — it's served from the cached
-    # HPA snapshot, so both the Europe PMC and PubTator queries are empty.
-    "hpa_ihc": _CategorySpec(
-        query_clauses=(),
-        pubtator_terms="",
-        hallmark_patterns=(),
-        section_weights={},
+    # Catch-all bucket for surface evidence that doesn't fit the
+    # methodology-specific categories above:
+    #   • Pharmacology — radioligand binding, BRET, β-arrestin recruitment,
+    #     agonist potency curves (the dominant evidence type for tm=7 GPCRs).
+    #   • Shedding — ADAM/MMP/BACE-mediated ectodomain release, soluble
+    #     form in serum / supernatant (implies prior surface presence).
+    #   • Proximity labeling — APEX2 / TurboID / BioID anchored at a
+    #     known surface marker, identifying neighbors.
+    #   • Functional surface assays — internalization / endocytosis
+    #     kinetics, live-cell tomography of the surface pool.
+    "other": _CategorySpec(
+        query_clauses=(
+            '("cell surface" OR "plasma membrane" OR "surface expression" '
+            'OR "cell-surface" OR "membrane localization")',
+            '("radioligand" OR "BRET" OR "β-arrestin" OR "beta-arrestin" '
+            'OR "agonist potency" OR "EC50" OR "IC50" '
+            'OR "shedding" OR "ectodomain release" OR "soluble form" '
+            'OR "proximity labeling" OR "proximity biotinylation" '
+            'OR "APEX2" OR "TurboID" OR "BioID" '
+            'OR "internalization" OR "endocytosis rate")',
+        ),
+        pubtator_terms="cell surface ligand binding",
+        hallmark_patterns=(
+            # Pharmacology / ligand binding — implies surface accessibility.
+            re.compile(
+                r"(radioligand|BRET|β[-\s]?arrestin|beta[-\s]?arrestin|"
+                r"agonist|antagonist|cAMP|EC50|IC50|\bKi\b|\bKd\b)"
+                r"[^.]{0,200}?(binding|recruitment|potency|engagement|"
+                r"surface|extracellular)",
+                re.IGNORECASE,
+            ),
+            # Shedding / soluble form — implies prior surface presence.
+            re.compile(
+                r"(shedding|ectodomain\s+release|sheddase|"
+                r"ADAM[-\s]?17|ADAM[-\s]?10|BACE[-\s]?1|MMP[-\s]?\d+|"
+                r"γ[-\s]?secretase|gamma[-\s]?secretase|soluble\s+form)",
+                re.IGNORECASE,
+            ),
+            # Proximity labeling near the PM / extracellular face.
+            re.compile(
+                r"(APEX2?|TurboID|BioID|proximity\s+labeling|"
+                r"proximity\s+biotinylation)[^.]{0,200}?"
+                r"(surface|membrane|extracellular|plasma\s+membrane)",
+                re.IGNORECASE,
+            ),
+            # Internalization implies the protein was at the surface first.
+            re.compile(
+                r"(internalization|endocytosis|recycling)\s+"
+                r"(rate|kinetics|assay|half[-\s]?life)",
+                re.IGNORECASE,
+            ),
+        ),
+        section_weights=_DEFAULT_ANTIBODY_WEIGHTS,
+        accepts_paper_level_evidence=True,
     ),
 }
-
-
-# ---------------------------------------------------------------------------
-# HPA snapshot path
-# ---------------------------------------------------------------------------
-
-
-# Import lazily inside _hpa_ihc to keep module import cheap and avoid
-# import-time coupling to paths.py (the path is only used for HPA queries).
 
 
 # ---------------------------------------------------------------------------
@@ -351,9 +419,10 @@ def evidence_retrieval(
     the papers, the snippets, and (when empty) an ``empty_reason`` the
     agent can pass through to ``confidence_reasoning``.
 
-    For ``category="hpa_ihc"`` no HTTP is issued — the HPA snapshot at
-    ``data/processed/hpa/hpa_human_snapshot.tsv`` is read directly and
-    a synthetic ``HPA:<symbol>`` source is emitted.
+    HPA per-tissue evidence is no longer a retrieval category — the HPA
+    surface vote + main_location ride on the deterministic ``db_panel``
+    input instead, and broader IHC literature (including papers that
+    cite or extend HPA) is covered by ``category="ihc"``.
     """
     if category not in get_args(EvidenceCategory):
         raise ValueError(
@@ -365,8 +434,6 @@ def evidence_retrieval(
     client = http or open_default_client()
     index = retraction_index if retraction_index is not None else _empty_retraction_index()
     try:
-        if category == "hpa_ihc":
-            return _hpa_ihc(uniprot_acc=uniprot_acc, http=client)
         return _pmc_retrieval(
             uniprot_acc=uniprot_acc,
             category=category,
@@ -381,7 +448,7 @@ def evidence_retrieval(
 
 
 # ---------------------------------------------------------------------------
-# PMC retrieval path (everything except hpa_ihc)
+# PMC retrieval path
 # ---------------------------------------------------------------------------
 
 
@@ -1150,141 +1217,6 @@ def _snap_right_to_clause(text: str) -> str:
     return text
 
 
-# ---------------------------------------------------------------------------
-# HPA short-circuit
-# ---------------------------------------------------------------------------
-
-
-_HPA_RELIABILITY_TIERS: tuple[str, ...] = ("enhanced", "supported", "approved", "uncertain")
-
-
-def _hpa_ihc(*, uniprot_acc: str, http: CachedHTTP) -> EvidenceRetrievalPack:
-    """Read the HPA snapshot, find this gene, emit deterministic snippets.
-
-    The snippet text uses :func:`format_hpa_body` so the orchestrator's
-    body-registration shim can rebuild the exact same string and the
-    substring check still works.
-    """
-    from ..paths import DATA_DIR  # local import to keep paths.py optional at import time
-
-    bundle = _resolve(uniprot_acc, http=http)
-    symbol = bundle.hgnc_symbol
-    snapshot = DATA_DIR / "processed" / "hpa" / "hpa_human_snapshot.tsv"
-    if not snapshot.exists():
-        return EvidenceRetrievalPack(
-            uniprot_acc=uniprot_acc,
-            category="hpa_ihc",
-            empty_reason="HPA snapshot not found on disk; bootstrap with `bootstrap-worktree.sh candidate`",
-        )
-
-    row = _find_hpa_row(snapshot, symbol=symbol, uniprot_acc=bundle.uniprot_acc)
-    if row is None:
-        return EvidenceRetrievalPack(
-            uniprot_acc=uniprot_acc,
-            category="hpa_ihc",
-            empty_reason=f"no HPA snapshot row for {symbol} / {bundle.uniprot_acc}",
-        )
-
-    body = format_hpa_body(row)
-    snippets = [
-        CandidateSnippet(
-            source_id=f"HPA:{symbol}",
-            section="other",
-            figure_or_table_id=None,
-            text=line.strip(),
-            score=1.0,
-            hallmark_phrase="hpa_snapshot",
-        )
-        for line in body.splitlines()
-        if line.strip() and len(line.strip()) <= 200
-    ]
-    ensembl = (row.get("ensembl_gene_id") or "").strip()
-    hpa_url = (
-        f"https://www.proteinatlas.org/{ensembl}/cell"
-        if ensembl
-        else f"https://www.proteinatlas.org/?query={symbol}"
-    )
-    synthetic = [
-        SyntheticSource(
-            source_id=f"HPA:{symbol}",
-            source_type="hpa_ihc",
-            url=hpa_url,
-            title=f"HPA snapshot for {symbol}",
-            raw_text=body,
-        )
-    ] if body else []
-    return EvidenceRetrievalPack(
-        uniprot_acc=uniprot_acc,
-        category="hpa_ihc",
-        n_papers_searched=1,
-        n_papers_with_snippets=1 if snippets else 0,
-        papers=[],
-        snippets=snippets,
-        evidence_claim_drafts=[
-            _snippet_to_draft(s, seq=i + 1) for i, s in enumerate(snippets)
-        ],
-        synthetic_sources=synthetic,
-        empty_reason=None if snippets else "HPA row matched but no quotable lines emitted",
-    )
-
-
-HPA_SOURCE_PREFIX: Literal["HPA"] = "HPA"
-
-
-def format_hpa_body(row: Mapping[str, str]) -> str:
-    """Render the HPA per-gene snapshot row as the canonical multi-line
-    source body for ``HPA:<symbol>``.
-
-    Used by both the tool (to emit candidate snippets) and the orchestrator
-    (to register the body for substring validation). Deterministic so the
-    two sides agree byte-for-byte.
-    """
-    parts: list[str] = []
-    symbol = (row.get("hpa_gene_symbol") or "").strip()
-    if symbol:
-        parts.append(f"HPA gene symbol: {symbol}.")
-    reliability = (row.get("hpa_reliability") or "").strip()
-    if reliability:
-        parts.append(f"HPA reliability for IHC: {reliability}.")
-    locations = (row.get("hpa_locations") or "").strip()
-    if locations:
-        parts.append(f"HPA subcellular locations: {locations}.")
-    if (row.get("hpa_pm_accessible") or "").strip() in {"1", "true", "True"}:
-        parts.append("HPA flags this gene as plasma-membrane accessible.")
-    if (row.get("hpa_junctional") or "").strip() in {"1", "true", "True"}:
-        parts.append("HPA flags this gene as junctional.")
-    pm_tiers: list[str] = []
-    for tier in _HPA_RELIABILITY_TIERS:
-        col = f"hpa_pm_in_{tier}"
-        if (row.get(col) or "").strip() in {"1", "true", "True"}:
-            pm_tiers.append(tier)
-    if pm_tiers:
-        parts.append(f"HPA plasma-membrane reliability tiers: {', '.join(pm_tiers)}.")
-    return "\n".join(parts)
-
-
-def _find_hpa_row(
-    snapshot_path,
-    *,
-    symbol: str | None,
-    uniprot_acc: str | None,
-) -> Mapping[str, str] | None:
-    target_symbol = (symbol or "").strip().upper()
-    target_acc = (uniprot_acc or "").strip().upper()
-    with snapshot_path.open() as fh:
-        reader = csv.DictReader(fh, delimiter="\t")
-        for raw in reader:
-            row_sym = (raw.get("hpa_gene_symbol") or "").strip().upper()
-            row_acc = (raw.get("uniprot_accession") or "").strip().upper()
-            if target_symbol and row_sym == target_symbol:
-                return raw
-            if target_acc and row_acc == target_acc:
-                return raw
-    return None
-
-
 __all__ = [
     "evidence_retrieval",
-    "format_hpa_body",
-    "HPA_SOURCE_PREFIX",
 ]

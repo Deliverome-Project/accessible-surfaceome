@@ -21,7 +21,6 @@ draft-level cross-reference rule.)
 from __future__ import annotations
 
 from datetime import UTC, datetime
-from pathlib import Path
 from typing import Any, cast
 
 import pytest
@@ -378,102 +377,6 @@ def test_trim_snaps_to_clause_boundary_when_overlong() -> None:
         assert snip[-1] in ".!?\"')" or snip.endswith("  ") is False, (
             f"snippet ends mid-clause: ...{snip[-80:]!r}"
         )
-
-
-# ---------------------------------------------------------------------------
-# HPA short-circuit
-# ---------------------------------------------------------------------------
-
-
-def _hpa_fixture_row(tmp_path: Path, symbol: str = "ERBB2") -> Path:
-    """Write a minimal HPA snapshot TSV with one matching row."""
-    snapshot = tmp_path / "hpa_human_snapshot.tsv"
-    header = "\t".join([
-        "uniprot_accession", "ensembl_gene_id", "hpa_gene_symbol",
-        "hpa_reliability", "hpa_surface_flag", "hpa_pm_accessible",
-        "hpa_junctional", "hpa_pm_in_enhanced", "hpa_pm_in_supported",
-        "hpa_pm_in_approved", "hpa_pm_in_uncertain", "hpa_locations",
-    ])
-    row = "\t".join([
-        "P04626", "ENSG00000141736", symbol,
-        "Enhanced", "1", "1",
-        "0", "1", "0",
-        "0", "0", "Plasma membrane;Vesicles",
-    ])
-    snapshot.write_text(f"{header}\n{row}\n")
-    return snapshot
-
-
-def test_hpa_ihc_reads_snapshot_no_http(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Pipe DATA_DIR at /processed/hpa to a tmp fixture; assert no HTTP."""
-    hpa_dir = tmp_path / "processed" / "hpa"
-    hpa_dir.mkdir(parents=True)
-    _hpa_fixture_row(hpa_dir, symbol="ERBB2")
-    # Move the snapshot to the canonical filename location.
-    (hpa_dir / "hpa_human_snapshot.tsv").rename(hpa_dir / "hpa_human_snapshot.tsv")
-
-    # Patch DATA_DIR so _hpa_ihc reads our fixture.
-    monkeypatch.setattr("accessible_surfaceome.paths.DATA_DIR", tmp_path)
-
-    class _NoHTTP:
-        def __getattr__(self, name: str) -> Any:
-            raise AssertionError(
-                f"hpa_ihc should not touch HTTP; called {name!r}"
-            )
-
-    # _hpa_ihc calls gene_lookup.resolve which uses http. We stub resolve
-    # to skip the HTTP path entirely.
-    from accessible_surfaceome.tools._shared.models import IdentifierBundle
-
-    def _fake_resolve(_acc: str, *, http: Any) -> IdentifierBundle:
-        return IdentifierBundle(
-            uniprot_acc="P04626",
-            hgnc_id="HGNC:3430",
-            hgnc_symbol="ERBB2",
-            approved_name="erb-b2 receptor tyrosine kinase 2",
-            aliases=["HER2"],
-            ncbi_gene_id=2064,
-            ensembl_gene="ENSG00000141736",
-        )
-
-    monkeypatch.setattr(er, "_resolve", _fake_resolve)
-
-    pack = er.evidence_retrieval(
-        uniprot_acc="P04626",
-        category="hpa_ihc",
-        http=cast(CachedHTTP, _NoHTTP()),
-    )
-    assert pack.category == "hpa_ihc"
-    assert pack.snippets, f"expected HPA snippets; got empty pack: {pack!r}"
-    # Every snippet's text must be a line of the synthetic body so the
-    # orchestrator's substring check passes against the registered body.
-    assert pack.synthetic_sources
-    body = pack.synthetic_sources[0].raw_text
-    for snippet in pack.snippets:
-        assert snippet.text in body
-    # Source ID convention.
-    for snippet in pack.snippets:
-        assert snippet.source_id == "HPA:ERBB2"
-
-
-def test_hpa_body_template_is_deterministic() -> None:
-    """format_hpa_body must produce the same bytes for the same row —
-    the orchestrator depends on this to register a body the snippet
-    substring check can find."""
-    row = {
-        "hpa_gene_symbol": "ERBB2",
-        "hpa_reliability": "Enhanced",
-        "hpa_locations": "Plasma membrane",
-        "hpa_pm_accessible": "1",
-        "hpa_pm_in_enhanced": "1",
-    }
-    body_a = er.format_hpa_body(row)
-    body_b = er.format_hpa_body(dict(row))
-    assert body_a == body_b
-    assert "HPA reliability for IHC: Enhanced" in body_a
-    assert "Plasma membrane" in body_a
 
 
 # ---------------------------------------------------------------------------
