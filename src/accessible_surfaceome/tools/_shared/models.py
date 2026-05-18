@@ -1425,6 +1425,34 @@ class ExpressionObservation(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
+class OverexpressionContext(BaseModel):
+    """Construct details for overexpression-based surface evidence.
+
+    Populated by the methods builder when ``MethodObservation.expression_system``
+    is ``"overexpression"`` or ``"mixed"``. The ``signal_peptide_source``
+    field is the critical tier discriminator: a foreign / exogenous signal
+    peptide forces secretory-pathway entry regardless of the protein's
+    native trafficking, so foreign-SP overexpression cannot directly evidence
+    native surface localization (csGRP78 / cell-surface-vimentin failure
+    mode). The trim + select prompts require the SP source on every
+    overexpression clip; this is where the builder lands it so downstream
+    consumers (the viewer, the synthesizer, future automated audits) can
+    tier the evidence without re-reading the methods sentence.
+
+    Schema-optional: ``MethodObservation.overexpression`` defaults to
+    ``None`` so endogenous-evidence records and pre-PR-#38 records remain
+    valid.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    signal_peptide_source: Literal["native", "exogenous", "unspecified"]
+    signal_peptide_detail: str | None = None  # "IgG kappa leader", "preprotrypsin SP", "BiP leader"
+    construct_tag: str | None = None  # "C-terminal FLAG", "N-terminal HA", "GFP fusion"
+    cell_line: str | None = None  # "HEK293", "CHO", "293T", "HeLa"
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
 class MethodObservation(BaseModel):
     """One surface-evidence method panel: how the surface claim was measured."""
 
@@ -1438,6 +1466,11 @@ class MethodObservation(BaseModel):
     accessibility_relevance: AccessibilityRelevance
     surface_claim_type: SurfaceClaimType
     expression_observations: list[ExpressionObservation] = Field(default_factory=list)
+    # Construct details for overexpression-based evidence. ``None`` for
+    # ``expression_system="endogenous"``; required-in-practice (enforced by
+    # the methods builder prompt, not the schema) when expression_system is
+    # ``"overexpression"`` or ``"mixed"``.
+    overexpression: OverexpressionContext | None = None
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
@@ -2745,6 +2778,7 @@ __all__ = [
     # v1.0.0 — surface evidence (section 1)
     "AntibodyRef",
     "ExpressionObservation",
+    "OverexpressionContext",
     "MethodObservation",
     "NonSurfaceExpression",
     "TherapeuticEngagementContext",

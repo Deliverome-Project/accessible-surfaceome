@@ -50,6 +50,39 @@ contributed to that row.
   `assay_context.permeabilized` when set; default `unknown` when silent.
 - `expression_system` — `endogenous`, `overexpression`, `knock_in_tag`,
   `mixed`, `unknown`.
+- `overexpression` — REQUIRED when `expression_system` is
+  `overexpression` or `mixed`; otherwise `null`. The A1 trim phase
+  preserved the methods sentence that names the construct's signal
+  peptide; read that sentence to fill these fields. The
+  `signal_peptide_source` is the critical tier discriminator — foreign
+  SPs force secretory-pathway entry regardless of the protein's native
+  trafficking, so this field decides whether the evidence is real
+  (native SP) or supportive-only (exogenous SP).
+    - `signal_peptide_source`: closed enum.
+      - `native` — methods sentence indicates the construct uses the
+        protein's own SP / no leader replacement. Phrases:
+        "endogenous signal peptide", "native signal sequence",
+        "untagged wildtype", "full-length [GENE]", "[GENE] cDNA" with
+        no leader-replacement mention.
+      - `exogenous` — methods sentence names a foreign SP. Phrases:
+        "IgG kappa leader", "IgG κ light-chain SP", "preprotrypsin
+        signal peptide", "BiP leader", "PreS", "honeybee melittin SP",
+        "interleukin-2 secretion signal", "Igλ leader", or any
+        chimeric leader replacing the native sequence.
+      - `unspecified` — methods don't mention the leader source.
+        Default to this when ambiguous; the synthesizer treats it
+        below endogenous-SP evidence.
+    - `signal_peptide_detail` — short phrase from the methods naming
+      the leader (e.g. "IgG kappa leader", "preprotrypsin SP",
+      "endogenous signal peptide"). Use `null` when nothing specific
+      was stated.
+    - `construct_tag` — short phrase naming any epitope or fluorescent
+      tag fused to the construct (e.g. "C-terminal FLAG", "N-HA",
+      "GFP fusion"). Use `null` when no tag is reported.
+    - `cell_line` — the OE host line ("HEK293", "CHO", "293T",
+      "HeLa", "COS-7"). Use `null` when not stated.
+    - `cited_evidence_ids` — every `evidence_id` from the input ledger
+      whose claim contributed to this overexpression block.
 - `antibodies[]` — list of `AntibodyRef`. Each carries `name`, optional
   `clone` / `vendor` / `catalog` / `rrid`, plus the required
   `monoclonal_or_polyclonal`, `antibody_epitope_region`,

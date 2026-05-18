@@ -542,6 +542,61 @@ def _render_antibody(ab: dict[str, Any]) -> str:
     return "<div class='ab'>" + " · ".join(pieces) + "</div>"
 
 
+# Expression system → badge color. ``endogenous`` is the gold standard
+# (green); overexpression and knock-in tag are real but require scrutiny
+# (amber); ``mixed`` includes both endogenous and OE in the same panel.
+_EXPRESSION_SYSTEM_KIND = {
+    "endogenous": "green",
+    "overexpression": "amber",
+    "knock_in_tag": "amber",
+    "mixed": "amber",
+    "unknown": "gray",
+}
+
+# Overexpression signal peptide source → badge color. Native is real
+# evidence (green); exogenous is a known artifact pathway and gets the
+# red alarm (a foreign SP forces secretory entry regardless of native
+# trafficking — csGRP78 / cell-surface-vimentin failure mode); unspecified
+# is the "we don't know" amber default.
+_SP_SOURCE_KIND = {
+    "native": "green",
+    "exogenous": "red",
+    "unspecified": "amber",
+}
+
+
+def _render_overexpression(oe: dict[str, Any] | None) -> str:
+    """Render the overexpression construct block — visible only when
+    a method's expression_system is overexpression / mixed."""
+    if oe is None:
+        return ""
+    sp_source = oe.get("signal_peptide_source") or "unspecified"
+    sp_kind = _SP_SOURCE_KIND.get(sp_source, "gray")
+    detail_pieces: list[str] = [
+        f"{_badge('SP: ' + sp_source, sp_kind)}"
+    ]
+    if oe.get("signal_peptide_detail"):
+        detail_pieces.append(
+            f"<span class='small'>{html.escape(oe['signal_peptide_detail'])}</span>"
+        )
+    if oe.get("cell_line"):
+        detail_pieces.append(
+            f"<span class='small'>cell line: <strong>{html.escape(oe['cell_line'])}</strong></span>"
+        )
+    if oe.get("construct_tag"):
+        detail_pieces.append(
+            f"<span class='small'>tag: {html.escape(oe['construct_tag'])}</span>"
+        )
+    return (
+        "<div class='oe-block' style='margin-top:.4rem;padding:.4rem .6rem;"
+        "border-left:3px solid var(--accent-amber, #c08a3a);"
+        "background:rgba(192,138,58,.06);font-size:.88rem;'>"
+        "<strong>Overexpression construct:</strong> "
+        + " · ".join(detail_pieces)
+        + "</div>"
+    )
+
+
 def _render_method_card(m: dict[str, Any]) -> str:
     abs_html = "".join(_render_antibody(ab) for ab in (m.get("antibodies") or []))
     obs_rows = ""
@@ -560,16 +615,20 @@ def _render_method_card(m: dict[str, Any]) -> str:
         if obs_rows
         else "<em class='muted small'>no expression observations</em>"
     )
+    expression_system = m.get("expression_system") or "unknown"
+    expression_kind = _EXPRESSION_SYSTEM_KIND.get(expression_system, "gray")
+    oe_block = _render_overexpression(m.get("overexpression"))
     return f"""
     <div class="method-card">
       <div class="method-head">
         {_badge(m.get('method_family', '—'), 'blue')}
         {_badge(m.get('method_subclass', '—'), 'blue')}
         {_badge('perm: ' + str(m.get('permeabilization', '—')), 'gray')}
-        {_badge('system: ' + str(m.get('expression_system', '—')), 'gray')}
+        {_badge('system: ' + str(expression_system), expression_kind)}
         {_badge(m.get('accessibility_relevance', '—'), _RELEVANCE_KIND.get(m.get('accessibility_relevance') or '', 'gray'))}
         {_badge('claim: ' + str(m.get('surface_claim_type', '—')), 'amber')}
       </div>
+      {oe_block}
       <div class="abs">{abs_html or "<em class='muted small'>no antibodies recorded</em>"}</div>
       <div class="obs">{obs_table}</div>
       <div class="citations">{_evi_chip_row(m.get('cited_evidence_ids') or [])}</div>

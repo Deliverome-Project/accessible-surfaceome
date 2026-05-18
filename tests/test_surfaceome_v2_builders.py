@@ -244,6 +244,107 @@ def test_build_methods_scrubs_unknown_citations() -> None:
     assert rows[0].cited_evidence_ids == ["a1_evi_01"]
 
 
+def test_build_methods_overexpression_with_native_sp() -> None:
+    """A native-SP overexpression panel populates the overexpression block
+    with `signal_peptide_source="native"`."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote="HEK293 cells transfected with untagged full-length [GENE] cDNA.",
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "overexpression",
+            "overexpression": {
+                "signal_peptide_source": "native",
+                "signal_peptide_detail": "native signal peptide",
+                "construct_tag": None,
+                "cell_line": "HEK293",
+                "cited_evidence_ids": ["a1_evi_01"],
+            },
+            "antibodies": [],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert len(rows) == 1
+    assert rows[0].expression_system == "overexpression"
+    assert rows[0].overexpression is not None
+    assert rows[0].overexpression.signal_peptide_source == "native"
+    assert rows[0].overexpression.cell_line == "HEK293"
+
+
+def test_build_methods_overexpression_with_exogenous_sp() -> None:
+    """An exogenous-SP construct should be flagged so downstream tier
+    rules can demote it (csGRP78 / cell-surface-vimentin failure mode)."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote="HEK293 cells transfected with IgG kappa leader-[GENE] fusion.",
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "overexpression",
+            "overexpression": {
+                "signal_peptide_source": "exogenous",
+                "signal_peptide_detail": "IgG kappa leader",
+                "construct_tag": "C-terminal FLAG",
+                "cell_line": "HEK293",
+                "cited_evidence_ids": ["a1_evi_01"],
+            },
+            "antibodies": [],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows[0].overexpression is not None
+    assert rows[0].overexpression.signal_peptide_source == "exogenous"
+    assert rows[0].overexpression.signal_peptide_detail == "IgG kappa leader"
+
+
+def test_build_methods_endogenous_panel_has_no_overexpression_block() -> None:
+    """Endogenous-evidence panels leave the overexpression block as None."""
+    claims = [_claim("01", evidence_type="flow_cytometry")]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows[0].expression_system == "endogenous"
+    assert rows[0].overexpression is None
+
+
 # ---------------------------------------------------------------------------
 # therapeutic_engagement_builder
 # ---------------------------------------------------------------------------
