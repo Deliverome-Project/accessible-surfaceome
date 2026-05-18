@@ -10,6 +10,16 @@ phrasings. Operates as a small cascade:
 3. ``mode="fetch_abstract"`` — single PMID with auto-tagged topic categories.
 4. ``mode="fetch_fulltext"`` — PMC OA full-text only, capped at ~10k tokens
    with section truncation flags.
+5. ``mode="recent_corpus"`` — PubTator entity-anchored ``@GENE_<SYMBOL>``
+   sweep sorted by date (no topic narrowing), paginated, then pre-filtered
+   on the abstract for surface/membrane keywords. Catches verdict-shifting
+   recent papers whose core concept the planner couldn't have keyword-
+   anchored (e.g. a paper introducing new vocabulary). See the SRC sample:
+   Delaveris 2026 *Science* — "Autophagolysosomal exocytosis inverts Src
+   kinase onto the cell surface in cancer" — was indexed by PubTator but
+   scored low on every methodology-category query because its concepts
+   ("inverts", "autophagolysosomal exocytosis") were absent from the
+   per-category terms.
 
 Each return carries deterministic ``topic_tags``, ``is_review``, and
 ``is_retracted`` flags computed in our process before tokens reach the agent
@@ -23,6 +33,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from typing import Any
 
 from ._shared.europepmc import (
@@ -39,6 +50,7 @@ from ._shared.models import (
     Paper,
     TopicAnchor,
 )
+from ._shared.pubtator import build_gene_entity_query, pubtator_search
 from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
 from .evidence_retrieval import extract_paper_drafts
 from .gene_lookup import resolve as _resolve
@@ -54,6 +66,39 @@ logger = logging.getLogger(__name__)
 _NCBI_TTL = 30
 
 _NCBI_ELINK = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
+
+
+# recent_corpus tuning. The query uses ``@GENE_<SYMBOL> surface`` (not
+# bare ``@GENE_<SYMBOL>``) so PubTator's per-token relevance scoring
+# biases the date-sorted return toward surface-relevant papers. Empirical
+# calibration over the hard-gene set (SRC, WT1, CD81, GPR75, ATP5F1B,
+# HSPA5, EGFR, VIM, CLDN18):
+#
+# * The one-term suffix shrinks SRC's PubTator hit count from 55,418
+#   → 22,646 *and* moves the Delaveris 2026 *Science* verdict-shifter
+#   (PMID 41818370) from rank #174 → rank #38. Five pages × 10 hits =
+#   50 candidates safely covers it.
+# * Adding *more* terms (``surface membrane extracellular shed
+#   exocytosis ectodomain``) is counterproductive — PubTator collapses
+#   to multi-topic review papers that hit every term, and Delaveris
+#   drops out of the top 20. One term is the sweet spot.
+# * On quiet/orphan genes the suffix doesn't starve results: GPR75
+#   still returns 99 hits, ATP5F1B 522, CLDN18 640 — plenty to fill
+#   50 candidates without needing a bare-gene fallback.
+#
+# The abstract filter below is a coarse safety net (defense-in-depth
+# against papers PubTator ranks in for ``surface`` reasons unrelated
+# to surface biology — e.g. a paper about "tumor surface area") but
+# is mostly a no-op now that the query itself is surface-biased.
+_RECENT_CORPUS_PAGES = 5
+_RECENT_CORPUS_QUERY_SUFFIX = "surface"
+_RECENT_CORPUS_SURFACE_FILTER = re.compile(
+    r"\b(surface|membrane|extracellular|"
+    r"surfaceome|ectopic|inverted|externaliz|"
+    r"localiz|accessib|cell[-\s]surface|plasma\s*membrane|"
+    r"shed(?:ding)?|exocytos|ectodomain)\b",
+    re.IGNORECASE,
+)
 
 
 # Topic-anchor expansions. Used both for Europe PMC search-query construction
@@ -212,6 +257,20 @@ def gene_literature(
                 sections=paper.sections,
             )
             return paper
+        if mode == "recent_corpus":
+            # Default cap = DEFAULT_PAGE_SIZE (25). The surface-anchored
+            # PubTator query + 5 pages caps the upstream candidate pool
+            # at ~50; the abstract filter passes most of them since the
+            # query is already surface-biased; 25 returned papers is
+            # plenty for the selector to see the verdict-shifter.
+            return _recent_corpus(
+                http=client,
+                uniprot_acc=uniprot_acc,
+                hgnc_symbol=hgnc_symbol,
+                aliases=aliases,
+                max_results=max_results,
+                retraction_index=index,
+            )
         raise ValueError(f"unknown mode: {mode!r}")
     finally:
         if own_client:
@@ -319,6 +378,112 @@ def _topic_search(
         n_total=int(payload.get("hitCount") or len(papers)),
         n_returned=len(papers),
         topic_anchors_used=list(topic_anchors),
+    )
+
+
+def _recent_corpus(
+    *,
+    http: CachedHTTP,
+    uniprot_acc: str | None,
+    hgnc_symbol: str | None,
+    aliases: list[str] | None,
+    max_results: int,
+    retraction_index: RetractionIndex,
+) -> LiteraturePack:
+    """Topic-blind, date-sorted PubTator sweep + abstract-keyword pre-filter.
+
+    Pulls ``_RECENT_CORPUS_PAGES`` pages of PubTator ``@GENE_<SYMBOL>``
+    hits sorted by indexing date (descending), resolves PMIDs to abstracts
+    via one EuropePMC bulk call, and keeps only papers whose abstract
+    contains at least one surface/membrane-vocabulary token (regex defined
+    at module scope). The remaining papers are returned as a
+    ``LiteraturePack`` so the planner's trim/select pipeline can decide
+    which deserve a full-text fetch.
+
+    The point of being topic-blind is to defeat the keyword chicken-and-egg
+    problem: a paper that introduces *new* surface-biology vocabulary
+    (e.g. Delaveris 2026's "autophagolysosomal exocytosis inverts SRC onto
+    the cell surface") will not score high on any pre-defined methodology
+    category, so the only way to surface it is to look at the gene's
+    recent literature regardless of topic and let an LLM judge relevance.
+    The abstract pre-filter is a coarse cost-control gate (drops ~75% of
+    pure-signaling-pathway noise on prolific genes), not a quality gate.
+    """
+    if not hgnc_symbol:
+        if uniprot_acc is None:
+            raise ValueError("recent_corpus requires hgnc_symbol or uniprot_acc")
+        bundle = _resolve(uniprot_acc, http=http)
+        hgnc_symbol = bundle.hgnc_symbol
+        if aliases is None:
+            aliases = list(bundle.aliases)
+
+    query = build_gene_entity_query(hgnc_symbol, _RECENT_CORPUS_QUERY_SUFFIX)
+    pmids: list[int] = []
+    seen: set[int] = set()
+    for page in range(1, _RECENT_CORPUS_PAGES + 1):
+        try:
+            result = pubtator_search(http=http, query=query, page=page, sort="date desc")
+        except Exception as exc:  # noqa: BLE001 — degrade gracefully on partial PubTator failure
+            logger.warning(
+                "recent_corpus: PubTator page %d failed for %r: %s", page, query, exc
+            )
+            break
+        new_this_page = 0
+        for hit in result.hits:
+            if hit.pmid in seen:
+                continue
+            seen.add(hit.pmid)
+            pmids.append(hit.pmid)
+            new_this_page += 1
+        # PubTator returns fewer hits on later pages once the corpus is
+        # exhausted; bail early to skip a wasted round-trip.
+        if new_this_page == 0:
+            break
+
+    if not pmids:
+        return LiteraturePack(
+            hgnc_symbol=hgnc_symbol,
+            mode="recent_corpus",
+            papers=[],
+            n_total=0,
+            n_returned=0,
+        )
+
+    try:
+        resolved = europepmc_bulk_by_pmid(
+            http=http,
+            pmids=pmids,
+            retraction_index=retraction_index,
+            topic_tagger=_detect_topic_tags,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("recent_corpus: EuropePMC bulk-by-pmid failed: %s", exc)
+        return LiteraturePack(
+            hgnc_symbol=hgnc_symbol,
+            mode="recent_corpus",
+            papers=[],
+            n_total=len(pmids),
+            n_returned=0,
+        )
+
+    # Coarse abstract-keyword pre-filter. Title is included because short
+    # Letters / Reports sometimes carry the surface vocabulary only in
+    # the title (Delaveris 2026 is one such case).
+    papers: list[Paper] = []
+    for paper in resolved:
+        haystack = f"{paper.title or ''} {paper.abstract or ''}"
+        if not _RECENT_CORPUS_SURFACE_FILTER.search(haystack):
+            continue
+        papers.append(paper)
+        if len(papers) >= max_results:
+            break
+
+    return LiteraturePack(
+        hgnc_symbol=hgnc_symbol,
+        mode="recent_corpus",
+        papers=papers,
+        n_total=len(pmids),
+        n_returned=len(papers),
     )
 
 

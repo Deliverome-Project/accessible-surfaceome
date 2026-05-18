@@ -50,6 +50,7 @@ class SearchRequest(BaseModel):
       * tool=gene_literature, mode=topic_search, anchors=[...]
       * tool=gene_literature, mode=fetch_abstract, pmid=<int>
       * tool=gene_literature, mode=fetch_fulltext, pmcid="PMC<digits>"
+      * tool=gene_literature, mode=recent_corpus
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -89,7 +90,8 @@ class SearchRequest(BaseModel):
             if self.mode is None:
                 raise ValueError(
                     "tool='gene_literature' requires `mode` (one of "
-                    "gene2pubmed, topic_search, fetch_abstract, fetch_fulltext)"
+                    "gene2pubmed, topic_search, fetch_abstract, fetch_fulltext, "
+                    "recent_corpus)"
                 )
             if self.category is not None:
                 raise ValueError(

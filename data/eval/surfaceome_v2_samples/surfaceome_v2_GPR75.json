@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "gene": {
     "hgnc_symbol": "GPR75",
     "hgnc_id": "HGNC:4526",
@@ -85,6 +85,8 @@
             "context": "Human pancreatic islets \u2014 GPR75 detected by western blotting",
             "sample_type": "primary_human_tissue",
             "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_06"
             ]
@@ -120,6 +122,8 @@
             "context": "Human pancreatic islets \u2014 GPR75 detected by immunohistochemistry",
             "sample_type": "primary_human_tissue",
             "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_06"
             ]
@@ -155,6 +159,8 @@
             "context": "Multiple tissues from global Gpr75 null mice used as negative controls \u2014 all anti-GPR75 antibodies produced non-specific staining, indicating no reliable antibody-based detection is possible",
             "sample_type": "unknown",
             "level": "absent",
+            "species": "mouse",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_11"
             ]
@@ -178,6 +184,8 @@
             "context": "HPA database annotation: GPR75 subcellular locations include plasma membrane, primary cilium, and vesicles in human samples",
             "sample_type": "unknown",
             "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
             "cited_evidence_ids": [
               "a1_evi_04",
               "a1_evi_05"
@@ -202,6 +210,8 @@
             "context": "Review assertion: AstraZeneca and other companies developing GPR75 antagonists for obesity indications, implying surface accessibility of extracellular domains",
             "sample_type": "unknown",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_15"
             ]
@@ -224,6 +234,8 @@
             "context": "Review assertion: ongoing drug development targeting GPR75 with small-molecule inhibitors, antibodies, and gene-silencing techniques presupposes surface accessibility",
             "sample_type": "unknown",
             "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
             "cited_evidence_ids": [
               "a1_evi_16"
             ]
@@ -320,6 +332,8 @@
           "glutamatergic neurons"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_02",
           "a2_evi_06",
@@ -337,6 +351,8 @@
           "perivascular cells surrounding retinal arterioles"
         ],
         "cell_states": [],
+        "species": "human",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_03",
           "a2_evi_05"
@@ -351,6 +367,8 @@
           "outer plexiform layer neurons"
         ],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_04"
         ]
@@ -361,6 +379,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_06",
           "a2_evi_07",
@@ -373,6 +393,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_08"
         ]
@@ -385,6 +407,8 @@
           "neurons"
         ],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_09"
         ]
@@ -398,6 +422,8 @@
           "glutamatergic neurons"
         ],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_12",
           "a2_evi_14"
@@ -411,6 +437,8 @@
           "dopaminergic neurons"
         ],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_11"
         ]
@@ -423,6 +451,8 @@
           "dopaminergic neurons"
         ],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_11"
         ]
@@ -435,6 +465,8 @@
           "noradrenergic neurons"
         ],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_11"
         ]
@@ -447,6 +479,8 @@
           "serotonergic neurons"
         ],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_11"
         ]
@@ -457,6 +491,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_14",
           "a2_evi_21"
@@ -468,6 +504,8 @@
         "disease_context": "other_disease",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_22",
           "a2_evi_23"
@@ -479,6 +517,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_14"
         ]
@@ -489,6 +529,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_14"
         ]
@@ -499,6 +541,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_14"
         ]
@@ -515,6 +559,8 @@
           "resting",
           "CCL5-stimulated"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_17",
           "a2_evi_18",
@@ -530,6 +576,8 @@
           "beta cells"
         ],
         "cell_states": [],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_20"
         ]
@@ -540,6 +588,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_15"
         ]
@@ -550,6 +600,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_07",
           "a2_evi_15"
@@ -561,6 +613,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_15"
         ]
@@ -571,6 +625,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_15"
         ]
@@ -581,6 +637,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_07",
           "a2_evi_15"
@@ -592,6 +650,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_07",
           "a2_evi_15"
@@ -603,6 +663,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_15"
         ]
@@ -613,6 +675,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_15"
         ]
@@ -623,6 +687,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_16"
         ]
@@ -633,6 +699,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_16"
         ]
@@ -643,6 +711,8 @@
         "disease_context": "normal",
         "cell_types": [],
         "cell_states": [],
+        "species": "rat",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_16"
         ]
@@ -655,6 +725,8 @@
         "present_in_tissues": [
           "retina"
         ],
+        "species": "human",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_03"
         ]
@@ -665,6 +737,8 @@
         "present_in_tissues": [
           "retina"
         ],
+        "species": "human",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_03"
         ]
@@ -675,6 +749,8 @@
         "present_in_tissues": [
           "retina"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_04"
         ]
@@ -685,6 +761,8 @@
         "present_in_tissues": [
           "retina"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_04"
         ]
@@ -695,6 +773,8 @@
         "present_in_tissues": [
           "hippocampus"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_09"
         ]
@@ -706,6 +786,8 @@
           "brain",
           "cerebellum"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_10",
           "a2_evi_12"
@@ -718,6 +800,8 @@
           "brain",
           "cerebellum"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_10",
           "a2_evi_12"
@@ -730,6 +814,8 @@
           "substantia nigra",
           "ventral tegmental area"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_11"
         ]
@@ -740,6 +826,8 @@
         "present_in_tissues": [
           "locus coeruleus"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_11"
         ]
@@ -750,6 +838,8 @@
         "present_in_tissues": [
           "raphe nucleus"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_11"
         ]
@@ -760,6 +850,8 @@
         "present_in_tissues": [
           "pancreatic islet"
         ],
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_17",
           "a2_evi_18",
@@ -772,6 +864,8 @@
         "present_in_tissues": [
           "pancreatic islet"
         ],
+        "species": "mouse",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_19"
         ]
@@ -851,6 +945,8 @@
         "modulating_state": "CNS neurons (hippocampus, cerebellum, hypothalamus, monoaminergic nuclei) in mouse/rat/human",
         "change": "GPR75 mRNA and protein are highly expressed across CNS neurons (GABAergic, glutamatergic, monoaminergic) but are very low or absent in peripheral tissues including muscle, heart, lung, stomach, spleen, kidney, and intestine.",
         "accessibility_implication": "Surface-accessible GPR75 is effectively restricted to neural/CNS contexts; binders targeting GPR75 on the cell surface will primarily access it in neuronal populations rather than peripheral organ targets.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_02",
           "a2_evi_06",
@@ -876,6 +972,8 @@
         "modulating_state": "same cells; protein distributed across plasma membrane, primary cilium, and vesicular compartment",
         "change": "GPR75 protein splits between the plasma membrane/primary cilium (surface-accessible) and an intracellular vesicular pool, indicating not all receptor molecules reside at the cell surface.",
         "accessibility_implication": "The vesicular pool is inaccessible to extracellular binders; only the plasma membrane and ciliary fractions are targetable. Effective surface density may be lower than total cellular expression suggests.",
+        "species": "human",
+        "species_inferred": true,
         "cited_evidence_ids": [
           "a2_evi_01"
         ]
@@ -890,6 +988,8 @@
         "modulating_state": "CCL5-stimulated pancreatic beta cells",
         "change": "Exogenous CCL5 engages surface GPR75 on beta cells, triggering reversible intracellular calcium elevation via phospholipase C and calcium influx, demonstrating active receptor engagement at the cell surface upon ligand stimulation.",
         "accessibility_implication": "GPR75 is functionally accessible on the beta cell surface under CCL5 stimulation; binders that mimic or block CCL5 engagement can access the receptor in this activation context.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_17",
           "a2_evi_18",
@@ -906,6 +1006,8 @@
         "modulating_state": "ob/ob hyperglycemic/insulin-resistant mice or high-fat diet-fed rats",
         "change": "GPR75-mediated CCL5 signalling promotes hyperphagia and metabolic dysregulation in obese/hyperglycemic animals; GPR75 KO protects against HFD-induced obesity, hyperglycemia, and hyperphagia, implicating altered GPR75 activity in the disease state.",
         "accessibility_implication": "In the obese/hyperglycemic disease context, GPR75 on hypothalamic neurons and islet beta cells may be more relevant as a surface target; therapeutics engaging surface GPR75 could modulate feeding and glycemic control specifically in this metabolic disease state.",
+        "species": "unspecified",
+        "species_inferred": false,
         "cited_evidence_ids": [
           "a2_evi_20",
           "a2_evi_21",

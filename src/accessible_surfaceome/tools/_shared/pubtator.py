@@ -16,7 +16,7 @@ and to fetch full text for snippet extraction.
 from __future__ import annotations
 
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from .http import CachedHTTP
 from .models import PubTatorHit, PubTatorSearchResult
@@ -49,24 +49,35 @@ def build_gene_entity_query(symbol: str, free_text_terms: str = "") -> str:
     return f"{entity} {terms}".strip()
 
 
+PubTatorSort = Literal["score desc", "date desc", "_id desc"]
+
+
 def pubtator_search(
     *,
     http: CachedHTTP,
     query: str,
     page: int = 1,
+    sort: PubTatorSort = "score desc",
 ) -> PubTatorSearchResult:
     """Issue one PubTator3 search request.
 
-    Returns at most one page (~10 hits) ordered by PubTator's own
-    relevance score. For the evidence-retrieval use case the first page
-    is usually enough — the score ordering is strong, and downstream we
-    only fetch full text for a handful of top hits anyway.
+    Returns at most one page (~10 hits). ``sort`` defaults to PubTator's
+    relevance score ordering, which is what evidence_retrieval wants
+    (top-relevance hit on a methodology query). Pass ``sort="date desc"``
+    for the topic-blind recency sweep used by
+    ``gene_literature(mode="recent_corpus")`` — that mode pulls the most
+    recently indexed papers tagged with the gene regardless of topic, to
+    catch verdict-shifting recent literature that a keyword-anchored
+    query wouldn't score highly (e.g. a paper whose key concept is novel
+    vocabulary the planner couldn't have guessed). ``"_id desc"`` is
+    PubTator's stable-insertion-order sort, useful for deterministic
+    replay in tests.
     """
     payload = http.get_json(
         PUBTATOR_SEARCH,
         source="pubtator",
         ttl_days=PUBTATOR_TTL,
-        params={"text": query, "page": str(page)},
+        params={"text": query, "page": str(page), "sort": sort},
     )
     hits = [
         _hit_from_record(record)
@@ -112,6 +123,7 @@ def _year_from_record(record: dict[str, Any]) -> int | None:
 __all__ = [
     "PUBTATOR_SEARCH",
     "PUBTATOR_TTL",
+    "PubTatorSort",
     "build_gene_entity_query",
     "pubtator_search",
 ]

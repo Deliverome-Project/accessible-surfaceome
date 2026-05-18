@@ -163,6 +163,59 @@ _PRESENCE_KIND = {
     "mixed": "amber",
     "unknown": "gray",
 }
+# Species → badge color. Human evidence is the headline; non-human is
+# supportive context; "unspecified" means the agent didn't say AND the
+# deterministic post-pass couldn't infer a cell-line token.
+_SPECIES_KIND = {
+    "human": "green",
+    "mouse": "amber",
+    "rat": "amber",
+    "macaque": "amber",
+    "dog": "amber",
+    "other": "amber",
+    "unspecified": "gray",
+}
+
+
+def _species_badge(row: dict[str, Any] | None) -> str:
+    """Render a small species chip. Dim ("unspecified") doubles as the
+    "agent didn't say AND no cell-line token matched" signal. Appends a
+    tiny ``†`` superscript when the value was filled by the deterministic
+    post-pass (``species_inferred=True``) so readers can tell it's a
+    heuristic call, not an agent extraction."""
+    if not row:
+        return ""
+    species = row.get("species") or "unspecified"
+    if species == "unspecified":
+        return _badge("sp?", "gray")
+    label = species
+    if row.get("species_inferred"):
+        label = f"{species}†"
+    return _badge(label, _SPECIES_KIND.get(species, "gray"))
+
+
+def _species_counter(rows: list[dict[str, Any]]) -> str:
+    """Header counter: 'Human: 3 · Mouse: 2 · Unspecified: 5'."""
+    if not rows:
+        return ""
+    tally: dict[str, int] = {}
+    for r in rows:
+        sp = r.get("species") or "unspecified"
+        tally[sp] = tally.get(sp, 0) + 1
+    # Order: known species first by count, unspecified last.
+    known = sorted(
+        ((k, v) for k, v in tally.items() if k != "unspecified"),
+        key=lambda kv: (-kv[1], kv[0]),
+    )
+    unspecified = tally.get("unspecified", 0)
+    parts = [f"{k.capitalize()}: {v}" for k, v in known]
+    if unspecified:
+        parts.append(f"Unspecified: {unspecified}")
+    if not parts:
+        return ""
+    return f"<div class='species-counter'>{' · '.join(parts)}</div>"
+
+
 _MODULATION_KIND = {
     "cell_state_induced": "lavender",
     "tissue_restricted_surface": "blue",
@@ -495,13 +548,15 @@ def _render_method_card(m: dict[str, Any]) -> str:
     for obs in m.get("expression_observations") or []:
         obs_rows += (
             f"<tr><td>{html.escape(obs.get('context', '—'))}</td>"
+            f"<td>{_species_badge(obs)}</td>"
             f"<td>{_badge(obs.get('sample_type', '—'), 'gray')}</td>"
             f"<td>{_badge(obs.get('level', '—'), _PRESENCE_KIND.get(obs.get('level') or '', 'gray'))}</td>"
             f"<td>{_evi_chip_row(obs.get('cited_evidence_ids') or [])}</td></tr>"
         )
     obs_table = (
-        f"<table class='compact'><thead><tr><th>context</th><th>sample</th>"
-        f"<th>level</th><th>cites</th></tr></thead><tbody>{obs_rows}</tbody></table>"
+        f"<table class='compact'><thead><tr><th>context</th><th>species</th>"
+        f"<th>sample</th><th>level</th><th>cites</th></tr></thead>"
+        f"<tbody>{obs_rows}</tbody></table>"
         if obs_rows
         else "<em class='muted small'>no expression observations</em>"
     )
@@ -638,6 +693,7 @@ def _render_tissue(t: dict[str, Any]) -> str:
     return (
         f"<tr>"
         f"<td><strong>{html.escape(t.get('tissue', '—'))}</strong></td>"
+        f"<td>{_species_badge(t)}</td>"
         f"<td>{_badge(t.get('present', '—'), _PRESENCE_KIND.get(t.get('present') or '', 'gray'))}</td>"
         f"<td>{_badge(t.get('disease_context', '—'), 'gray')}</td>"
         f"<td class='small'>{html.escape(cell_types)}</td>"
@@ -652,6 +708,7 @@ def _render_cell_type(c: dict[str, Any]) -> str:
     return (
         f"<tr>"
         f"<td><strong>{html.escape(c.get('cell_type', '—'))}</strong></td>"
+        f"<td>{_species_badge(c)}</td>"
         f"<td><code>{html.escape(c.get('ontology_id') or '—')}</code></td>"
         f"<td class='small'>{html.escape(tissues)}</td>"
         f"<td>{_evi_chip_row(c.get('cited_evidence_ids') or [])}</td>"
@@ -723,6 +780,7 @@ def _render_modulation(m: dict[str, Any]) -> str:
     <div class="mod-card">
       <div class="mod-head">
         {_badge(category, _MODULATION_KIND.get(category, 'gray'))}
+        {_species_badge(m)}
         {''.join(sub_chips)}
       </div>
       <div class="mod-states">
@@ -755,15 +813,16 @@ def _render_biological_context(record: dict[str, Any]) -> str:
     mods = bc.get("accessibility_modulation") or []
 
     tissues_html = (
-        "<table class='compact'><thead><tr><th>tissue</th><th>presence</th>"
-        "<th>disease</th><th>cell types</th><th>cell states</th><th>cites</th>"
+        "<table class='compact'><thead><tr><th>tissue</th><th>species</th>"
+        "<th>presence</th><th>disease</th><th>cell types</th>"
+        "<th>cell states</th><th>cites</th>"
         "</tr></thead><tbody>" + "".join(_render_tissue(t) for t in tissues) + "</tbody></table>"
         if tissues
         else "<em class='muted'>no tissue rows</em>"
     )
     cell_types_html = (
-        "<table class='compact'><thead><tr><th>cell type</th><th>ontology</th>"
-        "<th>in tissues</th><th>cites</th></tr></thead><tbody>"
+        "<table class='compact'><thead><tr><th>cell type</th><th>species</th>"
+        "<th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody>"
         + "".join(_render_cell_type(c) for c in cell_types) + "</tbody></table>"
         if cell_types
         else "<em class='muted'>no cell-type rows</em>"
@@ -804,9 +863,11 @@ def _render_biological_context(record: dict[str, Any]) -> str:
       <h2>Section 2 — Biological context</h2>
 
       <h3>Tissues ({len(tissues)})</h3>
+      {_species_counter(tissues)}
       {tissues_html}
 
       <h3>Cell types ({len(cell_types)})</h3>
+      {_species_counter(cell_types)}
       {cell_types_html}
 
 {cell_states_block}
@@ -818,6 +879,7 @@ def _render_biological_context(record: dict[str, Any]) -> str:
       {anat_html}
 
       <h3>Accessibility modulation ({len(mods)})</h3>
+      {_species_counter(mods)}
       {mods_html}
     </section>
     """
@@ -1223,6 +1285,12 @@ section.block > h3 {
 .badge-blue { background: var(--info-bg); color: var(--info); }
 .badge-gray { background: var(--gray-bg); color: var(--gray); }
 .badge-lavender { background: var(--lav-bg); color: var(--lav); }
+
+/* ---- Species counter (above tissue / cell-type / modulation tables) ---- */
+.species-counter {
+  font-size: 0.78rem; color: var(--fg-muted);
+  margin: 0.25rem 0 0.5rem 0; letter-spacing: 0.01em;
+}
 
 /* ---- Sub-grid (used in multiple sections) ---- */
 .sub-grid {

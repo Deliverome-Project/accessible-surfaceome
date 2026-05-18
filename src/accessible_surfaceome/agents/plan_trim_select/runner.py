@@ -559,6 +559,20 @@ def _execute_plan(
                     for paper in res.papers:
                         discovered_papers.setdefault(paper.pmid, paper)
                     n_papers = len(res.papers)
+                elif req.mode == "recent_corpus":
+                    res = gene_literature(
+                        mode="recent_corpus",
+                        uniprot_acc=acc,
+                        hgnc_symbol=bundle.hgnc_symbol,
+                        ncbi_gene_id=bundle.ncbi_gene_id,
+                        aliases=bundle.aliases,
+                        http=http,
+                        retraction_index=retraction_index,
+                    )
+                    assert isinstance(res, LiteraturePack)
+                    for paper in res.papers:
+                        discovered_papers.setdefault(paper.pmid, paper)
+                    n_papers = len(res.papers)
                 elif req.mode == "fetch_abstract":
                     if not req.pmid:
                         raise ValueError("fetch_abstract requires pmid")

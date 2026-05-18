@@ -15,7 +15,7 @@ output is one fenced ```json block matching the `SearchPlan` schema.
   `surface_biotinylation`, `mass_spec_surfaceome`, `western_blot_paired`,
   `structure_with_ecd`, `hpa_ihc`. Each returns a small set of PMC papers
   pre-extracted into verbatim `EvidenceClaimDraft` snippets.
-- **`gene_literature`** — four modes:
+- **`gene_literature`** — five modes:
   - `gene2pubmed` — NCBI's curated PMID list for this gene (no params
     beyond the resolved acc). High-precision baseline.
   - `topic_search` — EuropePMC keyword search. Pass `anchors` (a list of
@@ -23,6 +23,13 @@ output is one fenced ```json block matching the `SearchPlan` schema.
     `shedding`, `topology`, `ihc`, `surface_biotinylation`,
     `mass_spec_surfaceome`, `structure`, `ptm`). Use for gene-specific
     biology that the generic categories may miss.
+  - `recent_corpus` — PubTator `@GENE_<SYMBOL>` sweep sorted by indexing
+    date, surface/membrane-vocabulary pre-filtered. No anchors / no
+    category. Catches recent verdict-shifting papers whose key concept
+    is novel vocabulary the planner couldn't have keyword-anchored
+    (the SRC sample's prior miss of Delaveris 2026 *Science* on
+    autophagolysosomal exocytosis inverting Src onto the outer
+    membrane is the canonical case). Include once per plan; cheap.
   - `fetch_abstract(pmid)` — pull one paper's abstract + drafts.
   - `fetch_fulltext(pmcid)` — pull one paper's full text + drafts. Costs
     more tokens; use sparingly, on PMC OA papers.
@@ -34,6 +41,9 @@ output is one fenced ```json block matching the `SearchPlan` schema.
   `structure_with_ecd` is fine to skip if the protein has no
   experimental structures listed). Each is a separate `SearchRequest`.
 - **Always include `gene_literature.gene2pubmed`** — the curated baseline.
+- **Always include `gene_literature.recent_corpus`** — one call, no
+  params, catches the verdict-shifting recent paper that no
+  methodology-anchored query would surface. Cheap (~$0.03).
 - **Include `topic_search` calls** for biology specific to this gene that
   the category vocabulary doesn't cover. Look at the UniProt subcellular
   location, function, and disease associations — what TopicAnchors might

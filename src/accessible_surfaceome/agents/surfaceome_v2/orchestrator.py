@@ -85,7 +85,7 @@ from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTe
 logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"
-SCHEMA_VERSION_LITERAL = "1.0.0"
+SCHEMA_VERSION_LITERAL = "1.1.0"
 RUNS_DIR = Path(".runs")
 
 # Maximum block-builders to dispatch concurrently. There are 9 builders
@@ -505,6 +505,28 @@ def _annotate(
         evidence: list[Evidence] = [
             promote_claim(c, store=source_store) for c in merged_claims
         ]
+
+    # ---- step 6.5: deterministic species post-pass ------------------------
+    # Two passes:
+    # 1. Cell-line gazetteer over each row's free text (MC3T3-E1 →
+    #    mouse, U251 MG → human, FRTL-5 → rat).
+    # 2. Cite-aggregation over each row's cited_evidence_ids — pulls
+    #    species from the cited Evidence's AssayContext.species and
+    #    fills the row if all cited evidence agrees. Catches abstract
+    #    tissue rows like ``tissue="bone"`` where the cell-line name
+    #    doesn't appear in the row itself but the cited paper's
+    #    assay_context.species was already populated by the agent.
+    # Doesn't override anything the builders set explicitly.
+    with timing.step("species_post_pass", phase="post"):
+        from accessible_surfaceome.agents.surfaceome_v2.species_postpass import (
+            apply_species_post_pass,
+        )
+
+        apply_species_post_pass(
+            biological_context=biological_context,
+            surface_evidence=surface_evidence,
+            evidence=evidence,
+        )
 
     # ---- step 7: deterministic features stub (reused from v1) -------------
     # Pull the real DeepTMHMM topology + Compara paralog + cross-species

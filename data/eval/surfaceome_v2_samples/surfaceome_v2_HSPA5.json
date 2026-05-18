@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "gene": {
     "hgnc_symbol": "HSPA5",
     "hgnc_id": "HGNC:5238",
@@ -82,7 +82,9 @@
               "a1_evi_01",
               "a1_evi_02",
               "a1_evi_03"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -106,7 +108,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_06"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -129,7 +133,9 @@
             "level": "low",
             "cited_evidence_ids": [
               "a1_evi_14"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -164,7 +170,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_15"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -225,7 +233,9 @@
             "level": "low",
             "cited_evidence_ids": [
               "a1_evi_17"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -248,7 +258,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_18"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -270,7 +282,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_08"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -295,7 +309,9 @@
               "a1_evi_10",
               "a1_evi_12",
               "a1_evi_13"
-            ]
+            ],
+            "species": "human",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -372,7 +388,9 @@
           "a2_evi_07",
           "a2_evi_09",
           "a2_evi_10"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "brain",
@@ -383,7 +401,9 @@
         "cited_evidence_ids": [
           "a2_evi_04",
           "a2_evi_10"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_types": [
@@ -399,7 +419,9 @@
           "a2_evi_05",
           "a2_evi_06",
           "a2_evi_07"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "high-grade glioma cells (adult and pediatric)",
@@ -410,7 +432,9 @@
         "cited_evidence_ids": [
           "a2_evi_09",
           "a2_evi_10"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "acute myeloid leukemia (AML) cells",
@@ -420,7 +444,9 @@
           "a2_evi_11",
           "a2_evi_12",
           "a2_evi_14"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "B-cell leukemia cells",
@@ -428,7 +454,9 @@
         "present_in_tissues": [],
         "cited_evidence_ids": [
           "a2_evi_11"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "breast cancer cells",
@@ -439,7 +467,9 @@
         "cited_evidence_ids": [
           "a2_evi_15",
           "a2_evi_16"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "ovarian cancer cells",
@@ -449,7 +479,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_17"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "pancreatic cancer cells",
@@ -459,7 +491,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_17"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "vascular smooth muscle cells",
@@ -467,7 +501,9 @@
         "present_in_tissues": [],
         "cited_evidence_ids": [
           "a2_evi_13"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "platelets",
@@ -477,7 +513,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_13"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "cell_type": "blood-derived extracellular vesicle-producing cells",
@@ -487,7 +525,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_19"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_states": [],
@@ -553,7 +593,9 @@
           "a2_evi_01",
           "a2_evi_02",
           "a2_evi_21"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "stress_induced",
@@ -569,7 +611,9 @@
           "a2_evi_02",
           "a2_evi_12",
           "a2_evi_14"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -586,7 +630,9 @@
           "a2_evi_12",
           "a2_evi_13",
           "a2_evi_14"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -606,7 +652,9 @@
           "a2_evi_07",
           "a2_evi_08",
           "a2_evi_09"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -621,7 +669,9 @@
         "cited_evidence_ids": [
           "a2_evi_15",
           "a2_evi_16"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -635,7 +685,9 @@
         "accessibility_implication": "Surface HSPA5 accessibility in ovarian and pancreatic cancer is low-frequency; antibody or drug strategies targeting surface HSPA5 would reach only a small subset of these tumors, limiting broad therapeutic utility.",
         "cited_evidence_ids": [
           "a2_evi_17"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "category": "other",
@@ -650,7 +702,9 @@
         "cited_evidence_ids": [
           "a2_evi_18",
           "a2_evi_19"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       }
     ]
   },

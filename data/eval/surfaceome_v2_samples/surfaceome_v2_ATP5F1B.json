@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "gene": {
     "hgnc_symbol": "ATP5F1B",
     "hgnc_id": "HGNC:830",
@@ -75,7 +75,9 @@
             "cited_evidence_ids": [
               "a1_evi_01",
               "a1_evi_02"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -98,7 +100,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_03"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -145,7 +149,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_04"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           },
           {
             "context": "Prior studies demonstrated eATP synthase presence on cell surface of fixed cells using flow cytometry (cited as established prior evidence)",
@@ -153,7 +159,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_05"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -215,7 +223,9 @@
               "a1_evi_06",
               "a1_evi_07",
               "a1_evi_09"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -239,7 +249,9 @@
             "level": "moderate",
             "cited_evidence_ids": [
               "a1_evi_08"
-            ]
+            ],
+            "species": "unspecified",
+            "species_inferred": false
           }
         ],
         "cited_evidence_ids": [
@@ -261,7 +273,9 @@
             "level": "low",
             "cited_evidence_ids": [
               "a1_evi_10"
-            ]
+            ],
+            "species": "other",
+            "species_inferred": true
           }
         ],
         "cited_evidence_ids": [
@@ -294,7 +308,9 @@
         "cited_evidence_ids": [
           "a2_evi_01",
           "a2_evi_02"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "skeletal muscle",
@@ -305,7 +321,9 @@
         "cited_evidence_ids": [
           "a2_evi_01",
           "a2_evi_02"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "liver",
@@ -316,7 +334,9 @@
         "cited_evidence_ids": [
           "a2_evi_01",
           "a2_evi_02"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "kidney",
@@ -327,7 +347,9 @@
         "cited_evidence_ids": [
           "a2_evi_01",
           "a2_evi_02"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       },
       {
         "tissue": "brain",
@@ -341,7 +363,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_05"
-        ]
+        ],
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "tissue": "motor neurons (iPSC-derived)",
@@ -356,7 +380,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_06"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_types": [
@@ -366,7 +392,9 @@
         "present_in_tissues": [],
         "cited_evidence_ids": [
           "a2_evi_04"
-        ]
+        ],
+        "species": "other",
+        "species_inferred": true
       },
       {
         "cell_type": "neurons",
@@ -376,7 +404,9 @@
         ],
         "cited_evidence_ids": [
           "a2_evi_05"
-        ]
+        ],
+        "species": "mouse",
+        "species_inferred": true
       },
       {
         "cell_type": "motor neurons",
@@ -384,7 +414,9 @@
         "present_in_tissues": [],
         "cited_evidence_ids": [
           "a2_evi_06"
-        ]
+        ],
+        "species": "human",
+        "species_inferred": true
       }
     ],
     "cell_states": [],
@@ -417,7 +449,9 @@
         "accessibility_implication": "A pool of ATP5F1B is accessible on the extracellular face of the plasma membrane in at least some cell types, making it a potential target for surface-directed binders, though the fraction at the surface versus mitochondria is unquantified.",
         "cited_evidence_ids": [
           "a2_evi_03"
-        ]
+        ],
+        "species": "unspecified",
+        "species_inferred": false
       },
       {
         "category": "tissue_restricted_surface",
@@ -431,7 +465,9 @@
         "accessibility_implication": "Surface accessibility of ATP5F1B on sperm is subpopulation-dependent; binders targeting surface ATP5F1B would preferentially engage BU over BY spermatozoa, suggesting sperm-subtype-selective exposure.",
         "cited_evidence_ids": [
           "a2_evi_04"
-        ]
+        ],
+        "species": "other",
+        "species_inferred": true
       },
       {
         "category": "disease_state_induced",
@@ -445,7 +481,9 @@
         "accessibility_implication": "Although direct surface redistribution is not demonstrated, disease-associated disruption of ATP5F1B complex activity in neural tissue may accompany altered membrane dynamics; surface accessibility in ischemic brain is uncertain but potentially increased under stress-mediated membrane perturbation.",
         "cited_evidence_ids": [
           "a2_evi_05"
-        ]
+        ],
+        "species": "mouse",
+        "species_inferred": true
       }
     ]
   },

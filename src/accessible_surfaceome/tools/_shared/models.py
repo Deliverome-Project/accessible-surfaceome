@@ -396,7 +396,13 @@ class Paper(BaseModel):
     evidence_claim_drafts: list["EvidenceClaimDraft"] = Field(default_factory=list)
 
 
-LiteratureMode = Literal["gene2pubmed", "topic_search", "fetch_abstract", "fetch_fulltext"]
+LiteratureMode = Literal[
+    "gene2pubmed",
+    "topic_search",
+    "fetch_abstract",
+    "fetch_fulltext",
+    "recent_corpus",
+]
 
 
 class LiteraturePack(BaseModel):
@@ -1400,13 +1406,22 @@ class AntibodyRef(BaseModel):
 
 
 class ExpressionObservation(BaseModel):
-    """One expression-level observation anchored to a surface-evidence method."""
+    """One expression-level observation anchored to a surface-evidence method.
+
+    ``species`` defaults to ``"unspecified"`` (never ``"human"``) so the field
+    is opt-in; downstream filters can distinguish "agent confirmed human" from
+    "agent didn't say." ``species_inferred`` is set ``True`` by the deterministic
+    post-pass when a cell-line token in ``context`` implied the species (e.g.
+    "MC3T3-E1" → mouse) and the agent had left it unspecified.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     context: str
     sample_type: SampleType
     level: ExpressionLevel
+    species: Species = "unspecified"
+    species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
@@ -1520,6 +1535,9 @@ class TissueContext(BaseModel):
     The same tissue can appear twice (normal + tumor rows) with different
     ``present`` levels. Tissue / cell_type / cell_state names are free text —
     no ontology IDs for v1.0.0.
+
+    See ``ExpressionObservation`` for the ``species`` / ``species_inferred``
+    contract.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -1529,17 +1547,25 @@ class TissueContext(BaseModel):
     disease_context: DiseaseContext
     cell_types: list[str] = Field(default_factory=list)
     cell_states: list[str] = Field(default_factory=list)
+    species: Species = "unspecified"
+    species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
 class CellTypeContextV1(BaseModel):
-    """Orthogonal cell-type pivot for biological context (v1.0.0)."""
+    """Orthogonal cell-type pivot for biological context (v1.0.0).
+
+    See ``ExpressionObservation`` for the ``species`` / ``species_inferred``
+    contract.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     cell_type: str
     ontology_id: str | None = None
     present_in_tissues: list[str] = Field(default_factory=list)
+    species: Species = "unspecified"
+    species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
@@ -1635,6 +1661,8 @@ class AccessibilityModulationObservation(BaseModel):
         ...,
         description="What the change means for accessibility. Soft target ≤300 chars (overshoots warned but accepted).",
     )
+    species: Species = "unspecified"
+    species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {
@@ -1996,7 +2024,7 @@ class SurfaceomeRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0"] = "1.0.0"
+    schema_version: Literal["1.0.0", "1.1.0"] = "1.1.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -2083,7 +2111,7 @@ class SurfaceomeRecordDraft(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0"] = "1.0.0"
+    schema_version: Literal["1.0.0", "1.1.0"] = "1.1.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does

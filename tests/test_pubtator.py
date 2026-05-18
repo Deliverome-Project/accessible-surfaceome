@@ -138,8 +138,20 @@ def test_pubtator_search_year_falls_back_to_meta_date() -> None:
 def test_pubtator_search_passes_query_through_to_http() -> None:
     http = _FakeHTTP(_pubtator_payload())
     pubtator.pubtator_search(http=cast(CachedHTTP, http), query="@GENE_ERBB2 flow cytometry", page=2)
-    assert http.calls[0]["params"] == {"text": "@GENE_ERBB2 flow cytometry", "page": "2"}
+    assert http.calls[0]["params"] == {
+        "text": "@GENE_ERBB2 flow cytometry",
+        "page": "2",
+        "sort": "score desc",
+    }
     assert http.calls[0]["source"] == "pubtator"
+
+
+def test_pubtator_search_sort_date_desc_passes_through() -> None:
+    http = _FakeHTTP(_pubtator_payload())
+    pubtator.pubtator_search(
+        http=cast(CachedHTTP, http), query="@GENE_SRC", sort="date desc"
+    )
+    assert http.calls[0]["params"]["sort"] == "date desc"
 
 
 def test_pubtator_search_empty_results() -> None:
