@@ -336,6 +336,23 @@
 
 /* ---------- responsive ---------- */
 
+/* Below ~1040px the full brand lockup ("The Deliverome Project /
+ * Surfaceome") + 4-item nav + GitHub icon doesn't fit in one row,
+ * and the items collide because each text node has white-space:
+ * nowrap. Drop the parent wordmark first — keep the logo, the
+ * separator, and "Surfaceome" so the local brand still reads. */
+@media (max-width: 1040px) {
+  .brandParentText {
+    display: none;
+  }
+  .brandSep {
+    /* The separator is meaningless without the wordmark on its left,
+     * so hide it too. The Deliverome logo on its own is enough parent
+     * context. */
+    display: none;
+  }
+}
+
 @media (max-width: 760px) {
   .headerInner {
     flex-wrap: wrap;
@@ -343,14 +360,6 @@
   }
   .brandLockup {
     gap: 0.45rem;
-  }
-  .brandParentText {
-    /* Drop the wordmark on narrow screens — keep just the logo and
-     * the "/ Surfaceome" sub-brand. */
-    display: none;
-  }
-  .brandSep {
-    display: none;
   }
   .nav {
     width: 100%;
