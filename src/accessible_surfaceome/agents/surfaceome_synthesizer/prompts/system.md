@@ -44,7 +44,9 @@ parse time — invented or paraphrased ids fail the run.
 - **`headline_risks`** (≤3) selects the *consequential* sub-blocks of
   `accessibility_risks`. A `secreted_form` with `present=true` and
   `severity=high` belongs; a low-severity `restricted_subdomain` doesn't.
-  Pick what would change a target-discovery decision.
+  Pick what would change a target-discovery decision. See the dedicated
+  "Headline-risks selection discipline" section below for the closed
+  enum values and the anti-`other` rule.
 - **`confidence`** weighs three things: A1's `evidence_grade`, the count and
   severity of A1's `contradicting_evidence`, and A2's `state_dependence`. A
   direct_multi_method block with no contradictions and low state dependence
@@ -84,6 +86,64 @@ and `confidence` calls:
 
 The `Triage prior` block may be absent (no triage run for this gene).
 Don't fabricate a verdict; just lean on A1+A2 alone.
+
+## Headline-risks selection discipline
+
+The `headline_risks` enum has 11 values:
+`shed_form`, `secreted_form`, `co_receptor`, `ecd_too_small`,
+`epitope_masked`, `isoform_decoy`, `restricted_subdomain`,
+`low_endogenous_expression`, `antibody_validation_weak`,
+`ligand_unknown`, `other`.
+
+**`other` is a last-resort escape hatch, not a dodge.** Use it only
+when the load-bearing risk genuinely doesn't map to one of the named
+values AND you can name that risk in `one_paragraph`. If the risk you
+have in mind maps to any of the named values, USE THE NAMED VALUE.
+Three patterns that historically misuse `other`:
+
+* "EV-associated decoy pool" → use **`secreted_form`**. Extracellular
+  vesicles carry shed / secreted membrane proteins; the field
+  captures the decoy-pool meaning. Don't reach for `other`.
+* "intracellular pool with stress-induced surface" → not a headline
+  risk per se; the state-dependence already lives in
+  `executive_summary.state_dependence`. Drop from headline_risks and
+  let the `state_dependence={moderate, high}` carry the signal.
+* "antibody cross-reactivity with paralog" → use
+  **`antibody_validation_weak`** if the available clones aren't
+  paralog-KO-validated. The catalog filter is the load-bearing
+  surface.
+
+**Orphan-class genes (GPR75-style):** the enum has three values
+specifically for the orphan-receptor failure mode. The design added
+them precisely so the catalog can filter on these signals — they
+should appear in headline_risks for orphan-class genes:
+
+* **`low_endogenous_expression`** — surface evidence is sparse
+  because the protein is barely expressed endogenously, leading to
+  reliance on overexpression studies. Pick when expression is mostly
+  OE-driven, restricted to a single niche tissue, or the gene is
+  otherwise poorly studied.
+* **`antibody_validation_weak`** — available antibodies fail
+  KO-specificity tests or have no published validation. Pick when ≥1
+  primary method row carries `validation_strength="weak"` or
+  `validation_strategy="none"`.
+* **`ligand_unknown`** — for receptors with no validated endogenous
+  ligand. Pick for orphan GPCRs / orphan kinases / orphan NHRs where
+  ligand identity affects target tractability and pharmacology
+  development.
+
+**Audit guard for weak-evidence genes.** When
+`evidence_grade ∈ {weak, supportive_but_indirect}`, at least one of
+the three orphan-class values
+(`low_endogenous_expression`, `antibody_validation_weak`,
+`ligand_unknown`) MUST appear in `headline_risks` — unless the
+evidence weakness is genuinely a different shape (e.g.
+`isoform_decoy` for a predicted-soluble isoform whose biological
+relevance is unconfirmed). If you set
+`evidence_grade="weak"` and your headline_risks is
+`[restricted_subdomain, ecd_too_small, other]` with none of the
+three orphan values, you have probably miscalibrated — re-read the
+A2 expression evidence and pick the orphan value that fits.
 
 ## Citation discipline
 
