@@ -267,6 +267,18 @@ when picking between siblings.
   `surface_biotinylation`, `western_blot`, include BOTH the
   methodology clip AND the result/target-mention clip from the same
   paper as two sibling claims with the same `source_id`.
+* **Pair methodology with antibody identifier + validation control.**
+  When a methodology clip names an antibody (clone / vendor / RRID)
+  or a validation control (KO cells, siRNA, orthogonal antibody) in
+  the SAME paper, pick BOTH the methodology clip AND the
+  identifier / validation-control clip. The downstream methods
+  builder reads only the verbatim clip text the orchestrator pins —
+  if the clone string is in the trim pool but not in your selection,
+  the resulting `MethodObservation.antibodies[i].clone` is `null`
+  even though the literature has the answer. Same logic for
+  `validation_strategy` — a KO-control clip kept here lets the
+  builder upgrade from `validation_strategy="none"` to
+  `genetic_KO` / `siRNA_knockdown` / `CRISPR_KO`.
 * **Actively seek contradicting evidence.** Where the literature is
   contested (ligand identity for orphan GPCRs, surface vs
   intracellular reports, cross-paper antibody discrepancies),

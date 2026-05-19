@@ -345,6 +345,130 @@ def test_build_methods_endogenous_panel_has_no_overexpression_block() -> None:
     assert rows[0].overexpression is None
 
 
+def test_build_methods_extracts_clone_vendor_rrid_from_claim_quote() -> None:
+    """When the claim quote names an antibody clone + vendor + RRID, the
+    builder must split them into the structured fields, not collapse into
+    `name`. Verifies the new "Antibody-identifier extraction discipline"
+    section of the methods builder prompt."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote=(
+                "Surface CD81 was detected by flow cytometry with anti-CD81 "
+                "clone 5A6 (BD Biosciences, RRID:AB_396171) on live HEK293T "
+                "cells; CD81-KO cells were negative."
+            ),
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [
+                {
+                    "name": "anti-CD81",
+                    "clone": "5A6",
+                    "vendor": "BD Biosciences",
+                    "rrid": "AB_396171",
+                    "monoclonal_or_polyclonal": "monoclonal",
+                    "antibody_epitope_region": "extracellular",
+                    "validation_strategy": "genetic_KO",
+                    "validation_strength": "strong",
+                }
+            ],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "CD81"})
+    assert len(rows) == 1
+    ab = rows[0].antibodies[0]
+    assert ab.name == "anti-CD81"
+    assert ab.clone == "5A6"
+    assert ab.vendor == "BD Biosciences"
+    assert ab.rrid == "AB_396171"
+    assert ab.validation_strategy == "genetic_KO"
+    assert ab.validation_strength == "strong"
+
+
+def test_build_methods_generic_antibody_lands_vendor_claim_only() -> None:
+    """When the claim quote uses generic language ('a commercial anti-X
+    antibody'), the builder should set clone=null AND
+    validation_strategy=vendor_claim_only AND validation_strength=weak.
+    Verifies the prompt's "honest about gaps" rule."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote=(
+                "Live cells were stained with a commercial anti-CD81 "
+                "antibody and analyzed by flow cytometry."
+            ),
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [
+                {
+                    "name": "anti-CD81",
+                    "clone": None,
+                    "vendor": None,
+                    "monoclonal_or_polyclonal": "unknown",
+                    "antibody_epitope_region": "unknown",
+                    "validation_strategy": "vendor_claim_only",
+                    "validation_strength": "weak",
+                }
+            ],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "CD81"})
+    ab = rows[0].antibodies[0]
+    assert ab.clone is None
+    assert ab.validation_strategy == "vendor_claim_only"
+    assert ab.validation_strength == "weak"
+
+
+def test_methods_builder_prompt_mentions_clone_extraction_discipline() -> None:
+    """Tripwire: the methods builder prompt must carry the antibody-
+    identifier extraction discipline section that strengthens clone /
+    vendor / RRID extraction (PR #38 follow-up after audit found 0 of
+    ~50 antibody rows had a clone extracted)."""
+    from accessible_surfaceome.agents.surfaceome_v2.builders._common import load_prompt
+    body = load_prompt("methods_builder_system").lower()
+    assert "antibody-identifier extraction discipline" in body
+    assert "do not bury identifiers" in body or "not bury the identifier" in body or "burying" in body or "bury" in body
+    assert "vendor_claim_only" in body
+    assert "ab_" in body or "rrid" in body  # RRID guidance
+
+
+def test_methods_builder_prompt_mentions_validation_strategy_table() -> None:
+    """Tripwire: the prompt must explicitly map literature language to
+    validation_strategy enum values so the builder doesn't default to
+    `none`."""
+    from accessible_surfaceome.agents.surfaceome_v2.builders._common import load_prompt
+    body = load_prompt("methods_builder_system").lower()
+    assert "validation-strategy assignment" in body
+    assert "siRNA knockdown abolishes".lower() in body
+    assert "ip_ms_pulldown" in body
+
+
 # ---------------------------------------------------------------------------
 # therapeutic_engagement_builder
 # ---------------------------------------------------------------------------

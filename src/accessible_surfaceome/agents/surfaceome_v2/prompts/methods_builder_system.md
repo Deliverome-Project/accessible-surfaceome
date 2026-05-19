@@ -86,17 +86,78 @@ contributed to that row.
 - `antibodies[]` — list of `AntibodyRef`. Each carries `name`, optional
   `clone` / `vendor` / `catalog` / `rrid`, plus the required
   `monoclonal_or_polyclonal`, `antibody_epitope_region`,
-  `validation_strategy`, `validation_strength`. Extract clones (e.g.
-  `4D6`), vendors (BD Pharmingen, Cell Signaling), catalogs, and RRIDs
-  (RRID:AB_…) verbatim from the quote when present. Use `unknown` for
-  fields the source doesn't supply — never invent.
-    - `validation_strategy`: `genetic_KO`, `siRNA_knockdown`, `CRISPR_KO`,
-      `orthogonal_method`, `ip_ms_pulldown`, `isoform_specific_KO`,
-      `overexpression_reference`, `vendor_claim_only`, `none`, `unknown`.
-    - `validation_strength`: `strong`, `moderate`, `weak`, `none`,
-      `unknown`. Roll up from the strategy: `genetic_KO` / `CRISPR_KO` →
-      `strong`; `siRNA_knockdown` / `orthogonal_method` → `moderate`;
-      `vendor_claim_only` → `weak`; nothing stated → `none`/`unknown`.
+  `validation_strategy`, `validation_strength`. **Antibody identifiers
+  are LOAD-BEARING** — a `flow_cytometry` signal from a generic
+  "anti-X antibody" is a different evidence quality than a signal from
+  "anti-X clone 528, BD Biosciences, RRID:AB_123456, KO-validated".
+  The catalog reader filters and the synthesizer's confidence call
+  both read these fields. Extract verbatim from the claim quote when
+  present; use `unknown` (or `null` for the optional fields) only when
+  the source genuinely doesn't supply — never invent, never bury.
+
+### Antibody-identifier extraction discipline
+
+The input claim quote almost always names the antibody in some form;
+your job is to SPLIT the identifier into the right structured fields,
+not collapse it into `name`:
+
+* **`clone`** — alphanumeric clone ID (examples: `528`, `4D6`,
+  `D38B1`, `43-14A`, `AB-101`, `H300`, `9G4`, `5A6`, `B-A18`). When
+  the quote says "clone 528", "528 antibody", "anti-EGFR clone 528",
+  "anti-CD81 (5A6)", set `clone="528"` / `clone="5A6"`.
+* **`vendor`** — company name when stated (examples: `BD Pharmingen`,
+  `BD Biosciences`, `Cell Signaling Technology`, `Abcam`,
+  `R&D Systems`, `Thermo Fisher`, `Santa Cruz`, `Sigma`, `BioLegend`,
+  `Invitrogen`, `Millipore`).
+* **`catalog`** — vendor catalog number when stated (examples:
+  `#9101S`, `ab32077`, `MAB1095`, `sc-9996`, `M0876`).
+* **`rrid`** — Research Resource Identifier when stated (examples:
+  `AB_2138158`, `RRID:AB_396171`). Strip the `RRID:` prefix when
+  present so the field is just the `AB_...` identifier.
+* **`name`** — short canonical label, NOT the clone or vendor.
+  Examples: `"anti-EGFR"`, `"anti-CD81"`, `"anti-GRP78"`. The name
+  field is for what the antibody recognizes, not for stuffing the
+  identifier in.
+
+**Bad**: `name="anti-CD81 antibody clone 5A6 (BD Biosciences)"`,
+`clone=null`, `vendor=null`
+**Good**: `name="anti-CD81"`, `clone="5A6"`, `vendor="BD Biosciences"`,
+`validation_strategy="genetic_KO"`, `validation_strength="strong"`
+
+If the quote is generic ("a commercial anti-X antibody", "anti-X
+antibody from a vendor"), set `clone=null` AND
+`validation_strategy="vendor_claim_only"` AND
+`validation_strength="weak"`. The null clone is honest; the weak
+validation flags it for catalog readers.
+
+### Validation-strategy assignment
+
+`validation_strategy` is a closed enum. Set it from the most rigorous
+validation the claim quote (or sibling claim quotes on the same
+paper) mentions:
+
+| Quote language | `validation_strategy` | `validation_strength` |
+|---|---|---|
+| "signal disappears in [GENE]-KO cells", "validated by genetic knockout" | `genetic_KO` | `strong` |
+| "signal disappears in CRISPR-Cas9 [GENE]-knockout cells" | `CRISPR_KO` | `strong` |
+| "isoform-specific KO (CLDN18.2 only, CLDN18.1 unchanged)" | `isoform_specific_KO` | `strong` |
+| "siRNA knockdown abolishes the signal" | `siRNA_knockdown` | `moderate` |
+| "confirmed by an orthogonal method", "mass spec confirms the flow signal", "two antibodies against non-overlapping epitopes give the same result" | `orthogonal_method` | `moderate` |
+| "validated against [GENE]-overexpression cell line as positive control" | `overexpression_reference` | `moderate` |
+| "IP-MS pulldown confirmed the band identity" | `ip_ms_pulldown` | `moderate` |
+| "manufacturer-supplied datasheet only", "vendor-validated" | `vendor_claim_only` | `weak` |
+| nothing stated, generic descriptive name | `none` | `none` |
+
+Set `validation_strategy="none"` ONLY when the quote is genuinely
+silent on validation — not as a default. If the input ledger has a
+sibling claim on the same paper that mentions a knockout control or
+orthogonal method, that's enough — treat the methods sentence's
+implicit reference to the validation strategy as the validation
+strategy for the same `MethodObservation`. Closed-enum recap:
+`validation_strategy ∈ {genetic_KO, siRNA_knockdown, CRISPR_KO,
+orthogonal_method, ip_ms_pulldown, isoform_specific_KO,
+overexpression_reference, vendor_claim_only, none, unknown}`;
+`validation_strength ∈ {strong, moderate, weak, none, unknown}`.
 - `accessibility_relevance` — closed enum.
   `direct_surface_accessibility` for live/nonperm flow or surface
   biotinylation. `supports_surface_localization` for nonperm IF or IHC

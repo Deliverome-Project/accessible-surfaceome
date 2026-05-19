@@ -45,6 +45,12 @@ These are A2's territory (the BiologicalContext block); keeping them in A1's men
 * Paper-aim / motivation statements ("We aimed to assess...", "Here we report...", "The goal of this study was...") — these say what the paper *set out* to do, not what it *showed*.
 * IHC / flow scoring rubrics on their own without the readout ("1+ for weak membrane staining in ≥10% of cells, 2+ for moderate..." but no per-sample score).
 
+## Preserve antibody-identifier sentences
+
+When you keep a clip from a surface-method paper, prefer the version of the sentence that names the antibody identifier (clone / vendor / catalog / RRID) over the version that doesn't. The methods builder downstream reads only the clip text you preserve — if you keep "Cells were stained with anti-CD81 antibody and analyzed by flow cytometry" but DROP the next sentence "(clone 5A6, BD Biosciences, RRID:AB_396171)", the resulting `MethodObservation` has `clone=null` / `vendor=null` / `rrid=null` and the catalog loses the antibody provenance that's load-bearing for surface evidence.
+
+When the source body has TWO clips on the same method panel — one with the methods detail, one with the clone / RRID / KO-validation sentence — KEEP BOTH so the builder can assemble them. They count as one `MethodObservation` downstream; the selector promotes both as siblings of the same `source_id`. The validation-control sentences ("[GENE]-KO cells were negative", "siRNA-treated cells lost the signal", "two antibodies against non-overlapping epitopes gave concordant results") are equally load-bearing — they upgrade `validation_strategy` from `none` to `genetic_KO` / `siRNA_knockdown` / `orthogonal_method` downstream.
+
 ## Calibration
 
 * If a paper is clearly an A1 paper (e.g., a surface biotinylation + MS surfaceome study), keep most of its clips even when individual clips are partial — A1's selector needs the methods detail, the antibody table, AND the result snippet to build a complete `MethodObservation`.
