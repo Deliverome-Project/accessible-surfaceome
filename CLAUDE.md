@@ -48,12 +48,13 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 
 ## Managed Agents — auto-sync on drift
 
-The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
+`surface_triage` and the v1 deep-dive trio (`surface_evidence_compiler`, `biology_compiler`, `surfaceome_synthesizer`) are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
 
-**Auto-sync is wired into the annotator orchestrator.** When `annotate` runs, it sha-checks the local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. The sync is a single idempotent metadata round-trip (no model call, no extra spend). You no longer need to remember `agents sync` after editing:
+**Auto-sync is wired into the v1 deep-dive orchestrator.** When [surfaceome_v1/orchestrator.py:annotate](src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py) runs, it sha-checks each local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. Edits that auto-sync:
 
-- any `src/accessible_surfaceome/agents/surface_annotator/prompts/*.md`
-- the agent payload in `src/accessible_surfaceome/agents/surface_annotator/agent.py`
+- `src/accessible_surfaceome/agents/surface_evidence_compiler/prompts/*.md` (+ its `agent.py` payload)
+- `src/accessible_surfaceome/agents/biology_compiler/prompts/*.md` (+ its `agent.py` payload)
+- `src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/*.md` (+ its `agent.py` payload)
 - the `SurfaceomeRecord` / `SurfaceomeRecordDraft` schema in `src/accessible_surfaceome/tools/_shared/models.py` (when the prompt references the new shape)
 
 `uv run accessible-surfaceome agents sync` still works as a manual command for cases where you want to push prompt changes without triggering a full annotate run (CI, schema-only edits, dry-run verification).
@@ -62,7 +63,13 @@ The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agen
 
 The registry is local (per-worktree, gitignored under `.runs/`) so each worktree tracks its own remote agent version. surface_triage runs through a different code path and doesn't use the Managed Agent registry, so it's not part of the auto-sync.
 
-**Why auto-sync matters:** the surface_annotator run is ~$0.30–0.50 on Sonnet 4.6. Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
+### v2 is the production deep-dive path
+
+The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](scripts/surfaceome_v2_annotate.py)). v2 uses one registered Managed Agent (the synthesizer, same `surfaceome_synthesizer` registration the v1 path uses) plus in-process Sonnet calls for `plan_trim_select` + 10 block builders. The 19 in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) **do not auto-sync** — they take effect at the next local invocation, which is what we want for fast iteration. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) "Production architecture update (post-PR #38)" for the full v1/v2 trade-off table.
+
+The v1 path's `surface_evidence_compiler` + `biology_compiler` Managed Agents stay registered so historical v1 runs reproduce; they are not on the production code path.
+
+**Why auto-sync matters:** the synthesizer run is ~$0.10–0.20 on Sonnet 4.6 (full deep-dive ~$2). Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
 
 ## Agent Command Allowlist
 
