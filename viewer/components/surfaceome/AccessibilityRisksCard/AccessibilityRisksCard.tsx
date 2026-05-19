@@ -4,7 +4,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { CiteCount } from "../CiteCount/CiteCount";
+import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./AccessibilityRisksCard.module.css";
@@ -54,7 +54,7 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <StatusPill tone={r.shed_form.present ? "danger" : "neutral"} size="sm">
             {presenceLabel(r.shed_form.present)}
           </StatusPill>
-          <CiteCount ids={r.shed_form.cited_evidence_ids} label="Shed form" />
+          <EvidenceChipList ids={r.shed_form.cited_evidence_ids} label="Cites" />
         </div>
         {r.shed_form.mechanism ? (
           <p className={styles.prose}>
@@ -79,7 +79,7 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <StatusPill tone={r.secreted_form.present ? "danger" : "neutral"} size="sm">
             {presenceLabel(r.secreted_form.present)}
           </StatusPill>
-          <CiteCount ids={r.secreted_form.cited_evidence_ids} label="Secreted form" />
+          <EvidenceChipList ids={r.secreted_form.cited_evidence_ids} label="Cites" />
         </div>
         {r.secreted_form.source ? (
           <p className={styles.prose}>
@@ -113,9 +113,9 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           >
             {presenceLabel(r.restricted_subdomain.present)}
           </StatusPill>
-          <CiteCount
+          <EvidenceChipList
             ids={r.restricted_subdomain.cited_evidence_ids}
-            label="Restricted subdomain"
+            label="Cites"
           />
         </div>
         {r.restricted_subdomain.rationale ? (
@@ -142,9 +142,9 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <StatusPill tone="lavender" size="sm">
             evidence basis · {prettyEnum(r.co_receptor_requirements.evidence_basis)}
           </StatusPill>
-          <CiteCount
+          <EvidenceChipList
             ids={r.co_receptor_requirements.cited_evidence_ids}
-            label="Co-receptor"
+            label="Cites"
           />
         </div>
         {r.co_receptor_requirements.partners.length > 0 ? (
@@ -183,9 +183,9 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <span className={styles.muted}>
             (deterministic ECD len: {ctx.ecd_length_residues} aa)
           </span>
-          <CiteCount
+          <EvidenceChipList
             ids={r.ecd_size_assessment.cited_evidence_ids}
-            label="ECD size"
+            label="Cites"
           />
         </div>
         {r.ecd_size_assessment.rationale ? (
@@ -216,9 +216,9 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           >
             evidence · {prettyEnum(r.epitope_masking.evidence_strength)}
           </StatusPill>
-          <CiteCount
+          <EvidenceChipList
             ids={r.epitope_masking.cited_evidence_ids}
-            label="Epitope masking"
+            label="Cites"
           />
         </div>
         {r.epitope_masking.rationale ? (

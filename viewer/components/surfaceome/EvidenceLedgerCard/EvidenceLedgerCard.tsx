@@ -29,7 +29,7 @@ function firstSource(e: Evidence): Record<string, unknown> | null {
   type LegacyEvidence = Evidence & { source?: Record<string, unknown> };
   type SpanWithSource = { source?: Record<string, unknown> };
   if (Array.isArray(e.spans) && e.spans.length) {
-    for (const sp of e.spans as SpanWithSource[]) {
+    for (const sp of e.spans as unknown as SpanWithSource[]) {
       if (sp?.source) return sp.source;
     }
   }
@@ -91,7 +91,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
           <ul className={styles.list}>
             {rec.evidence.map((e) => {
               const link = sourceLink(e);
-              const firstSpan = e.spans[0]?.text ?? null;
+              const firstSpan = e.spans[0]?.quote ?? null;
               return (
                 <li key={e.evidence_id} className={styles.item}>
                   <div className={styles.head}>

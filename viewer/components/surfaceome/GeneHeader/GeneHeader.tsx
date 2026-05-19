@@ -104,10 +104,7 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
               {geneName.synonyms.length > 0 ? (
                 <span className={styles.geneSynonyms}>
                   {" · also known as "}
-                  {geneName.synonyms.slice(0, 4).join(", ")}
-                  {geneName.synonyms.length > 4
-                    ? `, +${geneName.synonyms.length - 4}`
-                    : ""}
+                  {geneName.synonyms.join(", ")}
                 </span>
               ) : null}
             </p>

@@ -726,9 +726,15 @@ export interface SourceRef {
 }
 
 export interface EvidenceSpan {
-  text: string;
-  start?: number | null;
-  end?: number | null;
+  /** Verbatim quote anchored to the source location (Pydantic field
+   * name is ``quote``, NOT ``text`` — the older TS type drifted). */
+  quote: string;
+  source: SourceRef;
+  section: string;
+  figure_or_table_id?: string | null;
+  quote_sha256?: string;
+  char_offset?: number;
+  normalized_source_sha256?: string;
 }
 
 export interface Evidence {
@@ -737,7 +743,11 @@ export interface Evidence {
   claim_type: string;
   evidence_tier: EvidenceTier;
   confidence: number;
-  source: SourceRef;
+  /** Pydantic schema carries ``SourceRef`` per-span (each EvidenceSpan
+   * has its own ``source``); the top-level ``source`` here is kept
+   * optional for back-compat with earlier records. New consumers
+   * should read ``spans[i].source`` directly. */
+  source?: SourceRef;
   spans: EvidenceSpan[];
   entailment_verified: boolean;
 }

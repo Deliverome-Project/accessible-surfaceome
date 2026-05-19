@@ -4,7 +4,7 @@ import type {
   TissueLevel,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { CiteCount } from "../CiteCount/CiteCount";
+import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./BiologicalContextCard.module.css";
@@ -72,7 +72,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   <td>{t.cell_types.join(", ") || "—"}</td>
                   <td>{t.cell_states.join(", ") || "—"}</td>
                   <td>
-                    <CiteCount ids={t.cited_evidence_ids} label="Tissue" />
+                    <EvidenceChipList ids={t.cited_evidence_ids} label="Cites" />
                   </td>
                 </tr>
               ))}
@@ -118,7 +118,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>{d.condition ?? "—"}</td>
                   <td>
-                    <CiteCount ids={d.cited_evidence_ids} label="Dual localization" />
+                    <EvidenceChipList ids={d.cited_evidence_ids} label="Cites" />
                   </td>
                 </tr>
               ))}
@@ -161,7 +161,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>{a.rationale}</td>
                   <td>
-                    <CiteCount ids={a.cited_evidence_ids} label="Anatomical" />
+                    <EvidenceChipList ids={a.cited_evidence_ids} label="Cites" />
                   </td>
                 </tr>
               ))}
@@ -192,7 +192,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                       lineage · {prettyEnum(m.restricted_lineage)}
                     </StatusPill>
                   ) : null}
-                  <CiteCount ids={m.cited_evidence_ids} label="Modulation" />
+                  <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
                 </div>
                 <p className={styles.modBaseline}>
                   <span className={styles.muted}>baseline</span> {m.baseline_context}{" "}

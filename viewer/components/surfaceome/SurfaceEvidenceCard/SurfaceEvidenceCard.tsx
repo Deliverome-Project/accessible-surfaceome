@@ -6,7 +6,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { CiteCount } from "../CiteCount/CiteCount";
+import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./SurfaceEvidenceCard.module.css";
@@ -84,7 +84,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                 <StatusPill tone={relevanceTone(m.accessibility_relevance)} size="sm">
                   {prettyEnum(m.accessibility_relevance)}
                 </StatusPill>
-                <CiteCount ids={m.cited_evidence_ids} label="Method" />
+                <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
               </div>
 
               {m.antibodies.length > 0 ? (
@@ -148,7 +148,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                             </StatusPill>
                           </td>
                           <td>
-                            <CiteCount ids={o.cited_evidence_ids} label="Observation" />
+                            <EvidenceChipList ids={o.cited_evidence_ids} />
                           </td>
                         </tr>
                       ))}
@@ -188,7 +188,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                     </StatusPill>
                   </td>
                   <td>
-                    <CiteCount ids={o.cited_evidence_ids} label="Expression" />
+                    <EvidenceChipList ids={o.cited_evidence_ids} />
                   </td>
                 </tr>
               ))}
@@ -211,9 +211,9 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
               Surface-form rationale
             </span>
             <span>{se.therapeutic_engagement.surface_form_rationale}</span>
-            <CiteCount
+            <EvidenceChipList
               ids={se.therapeutic_engagement.cited_evidence_ids}
-              label="Therapeutic"
+              label="Cites"
             />
           </p>
         </div>
@@ -235,7 +235,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                   <span className={styles.contradictionSeverity}>
                     severity · {prettyEnum(c.severity_for_surface_accessibility)}
                   </span>
-                  <CiteCount ids={c.cited_evidence_ids} label="Contradiction" />
+                  <EvidenceChipList ids={c.cited_evidence_ids} label="Cites" />
                 </div>
                 <p className={styles.contradictionClaim}>{c.claim}</p>
                 {c.likely_explanation ? (
