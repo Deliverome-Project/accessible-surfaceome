@@ -50,6 +50,64 @@
   border-bottom-color: var(--accent);
 }
 
+/* AFDB stats grid — sits between the topology legend and the
+   caption inside the structure slot. Three compact stat rows
+   (ECD pLDDT, disordered fraction, AFDB id+version) so the
+   reader sees the model confidence next to the 3D viewer. */
+.structureStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line-soft);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.structureStat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.structureStatK {
+  color: var(--muted);
+  font-size: 0.7rem;
+}
+
+.structureStatV {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.structureStatNum {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+.structureStatLink {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink);
+  border-bottom: 1px solid var(--line);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.structureStatLink:hover,
+.structureStatLink:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 @media (max-width: 760px) {
   .headerGrid {
     grid-template-columns: 1fr;
@@ -83,12 +141,6 @@
   font-style: normal;
   font-size: 0.85rem;
   color: var(--muted);
-}
-
-.tldr {
-  font-size: 1.18rem;
-  max-width: 60ch;
-  color: var(--ink-soft);
 }
 
 .ids {

@@ -230,6 +230,47 @@ land in `flow_cytometry` / `if` / `ihc` / `surface_biotinylation`
 retrieval naturally — those category specs don't filter for
 endogenous-vs-transfected.
 
+### Explicit OE-cell-line `topic_search` queries (required)
+
+The category retrievers cover OE work generically, but for the four
+workhorse OE hosts the literature is dense enough that named-host
+queries surface papers the method-anchored queries miss (e.g. a
+flow-cytometry paper indexed primarily as "HEK293 transient
+transfection" without a method keyword in the title). Always add four
+`topic_search` requests pairing the gene symbol with the host name —
+one per workhorse line:
+
+* **HEK293** (and aliases `HEK293T`, `293T`, `HEK 293`) — by far the
+  most-used heterologous expression host for receptors / surface
+  proteins. Search `topic_search` with anchors that combine the gene
+  symbol AND `HEK293` (or `HEK293T`) AND a surface-evidence keyword
+  (`surface expression`, `flow cytometry`, `cell surface`, or
+  `live-cell staining`). Intent: "find OE-host HEK293 surface papers
+  the method retrievers might miss."
+* **HeLa** — common epithelial host for IF / nonperm-IF assays on
+  receptors. Search the gene symbol AND `HeLa` AND a surface keyword.
+  Intent: "find HeLa OE surface papers."
+* **K562** — leukemia line, default host for hematologic OE work and
+  for proteins whose endogenous host is hematopoietic. Search the
+  gene symbol AND `K562` AND a surface keyword. Intent: "find K562
+  OE surface papers."
+* **U2OS** — adherent osteosarcoma line, common for live-cell
+  imaging / single-molecule work and for IF-based surface validation.
+  Search the gene symbol AND `U2OS` AND a surface keyword. Intent:
+  "find U2OS OE surface papers."
+
+These four queries are CHEAP (~$0.01 each at EuropePMC counts) and
+the marginal recall on under-studied genes is high. Don't skip them
+because the method retrievers "already cover OE" — they cover OE
+generically, not host-specifically, and host-specific titles fall
+through the cracks.
+
+When the gene has an obvious tissue-of-origin host that ISN'T one of
+the four (e.g. neuronal receptors → SH-SY5Y; pancreatic β-cell
+proteins → MIN6 / INS-1; T-cell receptors → Jurkat / primary T
+cells), add a fifth `topic_search` for that host. The four above are
+the minimum, not the cap.
+
 ## Triage prior
 
 A `Triage prior` JSON block carries the genome-wide Haiku

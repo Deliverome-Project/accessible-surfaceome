@@ -15,7 +15,6 @@ import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
 import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
 import { OrthologsCard } from "../../components/surfaceome/OrthologsCard/OrthologsCard";
 import { ParalogsCard } from "../../components/surfaceome/ParalogsCard/ParalogsCard";
-import { StructureSummaryCard } from "../../components/surfaceome/StructureSummaryCard/StructureSummaryCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
   listSurfaceomeGenes,
@@ -65,9 +64,13 @@ export default async function GenePage({ params }: PageProps) {
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
-  // The 3D structure viewer itself was promoted to a top-of-page
-  // sidekick on `<GeneHeader>` (auto-loads on mount); the deterministic
-  // AFDB stats stay as a section card later.
+  // The 3D structure viewer + AFDB pLDDT / disordered-fraction stats
+  // were promoted to the `<GeneHeader>` sidekick so the reader sees
+  // structure confidence next to the model itself. Attribution +
+  // license stay in the `<DataSourcesFooter>` at the bottom. The
+  // standalone StructureSummaryCard was removed (it duplicated both
+  // the stats now in the header and the attribution now in the
+  // footer).
   const sections: { kind: string; render: (n: number) => React.ReactNode }[] = [
     { kind: "executive", render: (n) => <ExecutiveSummaryCard rec={rec} n={n} /> },
     ...(catalogRow
@@ -87,15 +90,8 @@ export default async function GenePage({ params }: PageProps) {
     { kind: "paralogs", render: (n) => <ParalogsCard rec={rec} n={n} /> },
     { kind: "orthologs", render: (n) => <OrthologsCard rec={rec} n={n} /> },
     { kind: "risks", render: (n) => <AccessibilityRisksCard rec={rec} n={n} /> },
+    { kind: "ledger", render: (n) => <EvidenceLedgerCard rec={rec} n={n} /> },
   ];
-  sections.push({
-    kind: "structure-summary",
-    render: (n) => <StructureSummaryCard rec={rec} n={n} />,
-  });
-  sections.push({
-    kind: "ledger",
-    render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
-  });
 
   return (
     <Shell>

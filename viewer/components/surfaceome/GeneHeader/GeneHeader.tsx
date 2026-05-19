@@ -59,6 +59,13 @@ function gradeTone(value: string) {
   return "neutral" as const;
 }
 
+function plddtTone(plddt: number) {
+  if (plddt >= 90) return "success" as const;
+  if (plddt >= 70) return "teal" as const;
+  if (plddt >= 50) return "amber" as const;
+  return "danger" as const;
+}
+
 /**
  * GeneHeader — display-scale gene symbol, executive lede, identifier
  * links, and four vitals. Driven entirely by `executive_summary` +
@@ -69,6 +76,12 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
   const counts = tierCounts(rec);
+  const struct = rec.deterministic_features.structure;
+  // The AFDB pLDDT fetcher is deferred for some entries — the
+  // orchestrator emits a labeled placeholder with the source string
+  // starting "AlphaFold DB (placeholder ...)". Detect that explicitly
+  // so the header doesn't show "0.0 pLDDT" as a real measurement.
+  const structPlaceholder = struct.source.toLowerCase().includes("placeholder");
   const ids = [
     {
       label: "HGNC",
@@ -109,7 +122,11 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
               ) : null}
             </p>
           ) : null}
-          <p className={`lede ${styles.tldr}`}>{exec.one_paragraph}</p>
+          {/* Note: the executive summary `one_paragraph` is rendered ONCE,
+              by `<ExecutiveSummaryCard>` (§1). The header keeps the
+              gene-name strip + IDs + vitals; the full lede sits in the
+              card so the structured pills + headline risks live next to
+              the paragraph they describe. */}
 
           <ul className={styles.ids} aria-label="External identifiers">
             {ids.map((id) => (
@@ -134,24 +151,64 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
             <TopologyLegend
               presentStates={presentTopologyStates(structureData.topology)}
             />
+            {/* AFDB structure stats — moved up from the §9
+                StructureSummaryCard so the reader sees the pLDDT
+                confidence next to the model it qualifies. The `struct`
+                block is the canonical
+                ``deterministic_features.structure``. */}
+            <dl className={styles.structureStats} aria-label="AFDB structure stats">
+              <div className={styles.structureStat}>
+                <dt className={`label-mono ${styles.structureStatK}`}>
+                  ECD pLDDT
+                </dt>
+                <dd className={styles.structureStatV}>
+                  {structPlaceholder ? (
+                    <StatusPill tone="neutral" size="sm">
+                      pending
+                    </StatusPill>
+                  ) : (
+                    <StatusPill tone={plddtTone(struct.ecd_mean_plddt)} size="sm">
+                      {struct.ecd_mean_plddt.toFixed(1)}
+                    </StatusPill>
+                  )}
+                </dd>
+              </div>
+              <div className={styles.structureStat}>
+                <dt className={`label-mono ${styles.structureStatK}`}>
+                  Disordered
+                </dt>
+                <dd className={styles.structureStatV}>
+                  <span className={styles.structureStatNum}>
+                    {structPlaceholder
+                      ? "—"
+                      : `${(struct.ecd_disordered_fraction * 100).toFixed(0)}%`}
+                  </span>
+                </dd>
+              </div>
+              <div className={styles.structureStat}>
+                <dt className={`label-mono ${styles.structureStatK}`}>AFDB</dt>
+                <dd className={styles.structureStatV}>
+                  <a
+                    href={`https://alphafold.ebi.ac.uk/entry/${g.uniprot_acc}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.structureStatLink}
+                  >
+                    {struct.afdb_id} · {struct.afdb_version}
+                  </a>
+                </dd>
+              </div>
+            </dl>
             <p className={styles.structureCaption}>
-              <a
-                href={`https://alphafold.ebi.ac.uk/entry/${g.uniprot_acc}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.structureLink}
-              >
-                AlphaFold DB
-              </a>
               {structureData.deeptmhmm_type === "GLOB" ? (
                 <>
-                  {" "}· soluble cytoplasmic (DeepTMHMM ={" "}
+                  Soluble cytoplasmic (DeepTMHMM ={" "}
                   <span style={{ fontFamily: "var(--font-mono)" }}>GLOB</span>)
                   · membrane-association via lipid anchor / interaction, not a
                   TM helix
                 </>
               ) : (
-                <> · DeepTMHMM topology · membrane horizontal, extracellular up</>
+                <>DeepTMHMM topology · membrane horizontal, extracellular up</>
               )}
             </p>
           </aside>
