@@ -151,6 +151,57 @@ corpus that's noisier than the curated five.) Treat the count of
   disease-context queries (csGRP78-class story); the `cell_states`
   builder is the destination for that evidence.
 
+## Triage prior
+
+A `Triage prior` JSON block carries the genome-wide Haiku
+`surface_triage` agent's verdict on this gene — a high-recall
+first-pass decision made before any deep literature work. Treat as a
+prior to confirm or refute, not as ground truth. A2's job is biology
+context; the triage prior shapes which biology to chase:
+
+* **`verdict=yes` + `reason=stable_surface_marker`**: a canonical
+  surface protein. Standard tissue / cell-type atlas search; no
+  ectopic-surface chase needed.
+
+* **`verdict=contextual` + `reason=cell_state_induced`**: surface
+  presence depends on cellular state (ER stress, activation, etc.).
+  Plan extra `accessibility_modulation` coverage and ensure the
+  `cell_states` builder has material — `topic_search` with anchors
+  `shedding` + `ptm` + `surface_expression` paired with state-shift
+  terms in the intent.
+
+* **`verdict=contextual` + `reason=tissue_restricted_surface`**:
+  surface presence is tissue-restricted (germline / developmental /
+  lineage-specific). Plan tissue-atlas queries targeting the
+  flagged compartments; `accessibility_modulation` builder will
+  produce a `restricted_lineage` sub-enum row.
+
+* **`verdict=contextual` + `reason=lysosomal_exocytosis`**:
+  surface presence happens via secretory-vesicle / lysosomal
+  exocytosis (csGRP78 / cell-surface vimentin pattern). Plan stress
+  + autophagolysosomal-exocytosis literature; this is the dominant
+  evidence shape for the `cell_states` builder.
+
+* **`verdict=contextual` + `reason=dual_localization`**:
+  steady-state dual localization (ER + PM, lysosome + PM).
+  Plan dual-localization literature; `subcellular_localization`
+  builder's `dual_localization` block needs material.
+
+* **`verdict=no`**: triage thinks the gene is intracellular. If your
+  deep-dive turns up direct surface evidence anyway, that's the
+  strongest possible signal for the synthesizer — pull aggressively
+  on ectopic / shed / stress-induced surface queries.
+
+* **`verdict_reasoning`**: read the triage agent's prose for context
+  cues (cell-type-specific notes, paralog warnings). Quotable
+  excerpts can land in your `SearchPlan.rationale`.
+
+* **`key_uncertainty`**: when present, often a direct pointer to a
+  search you should run. Convert into a `topic_search` call.
+
+If the `Triage prior` block is absent (no triage record for this
+gene), plan as you normally would; don't fabricate a verdict.
+
 ## A2-specific planning bias
 
 A2's job is to assemble the **biological-context ledger** — where the

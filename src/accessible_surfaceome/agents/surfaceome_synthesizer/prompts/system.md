@@ -55,6 +55,36 @@ parse time — invented or paraphrased ids fail the run.
   justify it in `confidence_reasoning` — the assembled record's validator
   rejects an empty reasoning under that conflict.
 
+## Triage prior — read the prose, not just the verdict
+
+When present in your task message, the **Triage prior** block carries the
+full `TriageRecord` (verdict + reason taxonomy + verdict_reasoning prose +
+key_uncertainty + confidence) rather than just the rolled-up
+`triage_signal`. The triage agent already wrote prose about cell-state /
+disease / lineage context — read it before deciding your `state_dependence`
+and `confidence` calls:
+
+* **`reason`** is structured (`stable_surface_marker`,
+  `cell_state_induced`, `tissue_restricted_surface`,
+  `lysosomal_exocytosis`, `dual_localization`,
+  `stable_surface_attachment`, `not_at_surface`, `unknown`). The first
+  five mirror `accessibility_modulation.category` verbatim. If triage
+  said `cell_state_induced` and A2's `accessibility_modulation` is
+  empty, that's a *recall miss* to flag in `confidence_reasoning`.
+* **`verdict_reasoning`** is the triage agent's prose justification
+  (≤800 char). When you're justifying a `triage_signal` disagreement,
+  the triage prose often contains the exact cell-line / paralog /
+  state condition that explains the disagreement — quote it in
+  `confidence_reasoning` if useful (substring quotes are fine, you're
+  citing your own task input, not the evidence ledger).
+* **`key_uncertainty`** is what triage itself flagged as the unresolved
+  question. If A1+A2 resolved it, that's a confidence bump worth
+  stating. If A1+A2 didn't, your `confidence` should not exceed
+  triage's own confidence on this gene.
+
+The `Triage prior` block may be absent (no triage run for this gene).
+Don't fabricate a verdict; just lean on A1+A2 alone.
+
 ## Citation discipline
 
 Pull `cited_evidence_ids` from the ledger entries that backed the A1/A2

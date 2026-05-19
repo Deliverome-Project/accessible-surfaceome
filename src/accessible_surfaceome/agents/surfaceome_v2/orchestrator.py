@@ -44,6 +44,9 @@ from accessible_surfaceome.agents.plan_trim_select import (
     DualPlanTrimSelectResult,
     run_plan_trim_select_dual,
 )
+from accessible_surfaceome.agents.plan_trim_select.runner import (
+    _summarize_triage_for_planner,
+)
 from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
     BResult,
     run_synthesizer_with_drafts,
@@ -51,6 +54,7 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _derive_filters,
     scrub_headline_risks,
+    _load_triage_record,
     _load_triage_signal,
     _stub_deterministic_features,
 )
@@ -451,11 +455,25 @@ def _annotate(
         n_items=len(a1_claims) + len(a2_claims),
         model=AGENT_MODEL,
     ) as _h:
+        # Compute the triage prior once for the synthesizer's task
+        # message. ``plan_trim_select`` already computed its own copy
+        # during ``_build_gene_context`` (cheap file read); we compute
+        # again here so a synthesizer-only re-invocation doesn't depend
+        # on plumbing it from the earlier phase. Implements PR #23
+        # design doc §1110-1116's "common preamble — triage_record" for
+        # the v2 pipeline's B agent.
+        triage_record = _load_triage_record(gene_id.hgnc_symbol)
+        triage_summary_json = (
+            _summarize_triage_for_planner(triage_record)
+            if triage_record is not None
+            else None
+        )
         b = run_synthesizer_with_drafts(
             gene_id.hgnc_symbol,
             a1_draft=a1_draft,
             a2_draft=a2_draft,
             client=client,
+            triage_summary_json=triage_summary_json,
         )
         _h.model = b.usage.model
         # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a

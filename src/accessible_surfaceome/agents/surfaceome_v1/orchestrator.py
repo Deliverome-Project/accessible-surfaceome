@@ -451,15 +451,32 @@ def _load_triage_signal(symbol: str) -> TriageSignal:
     """Map the latest persisted triage record (if any) onto the record's
     ``triage_signal`` enum; default ``unknown`` when no triage exists.
     """
-    triage_path = DATA_DIR / "triage" / f"{symbol}.json"
-    if not triage_path.exists():
-        return "unknown"
-    try:
-        record = TriageRecord.model_validate_json(triage_path.read_text())
-    except Exception as exc:  # noqa: BLE001 — best-effort; a malformed triage shouldn't fail annotate
-        logger.warning("triage record for %s failed to parse: %s", symbol, exc)
+    record = _load_triage_record(symbol)
+    if record is None:
         return "unknown"
     return _TRIAGE_VERDICT_TO_SIGNAL.get(record.verdict, "unknown")
+
+
+def _load_triage_record(symbol: str) -> TriageRecord | None:
+    """Return the full persisted ``TriageRecord`` (verdict +
+    verdict_reasoning + reason taxonomy + key_uncertainty + confidence),
+    or ``None`` when no triage exists.
+
+    The deep-dive's planner + synthesizer read this so they can see the
+    triage agent's prose justification + structured reason taxonomy,
+    not just the verdict-derived ``triage_signal`` enum — per the
+    original design's "common preamble" requirement (PR #23 design doc
+    §1110-1116). Reads ``data/triage/{symbol}.json`` (gitignored;
+    populated by the triage agent or hydrated via D1 mirror tooling).
+    """
+    triage_path = DATA_DIR / "triage" / f"{symbol}.json"
+    if not triage_path.exists():
+        return None
+    try:
+        return TriageRecord.model_validate_json(triage_path.read_text())
+    except Exception as exc:  # noqa: BLE001 — best-effort; a malformed triage shouldn't fail annotate
+        logger.warning("triage record for %s failed to parse: %s", symbol, exc)
+        return None
 
 
 def _stub_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:

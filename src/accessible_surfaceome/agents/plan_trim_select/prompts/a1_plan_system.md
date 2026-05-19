@@ -230,6 +230,57 @@ land in `flow_cytometry` / `if` / `ihc` / `surface_biotinylation`
 retrieval naturally — those category specs don't filter for
 endogenous-vs-transfected.
 
+## Triage prior
+
+A `Triage prior` JSON block carries the genome-wide Haiku
+`surface_triage` agent's verdict on this gene — a high-recall
+first-pass decision made before any deep literature work. Treat as a
+prior to confirm or refute, not as ground truth:
+
+* **`verdict`**: `yes` / `contextual` / `no` / `unknown`.
+  - `yes`: triage thinks the gene is on the surface. Plan standard
+    methodology coverage; if your deep-dive surfaces direct
+    contradicting evidence, that's a load-bearing finding for the
+    synthesizer.
+  - `contextual`: triage thinks surface presence depends on
+    state / cell type / disease. Plan extra `topic_search` queries
+    with anchors that surface state-shift evidence (`shedding`, `ptm`,
+    `surface_expression` paired with disease-state terms in the
+    intent). The `accessibility_modulation` builder downstream will
+    need claims tied to specific states.
+  - `no`: triage thinks the gene is intracellular. Plan ectopic /
+    shed / stress-induced surface queries; any direct surface
+    methodology evidence you surface is the strongest possible signal
+    for the synthesizer (it overturns the prior).
+  - `unknown`: no triage was run; plan normally.
+
+* **`reason`**: triage's structured reason taxonomy. Common values:
+  `stable_surface_marker`, `cell_state_induced`,
+  `tissue_restricted_surface`, `lysosomal_exocytosis`,
+  `dual_localization`, `stable_surface_attachment`,
+  `not_at_surface`, `unknown`. The first five mirror the
+  `accessibility_modulation.category` enum verbatim — a
+  `cell_state_induced` triage reason is a direct hint to plan for
+  state-modulation evidence.
+
+* **`verdict_reasoning`**: the triage agent's prose justification
+  (≤800 chars). Read it for context cues you might otherwise miss —
+  cell-line-specific notes, paralog warnings, "considered but
+  discounted" framings. Quote-worthy excerpts can land in your
+  `SearchPlan.rationale`.
+
+* **`key_uncertainty`**: triage's flagged uncertainty (≤200 chars,
+  often `None`). When present, it's often a direct pointer to a
+  search the deep-dive should run — convert into a `topic_search`
+  call if applicable.
+
+* **`confidence`**: `strong` / `moderate` / `weak`. A low-confidence
+  triage is a weaker prior; a strong prior with `verdict=no` deserves
+  more scrutiny when your deep-dive surfaces conflicting evidence.
+
+If the `Triage prior` block is absent (no triage record for this
+gene), plan as you normally would; don't fabricate a verdict.
+
 ## A1-specific planning bias
 
 A1's job is to assemble **methodologically watertight** surface-evidence
