@@ -1,4 +1,4 @@
-import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
+import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -17,9 +17,33 @@ function boolPill(label: string, value: boolean) {
   );
 }
 
+function orthologPillLabel(
+  ecdPct: number | null,
+  entries: OrthologEntry[],
+): { text: string; tone: "neutral" | "teal"; title?: string } {
+  if (ecdPct != null) {
+    return { text: `${ecdPct.toFixed(1)}% ECD`, tone: "teal" };
+  }
+  if (entries.length === 0) {
+    return { text: "no Compara ortholog", tone: "neutral" };
+  }
+  // Ortholog exists, but no ECD to compare — fall back to full-length identity.
+  const canonical = entries.find((e) => e.is_canonical) ?? entries[0];
+  const fullPct = canonical.full_length_pct_identity_to_human_canonical;
+  return {
+    text: fullPct != null ? `${fullPct.toFixed(1)}% full-length (no ECD)` : "ortholog · no ECD",
+    tone: "teal",
+    title:
+      "Human protein has no ECD to compare (e.g. inner-leaflet, soluble, GPI-anchored). Showing full-length BioMart % identity instead.",
+  };
+}
+
 export function FiltersCard({ rec, n }: Props) {
   const f = rec.filters;
   const topo = rec.deterministic_features.canonical_topology;
+  const orthos = rec.deterministic_features.orthologs;
+  const mousePill = orthologPillLabel(f.mouse_ortholog_ecd_pct_identity, orthos.mouse);
+  const cynoPill = orthologPillLabel(f.cyno_ortholog_ecd_pct_identity, orthos.cynomolgus);
   const groups = [
     {
       label: "Accessibility",
@@ -71,25 +95,11 @@ export function FiltersCard({ rec, n }: Props) {
     {
       label: "Cross-species (deterministic)",
       pills: [
-        <StatusPill
-          key="m"
-          tone={f.mouse_ortholog_ecd_pct_identity == null ? "neutral" : "teal"}
-          size="sm"
-        >
-          mouse ·{" "}
-          {f.mouse_ortholog_ecd_pct_identity == null
-            ? "no Compara ortholog"
-            : `${f.mouse_ortholog_ecd_pct_identity.toFixed(1)}%`}
+        <StatusPill key="m" tone={mousePill.tone} size="sm" title={mousePill.title}>
+          mouse · {mousePill.text}
         </StatusPill>,
-        <StatusPill
-          key="c"
-          tone={f.cyno_ortholog_ecd_pct_identity == null ? "neutral" : "teal"}
-          size="sm"
-        >
-          cyno ·{" "}
-          {f.cyno_ortholog_ecd_pct_identity == null
-            ? "no Compara ortholog"
-            : `${f.cyno_ortholog_ecd_pct_identity.toFixed(1)}%`}
+        <StatusPill key="c" tone={cynoPill.tone} size="sm" title={cynoPill.title}>
+          cyno · {cynoPill.text}
         </StatusPill>,
       ],
     },

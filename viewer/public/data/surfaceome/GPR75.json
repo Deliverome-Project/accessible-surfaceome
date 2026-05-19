@@ -72,7 +72,7 @@
             "antibody_epitope_region": "intracellular",
             "validation_strategy": "CRISPR_KO",
             "validation_strength": "moderate",
-            "cross_reactivity_notes": "Epitope aa 395–425 (intracellular C-terminus); CRISPR-Cas9 knockdown (~70% reduction) confirmed specificity in same study."
+            "cross_reactivity_notes": "Epitope aa 395\u2013425 (intracellular C-terminus); CRISPR-Cas9 knockdown (~70% reduction) confirmed specificity in same study."
           }
         ],
         "accessibility_relevance": "direct_surface_accessibility",
@@ -208,7 +208,7 @@
     ],
     "therapeutic_engagement": {
       "highest_stage": "preclinical_in_vivo",
-      "description": "AstraZeneca and other companies have initiated GPR75 antagonist programs for obesity based on human genetics (PTVs → 54% lower obesity odds). Gpr75 knockout mice resist diet-induced weight gain. No approved drug or clinical trial for GPR75 documented in searched literature.",
+      "description": "AstraZeneca and other companies have initiated GPR75 antagonist programs for obesity based on human genetics (PTVs \u2192 54% lower obesity odds). Gpr75 knockout mice resist diet-induced weight gain. No approved drug or clinical trial for GPR75 documented in searched literature.",
       "surface_form_rationale": "GPR75 is a 7-TM GPCR with extracellular N-terminus bearing three N-glycosylation sites and extracellular loops accessible at the plasma membrane and primary cilia. Antagonists targeting GPR75 engage the extracellular ligand-binding pocket at the cell surface.",
       "cited_evidence_ids": [
         "a1_evi_11",
@@ -404,7 +404,7 @@
       },
       {
         "state": "high-fat diet (HFD)-fed",
-        "descriptor": "Under HFD conditions, GPR75 localizes to primary cilia of hypothalamic neurons and activates Gαq signaling pathways to modulate food intake",
+        "descriptor": "Under HFD conditions, GPR75 localizes to primary cilia of hypothalamic neurons and activates G\u03b1q signaling pathways to modulate food intake",
         "cited_evidence_ids": [
           "a2_evi_13"
         ]
@@ -443,7 +443,7 @@
     },
     "anatomical_accessibility": [
       {
-        "context": "Vascular endothelial cells and smooth muscle cells — systemic circulation-facing",
+        "context": "Vascular endothelial cells and smooth muscle cells \u2014 systemic circulation-facing",
         "orientation": "blood_interstitial_facing",
         "accessibility_implication": "favorable",
         "rationale": "GPR75 is expressed on the luminal surface of vascular endothelial cells and smooth muscle cells that are directly bathed by blood flow. A systemic binder would have straightforward access to these cell surfaces.",
@@ -515,7 +515,7 @@
         "dual_loc_partner_compartment": null,
         "baseline_context": "Resting neuronal or endothelial cells with GPR75 at the cell surface",
         "modulating_state": "After CCL5 or 20-HETE ligand stimulation",
-        "change": "CCL5 promotes time-dependent internalization of GPR75 from the plasma membrane in SH-SY5Y cells; 20-HETE activates GPR75 and recruits β-arrestin, initiating classical GPCR internalization.",
+        "change": "CCL5 promotes time-dependent internalization of GPR75 from the plasma membrane in SH-SY5Y cells; 20-HETE activates GPR75 and recruits \u03b2-arrestin, initiating classical GPCR internalization.",
         "accessibility_implication": "Agonist-driven internalization reduces surface-accessible GPR75 pool, a decoy risk for antibody-based or ligand-competitive approaches; target engagement must account for receptor trafficking state.",
         "cited_evidence_ids": [
           "a2_evi_12",
@@ -530,7 +530,7 @@
         "dual_loc_partner_compartment": null,
         "baseline_context": "Normal prostate epithelial cells with basal GPR75 expression",
         "modulating_state": "Androgen-insensitive prostate cancer cells (PC-3) exposed to 20-HETE",
-        "change": "20-HETE–GPR75 signaling drives EMT, MMP-2 release, actin stress fiber formation, cell invasion and anchorage-independent growth; GPR75 expression sustains a mesenchymal, invasive phenotype.",
+        "change": "20-HETE\u2013GPR75 signaling drives EMT, MMP-2 release, actin stress fiber formation, cell invasion and anchorage-independent growth; GPR75 expression sustains a mesenchymal, invasive phenotype.",
         "accessibility_implication": "GPR75 surface expression is functionally active in androgen-insensitive prostate cancer, making it an accessible target in this disease context if surface levels are maintained.",
         "cited_evidence_ids": [
           "a2_evi_09"
@@ -543,7 +543,7 @@
         "restricted_lineage": "neural",
         "dual_loc_partner_compartment": null,
         "baseline_context": "Peripheral tissues with low or absent GPR75 expression",
-        "modulating_state": "CNS neurons — brain regions including hypothalamus, hippocampus, cerebellum, substantia nigra, locus coeruleus",
+        "modulating_state": "CNS neurons \u2014 brain regions including hypothalamus, hippocampus, cerebellum, substantia nigra, locus coeruleus",
         "change": "GPR75 mRNA and protein expression is markedly enriched in the CNS compared with peripheral tissues; mouse knockin data confirm endogenous protein is predominantly brain-restricted.",
         "accessibility_implication": "The dominant surface pool of GPR75 is in a BBB-protected compartment; only peripheral vascular or islet fractions are accessible to systemic biologics.",
         "cited_evidence_ids": [
@@ -574,33 +574,34 @@
         {
           "is_canonical": true,
           "isoform_id": "Q6X632",
-          "ensembl_id": "GPR75_MOUSE",
+          "ensembl_id": "ENSMUSG00000043999",
           "ortholog_uniprot_acc": "Q6X632",
-          "ortholog_symbol": "GPR75_MOUSE",
+          "ortholog_symbol": "Gpr75",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 74.15730337078652,
           "ecd_pct_similarity_to_human_canonical": 74.15730337078652,
+          "full_length_pct_identity_to_human_canonical": 87.963,
           "ecd_length_residues": 90,
           "tm_helix_count": 7,
-          "compara_version": "Compara r112",
-          "retrieved_at": "2026-05-17T13:04:00.484651Z"
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-18T19:46:58.797037Z"
         }
       ],
-      "rat": [],
       "cynomolgus": [
         {
           "is_canonical": true,
           "isoform_id": "A0A7N9DAV0",
-          "ensembl_id": "A0A7N9DAV0_MACFA",
+          "ensembl_id": "ENSMFAG00000064656",
           "ortholog_uniprot_acc": "A0A7N9DAV0",
-          "ortholog_symbol": "A0A7N9DAV0_MACFA",
+          "ortholog_symbol": "GPR75",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 98.87640449438202,
           "ecd_pct_similarity_to_human_canonical": 98.87640449438202,
+          "full_length_pct_identity_to_human_canonical": 99.0741,
           "ecd_length_residues": 89,
           "tm_helix_count": 7,
-          "compara_version": "Compara r112",
-          "retrieved_at": "2026-05-17T13:04:00.483710Z"
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-18T19:46:58.795861Z"
         }
       ]
     },
@@ -835,9 +836,9 @@
       "afdb_version": "v4",
       "ecd_mean_plddt": 0.0,
       "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (placeholder — pLDDT fetcher not yet wired)",
+      "source": "AlphaFold DB (placeholder \u2014 pLDDT fetcher not yet wired)",
       "license": "CC BY 4.0",
-      "attribution": "© DeepMind / EMBL-EBI",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1356,7 +1357,7 @@
     },
     {
       "evidence_id": "a1_evi_10",
-      "claim": "Exome sequencing of 645,626 individuals identified GPR75 PTVs associated with 1.8 kg/m² lower BMI and 54% lower odds of obesity; GPR75 classified as brain-expressed GPCR. Genetic association data, not a surface-localisation assay.",
+      "claim": "Exome sequencing of 645,626 individuals identified GPR75 PTVs associated with 1.8 kg/m\u00b2 lower BMI and 54% lower odds of obesity; GPR75 classified as brain-expressed GPCR. Genetic association data, not a surface-localisation assay.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "genetic_association",
@@ -1796,7 +1797,7 @@
     },
     {
       "evidence_id": "a2_evi_08",
-      "claim": "GPR75 is expressed in cultured human endothelial cells and vascular smooth muscle cells; 20-HETE binding to GPR75 stimulates Gαq/11 dissociation and downstream signaling causing vasoconstriction and endothelial dysfunction in vascular cells.",
+      "claim": "GPR75 is expressed in cultured human endothelial cells and vascular smooth muscle cells; 20-HETE binding to GPR75 stimulates G\u03b1q/11 dissociation and downstream signaling causing vasoconstriction and endothelial dysfunction in vascular cells.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2031,7 +2032,7 @@
     },
     {
       "evidence_id": "a2_evi_15",
-      "claim": "Large-scale exome sequencing of 645,626 individuals identifies GPR75 as one of five brain-expressed GPCRs with exome-wide significant association with BMI; protein-truncating variants in GPR75 are associated with 1.8 kg/m² lower BMI and 54% lower odds of obesity.",
+      "claim": "Large-scale exome sequencing of 645,626 individuals identifies GPR75 as one of five brain-expressed GPCRs with exome-wide significant association with BMI; protein-truncating variants in GPR75 are associated with 1.8 kg/m\u00b2 lower BMI and 54% lower odds of obesity.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "genetic_association",

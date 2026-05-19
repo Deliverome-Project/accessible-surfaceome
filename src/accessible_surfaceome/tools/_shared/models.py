@@ -1764,8 +1764,12 @@ class OrthologEntry(BaseModel):
     ortholog_uniprot_acc: str
     ortholog_symbol: str
     type: OrthologyType
-    ecd_pct_identity_to_human_canonical: float = Field(..., ge=0.0, le=100.0)
-    ecd_pct_similarity_to_human_canonical: float = Field(..., ge=0.0, le=100.0)
+    # ECD identity is NULL when the protein has no ECD (inner-leaflet, soluble,
+    # GPI-anchored without surface loops). Full-length identity is always
+    # available from Ensembl Compara BioMart.
+    ecd_pct_identity_to_human_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
+    ecd_pct_similarity_to_human_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
+    full_length_pct_identity_to_human_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
     ecd_length_residues: int
     tm_helix_count: int
     compara_version: str
@@ -1778,7 +1782,6 @@ class Orthologs(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     mouse: list[OrthologEntry] = Field(default_factory=list)
-    rat: list[OrthologEntry] = Field(default_factory=list)
     cynomolgus: list[OrthologEntry] = Field(default_factory=list)
 
 

@@ -12,11 +12,14 @@ interface Props {
   n: number;
 }
 
-const SPECIES: { key: "mouse" | "rat" | "cynomolgus"; label: string }[] = [
+const SPECIES: { key: "mouse" | "cynomolgus"; label: string }[] = [
   { key: "mouse", label: "Mouse" },
-  { key: "rat", label: "Rat" },
   { key: "cynomolgus", label: "Cynomolgus" },
 ];
+
+function fmtPct(v: number | null | undefined): string {
+  return v == null ? "—" : `${v.toFixed(1)}%`;
+}
 
 function SpeciesTable({
   label,
@@ -39,6 +42,7 @@ function SpeciesTable({
               <th scope="col">Symbol</th>
               <th scope="col">UniProt</th>
               <th scope="col">Type</th>
+              <th scope="col">Full-length %id</th>
               <th scope="col">ECD %id</th>
               <th scope="col">ECD %sim</th>
               <th scope="col">ECD len</th>
@@ -46,38 +50,49 @@ function SpeciesTable({
             </tr>
           </thead>
           <tbody>
-            {entries.map((e, i) => (
-              <tr key={i}>
-                <td>
-                  <StatusPill tone={e.is_canonical ? "teal" : "neutral"} size="sm">
-                    {e.is_canonical ? "✓" : "alt"}
-                  </StatusPill>
-                </td>
-                <td>
-                  <span className={styles.mono}>{e.isoform_id}</span>
-                </td>
-                <td>{e.ortholog_symbol}</td>
-                <td>
-                  <a
-                    className={styles.link}
-                    href={`https://www.uniprot.org/uniprotkb/${e.ortholog_uniprot_acc}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
+            {entries.map((e, i) => {
+              const ecdMissing = e.ecd_pct_identity_to_human_canonical == null;
+              return (
+                <tr key={i}>
+                  <td>
+                    <StatusPill tone={e.is_canonical ? "teal" : "neutral"} size="sm">
+                      {e.is_canonical ? "✓" : "alt"}
+                    </StatusPill>
+                  </td>
+                  <td>
+                    <span className={styles.mono}>{e.isoform_id}</span>
+                  </td>
+                  <td>{e.ortholog_symbol}</td>
+                  <td>
+                    <a
+                      className={styles.link}
+                      href={`https://www.uniprot.org/uniprotkb/${e.ortholog_uniprot_acc}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className={styles.mono}>{e.ortholog_uniprot_acc}</span>
+                    </a>
+                  </td>
+                  <td>
+                    <StatusPill tone="lavender" size="sm">
+                      {prettyEnum(e.type)}
+                    </StatusPill>
+                  </td>
+                  <td>{fmtPct(e.full_length_pct_identity_to_human_canonical)}</td>
+                  <td
+                    className={ecdMissing ? styles.muted : undefined}
+                    title={ecdMissing ? "Human protein has no ECD to compare (e.g. inner-leaflet, soluble, GPI-anchored)" : undefined}
                   >
-                    <span className={styles.mono}>{e.ortholog_uniprot_acc}</span>
-                  </a>
-                </td>
-                <td>
-                  <StatusPill tone="lavender" size="sm">
-                    {prettyEnum(e.type)}
-                  </StatusPill>
-                </td>
-                <td>{e.ecd_pct_identity_to_human_canonical.toFixed(1)}%</td>
-                <td>{e.ecd_pct_similarity_to_human_canonical.toFixed(1)}%</td>
-                <td>{e.ecd_length_residues} aa</td>
-                <td>{e.tm_helix_count}</td>
-              </tr>
-            ))}
+                    {fmtPct(e.ecd_pct_identity_to_human_canonical)}
+                  </td>
+                  <td className={ecdMissing ? styles.muted : undefined}>
+                    {fmtPct(e.ecd_pct_similarity_to_human_canonical)}
+                  </td>
+                  <td>{e.ecd_length_residues} aa</td>
+                  <td>{e.tm_helix_count}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
@@ -89,7 +104,6 @@ export function OrthologsCard({ rec, n }: Props) {
   const orthologs = rec.deterministic_features.orthologs;
   const allEntries = [
     ...orthologs.mouse,
-    ...orthologs.rat,
     ...orthologs.cynomolgus,
   ];
   const comparaVersion = allEntries[0]?.compara_version ?? "—";

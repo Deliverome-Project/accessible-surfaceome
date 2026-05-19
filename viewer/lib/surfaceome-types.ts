@@ -187,8 +187,12 @@ export interface OrthologEntry {
   ortholog_uniprot_acc: string;
   ortholog_symbol: string;
   type: OrthologyType;
-  ecd_pct_identity_to_human_canonical: number;
-  ecd_pct_similarity_to_human_canonical: number;
+  // ECD identity is null when the human protein has no ECD to compare against
+  // (inner-leaflet, soluble, GPI-anchored without surface loops). Full-length
+  // identity is always available from Ensembl Compara BioMart.
+  ecd_pct_identity_to_human_canonical: number | null;
+  ecd_pct_similarity_to_human_canonical: number | null;
+  full_length_pct_identity_to_human_canonical: number | null;
   ecd_length_residues: number;
   tm_helix_count: number;
   compara_version: string;
@@ -197,7 +201,6 @@ export interface OrthologEntry {
 
 export interface OrthologSet {
   mouse: OrthologEntry[];
-  rat: OrthologEntry[];
   cynomolgus: OrthologEntry[];
 }
 

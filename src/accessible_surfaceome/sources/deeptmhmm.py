@@ -583,28 +583,41 @@ def resolve_uniprot_by_ensembl_gene(
     ``ortholog`` table only carries Ensembl gene IDs. Query order:
 
       1. ``xref:ensembl-<ENSG>+AND+organism_id:<taxon>+AND+reviewed:true``
-         — exact xref match, reviewed Swiss-Prot only.
-      2. Same xref but unreviewed (TrEMBL allowed). Cyno often only has
-         TrEMBL entries because few cyno proteins are manually curated.
-      3. ``gene_exact:<symbol>+AND+organism_id:<taxon>+AND+reviewed:true``
-         — last-resort symbol search when xref indexing is incomplete
-         (UniProt doesn't index cyno ENSMFAG xrefs by default). The
-         symbol here is the **ortholog's own symbol from Compara**, NOT
-         the human symbol — different failure mode from the within-species
-         symbol resolver bug PR #30 fixed.
-      4. Same gene_exact but unreviewed.
+         — exact xref match, reviewed Swiss-Prot only. Most-specific.
+      2. ``gene_exact:<symbol>+AND+organism_id:<taxon>+AND+reviewed:true``
+         — Swiss-Prot by symbol. **Critical for mouse**: UniProt frequently
+         does NOT index reviewed Swiss-Prot's Ensembl xref (e.g. mouse F3
+         P20352, STX2 Q00262, IL4I1 O09046 are all missed by Tier 1) but
+         the gene symbol lookup finds them. Symbol here is the **ortholog's
+         own symbol from Compara**, NOT the human symbol — different
+         failure mode from the within-species symbol resolver bug PR #30
+         fixed. Putting reviewed-by-symbol ahead of unreviewed-by-xref
+         (the previous Tier 2) is what stops us picking TrEMBL fragments
+         like ``A0A0G2JGS5`` (157 aa) over canonical Swiss-Prot.
+      3. ``xref:ensembl-<ENSG>+AND+organism_id:<taxon>`` (any review state),
+         **picking the longest entry** — TrEMBL fallback for cyno (where
+         reviewed Swiss-Prot doesn't exist) and edge mouse cases. Longest-
+         first prefers full-length isoforms over fragmentary TrEMBL entries
+         from older proteome assemblies.
+      4. Same gene_exact (any review state), longest entry — last resort.
 
-    Returns the first hit or ``None``.
+    Returns the matched accession or ``None``.
+
+    Cache invalidation: this resolver's output is cached on disk at
+    ``data/external/ortholog_uniprot_resolution.tsv``. After changing the
+    tier order, that cache file is *stale* — delete it (or rerun the
+    sweep with a fresh path) so previously-cached TrEMBL picks get
+    superseded.
     """
     import json as _json
 
     if not ensembl_gene_id:
         return None
 
-    def _try_query(query: str) -> str | None:
+    def _search(query: str, *, size: int = 1) -> list[dict]:
         url = (
             "https://rest.uniprot.org/uniprotkb/search?"
-            f"query={query}&format=json&size=1&fields=accession,reviewed"
+            f"query={query}&format=json&size={size}&fields=accession,reviewed,length"
         )
         try:
             text, _ = fetch_text_with_retries(
@@ -613,34 +626,49 @@ def resolve_uniprot_by_ensembl_gene(
                 retry_max_attempts=retry_max_attempts,
                 min_request_interval_ms=min_request_interval_ms,
             )
-            data = _json.loads(text)
-            results = data.get("results") or []
-            if results:
-                acc = (results[0].get("primaryAccession") or "").strip()
-                if acc:
-                    return acc
+            return _json.loads(text).get("results") or []
         except (RuntimeError, ValueError):
-            return None
+            return []
+
+    def _first(query: str) -> str | None:
+        results = _search(query, size=1)
+        if results:
+            acc = (results[0].get("primaryAccession") or "").strip()
+            if acc:
+                return acc
         return None
 
+    def _longest(query: str) -> str | None:
+        """Pick the entry with the longest sequence — prefers canonical
+        isoforms over fragmentary TrEMBL entries when multiple match."""
+        results = _search(query, size=10)
+        if not results:
+            return None
+        best = max(results, key=lambda e: int(e.get("sequence", {}).get("length") or 0))
+        acc = (best.get("primaryAccession") or "").strip()
+        return acc or None
+
+    sym = (ortholog_gene_symbol or "").strip()
+
     # Tier 1: reviewed xref
-    if acc := _try_query(
+    if acc := _first(
         f"xref:ensembl-{ensembl_gene_id}+AND+organism_id:{organism_taxon_id}+AND+reviewed:true"
     ):
         return acc
-    # Tier 2: unreviewed xref (TrEMBL fallback for cyno)
-    if acc := _try_query(
-        f"xref:ensembl-{ensembl_gene_id}+AND+organism_id:{organism_taxon_id}"
-    ):
-        return acc
-    # Tier 3+4: gene_exact symbol search when xref indexing fails (cyno)
-    sym = (ortholog_gene_symbol or "").strip()
+    # Tier 2: reviewed gene_exact — catches Swiss-Prot missing the Ensembl xref
     if sym:
-        if acc := _try_query(
+        if acc := _first(
             f"gene_exact:{sym}+AND+organism_id:{organism_taxon_id}+AND+reviewed:true"
         ):
             return acc
-        if acc := _try_query(
+    # Tier 3: unreviewed xref, longest entry — TrEMBL fallback for cyno
+    if acc := _longest(
+        f"xref:ensembl-{ensembl_gene_id}+AND+organism_id:{organism_taxon_id}"
+    ):
+        return acc
+    # Tier 4: unreviewed gene_exact, longest entry — last resort
+    if sym:
+        if acc := _longest(
             f"gene_exact:{sym}+AND+organism_id:{organism_taxon_id}"
         ):
             return acc

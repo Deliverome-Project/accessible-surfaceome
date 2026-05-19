@@ -236,13 +236,29 @@ def _fetch_paralogs(uniprot_acc: str, paralog_version: str) -> list[ParalogEntry
 
 def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                      ortholog_ecd_version: str) -> Orthologs:
-    """Mouse + cyno ortholog entries. Joins topology_public on the
-    ortholog UniProt (filtered to the same topology_version + matching
-    species cohort) to populate ecd_length + tm_helix_count so the
-    OrthologEntry schema is satisfied."""
+    """Mouse + cyno ortholog entries.
+
+    Reads from ``compara_ortholog_ecd`` (which carries both the full-length
+    BioMart % identity and the per-loop BLOSUM62 ECD % identity). Joins
+    ``topology_public`` on the ortholog UniProt (filtered to the same
+    ``topology_version`` + matching species cohort) to populate
+    ``ecd_length`` + ``tm_helix_count``.
+
+    Returns one entry per ortholog. ECD %identity is left None when the
+    human protein has no ECD to compare (inner-leaflet, soluble,
+    GPI-anchored without surface loops); the full-length identity from
+    BioMart is always populated so the reader can still see how conserved
+    the ortholog is.
+    """
+    # Full-length BioMart % identity lives in compara_ortholog.percent_identity,
+    # not in compara_ortholog_ecd.biomart_percent_identity (the latter is
+    # intentionally NULL — see compute_ortholog_ecd_records in
+    # scripts/run_topology_sweep.py). Join on the proper composite FK:
+    # (release_version, human_ensembl_gene, species, ortholog_ensembl_gene).
     rows = _query_public(
         "SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene, "
         "eo.ortholog_gene_symbol, eo.ecd_pct_identity, "
+        "co.percent_identity AS full_length_pct_identity, "
         "tp.tm_helix_count, tp.ecd_length_residues, "
         "eo.compara_release "
         "FROM compara_ortholog_ecd eo "
@@ -253,9 +269,13 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
         "    (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR "
         "    (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog') "
         "  ) "
+        "LEFT JOIN compara_ortholog co "
+        "  ON co.release_version = eo.compara_release "
+        "  AND co.human_ensembl_gene = eo.human_ensembl_gene "
+        "  AND co.species = eo.species "
+        "  AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene "
         "WHERE eo.human_uniprot_acc = ? "
         "  AND eo.ortholog_ecd_version = ? "
-        "  AND eo.ecd_pct_identity IS NOT NULL "
         "ORDER BY eo.species ASC",
         [topology_version, uniprot_acc, ortholog_ecd_version],
     )
@@ -263,7 +283,11 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
     cyno: list[OrthologEntry] = []
     for r in rows:
         species = (r.get("species") or "").lower()
+        ecd_raw = r.get("ecd_pct_identity")
+        full_raw = r.get("full_length_pct_identity")
         try:
+            ecd_pct = float(ecd_raw) if ecd_raw is not None else None
+            full_pct = float(full_raw) if full_raw is not None else None
             entry = OrthologEntry(
                 is_canonical=True,
                 isoform_id=r.get("ortholog_uniprot_acc") or "",
@@ -271,10 +295,10 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                 ortholog_uniprot_acc=r.get("ortholog_uniprot_acc") or "",
                 ortholog_symbol=r.get("ortholog_gene_symbol") or "",
                 type="one2one",
-                ecd_pct_identity_to_human_canonical=float(r["ecd_pct_identity"]),
-                # We compute identity locally; similarity not yet wired —
-                # default to identity as a conservative placeholder.
-                ecd_pct_similarity_to_human_canonical=float(r["ecd_pct_identity"]),
+                ecd_pct_identity_to_human_canonical=ecd_pct,
+                # Similarity not yet wired — mirror identity when present.
+                ecd_pct_similarity_to_human_canonical=ecd_pct,
+                full_length_pct_identity_to_human_canonical=full_pct,
                 ecd_length_residues=int(r.get("ecd_length_residues") or 0),
                 tm_helix_count=int(r.get("tm_helix_count") or 0),
                 compara_version=r.get("compara_release") or "",
