@@ -50,6 +50,45 @@ export type Confidence = "high" | "moderate" | "low";
 export type StateDependence = "low" | "moderate" | "high" | "unclear";
 
 /**
+ * Co-receptor surface-expression dependency. Mirrors the Python
+ * ``CoreceptorDependency`` Literal at
+ * ``src/accessible_surfaceome/tools/_shared/models.py``.
+ */
+export type CoreceptorDependency =
+  | "required"
+  | "modulatory"
+  | "none"
+  | "unknown";
+
+/**
+ * Reason taxonomy emitted by both the triage agent and the deep-dive
+ * synthesizer. The synthesizer re-derives this from A1+A2 evidence
+ * (not blindly copied from the triage). Mirrors the Python
+ * ``TriageReason`` Literal at
+ * ``src/accessible_surfaceome/tools/_shared/models.py``.
+ */
+export type TriageReason =
+  | "classical_surface_receptor"
+  | "gpi_anchored"
+  | "multipass_with_exposed_loops"
+  | "extracellular_face_protein"
+  | "stable_complex_partner"
+  | "cell_state_induced"
+  | "tissue_restricted_surface"
+  | "lysosomal_exocytosis"
+  | "dual_localization"
+  | "stable_surface_attachment"
+  | "cytoplasmic"
+  | "nuclear"
+  | "mitochondrial_internal"
+  | "endomembrane_resident"
+  | "nuclear_envelope"
+  | "inner_leaflet_anchored"
+  | "secreted_only"
+  | "pmhc_only_intracellular"
+  | "other";
+
+/**
  * Architecture (how the protein sits in the membrane). Orthogonal
  * to the new ``ProteinFamily`` axis (function). The previous
  * ``ion_channel`` and ``transporter`` values were dropped in the
@@ -162,6 +201,12 @@ export interface ExecutiveSummary {
    *  ``subcategory``. Defaults to ``"miscellaneous"`` for back-compat
    *  with samples generated before the redesign. */
   protein_family: ProteinFamily;
+  /** Synthesizer's re-derived reason for the surface call. Reuses
+   *  the ``TriageReason`` enum so the catalog can filter by the same
+   *  vocabulary regardless of which agent emitted the reason. The
+   *  synth re-derives from A1+A2 evidence; sometimes overrides the
+   *  triage's own reason. */
+  surface_call_reason: TriageReason;
   headline_risks: HeadlineRisk[];
   cited_evidence_ids: string[];
 }
@@ -170,6 +215,12 @@ export interface Filters {
   surface_accessibility: SurfaceAccessibility;
   confidence: Confidence;
   subcategory: Subcategory;
+  /** Mirror of ``executive_summary.state_dependence`` — promoted to
+   *  Filters so the catalog can D1-filter on state-conditional
+   *  candidates without joining through ``executive_summary``. */
+  state_dependence: StateDependence;
+  /** Mirror of ``executive_summary.surface_call_reason``. */
+  surface_call_reason: TriageReason;
   /** Functional family rolled up from ``executive_summary.protein_family``. */
   protein_family: ProteinFamily;
   evidence_grade: EvidenceGrade;
@@ -181,6 +232,11 @@ export interface Filters {
   has_shed_form: boolean;
   has_secreted_form: boolean;
   requires_coreceptor_for_expression: boolean;
+  /** Full 4-value CoreceptorDependency enum mirror of
+   *  ``accessibility_risks.co_receptor_requirements.surface_expression_dependency``.
+   *  Alongside the existing ``requires_coreceptor_for_expression`` bool,
+   *  which flattens ``"modulatory"`` into ``false``. */
+  co_receptor_dependency: CoreceptorDependency;
   has_epitope_masking: boolean;
   has_restricted_subdomain: boolean;
   mouse_ortholog_ecd_pct_identity: number;

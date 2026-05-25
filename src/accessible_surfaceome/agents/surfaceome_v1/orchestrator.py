@@ -864,6 +864,13 @@ def _derive_filters(
         surface_accessibility=executive_summary.surface_accessibility,
         confidence=executive_summary.confidence,
         subcategory=executive_summary.subcategory,
+        # D — state_dependence rolled up from executive_summary so the
+        # catalog can D1-filter "show me state-conditional candidates"
+        # without joining through executive_summary.
+        state_dependence=executive_summary.state_dependence,
+        # D — surface_call_reason rolled up from the synthesizer's
+        # re-derived call (NOT inherited from the triage record).
+        surface_call_reason=executive_summary.surface_call_reason,
         # D — protein_family rolled up from executive_summary so the
         # catalog filter mirrors the headline value (single source of
         # truth: the synthesizer's call).
@@ -883,6 +890,10 @@ def _derive_filters(
         has_secreted_form=accessibility_risks.secreted_form.present,
         requires_coreceptor_for_expression=(
             accessibility_risks.co_receptor_requirements.surface_expression_dependency == "required"
+        ),
+        # D — full 4-value enum so 'modulatory' isn't flattened away.
+        co_receptor_dependency=(
+            accessibility_risks.co_receptor_requirements.surface_expression_dependency
         ),
         has_epitope_masking=accessibility_risks.epitope_masking.severity in ("high", "moderate"),
         has_restricted_subdomain=has_restricted,

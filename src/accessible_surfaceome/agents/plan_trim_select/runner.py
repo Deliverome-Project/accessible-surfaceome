@@ -314,6 +314,12 @@ def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str
             {"symbol": p.paralog_symbol, "ecd_pct_identity": p.ecd_pct_identity}
             for p in top
         ],
+        # Aggregate ortholog counts — Compara can return one-to-many per
+        # species; canonical symbol + identity below cover the headline
+        # cross-species translatability, the count surfaces multi-isoform
+        # / multi-paralog mappings the planner may want to flag.
+        "mouse_ortholog_count": len(features.orthologs.mouse),
+        "cyno_ortholog_count": len(features.orthologs.cynomolgus),
         "mouse_ortholog_symbol": mouse.ortholog_symbol if mouse else None,
         "mouse_ortholog_ecd_pct_identity": (
             mouse.ecd_pct_identity_to_human_canonical if mouse else None
@@ -322,7 +328,6 @@ def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str
         "cyno_ortholog_ecd_pct_identity": (
             cyno.ecd_pct_identity_to_human_canonical if cyno else None
         ),
-        "tool_version": canon.tool_version,
     }
     return json.dumps(payload, indent=2)
 

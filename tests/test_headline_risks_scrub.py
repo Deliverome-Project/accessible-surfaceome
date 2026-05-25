@@ -96,6 +96,7 @@ def _exec(
     surface_accessibility: str = "moderate",
     subcategory: str = "other",
     confidence: str = "moderate",
+    surface_call_reason: str = "classical_surface_receptor",
 ) -> ExecutiveSummary:
     return ExecutiveSummary.model_validate(
         {
@@ -107,6 +108,7 @@ def _exec(
             "confidence": confidence,
             "headline_risks": headline_risks,
             "cited_evidence_ids": [],
+            "surface_call_reason": surface_call_reason,
         }
     )
 

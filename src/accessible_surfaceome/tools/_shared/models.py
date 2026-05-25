@@ -1389,6 +1389,18 @@ class ExecutiveSummary(BaseModel):
     # = adhesion / junction / tetraspanin / scaffold / structural /
     # chaperone proteins that don't fit the first three.
     protein_family: ProteinFamily = "miscellaneous"
+    # The synthesizer's re-derived reason for its surface call. Reuses
+    # the TriageReason enum so the catalog can filter by the same
+    # vocabulary regardless of which agent emitted the reason. The
+    # synth MUST re-derive from the A1+A2 evidence ledger — not just
+    # copy ``triage_record.reason`` — so the rolled-up value is the
+    # deep-dive's verdict, not the triage's echo. Often agrees with
+    # the triage (e.g., canonical surface receptors); deliberately
+    # disagrees when A1+A2 evidence overrides (e.g., a ``no /
+    # inner_leaflet_anchored`` triage that the deep-dive promotes to
+    # a contextual reason like ``lysosomal_exocytosis`` after finding
+    # the cancer-state surface evidence).
+    surface_call_reason: TriageReason
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
@@ -1418,6 +1430,16 @@ class Filters(BaseModel):
     surface_accessibility: SurfaceAccessibility
     confidence: Confidence
     subcategory: Subcategory
+    # Mirror of ``executive_summary.state_dependence``. Promoted to
+    # Filters so catalog UI can D1-filter on state-conditional candidates
+    # without joining through executive_summary.
+    state_dependence: StateDependence
+    # Mirror of ``executive_summary.surface_call_reason`` — the
+    # synthesizer's re-derived reason for its surface call (reuses the
+    # TriageReason enum). Distinct from the triage record's own reason:
+    # the synth weighs A1+A2 evidence and re-emits, so the rolled-up
+    # value is the deep-dive's verdict, not the triage's echo.
+    surface_call_reason: TriageReason
     # Mirror of ``executive_summary.protein_family``. Rolled up by
     # the orchestrator so the catalog can filter by functional family
     # (SURFACE-Bind axis) at the top level alongside architecture.
@@ -1431,6 +1453,13 @@ class Filters(BaseModel):
     has_shed_form: bool
     has_secreted_form: bool
     requires_coreceptor_for_expression: bool
+    # Full 4-value CoreceptorDependency enum
+    # (required / modulatory / none / unknown). Mirror of
+    # ``accessibility_risks.co_receptor_requirements.surface_expression_dependency``.
+    # The existing ``requires_coreceptor_for_expression`` bool collapses
+    # ``modulatory`` into ``False``, losing a real "not strictly required
+    # but matters" signal; this enum field is the catalog-filterable version.
+    co_receptor_dependency: CoreceptorDependency
     max_paralog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     has_epitope_masking: bool
     has_restricted_subdomain: bool

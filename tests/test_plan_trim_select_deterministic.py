@@ -125,7 +125,60 @@ def test_summary_includes_tm_paralog_ortholog():
     assert out["cyno_ortholog_ecd_pct_identity"] == 98.9
     assert out["mouse_ortholog_symbol"] == "GPR75_MOUSE"
     assert out["cyno_ortholog_symbol"] == "A0A7N9DAV0_MACFA"
-    assert out["tool_version"] == "deeptmhmm-1.0.24"
+    assert out["mouse_ortholog_count"] == 1
+    assert out["cyno_ortholog_count"] == 1
+
+
+def test_summary_omits_tool_version():
+    """``tool_version`` is audit metadata for the DeterministicFeatures
+    record itself — not signal the planner LLM needs. Withheld from the
+    injected summary to keep the prompt focused on decision-driving
+    fields (topology, paralog/ortholog cutoffs)."""
+    out = json.loads(_summarize_deterministic_for_planner(_gpr75_features()))
+    assert "tool_version" not in out
+
+
+def test_summary_counts_all_orthologs_not_just_canonical():
+    """mouse_ortholog_count / cyno_ortholog_count are aggregate counts
+    of every ortholog entry returned by Compara — not just the canonical
+    one. Lets the planner spot one-to-many cross-species mappings (where
+    cross-reactivity warnings matter) without losing the canonical
+    ECD-identity signal."""
+    feats = _gpr75_features()
+    extra_mouse_iso = OrthologEntry(
+        is_canonical=False,
+        isoform_id="Q6X632-2",
+        ensembl_id="ENSMUSG00000074882",
+        ortholog_uniprot_acc="Q6X632-2",
+        ortholog_symbol="GPR75_MOUSE_iso2",
+        type="one2one",
+        ecd_pct_identity_to_human_canonical=50.0,
+        ecd_pct_similarity_to_human_canonical=60.0,
+        ecd_length_residues=89,
+        tm_helix_count=7,
+        compara_version="r112",
+        retrieved_at=datetime.now(UTC),
+    )
+    feats = feats.model_copy(
+        update={
+            "orthologs": Orthologs(
+                mouse=list(feats.orthologs.mouse) + [extra_mouse_iso],
+                cynomolgus=list(feats.orthologs.cynomolgus),
+            )
+        }
+    )
+    out = json.loads(_summarize_deterministic_for_planner(feats))
+    assert out["mouse_ortholog_count"] == 2
+    assert out["cyno_ortholog_count"] == 1
+    # Canonical identity signal preserved
+    assert out["mouse_ortholog_ecd_pct_identity"] == 74.2
+
+
+def test_summary_zero_ortholog_counts_when_empty():
+    feats = _gpr75_features().model_copy(update={"orthologs": Orthologs()})
+    out = json.loads(_summarize_deterministic_for_planner(feats))
+    assert out["mouse_ortholog_count"] == 0
+    assert out["cyno_ortholog_count"] == 0
 
 
 def test_summary_handles_no_orthologs():

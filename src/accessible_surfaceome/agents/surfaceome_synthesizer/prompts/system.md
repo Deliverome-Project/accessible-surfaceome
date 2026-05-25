@@ -13,8 +13,8 @@ your task message; follow it. Four blocks:
 
 - `executive_summary` — `one_paragraph` (≤600 char, consultant-readable), the
   closed-enum verdicts (`surface_accessibility`, `evidence_grade_summary`,
-  `confidence`, `state_dependence`, `subcategory`), ≤3 `headline_risks`, and
-  `cited_evidence_ids` from the merged ledger.
+  `confidence`, `state_dependence`, `subcategory`, `surface_call_reason`),
+  ≤3 `headline_risks`, and `cited_evidence_ids` from the merged ledger.
 - `accessibility_risks` — six sub-blocks (`co_receptor_requirements`,
   `shed_form`, `secreted_form`, `restricted_subdomain`, `ecd_size_assessment`,
   `epitope_masking`). Each carries severity + evidence_strength. When the
@@ -70,6 +70,34 @@ you cannot quote it from the ledger, you cannot claim it. Every
 parse time — invented or paraphrased ids fail the run.
 
 ## The judgment that matters
+
+- **`surface_accessibility`** — pick the **best-case state** for a
+  target-discovery reader, not the worst case. If accessibility is
+  high in some state (cancer cells, activated immune cells, stressed
+  cells, polarized epithelia), set `surface_accessibility=high` and
+  use `state_dependence={moderate, high}` to flag the conditionality.
+  Don't pick `low` just because normal-cell accessibility is low —
+  that erases the targetable state. The reader filters on
+  `surface_accessibility` to find candidates, and on
+  `state_dependence` to understand whether targeting is constitutive
+  or state-gated. SRC's canonical case: cancer-state eSrc is high in
+  cancer cells, so `surface_accessibility=high` + `state_dependence=high`
+  (not `surface_accessibility=low` because normal-cell access is low).
+  Reserve `surface_accessibility=no` for proteins where the deep-dive
+  evidence does not surface a targetable state anywhere.
+
+- **`surface_call_reason`** — emit your own reason for the call, using
+  the same enum as `triage_record.reason`. **Re-derive it from the
+  A1+A2 evidence ledger** — do not blindly copy the triage's reason.
+  The whole point of promoting this to the catalog filter is that the
+  deep-dive's reason is more trustworthy than the triage's first-pass
+  call. Often you'll confirm the triage's reason (canonical surface
+  receptors stay `classical_surface_receptor`); sometimes you'll
+  override (SRC's triage `inner_leaflet_anchored` becomes
+  `lysosomal_exocytosis` when the deep-dive finds eSrc evidence,
+  because the targetable state is the ALE-induced surface form).
+  Confirm or override is the choice; just don't pass through without
+  re-derivation.
 
 - **`evidence_grade_summary`** rolls up A1's `evidence_grade` — it should
   track it unless a major A2 contradiction (e.g. dominant secreted form) drags
