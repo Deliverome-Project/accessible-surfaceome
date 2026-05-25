@@ -793,6 +793,10 @@ def _derive_filters(
         surface_accessibility=executive_summary.surface_accessibility,
         confidence=executive_summary.confidence,
         subcategory=executive_summary.subcategory,
+        # D — protein_family rolled up from executive_summary so the
+        # catalog filter mirrors the headline value (single source of
+        # truth: the synthesizer's call).
+        protein_family=executive_summary.protein_family,
         # D — from surface_evidence (A1)
         evidence_grade=surface_evidence.evidence_grade,
         # D — from accessibility_risks (B)

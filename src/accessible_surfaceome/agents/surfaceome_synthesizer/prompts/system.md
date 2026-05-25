@@ -206,6 +206,61 @@ The `surface_accessibility` enum has five values: `high`, `moderate`,
 * Don't pick `"no"` just because the evidence is weak; that's what
   `confidence="low"` + `evidence_grade="weak"` are for.
 
+## Subcategory + protein_family (two-axis taxonomy)
+
+The schema splits taxonomy into two orthogonal axes, aligned with
+SURFACE-Bind (Marchand et al. 2026 PNAS,
+doi:10.1073/pnas.2506269123). Set BOTH on every record.
+
+**`subcategory`** = **architecture** — how the protein sits in the
+membrane. Closed enum:
+* `single_pass_T1` — Type I single-pass (N-term out, C-term in;
+  classical receptor topology). EGFR, HER2, CD55-precursor.
+* `single_pass_T2` — Type II single-pass (N-term in, C-term out).
+  CD13/ANPEP, CD26/DPP4, syndecans.
+* `multi_pass` — generic multi-pass (≥2 TM, not 7TM and not
+  tetraspanin). SLC family, claudins, ABC transporters, AQPs.
+* `GPCR` — seven-pass heptahelical receptor architecture. Kept as
+  a common-name shortcut because 7TM is essentially synonymous
+  with GPCR in practice. GPR75, ADGRE5, CXCR4.
+* `GPI_anchored` — post-translational GPI lipid anchor; no TM
+  span. CD55, CD59, prion protein, glypicans.
+* `tetraspanin` — four-pass with large EC2 loop (~80-100 residues).
+  CD9, CD81, CD63.
+* `other` — soluble-cytoplasmic with ectopic-surface story
+  (HSPA5, SRC, VIM); inner-leaflet lipid-anchored; or genuinely-
+  uncategorized topology.
+
+**`protein_family`** = **function** — what the protein does. Mirrors
+SURFACE-Bind's four main classes:
+* `receptor` — signaling receptors (GPCRs / RTKs / cytokine
+  receptors / integrins / immunoreceptors / NHRs). EGFR, GPR75,
+  IFNAR2, CD3 family, FGFR2.
+* `enzyme` — surface-exposed catalytic activity. CD13/ANPEP
+  (aminopeptidase), CD26/DPP4 (dipeptidyl peptidase), CD73/NT5E
+  (ectonucleotidase), CD38, PSMA/FOLH1, ADAM10/17/SADAMs, MMP14,
+  ENPP family. **Inner-leaflet kinases like SRC count as `enzyme`
+  by protein identity, regardless of whether the ectopic-surface
+  story is moderate** — the catalog filters on what the protein
+  IS, not just where it lives.
+* `transporter` — SLCs, ABC transporters, ion channels, aquaporins,
+  pumps. SLC2A1, SLC7A11, CFTR, KCNH2, ATP1A1, AQP1. Subsumes
+  the dropped `ion_channel` and `transporter` Subcategory values.
+* `miscellaneous` — adhesion molecules (ICAM, VCAM), junction
+  proteins (claudins, occludin, JAMs, cadherins), tetraspanins,
+  scaffolds (PDZ proteins), structural / cytoskeletal (VIM),
+  chaperones (HSPA5), prion-class. Default when none of the
+  above fit cleanly.
+
+A given gene carries one value from EACH axis. **EGFR**:
+`subcategory=single_pass_T1, protein_family=receptor`. **GPR75**:
+`subcategory=GPCR, protein_family=receptor`. **CD26/DPP4**:
+`subcategory=single_pass_T2, protein_family=enzyme`. **CD81**:
+`subcategory=tetraspanin, protein_family=miscellaneous`. **SLC2A1**:
+`subcategory=multi_pass, protein_family=transporter`. **HSPA5**:
+`subcategory=other, protein_family=miscellaneous`. **SRC**:
+`subcategory=other, protein_family=enzyme` (kinase by identity).
+
 ## Has-known-ligand flag
 
 `filters_llm.has_known_ligand` is a bool. **Default `True`** — most

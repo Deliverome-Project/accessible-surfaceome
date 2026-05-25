@@ -24,7 +24,8 @@
       "a1_evi_14",
       "a2_evi_05",
       "a2_evi_12"
-    ]
+    ],
+    "protein_family": "enzyme"
   },
   "filters": {
     "surface_accessibility": "low",
@@ -47,7 +48,8 @@
     "n_term_extracellular": false,
     "c_term_extracellular": false,
     "low_endogenous_expression": false,
-    "has_known_ligand": true
+    "has_known_ligand": true,
+    "protein_family": "enzyme"
   },
   "surface_evidence": {
     "evidence_grade": "supportive_but_indirect",

@@ -80,7 +80,28 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
           </StatusPill>
         </li>
         <li>
-          <StatusPill tone="teal">{prettyEnum(e.subcategory)}</StatusPill>
+          <StatusPill
+            tone="teal"
+            title={
+              "Architecture (how the protein sits in the membrane): " +
+              "single_pass_T1/T2 · multi_pass · GPCR · GPI_anchored · " +
+              "tetraspanin · other. Orthogonal to the family axis."
+            }
+          >
+            Architecture · {prettyEnum(e.subcategory)}
+          </StatusPill>
+        </li>
+        <li>
+          <StatusPill
+            tone="lavender"
+            title={
+              "Functional family per SURFACE-Bind (Marchand 2026 PNAS, " +
+              "doi:10.1073/pnas.2506269123): receptor · enzyme · " +
+              "transporter · miscellaneous. Orthogonal to architecture."
+            }
+          >
+            Family · {prettyEnum(e.protein_family)}
+          </StatusPill>
         </li>
         <li>
           <StatusPill tone={gradeTone(e.evidence_grade_summary)}>

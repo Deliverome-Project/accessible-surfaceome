@@ -145,6 +145,15 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
       value: g.ensembl_gene,
       href: `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${g.ensembl_gene}`,
     },
+    // SURFACE-Bind (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
+    // — Correia lab's per-UniProt MaSIF / patch-based targetability
+    // mapping. Deep-link gives a per-protein view of which surface
+    // patches are scored as designable + downloadable binder seeds.
+    {
+      label: "SURFACE-Bind",
+      value: g.uniprot_acc,
+      href: `https://surface-bind.inria.fr/protein.html?uniprot=${g.uniprot_acc}`,
+    },
   ];
 
   return (

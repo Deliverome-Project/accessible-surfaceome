@@ -49,6 +49,14 @@ export type SurfaceAccessibility =
 export type Confidence = "high" | "moderate" | "low";
 export type StateDependence = "low" | "moderate" | "high" | "unclear";
 
+/**
+ * Architecture (how the protein sits in the membrane). Orthogonal
+ * to the new ``ProteinFamily`` axis (function). The previous
+ * ``ion_channel`` and ``transporter`` values were dropped in the
+ * SURFACE-Bind alignment (Marchand 2026 PNAS) — those are now
+ * ``ProteinFamily="transporter"`` paired with
+ * ``Subcategory="multi_pass"``.
+ */
 export type Subcategory =
   | "single_pass_T1"
   | "single_pass_T2"
@@ -56,9 +64,19 @@ export type Subcategory =
   | "GPCR"
   | "GPI_anchored"
   | "tetraspanin"
-  | "ion_channel"
-  | "transporter"
   | "other";
+
+/**
+ * Functional family. Mirrors SURFACE-Bind's four main classes
+ * (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123). Dropped
+ * their bookkeeping ``unclassified`` / ``unmatched`` because those
+ * reflect their mapping-pipeline state, not biology.
+ */
+export type ProteinFamily =
+  | "receptor"
+  | "enzyme"
+  | "transporter"
+  | "miscellaneous";
 
 export type EvidenceGrade =
   | "direct_multi_method"
@@ -138,7 +156,12 @@ export interface ExecutiveSummary {
   evidence_grade_summary: EvidenceGrade;
   confidence: Confidence;
   state_dependence: StateDependence;
+  /** Architecture axis (how the protein sits in the membrane). */
   subcategory: Subcategory;
+  /** Function axis (SURFACE-Bind alignment). Orthogonal to
+   *  ``subcategory``. Defaults to ``"miscellaneous"`` for back-compat
+   *  with samples generated before the redesign. */
+  protein_family: ProteinFamily;
   headline_risks: HeadlineRisk[];
   cited_evidence_ids: string[];
 }
@@ -147,6 +170,8 @@ export interface Filters {
   surface_accessibility: SurfaceAccessibility;
   confidence: Confidence;
   subcategory: Subcategory;
+  /** Functional family rolled up from ``executive_summary.protein_family``. */
+  protein_family: ProteinFamily;
   evidence_grade: EvidenceGrade;
   ecd_accessibility_class: EcdAccessibilityClass;
   evidence_density: EvidenceDensity;

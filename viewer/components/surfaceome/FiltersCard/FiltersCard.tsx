@@ -258,13 +258,27 @@ export function FiltersCard({ rec, n }: Props) {
           tone="neutral"
           size="sm"
           title={
-            "Protein architecture (single_pass_T1/T2, multi_pass, GPCR, " +
-            "GPI_anchored, tetraspanin, ion_channel, transporter, other). " +
-            "Orthogonal to the triage-agent's accessibility mechanism (e.g. " +
-            "classical_surface_receptor vs cell_state_induced)."
+            "Architecture (how the protein sits in the membrane): " +
+            "single_pass_T1/T2, multi_pass, GPCR (7TM), GPI_anchored, " +
+            "tetraspanin, other. Orthogonal to the `family` axis below."
           }
         >
-          {prettyEnum(f.subcategory)}
+          arch · {prettyEnum(f.subcategory)}
+        </StatusPill>,
+        <StatusPill
+          key="fam"
+          tone="lavender"
+          size="sm"
+          title={
+            "Functional family per SURFACE-Bind (Marchand 2026 PNAS, " +
+            "doi:10.1073/pnas.2506269123). receptor = GPCRs/RTKs/cytokine " +
+            "receptors; enzyme = surface peptidases / ectonucleotidases / " +
+            "kinases-by-identity; transporter = SLCs / ABC / channels / " +
+            "aquaporins; miscellaneous = adhesion / junction / tetraspanin " +
+            "/ scaffold / chaperone / structural."
+          }
+        >
+          family · {prettyEnum(f.protein_family)}
         </StatusPill>,
         <StatusPill
           key="grade"

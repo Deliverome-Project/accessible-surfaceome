@@ -1015,6 +1015,19 @@ EvidenceGrade = Literal[
 ]
 Confidence = Literal["high", "moderate", "low"]
 StateDependence = Literal["low", "moderate", "high", "unclear"]
+# Subcategory = ARCHITECTURE only — how the protein sits in the
+# membrane. Function lives on the separate ``ProteinFamily`` axis.
+# Slimmed in the SURFACE-Bind alignment (Marchand et al. 2026 PNAS,
+# doi:10.1073/pnas.2506269123): the SURFACE-Bind taxonomy splits
+# function (Receptor / Enzyme / Transporter / Miscellaneous) from
+# architectural detail (which SURFACE-Bind doesn't enumerate to
+# this depth — we keep our own architecture axis).
+#
+# Removed values: ``ion_channel`` and ``transporter`` were functional,
+# not architectural — they now flow to ``ProteinFamily=transporter``
+# with ``Subcategory=multi_pass``. ``GPCR`` stays here as a common-
+# name shortcut for the 7TM heptahelical architecture (the canonical
+# functional use, but the name labels architecture in this taxonomy).
 Subcategory = Literal[
     "single_pass_T1",
     "single_pass_T2",
@@ -1022,9 +1035,18 @@ Subcategory = Literal[
     "GPCR",
     "GPI_anchored",
     "tetraspanin",
-    "ion_channel",
-    "transporter",
     "other",
+]
+
+# ProteinFamily = FUNCTIONAL family. Mirrors SURFACE-Bind's four main
+# classes verbatim (Marchand et al. 2026 PNAS), dropping the
+# bookkeeping ``unclassified`` / ``unmatched`` since those reflect
+# their mapping-pipeline state rather than biology.
+ProteinFamily = Literal[
+    "receptor",
+    "enzyme",
+    "transporter",
+    "miscellaneous",
 ]
 # Headline risks — slimmed from 11 → 5 after the redundancy audit.
 # Each remaining value names a real load-bearing risk that the reader
@@ -1352,7 +1374,21 @@ class ExecutiveSummary(BaseModel):
     evidence_grade_summary: EvidenceGrade
     confidence: Confidence
     state_dependence: StateDependence
+    # Architecture (how the protein sits in the membrane). See the
+    # ``Subcategory`` Literal for the closed enum + the SURFACE-Bind
+    # alignment that splits architecture from function.
     subcategory: Subcategory
+    # NEW: functional family per SURFACE-Bind (Marchand 2026 PNAS).
+    # ``receptor`` = signaling receptors (GPCRs, RTKs, cytokine
+    # receptors, integrins, immunoreceptors). ``enzyme`` = surface-
+    # exposed catalytic activity (CD13/ANPEP, CD26/DPP4, CD73/NT5E,
+    # PSMA/FOLH1, ADAM family, MMPs, ectonucleotidases — and inner-
+    # leaflet kinases like SRC by protein identity, even when the
+    # ectopic-surface story is moderate). ``transporter`` = SLCs, ABC
+    # transporters, ion channels, aquaporins, pumps. ``miscellaneous``
+    # = adhesion / junction / tetraspanin / scaffold / structural /
+    # chaperone proteins that don't fit the first three.
+    protein_family: ProteinFamily = "miscellaneous"
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
@@ -1382,6 +1418,10 @@ class Filters(BaseModel):
     surface_accessibility: SurfaceAccessibility
     confidence: Confidence
     subcategory: Subcategory
+    # Mirror of ``executive_summary.protein_family``. Rolled up by
+    # the orchestrator so the catalog can filter by functional family
+    # (SURFACE-Bind axis) at the top level alongside architecture.
+    protein_family: ProteinFamily = "miscellaneous"
     evidence_grade: EvidenceGrade
     ecd_accessibility_class: ECDAccessibilityClass
     evidence_density: EvidenceDensity
@@ -2784,6 +2824,7 @@ __all__ = [
     "Confidence",
     "StateDependence",
     "Subcategory",
+    "ProteinFamily",
     "HeadlineRisk",
     "ExpressionLevel",
     "ExpressionBreadth",
