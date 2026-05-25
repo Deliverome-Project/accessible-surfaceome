@@ -38,3 +38,15 @@ repos:
         # but the false-positive rate on binary blobs and node_modules is
         # not worth the noise.
         exclude: '^(data/|.*/node_modules/|.*/\.next/|.*/out/|.*\.(lock|tsbuildinfo|fasta|fa)$)'
+      - id: check-viewer-types-sync
+        name: "Enforce TS↔Pydantic schema sync for the viewer"
+        # The script walks SurfaceomeRecord's Pydantic tree and verifies
+        # viewer/lib/surfaceome-types.ts declares every reachable field.
+        # Triggers on EITHER side of the boundary changing — adding a
+        # Pydantic field without updating TS fails the commit; renaming
+        # a Pydantic class without updating TS fails. Pydantic is the
+        # source of truth.
+        entry: uv run --frozen python scripts/check_viewer_types_sync.py
+        language: system
+        pass_filenames: false
+        files: '^(src/accessible_surfaceome/tools/_shared/models\.py|viewer/lib/surfaceome-types\.ts|scripts/check_viewer_types_sync\.py)$'

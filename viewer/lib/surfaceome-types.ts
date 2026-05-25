@@ -167,11 +167,20 @@ export interface CanonicalTopology {
   retrieved_at: string;
 }
 
+/**
+ * Mirrors the Pydantic ``IsoformTopology`` class verbatim — the same
+ * Python class is used in two slots: ``canonical_topology`` and each
+ * entry of ``isoform_topologies[]``. The TS schema previously had a
+ * separate ``CanonicalTopology`` interface that omitted
+ * ``c_terminal_orientation``; that field has now been added here so
+ * both slots type-check identically.
+ */
 export interface IsoformTopology {
   isoform_id: string;
   uniprot_acc: string;
   tm_helix_count: number;
   n_terminal_orientation: Orientation;
+  c_terminal_orientation: Orientation;
   signal_peptide_length: number;
   ecd_length_residues: number;
   icd_length_residues: number;
@@ -212,8 +221,17 @@ export interface ParalogEntry {
   compara_version: string;
 }
 
-export interface StructureBlock {
+/**
+ * AFDB-derived structure metrics. Renamed from ``StructureBlock`` to
+ * mirror the Pydantic ``StructureFeatures`` class name so the
+ * TS↔Pydantic drift checker (``scripts/check_viewer_types_sync.py``)
+ * doesn't trip on the rename.
+ */
+export interface StructureFeatures {
   afdb_id: string;
+  /** AFDB model version (vN, where N is currently 4-6 across our
+   *  cohort; widens as AFDB ships new releases). The placeholder
+   *  path emits ``"unknown"`` when the API fetch failed. */
   afdb_version: string;
   ecd_mean_plddt: number;
   ecd_disordered_fraction: number;
@@ -228,7 +246,7 @@ export interface DeterministicFeatures {
   isoform_topologies: IsoformTopology[];
   orthologs: OrthologSet;
   paralogs: ParalogEntry[];
-  structure: StructureBlock;
+  structure: StructureFeatures;
 }
 
 // ============================================================
@@ -376,6 +394,48 @@ export interface ExpressionObservation {
   context: string;
   sample_type: SampleType;
   level: ExpressionLevel;
+  /** Species the assay was run on. ``unspecified`` when the source
+   *  doesn't say (most common); ``human`` is NOT the default —
+   *  silently assuming human is how the old viewer mis-attributed
+   *  mouse / rat expression measurements. */
+  species?: Species;
+  /** ``true`` when the agent inferred species from cell line /
+   *  context (e.g. \"HEK293\" → human) rather than reading it
+   *  verbatim. Lets the catalog filter out inferred-only rows. */
+  species_inferred?: boolean;
+  cited_evidence_ids: string[];
+}
+
+/** Species discriminator emitted by the v1.0.0 builders for any row
+ *  that observed a measurement (expression, modulation, tissue).
+ *  Mirrors the Pydantic ``Species`` Literal. */
+export type Species =
+  | "human"
+  | "mouse"
+  | "rat"
+  | "macaque"
+  | "dog"
+  | "other"
+  | "unspecified";
+
+/**
+ * Captures the construct details when a method panel measures an
+ * exogenously expressed protein rather than the endogenous one. The
+ * ``signal_peptide_source`` is load-bearing for the synthesizer's
+ * evidence-grade rollup — a foreign (``exogenous``) SP forces
+ * secretory-pathway entry regardless of the protein's native
+ * trafficking, so the evidence is supportive-only rather than direct.
+ */
+export interface OverexpressionContext {
+  /** ``native`` = construct uses the protein's own SP (or none was
+   *  replaced); ``exogenous`` = a foreign leader was added (IgG
+   *  kappa, preprotrypsin, BiP, melittin, …); ``unspecified`` =
+   *  methods didn't mention the SP source. The synthesizer tiers
+   *  ``exogenous`` below ``native``. */
+  signal_peptide_source: "native" | "exogenous" | "unspecified";
+  signal_peptide_detail: string | null;
+  construct_tag: string | null;
+  cell_line: string | null;
   cited_evidence_ids: string[];
 }
 
@@ -384,6 +444,10 @@ export interface MethodObservation {
   method_subclass: MethodSubclass;
   permeabilization: Permeabilization;
   expression_system: ExpressionSystem;
+  /** Populated when ``expression_system`` is ``overexpression`` or
+   *  ``mixed``. ``null`` for endogenous / knock-in / unknown
+   *  systems. */
+  overexpression: OverexpressionContext | null;
   antibodies: AntibodyRef[];
   accessibility_relevance: AccessibilityRelevance;
   surface_claim_type: SurfaceClaimType;
@@ -531,6 +595,8 @@ export interface TissueContext {
   disease_context: DiseaseContext;
   cell_types: string[];
   cell_states: string[];
+  species?: Species;
+  species_inferred?: boolean;
   cited_evidence_ids: string[];
 }
 
@@ -538,6 +604,8 @@ export interface CellTypeContext {
   cell_type: string;
   ontology_id: string;
   present_in_tissues: string[];
+  species?: Species;
+  species_inferred?: boolean;
   cited_evidence_ids: string[];
 }
 
@@ -583,6 +651,8 @@ export interface AccessibilityModulationObservation {
   modulating_state: string;
   change: string;
   accessibility_implication: string;
+  species?: Species;
+  species_inferred?: boolean;
   cited_evidence_ids: string[];
 }
 
@@ -714,13 +784,42 @@ export interface AccessibilityRisks {
 
 export type EvidenceTier = "primary" | "secondary" | "tertiary";
 
+/**
+ * The Pydantic ``SourceRef`` is the audit-grade ledger shape; the
+ * legacy convenience fields below (``pmid``, ``doi``, ``pmcid``,
+ * ``journal``, ``authors``, ``year``) are kept for back-compat with
+ * the older record format that didn't carry the structured
+ * ``source_type`` / ``source_id`` pair. Viewer consumers should
+ * prefer ``source_id`` (parse the prefix to recover the ID type)
+ * and fall back to the legacy fields only for older records — see
+ * the parsing helper in
+ * ``viewer/components/surfaceome/EvidenceDrawer/EvidenceDrawer.tsx``.
+ */
 export interface SourceRef {
+  // ---- v1.0.0 audit-grade fields (mirror Pydantic) ----
+  source_type?: string;
+  /** Format: ``"PMID:12345678"`` / ``"DOI:10.xx/yy"`` /
+   *  ``"UniProt:P12345"`` / ``"PDB:2ABC"``. */
+  source_id?: string;
+  pmc_id?: string | null;
+  url?: string | null;
+  title?: string | null;
+  retrieved_at?: string;
+  /** Hash of fetched text at retrieval — tamper detection;
+   *  audit-only, viewer doesn't render. */
+  content_sha256?: string;
+  publication_type?: string;
+  /** Retraction-watch hit at retrieval time. Reserved for a future
+   *  red "Retracted" badge in the EvidenceDrawer. */
+  is_retracted?: boolean;
+  retraction_checked_at?: string;
+  license?: string;
+
+  // ---- legacy convenience fields (back-compat for v0.x records) ----
   pmid?: string | null;
   doi?: string | null;
   pmcid?: string | null;
-  url?: string | null;
   journal?: string | null;
-  title?: string | null;
   authors?: string | null;
   year?: number | null;
 }

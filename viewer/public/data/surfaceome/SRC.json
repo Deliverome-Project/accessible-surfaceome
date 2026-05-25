@@ -689,7 +689,7 @@
     "paralogs": [],
     "structure": {
       "afdb_id": "AF-P12931-F1",
-      "afdb_version": "v4",
+      "afdb_version": "v6",
       "ecd_mean_plddt": 83.44,
       "ecd_disordered_fraction": 0.194,
       "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",

@@ -29,7 +29,7 @@ from pathlib import Path
 
 import httpx
 
-from accessible_surfaceome.tools._shared.models import StructureFeatures
+from accessible_surfaceome.tools._shared.models import AFDBVersion, StructureFeatures
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +56,53 @@ _AFDB_CITATIONS = [
     "10.1038/s41586-021-03819-2",
     "10.1093/nar/gkad1011",
 ]
+
+
+_VALID_AFDB_VERSIONS: frozenset[str] = frozenset(
+    {"v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9"}
+)
+
+
+def _afdb_version_string(latest_version: object) -> AFDBVersion:
+    """Render AFDB's ``latestVersion`` (numeric) as a ``"vN"`` string.
+
+    AFDB metadata returns an ``int`` (typically ``4`` through ``6`` as
+    of 2026-05); the on-disk afdb_id + the viewer's display use
+    ``"v{N}"`` shape. Returns ``"v4"`` as a last-resort fallback when
+    the field is missing / non-numeric — that was the historical
+    hardcoded value, and matches the historical link shape so existing
+    consumers don't change behavior.
+
+    Return type is the narrow :data:`AFDBVersion` Literal so the
+    ``StructureFeatures`` constructor's strict literal field doesn't
+    require a ``ty:ignore`` at the call sites.
+    """
+    candidate: str
+    if isinstance(latest_version, int) and latest_version > 0:
+        candidate = f"v{latest_version}"
+    elif isinstance(latest_version, str):
+        s = latest_version.strip()
+        if s.startswith("v"):
+            candidate = s
+        else:
+            try:
+                n = int(s)
+                candidate = f"v{n}" if n > 0 else "v4"
+            except ValueError:
+                candidate = "v4"
+    else:
+        candidate = "v4"
+    if candidate in _VALID_AFDB_VERSIONS:
+        return candidate  # ty:ignore[invalid-return-type]
+    # Beyond v9: log + clamp so the schema doesn't reject the record.
+    # Widening _VALID_AFDB_VERSIONS is the right fix when this fires.
+    logger.warning(
+        "AFDB returned latestVersion=%r outside the schema's "
+        "v1-v9 range; defaulting to v4 — widen AFDBVersion in "
+        "tools._shared.models and _VALID_AFDB_VERSIONS here.",
+        latest_version,
+    )
+    return "v4"
 
 
 def _coerce_float(value: object, default: float = 0.0) -> float:
@@ -110,6 +157,14 @@ def fetch_afdb_plddt(
         afdb_id_raw if isinstance(afdb_id_raw, str) and afdb_id_raw
         else f"AF-{uniprot_acc}-F1"
     )
+    # AFDB has been bumping model versions over time (SRC = v6 as of
+    # 2026-05; earlier versions are removed from the file server, so
+    # "v4" is now a 404 link for many entries). Read the real version
+    # from the API's `latestVersion` rather than hardcoding "v4".
+    # The fallback is "v4" only because that's what every
+    # placeholder path historically emitted — once the API responds
+    # this code path is always taken.
+    afdb_version: str = _afdb_version_string(metadata.get("latestVersion"))
 
     # Whole-protein values from the API metadata. These are always
     # available even when the CIF isn't reachable.
@@ -123,7 +178,7 @@ def fetch_afdb_plddt(
     if not has_ecd:
         return StructureFeatures(
             afdb_id=afdb_id,
-            afdb_version="v4",
+            afdb_version=afdb_version,
             ecd_mean_plddt=global_metric,
             ecd_disordered_fraction=whole_disordered,
             source=(
@@ -144,7 +199,7 @@ def fetch_afdb_plddt(
         )
         return StructureFeatures(
             afdb_id=afdb_id,
-            afdb_version="v4",
+            afdb_version=afdb_version,
             ecd_mean_plddt=global_metric,
             ecd_disordered_fraction=whole_disordered,
             source="AlphaFold DB (whole-protein pLDDT — no cifUrl in metadata)",
@@ -163,7 +218,7 @@ def fetch_afdb_plddt(
         )
         return StructureFeatures(
             afdb_id=afdb_id,
-            afdb_version="v4",
+            afdb_version=afdb_version,
             ecd_mean_plddt=global_metric,
             ecd_disordered_fraction=whole_disordered,
             source=f"AlphaFold DB (whole-protein pLDDT — CIF unavailable: {exc})",
@@ -185,7 +240,7 @@ def fetch_afdb_plddt(
         )
         return StructureFeatures(
             afdb_id=afdb_id,
-            afdb_version="v4",
+            afdb_version=afdb_version,
             ecd_mean_plddt=global_metric,
             ecd_disordered_fraction=whole_disordered,
             source=(
@@ -210,7 +265,7 @@ def fetch_afdb_plddt(
 
     return StructureFeatures(
         afdb_id=afdb_id,
-        afdb_version="v4",
+        afdb_version=afdb_version,
         ecd_mean_plddt=ecd_mean,
         ecd_disordered_fraction=ecd_disordered,
         source=f"AlphaFold DB (ECD-restricted pLDDT, n={n_ecd})",
@@ -344,7 +399,11 @@ def _placeholder(uniprot_acc: str, *, reason: str) -> StructureFeatures:
 
     return StructureFeatures(
         afdb_id=f"AF-{uniprot_acc}-F1",
-        afdb_version="v4",
+        # Placeholder path doesn't know the real version — leave a
+        # sentinel so the viewer doesn't claim a wrong number, and
+        # the `structPlaceholder` check on `source` hides the value
+        # anyway.
+        afdb_version="unknown",
         ecd_mean_plddt=0.0,
         ecd_disordered_fraction=0.0,
         source=f"AlphaFold DB (placeholder — fetch failed: {reason})",

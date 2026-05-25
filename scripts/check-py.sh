@@ -13,3 +13,10 @@ uv run --frozen ruff check src tests
 uv run --frozen ty check
 uv run --frozen python -m compileall -q src
 uv run --frozen pytest -q
+
+# Schema-sync tripwire: every Pydantic field reachable from
+# SurfaceomeRecord must have a TS counterpart in viewer/lib/
+# surfaceome-types.ts, otherwise the viewer silently drops the
+# data. Pydantic is the source of truth — see the script's
+# module docstring for the full intent + the per-class skip lists.
+uv run --frozen python scripts/check_viewer_types_sync.py

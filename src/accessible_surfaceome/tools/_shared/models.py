@@ -1272,7 +1272,16 @@ _STATE_INDUCED_CATEGORIES: frozenset[str] = frozenset(
 
 TerminalOrientation = Literal["extracellular", "cytoplasmic"]
 OrthologyType = Literal["one2one", "one2many", "many2many"]
-AFDBVersion = Literal["v4"]
+# AFDB bumps its model version periodically (v1→v6 between 2021 and
+# 2026 for many entries; old versions are removed from the file
+# server, so a stale ``v4`` URL is now a 404 for a sizable subset).
+# The fetcher reads the real ``latestVersion`` from AFDB's metadata
+# API at write time; we accept any vN through v9 in the schema and an
+# ``"unknown"`` sentinel for the placeholder path. Widen further when
+# v10+ ships.
+AFDBVersion = Literal[
+    "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "unknown"
+]
 
 RiskSeverity = Literal["high", "moderate", "low", "unknown"]
 EvidenceStrength = Literal["strong", "moderate", "weak", "inferred"]

@@ -833,7 +833,7 @@
     ],
     "structure": {
       "afdb_id": "AF-O95800-F1",
-      "afdb_version": "v4",
+      "afdb_version": "v6",
       "ecd_mean_plddt": 65.40044943820224,
       "ecd_disordered_fraction": 0.5730337078651685,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=89)",
