@@ -8,6 +8,49 @@ interface Props {
   n: number;
 }
 
+type Compartment =
+  | "extracellular"
+  | "intracellular"
+  | "membrane"
+  | "signal"
+  | "unknown";
+
+/** Per-residue compartment from the DeepTMHMM topology string.
+ *  Returns ``unknown`` when topology data isn't available or the
+ *  residue index is out of range. Mirrors the inference rule in
+ *  ``GeneHeader.tsx``'s ``surfaceBindAnchors`` mapping — same source
+ *  of truth as the 3D label. */
+function compartmentAt(topology: string, residue: number): Compartment {
+  const idx = residue - 1;
+  if (idx < 0 || idx >= topology.length) return "unknown";
+  const ch = topology.charAt(idx);
+  if (ch === "O") return "extracellular";
+  if (ch === "I") return "intracellular";
+  if (ch === "M") return "membrane";
+  if (ch === "S") return "signal";
+  return "unknown";
+}
+
+/** Pill tone per compartment. EC = targetable (success / green);
+ *  IC = not antibody-accessible (amber); membrane / signal /
+ *  unknown = neutral. */
+function compartmentTone(c: Compartment): "success" | "amber" | "neutral" {
+  if (c === "extracellular") return "success";
+  if (c === "intracellular") return "amber";
+  return "neutral";
+}
+
+/** Short label for the column. EC = extracellular (antibody-
+ *  accessible); IC = intracellular (not accessible from outside);
+ *  TM = inside the membrane; SP = signal peptide; ? = no topology. */
+function compartmentGlyph(c: Compartment): string {
+  if (c === "extracellular") return "EC";
+  if (c === "intracellular") return "IC";
+  if (c === "membrane") return "TM";
+  if (c === "signal") return "SP";
+  return "?";
+}
+
 /** Must match ``ANCHOR_PALETTE`` in
  *  ``viewer/components/surfaceome/StructureViewerCard/StructureViewer.tsx``.
  *  Each row's color chip on the table corresponds to the colored
@@ -148,6 +191,13 @@ export function SurfaceBindCard({ rec, n }: Props) {
               <th scope="col" className={`label-mono ${styles.head}`}>
                 Anchor
               </th>
+              <th
+                scope="col"
+                className={`label-mono ${styles.head}`}
+                title="Compartment of the anchor residue, derived from DeepTMHMM topology. EC = extracellular (antibody-accessible from outside the cell); IC = intracellular (NOT accessible to systemic antibodies); TM = inside the transmembrane region; SP = signal peptide. SURFACE-Bind scores patch geometry but does NOT filter by which side of the membrane the patch faces — IC patches are real surface features but only accessible from inside the cell."
+              >
+                Side
+              </th>
               <th scope="col" className={`label-mono ${styles.head}`}>
                 BSA
               </th>
@@ -163,7 +213,13 @@ export function SurfaceBindCard({ rec, n }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sb.sites.map((site, i) => (
+            {sb.sites.map((site, i) => {
+              const compartment = compartmentAt(
+                rec.deterministic_features.canonical_topology
+                  .per_residue_topology,
+                site.anchor_residue,
+              );
+              return (
               <tr key={site.site_id}>
                 <td className={styles.cellMono}>
                   <span
@@ -176,6 +232,25 @@ export function SurfaceBindCard({ rec, n }: Props) {
                   {site.site_id + 1}
                 </td>
                 <td className={styles.cellMono}>R{site.anchor_residue}</td>
+                <td className={styles.cell}>
+                  <StatusPill
+                    tone={compartmentTone(compartment)}
+                    size="sm"
+                    title={
+                      compartment === "intracellular"
+                        ? "Intracellular — this site is on the cytoplasmic face. NOT accessible to systemic antibodies; only relevant for intracellular binder strategies (cell-penetrating, intrabodies)."
+                        : compartment === "extracellular"
+                          ? "Extracellular — antibody-accessible from outside the cell."
+                          : compartment === "membrane"
+                            ? "Within the transmembrane region — not accessible."
+                            : compartment === "signal"
+                              ? "Signal peptide region — cleaved during maturation."
+                              : "Compartment unknown — no topology data for this residue."
+                    }
+                  >
+                    {compartmentGlyph(compartment)}
+                  </StatusPill>
+                </td>
                 <td className={styles.cell}>
                   <StatusPill tone={bsaTone(site.area_a2)} size="sm">
                     {site.area_a2.toFixed(0)} Å²
@@ -199,7 +274,8 @@ export function SurfaceBindCard({ rec, n }: Props) {
                   {site.hydrophobicity.toFixed(1)}
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

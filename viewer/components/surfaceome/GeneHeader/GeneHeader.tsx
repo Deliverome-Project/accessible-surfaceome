@@ -225,8 +225,35 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
               // Empty array when the protein isn't in SURFACE-Bind
               // OR is in but no patches cleared scoring; the viewer
               // simply skips the overlay loop in that case.
+              // Compartment per anchor is derived from the
+              // DeepTMHMM ``per_residue_topology`` character at
+              // the anchor residue (1-indexed): O=extracellular,
+              // I=intracellular, M=membrane, S=signal, else
+              // unknown. Lets the viewer's "Sites focus" mode
+              // label each sphere with EC/IC at a glance so the
+              // reader knows which sites are antibody-accessible.
               surfaceBindAnchors={rec.deterministic_features.surface_bind.sites.map(
-                (s) => ({ siteId: s.site_id, residue: s.anchor_residue }),
+                (s) => {
+                  const topo = structureData.topology;
+                  const idx = s.anchor_residue - 1;
+                  const ch =
+                    idx >= 0 && idx < topo.length ? topo.charAt(idx) : "?";
+                  const compartment =
+                    ch === "O"
+                      ? ("extracellular" as const)
+                      : ch === "I"
+                        ? ("intracellular" as const)
+                        : ch === "M"
+                          ? ("membrane" as const)
+                          : ch === "S"
+                            ? ("signal" as const)
+                            : ("unknown" as const);
+                  return {
+                    siteId: s.site_id,
+                    residue: s.anchor_residue,
+                    compartment,
+                  };
+                },
               )}
             />
             <TopologyLegend

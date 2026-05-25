@@ -220,6 +220,13 @@ export interface MembraneSlab {
   yMax: number;
   xExtent: number;
   zExtent: number;
+  /** XZ centroid offset from the protein's own XZ-centered frame.
+   *  The TM bundle isn't always at the same X/Z as the protein's
+   *  overall bounding-box center (e.g. an ECD that hangs off to
+   *  one side shifts the bbox center but not the TM helix). The
+   *  3Dmol viewer must add this offset when placing the slab. */
+  xCenter: number;
+  zCenter: number;
 }
 
 export interface OrientationResult {
@@ -284,6 +291,16 @@ function applyOrientationTransform(
   // already touches every atom, so this is O(atoms) total.
   let mMinY = Number.POSITIVE_INFINITY;
   let mMaxY = Number.NEGATIVE_INFINITY;
+  // Also track the X/Z bounds of M-state CA atoms — this gives the
+  // TM bundle's actual cross-section, which the slab should match.
+  // The previous full-protein bounding box made the slab dwarf the
+  // membrane on proteins with large ECDs (EGFR is the worst case:
+  // 620-residue ECD + 270-residue ICD vs a single 23-residue TM
+  // helix produced a 200×200 Å slab around a single helix).
+  let mMinX = Number.POSITIVE_INFINITY;
+  let mMaxX = Number.NEGATIVE_INFINITY;
+  let mMinZ = Number.POSITIVE_INFINITY;
+  let mMaxZ = Number.NEGATIVE_INFINITY;
   for (const atom of parsed.atoms) {
     const shifted = vectorSub([atom.x, atom.y, atom.z], transform.membraneCenter);
     const rotated = matrixVecMul(transform.rotateToY, shifted);
@@ -307,6 +324,10 @@ function applyOrientationTransform(
     ) {
       if (atom.ty < mMinY) mMinY = atom.ty;
       if (atom.ty > mMaxY) mMaxY = atom.ty;
+      if (atom.tx < mMinX) mMinX = atom.tx;
+      if (atom.tx > mMaxX) mMaxX = atom.tx;
+      if (atom.tz < mMinZ) mMinZ = atom.tz;
+      if (atom.tz > mMaxZ) mMaxZ = atom.tz;
     }
   }
 
@@ -329,20 +350,31 @@ function applyOrientationTransform(
 
   let membrane: MembraneSlab | null = null;
   if (Number.isFinite(mMinY) && Number.isFinite(mMaxY) && mMaxY > mMinY) {
-    // Slab XZ extent: take the protein's full XZ bounding-box half-
-    // widths (minX/maxX/minZ/maxZ span every atom, not just the M
-    // region, so even bulky ECDs / ICDs are enclosed), then pad
-    // generously so the slab visibly surrounds the protein on every
-    // side rather than terminating flush with the silhouette. The 30 Å
-    // pad ≈ two phospholipid head-group rings; the 60 Å floor keeps a
-    // single-TM bundle from collapsing to a postage-stamp patch.
-    const xHalfWidth = Math.max((maxX - minX) / 2, 0);
-    const zHalfWidth = Math.max((maxZ - minZ) / 2, 0);
+    // Slab XZ extent: take the TM-helix-bundle's own XZ bounding-box
+    // half-widths (NOT the full protein's — that made the slab dwarf
+    // the membrane for big-ECD single-pass receptors like EGFR), then
+    // pad ~12 Å (≈ one phospholipid head-group ring) so the slab
+    // visibly surrounds the TM region without spilling into the ECD.
+    // The 25 Å floor keeps a single-helix TM from collapsing to a
+    // visually-indistinguishable patch. Re-center against the new
+    // post-shift coordinates (the XZ recentering above moves the
+    // protein's bbox center to origin, and the TM bundle inherits
+    // the same shift).
+    const mHalfX = Number.isFinite(mMaxX) && Number.isFinite(mMinX)
+      ? Math.max((mMaxX - mMinX) / 2, 0) : 0;
+    const mHalfZ = Number.isFinite(mMaxZ) && Number.isFinite(mMinZ)
+      ? Math.max((mMaxZ - mMinZ) / 2, 0) : 0;
+    const mCenterX = Number.isFinite(mMaxX) && Number.isFinite(mMinX)
+      ? (mMinX + mMaxX) / 2 - centerX : 0;
+    const mCenterZ = Number.isFinite(mMaxZ) && Number.isFinite(mMinZ)
+      ? (mMinZ + mMaxZ) / 2 - centerZ : 0;
     membrane = {
       yMin: mMinY,
       yMax: mMaxY,
-      xExtent: Math.max(xHalfWidth + 30, 60),
-      zExtent: Math.max(zHalfWidth + 30, 60),
+      xExtent: Math.max(mHalfX + 12, 25),
+      zExtent: Math.max(mHalfZ + 12, 25),
+      xCenter: mCenterX,
+      zCenter: mCenterZ,
     };
   }
 

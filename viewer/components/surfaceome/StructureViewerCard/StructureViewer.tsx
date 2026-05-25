@@ -14,6 +14,23 @@ import type {
 } from "../../../lib/structure-viewer-types";
 import styles from "./StructureViewerCard.module.css";
 
+/** Per-residue compartment, derived from the DeepTMHMM topology
+ *  string. Annotates each SURFACE-Bind anchor so the viewer can
+ *  show whether the site is antibody-accessible (extracellular) or
+ *  not (intracellular / TM / signal). */
+export type AnchorCompartment =
+  | "extracellular"
+  | "intracellular"
+  | "membrane"
+  | "signal"
+  | "unknown";
+
+export interface SurfaceBindAnchor {
+  siteId: number;
+  residue: number;
+  compartment: AnchorCompartment;
+}
+
 interface StructureViewerProps {
   data: StructureViewerData;
   geneSymbol: string;
@@ -21,12 +38,37 @@ interface StructureViewerProps {
    *  α-carbon of the named residue with a colored sphere + numeric
    *  label (the site index). Pass the array from
    *  ``rec.deterministic_features.surface_bind.sites.map(s =>
-   *  ({siteId: s.site_id, residue: s.anchor_residue}))``. Empty
-   *  array = no overlay. SURFACE-Bind only publishes the patch
-   *  anchor; nearby contact residues would need binder-PDB
+   *  ({siteId: s.site_id, residue: s.anchor_residue, compartment:
+   *  ...}))``. Empty array = no overlay. SURFACE-Bind only publishes
+   *  the patch anchor; nearby contact residues would need binder-PDB
    *  parsing to recover (separate task). */
-  surfaceBindAnchors?: { siteId: number; residue: number }[];
+  surfaceBindAnchors?: SurfaceBindAnchor[];
 }
+
+/** Renderer mode toggle. ``topology`` is the default — full topology
+ *  coloring + sphere overlay. ``sites`` washes out the cartoon and
+ *  beefs up the spheres so a reader scanning specifically for
+ *  SURFACE-Bind sites can see them at a glance against the membrane
+ *  + EC/IC labels. */
+type ViewMode = "topology" | "sites";
+
+/** Sphere radius in each mode. Sites mode uses ~2× the radius so the
+ *  spheres pop against the dimmed cartoon. */
+const SPHERE_RADIUS: Record<ViewMode, number> = {
+  topology: 2.6,
+  sites: 5.2,
+};
+
+/** Compartment glyph rendered as a suffix on the 3D label and in the
+ *  table. Short forms keep the label box compact at the typical 3D
+ *  zoom level. */
+const COMPARTMENT_GLYPH: Record<AnchorCompartment, string> = {
+  extracellular: "EC",
+  intracellular: "IC",
+  membrane: "M",
+  signal: "S",
+  unknown: "?",
+};
 
 /** Per-site sphere palette — discrete categorical, picked so the
  *  spheres pop against the topology palette (which uses pale green /
@@ -81,6 +123,12 @@ export function StructureViewer({
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const [status, setStatus] = useState<LoadStatus>("loading");
   const [errorMsg, setErrorMsg] = useState<string>("");
+  // Default to ``topology`` — the topology-colored cartoon is the
+  // canonical "what does this protein look like in context" view.
+  // ``sites`` is the user-requested "show me SURFACE-Bind sites at a
+  // glance" mode; only useful when surfaceBindAnchors has entries.
+  const [viewMode, setViewMode] = useState<ViewMode>("topology");
+  const hasAnchors = surfaceBindAnchors.length > 0;
 
   const renderViewer = useCallback(async () => {
     if (!containerRef.current) return;
@@ -147,27 +195,35 @@ export function StructureViewer({
       });
       viewer.addModel(pdbText, "pdb");
 
-      // Default cartoon style for any residue without explicit topology
-      // (shouldn't normally happen — DeepTMHMM covers the full sequence).
-      viewer.setStyle({}, { cartoon: { color: TOPOLOGY_COLORS.B } });
-
-      // Color each topology range.
-      (["M", "O", "I", "S", "B"] as const).forEach((state) => {
-        const color = TOPOLOGY_COLORS[state];
-        (data.topology_ranges[state] ?? []).forEach(([start, end]) => {
-          viewer.setStyle(
-            { resi: `${start}-${end}` },
-            { cartoon: { color }, line: { color, linewidth: 1.2 } },
-          );
+      if (viewMode === "topology") {
+        // ---- topology mode (default): color cartoon by DeepTMHMM ----
+        // Default cartoon style for any residue without explicit topology
+        // (shouldn't normally happen — DeepTMHMM covers the full sequence).
+        viewer.setStyle({}, { cartoon: { color: TOPOLOGY_COLORS.B } });
+        (["M", "O", "I", "S", "B"] as const).forEach((state) => {
+          const color = TOPOLOGY_COLORS[state];
+          (data.topology_ranges[state] ?? []).forEach(([start, end]) => {
+            viewer.setStyle(
+              { resi: `${start}-${end}` },
+              { cartoon: { color }, line: { color, linewidth: 1.2 } },
+            );
+          });
         });
-      });
+      } else {
+        // ---- sites mode: wash out cartoon so the spheres pop ----
+        // Pale gray cartoon at low opacity. Spheres get the screen
+        // real estate; the cartoon is just contextual silhouette.
+        viewer.setStyle({}, {
+          cartoon: { color: "#E5E7EB", opacity: 0.55 },
+        });
+      }
 
       // SURFACE-Bind anchor overlay — one sphere per scored site at
-      // the patch's anchor residue (CA atom). Discrete categorical
-      // palette so individual sites are distinguishable; numeric
-      // label (1-indexed for human readability) sits next to each
-      // sphere so the reader can match site rows in the
-      // SurfaceBindCard table to positions on the 3D structure.
+      // the patch's anchor residue (CA atom). Topology mode uses the
+      // per-site categorical palette so individual sites are
+      // distinguishable. Sites mode uses one bright red across the
+      // board for max contrast against the dimmed cartoon (per user
+      // request: "show sites as larger red balls").
       //
       // SURFACE-Bind only publishes the patch anchor, not the full
       // contact-residue list — to render the actual patch surface
@@ -176,39 +232,47 @@ export function StructureViewer({
       // approximation: "the patch is centered here."
       const viewerExt = viewer as ViewerInstance;
       for (let i = 0; i < surfaceBindAnchors.length; i += 1) {
-        const { siteId, residue } = surfaceBindAnchors[i];
-        const color = ANCHOR_PALETTE[i % ANCHOR_PALETTE.length];
+        const { siteId, residue, compartment } = surfaceBindAnchors[i];
+        const color = viewMode === "sites"
+          ? "#D62828" // red — high-contrast against dimmed cartoon
+          : ANCHOR_PALETTE[i % ANCHOR_PALETTE.length];
         const sel = { resi: residue, atom: "CA" };
         // ``addStyle`` (not ``setStyle``) layers on top of the
-        // existing topology cartoon — we want the sphere ON the
-        // cartoon, not replacing it. Fallback to ``setStyle`` when
-        // older 3Dmol builds don't expose ``addStyle``.
+        // existing cartoon — we want the sphere ON the cartoon, not
+        // replacing it. Fallback to ``setStyle`` when older 3Dmol
+        // builds don't expose ``addStyle``.
+        const radius = SPHERE_RADIUS[viewMode];
         if (typeof viewerExt.addStyle === "function") {
           viewerExt.addStyle(sel, {
-            sphere: { color, radius: 2.6, opacity: 0.92 },
+            sphere: { color, radius, opacity: 0.94 },
           });
         } else {
           viewer.setStyle(sel, {
-            sphere: { color, radius: 2.6, opacity: 0.92 },
+            sphere: { color, radius, opacity: 0.94 },
           });
         }
-        // Numeric label at the same residue, 1-indexed because the
-        // table reader counts from 1 even though the schema is
-        // 0-indexed. Background color matches the sphere so the
-        // pairing is obvious; white text reads on any of our hues.
+        // Label: site number + compartment glyph (EC/IC/M/S/?) so the
+        // reader sees at-a-glance whether the site is on the
+        // antibody-accessible face. ``EC`` = extracellular (good
+        // target), ``IC`` = intracellular (not antibody-accessible),
+        // ``M`` = inside the membrane (not targetable),
+        // ``S`` = signal peptide region. 1-indexed.
         if (typeof viewerExt.addLabel === "function") {
-          viewerExt.addLabel(`${siteId + 1}`, {
-            position: { resi: residue, atom: "CA" },
-            backgroundColor: color,
-            backgroundOpacity: 0.92,
-            fontColor: "white",
-            fontSize: 12,
-            borderThickness: 0,
-            inFront: true,
-            // Push the label slightly away from the sphere so they
-            // don't fully overlap.
-            screenOffset: { x: 14, y: -14 },
-          });
+          viewerExt.addLabel(
+            `${siteId + 1}·${COMPARTMENT_GLYPH[compartment]}`,
+            {
+              position: { resi: residue, atom: "CA" },
+              backgroundColor: color,
+              backgroundOpacity: 0.94,
+              fontColor: "white",
+              fontSize: viewMode === "sites" ? 14 : 12,
+              borderThickness: 0,
+              inFront: true,
+              // Push the label slightly away from the sphere so they
+              // don't fully overlap.
+              screenOffset: { x: 16, y: -16 },
+            },
+          );
         }
       }
 
@@ -222,14 +286,19 @@ export function StructureViewer({
       // orientation transform already pinned the bilayer normal to
       // +Y and centered the TM mean at Y=0, so the slab is just an
       // axis-aligned box spanning [yMin, yMax] in the oriented frame.
-      // Opacity stays low so the protein cartoon reads as the primary
-      // figure; the slab is spatial context, not the subject.
+      // The slab's XZ extent now comes from the TM bundle's own
+      // bounding box (not the full protein's) — see structure-
+      // orientation.ts for the rationale. Use the new xCenter /
+      // zCenter so the slab tracks the TM helix when the ECD pulls
+      // the protein's overall center off the membrane axis.
+      // In sites mode the slab is more opaque (a real membrane band)
+      // so EC vs IC reads as the dominant spatial cue.
       if (membrane) {
         viewer.addBox({
           corner: {
-            x: -membrane.xExtent,
+            x: membrane.xCenter - membrane.xExtent,
             y: membrane.yMin,
-            z: -membrane.zExtent,
+            z: membrane.zCenter - membrane.zExtent,
           },
           dimensions: {
             w: membrane.xExtent * 2,
@@ -237,9 +306,44 @@ export function StructureViewer({
             d: membrane.zExtent * 2,
           },
           color: MEMBRANE_COLOR,
-          opacity: MEMBRANE_OPACITY,
+          opacity: viewMode === "sites" ? 0.55 : MEMBRANE_OPACITY,
           wireframe: false,
         });
+
+        // Sites mode: render explicit "Extracellular" / "Intracellular"
+        // text labels floating above + below the slab so the reader
+        // sees the orientation without having to guess from topology
+        // coloring (which is muted in this mode).
+        if (viewMode === "sites" && typeof viewerExt.addLabel === "function") {
+          const slabMid = (membrane.yMin + membrane.yMax) / 2;
+          const slabHalf = (membrane.yMax - membrane.yMin) / 2;
+          viewerExt.addLabel("Extracellular ↑", {
+            position: {
+              x: membrane.xCenter,
+              y: slabMid + slabHalf + 18,
+              z: membrane.zCenter,
+            },
+            backgroundColor: "#2E7D7D",
+            backgroundOpacity: 0.85,
+            fontColor: "white",
+            fontSize: 13,
+            borderThickness: 0,
+            inFront: true,
+          });
+          viewerExt.addLabel("Intracellular ↓", {
+            position: {
+              x: membrane.xCenter,
+              y: slabMid - slabHalf - 18,
+              z: membrane.zCenter,
+            },
+            backgroundColor: "#5C3B9B",
+            backgroundOpacity: 0.85,
+            fontColor: "white",
+            fontSize: 13,
+            borderThickness: 0,
+            inFront: true,
+          });
+        }
       }
 
       viewer.render();
@@ -281,9 +385,10 @@ export function StructureViewer({
     // JSON-stringified value so the effect doesn't re-fire when the
     // parent creates a fresh array reference each render but the
     // content hasn't changed. ``data`` is the canonical structure
-    // payload — when it changes the protein has changed.
+    // payload — when it changes the protein has changed. ``viewMode``
+    // toggles between topology / sites-focused rendering.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, JSON.stringify(surfaceBindAnchors)]);
+  }, [data, JSON.stringify(surfaceBindAnchors), viewMode]);
 
   useEffect(() => {
     void renderViewer();
@@ -329,6 +434,36 @@ export function StructureViewer({
           </div>
         ) : null}
       </div>
+      {/* Mode toggle — only rendered when the gene has SURFACE-Bind
+          anchors to focus on; otherwise the "sites" mode would be
+          empty and meaningless. Two-button segment so the active
+          state reads at a glance. */}
+      {hasAnchors ? (
+        <div
+          className={styles.modeToggle}
+          role="group"
+          aria-label="3D viewer mode"
+        >
+          <button
+            type="button"
+            className={styles.modeButton}
+            data-active={viewMode === "topology"}
+            onClick={() => setViewMode("topology")}
+            title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). Sites overlay in the per-site palette."
+          >
+            Topology
+          </button>
+          <button
+            type="button"
+            className={styles.modeButton}
+            data-active={viewMode === "sites"}
+            onClick={() => setViewMode("sites")}
+            title="Dim the cartoon and enlarge the SURFACE-Bind site spheres in red. Labels show site number + EC (extracellular, antibody-accessible) / IC (intracellular, not accessible) per anchor."
+          >
+            Sites focus
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }
