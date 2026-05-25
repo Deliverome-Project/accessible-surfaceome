@@ -16,9 +16,7 @@
     "state_dependence": "high",
     "subcategory": "other",
     "headline_risks": [
-      "restricted_subdomain",
-      "secreted_form",
-      "antibody_validation_weak"
+      "secreted_form"
     ],
     "cited_evidence_ids": [
       "a1_evi_01",
@@ -52,7 +50,9 @@
     "mouse_ortholog_ecd_pct_identity": null,
     "cyno_ortholog_ecd_pct_identity": null,
     "n_term_extracellular": false,
-    "c_term_extracellular": false
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": true
   },
   "surface_evidence": {
     "evidence_grade": "conflicting",

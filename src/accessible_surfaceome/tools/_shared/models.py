@@ -1000,7 +1000,12 @@ TriageSignal = Literal[
     "unknown",
 ]
 
-SurfaceAccessibility = Literal["high", "moderate", "low", "uncertain"]
+# Adds explicit ``"no"`` (PR follow-up after the design review): when
+# the synthesizer's read is "this protein is confidently NOT on the
+# surface", the catalog should be able to distinguish that from the
+# weaker ``"uncertain"`` (no signal either way). Mirrors the triage
+# ``verdict="no"`` end of the scale.
+SurfaceAccessibility = Literal["high", "moderate", "low", "uncertain", "no"]
 EvidenceGrade = Literal[
     "direct_multi_method",
     "direct_single_method",
@@ -1021,18 +1026,36 @@ Subcategory = Literal[
     "transporter",
     "other",
 ]
+# Headline risks — slimmed from 11 → 5 after the redundancy audit.
+# Each remaining value names a real load-bearing risk that the reader
+# can't easily reconstruct from another structured field.
+#
+# Removed values + replacement signal:
+#   * ``ecd_too_small`` → read ``filters.ecd_accessibility_class``
+#     (small / minimal / none) — the headline flag was a binary
+#     restatement of the same field.
+#   * ``restricted_subdomain`` → read
+#     ``accessibility_risks.restricted_subdomain.present`` — the
+#     headline flag was a direct copy.
+#   * ``antibody_validation_weak`` → read
+#     ``surface_evidence.evidence_grade`` (weak / conflicting); per-
+#     antibody detail lives in ``AntibodyRef.validation_strategy``.
+#   * ``low_endogenous_expression`` → read the DERIVED
+#     ``filters.low_endogenous_expression`` (computed deterministically
+#     from ``filters.expression_level ∈ {low, absent}``), so the
+#     headline list can't drift from the filter the catalog filters on.
+#   * ``ligand_unknown`` → not a "risk"; orphan-receptor status now
+#     lives on ``filters.has_known_ligand: bool``.
+#   * ``other`` → forbidden escape hatch. If the risk doesn't fit one
+#     of the five remaining values, raise it in
+#     ``executive_summary.one_paragraph`` instead and let the reader
+#     see the prose.
 HeadlineRisk = Literal[
     "shed_form",
     "secreted_form",
     "co_receptor",
-    "ecd_too_small",
     "epitope_masked",
     "isoform_decoy",
-    "restricted_subdomain",
-    "low_endogenous_expression",
-    "antibody_validation_weak",
-    "ligand_unknown",
-    "other",
 ]
 
 ExpressionLevel = Literal["high", "moderate", "low", "absent"]
@@ -1375,6 +1398,19 @@ class Filters(BaseModel):
     cyno_ortholog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     n_term_extracellular: bool
     c_term_extracellular: bool
+    # Derived, NOT agent-emitted: the orchestrator computes this from
+    # ``expression_level`` after the synthesizer call so the headline
+    # signal can't drift from the catalog filter. ``True`` when
+    # ``expression_level ∈ {low, absent}``. Replaces the now-dropped
+    # ``HeadlineRisk.low_endogenous_expression`` enum value — readers
+    # see one canonical signal, the catalog filters on it.
+    low_endogenous_expression: bool = False
+    # Orphan-receptor status — ``True`` (the default) when a validated
+    # endogenous ligand is documented. Set ``False`` for orphan
+    # receptors (orphan GPCRs / nuclear receptors / kinases). Replaces
+    # the now-dropped ``HeadlineRisk.ligand_unknown`` enum value; the
+    # catalog can filter on this as a tractability signal.
+    has_known_ligand: bool = True
 
 
 # ---- surface evidence (section 1) -----------------------------------------
@@ -2342,6 +2378,14 @@ class SynthesizerLLMFilters(BaseModel):
     expression_level: ExpressionLevel
     expression_breadth: ExpressionBreadth
     surface_specificity: SurfaceSpecificity
+    # Orphan-receptor flag. Replaces the dropped
+    # ``HeadlineRisk.ligand_unknown`` value — moved here so the
+    # catalog can filter on ligand-known-or-not as a tractability
+    # signal. Defaults to ``True`` (most surface proteins have a
+    # validated endogenous ligand); the synthesizer flips it to
+    # ``False`` for orphan GPCRs / nuclear receptors / kinases where
+    # the deorphanization status is genuinely unknown.
+    has_known_ligand: bool = True
 
 
 class SynthesizerDraft(BaseModel):

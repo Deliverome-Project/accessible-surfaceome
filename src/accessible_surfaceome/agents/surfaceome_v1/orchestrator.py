@@ -726,15 +726,16 @@ def scrub_headline_risks(
     ):
         dropped.append("secreted_form")
 
-    if (
-        "restricted_subdomain" in risks
-        and not accessibility_risks.restricted_subdomain.present
-    ):
-        dropped.append("restricted_subdomain")
-
     cr_dep = accessibility_risks.co_receptor_requirements.surface_expression_dependency
     if "co_receptor" in risks and cr_dep != "required":
         dropped.append("co_receptor")
+
+    # NOTE: ``restricted_subdomain`` is no longer in the ``HeadlineRisk``
+    # enum (post-design-review slim from 11 → 5 values). It was a direct
+    # copy of ``accessibility_risks.restricted_subdomain.present`` and
+    # the reader sees the structured field on the page. The scrub call
+    # for it has been removed; if the model ever emits the obsolete
+    # value, Pydantic validation rejects it before this scrub runs.
 
     if not dropped:
         return executive_summary
@@ -817,6 +818,13 @@ def _derive_filters(
         # D — canonical topology terminal orientations
         n_term_extracellular=canon.n_terminal_orientation == "extracellular",
         c_term_extracellular=canon.c_terminal_orientation == "extracellular",
+        # D — derived from filters_llm.expression_level so the headline
+        # signal can't drift from this catalog filter. Replaces the
+        # now-dropped HeadlineRisk.low_endogenous_expression value.
+        low_endogenous_expression=filters_llm.expression_level in ("low", "absent"),
+        # L — orphan-receptor flag from SynthesizerLLMFilters. Replaces
+        # the now-dropped HeadlineRisk.ligand_unknown value.
+        has_known_ligand=filters_llm.has_known_ligand,
     )
 
 

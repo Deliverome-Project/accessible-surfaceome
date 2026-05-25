@@ -16,7 +16,6 @@
     "state_dependence": "moderate",
     "subcategory": "tetraspanin",
     "headline_risks": [
-      "restricted_subdomain",
       "epitope_masked"
     ],
     "cited_evidence_ids": [
@@ -55,7 +54,9 @@
     "mouse_ortholog_ecd_pct_identity": 82.88288288288288,
     "cyno_ortholog_ecd_pct_identity": 81.08108108108108,
     "n_term_extracellular": false,
-    "c_term_extracellular": false
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": true
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

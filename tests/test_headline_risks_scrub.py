@@ -120,11 +120,11 @@ def test_scrub_drops_co_receptor_when_dependency_is_modulatory() -> None:
     """The exact CD81 case: synthesizer wrote ``co_receptor`` in
     headline_risks but set ``surface_expression_dependency=modulatory``
     (not ``required``). Scrub drops it."""
-    es = _exec(headline_risks=["co_receptor", "restricted_subdomain"])
+    es = _exec(headline_risks=["co_receptor", "isoform_decoy"])
     risks = _risks(co_receptor_dependency="modulatory", restricted_present=True)
     cleaned = scrub_headline_risks(es, risks)
     assert "co_receptor" not in cleaned.headline_risks
-    assert "restricted_subdomain" in cleaned.headline_risks
+    assert "isoform_decoy" in cleaned.headline_risks
 
 
 def test_scrub_keeps_co_receptor_when_dependency_is_required() -> None:
@@ -135,12 +135,17 @@ def test_scrub_keeps_co_receptor_when_dependency_is_required() -> None:
 
 
 def test_scrub_drops_epitope_masked_when_severity_is_none_or_low() -> None:
+    # ``isoform_decoy`` here is just a passive value the scrub doesn't
+    # touch — used to assert that the scrub drops ONLY the offending
+    # entry, not unrelated companions. Replaces the historical
+    # ``"other"`` use, which is no longer a valid HeadlineRisk value
+    # post-redundancy-audit.
     for sev in ("none", "low"):
-        es = _exec(headline_risks=["epitope_masked", "other"])
+        es = _exec(headline_risks=["epitope_masked", "isoform_decoy"])
         risks = _risks(epitope_severity=sev)
         cleaned = scrub_headline_risks(es, risks)
         assert "epitope_masked" not in cleaned.headline_risks, f"severity={sev!r}"
-        assert "other" in cleaned.headline_risks
+        assert "isoform_decoy" in cleaned.headline_risks
 
 
 def test_scrub_keeps_epitope_masked_when_severity_is_moderate_or_high() -> None:
@@ -159,17 +164,20 @@ def test_scrub_drops_shed_form_when_present_false() -> None:
     assert "secreted_form" in cleaned.headline_risks
 
 
-def test_scrub_drops_restricted_subdomain_when_present_false() -> None:
-    es = _exec(headline_risks=["restricted_subdomain", "other"])
-    risks = _risks(restricted_present=False)
-    cleaned = scrub_headline_risks(es, risks)
-    assert "restricted_subdomain" not in cleaned.headline_risks
+# NOTE: the historical ``test_scrub_drops_restricted_subdomain_when_present_false``
+# was removed when ``restricted_subdomain`` was dropped from the
+# HeadlineRisk enum in the post-design-review slim. Pydantic now
+# rejects the value at validation time, so the orchestrator scrub
+# never sees it — no test needed.
 
 
 def test_scrub_returns_same_object_when_no_drops_needed() -> None:
     """Optimization: when nothing changes, return the input unchanged
-    (saves a model_copy + lets pydantic equality short-circuit)."""
-    es = _exec(headline_risks=["other"])
+    (saves a model_copy + lets pydantic equality short-circuit).
+    ``isoform_decoy`` is a value the scrub doesn't touch — picked
+    here as the inert no-op value (replaced the historical ``other``
+    after the enum slim)."""
+    es = _exec(headline_risks=["isoform_decoy"])
     risks = _risks()
     cleaned = scrub_headline_risks(es, risks)
     assert cleaned is es
@@ -177,7 +185,7 @@ def test_scrub_returns_same_object_when_no_drops_needed() -> None:
 
 def test_scrub_preserves_other_executive_summary_fields() -> None:
     es = _exec(
-        headline_risks=["co_receptor", "restricted_subdomain"],
+        headline_risks=["co_receptor", "isoform_decoy"],
         one_paragraph="Important context paragraph.",
         state_dependence="high",
         evidence_grade_summary="direct_multi_method",

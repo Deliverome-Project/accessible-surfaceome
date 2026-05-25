@@ -89,61 +89,104 @@ Don't fabricate a verdict; just lean on A1+A2 alone.
 
 ## Headline-risks selection discipline
 
-The `headline_risks` enum has 11 values:
-`shed_form`, `secreted_form`, `co_receptor`, `ecd_too_small`,
-`epitope_masked`, `isoform_decoy`, `restricted_subdomain`,
-`low_endogenous_expression`, `antibody_validation_weak`,
-`ligand_unknown`, `other`.
+The `headline_risks` enum has **five** values:
+`shed_form`, `secreted_form`, `co_receptor`, `epitope_masked`,
+`isoform_decoy`.
 
-**`other` is a last-resort escape hatch, not a dodge.** Use it only
-when the load-bearing risk genuinely doesn't map to one of the named
-values AND you can name that risk in `one_paragraph`. If the risk you
-have in mind maps to any of the named values, USE THE NAMED VALUE.
-Three patterns that historically misuse `other`:
+Each remaining value names a load-bearing risk that the reader can't
+easily reconstruct from another structured field. Pick at most three.
+The post-design-review trim dropped six values that were redundant
+with existing structured signals — DO NOT try to use them. They are
+either listed in the structured field where the catalog already
+filters on them, or moved entirely.
 
-* "EV-associated decoy pool" → use **`secreted_form`**. Extracellular
-  vesicles carry shed / secreted membrane proteins; the field
-  captures the decoy-pool meaning. Don't reach for `other`.
-* "intracellular pool with stress-induced surface" → not a headline
-  risk per se; the state-dependence already lives in
-  `executive_summary.state_dependence`. Drop from headline_risks and
-  let the `state_dependence={moderate, high}` carry the signal.
-* "antibody cross-reactivity with paralog" → use
-  **`antibody_validation_weak`** if the available clones aren't
-  paralog-KO-validated. The catalog filter is the load-bearing
-  surface.
+**Removed values + where the signal lives now.** Read this before you
+reach for a value you remember from earlier:
 
-**Orphan-class genes (GPR75-style):** the enum has three values
-specifically for the orphan-receptor failure mode. The design added
-them precisely so the catalog can filter on these signals — they
-should appear in headline_risks for orphan-class genes:
+* `ecd_too_small` → READ `filters.ecd_accessibility_class`
+  (`small` / `minimal` / `none`). The catalog filter is the canonical
+  source; the headline flag was a binary restatement of the same
+  field.
+* `restricted_subdomain` → READ
+  `accessibility_risks.restricted_subdomain.present`. The headline
+  flag was a direct copy.
+* `antibody_validation_weak` → READ `surface_evidence.evidence_grade`
+  (`weak` / `conflicting`); per-antibody detail lives in
+  `AntibodyRef.validation_strategy` / `validation_strength`. The
+  reader sees both surfaces; don't double-encode.
+* `low_endogenous_expression` → DERIVED in the orchestrator from
+  `filters.expression_level ∈ {low, absent}`; emitted as
+  `filters.low_endogenous_expression`. The catalog filters on the
+  derived bool, the headline list can't drift from it. **Don't try
+  to put it back in headline_risks.**
+* `ligand_unknown` → NOT a risk; it's an orphan-receptor status flag.
+  Set `filters_llm.has_known_ligand=False` for orphan GPCRs / NHRs /
+  kinases. The synthesizer's only job here is the bool; the catalog
+  treats `has_known_ligand=False` as a target-tractability signal.
+* `other` → forbidden. If the risk you have in mind doesn't map to
+  one of the five named values, raise it in `one_paragraph` and let
+  the reader see the prose. The headline list is for catalog filters
+  the reader can scan; `other` makes it unfilterable.
 
-* **`low_endogenous_expression`** — surface evidence is sparse
-  because the protein is barely expressed endogenously, leading to
-  reliance on overexpression studies. Pick when expression is mostly
-  OE-driven, restricted to a single niche tissue, or the gene is
-  otherwise poorly studied.
-* **`antibody_validation_weak`** — available antibodies fail
-  KO-specificity tests or have no published validation. Pick when ≥1
-  primary method row carries `validation_strength="weak"` or
-  `validation_strategy="none"`.
-* **`ligand_unknown`** — for receptors with no validated endogenous
-  ligand. Pick for orphan GPCRs / orphan kinases / orphan NHRs where
-  ligand identity affects target tractability and pharmacology
-  development.
+**Three patterns the headline_risks list HISTORICALLY misused** (the
+audit found these in committed samples):
 
-**Audit guard for weak-evidence genes.** When
-`evidence_grade ∈ {weak, supportive_but_indirect}`, at least one of
-the three orphan-class values
-(`low_endogenous_expression`, `antibody_validation_weak`,
-`ligand_unknown`) MUST appear in `headline_risks` — unless the
-evidence weakness is genuinely a different shape (e.g.
-`isoform_decoy` for a predicted-soluble isoform whose biological
-relevance is unconfirmed). If you set
-`evidence_grade="weak"` and your headline_risks is
-`[restricted_subdomain, ecd_too_small, other]` with none of the
-three orphan values, you have probably miscalibrated — re-read the
-A2 expression evidence and pick the orphan value that fits.
+* "EV-associated decoy pool" → use **`secreted_form`** (severity =
+  moderate / high). Extracellular vesicles carry shed / secreted
+  membrane proteins; the field captures the decoy-pool meaning.
+* "intracellular pool with stress-induced surface" → NOT a headline
+  risk per se; the state-dependence lives in
+  `executive_summary.state_dependence`. Set
+  `state_dependence ∈ {moderate, high}` and let that carry the
+  signal — don't squeeze it into headline_risks.
+* "antibody cross-reactivity with paralog" → this is what
+  `evidence_grade` is for. Set `evidence_grade` to `weak` or
+  `conflicting` and explain in `grade_rationale`; the catalog will
+  filter on `evidence_grade` directly.
+
+**Audit guard.** If your `evidence_grade ∈ {weak, conflicting}` AND
+your `headline_risks` is empty, that's fine — the evidence-grade
+filter already signals the weakness; you don't need to also pick a
+headline risk just to "say something." If the protein has a genuine
+shape-specific risk (e.g. it's mostly shed, or co-receptor-
+dependent), pick the named value for it. Otherwise leave the list
+empty.
+
+## Surface accessibility `"no"` verdict
+
+The `surface_accessibility` enum has five values: `high`, `moderate`,
+`low`, `uncertain`, **`no`**.
+
+* `"no"` is for confident negative calls — the deep dive's evidence
+  says this protein is NOT meaningfully at the surface (the
+  triage's `verdict="no"` end of the scale, extended to the
+  deep-dive verdict). Pick when the literature directly contradicts
+  surface presentation OR when the canonical localization
+  (cytoplasmic / mitochondrial / nuclear) is corroborated by
+  multiple methods AND no ectopic-surface evidence surfaced. SRC's
+  conservative read might land here, for example — the dominant
+  population is cytoplasmic-side and the eSrc ectopic-surface story
+  is method-specific.
+* `"uncertain"` is for absence-of-signal cases — neither direction
+  has enough evidence. Use this when you genuinely can't tell.
+* Don't pick `"no"` just because the evidence is weak; that's what
+  `confidence="low"` + `evidence_grade="weak"` are for.
+
+## Has-known-ligand flag
+
+`filters_llm.has_known_ligand` is a bool. **Default `True`** — most
+surface proteins have a validated endogenous ligand. Set `False`
+ONLY for orphan-class genes where ligand identity is genuinely
+unknown:
+
+* Orphan GPCRs (no validated endogenous agonist) — GPR75 is the
+  canonical example today.
+* Orphan nuclear receptors.
+* Orphan receptor tyrosine kinases.
+
+A receptor with a proposed but unconfirmed ligand stays `True` if
+the proposal is widely cited; flip to `False` if the literature
+explicitly calls it orphan / deorphanization-pending.
 
 ## Citation discipline
 

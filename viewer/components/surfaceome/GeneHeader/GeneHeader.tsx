@@ -48,6 +48,10 @@ function accessibilityTone(value: string) {
   if (value === "high") return "success" as const;
   if (value === "moderate") return "teal" as const;
   if (value === "low") return "amber" as const;
+  // `"no"` = confident negative call. Distinct from `"uncertain"`
+  // (no signal); render in danger / red so the reader can scan for
+  // it on the catalog.
+  if (value === "no") return "danger" as const;
   return "neutral" as const;
 }
 
@@ -270,7 +274,17 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
         </div>
 
         <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Evidence grade</dt>
+          <dt
+            className={`label-mono ${styles.vitalK}`}
+            title={
+              "Reader-facing relabel of `evidence_grade_summary` — " +
+              "rolls up A1's per-method `MethodObservation` blocks into " +
+              "one tier (direct_multi_method / direct_single_method / " +
+              "supportive_but_indirect / conflicting / weak)."
+            }
+          >
+            Experimental surface evidence
+          </dt>
           <dd className={styles.vitalV}>
             <StatusPill tone={gradeTone(exec.evidence_grade_summary)}>
               {prettyEnum(exec.evidence_grade_summary)}

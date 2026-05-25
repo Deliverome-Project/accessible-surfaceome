@@ -15,11 +15,7 @@
     "confidence": "moderate",
     "state_dependence": "moderate",
     "subcategory": "GPCR",
-    "headline_risks": [
-      "restricted_subdomain",
-      "low_endogenous_expression",
-      "other"
-    ],
+    "headline_risks": [],
     "cited_evidence_ids": [
       "a1_evi_01",
       "a1_evi_02",
@@ -50,7 +46,9 @@
     "mouse_ortholog_ecd_pct_identity": 74.15730337078652,
     "cyno_ortholog_ecd_pct_identity": 98.87640449438202,
     "n_term_extracellular": true,
-    "c_term_extracellular": false
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": false
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",

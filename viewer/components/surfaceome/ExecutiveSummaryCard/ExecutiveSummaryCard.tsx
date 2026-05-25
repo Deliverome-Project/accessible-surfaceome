@@ -14,7 +14,30 @@ function accessibilityTone(v: string) {
   if (v === "high") return "success" as const;
   if (v === "moderate") return "teal" as const;
   if (v === "low") return "amber" as const;
+  // `"no"` is the confident negative call — strongest "not surface"
+  // signal the schema carries, distinct from `"uncertain"` (no signal
+  // either way). Render in danger / red so the reader sees it.
+  if (v === "no") return "danger" as const;
   return "neutral" as const;
+}
+
+/**
+ * Headline-risks display labels. The enum value is the source of
+ * truth (matches Pydantic ``HeadlineRisk``); this map lets us render
+ * a longer reader-facing phrase without breaking the enum contract.
+ * One entry per current enum value — adding a new value without
+ * updating this map gracefully falls back to ``prettyEnum(value)``.
+ */
+const HEADLINE_RISK_LABELS: Record<string, string> = {
+  shed_form: "Shed form",
+  secreted_form: "Secreted form",
+  co_receptor: "Co-receptor required for expression",
+  epitope_masked: "Epitope masked",
+  isoform_decoy: "Isoform decoy",
+};
+
+function headlineRiskLabel(v: string): string {
+  return HEADLINE_RISK_LABELS[v] ?? prettyEnum(v);
 }
 
 function confidenceTone(v: string) {
@@ -61,7 +84,7 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
         </li>
         <li>
           <StatusPill tone={gradeTone(e.evidence_grade_summary)}>
-            {prettyEnum(e.evidence_grade_summary)}
+            Experimental surface evidence · {prettyEnum(e.evidence_grade_summary)}
           </StatusPill>
         </li>
         <li>
@@ -80,7 +103,7 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
         <p className={styles.risks}>
           <span className={`label-mono ${styles.risksLabel}`}>Headline risks</span>
           <span className={styles.risksValue}>
-            {e.headline_risks.map((r) => prettyEnum(r)).join(" · ")}
+            {e.headline_risks.map(headlineRiskLabel).join(" · ")}
           </span>
         </p>
       ) : (

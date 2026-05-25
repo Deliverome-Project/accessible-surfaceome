@@ -37,7 +37,15 @@ export type TriageSignal =
   | "unlikely"
   | "unknown";
 
-export type SurfaceAccessibility = "high" | "moderate" | "low" | "uncertain";
+export type SurfaceAccessibility =
+  | "high"
+  | "moderate"
+  | "low"
+  | "uncertain"
+  /** Confident negative call — the deep-dive evidence says this
+   *  protein is NOT meaningfully at the surface. Mirrors the triage
+   *  ``verdict="no"`` end of the scale. */
+  | "no";
 export type Confidence = "high" | "moderate" | "low";
 export type StateDependence = "low" | "moderate" | "high" | "unclear";
 
@@ -80,18 +88,29 @@ export type EvidenceStrength = "strong" | "moderate" | "weak" | "inferred";
 export type Orientation = "extracellular" | "cytoplasmic";
 export type OrthologyType = "one2one" | "one2many" | "many2many";
 
+/**
+ * Headline risks — slimmed from 11 → 5 after the post-design
+ * redundancy audit. Each remaining value names a load-bearing risk
+ * that isn't easily reconstructed from another structured field.
+ *
+ * Removed values + where their signal lives now:
+ *   * ``ecd_too_small`` → ``filters.ecd_accessibility_class``
+ *   * ``restricted_subdomain`` → ``accessibility_risks.restricted_subdomain.present``
+ *   * ``antibody_validation_weak`` → ``surface_evidence.evidence_grade`` +
+ *     per-row ``AntibodyRef.validation_strength``
+ *   * ``low_endogenous_expression`` → derived
+ *     ``filters.low_endogenous_expression``
+ *   * ``ligand_unknown`` → ``filters.has_known_ligand`` (it's an
+ *     orphan-receptor status, not a risk)
+ *   * ``other`` → forbidden; raise the risk in
+ *     ``executive_summary.one_paragraph`` instead
+ */
 export type HeadlineRisk =
   | "shed_form"
   | "secreted_form"
   | "co_receptor"
-  | "ecd_too_small"
   | "epitope_masked"
-  | "isoform_decoy"
-  | "restricted_subdomain"
-  | "low_endogenous_expression"
-  | "antibody_validation_weak"
-  | "ligand_unknown"
-  | "other";
+  | "isoform_decoy";
 
 export type TissueLevel =
   | "high"
@@ -141,6 +160,17 @@ export interface Filters {
   has_restricted_subdomain: boolean;
   mouse_ortholog_ecd_pct_identity: number;
   cyno_ortholog_ecd_pct_identity: number;
+  /** Derived (NOT agent-emitted): orchestrator sets this to ``true``
+   *  iff ``expression_level ∈ {"low", "absent"}``. Replaces the
+   *  now-dropped ``HeadlineRisk.low_endogenous_expression`` value —
+   *  one canonical signal, the catalog filters on it. */
+  low_endogenous_expression: boolean;
+  /** Orphan-receptor status. ``true`` (the default) when a validated
+   *  endogenous ligand is documented. ``false`` for orphan GPCRs /
+   *  nuclear receptors / kinases. Replaces the now-dropped
+   *  ``HeadlineRisk.ligand_unknown`` value; tractability signal for
+   *  the catalog. */
+  has_known_ligand: boolean;
   /** PR23 round 10: replaces the dropped LLM
    *  `has_paralog_cross_reactivity_risk` bool. Deterministic
    *  rollup `max(deterministic_features.paralogs[].ecd_pct_identity)`;

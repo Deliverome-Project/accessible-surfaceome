@@ -15,11 +15,7 @@
     "confidence": "moderate",
     "state_dependence": "moderate",
     "subcategory": "other",
-    "headline_risks": [
-      "ecd_too_small",
-      "restricted_subdomain",
-      "other"
-    ],
+    "headline_risks": [],
     "cited_evidence_ids": [
       "a1_evi_01",
       "a1_evi_02",
@@ -49,7 +45,9 @@
     "mouse_ortholog_ecd_pct_identity": null,
     "cyno_ortholog_ecd_pct_identity": null,
     "n_term_extracellular": false,
-    "c_term_extracellular": false
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": true
   },
   "surface_evidence": {
     "evidence_grade": "supportive_but_indirect",
