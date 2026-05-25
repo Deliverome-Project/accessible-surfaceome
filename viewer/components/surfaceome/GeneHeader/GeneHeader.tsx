@@ -77,11 +77,23 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
   const exec = rec.executive_summary;
   const counts = tierCounts(rec);
   const struct = rec.deterministic_features.structure;
-  // The AFDB pLDDT fetcher is deferred for some entries — the
-  // orchestrator emits a labeled placeholder with the source string
-  // starting "AlphaFold DB (placeholder ...)". Detect that explicitly
-  // so the header doesn't show "0.0 pLDDT" as a real measurement.
-  const structPlaceholder = struct.source.toLowerCase().includes("placeholder");
+  // The fetcher signals what kind of pLDDT the number is via the
+  // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
+  //   * "placeholder" — fetcher hasn't run, the 0.0 isn't a measurement.
+  //   * "whole-protein" — protein has no extracellular residues (GLOB
+  //     proteins like SRC); the fetcher reused the global metric so the
+  //     schema field stays populated. Honest display: label "Whole pLDDT"
+  //     so the reader doesn't think it's ECD-restricted, and omit the
+  //     disordered fraction (the global frac-low + frac-very-low isn't
+  //     comparable to the ECD-restricted threshold-based number on
+  //     proper ECD proteins).
+  //   * "ECD-restricted" — real ECD-restricted pLDDT computed from the
+  //     CIF; label "ECD pLDDT" as the schema field intends.
+  const structSource = struct.source.toLowerCase();
+  const structPlaceholder = structSource.includes("placeholder");
+  const structWholeProtein =
+    !structPlaceholder && structSource.includes("whole-protein");
+  const plddtLabel = structWholeProtein ? "Whole pLDDT" : "ECD pLDDT";
   const ids = [
     {
       label: "HGNC",
@@ -158,8 +170,15 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
                 ``deterministic_features.structure``. */}
             <dl className={styles.structureStats} aria-label="AFDB structure stats">
               <div className={styles.structureStat}>
-                <dt className={`label-mono ${styles.structureStatK}`}>
-                  ECD pLDDT
+                <dt
+                  className={`label-mono ${styles.structureStatK}`}
+                  title={
+                    structWholeProtein
+                      ? "Whole-protein pLDDT — this gene has no extracellular residues per DeepTMHMM (GLOB / cytoplasmic), so the AFDB metric describes the entire model rather than an ECD subset."
+                      : "Mean per-residue AlphaFold pLDDT across extracellular-domain residues (DeepTMHMM 'O' positions)."
+                  }
+                >
+                  {plddtLabel}
                 </dt>
                 <dd className={styles.structureStatV}>
                   {structPlaceholder ? (
@@ -173,18 +192,28 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
                   )}
                 </dd>
               </div>
-              <div className={styles.structureStat}>
-                <dt className={`label-mono ${styles.structureStatK}`}>
-                  Disordered
-                </dt>
-                <dd className={styles.structureStatV}>
-                  <span className={styles.structureStatNum}>
-                    {structPlaceholder
-                      ? "—"
-                      : `${(struct.ecd_disordered_fraction * 100).toFixed(0)}%`}
-                  </span>
-                </dd>
-              </div>
+              {/* Disordered fraction is meaningful only when computed
+                  over ECD residues against the pLDDT<70 threshold. For
+                  whole-protein fallback the JSON's value is global
+                  frac_low + frac_very_low, which mixes thresholds —
+                  hide rather than mislabel. */}
+              {!structWholeProtein ? (
+                <div className={styles.structureStat}>
+                  <dt
+                    className={`label-mono ${styles.structureStatK}`}
+                    title="Fraction of ECD residues with pLDDT < 70 (AFDB low-confidence threshold). High fraction → flexible / disordered ECD, often correlates with epitope-masking risk."
+                  >
+                    Disordered
+                  </dt>
+                  <dd className={styles.structureStatV}>
+                    <span className={styles.structureStatNum}>
+                      {structPlaceholder
+                        ? "—"
+                        : `${(struct.ecd_disordered_fraction * 100).toFixed(0)}%`}
+                    </span>
+                  </dd>
+                </div>
+              ) : null}
               <div className={styles.structureStat}>
                 <dt className={`label-mono ${styles.structureStatK}`}>AFDB</dt>
                 <dd className={styles.structureStatV}>

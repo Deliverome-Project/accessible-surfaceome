@@ -50,14 +50,16 @@
   border-bottom-color: var(--accent);
 }
 
-/* AFDB stats grid — sits between the topology legend and the
-   caption inside the structure slot. Three compact stat rows
-   (ECD pLDDT, disordered fraction, AFDB id+version) so the
-   reader sees the model confidence next to the 3D viewer. */
+/* AFDB stats — sits between the topology legend and the caption
+   inside the structure slot. Up to three compact stat cells
+   (pLDDT, disordered fraction, AFDB id+version); flex so the
+   layout adapts when the disordered cell is hidden (e.g. for
+   GLOB / soluble-cytoplasmic proteins where the disordered
+   fraction is not meaningful). */
 .structureStats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-2);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
   margin: var(--space-2) 0 0;
   padding: var(--space-2) 0;
   border-top: 1px solid var(--line-soft);
@@ -69,6 +71,7 @@
   flex-direction: column;
   gap: 0.2rem;
   min-width: 0;
+  flex: 1 1 0;
 }
 
 .structureStatK {
