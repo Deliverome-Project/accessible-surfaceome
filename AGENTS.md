@@ -256,7 +256,7 @@ When a figure is **promoted** to `data/analysis/triage_bench_final/` (or any oth
 
 Each gist contains exactly two files:
 - `01_<figure_slug>.md` — one-paragraph context, run command, hyperlinks to the canonical data source and figure generator. The `01_` prefix forces it to the top of the gist's alphabetical file list.
-- `make_<figure_slug>.py` — standalone Python reproduction script. Uses **PEP 723 inline-script metadata** (`# /// script ... # ///` header) to declare deps so readers run it with `uv run make_<figure_slug>.py` — no `pip install` step.
+- `make_<figure_slug>.py` — standalone Python reproduction script. Uses [**PyPA inline script metadata**](https://packaging.python.org/en/latest/specifications/inline-script-metadata/) (the accepted form of PEP 723, now part of the PyPA packaging specifications) — `# /// script ... # ///` header to declare deps so readers run it with `uv run make_<figure_slug>.py` — no `pip install` step.
 
 **Data fetching** — script reads from whichever source is canonical:
 - **D1 (preferred when canonical source is D1)** — query the public read-only D1 endpoint via HTTP.
