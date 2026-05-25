@@ -201,6 +201,16 @@ CREATE INDEX IF NOT EXISTS idx_deep_dive_run_gene       ON deep_dive_run (gene_s
 CREATE INDEX IF NOT EXISTS idx_deep_dive_run_prompt_sha ON deep_dive_run (prompt_sha);
 CREATE INDEX IF NOT EXISTS idx_deep_dive_run_verdict    ON deep_dive_run (targetability_verdict);
 
+-- One row per (run_id, gene_symbol). SQLite doesn't support adding a
+-- UNIQUE table constraint via ALTER TABLE, so we enforce the natural key
+-- via a UNIQUE INDEX — functionally equivalent and works on existing
+-- populated tables. Lets the v2 sweep sink use
+-- ``INSERT ... ON CONFLICT (run_id, gene_symbol) DO NOTHING`` so
+-- two driver processes hitting the same sweep can't race a duplicate row
+-- into D1.
+CREATE UNIQUE INDEX IF NOT EXISTS idx_deep_dive_run_unique_gene
+    ON deep_dive_run (run_id, gene_symbol);
+
 
 -- One row per Evidence claim. The triple (run, evidence_id) is the natural
 -- key; we autoincrement to avoid composite-PK juggling.
