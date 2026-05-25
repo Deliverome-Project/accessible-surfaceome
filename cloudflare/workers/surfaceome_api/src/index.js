@@ -1211,6 +1211,21 @@ async function handleFeedbackModerate(env, url) {
   );
 }
 
+async function handleFeedbackPublic(env, url) {
+  const gene = url.searchParams.get("gene");
+  if (!gene || !/^[A-Z0-9-]{1,30}$/.test(gene)) {
+    return badRequest("invalid_gene");
+  }
+  const rows = await env.DB.prepare(
+    `SELECT id, submitter_name, comment, approved_at
+     FROM feedback_public
+     WHERE gene_symbol = ?
+     ORDER BY approved_at DESC
+     LIMIT 50`,
+  ).bind(gene).all();
+  return json({ gene, notes: rows.results }, { ttl: CACHE_TTL_SHORT });
+}
+
 // --- entry ----------------------------------------------------------------
 
 export default {
