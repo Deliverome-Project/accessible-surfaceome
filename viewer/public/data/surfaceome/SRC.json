@@ -688,11 +688,11 @@
     },
     "paralogs": [],
     "structure": {
-      "afdb_id": "AF-P12931-F1-model_v4",
+      "afdb_id": "AF-P12931-F1",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 0.0,
-      "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (placeholder \u2014 pLDDT fetcher not yet wired)",
+      "ecd_mean_plddt": 83.44,
+      "ecd_disordered_fraction": 0.194,
+      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
