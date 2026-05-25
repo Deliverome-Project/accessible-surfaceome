@@ -145,8 +145,7 @@ export default function ReproducibilityPage() {
             >
               inline script metadata
             </a>{" "}
-            (the PyPA-adopted form of PEP 723), so a reader can
-            execute the figure with{" "}
+            so a reader can execute the figure with{" "}
             <code>uv run make_&lt;figure&gt;.py</code> — no
             environment setup, no <code>pip install</code> step.
           </p>
