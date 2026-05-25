@@ -7,7 +7,7 @@
     "ncbi_gene_id": 3309,
     "ensembl_gene": "ENSG00000044574"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "possibly_accessible",
   "executive_summary": {
     "one_paragraph": "HSPA5/GRP78 is a canonical ER-luminal chaperone that undergoes stress-induced translocation to the plasma membrane surface in multiple cancer contexts \u2014 AML (especially FLT3-ITD+), glioblastoma (mesenchymal subtype), brain tumor stem cells, breast, ovarian, and pancreatic cancers. Direct surface detection by BxxP-HRP biotinylation MS (leukemia lines) and surfaceome MS (HGG patient-derived cultures) confirms plasma-membrane accessibility in disease. Surface expression is absent or minimal in unstressed/normal cells. A concurrent secreted/EV-associated form and rare surface staining in primary tissue IHC are the principal accessibility risks.",
     "surface_accessibility": "moderate",

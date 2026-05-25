@@ -7,7 +7,7 @@
     "ncbi_gene_id": 7490,
     "ensembl_gene": "ENSG00000184937"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "unlikely",
   "executive_summary": {
     "one_paragraph": "WT1 is a nuclear/cytoplasmic transcription factor with no credible direct surface protein accessibility. All surface-engagement evidence in the ledger concerns processed WT1 peptide fragments presented via MHC-I (pMHC) at extremely low density (<100 sites/cell by flow cytometry), not the WT1 protein itself. A2 confirms exclusively nuclear/cytoplasmic localization across podocytes, mesothelial cells, and CAFs\u2014all detected only with permeabilization. There is no transmembrane domain, no shed or secreted form, and no surface subdomain evidence. Therapeutic strategies target the pMHC complex, not WT1 protein directly.",
     "surface_accessibility": "low",

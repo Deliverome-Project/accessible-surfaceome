@@ -7,7 +7,7 @@
     "ncbi_gene_id": 51208,
     "ensembl_gene": "ENSG00000066405"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "likely_accessible",
   "executive_summary": {
     "one_paragraph": "CLDN18 (claudin-18) is a four-pass tight-junction protein with two isoforms: CLDN18.1 (lung) and CLDN18.2 (stomach/tumors). Surface accessibility is established by live-cell flow cytometry, membranous IHC across multiple tumor cohorts, 89Zr-zolbetuximab PET imaging in xenografts, surfaceome mass spectrometry, and CAR-T on-target clinical toxicity. Zolbetuximab (anti-CLDN18.2) is FDA-approved for gastric/GEJ adenocarcinoma. Key caveats: junctional subdomain restriction in normal epithelium (partially relieved in tumors), isoform selectivity requirements, and uncertain surface retention in CLDN18-ARHGAP26 fusion contexts.",
     "surface_accessibility": "high",

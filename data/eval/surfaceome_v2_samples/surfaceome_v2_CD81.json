@@ -7,7 +7,7 @@
     "ncbi_gene_id": 975,
     "ensembl_gene": "ENSG00000110651"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "likely_accessible",
   "executive_summary": {
     "one_paragraph": "CD81 is a four-pass tetraspanin with a large extracellular loop (LEL) that is unambiguously surface-accessible across multiple independent human cell types. Live-cell flow cytometry with CRISPR-KO controls, surface biotinylation/MS with >2-fold enrichment, and cryo-EM/crystal structures resolving the accessible LEL collectively establish direct_multi_method evidence. Surface levels are constitutive on B cells and AML blasts, elevated on LSC-enriched subpopulations and under GBM hypoxia, and absent on HepG2 WT cells \u2014 conferring moderate state dependence. A significant intracellular endosomal pool exists in standard culture conditions but does not negate robust plasma-membrane presence.",
     "surface_accessibility": "high",

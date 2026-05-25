@@ -7,7 +7,7 @@
     "ncbi_gene_id": 7431,
     "ensembl_gene": "ENSG00000026025"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "possibly_accessible",
   "executive_summary": {
     "one_paragraph": "VIM (vimentin) displays confirmed cell-surface accessibility in multiple independent human cell contexts: cancer cell lines (live-cell flow cytometry, antibody 7C11-D9), Huh-7.5.1 hepatocellular carcinoma cells (surface biotinylation/WB), primary apoptotic neutrophils (live-cell flow), and senescent chondrocytes (cell-based ELISA on intact cells). Surface exposure is strongly state-dependent \u2014 preferentially upregulated in cancer, apoptosis, and senescence \u2014 consistent with VIM's canonical role as a cytoskeletal intermediate filament whose surface form (CSV) is an unconventional, non-transmembrane presentation.",
     "surface_accessibility": "moderate",

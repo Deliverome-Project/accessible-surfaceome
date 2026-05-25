@@ -7,7 +7,7 @@
     "ncbi_gene_id": 506,
     "ensembl_gene": "ENSG00000110955"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "possibly_accessible",
   "executive_summary": {
     "one_paragraph": "ATP5F1B (ATP synthase \u03b2-subunit) is canonically a mitochondrial inner-membrane F1 subunit but is also detected at the plasma membrane as part of ectopic ATP synthase (eATP synthase). Multiple direct methods\u2014surface biotinylation MS, non-permeabilized IF with orthogonal controls, live-cell flow cytometry, and super-resolution live-cell imaging\u2014support genuine surface accessibility. Surface expression appears conditional (not ubiquitous), with highest confidence in specific cell types; CSPA/SURFY databases do not annotate it as a surface protein, reflecting its non-conventional trafficking origin.",
     "surface_accessibility": "moderate",

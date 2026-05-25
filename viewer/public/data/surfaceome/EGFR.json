@@ -7,7 +7,7 @@
     "ncbi_gene_id": 1956,
     "ensembl_gene": "ENSG00000146648"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "likely_accessible",
   "executive_summary": {
     "one_paragraph": "EGFR is a single-pass type I transmembrane receptor with exceptionally well-documented plasma membrane accessibility. Live-cell flow cytometry across >44 cancer cell lines, surface biotinylation with mass spectrometry, non-permeabilized immunofluorescence, and IHC with explicit membranous scoring criteria\u2014combined with cryo-EM/X-ray structures of the ECD and multiple approved/clinical therapeutics engaging that domain\u2014establish high-confidence surface accessibility. Expression is broad across solid tumor types and multiple normal epithelia. Key caveats are ligand-induced internalization that transiently reduces surface density, a predicted secreted isoform, and junctional/ciliary subdomain enrichment in polarized epithelia.",
     "surface_accessibility": "high",

@@ -206,7 +206,10 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
           <p className={styles.therapeuticProse}>
             {se.therapeutic_engagement.description}
           </p>
-          <p className={styles.therapeuticRationale}>
+          {/* div, not p — `<EvidenceChipList>` renders a flex `<div>`
+              which can't legally nest inside `<p>`. The CSS class
+              still applies and the visual treatment is identical. */}
+          <div className={styles.therapeuticRationale}>
             <span className={`label-mono ${styles.subLabel}`}>
               Surface-form rationale
             </span>
@@ -215,7 +218,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
               ids={se.therapeutic_engagement.cited_evidence_ids}
               label="Cites"
             />
-          </p>
+          </div>
         </div>
       ) : null}
 
