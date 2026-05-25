@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
+  MEMBRANE_COLOR,
   TOPOLOGY_COLORS,
   alphafoldPdbUrl,
   alphafoldPredictionApiUrl,
@@ -24,7 +25,13 @@ interface ViewerInstance {
   clear: () => void;
   resize: () => void;
   render: () => void;
+  zoomTo: (sel?: object) => void;
 }
+
+/** Slab transparency. 0.34 is heavy enough to read as a clear
+ *  membrane band from across the room without obscuring the helices
+ *  it's wrapped around. */
+const MEMBRANE_OPACITY = 0.34;
 
 /**
  * StructureViewer — the 3Dmol.js-backed canvas. Client-only because
@@ -98,7 +105,7 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       // topology to find the M/O/I centroids, then rotates I→O onto
       // +Y. Falls back to the raw PDB when topology is too sparse
       // (small ECDs / soluble proteins).
-      const pdbText = orientPdbForTopology(rawPdb, data.topology);
+      const { pdbText, membrane } = orientPdbForTopology(rawPdb, data.topology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -121,7 +128,36 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
         });
       });
 
-      viewer.zoomTo();
+      // Frame on atoms BEFORE adding the membrane slab. `zoomTo({})`
+      // restricts the fit to selected atoms (empty selection = all
+      // atoms), so the slab — which is wider than the protein in XZ —
+      // doesn't pull the camera out.
+      viewer.zoomTo({});
+
+      // Translucent membrane slab at the TM-helix plane. The
+      // orientation transform already pinned the bilayer normal to
+      // +Y and centered the TM mean at Y=0, so the slab is just an
+      // axis-aligned box spanning [yMin, yMax] in the oriented frame.
+      // Opacity stays low so the protein cartoon reads as the primary
+      // figure; the slab is spatial context, not the subject.
+      if (membrane) {
+        viewer.addBox({
+          corner: {
+            x: -membrane.xExtent,
+            y: membrane.yMin,
+            z: -membrane.zExtent,
+          },
+          dimensions: {
+            w: membrane.xExtent * 2,
+            h: membrane.yMax - membrane.yMin,
+            d: membrane.zExtent * 2,
+          },
+          color: MEMBRANE_COLOR,
+          opacity: MEMBRANE_OPACITY,
+          wireframe: false,
+        });
+      }
+
       viewer.render();
       viewerRef.current = viewer as ViewerInstance;
 
@@ -138,7 +174,10 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
         const ro = new ResizeObserver(() => {
           try {
             viewer.resize();
-            viewer.zoomTo();
+            // Match the initial render: fit on atoms only, so the
+            // wider membrane slab doesn't pull the camera out on
+            // every layout shift.
+            viewer.zoomTo({});
             viewer.render();
           } catch {
             // 3Dmol throws on race against teardown; ignore.

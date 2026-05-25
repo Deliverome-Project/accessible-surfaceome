@@ -111,6 +111,7 @@ export function IsoformsCard({ rec, n }: Props) {
           ct.per_residue_topology,
           ...df.isoform_topologies.map((iso) => iso.per_residue_topology),
         ])}
+        showMembrane={false}
       />
 
       {/* canonical_isoform_caveat was dropped in PR23 round 8 —
