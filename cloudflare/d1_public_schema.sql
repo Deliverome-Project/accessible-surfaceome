@@ -527,3 +527,21 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_alpha
     ON surface_bind_site (n_seeds_alpha);
 CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
     ON surface_bind_site (n_seeds_beta);
+
+-- ---------------------------------------------------------------------------
+-- Approved-only community notes (public mirror)
+-- ---------------------------------------------------------------------------
+-- Sanitized subset of surfaceome_agents.feedback rows where status =
+-- 'approved_public'. Inserted by the Worker's magic-link approval
+-- handler. The viewer fetches from here via GET /v1/feedback/public.
+
+CREATE TABLE IF NOT EXISTS feedback_public (
+    id              TEXT PRIMARY KEY,                          -- same id as private feedback row
+    gene_symbol     TEXT NOT NULL,                             -- e.g. "SRC"
+    submitter_name  TEXT NOT NULL,                             -- attribution; e-mail never published
+    comment         TEXT NOT NULL,                             -- sanitized at insert time
+    approved_at     TEXT NOT NULL DEFAULT (datetime('now'))    -- both moderation timestamp and public-mirror write time
+);
+
+CREATE INDEX IF NOT EXISTS idx_feedback_public_gene
+    ON feedback_public(gene_symbol, approved_at DESC);
