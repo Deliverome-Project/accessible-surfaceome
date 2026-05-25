@@ -1,6 +1,7 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
@@ -80,6 +81,17 @@ function plddtTone(plddt: number) {
   return "danger" as const;
 }
 
+/** Map a StatusPill tone enum to the `.h-vital-display` tone modifier
+ *  class. Keeps the editorial display value tinted in the same hue as
+ *  the supporting pill underneath. Returns empty string for `neutral`
+ *  so the display value falls back to `var(--ink)`. */
+function vitalToneClass(
+  tone: "success" | "teal" | "lavender" | "amber" | "danger" | "neutral",
+): string {
+  if (tone === "neutral") return "";
+  return `tone-${tone}`;
+}
+
 /**
  * GeneHeader — display-scale gene symbol, executive lede, identifier
  * links, and four vitals. Driven entirely by `executive_summary` +
@@ -135,7 +147,6 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
     <header className={styles.header}>
       <div className={styles.headerGrid}>
         <div className={styles.headerText}>
-          <p className={`label-mono ${styles.eyebrow}`}>Surfaceome record</p>
           <h1 className={`h-gene ${styles.symbol}`}>{g.hgnc_symbol}</h1>
           {geneName?.name ? (
             <p className={styles.geneName}>
@@ -148,11 +159,31 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
               ) : null}
             </p>
           ) : null}
-          {/* Note: the executive summary `one_paragraph` is rendered ONCE,
-              by `<ExecutiveSummaryCard>` (§1). The header keeps the
-              gene-name strip + IDs + vitals; the full lede sits in the
-              card so the structured pills + headline risks live next to
-              the paragraph they describe. */}
+
+          {/* Executive summary inlined here (no longer a separate
+              section). Reader sees the gene name, then immediately the
+              one-paragraph synthesis + headline risks + cited evidence
+              chips. The structured signals (Accessibility, Grade,
+              Confidence, Triage) live in the vitals row below. */}
+          <p className={styles.execLede}>{exec.one_paragraph}</p>
+
+          {exec.headline_risks.length > 0 ? (
+            <p className={styles.risks}>
+              <span className={`label-mono ${styles.risksLabel}`}>
+                Headline risks
+              </span>
+              <span className={styles.risksValue}>
+                {exec.headline_risks.map((r) => prettyEnum(r)).join(" · ")}
+              </span>
+            </p>
+          ) : null}
+
+          {exec.cited_evidence_ids.length > 0 ? (
+            <EvidenceChipList
+              ids={exec.cited_evidence_ids}
+              label="Cited evidence"
+            />
+          ) : null}
 
           <ul className={styles.ids} aria-label="External identifiers">
             {ids.map((id) => (
@@ -258,67 +289,86 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
         ) : null}
       </div>
 
+      {/* Vitals — eyebrow label, italic-Playfair display value
+          (`.h-vital-display`), then a small outlined StatusPill that
+          carries the tonal cue. The display value carries the enum
+          headline; the sub-line carries the supplemental detail
+          (subcategory, evidence counts, triage risks). The pill stays
+          so colorblind / scanning readers still get the tone cue and
+          the tone modifier on the display value matches it. */}
       <dl className={styles.vitals}>
-        <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Accessibility</dt>
-          <dd className={styles.vitalV}>
-            <StatusPill tone={accessibilityTone(exec.surface_accessibility)}>
-              {prettyEnum(exec.surface_accessibility)}
-            </StatusPill>
-            <span className={styles.vitalSub}>{prettyEnum(exec.subcategory)}</span>
-          </dd>
-        </div>
+        {(() => {
+          const accessTone = accessibilityTone(exec.surface_accessibility);
+          const gradeT = gradeTone(exec.evidence_grade_summary);
+          const confT = confidenceTone(exec.confidence);
+          const triT = triageTone(rec.triage_signal);
+          return (
+            <>
+              <div className={styles.vital}>
+                <dt className={`label-mono ${styles.vitalK}`}>Accessibility</dt>
+                <dd className={styles.vitalV}>
+                  <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
+                    {prettyEnum(exec.surface_accessibility)}
+                  </p>
+                  <StatusPill tone={accessTone} size="sm">
+                    {prettyEnum(exec.subcategory)}
+                  </StatusPill>
+                </dd>
+              </div>
 
-        <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Evidence grade</dt>
-          <dd className={styles.vitalV}>
-            <StatusPill tone={gradeTone(exec.evidence_grade_summary)}>
-              {prettyEnum(exec.evidence_grade_summary)}
-            </StatusPill>
-            <span className={styles.vitalSub}>
-              {counts.total} entries
-            </span>
-          </dd>
-        </div>
+              <div className={styles.vital}>
+                <dt className={`label-mono ${styles.vitalK}`}>Evidence grade</dt>
+                <dd className={styles.vitalV}>
+                  <p className={`h-vital-display ${vitalToneClass(gradeT)}`}>
+                    {prettyEnum(exec.evidence_grade_summary)}
+                  </p>
+                  <span className={styles.vitalSub}>
+                    {counts.total} entries
+                  </span>
+                </dd>
+              </div>
 
-        <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Confidence</dt>
-          <dd className={styles.vitalV}>
-            <StatusPill tone={confidenceTone(exec.confidence)}>
-              {prettyEnum(exec.confidence)}
-            </StatusPill>
-            <span className={styles.vitalSub}>
-              {counts.primary} primary · {counts.secondary} secondary
-            </span>
-          </dd>
-        </div>
+              <div className={styles.vital}>
+                <dt className={`label-mono ${styles.vitalK}`}>Confidence</dt>
+                <dd className={styles.vitalV}>
+                  <p className={`h-vital-display ${vitalToneClass(confT)}`}>
+                    {prettyEnum(exec.confidence)}
+                  </p>
+                  <span className={styles.vitalSub}>
+                    {counts.primary} primary · {counts.secondary} secondary
+                  </span>
+                </dd>
+              </div>
 
-        <div className={styles.vital}>
-          <dt
-            className={`label-mono ${styles.vitalK}`}
-            title={
-              "Genome-wide Sonnet triage prior — first-pass surface-vs-not " +
-              "call made before any deep literature work. Hydrated from " +
-              "public D1 `triage_run_public` (mainbench_canonical_v1 · " +
-              "variant=ncbi · model=claude-sonnet-4-6). Falls back to " +
-              "`unknown` when no triage row exists for the gene."
-            }
-          >
-            Triage
-          </dt>
-          <dd className={styles.vitalV}>
-            <StatusPill tone={triageTone(rec.triage_signal)}>
-              {prettyEnum(rec.triage_signal)}
-            </StatusPill>
-            <span className={styles.vitalSub}>
-              {exec.headline_risks.length
-                ? `${exec.headline_risks.length} headline risk${
-                    exec.headline_risks.length === 1 ? "" : "s"
-                  }`
-                : "No headline risks"}
-            </span>
-          </dd>
-        </div>
+              <div className={styles.vital}>
+                <dt
+                  className={`label-mono ${styles.vitalK}`}
+                  title={
+                    "Genome-wide Sonnet triage prior — first-pass surface-vs-not " +
+                    "call made before any deep literature work. Hydrated from " +
+                    "public D1 `triage_run_public` (mainbench_canonical_v1 · " +
+                    "variant=ncbi · model=claude-sonnet-4-6). Falls back to " +
+                    "`unknown` when no triage row exists for the gene."
+                  }
+                >
+                  Triage
+                </dt>
+                <dd className={styles.vitalV}>
+                  <p className={`h-vital-display ${vitalToneClass(triT)}`}>
+                    {prettyEnum(rec.triage_signal)}
+                  </p>
+                  <span className={styles.vitalSub}>
+                    {exec.headline_risks.length
+                      ? `${exec.headline_risks.length} headline risk${
+                          exec.headline_risks.length === 1 ? "" : "s"
+                        }`
+                      : "No headline risks"}
+                  </span>
+                </dd>
+              </div>
+            </>
+          );
+        })()}
       </dl>
     </header>
   );

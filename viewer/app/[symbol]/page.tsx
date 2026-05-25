@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { AnchorNav } from "../../components/AnchorNav/AnchorNav";
 import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
@@ -9,7 +10,6 @@ import { DatabasePresenceCard } from "../../components/surfaceome/DatabasePresen
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
 import { EvidenceDrawer } from "../../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
 import { EvidenceLedgerCard } from "../../components/surfaceome/EvidenceLedgerCard/EvidenceLedgerCard";
-import { ExecutiveSummaryCard } from "../../components/surfaceome/ExecutiveSummaryCard/ExecutiveSummaryCard";
 import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
 import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
 import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
@@ -71,27 +71,68 @@ export default async function GenePage({ params }: PageProps) {
   // standalone StructureSummaryCard was removed (it duplicated both
   // the stats now in the header and the attribution now in the
   // footer).
-  const sections: { kind: string; render: (n: number) => React.ReactNode }[] = [
-    { kind: "executive", render: (n) => <ExecutiveSummaryCard rec={rec} n={n} /> },
+  // Each entry carries a stable `kind` (used as the `section-<kind>`
+  // anchor id) and a reader-facing `label` (shown in the AnchorNav
+  // strip). The label is short by design — the strip has to fit ~10
+  // links horizontally without wrapping on a 1280-wide canvas.
+  const sections: {
+    kind: string;
+    label: string;
+    render: (n: number) => React.ReactNode;
+  }[] = [
     ...(catalogRow
       ? [
           {
             kind: "db-presence",
+            label: "DB presence",
             render: (n: number) => (
               <DatabasePresenceCard row={catalogRow} n={n} />
             ),
           },
         ]
       : []),
-    { kind: "filters", render: (n) => <FiltersCard rec={rec} n={n} /> },
-    { kind: "evidence", render: (n) => <SurfaceEvidenceCard rec={rec} n={n} /> },
-    { kind: "biology", render: (n) => <BiologicalContextCard rec={rec} n={n} /> },
-    { kind: "isoforms", render: (n) => <IsoformsCard rec={rec} n={n} /> },
-    { kind: "paralogs", render: (n) => <ParalogsCard rec={rec} n={n} /> },
-    { kind: "orthologs", render: (n) => <OrthologsCard rec={rec} n={n} /> },
-    { kind: "risks", render: (n) => <AccessibilityRisksCard rec={rec} n={n} /> },
-    { kind: "ledger", render: (n) => <EvidenceLedgerCard rec={rec} n={n} /> },
+    {
+      kind: "filters",
+      label: "Filters",
+      render: (n) => <FiltersCard rec={rec} n={n} />,
+    },
+    {
+      kind: "evidence",
+      label: "Surface evidence",
+      render: (n) => <SurfaceEvidenceCard rec={rec} n={n} />,
+    },
+    {
+      kind: "biology",
+      label: "Biology",
+      render: (n) => <BiologicalContextCard rec={rec} n={n} />,
+    },
+    {
+      kind: "isoforms",
+      label: "Isoforms",
+      render: (n) => <IsoformsCard rec={rec} n={n} />,
+    },
+    {
+      kind: "paralogs",
+      label: "Paralogs",
+      render: (n) => <ParalogsCard rec={rec} n={n} />,
+    },
+    {
+      kind: "orthologs",
+      label: "Orthologs",
+      render: (n) => <OrthologsCard rec={rec} n={n} />,
+    },
+    {
+      kind: "risks",
+      label: "Risks",
+      render: (n) => <AccessibilityRisksCard rec={rec} n={n} />,
+    },
+    {
+      kind: "ledger",
+      label: "Evidence ledger",
+      render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
+    },
   ];
+  const anchorSections = sections.map((s) => ({ id: s.kind, label: s.label }));
 
   return (
     <Shell>
@@ -143,6 +184,12 @@ export default async function GenePage({ params }: PageProps) {
           <GeneHeader rec={rec} geneName={geneName} structureData={structureData} />
         </Reveal>
 
+        {/* Sticky numbered scroll-spy strip — sits below the Shell
+            topbar with a `top: 64px` offset. Each section below carries
+            `id="section-<kind>"` so clicking a link scrolls there and
+            the IntersectionObserver tracks which section is current. */}
+        <AnchorNav sections={anchorSections} />
+
         {/* Per-section Reveal wrappers, not a single bulk wrapper.
             A single stagger wrapper around all 12 sections is taller
             than the viewport, so an IntersectionObserver with a
@@ -151,7 +198,9 @@ export default async function GenePage({ params }: PageProps) {
             the scroll-fade rhythm honest: each card fades in as it
             actually scrolls into view. */}
         {sections.map((s, i) => (
-          <Reveal key={s.kind}>{s.render(i + 1)}</Reveal>
+          <section key={s.kind} id={`section-${s.kind}`}>
+            <Reveal>{s.render(i + 1)}</Reveal>
+          </section>
         ))}
 
         <Reveal className={styles.confidence}>

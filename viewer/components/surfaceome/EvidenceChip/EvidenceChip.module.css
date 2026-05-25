@@ -17,8 +17,8 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--accent);
-  background: var(--accent-soft, var(--maroon-soft));
-  border: 0;
+  background: transparent;
+  border: 1px solid rgba(146, 32, 56, 0.3);
   border-radius: 3px;
   padding: 0.18rem 0.45rem;
   margin: 0;
@@ -26,13 +26,15 @@
   text-decoration: none;
   transition:
     color var(--dur-fast) var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out);
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
 }
 
 .chip:hover,
 .chip:focus-visible {
   color: var(--bg);
   background: var(--accent);
+  border-color: var(--accent);
 }
 
 .chipRow {

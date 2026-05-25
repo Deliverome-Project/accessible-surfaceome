@@ -6,22 +6,22 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding: var(--space-12) 0 var(--space-8);
+  gap: var(--space-4);
+  padding: var(--space-4) 0 var(--space-6);
   border-bottom: 1px solid var(--line-soft);
 }
 
 .headerGrid {
   display: grid;
   grid-template-columns: 1fr 280px;
-  gap: var(--space-8);
+  gap: var(--space-6);
   align-items: start;
 }
 
 .headerText {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  gap: var(--space-4);
   min-width: 0;
 }
 
@@ -122,10 +122,6 @@
   }
 }
 
-.eyebrow {
-  color: var(--muted);
-}
-
 .symbol {
   font-size: clamp(2.4rem, 5.5vw, 3.8rem);
 }
@@ -137,6 +133,36 @@
   line-height: 1.4;
   color: var(--ink-soft);
   max-width: 60ch;
+}
+
+/* Executive-summary lede — promoted from §1 to live directly under
+ * the gene name. Reads as the gene-page TL;DR; deeper structured
+ * signals are in the vitals row below and the section cards beyond. */
+.execLede {
+  margin: var(--space-1) 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink);
+  max-width: 70ch;
+}
+
+/* Headline risks — small "label · value" line under the lede. */
+.risks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0;
+  color: var(--ink);
+}
+
+.risksLabel {
+  color: var(--muted);
+}
+
+.risksValue {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
 }
 
 .geneSynonyms {
@@ -187,10 +213,13 @@
 }
 
 .vitals {
-  margin: var(--space-5) 0 0;
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) 0;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-5);
+  gap: var(--space-4);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 @media (max-width: 760px) {
@@ -202,13 +231,21 @@
 .vital {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
 .vitalK {
   color: var(--muted);
+  font-size: 0.66rem;
+  letter-spacing: 0.2em;
 }
 
+/* Editorial vital body — italic Playfair display value (via the
+ * `.h-vital-display` primitive in globals.css) sits up top, with
+ * a small supporting StatusPill or vitalSub line beneath. The pill
+ * keeps the tone cue colorblind-readable; the display value picks
+ * up a matching tone tint via `.h-vital-display.tone-*`. */
 .vitalV {
   margin: 0;
   display: flex;
@@ -218,14 +255,7 @@
 }
 
 .vitalSub {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--muted);
-}
-
-.vitalCount {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-style: italic;
-  color: var(--accent);
-  line-height: 1;
+  line-height: 1.4;
 }

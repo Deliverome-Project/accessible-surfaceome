@@ -30,8 +30,7 @@ export function DataSourcesFooter({ rec }: Props) {
           open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
         </li>
         <li>
-          DeepTMHMM topology — {deeptmhmm} · DTU Health Tech (Hallgren et al. 2022;
-          academic-use service)
+          DeepTMHMM topology — {deeptmhmm} · DTU Health Tech (Hallgren et al. 2022)
         </li>
         <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
       </ul>
