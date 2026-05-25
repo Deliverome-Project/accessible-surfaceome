@@ -833,6 +833,188 @@ async function handleTriage(env, symbol) {
 }
 
 
+// === Feedback flow helpers ================================================
+// All functions in this block support the three /v1/feedback/* endpoints
+// added below. They never leak PII or unsanitized HTML across the
+// public/private boundary.
+
+// Hex-encode an ArrayBuffer or Uint8Array.
+function toHex(buf) {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Base64url (no padding) — safe to put in a URL.
+function toBase64Url(buf) {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// HMAC-SHA256(secret, message) → base64url.
+async function hmacSign(secret, message) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return toBase64Url(sig);
+}
+
+// Constant-time compare for base64url-or-hex strings of equal length.
+function timingSafeEqualStr(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return mismatch === 0;
+}
+
+// SHA-256(text) → hex.
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return toHex(buf);
+}
+
+// Strip HTML tags and normalize whitespace. Comments render as plaintext
+// in the viewer (no dangerouslySetInnerHTML), so this is defense-in-depth.
+function sanitizeComment(s) {
+  return String(s ?? "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim()
+    .slice(0, 4000);
+}
+
+// Cheap email-shape check. Real validation lives at the auth layer
+// (we never auto-trust the address); this is just "does it look like
+// an email at all".
+function looksLikeEmail(s) {
+  return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+// HTML-escape a string for safe embedding in the moderate-confirmation
+// page and the Resend email body.
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
+// Verify a Cloudflare Turnstile token against the siteverify endpoint.
+// Returns true on success, false on failure (does NOT throw — caller
+// decides response code).
+async function verifyTurnstile(token, secret, remoteIp) {
+  if (!token || !secret) return false;
+  const body = new URLSearchParams({ secret, response: token });
+  if (remoteIp) body.set("remoteip", remoteIp);
+  try {
+    const r = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      { method: "POST", body },
+    );
+    const j = await r.json();
+    return !!j.success;
+  } catch {
+    return false;
+  }
+}
+
+// Rate-limit per IP-hash. Returns true if under the limit, false if over.
+// Window: 1 hour, max: 5 submissions. KV is eventually consistent — that
+// is acceptable here (bursts of 6-10 once an hour aren't a real DoS).
+async function checkRateLimit(kv, ipHash) {
+  const key = `rl:${ipHash}:${Math.floor(Date.now() / 3600_000)}`; // hour bucket
+  const v = await kv.get(key);
+  const n = v ? parseInt(v, 10) : 0;
+  if (n >= 5) return false;
+  await kv.put(key, String(n + 1), { expirationTtl: 3600 });
+  return true;
+}
+
+// Send the feedback notification email via Resend. Returns true on
+// success, false on failure (the caller still 200's the submission —
+// we don't lose the row just because email is slow).
+async function sendFeedbackEmail({ apiKey, from, to, replyTo, subject, html }) {
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        reply_to: replyTo ? [replyTo] : undefined,
+        subject,
+        html,
+      }),
+    });
+    if (!r.ok) {
+      console.error("Resend send failed:", r.status, await r.text());
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Resend send error:", err);
+    return false;
+  }
+}
+
+// Compose the email body sent to the maintainer.
+function feedbackEmailHtml({ rec, base, approvePublicUrl, discardUrl }) {
+  const additional = `
+    <p><strong>Additional information</strong></p>
+    <ul style="line-height: 1.5">
+      <li>Referred from: <code>${escapeHtml(rec.referrer || "—")}</code></li>
+      <li>User browser: <code>${escapeHtml(rec.user_agent || "—")}</code></li>
+      <li>Website version: <code>${escapeHtml(rec.site_version || "—")}</code></li>
+    </ul>
+  `;
+  const publicBtn = rec.public_requested
+    ? `<a href="${approvePublicUrl}"
+          style="background:#922038;color:#fff;padding:0.7em 1.2em;
+                 border-radius:999px;text-decoration:none;
+                 display:inline-block;margin-right:0.6em;">
+         Approve as public
+       </a>`
+    : "";
+  return `
+    <div style="font-family:system-ui,sans-serif;color:#1f1718;
+                max-width:640px;margin:0 auto;line-height:1.55">
+      <h2 style="margin-top:0">New feedback for ${escapeHtml(rec.gene_symbol)}</h2>
+      <p style="color:#6f5d5a;margin:0 0 1em">
+        From <strong>${escapeHtml(rec.submitter_name)}</strong>
+        &lt;${escapeHtml(rec.submitter_email)}&gt;
+      </p>
+      <p><strong>Subject:</strong> ${escapeHtml(rec.subject)}</p>
+      <p style="white-space:pre-wrap;border-left:3px solid #e5ded3;
+                padding-left:1em;color:#1f1718">
+        ${escapeHtml(rec.comment)}
+      </p>
+      ${additional}
+      <p style="margin-top:2em">
+        ${publicBtn}
+        <a href="${discardUrl}"
+           style="color:#6f5d5a;text-decoration:underline;
+                  display:inline-block;padding:0.7em 0">
+          Discard
+        </a>
+      </p>
+      <p style="color:#80706a;font-size:0.85em;margin-top:2em">
+        Reply directly to this e-mail to respond to the submitter
+        (their address is set as Reply-To).
+      </p>
+    </div>
+  `;
+}
+
 // --- entry ----------------------------------------------------------------
 
 export default {
