@@ -296,12 +296,39 @@ export interface StructureFeatures {
   citations: string[];
 }
 
+/**
+ * SURFACE-Bind summary (Marchand et al. 2026 PNAS,
+ * doi:10.1073/pnas.2506269123). The MaSIF / patch-based targetability
+ * mapping for ~2,529 of the surfaceome's ~2,886 proteins. ``has_data``
+ * is the explicit "is this protein in SURFACE-Bind" signal — ~12% of
+ * surfaceome proteins drop out via SURFACE-Bind's structural-quality
+ * filters and carry ``has_data=false`` with zeroed counts.
+ *
+ * Seed counts are split by binder-backbone class: ``alpha`` = α-helical
+ * binder candidates, ``beta`` = β-strand binder candidates. The total
+ * is informative, but the split lets a reader pick the format that
+ * matches their downstream design pipeline.
+ */
+export interface SurfaceBindFeatures {
+  has_data: boolean;
+  n_sites: number;
+  n_seeds_alpha: number;
+  n_seeds_beta: number;
+  n_seeds_total: number;
+  /** PDB-chain identifier the scoring was run against (typically "A"). */
+  chain: string | null;
+  source: string;
+  attribution: string;
+  citation: string;
+}
+
 export interface DeterministicFeatures {
   canonical_topology: CanonicalTopology;
   isoform_topologies: IsoformTopology[];
   orthologs: OrthologSet;
   paralogs: ParalogEntry[];
   structure: StructureFeatures;
+  surface_bind: SurfaceBindFeatures;
 }
 
 // ============================================================

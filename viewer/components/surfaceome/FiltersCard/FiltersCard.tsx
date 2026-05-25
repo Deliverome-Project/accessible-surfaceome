@@ -438,6 +438,67 @@ export function FiltersCard({ rec, n }: Props) {
         positiveBoolPill("C-term extracellular", f.c_term_extracellular),
       ],
     },
+    {
+      label: "SURFACE-Bind (deterministic — Marchand 2026 PNAS)",
+      pills: rec.deterministic_features.surface_bind.has_data
+        ? [
+            <StatusPill
+              key="sb-sites"
+              tone="success"
+              size="sm"
+              title={
+                "Number of MaSIF-scored targetable surface patches. " +
+                "Each site is a region where SURFACE-Bind's patch " +
+                "scoring identified geometric / chemical features " +
+                "compatible with a de novo binder. Higher = more " +
+                "design flexibility."
+              }
+            >
+              {rec.deterministic_features.surface_bind.n_sites} sites
+            </StatusPill>,
+            <StatusPill
+              key="sb-alpha"
+              tone="teal"
+              size="sm"
+              title={
+                "Total α-helical binder candidate seeds aligned across " +
+                "all sites — SURFACE-Bind's continuous-fragment library " +
+                "docked to the surface patches and ranked by MaSIF score."
+              }
+            >
+              {rec.deterministic_features.surface_bind.n_seeds_alpha.toLocaleString()} α-seeds
+            </StatusPill>,
+            <StatusPill
+              key="sb-beta"
+              tone="teal"
+              size="sm"
+              title={
+                "Total β-strand binder candidate seeds aligned across " +
+                "all sites. β-strand binders are typically the harder " +
+                "design target; high counts here mean the surface " +
+                "has β-favorable patches."
+              }
+            >
+              {rec.deterministic_features.surface_bind.n_seeds_beta.toLocaleString()} β-seeds
+            </StatusPill>,
+          ]
+        : [
+            <StatusPill
+              key="sb-none"
+              tone="neutral"
+              size="sm"
+              title={
+                "Not in SURFACE-Bind. SURFACE-Bind covers ~2,529 of the " +
+                "~2,886 predicted surfaceome proteins; the omitted ~12% " +
+                "didn't pass the structural-quality filter (small ECD, " +
+                "poorly-modeled, soluble / inner-leaflet, etc.). " +
+                "Absence is signal, not a defect."
+              }
+            >
+              not in SURFACE-Bind
+            </StatusPill>,
+          ],
+    },
   ];
 
   return (

@@ -439,11 +439,18 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     # measurement. ``fetch_afdb_plddt`` never raises — on network /
     # parse failure it returns its own labeled placeholder.
     from accessible_surfaceome.tools.afdb_plddt import fetch_afdb_plddt
+    from accessible_surfaceome.tools.surface_bind import lookup as lookup_surface_bind
 
     structure = fetch_afdb_plddt(
         uniprot_acc,
         per_residue_topology=canonical.per_residue_topology or None,
     )
+
+    # SURFACE-Bind summary — in-memory lookup against the checked-in
+    # JSON ``data/external/surface_bind/surface_bind_summary.json``.
+    # ``has_data=False`` is the explicit "not scored" signal for the
+    # ~12% of surfaceome proteins SURFACE-Bind omitted.
+    surface_bind = lookup_surface_bind(uniprot_acc)
 
     return DeterministicFeatures(
         canonical_topology=canonical,
@@ -451,4 +458,5 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         orthologs=orthologs,
         paralogs=paralogs,
         structure=structure,
+        surface_bind=surface_bind,
     )

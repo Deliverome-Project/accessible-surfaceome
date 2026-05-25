@@ -290,6 +290,50 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
                 </dd>
               </div>
             </dl>
+            {/* SURFACE-Bind stat — sits below the AFDB row inside the
+                same structure aside so the reader sees patch-level
+                targetability next to the model that scored it. When
+                the protein isn't in SURFACE-Bind, render a neutral
+                "not scored" pill rather than the count (zeroes here
+                are an absence signal, not an actual measurement). */}
+            <dl className={styles.structureStats} aria-label="SURFACE-Bind summary">
+              <div className={styles.structureStat}>
+                <dt
+                  className={`label-mono ${styles.structureStatK}`}
+                  title={
+                    "SURFACE-Bind (Marchand 2026 PNAS, " +
+                    "doi:10.1073/pnas.2506269123) — MaSIF / patch-based " +
+                    "targetability mapping. Each site is a surface patch " +
+                    "scored as designable for a de novo binder. Total " +
+                    "seeds = candidate binder backbone fragments docked " +
+                    "to all sites combined (α-helical + β-strand)."
+                  }
+                >
+                  SURFACE-Bind
+                </dt>
+                <dd className={styles.structureStatV}>
+                  {rec.deterministic_features.surface_bind.has_data ? (
+                    <a
+                      href={`https://surface-bind.inria.fr/protein.html?uniprot=${g.uniprot_acc}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.structureStatLink}
+                    >
+                      {rec.deterministic_features.surface_bind.n_sites} site
+                      {rec.deterministic_features.surface_bind.n_sites === 1
+                        ? ""
+                        : "s"}{" "}
+                      · {rec.deterministic_features.surface_bind.n_seeds_total.toLocaleString()}{" "}
+                      seeds ↗
+                    </a>
+                  ) : (
+                    <StatusPill tone="neutral" size="sm" title="Not in SURFACE-Bind — typically because the protein dropped out of the structural-quality filter (small ECD, poor model, soluble / inner-leaflet). Not a defect; an absence signal.">
+                      not scored
+                    </StatusPill>
+                  )}
+                </dd>
+              </div>
+            </dl>
             <p className={styles.structureCaption}>
               {structureData.deeptmhmm_type === "GLOB" ? (
                 <>

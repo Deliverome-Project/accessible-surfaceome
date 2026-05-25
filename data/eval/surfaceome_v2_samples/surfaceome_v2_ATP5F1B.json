@@ -522,6 +522,17 @@
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
       ]
+    },
+    "surface_bind": {
+      "has_data": false,
+      "n_sites": 0,
+      "n_seeds_alpha": 0,
+      "n_seeds_beta": 0,
+      "n_seeds_total": 0,
+      "chain": null,
+      "source": "SURFACE-Bind v1 (Marchand 2026 PNAS)",
+      "attribution": "\u00a9 Marchand, Khakzad, Correia et al. \u2014 EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
     }
   },
   "accessibility_risks": {
