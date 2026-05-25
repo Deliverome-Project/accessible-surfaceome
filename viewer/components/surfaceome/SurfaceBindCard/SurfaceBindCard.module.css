@@ -47,6 +47,18 @@
   color: var(--ink);
 }
 
+/* Color swatch next to the site index — mirrors the 3D anchor
+   sphere color so the reader can match table rows to spheres. */
+.swatch {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.45rem;
+  border-radius: 50%;
+  vertical-align: -0.05rem;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
 .footer {
   margin: var(--space-3) 0 0;
   font-size: 0.85rem;

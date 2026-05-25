@@ -440,64 +440,91 @@ export function FiltersCard({ rec, n }: Props) {
     },
     {
       label: "SURFACE-Bind (deterministic — Marchand 2026 PNAS)",
-      pills: rec.deterministic_features.surface_bind.has_data
-        ? [
+      // Three distinct states, each rendered explicitly so the reader
+      // can tell them apart at a glance:
+      //   1. not_in: SURFACE-Bind dropped the protein at structural QC
+      //   2. scored_empty: in the table, but no patches cleared scoring
+      //   3. scored_with_sites: real targetability data
+      pills: (() => {
+        const sb = rec.deterministic_features.surface_bind;
+        if (!sb.has_data) {
+          return [
             <StatusPill
-              key="sb-sites"
-              tone="success"
-              size="sm"
-              title={
-                "Number of MaSIF-scored targetable surface patches. " +
-                "Each site is a region where SURFACE-Bind's patch " +
-                "scoring identified geometric / chemical features " +
-                "compatible with a de novo binder. Higher = more " +
-                "design flexibility."
-              }
-            >
-              {rec.deterministic_features.surface_bind.n_sites} sites
-            </StatusPill>,
-            <StatusPill
-              key="sb-alpha"
-              tone="teal"
-              size="sm"
-              title={
-                "Total α-helical binder candidate seeds aligned across " +
-                "all sites — SURFACE-Bind's continuous-fragment library " +
-                "docked to the surface patches and ranked by MaSIF score."
-              }
-            >
-              {rec.deterministic_features.surface_bind.n_seeds_alpha.toLocaleString()} α-seeds
-            </StatusPill>,
-            <StatusPill
-              key="sb-beta"
-              tone="teal"
-              size="sm"
-              title={
-                "Total β-strand binder candidate seeds aligned across " +
-                "all sites. β-strand binders are typically the harder " +
-                "design target; high counts here mean the surface " +
-                "has β-favorable patches."
-              }
-            >
-              {rec.deterministic_features.surface_bind.n_seeds_beta.toLocaleString()} β-seeds
-            </StatusPill>,
-          ]
-        : [
-            <StatusPill
-              key="sb-none"
+              key="sb-not-in"
               tone="neutral"
               size="sm"
               title={
-                "Not in SURFACE-Bind. SURFACE-Bind covers ~2,529 of the " +
-                "~2,886 predicted surfaceome proteins; the omitted ~12% " +
-                "didn't pass the structural-quality filter (small ECD, " +
-                "poorly-modeled, soluble / inner-leaflet, etc.). " +
-                "Absence is signal, not a defect."
+                "NOT in SURFACE-Bind's dataset. SURFACE-Bind filtered " +
+                "this protein out during structural-quality screening — " +
+                "typically inner-leaflet anchors, soluble cytoplasmic " +
+                "proteins, or poorly-modeled targets. Distinct from " +
+                "'scored · no patches' (where the protein WAS scored)."
               }
             >
               not in SURFACE-Bind
             </StatusPill>,
-          ],
+          ];
+        }
+        if (sb.n_sites === 0) {
+          return [
+            <StatusPill
+              key="sb-scored-empty"
+              tone="amber"
+              size="sm"
+              title={
+                "Scored by SURFACE-Bind but no surface patches cleared " +
+                "the MaSIF targetability threshold. The protein is in " +
+                "SURFACE-Bind's authoritative table; the surface " +
+                "chemistry just didn't yield designable binder seeds. " +
+                "Distinct from 'not in SURFACE-Bind' (where the " +
+                "protein was filtered out before scoring)."
+              }
+            >
+              scored · no patches
+            </StatusPill>,
+          ];
+        }
+        return [
+          <StatusPill
+            key="sb-sites"
+            tone="success"
+            size="sm"
+            title={
+              "Number of MaSIF-scored targetable surface patches. " +
+              "Each site is a region where SURFACE-Bind's patch scoring " +
+              "identified geometric / chemical features compatible with " +
+              "a de novo binder. Higher = more design flexibility."
+            }
+          >
+            {sb.n_sites} sites
+          </StatusPill>,
+          <StatusPill
+            key="sb-alpha"
+            tone="teal"
+            size="sm"
+            title={
+              "Total α-helical binder candidate seeds aligned across all " +
+              "sites — SURFACE-Bind's continuous-fragment library docked " +
+              "to the surface patches and ranked by MaSIF score."
+            }
+          >
+            {sb.n_seeds_alpha.toLocaleString()} α-seeds
+          </StatusPill>,
+          <StatusPill
+            key="sb-beta"
+            tone="teal"
+            size="sm"
+            title={
+              "Total β-strand binder candidate seeds aligned across all " +
+              "sites. β-strand binders are typically the harder design " +
+              "target; high counts here mean the surface has β-favorable " +
+              "patches."
+            }
+          >
+            {sb.n_seeds_beta.toLocaleString()} β-seeds
+          </StatusPill>,
+        ];
+      })(),
     },
   ];
 

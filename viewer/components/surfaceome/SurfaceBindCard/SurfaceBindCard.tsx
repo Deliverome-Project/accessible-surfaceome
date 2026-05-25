@@ -8,6 +8,23 @@ interface Props {
   n: number;
 }
 
+/** Must match ``ANCHOR_PALETTE`` in
+ *  ``viewer/components/surfaceome/StructureViewerCard/StructureViewer.tsx``.
+ *  Each row's color chip on the table corresponds to the colored
+ *  sphere + label at that site's anchor on the 3D structure. */
+const ANCHOR_PALETTE = [
+  "#C32F62",
+  "#E07B3F",
+  "#7A4BD8",
+  "#0F8A8A",
+  "#D62828",
+  "#5C3B9B",
+  "#B5651D",
+  "#1E5BA0",
+  "#9A2C7A",
+  "#3F8B3F",
+] as const;
+
 /**
  * Per-site targetability tone — three buckets based on the size of
  * the patch's β-seed pool (or α-seed pool for α-favored surfaces).
@@ -61,11 +78,25 @@ export function SurfaceBindCard({ rec, n }: Props) {
         meta="Marchand 2026 PNAS · MaSIF surface scoring · deterministic"
       >
         <p className={styles.emptyNote}>
-          In SURFACE-Bind ({sb.main_class}
-          {sb.sub_class ? ` · ${sb.sub_class}` : ""}), but no surface
-          patches cleared the MaSIF targetability threshold. The
-          protein was scored; the surface chemistry didn't yield
-          designable binder seeds.
+          <strong>Scored by SURFACE-Bind</strong> — present in the
+          authoritative ``results_no_TM.csv`` as{" "}
+          <strong>{sb.main_class}</strong>
+          {sb.sub_class ? (
+            <>
+              {" "}
+              · <strong>{sb.sub_class}</strong>
+            </>
+          ) : null}{" "}
+          — <strong>but no surface patches cleared the MaSIF
+          targetability threshold</strong>. The protein went through
+          scoring; the surface chemistry didn't yield designable
+          binder seeds.{" "}
+          <em>
+            This is distinct from "not in SURFACE-Bind" (where the
+            protein was filtered out at the structural-quality step
+            before scoring) — see the header pill for the dataset-
+            membership signal.
+          </em>
         </p>
       </SectionCard>
     );
@@ -80,8 +111,12 @@ export function SurfaceBindCard({ rec, n }: Props) {
       } · ${sb.n_seeds_total.toLocaleString()} total binder seeds`}
     >
       <p className={styles.preamble}>
-        Each row is one MaSIF-scored surface patch. Anchor = patch
-        center residue. BSA tone follows the typical antibody-antigen
+        Each row is one MaSIF-scored surface patch. The numbered,
+        colored spheres on the 3D structure above mark each site's
+        anchor residue — the swatch in the "Site" column matches the
+        sphere color. Anchor = patch center residue (SURFACE-Bind
+        doesn't publish the full per-patch residue list, only the
+        anchor). BSA tone follows the typical antibody-antigen
         interface band (1,103 ± 244 Å², Ramaraj 2012). Seed counts
         split by binder backbone — α-helical (3-helix bundles,
         minihelix) vs β-strand (β-sheet scaffolds); higher = more
@@ -103,7 +138,11 @@ export function SurfaceBindCard({ rec, n }: Props) {
         <table className={styles.table}>
           <thead>
             <tr>
-              <th scope="col" className={`label-mono ${styles.head}`}>
+              <th
+                scope="col"
+                className={`label-mono ${styles.head}`}
+                title="Colored dot matches the labeled sphere at the same site on the 3D structure above."
+              >
                 Site
               </th>
               <th scope="col" className={`label-mono ${styles.head}`}>
@@ -124,9 +163,18 @@ export function SurfaceBindCard({ rec, n }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sb.sites.map((site) => (
+            {sb.sites.map((site, i) => (
               <tr key={site.site_id}>
-                <td className={styles.cellMono}>{site.site_id}</td>
+                <td className={styles.cellMono}>
+                  <span
+                    className={styles.swatch}
+                    style={{
+                      background: ANCHOR_PALETTE[i % ANCHOR_PALETTE.length],
+                    }}
+                    aria-hidden="true"
+                  />
+                  {site.site_id + 1}
+                </td>
                 <td className={styles.cellMono}>R{site.anchor_residue}</td>
                 <td className={styles.cell}>
                   <StatusPill tone={bsaTone(site.area_a2)} size="sm">

@@ -217,7 +217,18 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
 
         {structureData ? (
           <aside className={styles.structureSlot} aria-label="3D structure">
-            <StructureViewer data={structureData} geneSymbol={g.hgnc_symbol} />
+            <StructureViewer
+              data={structureData}
+              geneSymbol={g.hgnc_symbol}
+              // Pass SURFACE-Bind anchor residues so each scored
+              // patch gets a sphere + label on the 3D structure.
+              // Empty array when the protein isn't in SURFACE-Bind
+              // OR is in but no patches cleared scoring; the viewer
+              // simply skips the overlay loop in that case.
+              surfaceBindAnchors={rec.deterministic_features.surface_bind.sites.map(
+                (s) => ({ siteId: s.site_id, residue: s.anchor_residue }),
+              )}
+            />
             <TopologyLegend
               presentStates={presentTopologyStates(structureData.topology)}
             />
@@ -312,7 +323,35 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
                   SURFACE-Bind
                 </dt>
                 <dd className={styles.structureStatV}>
-                  {rec.deterministic_features.surface_bind.has_data ? (
+                  {/* Three distinct states (intentionally NOT collapsed):
+                      1. ``has_data=false`` — not in the SURFACE-Bind table at all
+                         (SURFACE-Bind dropped it during structural-quality filtering;
+                         common for inner-leaflet kinases like SRC).
+                      2. ``has_data=true, n_sites=0`` — protein WAS scored by
+                         SURFACE-Bind but no surface patches cleared the MaSIF
+                         targetability threshold. GPR75 + CLDN18 land here.
+                      3. ``has_data=true, n_sites>0`` — has scored targetable
+                         patches; show the count + link out. EGFR is the
+                         canonical example. */}
+                  {!rec.deterministic_features.surface_bind.has_data ? (
+                    <StatusPill
+                      tone="neutral"
+                      size="sm"
+                      title="Not in SURFACE-Bind's dataset at all. SURFACE-Bind filtered the protein out during structural-quality screening — typically inner-leaflet anchors, soluble cytoplasmic proteins, or poorly-modeled targets. Distinct from 'scored with no patches'."
+                    >
+                      not in SURFACE-Bind
+                    </StatusPill>
+                  ) : rec.deterministic_features.surface_bind.n_sites === 0 ? (
+                    <a
+                      href={`https://surface-bind.inria.fr/protein.html?uniprot=${g.uniprot_acc}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.structureStatLink}
+                      title="In SURFACE-Bind's authoritative table but no surface patches cleared the MaSIF targetability threshold. The protein was scored; the surface chemistry didn't yield designable binder seeds. Distinct from 'not in SURFACE-Bind'."
+                    >
+                      scored · no patches ↗
+                    </a>
+                  ) : (
                     <a
                       href={`https://surface-bind.inria.fr/protein.html?uniprot=${g.uniprot_acc}`}
                       target="_blank"
@@ -326,10 +365,6 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
                       · {rec.deterministic_features.surface_bind.n_seeds_total.toLocaleString()}{" "}
                       seeds ↗
                     </a>
-                  ) : (
-                    <StatusPill tone="neutral" size="sm" title="Not in SURFACE-Bind — typically because the protein dropped out of the structural-quality filter (small ECD, poor model, soluble / inner-leaflet). Not a defect; an absence signal.">
-                      not scored
-                    </StatusPill>
                   )}
                 </dd>
               </div>

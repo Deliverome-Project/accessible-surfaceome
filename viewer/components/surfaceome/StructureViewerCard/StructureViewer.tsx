@@ -17,7 +17,34 @@ import styles from "./StructureViewerCard.module.css";
 interface StructureViewerProps {
   data: StructureViewerData;
   geneSymbol: string;
+  /** SURFACE-Bind anchor-residue overlay. Each entry highlights the
+   *  α-carbon of the named residue with a colored sphere + numeric
+   *  label (the site index). Pass the array from
+   *  ``rec.deterministic_features.surface_bind.sites.map(s =>
+   *  ({siteId: s.site_id, residue: s.anchor_residue}))``. Empty
+   *  array = no overlay. SURFACE-Bind only publishes the patch
+   *  anchor; nearby contact residues would need binder-PDB
+   *  parsing to recover (separate task). */
+  surfaceBindAnchors?: { siteId: number; residue: number }[];
 }
+
+/** Per-site sphere palette — discrete categorical, picked so the
+ *  spheres pop against the topology palette (which uses pale green /
+ *  yellow / gray) and the maroon brand accent. Cycles when there
+ *  are more sites than entries (rare; max site count in our cohort
+ *  is ~12). */
+const ANCHOR_PALETTE = [
+  "#C32F62", // maroon (brand)
+  "#E07B3F", // orange
+  "#7A4BD8", // violet
+  "#0F8A8A", // teal
+  "#D62828", // crimson
+  "#5C3B9B", // deep purple
+  "#B5651D", // ochre
+  "#1E5BA0", // ocean blue
+  "#9A2C7A", // magenta
+  "#3F8B3F", // forest green
+] as const;
 
 type LoadStatus = "loading" | "ready" | "error";
 
@@ -26,6 +53,9 @@ interface ViewerInstance {
   resize: () => void;
   render: () => void;
   zoomTo: (sel?: object) => void;
+  addStyle?: (sel: object, style: object) => void;
+  addLabel?: (text: string, options: object) => unknown;
+  removeAllLabels?: () => void;
 }
 
 /** Slab transparency. 0.34 is heavy enough to read as a clear
@@ -41,7 +71,11 @@ const MEMBRANE_OPACITY = 0.34;
  * gate — so the viewer reads as part of the gene-identity surface
  * rather than a hidden affordance.
  */
-export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
+export function StructureViewer({
+  data,
+  geneSymbol,
+  surfaceBindAnchors = [],
+}: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
@@ -128,6 +162,56 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
         });
       });
 
+      // SURFACE-Bind anchor overlay — one sphere per scored site at
+      // the patch's anchor residue (CA atom). Discrete categorical
+      // palette so individual sites are distinguishable; numeric
+      // label (1-indexed for human readability) sits next to each
+      // sphere so the reader can match site rows in the
+      // SurfaceBindCard table to positions on the 3D structure.
+      //
+      // SURFACE-Bind only publishes the patch anchor, not the full
+      // contact-residue list — to render the actual patch surface
+      // we'd need to parse the per-protein binder PDBs and compute
+      // contacts (separate task). The sphere is the honest
+      // approximation: "the patch is centered here."
+      const viewerExt = viewer as ViewerInstance;
+      for (let i = 0; i < surfaceBindAnchors.length; i += 1) {
+        const { siteId, residue } = surfaceBindAnchors[i];
+        const color = ANCHOR_PALETTE[i % ANCHOR_PALETTE.length];
+        const sel = { resi: residue, atom: "CA" };
+        // ``addStyle`` (not ``setStyle``) layers on top of the
+        // existing topology cartoon — we want the sphere ON the
+        // cartoon, not replacing it. Fallback to ``setStyle`` when
+        // older 3Dmol builds don't expose ``addStyle``.
+        if (typeof viewerExt.addStyle === "function") {
+          viewerExt.addStyle(sel, {
+            sphere: { color, radius: 2.6, opacity: 0.92 },
+          });
+        } else {
+          viewer.setStyle(sel, {
+            sphere: { color, radius: 2.6, opacity: 0.92 },
+          });
+        }
+        // Numeric label at the same residue, 1-indexed because the
+        // table reader counts from 1 even though the schema is
+        // 0-indexed. Background color matches the sphere so the
+        // pairing is obvious; white text reads on any of our hues.
+        if (typeof viewerExt.addLabel === "function") {
+          viewerExt.addLabel(`${siteId + 1}`, {
+            position: { resi: residue, atom: "CA" },
+            backgroundColor: color,
+            backgroundOpacity: 0.92,
+            fontColor: "white",
+            fontSize: 12,
+            borderThickness: 0,
+            inFront: true,
+            // Push the label slightly away from the sphere so they
+            // don't fully overlap.
+            screenOffset: { x: 14, y: -14 },
+          });
+        }
+      }
+
       // Frame on atoms BEFORE adding the membrane slab. `zoomTo({})`
       // restricts the fit to selected atoms (empty selection = all
       // atoms), so the slab — which is wider than the protein in XZ —
@@ -192,7 +276,14 @@ export function StructureViewer({ data, geneSymbol }: StructureViewerProps) {
       setErrorMsg(msg);
       setStatus("error");
     }
-  }, [data]);
+    // ``surfaceBindAnchors`` re-triggers the render so changes to
+    // SURFACE-Bind data (per-gene) update the overlay. We compare by
+    // JSON-stringified value so the effect doesn't re-fire when the
+    // parent creates a fresh array reference each render but the
+    // content hasn't changed. ``data`` is the canonical structure
+    // payload — when it changes the protein has changed.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, JSON.stringify(surfaceBindAnchors)]);
 
   useEffect(() => {
     void renderViewer();
