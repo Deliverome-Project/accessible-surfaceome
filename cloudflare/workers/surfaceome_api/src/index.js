@@ -33,7 +33,7 @@ const CACHE_TTL_LONG  = 86400;     // 1 day for per-gene records
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
@@ -1231,10 +1231,13 @@ async function handleFeedbackPublic(env, url) {
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
-    }
-    if (request.method !== "GET") {
-      return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...CORS_HEADERS,
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        },
+      });
     }
     const url = new URL(request.url);
     // Strip the `/surfaceome` route prefix when present so the
@@ -1250,6 +1253,17 @@ export default {
       path = "";
     }
 
+    // POST is allowed ONLY on the feedback submit endpoint.
+    if (request.method === "POST") {
+      if (path === "/v1/feedback/submit") {
+        return handleFeedbackSubmit(request, env, url);
+      }
+      return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
+    }
+    if (request.method !== "GET") {
+      return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
+    }
+
     if (path === "/v1/health") return handleHealth(env);
     if (path === "/v1/genes") return handleGeneList(env);
     if (path === "/v1/catalog") return handleCatalog(env);
@@ -1257,6 +1271,8 @@ export default {
     if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
     if (path === "/v1/benchmark/export.tsv") return handleBenchmarkExport(env);
     if (path === "/v1/triage/export.tsv") return handleTriageExport(env, url);
+    if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
+    if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);
