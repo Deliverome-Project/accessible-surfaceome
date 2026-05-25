@@ -155,12 +155,19 @@ export function Shell({ children }: ShellProps) {
               </a>
             </p>
           </div>
+          {/*
+           * Socials block — kept in sync with the parent shell at
+           * deliverome-internal:site/components/site-shell.tsx (PR #24).
+           * Same aria-labels, same `rel="noreferrer"`, same icon
+           * dimensions (18 × 18 for X, 19 × 19 for Bluesky). When the
+           * parent's social set changes, mirror it here.
+           */}
           <div className={styles.footerSocial} aria-label="Social links">
             <a
               className={styles.footerSocialLink}
               href="https://x.com/deliverome"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noreferrer"
               aria-label="Deliverome on X"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -168,9 +175,9 @@ export function Shell({ children }: ShellProps) {
             </a>
             <a
               className={styles.footerSocialLink}
-              href="https://bsky.app/profile/deliverome.bsky.social"
+              href="https://bsky.app/profile/deliverome.org"
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noreferrer"
               aria-label="Deliverome on Bluesky"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
