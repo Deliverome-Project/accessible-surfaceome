@@ -20,13 +20,21 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-weight: 350;
-  font-size: var(--fs-body);
+  font-weight: 380;
+  font-size: 0.93rem;
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-variant-ligatures: common-ligatures contextual no-discretionary-ligatures;
+}
+
+/* Anchor-link target offset — keeps the sticky AnchorNav strip from
+ * covering the top of a section when the reader clicks an anchor.
+ * Tuned to the shell topbar (~64px) + AnchorNav (~52px) + a small
+ * breathing margin. */
+[id^="section-"] {
+  scroll-margin-top: 132px;
 }
 
 a {
@@ -139,6 +147,27 @@ button {
   color: var(--muted);
 }
 
+/* Editorial display values — used by GeneHeader vital readouts
+ * ("Moderate", "Conflicting", etc.). Italic Playfair gives the
+ * vital cluster a journal-page register while the supporting
+ * StatusPill carries the tonal color cue. Tone modifiers below
+ * tint the display value itself for matched-tone readouts. */
+.h-vital-display {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.h-vital-display.tone-teal { color: var(--teal-deepest); }
+.h-vital-display.tone-danger { color: var(--accent-deep); }
+.h-vital-display.tone-lavender { color: var(--lavender-dark); }
+.h-vital-display.tone-amber { color: var(--amber-dark); }
+.h-vital-display.tone-success { color: var(--success); }
+
 .lede {
   margin: 0;
   color: var(--muted);
@@ -174,10 +203,15 @@ button {
  * Reveal — IntersectionObserver scroll-triggered fade + rise.
  * ============================================================ */
 
+/* Softened for the dense, journal-page register: fade-only
+ * (no translate-Y), faster duration, no per-section stagger.
+ * Marketing landing-page sections that previously set
+ * data-reveal-stagger still resolve via the block below, but
+ * the gene-page hot path uses the non-staggered branch. */
 .reveal {
   --reveal-step: 90ms;
-  --reveal-distance: 18px;
-  --reveal-duration: var(--dur-slow);
+  --reveal-distance: 0;
+  --reveal-duration: 260ms;
 }
 
 .reveal:not([data-reveal-stagger="true"]) {
