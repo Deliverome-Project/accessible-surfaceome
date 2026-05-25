@@ -322,7 +322,35 @@ export function loadGeneName(
   return entry;
 }
 
+// Module-level memo. SSG builds call loadCatalog once per home/benchmark
+// build, plus once per gene page if we ask for the row by symbol. Memo
+// avoids re-inflating 19k rows on every per-gene lookup.
+let _catalogPromise: Promise<Catalog> | null = null;
+let _catalogRowIndex: Map<string, CatalogRow> | null = null;
+
+/**
+ * Server-side lookup for a single gene's catalog row — gives the per-
+ * gene page access to the 5 source-DB votes (`r.db`) and `n_sources`
+ * count that the catalog + benchmark tables surface. Returns `null`
+ * when the symbol is absent from the universe (rare; resolver-failure
+ * outliers). Builds an index on first call; subsequent lookups are
+ * O(1).
+ */
+export async function loadCatalogRow(symbol: string): Promise<CatalogRow | null> {
+  if (!_catalogRowIndex) {
+    const cat = await loadCatalog();
+    _catalogRowIndex = new Map(cat.rows.map((r) => [r.symbol, r]));
+  }
+  return _catalogRowIndex.get(symbol) ?? null;
+}
+
 export async function loadCatalog(): Promise<Catalog> {
+  if (_catalogPromise) return _catalogPromise;
+  _catalogPromise = _loadCatalogImpl();
+  return _catalogPromise;
+}
+
+async function _loadCatalogImpl(): Promise<Catalog> {
   const names = loadGeneNamesMap();
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
   if (!base) {

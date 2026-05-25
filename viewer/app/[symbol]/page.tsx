@@ -5,6 +5,7 @@ import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
+import { DatabasePresenceCard } from "../../components/surfaceome/DatabasePresenceCard/DatabasePresenceCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
 import { EvidenceDrawer } from "../../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
 import { EvidenceLedgerCard } from "../../components/surfaceome/EvidenceLedgerCard/EvidenceLedgerCard";
@@ -18,6 +19,7 @@ import { StructureSummaryCard } from "../../components/surfaceome/StructureSumma
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
   listSurfaceomeGenes,
+  loadCatalogRow,
   loadGeneName,
   loadSurfaceomeRecord,
 } from "../../lib/surfaceome";
@@ -53,6 +55,13 @@ export default async function GenePage({ params }: PageProps) {
   if (!rec) notFound();
   const geneName = loadGeneName(rec.gene.hgnc_symbol);
   const structureData = loadStructureViewerData(rec.gene.uniprot_acc);
+  // 5-DB presence vector (UniProt / GO / SURFY / CSPA / HPA) from the
+  // candidate-universe build — the same vote pattern shown as dots on
+  // the catalog (/) and SurfaceBench (/benchmark) rows. Catalog load
+  // is memoized so this is O(1) once the first gene page has been
+  // rendered in the build. `null` for resolver-failure outliers; the
+  // card is omitted in that case rather than rendered with a stub.
+  const catalogRow = await loadCatalogRow(rec.gene.hgnc_symbol);
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
@@ -61,6 +70,16 @@ export default async function GenePage({ params }: PageProps) {
   // AFDB stats stay as a section card later.
   const sections: { kind: string; render: (n: number) => React.ReactNode }[] = [
     { kind: "executive", render: (n) => <ExecutiveSummaryCard rec={rec} n={n} /> },
+    ...(catalogRow
+      ? [
+          {
+            kind: "db-presence",
+            render: (n: number) => (
+              <DatabasePresenceCard row={catalogRow} n={n} />
+            ),
+          },
+        ]
+      : []),
     { kind: "filters", render: (n) => <FiltersCard rec={rec} n={n} /> },
     { kind: "evidence", render: (n) => <SurfaceEvidenceCard rec={rec} n={n} /> },
     { kind: "biology", render: (n) => <BiologicalContextCard rec={rec} n={n} /> },
