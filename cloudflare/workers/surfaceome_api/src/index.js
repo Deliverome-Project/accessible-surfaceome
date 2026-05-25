@@ -1015,6 +1015,89 @@ function feedbackEmailHtml({ rec, base, approvePublicUrl, discardUrl }) {
   `;
 }
 
+async function handleFeedbackSubmit(request, env, url) {
+  // Parse + validate body.
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return badRequest("invalid_json");
+  }
+  const gene = String(body.gene ?? "").trim();
+  if (!/^[A-Z0-9-]{1,30}$/.test(gene)) return badRequest("invalid_gene");
+  const name = String(body.name ?? "").trim();
+  if (name.length < 1 || name.length > 80) return badRequest("invalid_name");
+  const email = String(body.email ?? "").trim();
+  if (!looksLikeEmail(email)) return badRequest("invalid_email");
+  const subject = String(body.subject ?? "").trim();
+  if (subject.length < 1 || subject.length > 200) return badRequest("invalid_subject");
+  const comment = String(body.comment ?? "").trim();
+  if (comment.length < 1 || comment.length > 4000) return badRequest("invalid_comment");
+
+  // Turnstile.
+  const tToken = String(body.turnstile_token ?? "");
+  const remoteIp = request.headers.get("CF-Connecting-IP") ?? null;
+  const ok = await verifyTurnstile(tToken, env.TURNSTILE_SECRET_KEY, remoteIp);
+  if (!ok) return badRequest("turnstile_failed");
+
+  // Rate-limit by IP-hash (per day salt = today's UTC date).
+  const day = new Date().toISOString().slice(0, 10);
+  const ipHash = await sha256Hex(`${remoteIp ?? "0"}|${day}`);
+  const under = await checkRateLimit(env.FEEDBACK_RATELIMIT, ipHash);
+  if (!under) {
+    return json({ error: "rate_limited" }, { status: 429, ttl: 0 });
+  }
+
+  // Insert.
+  const id = crypto.randomUUID();
+  const approveToken = await hmacSign(env.MAGIC_LINK_SECRET, id);
+  const publicRequested = body.public_requested ? 1 : 0;
+  await env.FEEDBACK_DB.prepare(
+    `INSERT INTO feedback (
+       id, gene_symbol, uniprot_acc, submitter_name, submitter_email,
+       subject, comment, public_requested, referrer, user_agent,
+       site_version, ip_hash, approve_token
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    id, gene,
+    String(body.uniprot_acc ?? "") || null,
+    name, email, subject, comment, publicRequested,
+    String(body.referrer ?? "") || null,
+    String(body.user_agent ?? "") || null,
+    String(body.site_version ?? "") || null,
+    ipHash, approveToken,
+  ).run();
+
+  // Email notify maintainer.
+  const base = `${url.protocol}//${url.host}`;
+  const approvePublicUrl =
+    `${base}/v1/feedback/moderate?id=${encodeURIComponent(id)}` +
+    `&action=public&t=${encodeURIComponent(await hmacSign(env.MAGIC_LINK_SECRET, id + ":public"))}`;
+  const discardUrl =
+    `${base}/v1/feedback/moderate?id=${encodeURIComponent(id)}` +
+    `&action=discard&t=${encodeURIComponent(await hmacSign(env.MAGIC_LINK_SECRET, id + ":discard"))}`;
+
+  await sendFeedbackEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.MAINTAINER_EMAIL,
+    to: env.MAINTAINER_EMAIL,
+    replyTo: email,
+    subject,
+    html: feedbackEmailHtml({
+      rec: {
+        gene_symbol: gene, submitter_name: name, submitter_email: email,
+        subject, comment, public_requested: publicRequested,
+        referrer: String(body.referrer ?? ""),
+        user_agent: String(body.user_agent ?? ""),
+        site_version: String(body.site_version ?? ""),
+      },
+      base, approvePublicUrl, discardUrl,
+    }),
+  });
+
+  return json({ ok: true, id }, { status: 200, ttl: 0 });
+}
+
 // --- entry ----------------------------------------------------------------
 
 export default {
