@@ -15,6 +15,7 @@ import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
 import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
 import { OrthologsCard } from "../../components/surfaceome/OrthologsCard/OrthologsCard";
 import { ParalogsCard } from "../../components/surfaceome/ParalogsCard/ParalogsCard";
+import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
   listSurfaceomeGenes,
@@ -121,6 +122,20 @@ export default async function GenePage({ params }: PageProps) {
       label: "Orthologs",
       render: (n) => <OrthologsCard rec={rec} n={n} />,
     },
+    // SurfaceBindCard renders ``null`` when the protein isn't in
+    // SURFACE-Bind's authoritative table. Filter the section out
+    // entirely in the absent case so the AnchorNav link doesn't
+    // jump to an empty anchor — the absence is already signaled
+    // by the "not scored" pill in the GeneHeader.
+    ...(rec.deterministic_features.surface_bind.has_data
+      ? [
+          {
+            kind: "surface-bind",
+            label: "SURFACE-Bind",
+            render: (n: number) => <SurfaceBindCard rec={rec} n={n} />,
+          },
+        ]
+      : []),
     {
       kind: "risks",
       label: "Risks",

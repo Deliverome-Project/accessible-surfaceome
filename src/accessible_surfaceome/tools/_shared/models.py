@@ -1935,15 +1935,49 @@ class StructureFeatures(BaseModel):
     citations: list[str] = Field(default_factory=list)
 
 
+class SurfaceBindSite(BaseModel):
+    """One MaSIF-scored targetable patch on a SURFACE-Bind protein.
+
+    Sourced from SURFACE-Bind's ``results_no_TM.csv`` per-site arrays
+    (Marchand et al. 2026 PNAS). Each site is a surface patch the
+    MaSIF scoring identified as designable for a de novo binder.
+
+    Notes on the fields:
+
+    * ``anchor_residue`` — the center residue of the MaSIF patch.
+      SURFACE-Bind doesn't publish the full per-patch residue list
+      in any programmatic endpoint; only this anchor. For 3D
+      visualization, a viewer can highlight the anchor + nearby
+      residues at render time.
+    * ``area_a2`` — buried surface area in Å². The 1,103 ± 244 Å² band
+      from antibody-antigen interfaces (Ramaraj 2012) gives one
+      comparison point; SURFACE-Bind sites range much wider.
+    * ``hydrophobicity`` — patch hydrophobicity score (Eisenberg-style
+      scale). Positive = hydrophobic / lipid-facing-style; negative =
+      polar / solvent-exposed-style. Sign + magnitude shape what
+      binder chemistries pair well.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    site_id: int = Field(..., ge=0)
+    anchor_residue: int = Field(..., ge=1)
+    area_a2: float = Field(..., ge=0.0)
+    n_seeds_alpha: int = Field(..., ge=0)
+    n_seeds_beta: int = Field(..., ge=0)
+    hydrophobicity: float
+
+
 class SurfaceBindFeatures(BaseModel):
     """SURFACE-Bind per-UniProt summary (Marchand et al. 2026 PNAS).
 
     ``has_data=False`` is the explicit "not in SURFACE-Bind" signal —
-    SURFACE-Bind covers 2,529 of the ~2,886 predicted surface
-    proteins, omitting some via structural-quality filters (small or
-    poorly-modeled proteins drop out). This block is always present
-    so the catalog can distinguish "absent from SURFACE-Bind" from
-    "present but un-scored" rather than collapsing both to null.
+    SURFACE-Bind's authoritative ``results_no_TM.csv`` table covers
+    1,649 of the ~2,886 predicted surface proteins (loose ``seed_count``
+    files contain ~2,529 entries but include unscored proteins). This
+    block is always present so the catalog can distinguish "absent
+    from SURFACE-Bind" from "present but un-scored" rather than
+    collapsing both to null.
 
     Loaded by :func:`accessible_surfaceome.tools.surface_bind.lookup`
     from the checked-in summary JSON
@@ -1961,6 +1995,24 @@ class SurfaceBindFeatures(BaseModel):
     # PDB-chain identifier the SURFACE-Bind scoring was run against
     # (typically "A"; multi-chain UniProts kept the first chain).
     chain: str | None = None
+    # Per-site detail. Empty list when ``has_data=False`` OR when the
+    # protein is in SURFACE-Bind but with zero scored sites (rare;
+    # GPR75 is one example — listed in seed_count files but with no
+    # scored sites in the authoritative results_no_TM.csv).
+    sites: list[SurfaceBindSite] = Field(default_factory=list)
+    # SURFACE-Bind's own family / sub-family classification — useful
+    # as a cross-check against our ``protein_family`` / ``subcategory``
+    # but NOT what those fields are derived from.
+    main_class: str | None = None
+    sub_class: str | None = None
+    # Human-readable protein-name (from UniProt via SURFACE-Bind's
+    # join). May differ from our preferred display name; surface
+    # for the deep-link readability.
+    protein_name: str | None = None
+    # PDB entries cross-referenced by SURFACE-Bind for this protein.
+    # Often >100 entries for well-studied targets (EGFR has 250+);
+    # truncated in the viewer to the first few.
+    pdbs: list[str] = Field(default_factory=list)
     source: str = "SURFACE-Bind v1 (Marchand 2026 PNAS)"
     attribution: str = (
         "© Marchand, Khakzad, Correia et al. — EPFL / Inria / Novo Nordisk"
@@ -2517,7 +2569,10 @@ TRIAGE_SCHEMA_VERSION = "v0.9.0"
 
 
 TriageVerdict = Literal["yes", "contextual", "no"]
-TriageModelPath = Literal["haiku_only", "sonnet_only", "opus_only"]
+# NOTE: ``TriageModelPath`` was removed when the loader started threading
+# the actual D1 row's model + prompt_variant via :class:`TriageProvenance`.
+# The closed enum couldn't carry model version (4.5 vs 4.6 vs 4.7) or
+# prompt variant, both of which the synthesizer needs to weight the prior.
 TriageConfidence = Literal["low", "medium", "high"]
 
 
@@ -2703,6 +2758,41 @@ _REASONS_BY_VERDICT: dict[str, frozenset[str]] = {
 }
 
 
+class TriageProvenance(BaseModel):
+    """Where a persisted TriageRecord actually came from.
+
+    Populated when the record was hydrated from D1's ``triage_run_public``
+    table; ``None`` when the record came from a local ``data/triage/{gene}.json``
+    file or was emitted in-process by the triage agent. The synthesizer
+    reads ``model`` + ``prompt_variant`` to weight the prior (a high-confidence
+    Sonnet ``ncbi`` verdict is a stronger prior than a Haiku one, and a
+    non-canonical variant choice is worth surfacing in confidence_reasoning).
+
+    Replaces the prior ``TriageModelPath`` closed enum, which couldn't
+    carry model version (4.5 vs 4.6 vs 4.7) or prompt_variant — both
+    needed to calibrate the prior correctly.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    model: str = Field(
+        ...,
+        description="Exact model identifier from D1 (e.g. 'claude-sonnet-4-6').",
+    )
+    prompt_variant: str = Field(
+        ...,
+        description="Triage prompt variant (e.g. 'ncbi', 'web_ncbi', 'naive').",
+    )
+    run_id: str = Field(
+        ...,
+        description="D1 run_id (e.g. 'mainbench_canonical_v1').",
+    )
+    replicate: int | None = Field(
+        default=None,
+        description="Replicate index from the sweep; None when not recorded.",
+    )
+
+
 class TriageRecordDraft(BaseModel):
     """What the AGENT emits for triage — small, self-contained.
 
@@ -2727,7 +2817,6 @@ class TriageRecordDraft(BaseModel):
         default=None,
         description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
     )
-    model_path: TriageModelPath = "haiku_only"
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {
         "verdict_reasoning": 800,
@@ -2773,7 +2862,14 @@ class TriageRecord(BaseModel):
         description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
     )
     search_log: list[SearchEntry] = Field(default_factory=list)
-    model_path: TriageModelPath = "haiku_only"
+    provenance: TriageProvenance | None = Field(
+        default=None,
+        description=(
+            "D1 row provenance (model + prompt_variant + run_id + replicate) "
+            "when hydrated from triage_run_public; None for local-file records "
+            "or in-process drafts."
+        ),
+    )
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {
         "verdict_reasoning": 800,
@@ -2931,6 +3027,7 @@ __all__ = [
     "Orthologs",
     "ParalogEntry",
     "StructureFeatures",
+    "SurfaceBindSite",
     "SurfaceBindFeatures",
     "DeterministicFeatures",
     # v1.0.0 — accessibility risks (section 6)
@@ -2943,10 +3040,12 @@ __all__ = [
     "AccessibilityRisks",
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",
+    "TriageProvenance",
+    # NOTE: ``TriageModelPath`` removed — provenance.model carries the
+    # full model identifier (e.g. ``claude-sonnet-4-6``) instead.
     "TriageRecord",
     "TriageRecordDraft",
     "TriageVerdict",
-    "TriageModelPath",
     "TriageReason",
     "TriageConfidence",
     "YesReason",

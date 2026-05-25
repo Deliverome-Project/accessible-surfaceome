@@ -297,17 +297,38 @@ export interface StructureFeatures {
 }
 
 /**
+ * One MaSIF-scored targetable patch on a SURFACE-Bind protein.
+ * Sourced from SURFACE-Bind's ``results_no_TM.csv`` per-site arrays.
+ */
+export interface SurfaceBindSite {
+  site_id: number;
+  /** Center residue of the MaSIF patch. The full per-patch residue
+   *  list isn't published; viewer code can highlight ``anchor_residue``
+   *  + nearby residues by computing contacts at render time. */
+  anchor_residue: number;
+  /** Buried surface area in Å². Compare to the 1,103 ± 244 Å² typical
+   *  antibody-antigen interface (Ramaraj 2012). */
+  area_a2: number;
+  n_seeds_alpha: number;
+  n_seeds_beta: number;
+  /** Eisenberg-style hydrophobicity score. Positive = hydrophobic /
+   *  lipid-facing-style; negative = polar / solvent-exposed-style. */
+  hydrophobicity: number;
+}
+
+/**
  * SURFACE-Bind summary (Marchand et al. 2026 PNAS,
  * doi:10.1073/pnas.2506269123). The MaSIF / patch-based targetability
- * mapping for ~2,529 of the surfaceome's ~2,886 proteins. ``has_data``
- * is the explicit "is this protein in SURFACE-Bind" signal — ~12% of
- * surfaceome proteins drop out via SURFACE-Bind's structural-quality
- * filters and carry ``has_data=false`` with zeroed counts.
+ * mapping. ``has_data=true`` means the protein appears in SURFACE-Bind's
+ * authoritative ``results_no_TM.csv`` (~1,649 of the ~2,886 predicted
+ * surface proteins); ``has_data=false`` means it dropped out via the
+ * structural-quality filter.
  *
- * Seed counts are split by binder-backbone class: ``alpha`` = α-helical
- * binder candidates, ``beta`` = β-strand binder candidates. The total
- * is informative, but the split lets a reader pick the format that
- * matches their downstream design pipeline.
+ * Seed counts split by binder backbone class: ``alpha`` = α-helical
+ * binder candidates (3-helix bundles, minihelix designs), ``beta`` =
+ * β-strand binder candidates (β-sheet scaffolds). The split lets
+ * a reader pick the format that matches their downstream design
+ * pipeline.
  */
 export interface SurfaceBindFeatures {
   has_data: boolean;
@@ -317,6 +338,18 @@ export interface SurfaceBindFeatures {
   n_seeds_total: number;
   /** PDB-chain identifier the scoring was run against (typically "A"). */
   chain: string | null;
+  /** Per-site detail. Empty when ``has_data=false`` OR when the protein
+   *  is in SURFACE-Bind but no patches cleared the targetability
+   *  threshold. */
+  sites: SurfaceBindSite[];
+  /** SURFACE-Bind's own family / sub-family — cross-check against our
+   *  ``protein_family`` / ``subcategory``, NOT what they're derived from. */
+  main_class: string | null;
+  sub_class: string | null;
+  /** Human-readable protein name from UniProt via SURFACE-Bind's join. */
+  protein_name: string | null;
+  /** PDB entries cross-referenced. Truncated in viewer (often 100+). */
+  pdbs: string[];
   source: string;
   attribution: string;
   citation: string;

@@ -331,12 +331,16 @@ def _summarize_triage_for_planner(record: TriageRecord) -> str:
     """Compact JSON summary of the triage prior handed to A1/A2
     planners + the synthesizer.
 
-    Carries the four signals the original PR #23 design's common
-    preamble specified (§1110-1116): verdict + reason taxonomy +
-    verdict_reasoning (the prose justification) + key_uncertainty.
-    Confidence and model_path are also included so a downstream reader
-    can weight the prior appropriately (a low-confidence Haiku triage
-    is a weaker prior than a high-confidence one).
+    Carries exactly the five fields the design specifies (PR #23
+    §1110-1116): verdict + reason taxonomy + verdict_reasoning prose
+    + key_uncertainty + confidence. The LLM weights the prior on
+    confidence + reasoning, not on model identity.
+
+    ``record.provenance`` (the D1 row's model + prompt_variant +
+    run_id + replicate) is intentionally NOT emitted — it stays on
+    the TriageRecord for audit / logging / future ensemble work but
+    is withheld from the prompt to keep the LLM's calibration
+    grounded in the prose, not in heuristics about which model ran it.
     """
 
     payload: dict[str, Any] = {
@@ -345,7 +349,6 @@ def _summarize_triage_for_planner(record: TriageRecord) -> str:
         "verdict_reasoning": record.verdict_reasoning,
         "key_uncertainty": record.key_uncertainty,
         "confidence": record.confidence,
-        "model_path": record.model_path,
     }
     return json.dumps(payload, indent=2)
 

@@ -27,7 +27,10 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from accessible_surfaceome.tools._shared.models import SurfaceBindFeatures
+from accessible_surfaceome.tools._shared.models import (
+    SurfaceBindFeatures,
+    SurfaceBindSite,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,11 +84,29 @@ def lookup(uniprot_acc: str) -> SurfaceBindFeatures:
     when the accession isn't in the summary — that's the explicit
     "not in SURFACE-Bind" signal, distinct from "SURFACE-Bind hasn't
     been ingested yet" (which would be the empty-cache case).
+
+    ``has_data`` is set to ``True`` whenever the protein appears in
+    SURFACE-Bind's authoritative ``results_no_TM.csv`` even when the
+    per-site array is empty (the protein got scored but no patches
+    cleared the targetability threshold — a real "no good binder
+    sites" signal). Use ``len(sites) > 0`` to distinguish "scored
+    with sites" from "scored without sites".
     """
     cache = _load()
     entry = cache.get(uniprot_acc)
     if entry is None:
         return SurfaceBindFeatures(has_data=False)
+    sites = [
+        SurfaceBindSite(
+            site_id=int(s["site_id"]),
+            anchor_residue=int(s["anchor_residue"]),
+            area_a2=float(s["area_a2"]),
+            n_seeds_alpha=int(s["n_seeds_alpha"]),
+            n_seeds_beta=int(s["n_seeds_beta"]),
+            hydrophobicity=float(s["hydrophobicity"]),
+        )
+        for s in entry.get("sites", [])
+    ]
     return SurfaceBindFeatures(
         has_data=True,
         n_sites=int(entry.get("n_sites", 0)),
@@ -93,4 +114,9 @@ def lookup(uniprot_acc: str) -> SurfaceBindFeatures:
         n_seeds_beta=int(entry.get("n_seeds_beta", 0)),
         n_seeds_total=int(entry.get("n_seeds_total", 0)),
         chain=entry.get("chain"),
+        sites=sites,
+        main_class=entry.get("main_class"),
+        sub_class=entry.get("sub_class"),
+        protein_name=entry.get("protein_name"),
+        pdbs=list(entry.get("pdbs", [])),
     )

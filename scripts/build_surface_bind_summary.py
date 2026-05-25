@@ -1,15 +1,25 @@
 """Build a per-UniProt SURFACE-Bind summary JSON.
 
-Downloads :mod:`seed_count_a.txt` and :mod:`seed_count_b.txt` from the
-SURFACE-Bind GitHub repo
-(https://github.com/hamedkhakzad/SURFACE-Bind/tree/main/database) and
-aggregates them per UniProt accession into a single JSON keyed by acc.
+Downloads the per-protein-per-site data tables from the SURFACE-Bind
+GitHub repo (https://github.com/hamedkhakzad/SURFACE-Bind/tree/main/database)
+and aggregates them per UniProt accession into a single JSON keyed by
+acc, with each entry carrying both per-protein aggregates and the
+per-site arrays (anchor residue, BSA, α/β seeds, hydrophobicity).
+
+Sources:
+
+* ``results_no_TM.csv`` — primary per-site data. One row per protein
+  with parallel arrays indexed by site. Authoritative for which
+  proteins are in SURFACE-Bind and which sites are scored — the
+  ``seed_count_*.txt`` files have a slightly looser superset.
+* ``seed_count_a.txt`` / ``seed_count_b.txt`` — used to recover the
+  ``chain`` identifier (which doesn't appear in results_no_TM.csv).
 
 The resulting file is checked into the repo at
 ``data/external/surface_bind/surface_bind_summary.json`` so the
 orchestrator can do an O(1) in-memory lookup at record-build time
-without a per-gene network call. ~2500 entries × ~5 numeric fields →
-~500 KB on disk, well below the LFS threshold.
+without a per-gene network call. ~2700 entries (mostly with per-site
+arrays) totals ~1 MB on disk, well below the LFS threshold.
 
 Re-run periodically (when SURFACE-Bind ships updates) — the script
 is idempotent and the diff against the committed copy shows what
@@ -21,11 +31,20 @@ Schema per entry (keys are UniProt accessions):
 
     {
       "P00533": {
-        "n_sites": 9,
+        "n_sites": 8,
         "n_seeds_alpha": 956,
         "n_seeds_beta": 54404,
         "n_seeds_total": 55360,
-        "chain": "A"
+        "chain": "A",
+        "main_class": "Receptors",
+        "sub_class": "Kinase",
+        "protein_name": "Epidermal growth factor receptor",
+        "sites": [
+          {"site_id": 0, "anchor_residue": 743, "area_a2": 1523.93,
+           "n_seeds_alpha": 1, "n_seeds_beta": 878, "hydrophobicity": 6.7},
+          ...
+        ],
+        "pdbs": ["1IVO", "1M14", ...]
       },
       ...
     }
@@ -39,6 +58,9 @@ Run::
 
 from __future__ import annotations
 
+import ast
+import csv
+import io
 import json
 import logging
 from collections import defaultdict
@@ -61,6 +83,9 @@ OUTPUT_PATH = (
 _BASE = "https://raw.githubusercontent.com/hamedkhakzad/SURFACE-Bind/main/database"
 _SEED_COUNT_ALPHA_URL = f"{_BASE}/seed_count_a.txt"
 _SEED_COUNT_BETA_URL = f"{_BASE}/seed_count_b.txt"
+# Per-site detail: anchor residue + BSA + α/β seed counts + hydrophobicity
+# per site, plus protein classification + PDB list per UniProt.
+_RESULTS_URL = f"{_BASE}/results_no_TM_pnames.csv"
 
 _CITATION = (
     "Marchand A, Khakzad H, et al. Mapping targetable sites on the "
@@ -108,45 +133,93 @@ def _parse_seed_counts(text: str) -> dict[str, dict[str, int]]:
     return out
 
 
-def _aggregate(
+def _acc_to_chain(
     alpha: dict[str, dict[str, int]],
     beta: dict[str, dict[str, int]],
-) -> dict[str, dict[str, Any]]:
-    """Merge α and β per-site dicts into per-UniProt summary entries.
-
-    The site count is the union of α and β site ids (typically the
-    same set, but defensive). Seed totals sum across all sites in
-    each backbone-class file. UniProt acc is the prefix before the
-    chain-letter suffix.
-    """
-    out: dict[str, dict[str, Any]] = {}
-    all_keys = set(alpha) | set(beta)
-    for acc_chain in sorted(all_keys):
-        # Split "P00533_A" → acc="P00533", chain="A"
+) -> dict[str, str]:
+    """Recover UniProt-acc → chain mapping from the seed-count file
+    keys (``{ACC}_{CHAIN}`` format)."""
+    out: dict[str, str] = {}
+    for acc_chain in sorted(set(alpha) | set(beta)):
         if "_" not in acc_chain:
             continue
         acc, chain = acc_chain.rsplit("_", 1)
-        a_sites = alpha.get(acc_chain, {})
-        b_sites = beta.get(acc_chain, {})
-        n_sites = len(set(a_sites) | set(b_sites))
-        n_alpha = sum(a_sites.values())
-        n_beta = sum(b_sites.values())
-        # When a UniProt acc has multiple chains in the dataset
-        # (rare — most are single-chain), keep the first chain seen
-        # and log; the cohort is human surfaceome so the canonical
-        # chain dominates.
-        if acc in out:
-            logger.info(
-                "multiple chains for %s; keeping %s, ignoring %s",
-                acc, out[acc]["chain"], chain,
-            )
+        if acc not in out:
+            out[acc] = chain
+    return out
+
+
+def _parse_array(s: str) -> list[Any]:
+    """Parse a Python-literal array string (``[1, 2, 3]``) from the
+    results CSV. Empty / malformed inputs return an empty list."""
+    s = (s or "").strip()
+    if not s or s == "[]":
+        return []
+    try:
+        val = ast.literal_eval(s)
+    except (ValueError, SyntaxError):
+        return []
+    return list(val) if isinstance(val, (list, tuple)) else []
+
+
+def _parse_results(text: str, chain_lookup: dict[str, str]) -> dict[str, dict[str, Any]]:
+    """Parse ``results_no_TM_pnames.csv`` into per-UniProt entries
+    with both per-protein aggregates and the per-site array.
+
+    The CSV uses ``;`` as the delimiter (the pnames variant; the
+    non-pnames variant uses ``,`` but its protein-name column has
+    embedded commas that break naive CSV parsing). Per-site arrays
+    are stored as Python-literal strings in cells.
+    """
+    out: dict[str, dict[str, Any]] = {}
+    reader = csv.DictReader(io.StringIO(text), delimiter=";")
+    for row in reader:
+        acc = (row.get("acc") or "").strip()
+        if not acc:
             continue
+        anchors = _parse_array(row.get("binding_sites", ""))
+        areas = _parse_array(row.get("area_a2", ""))
+        alphas = _parse_array(row.get("alpha_seeds", ""))
+        betas = _parse_array(row.get("beta_seeds", ""))
+        hydros = _parse_array(row.get("hydrophobicity", ""))
+        pdbs = _parse_array(row.get("pdbs", ""))
+
+        n_sites = len(anchors)
+        # Defensive: if the parallel arrays have different lengths, that's
+        # a data-quality flag — log and trim to the shortest so per-site
+        # records stay consistent.
+        if not all(len(a) == n_sites for a in (areas, alphas, betas, hydros)):
+            logger.warning(
+                "%s: per-site array length mismatch "
+                "(anchors=%d areas=%d alphas=%d betas=%d hydros=%d); trimming",
+                acc, n_sites, len(areas), len(alphas), len(betas), len(hydros),
+            )
+            n_sites = min(len(anchors), len(areas), len(alphas), len(betas), len(hydros))
+
+        sites = [
+            {
+                "site_id": i,
+                "anchor_residue": int(anchors[i]),
+                "area_a2": float(areas[i]),
+                "n_seeds_alpha": int(alphas[i]),
+                "n_seeds_beta": int(betas[i]),
+                "hydrophobicity": float(hydros[i]),
+            }
+            for i in range(n_sites)
+        ]
         out[acc] = {
             "n_sites": n_sites,
-            "n_seeds_alpha": n_alpha,
-            "n_seeds_beta": n_beta,
-            "n_seeds_total": n_alpha + n_beta,
-            "chain": chain,
+            "n_seeds_alpha": sum(s["n_seeds_alpha"] for s in sites),
+            "n_seeds_beta": sum(s["n_seeds_beta"] for s in sites),
+            "n_seeds_total": sum(
+                s["n_seeds_alpha"] + s["n_seeds_beta"] for s in sites
+            ),
+            "chain": chain_lookup.get(acc),
+            "main_class": (row.get("main_class") or "").strip() or None,
+            "sub_class": (row.get("sub_class_1") or "").strip() or None,
+            "protein_name": (row.get("protein_names") or "").strip() or None,
+            "sites": sites,
+            "pdbs": [str(p) for p in pdbs],
         }
     return out
 
@@ -154,16 +227,22 @@ def _aggregate(
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s  %(message)s")
 
-    logger.info("fetching SURFACE-Bind seed-count files")
+    logger.info("fetching SURFACE-Bind data files")
     alpha_text = _fetch_text(_SEED_COUNT_ALPHA_URL)
     beta_text = _fetch_text(_SEED_COUNT_BETA_URL)
+    results_text = _fetch_text(_RESULTS_URL)
 
     alpha = _parse_seed_counts(alpha_text)
     beta = _parse_seed_counts(beta_text)
-    logger.info("parsed %d alpha entries, %d beta entries", len(alpha), len(beta))
+    chain_lookup = _acc_to_chain(alpha, beta)
 
-    summary = _aggregate(alpha, beta)
-    logger.info("aggregated %d unique UniProt entries", len(summary))
+    summary = _parse_results(results_text, chain_lookup)
+    n_with_sites = sum(1 for v in summary.values() if v["n_sites"] > 0)
+    logger.info(
+        "parsed %d UniProt entries from results_no_TM (%d with at least "
+        "one scored site, %d in seed_count files for chain xref)",
+        len(summary), n_with_sites, len(chain_lookup),
+    )
 
     payload: dict[str, Any] = {
         "__meta__": {

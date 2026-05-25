@@ -63,7 +63,6 @@ def _hspa5_triage_record() -> TriageRecord:
             "Mechanism of ER-to-PM translocation under stress is "
             "unresolved; multiple competing models exist."
         ),
-        model_path="haiku_only",
     )
 
 
@@ -82,7 +81,7 @@ def _bundle() -> IdentifierBundle:
 # ---------------------------------------------------------------------------
 
 
-def test_summary_includes_all_six_fields():
+def test_summary_includes_all_five_fields():
     record = _hspa5_triage_record()
     out = json.loads(_summarize_triage_for_planner(record))
     assert out["verdict"] == "contextual"
@@ -90,7 +89,173 @@ def test_summary_includes_all_six_fields():
     assert "ER-lumenal chaperone" in out["verdict_reasoning"]
     assert "unresolved" in out["key_uncertainty"]
     assert out["confidence"] == "medium"
-    assert out["model_path"] == "haiku_only"
+
+
+def test_triage_record_rejects_legacy_model_path_field():
+    """The legacy ``model_path`` closed-enum field was removed in favor
+    of the ``provenance`` block. TriageRecord uses ``extra="forbid"``,
+    so passing ``model_path`` as a kwarg should raise."""
+    import pytest
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        TriageRecord(
+            gene=GeneIdentifier(
+                hgnc_symbol="HSPA5", hgnc_id="HGNC:5238", uniprot_acc="P11021"
+            ),
+            verdict="contextual",
+            verdict_reasoning="...",
+            reason="cell_state_induced",
+            confidence="medium",
+            model_path="haiku_only",  # ty:ignore[unknown-argument]
+        )
+
+
+def test_summary_omits_model_path_key():
+    """The summarizer JSON injected into planners + synthesizer must
+    not carry the removed model_path field."""
+    out = json.loads(_summarize_triage_for_planner(_hspa5_triage_record()))
+    assert "model_path" not in out
+
+
+# ---------------------------------------------------------------------------
+# Provenance threading (D1 loader → TriageRecord → summarizer → planner)
+# ---------------------------------------------------------------------------
+
+
+def test_d1_loader_populates_provenance_from_row():
+    """_triage_record_from_d1_row must thread model + prompt_variant +
+    run_id + replicate from the D1 row into a TriageProvenance block on
+    the TriageRecord, so the synthesizer can see which model + variant
+    actually ran the triage (rather than the default model_path enum).
+    """
+    from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
+        _triage_record_from_d1_row,
+    )
+
+    row: dict[str, object] = {
+        "predicted_verdict": "no",
+        "predicted_reason": "inner_leaflet_anchored",
+        "predicted_confidence": "high",
+        "predicted_key_uncertainty": None,
+        "verdict_reasoning": "SRC is myristoylated and tethered to the inner leaflet.",
+        "uniprot_acc": "P12931",
+        "model": "claude-sonnet-4-6",
+        "prompt_variant": "ncbi",
+        "run_id": "mainbench_canonical_v1",
+        "replicate": 1,
+    }
+
+    record = _triage_record_from_d1_row("SRC", row)
+    assert record is not None
+    assert record.provenance is not None
+    assert record.provenance.model == "claude-sonnet-4-6"
+    assert record.provenance.prompt_variant == "ncbi"
+    assert record.provenance.run_id == "mainbench_canonical_v1"
+    assert record.provenance.replicate == 1
+
+
+def test_summary_omits_provenance_even_when_set():
+    """The summary JSON injected into planners + synthesizer carries ONLY
+    verdict / reason / verdict_reasoning / key_uncertainty / confidence.
+    Provenance is preserved on the TriageRecord for audit/logging but
+    must NOT leak into the prompt — the LLM should weight the prior on
+    confidence + reasoning prose, not on model identity."""
+    from accessible_surfaceome.tools._shared.models import TriageProvenance
+
+    record = _hspa5_triage_record().model_copy(
+        update={
+            "provenance": TriageProvenance(
+                model="claude-sonnet-4-6",
+                prompt_variant="ncbi",
+                run_id="mainbench_canonical_v1",
+                replicate=1,
+            )
+        }
+    )
+    out = json.loads(_summarize_triage_for_planner(record))
+    assert "provenance" not in out
+    # exactly the five fields the user enumerated
+    assert set(out.keys()) == {
+        "verdict",
+        "reason",
+        "verdict_reasoning",
+        "key_uncertainty",
+        "confidence",
+    }
+
+
+def test_synthesizer_prompt_does_not_reference_provenance():
+    """The synthesizer prompt must not instruct the model to read a
+    field it never receives — provenance is intentionally withheld
+    from the prompt JSON."""
+    body = SYNTH_SYSTEM_PROMPT_PATH.read_text().lower()
+    assert "provenance" not in body
+
+
+def test_d1_loader_fills_gene_identifier_when_row_provided():
+    """When the D1 loader gets the gene_identifier_public row alongside
+    the triage_run_public row, it populates the full GeneIdentifier
+    (hgnc_id, ncbi_gene_id, ensembl_gene) instead of empty placeholders."""
+    from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
+        _triage_record_from_d1_row,
+    )
+
+    triage_row: dict[str, object] = {
+        "predicted_verdict": "no",
+        "predicted_reason": "inner_leaflet_anchored",
+        "predicted_confidence": "high",
+        "predicted_key_uncertainty": None,
+        "verdict_reasoning": "SRC is myristoylated and tethered to the inner leaflet.",
+        "uniprot_acc": "P12931",
+        "model": "claude-sonnet-4-6",
+        "prompt_variant": "ncbi",
+        "run_id": "mainbench_canonical_v1",
+        "replicate": 1,
+    }
+    identifier_row: dict[str, object] = {
+        "hgnc_id": "HGNC:11283",
+        "ncbi_gene_id": 6714,
+        "ensembl_gene": "ENSG00000197122",
+    }
+
+    record = _triage_record_from_d1_row(
+        "SRC", triage_row, identifier_row=identifier_row
+    )
+    assert record is not None
+    assert record.gene.hgnc_symbol == "SRC"
+    assert record.gene.hgnc_id == "HGNC:11283"
+    assert record.gene.uniprot_acc == "P12931"
+    assert record.gene.ncbi_gene_id == 6714
+    assert record.gene.ensembl_gene == "ENSG00000197122"
+
+
+def test_d1_loader_tolerates_missing_identifier_row():
+    """When the identifier_row is absent (failed extra lookup), the
+    loader falls back gracefully — verdict + reasoning still load,
+    only the per-gene IDs are blank."""
+    from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
+        _triage_record_from_d1_row,
+    )
+
+    triage_row: dict[str, object] = {
+        "predicted_verdict": "no",
+        "predicted_reason": "inner_leaflet_anchored",
+        "predicted_confidence": "high",
+        "predicted_key_uncertainty": None,
+        "verdict_reasoning": "SRC tethered to inner leaflet.",
+        "uniprot_acc": "P12931",
+        "model": "claude-sonnet-4-6",
+        "prompt_variant": "ncbi",
+        "run_id": "mainbench_canonical_v1",
+        "replicate": 1,
+    }
+    record = _triage_record_from_d1_row("SRC", triage_row, identifier_row=None)
+    assert record is not None
+    assert record.gene.hgnc_symbol == "SRC"
+    assert record.gene.uniprot_acc == "P12931"
+    # Verdict + reasoning still populated
+    assert record.verdict == "no"
 
 
 def test_summary_handles_none_key_uncertainty():

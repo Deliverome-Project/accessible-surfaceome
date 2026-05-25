@@ -480,6 +480,11 @@
       "n_seeds_beta": 0,
       "n_seeds_total": 0,
       "chain": null,
+      "sites": [],
+      "main_class": null,
+      "sub_class": null,
+      "protein_name": null,
+      "pdbs": [],
       "source": "SURFACE-Bind v1 (Marchand 2026 PNAS)",
       "attribution": "\u00a9 Marchand, Khakzad, Correia et al. \u2014 EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"

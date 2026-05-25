@@ -545,7 +545,8 @@ def _load_triage_record_from_d1(symbol: str) -> TriageRecord | None:
                     """
                     SELECT predicted_verdict, predicted_reason,
                            predicted_confidence, predicted_key_uncertainty,
-                           verdict_reasoning, uniprot_acc
+                           verdict_reasoning, uniprot_acc,
+                           model, prompt_variant, run_id, replicate
                     FROM triage_run_public
                     WHERE gene_symbol = ?
                       AND run_id = ?
@@ -558,7 +559,34 @@ def _load_triage_record_from_d1(symbol: str) -> TriageRecord | None:
                     [symbol, run_id, variant],
                 )
                 if rows:
-                    return _triage_record_from_d1_row(symbol, rows[0])
+                    # Companion query against gene_identifier_public to fill
+                    # the full GeneIdentifier bundle (hgnc_id / ncbi_gene_id /
+                    # ensembl_gene) — the triage_run_public row only carries
+                    # uniprot_acc + gene_symbol. Failure is non-fatal; the
+                    # loader falls back to empty placeholders.
+                    identifier_row: dict[str, object] | None = None
+                    try:
+                        id_rows = d1.query(
+                            """
+                            SELECT hgnc_id, ncbi_gene_id, ensembl_gene
+                            FROM gene_identifier_public
+                            WHERE uniprot_acc = ?
+                            LIMIT 1;
+                            """,
+                            [rows[0].get("uniprot_acc")],
+                        )
+                        if id_rows:
+                            identifier_row = id_rows[0]
+                    except Exception as exc:  # noqa: BLE001 — keep going on identifier-lookup failure
+                        logger.warning(
+                            "gene_identifier_public lookup for %s failed: %s; "
+                            "triage record will have empty hgnc_id / ncbi_gene_id / ensembl_gene",
+                            symbol,
+                            exc,
+                        )
+                    return _triage_record_from_d1_row(
+                        symbol, rows[0], identifier_row=identifier_row
+                    )
     except Exception as exc:  # noqa: BLE001 — never fail annotate over a triage miss
         logger.warning(
             "triage D1 fallback for %s failed: %s; using triage_signal=unknown",
@@ -569,8 +597,21 @@ def _load_triage_record_from_d1(symbol: str) -> TriageRecord | None:
     return None
 
 
-def _triage_record_from_d1_row(symbol: str, row: dict[str, object]) -> TriageRecord | None:
+def _triage_record_from_d1_row(
+    symbol: str,
+    row: dict[str, object],
+    *,
+    identifier_row: dict[str, object] | None = None,
+) -> TriageRecord | None:
     """Construct a ``TriageRecord`` from one ``triage_run_public`` row.
+
+    When ``identifier_row`` is supplied (the caller paired the triage
+    query with a ``gene_identifier_public`` lookup), the resulting
+    ``GeneIdentifier`` carries the full bundle; otherwise the per-gene
+    IDs default to empty placeholders. Either way, the synthesizer only
+    reads ``verdict_reasoning`` / ``reason`` / ``confidence`` /
+    ``key_uncertainty``, so a placeholder-only record still annotates
+    correctly — the IDs matter for audit + downstream analytics.
 
     Returns ``None`` if the row can't be schema-validated (e.g. the
     D1 reason taxonomy drifted from the v1 verdict-vs-reason
@@ -591,26 +632,55 @@ def _triage_record_from_d1_row(symbol: str, row: dict[str, object]) -> TriageRec
 
     confidence = str(conf_raw).lower() if conf_raw else "medium"
 
+    # Identifier fields: prefer the companion gene_identifier_public row
+    # when the caller passed it; fall back to empty placeholders.
+    hgnc_id = ""
+    ncbi_gene_id = 0
+    ensembl_gene = ""
+    if identifier_row is not None:
+        hgnc_id = str(identifier_row.get("hgnc_id") or "")
+        ncbi_raw = identifier_row.get("ncbi_gene_id")
+        try:
+            ncbi_gene_id = int(ncbi_raw) if ncbi_raw is not None else 0  # ty:ignore[invalid-argument-type]
+        except (TypeError, ValueError):
+            ncbi_gene_id = 0
+        ensembl_gene = str(identifier_row.get("ensembl_gene") or "")
+
     try:
-        # GeneIdentifier needs the full identifier bundle. For the
-        # triage record we only have symbol + uniprot from D1; fill
-        # the rest with empty strings — the synthesizer only reads
-        # `verdict_reasoning`, `reason`, `confidence`, and
-        # `key_uncertainty`, plus the orchestrator only consumes the
-        # mapped `verdict`. Avoid the gene_identifier round-trip
-        # (it's a separate D1 query in the hot path).
         from accessible_surfaceome.tools._shared.models import (
             GeneIdentifier,
+            TriageProvenance,
             TriageRecord,
         )
+
+        provenance: TriageProvenance | None = None
+        model_id = row.get("model")
+        prompt_variant = row.get("prompt_variant")
+        run_id = row.get("run_id")
+        if model_id and prompt_variant and run_id:
+            replicate_raw = row.get("replicate")
+            replicate: int | None
+            if replicate_raw is None:
+                replicate = None
+            else:
+                try:
+                    replicate = int(replicate_raw)  # ty:ignore[invalid-argument-type]
+                except (TypeError, ValueError):
+                    replicate = None
+            provenance = TriageProvenance(
+                model=str(model_id),
+                prompt_variant=str(prompt_variant),
+                run_id=str(run_id),
+                replicate=replicate,
+            )
 
         return TriageRecord(
             gene=GeneIdentifier(
                 hgnc_symbol=symbol,
-                hgnc_id="",
+                hgnc_id=hgnc_id,
                 uniprot_acc=str(uniprot_acc),
-                ncbi_gene_id=0,
-                ensembl_gene="",
+                ncbi_gene_id=ncbi_gene_id,
+                ensembl_gene=ensembl_gene,
             ),
             # The verdict / reason / confidence values come straight from D1
             # as strings; their *runtime* validity is what the TriageRecord
@@ -622,6 +692,7 @@ def _triage_record_from_d1_row(symbol: str, row: dict[str, object]) -> TriageRec
             reason=str(reason),  # ty:ignore[invalid-argument-type]
             confidence=confidence,  # ty:ignore[invalid-argument-type]
             key_uncertainty=str(key_uncertainty) if key_uncertainty else None,
+            provenance=provenance,
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning(
