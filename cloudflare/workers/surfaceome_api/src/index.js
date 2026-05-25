@@ -1098,6 +1098,119 @@ async function handleFeedbackSubmit(request, env, url) {
   return json({ ok: true, id }, { status: 200, ttl: 0 });
 }
 
+// HTML confirmation page (no JS — just shows the outcome).
+function moderateHtmlPage({ title, message, accent = "#922038" }) {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8" /><title>${escapeHtml(title)}</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:560px;margin:6em auto;
+       padding:0 1em;color:#1f1718;line-height:1.55}
+  h1{font-size:1.4rem;color:${accent};margin-bottom:0.3em}
+  p{color:#6f5d5a}
+  .hint{font-size:0.85em;color:#80706a;margin-top:2em}
+</style></head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  <p>${escapeHtml(message)}</p>
+  <p class="hint">You can close this tab.</p>
+</body></html>`;
+}
+
+function htmlResponse(content, { status = 200 } = {}) {
+  return new Response(content, {
+    status,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+async function handleFeedbackModerate(env, url) {
+  const id = url.searchParams.get("id");
+  const action = url.searchParams.get("action");
+  const t = url.searchParams.get("t");
+  if (!id || !action || !t) {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Invalid link",
+        message: "This moderation link is missing required parameters.",
+      }),
+      { status: 400 },
+    );
+  }
+  if (action !== "public" && action !== "discard") {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Invalid link",
+        message: "Unknown action.",
+      }),
+      { status: 400 },
+    );
+  }
+  const expected = await hmacSign(env.MAGIC_LINK_SECRET, `${id}:${action}`);
+  if (!timingSafeEqualStr(expected, t)) {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Invalid link",
+        message: "This link is invalid or has been tampered with.",
+      }),
+      { status: 403 },
+    );
+  }
+
+  const row = await env.FEEDBACK_DB.prepare(
+    "SELECT id, gene_symbol, submitter_name, comment, status FROM feedback WHERE id = ?",
+  ).bind(id).first();
+  if (!row) {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Not found",
+        message: "We couldn't find that submission.",
+      }),
+      { status: 404 },
+    );
+  }
+  if (row.status !== "pending") {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Already handled",
+        message: `This submission was already marked "${row.status}".`,
+      }),
+    );
+  }
+
+  if (action === "discard") {
+    await env.FEEDBACK_DB.prepare(
+      "UPDATE feedback SET status = 'discarded', moderated_at = datetime('now') WHERE id = ?",
+    ).bind(id).run();
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Discarded",
+        message: `The submission about ${row.gene_symbol} from ${row.submitter_name} has been discarded.`,
+        accent: "#6f5d5a",
+      }),
+    );
+  }
+
+  // action === 'public' — copy sanitized subset to public DB, then mark approved.
+  const sanitized = sanitizeComment(row.comment);
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO feedback_public (id, gene_symbol, submitter_name, comment)
+     VALUES (?, ?, ?, ?)`,
+  ).bind(row.id, row.gene_symbol, row.submitter_name, sanitized).run();
+  await env.FEEDBACK_DB.prepare(
+    "UPDATE feedback SET status = 'approved_public', moderated_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
+  return htmlResponse(
+    moderateHtmlPage({
+      title: "Approved & published",
+      message: `${row.submitter_name}'s note on ${row.gene_symbol} is now visible on the gene page.`,
+    }),
+  );
+}
+
 // --- entry ----------------------------------------------------------------
 
 export default {
