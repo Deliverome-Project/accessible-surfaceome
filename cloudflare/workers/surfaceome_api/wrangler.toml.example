@@ -64,3 +64,30 @@ enabled = true
 [[routes]]
 pattern = "api.deliverome.org/surfaceome/*"
 zone_name = "deliverome.org"
+
+# --- Feedback flow bindings (per docs/superpowers/specs/2026-05-25-feedback-button-design.md) ---
+
+# Write binding for unmoderated submissions (PII + audit). Same database
+# as the main agent-run history. Used by:
+#   POST /v1/feedback/submit   — INSERT a new submission row
+#   GET  /v1/feedback/moderate — UPDATE the row's status on magic-link click
+[[d1_databases]]
+binding = "FEEDBACK_DB"
+database_name = "surfaceome_agents"
+database_id = "REPLACE_WITH_AGENTS_D1_UUID"
+
+# Rate-limit counters (5 submissions / IP-hash / hour). Worker reads /
+# writes a single per-hour-bucket counter; KV's eventual consistency is
+# fine for this use (a burst of 6-10 once an hour is not a real DoS).
+[[kv_namespaces]]
+binding = "FEEDBACK_RATELIMIT"
+id = "REPLACE_WITH_FEEDBACK_RATELIMIT_KV_ID"
+
+# Secrets — set via:
+#   cd cloudflare/workers/surfaceome_api
+#   npx wrangler secret put RESEND_API_KEY
+#   npx wrangler secret put TURNSTILE_SECRET_KEY
+#   npx wrangler secret put MAGIC_LINK_SECRET
+#   npx wrangler secret put MAINTAINER_EMAIL
+# Values come from the root .env (RESEND_API_KEY, TURNSTILE_SECRET_KEY,
+# MAGIC_LINK_SECRET, MAINTAINER_EMAIL respectively).
