@@ -5,10 +5,10 @@ import { Shell } from "../../components/Shell/Shell";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
-  title: "API usage — Surfaceome",
+  title: "API — Surfaceome",
   description:
-    "Public read-only API at api.deliverome.org/surfaceome/v1/* plus a " +
-    "downloadable Claude agent skill that teaches an agent how to call it.",
+    "Public read-only HTTP API at api.deliverome.org/surfaceome/v1/* " +
+    "plus a downloadable agent skill that documents the endpoints.",
 };
 
 interface Endpoint {
@@ -31,7 +31,7 @@ interface EndpointGroup {
 const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "Discovery",
-    blurb: "Health + per-gene lookups.",
+    blurb: "Liveness check and per-gene record lookups.",
     endpoints: [
       {
         method: "GET",
@@ -44,22 +44,22 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/genes",
         summary:
-          "List of genes that have a deep-dive SurfaceomeRecord on file (summary fields only — gene symbol, UniProt, schema version, top-line verdict).",
+          "Index of genes with a deep-dive SurfaceomeRecord on file. Summary fields only: gene_symbol, uniprot_acc, schema_version, triage_signal, surface_status, annotated_at.",
         curl: "curl -s https://api.deliverome.org/surfaceome/v1/genes | jq '.count'",
       },
       {
         method: "GET",
         path: "/v1/genes/{SYMBOL}",
         summary:
-          "Full SurfaceomeRecord JSON for one gene — targetability tier, surface biology with seven per-DB votes, primary + secondary evidence chain, risk flags, rationale. The single richest payload in the API.",
+          "Full SurfaceomeRecord JSON for one gene. Contains the executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks, and the full evidence ledger with citations.",
         curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 | jq '.targetability.tier, .confidence'",
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 | jq '.executive_summary.surface_accessibility, .confidence'",
       },
       {
         method: "GET",
         path: "/v1/orthologs/{SYMBOL}",
         summary:
-          "Mouse + cynomolgus orthologs for a human gene from the latest Ensembl Compara release. Powers the cross-species ECD-identity callouts on the deep-dive page.",
+          "Mouse and cynomolgus orthologs for a human gene from the latest Ensembl Compara release.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/orthologs/ERBB2 | jq '.release_version, (.orthologs | length)'",
       },
@@ -68,13 +68,13 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "Genome-wide",
     blurb:
-      "All ~19,300 protein-coding human genes with their per-DB surface votes and the latest Sonnet/NCBI triage verdict. This is the data the homepage table renders.",
+      "All ~19,300 protein-coding human genes with their 5-DB surface-vote vector and the latest Sonnet/NCBI triage verdict.",
     endpoints: [
       {
         method: "GET",
         path: "/v1/catalog",
         summary:
-          "Per-gene-per-source DB-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + reason code + deep-dive flag. One row per protein-coding gene (~19k rows); response is ~3.8 MB gzipped, ~24 MB decoded — too large to inline reasoning text, so the free-text per-run verdict_reasoning is on /v1/triage/{SYMBOL} instead. Drives the homepage CatalogTable.",
+          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus the latest triage verdict, short reason code, and deep-dive flag. One row per protein-coding gene (~19k). Free-text reasoning is omitted at this scale — fetch it per-gene from /v1/triage/{SYMBOL}.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage'",
       },
@@ -83,7 +83,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/triage/{SYMBOL}",
         anchor: "triage",
         summary:
-          "Every triage run on file for one gene — model × prompt-variant × replicate, with verdict, reason, confidence, latency, cost_usd, per-call token counts, and the agent's free-text verdict_reasoning. The catalog's drawer pulls from this endpoint.",
+          "Every triage run on file for one gene — model × prompt-variant × replicate — with verdict, reason code, confidence, latency, per-call token counts, and the agent's free-text verdict_reasoning paragraph.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2 | jq '.count, .runs[0]'",
       },
@@ -91,7 +91,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/triage/export.tsv",
         summary:
-          "Long-format TSV of every triage run for one run_id, with per-source DB votes (uniprot/go/surfy/cspa/hpa) and uniprot_acc joined in server-side from the latest candidate-universe snapshot. 21 columns; one row per (gene × model × variant × replicate). Default run_id is mainbench_canonical_v1 (~1.5k bench rows × Haiku/Sonnet/Opus × 4 variants); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet sweep.",
+          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v1 (147 bench rows × 3 models × 4 variants); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet sweep.",
         curl:
           "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1' | head -3",
       },
@@ -100,13 +100,13 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "SurfaceBench",
     blurb:
-      "147 curated proteins with ground-truth surface verdicts — the eval set behind every published cost/accuracy figure.",
+      "147 curated proteins with ground-truth surface verdicts — the eval set behind the cost / accuracy figures.",
     endpoints: [
       {
         method: "GET",
         path: "/v1/benchmark",
         summary:
-          "147 SurfaceBench ground-truth labels (gene, UniProt, class, verdict, signal, reason, rationale) for the current bench_version. JSON shape.",
+          "147 ground-truth labels (gene, UniProt, class, verdict, signal, reason, rationale) for the current bench_version.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark | jq '.count, .bench_version'",
       },
@@ -114,14 +114,15 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         method: "GET",
         path: "/v1/benchmark/export.tsv",
         summary:
-          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) for the canonical bench_version. 24 columns — adds DB votes + truth_verdict / truth_signal / truth_reason on top of the triage export shape. Same data as /v1/benchmark/matrix but flat instead of nested. For truth labels alone, use /v1/benchmark (JSON) or filter to one model+variant.",
+          "Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) for the canonical bench_version. Adds the 5-DB vote vector and truth_verdict / truth_signal / truth_reason to the triage export shape.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv | head -3",
       },
       {
         method: "GET",
         path: "/v1/benchmark/{SYMBOL}",
-        summary: "Single gene's SurfaceBench truth label + rationale.",
+        summary:
+          "Single gene's ground-truth label and rationale for the latest bench_version.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/ERBB2 | jq '.truth_verdict, .truth_reason'",
       },
@@ -130,7 +131,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/benchmark/matrix",
         anchor: "benchmark-matrix",
         summary:
-          "Full SurfaceBench matrix — one row per gene with truth + 7 per-DB flags + per-model LLM verdicts (headline + 3 alt prompt variants). Includes the agent's free-text reasoning on every (model, variant) cell, which the SurfaceBench page's side-drawer renders. Single round-trip; ~2 MB JSON.",
+          "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. ~2 MB JSON. Drives the SurfaceBench page's side-drawer.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .headline_variant, .alt_variants'",
       },
@@ -176,72 +177,31 @@ export default function ApiPage() {
     <Shell>
       <section className={`${styles.page} page-width`}>
         <header className={styles.head}>
-          <p className="h-data-eyebrow">API · v1</p>
           <h1 className={`h-data ${styles.title}`}>
-            Public read-only API.
+            Public read-only HTTP API
           </h1>
           <p className={styles.lede}>
-            Every page on this site is a thin renderer over{" "}
+            Every page on this site reads from{" "}
             <code className={styles.code}>
               api.deliverome.org/surfaceome/v1/*
-            </code>{" "}
-            — a no-auth, CORS-open Cloudflare Worker backed by a public
-            D1 mirror. Hit it from a notebook, a CLI, an SPA, or an
-            agent. Aggressive edge caching means responses are fast and
-            cheap; nothing here is rate-limited.
+            </code>
+            , a Cloudflare Worker backed by a public D1 mirror of the
+            project&apos;s annotation database. No authentication,
+            CORS open to all origins, no rate limits.
           </p>
         </header>
-
-        <aside className={styles.callout}>
-          <p className={styles.calloutLabel}>Where the reasoning lives</p>
-          <p className={styles.calloutBody}>
-            The bulk summary endpoints (
-            <code className={styles.code}>/v1/catalog</code>,{" "}
-            <code className={styles.code}>/v1/benchmark</code>) ship
-            verdicts + reason codes only — they&apos;d be too large to
-            inline the agent&apos;s free-text{" "}
-            <code className={styles.code}>verdict_reasoning</code>{" "}
-            paragraph on every row. For the full reasoning text:
-          </p>
-          <ul className={styles.calloutList}>
-            <li>
-              One gene (any of ~19k):{" "}
-              <code className={styles.code}>
-                GET /v1/triage/&#123;SYMBOL&#125;
-              </code>{" "}
-              — every model × prompt-variant × replicate run on file,
-              with the reasoning paragraph on each.
-            </li>
-            <li>
-              Bulk download:{" "}
-              <code className={styles.code}>
-                GET /v1/triage/export.tsv?run_id=…
-              </code>{" "}
-              — long-format TSV, one row per (gene, run), reasoning
-              column included.
-            </li>
-            <li>
-              SurfaceBench 147 with reasoning per cell:{" "}
-              <code className={styles.code}>
-                GET /v1/benchmark/matrix
-              </code>{" "}
-              — full 3 model × 4 variant grid with{" "}
-              <code className={styles.code}>reasoning</code> populated
-              on each verdict object.
-            </li>
-          </ul>
-        </aside>
 
         <section className={styles.skill}>
           <h2 className="h-data-section">Agent skill</h2>
           <p className={styles.skillBody}>
-            Drop the markdown below into{" "}
-            <code className={styles.code}>~/.claude/skills/</code> (or
-            any agent skill loader that consumes Anthropic-style{" "}
-            <code className={styles.code}>name</code>/
-            <code className={styles.code}>description</code> frontmatter)
-            and your agent will know how and when to call this API
-            without further prompting.
+            A Markdown skill file documents the endpoints in the
+            Anthropic skill format (
+            <code className={styles.code}>name</code>{" "}
+            /{" "}
+            <code className={styles.code}>description</code>{" "}
+            frontmatter plus instructions). Drop it into{" "}
+            <code className={styles.code}>~/.claude/skills/</code> and
+            an agent can call the API without further prompting.
           </p>
           {skill ? (
             <div className={styles.skillCard}>
@@ -249,8 +209,7 @@ export default function ApiPage() {
                 <p className={styles.skillName}>{skill.name}</p>
                 <p className={styles.skillSize}>
                   {skill.line_count.toLocaleString()} lines ·{" "}
-                  {(skill.size_bytes / 1024).toFixed(1)} KB ·
-                  Markdown
+                  {(skill.size_bytes / 1024).toFixed(1)} KB · Markdown
                 </p>
               </div>
               <p className={styles.skillDesc}>{skill.description}</p>
@@ -267,37 +226,6 @@ export default function ApiPage() {
               Skill file is missing from the build — file an issue.
             </p>
           )}
-        </section>
-
-        <section className={styles.skill}>
-          <h2 className="h-data-section">Data flow (pre-publication)</h2>
-          <p className={styles.skillBody}>
-            The work is <strong>pre-publication</strong>; figures and
-            tables shown today are draft artifacts and will be re-pinned
-            to Zenodo DOIs at submission time. Today the lineage runs:
-          </p>
-          <pre className={styles.lineage}>
-{`private D1 ──sync_public_d1.py──▶ public D1
-                                    │
-                                    ├─▶ this API  (live consumers: viewer, agents, notebooks)
-                                    │
-                                    └─▶ scripts/export_mainbench_to_tsv.py
-                                          ▼
-                                        data/processed/triage_bench/mainbench_canonical_v1.tsv
-                                          ▼
-                                        raw.githubusercontent.com/<repo>/<branch>/...
-                                          ▼
-                                        figure scripts + published gists`}
-          </pre>
-          <p className={styles.skillBody}>
-            <strong>Final figures</strong> read their data from{" "}
-            <code className={styles.code}>raw.githubusercontent.com</code>{" "}
-            — pinned to a commit SHA at publication for stable citation,
-            and eventually mirrored to a Zenodo DOI. The API on this
-            page is the source for everything <em>live</em>: the viewer,
-            agent skills, notebook exploration. Both surfaces mirror the
-            same public D1.
-          </p>
         </section>
 
         <section className={styles.endpoints}>
@@ -332,9 +260,8 @@ export default function ApiPage() {
 
         <footer className={styles.footnotes}>
           <p>
-            <span className="label-mono">Caching ·</span> List
-            endpoints (
-            <code className={styles.code}>/v1/health</code>,{" "}
+            <span className="label-mono">Caching ·</span> List endpoints
+            (<code className={styles.code}>/v1/health</code>,{" "}
             <code className={styles.code}>/v1/genes</code>,{" "}
             <code className={styles.code}>/v1/catalog</code>,{" "}
             <code className={styles.code}>/v1/triage/*</code>) ship{" "}
@@ -348,8 +275,8 @@ export default function ApiPage() {
           <p>
             <span className="label-mono">Schema ·</span> Per-gene records
             validate against the{" "}
-            <code className={styles.code}>SurfaceomeRecord</code> Pydantic
-            schema at{" "}
+            <code className={styles.code}>SurfaceomeRecord</code>{" "}
+            Pydantic schema at{" "}
             <code className={styles.code}>
               src/accessible_surfaceome/tools/_shared/models.py
             </code>{" "}
@@ -357,12 +284,11 @@ export default function ApiPage() {
             absent on the wire — use optional-chaining when reading.
           </p>
           <p>
-            <span className="label-mono">Source ·</span> Worker code lives
-            at{" "}
+            <span className="label-mono">Source ·</span> Worker code at{" "}
             <code className={styles.code}>
               cloudflare/workers/surfaceome_api/src/index.js
-            </code>{" "}
-            in the public repo; the D1 schema is at{" "}
+            </code>
+            ; D1 schema at{" "}
             <code className={styles.code}>
               cloudflare/d1_public_schema.sql
             </code>

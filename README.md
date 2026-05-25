@@ -285,9 +285,11 @@ pointed at this repo's `viewer/` directory.
 ## Figure reproducibility
 
 Every "final" figure in `data/analysis/figures/` is paired with a
-**reproduction gist** — a PEP 723 standalone script that fetches its
-own input from a content-pinned URL and re-renders the figure. The
-gist URL + a `provenance` JSON conforming to the
+**reproduction gist** — a standalone script that declares its
+dependencies inline via [PyPA inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/),
+fetches its own input from a content-pinned URL, and re-renders the
+figure. The gist URL + a
+`provenance` JSON conforming to the
 [schema v1](docs/figure-reproducibility-schema.md) is embedded
 directly in the figure's PDF / PNG metadata, so a reader who downloads
 a figure can recover everything needed to verify or re-run it.

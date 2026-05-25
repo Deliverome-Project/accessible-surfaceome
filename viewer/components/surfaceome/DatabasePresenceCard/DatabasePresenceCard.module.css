@@ -1,0 +1,79 @@
+/*
+ * DatabasePresenceCard — 5-DB vote indicator for the per-gene page.
+ * Mirrors the dot pattern used in the catalog and benchmark tables;
+ * here it gets a row of compact pill-chips with a hover affordance
+ * (link to each DB's portal).
+ */
+
+.row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2, 0.5rem);
+}
+
+.cell {
+  margin: 0;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-soft);
+  background: white;
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+
+.cellYes .link {
+  border-color: var(--line);
+  background: var(--bg-soft);
+}
+
+.cellNo .link {
+  color: var(--muted);
+}
+
+.link:hover,
+.link:focus-visible {
+  border-color: var(--accent);
+  background: rgba(226, 101, 94, 0.05);
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.swatchYes {
+  background: var(--accent);
+  box-shadow: 0 0 0 2px rgba(226, 101, 94, 0.18);
+}
+
+.swatchNo {
+  background: transparent;
+  border: 1px solid var(--line);
+}
+
+.name {
+  font-weight: 500;
+}
+
+.state {
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}

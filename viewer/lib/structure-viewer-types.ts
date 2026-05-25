@@ -46,12 +46,20 @@ export interface StructureViewerData {
  * loader logic stays in ``./structure-viewer.ts``.
  */
 export const TOPOLOGY_COLORS: Record<string, string> = {
-  M: "#FFD579", // TM helix (membrane)
-  O: "#D7DCE3", // extracellular (outside)
+  M: "#FFD579", // TM helix
+  O: "#DD5955", // extracellular — Deliverome primary red
   I: "#A9CFA8", // intracellular (inside)
   S: "#7D8896", // signal peptide
   B: "#C7CED6", // beta-strand (rare in this dataset)
 };
+
+/**
+ * Neutral slate-gray for the translucent bilayer slab. Reads as
+ * "membrane the TM helix is embedded in" while leaving the red
+ * extracellular cartoon as the page's high-saturation accent.
+ * Shared with the legend so the swatch matches the rendered slab.
+ */
+export const MEMBRANE_COLOR = "#A0A4AB";
 
 export function alphafoldPdbUrl(uniprotAcc: string, version = "v4"): string {
   return `https://alphafold.ebi.ac.uk/files/AF-${uniprotAcc}-F1-model_${version}.pdb`;

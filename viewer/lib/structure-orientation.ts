@@ -207,6 +207,26 @@ interface OrientationTransform {
   meanMY: number;
 }
 
+/**
+ * Membrane-slab bounds in the *oriented* coordinate frame (Y is the
+ * membrane normal, Y=0 sits at the TM-helix mean). `yMin` / `yMax`
+ * come from the M-state CA-atom Y range; `xExtent` / `zExtent` are
+ * half-widths that comfortably enclose the protein's XZ footprint
+ * so the rendered slab reads as a continuous bilayer rather than a
+ * small patch.
+ */
+export interface MembraneSlab {
+  yMin: number;
+  yMax: number;
+  xExtent: number;
+  zExtent: number;
+}
+
+export interface OrientationResult {
+  pdbText: string;
+  membrane: MembraneSlab | null;
+}
+
 function computeOrientationTransform(
   topology: string,
   parsed: ParsedPdb,
@@ -248,16 +268,22 @@ function formatPdbCoord(value: number): string {
 
 function applyOrientationTransform(
   pdbText: string,
+  topology: string,
   transform: OrientationTransform | null,
-): string {
-  if (!transform) return pdbText;
+): { pdbText: string; membrane: MembraneSlab | null } {
+  if (!transform) return { pdbText, membrane: null };
   const parsed = parsePdbForOrientation(pdbText);
-  if (parsed.atoms.length === 0) return pdbText;
+  if (parsed.atoms.length === 0) return { pdbText, membrane: null };
 
   let minX = Number.POSITIVE_INFINITY;
   let maxX = Number.NEGATIVE_INFINITY;
   let minZ = Number.POSITIVE_INFINITY;
   let maxZ = Number.NEGATIVE_INFINITY;
+  // Track M-state CA Y bounds in the oriented frame for the
+  // membrane-slab thickness. We collect during the same pass that
+  // already touches every atom, so this is O(atoms) total.
+  let mMinY = Number.POSITIVE_INFINITY;
+  let mMaxY = Number.NEGATIVE_INFINITY;
   for (const atom of parsed.atoms) {
     const shifted = vectorSub([atom.x, atom.y, atom.z], transform.membraneCenter);
     const rotated = matrixVecMul(transform.rotateToY, shifted);
@@ -273,6 +299,15 @@ function applyOrientationTransform(
     if (atom.tx > maxX) maxX = atom.tx;
     if (atom.tz < minZ) minZ = atom.tz;
     if (atom.tz > maxZ) maxZ = atom.tz;
+    if (
+      atom.atomName === "CA" &&
+      atom.resi > 0 &&
+      atom.resi <= topology.length &&
+      topology.charAt(atom.resi - 1) === "M"
+    ) {
+      if (atom.ty < mMinY) mMinY = atom.ty;
+      if (atom.ty > mMaxY) mMaxY = atom.ty;
+    }
   }
 
   const centerX =
@@ -291,21 +326,48 @@ function applyOrientationTransform(
     parsed.lines[atom.lineIndex] =
       `${line.slice(0, 30)}${x}${y}${z}${line.length > 54 ? line.slice(54) : ""}`;
   }
-  return parsed.lines.join("\n");
+
+  let membrane: MembraneSlab | null = null;
+  if (Number.isFinite(mMinY) && Number.isFinite(mMaxY) && mMaxY > mMinY) {
+    // Slab XZ extent: take the protein's full XZ bounding-box half-
+    // widths (minX/maxX/minZ/maxZ span every atom, not just the M
+    // region, so even bulky ECDs / ICDs are enclosed), then pad
+    // generously so the slab visibly surrounds the protein on every
+    // side rather than terminating flush with the silhouette. The 30 Å
+    // pad ≈ two phospholipid head-group rings; the 60 Å floor keeps a
+    // single-TM bundle from collapsing to a postage-stamp patch.
+    const xHalfWidth = Math.max((maxX - minX) / 2, 0);
+    const zHalfWidth = Math.max((maxZ - minZ) / 2, 0);
+    membrane = {
+      yMin: mMinY,
+      yMax: mMaxY,
+      xExtent: Math.max(xHalfWidth + 30, 60),
+      zExtent: Math.max(zHalfWidth + 30, 60),
+    };
+  }
+
+  return { pdbText: parsed.lines.join("\n"), membrane };
 }
 
 /**
  * Public API: rotate a PDB string so the membrane plane is horizontal.
  *
- *   - Returns the *oriented* PDB text on success.
- *   - Returns the original PDB text unchanged when topology / atom
- *     counts are too sparse to compute a meaningful transform.
+ *   - On success, returns `{ pdbText, membrane }` — `pdbText` is the
+ *     oriented PDB, `membrane` is the slab geometry (Y bounds + XZ
+ *     half-widths) for the 3Dmol viewer to draw a translucent
+ *     bilayer at the TM-helix plane.
+ *   - When topology / atom counts are too sparse to compute a
+ *     meaningful transform, returns `{ pdbText: <unchanged>,
+ *     membrane: null }` so the caller skips the slab.
  *
  * Deterministic and side-effect-free; safe to call before
  * ``viewer.addModel(pdbText, "pdb")``.
  */
-export function orientPdbForTopology(pdbText: string, topology: string): string {
+export function orientPdbForTopology(
+  pdbText: string,
+  topology: string,
+): OrientationResult {
   const parsed = parsePdbForOrientation(pdbText);
   const transform = computeOrientationTransform(topology, parsed);
-  return applyOrientationTransform(pdbText, transform);
+  return applyOrientationTransform(pdbText, topology, transform);
 }
