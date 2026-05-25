@@ -127,11 +127,26 @@ fields you should weight your `SearchPlan` against are:
     direct evidence.
 
 * **`ecd_length_residues`** — extracellular-domain length in residues.
-  - `<= 30`: short ECD. Antibody epitope space is small; down-weight
-    `structure_with_ecd` (limited structural literature) and up-weight
-    `flow_cytometry`.
-  - `>= 200`: large ECD. Up-weight `structure_with_ecd` — there's
-    almost certainly a published structural model.
+  Cutoffs derived from antibody-antigen interface measurements
+  (Ramaraj et al. 2012, doi:10.1016/j.bbapap.2012.07.005, n=53
+  non-redundant complexes): average conformational epitope =
+  **12 ± 3 residues** with **1103 ± 244 Å²** of buried surface.
+  - `<= 30`: short ECD. Hosts at most 1-2 candidate conformational
+    epitopes with no room for design iteration; antibody-discovery
+    campaigns at this size typically need specialized formats
+    (nanobodies / scFvs) and often fail to surface high-affinity
+    binders. Down-weight `structure_with_ecd` (limited structural
+    literature on small ECDs) and up-weight `flow_cytometry`.
+  - `>= 200`: large ECD. Comfortably accommodates ≥10 non-overlapping
+    conformational epitopes; antibody-engineering teams have room
+    to screen for functional masking, optimal kinetics, paralog
+    discrimination. Up-weight `structure_with_ecd` — almost
+    certainly a published structural model.
+  - Intermediate (`31-199`): synthesizer judgment based on
+    sub-domain architecture (e.g. tetraspanin EC2 loops at ~80-100
+    residues ARE targetable — see CD81, CD9 — even though the
+    flat threshold would call them "moderate"; treat known cases
+    as evidence the band is targetable).
 
 * **`signal_peptide_length`** — `>= 15` is a canonical signal peptide.
   - Absent AND `tm == 0`: the protein is non-secretory; treat surface

@@ -27,6 +27,40 @@ your task message; follow it. Four blocks:
 - `confidence` + `confidence_reasoning` (≤600 char; required non-empty when
   `confidence ∈ {moderate, low}`).
 
+## ECD size assessment thresholds
+
+`accessibility_risks.ecd_size_assessment.ecd_accessibility_class` is
+a closed enum: `large` / `moderate` / `small` / `minimal` / `none`.
+Thresholds reference the deterministic
+`deterministic_features.canonical_topology.ecd_length_residues`
+prefetched by the orchestrator. Derived from antibody-antigen
+interface measurements (Ramaraj et al. 2012,
+doi:10.1016/j.bbapap.2012.07.005; n=53 non-redundant complexes:
+average conformational epitope = **12 ± 3 residues**, **1103 ± 244
+Å²** buried surface):
+
+* **`large`** — `ecd_length_residues >= 200`. Comfortably
+  accommodates ≥10 non-overlapping conformational epitopes;
+  antibody-engineering teams have room to screen for functional
+  masking, optimal kinetics, paralog discrimination.
+* **`moderate`** — `60 <= ecd_length_residues < 200`. Multiple
+  candidate epitopes available; targetable but with less design
+  flexibility than `large`. Tetraspanin EC2 loops (~80-100 residues,
+  e.g. CD81 / CD9) land here and are demonstrably targetable.
+* **`small`** — `30 <= ecd_length_residues < 60`. 2-5 candidate
+  conformational epitopes; antibody discovery harder but feasible.
+* **`minimal`** — `ecd_length_residues < 30`. Hosts at most 1-2
+  candidate conformational epitopes; campaigns at this size
+  typically need specialized formats (nanobodies / scFvs) and often
+  fail to surface high-affinity binders.
+* **`none`** — `ecd_length_residues == 0` (or biology says no real
+  surface-exposed ECD: GPI-anchored fully buried, inner-leaflet
+  lipid-anchored proteins).
+
+When the deterministic ECD length disagrees with your reading of
+the literature (e.g. a topology miscall), trust the literature and
+explain in `confidence_reasoning`.
+
 ## You have no tools
 
 Cite-only over the merged A1 + A2 evidence ledger in your task message. If

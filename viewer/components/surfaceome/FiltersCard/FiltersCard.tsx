@@ -141,6 +141,90 @@ function orthologPillLabel(
 }
 
 // ---------------------------------------------------------------------------
+// Tooltip rationale — surfaced via the StatusPill `title` prop on
+// every chip whose tone / class is bounded by a numeric or
+// literature-derived threshold. Sourced from the synthesizer prompt's
+// own threshold rationale; keeping the strings here lets the viewer
+// stay readable without re-deriving the rationale per render.
+//
+// When the underlying threshold changes (in either the Pydantic
+// schema or the synthesizer prompt), update the string here AND the
+// upstream source so the chip's tooltip stays honest.
+// ---------------------------------------------------------------------------
+
+const TT_ECD_CLASS =
+  "ECD-size bands derived from antibody-antigen interface measurements " +
+  "(Ramaraj et al. 2012, doi:10.1016/j.bbapap.2012.07.005 — average " +
+  "conformational epitope = 12 ± 3 residues, 1103 ± 244 Å² buried). " +
+  "large ≥ 200 residues (≥10 non-overlapping epitopes possible); " +
+  "moderate = 60-199 (multiple epitopes, e.g. tetraspanin EC2 loops); " +
+  "small = 30-59 (2-5 candidate epitopes, harder discovery); " +
+  "minimal < 30 (1-2 epitopes max, specialized formats needed); " +
+  "none = no surface-exposed ECD (GPI / inner-leaflet).";
+
+const TT_EVIDENCE_DENSITY =
+  "Bucketed evidence row count: high ≥ 30 supporting rows, " +
+  "moderate ≥ 10, low < 10. Derived in the orchestrator from " +
+  "the merged A1+A2 ledger; deterministic, not LLM-judged.";
+
+const TT_ORTHOLOG_ID =
+  "ECD % identity to the human canonical, restricted to " +
+  "extracellular residues. Cutoffs from ICH S6(R1) biologics-" +
+  "preclinical-development practice: ≥85% = strong pharmacological " +
+  "translation (mouse / cyno can stand in for human evidence); " +
+  "60-85% = use with caution; < 60% = species substitution unreliable.";
+
+const TT_PARALOG_ID =
+  "Highest ECD % identity across the gene's Compara paralogs — " +
+  "antibody cross-reactivity risk. Cutoffs from antibody-validation " +
+  "literature (Bordeaux et al. 2010 / Edfors et al. 2018): < 50% = " +
+  "cross-reactivity unlikely; 50-70% = plausible (validate against " +
+  "paralog-KO); ≥ 70% = likely (paralog-discrimination required).";
+
+const TT_ACCESSIBILITY =
+  "Synthesizer's headline call: high (clear surface presence across " +
+  "multiple methods), moderate (one or two methods, or contested), " +
+  "low (weak / state-dependent / mostly intracellular), uncertain " +
+  "(insufficient evidence either way), no (confidently NOT at the " +
+  "surface — distinct from uncertain).";
+
+const TT_CONFIDENCE =
+  "Synthesizer's confidence in its accessibility call. Required to " +
+  "carry a non-empty `confidence_reasoning` (≤600 chars) whenever " +
+  "this is moderate or low.";
+
+const TT_EVIDENCE_GRADE =
+  "A1 evidence-grade rollup, reflecting experimental-method " +
+  "coverage: direct_multi_method (≥2 categories with " +
+  "live-cell / non-perm methods); direct_single_method (one " +
+  "category); supportive_but_indirect (fractionation / " +
+  "glycoproteomics, no direct surface staining); conflicting / weak.";
+
+const TT_EXPRESSION_LEVEL =
+  "Synthesizer's rollup of endogenous expression. Drives the derived " +
+  "`low_endogenous_expression` filter (fires when level ∈ {low, " +
+  "absent}); affects whether overexpression-only evidence has to " +
+  "carry the surface call.";
+
+const TT_LOW_ENDOG =
+  "Derived filter: true iff expression_level ∈ {low, absent}. " +
+  "Single source of truth for the orphan-class catalog filter — " +
+  "the orchestrator computes this from expression_level so the " +
+  "two signals can't drift.";
+
+const TT_KNOWN_LIGAND =
+  "Orphan-receptor status. true (default) = validated endogenous " +
+  "ligand documented in literature. false = orphan-class gene where " +
+  "ligand identity is unknown (orphan GPCRs / NHRs / kinases). " +
+  "Tractability signal for the catalog.";
+
+const TT_TM_COUNT =
+  "Transmembrane helix count from DeepTMHMM (deterministic). " +
+  "Drives `subcategory` choice: 0 (soluble / inner-leaflet), 1 " +
+  "(single-pass T1 or T2), 7 (GPCR), other counts (multi-pass / " +
+  "transporters / ion channels).";
+
+// ---------------------------------------------------------------------------
 
 
 export function FiltersCard({ rec, n }: Props) {
@@ -153,22 +237,57 @@ export function FiltersCard({ rec, n }: Props) {
     {
       label: "Accessibility",
       pills: [
-        <StatusPill key="acc" tone={accessibilityTone(f.surface_accessibility)} size="sm">
+        <StatusPill
+          key="acc"
+          tone={accessibilityTone(f.surface_accessibility)}
+          size="sm"
+          title={TT_ACCESSIBILITY}
+        >
           overall · {prettyEnum(f.surface_accessibility)}
         </StatusPill>,
-        <StatusPill key="conf" tone={confidenceTone(f.confidence)} size="sm">
+        <StatusPill
+          key="conf"
+          tone={confidenceTone(f.confidence)}
+          size="sm"
+          title={TT_CONFIDENCE}
+        >
           conf · {prettyEnum(f.confidence)}
         </StatusPill>,
-        <StatusPill key="sub" tone="neutral" size="sm">
+        <StatusPill
+          key="sub"
+          tone="neutral"
+          size="sm"
+          title={
+            "Protein architecture (single_pass_T1/T2, multi_pass, GPCR, " +
+            "GPI_anchored, tetraspanin, ion_channel, transporter, other). " +
+            "Orthogonal to the triage-agent's accessibility mechanism (e.g. " +
+            "classical_surface_receptor vs cell_state_induced)."
+          }
+        >
           {prettyEnum(f.subcategory)}
         </StatusPill>,
-        <StatusPill key="grade" tone={evidenceGradeTone(f.evidence_grade)} size="sm">
+        <StatusPill
+          key="grade"
+          tone={evidenceGradeTone(f.evidence_grade)}
+          size="sm"
+          title={TT_EVIDENCE_GRADE}
+        >
           {prettyEnum(f.evidence_grade)}
         </StatusPill>,
-        <StatusPill key="ecd" tone={ecdAccessibilityTone(f.ecd_accessibility_class)} size="sm">
+        <StatusPill
+          key="ecd"
+          tone={ecdAccessibilityTone(f.ecd_accessibility_class)}
+          size="sm"
+          title={TT_ECD_CLASS}
+        >
           ECD · {prettyEnum(f.ecd_accessibility_class)}
         </StatusPill>,
-        <StatusPill key="dens" tone={evidenceDensityTone(f.evidence_density)} size="sm">
+        <StatusPill
+          key="dens"
+          tone={evidenceDensityTone(f.evidence_density)}
+          size="sm"
+          title={TT_EVIDENCE_DENSITY}
+        >
           evidence · {prettyEnum(f.evidence_density)}
         </StatusPill>,
       ],
@@ -176,14 +295,63 @@ export function FiltersCard({ rec, n }: Props) {
     {
       label: "Expression",
       pills: [
-        <StatusPill key="level" tone={expressionLevelTone(f.expression_level)} size="sm">
+        <StatusPill
+          key="level"
+          tone={expressionLevelTone(f.expression_level)}
+          size="sm"
+          title={TT_EXPRESSION_LEVEL}
+        >
           level · {prettyEnum(f.expression_level)}
         </StatusPill>,
-        <StatusPill key="breadth" tone={expressionBreadthTone(f.expression_breadth)} size="sm">
+        <StatusPill
+          key="breadth"
+          tone={expressionBreadthTone(f.expression_breadth)}
+          size="sm"
+          title={
+            "Synthesizer's rollup of cross-tissue expression: pan_tissue (most " +
+            "tissues), broad (>half), restricted (a few), rare (one or two)."
+          }
+        >
           breadth · {prettyEnum(f.expression_breadth)}
         </StatusPill>,
-        <StatusPill key="spec" tone={surfaceSpecificityTone(f.surface_specificity)} size="sm">
+        <StatusPill
+          key="spec"
+          tone={surfaceSpecificityTone(f.surface_specificity)}
+          size="sm"
+          title={
+            "Surface-vs-intracellular split. surface_dominant = surface " +
+            "is the primary localization; mixed = ~equal partitioning; " +
+            "mostly_intracellular = surface is the minority pool."
+          }
+        >
           {prettyEnum(f.surface_specificity)}
+        </StatusPill>,
+        // Derived from `expression_level`; appears here so the
+        // catalog filter the orphan-class story uses is visible
+        // next to the source it's computed from.
+        <StatusPill
+          key="lowendog"
+          tone={f.low_endogenous_expression ? "danger" : "success"}
+          size="sm"
+          title={TT_LOW_ENDOG}
+        >
+          <span aria-hidden="true">
+            {f.low_endogenous_expression ? "✓" : "✗"}
+          </span>{" "}
+          low endogenous expression
+        </StatusPill>,
+        // Orphan-receptor status — replaces the dropped
+        // `HeadlineRisk.ligand_unknown` value.
+        <StatusPill
+          key="ligand"
+          tone={f.has_known_ligand ? "success" : "danger"}
+          size="sm"
+          title={TT_KNOWN_LIGAND}
+        >
+          <span aria-hidden="true">
+            {f.has_known_ligand ? "✓" : "✗"}
+          </span>{" "}
+          known ligand
         </StatusPill>,
       ],
     },
@@ -192,7 +360,7 @@ export function FiltersCard({ rec, n }: Props) {
       pills: [
         riskBoolPill("shed form", f.has_shed_form),
         riskBoolPill("secreted form", f.has_secreted_form),
-        riskBoolPill("co-receptor for expression", f.requires_coreceptor_for_expression),
+        riskBoolPill("co-receptor required for expression", f.requires_coreceptor_for_expression),
         riskBoolPill("epitope masking", f.has_epitope_masking),
         riskBoolPill("restricted subdomain", f.has_restricted_subdomain),
       ],
@@ -200,10 +368,24 @@ export function FiltersCard({ rec, n }: Props) {
     {
       label: "Cross-species (deterministic — higher conservation is better)",
       pills: [
-        <StatusPill key="m" tone={mousePill.tone} size="sm" title={mousePill.title}>
+        <StatusPill
+          key="m"
+          tone={mousePill.tone}
+          size="sm"
+          // `mousePill.title` is the per-row note ("no Compara
+          // ortholog", "fell back to full-length identity, etc.").
+          // Stack the general-rationale tooltip behind it via a
+          // newline so both are visible on hover.
+          title={mousePill.title ? `${TT_ORTHOLOG_ID}\n\n${mousePill.title}` : TT_ORTHOLOG_ID}
+        >
           mouse · {mousePill.text}
         </StatusPill>,
-        <StatusPill key="c" tone={cynoPill.tone} size="sm" title={cynoPill.title}>
+        <StatusPill
+          key="c"
+          tone={cynoPill.tone}
+          size="sm"
+          title={cynoPill.title ? `${TT_ORTHOLOG_ID}\n\n${cynoPill.title}` : TT_ORTHOLOG_ID}
+        >
           cyno · {cynoPill.text}
         </StatusPill>,
       ],
@@ -212,7 +394,12 @@ export function FiltersCard({ rec, n }: Props) {
       label: "Paralogs (deterministic — lower max identity is better)",
       pills: [
         f.max_paralog_ecd_pct_identity == null ? (
-          <StatusPill key="p" tone="success" size="sm">
+          <StatusPill
+            key="p"
+            tone="success"
+            size="sm"
+            title={`${TT_PARALOG_ID}\n\nNo paralogs in Compara — no within-family cross-reactivity risk.`}
+          >
             no Compara paralogs
           </StatusPill>
         ) : (
@@ -220,6 +407,7 @@ export function FiltersCard({ rec, n }: Props) {
             key="p"
             tone={paralogIdentityTone(f.max_paralog_ecd_pct_identity)}
             size="sm"
+            title={TT_PARALOG_ID}
           >
             max %ECD identity · {f.max_paralog_ecd_pct_identity.toFixed(1)}%
           </StatusPill>
@@ -229,7 +417,7 @@ export function FiltersCard({ rec, n }: Props) {
     {
       label: "Topology (deterministic)",
       pills: [
-        <StatusPill key="tm" tone="neutral" size="sm">
+        <StatusPill key="tm" tone="neutral" size="sm" title={TT_TM_COUNT}>
           {topo.tm_helix_count} TM
         </StatusPill>,
         positiveBoolPill("N-term extracellular", f.n_term_extracellular),

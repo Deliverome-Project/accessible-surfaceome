@@ -235,8 +235,12 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
               <div className={styles.structureStat}>
                 <dt className={`label-mono ${styles.structureStatK}`}>AFDB</dt>
                 <dd className={styles.structureStatV}>
+                  {/* AFDB's /entry/ route resolves either form, but the
+                      bare UniProt acc redirects through a search page
+                      first. The full entry-id (AF-{acc}-F1) lands
+                      directly on the model page — one fewer click. */}
                   <a
-                    href={`https://alphafold.ebi.ac.uk/entry/${g.uniprot_acc}`}
+                    href={`https://alphafold.ebi.ac.uk/entry/${struct.afdb_id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={styles.structureStatLink}
