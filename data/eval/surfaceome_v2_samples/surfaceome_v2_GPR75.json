@@ -7,7 +7,7 @@
     "ncbi_gene_id": 10936,
     "ensembl_gene": "ENSG00000119737"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "likely_accessible",
   "executive_summary": {
     "one_paragraph": "GPR75 is an orphan G\u03b1q-class 7TM GPCR (540 aa) with a canonical extracellular N-terminus and three extracellular loops. Surface-accessibility evidence is weak: topology rests on computational predictions and database annotations; the sole live-cell trafficking datum (BRET in HEK293) used an exogenous signal peptide, confounding endogenous surface inference. Expression is CNS-dominant (brain >> periphery), with secondary sites in pancreatic islets and retina. No validated endogenous ligand exists. Antibody validation is limited. Surface localization is inferred by GPCR class membership rather than direct assay.",
     "surface_accessibility": "moderate",

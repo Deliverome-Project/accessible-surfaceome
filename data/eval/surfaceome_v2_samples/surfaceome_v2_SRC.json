@@ -7,7 +7,7 @@
     "ncbi_gene_id": 6714,
     "ensembl_gene": "ENSG00000197122"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "unlikely",
   "executive_summary": {
     "one_paragraph": "SRC is canonically a cytoplasmic-face, inner-leaflet-anchored kinase with no extracellular domain. Two 2025 studies (PMID:41818370, PMID:41818382) report a cancer-specific non-canonical topological inversion (eSrc) via autophagolysosomal exocytosis, placing SRC on the outer cell surface in tumor cells and primary tumors, with anti-Src antibody killing confirmed in xenograft models. This surface form is strictly disease-state-induced; normal cells retain canonical inner-leaflet topology and are inaccessible. Evidence grade is conflicting: strong preclinical functional data for eSrc versus well-established canonical intracellular topology. Surface accessibility is therefore moderate and highly state-dependent (cancer-selective).",
     "surface_accessibility": "moderate",

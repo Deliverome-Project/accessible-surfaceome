@@ -7,7 +7,7 @@
     "ncbi_gene_id": 6714,
     "ensembl_gene": "ENSG00000197122"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "unlikely",
   "executive_summary": {
     "one_paragraph": "SRC (P12931) is a non-receptor tyrosine kinase anchored exclusively to the cytoplasmic inner leaflet of the plasma membrane via N-myristoylation; it has no extracellular domain and no transmembrane segment. All evidence\u2014biophysical inner-leaflet anchoring, membrane-fractionation MS, HPA IHC\u2014demonstrates plasma-membrane association but not extracellular-face accessibility. SURFY/CSPA exclude SRC from the surfaceome. Approved drugs (dasatinib, bosutinib) act intracellularly. Surface accessibility is therefore low; any engagement strategy requires cell-permeable or intrabody-type binders.",
     "surface_accessibility": "low",

@@ -466,16 +466,169 @@ def _load_triage_record(symbol: str) -> TriageRecord | None:
     triage agent's prose justification + structured reason taxonomy,
     not just the verdict-derived ``triage_signal`` enum — per the
     original design's "common preamble" requirement (PR #23 design doc
-    §1110-1116). Reads ``data/triage/{symbol}.json`` (gitignored;
-    populated by the triage agent or hydrated via D1 mirror tooling).
+    §1110-1116).
+
+    Resolution order:
+
+    1. Local file at ``data/triage/{symbol}.json`` (gitignored;
+       populated when a local triage sweep runs against the gene).
+    2. Public D1 ``triage_run_public`` Sonnet hit, preferring the
+       canonical run / variant. This lets a one-off deep-dive on a
+       gene that isn't in the local cache still see the genome-wide
+       triage prior — without the user having to manually hydrate
+       the local file first.
+
+    Returns ``None`` only when neither source has a hit. D1 errors
+    are logged and swallowed (annotate must keep running).
     """
     triage_path = DATA_DIR / "triage" / f"{symbol}.json"
-    if not triage_path.exists():
-        return None
+    if triage_path.exists():
+        try:
+            return TriageRecord.model_validate_json(triage_path.read_text())
+        except Exception as exc:  # noqa: BLE001 — best-effort; a malformed triage shouldn't fail annotate
+            logger.warning("triage record for %s failed to parse: %s", symbol, exc)
+            return None
+    return _load_triage_record_from_d1(symbol)
+
+
+# Priority list for the D1 fallback. We prefer the bench's canonical
+# Sonnet variant (richest, most-trusted) over the genome-wide sweep,
+# and fall back to "any Sonnet hit" if neither preferred run_id is
+# present. The "ncbi" variant is the production prompt the cohort
+# sweeps run with; the others (web_ncbi, pubmed_ncbi, recent_corpus)
+# add tool-use variants we don't want to elevate to the headline
+# triage_signal without explicit configuration.
+_D1_TRIAGE_PRIORITY: list[tuple[str, str]] = [
+    ("mainbench_canonical_v1", "ncbi"),
+    ("genome_full_sonnet_ncbi_v1__resolver_v3_fix", "ncbi"),
+    ("genome_full_sonnet_ncbi_v1", "ncbi"),
+]
+
+
+def _load_triage_record_from_d1(symbol: str) -> TriageRecord | None:
+    """Hydrate a ``TriageRecord`` from public D1 ``triage_run_public``.
+
+    See ``_D1_TRIAGE_PRIORITY`` for the (run_id, variant) priority
+    list. Each step queries D1 once; first hit wins. All errors are
+    logged + swallowed so a D1 outage doesn't fail annotate — the
+    caller falls back to ``triage_signal=unknown``, which is the same
+    behavior as before this fallback existed.
+    """
+
     try:
-        return TriageRecord.model_validate_json(triage_path.read_text())
-    except Exception as exc:  # noqa: BLE001 — best-effort; a malformed triage shouldn't fail annotate
-        logger.warning("triage record for %s failed to parse: %s", symbol, exc)
+        # Imports are local: keeps `D1Client` out of the hot path for
+        # the case where the local file is present (common in CI / on
+        # cohort sweeps that pre-populate ``data/triage/``).
+        import os
+
+        from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
+        from accessible_surfaceome.env import load_env
+
+        load_env()
+        public_db_id = os.environ.get("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", "").strip()
+        account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
+        api_token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
+        if not (public_db_id and account_id and api_token):
+            logger.info(
+                "no D1 public credentials in env; skipping triage D1 fallback for %s",
+                symbol,
+            )
+            return None
+        cfg = D1Config(
+            account_id=account_id,
+            database_id=public_db_id,
+            api_token=api_token,
+        )
+        with D1Client(cfg) as d1:
+            for run_id, variant in _D1_TRIAGE_PRIORITY:
+                rows = d1.query(
+                    """
+                    SELECT predicted_verdict, predicted_reason,
+                           predicted_confidence, predicted_key_uncertainty,
+                           verdict_reasoning, uniprot_acc
+                    FROM triage_run_public
+                    WHERE gene_symbol = ?
+                      AND run_id = ?
+                      AND prompt_variant = ?
+                      AND model LIKE '%sonnet%'
+                      AND predicted_verdict IS NOT NULL
+                    ORDER BY replicate ASC, created_at DESC
+                    LIMIT 1;
+                    """,
+                    [symbol, run_id, variant],
+                )
+                if rows:
+                    return _triage_record_from_d1_row(symbol, rows[0])
+    except Exception as exc:  # noqa: BLE001 — never fail annotate over a triage miss
+        logger.warning(
+            "triage D1 fallback for %s failed: %s; using triage_signal=unknown",
+            symbol,
+            exc,
+        )
+        return None
+    return None
+
+
+def _triage_record_from_d1_row(symbol: str, row: dict[str, object]) -> TriageRecord | None:
+    """Construct a ``TriageRecord`` from one ``triage_run_public`` row.
+
+    Returns ``None`` if the row can't be schema-validated (e.g. the
+    D1 reason taxonomy drifted from the v1 verdict-vs-reason
+    cross-check the model enforces). Logged at WARNING so drift
+    becomes visible rather than silently masking the triage.
+
+    D1's ``predicted_confidence`` and the schema's ``TriageConfidence``
+    both use the same ``low|medium|high`` alphabet, so no remapping is
+    needed — pass the value through and let Pydantic catch any drift.
+    """
+
+    verdict = row.get("predicted_verdict")
+    reason = row.get("predicted_reason")
+    conf_raw = row.get("predicted_confidence")
+    reasoning = row.get("verdict_reasoning") or ""
+    key_uncertainty = row.get("predicted_key_uncertainty")
+    uniprot_acc = row.get("uniprot_acc") or ""
+
+    confidence = str(conf_raw).lower() if conf_raw else "medium"
+
+    try:
+        # GeneIdentifier needs the full identifier bundle. For the
+        # triage record we only have symbol + uniprot from D1; fill
+        # the rest with empty strings — the synthesizer only reads
+        # `verdict_reasoning`, `reason`, `confidence`, and
+        # `key_uncertainty`, plus the orchestrator only consumes the
+        # mapped `verdict`. Avoid the gene_identifier round-trip
+        # (it's a separate D1 query in the hot path).
+        from accessible_surfaceome.tools._shared.models import (
+            GeneIdentifier,
+            TriageRecord,
+        )
+
+        return TriageRecord(
+            gene=GeneIdentifier(
+                hgnc_symbol=symbol,
+                hgnc_id="",
+                uniprot_acc=str(uniprot_acc),
+                ncbi_gene_id=0,
+                ensembl_gene="",
+            ),
+            # The verdict / reason / confidence values come straight from D1
+            # as strings; their *runtime* validity is what the TriageRecord
+            # constructor enforces (the `_check_reason_matches_verdict`
+            # model-validator + the Literal type narrowing). Static checkers
+            # can't see the narrowing, so silence the literal-mismatch.
+            verdict=str(verdict),  # ty:ignore[invalid-argument-type]
+            verdict_reasoning=str(reasoning),
+            reason=str(reason),  # ty:ignore[invalid-argument-type]
+            confidence=confidence,  # ty:ignore[invalid-argument-type]
+            key_uncertainty=str(key_uncertainty) if key_uncertainty else None,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "triage D1 row for %s failed schema validation: %s; "
+            "verdict=%r reason=%r conf=%r",
+            symbol, exc, verdict, reason, conf_raw,
+        )
         return None
 
 

@@ -7,7 +7,7 @@
     "ncbi_gene_id": 10936,
     "ensembl_gene": "ENSG00000119737"
   },
-  "triage_signal": "unknown",
+  "triage_signal": "likely_accessible",
   "executive_summary": {
     "one_paragraph": "GPR75 is a 7-TM GPCR confirmed at the cell surface by non-permeabilizing sulfo-NHS-LC-biotin in SH-SY5Y cells and corroborated by HPA IHC (plasma membrane/primary cilium/vesicles, 'Supported'). Expression is strongly brain-restricted, with meaningful secondary presence in vascular cells, pancreatic islets, and retina. The dominant surface pool resides behind the BBB in hypothalamic and other CNS neurons; vascular and islet fractions are systemically accessible. Ciliary enrichment under high-fat diet conditions and agonist-driven internalization (CCL5, 20-HETE) add moderate state-dependence. GPR75 is an active anti-obesity drug target at preclinical stage.",
     "surface_accessibility": "moderate",

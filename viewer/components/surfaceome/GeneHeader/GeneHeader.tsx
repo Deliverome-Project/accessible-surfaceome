@@ -59,6 +59,20 @@ function gradeTone(value: string) {
   return "neutral" as const;
 }
 
+function triageTone(signal: string) {
+  if (signal === "likely_accessible") return "success" as const;
+  if (signal === "possibly_accessible") return "teal" as const;
+  if (signal === "unlikely") return "amber" as const;
+  return "neutral" as const;
+}
+
+function confidenceTone(value: string) {
+  if (value === "high") return "success" as const;
+  if (value === "moderate") return "lavender" as const;
+  if (value === "low") return "amber" as const;
+  return "neutral" as const;
+}
+
 function plddtTone(plddt: number) {
   if (plddt >= 90) return "success" as const;
   if (plddt >= 70) return "teal" as const;
@@ -270,7 +284,9 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
         <div className={styles.vital}>
           <dt className={`label-mono ${styles.vitalK}`}>Confidence</dt>
           <dd className={styles.vitalV}>
-            <StatusPill tone="lavender">{prettyEnum(exec.confidence)}</StatusPill>
+            <StatusPill tone={confidenceTone(exec.confidence)}>
+              {prettyEnum(exec.confidence)}
+            </StatusPill>
             <span className={styles.vitalSub}>
               {counts.primary} primary · {counts.secondary} secondary
             </span>
@@ -278,9 +294,22 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
         </div>
 
         <div className={styles.vital}>
-          <dt className={`label-mono ${styles.vitalK}`}>Triage</dt>
+          <dt
+            className={`label-mono ${styles.vitalK}`}
+            title={
+              "Genome-wide Sonnet triage prior — first-pass surface-vs-not " +
+              "call made before any deep literature work. Hydrated from " +
+              "public D1 `triage_run_public` (mainbench_canonical_v1 · " +
+              "variant=ncbi · model=claude-sonnet-4-6). Falls back to " +
+              "`unknown` when no triage row exists for the gene."
+            }
+          >
+            Triage
+          </dt>
           <dd className={styles.vitalV}>
-            <StatusPill tone="teal">{prettyEnum(rec.triage_signal)}</StatusPill>
+            <StatusPill tone={triageTone(rec.triage_signal)}>
+              {prettyEnum(rec.triage_signal)}
+            </StatusPill>
             <span className={styles.vitalSub}>
               {exec.headline_risks.length
                 ? `${exec.headline_risks.length} headline risk${
