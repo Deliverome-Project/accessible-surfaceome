@@ -495,7 +495,7 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
-      label: "Cross-species (deterministic — higher conservation is better)",
+      label: "Cross-species",
       pills: [
         <StatusPill
           key="m"
@@ -520,7 +520,7 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
-      label: "Paralogs (deterministic — lower max identity is better)",
+      label: "Paralogs",
       pills: [
         f.max_paralog_ecd_pct_identity == null ? (
           <StatusPill
@@ -544,7 +544,7 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
-      label: "Topology (deterministic)",
+      label: "Topology",
       pills: [
         <StatusPill key="tm" tone="neutral" size="sm" title={TT_TM_COUNT}>
           {topo.tm_helix_count} TM
@@ -554,7 +554,7 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
-      label: "SURFACE-Bind (deterministic — Marchand 2026 PNAS)",
+      label: "SURFACE-Bind",
       // Three distinct states, each rendered explicitly so the reader
       // can tell them apart at a glance:
       //   1. not_in: SURFACE-Bind dropped the protein at structural QC
@@ -643,24 +643,133 @@ export function FiltersCard({ rec, n }: Props) {
     },
   ];
 
+  // ------------------------------------------------------------
+  // Per-group label metadata. Was a single string; now carries:
+  //   * ``title`` — tooltip explaining what the group measures + the
+  //     cutoffs / source / interpretation. Surfaces the rationale
+  //     that previously lived only in the parenthetical (which the
+  //     user said wasn't doing enough work).
+  //   * ``links`` — outbound links to the underlying data source for
+  //     deterministic groups (Ensembl Compara, DeepTMHMM,
+  //     SURFACE-Bind). Synth-emitted groups have no external source
+  //     to link to.
+  // Keyed on the group's short label below so the data stays paired
+  // and the JSX render is uncluttered.
+  // ------------------------------------------------------------
+  const GROUP_META: Record<
+    string,
+    { title: string; links?: { href: string; label: string }[] }
+  > = {
+    Accessibility: {
+      title:
+        "Synthesizer rollups of the accessibility verdict + supporting " +
+        "structured signals (surface_accessibility, confidence, " +
+        "state_dependence, surface_call_reason, evidence_grade, " +
+        "ECD-size class, evidence density). Same fields the catalog " +
+        "filters on.",
+    },
+    Expression: {
+      title:
+        "Synthesizer-emitted level/breadth/specificity + two derived " +
+        "filters (low_endogenous_expression flips on when " +
+        "expression_level ∈ {low, absent}; has_known_ligand flags " +
+        "orphan-receptor status). Surface specificity = how much of " +
+        "the protein is at the surface vs intracellular.",
+    },
+    Risks: {
+      title:
+        "Five risk-bool rollups from the §Risks accessibility_risks " +
+        "card: shed form, secreted form, co-receptor required for " +
+        "expression, epitope masking, restricted subdomain. Each " +
+        "carries the structured detail in the §Risks card below.",
+    },
+    "Cross-species": {
+      title:
+        "Mouse + cynomolgus ortholog %ECD identity to the human " +
+        "canonical (or full-length fallback when the human protein " +
+        "has no ECD). Cutoffs from ICH S6(R1) biologics-preclinical " +
+        "practice: ≥85% = strong pharmacological translation; " +
+        "60-85% = use with caution; <60% = species substitution " +
+        "unreliable. Source: Ensembl Compara.",
+      links: [
+        { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
+      ],
+    },
+    Paralogs: {
+      title:
+        "Highest ECD %identity across the gene's Compara paralogs — " +
+        "the antibody cross-reactivity risk. Cutoffs from antibody-" +
+        "validation literature (Bordeaux 2010 / Edfors 2018): <50% = " +
+        "cross-reactivity unlikely; 50-70% = plausible (validate " +
+        "against paralog-KO); ≥70% = likely (paralog-discrimination " +
+        "required).",
+      links: [
+        { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
+      ],
+    },
+    Topology: {
+      title:
+        "DeepTMHMM-predicted membrane topology for the canonical " +
+        "isoform: TM helix count + which termini face the " +
+        "extracellular vs intracellular side. Drives the subcategory " +
+        "axis (single_pass_T1 / multi_pass / GPCR / etc.).",
+      links: [
+        { href: "https://dtu.biolib.com/DeepTMHMM", label: "DeepTMHMM" },
+      ],
+    },
+    "SURFACE-Bind": {
+      title:
+        "MaSIF patch-based targetability scoring (Marchand et al. 2026 " +
+        "PNAS). Three states: 'not in' = filtered at structural QC; " +
+        "'scored · no patches' = scored but no patches cleared the " +
+        "MaSIF threshold; 'N sites · M seeds' = real targetability " +
+        "data. α-seeds = α-helical binder candidates; β-seeds = " +
+        "β-strand binder candidates.",
+      links: [
+        { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
+        { href: "https://doi.org/10.1073/pnas.2506269123", label: "PNAS 2026" },
+      ],
+    },
+  };
+
   return (
     <SectionCard
       n={n}
       eyebrow="Summary metrics"
       title="At-a-glance signal panel"
-      meta="D1-indexed facets · same fields the catalog filters on, rolled up per gene"
+      meta="Fields available for catalog-level filtering · rolled up per gene"
     >
       <div className={styles.groups}>
-        {groups.map((g) => (
-          <div key={g.label} className={styles.group}>
-            <p className={`label-mono ${styles.groupLabel}`}>{g.label}</p>
-            <ul className={styles.pills}>
-              {g.pills.map((p, i) => (
-                <li key={i}>{p}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        {groups.map((g) => {
+          const meta = GROUP_META[g.label];
+          return (
+            <div key={g.label} className={styles.group}>
+              <p
+                className={`label-mono ${styles.groupLabel}`}
+                title={meta?.title}
+              >
+                <span>{g.label}</span>
+                {meta?.links?.map((l) => (
+                  <a
+                    key={l.href}
+                    href={l.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={styles.groupLink}
+                    title={`Open ${l.label} in a new tab`}
+                  >
+                    {l.label} ↗
+                  </a>
+                ))}
+              </p>
+              <ul className={styles.pills}>
+                {g.pills.map((p, i) => (
+                  <li key={i}>{p}</li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
       </div>
     </SectionCard>
   );

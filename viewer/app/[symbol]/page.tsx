@@ -211,6 +211,21 @@ export default async function GenePage({ params }: PageProps) {
           />
         </Reveal>
 
+        {/* Synthesizer confidence — promoted from the bottom of the
+            page to here, just above the section tabs (the first tab
+            is "Summary metrics" so the confidence reads as the
+            preamble to whatever metric panel comes next). Always
+            visible regardless of which tab the reader picks. */}
+        <Reveal className={styles.confidence}>
+          <p className={`label-mono ${styles.confidenceEyebrow}`}>
+            Confidence ·{" "}
+            {typeof rec.confidence === "number"
+              ? rec.confidence.toFixed(2)
+              : String(rec.confidence ?? "—")}
+          </p>
+          <p className={styles.confidenceLine}>{rec.confidence_reasoning}</p>
+        </Reveal>
+
         {/* Tab-style section display. AnchorNav renders inside
             `<SectionTabs>` and drives which section is shown; only
             one section is visible at a time so clicking a tab swaps
@@ -228,16 +243,6 @@ export default async function GenePage({ params }: PageProps) {
             </section>
           ))}
         </SectionTabs>
-
-        <Reveal className={styles.confidence}>
-          <p className={`label-mono ${styles.confidenceEyebrow}`}>
-            Confidence ·{" "}
-            {typeof rec.confidence === "number"
-              ? rec.confidence.toFixed(2)
-              : String(rec.confidence ?? "—")}
-          </p>
-          <p className={styles.confidenceLine}>{rec.confidence_reasoning}</p>
-        </Reveal>
 
         <DataSourcesFooter rec={rec} />
       </article>
