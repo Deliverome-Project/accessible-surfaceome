@@ -1582,6 +1582,19 @@ class Filters(BaseModel):
     # whose builder didn't return stances both read as 0.
     n_supporting_claims_high_weight: int = Field(default=0, ge=0)
     n_contradicting_claims_high_weight: int = Field(default=0, ge=0)
+    # Derived from ``surface_evidence.methods[]`` by the orchestrator.
+    # True iff any MethodObservation has
+    # ``expression_system ∈ {overexpression, mixed}`` AND
+    # ``accessibility_relevance ∈ {direct_surface_accessibility,
+    # supports_surface_localization}``. Signals "the gene has been
+    # shown to surface-localize in an overexpression context" — useful
+    # for assessing whether OE-based validation is on precedent for
+    # this target. Distinct from ``has_known_ligand`` and
+    # ``low_endogenous_expression``: this is specifically the OE +
+    # surface combination, regardless of endogenous level or ligand
+    # status. Defaults to False — records whose builder produced no
+    # methods (weak grade, errored runs) read as False.
+    overexpression_surface_localization_observed: bool = False
 
 
 # ---- surface evidence (section 1) -----------------------------------------

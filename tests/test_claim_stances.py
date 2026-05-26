@@ -396,6 +396,170 @@ def test_filters_has_n_contradicting_high_weight_field():
 
 
 # ---------------------------------------------------------------------------
+# Overexpression-with-surface-localization derived filter
+# (separate from the stance map work but lives in the same Filters block)
+# ---------------------------------------------------------------------------
+
+
+def test_filters_has_overexpression_surface_localization_observed_field():
+    assert "overexpression_surface_localization_observed" in Filters.model_fields
+
+
+def _method(*, expression_system: str, accessibility_relevance: str):
+    """Minimal MethodObservation for the OE-filter tests."""
+    return {
+        "method_family": "flow_cytometry",
+        "method_subclass": "live_cell_flow",
+        "permeabilization": "live_cell",
+        "expression_system": expression_system,
+        "overexpression": None,
+        "antibodies": [],
+        "accessibility_relevance": accessibility_relevance,
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [],
+        "cited_evidence_ids": [],
+    }
+
+
+def test_overexpression_filter_true_when_oe_plus_direct_surface():
+    """Canonical positive case: an OE-host flow paper that shows direct
+    surface accessibility. Filter must flip True."""
+    se = SurfaceEvidence.model_validate({
+        "evidence_grade": "direct_single_method",
+        "grade_rationale": "—",
+        "methods": [_method(
+            expression_system="overexpression",
+            accessibility_relevance="direct_surface_accessibility",
+        )],
+        "non_surface_expression": [],
+        "contradicting_evidence": [],
+        "therapeutic_engagement": None,
+        "claim_stances": [],
+    })
+    filters = _derive_filters(
+        executive_summary=_exec(),
+        surface_evidence=se,
+        biological_context=_bio_ctx(),
+        accessibility_risks=_risks(),
+        filters_llm=_llm_filters(),
+        deterministic_features=_det(),
+        n_evidence=1,
+    )
+    assert filters.overexpression_surface_localization_observed is True
+
+
+def test_overexpression_filter_true_for_mixed_expression_system():
+    """`mixed` expression_system (overexpression + endogenous in the
+    same panel) also counts — the OE side of the panel is what matters
+    for the filter."""
+    se = SurfaceEvidence.model_validate({
+        "evidence_grade": "direct_single_method",
+        "grade_rationale": "—",
+        "methods": [_method(
+            expression_system="mixed",
+            accessibility_relevance="supports_surface_localization",
+        )],
+        "non_surface_expression": [],
+        "contradicting_evidence": [],
+        "therapeutic_engagement": None,
+        "claim_stances": [],
+    })
+    filters = _derive_filters(
+        executive_summary=_exec(),
+        surface_evidence=se,
+        biological_context=_bio_ctx(),
+        accessibility_risks=_risks(),
+        filters_llm=_llm_filters(),
+        deterministic_features=_det(),
+        n_evidence=1,
+    )
+    assert filters.overexpression_surface_localization_observed is True
+
+
+def test_overexpression_filter_false_when_endogenous_only():
+    """No OE method observed → filter stays False. (The protein may
+    still be on the surface endogenously; this filter is about whether
+    OE-based validation has been done.)"""
+    se = SurfaceEvidence.model_validate({
+        "evidence_grade": "direct_single_method",
+        "grade_rationale": "—",
+        "methods": [_method(
+            expression_system="endogenous",
+            accessibility_relevance="direct_surface_accessibility",
+        )],
+        "non_surface_expression": [],
+        "contradicting_evidence": [],
+        "therapeutic_engagement": None,
+        "claim_stances": [],
+    })
+    filters = _derive_filters(
+        executive_summary=_exec(),
+        surface_evidence=se,
+        biological_context=_bio_ctx(),
+        accessibility_risks=_risks(),
+        filters_llm=_llm_filters(),
+        deterministic_features=_det(),
+        n_evidence=1,
+    )
+    assert filters.overexpression_surface_localization_observed is False
+
+
+def test_overexpression_filter_false_when_oe_without_surface_localization():
+    """OE observed but the method was indirect (membrane fractionation,
+    not surface assay). The bool is specifically OE+surface, not just OE."""
+    se = SurfaceEvidence.model_validate({
+        "evidence_grade": "supportive_but_indirect",
+        "grade_rationale": "—",
+        "methods": [_method(
+            expression_system="overexpression",
+            accessibility_relevance="supports_membrane_association",
+        )],
+        "non_surface_expression": [],
+        "contradicting_evidence": [],
+        "therapeutic_engagement": None,
+        "claim_stances": [],
+    })
+    filters = _derive_filters(
+        executive_summary=_exec(),
+        surface_evidence=se,
+        biological_context=_bio_ctx(),
+        accessibility_risks=_risks(),
+        filters_llm=_llm_filters(),
+        deterministic_features=_det(),
+        n_evidence=1,
+    )
+    assert filters.overexpression_surface_localization_observed is False
+
+
+def test_overexpression_filter_false_when_no_methods():
+    """Empty methods list (e.g. weak-grade record where the builder
+    found no usable methods) → filter is False, never raises."""
+    se = SurfaceEvidence.model_validate({
+        "evidence_grade": "weak",
+        "grade_rationale": "—",
+        "methods": [],
+        "non_surface_expression": [],
+        "contradicting_evidence": [],
+        "therapeutic_engagement": None,
+        "claim_stances": [],
+    })
+    filters = _derive_filters(
+        executive_summary=_exec().model_copy(update={
+            "surface_accessibility": "no",
+            "evidence_grade_summary": "weak",
+            "surface_call_reason": "cytoplasmic",
+        }),
+        surface_evidence=se,
+        biological_context=_bio_ctx(),
+        accessibility_risks=_risks(),
+        filters_llm=_llm_filters(),
+        deterministic_features=_det(),
+        n_evidence=0,
+    )
+    assert filters.overexpression_surface_localization_observed is False
+
+
+# ---------------------------------------------------------------------------
 # Prompt tripwire — stance section + emit-order constraint
 # ---------------------------------------------------------------------------
 

@@ -268,6 +268,13 @@ export interface Filters {
    *  records (no stance map emitted) read as 0. */
   n_supporting_claims_high_weight: number;
   n_contradicting_claims_high_weight: number;
+  /** Derived from ``surface_evidence.methods[]`` — true iff any
+   *  MethodObservation has expression_system ∈ {overexpression, mixed}
+   *  AND accessibility_relevance ∈ {direct_surface_accessibility,
+   *  supports_surface_localization}. Signals "the gene has been shown
+   *  to surface-localize in an OE context" — useful for filtering
+   *  targets amenable to OE-based validation experiments. */
+  overexpression_surface_localization_observed: boolean;
 }
 
 // ============================================================

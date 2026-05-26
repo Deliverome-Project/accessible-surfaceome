@@ -871,6 +871,22 @@ def _derive_filters(
         if s.stance == "contradicts_surface" and s.weight == "high"
     )
 
+    # OE-with-surface-localization derived bool. True iff any
+    # MethodObservation pairs an overexpression / mixed expression
+    # system with a direct or surface-localization accessibility
+    # tier. Signals "OE-based validation has been done for this
+    # target." Filter on it to find genes amenable to OE follow-up.
+    _SURFACE_TIERS = {
+        "direct_surface_accessibility",
+        "supports_surface_localization",
+    }
+    _OE_SYSTEMS = {"overexpression", "mixed"}
+    oe_surface_observed = any(
+        m.expression_system in _OE_SYSTEMS
+        and m.accessibility_relevance in _SURFACE_TIERS
+        for m in surface_evidence.methods
+    )
+
     def _canonical_species_identity(entries: list) -> float | None:
         for e in entries:
             if e.is_canonical:
@@ -932,6 +948,8 @@ def _derive_filters(
         # D — stance-map counts derived above
         n_supporting_claims_high_weight=n_supporting_hi,
         n_contradicting_claims_high_weight=n_contradicting_hi,
+        # D — OE+surface-localization derived above
+        overexpression_surface_localization_observed=oe_surface_observed,
     )
 
 
