@@ -49,7 +49,7 @@ export const TOPOLOGY_COLORS: Record<string, string> = {
   M: "#FFD579", // TM helix
   O: "#DD5955", // extracellular — Deliverome primary red
   I: "#A9CFA8", // intracellular (inside)
-  S: "#7D8896", // signal peptide
+  S: "#7A4BD8", // signal peptide — purple (was slate gray, hard to spot)
   B: "#C7CED6", // beta-strand (rare in this dataset)
 };
 

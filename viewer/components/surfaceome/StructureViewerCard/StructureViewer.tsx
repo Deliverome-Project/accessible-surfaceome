@@ -472,11 +472,11 @@ export function StructureViewer({
       }
 
       // SURFACE-Bind anchor overlay — one sphere per scored site at
-      // the patch's anchor residue (CA atom). Topology mode uses the
-      // per-site categorical palette so individual sites are
-      // distinguishable. Sites mode uses one bright red across the
-      // board for max contrast against the dimmed cartoon (per user
-      // request: "show sites as larger red balls").
+      // the patch's anchor residue (CA atom). Spheres render ONLY in
+      // sites mode (per user feedback: "don't show surface bind
+      // sites at all on the topology version"). Colored by
+      // compartment so the antibody-accessibility story is the
+      // visual cue.
       //
       // SURFACE-Bind only publishes the patch anchor, not the full
       // contact-residue list — to render the actual patch surface
@@ -484,15 +484,10 @@ export function StructureViewer({
       // contacts (separate task). The sphere is the honest
       // approximation: "the patch is centered here."
       const viewerExt = viewer as ViewerInstance;
-      for (let i = 0; i < surfaceBindAnchors.length; i += 1) {
+      const shouldRenderAnchors = viewMode === "sites" && hasAnchors;
+      for (let i = 0; shouldRenderAnchors && i < surfaceBindAnchors.length; i += 1) {
         const { siteId, residue, compartment } = surfaceBindAnchors[i];
-        // Topology mode: single purple across all sites — the number
-        // label distinguishes them. Sites mode: color by compartment
-        // (green EC / amber IC / gray TM) so the antibody-
-        // accessibility story is the visual cue.
-        const color = viewMode === "sites"
-          ? COMPARTMENT_COLOR[compartment]
-          : ANCHOR_COLOR;
+        const color = COMPARTMENT_COLOR[compartment];
         const sel = { resi: residue, atom: "CA" };
         // ``addStyle`` (not ``setStyle``) layers on top of the
         // existing cartoon — we want the sphere ON the cartoon, not
