@@ -35,30 +35,29 @@
   border-bottom-color: var(--accent);
 }
 
+/* Text-link treatment in accent red — sits inline with the IDs row
+ * at the same visual weight as the JSON / Markdown crumb actions
+ * (which use the same font-size + underlined border-bottom pattern).
+ * Red color keeps the "this is a call-to-action" cue without the
+ * heavy filled-pill chrome that earlier iterations had. */
 .standalone {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  font-size: 0.68rem;
+  background: transparent;
+  border: 0;
+  padding: 0 0 2px 0;
+  font-size: 0.72rem;
   font-weight: 500;
-  letter-spacing: 0.02em;
-  padding: 0.18rem 0.55rem;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  border: 1px solid var(--accent);
-  color: var(--accent-on);
+  color: var(--accent);
+  border-bottom: 1px solid var(--accent);
 }
 
 .standalone:hover,
 .standalone:focus-visible {
-  background: var(--accent-deep);
-  border-color: var(--accent-deep);
-  color: var(--accent-on);
+  color: var(--accent-deep);
+  border-bottom-color: var(--accent-deep);
 }
 
 .standalone::after {
-  content: "↗";
-  font-size: 0.85em;
-  line-height: 1;
+  content: " ↗";
+  font-size: 0.9em;
   opacity: 0.85;
 }
