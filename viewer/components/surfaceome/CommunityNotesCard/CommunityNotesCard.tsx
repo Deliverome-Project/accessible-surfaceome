@@ -123,16 +123,17 @@ export function CommunityNotesCard({ gene, n }: Props) {
   if (notes === null || notes.length === 0 || errored) return null;
 
   return (
-    <SectionCard
-      n={n}
-      eyebrow={mock ? "Community · MOCK" : "Community"}
-      title="Community notes"
-      meta={
-        mock
-          ? `${notes.length} synthetic notes for design review (URL ?mock=notes)`
-          : `${notes.length} ${notes.length === 1 ? "note" : "notes"} · approved by curation team`
-      }
-    >
+    <div className={styles.accent}>
+      <SectionCard
+        n={n}
+        eyebrow={mock ? "Community · MOCK" : "Community"}
+        title={`Community notes (${notes.length})`}
+        meta={
+          mock
+            ? `${notes.length} synthetic notes for design review (URL ?mock=notes)`
+            : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`
+        }
+      >
       {mock ? (
         <p className={styles.mockBanner}>
           Preview only — these notes don&apos;t exist in production.
@@ -173,7 +174,8 @@ export function CommunityNotesCard({ gene, n }: Props) {
           </li>
         ))}
       </ul>
-    </SectionCard>
+      </SectionCard>
+    </div>
   );
 }
 

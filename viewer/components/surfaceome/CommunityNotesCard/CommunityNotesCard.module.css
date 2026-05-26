@@ -5,6 +5,19 @@
  * SectionCard.module.css. This file only styles the inner list.
  */
 
+/* Green left-border accent — applied via a wrapper around <SectionCard>
+ * so the community-notes section reads as a distinct (positive)
+ * presence on the gene page. Only rendered when notes exist (the
+ * component returns null before that), so the green never appears
+ * empty. The 3px bar mirrors the project's "Constitutive" / "success"
+ * tonal cue; --success is the same green used elsewhere for the
+ * state-dependence Constitutive case and DB-vote "yes" dots. */
+.accent {
+  border-left: 3px solid var(--success);
+  padding-left: var(--space-4);
+  margin-left: calc(var(--space-4) * -1);
+}
+
 .list {
   margin: 0;
   padding: 0;
