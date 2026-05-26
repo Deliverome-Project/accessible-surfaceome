@@ -219,35 +219,9 @@ export default async function GenePage({ params }: PageProps) {
           />
         </Reveal>
 
-        {/* Synthesizer confidence — promoted from the bottom of the
-            page to here, just above the section tabs (the first tab
-            is "Summary metrics" so the confidence reads as the
-            preamble to whatever metric panel comes next). Always
-            visible regardless of which tab the reader picks.
-
-            The `confidence_reasoning` prose is wrapped in a `<details>`
-            drawer (collapsed by default) so the above-the-fold stays
-            tight; the summary tells the reader what's inside, click
-            expands. Empty/whitespace reasoning hides the drawer
-            entirely — high-confidence calls typically don't populate
-            the field per the synth prompt's "writing for the reader"
-            guidance. */}
-        <Reveal className={styles.confidence}>
-          <p className={`label-mono ${styles.confidenceEyebrow}`}>
-            Confidence ·{" "}
-            {typeof rec.confidence === "number"
-              ? rec.confidence.toFixed(2)
-              : String(rec.confidence ?? "—")}
-          </p>
-          {rec.confidence_reasoning && rec.confidence_reasoning.trim().length > 0 ? (
-            <details className={styles.confidenceRationale}>
-              <summary>Why this confidence? — rationale</summary>
-              <p className={styles.confidenceRationaleBody}>
-                {rec.confidence_reasoning}
-              </p>
-            </details>
-          ) : null}
-        </Reveal>
+        {/* Confidence + reasoning moved INTO the GeneHeader's
+         *  Confidence vital cell (drawer right below the value)
+         *  — the second below-the-fold copy here was redundant. */}
 
         {/* Tab-style section display. AnchorNav renders inside
             `<SectionTabs>` and drives which section is shown; only

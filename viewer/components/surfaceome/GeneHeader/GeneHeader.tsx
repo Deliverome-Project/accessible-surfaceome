@@ -350,14 +350,27 @@ export function GeneHeader({
                       <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
                         {prettyEnum(exec.surface_accessibility)}
                       </p>
-                      {/* Architecture/subcategory used to render as a
-                       *  colored StatusPill chip here. Demoted to plain
-                       *  text below the vitals grid (see `.archFamilyRow`
-                       *  after the closing `</dl>`) so this accessibility
-                       *  cell stays focused on the accessibility signal
-                       *  itself. The architecture + family axes are
-                       *  orthogonal descriptive metadata that don't
-                       *  warrant a colored chip. */}
+                      {/* Architecture + Family as label/value text pairs
+                       *  beneath the accessibility value. Font matches
+                       *  the StatusPill chip (uppercase, font-sans,
+                       *  letter-spaced, 0.72rem); the value inherits the
+                       *  accessibility tone color (success / teal / amber
+                       *  / danger) so the text reads as colored metadata
+                       *  belonging to this accessibility cell. */}
+                      <p
+                        className={`${styles.archFamilyInline} ${vitalToneClass(accessTone)}`}
+                      >
+                        <span className={styles.archFamilyLabel}>
+                          Architecture
+                        </span>
+                        <span className={styles.archFamilyValue}>
+                          {prettyEnum(exec.subcategory)}
+                        </span>
+                        <span className={styles.archFamilyLabel}>Family</span>
+                        <span className={styles.archFamilyValue}>
+                          {prettyEnum(exec.protein_family)}
+                        </span>
+                      </p>
                     </dd>
                   </div>
 
@@ -388,6 +401,27 @@ export function GeneHeader({
                       <span className={styles.vitalSub}>
                         {counts.primary} primary · {counts.secondary} secondary
                       </span>
+                      {/* "reasoning" — inline expander below the
+                       *  confidence value. Uses the same `<details>` +
+                       *  `.summary` pattern as the Evidence ledger card
+                       *  (accent-colored cursor: pointer line, no
+                       *  background; toggles to show the synthesizer's
+                       *  user-facing prose). Hidden when reasoning is
+                       *  empty/whitespace — high-confidence calls
+                       *  typically don't populate the field per the
+                       *  synth prompt's "writing for the reader"
+                       *  guidance. */}
+                      {rec.confidence_reasoning &&
+                      rec.confidence_reasoning.trim().length > 0 ? (
+                        <details className={styles.reasoningDrawer}>
+                          <summary className={styles.reasoningSummary}>
+                            reasoning
+                          </summary>
+                          <p className={styles.reasoningBody}>
+                            {rec.confidence_reasoning}
+                          </p>
+                        </details>
+                      ) : null}
                     </dd>
                   </div>
 
@@ -416,27 +450,6 @@ export function GeneHeader({
               );
             })()}
           </dl>
-
-          {/* Architecture + Family as plain-text descriptive metadata
-           *  below the chip grid. These used to be a StatusPill chip
-           *  inside the Accessibility vital cell; demoting them here
-           *  keeps the chip grid focused on accessibility signals and
-           *  surfaces the orthogonal architecture / functional family
-           *  axes as scannable text instead. */}
-          <p className={styles.archFamilyRow}>
-            <span className={`label-mono ${styles.archFamilyLabel}`}>
-              Architecture
-            </span>
-            <span className={styles.archFamilyValue}>
-              {prettyEnum(exec.subcategory)}
-            </span>
-            <span className={`label-mono ${styles.archFamilyLabel}`}>
-              Family
-            </span>
-            <span className={styles.archFamilyValue}>
-              {prettyEnum(exec.protein_family)}
-            </span>
-          </p>
         </div>
 
         {structureData ? (

@@ -284,17 +284,27 @@
   line-height: 1.4;
 }
 
-/* Architecture + Family text row below the vitals grid. Mirrors
-   the ExecutiveSummaryCard `.meta` styling — label-mono labels
-   + sans-serif values with a flex-wrap layout so it collapses
-   cleanly on narrow viewports. */
-.archFamilyRow {
+/* Architecture + Family as label/value text pairs INSIDE the
+   Accessibility vital cell, beneath the accessibility value.
+   Font matches the StatusPill chip (uppercase, font-sans,
+   letter-spaced, 0.72rem). Color inheritance: the parent <p>
+   carries a global `tone-{success|teal|amber|danger|lavender}`
+   class set by `vitalToneClass(accessTone)`, which paints the
+   values in the accessibility tone (so the metadata reads as
+   belonging to this cell's accessibility signal). Labels stay
+   muted so the value pops. */
+.archFamilyInline {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  font-weight: var(--fw-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1.4;
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--space-3);
-  margin: var(--space-3) 0 0;
-  color: var(--ink);
+  gap: 0.45rem;
 }
 
 .archFamilyLabel {
@@ -302,7 +312,46 @@
 }
 
 .archFamilyValue {
+  /* Inherit color from .archFamilyInline (which the tone-X class
+     paints). Slight gap between value and the next label. */
+  margin-right: 0.3rem;
+}
+
+/* Confidence reasoning drawer — inline `<details>` directly under
+   the confidence vital value. Mirrors the EvidenceLedgerCard
+   `.summary` pattern (accent-colored cursor: pointer line, no
+   background, no border, no triangle marker) so the drawer
+   reads as the same "click to expand" affordance used elsewhere
+   in the page. */
+.reasoningDrawer {
+  margin: var(--space-2) 0 0;
+}
+
+.reasoningSummary {
+  cursor: pointer;
   font-family: var(--font-sans);
-  font-size: 0.95rem;
-  margin-right: var(--space-3);
+  font-size: 0.85rem;
+  color: var(--accent);
+  list-style: none;
+  user-select: none;
+}
+
+.reasoningSummary::marker {
+  content: "";
+}
+
+.reasoningSummary::-webkit-details-marker {
+  display: none;
+}
+
+.reasoningSummary:hover {
+  color: var(--ink);
+}
+
+.reasoningBody {
+  margin: var(--space-2) 0 0;
+  font-size: 0.88rem;
+  line-height: var(--lh-body);
+  color: var(--ink-soft);
+  max-width: 70ch;
 }
