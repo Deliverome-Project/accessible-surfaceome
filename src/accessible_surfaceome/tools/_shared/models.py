@@ -2939,18 +2939,22 @@ class TriageRecordDraft(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(
         ...,
-        description="Why this triage verdict. Soft target ≤800 chars (overshoots warned but accepted).",
+        description="Why this triage verdict. Soft target ≤1250 chars (overshoots warned but accepted). Floor set from the empirical distribution on the 2026-05-12 mainbench Sonnet ncbi sweep (147 cells): median 956, p99 1199, max 1221. Catches genuine multi-thousand-char outliers without flagging the typical case.",
     )
     reason: TriageReason
     confidence: TriageConfidence
     key_uncertainty: str | None = Field(
         default=None,
-        description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
+        description="The most important uncertainty. Soft target ≤300 chars (overshoots warned but accepted). Floor set from the empirical distribution (Sonnet ncbi 2026-05-12 sweep): p90 250, max 267.",
     )
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "verdict_reasoning": 800,
-        "key_uncertainty": 200,
+        # Caps set from empirical distribution of 147 Sonnet ncbi cells
+        # in the 2026-05-12 mainbench sweep: verdict_reasoning median
+        # 956 / p99 1199 / max 1221; key_uncertainty p90 250 / max 267.
+        # Old caps (800 / 200) fired on 80% / 37% of rows respectively.
+        "verdict_reasoning": 1250,
+        "key_uncertainty": 300,
     }
 
     @model_validator(mode="after")
@@ -2983,13 +2987,13 @@ class TriageRecord(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(
         ...,
-        description="Why this triage verdict. Soft target ≤800 chars (overshoots warned but accepted).",
+        description="Why this triage verdict. Soft target ≤1250 chars (overshoots warned but accepted). Floor set from the empirical distribution on the 2026-05-12 mainbench Sonnet ncbi sweep (147 cells): median 956, p99 1199, max 1221. Catches genuine multi-thousand-char outliers without flagging the typical case.",
     )
     reason: TriageReason
     confidence: TriageConfidence
     key_uncertainty: str | None = Field(
         default=None,
-        description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
+        description="The most important uncertainty. Soft target ≤300 chars (overshoots warned but accepted). Floor set from the empirical distribution (Sonnet ncbi 2026-05-12 sweep): p90 250, max 267.",
     )
     search_log: list[SearchEntry] = Field(default_factory=list)
     provenance: TriageProvenance | None = Field(
@@ -3002,8 +3006,12 @@ class TriageRecord(BaseModel):
     )
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "verdict_reasoning": 800,
-        "key_uncertainty": 200,
+        # Caps set from empirical distribution of 147 Sonnet ncbi cells
+        # in the 2026-05-12 mainbench sweep: verdict_reasoning median
+        # 956 / p99 1199 / max 1221; key_uncertainty p90 250 / max 267.
+        # Old caps (800 / 200) fired on 80% / 37% of rows respectively.
+        "verdict_reasoning": 1250,
+        "key_uncertainty": 300,
     }
 
     @model_validator(mode="after")
