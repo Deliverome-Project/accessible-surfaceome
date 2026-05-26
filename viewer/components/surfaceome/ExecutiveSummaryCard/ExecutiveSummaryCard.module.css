@@ -40,3 +40,56 @@
   font-family: var(--font-sans);
   font-size: 0.95rem;
 }
+
+/* Confidence rationale — collapsible expander tucked right under the
+   pill strip so the reader can click to see WHY confidence isn't
+   higher (specific weakness + what would lift it). Closed by default
+   to keep the gene-page header tight; the prose is user-facing per
+   the synth prompt's "writing for the reader" guidance. */
+.confidenceRationale {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-warm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-soft);
+}
+
+.confidenceRationale > summary {
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  list-style: none;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.confidenceRationale > summary::before {
+  content: "▸";
+  color: var(--muted);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.confidenceRationale[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.confidenceRationale > summary::-webkit-details-marker {
+  display: none;
+}
+
+.confidenceRationale > summary:hover {
+  color: var(--maroon);
+}
+
+.confidenceRationaleBody {
+  margin: var(--space-2) 0 0;
+  font-size: 0.9rem;
+  line-height: var(--lh-body);
+  color: var(--ink);
+  max-width: 70ch;
+}

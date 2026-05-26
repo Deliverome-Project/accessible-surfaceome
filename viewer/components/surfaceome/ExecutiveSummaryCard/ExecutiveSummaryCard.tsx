@@ -120,6 +120,24 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
         </li>
       </ul>
 
+      {/* Confidence rationale — collapsible expander beneath the
+       *  confidence chip. The synth prompt produces this prose only
+       *  when confidence ∈ {moderate, low}; for `high` calls the
+       *  field is typically empty, so we hide the expander entirely.
+       *  Prose is user-facing per the synth prompt's "writing for the
+       *  reader" section (no `A1`/`a1_evi_NN`/`accessibility='X'`
+       *  pipeline jargon). */}
+      {rec.confidence_reasoning && rec.confidence_reasoning.trim().length > 0 ? (
+        <details className={styles.confidenceRationale}>
+          <summary>
+            Why is confidence {prettyEnum(e.confidence)}? — rationale
+          </summary>
+          <p className={styles.confidenceRationaleBody}>
+            {rec.confidence_reasoning}
+          </p>
+        </details>
+      ) : null}
+
       {e.headline_risks.length > 0 ? (
         <p className={styles.risks}>
           <span className={`label-mono ${styles.risksLabel}`}>Headline risks</span>
