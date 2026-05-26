@@ -24,7 +24,13 @@
 .headerText {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  /* `--space-4` (1rem) was too airy between the IDs row, the
+   * SOURCES strip, and the TRIAGE row — those three should read as
+   * a tight cluster sitting under the gene symbol. Dropped to
+   * `--space-2` (0.5rem) so the cluster is dense; the larger gap to
+   * the exec lede + vitals (handled by their own margins) still
+   * separates them clearly. */
+  gap: var(--space-2);
   min-width: 0;
 }
 
@@ -85,9 +91,12 @@
  * the gene name. Reads as the gene-page TL;DR; deeper structured
  * signals are in the vitals row below and the section cards beyond.
  * Same width policy as .geneName: fill the headerText column up to
- * the structure-viewer edge. */
+ * the structure-viewer edge. Top margin is set explicitly to add
+ * breathing room above the lede, separating it visually from the
+ * dense IDs / SOURCES / TRIAGE cluster above (the parent flex-gap
+ * was reduced to 0.5rem to tighten that cluster). */
 .execLede {
-  margin: var(--space-1) 0 0;
+  margin: var(--space-3) 0 0;
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--ink);
@@ -111,7 +120,10 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.6rem;
-  margin: var(--space-2) 0 0;
+  /* No extra top margin — the parent .headerText flex gap handles
+   * the spacing from the DB-presence strip above. Extra margin would
+   * double-space them. */
+  margin: 0;
   font-size: 0.78rem;
   color: var(--ink);
 }

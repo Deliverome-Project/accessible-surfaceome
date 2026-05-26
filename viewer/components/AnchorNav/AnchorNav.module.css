@@ -37,6 +37,12 @@
   height: 100%;
   overflow-x: auto;
   scrollbar-width: none;
+  /* Padding gives the :focus-visible outline room to render without
+   * the leftmost / rightmost tab's outline getting clipped by the
+   * overflow-x scroll viewport. The global rule sets a 2px outline
+   * with a 2px outline-offset, so the tab needs ~4px of inline
+   * breathing room on each side. */
+  padding-inline: 4px;
 }
 
 .inner::-webkit-scrollbar {
