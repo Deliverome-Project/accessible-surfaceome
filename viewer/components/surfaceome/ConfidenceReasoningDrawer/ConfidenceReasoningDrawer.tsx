@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import styles from "./ConfidenceReasoningDrawer.module.css";
 
 interface Props {
@@ -35,6 +36,13 @@ interface Props {
  */
 export function ConfidenceReasoningDrawer({ reasoning, confidenceLabel }: Props) {
   const [isOpen, setIsOpen] = useState(false);
+  // Track when the component has mounted on the client so we can
+  // safely call `createPortal(..., document.body)`. The portal is
+  // load-bearing — see the block below the JSX for the gory details.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // ESC closes the drawer. Mirror of the BenchmarkTable pattern —
   // installed on window so we don't depend on drawer focus.
@@ -49,18 +57,22 @@ export function ConfidenceReasoningDrawer({ reasoning, confidenceLabel }: Props)
 
   if (!reasoning || !reasoning.trim()) return null;
 
-  return (
+  // Portal target for the drawer's fixed-position aside + backdrop.
+  // This is REQUIRED, not cosmetic: the gene page wraps each section
+  // in a `<Reveal>` div that carries `will-change: transform` (and a
+  // no-op `transform: translate(0,0)` once the fade settles). Per
+  // CSS spec, any ancestor with a non-`none` transform OR a
+  // `will-change` that lists `transform`/`perspective`/`filter`
+  // establishes a new containing block for `position: fixed`
+  // descendants — i.e. `right: 0` no longer means "viewport right",
+  // it means "the .reveal ancestor's right edge". The drawer then
+  // collapses to ~zero width and renders as a tall vertical sliver
+  // pinned inline next to the gene header instead of an offscreen
+  // side panel. Portaling to `document.body` skips the .reveal
+  // wrapper entirely so the fixed positioning resolves against the
+  // viewport again.
+  const overlay = (
     <>
-      <button
-        type="button"
-        className={styles.trigger}
-        onClick={() => setIsOpen(true)}
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-      >
-        reasoning
-      </button>
-
       {/* Backdrop — click anywhere off the drawer to close. Lives
        *  below the drawer's z-index so the drawer stays interactive.
        *  Only mounted when the drawer is open so it doesn't intercept
@@ -96,6 +108,22 @@ export function ConfidenceReasoningDrawer({ reasoning, confidenceLabel }: Props)
           <p className={styles.drawerReasoning}>{reasoning}</p>
         </div>
       </aside>
+    </>
+  );
+
+  return (
+    <>
+      <button
+        type="button"
+        className={styles.trigger}
+        onClick={() => setIsOpen(true)}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+      >
+        reasoning
+      </button>
+
+      {mounted ? createPortal(overlay, document.body) : null}
     </>
   );
 }
