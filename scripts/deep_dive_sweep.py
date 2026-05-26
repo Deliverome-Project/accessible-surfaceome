@@ -120,9 +120,13 @@ class GeneResult:
     d1_mirror_ok: bool = True
     # Number of SearchEntry rows on the record's search_log. Used by the
     # canary gate to fail fast on a regression where every record ships
-    # with an empty search_log (the silent-provenance-loss bug fixed in
-    # the same PR as this field was introduced).
+    # with an empty search_log.
     search_log_count: int = 0
+    # True iff the gene's total cost exceeded --max-cost-per-gene-usd.
+    # Even when set, the record + JSON + D1 row are still produced — we
+    # paid for the work, we keep the work. The operator can decide later
+    # whether to retain or rerun.
+    cost_capped: bool = False
 
 
 def annotate_one(
@@ -153,16 +157,8 @@ def annotate_one(
         cost = float(result.total_cost_usd)
         latency = time.monotonic() - t0
 
-        if cost > max_cost_per_gene_usd:
-            return GeneResult(
-                hgnc_id=row.hgnc_id, hgnc_symbol=row.hgnc_symbol,
-                cost_usd=cost, latency_s=latency,
-                blocks_used=result.blocks_used,
-                error=f"cost_cap_exceeded ({cost:.2f} > {max_cost_per_gene_usd:.2f})",
-                record_valid=False,
-            )
-
         if result.record is None:
+            # Pipeline didn't produce a valid record — nothing to save.
             return GeneResult(
                 hgnc_id=row.hgnc_id, hgnc_symbol=row.hgnc_symbol,
                 cost_usd=cost, latency_s=latency,
@@ -170,9 +166,24 @@ def annotate_one(
                 record_valid=False,
             )
 
-        # Canonical artifact: data/annotations/<symbol>.json
-        annotations_dir.mkdir(parents=True, exist_ok=True)
-        out = annotations_dir / f"{bundle.hgnc_symbol}.json"
+        # Cost-cap is a flag, NOT a discard. We paid for the work; we keep
+        # the work. The operator surfaces the count in the summary and
+        # decides whether to retain or rerun.
+        cost_capped = cost > max_cost_per_gene_usd
+        cap_message: str | None = None
+        if cost_capped:
+            cap_message = (
+                f"cost_cap_exceeded ({cost:.2f} > {max_cost_per_gene_usd:.2f})"
+            )
+
+        # Canonical artifact: <annotations_dir>/<run_id>/<symbol>.json.
+        # Scoping by run_id makes the JSON path unambiguous when two
+        # drivers race the same gene under different run_ids — without
+        # the run_id prefix, last-writer-win could store the record D1
+        # intentionally skipped via ON CONFLICT DO NOTHING.
+        gene_dir = annotations_dir / run_id
+        gene_dir.mkdir(parents=True, exist_ok=True)
+        out = gene_dir / f"{bundle.hgnc_symbol}.json"
         out.write_text(result.record.model_dump_json(indent=2))
 
         # Best-effort D1 mirror. Capture the return so silent D1 failures
@@ -190,9 +201,12 @@ def annotate_one(
         return GeneResult(
             hgnc_id=row.hgnc_id, hgnc_symbol=row.hgnc_symbol,
             cost_usd=cost, latency_s=latency,
-            blocks_used=result.blocks_used, error=None, record_valid=True,
+            blocks_used=result.blocks_used,
+            error=cap_message,  # informational; record is still valid
+            record_valid=True,
             d1_mirror_ok=d1_mirror_ok,
             search_log_count=len(result.record.search_log),
+            cost_capped=cost_capped,
         )
     finally:
         http.close()
@@ -243,6 +257,8 @@ def run_local(
                 status = f"FAIL ({res.error})"
             elif not res.d1_mirror_ok:
                 status = "OK (D1 MIRROR FAILED)"
+            elif res.cost_capped:
+                status = f"OK (COST CAP HIT: {res.error})"
             else:
                 status = "OK"
             print(
@@ -435,12 +451,21 @@ def main(argv: list[str] | None = None) -> int:
     print_canary_report(summary)
     failed = [r for r in results if not r.record_valid]
     d1_failed = [r for r in results if r.record_valid and not r.d1_mirror_ok]
+    cost_capped = [r for r in results if r.record_valid and r.cost_capped]
     print(f"\ntotals: valid={len(results) - len(failed)}  failed={len(failed)}", flush=True)
     if d1_failed:
         print(
             f"!! d1 mirror failures: {len(d1_failed)}/{len(results) - len(failed)} "
             "(JSON files landed; D1 rows did NOT — backfill from JSON before re-running "
             "or the next resume will re-spend on these genes)",
+            flush=True,
+        )
+    if cost_capped:
+        capped_spend = sum(r.cost_usd for r in cost_capped)
+        print(
+            f"!! cost cap hit on {len(cost_capped)} genes "
+            f"(${capped_spend:.2f} total over-cap spend). Records retained — "
+            "review and decide whether to keep or rerun.",
             flush=True,
         )
     if sink is not None:
