@@ -93,6 +93,7 @@ export function CommunityNotesCard({ gene, n }: Props) {
     if (usingMock()) {
       setMock(true);
       setNotes(MOCK_NOTES);
+      announceCount(MOCK_NOTES.length);
       return;
     }
     let cancelled = false;
@@ -103,13 +104,23 @@ export function CommunityNotesCard({ gene, n }: Props) {
           { cache: "no-store" },
         );
         if (!r.ok) {
-          if (!cancelled) setErrored(true);
+          if (!cancelled) {
+            setErrored(true);
+            announceCount(0);
+          }
           return;
         }
         const j: PublicResponse = await r.json();
-        if (!cancelled) setNotes(Array.isArray(j.notes) ? j.notes : []);
+        if (!cancelled) {
+          const list = Array.isArray(j.notes) ? j.notes : [];
+          setNotes(list);
+          announceCount(list.length);
+        }
       } catch {
-        if (!cancelled) setErrored(true);
+        if (!cancelled) {
+          setErrored(true);
+          announceCount(0);
+        }
       }
     }
     load();
@@ -123,17 +134,16 @@ export function CommunityNotesCard({ gene, n }: Props) {
   if (notes === null || notes.length === 0 || errored) return null;
 
   return (
-    <div className={styles.accent}>
-      <SectionCard
-        n={n}
-        eyebrow={mock ? "Community · MOCK" : "Community"}
-        title={`Community notes (${notes.length})`}
-        meta={
-          mock
-            ? `${notes.length} synthetic notes for design review (URL ?mock=notes)`
-            : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`
-        }
-      >
+    <SectionCard
+      n={n}
+      eyebrow={mock ? "Community · MOCK" : "Community"}
+      title="Community notes"
+      meta={
+        mock
+          ? `${notes.length} synthetic notes for design review (URL ?mock=notes)`
+          : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`
+      }
+    >
       {mock ? (
         <p className={styles.mockBanner}>
           Preview only — these notes don&apos;t exist in production.
@@ -174,9 +184,29 @@ export function CommunityNotesCard({ gene, n }: Props) {
           </li>
         ))}
       </ul>
-      </SectionCard>
-    </div>
+    </SectionCard>
   );
+}
+
+/** Dispatch the resolved note count so the SectionTabs strip can
+ *  decorate the "Community notes" tab with `(N)` + the green accent.
+ *  Event is global so the listener doesn't have to know about the
+ *  card; the contract is just `count: number` for this gene.
+ *
+ *  Deferred to the next microtask via `queueMicrotask` because React
+ *  fires child `useEffect`s BEFORE the parent's: if we dispatched
+ *  synchronously the SectionTabs listener wouldn't be mounted yet
+ *  and the event would land in the void. The microtask hop pushes
+ *  the dispatch past the parent's effect mount. */
+function announceCount(count: number): void {
+  if (typeof window === "undefined") return;
+  queueMicrotask(() => {
+    window.dispatchEvent(
+      new CustomEvent("surfaceome:community-notes-count", {
+        detail: { count },
+      }),
+    );
+  });
 }
 
 function formatDate(iso: string): string {

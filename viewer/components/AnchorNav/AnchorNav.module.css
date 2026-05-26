@@ -73,6 +73,27 @@
   box-shadow: 0 1px 2px rgba(31, 23, 24, 0.04);
 }
 
+/* Decorated tab — used today for the Community-notes tab when at
+ * least one note exists. Replaces the default tab's transparent
+ * border with a tinted green border so the reader notices new
+ * community content without having to scan the tab list. Stays
+ * compatible with linkActive (which adds bg + shadow on top).
+ * Border uses the full shorthand here because the `.link` base
+ * rule sets `border: 1px solid transparent` as a shorthand; the
+ * shorthand re-declaration ensures color, style, and width all
+ * land together regardless of CSS Modules' emission order. */
+.link.linkAccent {
+  border: 1px solid var(--success);
+  background: rgba(46, 122, 85, 0.04);
+}
+
+.link.linkAccent.linkActive {
+  /* Active + decorated = strongest emphasis: solid white background
+   * (from linkActive) + green border (from linkAccent). Force the
+   * green border so the active-state's var(--line) doesn't win. */
+  border: 1px solid var(--success);
+}
+
 .num {
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -81,5 +102,13 @@
 }
 
 .label {
+  font-weight: 500;
+}
+
+/* Count suffix on a decorated tab — e.g. "Community notes (3)".
+ * Matches the surrounding label weight but uses the success-green
+ * tint to mirror the border accent. */
+.count {
+  color: var(--success);
   font-weight: 500;
 }

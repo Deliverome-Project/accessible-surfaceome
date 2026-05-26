@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, isValidElement, useEffect, useState } from "react";
+import { Children, isValidElement, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { AnchorNav, type AnchorSection } from "../AnchorNav/AnchorNav";
 import styles from "./SectionTabs.module.css";
@@ -12,6 +12,10 @@ interface SectionTabsProps {
    *  ``id``. Children are pre-rendered server-side; this component
    *  just toggles which one is visible. */
   children: ReactNode;
+}
+
+interface CommunityCountDetail {
+  count: number;
 }
 
 /**
@@ -39,6 +43,43 @@ export function SectionTabs({ sections, children }: SectionTabsProps) {
   const initial = sections[0]?.id ?? "";
   const [active, setActive] = useState<string>(initial);
 
+  // Community-notes count, dispatched by <CommunityNotesCard> after
+  // it resolves its `/v1/feedback/public` fetch. We decorate the
+  // matching tab with `(N)` + green accent so the reader notices new
+  // community content without scrolling. `null` means "haven't heard
+  // yet" — render the tab undecorated until we know.
+  const [communityCount, setCommunityCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<CommunityCountDetail>).detail;
+      if (detail && typeof detail.count === "number") {
+        setCommunityCount(detail.count);
+      }
+    };
+    window.addEventListener("surfaceome:community-notes-count", handler);
+    return () => {
+      window.removeEventListener(
+        "surfaceome:community-notes-count",
+        handler,
+      );
+    };
+  }, []);
+
+  // Merge the community count into the sections list passed to
+  // <AnchorNav>. Keeps the AnchorNav generic — it just consumes
+  // `count?: number` per section and decorates when >= 1.
+  const decoratedSections = useMemo(
+    () =>
+      sections.map((s) =>
+        s.id === "community" && communityCount !== null
+          ? { ...s, count: communityCount }
+          : s,
+      ),
+    [sections, communityCount],
+  );
+
   // Restore the active tab from the URL hash on mount (so a deep
   // link like ``/EGFR#section-evidence`` works) and on
   // browser-history navigation (back / forward).
@@ -59,7 +100,11 @@ export function SectionTabs({ sections, children }: SectionTabsProps) {
 
   return (
     <>
-      <AnchorNav sections={sections} active={active} onSelect={setActive} />
+      <AnchorNav
+        sections={decoratedSections}
+        active={active}
+        onSelect={setActive}
+      />
       <div className={styles.body}>
         {Children.map(children, (child) => {
           if (!isValidElement(child)) return child;
