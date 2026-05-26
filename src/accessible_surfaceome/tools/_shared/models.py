@@ -1418,6 +1418,92 @@ class ExecutiveSummary(BaseModel):
         _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
         return self
 
+    @model_validator(mode="after")
+    def _check_surface_call_reason_aligns_with_accessibility(
+        self,
+    ) -> "ExecutiveSummary":
+        """Enforce bucket alignment between ``surface_accessibility``,
+        ``state_dependence``, and ``surface_call_reason``.
+
+        The synth-side analogue of TriageRecord's
+        ``_check_reason_matches_verdict``. Without this, the synth can
+        emit nonsensical combos like ``surface_accessibility=high`` +
+        ``state_dependence=low`` + ``surface_call_reason=cytoplasmic``
+        (a high canonical-surface call with a NO-bucket reason) and
+        nothing else in the schema catches it.
+
+        Rules (mirror the bucket structure documented in the
+        ``surface_call_reason`` section of
+        ``surfaceome_synthesizer/prompts/system.md``):
+
+        * ``high/moderate`` + ``low/unclear`` state_dep → YES-bucket only
+          (canonical surface mechanisms)
+        * ``high/moderate`` + ``moderate/high`` state_dep → YES OR
+          CONTEXTUAL bucket (state-gated surface OK)
+        * ``low`` → NO OR CONTEXTUAL bucket (marginal-yes state may
+          justify a low headline)
+        * ``no`` → NO-bucket only
+        * ``uncertain`` → any reason (by definition the synth wasn't
+          sure enough to constrain the explanation)
+
+        ``other`` is in every bucket so it's always valid as an
+        escape hatch.
+        """
+        sa = self.surface_accessibility
+        sd = self.state_dependence
+        r = self.surface_call_reason
+
+        # uncertain → any reason allowed
+        if sa == "uncertain":
+            return self
+
+        # `other` is in every bucket — always valid
+        if r == "other":
+            return self
+
+        yes_bucket = _YES_REASONS - {"other"}
+        contextual_bucket = _CONTEXTUAL_REASONS - {"other"}
+        no_bucket = _NO_REASONS - {"other"}
+
+        if sa == "no":
+            if r not in no_bucket:
+                raise ValueError(
+                    f"surface_accessibility='no' requires surface_call_reason "
+                    f"in the NO-bucket; got {r!r}. NO-bucket: "
+                    f"{sorted(no_bucket)}"
+                )
+            return self
+
+        if sa == "low":
+            allowed = no_bucket | contextual_bucket
+            if r not in allowed:
+                raise ValueError(
+                    f"surface_accessibility='low' requires surface_call_reason "
+                    f"in the NO or CONTEXTUAL bucket; got {r!r}"
+                )
+            return self
+
+        # sa ∈ {high, moderate}
+        if sd in ("low", "unclear"):
+            if r not in yes_bucket:
+                raise ValueError(
+                    f"surface_accessibility={sa!r} with state_dependence={sd!r} "
+                    f"requires surface_call_reason in the YES-bucket "
+                    f"(canonical surface mechanisms); got {r!r}. YES-bucket: "
+                    f"{sorted(yes_bucket)}"
+                )
+            return self
+
+        # sd ∈ {moderate, high}
+        allowed = yes_bucket | contextual_bucket
+        if r not in allowed:
+            raise ValueError(
+                f"surface_accessibility={sa!r} with state_dependence={sd!r} "
+                f"requires surface_call_reason in the YES or CONTEXTUAL bucket "
+                f"(canonical or state-gated surface); got {r!r}"
+            )
+        return self
+
 
 # ---- filters --------------------------------------------------------------
 

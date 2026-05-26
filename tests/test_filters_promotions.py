@@ -231,8 +231,16 @@ def test_derive_filters_propagates_co_receptor_dependency_full_enum():
 
 
 def test_derive_filters_propagates_surface_call_reason():
+    # Use a NO-bucket reason paired with surface_accessibility="no" so
+    # the ExecutiveSummary's new reason-vs-accessibility validator
+    # accepts the combo. The point of this test is filter PROPAGATION,
+    # not validator behavior — _derive_filters just copies the field
+    # through, so any valid combo works.
     filters = _derive_filters(
-        executive_summary=_exec(surface_call_reason="inner_leaflet_anchored"),
+        executive_summary=_exec(
+            surface_accessibility="no",
+            surface_call_reason="inner_leaflet_anchored",
+        ),
         surface_evidence=_surface_evidence(),
         biological_context=_bio_ctx(),
         accessibility_risks=_risks(),
