@@ -85,6 +85,16 @@ export interface CatalogRow {
    *  bench genes have only the Sonnet slot populated). */
   triage_by_model: (TriageCell | null)[];
   deep_dive: boolean;
+  /** SURFACE-Bind scored-patch count (Marchand 2026 PNAS). Three-
+   *  state semantics:
+   *   - ``undefined`` → UniProt not in SURFACE-Bind's dataset at
+   *     all (filtered out at structural QC).
+   *   - ``0`` → scored, but no patches cleared the MaSIF threshold.
+   *   - ``N > 0`` → number of scored targetable patches.
+   *  Populated by the Worker via D1 join on ``surface_bind_protein``;
+   *  ``undefined`` here also covers the pre-Worker-deploy interim
+   *  where the field hasn't shipped yet. */
+  surface_bind_sites?: number;
 }
 
 export interface Catalog {
@@ -298,6 +308,12 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   const triage_by_model: (TriageCell | null)[] = (tr ?? [null, null, null]).map(
     (slot) => (slot ? { verdict: slot[0], reason: slot[1] } : null),
   );
+  // Worker row_schema v4+ ships an optional ``sb`` field — number of
+  // SURFACE-Bind targetable patches. Undefined on rows whose UniProt
+  // isn't in SURFACE-Bind at all (the "not in dataset" state); 0
+  // means scored-but-no-patches. Decoder passes the value through
+  // unchanged so the table filter can distinguish the three states.
+  const sb = r.sb as number | undefined;
   return {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
@@ -307,6 +323,7 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     db,
     triage_by_model,
     deep_dive: Boolean(r.deep_dive),
+    surface_bind_sites: typeof sb === "number" ? sb : undefined,
   };
 }
 

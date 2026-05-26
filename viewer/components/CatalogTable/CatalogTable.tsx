@@ -235,6 +235,18 @@ export function CatalogTable({
   const [deepDiveFilter, setDeepDiveFilter] = useState<"yes" | "no" | null>(
     null,
   );
+  // SURFACE-Bind filter — 4-way exclusive: any / scored ≥1 / scored
+  // ≥3 / not in dataset. ``null`` = filter off (all rows pass).
+  //  - "any" → ``surface_bind_sites != null`` (in dataset, scored)
+  //  - "ge1" → ``surface_bind_sites >= 1`` (has scored targetable patches)
+  //  - "ge3" → ``surface_bind_sites >= 3`` (multi-site, design flexibility)
+  //  - "not_in" → ``surface_bind_sites == null`` (not in SURFACE-Bind)
+  // The chip set deliberately distinguishes "scored but 0 patches"
+  // (under "any" but NOT under "ge1") from "not in dataset" so the
+  // catalog reader can tell them apart at a glance.
+  type SurfaceBindFilter = "any" | "ge1" | "ge3" | "not_in" | null;
+  const [surfaceBindFilter, setSurfaceBindFilter] =
+    useState<SurfaceBindFilter>(null);
 
   function toggleDbFilter(key: DbKey) {
     setDbFilter((prev) => {
@@ -283,17 +295,23 @@ export function CatalogTable({
     // other chip switches to it. yes/no are mutually exclusive.
     setDeepDiveFilter((prev) => (prev === key ? null : key));
   }
+  function toggleSurfaceBindFilter(key: NonNullable<SurfaceBindFilter>) {
+    // 4-way radio — clicking the active chip clears, otherwise switches.
+    setSurfaceBindFilter((prev) => (prev === key ? null : key));
+  }
   function clearAdvancedFilters() {
     setDbFilter(new Set());
     setVerdictFilter(new Set());
     setReasonFilter(new Set());
     setDeepDiveFilter(null);
+    setSurfaceBindFilter(null);
   }
   const activeFilterCount =
     dbFilter.size +
     verdictFilter.size +
     reasonFilter.size +
-    (deepDiveFilter !== null ? 1 : 0);
+    (deepDiveFilter !== null ? 1 : 0) +
+    (surfaceBindFilter !== null ? 1 : 0);
 
   // Which reason groups make sense to surface, given the current
   // verdict filter. The triage reason is constrained by the verdict
@@ -411,6 +429,24 @@ export function CatalogTable({
         const k = r.deep_dive ? "yes" : "no";
         if (k !== deepDiveFilter) return false;
       }
+      if (surfaceBindFilter !== null) {
+        const sb = r.surface_bind_sites;
+        switch (surfaceBindFilter) {
+          case "any":
+            // In SURFACE-Bind's dataset at all (scored — even with 0 patches).
+            if (sb == null) return false;
+            break;
+          case "ge1":
+            if (sb == null || sb < 1) return false;
+            break;
+          case "ge3":
+            if (sb == null || sb < 3) return false;
+            break;
+          case "not_in":
+            if (sb != null) return false;
+            break;
+        }
+      }
       return true;
     });
   }, [
@@ -421,6 +457,7 @@ export function CatalogTable({
     verdictFilter,
     reasonFilter,
     deepDiveFilter,
+    surfaceBindFilter,
   ]);
 
   const sorted = useMemo(() => {
@@ -695,6 +732,48 @@ export function CatalogTable({
             </div>
             <span className={styles.filterHint}>
               {`Has a deep-dive page — currently ${n_with_deep_dive} of ${n_rows.toLocaleString()} genes. Click an active chip to clear.`}
+            </span>
+          </div>
+
+          {/* SURFACE-Bind filter — Marchand 2026 PNAS scored binder
+              patches. Four-way radio, mutually exclusive. ``any`` =
+              in dataset (scored, even with 0 patches); ``ge1`` /
+              ``ge3`` = scored with at least N patches; ``not_in`` =
+              filtered out at SURFACE-Bind's structural QC. Together
+              the chips distinguish the three states the SurfaceBindCard
+              talks about. */}
+          <div
+            className={styles.filterRow}
+            role="radiogroup"
+            aria-label="SURFACE-Bind site count"
+          >
+            <span className={styles.filterLabel}>SURFACE-Bind</span>
+            <div className={styles.filterChips}>
+              {(
+                [
+                  { k: "any", label: "any" },
+                  { k: "ge1", label: "≥1 site" },
+                  { k: "ge3", label: "≥3 sites" },
+                  { k: "not_in", label: "not in" },
+                ] as const
+              ).map(({ k, label }) => {
+                const on = surfaceBindFilter === k;
+                return (
+                  <button
+                    key={`sb-filter-${k}`}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                    onClick={() => toggleSurfaceBindFilter(k)}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+            <span className={styles.filterHint}>
+              {`SURFACE-Bind MaSIF-scored targetable patches (Marchand 2026 PNAS). "any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
             </span>
           </div>
 

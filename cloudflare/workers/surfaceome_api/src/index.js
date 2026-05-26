@@ -275,6 +275,31 @@ async function handleCatalog(env) {
   ).all();
   const deepSet = new Set(deepRows.results.map((r) => r.gene_symbol));
 
+  // SURFACE-Bind per-UniProt site counts (Marchand 2026 PNAS).
+  // Three-state value semantics — see viewer/lib/surfaceome.ts:
+  //   `null` (omitted from row entirely) — UniProt not in surface_bind_protein
+  //     (filtered out at SURFACE-Bind's structural QC step)
+  //   `0` — scored but no surface patches cleared the MaSIF
+  //     targetability threshold
+  //   `N > 0` — number of scored targetable patches
+  // The filter chip group in the catalog page reads this directly.
+  // ``surface_bind_protein`` is mirrored from
+  // ``scripts/sync_surface_bind_to_d1.py``; the join is keyed on
+  // UniProt acc so the lookup is O(1) per row.
+  const sbByAcc = new Map();
+  try {
+    const sbRows = await env.DB.prepare(
+      `SELECT acc, n_sites FROM surface_bind_protein`
+    ).all();
+    for (const r of sbRows.results) {
+      if (r.acc) sbByAcc.set(r.acc, r.n_sites ?? 0);
+    }
+  } catch (e) {
+    // Table doesn't exist yet (D1 mirror hasn't synced) — degrade
+    // gracefully; rows just won't carry the ``sb`` field.
+    console.warn("surface_bind_protein lookup failed:", e?.message ?? e);
+  }
+
   // HGNC ID lookup keyed on the authoritative hgnc_symbol. Lets us
   // attach hgnc_id to every catalog row so external reanalysts can
   // cross-reference any other HGNC-keyed table without re-resolving
@@ -336,6 +361,9 @@ async function handleCatalog(env) {
     const t = packTriage(u.gene_symbol);
     if (t) row.tr = t;
     if (deepSet.has(u.gene_symbol)) row.deep_dive = true;
+    if (u.uniprot_acc && sbByAcc.has(u.uniprot_acc)) {
+      row.sb = sbByAcc.get(u.uniprot_acc);
+    }
     return row;
   });
 
@@ -370,9 +398,10 @@ async function handleCatalog(env) {
       n_with_deep_dive: rows.filter((r) => r.deep_dive).length,
       // Schema version of the row encoding. Bumped when the shape
       // changes; viewer/lib/surfaceome.ts checks this and decodes
-      // accordingly. v3 = per-model ncbi `tr` array replaces the
-      // single `triage` object.
-      row_schema: 3,
+      // accordingly.
+      //   v3 = per-model ncbi `tr` array replaces single `triage`.
+      //   v4 = optional `sb` (SURFACE-Bind site count) added.
+      row_schema: 4,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
       //   const flags = db_keys.map((_, i) => (row.db >> i) & 1);
