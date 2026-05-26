@@ -297,12 +297,12 @@ export function GeneHeader({
                   initial pass · no web search
                 </span>
                 {verdict === "conflict" ? (
-                  <StatusPill tone="amber" size="sm">
-                    Conflicts with deep dive
-                  </StatusPill>
+                  <span className={styles.triageConflict}>
+                    conflicts with deep dive
+                  </span>
                 ) : verdict === "agree" ? (
                   <span className={styles.triageAgree}>
-                    Agrees with deep dive
+                    agrees with deep dive
                   </span>
                 ) : null}
               </p>

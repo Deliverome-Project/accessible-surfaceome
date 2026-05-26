@@ -25,20 +25,17 @@ export const tooltips: Record<string, ReactNode> = {
     <>
       The deep-dive agent&apos;s call on whether the protein is on the
       cell surface. Synthesized from per-method evidence (mass-spec,
-      IHC, antibody-validated surface stains, etc.). One of{" "}
-      <code>high · moderate · low · no · uncertain</code>.
+      IHC, antibody-validated surface stains, etc.). One of: high,
+      moderate, low, no, uncertain.
     </>
   ),
 
   experimental_surface_evidence: (
     <>
       The agent&apos;s grade on how strong the experimental surface
-      evidence is across all methods seen. Five tiers:{" "}
-      <code>
-        direct_multi_method · direct_single_method ·
-        supportive_but_indirect · conflicting · weak
-      </code>
-      .
+      evidence is across all methods seen. Five tiers: direct
+      multi-method, direct single-method, supportive but indirect,
+      conflicting, weak.
     </>
   ),
 
@@ -53,12 +50,11 @@ export const tooltips: Record<string, ReactNode> = {
 
   state_dependence: (
     <>
-      How much the surface call depends on cell state.{" "}
-      <code>low</code> = constitutive (always present),{" "}
-      <code>moderate</code> = varies with context but generally holds,{" "}
-      <code>high</code> = present only in specific states (cancer-only,
-      stress-only, EMT-only), <code>unclear</code> = evidence too
-      thin.
+      How much the surface call depends on cell state. <em>Low</em> =
+      constitutive (always present); <em>moderate</em> = varies with
+      context but generally holds; <em>high</em> = present only in
+      specific states (cancer-only, stress-only, EMT-only);{" "}
+      <em>unclear</em> = evidence too thin.
     </>
   ),
 
@@ -74,12 +70,13 @@ export const tooltips: Record<string, ReactNode> = {
   headline_risks: (
     <>
       Risks to surface accessibility that an antibody campaign would
-      need to plan around. Five categories:{" "}
-      <code>
-        shed_form · secreted_form · co_receptor · epitope_masked ·
-        isoform_decoy
-      </code>
-      .
+      need to plan around: <em>shed form</em> (proteolytically
+      released into the extracellular milieu), <em>secreted form</em>{" "}
+      (a soluble isoform alongside the membrane one),{" "}
+      <em>co-receptor</em> required for surface expression,{" "}
+      <em>epitope masked</em> by another binding partner,{" "}
+      <em>isoform decoy</em> (a non-target isoform competes for binder
+      occupancy).
     </>
   ),
 
@@ -90,13 +87,10 @@ export const tooltips: Record<string, ReactNode> = {
   architecture_chip: (
     <>
       How the protein sits in the membrane. The deep-dive agent picks
-      one of:{" "}
-      <code>
-        single_pass_T1 · single_pass_T2 · multi_pass · GPCR ·
-        GPI_anchored · tetraspanin · other
-      </code>
-      . Informed by DeepTMHMM topology, but the agent can override
-      (e.g. known GPCRs with partial predictions).
+      one of: single-pass type I, single-pass type II, multi-pass,
+      GPCR, GPI-anchored, tetraspanin, or other. Informed by DeepTMHMM
+      topology, but the agent can override (e.g. known GPCRs with
+      partial predictions).
     </>
   ),
 
@@ -111,9 +105,8 @@ export const tooltips: Record<string, ReactNode> = {
       >
         41604262
       </a>
-      ): <code>receptor · enzyme · transporter · miscellaneous</code>.
-      Orthogonal to the Architecture axis above (function vs.
-      topology).
+      ): receptor, enzyme, transporter, or miscellaneous. Orthogonal to
+      the Architecture axis above (function vs. topology).
     </>
   ),
 
@@ -170,17 +163,15 @@ export const tooltips: Record<string, ReactNode> = {
     <>
       The deep-dive agent&apos;s synthesis of where the protein is
       expressed. The agent searches the web for tissue-expression
-      evidence and picks one of{" "}
-      <code>high · moderate · low · absent</code>. See §Biology for the
-      per-tissue rows + cited evidence.
+      evidence and picks one of: high, moderate, low, absent. See
+      §Biology for the per-tissue rows + cited evidence.
     </>
   ),
 
   expression_breadth: (
     <>
       How broadly the protein is expressed across tissues. The agent
-      synthesizes from the per-tissue evidence into:{" "}
-      <code>pan_tissue · broad · restricted · rare</code>.
+      picks one of: pan-tissue, broad, restricted, rare.
     </>
   ),
 
@@ -188,8 +179,7 @@ export const tooltips: Record<string, ReactNode> = {
     <>
       Whether the protein is dominantly on the cell surface or mostly
       intracellular with some surface exposure. The deep-dive agent
-      picks:{" "}
-      <code>surface_dominant · mixed · mostly_intracellular</code>.
+      picks one of: surface-dominant, mixed, mostly intracellular.
     </>
   ),
 };

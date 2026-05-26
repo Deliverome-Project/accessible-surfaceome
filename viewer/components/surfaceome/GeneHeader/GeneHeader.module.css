@@ -198,6 +198,16 @@
   letter-spacing: 0.04em;
 }
 
+/* Same compact text register as `triageAgree` but in amber to signal
+ * the triage prior disagreed with the deep dive. Plain text (no pill
+ * chrome) per user preference — the row already carries enough
+ * structure that a second visual chip is overkill. */
+.triageConflict {
+  color: var(--warning);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
 /* Headline risks — small "label · value" line under the lede. */
 .risks {
   display: flex;
