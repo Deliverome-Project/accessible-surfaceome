@@ -35,29 +35,35 @@
   border-bottom-color: var(--accent);
 }
 
-/* Text-link treatment in accent red — sits inline with the IDs row
- * at the same visual weight as the JSON / Markdown crumb actions
- * (which use the same font-size + underlined border-bottom pattern).
- * Red color keeps the "this is a call-to-action" cue without the
- * heavy filled-pill chrome that earlier iterations had. */
+/* Filled-pill CTA in accent red — sits inline with the IDs row but
+ * reads as a clear call-to-action rather than another data link.
+ * Slightly larger than the IDs text so it pops; not as chunky as
+ * the first iteration. The ↗ glyph keeps the visual rhythm with
+ * the JSON / Markdown actions in the breadcrumb. */
 .standalone {
-  background: transparent;
-  border: 0;
-  padding: 0 0 2px 0;
-  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  color: var(--accent);
-  border-bottom: 1px solid var(--accent);
+  letter-spacing: 0.01em;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--accent-on);
 }
 
 .standalone:hover,
 .standalone:focus-visible {
-  color: var(--accent-deep);
-  border-bottom-color: var(--accent-deep);
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+  color: var(--accent-on);
 }
 
 .standalone::after {
-  content: " ↗";
-  font-size: 0.9em;
+  content: "↗";
+  font-size: 0.85em;
+  line-height: 1;
   opacity: 0.85;
 }
