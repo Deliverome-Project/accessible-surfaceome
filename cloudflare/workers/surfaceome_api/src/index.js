@@ -1069,7 +1069,8 @@ async function handleFeedbackSubmit(request, env, url) {
   ).run();
 
   // Email notify maintainer.
-  const base = `${url.protocol}//${url.host}`;
+  const prefix = url.pathname.startsWith("/surfaceome/") ? "/surfaceome" : "";
+  const base = `${url.protocol}//${url.host}${prefix}`;
   const approvePublicUrl =
     `${base}/v1/feedback/moderate?id=${encodeURIComponent(id)}` +
     `&action=public&t=${encodeURIComponent(await hmacSign(env.MAGIC_LINK_SECRET, id + ":public"))}`;
