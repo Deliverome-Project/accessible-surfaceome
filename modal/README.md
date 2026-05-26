@@ -46,7 +46,8 @@ uv run modal run modal/deep_dive_app.py::canary \
     --run-id candidate_universe_v1_sonnet_2026_05 \
     --n 50
 
-# Full sweep (after canary review). Aborts if running cost passes the cap.
+# Full sweep (after canary review). Dispatched in chunks of 200; aborts
+# between chunks if running cost passes the cap.
 uv run modal run modal/deep_dive_app.py::full_sweep \
     --gene-list data/processed/candidate_universe/candidate_universe.tsv \
     --run-id candidate_universe_v1_sonnet_2026_05 \
@@ -54,13 +55,15 @@ uv run modal run modal/deep_dive_app.py::full_sweep \
 ```
 
 Both entrypoints stream per-gene JSON to the `surfaceome-annotations`
-Volume and best-effort-mirror to the `deep_dive_run` table in
-`surfaceome_agents` D1. The full sweep is resume-aware — re-running with
-the same `--run-id` skips genes already in D1.
+Volume (under `<run_id>/<symbol>.json`) and best-effort-mirror to the
+`deep_dive_run` table in `surfaceome_agents` D1. The full sweep is
+resume-aware — re-running with the same `--run-id` skips genes already
+in D1.
 
 ## Pulling JSON files back
 
 ```bash
+# Pulls everything; files land under data/annotations/<run_id>/<symbol>.json
 uv run modal volume get surfaceome-annotations / data/annotations/
 ```
 
@@ -76,6 +79,12 @@ without downloading.
 - `max_containers=200` — caps fan-out so NCBI (10 req/s per key) and
   Anthropic (tier-dependent RPM) don't get hammered. Raise once
   observed-RPM headroom is confirmed.
+- `--chunk-size 200` (full sweep only) — genes are dispatched in
+  chunks of this size; each chunk is drained fully before the next
+  launches. Smaller chunks → tighter cost-cap enforcement (bounded
+  overshoot of `chunk_size × max_cost_per_gene_usd`) but lower peak
+  utilization of the worker pool. Default 200 keeps the pool
+  saturated while bounding overshoot to ~$100 of typical spend.
 
 ## Local equivalent
 

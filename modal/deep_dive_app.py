@@ -165,6 +165,7 @@ def annotate_one(payload: dict) -> dict:
         "record_valid": result.record_valid,
         "d1_mirror_ok": result.d1_mirror_ok,
         "search_log_count": result.search_log_count,
+        "cost_capped": result.cost_capped,
     }
 
 
@@ -246,6 +247,7 @@ def canary(
             record_valid=r["record_valid"],
             d1_mirror_ok=r.get("d1_mirror_ok", True),
             search_log_count=r.get("search_log_count", 0),
+            cost_capped=r.get("cost_capped", False),
         )
         for r in results
     ]
@@ -264,15 +266,28 @@ def full_sweep(
     run_id: str,
     max_cost_per_gene_usd: float = 10.0,
     max_total_cost_usd: float = 18000.0,
+    chunk_size: int = 200,
 ):
-    """Launch the full sweep over genes not yet in D1 under run_id."""
+    """Launch the full sweep over genes not yet in D1 under run_id.
+
+    Genes are dispatched in chunks of ``chunk_size`` (default 200, sized
+    to saturate ``max_containers=200 × max_inputs=4``). Each chunk is
+    drained fully before the next is submitted, with a running-cost
+    check between chunks. This makes ``--max-total-cost-usd`` a real
+    cap with bounded overshoot — at most ``chunk_size ×
+    max_cost_per_gene_usd`` over the cap. ``annotate_one.map()`` on the
+    full payload list would otherwise spawn every Modal Function
+    eagerly, and breaking out of the iterator wouldn't cancel
+    in-flight containers; the chunked path makes the cap actually stop
+    new work from being launched.
+    """
     from accessible_surfaceome.env import load_env
     load_env()
 
     payloads, total = _load_and_filter(gene_list, run_id, no_d1=False)
     print(
         f"full sweep: {len(payloads)}/{total} genes remaining "
-        f"(resumed from D1 run_id={run_id})",
+        f"(resumed from D1 run_id={run_id}); chunk_size={chunk_size}",
         flush=True,
     )
     for p in payloads:
@@ -282,27 +297,38 @@ def full_sweep(
     completed = 0
     failed = 0
     d1_failed = 0
+    cost_capped_count = 0
+    aborted = False
     t0 = time.monotonic()
-    for result in annotate_one.map(payloads):
-        completed += 1
-        running_cost += float(result.get("cost_usd") or 0.0)
-        if not result.get("record_valid"):
-            failed += 1
-        elif not result.get("d1_mirror_ok", True):
-            d1_failed += 1
-        if completed % 50 == 0 or completed == len(payloads):
-            elapsed = time.monotonic() - t0
-            print(
-                f"[{completed:4d}/{len(payloads)}] running_cost=${running_cost:.2f} "
-                f"failed={failed} d1_failed={d1_failed} elapsed={elapsed:.0f}s",
-                flush=True,
-            )
+    for chunk_start in range(0, len(payloads), chunk_size):
+        chunk = payloads[chunk_start : chunk_start + chunk_size]
+        for result in annotate_one.map(chunk):
+            completed += 1
+            running_cost += float(result.get("cost_usd") or 0.0)
+            if not result.get("record_valid"):
+                failed += 1
+            else:
+                if not result.get("d1_mirror_ok", True):
+                    d1_failed += 1
+                if result.get("cost_capped"):
+                    cost_capped_count += 1
+            if completed % 50 == 0 or completed == len(payloads):
+                elapsed = time.monotonic() - t0
+                print(
+                    f"[{completed:4d}/{len(payloads)}] running_cost=${running_cost:.2f} "
+                    f"failed={failed} d1_failed={d1_failed} "
+                    f"cost_capped={cost_capped_count} elapsed={elapsed:.0f}s",
+                    flush=True,
+                )
         if running_cost > max_total_cost_usd:
+            remaining = len(payloads) - completed
             print(
-                f"!! aborting: running cost ${running_cost:.2f} "
-                f"> --max-total-cost-usd ${max_total_cost_usd:.2f}",
+                f"!! aborting between chunks: running cost ${running_cost:.2f} "
+                f"> --max-total-cost-usd ${max_total_cost_usd:.2f}; "
+                f"{remaining} genes NOT launched (safe — no spend).",
                 flush=True,
             )
+            aborted = True
             break
     if d1_failed:
         print(
@@ -311,10 +337,18 @@ def full_sweep(
             "backfill from JSON before resuming or those genes will re-spend)",
             flush=True,
         )
+    if cost_capped_count:
+        print(
+            f"!! cost cap hit on {cost_capped_count} genes — records "
+            "retained on the Volume + in D1; review before resuming.",
+            flush=True,
+        )
     print(json.dumps({
         "completed": completed,
         "failed": failed,
         "d1_failed": d1_failed,
+        "cost_capped": cost_capped_count,
         "running_cost_usd": round(running_cost, 2),
         "wall_clock_s": round(time.monotonic() - t0, 1),
+        "aborted_by_cost_cap": aborted,
     }, indent=2))
