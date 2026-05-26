@@ -51,22 +51,13 @@ function compartmentGlyph(c: Compartment): string {
   return "?";
 }
 
-/** Must match ``ANCHOR_PALETTE`` in
+/** Must match ``ANCHOR_COLOR`` in
  *  ``viewer/components/surfaceome/StructureViewerCard/StructureViewer.tsx``.
- *  Each row's color chip on the table corresponds to the colored
- *  sphere + label at that site's anchor on the 3D structure. */
-const ANCHOR_PALETTE = [
-  "#C32F62",
-  "#E07B3F",
-  "#7A4BD8",
-  "#0F8A8A",
-  "#D62828",
-  "#5C3B9B",
-  "#B5651D",
-  "#1E5BA0",
-  "#9A2C7A",
-  "#3F8B3F",
-] as const;
+ *  All sites render purple in topology mode (the structure's number
+ *  label distinguishes them, not the color). The swatch in the table
+ *  matches so a reader can spot at a glance which row is the same
+ *  sphere on the structure above. */
+const ANCHOR_COLOR = "#7A4BD8";
 
 /**
  * Per-site targetability tone — three buckets based on the size of
@@ -154,16 +145,16 @@ export function SurfaceBindCard({ rec, n }: Props) {
       } · ${sb.n_seeds_total.toLocaleString()} total binder seeds`}
     >
       <p className={styles.preamble}>
-        Each row is one MaSIF-scored surface patch. The numbered,
-        colored spheres on the 3D structure above mark each site's
-        anchor residue — the swatch in the "Site" column matches the
-        sphere color. Anchor = patch center residue (SURFACE-Bind
-        doesn't publish the full per-patch residue list, only the
-        anchor). BSA tone follows the typical antibody-antigen
-        interface band (1,103 ± 244 Å², Ramaraj 2012). Seed counts
-        split by binder backbone — α-helical (3-helix bundles,
-        minihelix) vs β-strand (β-sheet scaffolds); higher = more
-        design options.{" "}
+        Each row is one MaSIF-scored surface patch. The numbered
+        purple spheres on the 3D structure above mark each site's
+        anchor residue (use "Sites focus" mode on the viewer to
+        color the spheres by compartment — green EC / amber IC).
+        Anchor = patch center residue (SURFACE-Bind doesn't publish
+        the full per-patch residue list, only the anchor). BSA tone
+        follows the typical antibody-antigen interface band (1,103
+        ± 244 Å², Ramaraj 2012). Seed counts split by binder
+        backbone — α-helical (3-helix bundles, minihelix) vs
+        β-strand (β-sheet scaffolds); higher = more design options.{" "}
         {sb.main_class ? (
           <>
             SURFACE-Bind classifies this as <strong>{sb.main_class}</strong>
@@ -176,6 +167,18 @@ export function SurfaceBindCard({ rec, n }: Props) {
             .
           </>
         ) : null}
+      </p>
+      <p className={styles.icDisclaimer}>
+        <strong>Why some sites show "IC":</strong> SURFACE-Bind scores
+        patch geometry on every PDB structure available for the
+        protein — for multi-domain receptors like EGFR that includes
+        kinase-domain-only crystal structures, which present a real
+        solvent-exposed cytoplasmic surface that scores well for
+        MaSIF. Those <strong>IC sites are genuine surface patches</strong>,
+        they just face the cytoplasm rather than the extracellular
+        space, so they're not antibody-accessible from outside the
+        cell. The Side column makes this distinction explicit;
+        antibody-design pipelines should filter to EC sites only.
       </p>
       <div className={styles.tableWrap}>
         <table className={styles.table}>
@@ -213,7 +216,7 @@ export function SurfaceBindCard({ rec, n }: Props) {
             </tr>
           </thead>
           <tbody>
-            {sb.sites.map((site, i) => {
+            {sb.sites.map((site) => {
               const compartment = compartmentAt(
                 rec.deterministic_features.canonical_topology
                   .per_residue_topology,
@@ -224,9 +227,7 @@ export function SurfaceBindCard({ rec, n }: Props) {
                 <td className={styles.cellMono}>
                   <span
                     className={styles.swatch}
-                    style={{
-                      background: ANCHOR_PALETTE[i % ANCHOR_PALETTE.length],
-                    }}
+                    style={{ background: ANCHOR_COLOR }}
                     aria-hidden="true"
                   />
                   {site.site_id + 1}

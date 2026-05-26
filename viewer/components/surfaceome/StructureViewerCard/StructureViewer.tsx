@@ -52,12 +52,12 @@ interface StructureViewerProps {
  *  + EC/IC labels. */
 type ViewMode = "topology" | "sites";
 
-/** Sphere radius in each mode. Sites mode uses ~2× the radius so the
- *  spheres pop against the dimmed cartoon. */
-const SPHERE_RADIUS: Record<ViewMode, number> = {
-  topology: 2.6,
-  sites: 5.2,
-};
+/** Single sphere radius across both modes. Previously sites mode
+ *  doubled the radius for emphasis, but the user wanted consistent
+ *  ball size so the spatial relationships don't visually shift when
+ *  switching modes. 3.2 Å is the compromise — big enough to read
+ *  against the cartoon, small enough not to occlude neighbors. */
+const SPHERE_RADIUS = 3.2;
 
 /** Compartment glyph rendered as a suffix on the 3D label and in the
  *  table. Short forms keep the label box compact at the typical 3D
@@ -70,23 +70,27 @@ const COMPARTMENT_GLYPH: Record<AnchorCompartment, string> = {
   unknown: "?",
 };
 
-/** Per-site sphere palette — discrete categorical, picked so the
- *  spheres pop against the topology palette (which uses pale green /
- *  yellow / gray) and the maroon brand accent. Cycles when there
- *  are more sites than entries (rare; max site count in our cohort
- *  is ~12). */
-const ANCHOR_PALETTE = [
-  "#C32F62", // maroon (brand)
-  "#E07B3F", // orange
-  "#7A4BD8", // violet
-  "#0F8A8A", // teal
-  "#D62828", // crimson
-  "#5C3B9B", // deep purple
-  "#B5651D", // ochre
-  "#1E5BA0", // ocean blue
-  "#9A2C7A", // magenta
-  "#3F8B3F", // forest green
-] as const;
+/** Single anchor color for "topology" mode — one purple across all
+ *  sites. Previously we used a discrete categorical palette so each
+ *  site got a distinct color, but in practice the per-sphere number
+ *  label + the table's "Site" column are enough to distinguish them
+ *  and the categorical palette made the cluster visually noisy.
+ *  Purple chosen to contrast both the topology cartoon (pale green /
+ *  yellow / gray) and the brand maroon used elsewhere on the page. */
+const ANCHOR_COLOR = "#7A4BD8";
+
+/** Per-compartment sphere color for "sites" mode. EC = green (good
+ *  target — antibody-accessible); IC = amber (NOT accessible from
+ *  outside the cell); TM = neutral gray (inside the membrane);
+ *  signal / unknown = mute. Mirrors the StatusPill tone mapping in
+ *  SurfaceBindCard's "Side" column. */
+const COMPARTMENT_COLOR: Record<AnchorCompartment, string> = {
+  extracellular: "#16A34A", // green-600
+  intracellular: "#D97706", // amber-600
+  membrane: "#94A3B8", // slate-400
+  signal: "#94A3B8",
+  unknown: "#6B7280", // gray-500
+};
 
 type LoadStatus = "loading" | "ready" | "error";
 
@@ -233,22 +237,25 @@ export function StructureViewer({
       const viewerExt = viewer as ViewerInstance;
       for (let i = 0; i < surfaceBindAnchors.length; i += 1) {
         const { siteId, residue, compartment } = surfaceBindAnchors[i];
+        // Topology mode: single purple across all sites — the number
+        // label distinguishes them. Sites mode: color by compartment
+        // (green EC / amber IC / gray TM) so the antibody-
+        // accessibility story is the visual cue.
         const color = viewMode === "sites"
-          ? "#D62828" // red — high-contrast against dimmed cartoon
-          : ANCHOR_PALETTE[i % ANCHOR_PALETTE.length];
+          ? COMPARTMENT_COLOR[compartment]
+          : ANCHOR_COLOR;
         const sel = { resi: residue, atom: "CA" };
         // ``addStyle`` (not ``setStyle``) layers on top of the
         // existing cartoon — we want the sphere ON the cartoon, not
         // replacing it. Fallback to ``setStyle`` when older 3Dmol
         // builds don't expose ``addStyle``.
-        const radius = SPHERE_RADIUS[viewMode];
         if (typeof viewerExt.addStyle === "function") {
           viewerExt.addStyle(sel, {
-            sphere: { color, radius, opacity: 0.94 },
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
           });
         } else {
           viewer.setStyle(sel, {
-            sphere: { color, radius, opacity: 0.94 },
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
           });
         }
         // Label: site number + compartment glyph (EC/IC/M/S/?) so the
@@ -265,7 +272,7 @@ export function StructureViewer({
               backgroundColor: color,
               backgroundOpacity: 0.94,
               fontColor: "white",
-              fontSize: viewMode === "sites" ? 14 : 12,
+              fontSize: 12,
               borderThickness: 0,
               inFront: true,
               // Push the label slightly away from the sphere so they
@@ -434,36 +441,59 @@ export function StructureViewer({
           </div>
         ) : null}
       </div>
-      {/* Mode toggle — only rendered when the gene has SURFACE-Bind
-          anchors to focus on; otherwise the "sites" mode would be
-          empty and meaningless. Two-button segment so the active
-          state reads at a glance. */}
-      {hasAnchors ? (
-        <div
-          className={styles.modeToggle}
-          role="group"
-          aria-label="3D viewer mode"
+      <div className={styles.controls}>
+        {/* Mode toggle — only rendered when the gene has SURFACE-Bind
+            anchors to focus on; otherwise the "sites" mode would be
+            empty and meaningless. Two-button segment so the active
+            state reads at a glance. */}
+        {hasAnchors ? (
+          <div
+            className={styles.modeToggle}
+            role="group"
+            aria-label="3D viewer mode"
+          >
+            <button
+              type="button"
+              className={styles.modeButton}
+              data-active={viewMode === "topology"}
+              onClick={() => setViewMode("topology")}
+              title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). All sites render in one purple color; the number label distinguishes them."
+            >
+              Topology
+            </button>
+            <button
+              type="button"
+              className={styles.modeButton}
+              data-active={viewMode === "sites"}
+              onClick={() => setViewMode("sites")}
+              title="Wash out the cartoon and color each SURFACE-Bind site by compartment: green = extracellular (antibody-accessible), amber = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Same sphere size as topology mode so the spatial relationships don't shift."
+            >
+              Sites focus
+            </button>
+          </div>
+        ) : null}
+        {/* Reset view — re-centers and re-zooms the camera. After the
+            user has dragged / scrolled the model around, this restores
+            the initial framing without a full page reload. */}
+        <button
+          type="button"
+          className={styles.resetButton}
+          onClick={() => {
+            try {
+              viewerRef.current?.zoomTo({});
+              viewerRef.current?.render();
+            } catch {
+              // 3Dmol can throw on race against teardown / re-render
+              // (e.g. user clicks Reset right as a mode toggle is
+              // re-mounting). Swallow — the next render call will
+              // settle the camera.
+            }
+          }}
+          title="Reset the 3D camera to the initial view (re-center and re-zoom)."
         >
-          <button
-            type="button"
-            className={styles.modeButton}
-            data-active={viewMode === "topology"}
-            onClick={() => setViewMode("topology")}
-            title="Color the cartoon by DeepTMHMM topology (extracellular / TM / intracellular). Sites overlay in the per-site palette."
-          >
-            Topology
-          </button>
-          <button
-            type="button"
-            className={styles.modeButton}
-            data-active={viewMode === "sites"}
-            onClick={() => setViewMode("sites")}
-            title="Dim the cartoon and enlarge the SURFACE-Bind site spheres in red. Labels show site number + EC (extracellular, antibody-accessible) / IC (intracellular, not accessible) per anchor."
-          >
-            Sites focus
-          </button>
-        </div>
-      ) : null}
+          Reset view
+        </button>
+      </div>
     </div>
   );
 }

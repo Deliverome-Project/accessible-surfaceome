@@ -3,7 +3,8 @@
  */
 
 .preamble,
-.emptyNote {
+.emptyNote,
+.icDisclaimer {
   font-size: 0.92rem;
   line-height: 1.55;
   color: var(--ink-soft);
@@ -13,6 +14,18 @@
 
 .emptyNote {
   color: var(--muted);
+}
+
+/* IC-vs-EC disclaimer — softer treatment than the preamble, but
+   the same readable line-length. Pulls focus away from the
+   preamble's design-options story toward the antibody-accessibility
+   caveat. */
+.icDisclaimer {
+  padding: var(--space-3);
+  background: var(--surface-soft, #f6f1ef);
+  border-left: 3px solid var(--accent, #C32F62);
+  border-radius: 4px;
+  font-size: 0.88rem;
 }
 
 .tableWrap {
