@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { AnchorNav } from "../../components/AnchorNav/AnchorNav";
+import { FeedbackButton } from "../../components/FeedbackButton/FeedbackButton";
+import { FeedbackModal } from "../../components/FeedbackModal/FeedbackModal";
 import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
@@ -192,6 +194,7 @@ export default async function GenePage({ params }: PageProps) {
             >
               Markdown (full) ↗
             </a>
+            <FeedbackButton gene={rec.gene.hgnc_symbol} uniprotAcc={rec.gene.uniprot_acc} />
           </span>
         </nav>
 
@@ -238,6 +241,7 @@ export default async function GenePage({ params }: PageProps) {
        *  one drawer for the whole page so it persists across section
        *  scrolls and chip clicks. */}
       <EvidenceDrawer evidence={rec.evidence} />
+      <FeedbackModal />
     </Shell>
   );
 }
