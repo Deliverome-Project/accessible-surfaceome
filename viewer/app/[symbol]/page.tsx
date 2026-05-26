@@ -8,6 +8,7 @@ import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
+import { CommunityNotesCard } from "../../components/surfaceome/CommunityNotesCard/CommunityNotesCard";
 import { DatabasePresenceCard } from "../../components/surfaceome/DatabasePresenceCard/DatabasePresenceCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
 import { EvidenceDrawer } from "../../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
@@ -147,6 +148,13 @@ export default async function GenePage({ params }: PageProps) {
       kind: "ledger",
       label: "Evidence ledger",
       render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
+    },
+    {
+      kind: "community",
+      label: "Community notes",
+      render: (n) => (
+        <CommunityNotesCard gene={rec.gene.hgnc_symbol} n={n} />
+      ),
     },
   ];
   const anchorSections = sections.map((s) => ({ id: s.kind, label: s.label }));
