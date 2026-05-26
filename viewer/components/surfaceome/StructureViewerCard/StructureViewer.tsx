@@ -31,6 +31,33 @@ export interface SurfaceBindAnchor {
   compartment: AnchorCompartment;
 }
 
+/** A variant the user can switch to via the tab strip above the
+ *  canvas. Each variant carries its own AFDB-fetchable accession +
+ *  per-residue topology so the existing render pipeline (topology
+ *  coloring, membrane slab, SURFACE-Bind overlay) just works. */
+export interface StructureVariant {
+  /** Stable key for the React tab list. */
+  id: string;
+  /** Reader-facing tab label, e.g. "Canonical", "Isoform 2", "Mouse
+   *  ortholog". */
+  label: string;
+  /** Optional secondary text rendered under the label (e.g. the
+   *  isoform UniProt acc or the ortholog symbol). */
+  sublabel?: string;
+  /** UniProt accession to fetch from AFDB. Stripped of any isoform
+   *  suffix because AFDB models the canonical-acc structure for the
+   *  isoform fold too. */
+  uniprot_acc: string;
+  /** Full UniProt acc including isoform suffix (e.g. "P00533-2") —
+   *  used in the SURFACE-Bind / display fields only, not URLs. */
+  uniprot_acc_full?: string;
+  /** Per-residue DeepTMHMM topology string for THIS variant. May
+   *  differ from canonical for isoforms (alt splicing changes the
+   *  TM count) and for orthologs (species-specific topology). */
+  topology: string;
+  deeptmhmm_type: StructureViewerData["deeptmhmm_type"];
+}
+
 interface StructureViewerProps {
   data: StructureViewerData;
   geneSymbol: string;
@@ -43,6 +70,12 @@ interface StructureViewerProps {
    *  the patch anchor; nearby contact residues would need binder-PDB
    *  parsing to recover (separate task). */
   surfaceBindAnchors?: SurfaceBindAnchor[];
+  /** Optional alternate variants (alt isoforms, mouse / cyno
+   *  orthologs). When non-empty, a tab strip renders above the
+   *  canvas; clicking a tab swaps the rendered structure to that
+   *  variant's AFDB model + topology. Canonical is implied as the
+   *  first tab — don't include it in this list. */
+  variants?: StructureVariant[];
 }
 
 /** Renderer mode toggle. ``topology`` is the default — full topology
@@ -58,6 +91,32 @@ type ViewMode = "topology" | "sites";
  *  switching modes. 3.2 Å is the compromise — big enough to read
  *  against the cartoon, small enough not to occlude neighbors. */
 const SPHERE_RADIUS = 3.2;
+
+/** Collapse a per-residue topology string into per-state [start, end]
+ *  ranges (1-indexed, inclusive). Used for variants (isoforms /
+ *  orthologs) whose structure-viewer JSON doesn't pre-compute ranges
+ *  — they only carry the per-residue string from D1. Canonical uses
+ *  the pre-baked ``data.topology_ranges`` because it's the hot path. */
+function _computeTopologyRanges(
+  topology: string,
+): Record<"M" | "O" | "I" | "S" | "B", [number, number][]> {
+  const out: Record<string, [number, number][]> = {
+    M: [], O: [], I: [], S: [], B: [],
+  };
+  if (!topology) return out as ReturnType<typeof _computeTopologyRanges>;
+  let state = topology.charAt(0);
+  let start = 1;
+  for (let i = 1; i < topology.length; i += 1) {
+    const ch = topology.charAt(i);
+    if (ch !== state) {
+      if (state in out) out[state].push([start, i]);
+      state = ch;
+      start = i + 1;
+    }
+  }
+  if (state in out) out[state].push([start, topology.length]);
+  return out as ReturnType<typeof _computeTopologyRanges>;
+}
 
 /** Compartment glyph rendered as a suffix on the 3D label and in the
  *  table. Short forms keep the label box compact at the typical 3D
@@ -122,6 +181,7 @@ export function StructureViewer({
   data,
   geneSymbol,
   surfaceBindAnchors = [],
+  variants = [],
 }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
@@ -133,7 +193,25 @@ export function StructureViewer({
   // ``sites`` is the user-requested "show me SURFACE-Bind sites at a
   // glance" mode; only useful when surfaceBindAnchors has entries.
   const [viewMode, setViewMode] = useState<ViewMode>("topology");
-  const hasAnchors = surfaceBindAnchors.length > 0;
+  // Active variant index. ``0`` = canonical (from ``data``); higher
+  // indices map into the ``variants`` array. SURFACE-Bind anchors
+  // only render on the canonical view — they're keyed to canonical
+  // residue numbering, which doesn't align with isoform / ortholog
+  // sequences once alternative splicing or species differences
+  // shift positions.
+  const [variantIdx, setVariantIdx] = useState<number>(0);
+  const isCanonicalActive = variantIdx === 0;
+  const activeVariant: StructureVariant | null = isCanonicalActive
+    ? null
+    : variants[variantIdx - 1] ?? null;
+  // The (uniprot_acc, topology, deeptmhmm_type) tuple actually
+  // rendered. Falls back to canonical when the active variant is
+  // null / out-of-range so a buggy variants list can't crash render.
+  const activeUniprot = activeVariant?.uniprot_acc ?? data.uniprot_acc;
+  const activeTopology = activeVariant?.topology ?? data.topology;
+  const activeDeepTMHMMType =
+    activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
+  const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
 
   const renderViewer = useCallback(async () => {
     if (!containerRef.current) return;
@@ -149,7 +227,13 @@ export function StructureViewer({
       // 1) Prefer the build-time-baked pdbUrl. Falls back to the
       //    legacy v4 URL if the build script couldn't enrich this
       //    entry (offline build, AFDB unreachable, etc.).
-      let pdbUrl = data.pdb_url ?? alphafoldPdbUrl(data.uniprot_acc);
+      // For canonical view, use the build-baked pdbUrl if present
+      // (saves an AFDB API hop). For variants we always go through
+      // the AFDB URL helper since we don't bake per-variant URLs.
+      let pdbUrl =
+        isCanonicalActive
+          ? (data.pdb_url ?? alphafoldPdbUrl(activeUniprot))
+          : alphafoldPdbUrl(activeUniprot);
 
       // 2) Try the URL with aggressive HTTP caching — AlphaFold PDBs
       //    are immutable per version, so force-cache is safe and
@@ -165,7 +249,7 @@ export function StructureViewer({
       if (pdbResp.status === 404) {
         try {
           const apiResp = await fetch(
-            alphafoldPredictionApiUrl(data.uniprot_acc),
+            alphafoldPredictionApiUrl(activeUniprot),
           );
           if (apiResp.ok) {
             const entries =
@@ -181,7 +265,7 @@ export function StructureViewer({
       }
       if (!pdbResp.ok) {
         throw new Error(
-          `AlphaFold DB returned ${pdbResp.status} for ${data.uniprot_acc}`,
+          `AlphaFold DB returned ${pdbResp.status} for ${activeUniprot}`,
         );
       }
       const rawPdb = await pdbResp.text();
@@ -192,7 +276,7 @@ export function StructureViewer({
       // topology to find the M/O/I centroids, then rotates I→O onto
       // +Y. Falls back to the raw PDB when topology is too sparse
       // (small ECDs / soluble proteins).
-      const { pdbText, membrane } = orientPdbForTopology(rawPdb, data.topology);
+      const { pdbText, membrane } = orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -205,9 +289,16 @@ export function StructureViewer({
         // Default cartoon style for any residue without explicit topology
         // (shouldn't normally happen — DeepTMHMM covers the full sequence).
         viewer.setStyle({}, { cartoon: { color: TOPOLOGY_COLORS.B } });
+        // For canonical, use the pre-computed `topology_ranges` from
+        // the build-time JSON. For a variant, compute ranges on the
+        // fly from its per-residue topology string (the variant
+        // doesn't carry pre-computed ranges).
+        const ranges = isCanonicalActive
+          ? data.topology_ranges
+          : _computeTopologyRanges(activeTopology);
         (["M", "O", "I", "S", "B"] as const).forEach((state) => {
           const color = TOPOLOGY_COLORS[state];
-          (data.topology_ranges[state] ?? []).forEach(([start, end]) => {
+          (ranges[state] ?? []).forEach(([start, end]) => {
             viewer.setStyle(
               { resi: `${start}-${end}` },
               { cartoon: { color }, line: { color, linewidth: 1.2 } },
@@ -365,8 +456,10 @@ export function StructureViewer({
     // content hasn't changed. ``data`` is the canonical structure
     // payload — when it changes the protein has changed. ``viewMode``
     // toggles between topology / sites-focused rendering.
+    // ``variantIdx`` switches which AFDB model (canonical / isoform /
+    // ortholog) gets fetched + rendered.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, JSON.stringify(surfaceBindAnchors), viewMode]);
+  }, [data, JSON.stringify(surfaceBindAnchors), viewMode, variantIdx]);
 
   useEffect(() => {
     void renderViewer();
@@ -388,12 +481,59 @@ export function StructureViewer({
 
   return (
     <div className={styles.viewerShell}>
+      {/* Variant tab strip — only rendered when the gene has at least
+          one alternative (isoform / ortholog). Canonical is the first
+          tab ("Canonical"); subsequent tabs come from the ``variants``
+          prop in their original order. Clicking switches which AFDB
+          model + per-residue topology is rendered; SURFACE-Bind
+          overlay hides on non-canonical tabs (anchor residue numbers
+          are canonical-keyed and don't translate cleanly). */}
+      {variants.length > 0 ? (
+        <div
+          className={styles.variantTabs}
+          role="tablist"
+          aria-label="Structure variant"
+        >
+          <button
+            type="button"
+            role="tab"
+            className={styles.variantTab}
+            data-active={isCanonicalActive}
+            onClick={() => setVariantIdx(0)}
+            title={`AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`}
+            aria-selected={isCanonicalActive}
+          >
+            <span className={styles.variantTabLabel}>Canonical</span>
+            <span className={styles.variantTabSub}>{data.uniprot_acc}</span>
+          </button>
+          {variants.map((v, i) => {
+            const isActive = variantIdx === i + 1;
+            return (
+              <button
+                key={v.id}
+                type="button"
+                role="tab"
+                className={styles.variantTab}
+                data-active={isActive}
+                onClick={() => setVariantIdx(i + 1)}
+                title={`AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`}
+                aria-selected={isActive}
+              >
+                <span className={styles.variantTabLabel}>{v.label}</span>
+                {v.sublabel ? (
+                  <span className={styles.variantTabSub}>{v.sublabel}</span>
+                ) : null}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
       <div
         ref={containerRef}
         className={styles.viewerCanvas}
         data-status={status}
         role="img"
-        aria-label={`3D structure of ${geneSymbol}, AlphaFold DB ${data.uniprot_acc}`}
+        aria-label={`3D structure of ${geneSymbol}, AlphaFold DB ${activeUniprot}`}
       >
         {status === "loading" ? (
           <p className={styles.loadingNote}>Loading AlphaFold…</p>

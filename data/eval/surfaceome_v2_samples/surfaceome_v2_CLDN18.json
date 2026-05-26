@@ -1194,7 +1194,21 @@
       "tool_version": "deeptmhmm-1.0.24",
       "retrieved_at": "2026-05-17T00:56:01Z"
     },
-    "isoform_topologies": [],
+    "isoform_topologies": [
+      {
+        "isoform_id": "P56856-2",
+        "uniprot_acc": "P56856-2",
+        "tm_helix_count": 4,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 85,
+        "icd_length_residues": 91,
+        "per_residue_topology": "IIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-26T01:23:31.715584Z"
+      }
+    ],
     "orthologs": {
       "mouse": [
         {

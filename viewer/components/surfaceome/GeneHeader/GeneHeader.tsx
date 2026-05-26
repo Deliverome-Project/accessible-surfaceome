@@ -9,6 +9,33 @@ import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
 
+/** Convert an isoform UniProt id like "P00533-2" into a reader-friendly
+ *  tab label ("Isoform 2"). Falls back to the raw id when the suffix
+ *  doesn't match the expected pattern. */
+function _isoformLabel(isoformId: string): string {
+  const m = /-(\d+)$/.exec(isoformId);
+  return m ? `Isoform ${m[1]}` : isoformId;
+}
+
+/** Best-effort DeepTMHMM type inference from a per-residue topology
+ *  string. The StructureViewerData type expects "TM" / "SP+TM" /
+ *  "SP" / "BETA" / "GLOB"; the IsoformTopology Pydantic class
+ *  doesn't carry the rolled-up type, so we approximate from the
+ *  per-residue string. The result drives the GLOB-vs-TM caption only
+ *  — no functional behavior depends on it. */
+function _inferDeepTMHMMType(
+  topology: string,
+): import("../../../lib/structure-viewer-types").DeepTMHMMType {
+  const hasS = topology.includes("S");
+  const hasM = topology.includes("M");
+  const hasB = topology.includes("B");
+  if (hasB) return "BETA";
+  if (hasS && hasM) return "SP+TM";
+  if (hasM) return "TM";
+  if (hasS) return "SP";
+  return "GLOB";
+}
+
 function presentTopologyStates(topology: string): string[] {
   if (!topology) return [];
   const seen = new Set<string>();
@@ -379,6 +406,44 @@ export function GeneHeader({
                     compartment,
                   };
                 },
+              )}
+              // Variant tabs above the 3D canvas: alt isoforms
+              // (sourced from `rec.deterministic_features.isoform_topologies`)
+              // and 1:1 orthologs (mouse + cynomolgus). Each variant
+              // carries its own per-residue topology so the topology
+              // coloring + membrane slab work without extra fetches.
+              //
+              // Isoforms: the .3line UniProt acc has a `-N` suffix
+              // (e.g. "P00533-2"). AFDB models the canonical
+              // accession but applies the isoform-specific
+              // sequence/topology, so the URL path strips the
+              // suffix back to the bare canonical.
+              //
+              // Orthologs: rendered ONLY when the ortholog has a
+              // matching topology cohort row in D1; we currently
+              // ship topology for mouse + cyno orthologs in
+              // `topology_public` but the per-residue strings live
+              // there, not on `OrthologEntry`. For MVP we render
+              // just the canonical + isoform variants and leave
+              // orthologs for a follow-up commit that backfills the
+              // ortholog topology strings onto the SurfaceomeRecord.
+              variants={rec.deterministic_features.isoform_topologies.map(
+                (iso) => ({
+                  id: `iso-${iso.isoform_id}`,
+                  label: _isoformLabel(iso.isoform_id),
+                  sublabel: iso.isoform_id,
+                  uniprot_acc: iso.uniprot_acc,
+                  uniprot_acc_full: iso.isoform_id,
+                  topology: iso.per_residue_topology,
+                  // IsoformTopology doesn't carry `deeptmhmm_type`
+                  // (TM / SP+TM / etc.) — synthesize a best-effort
+                  // value from the topology string so the GLOB
+                  // caption etc. still render sensibly on variant
+                  // switch.
+                  deeptmhmm_type: _inferDeepTMHMMType(
+                    iso.per_residue_topology,
+                  ),
+                }),
               )}
             />
             <TopologyLegend

@@ -3,6 +3,77 @@
   width: 100%;
 }
 
+/* Variant tab strip — only rendered when the gene has alternative
+   isoforms or orthologs. Sits directly above the 3D canvas; clicking
+   a tab swaps which AFDB model + topology is rendered. */
+.variantTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-bottom: var(--space-2);
+  background: var(--line-soft, #e8d6d2);
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 6px;
+  padding: 1px;
+  overflow: hidden;
+}
+
+.variantTab {
+  flex: 1 1 auto;
+  appearance: none;
+  background: var(--surface-soft, #f6f1ef);
+  color: var(--ink-soft, #555);
+  border: 0;
+  border-radius: 5px;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  text-align: left;
+  min-width: 0;
+  transition:
+    background var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    color var(--dur-fast, 0.15s) var(--ease-out, ease-out);
+}
+
+.variantTab:hover {
+  background: var(--surface, white);
+  color: var(--ink, #222);
+}
+
+.variantTab[data-active="true"] {
+  background: var(--ink, #2a2a2a);
+  color: white;
+}
+
+.variantTab[data-active="true"]:hover {
+  background: var(--ink, #2a2a2a);
+  color: white;
+}
+
+.variantTabLabel {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.variantTabSub {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
 /* Controls bar — mode toggle + reset button stacked horizontally
    below the canvas. The toggle (when present) takes most of the
    row; the reset button is fixed-width on the right. */
