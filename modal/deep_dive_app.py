@@ -163,6 +163,7 @@ def annotate_one(payload: dict) -> dict:
         "blocks_used": result.blocks_used,
         "error": result.error,
         "record_valid": result.record_valid,
+        "d1_mirror_ok": result.d1_mirror_ok,
     }
 
 
@@ -238,6 +239,7 @@ def canary(
             cost_usd=r["cost_usd"], latency_s=r["latency_s"],
             blocks_used=r["blocks_used"], error=r["error"],
             record_valid=r["record_valid"],
+            d1_mirror_ok=r.get("d1_mirror_ok", True),
         )
         for r in results
     ]
@@ -269,17 +271,20 @@ def full_sweep(
     running_cost = 0.0
     completed = 0
     failed = 0
+    d1_failed = 0
     t0 = time.monotonic()
     for result in annotate_one.map(payloads):
         completed += 1
         running_cost += float(result.get("cost_usd") or 0.0)
         if not result.get("record_valid"):
             failed += 1
+        elif not result.get("d1_mirror_ok", True):
+            d1_failed += 1
         if completed % 50 == 0 or completed == len(payloads):
             elapsed = time.monotonic() - t0
             print(
                 f"[{completed:4d}/{len(payloads)}] running_cost=${running_cost:.2f} "
-                f"failed={failed} elapsed={elapsed:.0f}s",
+                f"failed={failed} d1_failed={d1_failed} elapsed={elapsed:.0f}s",
                 flush=True,
             )
         if running_cost > max_total_cost_usd:
@@ -289,9 +294,17 @@ def full_sweep(
                 flush=True,
             )
             break
+    if d1_failed:
+        print(
+            f"!! d1 mirror failures: {d1_failed}/{completed - failed} "
+            "(JSON files landed on the Volume; D1 rows did NOT — "
+            "backfill from JSON before resuming or those genes will re-spend)",
+            flush=True,
+        )
     print(json.dumps({
         "completed": completed,
         "failed": failed,
+        "d1_failed": d1_failed,
         "running_cost_usd": round(running_cost, 2),
         "wall_clock_s": round(time.monotonic() - t0, 1),
     }, indent=2))

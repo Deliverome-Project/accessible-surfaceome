@@ -113,6 +113,11 @@ class GeneResult:
     blocks_used: dict[str, int]
     error: str | None
     record_valid: bool
+    # True iff the D1 sink reported a successful insert (or was skipped
+    # because --no-d1). False only when sink.insert() returned False —
+    # i.e. JSON wrote but the D1 mirror failed. Default True so worker
+    # exceptions don't double-count as D1 failures.
+    d1_mirror_ok: bool = True
 
 
 def annotate_one(
@@ -165,9 +170,12 @@ def annotate_one(
         out = annotations_dir / f"{bundle.hgnc_symbol}.json"
         out.write_text(result.record.model_dump_json(indent=2))
 
-        # Best-effort D1 mirror.
+        # Best-effort D1 mirror. Capture the return so silent D1 failures
+        # bubble up into the sweep summary instead of dying as log
+        # warnings.
+        d1_mirror_ok = True
         if sink is not None:
-            sink.insert(
+            d1_mirror_ok = sink.insert(
                 result.record,
                 cost_usd=cost,
                 latency_s=latency,
@@ -178,6 +186,7 @@ def annotate_one(
             hgnc_id=row.hgnc_id, hgnc_symbol=row.hgnc_symbol,
             cost_usd=cost, latency_s=latency,
             blocks_used=result.blocks_used, error=None, record_valid=True,
+            d1_mirror_ok=d1_mirror_ok,
         )
     finally:
         http.close()
@@ -224,7 +233,12 @@ def run_local(
                 )
             results.append(res)
             total_cost += res.cost_usd
-            status = "OK" if res.record_valid else f"FAIL ({res.error})"
+            if not res.record_valid:
+                status = f"FAIL ({res.error})"
+            elif not res.d1_mirror_ok:
+                status = "OK (D1 MIRROR FAILED)"
+            else:
+                status = "OK"
             print(
                 f"[{len(results):4d}/{len(rows)}] {res.hgnc_symbol:12s} "
                 f"${res.cost_usd:6.3f}  {res.latency_s:6.1f}s  {status}",
@@ -383,10 +397,18 @@ def main(argv: list[str] | None = None) -> int:
     summary = summarize_canary(results, total_genes=len(rows))
     print_canary_report(summary)
     failed = [r for r in results if not r.record_valid]
+    d1_failed = [r for r in results if r.record_valid and not r.d1_mirror_ok]
     print(f"\ntotals: valid={len(results) - len(failed)}  failed={len(failed)}", flush=True)
+    if d1_failed:
+        print(
+            f"!! d1 mirror failures: {len(d1_failed)}/{len(results) - len(failed)} "
+            "(JSON files landed; D1 rows did NOT — backfill from JSON before re-running "
+            "or the next resume will re-spend on these genes)",
+            flush=True,
+        )
     if sink is not None:
         sink.close()
-    return 0 if not failed else 1
+    return 0 if not failed and not d1_failed else 1
 
 
 if __name__ == "__main__":

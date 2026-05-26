@@ -86,6 +86,22 @@ def _build_composite_prompt(schema_version: str) -> CompositePrompt:
     )
 
 
+def _ensure_unique_index(d1: D1Client) -> None:
+    """Idempotently apply the (run_id, gene_symbol) UNIQUE INDEX that
+    ``_insert_run``'s ``ON CONFLICT`` clause depends on. The schema file
+    declares this index, but D1 doesn't auto-apply schema files — without
+    this guard a sweep against a DB where the index was never installed
+    fails every insert at the SQL parser, ``D1DeepDiveSink.insert()``
+    swallows the error as a warning, and the caller exits 0 with zero D1
+    rows. Sub-ms no-op when the index already exists.
+    """
+    d1.query(
+        "CREATE UNIQUE INDEX IF NOT EXISTS idx_deep_dive_run_unique_gene "
+        "ON deep_dive_run (run_id, gene_symbol);",
+        [],
+    )
+
+
 def _intern_prompt(d1: D1Client, prompt: CompositePrompt) -> None:
     d1.query(
         "INSERT OR IGNORE INTO prompt_version "
@@ -232,6 +248,7 @@ class D1DeepDiveSink:
         self._client = client if client is not None else D1Client()
         self._owns_client = client is None
 
+        _ensure_unique_index(self._client)
         self._prompt = _build_composite_prompt(SurfaceomeRecord.model_fields["schema_version"].default)
         _intern_prompt(self._client, self._prompt)
         self._existing = _existing_genes(self._client, run_id)
