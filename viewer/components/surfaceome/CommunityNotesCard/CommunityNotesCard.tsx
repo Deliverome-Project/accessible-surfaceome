@@ -13,6 +13,10 @@ interface Note {
   submitter_name: string;
   comment: string;
   approved_at: string;
+  /** Optional author affiliation. Renders as a subtle byline detail. */
+  affiliation?: string;
+  /** Optional ORCID for credibility — renders as a small ↗ link. */
+  orcid?: string;
 }
 
 interface PublicResponse {
@@ -23,6 +27,49 @@ interface PublicResponse {
 interface Props {
   gene: string;
   n: number;
+}
+
+/** Mock notes used when the page is loaded with ``?mock=notes``.
+ *  Three representative shapes:
+ *    1. A targeting-strategy correction with citation
+ *    2. A reagent-validation tip (positive, short)
+ *    3. A longer clinical-context comment from a named affiliation
+ *  Used for visual review only — the URL query is the dev-only
+ *  trigger; production loads strip the params before hitting the
+ *  API, so this code path never fires for real readers. */
+const MOCK_NOTES: Note[] = [
+  {
+    id: "mock-1",
+    submitter_name: "Dr. Priya Anand",
+    affiliation: "Genentech, oncology biologics",
+    orcid: "0000-0001-2345-6789",
+    comment:
+      "The IC sites flagged on the kinase domain (R743, R764) line up with the activation-loop pocket we routinely target with small molecules — agree these aren't antibody-accessible. We do see surface EGFR shedding under EGF stimulation in our HCC827 model though; worth flagging the secreted-form risk more prominently in the headline summary.",
+    approved_at: "2026-05-10 14:22:00",
+  },
+  {
+    id: "mock-2",
+    submitter_name: "Jordan Reyes",
+    affiliation: "MIT, Wittrup lab",
+    comment:
+      "Clone D11 from Cell Signaling (#2645) is mAb528-equivalent for the EGFR ECD and is paralog-discrimination validated against ErbB2 / ErbB3 / ErbB4 — useful add to the antibody table.",
+    approved_at: "2026-05-06 09:11:00",
+  },
+  {
+    id: "mock-3",
+    submitter_name: "Anonymous",
+    comment:
+      "Minor: the catalog says n_sources=5/5 but the HPA tissue-IHC link sometimes 404s for newly added genes. Not a data issue here — just a heads-up for anyone scripting against the Worker.",
+    approved_at: "2026-04-28 17:48:00",
+  },
+];
+
+/** Pull ``?mock=notes`` from the URL (client-only). Returns ``true``
+ *  when the dev-only mock trigger is active. */
+function usingMock(): boolean {
+  if (typeof window === "undefined") return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.get("mock") === "notes";
 }
 
 /**
@@ -38,8 +85,16 @@ interface Props {
 export function CommunityNotesCard({ gene, n }: Props) {
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [errored, setErrored] = useState(false);
+  const [mock, setMock] = useState(false);
 
   useEffect(() => {
+    // Mock branch — when ``?mock=notes`` is in the URL, skip the
+    // fetch entirely and render synthetic notes for design review.
+    if (usingMock()) {
+      setMock(true);
+      setNotes(MOCK_NOTES);
+      return;
+    }
     let cancelled = false;
     async function load() {
       try {
@@ -70,18 +125,48 @@ export function CommunityNotesCard({ gene, n }: Props) {
   return (
     <SectionCard
       n={n}
-      eyebrow="Community"
+      eyebrow={mock ? "Community · MOCK" : "Community"}
       title="Community notes"
-      meta={`${notes.length} ${notes.length === 1 ? "note" : "notes"}`}
+      meta={
+        mock
+          ? `${notes.length} synthetic notes for design review (URL ?mock=notes)`
+          : `${notes.length} ${notes.length === 1 ? "note" : "notes"} · approved by curation team`
+      }
     >
+      {mock ? (
+        <p className={styles.mockBanner}>
+          Preview only — these notes don&apos;t exist in production.
+          Triggered by <code>?mock=notes</code> in the URL.
+        </p>
+      ) : null}
       <ul className={styles.list}>
         {notes.map((note) => (
           <li key={note.id} className={styles.note}>
             <p className={styles.comment}>{note.comment}</p>
             <p className={styles.byline}>
-              — {note.submitter_name}
-              {" · "}
-              <time dateTime={note.approved_at}>
+              <span className={styles.bylineName}>{note.submitter_name}</span>
+              {note.affiliation ? (
+                <>
+                  <span className={styles.bylineSep} aria-hidden="true">·</span>
+                  <span className={styles.bylineAffil}>{note.affiliation}</span>
+                </>
+              ) : null}
+              {note.orcid ? (
+                <>
+                  <span className={styles.bylineSep} aria-hidden="true">·</span>
+                  <a
+                    className={styles.bylineLink}
+                    href={`https://orcid.org/${note.orcid}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title={`ORCID: ${note.orcid}`}
+                  >
+                    ORCID ↗
+                  </a>
+                </>
+              ) : null}
+              <span className={styles.bylineSep} aria-hidden="true">·</span>
+              <time className={styles.bylineDate} dateTime={note.approved_at}>
                 {formatDate(note.approved_at)}
               </time>
             </p>
