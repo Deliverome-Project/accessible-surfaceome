@@ -691,6 +691,25 @@ def _run_one_with_retry(
         replicate=replicate, truth_verdict=truth_verdict, truth_class=truth_class,
         hgnc_id=hgnc_id, uniprot_acc=uniprot_acc,
     )
+    # Persistent schema mismatch — the retry sample is ALSO invalid.
+    # Null out the predicted fields and stamp a schema-mismatch error
+    # rather than persisting an invalid (verdict, reason) combo to D1.
+    # The original 2026-05-12 mainbench sweep wrote 15 rows to D1 past
+    # this point (one Sonnet, fourteen Haiku); the Pydantic validator
+    # at TriageRecord can't catch them because the runner never
+    # constructs a TriageRecord — it operates on raw dict + RunRecord.
+    # This null-out is the canonical enforcement leg for the runner
+    # path. The D1RunSink belt-and-suspenders is at
+    # cloud/triage_upload.py.
+    if second.predicted_verdict is not None and not _is_schema_valid(
+        second.predicted_verdict, second.predicted_reason
+    ):
+        second.error = (
+            f"schema mismatch after retry: verdict="
+            f"{second.predicted_verdict!r} reason={second.predicted_reason!r}"
+        )
+        second.predicted_verdict = None
+        second.predicted_reason = None
     return second
 
 
