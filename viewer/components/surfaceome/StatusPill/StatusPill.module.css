@@ -15,7 +15,13 @@
   border-radius: var(--radius-pill);
   font-family: var(--font-sans);
   font-weight: var(--fw-medium);
-  letter-spacing: 0.01em;
+  /* All chip text uppercase for visual consistency — previously some
+     chips lower-cased values like "moderate" while others rendered
+     human-cased labels like "Direct Multi Method" so the page read
+     as inconsistent. Bumped letter-spacing to compensate for the
+     denser uppercase tracking. */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   white-space: nowrap;
   line-height: 1;
   background: transparent;

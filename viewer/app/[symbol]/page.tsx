@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { AnchorNav } from "../../components/AnchorNav/AnchorNav";
+import { SectionTabs } from "../../components/SectionTabs/SectionTabs";
 import { FeedbackButton } from "../../components/FeedbackButton/FeedbackButton";
 import { FeedbackModal } from "../../components/FeedbackModal/FeedbackModal";
 import { Reveal } from "../../components/Reveal/Reveal";
@@ -9,7 +9,6 @@ import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../../components/surfaceome/CommunityNotesCard/CommunityNotesCard";
-import { DatabasePresenceCard } from "../../components/surfaceome/DatabasePresenceCard/DatabasePresenceCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
 import { EvidenceDrawer } from "../../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
 import { EvidenceLedgerCard } from "../../components/surfaceome/EvidenceLedgerCard/EvidenceLedgerCard";
@@ -84,20 +83,12 @@ export default async function GenePage({ params }: PageProps) {
     label: string;
     render: (n: number) => React.ReactNode;
   }[] = [
-    ...(catalogRow
-      ? [
-          {
-            kind: "db-presence",
-            label: "DB presence",
-            render: (n: number) => (
-              <DatabasePresenceCard row={catalogRow} n={n} />
-            ),
-          },
-        ]
-      : []),
+    // DB-membership was its own §section; promoted to an inline
+    // strip in `<GeneHeader>` per user feedback. The section entry
+    // is gone; nothing to surface in AnchorNav for it.
     {
-      kind: "filters",
-      label: "Filters",
+      kind: "metrics",
+      label: "Summary metrics",
       render: (n) => <FiltersCard rec={rec} n={n} />,
     },
     {
@@ -214,27 +205,31 @@ export default async function GenePage({ params }: PageProps) {
         </nav>
 
         <Reveal>
-          <GeneHeader rec={rec} geneName={geneName} structureData={structureData} />
+          <GeneHeader
+            rec={rec}
+            geneName={geneName}
+            structureData={structureData}
+            catalogRow={catalogRow}
+          />
         </Reveal>
 
-        {/* Sticky numbered scroll-spy strip — sits below the Shell
-            topbar with a `top: 64px` offset. Each section below carries
-            `id="section-<kind>"` so clicking a link scrolls there and
-            the IntersectionObserver tracks which section is current. */}
-        <AnchorNav sections={anchorSections} />
-
-        {/* Per-section Reveal wrappers, not a single bulk wrapper.
-            A single stagger wrapper around all 12 sections is taller
-            than the viewport, so an IntersectionObserver with a
-            non-trivial threshold never reaches its trigger and every
-            child stays at opacity 0. Per-section Reveals also keep
-            the scroll-fade rhythm honest: each card fades in as it
-            actually scrolls into view. */}
-        {sections.map((s, i) => (
-          <section key={s.kind} id={`section-${s.kind}`}>
-            <Reveal>{s.render(i + 1)}</Reveal>
-          </section>
-        ))}
+        {/* Tab-style section display. AnchorNav renders inside
+            `<SectionTabs>` and drives which section is shown; only
+            one section is visible at a time so clicking a tab swaps
+            the body in place without scrolling. All sections are
+            pre-rendered server-side and the CSS hides the inactive
+            ones (no client re-render on tab change). */}
+        <SectionTabs sections={anchorSections}>
+          {sections.map((s, i) => (
+            <section
+              key={s.kind}
+              id={`section-${s.kind}`}
+              data-section-id={s.kind}
+            >
+              <Reveal>{s.render(i + 1)}</Reveal>
+            </section>
+          ))}
+        </SectionTabs>
 
         <Reveal className={styles.confidence}>
           <p className={`label-mono ${styles.confidenceEyebrow}`}>

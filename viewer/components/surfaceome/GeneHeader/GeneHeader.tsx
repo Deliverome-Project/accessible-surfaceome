@@ -1,6 +1,8 @@
+import type { CatalogRow } from "../../../lib/surfaceome";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
@@ -30,6 +32,13 @@ interface GeneHeaderProps {
    *  intracellular and the caption is adjusted to describe the
    *  membrane-anchoring rather than a transmembrane orientation. */
   structureData?: StructureViewerData | null;
+  /** 5-DB surface-vote vector from the candidate-universe build.
+   *  When present, a slim ``<DatabasePresenceStrip>`` renders inline
+   *  above the executive summary so the reader sees DB consensus
+   *  without scrolling. ``null`` for resolver-failure outliers — the
+   *  strip is omitted in that case (same fall-back as the old
+   *  section-card placement). */
+  catalogRow?: CatalogRow | null;
 }
 
 function tierCounts(rec: SurfaceomeRecord) {
@@ -101,7 +110,12 @@ function vitalToneClass(
  * derived counts from the evidence ledger; no v0.x targetability /
  * surface_biology fields.
  */
-export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
+export function GeneHeader({
+  rec,
+  geneName,
+  structureData,
+  catalogRow,
+}: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
   const counts = tierCounts(rec);
@@ -185,6 +199,12 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
               </li>
             ))}
           </ul>
+
+          {/* DB-membership strip — was a full §section card; promoted
+              to an inline strip immediately above the exec summary
+              per user feedback. ``null`` for resolver-failure
+              outliers, where we just omit the strip. */}
+          {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
 
           {/* Executive summary one-paragraph. Headline risks + cited
               evidence chips were dropped from the header per user

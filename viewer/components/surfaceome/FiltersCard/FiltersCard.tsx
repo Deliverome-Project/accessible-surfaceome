@@ -646,9 +646,9 @@ export function FiltersCard({ rec, n }: Props) {
   return (
     <SectionCard
       n={n}
-      eyebrow="Filters"
-      title="Catalog membership and source coverage"
-      meta="D1-indexed facets · informational here; the catalog page owns interactive filtering"
+      eyebrow="Summary metrics"
+      title="At-a-glance signal panel"
+      meta="D1-indexed facets · same fields the catalog filters on, rolled up per gene"
     >
       <div className={styles.groups}>
         {groups.map((g) => (

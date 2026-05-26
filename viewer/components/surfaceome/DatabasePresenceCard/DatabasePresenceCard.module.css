@@ -77,3 +77,56 @@
   color: var(--muted);
   letter-spacing: 0.05em;
 }
+
+/* ============================================================
+ * Strip variant — slim, header-embedded version. Renders just the
+ * 5 swatches + DB names in an inline strip, no card wrapper.
+ * ============================================================ */
+
+.stripWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.25rem 0;
+  flex-wrap: wrap;
+}
+
+.stripLabel {
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stripRow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.15rem var(--space-2);
+}
+
+.stripCell {
+  display: inline-flex;
+}
+
+.stripLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  color: var(--ink-soft);
+  padding: 0.15rem 0;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.stripLink:hover,
+.stripLink:focus-visible {
+  color: var(--accent);
+}
+
+.cellNo .stripLink {
+  opacity: 0.55;
+}

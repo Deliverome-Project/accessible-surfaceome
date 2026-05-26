@@ -84,9 +84,9 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
       {total === 0 ? (
         <p className={styles.empty}>No evidence entries recorded.</p>
       ) : (
-        <details className={styles.details}>
+        <details className={styles.details} open>
           <summary className={styles.summary}>
-            Show {total} entr{total === 1 ? "y" : "ies"}
+            {total} entr{total === 1 ? "y" : "ies"} · click to collapse
           </summary>
           <ul className={styles.list}>
             {rec.evidence.map((e) => {
