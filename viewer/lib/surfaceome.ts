@@ -400,19 +400,45 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       rows: [],
     };
   }
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  const res = await fetch(`${base}/v1/catalog`, {
-    // `force-cache` makes the response part of the static build
-    // artifact under `output: "export"`. A re-deploy of the Worker
-    // surfaces in the viewer on the next `npm run build` — exactly
-    // the SSG lifecycle we want for a research catalogue (no
-    // per-page-load D1 hits in production).
-    cache: "force-cache",
-    signal: controller.signal,
-  }).finally(() => clearTimeout(timer));
-  if (!res.ok) {
-    throw new Error(`${base}/v1/catalog returned ${res.status}`);
+  // Retry-on-5xx loop. The /v1/catalog response is ~4.5 MB and the
+  // Worker brushes Cloudflare's per-request CPU cap when D1 is cold,
+  // so intermittent 503s are normal — they almost always recover on
+  // the next call. Three attempts at 1.5s / 3s / 6s backoff. After
+  // that, fall through to the throw so build failures stay loud
+  // (we don't want to ship a viewer built against a wedged Worker).
+  let res: Response | null = null;
+  let lastStatus: number | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+      res = await fetch(`${base}/v1/catalog`, {
+        // `force-cache` makes the response part of the static build
+        // artifact under `output: "export"`. A re-deploy of the Worker
+        // surfaces in the viewer on the next `npm run build` — exactly
+        // the SSG lifecycle we want for a research catalogue (no
+        // per-page-load D1 hits in production).
+        cache: "force-cache",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+    if (res.ok) break;
+    lastStatus = res.status;
+    // Don't retry on 4xx — those are deterministic.
+    if (res.status < 500) break;
+    // 503 / 502 / 504 — usually transient; back off and retry.
+    if (attempt < 2) {
+      const delay = [1500, 3000][attempt] ?? 3000;
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  if (!res || !res.ok) {
+    throw new Error(
+      `${base}/v1/catalog returned ${lastStatus ?? "no-response"} ` +
+        `after 3 attempts`,
+    );
   }
   const payload = (await res.json()) as Omit<Catalog, "source" | "rows"> & {
     rows: unknown[];
