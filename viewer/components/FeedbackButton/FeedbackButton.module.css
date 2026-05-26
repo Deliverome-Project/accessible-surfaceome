@@ -38,18 +38,15 @@
 .standalone {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.88rem;
+  gap: 0.25rem;
+  font-size: 0.68rem;
   font-weight: 500;
-  letter-spacing: 0;
-  padding: 0.45rem 1rem;
+  letter-spacing: 0.02em;
+  padding: 0.18rem 0.55rem;
   border-radius: var(--radius-pill);
   background: var(--accent);
   border: 1px solid var(--accent);
   color: var(--accent-on);
-  /* subtle warm-ink shadow so the pill sits forward against the bone
-   * background without feeling like a marketing CTA */
-  box-shadow: 0 1px 2px rgba(31, 23, 24, 0.06);
 }
 
 .standalone:hover,

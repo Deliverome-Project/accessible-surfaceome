@@ -34,10 +34,18 @@ const nextConfig = {
   outputFileTracingRoot: __dirname,
   // Inject feedback-flow env vars at build time so the modal and
   // CommunityNotes card can read them via process.env.NEXT_PUBLIC_*.
-  // process.env source allows .env, shell, and Cloudflare Pages's
-  // NODE_* injection to drive the values.
+  // process.env override allows shell / .env.local / Cloudflare Pages
+  // to point at a different Turnstile site (e.g. test-mode key) or a
+  // different feedback API base (e.g. a staging Worker) without
+  // touching this file. The hardcoded defaults are the production
+  // values; both are public — the Turnstile site key is embedded in
+  // every page bundle that ships, and the API base is just a URL.
+  // Hardcoding them as defaults means a fresh worktree's `npm run dev`
+  // works without any `.env*` file at all.
   env: {
-    NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "",
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY:
+      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
+      ?? "0x4AAAAAADWMXfjX7seRgQLJ",
     NEXT_PUBLIC_FEEDBACK_API_BASE:
       process.env.NEXT_PUBLIC_FEEDBACK_API_BASE
       ?? "https://api.deliverome.org/surfaceome",
