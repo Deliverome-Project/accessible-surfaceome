@@ -53,66 +53,13 @@
   border-bottom-color: var(--accent);
 }
 
-/* AFDB stats — sits between the topology legend and the caption
-   inside the structure slot. Up to three compact stat cells
-   (pLDDT, disordered fraction, AFDB id+version); flex so the
-   layout adapts when the disordered cell is hidden (e.g. for
-   GLOB / soluble-cytoplasmic proteins where the disordered
-   fraction is not meaningful). */
-.structureStats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
-  margin: var(--space-2) 0 0;
-  padding: var(--space-2) 0;
-  border-top: 1px solid var(--line-soft);
-  border-bottom: 1px solid var(--line-soft);
-}
-
-.structureStat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  min-width: 0;
-  flex: 1 1 0;
-}
-
-.structureStatK {
-  color: var(--muted);
-  font-size: 0.7rem;
-}
-
-.structureStatV {
-  margin: 0;
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
-.structureStatNum {
-  font-family: var(--font-mono);
-  font-size: 0.9rem;
-  color: var(--ink);
-}
-
-.structureStatLink {
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  color: var(--ink);
-  border-bottom: 1px solid var(--line);
-  transition:
-    color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.structureStatLink:hover,
-.structureStatLink:focus-visible {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
+/* (.structureStats / .structureStat / .structureStatK / .structureStatV
+   / .structureStatNum / .structureStatLink were the SURFACE-Bind summary
+   dl below the AFDB stats. The dl was removed — the §SURFACE-Bind card
+   below the header carries the same info in a richer presentation and
+   the Summary metrics SURFACE-Bind chip gives the catalog-filter view.
+   The rules are deleted so the GeneHeader stylesheet stays in sync
+   with what's actually in the JSX.) */
 
 @media (max-width: 760px) {
   .headerGrid {
@@ -129,17 +76,10 @@
   font-size: clamp(2.4rem, 5.5vw, 3.8rem);
 }
 
-.geneName {
-  margin: calc(var(--space-3) * -1) 0 0;
-  font-family: var(--font-sans);
-  font-size: 1.05rem;
-  line-height: 1.4;
-  color: var(--ink-soft);
-  /* No max-width cap — the headerText flex column already constrains
-   * width via the parent grid (1fr / 365px), and that natural cap is
-   * the right one. The previous 60ch cap forced wrapping well before
-   * the structure-viewer edge, leaving awkward empty space. */
-}
+/* .geneName + .geneSynonyms were the descriptive HGNC name + alias
+   list under the h1 gene symbol. Removed per user feedback — the
+   symbol IS the page identity; the long descriptor was visual noise
+   for the target-discovery reader. */
 
 /* Executive-summary lede — promoted from §1 to live directly under
  * the gene name. Reads as the gene-page TL;DR; deeper structured
@@ -225,13 +165,6 @@
 .risksValue {
   font-family: var(--font-sans);
   font-size: 0.9rem;
-}
-
-.geneSynonyms {
-  font-family: var(--font-sans);
-  font-style: normal;
-  font-size: 0.85rem;
-  color: var(--muted);
 }
 
 /* idsRow — flex container that pairs the IDs strip with the prominent
@@ -349,4 +282,27 @@
   font-size: 0.78rem;
   color: var(--muted);
   line-height: 1.4;
+}
+
+/* Architecture + Family text row below the vitals grid. Mirrors
+   the ExecutiveSummaryCard `.meta` styling — label-mono labels
+   + sans-serif values with a flex-wrap layout so it collapses
+   cleanly on narrow viewports. */
+.archFamilyRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: var(--space-3) 0 0;
+  color: var(--ink);
+}
+
+.archFamilyLabel {
+  color: var(--muted);
+}
+
+.archFamilyValue {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  margin-right: var(--space-3);
 }

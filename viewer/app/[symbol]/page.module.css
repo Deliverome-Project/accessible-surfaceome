@@ -148,3 +148,56 @@
   color: var(--ink);
   font-weight: var(--fw-semibold);
 }
+
+/* Collapsible drawer for confidence_reasoning prose — closed by
+   default so the above-the-fold confidence eyebrow stays tight;
+   click the summary to expand. Styling mirrors
+   ExecutiveSummaryCard.module.css for visual consistency across
+   any other place the same drawer might appear. */
+.confidenceRationale {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-warm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-soft);
+}
+
+.confidenceRationale > summary {
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  list-style: none;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.confidenceRationale > summary::before {
+  content: "▸";
+  color: var(--muted);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.confidenceRationale[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.confidenceRationale > summary::-webkit-details-marker {
+  display: none;
+}
+
+.confidenceRationale > summary:hover {
+  color: var(--maroon);
+}
+
+.confidenceRationaleBody {
+  margin: var(--space-2) 0 0;
+  font-size: 0.9rem;
+  line-height: var(--lh-body);
+  color: var(--ink);
+  max-width: 70ch;
+}

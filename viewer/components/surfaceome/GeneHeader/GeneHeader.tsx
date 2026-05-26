@@ -221,17 +221,13 @@ export function GeneHeader({
       <div className={styles.headerGrid}>
         <div className={styles.headerText}>
           <h1 className={`h-gene ${styles.symbol}`}>{g.hgnc_symbol}</h1>
-          {geneName?.name ? (
-            <p className={styles.geneName}>
-              {geneName.name}
-              {geneName.synonyms.length > 0 ? (
-                <span className={styles.geneSynonyms}>
-                  {" · also known as "}
-                  {geneName.synonyms.join(", ")}
-                </span>
-              ) : null}
-            </p>
-          ) : null}
+          {/* The descriptive HGNC name ("epidermal growth factor
+              receptor") was removed from the header per user feedback —
+              the gene symbol IS the page identity; the long name added
+              visual weight without telling the target-discovery reader
+              anything they didn't already know. Synonyms came off the
+              same line; if a reader needs them they're available via
+              the JSON / Markdown crumbs and in the per-gene record. */}
 
           {/* IDs row — small, immediately under the descriptive gene
               name. Was previously placed below the exec lede + headline
@@ -341,16 +337,14 @@ export function GeneHeader({
                       <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
                         {prettyEnum(exec.surface_accessibility)}
                       </p>
-                      <span className={styles.subcategoryRow}>
-                        <StatusPill tone={accessTone} size="sm">
-                          {prettyEnum(exec.subcategory)}
-                        </StatusPill>
-                        <InfoTip
-                          label="About architecture / subcategory"
-                        >
-                          {tooltips.architecture_chip}
-                        </InfoTip>
-                      </span>
+                      {/* Architecture/subcategory used to render as a
+                       *  colored StatusPill chip here. Demoted to plain
+                       *  text below the vitals grid (see `.archFamilyRow`
+                       *  after the closing `</dl>`) so this accessibility
+                       *  cell stays focused on the accessibility signal
+                       *  itself. The architecture + family axes are
+                       *  orthogonal descriptive metadata that don't
+                       *  warrant a colored chip. */}
                     </dd>
                   </div>
 
@@ -409,6 +403,27 @@ export function GeneHeader({
               );
             })()}
           </dl>
+
+          {/* Architecture + Family as plain-text descriptive metadata
+           *  below the chip grid. These used to be a StatusPill chip
+           *  inside the Accessibility vital cell; demoting them here
+           *  keeps the chip grid focused on accessibility signals and
+           *  surfaces the orthogonal architecture / functional family
+           *  axes as scannable text instead. */}
+          <p className={styles.archFamilyRow}>
+            <span className={`label-mono ${styles.archFamilyLabel}`}>
+              Architecture
+            </span>
+            <span className={styles.archFamilyValue}>
+              {prettyEnum(exec.subcategory)}
+            </span>
+            <span className={`label-mono ${styles.archFamilyLabel}`}>
+              Family
+            </span>
+            <span className={styles.archFamilyValue}>
+              {prettyEnum(exec.protein_family)}
+            </span>
+          </p>
         </div>
 
         {structureData ? (
@@ -518,67 +533,12 @@ export function GeneHeader({
                 orthologs lazy-fetch AFDB metadata at click time;
                 experimental shows resolution + method + RCSB link
                 instead). */}
-            {/* SURFACE-Bind stat — sits below the AFDB row inside the
-                same structure aside so the reader sees patch-level
-                targetability next to the model that scored it. When
-                the protein isn't in SURFACE-Bind, render a neutral
-                "not scored" pill rather than the count (zeroes here
-                are an absence signal, not an actual measurement). */}
-            <dl className={styles.structureStats} aria-label="SURFACE-Bind summary">
-              <div className={styles.structureStat}>
-                <dt className={`label-mono ${styles.structureStatK}`}>
-                  SURFACE-Bind
-                  <InfoTip label="About SURFACE-Bind">
-                    {tooltips.surface_bind}
-                  </InfoTip>
-                </dt>
-                <dd className={styles.structureStatV}>
-                  {/* Three distinct states (intentionally NOT collapsed):
-                      1. ``has_data=false`` — not in the SURFACE-Bind table at all
-                         (SURFACE-Bind dropped it during structural-quality filtering;
-                         common for inner-leaflet kinases like SRC).
-                      2. ``has_data=true, n_sites=0`` — protein WAS scored by
-                         SURFACE-Bind but no surface patches cleared the MaSIF
-                         targetability threshold. GPR75 + CLDN18 land here.
-                      3. ``has_data=true, n_sites>0`` — has scored targetable
-                         patches; show the count + link out. EGFR is the
-                         canonical example. */}
-                  {!rec.deterministic_features.surface_bind.has_data ? (
-                    <StatusPill
-                      tone="neutral"
-                      size="sm"
-                      title="Not in SURFACE-Bind's dataset at all. SURFACE-Bind filtered the protein out during structural-quality screening — typically inner-leaflet anchors, soluble cytoplasmic proteins, or poorly-modeled targets. Distinct from 'scored with no patches'."
-                    >
-                      not in SURFACE-Bind
-                    </StatusPill>
-                  ) : rec.deterministic_features.surface_bind.n_sites === 0 ? (
-                    <a
-                      href={`https://surface-bind.inria.fr/protein.html?uniprot=${g.uniprot_acc}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.structureStatLink}
-                      title="In SURFACE-Bind's authoritative table but no surface patches cleared the MaSIF targetability threshold. The protein was scored; the surface chemistry didn't yield designable binder seeds. Distinct from 'not in SURFACE-Bind'."
-                    >
-                      scored · no patches ↗
-                    </a>
-                  ) : (
-                    <a
-                      href={`https://surface-bind.inria.fr/protein.html?uniprot=${g.uniprot_acc}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.structureStatLink}
-                    >
-                      {rec.deterministic_features.surface_bind.n_sites} site
-                      {rec.deterministic_features.surface_bind.n_sites === 1
-                        ? ""
-                        : "s"}{" "}
-                      · {rec.deterministic_features.surface_bind.n_seeds_total.toLocaleString()}{" "}
-                      seeds ↗
-                    </a>
-                  )}
-                </dd>
-              </div>
-            </dl>
+            {/* SURFACE-Bind summary <dl> was removed — it duplicated the
+                §SURFACE-Bind card (which carries the same site count,
+                seed total, and surface-bind.inria.fr link in a richer
+                presentation) AND the Summary metrics SURFACE-Bind chip
+                (which gives the catalog-filter view). One source of
+                truth: the SurfaceBindCard section below. */}
             {/* Old DeepTMHMM-orientation caption removed — the new
                 StructureViewer caption already names the model + the
                 per-variant pLDDT / disordered stats; the orientation

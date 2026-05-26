@@ -223,7 +223,15 @@ export default async function GenePage({ params }: PageProps) {
             page to here, just above the section tabs (the first tab
             is "Summary metrics" so the confidence reads as the
             preamble to whatever metric panel comes next). Always
-            visible regardless of which tab the reader picks. */}
+            visible regardless of which tab the reader picks.
+
+            The `confidence_reasoning` prose is wrapped in a `<details>`
+            drawer (collapsed by default) so the above-the-fold stays
+            tight; the summary tells the reader what's inside, click
+            expands. Empty/whitespace reasoning hides the drawer
+            entirely — high-confidence calls typically don't populate
+            the field per the synth prompt's "writing for the reader"
+            guidance. */}
         <Reveal className={styles.confidence}>
           <p className={`label-mono ${styles.confidenceEyebrow}`}>
             Confidence ·{" "}
@@ -231,7 +239,14 @@ export default async function GenePage({ params }: PageProps) {
               ? rec.confidence.toFixed(2)
               : String(rec.confidence ?? "—")}
           </p>
-          <p className={styles.confidenceLine}>{rec.confidence_reasoning}</p>
+          {rec.confidence_reasoning && rec.confidence_reasoning.trim().length > 0 ? (
+            <details className={styles.confidenceRationale}>
+              <summary>Why this confidence? — rationale</summary>
+              <p className={styles.confidenceRationaleBody}>
+                {rec.confidence_reasoning}
+              </p>
+            </details>
+          ) : null}
         </Reveal>
 
         {/* Tab-style section display. AnchorNav renders inside
