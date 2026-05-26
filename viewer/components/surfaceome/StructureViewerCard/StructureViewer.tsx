@@ -181,17 +181,26 @@ function _presentTopologyStates(topology: string): string[] {
   return ["M", "O", "I", "S", "B"].filter((s) => seen.has(s));
 }
 
-/** Derive the per-compartment swatch list for the sites-mode legend.
- *  Only renders chips for compartments that actually appear in the
- *  anchor list — a gene with 100% EC sites doesn't need an IC swatch. */
+/** Derive the per-compartment count map for the sites-mode legend.
+ *  Each compartment's chip shows "(N)" so the reader sees both
+ *  what's there AND how many of each at a glance. A gene with all-
+ *  EC sites still gets a single "(N)" chip; absent compartments
+ *  don't render. */
 function _presentSitesCompartments(
   anchors: SurfaceBindAnchor[],
-): AnchorCompartment[] {
-  const seen = new Set<AnchorCompartment>();
-  for (const a of anchors) seen.add(a.compartment);
+): Array<{ compartment: AnchorCompartment; count: number }> {
+  const counts = new Map<AnchorCompartment, number>();
+  for (const a of anchors) {
+    counts.set(a.compartment, (counts.get(a.compartment) ?? 0) + 1);
+  }
   return (
     ["extracellular", "intracellular", "membrane", "signal", "unknown"] as const
-  ).filter((c) => seen.has(c));
+  )
+    .filter((c) => counts.has(c))
+    .map((compartment) => ({
+      compartment,
+      count: counts.get(compartment) ?? 0,
+    }));
 }
 
 /** Human-readable label for each AnchorCompartment value. Mirrors
@@ -776,14 +785,19 @@ export function StructureViewer({
       });
       viewer.addModel(pdbText, "pdb");
 
-      // Topology coloring fires in BOTH modes — the membrane band +
-      // cartoon read identically across topology and sites-focus
-      // views (per user feedback: "the membrane on the surfacebind
-      // sites should look the same as the membrane on the topology
-      // version"). Sites mode just OVERLAYS the SURFACE-Bind anchor
-      // spheres on top of the same colored cartoon; it no longer
-      // washes the cartoon to pale gray.
-      {
+      // Mode-specific cartoon styling:
+      //   topology mode: paint M/O/I/S/B per DeepTMHMM ranges so the
+      //     reader sees the topology coloring + membrane slab.
+      //   sites mode: wash the cartoon to pale gray so the colored
+      //     SURFACE-Bind anchor spheres are the dominant visual cue.
+      //     The membrane slab stays at MEMBRANE_OPACITY in both
+      //     modes so its appearance is identical.
+      if (viewMode === "sites") {
+        const baseSel = expVariant ? { chain: expVariant.chain_id } : {};
+        viewer.setStyle(baseSel, {
+          cartoon: { color: "#D6D9DE", opacity: 0.55 },
+        });
+      } else {
         // Default cartoon style for any residue without explicit topology
         // (shouldn't normally happen — DeepTMHMM covers the full sequence).
         // For experimental, restrict the default style to the mapped
@@ -1143,23 +1157,40 @@ export function StructureViewer({
           legend tracks the viewer's internal mode without lifting
           state. */}
       {viewMode === "sites" && hasAnchors ? (
-        <ul
-          className={styles.sitesLegend}
-          aria-label="SURFACE-Bind site compartment legend"
-        >
-          {_presentSitesCompartments(surfaceBindAnchors).map((c) => (
-            <li key={c} className={styles.sitesLegendItem}>
-              <span
-                className={styles.sitesLegendSwatch}
-                style={{ background: COMPARTMENT_COLOR[c] }}
-                aria-hidden="true"
-              />
-              <span className={styles.sitesLegendLabel}>
-                {COMPARTMENT_LEGEND_LABEL[c]}
-              </span>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul
+            className={styles.sitesLegend}
+            aria-label="SURFACE-Bind site compartment legend"
+          >
+            {_presentSitesCompartments(surfaceBindAnchors).map(({ compartment, count }) => (
+              <li key={compartment} className={styles.sitesLegendItem}>
+                <span
+                  className={styles.sitesLegendSwatch}
+                  style={{ background: COMPARTMENT_COLOR[compartment] }}
+                  aria-hidden="true"
+                />
+                <span className={styles.sitesLegendLabel}>
+                  {COMPARTMENT_LEGEND_LABEL[compartment]} ({count})
+                </span>
+              </li>
+            ))}
+          </ul>
+          {/* SURFACE-Bind citation — same Marchand et al 2026 PNAS
+              link the Summary metrics SURFACE-Bind chip cites; surfaces
+              the source paper right next to the spheres so a reader
+              who wants to read the method has a one-click path. */}
+          <p className={styles.sitesCitation}>
+            Marchand et al ·{" "}
+            <a
+              href="https://www.pnas.org/doi/10.1073/pnas.2506269123"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.captionLink}
+            >
+              PNAS 2026 ↗
+            </a>
+          </p>
+        </>
       ) : (
         <TopologyLegend
           presentStates={_presentTopologyStates(activeTopology)}

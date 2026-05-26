@@ -693,7 +693,13 @@ export function FiltersCard({ rec, n }: Props) {
         "β-strand binder candidates.",
       links: [
         { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
-        { href: "https://doi.org/10.1073/pnas.2506269123", label: "PNAS 2026" },
+        {
+          href: "https://www.pnas.org/doi/10.1073/pnas.2506269123",
+          // Match the citation format used in the 3D viewer's
+          // sites-mode caption — author + journal year — so both
+          // surfaces cite the source the same way.
+          label: "Marchand et al · PNAS 2026",
+        },
       ],
     },
   };

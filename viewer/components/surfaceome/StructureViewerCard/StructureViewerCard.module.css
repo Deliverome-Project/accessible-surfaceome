@@ -93,6 +93,15 @@
   white-space: nowrap;
 }
 
+/* Citation line below the sites legend — surfaces the source paper
+   for the SURFACE-Bind anchor data next to the spheres. */
+.sitesCitation {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 /* Variant tab strip — only rendered when the gene has alternative
    isoforms or orthologs. Sits directly above the 3D canvas; clicking
    a tab swaps which AFDB model + topology is rendered. */
