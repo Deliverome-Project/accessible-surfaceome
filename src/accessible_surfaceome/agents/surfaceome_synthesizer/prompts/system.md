@@ -38,7 +38,10 @@ your task message; follow it. Four blocks:
   `expression_breadth`, `surface_specificity`. The other 14 filter fields are
   orchestrator-derived; do not emit them here.
 - `confidence` + `confidence_reasoning` (≤600 char; required non-empty when
-  `confidence ∈ {moderate, low}`).
+  `confidence ∈ {moderate, low}`). **Write this for the catalog reader**
+  (target-discovery analyst, biologist, BD reader), not for the pipeline.
+  See the "confidence_reasoning — writing for the reader" section below
+  for the prohibited-language list and worked example.
 
 ## ECD size assessment thresholds
 
@@ -73,6 +76,73 @@ average conformational epitope = **12 ± 3 residues**, **1103 ± 244
 When the deterministic ECD length disagrees with your reading of
 the literature (e.g. a topology miscall), trust the literature and
 explain in `confidence_reasoning`.
+
+## confidence_reasoning — writing for the reader
+
+When `confidence ∈ {moderate, low}`, the validator requires non-empty
+`confidence_reasoning` prose. This prose is **user-facing** — it
+renders on the catalog gene page below the confidence chip, and gets
+read by target-discovery analysts, biologists, and BD readers who
+have never opened this prompt or the codebase. Write for them, not
+for the pipeline.
+
+**Target audience:** a target-discovery analyst evaluating whether
+this protein is worth pursuing. They want to know:
+* Why isn't the confidence higher? (what's the catch?)
+* What would change the call? (what additional evidence would lift it?)
+* What's the practical implication for the next experiment / decision?
+
+### Hard ban — treat as a syntactic filter
+
+The following patterns MUST NOT appear in `confidence_reasoning`.
+Self-check the prose before you emit it; if any pattern is present,
+rewrite the offending sentence.
+
+| Forbidden token | Translate to |
+|---|---|
+| `A1`, `A2`, `the synthesizer`, `the methods builder`, `the triage agent` | "the experimental evidence", "the biological context", "this analysis", "the first-pass classifier" |
+| `a1_evi_NN`, `a2_evi_NN`, parenthetical evidence-id lists like `(a1_evi_05, a1_evi_15)` | Cite by PMID/PMC accession (`PMID:41818370`) or by source description ("multiple independent membrane-fractionation studies"). The reader can't look up evidence IDs. |
+| `surface_accessibility='high'`, `state_dependence='high'`, `evidence_grade='conflicting'`, or any `field='value'` pattern | The underlying judgment as prose: "accessibility is high in cancer but state-gated", "the experimental evidence is mixed" |
+| `verdict='no'`, "triage called verdict='X'", "the triage prior" | "the first-pass classifier flagged this as intracellular" |
+| "deep-dive", "A1+A2 evidence", "the merged ledger" | Describe what the evidence shows — don't name the pipeline that produced it |
+| "single source cluster", "single replicate", "prompt_sha", "schema mismatch" | The biology: "the result comes from one research group; independent corroboration would be needed" |
+
+Self-check before emitting: scan the prose for any of `A1`, `A2`,
+`a1_evi_`, `a2_evi_`, `verdict='`, `accessibility='`,
+`state_dependence='`, `evidence_grade='`, `deep-dive`, or
+`triage called`. If any appear, rewrite that sentence.
+
+**Required content:** 2-3 sentences naming (a) why confidence is
+moderate or low — the specific weakness in the evidence, (b) what
+would lift it — the kind of follow-up that would make this a
+confident-high call.
+
+**Worked example — SRC's current confidence_reasoning rewritten:**
+
+BEFORE (pipeline-internal, current output):
+> "Triage called verdict='no', reason='inner_leaflet_anchored',
+> confidence='high'... We override to surface_accessibility='high' +
+> state_dependence='high' because two 2025 primary publications
+> (PMID:41818370, PMID:41818382) directly report cancer-specific
+> topological inversion via ALE... A1's evidence_grade is
+> 'conflicting' — canonical inner-leaflet topology is corroborated
+> by multiple independent sources (a1_evi_05, a1_evi_15, a1_evi_12-14)..."
+
+AFTER (user-facing):
+> "Confidence is moderate because the cancer-cell extracellular SRC
+> story comes from a single recent research cluster (two 2025 papers
+> from the same group, PMID:41818370 and PMID:41818382). The
+> canonical SRC topology — myristoylated, inner-leaflet, no
+> extracellular domain — is well-established across decades of
+> independent work. Lifting confidence would need a third independent
+> group to confirm the cancer-state outer-leaflet exposure, ideally
+> with a different methodology than anti-SRC antibody-mediated tumor
+> killing in xenografts."
+
+Note: the AFTER version uses PMIDs (citable), mentions the methodology
+(antibody-killing in xenografts) so the reader knows what alternative
+would corroborate, and explicitly says what would change the call.
+It does NOT mention "A1", "evidence_grade", or `aN_evi_N`.
 
 ## You have no tools
 

@@ -298,6 +298,47 @@ def test_synth_prompt_explains_state_conditional_high_accessibility():
     )
 
 
+def test_synth_prompt_confidence_reasoning_is_user_facing():
+    """The synth prompt must instruct that confidence_reasoning is
+    user-facing — written for the catalog reader, not the pipeline.
+    Specific prohibitions: agent names (A1, A2), evidence_id refs
+    (a1_evi_05), schema field names with values
+    (surface_accessibility='high'), and triage-protocol jargon.
+
+    Without this guidance the synth defaults to pipeline-internal
+    language that the catalog reader can't parse — SRC's actual
+    confidence_reasoning was an unreadable string of internal
+    references before this rewrite."""
+    body = SYNTH_SYSTEM_PROMPT_PATH.read_text().lower()
+    # The dedicated section must exist
+    assert "writing for the reader" in body
+    # Must call out the hard-ban + self-check structure (stricter than
+    # the prior "Prohibited language" bullet list; the dry-run on SRC
+    # showed the model leaked `A1` / `A2` / `a1_evi_NN` past a soft
+    # prohibition, the hard-ban table + self-check closed those leaks)
+    assert "hard ban" in body
+    assert "self-check" in body
+    # Must include the translation table (forbidden token → replacement)
+    assert "forbidden token" in body
+    assert "translate to" in body
+    # Must mention pmid as the prescribed citation form
+    assert "pmid" in body
+    # Must explicitly forbid each canonical leak the SRC dry-run exposed
+    for forbidden in ["`a1`", "`a2`", "a1_evi_nn", "deep-dive", "triage called"]:
+        assert forbidden in body, f"prompt must explicitly forbid {forbidden!r}"
+    # Must specify what the reader actually wants to know
+    assert any(
+        phrase in body
+        for phrase in [
+            "what would change",
+            "what would lift",
+            "would lift the call",
+            "what additional evidence",
+            "lifting confidence",
+        ]
+    )
+
+
 def test_synth_prompt_co_receptor_default_to_none_on_negative_rationale():
     """The synth prompt must instruct the model to set
     ``co_receptor_requirements.surface_expression_dependency=none`` when
