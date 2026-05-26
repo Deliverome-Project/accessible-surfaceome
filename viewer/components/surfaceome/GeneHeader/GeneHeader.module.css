@@ -135,18 +135,22 @@
   font-size: 1.05rem;
   line-height: 1.4;
   color: var(--ink-soft);
-  max-width: 60ch;
+  /* No max-width cap — the headerText flex column already constrains
+   * width via the parent grid (1fr / 365px), and that natural cap is
+   * the right one. The previous 60ch cap forced wrapping well before
+   * the structure-viewer edge, leaving awkward empty space. */
 }
 
 /* Executive-summary lede — promoted from §1 to live directly under
  * the gene name. Reads as the gene-page TL;DR; deeper structured
- * signals are in the vitals row below and the section cards beyond. */
+ * signals are in the vitals row below and the section cards beyond.
+ * Same width policy as .geneName: fill the headerText column up to
+ * the structure-viewer edge. */
 .execLede {
   margin: var(--space-1) 0 0;
   font-size: 0.95rem;
   line-height: 1.6;
   color: var(--ink);
-  max-width: 70ch;
 }
 
 /* Headline risks — small "label · value" line under the lede. */

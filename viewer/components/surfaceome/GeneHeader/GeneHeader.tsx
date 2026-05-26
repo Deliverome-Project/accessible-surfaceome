@@ -73,10 +73,27 @@ function gradeTone(value: string) {
   return "neutral" as const;
 }
 
-function triageTone(signal: string) {
-  if (signal === "likely_accessible") return "success" as const;
-  if (signal === "possibly_accessible") return "teal" as const;
-  if (signal === "unlikely") return "amber" as const;
+/** Reader-facing label for `executive_summary.state_dependence`:
+ *  - `low` → Constitutive (surface call holds across cell states)
+ *  - `moderate` → Conditional (call depends on cell state / context)
+ *  - `high` → State-dependent (call only in specific states; e.g.
+ *     cancer-only, stress-only)
+ *  - `unclear` → Unclear (evidence too thin to call) */
+function stateDependenceLabel(value: string): string {
+  if (value === "low") return "Constitutive";
+  if (value === "moderate") return "Conditional";
+  if (value === "high") return "State-dependent";
+  return "Unclear";
+}
+
+function stateDependenceTone(value: string) {
+  // low = always-on surface call → success / green; the safest target.
+  // moderate = context-dependent → lavender; needs the right cell state.
+  // high = only in specific states → amber; reader should pay attention.
+  // unclear = neutral.
+  if (value === "low") return "success" as const;
+  if (value === "moderate") return "lavender" as const;
+  if (value === "high") return "amber" as const;
   return "neutral" as const;
 }
 
@@ -222,25 +239,25 @@ export function GeneHeader({
           {/* Executive summary one-paragraph. Headline risks + cited
               evidence chips were dropped from the header per user
               feedback — both are still visible:
-                * headline_risks → the Triage vital below (subtitle
-                  shows "N headline risks") + the §Risks card
+                * headline_risks → the State-dependence vital below
+                  (subtitle shows "N headline risks") + the §Risks card
                 * cited_evidence_ids → the §Evidence ledger + each
                   per-row EvidenceChipList */}
           <p className={styles.execLede}>{exec.one_paragraph}</p>
 
           {/* Vitals 2×2 grid — Accessibility / Experimental surface
-              evidence / Confidence / Triage. Was previously a 4-up
-              row across the full header width; moved inside
-              `<div className=headerText>` so it sits directly under
-              the executive summary text rather than below the 3D
-              viewer column. Lets the reader scan the four headline
-              signals immediately after reading the lede paragraph. */}
+              evidence / Confidence / State dependence. The fourth
+              vital is the editorial summary of `state_dependence`
+              ("Constitutive" / "Conditional" / "State-dependent" /
+              "Unclear"); the raw Sonnet triage prior moved off the
+              gene-page hero — it's still in D1 if a reader wants it,
+              but it isn't a headline signal. */}
           <dl className={styles.vitals}>
             {(() => {
               const accessTone = accessibilityTone(exec.surface_accessibility);
               const gradeT = gradeTone(exec.evidence_grade_summary);
               const confT = confidenceTone(exec.confidence);
-              const triT = triageTone(rec.triage_signal);
+              const stateT = stateDependenceTone(exec.state_dependence);
               return (
                 <>
                   <div className={styles.vital}>
@@ -293,18 +310,20 @@ export function GeneHeader({
                     <dt
                       className={`label-mono ${styles.vitalK}`}
                       title={
-                        "Genome-wide Sonnet triage prior — first-pass surface-vs-not " +
-                        "call made before any deep literature work. Hydrated from " +
-                        "public D1 `triage_run_public` (mainbench_canonical_v1 · " +
-                        "variant=ncbi · model=claude-sonnet-4-6). Falls back to " +
-                        "`unknown` when no triage row exists for the gene."
+                        "Editorial summary of `executive_summary.state_dependence`: " +
+                        "Constitutive (surface call holds across cell states) → " +
+                        "Conditional (depends on context) → State-dependent " +
+                        "(only in specific states; e.g. cancer-only, stress-only) → " +
+                        "Unclear (evidence too thin to call). Replaces the raw " +
+                        "Sonnet triage prior, which lives in D1's triage_run_public " +
+                        "but isn't useful as a gene-page headline."
                       }
                     >
-                      Triage
+                      State dependence
                     </dt>
                     <dd className={styles.vitalV}>
-                      <p className={`h-vital-display ${vitalToneClass(triT)}`}>
-                        {prettyEnum(rec.triage_signal)}
+                      <p className={`h-vital-display ${vitalToneClass(stateT)}`}>
+                        {stateDependenceLabel(exec.state_dependence)}
                       </p>
                       <span className={styles.vitalSub}>
                         {exec.headline_risks.length
