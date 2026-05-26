@@ -153,6 +153,51 @@
   color: var(--ink);
 }
 
+/* Subcategory pill + its info-tip — inline so the tooltip glyph sits
+ * next to the pill rather than floating below it. */
+.subcategoryRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* Triage row — small horizontal strip directly under the DB-presence
+ * strip. Same compact register as the SOURCES line so the two read as
+ * a pair (database surface call + agent surface call). The
+ * "Conflicts with deep dive" pill is the only place the conflict
+ * surfaces visually; the deep-dive verdict in the vitals below wins. */
+.triageRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: var(--space-2) 0 0;
+  font-size: 0.78rem;
+  color: var(--ink);
+}
+
+.triageLabel {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--muted);
+}
+
+.triageValue {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.triageQualifier {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.triageAgree {
+  color: var(--success);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
 /* Headline risks — small "label · value" line under the lede. */
 .risks {
   display: flex;

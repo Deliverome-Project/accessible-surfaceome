@@ -2,8 +2,10 @@ import type { CatalogRow } from "../../../lib/surfaceome";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { tooltips } from "../../../lib/tooltips";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
+import { InfoTip } from "../../InfoTip/InfoTip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
@@ -92,17 +94,31 @@ function gradeTone(value: string) {
   return "neutral" as const;
 }
 
-/** Reader-facing label for `executive_summary.state_dependence`:
- *  - `low` → Constitutive (surface call holds across cell states)
- *  - `moderate` → Conditional (call depends on cell state / context)
- *  - `high` → State-dependent (call only in specific states; e.g.
- *     cancer-only, stress-only)
- *  - `unclear` → Unclear (evidence too thin to call) */
-function stateDependenceLabel(value: string): string {
-  if (value === "low") return "Constitutive";
-  if (value === "moderate") return "Conditional";
-  if (value === "high") return "State-dependent";
-  return "Unclear";
+/** Compare the Sonnet triage prior to the deep-dive surface verdict.
+ *
+ * Returns one of:
+ * - `"agree"` — both sides on the same side of the binary surface call
+ * - `"conflict"` — triage and deep-dive disagree (e.g. SRC's eSrc finding:
+ *     triage said `unlikely`, deep dive said `high`)
+ * - `"unclear"` — one or both sides emit `unknown` / `uncertain`, so no
+ *     useful comparison
+ *
+ * The deep dive wins on conflict (it has the per-method evidence); the
+ * triage row just flags the disagreement for transparency. */
+function triageVsDeepDive(
+  triage: string,
+  accessibility: string,
+): "agree" | "conflict" | "unclear" {
+  const triagePositive =
+    triage === "likely_accessible" || triage === "possibly_accessible";
+  const triageNegative = triage === "unlikely";
+  const deepPositive = accessibility === "high" || accessibility === "moderate";
+  const deepNegative = accessibility === "low" || accessibility === "no";
+  if (triagePositive && deepPositive) return "agree";
+  if (triageNegative && deepNegative) return "agree";
+  if (triagePositive && deepNegative) return "conflict";
+  if (triageNegative && deepPositive) return "conflict";
+  return "unclear";
 }
 
 function stateDependenceTone(value: string) {
@@ -255,6 +271,44 @@ export function GeneHeader({
               outliers, where we just omit the strip. */}
           {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
 
+          {/* Triage row — Sonnet first-pass surface verdict, sitting
+              under the DB-presence strip for transparency. Tagged with
+              "initial pass · no web search" so the reader knows this
+              isn't the deep-dive call. When the triage disagrees with
+              the deep-dive `surface_accessibility`, the row carries a
+              warn pill that links the eye to the conflict (e.g. for
+              SRC: triage=Unlikely vs deep-dive=High — the eSrc
+              cancer-specific surface that the initial triage missed). */}
+          {(() => {
+            const verdict = triageVsDeepDive(
+              rec.triage_signal,
+              exec.surface_accessibility,
+            );
+            return (
+              <p className={styles.triageRow}>
+                <span className={`label-mono ${styles.triageLabel}`}>
+                  Triage
+                  <InfoTip>{tooltips.triage_signal}</InfoTip>
+                </span>
+                <span className={styles.triageValue}>
+                  {prettyEnum(rec.triage_signal)}
+                </span>
+                <span className={styles.triageQualifier}>
+                  initial pass · no web search
+                </span>
+                {verdict === "conflict" ? (
+                  <StatusPill tone="amber" size="sm">
+                    Conflicts with deep dive
+                  </StatusPill>
+                ) : verdict === "agree" ? (
+                  <span className={styles.triageAgree}>
+                    Agrees with deep dive
+                  </span>
+                ) : null}
+              </p>
+            );
+          })()}
+
           {/* Executive summary one-paragraph. Headline risks + cited
               evidence chips were dropped from the header per user
               feedback — both are still visible:
@@ -265,12 +319,11 @@ export function GeneHeader({
           <p className={styles.execLede}>{exec.one_paragraph}</p>
 
           {/* Vitals 2×2 grid — Accessibility / Experimental surface
-              evidence / Confidence / State dependence. The fourth
-              vital is the editorial summary of `state_dependence`
-              ("Constitutive" / "Conditional" / "State-dependent" /
-              "Unclear"); the raw Sonnet triage prior moved off the
-              gene-page hero — it's still in D1 if a reader wants it,
-              but it isn't a headline signal. */}
+              evidence / Confidence / State dependence. Each label
+              carries an <InfoTip> with provenance (LLM rollup vs
+              deterministic source). The raw enum values render via
+              prettyEnum so the reader sees the same labels they see
+              in the data ledger. */}
           <dl className={styles.vitals}>
             {(() => {
               const accessTone = accessibilityTone(exec.surface_accessibility);
@@ -280,28 +333,31 @@ export function GeneHeader({
               return (
                 <>
                   <div className={styles.vital}>
-                    <dt className={`label-mono ${styles.vitalK}`}>Accessibility</dt>
+                    <dt className={`label-mono ${styles.vitalK}`}>
+                      Accessibility
+                      <InfoTip>{tooltips.surface_accessibility}</InfoTip>
+                    </dt>
                     <dd className={styles.vitalV}>
                       <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
                         {prettyEnum(exec.surface_accessibility)}
                       </p>
-                      <StatusPill tone={accessTone} size="sm">
-                        {prettyEnum(exec.subcategory)}
-                      </StatusPill>
+                      <span className={styles.subcategoryRow}>
+                        <StatusPill tone={accessTone} size="sm">
+                          {prettyEnum(exec.subcategory)}
+                        </StatusPill>
+                        <InfoTip
+                          label="About architecture / subcategory"
+                        >
+                          {tooltips.architecture_chip}
+                        </InfoTip>
+                      </span>
                     </dd>
                   </div>
 
                   <div className={styles.vital}>
-                    <dt
-                      className={`label-mono ${styles.vitalK}`}
-                      title={
-                        "Reader-facing relabel of `evidence_grade_summary` — " +
-                        "rolls up A1's per-method `MethodObservation` blocks into " +
-                        "one tier (direct_multi_method / direct_single_method / " +
-                        "supportive_but_indirect / conflicting / weak)."
-                      }
-                    >
+                    <dt className={`label-mono ${styles.vitalK}`}>
                       Experimental surface evidence
+                      <InfoTip>{tooltips.experimental_surface_evidence}</InfoTip>
                     </dt>
                     <dd className={styles.vitalV}>
                       <p className={`h-vital-display ${vitalToneClass(gradeT)}`}>
@@ -314,7 +370,10 @@ export function GeneHeader({
                   </div>
 
                   <div className={styles.vital}>
-                    <dt className={`label-mono ${styles.vitalK}`}>Confidence</dt>
+                    <dt className={`label-mono ${styles.vitalK}`}>
+                      Confidence
+                      <InfoTip>{tooltips.confidence}</InfoTip>
+                    </dt>
                     <dd className={styles.vitalV}>
                       <p className={`h-vital-display ${vitalToneClass(confT)}`}>
                         {prettyEnum(exec.confidence)}
@@ -326,23 +385,13 @@ export function GeneHeader({
                   </div>
 
                   <div className={styles.vital}>
-                    <dt
-                      className={`label-mono ${styles.vitalK}`}
-                      title={
-                        "Editorial summary of `executive_summary.state_dependence`: " +
-                        "Constitutive (surface call holds across cell states) → " +
-                        "Conditional (depends on context) → State-dependent " +
-                        "(only in specific states; e.g. cancer-only, stress-only) → " +
-                        "Unclear (evidence too thin to call). Replaces the raw " +
-                        "Sonnet triage prior, which lives in D1's triage_run_public " +
-                        "but isn't useful as a gene-page headline."
-                      }
-                    >
+                    <dt className={`label-mono ${styles.vitalK}`}>
                       State dependence
+                      <InfoTip>{tooltips.state_dependence}</InfoTip>
                     </dt>
                     <dd className={styles.vitalV}>
                       <p className={`h-vital-display ${vitalToneClass(stateT)}`}>
-                        {stateDependenceLabel(exec.state_dependence)}
+                        {prettyEnum(exec.state_dependence)}
                       </p>
                       <span className={styles.vitalSub}>
                         {exec.headline_risks.length
@@ -350,6 +399,9 @@ export function GeneHeader({
                               exec.headline_risks.length === 1 ? "" : "s"
                             }`
                           : "No headline risks"}
+                        <InfoTip label="About headline risks">
+                          {tooltips.headline_risks}
+                        </InfoTip>
                       </span>
                     </dd>
                   </div>
@@ -474,18 +526,11 @@ export function GeneHeader({
                 are an absence signal, not an actual measurement). */}
             <dl className={styles.structureStats} aria-label="SURFACE-Bind summary">
               <div className={styles.structureStat}>
-                <dt
-                  className={`label-mono ${styles.structureStatK}`}
-                  title={
-                    "SURFACE-Bind (Balbi et al 2026, PMID 41604262) — " +
-                    "MaSIF / patch-based " +
-                    "targetability mapping. Each site is a surface patch " +
-                    "scored as designable for a de novo binder. Total " +
-                    "seeds = candidate binder backbone fragments docked " +
-                    "to all sites combined (α-helical + β-strand)."
-                  }
-                >
+                <dt className={`label-mono ${styles.structureStatK}`}>
                   SURFACE-Bind
+                  <InfoTip label="About SURFACE-Bind">
+                    {tooltips.surface_bind}
+                  </InfoTip>
                 </dt>
                 <dd className={styles.structureStatV}>
                   {/* Three distinct states (intentionally NOT collapsed):
