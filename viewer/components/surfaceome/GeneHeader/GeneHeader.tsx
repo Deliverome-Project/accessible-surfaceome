@@ -1,7 +1,6 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
@@ -124,6 +123,9 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
   const structWholeProtein =
     !structPlaceholder && structSource.includes("whole-protein");
   const plddtLabel = structWholeProtein ? "Whole pLDDT" : "ECD pLDDT";
+  // Four canonical external IDs only — SURFACE-Bind was dropped from
+  // this row (it's already linked from the 3D viewer's ↗ control next
+  // to the mode toggle, no need to surface it twice).
   const ids = [
     {
       label: "HGNC",
@@ -145,15 +147,6 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
       value: g.ensembl_gene,
       href: `https://www.ensembl.org/Homo_sapiens/Gene/Summary?g=${g.ensembl_gene}`,
     },
-    // SURFACE-Bind (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
-    // — Correia lab's per-UniProt MaSIF / patch-based targetability
-    // mapping. Deep-link gives a per-protein view of which surface
-    // patches are scored as designable + downloadable binder seeds.
-    {
-      label: "SURFACE-Bind",
-      value: g.uniprot_acc,
-      href: `https://surface-bind.inria.fr/protein.html?uniprot=${g.uniprot_acc}`,
-    },
   ];
 
   return (
@@ -173,31 +166,10 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
             </p>
           ) : null}
 
-          {/* Executive summary inlined here (no longer a separate
-              section). Reader sees the gene name, then immediately the
-              one-paragraph synthesis + headline risks + cited evidence
-              chips. The structured signals (Accessibility, Grade,
-              Confidence, Triage) live in the vitals row below. */}
-          <p className={styles.execLede}>{exec.one_paragraph}</p>
-
-          {exec.headline_risks.length > 0 ? (
-            <p className={styles.risks}>
-              <span className={`label-mono ${styles.risksLabel}`}>
-                Headline risks
-              </span>
-              <span className={styles.risksValue}>
-                {exec.headline_risks.map((r) => prettyEnum(r)).join(" · ")}
-              </span>
-            </p>
-          ) : null}
-
-          {exec.cited_evidence_ids.length > 0 ? (
-            <EvidenceChipList
-              ids={exec.cited_evidence_ids}
-              label="Cited evidence"
-            />
-          ) : null}
-
+          {/* IDs row — small, immediately under the descriptive gene
+              name. Was previously placed below the exec lede + headline
+              risks; promoted here per user feedback so the external
+              identifiers are visually attached to the gene-name strip. */}
           <ul className={styles.ids} aria-label="External identifiers">
             {ids.map((id) => (
               <li key={id.label} className={styles.idItem}>
@@ -213,6 +185,15 @@ export function GeneHeader({ rec, geneName, structureData }: GeneHeaderProps) {
               </li>
             ))}
           </ul>
+
+          {/* Executive summary one-paragraph. Headline risks + cited
+              evidence chips were dropped from the header per user
+              feedback — both are still visible:
+                * headline_risks → the Triage vital below (subtitle
+                  shows "N headline risks") + the §Risks card
+                * cited_evidence_ids → the §Evidence ledger + each
+                  per-row EvidenceChipList */}
+          <p className={styles.execLede}>{exec.one_paragraph}</p>
         </div>
 
         {structureData ? (

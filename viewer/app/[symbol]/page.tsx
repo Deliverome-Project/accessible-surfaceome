@@ -175,14 +175,21 @@ export default async function GenePage({ params }: PageProps) {
           />
         ) : null}
 
-        <nav className={styles.crumbs} aria-label="Breadcrumb">
-          <Link href="/" className={styles.crumbLink}>
-            Surfaceome
+        {/* Compact toolbar — drop the "Surfaceome / EGFR" breadcrumb
+            text (the gene symbol is already the page's h1 below); a
+            small ← icon link is the back-to-catalog affordance. The
+            JSON / Markdown / Feedback actions stay on the right.
+            Pulls the gene-symbol h1 ~30 px closer to the top of the
+            page. */}
+        <nav className={styles.crumbs} aria-label="Page actions">
+          <Link
+            href="/"
+            className={styles.crumbBack}
+            title="Back to surfaceome catalog"
+            aria-label="Back to surfaceome catalog"
+          >
+            ←
           </Link>
-          <span className={styles.crumbSep} aria-hidden="true">
-            /
-          </span>
-          <span className={styles.crumbHere}>{rec.gene.hgnc_symbol}</span>
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
