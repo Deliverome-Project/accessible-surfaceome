@@ -685,7 +685,8 @@ export function FiltersCard({ rec, n }: Props) {
     },
     "SURFACE-Bind": {
       title:
-        "MaSIF patch-based targetability scoring (Marchand et al. 2026 " +
+        "MaSIF patch-based targetability scoring (Balbi et al. 2026, " +
+        "PMID 41604262, " +
         "PNAS). Three states: 'not in' = filtered at structural QC; " +
         "'scored · no patches' = scored but no patches cleared the " +
         "MaSIF threshold; 'N sites · M seeds' = real targetability " +
@@ -694,11 +695,11 @@ export function FiltersCard({ rec, n }: Props) {
       links: [
         { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
         {
-          href: "https://www.pnas.org/doi/10.1073/pnas.2506269123",
-          // Match the citation format used in the 3D viewer's
-          // sites-mode caption — author + journal year — so both
-          // surfaces cite the source the same way.
-          label: "Marchand et al · PNAS 2026",
+          // PubMed PMID 41604262 — same source the 3D viewer's
+          // sites-mode caption cites. Author + year format
+          // mirrored across both surfaces.
+          href: "https://pubmed.ncbi.nlm.nih.gov/41604262/",
+          label: "Balbi et al · 2026",
         },
       ],
     },

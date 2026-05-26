@@ -91,7 +91,7 @@ export interface CatalogRow {
    *  bench genes have only the Sonnet slot populated). */
   triage_by_model: (TriageCell | null)[];
   deep_dive: boolean;
-  /** SURFACE-Bind scored-patch count (Marchand 2026 PNAS). Three-
+  /** SURFACE-Bind scored-patch count (Balbi et al 2026, PMID 41604262). Three-
    *  state semantics:
    *   - ``undefined`` → UniProt not in SURFACE-Bind's dataset at
    *     all (filtered out at structural QC).

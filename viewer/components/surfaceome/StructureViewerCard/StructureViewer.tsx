@@ -1175,19 +1175,20 @@ export function StructureViewer({
               </li>
             ))}
           </ul>
-          {/* SURFACE-Bind citation — same Marchand et al 2026 PNAS
-              link the Summary metrics SURFACE-Bind chip cites; surfaces
-              the source paper right next to the spheres so a reader
-              who wants to read the method has a one-click path. */}
+          {/* SURFACE-Bind citation — Balbi et al 2026, PMID 41604262.
+              Same link the Summary metrics SURFACE-Bind chip cites;
+              surfaces the source paper right next to the spheres so
+              a reader who wants to read the method has a one-click
+              path. */}
           <p className={styles.sitesCitation}>
-            Marchand et al ·{" "}
+            Balbi et al ·{" "}
             <a
-              href="https://www.pnas.org/doi/10.1073/pnas.2506269123"
+              href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.captionLink}
             >
-              PNAS 2026 ↗
+              2026 ↗
             </a>
           </p>
         </>

@@ -112,7 +112,7 @@ export function SurfaceBindCard({ rec, n }: Props) {
         n={n}
         eyebrow="SURFACE-Bind"
         title="Patch-based targetability"
-        meta="Marchand 2026 PNAS · MaSIF surface scoring · deterministic"
+        meta="Balbi 2026 (PMID 41604262) · MaSIF surface scoring · deterministic"
       >
         <p className={styles.emptyNote}>
           <strong>Scored by SURFACE-Bind</strong> — present in the
@@ -143,7 +143,7 @@ export function SurfaceBindCard({ rec, n }: Props) {
       n={n}
       eyebrow="SURFACE-Bind"
       title="Patch-based targetability"
-      meta={`Marchand 2026 PNAS · ${sb.n_sites} site${
+      meta={`Balbi 2026 (PMID 41604262) · ${sb.n_sites} site${
         sb.n_sites === 1 ? "" : "s"
       } · ${sb.n_seeds_total.toLocaleString()} total binder seeds`}
     >

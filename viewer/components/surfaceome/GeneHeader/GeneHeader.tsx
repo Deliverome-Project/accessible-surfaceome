@@ -477,8 +477,8 @@ export function GeneHeader({
                 <dt
                   className={`label-mono ${styles.structureStatK}`}
                   title={
-                    "SURFACE-Bind (Marchand 2026 PNAS, " +
-                    "doi:10.1073/pnas.2506269123) — MaSIF / patch-based " +
+                    "SURFACE-Bind (Balbi et al 2026, PMID 41604262) — " +
+                    "MaSIF / patch-based " +
                     "targetability mapping. Each site is a surface patch " +
                     "scored as designable for a de novo binder. Total " +
                     "seeds = candidate binder backbone fragments docked " +

@@ -92,7 +92,7 @@ export type TriageReason =
  * Architecture (how the protein sits in the membrane). Orthogonal
  * to the new ``ProteinFamily`` axis (function). The previous
  * ``ion_channel`` and ``transporter`` values were dropped in the
- * SURFACE-Bind alignment (Marchand 2026 PNAS) — those are now
+ * SURFACE-Bind alignment (Balbi et al 2026, PMID 41604262) — those are now
  * ``ProteinFamily="transporter"`` paired with
  * ``Subcategory="multi_pass"``.
  */
@@ -107,7 +107,7 @@ export type Subcategory =
 
 /**
  * Functional family. Mirrors SURFACE-Bind's four main classes
- * (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123). Dropped
+ * (Balbi et al 2026, PMID 41604262). Dropped
  * their bookkeeping ``unclassified`` / ``unmatched`` because those
  * reflect their mapping-pipeline state, not biology.
  */
@@ -260,6 +260,14 @@ export interface Filters {
   max_paralog_ecd_pct_identity: number | null;
   n_term_extracellular: boolean;
   c_term_extracellular: boolean;
+  /** Stance-map counts (5b.8) derived from
+   *  ``surface_evidence.claim_stances`` by the orchestrator. Lets the
+   *  catalog distinguish "conflicting grade with 1 contradiction →
+   *  artifact-suspect" from "≥3 contradictions → real disagreement"
+   *  without re-parsing grade_rationale prose. Defaults to 0 — old
+   *  records (no stance map emitted) read as 0. */
+  n_supporting_claims_high_weight: number;
+  n_contradicting_claims_high_weight: number;
 }
 
 // ============================================================
@@ -373,8 +381,8 @@ export interface SurfaceBindSite {
 }
 
 /**
- * SURFACE-Bind summary (Marchand et al. 2026 PNAS,
- * doi:10.1073/pnas.2506269123). The MaSIF / patch-based targetability
+ * SURFACE-Bind summary (Balbi et al 2026, PMID 41604262).
+ * The MaSIF / patch-based targetability
  * mapping. ``has_data=true`` means the protein appears in SURFACE-Bind's
  * authoritative ``results_no_TM.csv`` (~1,649 of the ~2,886 predicted
  * surface proteins); ``has_data=false`` means it dropped out via the
@@ -650,9 +658,32 @@ export interface Contradiction {
   cited_evidence_ids: string[];
 }
 
+// Per-claim stance map (5b.8) — structured per-claim accounting that
+// backs the evidence_grade verdict alongside the prose rationale.
+// Each row names one EvidenceClaim id + its stance + weight. Drives the
+// derived Filters.n_supporting_claims_high_weight /
+// n_contradicting_claims_high_weight catalog filter fields.
+export type ClaimStance =
+  | "supports_surface"
+  | "contradicts_surface"
+  | "tangential"
+  | "expression_only";
+
+export type ClaimWeight = "high" | "moderate" | "low";
+
+export interface ClaimStanceRow {
+  claim_id: string;
+  stance: ClaimStance;
+  weight: ClaimWeight;
+  /** Optional ≤120-char qualifier (e.g. "antibody from non-KO-validated paper"). */
+  note: string | null;
+}
+
 export interface SurfaceEvidence {
   evidence_grade: EvidenceGrade;
   grade_rationale: string;
+  /** Per-claim stance map; empty for records emitted before 5b.8. */
+  claim_stances: ClaimStanceRow[];
   methods: MethodObservation[];
   non_surface_expression: NonSurfaceExpression[];
   therapeutic_engagement: TherapeuticEngagement | null;
