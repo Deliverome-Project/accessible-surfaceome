@@ -5,7 +5,11 @@
   overflow: hidden;
   border: 1px solid var(--line);
   margin: var(--space-1) 0;
-  min-width: 12rem;
+  /* Narrowed from 12rem to keep the topology column compact (per
+     the parent .topoCol width:20% constraint). Per-segment flex-basis
+     still uses residue counts, so the RELATIVE proportions of
+     S / M / O / I segments stay honest at the smaller width. */
+  min-width: 2.4rem;
 }
 
 .seg {

@@ -18,8 +18,12 @@
 }
 
 .topoCol {
-  width: 100%;
-  min-width: 14rem;
+  /* Narrow topology column so it doesn't dominate the table.
+     Was width:100%/min-width:14rem before — the residue bar
+     stretched across most of the table width which crowded the
+     numeric columns (TM, N-term, C-term, lengths). */
+  width: 20%;
+  min-width: 6rem;
 }
 
 .topoCell {

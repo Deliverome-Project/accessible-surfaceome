@@ -37,6 +37,7 @@ export function IsoformsCard({ rec, n }: Props) {
               <th scope="col">UniProt</th>
               <th scope="col">TM</th>
               <th scope="col">N-term</th>
+              <th scope="col">C-term</th>
               <th scope="col">Signal pep</th>
               <th scope="col">ECD len</th>
               <th scope="col">ICD len</th>
@@ -60,6 +61,14 @@ export function IsoformsCard({ rec, n }: Props) {
                   size="sm"
                 >
                   {prettyEnum(ct.n_terminal_orientation)}
+                </StatusPill>
+              </td>
+              <td>
+                <StatusPill
+                  tone={ct.c_terminal_orientation === "extracellular" ? "teal" : "neutral"}
+                  size="sm"
+                >
+                  {prettyEnum(ct.c_terminal_orientation)}
                 </StatusPill>
               </td>
               <td>{ct.signal_peptide_length} aa</td>
@@ -89,6 +98,16 @@ export function IsoformsCard({ rec, n }: Props) {
                     size="sm"
                   >
                     {prettyEnum(iso.n_terminal_orientation)}
+                  </StatusPill>
+                </td>
+                <td>
+                  <StatusPill
+                    tone={
+                      iso.c_terminal_orientation === "extracellular" ? "teal" : "neutral"
+                    }
+                    size="sm"
+                  >
+                    {prettyEnum(iso.c_terminal_orientation)}
                   </StatusPill>
                 </td>
                 <td>{iso.signal_peptide_length} aa</td>
@@ -122,7 +141,17 @@ export function IsoformsCard({ rec, n }: Props) {
 
       {df.isoform_topologies.length === 0 ? (
         <p className={styles.empty}>
-          UniProt records no alternative isoforms for {rec.gene.hgnc_symbol}.
+          No alternative isoforms in our DeepTMHMM coverage for {rec.gene.hgnc_symbol}.
+          (UniProt may list additional isoforms whose topology hasn&rsquo;t been
+          computed yet — see the canonical entry at{" "}
+          <a
+            href={`https://www.uniprot.org/uniprotkb/${rec.gene.uniprot_acc}/entry#sequences`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            uniprot.org/{rec.gene.uniprot_acc}
+          </a>
+          .)
         </p>
       ) : null}
     </SectionCard>
