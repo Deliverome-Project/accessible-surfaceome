@@ -1573,6 +1573,15 @@ class Filters(BaseModel):
     # the now-dropped ``HeadlineRisk.ligand_unknown`` enum value; the
     # catalog can filter on this as a tractability signal.
     has_known_ligand: bool = True
+    # Derived from ``surface_evidence.claim_stances`` by the
+    # orchestrator. Lets the catalog distinguish "conflicting grade
+    # from a single contradicting claim (artifact-suspect)" from
+    # "conflicting grade from ≥3 contradicting claims (real
+    # disagreement)" without re-parsing the grade_rationale prose.
+    # Defaults to 0 — old records (no stance map emitted) and genes
+    # whose builder didn't return stances both read as 0.
+    n_supporting_claims_high_weight: int = Field(default=0, ge=0)
+    n_contradicting_claims_high_weight: int = Field(default=0, ge=0)
 
 
 # ---- surface evidence (section 1) -----------------------------------------
@@ -1743,6 +1752,51 @@ class Contradiction(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
+ClaimStance = Literal[
+    "supports_surface",      # claim supports surface accessibility
+    "contradicts_surface",   # claim refutes surface accessibility
+    "tangential",            # informs picture but doesn't commit either way
+    "expression_only",       # tissue/cell expression claim, not surface evidence
+]
+
+ClaimWeight = Literal[
+    "high",      # direct surface methodology + KO control or multi-source
+    "moderate",  # direct methodology, single source, weak validation
+    "low",       # indirect / inferred / single mention
+]
+
+
+class ClaimStanceRow(BaseModel):
+    """One per-claim stance backing the evidence_grade verdict.
+
+    Structured per-claim accounting alongside the free-text
+    ``grade_rationale`` prose. Lets the catalog query "conflicting grade
+    with only 1 high-weight contradiction → likely artifact" vs "≥3
+    high-weight contradictions → real disagreement" — distinctions the
+    grade enum alone collapses.
+
+    Weight criteria the LLM applies:
+      * ``high`` — direct surface methodology (live flow, nonperm IF,
+        surface biotin, IHC membranous) with knockout / siRNA control
+        OR corroboration across multiple independent sources.
+      * ``moderate`` — direct methodology, single source, weaker
+        validation (e.g. one published flow study with vendor-only
+        antibody validation).
+      * ``low`` — indirect (fractionation / glycoproteomics) OR a
+        single mention without methodology detail.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    claim_id: str
+    stance: ClaimStance
+    weight: ClaimWeight
+    note: str | None = Field(
+        default=None,
+        description="Optional ≤120-char qualifier (e.g. 'antibody from non-KO-validated paper').",
+    )
+
+
 class SurfaceEvidence(BaseModel):
     """Section 1 — the surface-accessibility evidence the agent assembled."""
 
@@ -1753,6 +1807,16 @@ class SurfaceEvidence(BaseModel):
         ...,
         description="Why this evidence_grade. Soft target ≤800 chars (overshoots warned but accepted).",
     )
+    # Per-claim structured accounting that backs the grade. Each row
+    # names one EvidenceClaim from the input ledger + its stance
+    # (supports/contradicts/tangential/expression_only) + weight
+    # (high/moderate/low). Used by the orchestrator to derive the
+    # ``n_supporting_claims_high_weight`` / ``n_contradicting_claims_high_weight``
+    # filters so the catalog can distinguish artifact vs. real
+    # conflicting-grade cases. Defaults to ``[]`` for backward compat
+    # with records emitted before this field existed; the derived
+    # filters read 0 in that case.
+    claim_stances: list[ClaimStanceRow] = Field(default_factory=list)
     methods: list[MethodObservation] = Field(default_factory=list)
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
     therapeutic_engagement: TherapeuticEngagementContext | None = None
@@ -2559,6 +2623,12 @@ class SurfaceEvidenceDraft(BaseModel):
             cited.update(se.therapeutic_engagement.cited_evidence_ids)
         for contradiction in se.contradicting_evidence:
             cited.update(contradiction.cited_evidence_ids)
+        # claim_stances rows each name one claim_id directly (not in
+        # a cited_evidence_ids list) — fold their ids into the same
+        # cross-check so an LLM that fabricates a claim_id in the
+        # stance map fails fast at parse time.
+        for stance_row in se.claim_stances:
+            cited.add(stance_row.claim_id)
         unresolved = sorted(cited - known)
         if unresolved:
             raise ValueError(
@@ -3179,6 +3249,9 @@ __all__ = [
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",
     "TriageProvenance",
+    "ClaimStance",
+    "ClaimWeight",
+    "ClaimStanceRow",
     # NOTE: ``TriageModelPath`` removed — provenance.model carries the
     # full model identifier (e.g. ``claude-sonnet-4-6``) instead.
     "TriageRecord",

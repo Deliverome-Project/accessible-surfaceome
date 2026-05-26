@@ -395,6 +395,11 @@ def _annotate(
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,
         grade_rationale=grade_block.grade_rationale,
+        # Per-claim stance map from the evidence_grade builder (5b.8).
+        # Drives the derived ``n_supporting_claims_high_weight`` +
+        # ``n_contradicting_claims_high_weight`` Filter fields in
+        # ``_derive_filters``.
+        claim_stances=grade_block.claim_stances,
         methods=outputs["methods"],
         non_surface_expression=grade_block.non_surface_expression,
         therapeutic_engagement=outputs["therapeutic_engagement"],

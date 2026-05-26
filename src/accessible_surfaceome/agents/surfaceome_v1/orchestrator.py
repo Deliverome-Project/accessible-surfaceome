@@ -855,6 +855,22 @@ def _derive_filters(
     ]
     max_paralog = max(_paralog_ids) if _paralog_ids else None
 
+    # Stance-map counts (5b.8) — derived from
+    # ``surface_evidence.claim_stances`` so the catalog can distinguish
+    # "conflicting grade with 1 contradiction → likely artifact" from
+    # "conflicting grade with ≥3 contradictions → real disagreement"
+    # without re-parsing grade_rationale prose. Empty stance map →
+    # both counts are 0 (backward-compat for records emitted before
+    # the stance field existed).
+    n_supporting_hi = sum(
+        1 for s in surface_evidence.claim_stances
+        if s.stance == "supports_surface" and s.weight == "high"
+    )
+    n_contradicting_hi = sum(
+        1 for s in surface_evidence.claim_stances
+        if s.stance == "contradicts_surface" and s.weight == "high"
+    )
+
     def _canonical_species_identity(entries: list) -> float | None:
         for e in entries:
             if e.is_canonical:
@@ -913,6 +929,9 @@ def _derive_filters(
         # L — orphan-receptor flag from SynthesizerLLMFilters. Replaces
         # the now-dropped HeadlineRisk.ligand_unknown value.
         has_known_ligand=filters_llm.has_known_ligand,
+        # D — stance-map counts derived above
+        n_supporting_claims_high_weight=n_supporting_hi,
+        n_contradicting_claims_high_weight=n_contradicting_hi,
     )
 
 
