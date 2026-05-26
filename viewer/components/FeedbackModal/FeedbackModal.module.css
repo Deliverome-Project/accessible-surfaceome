@@ -1,0 +1,235 @@
+/*
+ * FeedbackModal — page-level dialog that overlays the gene page.
+ * Visual register matches the editorial / journal-page feel of the
+ * surrounding viewer: bone background, ink text, italic display for
+ * the title, tight section padding.
+ */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 4rem 1rem 1rem;
+  background: rgba(31, 23, 24, 0.45);
+  overflow-y: auto;
+}
+
+.dialog {
+  width: 100%;
+  max-width: 640px;
+  background: var(--bg-soft);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.4rem, 2vw, 1.7rem);
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: var(--space-3);
+}
+
+.field label {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.field input,
+.field textarea {
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--ink);
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 9rem;
+  line-height: 1.5;
+}
+
+.field input:focus,
+.field textarea:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.additional {
+  margin-top: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-warm);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.additionalLabel {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.additionalHint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.additionalList {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.82rem;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.additionalList li {
+  display: flex;
+  gap: 0.4rem;
+  align-items: baseline;
+}
+
+.additionalList li > span {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.additionalList code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  word-break: break-all;
+  color: var(--ink);
+  background: transparent;
+}
+
+.checkbox {
+  margin-top: var(--space-3);
+  display: flex;
+  gap: 0.6rem;
+  align-items: flex-start;
+  font-size: 0.88rem;
+  color: var(--ink);
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.checkbox input {
+  margin-top: 0.25rem;
+  flex-shrink: 0;
+}
+
+.privacy {
+  margin: var(--space-3) 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.privacy a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--line);
+}
+
+.turnstile {
+  margin-top: var(--space-3);
+  min-height: 70px;
+}
+
+.error {
+  margin: var(--space-2) 0 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: var(--radius-sm);
+  background: rgba(146, 32, 56, 0.06);
+  color: var(--maroon-dark);
+  font-size: 0.88rem;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.cancel,
+.submit {
+  font: inherit;
+  font-size: 0.92rem;
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.cancel {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--muted);
+}
+
+.cancel:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
+.submit {
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--accent-on);
+}
+
+.submit:hover {
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+}
+
+.submit:disabled,
+.cancel:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
