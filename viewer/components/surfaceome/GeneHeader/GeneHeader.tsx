@@ -214,6 +214,98 @@ export function GeneHeader({
                 * cited_evidence_ids → the §Evidence ledger + each
                   per-row EvidenceChipList */}
           <p className={styles.execLede}>{exec.one_paragraph}</p>
+
+          {/* Vitals 2×2 grid — Accessibility / Experimental surface
+              evidence / Confidence / Triage. Was previously a 4-up
+              row across the full header width; moved inside
+              `<div className=headerText>` so it sits directly under
+              the executive summary text rather than below the 3D
+              viewer column. Lets the reader scan the four headline
+              signals immediately after reading the lede paragraph. */}
+          <dl className={styles.vitals}>
+            {(() => {
+              const accessTone = accessibilityTone(exec.surface_accessibility);
+              const gradeT = gradeTone(exec.evidence_grade_summary);
+              const confT = confidenceTone(exec.confidence);
+              const triT = triageTone(rec.triage_signal);
+              return (
+                <>
+                  <div className={styles.vital}>
+                    <dt className={`label-mono ${styles.vitalK}`}>Accessibility</dt>
+                    <dd className={styles.vitalV}>
+                      <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
+                        {prettyEnum(exec.surface_accessibility)}
+                      </p>
+                      <StatusPill tone={accessTone} size="sm">
+                        {prettyEnum(exec.subcategory)}
+                      </StatusPill>
+                    </dd>
+                  </div>
+
+                  <div className={styles.vital}>
+                    <dt
+                      className={`label-mono ${styles.vitalK}`}
+                      title={
+                        "Reader-facing relabel of `evidence_grade_summary` — " +
+                        "rolls up A1's per-method `MethodObservation` blocks into " +
+                        "one tier (direct_multi_method / direct_single_method / " +
+                        "supportive_but_indirect / conflicting / weak)."
+                      }
+                    >
+                      Experimental surface evidence
+                    </dt>
+                    <dd className={styles.vitalV}>
+                      <p className={`h-vital-display ${vitalToneClass(gradeT)}`}>
+                        {prettyEnum(exec.evidence_grade_summary)}
+                      </p>
+                      <span className={styles.vitalSub}>
+                        {counts.total} entries
+                      </span>
+                    </dd>
+                  </div>
+
+                  <div className={styles.vital}>
+                    <dt className={`label-mono ${styles.vitalK}`}>Confidence</dt>
+                    <dd className={styles.vitalV}>
+                      <p className={`h-vital-display ${vitalToneClass(confT)}`}>
+                        {prettyEnum(exec.confidence)}
+                      </p>
+                      <span className={styles.vitalSub}>
+                        {counts.primary} primary · {counts.secondary} secondary
+                      </span>
+                    </dd>
+                  </div>
+
+                  <div className={styles.vital}>
+                    <dt
+                      className={`label-mono ${styles.vitalK}`}
+                      title={
+                        "Genome-wide Sonnet triage prior — first-pass surface-vs-not " +
+                        "call made before any deep literature work. Hydrated from " +
+                        "public D1 `triage_run_public` (mainbench_canonical_v1 · " +
+                        "variant=ncbi · model=claude-sonnet-4-6). Falls back to " +
+                        "`unknown` when no triage row exists for the gene."
+                      }
+                    >
+                      Triage
+                    </dt>
+                    <dd className={styles.vitalV}>
+                      <p className={`h-vital-display ${vitalToneClass(triT)}`}>
+                        {prettyEnum(rec.triage_signal)}
+                      </p>
+                      <span className={styles.vitalSub}>
+                        {exec.headline_risks.length
+                          ? `${exec.headline_risks.length} headline risk${
+                              exec.headline_risks.length === 1 ? "" : "s"
+                            }`
+                          : "No headline risks"}
+                      </span>
+                    </dd>
+                  </div>
+                </>
+              );
+            })()}
+          </dl>
         </div>
 
         {structureData ? (
@@ -413,97 +505,6 @@ export function GeneHeader({
         ) : null}
       </div>
 
-      {/* Vitals — eyebrow label, italic-Playfair display value
-          (`.h-vital-display`), then a small outlined StatusPill that
-          carries the tonal cue. The display value carries the enum
-          headline; the sub-line carries the supplemental detail
-          (subcategory, evidence counts, triage risks). The pill stays
-          so colorblind / scanning readers still get the tone cue and
-          the tone modifier on the display value matches it. */}
-      <dl className={styles.vitals}>
-        {(() => {
-          const accessTone = accessibilityTone(exec.surface_accessibility);
-          const gradeT = gradeTone(exec.evidence_grade_summary);
-          const confT = confidenceTone(exec.confidence);
-          const triT = triageTone(rec.triage_signal);
-          return (
-            <>
-              <div className={styles.vital}>
-                <dt className={`label-mono ${styles.vitalK}`}>Accessibility</dt>
-                <dd className={styles.vitalV}>
-                  <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
-                    {prettyEnum(exec.surface_accessibility)}
-                  </p>
-                  <StatusPill tone={accessTone} size="sm">
-                    {prettyEnum(exec.subcategory)}
-                  </StatusPill>
-                </dd>
-              </div>
-
-              <div className={styles.vital}>
-                <dt
-                  className={`label-mono ${styles.vitalK}`}
-                  title={
-                    "Reader-facing relabel of `evidence_grade_summary` — " +
-                    "rolls up A1's per-method `MethodObservation` blocks into " +
-                    "one tier (direct_multi_method / direct_single_method / " +
-                    "supportive_but_indirect / conflicting / weak)."
-                  }
-                >
-                  Experimental surface evidence
-                </dt>
-                <dd className={styles.vitalV}>
-                  <p className={`h-vital-display ${vitalToneClass(gradeT)}`}>
-                    {prettyEnum(exec.evidence_grade_summary)}
-                  </p>
-                  <span className={styles.vitalSub}>
-                    {counts.total} entries
-                  </span>
-                </dd>
-              </div>
-
-              <div className={styles.vital}>
-                <dt className={`label-mono ${styles.vitalK}`}>Confidence</dt>
-                <dd className={styles.vitalV}>
-                  <p className={`h-vital-display ${vitalToneClass(confT)}`}>
-                    {prettyEnum(exec.confidence)}
-                  </p>
-                  <span className={styles.vitalSub}>
-                    {counts.primary} primary · {counts.secondary} secondary
-                  </span>
-                </dd>
-              </div>
-
-              <div className={styles.vital}>
-                <dt
-                  className={`label-mono ${styles.vitalK}`}
-                  title={
-                    "Genome-wide Sonnet triage prior — first-pass surface-vs-not " +
-                    "call made before any deep literature work. Hydrated from " +
-                    "public D1 `triage_run_public` (mainbench_canonical_v1 · " +
-                    "variant=ncbi · model=claude-sonnet-4-6). Falls back to " +
-                    "`unknown` when no triage row exists for the gene."
-                  }
-                >
-                  Triage
-                </dt>
-                <dd className={styles.vitalV}>
-                  <p className={`h-vital-display ${vitalToneClass(triT)}`}>
-                    {prettyEnum(rec.triage_signal)}
-                  </p>
-                  <span className={styles.vitalSub}>
-                    {exec.headline_risks.length
-                      ? `${exec.headline_risks.length} headline risk${
-                          exec.headline_risks.length === 1 ? "" : "s"
-                        }`
-                      : "No headline risks"}
-                  </span>
-                </dd>
-              </div>
-            </>
-          );
-        })()}
-      </dl>
     </header>
   );
 }

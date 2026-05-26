@@ -463,7 +463,41 @@ export function CatalogTable({
   const sorted = useMemo(() => {
     const copy = filtered.slice();
     const dir = sortDir === "asc" ? 1 : -1;
+    const q = query.trim().toLowerCase();
+    // When a query is active, override the user-selected sort with a
+    // relevance rank so the gene whose SYMBOL is the query lands first.
+    // Previously "src" returned dozens of rows where the symbol just
+    // *contained* "src" (transcription factors with SRC-prefix names)
+    // ahead of the canonical SRC gene because the user-selected sort
+    // (deep-dive desc, n_sources desc) didn't know about the query.
+    // Rank tiers (lower = better):
+    //   0 exact symbol  ("SRC" === q)
+    //   1 exact uniprot ("P12931" === q)
+    //   2 symbol prefix ("SRCM" startsWith q)
+    //   3 symbol contains q anywhere
+    //   4 uniprot contains q
+    //   5 name contains q
+    //   6 synonym contains q
+    //   7 fallback (shouldn't fire — filter would have excluded)
+    function relevanceRank(r: CatalogRow): number {
+      if (!q) return 0;
+      const sym = r.symbol.toLowerCase();
+      const up = r.uniprot.toLowerCase();
+      if (sym === q) return 0;
+      if (up === q) return 1;
+      if (sym.startsWith(q)) return 2;
+      if (sym.includes(q)) return 3;
+      if (up.includes(q)) return 4;
+      if ((r.name ?? "").toLowerCase().includes(q)) return 5;
+      if ((r.synonyms ?? []).some((s) => s.toLowerCase().includes(q))) return 6;
+      return 7;
+    }
     copy.sort((a, b) => {
+      if (q) {
+        const ra = relevanceRank(a);
+        const rb = relevanceRank(b);
+        if (ra !== rb) return ra - rb;
+      }
       const av = sortValue(a, sortKey);
       const bv = sortValue(b, sortKey);
       if (av < bv) return -1 * dir;
@@ -471,7 +505,7 @@ export function CatalogTable({
       return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
     });
     return copy;
-  }, [filtered, sortKey, sortDir]);
+  }, [filtered, sortKey, sortDir, query]);
 
   const virtualizer = useVirtualizer({
     count: sorted.length,

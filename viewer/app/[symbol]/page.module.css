@@ -1,10 +1,10 @@
 .page {
-  /* Tighter top padding so the gene-symbol h1 sits closer to the top
-     after the breadcrumb text was dropped. Was `--space-12`. */
-  padding: var(--space-6) 0 var(--space-24);
+  /* Tight top padding + tighter inter-row gap so the gene-symbol
+     h1 sits a single line below the back-arrow toolbar. */
+  padding: var(--space-3) 0 var(--space-24);
   display: flex;
   flex-direction: column;
-  gap: var(--space-6);
+  gap: var(--space-3);
   font-size: 0.92rem;
   line-height: 1.55;
 }

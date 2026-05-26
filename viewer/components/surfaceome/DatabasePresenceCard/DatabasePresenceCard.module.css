@@ -110,23 +110,39 @@
 
 .stripCell {
   display: inline-flex;
-}
-
-.stripLink {
-  display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.35rem;
   font-size: 0.7rem;
-  color: var(--ink-soft);
   padding: 0.15rem 0;
-  transition: color var(--dur-fast) var(--ease-out);
+  cursor: default;
 }
 
-.stripLink:hover,
-.stripLink:focus-visible {
-  color: var(--accent);
+.stripCellYes {
+  color: var(--ink-soft);
 }
 
-.cellNo .stripLink {
+.stripCellNo {
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+/* Green/red dot convention per user preference — green = present
+   (flagged by this source DB), red = absent. Replaces the previous
+   teal-mid-filled / outlined-empty look so the strip reads as a
+   pass/fail rollup at a glance. */
+.stripDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.stripDotYes {
+  background: var(--success, #16A34A);
+}
+
+.stripDotNo {
+  background: var(--danger, #DC2626);
   opacity: 0.55;
 }
