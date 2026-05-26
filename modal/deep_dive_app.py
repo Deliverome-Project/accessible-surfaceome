@@ -164,6 +164,7 @@ def annotate_one(payload: dict) -> dict:
         "error": result.error,
         "record_valid": result.record_valid,
         "d1_mirror_ok": result.d1_mirror_ok,
+        "search_log_count": result.search_log_count,
     }
 
 
@@ -211,7 +212,11 @@ def canary(
     from accessible_surfaceome.env import load_env
     load_env()  # driver-side: needed for D1 resume query
     from scripts.deep_dive_sweep import (
-        print_canary_report, select_canary, summarize_canary, GeneRow,
+        check_search_log_populated,
+        print_canary_report,
+        select_canary,
+        summarize_canary,
+        GeneRow,
     )
 
     payloads, total = _load_and_filter(gene_list, run_id, no_d1=False)
@@ -240,12 +245,17 @@ def canary(
             blocks_used=r["blocks_used"], error=r["error"],
             record_valid=r["record_valid"],
             d1_mirror_ok=r.get("d1_mirror_ok", True),
+            search_log_count=r.get("search_log_count", 0),
         )
         for r in results
     ]
     summary = summarize_canary(generesults, total_genes=len(rows))
     summary["wall_clock_s"] = round(elapsed, 1)
     print_canary_report(summary)
+    err = check_search_log_populated(generesults)
+    if err is not None:
+        # Raising rather than sys.exit so Modal surfaces this in the run UI.
+        raise RuntimeError(err)
 
 
 @app.local_entrypoint()

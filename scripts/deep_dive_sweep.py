@@ -118,6 +118,11 @@ class GeneResult:
     # i.e. JSON wrote but the D1 mirror failed. Default True so worker
     # exceptions don't double-count as D1 failures.
     d1_mirror_ok: bool = True
+    # Number of SearchEntry rows on the record's search_log. Used by the
+    # canary gate to fail fast on a regression where every record ships
+    # with an empty search_log (the silent-provenance-loss bug fixed in
+    # the same PR as this field was introduced).
+    search_log_count: int = 0
 
 
 def annotate_one(
@@ -187,6 +192,7 @@ def annotate_one(
             cost_usd=cost, latency_s=latency,
             blocks_used=result.blocks_used, error=None, record_valid=True,
             d1_mirror_ok=d1_mirror_ok,
+            search_log_count=len(result.record.search_log),
         )
     finally:
         http.close()
@@ -292,6 +298,31 @@ def summarize_canary(results: list[GeneResult], total_genes: int) -> dict:
     return summary
 
 
+def check_search_log_populated(results: list[GeneResult]) -> str | None:
+    """Return an error message if every valid record in the canary has an
+    empty ``search_log``, else None.
+
+    The v2 orchestrator builds ``record.search_log`` from
+    ``DualPlanTrimSelectResult.{a1,a2}.search_log``. A regression that
+    leaves the field empty silently loses per-gene provenance — a class
+    of bug expensive to detect after the full sweep finishes. Fail the
+    canary loudly instead.
+    """
+    valid = [r for r in results if r.record_valid]
+    if not valid:
+        return None
+    if max(r.search_log_count for r in valid) == 0:
+        return (
+            f"canary aborted: {len(valid)} valid records but every one has "
+            "search_log=[]. The v2 orchestrator's search-log translation is "
+            "broken — re-running the full sweep would silently lose "
+            "per-gene provenance for every gene. Fix the regression in "
+            "src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py "
+            "before launching."
+        )
+    return None
+
+
 def print_canary_report(summary: dict) -> None:
     print()
     print("=== canary report ===")
@@ -378,6 +409,12 @@ def main(argv: list[str] | None = None) -> int:
         )
         summary = summarize_canary(results, total_genes=len(all_rows))
         print_canary_report(summary)
+        err = check_search_log_populated(results)
+        if err is not None:
+            print(f"\n!! {err}", file=sys.stderr, flush=True)
+            if sink is not None:
+                sink.close()
+            return 3
         if sink is not None:
             sink.close()
         return 0

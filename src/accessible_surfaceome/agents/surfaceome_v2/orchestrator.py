@@ -44,6 +44,7 @@ from accessible_surfaceome.agents.plan_trim_select import (
     DualPlanTrimSelectResult,
     run_plan_trim_select_dual,
 )
+from accessible_surfaceome.agents.plan_trim_select.runner import SearchLogEntry
 from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
     BResult,
     run_synthesizer_with_drafts,
@@ -74,6 +75,7 @@ from accessible_surfaceome.tools._shared.models import (
     Evidence,
     EvidenceClaim,
     GeneIdentifier,
+    SearchEntry,
     SourceType,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
@@ -568,6 +570,7 @@ def _annotate(
     # ---- step 9: assemble SurfaceomeRecord --------------------------------
     primary = sum(1 for e in evidence if e.evidence_tier == "primary")
     secondary = sum(1 for e in evidence if e.evidence_tier == "secondary")
+    search_log = _build_search_log(dual)
     try:
         record = SurfaceomeRecord(
             schema_version=SCHEMA_VERSION_LITERAL,
@@ -580,7 +583,7 @@ def _annotate(
             deterministic_features=det_features,
             accessibility_risks=synth_draft.accessibility_risks,
             evidence=evidence,
-            search_log=[],
+            search_log=search_log,
             evidence_count=len(evidence),
             primary_evidence_count=primary,
             secondary_evidence_count=secondary,
@@ -622,6 +625,51 @@ def _annotate(
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------
+
+
+def _build_search_log(dual: DualPlanTrimSelectResult) -> list[SearchEntry]:
+    """Translate plan-trim-select's per-search records into ``SearchEntry``
+    rows for the SurfaceomeRecord.
+
+    A1 and A2 are concatenated in execution order with ``agent_focus``
+    threaded onto each entry's ``query`` so downstream consumers can
+    distinguish what each agent looked at. ``sources_seen`` and
+    ``contributed_evidence_ids`` are intentionally left empty for now —
+    threading per-search source-id lists would require widening
+    ``SearchLogEntry`` upstream; the per-tool / per-mode breakdown is
+    enough to answer the primary audit question ("was the shedding
+    literature checked for this gene?"). Tightening source attribution
+    is a follow-up.
+    """
+    now = datetime.now(UTC)
+    entries: list[SearchEntry] = []
+    for focus, log in (("a1", dual.a1.search_log), ("a2", dual.a2.search_log)):
+        for row in log:
+            entries.append(_search_log_entry_to_search_entry(row, focus, now))
+    return entries
+
+
+def _search_log_entry_to_search_entry(
+    row: SearchLogEntry, agent_focus: str, retrieved_at: datetime
+) -> SearchEntry:
+    params = dict(row.params)
+    mode: str | None = params.pop("mode", None)
+    if mode is None and row.tool == "evidence_retrieval":
+        category = params.get("category")
+        mode = str(category) if category is not None else None
+    query: dict[str, Any] = {"agent_focus": agent_focus, "intent": row.intent}
+    query.update(params)
+    if row.error is not None:
+        query["error"] = row.error
+    return SearchEntry(
+        tool=row.tool,
+        mode=mode,
+        query=query,
+        n_results=row.n_papers,
+        sources_seen=[],
+        retrieved_at=retrieved_at,
+        contributed_evidence_ids=[],
+    )
 
 
 def _count_blocks(
