@@ -325,33 +325,14 @@ export function FiltersCard({ rec, n }: Props) {
   const mousePill = orthologPillLabel(f.mouse_ortholog_ecd_pct_identity, orthos.mouse);
   const cynoPill = orthologPillLabel(f.cyno_ortholog_ecd_pct_identity, orthos.cynomolgus);
   const groups = [
+    // The "Accessibility" umbrella group was retired — the headline
+    // accessibility / confidence / state_dependence chips already
+    // render in the executive-summary chip strip up top, so showing
+    // them twice was noise. The remaining filter-only signals are
+    // redistributed into Evidence (new), Risks, and Topology groups.
     {
-      label: "Accessibility",
+      label: "Evidence",
       pills: [
-        <StatusPill
-          key="acc"
-          tone={accessibilityTone(f.surface_accessibility)}
-          size="sm"
-          title={TT_ACCESSIBILITY}
-        >
-          overall · {prettyEnum(f.surface_accessibility)}
-        </StatusPill>,
-        <StatusPill
-          key="conf"
-          tone={confidenceTone(f.confidence)}
-          size="sm"
-          title={TT_CONFIDENCE}
-        >
-          conf · {prettyEnum(f.confidence)}
-        </StatusPill>,
-        <StatusPill
-          key="state_dep"
-          tone={stateDependenceTone(f.state_dependence)}
-          size="sm"
-          title={TT_STATE_DEP}
-        >
-          state dep · {prettyEnum(f.state_dependence)}
-        </StatusPill>,
         <StatusPill
           key="reason"
           tone={surfaceCallReasonTone(f.surface_call_reason)}
@@ -361,55 +342,12 @@ export function FiltersCard({ rec, n }: Props) {
           reason · {prettyEnum(f.surface_call_reason)}
         </StatusPill>,
         <StatusPill
-          key="coreceptor"
-          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
-          size="sm"
-          title={TT_CO_RECEPTOR}
-        >
-          co-receptor · {prettyEnum(f.co_receptor_dependency)}
-        </StatusPill>,
-        <StatusPill
-          key="sub"
-          tone="neutral"
-          size="sm"
-          title={
-            "Architecture (how the protein sits in the membrane): " +
-            "single_pass_T1/T2, multi_pass, GPCR (7TM), GPI_anchored, " +
-            "tetraspanin, other. Orthogonal to the `family` axis below."
-          }
-        >
-          arch · {prettyEnum(f.subcategory)}
-        </StatusPill>,
-        <StatusPill
-          key="fam"
-          tone="lavender"
-          size="sm"
-          title={
-            "Functional family per SURFACE-Bind (Marchand 2026 PNAS, " +
-            "doi:10.1073/pnas.2506269123). receptor = GPCRs/RTKs/cytokine " +
-            "receptors; enzyme = surface peptidases / ectonucleotidases / " +
-            "kinases-by-identity; transporter = SLCs / ABC / channels / " +
-            "aquaporins; miscellaneous = adhesion / junction / tetraspanin " +
-            "/ scaffold / chaperone / structural."
-          }
-        >
-          family · {prettyEnum(f.protein_family)}
-        </StatusPill>,
-        <StatusPill
           key="grade"
           tone={evidenceGradeTone(f.evidence_grade)}
           size="sm"
           title={TT_EVIDENCE_GRADE}
         >
           {prettyEnum(f.evidence_grade)}
-        </StatusPill>,
-        <StatusPill
-          key="ecd"
-          tone={ecdAccessibilityTone(f.ecd_accessibility_class)}
-          size="sm"
-          title={TT_ECD_CLASS}
-        >
-          ECD · {prettyEnum(f.ecd_accessibility_class)}
         </StatusPill>,
         <StatusPill
           key="dens"
@@ -489,7 +427,19 @@ export function FiltersCard({ rec, n }: Props) {
       pills: [
         riskBoolPill("shed form", f.has_shed_form),
         riskBoolPill("secreted form", f.has_secreted_form),
-        riskBoolPill("co-receptor required for expression", f.requires_coreceptor_for_expression),
+        // The full 4-value co_receptor_dependency enum
+        // (required / modulatory / none / unknown) replaces the
+        // binary requires_coreceptor_for_expression chip here —
+        // the bool collapsed "modulatory" into False, losing a
+        // real signal the catalog filter needs.
+        <StatusPill
+          key="coreceptor"
+          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
+          size="sm"
+          title={TT_CO_RECEPTOR}
+        >
+          co-receptor · {prettyEnum(f.co_receptor_dependency)}
+        </StatusPill>,
         riskBoolPill("epitope masking", f.has_epitope_masking),
         riskBoolPill("restricted subdomain", f.has_restricted_subdomain),
       ],
@@ -551,6 +501,18 @@ export function FiltersCard({ rec, n }: Props) {
         </StatusPill>,
         positiveBoolPill("N-term extracellular", f.n_term_extracellular),
         positiveBoolPill("C-term extracellular", f.c_term_extracellular),
+        // ECD accessibility class — derived from ECD length, so it
+        // belongs alongside the other topology rollups (was in the
+        // retired Accessibility group, now moved here so the size /
+        // shape / orientation signals all live in one place).
+        <StatusPill
+          key="ecd"
+          tone={ecdAccessibilityTone(f.ecd_accessibility_class)}
+          size="sm"
+          title={TT_ECD_CLASS}
+        >
+          ECD · {prettyEnum(f.ecd_accessibility_class)}
+        </StatusPill>,
       ],
     },
     {
@@ -678,10 +640,11 @@ export function FiltersCard({ rec, n }: Props) {
     },
     Risks: {
       title:
-        "Five risk-bool rollups from the §Risks accessibility_risks " +
-        "card: shed form, secreted form, co-receptor required for " +
-        "expression, epitope masking, restricted subdomain. Each " +
-        "carries the structured detail in the §Risks card below.",
+        "Risk rollups from the §Risks accessibility_risks card: shed " +
+        "form, secreted form, co-receptor dependence (full 4-value " +
+        "enum: required / modulatory / none / unknown), epitope " +
+        "masking, restricted subdomain. Each carries the structured " +
+        "detail in the §Risks card below.",
     },
     "Cross-species": {
       title:
@@ -711,8 +674,11 @@ export function FiltersCard({ rec, n }: Props) {
       title:
         "DeepTMHMM-predicted membrane topology for the canonical " +
         "isoform: TM helix count + which termini face the " +
-        "extracellular vs intracellular side. Drives the subcategory " +
-        "axis (single_pass_T1 / multi_pass / GPCR / etc.).",
+        "extracellular vs intracellular side + ECD-size accessibility " +
+        "class (large / moderate / small / minimal / none — derived " +
+        "from ECD residue length per the Ramaraj 2012 antibody-epitope " +
+        "thresholds). Drives the subcategory axis (single_pass_T1 / " +
+        "multi_pass / GPCR / etc.).",
       links: [
         { href: "https://dtu.biolib.com/DeepTMHMM", label: "DeepTMHMM" },
       ],

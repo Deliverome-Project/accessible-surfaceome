@@ -41,6 +41,31 @@
   font-size: 0.95rem;
 }
 
+/* Architecture + Family as plain-text descriptive metadata —
+   below the chip strip but above the headline risks line. The
+   label/value pairs share the same label-mono / value layout as
+   the risks line, so they read as a single "metadata strip".
+   These used to be StatusPills inside the chip strip; demoting
+   them keeps the at-a-glance row focused on accessibility chips. */
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: var(--space-2) 0 0;
+  color: var(--ink);
+}
+
+.metaLabel {
+  color: var(--muted);
+}
+
+.metaValue {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  margin-right: var(--space-3);
+}
+
 /* Confidence rationale — collapsible expander tucked right under the
    pill strip so the reader can click to see WHY confidence isn't
    higher (specific weakness + what would lift it). Closed by default

@@ -80,30 +80,6 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
           </StatusPill>
         </li>
         <li>
-          <StatusPill
-            tone="teal"
-            title={
-              "Architecture (how the protein sits in the membrane): " +
-              "single_pass_T1/T2 · multi_pass · GPCR · GPI_anchored · " +
-              "tetraspanin · other. Orthogonal to the family axis."
-            }
-          >
-            Architecture · {prettyEnum(e.subcategory)}
-          </StatusPill>
-        </li>
-        <li>
-          <StatusPill
-            tone="lavender"
-            title={
-              "Functional family per SURFACE-Bind (Marchand 2026 PNAS, " +
-              "doi:10.1073/pnas.2506269123): receptor · enzyme · " +
-              "transporter · miscellaneous. Orthogonal to architecture."
-            }
-          >
-            Family · {prettyEnum(e.protein_family)}
-          </StatusPill>
-        </li>
-        <li>
           <StatusPill tone={gradeTone(e.evidence_grade_summary)}>
             Experimental surface evidence · {prettyEnum(e.evidence_grade_summary)}
           </StatusPill>
@@ -119,6 +95,18 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
           </StatusPill>
         </li>
       </ul>
+
+      {/* Architecture + Family as plain text below the chip strip.
+       *  These used to be StatusPills in the strip itself; demoted
+       *  here to keep the at-a-glance row focused on accessibility
+       *  signals (the architecture / family axes are orthogonal
+       *  descriptive metadata that doesn't need a colored chip). */}
+      <p className={styles.meta}>
+        <span className={`label-mono ${styles.metaLabel}`}>Architecture</span>
+        <span className={styles.metaValue}>{prettyEnum(e.subcategory)}</span>
+        <span className={`label-mono ${styles.metaLabel}`}>Family</span>
+        <span className={styles.metaValue}>{prettyEnum(e.protein_family)}</span>
+      </p>
 
       {/* Confidence rationale — collapsible expander beneath the
        *  confidence chip. The synth prompt produces this prose only
