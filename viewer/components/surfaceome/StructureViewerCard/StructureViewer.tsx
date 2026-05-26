@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
@@ -13,6 +14,7 @@ import type {
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
+import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./StructureViewerCard.module.css";
 
 /** Per-residue compartment, derived from the DeepTMHMM topology
@@ -81,6 +83,17 @@ export interface StructureVariantExperimental extends StructureVariantBase {
   coverage: number;
 }
 
+/** Per-variant AFDB metadata fetched at runtime from
+ *  ``alphafold.ebi.ac.uk/api/prediction/{UNIPROT}``. Matches the
+ *  subset of fields ``tools/afdb_plddt.py`` reads for the canonical
+ *  cohort, but live-fetched here instead of pre-baked. */
+interface AfdbVariantMeta {
+  latestVersion: number | null;
+  globalMetricValue: number | null;
+  fractionPlddtLow: number;
+  fractionPlddtVeryLow: number;
+}
+
 /** PDBe `best_structures` API response shape (one entry — the
  *  endpoint returns an object keyed by UniProt acc with an array of
  *  these). We only use a subset of fields; documented for grep-ability. */
@@ -97,9 +110,31 @@ interface PDBeBestStructure {
   tax_id?: number;
 }
 
+/** Subset of the SurfaceomeRecord canonical AFDB struct block.
+ *  We only need the fields displayed in the per-variant caption;
+ *  declaring just these keeps the prop interface narrow. */
+export interface CanonicalStructStats {
+  afdb_id: string;
+  afdb_version: string;
+  ecd_mean_plddt: number;
+  ecd_disordered_fraction: number;
+  source: string;
+}
+
 interface StructureViewerProps {
   data: StructureViewerData;
   geneSymbol: string;
+  /** Canonical AFDB stats from
+   *  ``rec.deterministic_features.structure``. Drives the caption
+   *  on the Canonical variant tab; non-canonical AFDB variants
+   *  lazy-fetch their own metadata from AFDB's prediction API
+   *  client-side when the user clicks them. */
+  canonicalStruct: CanonicalStructStats;
+  /** Display name for the gene (e.g. "Epidermal growth factor
+   *  receptor"). Shown in the caption when the active variant is
+   *  an AlphaFold model — the model has no per-entry title of its
+   *  own, so the UniProt protein name stands in. */
+  proteinName?: string | null;
   /** SURFACE-Bind anchor-residue overlay. Each entry highlights the
    *  α-carbon of the named residue with a colored sphere + numeric
    *  label (the site index). Pass the array from
@@ -169,6 +204,215 @@ const COMPARTMENT_LEGEND_LABEL: Record<AnchorCompartment, string> = {
   signal: "Signal peptide",
   unknown: "Unknown",
 };
+
+/** Parse the TITLE block out of a PDB file. PDB TITLE records have a
+ *  fixed-width header (cols 1-6 = "TITLE ", col 9-10 = continuation
+ *  number) and the title text starts at col 11. Multi-line TITLE
+ *  blocks concatenate; we join with a single space and collapse runs
+ *  of whitespace. Returns ``null`` when no TITLE record is present
+ *  (rare for RCSB-served PDBs but defensive). */
+function _parsePdbTitle(pdb: string): string | null {
+  const lines: string[] = [];
+  for (const raw of pdb.split("\n")) {
+    if (raw.startsWith("TITLE")) {
+      // Cols 11+ carry the text content. .slice(10) strips the
+      // record name + continuation number; .trim() handles the
+      // PDB's space-padded right edge.
+      lines.push(raw.slice(10).trim());
+    } else if (lines.length > 0) {
+      // TITLE block always contiguous; bail on first non-TITLE.
+      break;
+    }
+  }
+  if (lines.length === 0) return null;
+  const joined = lines.join(" ").replace(/\s+/g, " ").trim();
+  // PDB TITLEs are all caps by convention; sentence-case the result
+  // so the caption reads as prose rather than shouting.
+  return _sentenceCase(joined);
+}
+
+/** Lowercase the title and capitalize sentence starts. Preserves
+ *  ALL-CAPS tokens longer than 4 chars (likely acronyms — EGFR,
+ *  GRP78) and keeps roman numerals + chemical names in their
+ *  original case where reasonably possible. Heuristic — fine for
+ *  visual readability, not for indexing. */
+function _sentenceCase(s: string): string {
+  const lower = s.toLowerCase();
+  // Capitalize first letter only — keeping most acronyms in lower
+  // case is worse than uniformly lower, since the prose then reads
+  // naturally and the reader recognizes gene names from context.
+  return lower.charAt(0).toUpperCase() + lower.slice(1);
+}
+
+/** pLDDT tone bucket. Mirrors the canonical fetcher's
+ *  ``ecd_mean_plddt`` interpretation: ≥90 success, ≥70 teal,
+ *  ≥50 amber, <50 danger. */
+function _plddtTone(p: number): "success" | "teal" | "amber" | "danger" {
+  if (p >= 90) return "success";
+  if (p >= 70) return "teal";
+  if (p >= 50) return "amber";
+  return "danger";
+}
+
+/** Build the per-variant caption JSX. Separated out of the main
+ *  component for legibility — three distinct shapes:
+ *  - canonical AFDB: pLDDT + disordered (from prop) + AFDB link
+ *  - other AFDB:     same but lazy-fetched + ECD-disordered hidden
+ *                    (variant doesn't have ECD-restricted metrics)
+ *  - experimental:   PDB title + method/resolution + RCSB link */
+function _renderCaption(args: {
+  activeVariant: StructureVariant | null;
+  canonicalStruct: CanonicalStructStats;
+  proteinName?: string | null;
+  canonicalUniprot: string;
+  afdbMetaByAcc: Record<string, AfdbVariantMeta | "loading" | "error">;
+  pdbTitles: Record<string, string>;
+}) {
+  const {
+    activeVariant, canonicalStruct, proteinName, canonicalUniprot,
+    afdbMetaByAcc, pdbTitles,
+  } = args;
+
+  // ---- Experimental branch ----
+  if (activeVariant?.source === "experimental") {
+    const v = activeVariant;
+    const title = pdbTitles[v.pdb_id];
+    const rcsbUrl = `https://www.rcsb.org/structure/${v.pdb_id.toUpperCase()}`;
+    const resLabel =
+      typeof v.resolution === "number" && Number.isFinite(v.resolution)
+        ? `${v.resolution.toFixed(1)} Å`
+        : "—";
+    return (
+      <div className={styles.caption} aria-label="Structure caption">
+        {title ? (
+          <p className={styles.captionTitle}>{title}</p>
+        ) : null}
+        <p className={styles.captionStats}>
+          <span className={styles.captionStat}>{v.experimental_method}</span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>
+            Resolution <strong>{resLabel}</strong>
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>
+            Chain <strong>{v.chain_id}</strong>
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <a
+            href={rcsbUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.captionLink}
+          >
+            RCSB {v.pdb_id.toUpperCase()} ↗
+          </a>
+        </p>
+      </div>
+    );
+  }
+
+  // ---- AFDB branch (canonical OR variant) ----
+  const isCanonical = activeVariant === null;
+  const acc = isCanonical
+    ? canonicalUniprot
+    : (activeVariant as StructureVariantAfdb).uniprot_acc;
+  const accFull = isCanonical
+    ? canonicalUniprot
+    : ((activeVariant as StructureVariantAfdb).uniprot_acc_full ?? acc);
+  const afdbUrl = `https://alphafold.ebi.ac.uk/entry/${acc}`;
+
+  // Stats: canonical reuses the prop; variants use the live-fetched
+  // map (loading / error / data shapes).
+  let plddtNode: ReactNode = null;
+  let disorderedNode: ReactNode = null;
+  let versionLabel = "";
+  if (isCanonical) {
+    const placeholder = canonicalStruct.source
+      .toLowerCase()
+      .includes("placeholder");
+    const wholeProtein = !placeholder
+      && canonicalStruct.source.toLowerCase().includes("whole-protein");
+    versionLabel = canonicalStruct.afdb_version;
+    if (placeholder) {
+      plddtNode = <StatusPill tone="neutral" size="sm">pending</StatusPill>;
+    } else {
+      plddtNode = (
+        <StatusPill tone={_plddtTone(canonicalStruct.ecd_mean_plddt)} size="sm">
+          {wholeProtein ? "Whole" : "ECD"} pLDDT{" "}
+          <strong>{canonicalStruct.ecd_mean_plddt.toFixed(1)}</strong>
+        </StatusPill>
+      );
+    }
+    if (!wholeProtein && !placeholder) {
+      disorderedNode = (
+        <span className={styles.captionStat}>
+          Disordered{" "}
+          <strong>{(canonicalStruct.ecd_disordered_fraction * 100).toFixed(0)}%</strong>
+        </span>
+      );
+    }
+  } else {
+    const meta = afdbMetaByAcc[acc];
+    if (meta === "loading" || meta === undefined) {
+      plddtNode = <StatusPill tone="neutral" size="sm">loading…</StatusPill>;
+    } else if (meta === "error") {
+      plddtNode = <StatusPill tone="neutral" size="sm">unavailable</StatusPill>;
+    } else {
+      versionLabel = meta.latestVersion ? `v${meta.latestVersion}` : "";
+      if (typeof meta.globalMetricValue === "number") {
+        plddtNode = (
+          <StatusPill tone={_plddtTone(meta.globalMetricValue)} size="sm">
+            Whole pLDDT{" "}
+            <strong>{meta.globalMetricValue.toFixed(1)}</strong>
+          </StatusPill>
+        );
+        const lowFrac = meta.fractionPlddtLow + meta.fractionPlddtVeryLow;
+        disorderedNode = (
+          <span className={styles.captionStat}>
+            Disordered{" "}
+            <strong>{(lowFrac * 100).toFixed(0)}%</strong>
+          </span>
+        );
+      }
+    }
+  }
+
+  const label = isCanonical
+    ? "AlphaFold model"
+    : `AlphaFold model · ${(activeVariant as StructureVariantAfdb).label}`;
+  return (
+    <div className={styles.caption} aria-label="Structure caption">
+      {proteinName && isCanonical ? (
+        <p className={styles.captionTitle}>{proteinName}</p>
+      ) : null}
+      <p className={styles.captionStats}>
+        <span className={styles.captionStat}>{label}</span>
+        {plddtNode ? (
+          <>
+            <span className={styles.captionSep} aria-hidden="true">·</span>
+            {plddtNode}
+          </>
+        ) : null}
+        {disorderedNode ? (
+          <>
+            <span className={styles.captionSep} aria-hidden="true">·</span>
+            {disorderedNode}
+          </>
+        ) : null}
+        <span className={styles.captionSep} aria-hidden="true">·</span>
+        <a
+          href={afdbUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.captionLink}
+        >
+          AFDB {accFull}
+          {versionLabel ? ` · ${versionLabel}` : ""} ↗
+        </a>
+      </p>
+    </div>
+  );
+}
 
 function _computeTopologyRanges(
   topology: string,
@@ -253,6 +497,8 @@ const MEMBRANE_OPACITY = 0.34;
 export function StructureViewer({
   data,
   geneSymbol,
+  canonicalStruct,
+  proteinName,
   surfaceBindAnchors = [],
   variants = [],
 }: StructureViewerProps) {
@@ -282,6 +528,17 @@ export function StructureViewer({
   const [pdbeCandidate, setPdbeCandidate] = useState<
     PDBeBestStructure | "loading" | null
   >("loading");
+  // PDB TITLE record parsed out of the most-recently-fetched
+  // experimental PDB. Keyed on pdb_id so switching between two
+  // experimental structures correctly updates the caption.
+  const [pdbTitles, setPdbTitles] = useState<Record<string, string>>({});
+  // AFDB metadata (pLDDT, disordered fraction, latestVersion) per
+  // UniProt acc — populated lazily when the user clicks a
+  // non-canonical AFDB variant. Canonical uses `canonicalStruct`
+  // (already on the prop) and doesn't go through this map.
+  const [afdbMetaByAcc, setAfdbMetaByAcc] = useState<
+    Record<string, AfdbVariantMeta | "loading" | "error">
+  >({});
 
   // SURFACE-Bind sphere overlay only makes sense on the canonical
   // AFDB view — anchor residues are canonical-UniProt-keyed and
@@ -376,6 +633,49 @@ export function StructureViewer({
   // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
 
+  // Lazy-fetch AFDB metadata when the user clicks a non-canonical
+  // AFDB variant (isoform / ortholog). One fetch per uniprot_acc;
+  // cached in state so re-clicks are free. Canonical reuses
+  // ``canonicalStruct`` (already on the prop) without any fetch.
+  useEffect(() => {
+    if (!activeVariant || activeVariant.source !== "afdb") return;
+    const acc = activeVariant.uniprot_acc;
+    if (acc in afdbMetaByAcc) return;
+    let cancelled = false;
+    setAfdbMetaByAcc((prev) => ({ ...prev, [acc]: "loading" }));
+    (async () => {
+      try {
+        const r = await fetch(
+          `https://alphafold.ebi.ac.uk/api/prediction/${acc}`,
+          { cache: "force-cache" },
+        );
+        if (!r.ok) throw new Error(`AFDB API ${r.status}`);
+        const j = (await r.json()) as Array<{
+          latestVersion?: number;
+          globalMetricValue?: number;
+          fractionPlddtLow?: number;
+          fractionPlddtVeryLow?: number;
+        }>;
+        const entry = j[0];
+        if (!entry) throw new Error("empty AFDB response");
+        if (cancelled) return;
+        setAfdbMetaByAcc((prev) => ({
+          ...prev,
+          [acc]: {
+            latestVersion: entry.latestVersion ?? null,
+            globalMetricValue: entry.globalMetricValue ?? null,
+            fractionPlddtLow: entry.fractionPlddtLow ?? 0,
+            fractionPlddtVeryLow: entry.fractionPlddtVeryLow ?? 0,
+          },
+        }));
+      } catch {
+        if (cancelled) return;
+        setAfdbMetaByAcc((prev) => ({ ...prev, [acc]: "error" }));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeVariant, afdbMetaByAcc]);
+
   const renderViewer = useCallback(async () => {
     if (!containerRef.current) return;
     setStatus("loading");
@@ -407,6 +707,14 @@ export function StructureViewer({
           );
         }
         rawPdb = await resp.text();
+        // Parse the TITLE record once per PDB and cache so re-renders
+        // (mode toggle, etc.) don't re-parse.
+        if (!(expVariant.pdb_id in pdbTitles)) {
+          const title = _parsePdbTitle(rawPdb);
+          if (title) {
+            setPdbTitles((prev) => ({ ...prev, [expVariant.pdb_id]: title }));
+          }
+        }
       } else {
         // 1) Prefer the build-time-baked pdbUrl. Falls back to the
         //    legacy v4 URL if the build script couldn't enrich this
@@ -812,6 +1120,22 @@ export function StructureViewer({
               duplicate it next to the mode toggle. */}
         </div>
       ) : null}
+      {/* Per-variant caption — sits directly below the canvas (above
+          the legend) and shows the structure's title + pLDDT /
+          resolution + a link out to AFDB or RCSB for the ACTIVE
+          variant. For canonical AFDB this is instant (data on prop);
+          for non-canonical AFDB variants it lazy-fetches AFDB's
+          /api/prediction; for experimental it parses the PDB TITLE
+          record once and caches per pdb_id. */}
+      {_renderCaption({
+        activeVariant,
+        canonicalStruct,
+        proteinName,
+        canonicalUniprot: data.uniprot_acc,
+        afdbMetaByAcc,
+        pdbTitles,
+      })}
+
       {/* Legend — switches with viewMode. Topology mode shows the
           DeepTMHMM M/O/I/S/B color key; sites mode shows the
           per-compartment EC/IC/TM color key (matching the spheres

@@ -3,6 +3,63 @@
   width: 100%;
 }
 
+/* Per-variant structure caption — sits below the canvas (above the
+   legend). Title + stats + source link per variant. */
+.caption {
+  margin: var(--space-2) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-soft, #555);
+}
+
+.captionTitle {
+  margin: 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink, #222);
+  /* Long PDB titles can wrap a couple of lines on a narrow viewer
+     column — that's fine; max 3 lines is generous enough that we
+     don't need to clamp. */
+}
+
+.captionStats {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+}
+
+.captionStat {
+  white-space: nowrap;
+}
+
+.captionSep {
+  color: var(--line);
+}
+
+.captionLink {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft, #555);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1px;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.captionLink:hover,
+.captionLink:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 /* SURFACE-Bind sites legend — mirrors the TopologyBar's legend
    classes for visual consistency (same swatch size, same gap, same
    label color) but uses round swatches (sphere = round) instead of

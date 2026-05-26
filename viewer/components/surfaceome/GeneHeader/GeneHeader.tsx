@@ -364,6 +364,21 @@ export function GeneHeader({
             <StructureViewer
               data={structureData}
               geneSymbol={g.hgnc_symbol}
+              // Canonical AFDB stats — the new caption inside the
+              // viewer renders these for the canonical tab (and
+              // lazy-fetches metadata for other AFDB variants when
+              // the user switches tabs).
+              canonicalStruct={{
+                afdb_id: struct.afdb_id,
+                afdb_version: struct.afdb_version,
+                ecd_mean_plddt: struct.ecd_mean_plddt,
+                ecd_disordered_fraction: struct.ecd_disordered_fraction,
+                source: struct.source,
+              }}
+              // UniProt protein name (NCBI gene_info `name`) — shown
+              // in italic above the AFDB stats for the canonical
+              // tab, like the structure title shown for experimental.
+              proteinName={geneName?.name ?? null}
               // Pass SURFACE-Bind anchor residues so each scored
               // patch gets a sphere + label on the 3D structure.
               // Empty array when the protein isn't in SURFACE-Bind
@@ -443,75 +458,14 @@ export function GeneHeader({
                 switch between the M/O/I/S/B topology key and the
                 EC/IC/TM sites key based on the viewer's internal
                 viewMode state. */}
-            {/* AFDB structure stats — moved up from the §9
-                StructureSummaryCard so the reader sees the pLDDT
-                confidence next to the model it qualifies. The `struct`
-                block is the canonical
-                ``deterministic_features.structure``. */}
-            <dl className={styles.structureStats} aria-label="AFDB structure stats">
-              <div className={styles.structureStat}>
-                <dt
-                  className={`label-mono ${styles.structureStatK}`}
-                  title={
-                    structWholeProtein
-                      ? "Whole-protein pLDDT — this gene has no extracellular residues per DeepTMHMM (GLOB / cytoplasmic), so the AFDB metric describes the entire model rather than an ECD subset."
-                      : "Mean per-residue AlphaFold pLDDT across extracellular-domain residues (DeepTMHMM 'O' positions)."
-                  }
-                >
-                  {plddtLabel}
-                </dt>
-                <dd className={styles.structureStatV}>
-                  {structPlaceholder ? (
-                    <StatusPill tone="neutral" size="sm">
-                      pending
-                    </StatusPill>
-                  ) : (
-                    <StatusPill tone={plddtTone(struct.ecd_mean_plddt)} size="sm">
-                      {struct.ecd_mean_plddt.toFixed(1)}
-                    </StatusPill>
-                  )}
-                </dd>
-              </div>
-              {/* Disordered fraction is meaningful only when computed
-                  over ECD residues against the pLDDT<70 threshold. For
-                  whole-protein fallback the JSON's value is global
-                  frac_low + frac_very_low, which mixes thresholds —
-                  hide rather than mislabel. */}
-              {!structWholeProtein ? (
-                <div className={styles.structureStat}>
-                  <dt
-                    className={`label-mono ${styles.structureStatK}`}
-                    title="Fraction of ECD residues with pLDDT < 70 (AFDB low-confidence threshold). High fraction → flexible / disordered ECD, often correlates with epitope-masking risk."
-                  >
-                    Disordered
-                  </dt>
-                  <dd className={styles.structureStatV}>
-                    <span className={styles.structureStatNum}>
-                      {structPlaceholder
-                        ? "—"
-                        : `${(struct.ecd_disordered_fraction * 100).toFixed(0)}%`}
-                    </span>
-                  </dd>
-                </div>
-              ) : null}
-              <div className={styles.structureStat}>
-                <dt className={`label-mono ${styles.structureStatK}`}>AFDB</dt>
-                <dd className={styles.structureStatV}>
-                  {/* AFDB's /entry/ route resolves either form, but the
-                      bare UniProt acc redirects through a search page
-                      first. The full entry-id (AF-{acc}-F1) lands
-                      directly on the model page — one fewer click. */}
-                  <a
-                    href={`https://alphafold.ebi.ac.uk/entry/${struct.afdb_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.structureStatLink}
-                  >
-                    {struct.afdb_id} · {struct.afdb_version}
-                  </a>
-                </dd>
-              </div>
-            </dl>
+            {/* AFDB stats moved INSIDE <StructureViewer> as part of
+                the new per-variant caption. The caption renders the
+                pLDDT pill + disordered fraction + AFDB entry link
+                for the active variant (canonical reuses
+                rec.deterministic_features.structure; isoforms /
+                orthologs lazy-fetch AFDB metadata at click time;
+                experimental shows resolution + method + RCSB link
+                instead). */}
             {/* SURFACE-Bind stat — sits below the AFDB row inside the
                 same structure aside so the reader sees patch-level
                 targetability next to the model that scored it. When
@@ -580,18 +534,10 @@ export function GeneHeader({
                 </dd>
               </div>
             </dl>
-            <p className={styles.structureCaption}>
-              {structureData.deeptmhmm_type === "GLOB" ? (
-                <>
-                  Soluble cytoplasmic (DeepTMHMM ={" "}
-                  <span style={{ fontFamily: "var(--font-mono)" }}>GLOB</span>)
-                  · membrane-association via lipid anchor / interaction, not a
-                  TM helix
-                </>
-              ) : (
-                <>DeepTMHMM topology · membrane horizontal, extracellular up</>
-              )}
-            </p>
+            {/* Old DeepTMHMM-orientation caption removed — the new
+                StructureViewer caption already names the model + the
+                per-variant pLDDT / disordered stats; the orientation
+                hint is implicit in the membrane slab shown above. */}
           </aside>
         ) : null}
       </div>
