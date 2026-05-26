@@ -310,14 +310,96 @@ prior to confirm or refute, not as ground truth:
     for the synthesizer (it overturns the prior).
   - `unknown`: no triage was run; plan normally.
 
-* **`reason`**: triage's structured reason taxonomy. Common values:
-  `stable_surface_marker`, `cell_state_induced`,
-  `tissue_restricted_surface`, `lysosomal_exocytosis`,
-  `dual_localization`, `stable_surface_attachment`,
-  `not_at_surface`, `unknown`. The first five mirror the
-  `accessibility_modulation.category` enum verbatim — a
-  `cell_state_induced` triage reason is a direct hint to plan for
-  state-modulation evidence.
+* **`reason`**: triage's structured reason taxonomy — closed enum,
+  19 values, grouped by which verdict each is valid for. Each value
+  is a specific hypothesis the deep-dive should target with method
+  retrievals and `topic_search` anchors:
+
+  **YES-bucket (gene is likely surface; standard methodology coverage):**
+  - `classical_surface_receptor` — canonical Type-I / Type-II / Type-III
+    single-pass receptor. Run all 5 method categories at full weight.
+  - `gpi_anchored` — GPI-anchored protein. Standard methods + add a
+    `topic_search` for FLAER / PIPLC sensitivity (the GPI-specific
+    assays that confirm anchorage).
+  - `multipass_with_exposed_loops` — claudin / tetraspanin / SLC
+    transporter class. ECD loops are small; `western_blot_paired` +
+    `surface_biotinylation` are the strongest evidence types.
+  - `extracellular_face_protein` — unusual; protein body faces
+    extracellular without a TM helix (some membrane-binding peripheral
+    proteins). Plan `topic_search` for the gene-specific membrane-
+    binding biology + nonperm IF.
+  - `stable_complex_partner` — surface presence requires a partner
+    co-receptor. Plan a `topic_search` for the named partner alongside
+    the gene-specific queries.
+  - `other` — read `verdict_reasoning` prose; plan adaptively.
+
+  **CONTEXTUAL-bucket (state / lineage gated; first five mirror
+  `accessibility_modulation.category` verbatim):**
+  - `cell_state_induced` — generic state gate. Add `topic_search`
+    pairing the gene with state-shift terms (activation, stress,
+    differentiation) + `shedding` / `ptm` anchors.
+  - `tissue_restricted_surface` — surface presence in a specific
+    lineage / tissue. Add `ihc` retrievals + `topic_search` naming the
+    suspected tissue.
+  - `lysosomal_exocytosis` — surface presence via lysosomal /
+    autophagolysosomal exocytosis (csGRP78 / csCALR / eSrc pattern).
+    Plan `topic_search` for "lysosomal exocytosis" / "autophagolysosomal"
+    / "ectopic surface" + recent_corpus weighted for the gene.
+  - `dual_localization` — steady-state split between PM and another
+    compartment. Plan dual-localization literature; the
+    `subcellular_localization.dual_localization` block needs material.
+  - `stable_surface_attachment` — stable but non-canonical surface
+    association (lipid-anchored, GPI-like, peripheral). Read prose
+    for the specific mechanism; plan accordingly.
+  - `other` — read `verdict_reasoning` prose.
+
+  **NO-bucket (gene is probably intracellular; deep-dive should hunt
+  for ectopic-surface evidence — any direct surface assay you find is
+  the strongest possible signal because it overturns the prior):**
+  - `cytoplasmic` — protein body in cytoplasm (kinases, enzymes,
+    signaling adapters). Classic ectopic-surface chase: csVIM /
+    csGAPDH / cs-aldolase class. **`recent_corpus` is the critical
+    retriever** — the ectopic-surface literature is recent and uses
+    new vocabulary (e.g. "moonlighting protein", "vimentin on cell
+    surface"). Method-anchored queries will miss it.
+  - `nuclear` — nuclear protein. Surface inversion is vanishingly
+    rare; the prior is very low. Skip method-anchored queries
+    (waste); plan `recent_corpus` + `topic_search` with
+    `surface_expression` + `shedding` anchors only.
+  - `mitochondrial_internal` — mitochondrial matrix / IMM protein.
+    Surface presence is the exception class (csATP5B / surface
+    hexokinase-2 in cancer). `recent_corpus` is the primary
+    retriever for the moonlighting biology.
+  - `endomembrane_resident` — ER / Golgi / endosome resident. The
+    csGRP78 / csCALR / surface-PDI stress-induced PM fraction is the
+    chase. Plan stress / disease-state `topic_search` (UPR, ER
+    stress, apoptosis, cancer microenvironment) + `recent_corpus`.
+  - `nuclear_envelope` — same low prior as `nuclear`; treat
+    identically.
+  - `inner_leaflet_anchored` — myristoylated / palmitoylated kinases
+    (SRC class, RAS class). **Cancer-state topological inversion**
+    is the targetable mechanism (eSrc story, 2025 PMID:41818370 /
+    PMID:41818382). `recent_corpus` is critical — the inversion
+    biology is post-2024 and uses vocabulary like "topological
+    inversion", "outer-leaflet exposure", "autophagolysosomal
+    exocytosis" that method-anchored queries miss.
+  - `secreted_only` — soluble protein documented (cytokine, growth
+    factor, complement). Plan for a *membrane-tethered isoform*
+    search (alt-splicing surface form of a secreted gene) OR for
+    the *receptor* of the soluble form (cytokine ↔ receptor).
+    `topic_search` with `shedding` + `topology` anchors.
+  - `pmhc_only_intracellular` — protein presented as a peptide via
+    MHC class I. The protein body itself is intracellular; the
+    pMHC complex is the targetable surface entity (TCR-mimetic
+    antibodies). Skip protein-body surface searches; the catalog
+    filter is for the pMHC presentation, not the protein.
+  - `other` — read `verdict_reasoning` prose; plan adaptively.
+
+  When the triage `reason` doesn't fit one of the above (loader
+  emitted a value you don't recognize), default to chasing
+  `recent_corpus` + `surface_expression` topic_search and treat any
+  direct surface methodology evidence you find as the strongest
+  possible signal.
 
 * **`verdict_reasoning`**: the triage agent's prose justification
   (≤800 chars). Read it for context cues you might otherwise miss —

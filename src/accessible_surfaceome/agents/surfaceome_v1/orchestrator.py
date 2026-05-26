@@ -846,12 +846,14 @@ def _derive_filters(
     )
 
     # max-paralog identity is None when there are no paralogs (the stub case
-    # while fetchers are deferred); same for cross-species rollups.
-    max_paralog = (
-        max((p.ecd_pct_identity for p in deterministic_features.paralogs), default=None)
-        if deterministic_features.paralogs
-        else None
-    )
+    # while fetchers are deferred) OR when every paralog has NULL identity
+    # (ECD-less proteins — SRC-family kinases / soluble proteins).
+    _paralog_ids = [
+        p.ecd_pct_identity
+        for p in deterministic_features.paralogs
+        if p.ecd_pct_identity is not None
+    ]
+    max_paralog = max(_paralog_ids) if _paralog_ids else None
 
     def _canonical_species_identity(entries: list) -> float | None:
         for e in entries:

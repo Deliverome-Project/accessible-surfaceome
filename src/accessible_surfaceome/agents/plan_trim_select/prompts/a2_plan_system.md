@@ -157,40 +157,82 @@ A `Triage prior` JSON block carries the genome-wide Haiku
 `surface_triage` agent's verdict on this gene — a high-recall
 first-pass decision made before any deep literature work. Treat as a
 prior to confirm or refute, not as ground truth. A2's job is biology
-context; the triage prior shapes which biology to chase:
+context; the triage prior shapes which biology to chase.
 
-* **`verdict=yes` + `reason=stable_surface_marker`**: a canonical
-  surface protein. Standard tissue / cell-type atlas search; no
-  ectopic-surface chase needed.
+The `reason` field is a closed 19-value enum. A2 plans differently
+depending on which bucket the reason falls into.
 
-* **`verdict=contextual` + `reason=cell_state_induced`**: surface
-  presence depends on cellular state (ER stress, activation, etc.).
-  Plan extra `accessibility_modulation` coverage and ensure the
-  `cell_states` builder has material — `topic_search` with anchors
-  `shedding` + `ptm` + `surface_expression` paired with state-shift
-  terms in the intent.
+**YES-bucket** — gene is canonical surface; A2 chases
+tissue / cell-type / disease context, not ectopic surface:
 
-* **`verdict=contextual` + `reason=tissue_restricted_surface`**:
-  surface presence is tissue-restricted (germline / developmental /
-  lineage-specific). Plan tissue-atlas queries targeting the
-  flagged compartments; `accessibility_modulation` builder will
-  produce a `restricted_lineage` sub-enum row.
+* `classical_surface_receptor` — standard tissue + cell-type atlas
+  search; no ectopic chase needed.
+* `gpi_anchored` — same as above + add a `topic_search` for the
+  GPI-anchor biology (hematopoietic context, lipid raft).
+* `multipass_with_exposed_loops` — claudin / tetraspanin / SLC class;
+  tissue-restricted patterns (e.g. claudin family by epithelium type)
+  are the dominant biology.
+* `extracellular_face_protein` — unusual; read `verdict_reasoning`
+  prose for the specific membrane-binding biology.
+* `stable_complex_partner` — search the partner's tissue distribution
+  too; A2's `cell_types` and `tissues` builders need the
+  co-expression context.
+* `other` — read prose; plan adaptively.
 
-* **`verdict=contextual` + `reason=lysosomal_exocytosis`**:
-  surface presence happens via secretory-vesicle / lysosomal
-  exocytosis (csGRP78 / cell-surface vimentin pattern). Plan stress
-  + autophagolysosomal-exocytosis literature; this is the dominant
-  evidence shape for the `cell_states` builder.
+**CONTEXTUAL-bucket** — surface presence is state / lineage gated;
+A2's `accessibility_modulation` + `cell_states` builders are the
+primary destination:
 
-* **`verdict=contextual` + `reason=dual_localization`**:
-  steady-state dual localization (ER + PM, lysosome + PM).
-  Plan dual-localization literature; `subcellular_localization`
-  builder's `dual_localization` block needs material.
+* `cell_state_induced` — surface presence depends on cellular state
+  (ER stress, activation, etc.). Plan extra `accessibility_modulation`
+  coverage; `topic_search` with `shedding` + `ptm` + `surface_expression`
+  + state-shift terms in the intent.
+* `tissue_restricted_surface` — surface presence restricted to a
+  lineage / tissue (germline / developmental). Plan tissue-atlas
+  queries targeting the flagged compartments;
+  `accessibility_modulation` produces a `restricted_lineage` sub-row.
+* `lysosomal_exocytosis` — surface presence via secretory-vesicle /
+  lysosomal exocytosis (csGRP78 / cs-VIM pattern). Plan stress +
+  autophagolysosomal-exocytosis literature; the dominant evidence
+  shape for the `cell_states` builder.
+* `dual_localization` — steady-state dual localization (ER + PM,
+  lysosome + PM). Plan dual-localization literature;
+  `subcellular_localization.dual_localization` block needs material.
+* `stable_surface_attachment` — stable but non-canonical attachment
+  (lipid-anchored, peripheral). Plan biology of the specific
+  attachment mechanism named in the verdict_reasoning.
+* `other` — read prose; plan adaptively.
 
-* **`verdict=no`**: triage thinks the gene is intracellular. If your
-  deep-dive turns up direct surface evidence anyway, that's the
-  strongest possible signal for the synthesizer — pull aggressively
-  on ectopic / shed / stress-induced surface queries.
+**NO-bucket** — triage thinks the gene is intracellular. If A2
+turns up direct surface evidence anyway, that's the strongest
+possible signal for the synthesizer. Pull aggressively on ectopic /
+shed / stress-induced surface queries based on the specific reason:
+
+* `cytoplasmic` — protein body in cytoplasm. Ectopic-surface chase
+  (csVIM / csGAPDH / surface-aldolase class); `recent_corpus` is the
+  primary retriever for the moonlighting-protein biology.
+* `nuclear` — surface inversion vanishingly rare. Skip
+  ectopic-surface chase; `recent_corpus` + `surface_expression`
+  topic_search only.
+* `mitochondrial_internal` — exception class (csATP5B, surface HK2 in
+  cancer). `recent_corpus` for the moonlighting biology.
+* `endomembrane_resident` — ER / Golgi / endosome resident.
+  csGRP78 / csCALR / surface-PDI stress-induced PM fraction is the
+  chase. Stress / disease-state topic_search (UPR, ER stress,
+  apoptosis, cancer microenvironment).
+* `nuclear_envelope` — treat like `nuclear`; very low prior.
+* `inner_leaflet_anchored` — myristoylated / palmitoylated kinases
+  (SRC class). Cancer-state topological inversion (eSrc / ALE) is
+  the targetable state; `recent_corpus` for the post-2024 inversion
+  biology.
+* `secreted_only` — soluble protein. Plan for membrane-tethered
+  isoform OR the receptor of the soluble form; `topic_search` with
+  `shedding` + `topology` anchors.
+* `pmhc_only_intracellular` — pMHC-presented; the protein body is
+  intracellular. Skip protein-body surface searches; A2's tissue +
+  cell_types coverage focuses on presentation context (antigen
+  source, MHC class I expression, immune cell context).
+* `other` — read prose.
 
 * **`verdict_reasoning`**: read the triage agent's prose for context
   cues (cell-type-specific notes, paralog warnings). Quotable

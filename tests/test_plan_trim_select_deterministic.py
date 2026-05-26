@@ -181,6 +181,83 @@ def test_summary_zero_ortholog_counts_when_empty():
     assert out["cyno_ortholog_count"] == 0
 
 
+def test_paralog_entry_allows_null_ecd_identity():
+    """ECD-less proteins (inner-leaflet kinases like SRC, secreted proteins)
+    have NULL ECD identity for their paralogs — there's no ECD to compare.
+    ParalogEntry.ecd_pct_identity must accept None so these paralogs land
+    in the dump (lets the planner flag cross-reactivity from family
+    membership even when an identity number isn't computable)."""
+    from accessible_surfaceome.tools._shared.models import ParalogEntry
+
+    entry = ParalogEntry(
+        paralog_symbol="FYN",
+        paralog_uniprot_acc="P06241",
+        ecd_pct_identity=None,
+        family_id="src_family_kinases",
+        compara_version="r112",
+    )
+    assert entry.ecd_pct_identity is None
+    assert entry.paralog_symbol == "FYN"
+
+
+def test_summary_includes_paralogs_with_null_ecd_identity():
+    """A SRC-like fixture: paralogs with NULL ECD identity should land
+    in top_paralogs alongside the ones with numeric identity."""
+    from accessible_surfaceome.tools._shared.models import ParalogEntry
+
+    feats = _gpr75_features()
+    src_family_no_ecd = [
+        ParalogEntry(
+            paralog_symbol=sym,
+            paralog_uniprot_acc=acc,
+            ecd_pct_identity=None,
+            family_id="src_kinases",
+            compara_version="r112",
+        )
+        for sym, acc in [
+            ("YES1", "P07947"), ("FYN", "P06241"), ("FGR", "P09769"),
+            ("HCK", "P08631"), ("BLK", "P51451"), ("LYN", "P07948"),
+            ("LCK", "P06239"),
+        ]
+    ]
+    feats = feats.model_copy(update={"paralogs": src_family_no_ecd})
+    out = json.loads(_summarize_deterministic_for_planner(feats))
+    assert out["paralog_count"] == 7
+    assert len(out["top_paralogs"]) == 5  # capped at 5
+    # NULL-identity entries land in top_paralogs with ecd_pct_identity=null
+    for p in out["top_paralogs"]:
+        assert p["symbol"] in {"YES1", "FYN", "FGR", "HCK", "BLK", "LYN", "LCK"}
+        assert p["ecd_pct_identity"] is None
+
+
+def test_summary_sorts_numeric_identity_first_when_mixed():
+    """When the paralog list mixes numeric and NULL identity values,
+    the numeric ones (highest first) come first in top_paralogs;
+    NULL ones fall to the end."""
+    from accessible_surfaceome.tools._shared.models import ParalogEntry
+
+    feats = _gpr75_features()
+    mixed = [
+        ParalogEntry(paralog_symbol="HI", paralog_uniprot_acc="P00001",
+                     ecd_pct_identity=85.0, family_id="f", compara_version="r112"),
+        ParalogEntry(paralog_symbol="NULL_A", paralog_uniprot_acc="P00002",
+                     ecd_pct_identity=None, family_id="f", compara_version="r112"),
+        ParalogEntry(paralog_symbol="LO", paralog_uniprot_acc="P00003",
+                     ecd_pct_identity=30.0, family_id="f", compara_version="r112"),
+        ParalogEntry(paralog_symbol="NULL_B", paralog_uniprot_acc="P00004",
+                     ecd_pct_identity=None, family_id="f", compara_version="r112"),
+    ]
+    feats = feats.model_copy(update={"paralogs": mixed})
+    out = json.loads(_summarize_deterministic_for_planner(feats))
+    assert out["top_paralogs"][0]["symbol"] == "HI"
+    assert out["top_paralogs"][0]["ecd_pct_identity"] == 85.0
+    assert out["top_paralogs"][1]["symbol"] == "LO"
+    assert out["top_paralogs"][1]["ecd_pct_identity"] == 30.0
+    # NULLs come after numeric values
+    null_syms = {p["symbol"] for p in out["top_paralogs"][2:]}
+    assert null_syms == {"NULL_A", "NULL_B"}
+
+
 def test_summary_handles_no_orthologs():
     feats = _gpr75_features().model_copy(update={"orthologs": Orthologs()})
     out = json.loads(_summarize_deterministic_for_planner(feats))

@@ -79,14 +79,15 @@ const COMPARTMENT_GLYPH: Record<AnchorCompartment, string> = {
  *  yellow / gray) and the brand maroon used elsewhere on the page. */
 const ANCHOR_COLOR = "#7A4BD8";
 
-/** Per-compartment sphere color for "sites" mode. EC = green (good
- *  target — antibody-accessible); IC = amber (NOT accessible from
- *  outside the cell); TM = neutral gray (inside the membrane);
- *  signal / unknown = mute. Mirrors the StatusPill tone mapping in
- *  SurfaceBindCard's "Side" column. */
+/** Per-compartment sphere color for "sites" mode. Per user
+ *  preference: EC = red (the "look here / focus" attention color),
+ *  IC = green (safely tucked away inside the cell). TM = gray
+ *  (inside the membrane); signal / unknown = mute. The SurfaceBindCard
+ *  "Side" column uses the same red/green mapping for visual
+ *  consistency between the 3D view and the table. */
 const COMPARTMENT_COLOR: Record<AnchorCompartment, string> = {
-  extracellular: "#16A34A", // green-600
-  intracellular: "#D97706", // amber-600
+  extracellular: "#DC2626", // red-600
+  intracellular: "#16A34A", // green-600
   membrane: "#94A3B8", // slate-400
   signal: "#94A3B8",
   unknown: "#6B7280", // gray-500

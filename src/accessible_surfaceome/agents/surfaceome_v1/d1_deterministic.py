@@ -202,26 +202,35 @@ def _fetch_isoform_topologies(uniprot_acc: str, topology_version: str) -> list[I
 
 def _fetch_paralogs(uniprot_acc: str, paralog_version: str) -> list[ParalogEntry]:
     """Top-N paralogs by ECD identity. NULLs sort last via
-    ``rank_by_ecd_identity`` so the head is the most-similar pairs."""
+    ``rank_by_ecd_identity`` so the head is the most-similar pairs.
+
+    Paralogs with NULL ``ecd_pct_identity`` (ECD-less proteins like
+    inner-leaflet SRC-family kinases) are INCLUDED in the result —
+    family membership is still cross-reactivity signal for
+    antibody-derived evidence even when an identity number isn't
+    computable. The planner's 50/70% cutoff ladder simply doesn't
+    fire for those rows.
+    """
     rows = _query_public(
         "SELECT paralog_gene_symbol, paralog_uniprot_acc, ecd_pct_identity, "
         "family_id, compara_version, rank_by_ecd_identity "
         "FROM compara_paralog "
         "WHERE human_uniprot_acc = ? AND paralog_version = ? "
-        "  AND ecd_pct_identity IS NOT NULL "
         "  AND paralog_gene_symbol IS NOT NULL "
         "  AND paralog_uniprot_acc IS NOT NULL "
-        "ORDER BY rank_by_ecd_identity ASC LIMIT ?",
+        "ORDER BY rank_by_ecd_identity ASC NULLS LAST LIMIT ?",
         [uniprot_acc, paralog_version, PARALOG_TOP_N],
     )
     out: list[ParalogEntry] = []
     for r in rows:
         try:
+            ecd_raw = r.get("ecd_pct_identity")
+            ecd_id = float(ecd_raw) if ecd_raw is not None else None
             out.append(
                 ParalogEntry(
                     paralog_symbol=r["paralog_gene_symbol"],
                     paralog_uniprot_acc=r["paralog_uniprot_acc"],
-                    ecd_pct_identity=float(r["ecd_pct_identity"]),
+                    ecd_pct_identity=ecd_id,
                     family_id=r.get("family_id") or "",
                     compara_version=r.get("compara_version") or "",
                 )

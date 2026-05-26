@@ -1095,6 +1095,13 @@ MethodFamily = Literal[
     "glycoproteomics",
     "proximity_labeling",
     "fractionation",
+    # Functional engagement / pharmacology demonstrations of surface
+    # access — antibody-mediated tumor killing in xenografts, ADC
+    # efficacy, surface-targeted photo-tag labeling, FRET-on-surface,
+    # radioligand binding. Use ``functional_surface_assay`` instead of
+    # ``other`` for these; ``other`` stays for true catch-all cases
+    # the bucket list doesn't cover.
+    "functional_surface_assay",
     "other",
 ]
 MethodSubclass = Literal[
@@ -1933,13 +1940,21 @@ class Orthologs(BaseModel):
 
 
 class ParalogEntry(BaseModel):
-    """One within-species paralog — Ensembl Compara. Deterministic."""
+    """One within-species paralog — Ensembl Compara. Deterministic.
+
+    ``ecd_pct_identity`` is ``None`` for ECD-less proteins (inner-leaflet
+    kinases like SRC, soluble proteins, cytoplasmic enzymes) — there's
+    no ECD to compute identity against. The cross-reactivity warning
+    based on the 50/70% cutoffs simply doesn't apply to those paralogs;
+    family membership alone is still meaningful signal for the methods
+    builder's antibody-validation discipline.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     paralog_symbol: str
     paralog_uniprot_acc: str
-    ecd_pct_identity: float = Field(..., ge=0.0, le=100.0)
+    ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
 

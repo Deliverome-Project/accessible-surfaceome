@@ -40,7 +40,24 @@ contributed to that row.
 
 - `method_family` — closed enum: `flow_cytometry`, `immunofluorescence`,
   `immunohistochemistry`, `mass_spec`, `biotinylation`,
-  `glycoproteomics`, `proximity_labeling`, `fractionation`, `other`.
+  `glycoproteomics`, `proximity_labeling`, `fractionation`,
+  `functional_surface_assay`, `other`.
+    - `functional_surface_assay` — functional / pharmacology
+      demonstrations of surface access where binding or engagement
+      implies extracellular accessibility. Use for: antibody-mediated
+      tumor killing (anti-target Ab depletes / kills target-expressing
+      cells in xenograft), ADC efficacy on cells expressing the
+      target, surface-targeted photo-tag labeling (RaPID, BioID-
+      surface, APEX-surface), FRET-on-surface, radioligand binding,
+      surface-restricted small-molecule probes. These claims don't
+      stain or isolate the protein directly, but the functional
+      readout is impossible without surface access. The SRC eSrc
+      anti-Src antibody-killing paper (PMID:41818370 / 41818382) is
+      the canonical case.
+    - `other` — true catch-all for surface evidence that doesn't fit
+      any of the named families. Reach for `functional_surface_assay`
+      first; only fall to `other` when the evidence genuinely doesn't
+      involve antibody / pharmacology / labeling engagement.
 - `method_subclass` — closed enum: `live_cell_flow`, `fixed_cell_flow`,
   `nonpermeabilized_IF`, `permeabilized_IF`, `IHC_membranous`,
   `surface_biotinylation`, `cell_surface_capture`, `N_glycoproteomics`,

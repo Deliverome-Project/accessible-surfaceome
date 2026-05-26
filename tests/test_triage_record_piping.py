@@ -23,6 +23,8 @@ from __future__ import annotations
 import json
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from accessible_surfaceome.agents.plan_trim_select.runner import (
     A1_PLAN_PROMPT_PATH,
     A2_PLAN_PROMPT_PATH,
@@ -381,6 +383,66 @@ def test_synthesizer_prompt_mentions_triage_prior():
     body = SYNTH_SYSTEM_PROMPT_PATH.read_text().lower()
     assert "triage prior" in body
     assert "verdict_reasoning" in body
+
+
+# ---------------------------------------------------------------------------
+# Schema-prompt drift tripwire
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture(scope="module")
+def _triage_reasons() -> frozenset[str]:
+    """All 19 documented TriageReason values."""
+    from typing import get_args
+
+    from accessible_surfaceome.tools._shared.models import TriageReason
+
+    return frozenset(get_args(TriageReason))
+
+
+@pytest.mark.parametrize(
+    "prompt_path_name",
+    ["A1_PLAN_PROMPT_PATH", "A2_PLAN_PROMPT_PATH", "SYNTH_SYSTEM_PROMPT_PATH"],
+)
+def test_prompts_document_every_triage_reason(
+    prompt_path_name: str, _triage_reasons: frozenset[str]
+) -> None:
+    """Tripwire: every value in TriageReason must appear in each prompt
+    that consumes the triage prior. Catches schema-prompt drift the way
+    the 8-vs-19 reason gap silently lived for months. If you add a new
+    TriageReason value, you have to also tell the planner / synthesizer
+    what to do with it, or this test breaks CI."""
+    import pytest as _p
+
+    paths = {
+        "A1_PLAN_PROMPT_PATH": A1_PLAN_PROMPT_PATH,
+        "A2_PLAN_PROMPT_PATH": A2_PLAN_PROMPT_PATH,
+        "SYNTH_SYSTEM_PROMPT_PATH": SYNTH_SYSTEM_PROMPT_PATH,
+    }
+    body = paths[prompt_path_name].read_text()
+    missing = sorted(r for r in _triage_reasons if r not in body)
+    if missing:
+        _p.fail(
+            f"{prompt_path_name} doesn't document these TriageReason values: "
+            f"{missing}. Either add per-reason guidance to the prompt or "
+            f"remove the value from the TriageReason Literal."
+        )
+
+
+def test_triage_reason_enum_size_sentinel():
+    """Sanity check on the enum count itself. When this fires, audit
+    the new value(s) for cohort prevalence + downstream impact before
+    bumping the constant."""
+    from typing import get_args
+
+    from accessible_surfaceome.tools._shared.models import TriageReason
+
+    n = len(get_args(TriageReason))
+    assert n == 19, (
+        f"TriageReason has {n} values; expected 19. If you added a value, "
+        f"update this assertion AND check that every prompt that reads "
+        f"`reason` (A1/A2 planner, synthesizer) documents it."
+    )
 
 
 # ---------------------------------------------------------------------------

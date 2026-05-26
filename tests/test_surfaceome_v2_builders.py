@@ -18,7 +18,8 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from typing import Any
+from pathlib import Path
+from typing import Any, get_args
 from unittest.mock import MagicMock
 
 import pytest
@@ -50,6 +51,7 @@ from accessible_surfaceome.tools._shared.models import (
     CellTypeContextV1,
     Contradiction,
     EvidenceClaim,
+    MethodFamily,
     MethodObservation,
     StateContext,
     SubcellularLocalization,
@@ -58,6 +60,27 @@ from accessible_surfaceome.tools._shared.models import (
     TherapeuticEngagementContext,
     TissueContext,
 )
+
+
+def test_method_family_includes_functional_surface_assay():
+    """``functional_surface_assay`` distinguishes evidence where binding /
+    engagement implies surface access (antibody-mediated tumor killing,
+    surface-targeted ADC efficacy, photo-tag labeling, FRET-on-surface)
+    from the catch-all ``other``. SRC's a1_evi_02 — anti-Src antibody
+    therapy in xenografts — is the canonical case that didn't fit any
+    methodology bucket before."""
+    assert "functional_surface_assay" in get_args(MethodFamily)
+
+
+def test_methods_prompt_documents_functional_surface_assay():
+    """The methods_builder prompt must mention the new method_family
+    value so the LLM knows when to pick it."""
+    prompt_path = (
+        Path(__file__).parent.parent
+        / "src/accessible_surfaceome/agents/surfaceome_v2/prompts/methods_builder_system.md"
+    )
+    body = prompt_path.read_text()
+    assert "functional_surface_assay" in body
 
 
 # ---------------------------------------------------------------------------

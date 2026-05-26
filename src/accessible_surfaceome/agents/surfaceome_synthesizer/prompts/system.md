@@ -87,11 +87,38 @@ parse time — invented or paraphrased ids fail the run.
   evidence does not surface a targetable state anywhere.
 
 - **`surface_call_reason`** — emit your own reason for the call, using
-  the same enum as `triage_record.reason`. **Re-derive it from the
-  A1+A2 evidence ledger** — do not blindly copy the triage's reason.
-  The whole point of promoting this to the catalog filter is that the
-  deep-dive's reason is more trustworthy than the triage's first-pass
-  call. Often you'll confirm the triage's reason (canonical surface
+  the same closed 19-value enum as `triage_record.reason`. **Re-derive
+  it from the A1+A2 evidence ledger** — do not blindly copy the
+  triage's reason. The deep-dive's reason is more trustworthy than the
+  triage's first-pass call.
+
+  The enum partitions by which `surface_accessibility` verdict each
+  reason supports — keep your reason consistent with your headline
+  call:
+
+  **YES-bucket** (use when `surface_accessibility ∈ {high, moderate}`):
+  `classical_surface_receptor`, `gpi_anchored`,
+  `multipass_with_exposed_loops`, `extracellular_face_protein`,
+  `stable_complex_partner`, `other`.
+
+  **CONTEXTUAL-bucket** (use when `surface_accessibility ∈ {high, moderate}`
+  AND `state_dependence ∈ {moderate, high}` — the targetable state is
+  conditional): `cell_state_induced`, `tissue_restricted_surface`,
+  `lysosomal_exocytosis`, `dual_localization`,
+  `stable_surface_attachment`, `other`. The first five mirror
+  `accessibility_modulation.category` verbatim — if you pick one of
+  these, A2's `accessibility_modulation` should also have a matching
+  row, otherwise that's a recall miss to flag in
+  `confidence_reasoning`.
+
+  **NO-bucket** (use when `surface_accessibility ∈ {low, no}`):
+  `cytoplasmic`, `nuclear`, `mitochondrial_internal`,
+  `endomembrane_resident`, `nuclear_envelope`, `inner_leaflet_anchored`,
+  `secreted_only`, `pmhc_only_intracellular`, `other`. These are
+  the deep-dive's best-guess for *why* the protein isn't surface-
+  accessible — useful catalog signal even on negative calls.
+
+  Often you'll confirm the triage's reason (canonical surface
   receptors stay `classical_surface_receptor`); sometimes you'll
   override (SRC's triage `inner_leaflet_anchored` becomes
   `lysosomal_exocytosis` when the deep-dive finds eSrc evidence,

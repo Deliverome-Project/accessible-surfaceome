@@ -433,6 +433,7 @@ export type MethodFamily =
   | "glycoproteomics"
   | "proximity_labeling"
   | "fractionation"
+  | "functional_surface_assay"
   | "other";
 
 export type MethodSubclass =

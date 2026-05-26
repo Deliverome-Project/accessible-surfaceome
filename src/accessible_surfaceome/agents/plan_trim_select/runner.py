@@ -292,7 +292,16 @@ def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str
     """
 
     canon = features.canonical_topology
-    top = sorted(features.paralogs, key=lambda p: p.ecd_pct_identity, reverse=True)[:5]
+    # Sort: numeric identity first (high → low), then NULL-identity
+    # paralogs (ECD-less proteins like SRC-family kinases). Sentinel -1
+    # is below any valid 0-100 identity so Nones land at the end.
+    top = sorted(
+        features.paralogs,
+        key=lambda p: (
+            p.ecd_pct_identity if p.ecd_pct_identity is not None else -1.0
+        ),
+        reverse=True,
+    )[:5]
 
     def _canonical(entries: list[OrthologEntry]) -> OrthologEntry | None:
         for entry in entries:
