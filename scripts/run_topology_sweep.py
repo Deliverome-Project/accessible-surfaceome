@@ -4,8 +4,11 @@ Stages:
     1. Load the candidate accession set (built by build_topology_candidate_set.py).
     2. Resolve per-cohort accessions:
          human_canonical → the candidate UniProt accessions
-         human_isoforms  → AFDB-modeled isoforms of those accessions (resolved
-                           via UniProt isoform query — see _resolve_human_isoforms)
+         human_isoforms  → all alternative isoforms of the candidate canonicals,
+                           fetched fresh via UniProt search?includeIsoform=true
+                           (see _resolve_isoforms_for_candidates). Skips any
+                           isoform already in the legacy .3line via the
+                           already_predicted check.
          mouse_ortholog  → one2one_highconf mouse orthologs from the existing
                            Compara CSV (no refresh — the orchestrator assumes
                            it is up-to-date; refresh via ensembl_compara
@@ -64,6 +67,7 @@ from accessible_surfaceome.sources.deeptmhmm import (
     DEEPTMHMM_TOOL_VERSION,
     SEQUENCE_CACHE_DIR,
     assemble_batch_fasta,
+    fetch_text_with_retries,
     fetch_uniprot_fastas_to_cache,
     parse_3line,
     run_deeptmhmm_batch,
@@ -123,6 +127,24 @@ class Candidate:
     ncbi_gene_id: int | None
     selection_reason: str       # db_only | triage_only | both | override
     triage_verdict: str | None  # yes | contextual | None
+
+
+@dataclass(frozen=True)
+class IsoformSpec:
+    """One human alternative-isoform target.
+
+    ``canonical_acc`` is the bare UniProt acc (P12931); ``isoform_acc_full``
+    is the dashed isoform form (P12931-2). ``sequence`` is the residue
+    string fetched from UniProt's FASTA endpoint. ``gene_symbol`` and
+    ``hgnc_id`` are stamped from the parent candidate so the orchestrator
+    has a back-pointer for the topology_public row.
+    """
+
+    canonical_acc: str
+    isoform_acc_full: str
+    gene_symbol: str
+    hgnc_id: str
+    sequence: str
 
 
 def load_candidate_set(path: Path) -> list[Candidate]:
@@ -380,6 +402,257 @@ def _resolve_ortholog_uniprots(
         t.ortholog_ensembl_gene: cache.get((t.ortholog_ensembl_gene, t.species_taxon_id), "")
         for t in targets
     }
+
+
+def _parse_isoform_fasta_payload(text: str) -> list[tuple[str, str]]:
+    """Split a UniProt FASTA payload into ``[(isoform_acc_full, sequence), ...]``.
+
+    UniProt's ``search?...&format=fasta&includeIsoform=true`` returns multiple
+    records concatenated; we split on ``\\n>`` and parse each header to pull
+    the second pipe-delimited field (the accession; canonical or
+    isoform-suffixed). Records with empty sequence are dropped.
+    """
+    out: list[tuple[str, str]] = []
+    if not text:
+        return out
+    # Strip leading whitespace so the first record starts with '>'.
+    payload = text.lstrip()
+    if not payload.startswith(">"):
+        return out
+    # Split on '\n>' so each chunk (except the first) loses its '>' prefix —
+    # we re-attach below for uniform parsing.
+    chunks = payload.split("\n>")
+    for idx, chunk in enumerate(chunks):
+        block = chunk if idx == 0 else ">" + chunk
+        lines = [ln.rstrip() for ln in block.splitlines() if ln.strip()]
+        if not lines or not lines[0].startswith(">"):
+            continue
+        header = lines[0]
+        # 'sp|P12931-2|SRC_HUMAN ...' → ['sp', 'P12931-2', 'SRC_HUMAN ...']
+        parts = header[1:].split("|")
+        if len(parts) < 2:
+            continue
+        acc_full = parts[1].strip()
+        if not acc_full:
+            continue
+        sequence = "".join(lines[1:]).strip().upper()
+        if not sequence:
+            continue
+        out.append((acc_full, sequence))
+    return out
+
+
+def _resolve_isoforms_for_candidates(
+    candidates: list[Candidate],
+    *,
+    cache_path: Path,
+    max_workers: int = 8,
+) -> list[IsoformSpec]:
+    """Resolve all alternative isoforms for the human candidate set via UniProt.
+
+    For each unique candidate ``uniprot_acc`` (the canonical), hit UniProt's
+    ``search?query=accession:<acc>&format=fasta&includeIsoform=true`` endpoint,
+    parse the multi-record FASTA, and emit one ``IsoformSpec`` per
+    NON-CANONICAL isoform (i.e. accs containing a ``-`` suffix). Canonicals
+    are skipped because they already live in the ``human_canonical`` cohort.
+
+    Caches per-canonical results to ``cache_path`` as JSONL with one line per
+    canonical_acc; status is ``ok`` (had alts), ``no_isoforms`` (only canonical
+    returned), or ``error`` (UniProt fetch failed). On re-runs, candidates
+    whose canonical has any status line are skipped.
+
+    Parallelized with a ``ThreadPoolExecutor`` (default 8 workers) and a
+    200ms per-request delay inside ``fetch_text_with_retries`` so we stay
+    polite to the UniProt REST gateway.
+
+    Each emitted ``IsoformSpec`` carries the parent candidate's
+    ``cohort_symbol`` (→ ``gene_symbol``) and ``hgnc_id`` so the downstream
+    orchestrator can stamp stable IDs onto topology_public rows.
+    """
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Load existing cache: {canonical_acc → {"status", "isoform_ids", "sequences"}}.
+    cache: dict[str, dict[str, Any]] = {}
+    if cache_path.exists():
+        with cache_path.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                acc = (entry.get("canonical_acc") or "").strip().upper()
+                if acc:
+                    cache[acc] = entry
+    logger.info(
+        "isoform-resolution cache: %d canonicals already resolved", len(cache)
+    )
+
+    # Unique candidate accs (preserve a back-map to the candidate row for
+    # per-isoform gene_symbol / hgnc_id stamping). On collisions (multiple
+    # candidates sharing one uniprot_acc — rare but possible across paralog
+    # expansion), first wins for stamping.
+    candidate_by_acc: dict[str, Candidate] = {}
+    for c in candidates:
+        if c.uniprot_acc and c.uniprot_acc not in candidate_by_acc:
+            candidate_by_acc[c.uniprot_acc] = c
+    unique_accs = sorted(candidate_by_acc)
+    needed = [acc for acc in unique_accs if acc not in cache]
+    logger.info(
+        "isoform resolution: %d candidates, %d to fetch (%d cache hits)",
+        len(unique_accs), len(needed), len(unique_accs) - len(needed),
+    )
+
+    def worker(canonical_acc: str) -> dict[str, Any]:
+        url = (
+            "https://rest.uniprot.org/uniprotkb/search"
+            f"?query=accession:{canonical_acc}&format=fasta&includeIsoform=true"
+        )
+        try:
+            text, _ = fetch_text_with_retries(
+                url,
+                timeout=30,
+                retry_max_attempts=3,
+                min_request_interval_ms=200,
+            )
+        except Exception as exc:  # noqa: BLE001 - cache the error and move on
+            return {
+                "canonical_acc": canonical_acc,
+                "isoform_ids": [],
+                "sequences": {},
+                "status": "error",
+                "error": str(exc)[:300],
+            }
+        records = _parse_isoform_fasta_payload(text)
+        isoform_ids = [acc_full for acc_full, _ in records]
+        # NON-canonical sequences only — the canonical lives in the
+        # human_canonical FASTA cache already.
+        sequences = {
+            acc_full: seq for acc_full, seq in records if "-" in acc_full
+        }
+        if not sequences:
+            return {
+                "canonical_acc": canonical_acc,
+                "isoform_ids": isoform_ids,
+                "sequences": {},
+                "status": "no_isoforms",
+            }
+        return {
+            "canonical_acc": canonical_acc,
+            "isoform_ids": isoform_ids,
+            "sequences": sequences,
+            "status": "ok",
+        }
+
+    # Append fresh entries to the cache file as they arrive so a crash mid-run
+    # doesn't lose work.
+    #
+    # Durability policy (regression on 2026-05-26 reboot): open with
+    # ``buffering=1`` (line-buffered) so each JSON line auto-flushes to
+    # the kernel page cache on the trailing ``\n``. Without this, the
+    # previous every-200-entries explicit flush left up to ~199 entries
+    # in Python's user-space buffer at any moment; a SIGKILL or hard
+    # reboot dropped them entirely (we lost ~6,000 / 6,400 fetches that
+    # way). Line buffering gives kernel-page-cache durability per-write
+    # — survives a process crash. Full disk-fsync per write would cost
+    # ~50-100 ms each on SSD and isn't justified; the page cache is
+    # durable across process crashes, which was the failure mode.
+    if needed:
+        n_done = 0
+        with cache_path.open("a", encoding="utf-8", buffering=1) as cache_f:
+            with ThreadPoolExecutor(max_workers=max_workers) as pool:
+                futures = {pool.submit(worker, acc): acc for acc in needed}
+                for fut in as_completed(futures):
+                    entry = fut.result()
+                    cache[entry["canonical_acc"]] = entry
+                    # Line-buffered: this write auto-flushes on the
+                    # trailing newline. No explicit flush() needed.
+                    cache_f.write(json.dumps(entry, sort_keys=True) + "\n")
+                    n_done += 1
+                    if n_done % 200 == 0:
+                        logger.info(
+                            "  isoform resolution progress: %d/%d",
+                            n_done, len(needed),
+                        )
+        logger.info(
+            "  isoform resolution complete: %d fetched, %d total cached",
+            n_done, len(cache),
+        )
+
+    # Flatten cache → list[IsoformSpec], one entry per NON-canonical isoform.
+    out: list[IsoformSpec] = []
+    n_ok = 0
+    n_no_iso = 0
+    n_err = 0
+    for canonical_acc in unique_accs:
+        entry = cache.get(canonical_acc)
+        if entry is None:
+            continue
+        status = entry.get("status")
+        if status == "no_isoforms":
+            n_no_iso += 1
+            continue
+        if status == "error":
+            n_err += 1
+            continue
+        if status != "ok":
+            continue
+        cand = candidate_by_acc.get(canonical_acc)
+        if cand is None:
+            continue
+        sequences = entry.get("sequences") or {}
+        for isoform_acc_full, sequence in sequences.items():
+            # Defensive: skip empty + skip the canonical if it slipped in.
+            if not sequence or "-" not in isoform_acc_full:
+                continue
+            out.append(
+                IsoformSpec(
+                    canonical_acc=canonical_acc,
+                    isoform_acc_full=isoform_acc_full,
+                    gene_symbol=cand.cohort_symbol,
+                    hgnc_id=cand.hgnc_id,
+                    sequence=sequence,
+                )
+            )
+        n_ok += 1
+    logger.info(
+        "  isoform resolution summary: %d canonicals with isoforms, "
+        "%d with none, %d errored → %d total alt isoforms",
+        n_ok, n_no_iso, n_err, len(out),
+    )
+    return out
+
+
+def _write_isoform_fastas_to_cache(
+    specs: list[IsoformSpec],
+    *,
+    cache_dir: Path,
+) -> dict[str, Path]:
+    """Write each isoform's FASTA to ``cache_dir`` keyed by ``isoform_acc_full``.
+
+    Mirrors the canonical-FASTA cache pattern: skip if the file already exists
+    and is non-empty. Header uses the UniProt-style ``sp|ACC|ENTRY_NAME …``
+    layout so downstream parsers (``parse_3line``, ``assemble_batch_fasta``)
+    Just Work. Sequence is wrapped at 60 characters per FASTA convention.
+    """
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    out: dict[str, Path] = {}
+    for spec in specs:
+        path = cache_dir / f"{spec.isoform_acc_full}.fasta"
+        if path.exists() and path.stat().st_size > 0:
+            out[spec.isoform_acc_full] = path
+            continue
+        header = (
+            f">sp|{spec.isoform_acc_full}|{spec.gene_symbol}_HUMAN "
+            "isoform fetched from UniProt"
+        )
+        seq = spec.sequence.strip().upper()
+        wrapped = "\n".join(seq[i : i + 60] for i in range(0, len(seq), 60))
+        path.write_text(header + "\n" + wrapped + "\n", encoding="utf-8")
+        out[spec.isoform_acc_full] = path
+    return out
 
 
 def _existing_canonical_predictions() -> set[str]:
@@ -1484,7 +1757,9 @@ def main() -> int:
     # cohort_accessions[cohort] is the list of UniProt accessions to feed to
     # DeepTMHMM for that cohort. Built differently per cohort source:
     #   * human_canonical → candidate set's resolved uniprot_acc
-    #   * human_isoforms → existing legacy .3line set (M1 cohort)
+    #   * human_isoforms → UniProt search?includeIsoform=true per candidate,
+    #     keyed on isoform_acc_full (P12931-2). Skips canonicals (already in
+    #     human_canonical) and already-predicted accs via the legacy .3line.
     #   * mouse/cyno_ortholog → compara_ortholog (D1) + UniProt-by-Ensembl resolution
     cohort_accessions: dict[str, list[str]] = {}
     # ortholog_human_hgnc_by_acc[cohort][ortholog_uniprot_acc] = human_hgnc_id.
@@ -1498,11 +1773,24 @@ def main() -> int:
     if "human_canonical" in cohorts:
         cohort_accessions["human_canonical"] = [c.uniprot_acc for c in candidates]
     if "human_isoforms" in cohorts:
-        # For v1 we use the existing human_isoforms cohort FASTA inputs
-        # already produced under data/external/deeptmhmm_surfaceome_predictions/
-        # human_isoforms_from_afdb_non_hla/. Resolving fresh isoforms for
-        # arbitrary candidates is out of scope for this orchestrator.
-        cohort_accessions["human_isoforms"] = []
+        isoform_cache = REPO_ROOT / "data" / "external" / "isoform_resolution.jsonl"
+        isoform_specs = _resolve_isoforms_for_candidates(
+            candidates,
+            cache_path=isoform_cache,
+            max_workers=args.fetch_workers,
+        )
+        isoform_fasta_cache = SEQUENCE_CACHE_DIR / "isoforms"
+        isoform_fasta_paths = _write_isoform_fastas_to_cache(
+            isoform_specs, cache_dir=isoform_fasta_cache,
+        )
+        cohort_accessions["human_isoforms"] = sorted(isoform_fasta_paths)
+        logger.info(
+            "  human_isoforms: resolved %d alt isoforms across %d candidates",
+            len(isoform_specs),
+            len({s.canonical_acc for s in isoform_specs}),
+        )
+    else:
+        isoform_fasta_paths = {}
 
     for ortholog_cohort in ("mouse_ortholog", "cyno_ortholog"):
         if ortholog_cohort not in cohorts:
@@ -1598,7 +1886,11 @@ def main() -> int:
         if legacy_3line.exists():
             try:
                 for rec in parse_3line(legacy_3line):
-                    already_predicted.add(rec["uniprot_accession"])
+                    # Store the FULL accession (e.g. P12931-2) so the isoforms
+                    # cohort's skip-check doesn't incorrectly elide P12931-2 just
+                    # because the base canonical P12931 is in the legacy .3line.
+                    # For canonical cohorts uniprot_accession_full == base acc.
+                    already_predicted.add(rec["uniprot_accession_full"])
             except Exception as exc:  # noqa: BLE001
                 logger.warning("could not pre-scan legacy .3line %s: %s", cohort, exc)
 
@@ -1606,9 +1898,10 @@ def main() -> int:
             target_fasta_paths = canonical_fasta_paths
         elif cohort in ortholog_fasta_paths_by_cohort:
             target_fasta_paths = ortholog_fasta_paths_by_cohort[cohort]
+        elif cohort == "human_isoforms":
+            target_fasta_paths = isoform_fasta_paths
         else:
-            # human_isoforms or an ortholog cohort with no resolved targets:
-            # legacy-only path.
+            # An ortholog cohort with no resolved targets: legacy-only path.
             target_fasta_paths = {}
 
         gap_fasta_paths = [
