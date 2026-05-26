@@ -1,0 +1,39 @@
+/*
+ * CommunityNotesCard — approved-only reader-submitted notes.
+ * Sits inside the project's standard <SectionCard> frame, so
+ * the section's outer padding/eyebrow/title styling comes from
+ * SectionCard.module.css. This file only styles the inner list.
+ */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--line);
+}
+
+.comment {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.byline {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
