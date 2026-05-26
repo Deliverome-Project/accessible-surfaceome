@@ -226,15 +226,12 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
             conf · {e.confidence}
           </StatusPill>
         ) : null}
-        {e.entailment_verified ? (
-          <StatusPill tone="success" size="sm">
-            entailment ✓
-          </StatusPill>
-        ) : warnings.length || e.entailment_audit_passed === false ? (
-          <StatusPill tone="amber" size="sm">
-            quote unverified
-          </StatusPill>
-        ) : null}
+        {/* entailment_verified / audit_passed / validation_warnings
+         *  chips removed per UX request — the substring check still
+         *  runs in the pipeline and the result lands on the record
+         *  for audit, but the reader-facing chip strip stays clean.
+         *  PMC ID recovery from validation_warnings (above) still
+         *  fires so entailment-failed claims still get a source link. */}
       </div>
       <h2 className={styles.title}>Agent&apos;s claim</h2>
       <p className={styles.claim}>{ev.claim}</p>
@@ -242,21 +239,6 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
         <>
           <h3 className={styles.subhead}>Verbatim quote</h3>
           <blockquote className={styles.quote}>{headSpan.quote}</blockquote>
-        </>
-      ) : warnings.length ? (
-        <>
-          <h3 className={styles.subhead}>Verbatim quote</h3>
-          <p className={styles.warningNote}>
-            The agent&apos;s quoted text could not be re-located in the source
-            after normalization, so the span was dropped by the entailment
-            auditor. The claim is shown above; the source paper is linked
-            below — verify against the source directly.
-          </p>
-          <ul className={styles.warningList}>
-            {warnings.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
         </>
       ) : null}
       {e.assay_context ? (

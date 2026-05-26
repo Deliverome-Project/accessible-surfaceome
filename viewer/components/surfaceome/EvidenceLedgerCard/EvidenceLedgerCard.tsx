@@ -106,11 +106,10 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
                     <StatusPill tone={tierTone(e.evidence_tier)} size="sm">
                       {prettyEnum(e.evidence_tier)}
                     </StatusPill>
-                    {e.entailment_verified ? (
-                      <StatusPill tone="success" size="sm">
-                        entailment ✓
-                      </StatusPill>
-                    ) : null}
+                    {/* entailment_verified chip removed per UX request —
+                     *  the pipeline still runs the substring check (and
+                     *  records the bool on the record for audit), it's
+                     *  just not surfaced as a reader-facing badge. */}
                   </div>
                   <p className={styles.claim}>{e.claim}</p>
                   {firstSpan ? (

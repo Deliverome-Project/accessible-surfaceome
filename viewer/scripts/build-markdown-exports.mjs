@@ -504,7 +504,7 @@ function md(rec, structureData, canonicalSequence) {
       }
     }
     lines.push(
-      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}*${ev.entailment_verified ? " · entailment ✓" : ""} — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
+      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}* — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
     );
     if (ev.spans?.[0]?.text) {
       lines.push(`  > "${ev.spans[0].text}"`);
