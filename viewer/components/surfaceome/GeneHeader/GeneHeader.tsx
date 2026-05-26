@@ -429,6 +429,7 @@ export function GeneHeader({
               // ortholog topology strings onto the SurfaceomeRecord.
               variants={rec.deterministic_features.isoform_topologies.map(
                 (iso) => ({
+                  source: "afdb" as const,
                   id: `iso-${iso.isoform_id}`,
                   label: _isoformLabel(iso.isoform_id),
                   sublabel: iso.isoform_id,

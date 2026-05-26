@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
@@ -32,30 +32,68 @@ export interface SurfaceBindAnchor {
 }
 
 /** A variant the user can switch to via the tab strip above the
- *  canvas. Each variant carries its own AFDB-fetchable accession +
- *  per-residue topology so the existing render pipeline (topology
- *  coloring, membrane slab, SURFACE-Bind overlay) just works. */
-export interface StructureVariant {
+ *  canvas. Either AFDB-fetchable (isoforms, orthologs) or an
+ *  experimental PDB resolved at runtime via PDBe + RCSB. */
+export type StructureVariant = StructureVariantAfdb | StructureVariantExperimental;
+
+interface StructureVariantBase {
   /** Stable key for the React tab list. */
   id: string;
   /** Reader-facing tab label, e.g. "Canonical", "Isoform 2", "Mouse
-   *  ortholog". */
+   *  ortholog", "Experimental". */
   label: string;
-  /** Optional secondary text rendered under the label (e.g. the
-   *  isoform UniProt acc or the ortholog symbol). */
+  /** Optional secondary text under the label (UniProt acc / PDB id). */
   sublabel?: string;
+  /** Per-residue DeepTMHMM topology string (canonical-UniProt-coord). */
+  topology: string;
+  deeptmhmm_type: StructureViewerData["deeptmhmm_type"];
+}
+
+export interface StructureVariantAfdb extends StructureVariantBase {
+  source: "afdb";
   /** UniProt accession to fetch from AFDB. Stripped of any isoform
    *  suffix because AFDB models the canonical-acc structure for the
    *  isoform fold too. */
   uniprot_acc: string;
-  /** Full UniProt acc including isoform suffix (e.g. "P00533-2") —
-   *  used in the SURFACE-Bind / display fields only, not URLs. */
+  /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
-  /** Per-residue DeepTMHMM topology string for THIS variant. May
-   *  differ from canonical for isoforms (alt splicing changes the
-   *  TM count) and for orthologs (species-specific topology). */
-  topology: string;
-  deeptmhmm_type: StructureViewerData["deeptmhmm_type"];
+}
+
+export interface StructureVariantExperimental extends StructureVariantBase {
+  source: "experimental";
+  /** PDBe pick — a `BestStructureCandidate` essentially. The viewer
+   *  fetches the PDB file from RCSB at click time and applies the
+   *  canonical DeepTMHMM topology coloring with the chain + offset
+   *  from this record. */
+  pdb_id: string;
+  chain_id: string;
+  /** PDBe's mapped UniProt residue range covered by this PDB chain. */
+  unp_start: number;
+  unp_end: number;
+  /** Corresponding PDB residue range. ``offset = pdb_start - unp_start``
+   *  translates DeepTMHMM (UniProt-coord) ranges to PDB residue numbers. */
+  pdb_start: number;
+  pdb_end: number;
+  /** Display-only metadata. */
+  experimental_method: string;
+  resolution: number | null;
+  coverage: number;
+}
+
+/** PDBe `best_structures` API response shape (one entry — the
+ *  endpoint returns an object keyed by UniProt acc with an array of
+ *  these). We only use a subset of fields; documented for grep-ability. */
+interface PDBeBestStructure {
+  pdb_id: string;
+  chain_id: string;
+  unp_start: number;
+  unp_end: number;
+  start: number;
+  end: number;
+  experimental_method: string;
+  resolution: number | null;
+  coverage: number;
+  tax_id?: number;
 }
 
 interface StructureViewerProps {
@@ -200,17 +238,94 @@ export function StructureViewer({
   // sequences once alternative splicing or species differences
   // shift positions.
   const [variantIdx, setVariantIdx] = useState<number>(0);
+  // PDBe `best_structures` lookup — fires on mount per gene. When a
+  // top experimental candidate is available, an extra "Experimental"
+  // variant is appended to the tabs at render time. Three states:
+  //   "loading" — request in flight
+  //   PDBeBestStructure — top candidate (we use index 0 of the array)
+  //   null — no candidate (gene has no PDB / PDBe API error / 404)
+  const [pdbeCandidate, setPdbeCandidate] = useState<
+    PDBeBestStructure | "loading" | null
+  >("loading");
+
+  useEffect(() => {
+    let cancelled = false;
+    async function fetchPDBe() {
+      try {
+        const r = await fetch(
+          `https://www.ebi.ac.uk/pdbe/api/mappings/best_structures/${data.uniprot_acc}`,
+          { cache: "force-cache" },
+        );
+        if (!r.ok) {
+          if (!cancelled) setPdbeCandidate(null);
+          return;
+        }
+        const j = (await r.json()) as Record<string, PDBeBestStructure[]>;
+        const candidates = j[data.uniprot_acc] ?? [];
+        // Top-ranked candidate first; PDBe orders by coverage +
+        // resolution. Filter to human (tax_id 9606) when present,
+        // else accept any candidate (some PDBe rows lack tax_id).
+        const human = candidates.find((c) => c.tax_id === 9606);
+        const top = human ?? candidates[0] ?? null;
+        if (!cancelled) setPdbeCandidate(top);
+      } catch {
+        if (!cancelled) setPdbeCandidate(null);
+      }
+    }
+    fetchPDBe();
+    return () => { cancelled = true; };
+  }, [data.uniprot_acc]);
+
+  // Effective variants = caller-provided (isoforms / orthologs) +
+  // experimental tab when PDBe has a hit. Experimental always lands
+  // after isoforms / orthologs in the tab strip.
+  const effectiveVariants: StructureVariant[] = useMemo(() => {
+    const v: StructureVariant[] = [...variants];
+    if (pdbeCandidate && pdbeCandidate !== "loading") {
+      v.push({
+        source: "experimental",
+        id: `exp-${pdbeCandidate.pdb_id}-${pdbeCandidate.chain_id}`,
+        label: "Experimental",
+        sublabel: `${pdbeCandidate.pdb_id.toUpperCase()} · ${pdbeCandidate.chain_id}`,
+        // Reuse canonical topology — DeepTMHMM coords are UniProt-
+        // keyed and PDBe gives us the offset to project them onto
+        // the PDB chain.
+        topology: data.topology,
+        deeptmhmm_type: data.deeptmhmm_type,
+        pdb_id: pdbeCandidate.pdb_id,
+        chain_id: pdbeCandidate.chain_id,
+        unp_start: pdbeCandidate.unp_start,
+        unp_end: pdbeCandidate.unp_end,
+        pdb_start: pdbeCandidate.start,
+        pdb_end: pdbeCandidate.end,
+        experimental_method: pdbeCandidate.experimental_method,
+        resolution: pdbeCandidate.resolution,
+        coverage: pdbeCandidate.coverage,
+      });
+    }
+    return v;
+  }, [variants, pdbeCandidate, data.topology, data.deeptmhmm_type]);
+
   const isCanonicalActive = variantIdx === 0;
   const activeVariant: StructureVariant | null = isCanonicalActive
     ? null
-    : variants[variantIdx - 1] ?? null;
-  // The (uniprot_acc, topology, deeptmhmm_type) tuple actually
-  // rendered. Falls back to canonical when the active variant is
-  // null / out-of-range so a buggy variants list can't crash render.
-  const activeUniprot = activeVariant?.uniprot_acc ?? data.uniprot_acc;
+    : effectiveVariants[variantIdx - 1] ?? null;
+  const isExperimentalActive = activeVariant?.source === "experimental";
+  // The uniprot_acc / topology / type used by the render pipeline.
+  // For experimental view, ``activeUniprot`` is unused (we fetch
+  // RCSB by pdb_id instead) — keep canonical for the aria-label.
+  const activeUniprot =
+    activeVariant && activeVariant.source === "afdb"
+      ? activeVariant.uniprot_acc
+      : data.uniprot_acc;
   const activeTopology = activeVariant?.topology ?? data.topology;
   const activeDeepTMHMMType =
     activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
+  // SURFACE-Bind anchor overlay only fires on canonical-AFDB view:
+  // (1) anchor residue numbers are canonical-UniProt-keyed, don't
+  // translate to isoforms or orthologs; (2) on experimental tabs
+  // the chain is restricted + residues may be missing from the
+  // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
 
   const renderViewer = useCallback(async () => {
@@ -224,59 +339,80 @@ export function StructureViewer({
       type Mod3D = typeof import("3dmol");
       const Mod = (await import("3dmol")) as Mod3D & { default?: Mod3D };
       const $3Dmol: Mod3D = Mod.default ?? Mod;
-      // 1) Prefer the build-time-baked pdbUrl. Falls back to the
-      //    legacy v4 URL if the build script couldn't enrich this
-      //    entry (offline build, AFDB unreachable, etc.).
-      // For canonical view, use the build-baked pdbUrl if present
-      // (saves an AFDB API hop). For variants we always go through
-      // the AFDB URL helper since we don't bake per-variant URLs.
-      let pdbUrl =
-        isCanonicalActive
-          ? (data.pdb_url ?? alphafoldPdbUrl(activeUniprot))
-          : alphafoldPdbUrl(activeUniprot);
-
-      // 2) Try the URL with aggressive HTTP caching — AlphaFold PDBs
-      //    are immutable per version, so force-cache is safe and
-      //    makes repeat visits free.
-      let pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
-
-      // 3) On 404 specifically, AFDB has bumped the version since the
-      //    last build (observed: O95800 went v4→v6 in 2025-08, with
-      //    v1–v5 removed from the file server). Re-query the
-      //    prediction API once for the current pdbUrl and retry.
-      //    Other errors propagate — no double-latency on hopeless
-      //    paths (CORS, 500, timeout).
-      if (pdbResp.status === 404) {
-        try {
-          const apiResp = await fetch(
-            alphafoldPredictionApiUrl(activeUniprot),
+      // Branch on AFDB vs experimental. AFDB fetches by UniProt acc
+      // through AFDB DB; experimental fetches by PDB id through RCSB
+      // and uses PDBe's chain + offset mapping to project canonical
+      // DeepTMHMM topology onto the (potentially partial, chain-
+      // restricted) PDB residue numbering.
+      let rawPdb: string;
+      const expVariant = isExperimentalActive
+        ? (activeVariant as StructureVariantExperimental)
+        : null;
+      if (expVariant) {
+        // RCSB returns the PDB file directly. Aggressive caching is
+        // fine — PDB entries are immutable per release.
+        const rcsbUrl = `https://files.rcsb.org/download/${expVariant.pdb_id}.pdb`;
+        const resp = await fetch(rcsbUrl, { cache: "force-cache" });
+        if (!resp.ok) {
+          throw new Error(
+            `RCSB returned ${resp.status} for ${expVariant.pdb_id}`,
           );
-          if (apiResp.ok) {
-            const entries =
-              (await apiResp.json()) as AlphafoldPredictionEntry[];
-            if (entries[0]?.pdbUrl) {
-              pdbUrl = entries[0].pdbUrl;
-              pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
-            }
-          }
-        } catch {
-          // Fall through to the status check below.
         }
-      }
-      if (!pdbResp.ok) {
-        throw new Error(
-          `AlphaFold DB returned ${pdbResp.status} for ${activeUniprot}`,
-        );
-      }
-      const rawPdb = await pdbResp.text();
+        rawPdb = await resp.text();
+      } else {
+        // 1) Prefer the build-time-baked pdbUrl. Falls back to the
+        //    legacy v4 URL if the build script couldn't enrich this
+        //    entry (offline build, AFDB unreachable, etc.).
+        // For canonical view, use the build-baked pdbUrl if present
+        // (saves an AFDB API hop). For AFDB variants we always go
+        // through the AFDB URL helper since we don't bake per-variant
+        // URLs.
+        let pdbUrl =
+          isCanonicalActive
+            ? (data.pdb_url ?? alphafoldPdbUrl(activeUniprot))
+            : alphafoldPdbUrl(activeUniprot);
 
-      // Rotate the PDB so the membrane plane is horizontal,
-      // extracellular side up. Ported from the deliverome-internal
-      // structure-site viewer; uses DeepTMHMM's per-residue
-      // topology to find the M/O/I centroids, then rotates I→O onto
-      // +Y. Falls back to the raw PDB when topology is too sparse
-      // (small ECDs / soluble proteins).
-      const { pdbText, membrane } = orientPdbForTopology(rawPdb, activeTopology);
+        let pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
+
+        // On 404 specifically, AFDB has bumped the version since the
+        // last build (observed: O95800 went v4→v6 in 2025-08, with
+        // v1–v5 removed from the file server). Re-query the
+        // prediction API once for the current pdbUrl and retry.
+        if (pdbResp.status === 404) {
+          try {
+            const apiResp = await fetch(
+              alphafoldPredictionApiUrl(activeUniprot),
+            );
+            if (apiResp.ok) {
+              const entries =
+                (await apiResp.json()) as AlphafoldPredictionEntry[];
+              if (entries[0]?.pdbUrl) {
+                pdbUrl = entries[0].pdbUrl;
+                pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
+              }
+            }
+          } catch {
+            // Fall through to the status check below.
+          }
+        }
+        if (!pdbResp.ok) {
+          throw new Error(
+            `AlphaFold DB returned ${pdbResp.status} for ${activeUniprot}`,
+          );
+        }
+        rawPdb = await pdbResp.text();
+      }
+
+      // For AFDB models we orient the PDB to put the membrane
+      // horizontal + extracellular up. Experimental PDBs are not
+      // re-oriented: (1) they're chain-restricted and the centroid
+      // computation would be skewed by partial coverage; (2) PDB
+      // structures often only contain one domain (e.g. an ECD-only
+      // crystal), so there's no membrane plane to orient against.
+      // 3dmol auto-frames the unoriented coords cleanly.
+      const { pdbText, membrane } = expVariant
+        ? { pdbText: rawPdb, membrane: null }
+        : orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -288,19 +424,40 @@ export function StructureViewer({
         // ---- topology mode (default): color cartoon by DeepTMHMM ----
         // Default cartoon style for any residue without explicit topology
         // (shouldn't normally happen — DeepTMHMM covers the full sequence).
-        viewer.setStyle({}, { cartoon: { color: TOPOLOGY_COLORS.B } });
+        // For experimental, restrict the default style to the mapped
+        // chain so non-mapped chains (e.g. an antibody Fab co-crystal)
+        // stay in default gray.
+        const baseSel = expVariant ? { chain: expVariant.chain_id } : {};
+        viewer.setStyle(baseSel, { cartoon: { color: TOPOLOGY_COLORS.B } });
         // For canonical, use the pre-computed `topology_ranges` from
-        // the build-time JSON. For a variant, compute ranges on the
-        // fly from its per-residue topology string (the variant
-        // doesn't carry pre-computed ranges).
+        // the build-time JSON. For an AFDB variant, compute ranges
+        // on the fly. For experimental, project the canonical
+        // ranges onto PDB residue numbers via the PDBe offset.
         const ranges = isCanonicalActive
           ? data.topology_ranges
           : _computeTopologyRanges(activeTopology);
+        // Experimental projection: pdb_resi = unp_resi - unp_start + pdb_start
+        // Drop any portion of a range that falls outside the PDBe-
+        // mapped UniProt window (those residues just aren't in the
+        // crystal).
+        const offset = expVariant
+          ? expVariant.pdb_start - expVariant.unp_start
+          : 0;
+        const unpLo = expVariant?.unp_start ?? -Infinity;
+        const unpHi = expVariant?.unp_end ?? Infinity;
         (["M", "O", "I", "S", "B"] as const).forEach((state) => {
           const color = TOPOLOGY_COLORS[state];
           (ranges[state] ?? []).forEach(([start, end]) => {
+            // Clip the UniProt range to the PDBe-mapped window.
+            const a = Math.max(start, unpLo);
+            const b = Math.min(end, unpHi);
+            if (b < a) return;
+            const pdbA = a + offset;
+            const pdbB = b + offset;
+            const sel: Record<string, unknown> = { resi: `${pdbA}-${pdbB}` };
+            if (expVariant) sel.chain = expVariant.chain_id;
             viewer.setStyle(
-              { resi: `${start}-${end}` },
+              sel,
               { cartoon: { color }, line: { color, linewidth: 1.2 } },
             );
           });
@@ -488,7 +645,7 @@ export function StructureViewer({
           model + per-residue topology is rendered; SURFACE-Bind
           overlay hides on non-canonical tabs (anchor residue numbers
           are canonical-keyed and don't translate cleanly). */}
-      {variants.length > 0 ? (
+      {effectiveVariants.length > 0 ? (
         <div
           className={styles.variantTabs}
           role="tablist"
@@ -506,7 +663,7 @@ export function StructureViewer({
             <span className={styles.variantTabLabel}>Canonical</span>
             <span className={styles.variantTabSub}>{data.uniprot_acc}</span>
           </button>
-          {variants.map((v, i) => {
+          {effectiveVariants.map((v, i) => {
             const isActive = variantIdx === i + 1;
             return (
               <button
