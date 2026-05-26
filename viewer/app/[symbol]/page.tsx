@@ -37,7 +37,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { symbol } = await params;
-  const rec = loadSurfaceomeRecord(symbol);
+  const rec = await loadSurfaceomeRecord(symbol);
   if (!rec) {
     return {
       title: `${symbol} — record not found`,
@@ -52,7 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function GenePage({ params }: PageProps) {
   const { symbol } = await params;
-  const rec = loadSurfaceomeRecord(symbol);
+  const rec = await loadSurfaceomeRecord(symbol);
   if (!rec) notFound();
   const geneName = loadGeneName(rec.gene.hgnc_symbol);
   const structureData = loadStructureViewerData(rec.gene.uniprot_acc);

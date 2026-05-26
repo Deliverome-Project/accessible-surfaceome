@@ -1,17 +1,23 @@
 /*
  * Surfaceome data loader + label helpers.
  * ------------------------------------------------------------
- * Read per-gene `SurfaceomeRecord` JSONs at build time from
- * `site/public/data/surfaceome/*.json`. Reading from /public lets
- * the same files serve as the static-fetch endpoint at runtime
- * (`/data/surfaceome/{SYMBOL}.json`) while also being readable
- * via `fs` during `generateStaticParams` and server-rendered
- * page bodies.
+ * Per-gene `SurfaceomeRecord` data flows from the public Cloudflare
+ * Worker at `api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` —
+ * fetched at build time, baked into the static export via
+ * `cache: "force-cache"`. Same SSG lifecycle as the catalog: a
+ * re-deploy of the Worker surfaces in the viewer on the next
+ * `npm run build`, no per-page-load D1 hits in production.
  *
- * When the public Cloudflare Worker at
- * `api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` is live, the
- * loader can be swapped to `fetch()` against that URL — same
- * `SurfaceomeRecord` shape, just a different source.
+ * The committed `viewer/public/data/surfaceome/*.json` files act as
+ * an offline / Worker-down fallback: when the Worker fetch fails (or
+ * `SURFACEOME_API_BASE=local`), the loader falls back to
+ * `fs.readFileSync` against the committed snapshot. They also still
+ * drive which routes exist (`listSurfaceomeGenes` reads the directory
+ * to decide which gene pages `generateStaticParams` emits).
+ *
+ * Why both: dev / CI without network access still builds; production
+ * deploys always read the latest D1 mirror; staleness of the committed
+ * fallback no longer pins the production view.
  */
 
 import { readdirSync, readFileSync } from "node:fs";
@@ -500,7 +506,39 @@ export function listSurfaceomeGenes(): string[] {
     .sort();
 }
 
-export function loadSurfaceomeRecord(symbol: string): SurfaceomeRecord | null {
+/**
+ * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on
+ * any Worker error (network, 404, non-2xx, malformed JSON) so the
+ * caller can fall back to the committed fs snapshot. Uses
+ * `cache: "force-cache"` so each gene's record is fetched once per
+ * build and baked into the static export.
+ */
+async function _fetchRecordFromWorker(
+  symbol: string,
+  base: string,
+): Promise<SurfaceomeRecord | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${base}/v1/genes/${symbol}`, {
+      cache: "force-cache",
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as SurfaceomeRecord;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Offline / Worker-down fallback: read the committed JSON snapshot.
+ * Same files that drive `listSurfaceomeGenes` (which decides which
+ * routes `generateStaticParams` emits).
+ */
+function _loadRecordFromFs(symbol: string): SurfaceomeRecord | null {
   const file = path.join(DATA_DIR, `${symbol}.json`);
   try {
     const raw = readFileSync(file, "utf-8");
@@ -510,10 +548,40 @@ export function loadSurfaceomeRecord(symbol: string): SurfaceomeRecord | null {
   }
 }
 
-export function loadAllSurfaceomeRecords(): SurfaceomeRecord[] {
-  return listSurfaceomeGenes()
-    .map((sym) => loadSurfaceomeRecord(sym))
-    .filter((r): r is SurfaceomeRecord => r != null);
+/**
+ * Load one gene's full SurfaceomeRecord.
+ *
+ * Resolution order:
+ * 1. `SURFACEOME_API_BASE=local` (or unset to empty) → fs snapshot only,
+ *    skip the Worker. Used by the GitHub-Actions viewer-build smoke
+ *    whose IPs hit Cloudflare's WAF.
+ * 2. Otherwise → fetch the Worker, fall back to the committed fs
+ *    snapshot on any error.
+ *
+ * The Worker path serves the latest D1 mirror; the fs fallback keeps
+ * offline dev / CI working and provides a stale-but-readable copy when
+ * the Worker is unreachable.
+ */
+export async function loadSurfaceomeRecord(
+  symbol: string,
+): Promise<SurfaceomeRecord | null> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  if (base === "local" || !base) {
+    return _loadRecordFromFs(symbol);
+  }
+  const fromWorker = await _fetchRecordFromWorker(symbol, base);
+  if (fromWorker) return fromWorker;
+  return _loadRecordFromFs(symbol);
+}
+
+export async function loadAllSurfaceomeRecords(): Promise<SurfaceomeRecord[]> {
+  const symbols = listSurfaceomeGenes();
+  // Concurrent fetch — each gene hits the Worker independently;
+  // `cache: "force-cache"` dedups across the same build.
+  const records = await Promise.all(
+    symbols.map((sym) => loadSurfaceomeRecord(sym)),
+  );
+  return records.filter((r): r is SurfaceomeRecord => r != null);
 }
 
 // Pretty labels for v1.0.0 enums. Keys must stay in sync with the
