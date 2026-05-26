@@ -40,14 +40,24 @@
 
 .popover {
   position: absolute;
-  z-index: 50;
+  /* Very high z-index — the bone-themed pages have several stacking
+   * contexts (sticky tab strip at z=30, modals at z=80, etc.) and
+   * the popover needs to sit above the in-page content underneath
+   * it (the §Confidence prose, for example) so the reader doesn't
+   * see text bleed through. */
+  z-index: 100;
   top: calc(100% + 0.45rem);
   left: 50%;
   transform: translateX(-50%);
   max-width: min(28em, 90vw);
   min-width: 16em;
   padding: var(--space-3) var(--space-4);
-  background: var(--bg-soft);
+  /* Fully opaque background — `--bg-soft` resolves to `#ffffff` but
+   * setting it explicitly via the hex value too removes any chance
+   * of an inherited `--bg-soft` override (e.g. a card layer) making
+   * the popover translucent. The reader reading the prose
+   * underneath the popover would be confused either way. */
+  background-color: #ffffff;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   box-shadow: var(--shadow-md);

@@ -94,6 +94,19 @@ function gradeTone(value: string) {
   return "neutral" as const;
 }
 
+/** Convert the derived `TriageSignal` enum back to the original
+ *  triage verdict the agent actually emitted. The signal is a 1:1
+ *  rename of `TriageVerdict` (yes | contextual | no), so the
+ *  inversion is mechanical. Rendering the verdict instead of the
+ *  signal matches what the synthesizer's prose quotes (e.g. SRC's
+ *  confidence_reasoning: "Triage called verdict='no', …"). */
+function triageVerdictLabel(signal: string): string {
+  if (signal === "likely_accessible") return "Yes";
+  if (signal === "possibly_accessible") return "Contextual";
+  if (signal === "unlikely") return "No";
+  return "Unknown";
+}
+
 /** Compare the Sonnet triage prior to the deep-dive surface verdict.
  *
  * Returns one of:
@@ -287,7 +300,7 @@ export function GeneHeader({
                   <InfoTip>{tooltips.triage_signal}</InfoTip>
                 </span>
                 <span className={styles.triageValue}>
-                  {prettyEnum(rec.triage_signal)}
+                  {triageVerdictLabel(rec.triage_signal)}
                 </span>
                 <span className={styles.triageQualifier}>
                   initial pass · no web search
