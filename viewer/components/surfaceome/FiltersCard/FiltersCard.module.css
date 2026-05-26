@@ -80,3 +80,13 @@
 .pills li {
   display: inline-flex;
 }
+
+/* Pill paired with an inline InfoTip — sits tightly together inside
+ * the same flex cell of the .pills row. Used today for pills whose
+ * native `title=` tooltip got promoted to the popover system (e.g.
+ * the co-receptor pill). */
+.pillWithInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+}

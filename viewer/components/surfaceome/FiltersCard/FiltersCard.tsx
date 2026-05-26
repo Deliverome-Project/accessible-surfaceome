@@ -1,5 +1,7 @@
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { tooltips } from "../../../lib/tooltips";
+import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./FiltersCard.module.css";
@@ -431,15 +433,20 @@ export function FiltersCard({ rec, n }: Props) {
         // (required / modulatory / none / unknown) replaces the
         // binary requires_coreceptor_for_expression chip here —
         // the bool collapsed "modulatory" into False, losing a
-        // real signal the catalog filter needs.
-        <StatusPill
-          key="coreceptor"
-          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
-          size="sm"
-          title={TT_CO_RECEPTOR}
-        >
-          co-receptor · {prettyEnum(f.co_receptor_dependency)}
-        </StatusPill>,
+        // real signal the catalog filter needs. Provenance lives
+        // in the inline <InfoTip> next to the pill (replaces the
+        // native `title=` tooltip, which felt "fleeting" on hover).
+        <span key="coreceptor" className={styles.pillWithInfo}>
+          <StatusPill
+            tone={coReceptorDependencyTone(f.co_receptor_dependency)}
+            size="sm"
+          >
+            co-receptor · {prettyEnum(f.co_receptor_dependency)}
+          </StatusPill>
+          <InfoTip label="About co-receptor dependency">
+            {tooltips.co_receptor_dependency}
+          </InfoTip>
+        </span>,
         riskBoolPill("epitope masking", f.has_epitope_masking),
         riskBoolPill("restricted subdomain", f.has_restricted_subdomain),
       ],
