@@ -552,31 +552,28 @@ export function StructureViewer({
           </div>
         ) : null}
         {/* Inlaid reset symbol — small icon button in the canvas's
-            bottom-right corner. Replaces the previous full-width
-            "Reset view" text button so the controls row is just the
-            mode toggle. Unicode ↺ ("anticlockwise open circle arrow")
-            reads as "reset" across operating systems without a custom
-            SVG. Only rendered once the viewer is ready — no point
-            offering reset while it's still loading / errored. */}
-        {status === "ready" ? (
-          <button
-            type="button"
-            className={styles.resetSymbol}
-            onClick={() => {
-              try {
-                viewerRef.current?.zoomTo({});
-                viewerRef.current?.render();
-              } catch {
-                // 3Dmol can throw on race against teardown / re-render
-                // — swallow; next render call will settle.
-              }
-            }}
-            title="Reset 3D view (re-center + re-zoom)"
-            aria-label="Reset 3D view"
-          >
-            ↺
-          </button>
-        ) : null}
+            bottom-right corner. Always rendered (no status gate) so
+            it's visible immediately on SSR and stays visible even if
+            3dmol takes a moment to mount. The onClick handler
+            tries/catches the zoomTo call so a click before 3dmol is
+            ready is a no-op rather than an exception. */}
+        <button
+          type="button"
+          className={styles.resetSymbol}
+          onClick={() => {
+            try {
+              viewerRef.current?.zoomTo({});
+              viewerRef.current?.render();
+            } catch {
+              // 3Dmol can throw on race against teardown / not-yet-ready
+              // — swallow; next render call will settle.
+            }
+          }}
+          title="Reset 3D view (re-center + re-zoom)"
+          aria-label="Reset 3D view"
+        >
+          ↺
+        </button>
       </div>
       {/* Controls row — mode toggle + SURFACE-Bind external link.
           Reset is the inlaid ↺ symbol inside the canvas (above), no

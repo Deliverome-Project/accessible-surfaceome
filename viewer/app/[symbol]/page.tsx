@@ -100,24 +100,28 @@ export default async function GenePage({ params }: PageProps) {
       label: "Biology",
       render: (n) => <BiologicalContextCard rec={rec} n={n} />,
     },
-    // Topology + evolution consolidated tab — was four separate
-    // tabs (Isoforms / Paralogs / Orthologs + the topology bits
-    // inside Isoforms). One render fn stacks all four cards
-    // inside the single tab so a reader can scan the structural
-    // and evolutionary context for a gene in one place.
-    // Numbering: all four cards get the same parent `n` since
-    // they share a tab; the SectionCard eyebrow on each child
-    // disambiguates them visually.
+    // Topology / evolutionary context — three separate tabs again.
+    // We briefly tried a single consolidated "Topology & evolution"
+    // tab, but the AnchorNav doesn't surface what's inside a
+    // consolidated tab, so genes with empty isoform / paralog
+    // sections silently disappeared from the reader's eye. Separate
+    // tabs each carry their own eyebrow + show their own empty
+    // state, so the reader can spot e.g. "0 paralogs in Compara"
+    // at a glance without clicking into a stacked tab.
     {
-      kind: "topology",
-      label: "Topology & evolution",
-      render: (n) => (
-        <>
-          <IsoformsCard rec={rec} n={n} />
-          <ParalogsCard rec={rec} n={n} />
-          <OrthologsCard rec={rec} n={n} />
-        </>
-      ),
+      kind: "isoforms",
+      label: "Isoforms",
+      render: (n) => <IsoformsCard rec={rec} n={n} />,
+    },
+    {
+      kind: "paralogs",
+      label: "Paralogs",
+      render: (n) => <ParalogsCard rec={rec} n={n} />,
+    },
+    {
+      kind: "orthologs",
+      label: "Orthologs",
+      render: (n) => <OrthologsCard rec={rec} n={n} />,
     },
     // SurfaceBindCard renders ``null`` when the protein isn't in
     // SURFACE-Bind's authoritative table. Filter the section out
