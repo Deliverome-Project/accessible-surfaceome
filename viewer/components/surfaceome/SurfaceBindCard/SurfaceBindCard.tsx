@@ -31,12 +31,15 @@ function compartmentAt(topology: string, residue: number): Compartment {
   return "unknown";
 }
 
-/** Pill tone per compartment. EC = targetable (success / green);
- *  IC = not antibody-accessible (amber); membrane / signal /
+/** Pill tone per compartment — mirrors ``COMPARTMENT_COLOR`` in
+ *  ``viewer/components/surfaceome/StructureViewerCard/StructureViewer.tsx``
+ *  so the 3D sphere color and the table pill match per site.
+ *  Per user preference: EC = red ("look here / focus"), IC = green
+ *  (safely tucked away inside the cell); membrane / signal /
  *  unknown = neutral. */
-function compartmentTone(c: Compartment): "success" | "amber" | "neutral" {
-  if (c === "extracellular") return "success";
-  if (c === "intracellular") return "amber";
+function compartmentTone(c: Compartment): "danger" | "success" | "neutral" {
+  if (c === "extracellular") return "danger";
+  if (c === "intracellular") return "success";
   return "neutral";
 }
 
@@ -148,7 +151,7 @@ export function SurfaceBindCard({ rec, n }: Props) {
         Each row is one MaSIF-scored surface patch. The numbered
         purple spheres on the 3D structure above mark each site's
         anchor residue (use "Sites focus" mode on the viewer to
-        color the spheres by compartment — green EC / amber IC).
+        color the spheres by compartment — red EC / green IC).
         Anchor = patch center residue (SURFACE-Bind doesn't publish
         the full per-patch residue list, only the anchor). BSA tone
         follows the typical antibody-antigen interface band (1,103

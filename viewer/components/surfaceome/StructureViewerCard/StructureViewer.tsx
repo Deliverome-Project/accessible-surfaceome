@@ -294,13 +294,18 @@ export function StructureViewer({
       // orientation transform already pinned the bilayer normal to
       // +Y and centered the TM mean at Y=0, so the slab is just an
       // axis-aligned box spanning [yMin, yMax] in the oriented frame.
-      // The slab's XZ extent now comes from the TM bundle's own
-      // bounding box (not the full protein's) — see structure-
-      // orientation.ts for the rationale. Use the new xCenter /
-      // zCenter so the slab tracks the TM helix when the ECD pulls
-      // the protein's overall center off the membrane axis.
-      // In sites mode the slab is more opaque (a real membrane band)
-      // so EC vs IC reads as the dominant spatial cue.
+      // The slab's XZ extent comes from the TM bundle's own bounding
+      // box (not the full protein's) — see structure-orientation.ts
+      // for the rationale. Use xCenter / zCenter so the slab tracks
+      // the TM helix when the ECD pulls the protein's overall center
+      // off the membrane axis.
+      //
+      // Opacity is the same MEMBRANE_OPACITY in both modes — the
+      // earlier sites-mode bump-up made the membrane fight the sphere
+      // colors for visual attention. The red EC / green IC sphere
+      // colors now carry the spatial orientation cue on their own
+      // (no need for the floating "Extracellular ↑" / "Intracellular ↓"
+      // text labels that used to sit above and below the slab).
       if (membrane) {
         viewer.addBox({
           corner: {
@@ -314,44 +319,9 @@ export function StructureViewer({
             d: membrane.zExtent * 2,
           },
           color: MEMBRANE_COLOR,
-          opacity: viewMode === "sites" ? 0.55 : MEMBRANE_OPACITY,
+          opacity: MEMBRANE_OPACITY,
           wireframe: false,
         });
-
-        // Sites mode: render explicit "Extracellular" / "Intracellular"
-        // text labels floating above + below the slab so the reader
-        // sees the orientation without having to guess from topology
-        // coloring (which is muted in this mode).
-        if (viewMode === "sites" && typeof viewerExt.addLabel === "function") {
-          const slabMid = (membrane.yMin + membrane.yMax) / 2;
-          const slabHalf = (membrane.yMax - membrane.yMin) / 2;
-          viewerExt.addLabel("Extracellular ↑", {
-            position: {
-              x: membrane.xCenter,
-              y: slabMid + slabHalf + 18,
-              z: membrane.zCenter,
-            },
-            backgroundColor: "#2E7D7D",
-            backgroundOpacity: 0.85,
-            fontColor: "white",
-            fontSize: 13,
-            borderThickness: 0,
-            inFront: true,
-          });
-          viewerExt.addLabel("Intracellular ↓", {
-            position: {
-              x: membrane.xCenter,
-              y: slabMid - slabHalf - 18,
-              z: membrane.zCenter,
-            },
-            backgroundColor: "#5C3B9B",
-            backgroundOpacity: 0.85,
-            fontColor: "white",
-            fontSize: 13,
-            borderThickness: 0,
-            inFront: true,
-          });
-        }
       }
 
       viewer.render();
@@ -467,7 +437,7 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "sites"}
               onClick={() => setViewMode("sites")}
-              title="Wash out the cartoon and color each SURFACE-Bind site by compartment: green = extracellular (antibody-accessible), amber = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Same sphere size as topology mode so the spatial relationships don't shift."
+              title="Wash out the cartoon and color each SURFACE-Bind site by compartment: red = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Same sphere size as topology mode so the spatial relationships don't shift."
             >
               Sites focus
             </button>
