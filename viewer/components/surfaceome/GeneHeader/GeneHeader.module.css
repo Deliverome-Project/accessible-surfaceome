@@ -175,6 +175,18 @@
   color: var(--muted);
 }
 
+/* idsRow — flex container that pairs the IDs strip with the prominent
+   Submit-feedback CTA on the same baseline. Wide viewports show them
+   inline; on narrow viewports the CTA wraps onto its own line under
+   the IDs. */
+.idsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
 /* External-ID row — compact strip immediately under the descriptive
    gene name. Was a multi-line label-stacked-on-value list with
    ~0.95rem font; now a single inline row with smaller mono text

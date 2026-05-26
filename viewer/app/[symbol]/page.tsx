@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { SectionTabs } from "../../components/SectionTabs/SectionTabs";
-import { FeedbackButton } from "../../components/FeedbackButton/FeedbackButton";
 import { FeedbackModal } from "../../components/FeedbackModal/FeedbackModal";
 import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
@@ -200,7 +199,6 @@ export default async function GenePage({ params }: PageProps) {
             >
               Markdown (full) ↗
             </a>
-            <FeedbackButton gene={rec.gene.hgnc_symbol} uniprotAcc={rec.gene.uniprot_acc} />
           </span>
         </nav>
 

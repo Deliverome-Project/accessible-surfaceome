@@ -3,6 +3,7 @@ import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
+import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
@@ -184,21 +185,33 @@ export function GeneHeader({
               name. Was previously placed below the exec lede + headline
               risks; promoted here per user feedback so the external
               identifiers are visually attached to the gene-name strip. */}
-          <ul className={styles.ids} aria-label="External identifiers">
-            {ids.map((id) => (
-              <li key={id.label} className={styles.idItem}>
-                <a
-                  className={styles.idLink}
-                  href={id.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <span className={`label-mono ${styles.idLabel}`}>{id.label}</span>
-                  <span className={styles.idValue}>{id.value}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          {/* IDs row + Submit-feedback CTA. The button sits inline at
+              the end of the identifier strip so the call-to-action is
+              visually attached to the IDs rather than floating
+              elsewhere on the page; on narrow viewports the flex wrap
+              puts it on its own line under the IDs. */}
+          <div className={styles.idsRow}>
+            <ul className={styles.ids} aria-label="External identifiers">
+              {ids.map((id) => (
+                <li key={id.label} className={styles.idItem}>
+                  <a
+                    className={styles.idLink}
+                    href={id.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <span className={`label-mono ${styles.idLabel}`}>{id.label}</span>
+                    <span className={styles.idValue}>{id.value}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+            <FeedbackButton
+              gene={g.hgnc_symbol}
+              uniprotAcc={g.uniprot_acc}
+              variant="standalone"
+            />
+          </div>
 
           {/* DB-membership strip — was a full §section card; promoted
               to an inline strip immediately above the exec summary

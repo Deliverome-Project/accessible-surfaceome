@@ -1,29 +1,32 @@
 /*
  * FeedbackButton — two variants:
- *   .crumb       — for the breadcrumb actions row; matches the
- *                  page_crumbAction styling (small, with underline
- *                  border + hover-accent color).
- *   .standalone  — for use outside the breadcrumb context (currently
- *                  unused but reserved for a footer-y placement).
+ *   .crumb       — small underlined-text style for inline use in the
+ *                  breadcrumb actions row (currently unused; the page
+ *                  uses `.standalone` next to the IDs row instead, but
+ *                  retained so the button can sit in the crumb row in
+ *                  the future without re-styling).
+ *   .standalone  — prominent filled accent button used next to the
+ *                  gene-page IDs row. Reads as a clear call-to-action.
  */
 
 .crumb,
 .standalone {
-  background: transparent;
-  border: 0;
-  padding: 0;
   font: inherit;
   cursor: pointer;
-  color: var(--muted);
   transition:
     color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out);
 }
 
 .crumb {
+  background: transparent;
+  border: 0;
+  padding: 0;
   font-size: 0.76rem;
   padding-bottom: 2px;
   border-bottom: 1px solid var(--line);
+  color: var(--muted);
 }
 
 .crumb:hover,
@@ -33,15 +36,32 @@
 }
 
 .standalone {
-  font-size: 0.9rem;
-  padding: 0.4rem 0.85rem;
-  border: 1px solid var(--line);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  padding: 0.45rem 1rem;
   border-radius: var(--radius-pill);
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--accent-on);
+  /* subtle warm-ink shadow so the pill sits forward against the bone
+   * background without feeling like a marketing CTA */
+  box-shadow: 0 1px 2px rgba(31, 23, 24, 0.06);
 }
 
 .standalone:hover,
 .standalone:focus-visible {
-  color: var(--ink);
-  background: var(--bg-soft);
-  border-color: var(--accent);
+  background: var(--accent-deep);
+  border-color: var(--accent-deep);
+  color: var(--accent-on);
+}
+
+.standalone::after {
+  content: "↗";
+  font-size: 0.85em;
+  line-height: 1;
+  opacity: 0.85;
 }
