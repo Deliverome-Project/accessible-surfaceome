@@ -26,24 +26,64 @@
   overflow: hidden;
 }
 
-.resetButton {
+/* Inlaid reset symbol — small circular button in the canvas's
+   bottom-right corner. Replaces the previous full-width "Reset view"
+   text button so the controls row doesn't have to make room for it.
+   Semi-transparent backdrop so the symbol reads against any cartoon
+   color underneath; goes solid on hover for a clear hit state. */
+.resetSymbol {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
   appearance: none;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink-soft, #555);
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    color var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    box-shadow var(--dur-fast, 0.15s) var(--ease-out, ease-out);
+}
+
+.resetSymbol:hover,
+.resetSymbol:focus-visible {
+  background: white;
+  color: var(--ink, #222);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* External-link icon next to the mode toggle — opens the SURFACE-Bind
+   per-protein entry page. Compact, same height as the toggle so the
+   row reads as a single control unit. */
+.externalLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.55rem;
   background: var(--surface-soft, #f6f1ef);
   color: var(--ink-soft, #555);
   border: 1px solid var(--line-soft, #e8d6d2);
   border-radius: 6px;
-  padding: 0.4rem 0.8rem;
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: inherit;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-decoration: none;
   transition:
     background var(--dur-fast, 0.15s) var(--ease-out, ease-out),
     color var(--dur-fast, 0.15s) var(--ease-out, ease-out);
 }
 
-.resetButton:hover {
+.externalLink:hover,
+.externalLink:focus-visible {
   background: var(--surface, white);
   color: var(--ink, #222);
 }

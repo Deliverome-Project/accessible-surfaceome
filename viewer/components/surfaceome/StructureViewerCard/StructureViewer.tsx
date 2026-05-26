@@ -411,13 +411,41 @@ export function StructureViewer({
             </button>
           </div>
         ) : null}
+        {/* Inlaid reset symbol — small icon button in the canvas's
+            bottom-right corner. Replaces the previous full-width
+            "Reset view" text button so the controls row is just the
+            mode toggle. Unicode ↺ ("anticlockwise open circle arrow")
+            reads as "reset" across operating systems without a custom
+            SVG. Only rendered once the viewer is ready — no point
+            offering reset while it's still loading / errored. */}
+        {status === "ready" ? (
+          <button
+            type="button"
+            className={styles.resetSymbol}
+            onClick={() => {
+              try {
+                viewerRef.current?.zoomTo({});
+                viewerRef.current?.render();
+              } catch {
+                // 3Dmol can throw on race against teardown / re-render
+                // — swallow; next render call will settle.
+              }
+            }}
+            title="Reset 3D view (re-center + re-zoom)"
+            aria-label="Reset 3D view"
+          >
+            ↺
+          </button>
+        ) : null}
       </div>
-      <div className={styles.controls}>
-        {/* Mode toggle — only rendered when the gene has SURFACE-Bind
-            anchors to focus on; otherwise the "sites" mode would be
-            empty and meaningless. Two-button segment so the active
-            state reads at a glance. */}
-        {hasAnchors ? (
+      {/* Controls row — mode toggle + SURFACE-Bind external link.
+          Reset is the inlaid ↺ symbol inside the canvas (above), no
+          longer in this row. Only rendered when the gene has
+          SURFACE-Bind anchors; the link-out is suppressed too so we
+          don't promise the reader a SURFACE-Bind entry that has
+          nothing to show. */}
+      {hasAnchors ? (
+        <div className={styles.controls}>
           <div
             className={styles.modeToggle}
             role="group"
@@ -439,32 +467,24 @@ export function StructureViewer({
               onClick={() => setViewMode("sites")}
               title="Wash out the cartoon and color each SURFACE-Bind site by compartment: red = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Same sphere size as topology mode so the spatial relationships don't shift."
             >
-              Sites focus
+              SURFACE-Bind sites
             </button>
           </div>
-        ) : null}
-        {/* Reset view — re-centers and re-zooms the camera. After the
-            user has dragged / scrolled the model around, this restores
-            the initial framing without a full page reload. */}
-        <button
-          type="button"
-          className={styles.resetButton}
-          onClick={() => {
-            try {
-              viewerRef.current?.zoomTo({});
-              viewerRef.current?.render();
-            } catch {
-              // 3Dmol can throw on race against teardown / re-render
-              // (e.g. user clicks Reset right as a mode toggle is
-              // re-mounting). Swallow — the next render call will
-              // settle the camera.
-            }
-          }}
-          title="Reset the 3D camera to the initial view (re-center and re-zoom)."
-        >
-          Reset view
-        </button>
-      </div>
+          {/* Direct deep-link to the SURFACE-Bind entry page for this
+              UniProt — readers who want the full per-protein record
+              (binder PDB downloads, full MaSIF score table, etc.)
+              jump straight there from the toggle. */}
+          <a
+            href={`https://surface-bind.inria.fr/protein.html?uniprot=${data.uniprot_acc}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.externalLink}
+            title="Open the SURFACE-Bind entry for this protein (full binder PDB downloads, per-site MaSIF scores)"
+          >
+            ↗
+          </a>
+        </div>
+      ) : null}
     </div>
   );
 }
