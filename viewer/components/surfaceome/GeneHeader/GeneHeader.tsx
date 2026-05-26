@@ -3,6 +3,7 @@ import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
+import { ConfidenceReasoningDrawer } from "../ConfidenceReasoningDrawer/ConfidenceReasoningDrawer";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -401,27 +402,17 @@ export function GeneHeader({
                       <span className={styles.vitalSub}>
                         {counts.primary} primary · {counts.secondary} secondary
                       </span>
-                      {/* "reasoning" — inline expander below the
-                       *  confidence value. Uses the same `<details>` +
-                       *  `.summary` pattern as the Evidence ledger card
-                       *  (accent-colored cursor: pointer line, no
-                       *  background; toggles to show the synthesizer's
-                       *  user-facing prose). Hidden when reasoning is
-                       *  empty/whitespace — high-confidence calls
-                       *  typically don't populate the field per the
-                       *  synth prompt's "writing for the reader"
-                       *  guidance. */}
-                      {rec.confidence_reasoning &&
-                      rec.confidence_reasoning.trim().length > 0 ? (
-                        <details className={styles.reasoningDrawer}>
-                          <summary className={styles.reasoningSummary}>
-                            reasoning
-                          </summary>
-                          <p className={styles.reasoningBody}>
-                            {rec.confidence_reasoning}
-                          </p>
-                        </details>
-                      ) : null}
+                      {/* "reasoning" — slide-in side drawer below the
+                       *  confidence value, mirroring the BenchmarkTable
+                       *  `RationaleDrawer` pattern (right-side panel
+                       *  with × close + ESC + backdrop click-to-close).
+                       *  Self-hides when reasoning is empty so the
+                       *  trigger never appears for high-confidence
+                       *  calls. */}
+                      <ConfidenceReasoningDrawer
+                        reasoning={rec.confidence_reasoning ?? ""}
+                        confidenceLabel={prettyEnum(exec.confidence)}
+                      />
                     </dd>
                   </div>
 

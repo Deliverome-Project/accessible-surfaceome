@@ -329,41 +329,7 @@
   margin-right: 0.3rem;
 }
 
-/* Confidence reasoning drawer — inline `<details>` directly under
-   the confidence vital value. Mirrors the EvidenceLedgerCard
-   `.summary` pattern (accent-colored cursor: pointer line, no
-   background, no border, no triangle marker) so the drawer
-   reads as the same "click to expand" affordance used elsewhere
-   in the page. */
-.reasoningDrawer {
-  margin: var(--space-2) 0 0;
-}
-
-.reasoningSummary {
-  cursor: pointer;
-  font-family: var(--font-sans);
-  font-size: 0.85rem;
-  color: var(--accent);
-  list-style: none;
-  user-select: none;
-}
-
-.reasoningSummary::marker {
-  content: "";
-}
-
-.reasoningSummary::-webkit-details-marker {
-  display: none;
-}
-
-.reasoningSummary:hover {
-  color: var(--ink);
-}
-
-.reasoningBody {
-  margin: var(--space-2) 0 0;
-  font-size: 0.88rem;
-  line-height: var(--lh-body);
-  color: var(--ink-soft);
-  max-width: 70ch;
-}
+/* Confidence reasoning trigger + drawer styles moved into
+   ../ConfidenceReasoningDrawer/ConfidenceReasoningDrawer.module.css
+   as part of porting the inline `<details>` to the slide-in
+   side-panel pattern (matching BenchmarkTable's RationaleDrawer). */
