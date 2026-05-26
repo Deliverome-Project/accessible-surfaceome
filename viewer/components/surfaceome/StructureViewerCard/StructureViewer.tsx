@@ -12,6 +12,7 @@ import type {
   AlphafoldPredictionEntry,
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
+import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import styles from "./StructureViewerCard.module.css";
 
 /** Per-residue compartment, derived from the DeepTMHMM topology
@@ -135,6 +136,40 @@ const SPHERE_RADIUS = 3.2;
  *  orthologs) whose structure-viewer JSON doesn't pre-compute ranges
  *  — they only carry the per-residue string from D1. Canonical uses
  *  the pre-baked ``data.topology_ranges`` because it's the hot path. */
+/** Derive the present-states list for the topology legend so it
+ *  only shows colors that actually appear on the rendered cartoon.
+ *  Mirrors the helper in GeneHeader (previously the only caller). */
+function _presentTopologyStates(topology: string): string[] {
+  if (!topology) return [];
+  const seen = new Set<string>();
+  for (const ch of topology) seen.add(ch);
+  return ["M", "O", "I", "S", "B"].filter((s) => seen.has(s));
+}
+
+/** Derive the per-compartment swatch list for the sites-mode legend.
+ *  Only renders chips for compartments that actually appear in the
+ *  anchor list — a gene with 100% EC sites doesn't need an IC swatch. */
+function _presentSitesCompartments(
+  anchors: SurfaceBindAnchor[],
+): AnchorCompartment[] {
+  const seen = new Set<AnchorCompartment>();
+  for (const a of anchors) seen.add(a.compartment);
+  return (
+    ["extracellular", "intracellular", "membrane", "signal", "unknown"] as const
+  ).filter((c) => seen.has(c));
+}
+
+/** Human-readable label for each AnchorCompartment value. Mirrors
+ *  the SurfaceBindCard 'Side' column glyphs (EC / IC / TM / SP / ?)
+ *  with the longer reader-facing word. */
+const COMPARTMENT_LEGEND_LABEL: Record<AnchorCompartment, string> = {
+  extracellular: "Extracellular",
+  intracellular: "Intracellular",
+  membrane: "TM region",
+  signal: "Signal peptide",
+  unknown: "Unknown",
+};
+
 function _computeTopologyRanges(
   topology: string,
 ): Record<"M" | "O" | "I" | "S" | "B", [number, number][]> {
@@ -247,6 +282,19 @@ export function StructureViewer({
   const [pdbeCandidate, setPdbeCandidate] = useState<
     PDBeBestStructure | "loading" | null
   >("loading");
+
+  // SURFACE-Bind sphere overlay only makes sense on the canonical
+  // AFDB view — anchor residues are canonical-UniProt-keyed and
+  // don't translate to isoforms / orthologs / chain-restricted PDBs.
+  // If the user clicks an isoform / ortholog / experimental tab
+  // while in sites mode, the canvas would just show a gray cartoon
+  // with no spheres. Revert to topology mode automatically so the
+  // variant view is informative.
+  useEffect(() => {
+    if (variantIdx !== 0 && viewMode === "sites") {
+      setViewMode("topology");
+    }
+  }, [variantIdx, viewMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -420,8 +468,14 @@ export function StructureViewer({
       });
       viewer.addModel(pdbText, "pdb");
 
-      if (viewMode === "topology") {
-        // ---- topology mode (default): color cartoon by DeepTMHMM ----
+      // Topology coloring fires in BOTH modes — the membrane band +
+      // cartoon read identically across topology and sites-focus
+      // views (per user feedback: "the membrane on the surfacebind
+      // sites should look the same as the membrane on the topology
+      // version"). Sites mode just OVERLAYS the SURFACE-Bind anchor
+      // spheres on top of the same colored cartoon; it no longer
+      // washes the cartoon to pale gray.
+      {
         // Default cartoon style for any residue without explicit topology
         // (shouldn't normally happen — DeepTMHMM covers the full sequence).
         // For experimental, restrict the default style to the mapped
@@ -461,13 +515,6 @@ export function StructureViewer({
               { cartoon: { color }, line: { color, linewidth: 1.2 } },
             );
           });
-        });
-      } else {
-        // ---- sites mode: wash out cartoon so the spheres pop ----
-        // Pale gray cartoon at low opacity. Spheres get the screen
-        // real estate; the cartoon is just contextual silhouette.
-        viewer.setStyle({}, {
-          cartoon: { color: "#E5E7EB", opacity: 0.55 },
         });
       }
 
@@ -754,26 +801,46 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "sites"}
               onClick={() => setViewMode("sites")}
-              title="Wash out the cartoon and color each SURFACE-Bind site by compartment: red = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Same sphere size as topology mode so the spatial relationships don't shift."
+              title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: red = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
             >
               SURFACE-Bind sites
             </button>
           </div>
-          {/* Direct deep-link to the SURFACE-Bind entry page for this
-              UniProt — readers who want the full per-protein record
-              (binder PDB downloads, full MaSIF score table, etc.)
-              jump straight there from the toggle. */}
-          <a
-            href={`https://surface-bind.inria.fr/protein.html?uniprot=${data.uniprot_acc}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.externalLink}
-            title="Open the SURFACE-Bind entry for this protein (full binder PDB downloads, per-site MaSIF scores)"
-          >
-            ↗
-          </a>
+          {/* The previous ↗ deep-link to SURFACE-Bind was removed —
+              the §SURFACE-Bind card below already carries the
+              "SURFACE-Bind entry ↗" link in its footer; no need to
+              duplicate it next to the mode toggle. */}
         </div>
       ) : null}
+      {/* Legend — switches with viewMode. Topology mode shows the
+          DeepTMHMM M/O/I/S/B color key; sites mode shows the
+          per-compartment EC/IC/TM color key (matching the spheres
+          drawn on the cartoon). Moved here from GeneHeader so the
+          legend tracks the viewer's internal mode without lifting
+          state. */}
+      {viewMode === "sites" && hasAnchors ? (
+        <ul
+          className={styles.sitesLegend}
+          aria-label="SURFACE-Bind site compartment legend"
+        >
+          {_presentSitesCompartments(surfaceBindAnchors).map((c) => (
+            <li key={c} className={styles.sitesLegendItem}>
+              <span
+                className={styles.sitesLegendSwatch}
+                style={{ background: COMPARTMENT_COLOR[c] }}
+                aria-hidden="true"
+              />
+              <span className={styles.sitesLegendLabel}>
+                {COMPARTMENT_LEGEND_LABEL[c]}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <TopologyLegend
+          presentStates={_presentTopologyStates(activeTopology)}
+        />
+      )}
     </div>
   );
 }

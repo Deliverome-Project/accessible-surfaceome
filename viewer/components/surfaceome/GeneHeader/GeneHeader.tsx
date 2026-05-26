@@ -5,7 +5,6 @@ import { prettyEnum } from "../../../lib/surfaceome";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { StatusPill } from "../StatusPill/StatusPill";
-import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
 
@@ -34,13 +33,6 @@ function _inferDeepTMHMMType(
   if (hasM) return "TM";
   if (hasS) return "SP";
   return "GLOB";
-}
-
-function presentTopologyStates(topology: string): string[] {
-  if (!topology) return [];
-  const seen = new Set<string>();
-  for (const ch of topology) seen.add(ch);
-  return ["M", "O", "I", "S", "B"].filter((s) => seen.has(s));
 }
 
 interface GeneHeaderProps {
@@ -447,9 +439,10 @@ export function GeneHeader({
                 }),
               )}
             />
-            <TopologyLegend
-              presentStates={presentTopologyStates(structureData.topology)}
-            />
+            {/* Legend moved INSIDE <StructureViewer> so it can
+                switch between the M/O/I/S/B topology key and the
+                EC/IC/TM sites key based on the viewer's internal
+                viewMode state. */}
             {/* AFDB structure stats — moved up from the §9
                 StructureSummaryCard so the reader sees the pLDDT
                 confidence next to the model it qualifies. The `struct`

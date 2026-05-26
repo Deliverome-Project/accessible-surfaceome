@@ -3,6 +3,39 @@
   width: 100%;
 }
 
+/* SURFACE-Bind sites legend — mirrors the TopologyBar's legend
+   classes for visual consistency (same swatch size, same gap, same
+   label color) but uses round swatches (sphere = round) instead of
+   the topology bar's square ones. */
+.sitesLegend {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.sitesLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.sitesLegendSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.sitesLegendLabel {
+  white-space: nowrap;
+}
+
 /* Variant tab strip — only rendered when the gene has alternative
    isoforms or orthologs. Sits directly above the 3D canvas; clicking
    a tab swaps which AFDB model + topology is rendered. */
