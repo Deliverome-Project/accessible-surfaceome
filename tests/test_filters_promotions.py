@@ -288,3 +288,30 @@ def test_synth_prompt_explains_state_conditional_high_accessibility():
             "pick the highest accessibility across states",
         )
     )
+
+
+def test_synth_prompt_co_receptor_default_to_none_on_negative_rationale():
+    """The synth prompt must instruct the model to set
+    ``co_receptor_requirements.surface_expression_dependency=none`` when
+    the rationale explicitly states no co-receptor is needed — not the
+    safe-default ``unknown``. SRC's rerun showed the failure mode:
+    rationale said "no obligate co-receptor", synth still picked
+    ``unknown`` for the closed-enum field. The catalog filter for
+    monovalent-binder targets uses ``=none`` directly, so the
+    safe-default makes those targets invisible."""
+    body = SYNTH_SYSTEM_PROMPT_PATH.read_text().lower()
+    # Must instruct on the default
+    assert "surface_expression_dependency" in body
+    # Must mention the none-vs-unknown distinction
+    assert "none" in body and "unknown" in body
+    # And the principle: negative rationale → none, not unknown
+    assert any(
+        phrase in body
+        for phrase in (
+            "default-to-`none`",
+            "default to `none`",
+            "set `none`",
+            'set `surface_expression_dependency="none"`',
+            "not `unknown`",
+        )
+    )

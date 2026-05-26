@@ -88,6 +88,71 @@ function surfaceSpecificityTone(v: string): Tone {
 }
 
 /**
+ * State dependence — low is best (constitutive surface presence),
+ * high is worst (only-in-cancer / only-on-activation / only-in-stress
+ * conditionality). Mirror of executive_summary.state_dependence.
+ */
+function stateDependenceTone(v: string): Tone {
+  if (v === "low") return "success";
+  if (v === "moderate") return "warn";
+  if (v === "high") return "danger";
+  return "neutral";
+}
+
+/**
+ * Co-receptor dependency — "none" means the protein surfaces on its
+ * own (best for monovalent-binder programs); "modulatory" means a
+ * partner influences but doesn't gate surface presence; "required"
+ * means surface presence depends on a partner (worst for monovalent
+ * binders, may need bispecific or partner-aware design); "unknown"
+ * is the synth's default when the ledger is silent.
+ */
+function coReceptorDependencyTone(v: string): Tone {
+  if (v === "none") return "success";
+  if (v === "modulatory") return "warn";
+  if (v === "required") return "danger";
+  return "neutral";
+}
+
+/**
+ * Surface_call_reason — synth-derived reason, 19 values. We color by
+ * verdict-bucket: YES-bucket (canonical surface receptors etc) = success,
+ * CONTEXTUAL-bucket (state-gated mechanisms) = lavender, NO-bucket
+ * (cytoplasmic / nuclear / inner-leaflet etc) = danger when paired
+ * with a low / no accessibility call.
+ */
+const YES_BUCKET_REASONS = new Set([
+  "classical_surface_receptor",
+  "gpi_anchored",
+  "multipass_with_exposed_loops",
+  "extracellular_face_protein",
+  "stable_complex_partner",
+]);
+const CONTEXTUAL_BUCKET_REASONS = new Set([
+  "cell_state_induced",
+  "tissue_restricted_surface",
+  "lysosomal_exocytosis",
+  "dual_localization",
+  "stable_surface_attachment",
+]);
+const NO_BUCKET_REASONS = new Set([
+  "cytoplasmic",
+  "nuclear",
+  "mitochondrial_internal",
+  "endomembrane_resident",
+  "nuclear_envelope",
+  "inner_leaflet_anchored",
+  "secreted_only",
+  "pmhc_only_intracellular",
+]);
+function surfaceCallReasonTone(v: string): Tone {
+  if (YES_BUCKET_REASONS.has(v)) return "success";
+  if (CONTEXTUAL_BUCKET_REASONS.has(v)) return "lavender";
+  if (NO_BUCKET_REASONS.has(v)) return "danger";
+  return "neutral"; // 'other' or unrecognized
+}
+
+/**
  * Ortholog ECD identity tone — higher conservation is BETTER (mouse /
  * cyno literature can stand in for human evidence). Thresholds from PR
  * #23 design + ICH S6(R1) biologics-development practice.
@@ -224,6 +289,32 @@ const TT_TM_COUNT =
   "(single-pass T1 or T2), 7 (GPCR), other counts (multi-pass / " +
   "transporters / ion channels).";
 
+const TT_STATE_DEP =
+  "Synthesizer's call: low (constitutive surface presence), moderate " +
+  "(modestly state-gated — e.g. activation-dependent), high (only-in-" +
+  "cancer / only-on-stress / only-on-activation surface presence — SRC " +
+  "via cancer-state autophagolysosomal exocytosis is the canonical " +
+  "case), unclear. Conditionality flag that rides alongside " +
+  "surface_accessibility — a `high` accessibility call with " +
+  "`high` state_dependence means the targetable state exists but " +
+  "is state-gated.";
+
+const TT_CO_RECEPTOR =
+  "Co-receptor dependence of surface expression: none (protein " +
+  "surfaces on its own), modulatory (partner influences but doesn't " +
+  "gate surface presence), required (surface presence depends on a " +
+  "partner — bispecific / partner-aware design may be needed), " +
+  "unknown (ledger silent on partner interactions).";
+
+const TT_CALL_REASON =
+  "Synthesizer's reason for the surface call, re-derived from A1+A2 " +
+  "evidence (NOT inherited from the triage's first-pass call). 19 " +
+  "values across YES-bucket (canonical surface mechanisms), " +
+  "CONTEXTUAL-bucket (state-gated mechanisms — `lysosomal_exocytosis` " +
+  "etc), and NO-bucket (cytoplasmic / nuclear / inner-leaflet etc). " +
+  "SRC: synth-derived `lysosomal_exocytosis` overrides the triage's " +
+  "`inner_leaflet_anchored` baseline-state label.";
+
 // ---------------------------------------------------------------------------
 
 
@@ -252,6 +343,30 @@ export function FiltersCard({ rec, n }: Props) {
           title={TT_CONFIDENCE}
         >
           conf · {prettyEnum(f.confidence)}
+        </StatusPill>,
+        <StatusPill
+          key="state_dep"
+          tone={stateDependenceTone(f.state_dependence)}
+          size="sm"
+          title={TT_STATE_DEP}
+        >
+          state dep · {prettyEnum(f.state_dependence)}
+        </StatusPill>,
+        <StatusPill
+          key="reason"
+          tone={surfaceCallReasonTone(f.surface_call_reason)}
+          size="sm"
+          title={TT_CALL_REASON}
+        >
+          reason · {prettyEnum(f.surface_call_reason)}
+        </StatusPill>,
+        <StatusPill
+          key="coreceptor"
+          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
+          size="sm"
+          title={TT_CO_RECEPTOR}
+        >
+          co-receptor · {prettyEnum(f.co_receptor_dependency)}
         </StatusPill>,
         <StatusPill
           key="sub"

@@ -21,6 +21,19 @@ your task message; follow it. Four blocks:
   ledger shows nothing for a risk, set `present=false` with `severity="low"`
   (or `"unknown"` if ambiguous) and `evidence_strength="weak"` — never omit
   the sub-block.
+
+  **Default-to-`none`, not `unknown`, on negative co-receptor calls.**
+  `co_receptor_requirements.surface_expression_dependency` is a 4-value
+  enum: `required` / `modulatory` / `none` / `unknown`. The catalog
+  filter on this field is load-bearing — readers querying for
+  "monovalent-binder-compatible targets" want `none`; "unknown" is the
+  safe default but it makes those targets invisible to the filter.
+  When your `rationale` explicitly states no co-receptor is needed
+  (e.g. SRC: "SRC membrane anchoring is entirely myristoylation-driven;
+  no obligate co-receptor is required for membrane association"),
+  set `surface_expression_dependency="none"`, not `"unknown"`. Reserve
+  `"unknown"` for cases where the ledger has no co-receptor information
+  at all — not for cases where it has *negative* information.
 - `filters_llm` — three rollups only: `expression_level`,
   `expression_breadth`, `surface_specificity`. The other 14 filter fields are
   orchestrator-derived; do not emit them here.
