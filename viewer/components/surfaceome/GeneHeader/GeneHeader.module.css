@@ -243,19 +243,38 @@
   color: var(--ink-soft);
 }
 
+/* Row eyebrow — sits above each at-a-glance row to label its
+ * provenance. Two rows ship today: an LLM-driven row (the 2×2 vitals
+ * grid below) and a Deterministic row (tool-output strip further
+ * down). The eyebrow carries the same border-top + padding-top that
+ * the .vitals rule used to own — moving it here keeps the visual
+ * separator attached to its label rather than to the body. */
+.rowEyebrow {
+  margin: var(--space-4) 0 var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
 /* Vitals 2×2 grid — sits inside the text column directly below
    the executive summary paragraph. Was previously a 4-up row that
    spanned the full header width below the structure aside; tightened
    to 2×2 so the vitals stay attached to the lede paragraph and the
    reader can scan all four signals without scrolling past the 3D
-   viewer column. */
+   viewer column. Border-top + spacing now lives on the .rowEyebrow
+   above this dl — keeps each row's "LLM-DRIVEN" / "DETERMINISTIC"
+   provenance label visually attached to its separator. */
 .vitals {
-  margin: var(--space-3) 0 0;
-  padding: var(--space-3) 0 0;
+  margin: 0;
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3) var(--space-5);
-  border-top: 1px solid var(--line);
 }
 
 @media (max-width: 480px) {
@@ -271,10 +290,16 @@
   min-width: 0;
 }
 
+/* Vital-cell eyebrow ("ACCESSIBILITY", "CONFIDENCE", etc.). Bumped
+ * from 0.66rem / 0.2em letter-spacing — the smaller register was
+ * blending into the body so the reader had to actively look to find
+ * the label. Slightly heavier weight + tighter tracking holds the
+ * eyebrow shape without dominating the value below. */
 .vitalK {
   color: var(--muted);
-  font-size: 0.66rem;
-  letter-spacing: 0.2em;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
 }
 
 /* Editorial vital body — italic Playfair display value (via the
@@ -333,3 +358,68 @@
    ../ConfidenceReasoningDrawer/ConfidenceReasoningDrawer.module.css
    as part of porting the inline `<details>` to the slide-in
    side-panel pattern (matching BenchmarkTable's RationaleDrawer). */
+
+/* Deterministic-tools strip — a 4-cell horizontal grid that surfaces
+ * the orchestrator-prefetched signals (DeepTMHMM topology, AlphaFold
+ * pLDDT, SURFACE-Bind site count, Ensembl Compara ortholog identity)
+ * alongside the LLM vitals above. These signals are otherwise buried
+ * in deeper section cards — promoting them to the at-a-glance row
+ * lets the reader scan both the LLM call and the tool-measured
+ * substrates side-by-side. Each cell carries its own InfoTip with
+ * tool + version provenance. */
+.deterministicGrid {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+
+@media (max-width: 760px) {
+  .deterministicGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .deterministicGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detTile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Same eyebrow treatment as the LLM-vital labels so the two rows
+ * scan as siblings. */
+.detTileK {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+/* Deterministic value — Manrope-sans medium numerals, NOT the
+ * Playfair italic of .h-vital-display. Numbers and short tool
+ * outputs ("1 TM", "92", "Not in SURFACE-Bind") read cleaner in
+ * sans, and the typographic split visually reinforces the
+ * provenance split (editorial-italic = LLM call; sans-medium =
+ * measured datum). */
+.detTileV {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.detTileSub {
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.4;
+}

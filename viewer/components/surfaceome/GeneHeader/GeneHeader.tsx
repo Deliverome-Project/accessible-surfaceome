@@ -1,5 +1,11 @@
 import type { CatalogRow } from "../../../lib/surfaceome";
-import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
+import type {
+  CanonicalTopology,
+  OrthologSet,
+  StructureFeatures,
+  SurfaceBindFeatures,
+  SurfaceomeRecord,
+} from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
@@ -172,6 +178,85 @@ function vitalToneClass(
 }
 
 /**
+ * Cell-content helpers for the deterministic-tools strip below the
+ * LLM vitals 2×2. Each returns a `{ headline, sub }` pair the
+ * `.detTile` template renders. Pulled out as named helpers (vs.
+ * inline IIFEs) so the JSX stays readable — four cells per record
+ * with conditional fall-backs would otherwise nest deeply.
+ *
+ * Each helper handles the orchestrator-prefetch's "no data" cases
+ * explicitly so the cell renders an em-dash + a one-line "why" sub
+ * instead of crashing on a null / placeholder value.
+ */
+function topologyCellSummary(
+  topo: CanonicalTopology,
+): { headline: string; sub: string } {
+  const tm = topo.tm_helix_count;
+  const n = topo.n_terminal_orientation === "extracellular" ? "EC" : "IC";
+  const c = topo.c_terminal_orientation === "extracellular" ? "EC" : "IC";
+  if (tm === 0) {
+    return { headline: "0 TM", sub: "Globular / soluble" };
+  }
+  const sp = topo.signal_peptide_length > 0 ? " · SP" : "";
+  return {
+    headline: `${tm} TM`,
+    sub: `N-${n} · C-${c}${sp}`,
+  };
+}
+
+function plddtCellSummary(
+  struct: StructureFeatures,
+): { headline: string; sub: string } {
+  const src = struct.source.toLowerCase();
+  const placeholder = src.includes("placeholder");
+  const whole = !placeholder && src.includes("whole-protein");
+  if (placeholder) {
+    return { headline: "—", sub: "Not available" };
+  }
+  const v = struct.ecd_mean_plddt.toFixed(0);
+  const label = whole ? "Whole" : "ECD";
+  const disordered = (struct.ecd_disordered_fraction * 100).toFixed(0);
+  return {
+    headline: v,
+    sub: `${label} pLDDT · ${disordered}% disordered`,
+  };
+}
+
+function surfaceBindCellSummary(
+  sb: SurfaceBindFeatures,
+): { headline: string; sub: string } {
+  if (!sb.has_data) {
+    return { headline: "—", sub: "Not in SURFACE-Bind" };
+  }
+  if (sb.n_sites === 0) {
+    return { headline: "0 sites", sub: "No patches cleared scoring" };
+  }
+  return {
+    headline: `${sb.n_sites} site${sb.n_sites === 1 ? "" : "s"}`,
+    sub: `${sb.n_seeds_total} MaSIF seed${sb.n_seeds_total === 1 ? "" : "s"}`,
+  };
+}
+
+function conservationCellSummary(
+  orth: OrthologSet,
+): { headline: string; sub: string } {
+  const mouseCanon = orth.mouse.find((o) => o.is_canonical) ?? orth.mouse[0];
+  const cynoCanon =
+    orth.cynomolgus.find((o) => o.is_canonical) ?? orth.cynomolgus[0];
+  const mouse = mouseCanon?.full_length_pct_identity_to_human_canonical;
+  const cyno = cynoCanon?.full_length_pct_identity_to_human_canonical;
+  if (mouse == null && cyno == null) {
+    return { headline: "—", sub: "No ortholog data" };
+  }
+  const mouseStr = mouse != null ? `${mouse.toFixed(0)}` : "—";
+  const cynoStr = cyno != null ? `${cyno.toFixed(0)}` : "—";
+  return {
+    headline: `${mouseStr} / ${cynoStr}`,
+    sub: "Mouse / Cyno · % identity",
+  };
+}
+
+/**
  * GeneHeader — display-scale gene symbol, executive lede, identifier
  * links, and four vitals. Driven entirely by `executive_summary` +
  * derived counts from the evidence ledger; no v0.x targetability /
@@ -328,12 +413,16 @@ export function GeneHeader({
                   per-row EvidenceChipList */}
           <p className={styles.execLede}>{exec.one_paragraph}</p>
 
-          {/* Vitals 2×2 grid — Accessibility / Experimental surface
-              evidence / Confidence / State dependence. Each label
-              carries an <InfoTip> with provenance (LLM rollup vs
-              deterministic source). The raw enum values render via
-              prettyEnum so the reader sees the same labels they see
-              in the data ledger. */}
+          {/* LLM-driven at-a-glance row — eyebrow label + 2×2 vitals
+              grid. Each value is the deep-dive agent's synthesis
+              (Accessibility / Experimental surface evidence /
+              Confidence / State dependence). Architecture, Family,
+              and the headline-risk count sit inside these cells as
+              colored sub-text (each with its own InfoTip). The
+              eyebrow above the dl makes the provenance explicit so
+              the reader can tell the LLM-call row apart from the
+              Deterministic-tools row that follows below. */}
+          <p className={`label-mono ${styles.rowEyebrow}`}>LLM-driven</p>
           <dl className={styles.vitals}>
             {(() => {
               const accessTone = accessibilityTone(exec.surface_accessibility);
@@ -357,17 +446,25 @@ export function GeneHeader({
                        *  letter-spaced, 0.72rem); the value inherits the
                        *  accessibility tone color (success / teal / amber
                        *  / danger) so the text reads as colored metadata
-                       *  belonging to this accessibility cell. */}
+                       *  belonging to this accessibility cell. Each label
+                       *  carries its own InfoTip — the values are
+                       *  LLM-derived (informed by DeepTMHMM topology +
+                       *  SURFACE-Bind family classification, but the
+                       *  deep-dive agent picks the final value). */}
                       <p
                         className={`${styles.archFamilyInline} ${vitalToneClass(accessTone)}`}
                       >
                         <span className={styles.archFamilyLabel}>
                           Architecture
+                          <InfoTip>{tooltips.architecture_chip}</InfoTip>
                         </span>
                         <span className={styles.archFamilyValue}>
                           {prettyEnum(exec.subcategory)}
                         </span>
-                        <span className={styles.archFamilyLabel}>Family</span>
+                        <span className={styles.archFamilyLabel}>
+                          Family
+                          <InfoTip>{tooltips.family_chip}</InfoTip>
+                        </span>
                         <span className={styles.archFamilyValue}>
                           {prettyEnum(exec.protein_family)}
                         </span>
@@ -435,6 +532,78 @@ export function GeneHeader({
                           {tooltips.headline_risks}
                         </InfoTip>
                       </span>
+                    </dd>
+                  </div>
+                </>
+              );
+            })()}
+          </dl>
+
+          {/* Deterministic-tools row — eyebrow + 4-cell strip pulling
+              from rec.deterministic_features. Mirrors the LLM-driven
+              row above but with sans-medium numerals instead of
+              editorial-italic Playfair, so the typographic register
+              itself reinforces the provenance split: italic Playfair
+              = LLM call, sans-medium = measured tool datum. Each
+              cell carries its own InfoTip naming the underlying
+              tool + version (DeepTMHMM v1.0.24, AlphaFold v4,
+              MaSIF / SURFACE-Bind, Ensembl Compara). */}
+          <p className={`label-mono ${styles.rowEyebrow}`}>Deterministic</p>
+          <dl className={styles.deterministicGrid}>
+            {(() => {
+              const topo = topologyCellSummary(
+                rec.deterministic_features.canonical_topology,
+              );
+              const plddt = plddtCellSummary(struct);
+              const sb = surfaceBindCellSummary(
+                rec.deterministic_features.surface_bind,
+              );
+              const cons = conservationCellSummary(
+                rec.deterministic_features.orthologs,
+              );
+              return (
+                <>
+                  <div className={styles.detTile}>
+                    <dt className={`label-mono ${styles.detTileK}`}>
+                      Topology
+                      <InfoTip>{tooltips.topology_pills}</InfoTip>
+                    </dt>
+                    <dd className={styles.vitalV}>
+                      <p className={styles.detTileV}>{topo.headline}</p>
+                      <span className={styles.detTileSub}>{topo.sub}</span>
+                    </dd>
+                  </div>
+
+                  <div className={styles.detTile}>
+                    <dt className={`label-mono ${styles.detTileK}`}>
+                      {plddtLabel}
+                      <InfoTip>{tooltips.afdb_plddt}</InfoTip>
+                    </dt>
+                    <dd className={styles.vitalV}>
+                      <p className={styles.detTileV}>{plddt.headline}</p>
+                      <span className={styles.detTileSub}>{plddt.sub}</span>
+                    </dd>
+                  </div>
+
+                  <div className={styles.detTile}>
+                    <dt className={`label-mono ${styles.detTileK}`}>
+                      SURFACE-Bind
+                      <InfoTip>{tooltips.surface_bind}</InfoTip>
+                    </dt>
+                    <dd className={styles.vitalV}>
+                      <p className={styles.detTileV}>{sb.headline}</p>
+                      <span className={styles.detTileSub}>{sb.sub}</span>
+                    </dd>
+                  </div>
+
+                  <div className={styles.detTile}>
+                    <dt className={`label-mono ${styles.detTileK}`}>
+                      Conservation
+                      <InfoTip>{tooltips.cross_species_conservation}</InfoTip>
+                    </dt>
+                    <dd className={styles.vitalV}>
+                      <p className={styles.detTileV}>{cons.headline}</p>
+                      <span className={styles.detTileSub}>{cons.sub}</span>
                     </dd>
                   </div>
                 </>
