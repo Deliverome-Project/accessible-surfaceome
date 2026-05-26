@@ -285,6 +285,17 @@ const TT_KNOWN_LIGAND =
   "ligand identity is unknown (orphan GPCRs / NHRs / kinases). " +
   "Tractability signal for the catalog.";
 
+const TT_OE_OBSERVED =
+  "Derived filter: true iff any MethodObservation has " +
+  "expression_system ∈ {overexpression, mixed} AND " +
+  "accessibility_relevance ∈ {direct_surface_accessibility, " +
+  "supports_surface_localization}. Tells a target-discovery analyst " +
+  "pricing out an OE validation experiment whether this protein has " +
+  "precedent (HEK293 / HeLa / K562 / U2OS transfection studies " +
+  "with surface readouts). Distinct from `has_known_ligand` " +
+  "(orphan-receptor status) and `low_endogenous_expression` " +
+  "(endogenous level).";
+
 const TT_TM_COUNT =
   "Transmembrane helix count from DeepTMHMM (deterministic). " +
   "Drives `subcategory` choice: 0 (soluble / inner-leaflet), 1 " +
@@ -421,6 +432,22 @@ export function FiltersCard({ rec, n }: Props) {
             {f.has_known_ligand ? "✓" : "✗"}
           </span>{" "}
           known ligand
+        </StatusPill>,
+        // Overexpression-with-surface-readout precedent — derived
+        // from method observations. Lets a reader filter for "OE
+        // validation has been done on this protein" without joining
+        // back to the methods block. Renders here next to the other
+        // expression-evidence pills so the cluster reads as one row.
+        <StatusPill
+          key="oe_observed"
+          tone={f.overexpression_surface_localization_observed ? "success" : "neutral"}
+          size="sm"
+          title={TT_OE_OBSERVED}
+        >
+          <span aria-hidden="true">
+            {f.overexpression_surface_localization_observed ? "✓" : "✗"}
+          </span>{" "}
+          OE+surface precedent
         </StatusPill>,
       ],
     },
