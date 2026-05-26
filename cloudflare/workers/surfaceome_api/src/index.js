@@ -288,11 +288,13 @@ async function handleCatalog(env) {
   // UniProt acc so the lookup is O(1) per row.
   const sbByAcc = new Map();
   try {
+    // Column name in the D1 mirror is ``uniprot_acc`` (matches the
+    // pydantic field), NOT ``acc`` (which is the source CSV's name).
     const sbRows = await env.DB.prepare(
-      `SELECT acc, n_sites FROM surface_bind_protein`
+      `SELECT uniprot_acc, n_sites FROM surface_bind_protein`
     ).all();
     for (const r of sbRows.results) {
-      if (r.acc) sbByAcc.set(r.acc, r.n_sites ?? 0);
+      if (r.uniprot_acc) sbByAcc.set(r.uniprot_acc, r.n_sites ?? 0);
     }
   } catch (e) {
     // Table doesn't exist yet (D1 mirror hasn't synced) — degrade
