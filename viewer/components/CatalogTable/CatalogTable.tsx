@@ -1059,9 +1059,11 @@ export function CatalogTable({
                   {DD_BOOL_FIELDS.filter((f) => f.provenance === "llm").map(
                     (field) => {
                       const mode = ddBoolFilters[field.key];
+                      // Single "yes" toggle — boolean is one-or-the-
+                      // other; ON requires true, OFF (default) = no
+                      // filter. Dropped the "no" chip per user feedback.
                       const triStates: { k: DdBoolFilter; label: string }[] = [
                         { k: "yes", label: "yes" },
-                        { k: "no", label: "no" },
                       ];
                       return (
                         <div
@@ -1203,9 +1205,9 @@ export function CatalogTable({
                     (f) => f.provenance === "deterministic",
                   ).map((field) => {
                     const mode = ddBoolFilters[field.key];
+                    // Single "yes" toggle (see LLM-subgroup block above).
                     const triStates: { k: DdBoolFilter; label: string }[] = [
                       { k: "yes", label: "yes" },
-                      { k: "no", label: "no" },
                     ];
                     return (
                       <div
