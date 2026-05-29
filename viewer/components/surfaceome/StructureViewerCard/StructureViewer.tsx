@@ -437,7 +437,7 @@ function _renderCaption(args: {
             <span className={styles.captionSep} aria-hidden="true">·</span>
             <span className={styles.captionStat}>
               {disorderedNode}
-              <InfoTip label="About disordered fraction">
+              <InfoTip wide label="About disordered fraction">
                 {tooltips.afdb_disordered}
               </InfoTip>
             </span>
