@@ -71,6 +71,20 @@ The v1 path's `surface_evidence_compiler` + `biology_compiler` Managed Agents st
 
 **Why auto-sync matters:** the synthesizer run is ~$0.10–0.20 on Sonnet 4.6 (full deep-dive ~$2). Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
 
+### v2 publishes records by default — `--no-publish` to opt out
+
+After a v2 annotate run validates, `scripts/surfaceome_v2_annotate.py` writes the record to **three** surfaces:
+
+1. `data/annotations/{symbol}.json` — the agent's canonical disk artifact (was previously gated behind `--persist`; now default-on, opt out with `--no-persist`).
+2. `viewer/public/data/surfaceome/{symbol}.json` — the viewer's offline / Worker-down fallback.
+3. Public Cloudflare D1 `surface_annotation.annotation_json` — what the `api.deliverome.org/surfaceome/v1/genes/:symbol` Worker serves.
+
+Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.publish_record`](src/accessible_surfaceome/cloud/surface_annotation.py), default-on with `--no-publish` to skip. The D1 push is **auto-skipped** with a warning (not an error) when the `CLOUDFLARE_*` env vars aren't set, so CI without secrets still works.
+
+**Why default-on:** previously a record could land on disk via `--persist` but never reach D1 — which meant the Worker kept serving a stale schema-incomplete row and the viewer crashed on missing fields (e.g. `rec.deterministic_features.surface_bind.has_data`). The fix is to add the field to the **records**, not defensive `?.` chains in the viewer. Publishing-by-default is the mechanism that enforces this.
+
+The same `publish_record` helper backs `scripts/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
+
 ## Agent Command Allowlist
 
 - Agents may run `uv run python ...` commands for repository modules/scripts.
@@ -474,6 +488,32 @@ So this is *author-side metadata*: it persists through any PNG-aware tool but is
 Cloudflare Pages project at **`surfaceome.deliverome.org`**. It is *not*
 a sub-route of `deliverome.org`'s main site — separate build, separate
 deploy target, separate domain.
+
+### Tooltip / InfoTip citation rule
+
+Any tooltip (InfoTip body text, StatusPill `title=`, etc.) that
+cites a paper **must include both a DOI/PMID identifier AND a
+clickable link to it** — never just an author-year phrase.
+Acceptable patterns:
+
+* `Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/)`
+* `Ramaraj et al. 2012, [doi:10.1016/j.bbapap.2012.07.005](https://doi.org/10.1016/j.bbapap.2012.07.005), [PMID 22796141](https://pubmed.ncbi.nlm.nih.gov/22796141/)`
+* `Bordeaux 2010 / Edfors 2018` — **not acceptable on its own**; reach for the
+  PMIDs and link them. If you can't find the exact PMID, search PubMed
+  before shipping (the user can't trace the citation otherwise).
+
+Why: tooltips are the only on-page surface where the cutoff /
+threshold provenance lives. A reader who wants to verify the
+threshold must be one click from the primary source — the gene-page
+prose can't carry every citation. The on-page link also serves as a
+durability check: dead DOIs / retracted PMIDs surface as 404s during
+review.
+
+The text-bank entry point is `viewer/lib/tooltips.tsx`. Per-component
+TT_* string constants (in `FiltersCard.tsx`, `AccessibilityRisksCard.tsx`,
+etc.) follow the same rule. When you add a new threshold-bearing
+tooltip, include the citation chain — never punt with "see
+literature" or "per established practice".
 
 The design language is borrowed from
 `Deliverome-Project/deliverome-internal` PR #24 (Rosy Maroon: Maroon ·

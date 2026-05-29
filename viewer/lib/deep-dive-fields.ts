@@ -101,7 +101,7 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
       "pmhc_only_intracellular",
       "other",
     ],
-    tooltipKey: "headline_risks",
+    tooltipKey: "catalog_surface_call_reason",
   },
   {
     key: "subcategory",

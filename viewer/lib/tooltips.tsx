@@ -356,6 +356,27 @@ export const tooltips: Record<string, ReactNode> = {
   // tooltips speak the same language.
   // --------------------------------------------------------------
 
+  catalog_surface_call_reason: (
+    <>
+      Synth-derived reason for the surface call, re-emitted from
+      the A1+A2 evidence (not inherited from the triage&apos;s
+      first-pass call). The 19 values group into three buckets:
+      <strong>YES</strong> (canonical surface mechanisms —
+      classical receptor, GPI-anchored, multipass-with-exposed-
+      loops, extracellular-face, stable-complex-partner);{" "}
+      <strong>CONTEXTUAL</strong> (state-gated surface mechanisms —
+      cell-state-induced, tissue-restricted, lysosomal exocytosis,
+      dual localization, stable surface attachment); and{" "}
+      <strong>NO</strong> (intracellular / non-surface localizations
+      — cytoplasmic, nuclear, mitochondrial, endomembrane, nuclear
+      envelope, inner-leaflet anchored, secreted only, pMHC-only).
+      SRC&apos;s cancer-state surface form is &ldquo;
+      <code>lysosomal_exocytosis</code>&rdquo;, overriding the
+      triage&apos;s baseline-state &ldquo;
+      <code>inner_leaflet_anchored</code>&rdquo;.
+    </>
+  ),
+
   catalog_subcategory: (
     <>
       Architecture — how the protein sits in the membrane. Orthogonal
@@ -390,11 +411,26 @@ export const tooltips: Record<string, ReactNode> = {
   catalog_ecd_class: (
     <>
       ECD-size bands from antibody-antigen interface measurements
-      (Ramaraj et al. 2012, average conformational epitope = 12 ± 3
-      residues, 1103 ± 244 Å²). <em>large</em> ≥ 200 residues;{" "}
-      <em>moderate</em> 60–199; <em>small</em> 30–59; <em>minimal</em>{" "}
-      &lt; 30; <em>none</em> = no surface-exposed ECD (GPI / inner-
-      leaflet).
+      (Ramaraj et al.&nbsp;2012,{" "}
+      <a
+        href="https://doi.org/10.1016/j.bbapap.2012.07.005"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        doi:10.1016/j.bbapap.2012.07.005
+      </a>
+      , PMID&nbsp;
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/22796141/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        22796141
+      </a>
+      ; average conformational epitope = 12 ± 3 residues, 1103 ± 244 Å²
+      buried). <em>large</em> ≥ 200 residues; <em>moderate</em> 60–199;{" "}
+      <em>small</em> 30–59; <em>minimal</em> &lt; 30; <em>none</em> = no
+      surface-exposed ECD (GPI / inner-leaflet).
     </>
   ),
 

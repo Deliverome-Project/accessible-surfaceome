@@ -1094,8 +1094,13 @@ export function CatalogTable({
                 })}
                 {DD_BOOL_FIELDS.map((field) => {
                   const mode = ddBoolFilters[field.key];
+                  // Yes/No only — the "any" state is implicit: neither
+                  // chip selected = no filter applied. Showing an
+                  // explicit "any" chip was redundant with the deselect
+                  // affordance (clicking the active chip clears back to
+                  // any, same as the per-enum chip strips). Per user
+                  // feedback in the catalog-filter polish pass.
                   const triStates: { k: DdBoolFilter; label: string }[] = [
-                    { k: "any", label: "any" },
                     { k: "yes", label: "yes" },
                     { k: "no", label: "no" },
                   ];
