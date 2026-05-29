@@ -56,6 +56,15 @@ export function InfoTip({
   // trigger instead. Computed once per open, after the popover lays
   // out, so we can measure where it actually landed.
   const [flipUp, setFlipUp] = useState(false);
+  // Horizontal shift (px) we add on top of the default
+  // `translateX(-50%)` centering so the popover stays inside the
+  // viewport when the trigger is near the left/right edge. Positive
+  // shifts right (rescue left-overflow); negative shifts left
+  // (rescue right-overflow). The wide-popover Triage tip sits near
+  // the left of the gene header; the pLDDT tip sits near the right
+  // edge of the deterministic strip — both would otherwise extend
+  // off-screen.
+  const [shiftX, setShiftX] = useState(0);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const popoverId = useId();
@@ -98,6 +107,7 @@ export function InfoTip({
   useLayoutEffect(() => {
     if (!open) {
       setFlipUp(false);
+      setShiftX(0);
       return;
     }
     const popover = popoverRef.current;
@@ -105,11 +115,29 @@ export function InfoTip({
     if (!popover || !trigger) return;
     const popRect = popover.getBoundingClientRect();
     const trigRect = trigger.getBoundingClientRect();
+
+    // ── Vertical: flip up if the popover overflows below AND there's
+    // more room above than below.
     const spaceBelow = window.innerHeight - trigRect.bottom;
     const spaceAbove = trigRect.top;
     if (popRect.bottom > window.innerHeight - 8 && spaceAbove > spaceBelow) {
       setFlipUp(true);
     }
+
+    // ── Horizontal: the popover is centered on the trigger via
+    // `left: 50%; transform: translateX(-50%)`. For a wide popover
+    // near a viewport edge, that centering puts the left/right edge
+    // off-screen. Compute a pixel shift we add to the translateX so
+    // the popover stays inside the viewport with an 8px gutter,
+    // without losing alignment relative to the trigger.
+    const gutter = 8;
+    let shift = 0;
+    if (popRect.left < gutter) {
+      shift = gutter - popRect.left;
+    } else if (popRect.right > window.innerWidth - gutter) {
+      shift = window.innerWidth - gutter - popRect.right;
+    }
+    if (shift !== 0) setShiftX(shift);
   }, [open]);
 
   const onKeyDown = useCallback((e: KeyboardEvent<HTMLButtonElement>) => {
@@ -148,6 +176,15 @@ export function InfoTip({
           id={popoverId}
           role="tooltip"
           className={`${styles.popover} ${flipUp ? styles.popoverFlipUp : ""} ${wide ? styles.popoverWide : ""}`.replace(/\s+/g, " ").trim()}
+          // Inline transform overrides the CSS `translateX(-50%)`
+          // when we need to nudge the popover horizontally to keep
+          // it inside the viewport (see the useLayoutEffect above).
+          // `shiftX=0` leaves the CSS rule alone.
+          style={
+            shiftX !== 0
+              ? { transform: `translateX(calc(-50% + ${shiftX}px))` }
+              : undefined
+          }
           // Don't let the popover swallow the trigger's hover-out:
           // moving from trigger → popover bridges via a tiny gap that
           // we suppress with `pointer-events` so the mouse still
