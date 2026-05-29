@@ -45,14 +45,12 @@ export const tooltips: Record<string, ReactNode> = {
 
   confidence: (
     <>
-      <strong>From the deep-dive synthesizer</strong> — the agent&apos;s
-      confidence in its OWN surface call (not the triage&apos;s). Tracks
-      evidence breadth × per-method strength × consistency. <em>High</em>
-      is rare; <em>moderate</em> is the default for well-supported
-      calls. The full reasoning (why <em>moderate</em> vs <em>high</em>{" "}
-      vs <em>low</em> for THIS gene) sits in the &quot;Confidence&quot;
-      rationale paragraph just below the gene-symbol heading — open it
-      to see the load-bearing factors the agent named.
+      <strong>From the deep-dive synthesizer.</strong> How sure the
+      surface-accessibility call is, weighing how much evidence exists,
+      how strong each method is, and how well the methods agree.{" "}
+      <em>High</em> is rare; <em>moderate</em> is typical for a
+      well-supported call. Open the Confidence rationale below the gene
+      name to see why this gene landed where it did.
     </>
   ),
 
