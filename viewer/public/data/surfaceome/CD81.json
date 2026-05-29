@@ -8,6 +8,7 @@
     "ensembl_gene": "ENSG00000110651"
   },
   "triage_signal": "likely_accessible",
+  "triage_reasoning": "CD81 (TAPA-1/TSPAN28) is a canonical tetraspanin with four transmembrane domains and two extracellular loops (SEL and LEL). The large extracellular loop (LEL/EC2) is well-characterized on the outer leaflet of the plasma membrane and is the binding site for HCV E2 glycoprotein, anti-CD81 antibodies, and various therapeutic agents. It forms tetraspanin-enriched microdomains at the cell surface and is readily detected by flow cytometry on non-permeabilized cells. Multiple therapeutic antibodies and CAR-T constructs target the extracellular domain. Its CD designation (CD81) and extensive surface proteomics data confirm stable, constitutive surface residence.",
   "executive_summary": {
     "one_paragraph": "CD81 is a four-pass tetraspanin with a large extracellular loop (LEL) that is unambiguously surface-accessible across multiple independent human cell types. Live-cell flow cytometry with CRISPR-KO controls, surface biotinylation/MS with >2-fold enrichment, and cryo-EM/crystal structures resolving the accessible LEL collectively establish direct_multi_method evidence. Surface levels are constitutive on B cells and AML blasts, elevated on LSC-enriched subpopulations and under GBM hypoxia, and absent on HepG2 WT cells \u2014 conferring moderate state dependence. A significant intracellular endosomal pool exists in standard culture conditions but does not negate robust plasma-membrane presence.",
     "surface_accessibility": "high",

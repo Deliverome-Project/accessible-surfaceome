@@ -1,5 +1,7 @@
+import type { ReactNode } from "react";
 import type { CatalogRow } from "../../../lib/surfaceome";
 import type {
+  AccessibilityModulationObservation,
   CanonicalTopology,
   OrthologSet,
   StructureFeatures,
@@ -9,8 +11,7 @@ import type {
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
-import { ConfidenceReasoningDrawer } from "../ConfidenceReasoningDrawer/ConfidenceReasoningDrawer";
-import { EvidenceGradeReasoningDrawer } from "../EvidenceGradeReasoningDrawer/EvidenceGradeReasoningDrawer";
+import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -158,6 +159,45 @@ function confidenceTone(value: string) {
   if (value === "moderate") return "lavender" as const;
   if (value === "low") return "amber" as const;
   return "neutral" as const;
+}
+
+/** Structured body for the State-dependence "Reasoning" drawer. The
+ *  state-dependence call has no single prose field (unlike confidence /
+ *  grade); its rationale lives in the per-observation
+ *  `biological_context.accessibility_modulation` entries. Render each as
+ *  a compact block — the modulation category (+ cell-state trigger when
+ *  present), the `change` (what happens), and the
+ *  `accessibility_implication` (the so-what for surface access). The
+ *  drawer footer carries the union of cited evidence, so per-block chips
+ *  are omitted here to keep the narrative readable. */
+function stateModulationBody(
+  observations: readonly AccessibilityModulationObservation[],
+): ReactNode {
+  return (
+    <div className={styles.stateModList}>
+      {observations.map((m, i) => {
+        const category =
+          m.category === "other" && m.category_other_label
+            ? m.category_other_label
+            : prettyEnum(m.category);
+        const trigger = m.cell_state_trigger
+          ? ` · ${prettyEnum(m.cell_state_trigger)}`
+          : "";
+        return (
+          <div key={i} className={styles.stateModItem}>
+            <p className={`label-mono ${styles.stateModCategory}`}>
+              {category}
+              {trigger}
+            </p>
+            <p className={styles.stateModChange}>{m.change}</p>
+            <p className={styles.stateModImplication}>
+              {m.accessibility_implication}
+            </p>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 function plddtTone(plddt: number) {
@@ -401,6 +441,19 @@ export function GeneHeader({
                     agrees with deep dive
                   </span>
                 ) : null}
+                {/* The triage agent's own verdict justification, surfaced
+                 *  in a slide-in drawer. Self-hides when the record
+                 *  carries no triage_reasoning (older records / genes with
+                 *  no persisted triage). Distinct from the deep-dive
+                 *  confidence reasoning below — this is the first-pass,
+                 *  no-web-search rationale. */}
+                <ReasoningDrawer
+                  eyebrow={`Triage · ${triageVerdictLabel(rec.triage_signal)}`}
+                  title="Why this triage call?"
+                  ariaLabel="Why the initial triage pass called it this way"
+                  triggerClassName={styles.triageReasoningTrigger}
+                  reasoning={rec.triage_reasoning ?? ""}
+                />
               </p>
             );
           })()}
@@ -408,17 +461,19 @@ export function GeneHeader({
           {/* Executive summary one-paragraph. Headline risks + cited
               evidence chips were dropped from the header per user
               feedback — both are still visible:
-                * headline_risks → the State-dependence vital below
-                  (subtitle shows "N headline risks") + the §Risks card
+                * headline_risks → the §Risks card (they're not a
+                  state-dependence signal, so they no longer sit under
+                  that vital)
                 * cited_evidence_ids → the §Evidence ledger + each
                   per-row EvidenceChipList */}
           <p className={styles.execLede}>{exec.one_paragraph}</p>
 
           {/* At-a-glance 2×2 vitals grid. Each value is the deep-dive
               agent's synthesis (Accessibility / Experimental surface
-              evidence / Confidence / State dependence). Architecture,
-              Family, and the headline-risk count sit inside these
-              cells as colored sub-text (each with its own InfoTip).
+              evidence / Confidence / State dependence). Architecture +
+              Family sit inside the Accessibility cell as pill chips
+              (each with its own InfoTip); Confidence, Surface evidence,
+              and State dependence each carry a "Reasoning" drawer chip.
               The LLM-vs-Deterministic split now lives in §01 Summary
               metrics; deterministic tool data (topology, pLDDT,
               SURFACE-Bind, conservation) is no longer duplicated
@@ -456,8 +511,8 @@ export function GeneHeader({
                           <span className={styles.archFamilyChipValue}>
                             {prettyEnum(exec.subcategory)}
                           </span>
+                          <InfoTip>{tooltips.architecture_chip}</InfoTip>
                         </span>
-                        <InfoTip>{tooltips.architecture_chip}</InfoTip>
                         <span className={styles.archFamilyChip}>
                           <span className={styles.archFamilyChipKey}>
                             Family
@@ -465,8 +520,8 @@ export function GeneHeader({
                           <span className={styles.archFamilyChipValue}>
                             {prettyEnum(exec.protein_family)}
                           </span>
+                          <InfoTip>{tooltips.family_chip}</InfoTip>
                         </span>
-                        <InfoTip>{tooltips.family_chip}</InfoTip>
                       </div>
                     </dd>
                   </div>
@@ -483,17 +538,21 @@ export function GeneHeader({
                       <span className={styles.vitalSub}>
                         {counts.total} entries
                       </span>
-                      {/* "reasoning" chip — opens a slide-in drawer with
-                       *  the synthesizer's grade_rationale prose. Same
-                       *  affordance pattern as the Confidence vital
-                       *  below. Source field is
-                       *  ``surface_evidence.grade_rationale`` which the
-                       *  §02 banner also renders; the chip is the
-                       *  vital-grid surface so the reader can read the
+                      {/* "Reasoning" chip — opens a slide-in drawer with
+                       *  the synthesizer's grade_rationale prose. Source
+                       *  field is ``surface_evidence.grade_rationale``,
+                       *  which the §02 banner also renders; the chip is
+                       *  the vital-grid surface so the reader can read the
                        *  reasoning without scrolling to the section. */}
-                      <EvidenceGradeReasoningDrawer
+                      <ReasoningDrawer
+                        eyebrow={`Surface evidence · ${prettyEnum(
+                          exec.evidence_grade_summary,
+                        )}`}
+                        title="Why this grade?"
+                        ariaLabel={`Why this evidence grade is ${prettyEnum(
+                          exec.evidence_grade_summary,
+                        )}`}
                         reasoning={rec.surface_evidence.grade_rationale ?? ""}
-                        gradeLabel={prettyEnum(exec.evidence_grade_summary)}
                         // Union of every method block's cited evidence — the
                         // grade rationale aggregates across all methods, so
                         // the chip strip should too. Dedup preserves order.
@@ -520,16 +579,17 @@ export function GeneHeader({
                       <span className={styles.vitalSub}>
                         {counts.primary} primary · {counts.secondary} secondary
                       </span>
-                      {/* "reasoning" — slide-in side drawer below the
-                       *  confidence value, mirroring the BenchmarkTable
-                       *  `RationaleDrawer` pattern (right-side panel
-                       *  with × close + ESC + backdrop click-to-close).
-                       *  Self-hides when reasoning is empty so the
-                       *  trigger never appears for high-confidence
-                       *  calls. */}
-                      <ConfidenceReasoningDrawer
+                      {/* "Reasoning" — slide-in side drawer below the
+                       *  confidence value. Self-hides when reasoning is
+                       *  empty so the trigger never appears for
+                       *  high-confidence calls. */}
+                      <ReasoningDrawer
+                        eyebrow={`Confidence · ${prettyEnum(exec.confidence)}`}
+                        title="Why this confidence?"
+                        ariaLabel={`Why this confidence is ${prettyEnum(
+                          exec.confidence,
+                        )}`}
                         reasoning={rec.confidence_reasoning ?? ""}
-                        confidenceLabel={prettyEnum(exec.confidence)}
                         // Lede's cited_evidence_ids cover the overall
                         // surface call which the confidence rationale
                         // justifies; pass them through so the reader
@@ -549,16 +609,37 @@ export function GeneHeader({
                       <p className={`h-vital-display ${vitalToneClass(stateT)}`}>
                         {prettyEnum(exec.state_dependence)}
                       </p>
-                      <span className={styles.vitalSub}>
-                        {exec.headline_risks.length
-                          ? `${exec.headline_risks.length} headline risk${
-                              exec.headline_risks.length === 1 ? "" : "s"
-                            }`
-                          : "No headline risks"}
-                        <InfoTip label="About headline risks">
-                          {tooltips.headline_risks}
-                        </InfoTip>
-                      </span>
+                      {/* "Reasoning" chip — the state-dependence call has
+                       *  no single prose field; its rationale lives in the
+                       *  per-observation accessibility_modulation entries
+                       *  (the "Normal → Disease" surface-access story).
+                       *  Guarded on length so always-on surface proteins
+                       *  (no modulation observations) show just the value
+                       *  with no chip. The old "N headline risks" subtitle
+                       *  was removed — headline risks aren't a
+                       *  state-dependence signal; they live in the §Risks
+                       *  card. */}
+                      {rec.biological_context.accessibility_modulation.length >
+                      0 ? (
+                        <ReasoningDrawer
+                          eyebrow={`State dependence · ${prettyEnum(
+                            exec.state_dependence,
+                          )}`}
+                          title="What modulates surface access?"
+                          ariaLabel="How surface access changes with cell state"
+                          citedEvidenceIds={Array.from(
+                            new Set(
+                              rec.biological_context.accessibility_modulation.flatMap(
+                                (m) => m.cited_evidence_ids,
+                              ),
+                            ),
+                          )}
+                        >
+                          {stateModulationBody(
+                            rec.biological_context.accessibility_modulation,
+                          )}
+                        </ReasoningDrawer>
+                      ) : null}
                     </dd>
                   </div>
                 </>

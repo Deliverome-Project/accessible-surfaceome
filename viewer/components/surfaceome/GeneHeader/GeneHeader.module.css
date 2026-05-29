@@ -160,6 +160,18 @@
   letter-spacing: 0.04em;
 }
 
+/* Triage-row reasoning trigger. The shared ReasoningDrawer trigger
+ * carries a `margin: var(--space-2) 0 0` so it sits below a vital
+ * value; here it's an inline sibling on a baseline-aligned flex row,
+ * so the top margin would push it out of the baseline. Zero it. The
+ * base `.trigger` rule still owns color (--ink-soft) + the "›" carat;
+ * this only adjusts the contextual layout. GeneHeader.module.css loads
+ * after ReasoningDrawer.module.css, so this equal-specificity override
+ * wins the cascade. */
+.triageReasoningTrigger {
+  margin-top: 0;
+}
+
 /* Headline risks — small "label · value" line under the lede. */
 .risks {
   display: flex;
@@ -321,43 +333,104 @@
   line-height: 1.4;
 }
 
-/* Architecture + Family as label/value text pairs INSIDE the
-   Accessibility vital cell, beneath the accessibility value.
-   Font matches the StatusPill chip (uppercase, font-sans,
-   letter-spaced, 0.72rem). Color inheritance: the parent <p>
-   carries a global `tone-{success|teal|amber|danger|lavender}`
-   class set by `vitalToneClass(accessTone)`, which paints the
-   values in the accessibility tone (so the metadata reads as
-   belonging to this cell's accessibility signal). Labels stay
-   muted so the value pops. */
+/* Architecture + Family — pill-shaped chips inside the Accessibility
+   vital cell, beneath the accessibility value.
+   Was uppercase/letter-spaced inline text that inherited the
+   accessibility tone color (so on accessibility=no it rendered in
+   the danger/red palette, which the user found visually noisy and
+   semantically wrong — Architecture/Family aren't tone-bearing).
+   New shape: two compact pill chips, ``Architecture · Value`` and
+   ``Family · Value``, sentence-cased (prettyEnum already does that)
+   in the soft-brown ``--ink-soft`` color so they sit as neutral
+   metadata under the accessibility headline. */
 .archFamilyInline {
   margin: var(--space-2) 0 0;
-  font-family: var(--font-sans);
-  font-size: 0.72rem;
-  font-weight: var(--fw-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  line-height: 1.4;
   display: flex;
   flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.45rem;
+  align-items: center;
+  gap: 0.35rem;
+  /* No font-family / text-transform / letter-spacing here — the
+     chip rule below owns those so we don't paint mixed registers. */
 }
 
-.archFamilyLabel {
+.archFamilyChip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.18rem 0.55rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  /* Soft brown — explicit ``--ink-soft`` rather than inheriting from
+     the parent vital's tone class. Architecture/Family are
+     deterministic metadata that don't carry the accessibility tone. */
+  color: var(--ink-soft);
+  background: var(--surface-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  /* Cancel any uppercase/letter-spacing the parent grid might pass
+     down by way of utility classes. */
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.archFamilyChipKey {
   color: var(--muted);
 }
 
-.archFamilyValue {
-  /* Inherit color from .archFamilyInline (which the tone-X class
-     paints). Slight gap between value and the next label. */
-  margin-right: 0.3rem;
+.archFamilyChipValue {
+  font-weight: var(--fw-medium);
+  color: var(--ink);
 }
 
-/* Confidence reasoning trigger + drawer styles moved into
-   ../ConfidenceReasoningDrawer/ConfidenceReasoningDrawer.module.css
-   as part of porting the inline `<details>` to the slide-in
-   side-panel pattern (matching BenchmarkTable's RationaleDrawer). */
+/* Reasoning-trigger + slide-in drawer styles live in the shared
+   ../ReasoningDrawer/ReasoningDrawer.module.css — one component now
+   backs every "Reasoning ›" chip (Confidence, Surface evidence, State
+   dependence, Triage), so the trigger color (--ink-soft brown) + casing
+   ("Reasoning") can't drift between vitals the way the old per-vital
+   forks did. */
+
+/* State-dependence drawer body. The State-dependence vital has no
+   single prose field (unlike Confidence's `confidence_reasoning` or
+   Surface evidence's `grade_rationale`), so its drawer renders the
+   structured `accessibility_modulation` observations as a list:
+   category eyebrow → the change → the accessibility implication. */
+.stateModList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-2) 0 0;
+}
+
+.stateModItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stateModCategory {
+  margin: 0;
+  color: var(--muted);
+}
+
+.stateModChange {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* The implication is the "so what" for surface access — set it off with
+   a left rule + soft-brown ink so it reads as a consequence of the
+   change above it rather than a second independent sentence. */
+.stateModImplication {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
 
 /* Deterministic-tools strip — a 4-cell horizontal grid that surfaces
  * the orchestrator-prefetched signals (DeepTMHMM topology, AlphaFold
