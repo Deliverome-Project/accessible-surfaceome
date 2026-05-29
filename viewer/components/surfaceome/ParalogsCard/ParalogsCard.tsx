@@ -55,7 +55,14 @@ export function ParalogsCard({ rec, n }: Props) {
                     <span className={styles.mono}>{p.paralog_uniprot_acc}</span>
                   </a>
                 </td>
-                <td>{p.ecd_pct_identity.toFixed(1)}%</td>
+                <td>
+                  {/* ecd_pct_identity is null for ECD-less proteins
+                   *  (SRC, soluble kinases, GPI-anchored, cytoplasmic
+                   *  enzymes) — no ECD to compute identity against. */}
+                  {p.ecd_pct_identity != null
+                    ? `${p.ecd_pct_identity.toFixed(1)}%`
+                    : "no ECD"}
+                </td>
                 <td>
                   <span className={styles.mono}>{p.family_id}</span>
                 </td>
