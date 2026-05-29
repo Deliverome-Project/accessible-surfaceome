@@ -256,6 +256,50 @@
   font-weight: var(--fw-medium);
 }
 
+/* Significant depletion (fold ≤ 0.5, p < 0.05) — maroon to read as the
+   opposite of the teal enrichment. */
+.foldCold {
+  color: var(--maroon-dark);
+  font-weight: var(--fw-medium);
+}
+
+/* Sortable enrichment-table header cell. Inherits the .enrichHead mono /
+   uppercase styling; flips to a button so any column can sort. */
+.enrichSortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.enrichSortBtn:hover,
+.enrichSortBtn:focus-visible {
+  color: var(--accent);
+}
+
+.enrichSortNum {
+  justify-content: flex-end;
+}
+
+.enrichSortActive {
+  color: var(--ink);
+}
+
+.enrichSortInd {
+  font-size: 0.75em;
+  color: var(--accent);
+  width: 0.7em;
+  display: inline-block;
+  text-align: center;
+}
+
 /* Per-category enrichment sub-block (triage verdict / reason, each
    deep-dive filter field). A small italic label over its own value
    table. */

@@ -31,8 +31,9 @@ function fmtP(p: number): string {
 }
 
 function fmtFold(f: number): string {
-  if (!Number.isFinite(f) || f === 0) return "—";
-  return `${f.toFixed(f >= 10 ? 0 : 1)}×`;
+  if (!Number.isFinite(f)) return "—";
+  if (f === 0) return "0×"; // fully depleted — absent from the list
+  return `${f.toFixed(f >= 10 ? 0 : f >= 1 ? 1 : 2)}×`;
 }
 
 interface CompareToolProps {
@@ -252,13 +253,14 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
               <p className={`label-mono ${styles.blockHead}`}>
                 Enrichment vs the full catalog
                 <InfoTip label="About enrichment">
-                  For each signal: the share of your matched genes carrying
-                  it, vs the share across all {nRows.toLocaleString()} catalog
-                  genes, the fold-enrichment, and a one-tailed hypergeometric
-                  p-value. Signals are correlated (DB votes co-occur, verdict
-                  tracks DB count), so the p-values are descriptive, not
-                  multiple-testing-corrected, and only matched genes are
-                  tested.
+                  Each row: the share of your matched genes carrying the value
+                  vs the share across all {nRows.toLocaleString()} catalog
+                  genes, the fold (&gt;1 enriched, &lt;1 depleted, 0 = absent
+                  from your list), and a one-tailed hypergeometric p in the
+                  direction of the deviation. Every catalog value is shown —
+                  depleted ones included — and any column header sorts. The
+                  p-values are descriptive, not multiple-testing-corrected
+                  (signals are correlated; only matched genes are tested).
                 </InfoTip>
               </p>
               <EnrichTable rows={stats.signals} firstCol="Signal" />
@@ -273,26 +275,41 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
           ) : null}
 
           {/* ---- Deep-dive filter enrichment ----------------------- */}
-          {stats.deepDivedListCount > 0 && stats.deepDiveGroups.length > 0 ? (
+          {stats.deepDivedListCount > 0 &&
+          (stats.deepDiveEnumGroups.length > 0 ||
+            stats.deepDiveBoolFlags.length > 0) ? (
             <div className={styles.summary}>
               <p className={`label-mono ${styles.blockHead}`}>
                 Deep-dive filter enrichment · {stats.deepDivedListCount} of
                 your genes deep-dived
                 <InfoTip label="About deep-dive filter enrichment">
-                  Deep-dive filters exist only on deep-dived genes, a curated
-                  non-random subset, so these test your {stats.deepDivedListCount}{" "}
-                  deep-dived matches against the{" "}
+                  Deep-dive filters exist only on deep-dived genes (a curated,
+                  non-random subset), so these test your{" "}
+                  {stats.deepDivedListCount} deep-dived matches against the{" "}
                   {stats.deepDivedBaselineCount.toLocaleString()} deep-dived
-                  catalog genes (not the whole catalog). Underpowered on small
-                  lists — read the fold + counts descriptively.
+                  catalog genes — not the whole catalog. Boolean flags show the
+                  &ldquo;= yes&rdquo; rate only. Every value is shown, including
+                  depleted ones (fold &lt; 1, absent from your list); click a
+                  column header to sort. Underpowered on small lists — read
+                  fold + counts descriptively.
                 </InfoTip>
               </p>
-              {stats.deepDiveGroups.map((g) => (
+              {stats.deepDiveEnumGroups.map((g) => (
                 <div key={g.key} className={styles.enrichGroup}>
                   <span className={styles.enrichGroupLabel}>{g.label}</span>
                   <EnrichTable rows={g.rows} firstCol="Value" baseline="deep-dived" />
                 </div>
               ))}
+              {stats.deepDiveBoolFlags.length > 0 ? (
+                <div className={styles.enrichGroup}>
+                  <span className={styles.enrichGroupLabel}>Flags (= yes)</span>
+                  <EnrichTable
+                    rows={stats.deepDiveBoolFlags}
+                    firstCol="Flag"
+                    baseline="deep-dived"
+                  />
+                </div>
+              ) : null}
             </div>
           ) : null}
 
@@ -389,6 +406,8 @@ function Stat({
   );
 }
 
+type EnrichSortKey = "label" | "list" | "baseline" | "fold" | "p";
+
 function EnrichTable({
   rows,
   firstCol,
@@ -398,23 +417,76 @@ function EnrichTable({
   firstCol: string;
   baseline?: "catalog" | "deep-dived";
 }) {
+  // Each table sorts independently; default is fold desc (most enriched
+  // first, depleted trailing). Click a header to re-sort / flip direction.
+  const [sortKey, setSortKey] = useState<EnrichSortKey>("fold");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+
+  const sorted = useMemo(() => {
+    const val = (r: EnrichRow): number | string => {
+      switch (sortKey) {
+        case "label":
+          return r.label.toLowerCase();
+        case "list":
+          return r.listTotal > 0 ? r.listHits / r.listTotal : 0;
+        case "baseline":
+          return r.baselineTotal > 0 ? r.baselineHits / r.baselineTotal : 0;
+        case "fold":
+          return r.fold;
+        case "p":
+          return r.pValue;
+      }
+    };
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...rows].sort((a, b) => {
+      const av = val(a);
+      const bv = val(b);
+      if (av < bv) return -dir;
+      if (av > bv) return dir;
+      return a.label < b.label ? -1 : a.label > b.label ? 1 : 0;
+    });
+  }, [rows, sortKey, sortDir]);
+
+  function setSort(k: EnrichSortKey) {
+    if (k === sortKey) setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    else {
+      setSortKey(k);
+      setSortDir(k === "label" ? "asc" : "desc");
+    }
+  }
+
   if (rows.length === 0) return null;
+  const cols: { key: EnrichSortKey; label: string; num: boolean }[] = [
+    { key: "label", label: firstCol, num: false },
+    { key: "list", label: "Your list", num: true },
+    { key: "baseline", label: baseline === "deep-dived" ? "Deep-dived" : "Catalog", num: true },
+    { key: "fold", label: "Fold", num: true },
+    { key: "p", label: "p", num: true },
+  ];
   return (
     <div className={styles.enrichTable}>
       <div className={`${styles.enrichRow} ${styles.enrichHead}`}>
-        <span>{firstCol}</span>
-        <span className={styles.num}>Your list</span>
-        <span className={styles.num}>
-          {baseline === "deep-dived" ? "Deep-dived" : "Catalog"}
-        </span>
-        <span className={styles.num}>Fold</span>
-        <span className={styles.num}>p</span>
+        {cols.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            className={`${styles.enrichSortBtn} ${c.num ? styles.enrichSortNum : ""} ${sortKey === c.key ? styles.enrichSortActive : ""}`}
+            onClick={() => setSort(c.key)}
+            aria-label={`Sort by ${c.label}`}
+          >
+            {c.label}
+            <span className={styles.enrichSortInd} aria-hidden="true">
+              {sortKey === c.key ? (sortDir === "asc" ? "▲" : "▼") : ""}
+            </span>
+          </button>
+        ))}
       </div>
-      {rows.map((r) => {
+      {sorted.map((r) => {
         const listRate = r.listTotal > 0 ? r.listHits / r.listTotal : 0;
         const baselineRate =
           r.baselineTotal > 0 ? r.baselineHits / r.baselineTotal : 0;
         const enriched = r.fold >= 2 && r.pValue < 0.05;
+        const depleted = r.fold <= 0.5 && r.pValue < 0.05;
         return (
           <div key={r.label} className={styles.enrichRow}>
             <span className={styles.enrichLabel}>{r.label}</span>
@@ -428,7 +500,9 @@ function EnrichTable({
             <span className={`${styles.num} ${styles.muted}`}>
               {fmtPct(baselineRate)}
             </span>
-            <span className={`${styles.num} ${enriched ? styles.foldHot : ""}`}>
+            <span
+              className={`${styles.num} ${enriched ? styles.foldHot : depleted ? styles.foldCold : ""}`}
+            >
               {fmtFold(r.fold)}
             </span>
             <span className={`${styles.num} ${styles.muted}`}>

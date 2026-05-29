@@ -50,8 +50,12 @@ export interface CompareStats {
   signals: EnrichRow[];
   /** Categorical catalog-wide enrichment: triage verdict, triage reason. */
   catalogGroups: EnrichGroup[];
-  /** Deep-dive-filter enrichment (baseline = deep-dived genes). */
-  deepDiveGroups: EnrichGroup[];
+  /** Multi-valued deep-dive filter enrichment (baseline = deep-dived genes). */
+  deepDiveEnumGroups: EnrichGroup[];
+  /** Boolean deep-dive flags, one "= yes" row per field (baseline =
+   *  deep-dived genes). The complementary "no" is redundant so it's
+   *  dropped; collapsed into one table rather than 8 single-row groups. */
+  deepDiveBoolFlags: EnrichRow[];
   /** Matched genes that carry deep_dive_filters. */
   deepDivedListCount: number;
   /** Catalog genes that carry deep_dive_filters (the DD baseline size). */
@@ -94,6 +98,33 @@ function hyperTailGE(
   return Math.min(1, Math.max(0, sum));
 }
 
+/** P(X <= a) — the depletion (lower) tail. */
+function hyperTailLE(
+  lf: Float64Array,
+  N: number,
+  K: number,
+  draws: number,
+  a: number,
+): number {
+  const denom = logChoose(lf, N, draws);
+  if (!Number.isFinite(denom)) return 1;
+  const lo = Math.max(0, draws - (N - K));
+  let sum = 0;
+  for (let i = lo; i <= a; i += 1) {
+    const logp = logChoose(lf, K, i) + logChoose(lf, N - K, draws - i) - denom;
+    if (Number.isFinite(logp)) sum += Math.exp(logp);
+  }
+  return Math.min(1, Math.max(0, sum));
+}
+
+/**
+ * One enrichment row. `a` may be 0 — a value present in the baseline but
+ * absent from the list is *depleted* (fold < 1, fold = 0 when a = 0),
+ * which is as informative as enrichment, so those rows are kept. The
+ * p-value is the one-tailed hypergeometric tail in the direction of the
+ * observed deviation: the enrichment tail P(X >= a) when a is at or above
+ * the expected count, else the depletion tail P(X <= a).
+ */
 function makeRow(
   label: string,
   a: number,
@@ -103,29 +134,37 @@ function makeRow(
   lf: Float64Array,
 ): EnrichRow {
   const fold = n > 0 && k > 0 && K > 0 ? a / k / (K / n) : 0;
-  const pValue = k > 0 && K > 0 ? hyperTailGE(lf, n, K, k, a) : 1;
+  let pValue = 1;
+  if (k > 0 && K > 0 && n > 0) {
+    const expected = (k * K) / n;
+    pValue =
+      a >= expected ? hyperTailGE(lf, n, K, k, a) : hyperTailLE(lf, n, K, k, a);
+  }
   return { label, listHits: a, listTotal: k, baselineHits: K, baselineTotal: n, fold, pValue };
 }
 
 function enrichBinary(
   label: string,
-  allRows: CatalogRow[],
-  matchedRows: CatalogRow[],
+  pop: CatalogRow[],
+  listPop: CatalogRow[],
   pred: (r: CatalogRow) => boolean,
   lf: Float64Array,
 ): EnrichRow {
   let K = 0;
-  for (const r of allRows) if (pred(r)) K += 1;
+  for (const r of pop) if (pred(r)) K += 1;
   let a = 0;
-  for (const r of matchedRows) if (pred(r)) a += 1;
-  return makeRow(label, a, matchedRows.length, K, allRows.length, lf);
+  for (const r of listPop) if (pred(r)) a += 1;
+  return makeRow(label, a, listPop.length, K, pop.length, lf);
 }
 
 /**
  * Per-value enrichment for one categorical dimension. `inPop` restricts
  * the baseline population (e.g. deep-dived genes for DD fields); `valueOf`
- * extracts the value (null = excluded). Only values present in the list
- * (a >= 1) are returned, sorted by fold desc then count desc.
+ * extracts the value (null = excluded). EVERY value present in the
+ * baseline population is returned — including values absent from the list
+ * (a = 0), which are depleted (fold 0) and just as informative as
+ * enriched ones. Sorted by fold desc then count desc (so the default
+ * view leads with enrichment and trails into depletion).
  */
 function enrichCategory(
   key: string,
@@ -151,9 +190,11 @@ function enrichCategory(
     const v = valueOf(r);
     if (v != null) amap.set(v, (amap.get(v) ?? 0) + 1);
   }
+  // Iterate the baseline values (not just the list's) so depleted values
+  // — present in the catalog/population but a = 0 in the list — appear.
   const rows: EnrichRow[] = [];
-  for (const [v, a] of amap) {
-    rows.push(makeRow(labelOf(v), a, k, Kmap.get(v) ?? 0, n, lf));
+  for (const [v, K] of Kmap) {
+    rows.push(makeRow(labelOf(v), amap.get(v) ?? 0, k, K, n, lf));
   }
   rows.sort((x, y) => y.fold - x.fold || y.listHits - x.listHits);
   return { key, label, rows };
@@ -198,7 +239,11 @@ export function computeCompareStats(
   ].filter((g) => g.rows.length > 0);
 
   const hasDdf = (r: CatalogRow) => Boolean(r.deep_dive_filters);
-  const deepDiveGroups: EnrichGroup[] = [];
+  const ddPop = allRows.filter(hasDdf);
+  const ddListPop = matchedRows.filter(hasDdf);
+
+  // Multi-valued enum fields — one sub-table each (all values, incl. depleted).
+  const deepDiveEnumGroups: EnrichGroup[] = [];
   for (const f of DD_ENUM_FIELDS) {
     const g = enrichCategory(
       f.key,
@@ -210,29 +255,31 @@ export function computeCompareStats(
       lf,
       prettyEnum,
     );
-    if (g.rows.length) deepDiveGroups.push(g);
+    if (g.rows.length) deepDiveEnumGroups.push(g);
   }
+
+  // Boolean flags — one "= yes" row per field (the complementary "no" is
+  // redundant). Collapsed into a single table; a field with 0 list hits is
+  // kept as a depleted row as long as some deep-dived gene has it.
+  const deepDiveBoolFlags: EnrichRow[] = [];
   for (const f of DD_BOOL_FIELDS) {
-    const g = enrichCategory(
-      f.key,
+    const row = enrichBinary(
       f.label,
-      allRows,
-      matchedRows,
-      (r) => {
-        const v = r.deep_dive_filters?.[f.key] as boolean | undefined;
-        return v == null ? null : v ? "yes" : "no";
-      },
-      hasDdf,
+      ddPop,
+      ddListPop,
+      (r) => r.deep_dive_filters?.[f.key] === true,
       lf,
     );
-    if (g.rows.length) deepDiveGroups.push(g);
+    if (row.baselineHits > 0) deepDiveBoolFlags.push(row);
   }
+  deepDiveBoolFlags.sort((a, b) => b.fold - a.fold || b.listHits - a.listHits);
 
   return {
     signals,
     catalogGroups,
-    deepDiveGroups,
-    deepDivedListCount: matchedRows.filter(hasDdf).length,
-    deepDivedBaselineCount: allRows.filter(hasDdf).length,
+    deepDiveEnumGroups,
+    deepDiveBoolFlags,
+    deepDivedListCount: ddListPop.length,
+    deepDivedBaselineCount: ddPop.length,
   };
 }
