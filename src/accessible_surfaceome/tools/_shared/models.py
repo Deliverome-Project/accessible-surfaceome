@@ -2131,13 +2131,13 @@ class ParalogEntry(BaseModel):
     ``ecd_pct_identity`` is ``None`` for ECD-less proteins (inner-leaflet
     kinases like SRC, soluble proteins, cytoplasmic enzymes) — there's
     no ECD to compute identity against. ``full_length_pct_identity`` is
-    the whole-protein BLOSUM62 identity, which IS defined for those
-    proteins, so the viewer can still color the antibody cross-reactivity
-    risk tier for an ECD-less protein's paralogs by falling back to it
-    (same ≥70 / 50–70 / <50 cutoffs, keyed on whole-protein homology
-    rather than the extracellular surface). Family membership alone is
-    still meaningful signal for the methods builder's antibody-validation
-    discipline.
+    the whole-protein identity (Ensembl Compara / BioMart), which IS
+    populated for those proteins, so the viewer can still color the
+    antibody cross-reactivity risk tier for an ECD-less protein's paralogs
+    by falling back to it (same ≥70 / 50–70 / <50 cutoffs, keyed on
+    whole-protein homology rather than the extracellular surface). Family
+    membership alone is still meaningful signal for the methods builder's
+    antibody-validation discipline.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -2145,11 +2145,13 @@ class ParalogEntry(BaseModel):
     paralog_symbol: str
     paralog_uniprot_acc: str
     ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
-    # Whole-protein percent identity vs the human canonical (single global
-    # BLOSUM62 alignment over the full sequences, not loop-restricted).
-    # Non-null wherever both sequences are available — including ECD-less
-    # proteins where ``ecd_pct_identity`` is None. ``None`` only on records
-    # built before this field was populated in the Compara paralog table.
+    # Whole-protein percent identity vs the human canonical, straight from
+    # Ensembl Compara's BioMart homology table (``compara_paralog.
+    # biomart_percent_identity``) — same source as the ortholog full-length
+    # identity (``compara_ortholog.percent_identity``), so the two are
+    # directly comparable. Populated for ~all paralog pairs, INCLUDING
+    # ECD-less proteins where ``ecd_pct_identity`` is None. ``None`` only on
+    # records built before this field was surfaced by the deep-dive builder.
     full_length_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str

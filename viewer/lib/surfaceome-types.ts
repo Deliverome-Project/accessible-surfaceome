@@ -352,10 +352,11 @@ export interface OrthologSet {
  * One within-species paralog (Ensembl Compara). `ecd_pct_identity` is
  * `null` for ECD-less proteins (inner-leaflet kinases like SRC, soluble
  * proteins, cytoplasmic enzymes) — there's no extracellular domain to
- * align. `full_length_pct_identity` is the whole-protein identity, which
- * IS defined for those proteins, so the IsoformsCard chip falls back to
- * it to still color the cross-reactivity risk tier (same ≥70 / 50–70 /
- * <50 cutoffs, keyed on whole-protein homology). Mirrors Python's
+ * align. `full_length_pct_identity` is the whole-protein identity from
+ * Compara/BioMart (same source as the ortholog full-length identity),
+ * which IS populated for those proteins, so the IsoformsCard chip falls
+ * back to it to still color the cross-reactivity risk tier (same ≥70 /
+ * 50–70 / <50 cutoffs, keyed on whole-protein homology). Mirrors Python's
  * ``ParalogEntry`` (``ecd_pct_identity`` / ``full_length_pct_identity``:
  * ``float | None``).
  */

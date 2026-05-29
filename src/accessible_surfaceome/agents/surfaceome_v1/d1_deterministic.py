@@ -272,7 +272,7 @@ def _fetch_paralogs(
     """
     rows = _query_public(
         "SELECT paralog_gene_symbol, paralog_uniprot_acc, ecd_pct_identity, "
-        "family_id, compara_version, rank_by_ecd_identity "
+        "biomart_percent_identity, family_id, compara_version, rank_by_ecd_identity "
         "FROM compara_paralog "
         "WHERE human_uniprot_acc = ? AND paralog_version = ? "
         "  AND paralog_gene_symbol IS NOT NULL "
@@ -285,11 +285,18 @@ def _fetch_paralogs(
         try:
             ecd_raw = r.get("ecd_pct_identity")
             ecd_id = float(ecd_raw) if ecd_raw is not None else None
+            # Full-length identity from Compara/BioMart — populated even for
+            # ECD-less proteins (ecd_id is None), which is what lets the
+            # viewer color their cross-reactivity tier. Same source as the
+            # ortholog full-length identity, so the numbers are comparable.
+            full_raw = r.get("biomart_percent_identity")
+            full_id = float(full_raw) if full_raw is not None else None
             out.append(
                 ParalogEntry(
                     paralog_symbol=r["paralog_gene_symbol"],
                     paralog_uniprot_acc=r["paralog_uniprot_acc"],
                     ecd_pct_identity=ecd_id,
+                    full_length_pct_identity=full_id,
                     family_id=r.get("family_id") or "",
                     compara_version=r.get("compara_version") or "",
                 )

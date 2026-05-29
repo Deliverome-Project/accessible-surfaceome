@@ -1250,6 +1250,7 @@
         "paralog_symbol": "CLDN1",
         "paralog_uniprot_acc": "O95832",
         "ecd_pct_identity": 40.78947368421053,
+        "full_length_pct_identity": 28.3525,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1257,6 +1258,7 @@
         "paralog_symbol": "CLDN19",
         "paralog_uniprot_acc": "Q8N6F1",
         "ecd_pct_identity": 38.666666666666664,
+        "full_length_pct_identity": 25.6705,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1264,6 +1266,7 @@
         "paralog_symbol": "CLDN4",
         "paralog_uniprot_acc": "O14493",
         "ecd_pct_identity": 37.83783783783784,
+        "full_length_pct_identity": 27.9693,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1271,6 +1274,7 @@
         "paralog_symbol": "CLDN7",
         "paralog_uniprot_acc": "O95471",
         "ecd_pct_identity": 36.84210526315789,
+        "full_length_pct_identity": 26.8199,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1278,6 +1282,7 @@
         "paralog_symbol": "CLDN5",
         "paralog_uniprot_acc": "O00501",
         "ecd_pct_identity": 36.84210526315789,
+        "full_length_pct_identity": 24.1379,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1285,6 +1290,7 @@
         "paralog_symbol": "CLDN3",
         "paralog_uniprot_acc": "O15551",
         "ecd_pct_identity": 36.486486486486484,
+        "full_length_pct_identity": 28.3525,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1292,6 +1298,7 @@
         "paralog_symbol": "CLDN14",
         "paralog_uniprot_acc": "O95500",
         "ecd_pct_identity": 35.526315789473685,
+        "full_length_pct_identity": 25.6705,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1299,6 +1306,7 @@
         "paralog_symbol": "CLDN6",
         "paralog_uniprot_acc": "P56747",
         "ecd_pct_identity": 35.13513513513514,
+        "full_length_pct_identity": 26.8199,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1306,6 +1314,7 @@
         "paralog_symbol": "CLDN8",
         "paralog_uniprot_acc": "P56748",
         "ecd_pct_identity": 35.064935064935064,
+        "full_length_pct_identity": 22.9885,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1313,6 +1322,7 @@
         "paralog_symbol": "CLDN11",
         "paralog_uniprot_acc": "O75508",
         "ecd_pct_identity": 33.84615384615385,
+        "full_length_pct_identity": 20.3065,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1320,6 +1330,7 @@
         "paralog_symbol": "CLDN9",
         "paralog_uniprot_acc": "O95484",
         "ecd_pct_identity": 33.78378378378378,
+        "full_length_pct_identity": 24.9042,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1327,6 +1338,7 @@
         "paralog_symbol": "CLDN2",
         "paralog_uniprot_acc": "P57739",
         "ecd_pct_identity": 31.57894736842105,
+        "full_length_pct_identity": 22.2222,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1334,6 +1346,7 @@
         "paralog_symbol": "CLDN24",
         "paralog_uniprot_acc": "A6NM45",
         "ecd_pct_identity": 30.263157894736842,
+        "full_length_pct_identity": 24.1379,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1341,6 +1354,7 @@
         "paralog_symbol": "CLDN22",
         "paralog_uniprot_acc": "Q8N7P3",
         "ecd_pct_identity": 30.263157894736842,
+        "full_length_pct_identity": 23.3716,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1348,6 +1362,7 @@
         "paralog_symbol": "CLDN23",
         "paralog_uniprot_acc": "Q96B33",
         "ecd_pct_identity": 30.0,
+        "full_length_pct_identity": 16.8582,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1355,6 +1370,7 @@
         "paralog_symbol": "CLDN10",
         "paralog_uniprot_acc": "P78369",
         "ecd_pct_identity": 28.37837837837838,
+        "full_length_pct_identity": 25.6705,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1362,6 +1378,7 @@
         "paralog_symbol": "CLDN15",
         "paralog_uniprot_acc": "P56746",
         "ecd_pct_identity": 28.169014084507044,
+        "full_length_pct_identity": 25.6705,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1369,6 +1386,7 @@
         "paralog_symbol": "CLDN25",
         "paralog_uniprot_acc": "C9JDP6",
         "ecd_pct_identity": 28.000000000000004,
+        "full_length_pct_identity": 18.0077,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1376,6 +1394,7 @@
         "paralog_symbol": "CLDN20",
         "paralog_uniprot_acc": "P56880",
         "ecd_pct_identity": 27.631578947368425,
+        "full_length_pct_identity": 20.3065,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1383,6 +1402,7 @@
         "paralog_symbol": "CLDN16",
         "paralog_uniprot_acc": "Q9Y5I7",
         "ecd_pct_identity": 27.631578947368425,
+        "full_length_pct_identity": 19.9234,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1390,6 +1410,7 @@
         "paralog_symbol": "CLDN34",
         "paralog_uniprot_acc": "H7C241",
         "ecd_pct_identity": 26.506024096385545,
+        "full_length_pct_identity": 14.9425,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       },
@@ -1397,6 +1418,7 @@
         "paralog_symbol": "CLDN17",
         "paralog_uniprot_acc": "P56750",
         "ecd_pct_identity": 26.31578947368421,
+        "full_length_pct_identity": 24.5211,
         "family_id": "Chordata",
         "compara_version": "Compara r112"
       }

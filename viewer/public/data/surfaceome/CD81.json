@@ -1139,6 +1139,7 @@
         "paralog_symbol": "TSPAN18",
         "paralog_uniprot_acc": "Q96SJ8",
         "ecd_pct_identity": 27.722772277227726,
+        "full_length_pct_identity": 27.1186,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1146,6 +1147,7 @@
         "paralog_symbol": "TSPAN16",
         "paralog_uniprot_acc": "Q9UKR8",
         "ecd_pct_identity": 26.851851851851855,
+        "full_length_pct_identity": 18.2203,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1153,6 +1155,7 @@
         "paralog_symbol": "TSPAN2",
         "paralog_uniprot_acc": "O60636",
         "ecd_pct_identity": 26.595744680851062,
+        "full_length_pct_identity": 39.8305,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1160,6 +1163,7 @@
         "paralog_symbol": "TSPAN31",
         "paralog_uniprot_acc": "Q12999",
         "ecd_pct_identity": 26.190476190476193,
+        "full_length_pct_identity": 16.9492,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1167,6 +1171,7 @@
         "paralog_symbol": "CD9",
         "paralog_uniprot_acc": "P21926",
         "ecd_pct_identity": 25.961538461538463,
+        "full_length_pct_identity": 43.6441,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1174,6 +1179,7 @@
         "paralog_symbol": "ROM1",
         "paralog_uniprot_acc": "Q03395",
         "ecd_pct_identity": 25.961538461538463,
+        "full_length_pct_identity": 16.9492,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1181,6 +1187,7 @@
         "paralog_symbol": "TSPAN11",
         "paralog_uniprot_acc": "A1L157",
         "ecd_pct_identity": 24.761904761904763,
+        "full_length_pct_identity": 26.6949,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1188,6 +1195,7 @@
         "paralog_symbol": "UPK1B",
         "paralog_uniprot_acc": "O75841",
         "ecd_pct_identity": 24.299065420560748,
+        "full_length_pct_identity": 18.2203,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1195,6 +1203,7 @@
         "paralog_symbol": "TSPAN6",
         "paralog_uniprot_acc": "O43657",
         "ecd_pct_identity": 23.809523809523807,
+        "full_length_pct_identity": 23.3051,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1202,6 +1211,7 @@
         "paralog_symbol": "CD53",
         "paralog_uniprot_acc": "P19397",
         "ecd_pct_identity": 23.711340206185564,
+        "full_length_pct_identity": 25.4237,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1209,6 +1219,7 @@
         "paralog_symbol": "TSPAN12",
         "paralog_uniprot_acc": "O95859",
         "ecd_pct_identity": 23.423423423423422,
+        "full_length_pct_identity": 19.4915,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1216,6 +1227,7 @@
         "paralog_symbol": "CD151",
         "paralog_uniprot_acc": "P48509",
         "ecd_pct_identity": 23.300970873786408,
+        "full_length_pct_identity": 25.8475,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1223,6 +1235,7 @@
         "paralog_symbol": "UPK1A",
         "paralog_uniprot_acc": "O00322",
         "ecd_pct_identity": 22.93577981651376,
+        "full_length_pct_identity": 18.6441,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1230,6 +1243,7 @@
         "paralog_symbol": "TSPAN19",
         "paralog_uniprot_acc": "P0C672",
         "ecd_pct_identity": 22.93577981651376,
+        "full_length_pct_identity": 16.5254,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1237,6 +1251,7 @@
         "paralog_symbol": "CD63",
         "paralog_uniprot_acc": "P08962",
         "ecd_pct_identity": 22.641509433962266,
+        "full_length_pct_identity": 21.6102,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1244,6 +1259,7 @@
         "paralog_symbol": "TSPAN7",
         "paralog_uniprot_acc": "P41732",
         "ecd_pct_identity": 22.429906542056074,
+        "full_length_pct_identity": 23.3051,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1251,6 +1267,7 @@
         "paralog_symbol": "TSPAN13",
         "paralog_uniprot_acc": "O95857",
         "ecd_pct_identity": 22.36842105263158,
+        "full_length_pct_identity": 17.3729,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1258,6 +1275,7 @@
         "paralog_symbol": "TSPAN15",
         "paralog_uniprot_acc": "O95858",
         "ecd_pct_identity": 22.330097087378643,
+        "full_length_pct_identity": 18.6441,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1265,6 +1283,7 @@
         "paralog_symbol": "TSPAN5",
         "paralog_uniprot_acc": "P62079",
         "ecd_pct_identity": 22.018348623853214,
+        "full_length_pct_identity": 27.9661,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1272,6 +1291,7 @@
         "paralog_symbol": "TSPAN8",
         "paralog_uniprot_acc": "P19075",
         "ecd_pct_identity": 21.818181818181817,
+        "full_length_pct_identity": 30.9322,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1279,6 +1299,7 @@
         "paralog_symbol": "TSPAN3",
         "paralog_uniprot_acc": "O60637",
         "ecd_pct_identity": 20.754716981132077,
+        "full_length_pct_identity": 21.1864,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1286,6 +1307,7 @@
         "paralog_symbol": "CD37",
         "paralog_uniprot_acc": "P11049",
         "ecd_pct_identity": 20.0,
+        "full_length_pct_identity": 23.3051,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1293,6 +1315,7 @@
         "paralog_symbol": "TSPAN33",
         "paralog_uniprot_acc": "Q86UF1",
         "ecd_pct_identity": 19.607843137254903,
+        "full_length_pct_identity": 24.1525,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1300,6 +1323,7 @@
         "paralog_symbol": "TSPAN1",
         "paralog_uniprot_acc": "O60635",
         "ecd_pct_identity": 19.26605504587156,
+        "full_length_pct_identity": 26.2712,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1307,6 +1331,7 @@
         "paralog_symbol": "TSPAN17",
         "paralog_uniprot_acc": "Q96FV3",
         "ecd_pct_identity": 18.34862385321101,
+        "full_length_pct_identity": 26.6949,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1314,6 +1339,7 @@
         "paralog_symbol": "PRPH2",
         "paralog_uniprot_acc": "P23942",
         "ecd_pct_identity": 18.34862385321101,
+        "full_length_pct_identity": 13.1356,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1321,6 +1347,7 @@
         "paralog_symbol": "TSPAN9",
         "paralog_uniprot_acc": "O75954",
         "ecd_pct_identity": 18.095238095238095,
+        "full_length_pct_identity": 26.2712,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1328,6 +1355,7 @@
         "paralog_symbol": "TSPAN4",
         "paralog_uniprot_acc": "O14817",
         "ecd_pct_identity": 17.92452830188679,
+        "full_length_pct_identity": 24.5763,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1335,6 +1363,7 @@
         "paralog_symbol": "TSPAN32",
         "paralog_uniprot_acc": "Q96QS1",
         "ecd_pct_identity": 17.92452830188679,
+        "full_length_pct_identity": 18.6441,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1342,6 +1371,7 @@
         "paralog_symbol": "CD82",
         "paralog_uniprot_acc": "P27701",
         "ecd_pct_identity": 16.9811320754717,
+        "full_length_pct_identity": 26.2712,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1349,6 +1379,7 @@
         "paralog_symbol": "TSPAN14",
         "paralog_uniprot_acc": "Q8NG11",
         "ecd_pct_identity": 16.822429906542055,
+        "full_length_pct_identity": 25.8475,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       },
@@ -1356,6 +1387,7 @@
         "paralog_symbol": "TSPAN10",
         "paralog_uniprot_acc": "Q9H1Z9",
         "ecd_pct_identity": 16.037735849056602,
+        "full_length_pct_identity": 17.3729,
         "family_id": "Bilateria",
         "compara_version": "Compara r112"
       }

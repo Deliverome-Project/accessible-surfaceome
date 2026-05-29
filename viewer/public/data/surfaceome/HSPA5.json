@@ -876,6 +876,7 @@
         "paralog_symbol": "HSPA8",
         "paralog_uniprot_acc": "P11142",
         "ecd_pct_identity": 64.77987421383648,
+        "full_length_pct_identity": 63.7615,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112"
       },
@@ -883,6 +884,7 @@
         "paralog_symbol": "HSPA1L",
         "paralog_uniprot_acc": "P34931",
         "ecd_pct_identity": 63.52201257861635,
+        "full_length_pct_identity": 61.7737,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112"
       },
@@ -890,6 +892,7 @@
         "paralog_symbol": "HSPA2",
         "paralog_uniprot_acc": "P54652",
         "ecd_pct_identity": 63.36477987421384,
+        "full_length_pct_identity": 61.9266,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112"
       },
@@ -897,6 +900,7 @@
         "paralog_symbol": "HSPA1B",
         "paralog_uniprot_acc": "P0DMV9",
         "ecd_pct_identity": 62.893081761006286,
+        "full_length_pct_identity": 61.315,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112"
       },
@@ -904,6 +908,7 @@
         "paralog_symbol": "HSPA1A",
         "paralog_uniprot_acc": "P0DMV8",
         "ecd_pct_identity": 62.893081761006286,
+        "full_length_pct_identity": 61.315,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112"
       },
@@ -911,6 +916,7 @@
         "paralog_symbol": "HSPA13",
         "paralog_uniprot_acc": "P48723",
         "ecd_pct_identity": 39.14988814317674,
+        "full_length_pct_identity": 26.7584,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112"
       },
@@ -918,6 +924,55 @@
         "paralog_symbol": "HYOU1",
         "paralog_uniprot_acc": "Q9Y4L1",
         "ecd_pct_identity": 33.490566037735846,
+        "full_length_pct_identity": 28.2875,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "HSPA6",
+        "paralog_uniprot_acc": "P17066",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 59.633,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "HSPA9",
+        "paralog_uniprot_acc": "P38646",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 50.9174,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "HSPA4",
+        "paralog_uniprot_acc": "P34932",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 32.5688,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "HSPH1",
+        "paralog_uniprot_acc": "Q92598",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 29.5107,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "HSPA4L",
+        "paralog_uniprot_acc": "O95757",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 28.8991,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112"
+      },
+      {
+        "paralog_symbol": "HSPA14",
+        "paralog_uniprot_acc": "Q0VDF9",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 26.9113,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112"
       }
