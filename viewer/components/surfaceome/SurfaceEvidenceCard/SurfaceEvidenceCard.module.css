@@ -9,7 +9,11 @@
   color: var(--ink);
   font-size: 0.98rem;
   line-height: var(--lh-body);
-  max-width: 64ch;
+  /* Was ``max-width: 64ch`` — capped at ~64 characters which left a big
+   * empty column to the right of the prose and made the banner look
+   * undersized vs the method blocks below it. Per user feedback, let
+   * the prose fill the full section width so the banner block visually
+   * weighs the same as the method-block list underneath. */
 }
 
 .empty {
