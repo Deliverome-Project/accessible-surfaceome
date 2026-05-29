@@ -8,7 +8,13 @@ import type {
   DeepDiveFilters,
   TriageCell,
 } from "../../lib/surfaceome";
-import { prettyEnum } from "../../lib/surfaceome";
+import { prettyEnum } from "../../lib/enums";
+import {
+  DD_BOOL_FIELDS,
+  DD_ENUM_FIELDS,
+  type DdBoolKey,
+  type DdEnumKey,
+} from "../../lib/deep-dive-fields";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import { InfoTip } from "../InfoTip/InfoTip";
@@ -175,218 +181,9 @@ function reasonGroupLabelToneClass(v: VerdictKey): string {
   return styles.filterReasonGroupLabelAny;
 }
 
-// ---------------------------------------------------------------------------
-// Deep-dive filter taxonomy.
-//
-// 13 enum-valued fields (multi-select chip strip; empty set = no filter)
-// and 8 boolean fields (tri-state: any | true | false). Keys mirror
-// `DeepDiveFilters` in viewer/lib/surfaceome.ts and `DDF_KEYS` in the
-// Worker; the enum value lists are pulled from the Python Literal
-// definitions in src/accessible_surfaceome/tools/_shared/models.py.
-//
-// Tooltip text reuses entries from viewer/lib/tooltips.tsx (same
-// text bank the gene-page FiltersCard reads) so the language stays
-// consistent between the catalog filter chips and the per-gene
-// detail pills.
-// ---------------------------------------------------------------------------
-
-type DdEnumKey =
-  | "surface_accessibility"
-  | "confidence"
-  | "state_dependence"
-  | "surface_call_reason"
-  | "subcategory"
-  | "protein_family"
-  | "evidence_grade"
-  | "evidence_density"
-  | "ecd_accessibility_class"
-  | "expression_level"
-  | "expression_breadth"
-  | "surface_specificity"
-  | "co_receptor_dependency";
-
-type DdBoolKey =
-  | "has_known_ligand"
-  | "low_endogenous_expression"
-  | "overexpression_surface_localization_observed"
-  | "has_shed_form"
-  | "has_secreted_form"
-  | "has_epitope_masking"
-  | "n_term_extracellular"
-  | "c_term_extracellular";
-
-interface DdEnumSpec {
-  key: DdEnumKey;
-  label: string;
-  values: readonly string[];
-  /** Key into the `tooltips` map for the InfoTip body. */
-  tooltipKey: string;
-}
-
-interface DdBoolSpec {
-  key: DdBoolKey;
-  label: string;
-  tooltipKey: string;
-}
-
-const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
-  {
-    key: "surface_accessibility",
-    label: "Accessibility",
-    values: ["high", "moderate", "low", "uncertain", "no"],
-    tooltipKey: "surface_accessibility",
-  },
-  {
-    key: "confidence",
-    label: "Confidence",
-    values: ["high", "moderate", "low"],
-    tooltipKey: "confidence",
-  },
-  {
-    key: "state_dependence",
-    label: "State dependence",
-    values: ["low", "moderate", "high", "unclear"],
-    tooltipKey: "state_dependence",
-  },
-  {
-    key: "surface_call_reason",
-    label: "Synth reason",
-    values: [
-      "classical_surface_receptor",
-      "gpi_anchored",
-      "multipass_with_exposed_loops",
-      "extracellular_face_protein",
-      "stable_complex_partner",
-      "cell_state_induced",
-      "tissue_restricted_surface",
-      "lysosomal_exocytosis",
-      "dual_localization",
-      "stable_surface_attachment",
-      "cytoplasmic",
-      "nuclear",
-      "mitochondrial_internal",
-      "endomembrane_resident",
-      "nuclear_envelope",
-      "inner_leaflet_anchored",
-      "secreted_only",
-      "pmhc_only_intracellular",
-      "other",
-    ],
-    tooltipKey: "headline_risks",
-  },
-  {
-    key: "subcategory",
-    label: "Architecture",
-    values: [
-      "single_pass_T1",
-      "single_pass_T2",
-      "multi_pass",
-      "GPCR",
-      "GPI_anchored",
-      "tetraspanin",
-      "other",
-    ],
-    tooltipKey: "catalog_subcategory",
-  },
-  {
-    key: "protein_family",
-    label: "Family",
-    values: ["receptor", "enzyme", "transporter", "miscellaneous"],
-    tooltipKey: "catalog_protein_family",
-  },
-  {
-    key: "evidence_grade",
-    label: "Evidence grade",
-    values: [
-      "direct_multi_method",
-      "direct_single_method",
-      "supportive_but_indirect",
-      "conflicting",
-      "weak",
-    ],
-    tooltipKey: "experimental_surface_evidence",
-  },
-  {
-    key: "evidence_density",
-    label: "Evidence density",
-    values: ["low", "moderate", "high"],
-    tooltipKey: "catalog_evidence_density",
-  },
-  {
-    key: "ecd_accessibility_class",
-    label: "ECD class",
-    values: ["large", "moderate", "small", "minimal", "none"],
-    tooltipKey: "catalog_ecd_class",
-  },
-  {
-    key: "expression_level",
-    label: "Expression level",
-    values: ["high", "moderate", "low", "absent"],
-    tooltipKey: "expression_level",
-  },
-  {
-    key: "expression_breadth",
-    label: "Expression breadth",
-    values: ["pan_tissue", "broad", "restricted", "rare"],
-    tooltipKey: "expression_breadth",
-  },
-  {
-    key: "surface_specificity",
-    label: "Surface specificity",
-    values: ["surface_dominant", "mixed", "mostly_intracellular"],
-    tooltipKey: "surface_specificity",
-  },
-  {
-    key: "co_receptor_dependency",
-    label: "Co-receptor",
-    values: ["required", "modulatory", "none", "unknown"],
-    tooltipKey: "co_receptor_dependency",
-  },
-];
-
-const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
-  {
-    key: "has_known_ligand",
-    label: "Known ligand",
-    tooltipKey: "headline_risks",
-  },
-  {
-    key: "low_endogenous_expression",
-    label: "Low endogenous expression",
-    tooltipKey: "headline_risks",
-  },
-  {
-    key: "overexpression_surface_localization_observed",
-    label: "OE + surface precedent",
-    tooltipKey: "headline_risks",
-  },
-  {
-    key: "has_shed_form",
-    label: "Shed form",
-    tooltipKey: "catalog_shed_form",
-  },
-  {
-    key: "has_secreted_form",
-    label: "Secreted form",
-    tooltipKey: "catalog_secreted_form",
-  },
-  {
-    key: "has_epitope_masking",
-    label: "Epitope masking",
-    tooltipKey: "catalog_epitope_masking",
-  },
-  {
-    key: "n_term_extracellular",
-    label: "N-term extracellular",
-    tooltipKey: "catalog_n_term_extracellular",
-  },
-  {
-    key: "c_term_extracellular",
-    label: "C-term extracellular",
-    tooltipKey: "catalog_c_term_extracellular",
-  },
-];
-
+// Deep-dive filter taxonomy (DD_ENUM_FIELDS / DD_BOOL_FIELDS + the
+// DdEnumKey / DdBoolKey types) moved to lib/deep-dive-fields.ts so the
+// catalog filter panel and the /compare tool share one source of truth.
 type DdBoolFilter = "any" | "yes" | "no";
 
 function verdictTone(v: string | null | undefined): string {
@@ -436,7 +233,18 @@ export function CatalogTable({
   // the deep-dive synthesizer's filters block). Both start collapsed
   // so opening the panel doesn't dump 30 chip rows on the reader at
   // once — they expand the section they want to filter on.
+  // Filter panel is organized into four collapsible groups:
+  //   * Databases — the 5-DB vote pattern (independent of agents)
+  //   * Triage    — first-pass Sonnet 4.6 agent (verdict + reason +
+  //                 deep-dive-presence bool)
+  //   * SURFACE-Bind — MaSIF patch-scored targetability (Balbi 2026)
+  //   * Deep Dive — the 21 deep-dive Filters fields (only applies
+  //                 to rows where the deep-dive has run)
+  // All four start collapsed so the panel reads as a compact menu;
+  // each group's header shows an active-filter count when collapsed.
+  const [databasesGroupOpen, setDatabasesGroupOpen] = useState(false);
   const [triageGroupOpen, setTriageGroupOpen] = useState(false);
+  const [surfaceBindGroupOpen, setSurfaceBindGroupOpen] = useState(false);
   const [deepDiveGroupOpen, setDeepDiveGroupOpen] = useState(false);
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
@@ -920,6 +728,65 @@ export function CatalogTable({
           aria-label="Advanced catalog filters"
         >
           <div className={styles.filterGroup}>
+            {/* === Databases group =================================
+             *  Independent of the agent pipeline — these are the 5
+             *  gating DB votes from the candidate-universe build
+             *  (UniProt, GO, SURFY, CSPA, HPA). Moved out of the
+             *  Triage group per user feedback: DB votes are neither
+             *  triage nor deep-dive output, they're an upstream
+             *  signal that both pipelines consume. */}
+            <button
+              type="button"
+              className={styles.groupHeader}
+              onClick={() => setDatabasesGroupOpen((v) => !v)}
+              aria-expanded={databasesGroupOpen}
+              aria-controls="catalog-filter-group-databases"
+            >
+              <span className={styles.groupHeaderChevron} aria-hidden="true">
+                {databasesGroupOpen ? "▾" : "▸"}
+              </span>
+              Databases
+              {!databasesGroupOpen && dbFilter.size > 0 ? (
+                <span className={styles.chipCount}>{dbFilter.size}</span>
+              ) : null}
+              <InfoTip label="About the Databases filter group" wide>
+                {tooltips.catalog_databases_group}
+              </InfoTip>
+            </button>
+            {databasesGroupOpen ? (
+              <div
+                id="catalog-filter-group-databases"
+                className={styles.groupBody}
+              >
+                <div className={styles.filterRow}>
+                  <span className={styles.filterLabel}>DBs</span>
+                  <div className={styles.filterChips}>
+                    {DB_KEYS.map((d) => {
+                      const on = dbFilter.has(d.key);
+                      return (
+                        <button
+                          key={`db-filter-${d.key}`}
+                          type="button"
+                          className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                          onClick={() => toggleDbFilter(d.key)}
+                          aria-pressed={on}
+                          title={`Require ${d.long} = yes`}
+                        >
+                          {d.long}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className={styles.filterHint}>
+                    Requires all checked DBs to vote yes
+                  </span>
+                </div>
+              </div>
+            ) : null}
+          </div>{/* end .filterGroup (Databases) */}
+
+          {/* === Triage group ===================================== */}
+          <div className={styles.filterGroup}>
             <button
               type="button"
               className={styles.groupHeader}
@@ -932,18 +799,14 @@ export function CatalogTable({
               </span>
               Triage
               {!triageGroupOpen &&
-              dbFilter.size +
-                verdictFilter.size +
+              verdictFilter.size +
                 reasonFilter.size +
-                (deepDiveFilter !== null ? 1 : 0) +
-                (surfaceBindFilter !== null ? 1 : 0) >
+                (deepDiveFilter !== null ? 1 : 0) >
                 0 ? (
                 <span className={styles.chipCount}>
-                  {dbFilter.size +
-                    verdictFilter.size +
+                  {verdictFilter.size +
                     reasonFilter.size +
-                    (deepDiveFilter !== null ? 1 : 0) +
-                    (surfaceBindFilter !== null ? 1 : 0)}
+                    (deepDiveFilter !== null ? 1 : 0)}
                 </span>
               ) : null}
               <InfoTip label="About the Triage filter group" wide>
@@ -955,30 +818,6 @@ export function CatalogTable({
                 id="catalog-filter-group-triage"
                 className={styles.groupBody}
               >
-          <div className={styles.filterRow}>
-            <span className={styles.filterLabel}>DBs</span>
-            <div className={styles.filterChips}>
-              {DB_KEYS.map((d) => {
-                const on = dbFilter.has(d.key);
-                return (
-                  <button
-                    key={`db-filter-${d.key}`}
-                    type="button"
-                    className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
-                    onClick={() => toggleDbFilter(d.key)}
-                    aria-pressed={on}
-                    title={`Require ${d.long} = yes`}
-                  >
-                    {d.long}
-                  </button>
-                );
-              })}
-            </div>
-            <span className={styles.filterHint}>
-              Requires all checked DBs to vote yes
-            </span>
-          </div>
-
           <div className={styles.filterRow}>
             <span className={styles.filterLabel}>Triage</span>
             <div className={styles.filterChips}>
@@ -1110,50 +949,78 @@ export function CatalogTable({
             </span>
           </div>
 
-          {/* SURFACE-Bind filter — Marchand 2026 PNAS scored binder
-              patches. Four-way radio, mutually exclusive. ``any`` =
-              in dataset (scored, even with 0 patches); ``ge1`` /
-              ``ge3`` = scored with at least N patches; ``not_in`` =
-              filtered out at SURFACE-Bind's structural QC. Together
-              the chips distinguish the three states the SurfaceBindCard
-              talks about. */}
-          <div
-            className={styles.filterRow}
-            role="radiogroup"
-            aria-label="SURFACE-Bind site count"
-          >
-            <span className={styles.filterLabel}>SURFACE-Bind</span>
-            <div className={styles.filterChips}>
-              {(
-                [
-                  { k: "any", label: "any" },
-                  { k: "ge1", label: "≥1 site" },
-                  { k: "ge3", label: "≥3 sites" },
-                  { k: "not_in", label: "not in" },
-                ] as const
-              ).map(({ k, label }) => {
-                const on = surfaceBindFilter === k;
-                return (
-                  <button
-                    key={`sb-filter-${k}`}
-                    type="button"
-                    role="radio"
-                    aria-checked={on}
-                    className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
-                    onClick={() => toggleSurfaceBindFilter(k)}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-            <span className={styles.filterHint}>
-              {`SURFACE-Bind MaSIF-scored targetable patches (Marchand 2026 PNAS). "any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
-            </span>
-          </div>
               </div>
             ) : null}
           </div>{/* end .filterGroup (Triage) */}
+
+          {/* === SURFACE-Bind group ================================
+           *  Independent of agents — MaSIF patch-based targetability
+           *  scoring from Balbi et al 2026 PNAS (PMID 41604262).
+           *  Filters by how many surface patches cleared scoring or
+           *  whether the protein was filtered at SURFACE-Bind's
+           *  structural-QC step. Header InfoTip includes the citation
+           *  link. */}
+          <div className={styles.filterGroup}>
+            <button
+              type="button"
+              className={styles.groupHeader}
+              onClick={() => setSurfaceBindGroupOpen((v) => !v)}
+              aria-expanded={surfaceBindGroupOpen}
+              aria-controls="catalog-filter-group-surface-bind"
+            >
+              <span className={styles.groupHeaderChevron} aria-hidden="true">
+                {surfaceBindGroupOpen ? "▾" : "▸"}
+              </span>
+              SURFACE-Bind
+              {!surfaceBindGroupOpen && surfaceBindFilter !== null ? (
+                <span className={styles.chipCount}>1</span>
+              ) : null}
+              <InfoTip label="About the SURFACE-Bind filter group" wide>
+                {tooltips.catalog_surface_bind_group}
+              </InfoTip>
+            </button>
+            {surfaceBindGroupOpen ? (
+              <div
+                id="catalog-filter-group-surface-bind"
+                className={styles.groupBody}
+              >
+                <div
+                  className={styles.filterRow}
+                  role="radiogroup"
+                  aria-label="SURFACE-Bind site count"
+                >
+                  <span className={styles.filterLabel}>Patch count</span>
+                  <div className={styles.filterChips}>
+                    {(
+                      [
+                        { k: "any", label: "any (scored)" },
+                        { k: "ge1", label: "≥1 site" },
+                        { k: "ge3", label: "≥3 sites" },
+                        { k: "not_in", label: "not in" },
+                      ] as const
+                    ).map(({ k, label }) => {
+                      const on = surfaceBindFilter === k;
+                      return (
+                        <button
+                          key={`sb-filter-${k}`}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                          onClick={() => toggleSurfaceBindFilter(k)}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <span className={styles.filterHint}>
+                    {`"any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
+                  </span>
+                </div>
+              </div>
+            ) : null}
+          </div>{/* end .filterGroup (SURFACE-Bind) */}
 
           {/* === Deep Dive group ===================================== */}
           <div className={styles.filterGroup}>

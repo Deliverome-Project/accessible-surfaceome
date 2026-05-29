@@ -292,25 +292,58 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_triage_group: (
     <>
-      <strong>First-pass triage agent</strong> (Sonnet) — a pure-LLM
+      <strong>First-pass triage agent</strong> (Sonnet 4.6) — a pure-LLM
       classifier that scores each gene from its standard identifier
       context (HGNC name / aliases, UniProt accession, gene-group
       memberships, CD designation, NCBI summary). No web search, no
-      per-paper evidence. Filters here narrow the catalog by which DBs
-      voted surface, the triage verdict, and the triage reason code.
+      per-paper evidence. Filters here narrow the catalog by the
+      triage verdict and the triage reason code.
     </>
   ),
 
   catalog_deep_dive_group: (
     <>
-      <strong>Full multi-agent deep-dive pipeline</strong> — plan / trim /
-      select retrieves and ranks 20–30 primary sources; ~10 builder
-      agents parse claims into structured blocks; a synthesizer
-      reconciles into one record with{" "}
+      <strong>Multi-agent deep-dive pipeline.</strong> Retrieves and
+      ranks 20–30 primary sources, parses claims into structured
+      blocks via ~10 builders, then reconciles into one record with{" "}
       <code>surface_accessibility</code> + <code>confidence</code> +{" "}
       <code>evidence_grade</code> et al. Only the ~6,000 candidate-
-      universe genes have been deep-dived; filters in this group apply
-      only to rows where the deep-dive has run.
+      universe genes have been deep-dived; filters in this group
+      apply only to rows where the deep-dive has run.
+    </>
+  ),
+
+  // Surface-DB votes — neither triage nor deep-dive. From the
+  // candidate-universe build: each of the 5 gating databases voted
+  // independently on whether this protein is at the surface.
+  catalog_databases_group: (
+    <>
+      <strong>Surface-DB votes</strong> — independent of the agent
+      pipeline. From the candidate-universe build, each of 5 gating
+      databases (UniProt, GO, SURFY, CSPA, HPA) votes yes/no on
+      surface localization under that source&apos;s optimized cutoff.
+      AND-semantics: a row passes only when EVERY checked DB voted
+      yes (intersection).
+    </>
+  ),
+
+  // SURFACE-Bind targetability — MaSIF patch-based scoring from
+  // the Balbi et al 2026 PNAS paper. Same source the gene-page §SURFACE-
+  // Bind card cites.
+  catalog_surface_bind_group: (
+    <>
+      <strong>SURFACE-Bind targetability</strong> — MaSIF patch-based
+      scoring for de novo binder design seeds. Source:{" "}
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Balbi et al · 2026 · PMID 41604262
+      </a>
+      . Filters by how many surface patches cleared MaSIF scoring (≥1
+      site, ≥3 sites) or whether the protein was filtered out by
+      SURFACE-Bind&apos;s structural QC step.
     </>
   ),
 
@@ -325,18 +358,16 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_subcategory: (
     <>
-      <strong>LLM-driven.</strong> Architecture — how the protein sits
-      in the membrane. Single-pass type I, single-pass type II, multi-
-      pass, GPCR, GPI-anchored, tetraspanin, or other. Orthogonal to
-      the functional family axis below; informed by DeepTMHMM topology
+      Architecture — how the protein sits in the membrane. Orthogonal
+      to the functional family axis; informed by DeepTMHMM topology
       but the deep-dive agent can override.
     </>
   ),
 
   catalog_protein_family: (
     <>
-      <strong>LLM-driven.</strong> Functional family — aligned with
-      SURFACE-Bind&apos;s four classes (Balbi et al. 2026,{" "}
+      Functional family — aligned with SURFACE-Bind&apos;s four classes
+      (Balbi et al. 2026,{" "}
       <a
         href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
         target="_blank"
@@ -344,71 +375,68 @@ export const tooltips: Record<string, ReactNode> = {
       >
         PMID 41604262
       </a>
-      ): receptor, enzyme, transporter, or miscellaneous. Function vs.
-      topology — orthogonal to the architecture axis above.
+      ). Function vs. topology — orthogonal to the architecture axis.
     </>
   ),
 
   catalog_evidence_density: (
     <>
-      Bucketed evidence row count: <em>high</em> ≥ 30 supporting rows,{" "}
-      <em>moderate</em> ≥ 10, <em>low</em> &lt; 10. Derived in the
-      orchestrator from the merged A1+A2 ledger; deterministic, not
-      LLM-judged.
+      Bucketed evidence-row count from the merged A1+A2 ledger:{" "}
+      <em>high</em> ≥ 30 supporting rows, <em>moderate</em> ≥ 10,{" "}
+      <em>low</em> &lt; 10.
     </>
   ),
 
   catalog_ecd_class: (
     <>
-      ECD-size bands derived from antibody-antigen interface
-      measurements (Ramaraj et al. 2012, average conformational
-      epitope = 12 ± 3 residues, 1103 ± 244 Å²). <em>large</em> ≥ 200
-      residues; <em>moderate</em> 60–199; <em>small</em> 30–59;{" "}
-      <em>minimal</em> &lt; 30; <em>none</em> = no surface-exposed ECD
-      (GPI / inner-leaflet).
+      ECD-size bands from antibody-antigen interface measurements
+      (Ramaraj et al. 2012, average conformational epitope = 12 ± 3
+      residues, 1103 ± 244 Å²). <em>large</em> ≥ 200 residues;{" "}
+      <em>moderate</em> 60–199; <em>small</em> 30–59; <em>minimal</em>{" "}
+      &lt; 30; <em>none</em> = no surface-exposed ECD (GPI / inner-
+      leaflet).
     </>
   ),
 
   catalog_shed_form: (
     <>
-      <strong>LLM-driven.</strong> A soluble fragment is proteolytically
-      released into the extracellular milieu (sheddase cleavage of the
-      ectodomain), creating a circulating decoy that competes with the
-      surface form for binder occupancy.
+      A soluble fragment is proteolytically released into the
+      extracellular milieu (sheddase cleavage of the ectodomain),
+      creating a circulating decoy that competes with the surface
+      form for binder occupancy.
     </>
   ),
 
   catalog_secreted_form: (
     <>
-      <strong>LLM-driven.</strong> An alternative isoform is secreted
-      rather than membrane-anchored — present in the same compartment
-      as the surface form and consumes binder.
+      An alternative isoform is secreted as free soluble protein
+      (not EV-enclosed) — present in the same compartment as the
+      surface form and consumes binder.
     </>
   ),
 
   catalog_epitope_masking: (
     <>
-      <strong>LLM-driven.</strong> The targetable surface is shielded —
-      partner heterodimerization, glycan shield, or conformational
-      hiding obscures the epitopes a binder would otherwise engage.
+      The targetable surface is shielded — partner heterodimerization,
+      glycan shield, or conformational hiding obscures the epitopes a
+      binder would otherwise engage.
     </>
   ),
 
   catalog_n_term_extracellular: (
     <>
-      DeepTMHMM-derived (deterministic) — does the canonical isoform&apos;s
-      N-terminus face the extracellular space? True for type I single-
-      pass receptors and most multi-pass topologies with extracellular
-      N-loops; false for type II single-pass (cytoplasmic N-term).
+      Does the canonical isoform&apos;s N-terminus face the extracellular
+      space? True for type I single-pass receptors and most multi-pass
+      topologies with extracellular N-loops; false for type II single-
+      pass (cytoplasmic N-term).
     </>
   ),
 
   catalog_c_term_extracellular: (
     <>
-      DeepTMHMM-derived (deterministic) — does the canonical isoform&apos;s
-      C-terminus face the extracellular space? Useful when designing
-      C-terminal tag constructs or when the antibody campaign targets
-      the C-terminal region.
+      Does the canonical isoform&apos;s C-terminus face the extracellular
+      space? Useful when designing C-terminal tag constructs or when
+      the antibody campaign targets the C-terminal region.
     </>
   ),
 };
