@@ -2,46 +2,22 @@
 
 import { useMemo, useRef, useState } from "react";
 import type { CatalogRow } from "../../lib/surfaceome";
-import { prettyEnum } from "../../lib/enums";
 import {
   buildIndex,
   resolveList,
-  type MatchedBy,
   type ResolvedEntry,
 } from "../../lib/compare-match";
 import {
-  computeDdDistribution,
-  computeEnrichment,
+  computeCompareStats,
   SONNET_IDX,
-  type SignalEnrichment,
+  type EnrichRow,
 } from "../../lib/compare-stats";
 import { DD_BOOL_FIELDS, DD_ENUM_FIELDS } from "../../lib/deep-dive-fields";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { InfoTip } from "../InfoTip/InfoTip";
-import { StatusPill } from "../surfaceome/StatusPill/StatusPill";
 import styles from "./CompareTool.module.css";
 
-const DB_KEYS: { key: keyof CatalogRow["db"]; long: string }[] = [
-  { key: "uniprot", long: "UniProt" },
-  { key: "go", long: "GO" },
-  { key: "surfy", long: "SURFY" },
-  { key: "cspa", long: "CSPA" },
-  { key: "hpa", long: "HPA" },
-];
-
-const GRID_TEMPLATE =
-  "9rem 9rem 3.4rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem 6.5rem minmax(7rem, 1fr) 4rem 2rem";
-
 const EXAMPLE_LIST = "EGFR, ERBB2, SRC, CD81, GPR75, P12931, FOObarFAKE";
-
-function verdictTone(
-  v: string | null | undefined,
-): "success" | "maroon" | "amber" | "neutral" {
-  if (v === "yes") return "success";
-  if (v === "no") return "maroon";
-  if (v === "contextual") return "amber";
-  return "neutral";
-}
 
 function fmtPct(x: number): string {
   return `${(x * 100).toFixed(x < 0.01 && x > 0 ? 1 : 0)}%`;
@@ -68,7 +44,6 @@ interface CompareToolProps {
 export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
@@ -93,9 +68,8 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
     [result],
   );
 
-  // Unique genes (two tokens — a symbol and its accession — can resolve to
-  // the same row; dedupe for the set-level stats so a gene isn't counted
-  // twice). The per-input table still shows every token.
+  // Unique genes — two tokens (a symbol and its accession) can resolve to
+  // the same row; dedupe so a gene isn't counted twice in the stats.
   const uniqueMatchedRows = useMemo(() => {
     const seen = new Set<string>();
     const out: CatalogRow[] = [];
@@ -110,31 +84,23 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
     return out;
   }, [matchedEntries]);
 
-  const enrichment = useMemo<SignalEnrichment[]>(
-    () => (result ? computeEnrichment(rows, uniqueMatchedRows) : []),
+  const stats = useMemo(
+    () => (result ? computeCompareStats(rows, uniqueMatchedRows) : null),
     [result, rows, uniqueMatchedRows],
-  );
-
-  const ddDist = useMemo(
-    () => (result ? computeDdDistribution(uniqueMatchedRows) : null),
-    [result, uniqueMatchedRows],
   );
 
   function runCompare() {
     setSubmitted(text);
-    setExpanded(null);
   }
 
   function loadExample() {
     setText(EXAMPLE_LIST);
     setSubmitted(EXAMPLE_LIST);
-    setExpanded(null);
   }
 
   function clearAll() {
     setText("");
     setSubmitted(null);
-    setExpanded(null);
     if (fileRef.current) fileRef.current.value = "";
   }
 
@@ -146,7 +112,6 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
       const content = String(reader.result ?? "");
       setText(content);
       setSubmitted(content);
-      setExpanded(null);
     };
     reader.readAsText(file);
   }
@@ -164,17 +129,13 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
     }
   }
 
-  function downloadResults() {
-    if (!result) return;
+  function downloadMatches() {
+    if (matchedEntries.length === 0) return;
     downloadTextFile(
       `surfaceome-compare-${uniqueMatchedRows.length}-genes.tsv`,
-      buildCompareTsv(result.entries),
+      buildCompareTsv(matchedEntries),
     );
   }
-
-  const gridStyle: React.CSSProperties = {
-    ["--compare-cols" as string]: GRID_TEMPLATE,
-  };
 
   const uploadedCount = result ? result.entries.length : 0;
 
@@ -232,9 +193,9 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
         </div>
       </div>
 
-      {result ? (
+      {result && stats ? (
         <>
-          {/* ---- Summary + enrichment ------------------------------ */}
+          {/* ---- Summary ------------------------------------------- */}
           <div className={styles.summary}>
             <div className={styles.coverageRow}>
               <Stat label="Uploaded" value={uploadedCount} />
@@ -255,165 +216,78 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
               ) : null}
             </div>
 
-            {uniqueMatchedRows.length > 0 ? (
-              <div className={styles.enrichBlock}>
-                <p className={`label-mono ${styles.blockHead}`}>
-                  Enrichment vs the full catalog
-                  <InfoTip label="About enrichment">
-                    For each signal: the share of your matched genes that
-                    carry it, vs the share across all {nRows.toLocaleString()}{" "}
-                    catalog genes, the fold-enrichment, and a one-tailed
-                    hypergeometric p-value. Signals are correlated (DB votes
-                    co-occur), so the p-values are descriptive, not
-                    multiple-testing-corrected, and only matched genes are
-                    tested.
-                  </InfoTip>
-                </p>
-                <div className={styles.enrichTable}>
-                  <div className={`${styles.enrichRow} ${styles.enrichHead}`}>
-                    <span>Signal</span>
-                    <span className={styles.num}>Your list</span>
-                    <span className={styles.num}>Catalog</span>
-                    <span className={styles.num}>Fold</span>
-                    <span className={styles.num}>p</span>
-                  </div>
-                  {enrichment.map((s) => {
-                    const enriched = s.fold >= 2 && s.pValue < 0.05;
-                    return (
-                      <div key={s.key} className={styles.enrichRow}>
-                        <span className={styles.enrichLabel}>{s.label}</span>
-                        <span className={styles.num}>
-                          {fmtPct(s.listRate)}
-                          <span className={styles.numSub}>
-                            {" "}
-                            {s.listHits}/{s.listTotal}
-                          </span>
-                        </span>
-                        <span className={`${styles.num} ${styles.muted}`}>
-                          {fmtPct(s.baselineRate)}
-                        </span>
-                        <span
-                          className={`${styles.num} ${enriched ? styles.foldHot : ""}`}
-                        >
-                          {fmtFold(s.fold)}
-                        </span>
-                        <span className={`${styles.num} ${styles.muted}`}>
-                          {fmtP(s.pValue)}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
-
-            {ddDist && ddDist.deepDivedCount > 0 ? (
-              <div className={styles.enrichBlock}>
-                <p className={`label-mono ${styles.blockHead}`}>
-                  Deep-dive filters · {ddDist.deepDivedCount} deep-dived
-                  {ddDist.deepDivedCount === 1 ? " gene" : " genes"} in your
-                  list
-                  <InfoTip label="About deep-dive filter counts">
-                    Deep-dived genes are a curated, non-random subset, so
-                    these are descriptive value counts over your{" "}
-                    {ddDist.deepDivedCount} deep-dived matches — not
-                    statistical enrichment.
-                  </InfoTip>
-                </p>
-                <div className={styles.ddGrid}>
-                  {ddDist.enums.map((f) => (
-                    <div key={f.key} className={styles.ddField}>
-                      <span className={styles.ddFieldLabel}>{f.label}</span>
-                      <span className={styles.ddCounts}>
-                        {f.counts.map((c) => (
-                          <span key={c.value} className={styles.ddCount}>
-                            {prettyEnum(c.value)}
-                            <span className={styles.ddCountN}>{c.n}</span>
-                          </span>
-                        ))}
-                      </span>
-                    </div>
-                  ))}
-                  {ddDist.bools.map((f) => (
-                    <div key={f.key} className={styles.ddField}>
-                      <span className={styles.ddFieldLabel}>{f.label}</span>
-                      <span className={styles.ddCounts}>
-                        <span className={styles.ddCount}>
-                          true<span className={styles.ddCountN}>{f.trueN}</span>
-                        </span>
-                        <span className={styles.ddCount}>
-                          false
-                          <span className={styles.ddCountN}>{f.falseN}</span>
-                        </span>
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-
-          {/* ---- Results table ------------------------------------- */}
-          {matchedEntries.length > 0 ? (
-            <div className={styles.resultsCard} style={gridStyle}>
-              <div className={styles.resultsTopBar}>
-                <p className={styles.resultsMeta}>
-                  {matchedEntries.length} matched{" "}
-                  {matchedEntries.length === 1 ? "row" : "rows"}
-                </p>
+            {/* Download — the per-protein detail lives in the TSV. */}
+            {matchedEntries.length > 0 ? (
+              <div className={styles.downloadRow}>
+                <span className={styles.downloadMeta}>
+                  Per-protein detail (DB votes, triage call, all deep-dive
+                  filters) for your {matchedEntries.length} matched
+                  {matchedEntries.length === 1 ? " row" : " rows"} →
+                </span>
                 <button
                   type="button"
-                  className={styles.downloadBtn}
-                  onClick={downloadResults}
-                  title="Download all results (matched + not-found) as TSV"
+                  className={styles.primaryBtn}
+                  onClick={downloadMatches}
                 >
-                  TSV ↓
+                  Download matches (TSV) ↓
                 </button>
               </div>
-              <div className={styles.tableScroll} role="table">
-                <div className={`${styles.headerRow} ${styles.row}`} role="row">
-                  <span className={styles.headerCell}>Input</span>
-                  <span className={styles.headerCell}>Matched</span>
-                  <span className={`${styles.headerCell} ${styles.center}`}>
-                    Votes
-                  </span>
-                  {DB_KEYS.map((d) => (
-                    <span
-                      key={d.key}
-                      className={`${styles.headerCell} ${styles.center} ${styles.dbHead}`}
-                      title={d.long}
-                    >
-                      {d.long}
-                    </span>
-                  ))}
-                  <span className={`${styles.headerCell} ${styles.center}`}>
-                    Triage
-                  </span>
-                  <span className={styles.headerCell}>Reason</span>
-                  <span className={`${styles.headerCell} ${styles.center}`}>
-                    Deep dive
-                  </span>
-                  <span className={styles.headerCell} aria-hidden="true" />
+            ) : (
+              <p className={styles.emptyMatched}>
+                None of your inputs matched a gene in the catalog.
+              </p>
+            )}
+          </div>
+
+          {/* ---- Catalog-wide enrichment --------------------------- */}
+          {uniqueMatchedRows.length > 0 ? (
+            <div className={styles.summary}>
+              <p className={`label-mono ${styles.blockHead}`}>
+                Enrichment vs the full catalog
+                <InfoTip label="About enrichment">
+                  For each signal: the share of your matched genes carrying
+                  it, vs the share across all {nRows.toLocaleString()} catalog
+                  genes, the fold-enrichment, and a one-tailed hypergeometric
+                  p-value. Signals are correlated (DB votes co-occur, verdict
+                  tracks DB count), so the p-values are descriptive, not
+                  multiple-testing-corrected, and only matched genes are
+                  tested.
+                </InfoTip>
+              </p>
+              <EnrichTable rows={stats.signals} firstCol="Signal" />
+
+              {stats.catalogGroups.map((g) => (
+                <div key={g.key} className={styles.enrichGroup}>
+                  <span className={styles.enrichGroupLabel}>{g.label}</span>
+                  <EnrichTable rows={g.rows} firstCol="Value" />
                 </div>
-                {matchedEntries.map((e, i) => (
-                  <CompareRow
-                    key={`${e.input}-${i}`}
-                    entry={e}
-                    expanded={expanded === `${e.input}-${i}`}
-                    onToggle={() =>
-                      setExpanded((prev) =>
-                        prev === `${e.input}-${i}` ? null : `${e.input}-${i}`,
-                      )
-                    }
-                  />
-                ))}
-              </div>
+              ))}
             </div>
-          ) : (
-            <p className={styles.emptyMatched}>
-              None of your inputs matched a gene in the catalog.
-            </p>
-          )}
+          ) : null}
+
+          {/* ---- Deep-dive filter enrichment ----------------------- */}
+          {stats.deepDivedListCount > 0 && stats.deepDiveGroups.length > 0 ? (
+            <div className={styles.summary}>
+              <p className={`label-mono ${styles.blockHead}`}>
+                Deep-dive filter enrichment · {stats.deepDivedListCount} of
+                your genes deep-dived
+                <InfoTip label="About deep-dive filter enrichment">
+                  Deep-dive filters exist only on deep-dived genes, a curated
+                  non-random subset, so these test your {stats.deepDivedListCount}{" "}
+                  deep-dived matches against the{" "}
+                  {stats.deepDivedBaselineCount.toLocaleString()} deep-dived
+                  catalog genes (not the whole catalog). Underpowered on small
+                  lists — read the fold + counts descriptively.
+                </InfoTip>
+              </p>
+              {stats.deepDiveGroups.map((g) => (
+                <div key={g.key} className={styles.enrichGroup}>
+                  <span className={styles.enrichGroupLabel}>{g.label}</span>
+                  <EnrichTable rows={g.rows} firstCol="Value" baseline="deep-dived" />
+                </div>
+              ))}
+            </div>
+          ) : null}
 
           {/* ---- Unresolved ---------------------------------------- */}
           {notFound.length + ambiguous.length > 0 ? (
@@ -476,11 +350,11 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
         </>
       ) : (
         <p className={styles.placeholder}>
-          Paste a list above and hit <strong>Compare</strong> to see how each
-          protein scores across the five source databases, the triage call,
-          and (where available) the deep-dive filters — plus which signals are
-          enriched in your set. {nWithDeepDive.toLocaleString()} of the{" "}
-          {nRows.toLocaleString()} catalog genes have a deep-dive record.
+          Paste a list above and hit <strong>Compare</strong> to see which
+          source databases, triage calls, and deep-dive filters are enriched
+          in your set — and download a per-protein TSV.{" "}
+          {nWithDeepDive.toLocaleString()} of the {nRows.toLocaleString()}{" "}
+          catalog genes have a deep-dive record.
         </p>
       )}
     </div>
@@ -508,150 +382,62 @@ function Stat({
   );
 }
 
-function matchedByBadge(matchedBy: MatchedBy, canonical: string) {
-  if (matchedBy === "uniprot") {
-    return (
-      <StatusPill tone="lavender" size="sm" title={`Matched by UniProt accession → ${canonical}`}>
-        via UniProt
-      </StatusPill>
-    );
-  }
-  if (matchedBy === "synonym") {
-    return (
-      <StatusPill tone="amber" size="sm" title={`Matched via an old / previous symbol → ${canonical}`}>
-        old symbol
-      </StatusPill>
-    );
-  }
-  return null;
-}
-
-function CompareRow({
-  entry,
-  expanded,
-  onToggle,
+function EnrichTable({
+  rows,
+  firstCol,
+  baseline = "catalog",
 }: {
-  entry: ResolvedEntry;
-  expanded: boolean;
-  onToggle: () => void;
+  rows: EnrichRow[];
+  firstCol: string;
+  baseline?: "catalog" | "deep-dived";
 }) {
-  const row = entry.row;
-  if (!row) return null;
-  const triage = row.triage_by_model[SONNET_IDX];
-  const reason = triage?.reason ? triage.reason.replace(/_/g, " ") : null;
-  const ddf = row.deep_dive ? row.deep_dive_filters : undefined;
-  const canExpand = Boolean(ddf);
-  const badge = matchedByBadge(entry.matchedBy, row.symbol);
+  if (rows.length === 0) return null;
   return (
-    <>
-      <div className={styles.row} role="row">
-        <span className={`${styles.cell} ${styles.mono}`}>{entry.input}</span>
-        <span className={`${styles.cell} ${styles.matchedCell}`}>
-          {row.deep_dive ? (
-            <a className={styles.matchedLink} href={`/${row.symbol}/`}>
-              {row.symbol}
-            </a>
-          ) : (
-            <span className={styles.mono}>{row.symbol}</span>
-          )}
-          {badge}
+    <div className={styles.enrichTable}>
+      <div className={`${styles.enrichRow} ${styles.enrichHead}`}>
+        <span>{firstCol}</span>
+        <span className={styles.num}>Your list</span>
+        <span className={styles.num}>
+          {baseline === "deep-dived" ? "Deep-dived" : "Catalog"}
         </span>
-        <span className={`${styles.cell} ${styles.center}`}>
-          <span className={styles.nBubble} data-n={row.n_sources}>
-            {row.n_sources}
-          </span>
-        </span>
-        {DB_KEYS.map((d) => {
-          const yes = Boolean(row.db[d.key]);
-          return (
-            <span
-              key={d.key}
-              className={`${styles.cell} ${styles.center} ${styles.dbCell} ${yes ? styles.dbCellYes : ""}`}
-              aria-label={`${d.long}: ${yes ? "yes" : "no"}`}
-            >
-              <span className={styles.dbDot} aria-hidden="true" />
-            </span>
-          );
-        })}
-        <span className={`${styles.cell} ${styles.center}`}>
-          {triage ? (
-            <StatusPill tone={verdictTone(triage.verdict)} size="sm">
-              {triage.verdict}
-            </StatusPill>
-          ) : (
-            <span className={styles.dim}>—</span>
-          )}
-        </span>
-        <span className={`${styles.cell} ${styles.reasonCell}`}>
-          {reason ? (
-            <span className={styles.reasonText} title={reason}>
-              {reason}
-            </span>
-          ) : (
-            <span className={styles.dim}>—</span>
-          )}
-        </span>
-        <span className={`${styles.cell} ${styles.center}`}>
-          {row.deep_dive ? (
-            <a
-              className={styles.deepLink}
-              href={`/${row.symbol}/`}
-              title={`Open the deep-dive record for ${row.symbol}`}
-            >
-              yes
-            </a>
-          ) : (
-            <span className={styles.dim}>—</span>
-          )}
-        </span>
-        <span className={`${styles.cell} ${styles.center}`}>
-          {canExpand ? (
-            <button
-              type="button"
-              className={styles.expandBtn}
-              onClick={onToggle}
-              aria-expanded={expanded}
-              aria-label={`${expanded ? "Hide" : "Show"} deep-dive filters for ${row.symbol}`}
-            >
-              {expanded ? "▾" : "▸"}
-            </button>
-          ) : null}
-        </span>
+        <span className={styles.num}>Fold</span>
+        <span className={styles.num}>p</span>
       </div>
-      {expanded && ddf ? (
-        <div className={styles.detail} role="row">
-          <dl className={styles.detailGrid}>
-            {DD_ENUM_FIELDS.map((f) => {
-              const v = ddf[f.key] as string | undefined;
-              if (v == null) return null;
-              return (
-                <div key={f.key} className={styles.detailItem}>
-                  <dt className={styles.detailLabel}>{f.label}</dt>
-                  <dd className={styles.detailValue}>{prettyEnum(v)}</dd>
-                </div>
-              );
-            })}
-            {DD_BOOL_FIELDS.map((f) => {
-              const v = ddf[f.key] as boolean | undefined;
-              if (typeof v !== "boolean") return null;
-              return (
-                <div key={f.key} className={styles.detailItem}>
-                  <dt className={styles.detailLabel}>{f.label}</dt>
-                  <dd className={styles.detailValue}>{v ? "yes" : "no"}</dd>
-                </div>
-              );
-            })}
-          </dl>
-        </div>
-      ) : null}
-    </>
+      {rows.map((r) => {
+        const listRate = r.listTotal > 0 ? r.listHits / r.listTotal : 0;
+        const baselineRate =
+          r.baselineTotal > 0 ? r.baselineHits / r.baselineTotal : 0;
+        const enriched = r.fold >= 2 && r.pValue < 0.05;
+        return (
+          <div key={r.label} className={styles.enrichRow}>
+            <span className={styles.enrichLabel}>{r.label}</span>
+            <span className={styles.num}>
+              {fmtPct(listRate)}
+              <span className={styles.numSub}>
+                {" "}
+                {r.listHits}/{r.listTotal}
+              </span>
+            </span>
+            <span className={`${styles.num} ${styles.muted}`}>
+              {fmtPct(baselineRate)}
+            </span>
+            <span className={`${styles.num} ${enriched ? styles.foldHot : ""}`}>
+              {fmtFold(r.fold)}
+            </span>
+            <span className={`${styles.num} ${styles.muted}`}>
+              {fmtP(r.pValue)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
 /**
- * TSV of the compare results — one row per input token (matched or not),
- * matching the table columns plus the 21 DeepDiveFilters (blank when the
- * gene wasn't deep-dived).
+ * TSV of the matched genes — one row per matched input token, with the
+ * DB votes, triage call, deep-dive flag, and the 21 DeepDiveFilters
+ * (blank when the gene wasn't deep-dived).
  */
 function buildCompareTsv(entries: ResolvedEntry[]): string {
   const headers = [
