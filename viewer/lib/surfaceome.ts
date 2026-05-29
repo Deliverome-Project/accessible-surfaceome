@@ -641,6 +641,58 @@ function _loadRecordFromFs(symbol: string): SurfaceomeRecord | null {
 }
 
 /**
+ * Pull the triage agent's free-text reasoning from `/v1/triage/{symbol}`
+ * (the `triage_run` store), picking the latest headline run — Sonnet 4.6
+ * with the `ncbi` context variant — that carries a non-empty
+ * `verdict_reasoning`. Returns `null` on any miss.
+ *
+ * Used to backfill a deep-dive record whose own `triage_reasoning` is
+ * empty. The catalog's rationale drawer already reads this endpoint (see
+ * `CatalogRationaleDrawer`); sourcing the gene-page triage drawer from
+ * the same place keeps the two surfaces in sync without re-publishing
+ * the record into D1.
+ */
+async function _fetchTriageReasoningFromWorker(
+  symbol: string,
+  base: string,
+): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${base}/v1/triage/${symbol}`, {
+      cache: "force-cache",
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      runs?: Array<{
+        created_at: string;
+        model: string;
+        prompt_variant: string | null;
+        verdict_reasoning: string | null;
+      }>;
+    };
+    let latest: { created_at: string; verdict_reasoning: string } | null = null;
+    for (const r of data.runs ?? []) {
+      // Headline triage cell = Sonnet 4.6 + the NCBI context block — the
+      // same (model, variant) the catalog rationale drawer surfaces.
+      if (r.model !== "claude-sonnet-4-6") continue;
+      if (r.prompt_variant !== "ncbi") continue;
+      const reasoning = r.verdict_reasoning?.trim();
+      if (!reasoning) continue;
+      if (!latest || latest.created_at < r.created_at) {
+        latest = { created_at: r.created_at, verdict_reasoning: reasoning };
+      }
+    }
+    return latest?.verdict_reasoning ?? null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
  * Load one gene's full SurfaceomeRecord.
  *
  * Resolution order:
@@ -653,6 +705,14 @@ function _loadRecordFromFs(symbol: string): SurfaceomeRecord | null {
  * The Worker path serves the latest D1 mirror; the fs fallback keeps
  * offline dev / CI working and provides a stale-but-readable copy when
  * the Worker is unreachable.
+ *
+ * Triage-reasoning backfill: when the resolved record's own
+ * `triage_reasoning` field is empty, pull it from the `triage_run` store
+ * via `/v1/triage/{symbol}`. Older D1 records (published before the field
+ * existed) serve it as `null` even though the triage prose lives in
+ * `triage_run` and renders in the catalog drawer — so the gene-page
+ * triage drawer would otherwise self-hide. Sourcing from the same place
+ * keeps both surfaces in sync without re-publishing the record.
  */
 export async function loadSurfaceomeRecord(
   symbol: string,
@@ -661,9 +721,13 @@ export async function loadSurfaceomeRecord(
   if (base === "local" || !base) {
     return _loadRecordFromFs(symbol);
   }
-  const fromWorker = await _fetchRecordFromWorker(symbol, base);
-  if (fromWorker) return fromWorker;
-  return _loadRecordFromFs(symbol);
+  const record =
+    (await _fetchRecordFromWorker(symbol, base)) ?? _loadRecordFromFs(symbol);
+  if (record && !record.triage_reasoning?.trim()) {
+    const reasoning = await _fetchTriageReasoningFromWorker(symbol, base);
+    if (reasoning) return { ...record, triage_reasoning: reasoning };
+  }
+  return record;
 }
 
 export async function loadAllSurfaceomeRecords(): Promise<SurfaceomeRecord[]> {
