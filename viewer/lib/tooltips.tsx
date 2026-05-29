@@ -325,6 +325,17 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  catalog_deep_dive_risks_subhead: (
+    <>
+      Accessibility risks from the deep dive — properties that can
+      blunt a binder campaign even when the protein IS at the surface:
+      a shed or secreted decoy pool competing for binder, epitope
+      masking by partners or glycans, or a co-receptor the protein
+      needs to reach the surface. Filtering here narrows to genes
+      carrying (or free of) each risk.
+    </>
+  ),
+
   catalog_deep_dive_deterministic_subhead: (
     <>
       Filters in this section apply to deterministic, tool-derived

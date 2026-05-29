@@ -46,7 +46,7 @@ export type DdBoolKey =
 
 /**
  * Provenance bucket used by the catalog filter panel to partition
- * deep-dive fields into two subheads under the Deep Dive group:
+ * deep-dive fields under the Deep Dive group:
  *
  * - `llm` — rollups the deep-dive *synthesizer* emits as its own
  *   classification (re-derived from the merged A1+A2 evidence ledger
@@ -54,6 +54,12 @@ export type DdBoolKey =
  * - `deterministic` — tool-derived readouts (DeepTMHMM topology,
  *   ledger-count buckets, SURFACE-Bind MaSIF patch scoring). No LLM
  *   involvement; values are reproducible by re-running the tool.
+ *
+ * The catalog filter panel renders three collapsible subsections:
+ * "Surface call" (`provenance === "llm" && !isRisk`), "Risks"
+ * (`isRisk`, orthogonal to provenance), and "Deterministic"
+ * (`provenance === "deterministic"`). `isRisk` is a topical tag, not a
+ * provenance value — the risk fields keep their `llm` provenance.
  *
  * The same provenance split is used by the gene-page FiltersCard at
  * `viewer/components/surfaceome/FiltersCard/FiltersCard.tsx`.
@@ -68,6 +74,11 @@ export interface DdEnumSpec {
   tooltipKey: string;
   /** LLM-rollup vs deterministic-tool readout. */
   provenance: DdProvenance;
+  /** Accessibility-risk topical tag. Orthogonal to `provenance` — a
+   *  risk field keeps its `llm`/`deterministic` provenance but is
+   *  surfaced under the catalog's "Risks" subsection rather than the
+   *  "Surface call" one. Undefined = not a risk. */
+  isRisk?: boolean;
 }
 
 export interface DdBoolSpec {
@@ -76,6 +87,8 @@ export interface DdBoolSpec {
   tooltipKey: string;
   /** LLM-rollup vs deterministic-tool readout. */
   provenance: DdProvenance;
+  /** Accessibility-risk topical tag (see `DdEnumSpec.isRisk`). */
+  isRisk?: boolean;
 }
 
 export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
@@ -102,7 +115,7 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
   },
   {
     key: "surface_call_reason",
-    label: "Synth reason",
+    label: "Surface reason",
     values: [
       "classical_surface_receptor",
       "gpi_anchored",
@@ -203,6 +216,7 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     values: ["required", "modulatory", "none", "unknown"],
     tooltipKey: "co_receptor_dependency",
     provenance: "llm",
+    isRisk: true,
   },
 ];
 
@@ -230,18 +244,21 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     label: "Shed form",
     tooltipKey: "catalog_shed_form",
     provenance: "llm",
+    isRisk: true,
   },
   {
     key: "has_secreted_form",
     label: "Secreted form",
     tooltipKey: "catalog_secreted_form",
     provenance: "llm",
+    isRisk: true,
   },
   {
     key: "has_epitope_masking",
     label: "Epitope masking",
     tooltipKey: "catalog_epitope_masking",
     provenance: "llm",
+    isRisk: true,
   },
   {
     key: "n_term_extracellular",

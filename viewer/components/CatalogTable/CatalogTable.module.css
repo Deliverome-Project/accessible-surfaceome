@@ -449,6 +449,42 @@
   padding-top: 0;
   margin-top: 0;
 }
+
+/* Collapsible variant of .subhead — same quiet uppercase divider look
+ * but as a full-width clickable button (chevron + label + InfoTip) so
+ * each Deep Dive subsection ("Surface call", "Risks", "Deterministic")
+ * is independently expandable. Mirrors .subhead's typography + dashed
+ * top divider; the first-of-type rule drops the divider for the first
+ * subsection inside the group body. */
+.subheadButton {
+  width: 100%;
+  margin: var(--space-3) 0 var(--space-2);
+  padding: var(--space-2) 0 0;
+  border: 0;
+  border-top: 1px dashed var(--line-soft);
+  background: transparent;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  cursor: pointer;
+  text-align: left;
+}
+.subheadButton:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+.subheadButton:hover,
+.subheadButton:focus-visible {
+  color: var(--accent);
+}
+
 .subgroupBody {
   display: flex;
   flex-direction: column;
