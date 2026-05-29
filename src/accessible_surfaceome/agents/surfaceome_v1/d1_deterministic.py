@@ -100,6 +100,15 @@ def _latest_topology_version() -> str:
     Used to gate every query so we don't accidentally merge multiple
     historical versions for the same gene (e.g. test runs left in D1
     pre-prod).
+
+    **Prefer ``_latest_topology_version_for_cohort(cohort)`` for any
+    new code.** When a topology sweep is run for some cohorts but not
+    others (e.g. the 2026-05-25 isoforms-only run that left the
+    human_canonical / mouse_ortholog / cyno_ortholog cohorts under the
+    older topo_2026_05_16), this all-cohorts-share-one-version
+    function returns the newest release entry — which may not have
+    rows for the cohort you're about to JOIN against, silently
+    nulling out topology fields.
     """
     rows = _query_public(
         "SELECT topology_version FROM topology_release "
@@ -107,6 +116,47 @@ def _latest_topology_version() -> str:
         [],
     )
     return rows[0]["topology_version"] if rows else ""
+
+
+def _latest_topology_version_for_cohort(cohort: str) -> str:
+    """Resolve the freshest topology_version that has rows for the
+    given cohort.
+
+    Replaces the all-cohorts-share-one-version assumption of
+    :func:`_latest_topology_version`. When a topology sweep was run
+    for some cohorts but not others, this picks the right version for
+    each cohort's JOIN target — so a paralog query against
+    ``human_canonical`` finds rows even if the latest release was an
+    isoforms-only sweep that doesn't carry that cohort.
+
+    Strategy: take the set of versions that have rows for ``cohort``
+    in ``topology_public``, intersect with ``topology_release``
+    ordered by ``loaded_at DESC``, return the first match. Falls back
+    to any version with rows for the cohort if no release-table entry
+    matches (defensive — shouldn't happen in production).
+    """
+    rows = _query_public(
+        "SELECT DISTINCT topology_version FROM topology_public WHERE cohort = ?",
+        [cohort],
+    )
+    versions = {r["topology_version"] for r in rows if r.get("topology_version")}
+    if not versions:
+        return ""
+    # Prefer the topology_release row that's most recently loaded AND
+    # has rows for this cohort. Two-step rather than one JOIN because
+    # D1's SQL planner is small and the LEFT JOIN on the release table
+    # is unreliable for "ordered by NULLS LAST" cases.
+    rel_rows = _query_public(
+        "SELECT topology_version FROM topology_release "
+        "ORDER BY loaded_at DESC",
+        [],
+    )
+    for r in rel_rows:
+        if r["topology_version"] in versions:
+            return r["topology_version"]
+    # Defensive fallback — no release-table match. Pick the version
+    # with the highest row count for this cohort (stable across runs).
+    return sorted(versions)[-1]
 
 
 def _latest_paralog_version() -> str:
@@ -427,15 +477,26 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     ``deeptmhmm-1.0.24`` tag from the upload (or whatever version the
     sweep was run against).
     """
-    topology_version = _latest_topology_version()
+    # Per-cohort version resolution — each cohort's JOIN target may
+    # live under a different topology_version when sweeps are run
+    # partially (e.g. an isoforms-only refresh that doesn't re-run
+    # human_canonical or the ortholog cohorts). `_latest_topology_version`
+    # returned the newest release entry regardless of which cohort it
+    # carried — that silently nulled paralog/ortholog topology fields
+    # after the 2026-05-25 isoforms-only sweep. The per-cohort variant
+    # picks the right version for each fetcher's JOIN.
+    canonical_topo_version = _latest_topology_version_for_cohort("human_canonical")
+    isoform_topo_version = _latest_topology_version_for_cohort("human_isoforms")
+    mouse_topo_version = _latest_topology_version_for_cohort("mouse_ortholog")
     paralog_version = _latest_paralog_version()
     ortholog_ecd_version = _latest_ortholog_ecd_version()
-    if not topology_version:
+    if not canonical_topo_version:
         logger.warning(
-            "no topology_release rows in D1; falling back to placeholder for %s",
+            "no human_canonical rows in topology_public; falling back to "
+            "placeholder for %s",
             uniprot_acc,
         )
-    canonical = _fetch_canonical_topology(uniprot_acc, topology_version) if topology_version else None
+    canonical = _fetch_canonical_topology(uniprot_acc, canonical_topo_version) if canonical_topo_version else None
     if canonical is None:
         # Schema requires a canonical_topology; emit a clearly-labeled
         # placeholder. Examples of when this fires: the 3 length-skipped
@@ -458,24 +519,30 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
             tool_version="placeholder-no-d1-row",
             retrieved_at=datetime.now(UTC),
         )
+    # Per-cohort version threading — see the comment block above where
+    # the cohort-specific versions are resolved. Isoforms JOIN against
+    # human_isoforms (newest sweep), paralogs JOIN against
+    # human_canonical (which the paralog uniprots live under), orthologs
+    # JOIN against mouse_ortholog / cyno_ortholog (which share a version
+    # in practice — mouse_topo_version covers both).
     isoforms = (
-        _fetch_isoform_topologies(uniprot_acc, topology_version)
-        if topology_version else []
+        _fetch_isoform_topologies(uniprot_acc, isoform_topo_version)
+        if isoform_topo_version else []
     )
     orthologs = (
         _fetch_orthologs(
             uniprot_acc,
-            topology_version=topology_version,
+            topology_version=mouse_topo_version,
             ortholog_ecd_version=ortholog_ecd_version,
         )
-        if topology_version and ortholog_ecd_version
+        if mouse_topo_version and ortholog_ecd_version
         else Orthologs()
     )
     paralogs = (
         _fetch_paralogs(
             uniprot_acc,
             paralog_version,
-            topology_version=topology_version,
+            topology_version=canonical_topo_version,
         )
         if paralog_version else []
     )

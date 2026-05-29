@@ -21,6 +21,92 @@ from accessible_surfaceome.tools._shared.models import OrthologEntry, ParalogEnt
 
 
 # ---------------------------------------------------------------------------
+# _latest_topology_version_for_cohort — per-cohort version resolution
+# ---------------------------------------------------------------------------
+
+
+def test_per_cohort_version_picks_release_match(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Cohort exists under multiple versions; pick the one the
+    topology_release table lists most recently. Scenario: 2026-05-25
+    isoforms-only sweep means topo_2026_05_25 has human_isoforms but
+    not human_canonical; querying for human_canonical should return
+    topo_2026_05_16 (the older release that does carry it)."""
+    calls: list[tuple[str, list]] = []
+
+    def fake_query(sql: str, params: list) -> list[dict]:
+        calls.append((sql, params))
+        if "topology_public WHERE cohort" in sql:
+            # human_canonical exists in two versions
+            return [
+                {"topology_version": "topo_2026_05_16"},
+                {"topology_version": "topo_test_optA_full"},
+            ]
+        if "topology_release" in sql:
+            # Release order: newest first. topo_2026_05_25 wins overall
+            # but isn't in the cohort set; topo_2026_05_16 is and is
+            # the next-newest.
+            return [
+                {"topology_version": "topo_2026_05_25"},
+                {"topology_version": "topo_2026_05_16"},
+                {"topology_version": "topo_test_optA_full"},
+            ]
+        return []
+
+    monkeypatch.setattr(d1_deterministic, "_query_public", fake_query)
+    assert (
+        d1_deterministic._latest_topology_version_for_cohort("human_canonical")
+        == "topo_2026_05_16"
+    )
+    # Sanity: both queries fired (DISTINCT cohort + release lookup).
+    assert any("WHERE cohort" in sql for sql, _ in calls)
+    assert any("topology_release" in sql for sql, _ in calls)
+
+
+def test_per_cohort_version_returns_empty_when_cohort_missing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Cohort not present in topology_public → empty string (caller's
+    short-circuit prevents the JOIN from running)."""
+
+    def fake_query(sql: str, params: list) -> list[dict]:
+        if "topology_public" in sql:
+            return []  # no rows for this cohort
+        if "topology_release" in sql:
+            return [{"topology_version": "topo_2026_05_25"}]
+        return []
+
+    monkeypatch.setattr(d1_deterministic, "_query_public", fake_query)
+    assert (
+        d1_deterministic._latest_topology_version_for_cohort("nonexistent_cohort")
+        == ""
+    )
+
+
+def test_per_cohort_version_falls_back_when_no_release_match(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Cohort exists under a version that isn't in topology_release
+    (defensive — shouldn't happen in prod). Loader picks the lexically-
+    last cohort version so the result is at least stable across runs."""
+
+    def fake_query(sql: str, params: list) -> list[dict]:
+        if "topology_public WHERE cohort" in sql:
+            return [
+                {"topology_version": "topo_orphan_a"},
+                {"topology_version": "topo_orphan_b"},
+            ]
+        if "topology_release" in sql:
+            return []  # no release rows match
+        return []
+
+    monkeypatch.setattr(d1_deterministic, "_query_public", fake_query)
+    assert (
+        d1_deterministic._latest_topology_version_for_cohort("human_canonical")
+        == "topo_orphan_b"
+    )
+
+
+# ---------------------------------------------------------------------------
 # _fetch_paralogs
 # ---------------------------------------------------------------------------
 
