@@ -128,6 +128,46 @@
     visibility 0s;
 }
 
+/* Hover bridge — lets the reader move the cursor OFF the trigger and
+ * INTO the popover to click links inside it (the PubMed `<a>` in the
+ * family / SURFACE-Bind tooltips, etc.).
+ *
+ * The popover sits `calc(100% + 0.45rem)` below the trigger, so a bare
+ * cursor crossing that 0.45rem gap is over neither the trigger nor the
+ * popover — `.wrap:hover` drops and the popover vanishes mid-transit,
+ * before the click can land. This transparent pseudo-element fills the
+ * gap so the hover region is continuous from trigger to popover.
+ *
+ * It lives on `.wrap` (not `.popover`): the popover is `overflow-y:
+ * auto`, which would CLIP an abs-positioned `::before` placed above its
+ * padding box — the bridge would be invisible and inert. `.wrap` is
+ * `overflow: visible`, so its `::after` renders into the gap freely.
+ *
+ * Width is a touch wider than the ~1em glyph for comfortable transit;
+ * the popover always abuts the gap directly below the trigger (the
+ * trigger is at the popover's top-center / -corner for every `align`),
+ * so a trigger-centered bridge reaches it. Height slightly overshoots
+ * 0.45rem so it overlaps the popover's top edge with no seam. */
+.wrap::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.25em;
+  height: 0.5rem;
+  /* Inert until the tooltip is actually shown, so a closed tooltip's
+   * bridge never intercepts clicks on content just below the glyph.
+   * The first hover always comes from the trigger button itself, which
+   * flips `.wrap:hover` on and arms the bridge for the transit. */
+  pointer-events: none;
+}
+
+.wrap:hover::after,
+.wrap:focus-within::after {
+  pointer-events: auto;
+}
+
 /* Wide modifier — opt-in for long-prose tooltips (Triage tip,
  * afdb_plddt, afdb_disordered) that would otherwise wrap into a
  * tall narrow column.
