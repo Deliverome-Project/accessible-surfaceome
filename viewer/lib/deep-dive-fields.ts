@@ -273,3 +273,27 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     provenance: "deterministic",
   },
 ];
+
+/**
+ * Project a deep-dive record's `filters` block onto the `DeepDiveFilters`
+ * field set (the 13 enum + 8 bool keys above). The deployed public Worker
+ * doesn't ship the catalog `ddf` field yet, so the compare page rebuilds
+ * it at BUILD time from the bundled per-gene records — whose `filters`
+ * block carries the same field names. Older records omit some of the
+ * newer fields; those are left out and read as `undefined` by the
+ * enrichment (so their groups simply don't render). Returns `undefined`
+ * when nothing maps, so the caller can skip attaching an empty object.
+ */
+export function pickDeepDiveFilters(
+  filters: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | undefined {
+  if (!filters) return undefined;
+  const out: Record<string, unknown> = {};
+  for (const f of DD_ENUM_FIELDS) {
+    if (filters[f.key] != null) out[f.key] = filters[f.key];
+  }
+  for (const f of DD_BOOL_FIELDS) {
+    if (typeof filters[f.key] === "boolean") out[f.key] = filters[f.key];
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}

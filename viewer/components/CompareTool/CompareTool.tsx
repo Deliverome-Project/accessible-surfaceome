@@ -265,12 +265,24 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
               </p>
               <EnrichTable rows={stats.signals} firstCol="Signal" />
 
-              {stats.catalogGroups.map((g) => (
-                <div key={g.key} className={styles.enrichGroup}>
-                  <span className={styles.enrichGroupLabel}>{g.label}</span>
-                  <EnrichTable rows={g.rows} firstCol="Value" />
-                </div>
-              ))}
+              {/* Short categories (triage verdict, 3 values) render inline;
+                  long ones (triage reason, ~18 values) collapse so they
+                  don't dominate the panel. */}
+              {stats.catalogGroups.map((g) =>
+                g.rows.length > 6 ? (
+                  <Collapsible
+                    key={g.key}
+                    summary={`${g.label} · ${g.rows.length} values`}
+                  >
+                    <EnrichTable rows={g.rows} firstCol="Value" />
+                  </Collapsible>
+                ) : (
+                  <div key={g.key} className={styles.enrichGroup}>
+                    <span className={styles.enrichGroupLabel}>{g.label}</span>
+                    <EnrichTable rows={g.rows} firstCol="Value" />
+                  </div>
+                ),
+              )}
             </div>
           ) : null}
 
@@ -294,22 +306,32 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
                   fold + counts descriptively.
                 </InfoTip>
               </p>
-              {stats.deepDiveEnumGroups.map((g) => (
-                <div key={g.key} className={styles.enrichGroup}>
-                  <span className={styles.enrichGroupLabel}>{g.label}</span>
-                  <EnrichTable rows={g.rows} firstCol="Value" baseline="deep-dived" />
-                </div>
-              ))}
-              {stats.deepDiveBoolFlags.length > 0 ? (
-                <div className={styles.enrichGroup}>
-                  <span className={styles.enrichGroupLabel}>Flags (= yes)</span>
-                  <EnrichTable
-                    rows={stats.deepDiveBoolFlags}
-                    firstCol="Flag"
-                    baseline="deep-dived"
-                  />
-                </div>
-              ) : null}
+              <Collapsible
+                summary={`${stats.deepDiveEnumGroups.length} filter field${
+                  stats.deepDiveEnumGroups.length === 1 ? "" : "s"
+                }${stats.deepDiveBoolFlags.length > 0 ? " + flags" : ""}`}
+              >
+                {stats.deepDiveEnumGroups.map((g) => (
+                  <div key={g.key} className={styles.enrichGroup}>
+                    <span className={styles.enrichGroupLabel}>{g.label}</span>
+                    <EnrichTable
+                      rows={g.rows}
+                      firstCol="Value"
+                      baseline="deep-dived"
+                    />
+                  </div>
+                ))}
+                {stats.deepDiveBoolFlags.length > 0 ? (
+                  <div className={styles.enrichGroup}>
+                    <span className={styles.enrichGroupLabel}>Flags (= yes)</span>
+                    <EnrichTable
+                      rows={stats.deepDiveBoolFlags}
+                      firstCol="Flag"
+                      baseline="deep-dived"
+                    />
+                  </div>
+                ) : null}
+              </Collapsible>
             </div>
           ) : null}
 
@@ -382,6 +404,26 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
         </p>
       )}
     </div>
+  );
+}
+
+function Collapsible({
+  summary,
+  children,
+  defaultOpen = false,
+}: {
+  summary: React.ReactNode;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <details
+      className={styles.collapsible}
+      {...(defaultOpen ? { open: true } : {})}
+    >
+      <summary className={styles.collapsibleSummary}>{summary}</summary>
+      <div className={styles.collapsibleBody}>{children}</div>
+    </details>
   );
 }
 
