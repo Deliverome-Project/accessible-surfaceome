@@ -1,12 +1,13 @@
 import type {
   AccessibilityRelevance,
-  EvidenceGrade,
   ExpressionLevel,
   Severity,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import { tooltips } from "../../../lib/tooltips";
+import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
+import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./SurfaceEvidenceCard.module.css";
@@ -16,13 +17,9 @@ interface Props {
   n: number;
 }
 
-function gradeTone(v: EvidenceGrade) {
-  if (v === "direct_multi_method") return "success" as const;
-  if (v === "direct_single_method") return "teal" as const;
-  if (v === "supportive_but_indirect") return "amber" as const;
-  if (v === "conflicting") return "danger" as const;
-  return "neutral" as const;
-}
+// (gradeTone removed alongside the banner pill it tinted — the
+// GeneHeader's "Surface evidence" vital is the only place that needs
+// the tone-from-grade mapping now.)
 
 function relevanceTone(v: AccessibilityRelevance) {
   if (v === "direct_surface_accessibility") return "success" as const;
@@ -54,15 +51,26 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
       n={n}
       eyebrow="Surface evidence"
       title="Plasma-membrane evidence"
-      meta={`Evidence grade · ${prettyEnum(se.evidence_grade)} · ${se.methods.length} method block${
-        se.methods.length === 1 ? "" : "s"
-      }`}
+      meta={`${se.methods.length} method block${se.methods.length === 1 ? "" : "s"}`}
     >
+      {/* Evidence-grade value (Conflicting / Direct multi-method / etc.)
+          was removed from the eyebrow meta — the same value is already
+          shown as the "Surface evidence" vital up in the GeneHeader,
+          and surfacing it twice (here + above) just split attention.
+          The eyebrow now carries only the method-block count, which
+          isn't shown anywhere else. The synthesizer's narrative
+          rationale stays in the banner; that's the piece that doesn't
+          appear elsewhere on the page. */}
       <div className={styles.banner}>
-        <StatusPill tone={gradeTone(se.evidence_grade)}>
-          {prettyEnum(se.evidence_grade)}
-        </StatusPill>
-        <p className={styles.bannerProse}>{se.grade_rationale}</p>
+        {/* grade_rationale prose often cites evidence inline as
+         *  ``(a1_evi_06, high-weight)`` or ``(a1_evi_09, a1_evi_15,
+         *  moderate)``. linkifyEvidenceRefs wraps each ``aN_evi_NN``
+         *  occurrence in a clickable EvidenceChip so the reader can
+         *  open the global EvidenceDrawer without mentally cross-
+         *  referencing the §Evidence ledger. */}
+        <p className={styles.bannerProse}>
+          {linkifyEvidenceRefs(se.grade_rationale)}
+        </p>
       </div>
 
       {se.methods.length === 0 ? (
@@ -118,6 +126,9 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                           >
                             {prettyEnum(ab.validation_strength)} validation
                           </StatusPill>
+                          <InfoTip label="About validation strength">
+                            {tooltips.antibody_validation_strength}
+                          </InfoTip>
                         </span>
                       </li>
                     ))}
@@ -133,7 +144,12 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                       <tr>
                         <th scope="col">Context</th>
                         <th scope="col">Sample</th>
-                        <th scope="col">Level</th>
+                        <th scope="col">
+                          Level
+                          <InfoTip label="About expression level">
+                            {tooltips.expression_observation_level}
+                          </InfoTip>
+                        </th>
                         <th scope="col">Cites</th>
                       </tr>
                     </thead>
@@ -213,7 +229,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
             <span className={`label-mono ${styles.subLabel}`}>
               Surface-form rationale
             </span>
-            <span>{se.therapeutic_engagement.surface_form_rationale}</span>
+            <span>{linkifyEvidenceRefs(se.therapeutic_engagement.surface_form_rationale)}</span>
             <EvidenceChipList
               ids={se.therapeutic_engagement.cited_evidence_ids}
               label="Cites"
@@ -240,13 +256,15 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                   </span>
                   <EvidenceChipList ids={c.cited_evidence_ids} label="Cites" />
                 </div>
-                <p className={styles.contradictionClaim}>{c.claim}</p>
+                <p className={styles.contradictionClaim}>
+                  {linkifyEvidenceRefs(c.claim)}
+                </p>
                 {c.likely_explanation ? (
                   <p className={styles.contradictionExplain}>
                     <span className={`label-mono ${styles.subLabel}`}>
                       Likely explanation
                     </span>{" "}
-                    {c.likely_explanation}
+                    {linkifyEvidenceRefs(c.likely_explanation)}
                   </p>
                 ) : null}
               </li>
