@@ -225,7 +225,22 @@ button {
 
 .reveal:not([data-reveal-stagger="true"]).is-visible {
   opacity: 1;
-  transform: translateY(0);
+  /* CRITICAL: ``transform: none`` (not ``translateY(0)``) and
+   * ``will-change: auto`` (not ``opacity, transform``) — both
+   * promote-to-layer hints create a CSS stacking context that
+   * traps any descendant ``z-index`` (popovers, dropdowns) below
+   * sibling Reveal sections that render later in DOM order.
+   *
+   * Concretely: the GeneHeader is wrapped in a Reveal, and so is
+   * every section card below it. With ``transform: translateY(0)``
+   * + ``will-change: transform``, the InfoTip popover (z-index 100)
+   * inside the GeneHeader could only stack within the GeneHeader's
+   * stacking context — and the §Summary metrics Reveal stacking
+   * context (a later sibling) paints on top. Dropping both promote-
+   * to-layer hints once ``.is-visible`` is set lets the popover
+   * escape to the document root's stacking context. */
+  transform: none;
+  will-change: auto;
 }
 
 .reveal[data-reveal-stagger="true"] > * {
@@ -240,7 +255,11 @@ button {
 
 .reveal[data-reveal-stagger="true"].is-visible > * {
   opacity: 1;
-  transform: translateY(0);
+  /* Same stacking-context-escape fix as the non-stagger branch above —
+   * drop the promote-to-layer hints once visible so descendant
+   * popovers (InfoTip etc.) can escape the per-child stacking context. */
+  transform: none;
+  will-change: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {
