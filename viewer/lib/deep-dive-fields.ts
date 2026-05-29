@@ -44,18 +44,38 @@ export type DdBoolKey =
   | "n_term_extracellular"
   | "c_term_extracellular";
 
+/**
+ * Provenance bucket used by the catalog filter panel to partition
+ * deep-dive fields into two subheads under the Deep Dive group:
+ *
+ * - `llm` — rollups the deep-dive *synthesizer* emits as its own
+ *   classification (re-derived from the merged A1+A2 evidence ledger
+ *   but still an LLM judgement).
+ * - `deterministic` — tool-derived readouts (DeepTMHMM topology,
+ *   ledger-count buckets, SURFACE-Bind MaSIF patch scoring). No LLM
+ *   involvement; values are reproducible by re-running the tool.
+ *
+ * The same provenance split is used by the gene-page FiltersCard at
+ * `viewer/components/surfaceome/FiltersCard/FiltersCard.tsx`.
+ */
+export type DdProvenance = "llm" | "deterministic";
+
 export interface DdEnumSpec {
   key: DdEnumKey;
   label: string;
   values: readonly string[];
   /** Key into the `tooltips` map for the InfoTip body. */
   tooltipKey: string;
+  /** LLM-rollup vs deterministic-tool readout. */
+  provenance: DdProvenance;
 }
 
 export interface DdBoolSpec {
   key: DdBoolKey;
   label: string;
   tooltipKey: string;
+  /** LLM-rollup vs deterministic-tool readout. */
+  provenance: DdProvenance;
 }
 
 export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
@@ -64,18 +84,21 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     label: "Accessibility",
     values: ["high", "moderate", "low", "uncertain", "no"],
     tooltipKey: "surface_accessibility",
+    provenance: "llm",
   },
   {
     key: "confidence",
     label: "Confidence",
     values: ["high", "moderate", "low"],
     tooltipKey: "confidence",
+    provenance: "llm",
   },
   {
     key: "state_dependence",
     label: "State dependence",
     values: ["low", "moderate", "high", "unclear"],
     tooltipKey: "state_dependence",
+    provenance: "llm",
   },
   {
     key: "surface_call_reason",
@@ -102,6 +125,7 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
       "other",
     ],
     tooltipKey: "catalog_surface_call_reason",
+    provenance: "llm",
   },
   {
     key: "subcategory",
@@ -116,12 +140,14 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
       "other",
     ],
     tooltipKey: "catalog_subcategory",
+    provenance: "llm",
   },
   {
     key: "protein_family",
     label: "Family",
     values: ["receptor", "enzyme", "transporter", "miscellaneous"],
     tooltipKey: "catalog_protein_family",
+    provenance: "llm",
   },
   {
     key: "evidence_grade",
@@ -134,42 +160,49 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
       "weak",
     ],
     tooltipKey: "experimental_surface_evidence",
+    provenance: "llm",
   },
   {
     key: "evidence_density",
     label: "Evidence density",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_evidence_density",
+    provenance: "deterministic",
   },
   {
     key: "ecd_accessibility_class",
     label: "ECD class",
     values: ["large", "moderate", "small", "minimal", "none"],
     tooltipKey: "catalog_ecd_class",
+    provenance: "deterministic",
   },
   {
     key: "expression_level",
     label: "Expression level",
     values: ["high", "moderate", "low", "absent"],
     tooltipKey: "expression_level",
+    provenance: "llm",
   },
   {
     key: "expression_breadth",
     label: "Expression breadth",
     values: ["pan_tissue", "broad", "restricted", "rare"],
     tooltipKey: "expression_breadth",
+    provenance: "llm",
   },
   {
     key: "surface_specificity",
     label: "Surface specificity",
     values: ["surface_dominant", "mixed", "mostly_intracellular"],
     tooltipKey: "surface_specificity",
+    provenance: "llm",
   },
   {
     key: "co_receptor_dependency",
     label: "Co-receptor",
     values: ["required", "modulatory", "none", "unknown"],
     tooltipKey: "co_receptor_dependency",
+    provenance: "llm",
   },
 ];
 
@@ -178,40 +211,48 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     key: "has_known_ligand",
     label: "Known ligand",
     tooltipKey: "headline_risks",
+    provenance: "llm",
   },
   {
     key: "low_endogenous_expression",
     label: "Low endogenous expression",
     tooltipKey: "headline_risks",
+    provenance: "llm",
   },
   {
     key: "overexpression_surface_localization_observed",
     label: "OE + surface precedent",
     tooltipKey: "headline_risks",
+    provenance: "llm",
   },
   {
     key: "has_shed_form",
     label: "Shed form",
     tooltipKey: "catalog_shed_form",
+    provenance: "llm",
   },
   {
     key: "has_secreted_form",
     label: "Secreted form",
     tooltipKey: "catalog_secreted_form",
+    provenance: "llm",
   },
   {
     key: "has_epitope_masking",
     label: "Epitope masking",
     tooltipKey: "catalog_epitope_masking",
+    provenance: "llm",
   },
   {
     key: "n_term_extracellular",
     label: "N-term extracellular",
     tooltipKey: "catalog_n_term_extracellular",
+    provenance: "deterministic",
   },
   {
     key: "c_term_extracellular",
     label: "C-term extracellular",
     tooltipKey: "catalog_c_term_extracellular",
+    provenance: "deterministic",
   },
 ];

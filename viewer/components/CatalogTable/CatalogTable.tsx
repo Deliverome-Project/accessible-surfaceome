@@ -233,18 +233,22 @@ export function CatalogTable({
   // the deep-dive synthesizer's filters block). Both start collapsed
   // so opening the panel doesn't dump 30 chip rows on the reader at
   // once — they expand the section they want to filter on.
-  // Filter panel is organized into four collapsible groups:
+  // Filter panel is organized into three collapsible groups:
   //   * Databases — the 5-DB vote pattern (independent of agents)
   //   * Triage    — first-pass Sonnet 4.6 agent (verdict + reason +
   //                 deep-dive-presence bool)
-  //   * SURFACE-Bind — MaSIF patch-scored targetability (Balbi 2026)
-  //   * Deep Dive — the 21 deep-dive Filters fields (only applies
-  //                 to rows where the deep-dive has run)
-  // All four start collapsed so the panel reads as a compact menu;
+  //   * Deep Dive — the 21 deep-dive Filters fields + SURFACE-Bind
+  //                 patch count, split into two subheads inside:
+  //                 "LLM rollups" (synthesizer's classifications)
+  //                 and "Deterministic" (DeepTMHMM topology, ECD /
+  //                 evidence buckets, SURFACE-Bind MaSIF scoring).
+  //                 Only applies to rows where the deep-dive has
+  //                 run, except for the SURFACE-Bind patch radio
+  //                 which is independent of deep-dive coverage.
+  // All three start collapsed so the panel reads as a compact menu;
   // each group's header shows an active-filter count when collapsed.
   const [databasesGroupOpen, setDatabasesGroupOpen] = useState(false);
   const [triageGroupOpen, setTriageGroupOpen] = useState(false);
-  const [surfaceBindGroupOpen, setSurfaceBindGroupOpen] = useState(false);
   const [deepDiveGroupOpen, setDeepDiveGroupOpen] = useState(false);
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
@@ -380,7 +384,9 @@ export function CatalogTable({
   // Count Deep-Dive filter slots that are non-default. Each enum field
   // with ≥1 chip selected counts as one filter; each bool field set
   // to "yes" or "no" counts as one. (Bool tri-state in "any" mode
-  // counts as off.)
+  // counts as off.) The SURFACE-Bind patch-count radio also lives
+  // inside the Deep Dive group (Deterministic subhead), so it counts
+  // toward the group's active-filter chip.
   const ddEnumActiveCount = DD_ENUM_FIELDS.reduce(
     (n, f) => n + (ddEnumFilters[f.key].size > 0 ? 1 : 0),
     0,
@@ -389,16 +395,22 @@ export function CatalogTable({
     (n, f) => n + (ddBoolFilters[f.key] !== "any" ? 1 : 0),
     0,
   );
-  const ddActiveCount = ddEnumActiveCount + ddBoolActiveCount;
+  const ddActiveCount =
+    ddEnumActiveCount +
+    ddBoolActiveCount +
+    (surfaceBindFilter !== null ? 1 : 0);
 
   const activeFilterCount =
     dbFilter.size +
     verdictFilter.size +
     reasonFilter.size +
     (deepDiveFilter !== null ? 1 : 0) +
-    (surfaceBindFilter !== null ? 1 : 0) +
     ddActiveCount;
-  const ddActive = ddActiveCount > 0;
+  // `ddActive` gates the deep-dive predicate (requires deep_dive=true
+  // and applies enum/bool filters). It does NOT include the SURFACE-
+  // Bind radio — that filter runs independently regardless of deep-
+  // dive coverage, so it doesn't force the deep-dive presence gate.
+  const ddActive = ddEnumActiveCount + ddBoolActiveCount > 0;
 
   // Which reason groups make sense to surface, given the current
   // verdict filter. The triage reason is constrained by the verdict
@@ -953,76 +965,17 @@ export function CatalogTable({
             ) : null}
           </div>{/* end .filterGroup (Triage) */}
 
-          {/* === SURFACE-Bind group ================================
-           *  Independent of agents — MaSIF patch-based targetability
-           *  scoring from Balbi et al 2026 PNAS (PMID 41604262).
-           *  Filters by how many surface patches cleared scoring or
-           *  whether the protein was filtered at SURFACE-Bind's
-           *  structural-QC step. Header InfoTip includes the citation
-           *  link. */}
-          <div className={styles.filterGroup}>
-            <button
-              type="button"
-              className={styles.groupHeader}
-              onClick={() => setSurfaceBindGroupOpen((v) => !v)}
-              aria-expanded={surfaceBindGroupOpen}
-              aria-controls="catalog-filter-group-surface-bind"
-            >
-              <span className={styles.groupHeaderChevron} aria-hidden="true">
-                {surfaceBindGroupOpen ? "▾" : "▸"}
-              </span>
-              SURFACE-Bind
-              {!surfaceBindGroupOpen && surfaceBindFilter !== null ? (
-                <span className={styles.chipCount}>1</span>
-              ) : null}
-              <InfoTip label="About the SURFACE-Bind filter group" wide>
-                {tooltips.catalog_surface_bind_group}
-              </InfoTip>
-            </button>
-            {surfaceBindGroupOpen ? (
-              <div
-                id="catalog-filter-group-surface-bind"
-                className={styles.groupBody}
-              >
-                <div
-                  className={styles.filterRow}
-                  role="radiogroup"
-                  aria-label="SURFACE-Bind site count"
-                >
-                  <span className={styles.filterLabel}>Patch count</span>
-                  <div className={styles.filterChips}>
-                    {(
-                      [
-                        { k: "any", label: "any (scored)" },
-                        { k: "ge1", label: "≥1 site" },
-                        { k: "ge3", label: "≥3 sites" },
-                        { k: "not_in", label: "not in" },
-                      ] as const
-                    ).map(({ k, label }) => {
-                      const on = surfaceBindFilter === k;
-                      return (
-                        <button
-                          key={`sb-filter-${k}`}
-                          type="button"
-                          role="radio"
-                          aria-checked={on}
-                          className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
-                          onClick={() => toggleSurfaceBindFilter(k)}
-                        >
-                          {label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <span className={styles.filterHint}>
-                    {`"any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
-                  </span>
-                </div>
-              </div>
-            ) : null}
-          </div>{/* end .filterGroup (SURFACE-Bind) */}
-
-          {/* === Deep Dive group ===================================== */}
+          {/* === Deep Dive group =====================================
+           *  Two subheads inside:
+           *    • LLM rollups — synthesizer's own classifications,
+           *      re-emitted from the merged A1+A2 evidence ledger
+           *    • Deterministic — tool-derived readouts (DeepTMHMM
+           *      topology, ledger-count buckets, SURFACE-Bind MaSIF
+           *      patch scoring from Balbi et al 2026 PNAS, PMID
+           *      41604262). No LLM involvement; reproducible by
+           *      re-running the underlying tool.
+           *  SURFACE-Bind patch radio absorbed here per user
+           *  feedback (was previously a 4th top-level group). */}
           <div className={styles.filterGroup}>
             <button
               type="button"
@@ -1054,102 +1007,246 @@ export function CatalogTable({
                     serves the `deep_dive_filters` projection is live.
                   </p>
                 ) : null}
-                {DD_ENUM_FIELDS.map((field) => {
-                  const sel = ddEnumFilters[field.key];
-                  return (
-                    <div
-                      key={`dd-enum-${field.key}`}
-                      className={styles.filterRowDd}
-                    >
-                      <span className={styles.filterLabelWithTip}>
-                        {field.label}
-                        <InfoTip
-                          label={`About ${field.label}`}
-                          wide
+
+                {/* ── LLM rollups subhead ───────────────────────── */}
+                <p className={styles.subhead}>
+                  LLM rollups
+                  <InfoTip wide label="About LLM-derived deep-dive filters">
+                    {tooltips.catalog_deep_dive_llm_subhead}
+                  </InfoTip>
+                </p>
+                <div className={styles.subgroupBody}>
+                  {DD_ENUM_FIELDS.filter((f) => f.provenance === "llm").map(
+                    (field) => {
+                      const sel = ddEnumFilters[field.key];
+                      return (
+                        <div
+                          key={`dd-enum-${field.key}`}
+                          className={styles.filterRowDd}
                         >
-                          {tooltips[field.tooltipKey] ?? field.label}
-                        </InfoTip>
-                      </span>
-                      <div className={styles.filterChips}>
-                        {field.values.map((v) => {
-                          const on = sel.has(v);
-                          return (
-                            <button
-                              key={`dd-${field.key}-${v}`}
-                              type="button"
-                              className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
-                              onClick={() =>
-                                toggleDdEnumFilter(field.key, v)
-                              }
-                              aria-pressed={on}
-                              title={`Require ${field.label} = ${prettyEnum(v)}`}
+                          <span className={styles.filterLabelWithTip}>
+                            {field.label}
+                            <InfoTip
+                              label={`About ${field.label}`}
+                              wide
                             >
-                              {prettyEnum(v)}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })}
-                {DD_BOOL_FIELDS.map((field) => {
-                  const mode = ddBoolFilters[field.key];
-                  // Yes/No only — the "any" state is implicit: neither
-                  // chip selected = no filter applied. Showing an
-                  // explicit "any" chip was redundant with the deselect
-                  // affordance (clicking the active chip clears back to
-                  // any, same as the per-enum chip strips). Per user
-                  // feedback in the catalog-filter polish pass.
-                  const triStates: { k: DdBoolFilter; label: string }[] = [
-                    { k: "yes", label: "yes" },
-                    { k: "no", label: "no" },
-                  ];
-                  return (
-                    <div
-                      key={`dd-bool-${field.key}`}
-                      className={styles.filterRowDd}
-                      role="radiogroup"
-                      aria-label={field.label}
-                    >
-                      <span className={styles.filterLabelWithTip}>
-                        {field.label}
-                        <InfoTip
-                          label={`About ${field.label}`}
-                          wide
+                              {tooltips[field.tooltipKey] ?? field.label}
+                            </InfoTip>
+                          </span>
+                          <div className={styles.filterChips}>
+                            {field.values.map((v) => {
+                              const on = sel.has(v);
+                              return (
+                                <button
+                                  key={`dd-${field.key}-${v}`}
+                                  type="button"
+                                  className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                                  onClick={() =>
+                                    toggleDdEnumFilter(field.key, v)
+                                  }
+                                  aria-pressed={on}
+                                  title={`Require ${field.label} = ${prettyEnum(v)}`}
+                                >
+                                  {prettyEnum(v)}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    },
+                  )}
+                  {DD_BOOL_FIELDS.filter((f) => f.provenance === "llm").map(
+                    (field) => {
+                      const mode = ddBoolFilters[field.key];
+                      const triStates: { k: DdBoolFilter; label: string }[] = [
+                        { k: "yes", label: "yes" },
+                        { k: "no", label: "no" },
+                      ];
+                      return (
+                        <div
+                          key={`dd-bool-${field.key}`}
+                          className={styles.filterRowDd}
+                          role="radiogroup"
+                          aria-label={field.label}
                         >
-                          {tooltips[field.tooltipKey] ?? field.label}
-                        </InfoTip>
-                      </span>
-                      <div className={styles.filterChips}>
-                        {triStates.map(({ k, label }) => {
-                          const on = mode === k;
-                          // Tone the YES/NO chips with the verdict
-                          // palette when active so the tri-state reads
-                          // at a glance: green for yes, maroon for no.
-                          // "any" stays neutral.
-                          const toneClass =
-                            on && k === "yes"
-                              ? styles.verdictYes
-                              : on && k === "no"
-                                ? styles.verdictNo
-                                : "";
-                          return (
-                            <button
-                              key={`dd-${field.key}-${k}`}
-                              type="button"
-                              role="radio"
-                              aria-checked={on}
-                              className={`${styles.filterVerdictChip} ${toneClass}`}
-                              onClick={() => cycleDdBoolFilter(field.key, k)}
+                          <span className={styles.filterLabelWithTip}>
+                            {field.label}
+                            <InfoTip
+                              label={`About ${field.label}`}
+                              wide
                             >
-                              {label}
-                            </button>
-                          );
-                        })}
-                      </div>
+                              {tooltips[field.tooltipKey] ?? field.label}
+                            </InfoTip>
+                          </span>
+                          <div className={styles.filterChips}>
+                            {triStates.map(({ k, label }) => {
+                              const on = mode === k;
+                              const toneClass =
+                                on && k === "yes"
+                                  ? styles.verdictYes
+                                  : on && k === "no"
+                                    ? styles.verdictNo
+                                    : "";
+                              return (
+                                <button
+                                  key={`dd-${field.key}-${k}`}
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={on}
+                                  className={`${styles.filterVerdictChip} ${toneClass}`}
+                                  onClick={() =>
+                                    cycleDdBoolFilter(field.key, k)
+                                  }
+                                >
+                                  {label}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    },
+                  )}
+                </div>
+
+                {/* ── Deterministic subhead ─────────────────────── */}
+                <p className={styles.subhead}>
+                  Deterministic
+                  <InfoTip
+                    wide
+                    label="About deterministic-tool deep-dive filters"
+                  >
+                    {tooltips.catalog_deep_dive_deterministic_subhead}
+                  </InfoTip>
+                </p>
+                <div className={styles.subgroupBody}>
+                  {/* SURFACE-Bind patch radio FIRST — moved here from
+                   *  the deleted top-level SURFACE-Bind group. Source:
+                   *  Balbi et al 2026 PNAS (PMID 41604262); see
+                   *  tooltips.catalog_surface_bind_group for the
+                   *  citation context (still wired through the gene-
+                   *  page SURFACE-Bind card). The 4-way radio is the
+                   *  same shape as before: any / ≥1 / ≥3 / not in. */}
+                  <div
+                    className={styles.filterRow}
+                    role="radiogroup"
+                    aria-label="SURFACE-Bind site count"
+                  >
+                    <span className={styles.filterLabel}>SURFACE-Bind</span>
+                    <div className={styles.filterChips}>
+                      {(
+                        [
+                          { k: "any", label: "any (scored)" },
+                          { k: "ge1", label: "≥1 site" },
+                          { k: "ge3", label: "≥3 sites" },
+                          { k: "not_in", label: "not in" },
+                        ] as const
+                      ).map(({ k, label }) => {
+                        const on = surfaceBindFilter === k;
+                        return (
+                          <button
+                            key={`sb-filter-${k}`}
+                            type="button"
+                            role="radio"
+                            aria-checked={on}
+                            className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                            onClick={() => toggleSurfaceBindFilter(k)}
+                          >
+                            {label}
+                          </button>
+                        );
+                      })}
                     </div>
-                  );
-                })}
+                    <span className={styles.filterHint}>
+                      {`"any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
+                    </span>
+                  </div>
+                  {DD_ENUM_FIELDS.filter(
+                    (f) => f.provenance === "deterministic",
+                  ).map((field) => {
+                    const sel = ddEnumFilters[field.key];
+                    return (
+                      <div
+                        key={`dd-enum-${field.key}`}
+                        className={styles.filterRowDd}
+                      >
+                        <span className={styles.filterLabelWithTip}>
+                          {field.label}
+                          <InfoTip label={`About ${field.label}`} wide>
+                            {tooltips[field.tooltipKey] ?? field.label}
+                          </InfoTip>
+                        </span>
+                        <div className={styles.filterChips}>
+                          {field.values.map((v) => {
+                            const on = sel.has(v);
+                            return (
+                              <button
+                                key={`dd-${field.key}-${v}`}
+                                type="button"
+                                className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                                onClick={() =>
+                                  toggleDdEnumFilter(field.key, v)
+                                }
+                                aria-pressed={on}
+                                title={`Require ${field.label} = ${prettyEnum(v)}`}
+                              >
+                                {prettyEnum(v)}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {DD_BOOL_FIELDS.filter(
+                    (f) => f.provenance === "deterministic",
+                  ).map((field) => {
+                    const mode = ddBoolFilters[field.key];
+                    const triStates: { k: DdBoolFilter; label: string }[] = [
+                      { k: "yes", label: "yes" },
+                      { k: "no", label: "no" },
+                    ];
+                    return (
+                      <div
+                        key={`dd-bool-${field.key}`}
+                        className={styles.filterRowDd}
+                        role="radiogroup"
+                        aria-label={field.label}
+                      >
+                        <span className={styles.filterLabelWithTip}>
+                          {field.label}
+                          <InfoTip label={`About ${field.label}`} wide>
+                            {tooltips[field.tooltipKey] ?? field.label}
+                          </InfoTip>
+                        </span>
+                        <div className={styles.filterChips}>
+                          {triStates.map(({ k, label }) => {
+                            const on = mode === k;
+                            const toneClass =
+                              on && k === "yes"
+                                ? styles.verdictYes
+                                : on && k === "no"
+                                  ? styles.verdictNo
+                                  : "";
+                            return (
+                              <button
+                                key={`dd-${field.key}-${k}`}
+                                type="button"
+                                role="radio"
+                                aria-checked={on}
+                                className={`${styles.filterVerdictChip} ${toneClass}`}
+                                onClick={() => cycleDdBoolFilter(field.key, k)}
+                              >
+                                {label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             ) : null}
           </div>

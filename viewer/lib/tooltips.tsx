@@ -313,6 +313,27 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  // Subhead splits inside the Deep Dive group — partitions the 21
+  // deep-dive filters into LLM-derived rollups vs deterministic /
+  // tool-derived readouts so the reader can tell at a glance which
+  // half of the pipeline a filter came from.
+  catalog_deep_dive_llm_subhead: (
+    <>
+      Filters in this section apply to LLM-derived rollups from the
+      deep-dive synthesizer — the agent&apos;s own classifications,
+      re-emitted from the merged A1+A2 evidence ledger.
+    </>
+  ),
+
+  catalog_deep_dive_deterministic_subhead: (
+    <>
+      Filters in this section apply to deterministic, tool-derived
+      readouts — DeepTMHMM topology, ledger-count buckets,
+      SURFACE-Bind MaSIF patch scoring. No LLM involvement; values
+      are reproducible by re-running the underlying tool.
+    </>
+  ),
+
   // Surface-DB votes — neither triage nor deep-dive. From the
   // candidate-universe build: each of the 5 gating databases voted
   // independently on whether this protein is at the surface.
