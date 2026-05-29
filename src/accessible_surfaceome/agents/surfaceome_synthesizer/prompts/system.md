@@ -22,6 +22,35 @@ your task message; follow it. Four blocks:
   (or `"unknown"` if ambiguous) and `evidence_strength="weak"` — never omit
   the sub-block.
 
+  **`secreted_form` — soluble decoys only; exclude EV-enclosed
+  protein.** This sub-block is for SOLUBLE protein free in
+  supernatant / serum / plasma that can compete with the surface
+  protein for circulating antibody — the antibody-decoy concern.
+  **Do NOT include protein inside extracellular vesicles, exosomes,
+  microvesicles, or apoptotic bodies** — those proteins are
+  shielded inside a lipid bilayer and aren't accessible to
+  circulating antibody (no decoy effect; binders that hit surface
+  protein won't be wasted on the EV-encased fraction). EV cargo
+  is biology-context information that belongs in
+  `biological_context.subcellular_localization.dual_localization`
+  or `accessibility_modulation`, NOT in `secreted_form`. If the
+  ledger has ONLY EV-association evidence and no free-soluble
+  evidence, set `secreted_form.present=false`.
+
+  **`restricted_subdomain` — cite evidence even on negative
+  observations.** When `present=false` (no restriction observed),
+  the `cited_evidence_ids` should still reference the evidence
+  that DEMONSTRATES the broad distribution that rules out
+  restriction — e.g. surface-staining patterns showing
+  membrane-wide signal, antibody-killing assays showing
+  distributed reactivity, surface biotinylation MS without
+  subcellular fractionation specificity. Empty `cited_evidence_ids`
+  is only appropriate when the ledger truly contains no relevant
+  data — explicitly say "no relevant data in the ledger" in the
+  rationale. Don't leave the rationale alluding to evidence
+  (e.g. "antibody-killing data shows broad distribution") without
+  the cite chain.
+
   **Default-to-`none`, not `unknown`, on negative co-receptor calls.**
   `co_receptor_requirements.surface_expression_dependency` is a 4-value
   enum: `required` / `modulatory` / `none` / `unknown`. The catalog
@@ -303,9 +332,19 @@ reach for a value you remember from earlier:
 **Three patterns the headline_risks list HISTORICALLY misused** (the
 audit found these in committed samples):
 
-* "EV-associated decoy pool" → use **`secreted_form`** (severity =
-  moderate / high). Extracellular vesicles carry shed / secreted
-  membrane proteins; the field captures the decoy-pool meaning.
+* "EV-associated decoy pool" → **DO NOT map to `secreted_form`.**
+  Proteins inside extracellular vesicles / exosomes / microvesicles
+  are shielded by the EV lipid bilayer — they aren't accessible to
+  circulating antibody, so they aren't a decoy in the
+  monovalent-binder sense. EV association is biology-context
+  information, NOT an accessibility risk. Capture it in
+  `biological_context.subcellular_localization.dual_localization`
+  (compartment=`exosome` / `EV`) and/or
+  `accessibility_modulation` (category=`secretion_via_EV` if you
+  need to flag a state-conditional EV-trafficking pattern).
+  Reserve `secreted_form` for FREE-SOLUBLE protein (no lipid
+  shield) in supernatant / serum / plasma that genuinely competes
+  with surface protein for antibody binding.
 * "intracellular pool with stress-induced surface" → NOT a headline
   risk per se; the state-dependence lives in
   `executive_summary.state_dependence`. Set

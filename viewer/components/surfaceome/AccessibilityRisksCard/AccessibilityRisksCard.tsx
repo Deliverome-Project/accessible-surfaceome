@@ -25,6 +25,11 @@ function severityTone(v: Severity | "none") {
 function strengthTone(v: EvidenceStrength) {
   if (v === "strong") return "success" as const;
   if (v === "moderate") return "amber" as const;
+  // Weak / inferred evidence reads as a real concern in this card —
+  // the risk subsection has data but the data quality is poor.
+  // Render in danger (red) rather than neutral (brown); the reader
+  // needs to scan for evidence-quality problems quickly.
+  if (v === "weak" || v === "inferred") return "danger" as const;
   return "neutral" as const;
 }
 
@@ -51,7 +56,7 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <StatusPill tone={strengthTone(r.shed_form.evidence_strength)} size="sm">
             evidence · {prettyEnum(r.shed_form.evidence_strength)}
           </StatusPill>
-          <StatusPill tone={r.shed_form.present ? "danger" : "neutral"} size="sm">
+          <StatusPill tone={r.shed_form.present ? "danger" : "success"} size="sm">
             {presenceLabel(r.shed_form.present)}
           </StatusPill>
           <EvidenceChipList ids={r.shed_form.cited_evidence_ids} label="Cites" />
@@ -76,7 +81,7 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <StatusPill tone={strengthTone(r.secreted_form.evidence_strength)} size="sm">
             evidence · {prettyEnum(r.secreted_form.evidence_strength)}
           </StatusPill>
-          <StatusPill tone={r.secreted_form.present ? "danger" : "neutral"} size="sm">
+          <StatusPill tone={r.secreted_form.present ? "danger" : "success"} size="sm">
             {presenceLabel(r.secreted_form.present)}
           </StatusPill>
           <EvidenceChipList ids={r.secreted_form.cited_evidence_ids} label="Cites" />
@@ -92,36 +97,11 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
         ) : null}
       </div>
 
-      <div className={styles.subsection}>
-        <div className={styles.subHead}>
-          <p className={styles.subTitle}>Restricted subdomain</p>
-          <StatusPill tone={severityTone(r.restricted_subdomain.severity)} size="sm">
-            severity · {prettyEnum(r.restricted_subdomain.severity)}
-          </StatusPill>
-          <StatusPill
-            tone={strengthTone(r.restricted_subdomain.evidence_strength)}
-            size="sm"
-          >
-            evidence · {prettyEnum(r.restricted_subdomain.evidence_strength)}
-          </StatusPill>
-          <StatusPill tone="lavender" size="sm">
-            {prettyEnum(r.restricted_subdomain.domain)}
-          </StatusPill>
-          <StatusPill
-            tone={r.restricted_subdomain.present ? "danger" : "neutral"}
-            size="sm"
-          >
-            {presenceLabel(r.restricted_subdomain.present)}
-          </StatusPill>
-          <EvidenceChipList
-            ids={r.restricted_subdomain.cited_evidence_ids}
-            label="Cites"
-          />
-        </div>
-        {r.restricted_subdomain.rationale ? (
-          <p className={styles.prose}>{r.restricted_subdomain.rationale}</p>
-        ) : null}
-      </div>
+      {/* Restricted subdomain MOVED to BiologicalContextCard — it
+       *  describes WHERE on the cell surface a protein is localized
+       *  (apical vs basolateral vs junctional vs broad), which is
+       *  biology context, not a risk per se. The Biology card's
+       *  subcellular-localization subsection is the natural home. */}
 
       <div className={styles.subsection}>
         <div className={styles.subHead}>
@@ -197,7 +177,11 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
         <div className={styles.subHead}>
           <p className={styles.subTitle}>Epitope masking</p>
           {r.epitope_masking.mechanism.length === 0 ? (
-            <StatusPill tone="neutral" size="sm">
+            // No documented masking mechanism is GOOD — render in
+            // success/green so it reads as "no risk here" rather
+            // than the previous neutral brown which looked like a
+            // gap in coverage.
+            <StatusPill tone="success" size="sm">
               mechanism · none documented
             </StatusPill>
           ) : (

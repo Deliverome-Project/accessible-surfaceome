@@ -129,6 +129,45 @@ export function BiologicalContextCard({ rec, n }: Props) {
             biology now lives in `accessibility_modulation` rows
             with `category=lysosomal_exocytosis` or `category=
             activation_induced` plus `cell_state_trigger`. */}
+
+        {/* Restricted subdomain — MOVED HERE from §Risks. Describes
+         *  WHERE on the cell surface the protein localizes (apical
+         *  vs basolateral vs junctional vs broad). That's a
+         *  biology-context fact about distribution, not a risk per
+         *  se; reading it under Subcellular localization matches
+         *  the reader's mental model and keeps the Risks card
+         *  focused on shed / secreted / co-receptor / epitope-
+         *  masking / ECD-size which truly are accessibility caveats. */}
+        {(() => {
+          const rs = rec.accessibility_risks.restricted_subdomain;
+          return (
+            <div className={styles.locRestricted}>
+              <p className={`label-mono ${styles.subhead}`}>
+                Restricted-subdomain distribution
+              </p>
+              <div className={styles.locHead}>
+                <StatusPill
+                  tone={rs.present ? "warn" : "success"}
+                  size="sm"
+                >
+                  {rs.present ? "Restricted" : "Broad / no restriction observed"}
+                </StatusPill>
+                {rs.present ? (
+                  <StatusPill tone="lavender" size="sm">
+                    {prettyEnum(rs.domain)}
+                  </StatusPill>
+                ) : null}
+                <EvidenceChipList
+                  ids={rs.cited_evidence_ids}
+                  label="Cites"
+                />
+              </div>
+              {rs.rationale ? (
+                <p className={styles.locProse}>{rs.rationale}</p>
+              ) : null}
+            </div>
+          );
+        })()}
       </div>
 
       <div className={styles.subsection}>
