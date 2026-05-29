@@ -15,6 +15,17 @@
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  /* Single source of truth for the sticky topbar height. The header
+   * is logo-dominated; the rendered height is:
+   *   40px brand mark + 1rem top pad (16) + 0.55rem bottom pad (8.8)
+   *   + 1px transparent border-bottom = 65.8px → round up to 66.
+   * The brand-lockup links carry no vertical padding so the 40px mark
+   * stays the tallest child and this stays deterministic. The gene
+   * page's sticky AnchorNav strip reads this via
+   * `top: var(--shell-header-h)` so the two sticky layers abut cleanly
+   * instead of overlapping — keep this in sync with `.header` padding +
+   * border + `.brandMark` height if any of them change. */
+  --shell-header-h: 66px;
 }
 
 /* Keyboard skip link — visually hidden until focused. Standard
@@ -77,7 +88,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.55rem 0.4rem 0.55rem 0;
+  /* Zero vertical padding: the 40px brand mark is the tallest child, so
+   * the header height is `brandMark + .header padding` = 40 + 16 + 8.8 ≈
+   * 65px (== --shell-header-h on .shell). Earlier this carried 0.55rem
+   * top/bottom, which inflated the lockup to 57.6px and the whole topbar
+   * to ~83px — that desynced the AnchorNav's sticky `top` offset and made
+   * the two sticky layers overlap by ~19px when scrolled. Keep this at 0
+   * vertically; horizontal padding is fine. */
+  padding: 0 0.4rem 0 0;
   margin-left: -0.4rem;
   font-family: var(--font-display);
   /* Matches PR24's brand wordmark exactly — Playfair Display semibold

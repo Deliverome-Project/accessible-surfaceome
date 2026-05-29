@@ -2,9 +2,12 @@
  * AnchorNav — sticky numbered scroll-spy strip on the gene page.
  *
  * Sits below the Shell topbar (which is `position: sticky; top: 0`),
- * so this strip stacks just under it. The 64px `top:` value matches
- * the Shell's header height in `Shell.module.css`. Bump in both
- * places if the topbar changes.
+ * so this strip stacks just under it. The `top:` offset reads
+ * `--shell-header-h` from the Shell so the two sticky layers abut
+ * exactly — no hardcoded duplicate to drift. The Shell owns that
+ * token (currently 65px); the 64px literal here is only a fallback
+ * for the (impossible in practice) case where the var is unset.
+ * (Shell currently resolves it to 66px.)
  *
  * Visual register: a thin warm-bone bar with a soft blur, a single
  * border-bottom rule, and pill-style active links. Inactive links
@@ -15,7 +18,7 @@
 
 .nav {
   position: sticky;
-  top: 64px;
+  top: var(--shell-header-h, 64px);
   z-index: 30;
   margin-inline: calc(50% - 50vw);
   padding-inline: calc(50vw - 50%);
