@@ -1,5 +1,3 @@
-"use client";
-
 import styles from "./EvidenceChip.module.css";
 
 interface EvidenceChipProps {
@@ -14,13 +12,23 @@ interface EvidenceChipProps {
  * EvidenceChip — small monospace pill that opens the global
  * EvidenceDrawer for a single evidence_id.
  *
- * Communication is via a CustomEvent on `window` (not React context)
- * so a chip can live anywhere in the tree without prop-drilling a
- * setter — the drawer component is rendered once at the page level
- * and subscribes. The same chip shape (and styling) gets reused in:
+ * **Pure server component, no `"use client"`.** Click handling is
+ * delegated through the page-level :func:`EvidenceClickDelegator`
+ * which mounts ONE `document.addEventListener("click", ...)` and
+ * walks `closest("[data-evidence-id]")`. That lets a typical
+ * gene page render 100+ chips (Surface evidence per-method strips
+ * + per-observation rows + linkified inline refs + contradictions)
+ * with a single hydration boundary instead of one per chip — the
+ * Next.js 16 RSC chunk count drops accordingly and the
+ * "/Surface evidence/" tab loads noticeably faster.
+ *
+ * Communication is still via a CustomEvent on `window` so a chip
+ * can live anywhere in the tree without prop-drilling a setter —
+ * the drawer component is rendered once at the page level and
+ * subscribes. The same chip shape (and styling) gets reused in:
  *
  *   • ExecutiveSummaryCard — top-level cited_evidence_ids
- *   • SurfaceEvidenceCard  — per-method chips
+ *   • SurfaceEvidenceCard  — per-method chips + linkified prose refs
  *   • BiologicalContextCard — per-tissue chips
  *   • AccessibilityRisksCard — per-risk-item chips
  *   • EvidenceLedgerCard — the id pill itself is a chip
@@ -32,13 +40,7 @@ export function EvidenceChip({ evidenceId, label, title }: EvidenceChipProps) {
     <button
       type="button"
       className={styles.chip}
-      onClick={() => {
-        window.dispatchEvent(
-          new CustomEvent("surfaceome:open-evidence", {
-            detail: { evidenceId },
-          }),
-        );
-      }}
+      data-evidence-id={evidenceId}
       title={title ?? `Open evidence ${evidenceId}`}
     >
       {label ?? evidenceId}

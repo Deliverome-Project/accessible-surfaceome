@@ -9,13 +9,15 @@ import { AccessibilityRisksCard } from "../../components/surfaceome/Accessibilit
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../../components/surfaceome/CommunityNotesCard/CommunityNotesCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
+import { EvidenceClickDelegator } from "../../components/surfaceome/EvidenceClickDelegator/EvidenceClickDelegator";
 import { EvidenceDrawer } from "../../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
 import { EvidenceLedgerCard } from "../../components/surfaceome/EvidenceLedgerCard/EvidenceLedgerCard";
 import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
 import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
+// IsoformsCard now subsumes the old standalone OrthologsCard +
+// ParalogsCard — three section tabs collapsed to one ("Isoforms ·
+// orthologs · paralogs").
 import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
-import { OrthologsCard } from "../../components/surfaceome/OrthologsCard/OrthologsCard";
-import { ParalogsCard } from "../../components/surfaceome/ParalogsCard/ParalogsCard";
 import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
@@ -100,28 +102,16 @@ export default async function GenePage({ params }: PageProps) {
       label: "Biology",
       render: (n) => <BiologicalContextCard rec={rec} n={n} />,
     },
-    // Topology / evolutionary context — three separate tabs again.
-    // We briefly tried a single consolidated "Topology & evolution"
-    // tab, but the AnchorNav doesn't surface what's inside a
-    // consolidated tab, so genes with empty isoform / paralog
-    // sections silently disappeared from the reader's eye. Separate
-    // tabs each carry their own eyebrow + show their own empty
-    // state, so the reader can spot e.g. "0 paralogs in Compara"
-    // at a glance without clicking into a stacked tab.
+    // Evolutionary context — isoforms + orthologs + paralogs combined
+    // into one section per user feedback. The previous three-tab split
+    // each had its own AnchorNav entry so empty subsections stayed
+    // visible to readers; the combined card has subheads inside so
+    // emptiness is still visible (e.g. "No paralogs in Compara." renders
+    // under its own subhead) but the tab strip is three slots shorter.
     {
       kind: "isoforms",
-      label: "Isoforms",
+      label: "Isoforms · orthologs · paralogs",
       render: (n) => <IsoformsCard rec={rec} n={n} />,
-    },
-    {
-      kind: "paralogs",
-      label: "Paralogs",
-      render: (n) => <ParalogsCard rec={rec} n={n} />,
-    },
-    {
-      kind: "orthologs",
-      label: "Orthologs",
-      render: (n) => <OrthologsCard rec={rec} n={n} />,
     },
     // SurfaceBindCard renders ``null`` when the protein isn't in
     // SURFACE-Bind's authoritative table. Filter the section out
@@ -245,11 +235,15 @@ export default async function GenePage({ params }: PageProps) {
       </article>
 
       {/* Global EvidenceDrawer — listens for the `surfaceome:open-evidence`
-       *  CustomEvent dispatched by any <EvidenceChip> in the tree
-       *  (executive-summary cited_evidence_ids, per-method chips,
-       *  per-tissue chips, the EvidenceLedger items themselves). Renders
-       *  one drawer for the whole page so it persists across section
-       *  scrolls and chip clicks. */}
+       *  CustomEvent. Dispatched by the page-level
+       *  <EvidenceClickDelegator> when any [data-evidence-id]
+       *  element gets clicked anywhere in the document. Lets every
+       *  <EvidenceChip> stay a pure server component (no `"use
+       *  client"`, no per-chip handler) — the page renders 100+
+       *  chips with a single hydration boundary. Renders one drawer
+       *  for the whole page so it persists across section scrolls
+       *  and chip clicks. */}
+      <EvidenceClickDelegator />
       <EvidenceDrawer evidence={rec.evidence} />
       <FeedbackModal />
     </Shell>
