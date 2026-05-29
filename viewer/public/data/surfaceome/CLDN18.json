@@ -1215,33 +1215,38 @@
         {
           "is_canonical": true,
           "isoform_id": "P56857",
-          "ensembl_id": "CLD18_MOUSE",
+          "ensembl_id": "ENSMUSG00000032473",
           "ortholog_uniprot_acc": "P56857",
-          "ortholog_symbol": "CLD18_MOUSE",
+          "ortholog_symbol": "Cldn18",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 96.47058823529412,
           "ecd_pct_similarity_to_human_canonical": 96.47058823529412,
+          "full_length_pct_identity_to_human_canonical": 88.8889,
           "ecd_length_residues": 89,
           "tm_helix_count": 4,
-          "compara_version": "Compara r112",
-          "retrieved_at": "2026-05-18T12:40:14.492197Z"
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-29T19:47:34.501759Z",
+          "per_residue_topology": "IIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "TM"
         }
       ],
-      "rat": [],
       "cynomolgus": [
         {
           "is_canonical": true,
           "isoform_id": "A0A2K5VVB4",
-          "ensembl_id": "A0A2K5VVB4_MACFA",
+          "ensembl_id": "ENSMFAG00000041655",
           "ortholog_uniprot_acc": "A0A2K5VVB4",
-          "ortholog_symbol": "A0A2K5VVB4_MACFA",
+          "ortholog_symbol": "CLDN18",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 100.0,
           "ecd_pct_similarity_to_human_canonical": 100.0,
+          "full_length_pct_identity_to_human_canonical": 98.8506,
           "ecd_length_residues": 85,
           "tm_helix_count": 4,
-          "compara_version": "Compara r112",
-          "retrieved_at": "2026-05-18T12:40:14.492159Z"
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-29T19:47:34.501674Z",
+          "per_residue_topology": "IIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "TM"
         }
       ]
     },

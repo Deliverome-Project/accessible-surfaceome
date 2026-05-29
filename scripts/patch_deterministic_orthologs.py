@@ -39,7 +39,7 @@ from pathlib import Path
 from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
     _fetch_orthologs,
     _latest_ortholog_ecd_version,
-    _latest_topology_version,
+    _latest_topology_version_for_cohort,
 )
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.paths import REPO_ROOT
@@ -146,7 +146,16 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     load_env()
 
-    topology_version = _latest_topology_version()
+    # Cohort-aware version: ortholog topology lives under the
+    # mouse_ortholog / cyno_ortholog cohorts (which share a version in
+    # practice), NOT the global-latest topology_version. Using
+    # _latest_topology_version() here was a latent bug — after the
+    # 2026-05-25 canonical-only sweep the global latest (topo_2026_05_25)
+    # has no ortholog-cohort rows, so the topology LEFT JOIN in
+    # _fetch_orthologs returns nothing and this patch would WIPE ortholog
+    # topology. Mirror fetch_deterministic_features, which resolves the
+    # version per fetcher's cohort.
+    topology_version = _latest_topology_version_for_cohort("mouse_ortholog")
     ortholog_ecd_version = _latest_ortholog_ecd_version()
     if not topology_version or not ortholog_ecd_version:
         logger.error(

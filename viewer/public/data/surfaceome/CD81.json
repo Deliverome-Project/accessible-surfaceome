@@ -1110,13 +1110,15 @@
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 82.88288288288288,
           "ecd_pct_similarity_to_human_canonical": 82.88288288288288,
+          "full_length_pct_identity_to_human_canonical": 91.9492,
           "ecd_length_residues": 111,
           "tm_helix_count": 4,
           "compara_version": "ensembl_compara_2026_05_12",
-          "retrieved_at": "2026-05-19T02:29:17.511352Z"
+          "retrieved_at": "2026-05-29T19:47:34.215281Z",
+          "per_residue_topology": "IIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIII",
+          "deeptmhmm_label": "TM"
         }
       ],
-      "rat": [],
       "cynomolgus": [
         {
           "is_canonical": true,
@@ -1127,10 +1129,13 @@
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 81.08108108108108,
           "ecd_pct_similarity_to_human_canonical": 81.08108108108108,
+          "full_length_pct_identity_to_human_canonical": 76.6949,
           "ecd_length_residues": 220,
           "tm_helix_count": 3,
           "compara_version": "ensembl_compara_2026_05_12",
-          "retrieved_at": "2026-05-19T02:29:17.511317Z"
+          "retrieved_at": "2026-05-29T19:47:34.214330Z",
+          "per_residue_topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIII",
+          "deeptmhmm_label": "TM"
         }
       ]
     },
