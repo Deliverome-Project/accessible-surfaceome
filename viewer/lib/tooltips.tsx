@@ -438,18 +438,26 @@ export const tooltips: Record<string, ReactNode> = {
   catalog_surface_call_reason: (
     <>
       Why this protein is (or isn&apos;t) at the cell surface — the
-      mechanism behind the accessibility call. Three families:{" "}
+      mechanism behind the accessibility call. Same 19-value
+      taxonomy the first-pass triage uses, so the deep-dive&apos;s
+      reason can be compared directly to the triage&apos;s — when
+      they disagree, the deep-dive wins. Three families:{" "}
       <strong>YES</strong> — at the surface (classical receptor,
       GPI-anchored, multipass with exposed extracellular loops,
       extracellular face, stable surface-complex partner);{" "}
       <strong>CONTEXTUAL</strong> — at the surface only in certain
       states (induced by cell state, tissue-restricted, lysosomal
       exocytosis, dual localization, stable surface attachment); and{" "}
-      <strong>NO</strong> — not at the surface (cytoplasmic, nuclear,
-      mitochondrial, endomembrane, nuclear envelope, inner-leaflet
-      anchored, secreted-only, pMHC-only). SRC, for example, is{" "}
-      &ldquo;<code>lysosomal_exocytosis</code>&rdquo; in its cancer
-      state — overriding the baseline &ldquo;
+      <strong>NO</strong> — not at the surface (cytoplasmic; nuclear;
+      mitochondrial (matrix or inner-membrane face); endomembrane (ER
+      / Golgi / lysosomal / peroxisomal / autophagosomal membrane
+      only); nuclear envelope (inner / outer); inner-leaflet
+      anchored (lipidated / peripheral on the cytoplasmic face of
+      the plasma membrane); secreted-only (no wash-resistant surface
+      anchor); pMHC-only (the only &ldquo;surface&rdquo; story is
+      MHC-presented peptides)). SRC, for example, is &ldquo;
+      <code>lysosomal_exocytosis</code>&rdquo; in its cancer state —
+      overriding the baseline &ldquo;
       <code>inner_leaflet_anchored</code>&rdquo;.
     </>
   ),

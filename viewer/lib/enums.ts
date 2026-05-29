@@ -41,6 +41,28 @@ const ENUM_MAP: Record<string, string> = {
   transporter: "Transporter",
   other: "Other",
 
+  // Surface call reason (TriageReason in models.py — same 19-value
+  // taxonomy used by surface_triage AND surfaceome_synthesizer for
+  // surface_call_reason). titleCase fallback mangles a few of these
+  // ("Pmhc Only Intracellular", "Gpi Anchored"); spell those out so
+  // any future caller of prettyEnum(...) on a reason value gets the
+  // right casing without each call site having to bring its own map.
+  // Catalog chips override these via DD_ENUM_FIELDS.valueLabels for
+  // its own tighter labels; this map is the global fallback. Five
+  // CONTEXTUAL values + secreted_only already appear elsewhere in
+  // this map (Modulation / Contradiction-types blocks below) so we
+  // don't re-declare them here — TS rejects duplicate keys.
+  classical_surface_receptor: "Classical surface receptor",
+  gpi_anchored: "GPI-anchored",
+  multipass_with_exposed_loops: "Multipass, exposed loops",
+  extracellular_face_protein: "Extracellular-face protein",
+  stable_complex_partner: "Stable complex partner",
+  mitochondrial_internal: "Mitochondrial (internal)",
+  endomembrane_resident: "Endomembrane-resident",
+  nuclear_envelope: "Nuclear envelope",
+  inner_leaflet_anchored: "Inner-leaflet anchored",
+  pmhc_only_intracellular: "pMHC (intracellular only)",
+
   // Evidence grade / strength / density
   direct_multi_method: "Direct, multi-method",
   direct_single_method: "Direct, single method",
