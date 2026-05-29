@@ -16,8 +16,7 @@
 | Surface accessibility | Moderate |
 | Confidence | Moderate |
 | Evidence grade | Direct, single method |
-| Triage signal | Unknown |
-| Headline risks | Restricted Subdomain, Low Endogenous Expression, Other |
+| Triage signal | Likely accessible |
 
 ## 1. Executive summary
 
@@ -187,15 +186,15 @@ AstraZeneca and other companies have initiated GPR75 antagonist programs for obe
 
 **Mouse**
 
-| Canonical | Isoform | Symbol | UniProt | Type | ECD %id | ECD %sim | ECD len | TM |
-|---|---|---|---|---|---|---|---|---|
-| ✓ | Q6X632 | GPR75_MOUSE | Q6X632 | One2one | 74.2% | 74.2% | 90 aa | 7 |
+| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |
+|---|---|---|---|---|---|---|---|---|---|
+| ✓ | Q6X632 | Gpr75 | Q6X632 | One2one | 88.0% | 74.2% | 74.2% | 90 aa | 7 |
 
 **Cynomolgus**
 
-| Canonical | Isoform | Symbol | UniProt | Type | ECD %id | ECD %sim | ECD len | TM |
-|---|---|---|---|---|---|---|---|---|
-| ✓ | A0A7N9DAV0 | A0A7N9DAV0_MACFA | A0A7N9DAV0 | One2one | 98.9% | 98.9% | 89 aa | 7 |
+| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |
+|---|---|---|---|---|---|---|---|---|---|
+| ✓ | A0A7N9DAV0 | GPR75 | A0A7N9DAV0 | One2one | 99.1% | 98.9% | 98.9% | 89 aa | 7 |
 
 ## 8. Accessibility risks
 
@@ -242,10 +241,10 @@ AstraZeneca and other companies have initiated GPR75 antagonist programs for obe
 
 | Field | Value |
 |---|---|
-| AFDB ID | [AF-O95800-F1-model_v4](https://alphafold.ebi.ac.uk/entry/O95800) |
-| AFDB version | v4 |
-| ECD mean pLDDT | 0.0 |
-| ECD disordered fraction | 0.0% |
+| AFDB ID | [AF-O95800-F1](https://alphafold.ebi.ac.uk/entry/O95800) |
+| AFDB version | v6 |
+| ECD mean pLDDT | 65.4 |
+| ECD disordered fraction | 57.3% |
 
 Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/O95800) · © DeepMind / EMBL-EBI · licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · cite `10.1038/s41586-021-03819-2`; `10.1093/nar/gkad1011`.
 
@@ -253,32 +252,32 @@ Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/O95800) · 
 
 27 entries · 17 primary · 10 secondary · 0 tertiary · 7 PMC OA.
 
-- `a1_evi_01` · *Primary* · entailment ✓ — GPR75 is present at the plasma membrane of differentiated SH-SY5Y cells; CCL5 induced time-dependent internalization of surface GPR75 beginning at 30 min, confirmed by streptavidin pulldown and GPR75 immunoblot. ([PMC6198807](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6198807/))
-- `a1_evi_02` · *Primary* · entailment ✓ — Cell-impermeant sulfo-NHS-LC-biotin was used to label surface proteins on SH-SY5Y cells; biotinylated proteins were precipitated with streptavidin-agarose and GPR75 detected by immunoblot, establishing a direct cell-surface readout. ([PMC6198807](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6198807/))
-- `a1_evi_03` · *Secondary* · entailment ✓ — Immunofluorescence in mIMCD3 cells expressing 3xFlag-Gpr75 showed GPR75 localisation to primary cilia (acetylated tubulin marker); ciliary localisation was TULP3-dependent and lost in Tulp3-knockout cells. ([PMC11444156](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11444156/))
-- `a1_evi_04` · *Primary* · entailment ✓ — Endogenous GPR75 (3xFlag knockin) co-localises with cilia marker ADCY3 in primary mouse hypothalamic neurons; human GPR75 also cilia-localised in N11 cells; obesity-protective LOF mutations p.Ala110fs and p.Gln234* fail to reach primary cilia. ([PMC11444156](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11444156/))
-- `a1_evi_05` · *Secondary* · entailment ✓ — Human Protein Atlas IHC data for GPR75 report subcellular locations as Plasma membrane, Primary cilium, and Vesicles, consistent with a 7-TM GPCR at the cell surface. (https://www.proteinatlas.org/ENSG00000119737/cell)
-- `a1_evi_06` · *Secondary* · entailment ✓ — Human Protein Atlas flags GPR75 as plasma-membrane accessible with 'Supported' IHC reliability tier, indicating reproducible antibody-based evidence for membrane localisation. (https://www.proteinatlas.org/ENSG00000119737/cell)
-- `a1_evi_07` · *Secondary* · entailment ✓ — Original GPR75 cloning paper (Tarttelin et al. 1999) identified a 540-aa protein with seven predicted transmembrane domains by sequence analysis; Northern blot showed a 7 kb transcript highly expressed in brain. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
-- `a1_evi_08` · *Secondary* · entailment ✓ — Western blot of whole-cell lysates from RA-differentiated SH-SY5Y cells and rat cortical neurons detected GPR75 at ~59 kDa; lower intensity in astrocytes, undifferentiated SH-SY5Y, thymus, and spleen. Bulk-protein expression readout, not surface-specific. ([PMC6198807](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6198807/))
+- `a1_evi_01` · *Primary* — GPR75 is present at the plasma membrane of differentiated SH-SY5Y cells; CCL5 induced time-dependent internalization of surface GPR75 beginning at 30 min, confirmed by streptavidin pulldown and GPR75 immunoblot. ([PMC6198807](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6198807/))
+- `a1_evi_02` · *Primary* — Cell-impermeant sulfo-NHS-LC-biotin was used to label surface proteins on SH-SY5Y cells; biotinylated proteins were precipitated with streptavidin-agarose and GPR75 detected by immunoblot, establishing a direct cell-surface readout. ([PMC6198807](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6198807/))
+- `a1_evi_03` · *Secondary* — Immunofluorescence in mIMCD3 cells expressing 3xFlag-Gpr75 showed GPR75 localisation to primary cilia (acetylated tubulin marker); ciliary localisation was TULP3-dependent and lost in Tulp3-knockout cells. ([PMC11444156](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11444156/))
+- `a1_evi_04` · *Primary* — Endogenous GPR75 (3xFlag knockin) co-localises with cilia marker ADCY3 in primary mouse hypothalamic neurons; human GPR75 also cilia-localised in N11 cells; obesity-protective LOF mutations p.Ala110fs and p.Gln234* fail to reach primary cilia. ([PMC11444156](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11444156/))
+- `a1_evi_05` · *Secondary* — Human Protein Atlas IHC data for GPR75 report subcellular locations as Plasma membrane, Primary cilium, and Vesicles, consistent with a 7-TM GPCR at the cell surface. (https://www.proteinatlas.org/ENSG00000119737/cell)
+- `a1_evi_06` · *Secondary* — Human Protein Atlas flags GPR75 as plasma-membrane accessible with 'Supported' IHC reliability tier, indicating reproducible antibody-based evidence for membrane localisation. (https://www.proteinatlas.org/ENSG00000119737/cell)
+- `a1_evi_07` · *Secondary* — Original GPR75 cloning paper (Tarttelin et al. 1999) identified a 540-aa protein with seven predicted transmembrane domains by sequence analysis; Northern blot showed a 7 kb transcript highly expressed in brain. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
+- `a1_evi_08` · *Secondary* — Western blot of whole-cell lysates from RA-differentiated SH-SY5Y cells and rat cortical neurons detected GPR75 at ~59 kDa; lower intensity in astrocytes, undifferentiated SH-SY5Y, thymus, and spleen. Bulk-protein expression readout, not surface-specific. ([PMC6198807](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6198807/))
 - `a1_evi_09` · *Secondary* — Endogenous GPR75 protein detected exclusively in brain tissue of 3xFlag-Gpr75 knockin mice by Flag-IP western blot; Gpr75 mRNA highest in brain vs all other mouse tissues by RT-qPCR. Bulk-protein/RNA readout.
 - `a1_evi_10` · *Secondary* — Exome sequencing of 645,626 individuals identified GPR75 PTVs associated with 1.8 kg/m² lower BMI and 54% lower odds of obesity; GPR75 classified as brain-expressed GPCR. Genetic association data, not a surface-localisation assay.
-- `a1_evi_11` · *Secondary* · entailment ✓ — AstraZeneca and other companies have initiated GPR75 antagonist development as novel anti-obesity therapeutics, consistent with GPR75 being a druggable cell-surface GPCR. ([PMC12462478](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12462478/))
-- `a1_evi_12` · *Secondary* · entailment ✓ — GPR75 is described as an anti-obesity target first discovered by human molecular genetics from the UKBiobank, affirming its status as a validated GPCR target accessible at the cell surface. ([PMC12462478](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12462478/))
-- `a2_evi_01` · *Primary* · entailment ✓ — Northern blot analysis shows GPR75 mRNA is highly expressed in human brain and spinal cord, with in situ hybridization localizing transcripts to the retinal pigment epithelium (RPE) and perivascular cells surrounding retinal arterioles in human sections. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
+- `a1_evi_11` · *Secondary* — AstraZeneca and other companies have initiated GPR75 antagonist development as novel anti-obesity therapeutics, consistent with GPR75 being a druggable cell-surface GPCR. ([PMC12462478](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12462478/))
+- `a1_evi_12` · *Secondary* — GPR75 is described as an anti-obesity target first discovered by human molecular genetics from the UKBiobank, affirming its status as a validated GPCR target accessible at the cell surface. ([PMC12462478](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12462478/))
+- `a2_evi_01` · *Primary* — Northern blot analysis shows GPR75 mRNA is highly expressed in human brain and spinal cord, with in situ hybridization localizing transcripts to the retinal pigment epithelium (RPE) and perivascular cells surrounding retinal arterioles in human sections. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
 - `a2_evi_02` · *Primary* — GPR75 mRNA expression is abundant in the CNS more than peripheral tissues; RNAscope FISH in mouse CNS confirms GPR75 expression in GABAergic and glutamatergic neuronal populations across multiple brain regions.
 - `a2_evi_03` · *Primary* — GPR75 mRNA is expressed in monoaminergic neurons in the substantia nigra/VTA, locus coeruleus, and raphe nucleus, and is highly expressed in cerebellar GABAergic and glutamatergic neurons in mouse brain.
-- `a2_evi_04` · *Primary* · entailment ✓ — In situ hybridization on human retina sections localizes GPR75 transcripts to the RPE and perivascular cells surrounding retinal arterioles in the ganglion cell/nerve fiber layer. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
+- `a2_evi_04` · *Primary* — In situ hybridization on human retina sections localizes GPR75 transcripts to the RPE and perivascular cells surrounding retinal arterioles in the ganglion cell/nerve fiber layer. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
 - `a2_evi_05` · *Primary* — GPR75 is expressed in the retina and is functionally required to maintain cone photoreceptor health; knockout mice show age-dependent loss of M-cone and S-cone photoreceptor cells.
-- `a2_evi_06` · *Primary* · entailment ✓ — Mouse and human pancreatic islets express GPR75 at the mRNA level; GPR75 protein is detected in islet cells by western blotting and immunohistochemistry. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
-- `a2_evi_07` · *Primary* · entailment ✓ — Mouse and human islets express GPR75 and its ligand CCL5; CCL5 via GPR75 increases beta-cell intracellular calcium and stimulates insulin secretion. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
+- `a2_evi_06` · *Primary* — Mouse and human pancreatic islets express GPR75 at the mRNA level; GPR75 protein is detected in islet cells by western blotting and immunohistochemistry. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
+- `a2_evi_07` · *Primary* — Mouse and human islets express GPR75 and its ligand CCL5; CCL5 via GPR75 increases beta-cell intracellular calcium and stimulates insulin secretion. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
 - `a2_evi_08` · *Primary* — GPR75 is expressed in cultured human endothelial cells and vascular smooth muscle cells; 20-HETE binding to GPR75 stimulates Gαq/11 dissociation and downstream signaling causing vasoconstriction and endothelial dysfunction in vascular cells.
 - `a2_evi_09` · *Primary* — GPR75 is expressed in androgen-insensitive PC-3 prostate cancer cells; 20-HETE via GPR75 drives EMT, MMP-2 release, invasion, and anchorage-independent growth, which are blocked by GPR75 silencing.
 - `a2_evi_10` · *Primary* — RNAscope technology identifies GPR75 puncta in NeuN-positive hippocampal neurons in mouse brain, and GPR75 knockout reduces synaptic markers (synapsin I and II), demonstrating neuronal expression.
 - `a2_evi_11` · *Primary* — qPCR and flow cytometry confirm that SH-SY5Y human neuroblastoma cells express GPR75 but do not express CCR5, CCR3, or CCR1 receptors, establishing this cell line as a GPR75-expressing neuronal model.
 - `a2_evi_12` · *Primary* — CCL5 promotes time-dependent internalization of GPR75 from the cell surface in SH-SY5Y neuroblastoma cells, indicating agonist-induced receptor endocytosis.
 - `a2_evi_13` · *Primary* — Endogenous GPR75 protein is exclusively expressed in the brains of knockin mice and localizes to primary cilia of hypothalamic cells; GPR75 variants associated with lower BMI in humans fail to localize to primary cilia.
-- `a2_evi_14` · *Secondary* · entailment ✓ — HPA database annotates GPR75 subcellular localization as plasma membrane, primary cilium, and vesicles, with IHC reliability rated as Supported. (https://www.proteinatlas.org/ENSG00000119737/cell)
+- `a2_evi_14` · *Secondary* — HPA database annotates GPR75 subcellular localization as plasma membrane, primary cilium, and vesicles, with IHC reliability rated as Supported. (https://www.proteinatlas.org/ENSG00000119737/cell)
 - `a2_evi_15` · *Primary* — Large-scale exome sequencing of 645,626 individuals identifies GPR75 as one of five brain-expressed GPCRs with exome-wide significant association with BMI; protein-truncating variants in GPR75 are associated with 1.8 kg/m² lower BMI and 54% lower odds of obesity.
 
 ## Appendix · Downloads & reproduction
@@ -331,8 +330,8 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 ### Data sources
 
 - AlphaFold DB structures — CC BY 4.0 (© DeepMind / EMBL-EBI)
-- Ensembl Compara orthologs & paralogs — Compara r112 · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
-- DeepTMHMM topology — deeptmhmm-1.0.24 · DTU Health Tech (Hallgren et al. 2022; academic-use service)
+- Ensembl Compara orthologs & paralogs — ensembl_compara_2026_05_12 · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
+- DeepTMHMM topology — deeptmhmm-1.0.24 · DTU Health Tech (Hallgren et al. 2022)
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — A1 grades evidence as direct_single_method: one confirmed non-permeabilized surface-biotinylation study (Dedoni 2018) plus HPA IHC support. No mass-spec surfaceome, live-cell flow of GPR75 protein, or second independent direct surface method exists. A2 adds moderate state-dependence: ciliary enrichment is HFD-conditional and agonist-driven internalization reduces the accessible surface pool. The sole contradicting A1 item (ciliary vs. general membrane) is low severity but narrows the accessible compartment. No direct contradictions between A1/A2 surface calls. Combined, this justifies moderate rather than high confidence.*

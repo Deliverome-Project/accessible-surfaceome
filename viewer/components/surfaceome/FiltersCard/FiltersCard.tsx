@@ -340,6 +340,17 @@ export function FiltersCard({ rec, n }: Props) {
   const f = rec.filters;
   const topo = rec.deterministic_features.canonical_topology;
   const orthos = rec.deterministic_features.orthologs;
+  const isoforms = rec.deterministic_features.isoform_topologies;
+  // Total isoforms modeled (canonical + alternate isoform topologies
+  // emitted by the DeepTMHMM build) and count of alt isoforms whose
+  // per-residue topology string differs from canonical. The second
+  // metric is the isoform-decoy heuristic — if alt isoforms expose a
+  // different TM/SP arrangement and they express in target tissues,
+  // they compete with the canonical for binder occupancy.
+  const isoformTotal = 1 + isoforms.length;
+  const distinctIsoCount = isoforms.filter(
+    (iso) => iso.per_residue_topology !== topo.per_residue_topology,
+  ).length;
   const mousePill = orthologPillLabel(f.mouse_ortholog_ecd_pct_identity, orthos.mouse);
   const cynoPill = orthologPillLabel(f.cyno_ortholog_ecd_pct_identity, orthos.cynomolgus);
   // Each group is tagged with `provenance` so the render can partition
@@ -493,6 +504,70 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
+      // Topology was previously the third deterministic group;
+      // promoted to first under user request so the structural
+      // priors (TM count, isoform variety, ECD class) read BEFORE
+      // the homology rollups (Cross-species / Paralogs) that ride
+      // on top of them. Order: Topology → Cross-species → Paralogs
+      // → Candidate sites.
+      label: "Topology",
+      provenance: "deterministic",
+      pills: [
+        <StatusPill key="tm" tone="neutral" size="sm" title={TT_TM_COUNT}>
+          {topo.tm_helix_count} TM
+        </StatusPill>,
+        positiveBoolPill("N-term extracellular", f.n_term_extracellular),
+        positiveBoolPill("C-term extracellular", f.c_term_extracellular),
+        // Isoform-decoy heuristic — total isoforms modeled + how
+        // many of those alt isoforms expose a topology distinct
+        // from canonical. If alt isoforms expose a soluble or
+        // differently-anchored form AND express in target tissues,
+        // they compete with the canonical surface form for binder
+        // occupancy. Surfaces the §02 Surface-Bind / §04 Isoforms
+        // detail at-a-glance.
+        <StatusPill
+          key="iso-count"
+          tone="neutral"
+          size="sm"
+          title={
+            "Total isoforms with topology models (canonical + alternate " +
+            "isoforms emitted by the DeepTMHMM build). Higher count = " +
+            "more isoform variety to validate antibodies against."
+          }
+        >
+          {isoformTotal} isoform{isoformTotal === 1 ? "" : "s"}
+        </StatusPill>,
+        isoforms.length > 0 ? (
+          <StatusPill
+            key="iso-distinct"
+            tone={distinctIsoCount > 0 ? "amber" : "success"}
+            size="sm"
+            title={
+              "Number of alternate isoforms whose per-residue topology " +
+              "differs from canonical. >0 = isoform-decoy risk: an " +
+              "alternate isoform exposes a different TM/SP arrangement " +
+              "and may compete with the canonical surface form for " +
+              "binder occupancy (the §Risks card details the strength)."
+            }
+          >
+            {distinctIsoCount} distinct topology
+          </StatusPill>
+        ) : null,
+        // ECD accessibility class — derived from ECD length, so it
+        // belongs alongside the other topology rollups (was in the
+        // retired Accessibility group, now moved here so the size /
+        // shape / orientation signals all live in one place).
+        <StatusPill
+          key="ecd"
+          tone={ecdAccessibilityTone(f.ecd_accessibility_class)}
+          size="sm"
+          title={TT_ECD_CLASS}
+        >
+          ECD · {prettyEnum(f.ecd_accessibility_class)}
+        </StatusPill>,
+      ],
+    },
+    {
       label: "Cross-species",
       provenance: "deterministic",
       pills: [
@@ -544,30 +619,13 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
-      label: "Topology",
-      provenance: "deterministic",
-      pills: [
-        <StatusPill key="tm" tone="neutral" size="sm" title={TT_TM_COUNT}>
-          {topo.tm_helix_count} TM
-        </StatusPill>,
-        positiveBoolPill("N-term extracellular", f.n_term_extracellular),
-        positiveBoolPill("C-term extracellular", f.c_term_extracellular),
-        // ECD accessibility class — derived from ECD length, so it
-        // belongs alongside the other topology rollups (was in the
-        // retired Accessibility group, now moved here so the size /
-        // shape / orientation signals all live in one place).
-        <StatusPill
-          key="ecd"
-          tone={ecdAccessibilityTone(f.ecd_accessibility_class)}
-          size="sm"
-          title={TT_ECD_CLASS}
-        >
-          ECD · {prettyEnum(f.ecd_accessibility_class)}
-        </StatusPill>,
-      ],
-    },
-    {
-      label: "SURFACE-Bind",
+      // Was "SURFACE-Bind"; reader-facing label is now "Candidate
+      // sites" — names the metric (per-protein count of MaSIF-scored
+      // targetable surface patches) rather than the toolchain. Pill
+      // text + tooltips still cite SURFACE-Bind / MaSIF for
+      // provenance, and the group label metadata below carries the
+      // SURFACE-Bind + Balbi et al links.
+      label: "Candidate sites",
       provenance: "deterministic",
       // Three distinct states, each rendered explicitly so the reader
       // can tell them apart at a glance:
@@ -735,15 +793,15 @@ export function FiltersCard({ rec, n }: Props) {
         { href: "https://dtu.biolib.com/DeepTMHMM", label: "DeepTMHMM" },
       ],
     },
-    "SURFACE-Bind": {
+    "Candidate sites": {
       title:
-        "MaSIF patch-based targetability scoring (Balbi et al. 2026, " +
-        "PMID 41604262, " +
-        "PNAS). Three states: 'not in' = filtered at structural QC; " +
-        "'scored · no patches' = scored but no patches cleared the " +
-        "MaSIF threshold; 'N sites · M seeds' = real targetability " +
-        "data. α-seeds = α-helical binder candidates; β-seeds = " +
-        "β-strand binder candidates.",
+        "MaSIF patch-based targetability scoring from SURFACE-Bind " +
+        "(Balbi et al. 2026, PMID 41604262, PNAS). Three states: " +
+        "'not in' = filtered at structural QC; 'scored · no patches' = " +
+        "scored but no patches cleared the MaSIF threshold; " +
+        "'N sites · M seeds' = real targetability data. α-seeds = " +
+        "α-helical binder candidates; β-seeds = β-strand binder " +
+        "candidates.",
       links: [
         { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
         {
@@ -786,7 +844,14 @@ export function FiltersCard({ rec, n }: Props) {
           ))}
         </p>
         <ul className={styles.pills}>
-          {g.pills.map((p, i) => (
+          {g.pills
+            // Drop any nulls before rendering — some groups
+            // conditionally include pills (e.g. the topology
+            // "N distinct topology" pill only renders when alt
+            // isoforms exist). Without this filter an empty <li>
+            // renders for each null entry.
+            .filter((p) => p != null)
+            .map((p, i) => (
             <li key={i}>{p}</li>
           ))}
         </ul>
