@@ -1,7 +1,12 @@
 .page {
   /* Tight top padding + tighter inter-row gap so the gene-symbol
-     h1 sits a single line below the back-arrow toolbar. */
-  padding: var(--space-3) 0 var(--space-24);
+     h1 sits a single line below the back-arrow toolbar. The bottom
+     padding used to be `var(--space-24)` (96px); the Shell footer's
+     own `margin-top: var(--space-12)` (48px) already gives the
+     content a clear separator, so the page's extra 96px just sat
+     as a dead band between DataSourcesFooter and the footer copy.
+     Dropped to 0 — the footer's margin-top handles the gap. */
+  padding: var(--space-3) 0 0;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
