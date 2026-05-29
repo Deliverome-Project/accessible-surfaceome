@@ -90,6 +90,9 @@ export function Shell({ children }: ShellProps) {
             <NavLink href="/benchmark" matchPrefix>
               SurfaceBench
             </NavLink>
+            <NavLink href="/compare" matchPrefix>
+              Compare
+            </NavLink>
             <NavLink href="/api" matchPrefix>
               API
             </NavLink>
