@@ -76,7 +76,7 @@ export default async function ComparePage() {
         </header>
 
         <CompareTool
-          rows={catalog.rows}
+          rows={rows}
           nRows={catalog.n_rows}
           nWithDeepDive={catalog.n_with_deep_dive}
         />
