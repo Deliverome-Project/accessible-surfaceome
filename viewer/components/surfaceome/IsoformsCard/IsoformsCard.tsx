@@ -41,9 +41,10 @@ function orientationPill(o: Orientation) {
  * length. Both `canonical_topology` (CanonicalTopology) and each
  * `isoform_topologies[]` entry (IsoformTopology) structurally carry
  * these fields, so the Pick below type-checks for either. Orthologs
- * only carry ECD length + TM count from Compara, so `orthologRow`
- * renders its own cells with em-dashes for the four DeepTMHMM-only
- * columns.
+ * only carry ECD length + TM count from Compara directly, so
+ * `orthologRow` renders its own cells — deriving ICD length, the two
+ * terminal orientations, and signal-peptide length from the ortholog's
+ * DeepTMHMM topology string (see `deriveOrthologDetail`).
  */
 type TopologyDetail = Pick<
   IsoformTopology,
@@ -66,6 +67,60 @@ function topologyDetailCells(t: TopologyDetail) {
       <td>{t.signal_peptide_length} aa</td>
     </>
   );
+}
+
+/** Map a DeepTMHMM terminal-side character to the viewer's two-member
+ *  Orientation union. O (outside) / B (beta-strand, periplasm-facing) →
+ *  extracellular; I (inside) → cytoplasmic. Anything else (a membrane
+ *  residue at the terminus, or an empty string) is "indeterminate" in
+ *  the backend enum, which the viewer's Orientation type can't express —
+ *  return null so the caller renders an em-dash for that one cell. */
+function terminalOrientation(side: string): Orientation | null {
+  if (side === "O" || side === "B") return "extracellular";
+  if (side === "I") return "cytoplasmic";
+  return null;
+}
+
+/**
+ * Derive the topology-detail scalars Ensembl Compara doesn't store on an
+ * `OrthologEntry` — signal-peptide length, ICD length, and the two
+ * terminal orientations — straight from the per-residue DeepTMHMM
+ * topology string the ortholog now carries. Mirrors the backend parse in
+ * `sources/deeptmhmm.py` exactly: the leading run of "S" is the signal
+ * peptide; ICD length is the count of "I" (cytoplasmic) residues; the
+ * terminal orientation is the first / last non-"S" character. Lets the
+ * ortholog rows read with the same topology detail as the canonical /
+ * isoform rows instead of four em-dashes. (ECD length + TM count come
+ * from the stored Compara fields, so they aren't re-derived here.)
+ */
+function deriveOrthologDetail(topology: string): {
+  signal_peptide_length: number;
+  icd_length_residues: number;
+  n_terminal_orientation: Orientation | null;
+  c_terminal_orientation: Orientation | null;
+} {
+  const topo = topology.toUpperCase();
+  let sp = 0;
+  for (const ch of topo) {
+    if (ch === "S") sp += 1;
+    else break;
+  }
+  let firstNonS = "";
+  let lastNonS = "";
+  let icd = 0;
+  for (const ch of topo) {
+    if (ch !== "S") {
+      if (firstNonS === "") firstNonS = ch;
+      lastNonS = ch;
+    }
+    if (ch === "I") icd += 1;
+  }
+  return {
+    signal_peptide_length: sp,
+    icd_length_residues: icd,
+    n_terminal_orientation: terminalOrientation(firstNonS),
+    c_terminal_orientation: terminalOrientation(lastNonS),
+  };
 }
 
 /**
@@ -95,6 +150,13 @@ function paralogRiskTier(pct: number | null): "high" | "med" | "low" | null {
  */
 function orthologRow(e: OrthologEntry, key: string, species: string) {
   const ecdMissing = e.ecd_pct_identity_to_human_canonical == null;
+  // ICD length / terminal orientations / signal-peptide length aren't in
+  // the Compara record, but they're derivable from the ortholog's own
+  // DeepTMHMM topology string (same parse the backend runs for the
+  // canonical + isoforms). Null when the ortholog has no topology yet.
+  const detail = e.per_residue_topology
+    ? deriveOrthologDetail(e.per_residue_topology)
+    : null;
   return (
     <tr key={key}>
       <td>
@@ -133,14 +195,26 @@ function orthologRow(e: OrthologEntry, key: string, species: string) {
         {fmtPct(e.ecd_pct_similarity_to_human_canonical)}
       </td>
       <td>{e.ecd_length_residues} aa</td>
-      {/* ICD length — Compara doesn't carry it for orthologs. */}
-      <td className={styles.muted}>—</td>
+      {/* ICD length / terminal orientations / signal-peptide length —
+          derived from the ortholog's DeepTMHMM topology (see `detail`).
+          Em-dash only when the ortholog has no topology string yet. */}
+      <td className={detail ? undefined : styles.muted}>
+        {detail ? `${detail.icd_length_residues} aa` : "—"}
+      </td>
       <td>{e.tm_helix_count}</td>
-      {/* Per-terminus orientation + signal-peptide length are DeepTMHMM
-          outputs only computed for the human canonical + isoforms. */}
-      <td className={styles.muted}>—</td>
-      <td className={styles.muted}>—</td>
-      <td className={styles.muted}>—</td>
+      <td className={detail?.n_terminal_orientation ? undefined : styles.muted}>
+        {detail?.n_terminal_orientation
+          ? orientationPill(detail.n_terminal_orientation)
+          : "—"}
+      </td>
+      <td className={detail?.c_terminal_orientation ? undefined : styles.muted}>
+        {detail?.c_terminal_orientation
+          ? orientationPill(detail.c_terminal_orientation)
+          : "—"}
+      </td>
+      <td className={detail ? undefined : styles.muted}>
+        {detail ? `${detail.signal_peptide_length} aa` : "—"}
+      </td>
       <td className={styles.topoCell}>
         {e.per_residue_topology ? (
           <TopologyBar
@@ -175,12 +249,13 @@ interface Props {
  * - The columns are: identifier, %identity (full-length vs the human
  *   canonical), ECD %identity, ECD %similarity, ECD length, ICD length,
  *   TM-helix count, N-terminal orientation, C-terminal orientation,
- *   signal-peptide length, and the DeepTMHMM topology bar. The four
+ *   signal-peptide length, and the DeepTMHMM topology bar. The
  *   per-terminus / ICD-length / signal-peptide columns come from
- *   DeepTMHMM and are only populated for the human canonical + isoform
- *   rows; orthologs (whose Compara records carry only ECD length +
- *   TM count) show an em-dash there. The table is wide enough that the
- *   wrapper scrolls horizontally on narrow viewports.
+ *   DeepTMHMM: stored directly on the canonical + isoform rows, and
+ *   derived from the ortholog's own topology string for ortholog rows
+ *   (an ortholog only shows em-dashes there if its topology hasn't been
+ *   computed yet). The table is wide enough that the wrapper scrolls
+ *   horizontally on narrow viewports.
  * - Orthologs carry real alignment numbers; the canonical row is the
  *   reference ("ref"); alternative-isoform identity cells are pending a
  *   full-length alignment (shown as "—" until that lands).
