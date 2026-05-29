@@ -1,4 +1,6 @@
 import type {
+  IsoformTopology,
+  Orientation,
   OrthologEntry,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
@@ -20,6 +22,50 @@ function presentStates(topologies: string[]): string[] {
 /** Format a nullable percent as "x.x%" or an em-dash. */
 function fmtPct(v: number | null | undefined): string {
   return v == null ? "—" : `${v.toFixed(1)}%`;
+}
+
+/** Terminal-orientation pill — teal when the terminus faces the
+ *  extracellular space, neutral when it sits cytoplasmic. */
+function orientationPill(o: Orientation) {
+  return (
+    <StatusPill tone={o === "extracellular" ? "teal" : "neutral"} size="sm">
+      {prettyEnum(o)}
+    </StatusPill>
+  );
+}
+
+/**
+ * The six DeepTMHMM topology-detail cells shared by the canonical and
+ * alternative-isoform rows: ECD length · ICD length · TM-helix count ·
+ * N-terminal orientation · C-terminal orientation · signal-peptide
+ * length. Both `canonical_topology` (CanonicalTopology) and each
+ * `isoform_topologies[]` entry (IsoformTopology) structurally carry
+ * these fields, so the Pick below type-checks for either. Orthologs
+ * only carry ECD length + TM count from Compara, so `orthologRow`
+ * renders its own cells with em-dashes for the four DeepTMHMM-only
+ * columns.
+ */
+type TopologyDetail = Pick<
+  IsoformTopology,
+  | "ecd_length_residues"
+  | "icd_length_residues"
+  | "tm_helix_count"
+  | "n_terminal_orientation"
+  | "c_terminal_orientation"
+  | "signal_peptide_length"
+>;
+
+function topologyDetailCells(t: TopologyDetail) {
+  return (
+    <>
+      <td>{t.ecd_length_residues} aa</td>
+      <td>{t.icd_length_residues} aa</td>
+      <td>{t.tm_helix_count}</td>
+      <td>{orientationPill(t.n_terminal_orientation)}</td>
+      <td>{orientationPill(t.c_terminal_orientation)}</td>
+      <td>{t.signal_peptide_length} aa</td>
+    </>
+  );
 }
 
 /**
@@ -68,7 +114,14 @@ function orthologRow(e: OrthologEntry, key: string, species: string) {
         {fmtPct(e.ecd_pct_similarity_to_human_canonical)}
       </td>
       <td>{e.ecd_length_residues} aa</td>
+      {/* ICD length — Compara doesn't carry it for orthologs. */}
+      <td className={styles.muted}>—</td>
       <td>{e.tm_helix_count}</td>
+      {/* Per-terminus orientation + signal-peptide length are DeepTMHMM
+          outputs only computed for the human canonical + isoforms. */}
+      <td className={styles.muted}>—</td>
+      <td className={styles.muted}>—</td>
+      <td className={styles.muted}>—</td>
       <td className={styles.topoCell}>
         {e.per_residue_topology ? (
           <TopologyBar
@@ -100,13 +153,15 @@ interface Props {
  *   isoforms, and the mouse / cynomolgus orthologs — is a row in a
  *   single table, so the reader compares "how similar is each version
  *   to the canonical, and what does its topology look like" at a glance.
- * - The shared, comparison-focused columns are: identifier, %identity
- *   (full-length vs the human canonical), ECD %identity, ECD
- *   %similarity, ECD length, TM-helix count, and the DeepTMHMM topology
- *   bar. N-/C-terminal orientation and signal-peptide length (which
- *   only the isoform rows carried) are dropped from the table because
- *   the topology bar already encodes them visually — keeping the merged
- *   table narrow enough to never need horizontal scrolling.
+ * - The columns are: identifier, %identity (full-length vs the human
+ *   canonical), ECD %identity, ECD %similarity, ECD length, ICD length,
+ *   TM-helix count, N-terminal orientation, C-terminal orientation,
+ *   signal-peptide length, and the DeepTMHMM topology bar. The four
+ *   per-terminus / ICD-length / signal-peptide columns come from
+ *   DeepTMHMM and are only populated for the human canonical + isoform
+ *   rows; orthologs (whose Compara records carry only ECD length +
+ *   TM count) show an em-dash there. The table is wide enough that the
+ *   wrapper scrolls horizontally on narrow viewports.
  * - Orthologs carry real alignment numbers; the canonical row is the
  *   reference ("ref"); alternative-isoform identity cells are pending a
  *   full-length alignment (shown as "—" until that lands).
@@ -185,7 +240,11 @@ export function IsoformsCard({ rec, n }: Props) {
                   </InfoTip>
                 </th>
                 <th scope="col">ECD len</th>
-                <th scope="col">TM</th>
+                <th scope="col">ICD len</th>
+                <th scope="col">TM count</th>
+                <th scope="col">N-term</th>
+                <th scope="col">C-term</th>
+                <th scope="col">Signal pep</th>
                 <th scope="col" className={styles.topoCol}>
                   Topology
                 </th>
@@ -212,8 +271,7 @@ export function IsoformsCard({ rec, n }: Props) {
                 <td className={styles.refCell}>ref</td>
                 <td className={styles.refCell}>ref</td>
                 <td className={styles.refCell}>ref</td>
-                <td>{ct.ecd_length_residues} aa</td>
-                <td>{ct.tm_helix_count}</td>
+                {topologyDetailCells(ct)}
                 <td className={styles.topoCell}>
                   <TopologyBar
                     topology={ct.per_residue_topology}
@@ -250,8 +308,7 @@ export function IsoformsCard({ rec, n }: Props) {
                   </td>
                   <td className={styles.muted}>—</td>
                   <td className={styles.muted}>—</td>
-                  <td>{iso.ecd_length_residues} aa</td>
-                  <td>{iso.tm_helix_count}</td>
+                  {topologyDetailCells(iso)}
                   <td className={styles.topoCell}>
                     <TopologyBar
                       topology={iso.per_residue_topology}
