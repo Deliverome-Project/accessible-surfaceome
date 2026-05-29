@@ -99,10 +99,24 @@
   content: attr(data-hint);
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
+  /* Right-align the tooltip to the link so it opens LEFTWARD into the
+   * page. The crumb actions live in a `margin-left: auto` cluster
+   * pinned to the right edge of the page-width container, so a
+   * left-anchored tooltip (the old `left: 0`) spilled the 320px box
+   * past the right viewport edge — worst for the rightmost
+   * "Markdown (full)" link, whose long hint ran ~170px off-screen.
+   * Anchoring to `right: 0` keeps the whole box on-screen; the page is
+   * always wider than 320px so it can't underflow the left edge. */
+  right: 0;
+  left: auto;
   z-index: 20;
   width: max-content;
-  max-width: 320px;
+  /* Cap at 320px, but never wider than the viewport minus an 8px
+   * margin each side — so on a phone narrower than ~336px the box
+   * shrinks instead of spilling past the left edge. Mirrors the
+   * `90vw` guarantee on the InfoTip popover: no tooltip ever exceeds
+   * the viewport, so the reader never has to scroll to read one. */
+  max-width: min(320px, calc(100vw - 16px));
   padding: 0.5rem 0.7rem;
   border-radius: var(--radius-sm);
   background: var(--ink);

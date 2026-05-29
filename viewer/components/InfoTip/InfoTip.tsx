@@ -16,6 +16,19 @@ interface InfoTipProps {
    *  long-prose tooltips that would otherwise wrap into a tall narrow
    *  column. */
   wide?: boolean;
+  /** Horizontal anchoring of the popover relative to the trigger.
+   *  Because the popover is CSS-only (no JS viewport-edge auto-flip),
+   *  triggers near a screen edge must be told which way to open so the
+   *  popover stays fully on-screen:
+   *    - `"center"` (default) — centered under the trigger. Use for
+   *      triggers comfortably inside the page (left / mid columns).
+   *    - `"end"` — popover's right edge aligns to the trigger and it
+   *      opens LEFTWARD. Use for right-column / right-aligned triggers
+   *      (e.g. the structure-caption pLDDT pills) so a wide popover
+   *      doesn't spill past the right viewport edge.
+   *    - `"start"` — popover's left edge aligns to the trigger and it
+   *      opens RIGHTWARD. Use for triggers hard against the left edge. */
+  align?: "center" | "start" | "end";
 }
 
 /**
@@ -62,9 +75,20 @@ export function InfoTip({
   label = "About this field",
   triggerClassName,
   wide = false,
+  align = "center",
 }: InfoTipProps) {
+  const alignClass =
+    align === "end"
+      ? styles.popoverEnd
+      : align === "start"
+        ? styles.popoverStart
+        : "";
   return (
-    <span className={styles.wrap}>
+    // `data-infotip` is the hit-test hook for InfoTipAutoPlace (the
+    // single document-level positioner in <Shell>); it nudges the
+    // popover back on-screen via `--infotip-shift` without making this
+    // a client component.
+    <span className={styles.wrap} data-infotip="">
       <button
         type="button"
         className={`${styles.trigger} ${triggerClassName ?? ""}`.trim()}
@@ -74,7 +98,7 @@ export function InfoTip({
       </button>
       <span
         role="tooltip"
-        className={`${styles.popover} ${wide ? styles.popoverWide : ""}`
+        className={`${styles.popover} ${wide ? styles.popoverWide : ""} ${alignClass}`
           .replace(/\s+/g, " ")
           .trim()}
       >

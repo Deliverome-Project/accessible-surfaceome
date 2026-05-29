@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { InfoTipAutoPlace } from "../InfoTip/InfoTipAutoPlace";
 import { NavLink } from "./NavLink";
 import styles from "./Shell.module.css";
 
@@ -51,6 +52,11 @@ function parentHref(path: string): string {
 export function Shell({ children }: ShellProps) {
   return (
     <div className={styles.shell}>
+      {/* One document-level listener that keeps every InfoTip popover on
+       *  screen (writes `--infotip-shift`). Renders null — see
+       *  InfoTipAutoPlace.tsx for why this stays out of the server-only
+       *  InfoTip component. */}
+      <InfoTipAutoPlace />
       <a className={styles.skipLink} href="#main-content">
         Skip to main content
       </a>

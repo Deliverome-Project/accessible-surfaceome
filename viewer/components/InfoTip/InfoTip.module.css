@@ -48,7 +48,12 @@
   z-index: 100;
   top: calc(100% + 0.45rem);
   left: 50%;
-  transform: translateX(-50%);
+  /* `--infotip-shift` is written by InfoTipAutoPlace (the single
+   * document-level positioner mounted in <Shell>) when a centered
+   * popover would spill past a viewport edge. Defaults to 0px so the
+   * CSS-only popover stays perfectly centered until/unless JS nudges
+   * it back on-screen. */
+  transform: translateX(calc(-50% + var(--infotip-shift, 0px)));
   max-width: min(28em, 90vw);
   min-width: 16em;
   /* Let the popover grow to fit its content; cap only at the viewport
@@ -76,6 +81,23 @@
   line-height: 1.5;
   color: var(--ink);
   text-align: left;
+  /* Force normal wrapping. CRITICAL: several triggers live inside
+   * single-line `white-space: nowrap` rows (the structure-caption
+   * stats strip, chip rows, etc.), and the popover would otherwise
+   * INHERIT that nowrap — laying its prose out as one long line that
+   * overflows into an internal horizontal scrollbar (the reader had to
+   * scroll the tooltip left/right to read it). Resetting to `normal`
+   * here makes the prose wrap within the popover's max-width. */
+  white-space: normal;
+  /* Wrap long unbroken tokens (e.g. inline `<code>` like
+   * `fractionPlddtLow + fractionPlddtVeryLow`, DOIs, URLs) instead of
+   * letting them force the popover wider than its max-width. Combined
+   * with `overflow-y: auto` (which per CSS spec makes overflow-x
+   * compute to `auto` too), an un-wrapped token would otherwise create
+   * an internal horizontal scrollbar — the reader should never have to
+   * scroll a tooltip. */
+  overflow-wrap: break-word;
+  word-break: normal;
 
   /* Hidden by default — CSS-only reveal on parent :hover / :focus-
    * within (see selectors below). `visibility: hidden` (not
@@ -121,6 +143,33 @@
   min-width: 28rem;
 }
 
+/* Horizontal anchoring modifiers (set via the InfoTip `align` prop).
+ * The default popover centers under the trigger (`left: 50%` +
+ * `translateX(-50%)`); these override that for edge triggers so the
+ * popover opens INTO the page instead of off-screen. There's no JS
+ * viewport detection, so the caller picks the side based on where the
+ * trigger sits in the layout. `90vw` max-width still caps either way,
+ * so the popover can never be wider than the viewport. */
+.popoverEnd {
+  /* Right edge aligns to the trigger; popover opens leftward. For
+   * right-column / right-aligned triggers (structure-caption pLDDT
+   * pills, etc.). */
+  left: auto;
+  right: 0;
+  /* No centering translate; still fold in `--infotip-shift` so the
+   * positioner can nudge an edge-anchored popover that would otherwise
+   * spill past the opposite viewport edge on a narrow screen. */
+  transform: translateX(var(--infotip-shift, 0px));
+}
+
+.popoverStart {
+  /* Left edge aligns to the trigger; popover opens rightward. For
+   * triggers hard against the left viewport edge. */
+  left: 0;
+  right: auto;
+  transform: translateX(var(--infotip-shift, 0px));
+}
+
 /* Compress consecutive <br> pairs — tooltip authors use
  * `<br /><br />` to separate paragraphs, but the resulting double
  * line break renders with a full empty line at line-height 1.5,
@@ -149,8 +198,3 @@
   color: var(--accent-deep);
   border-bottom-color: var(--accent-deep);
 }
-
-/* When the popover would overflow the viewport on the right, the
- * caller can apply this modifier via a wrapper class. We default to
- * centered; alignment fixes happen via CSS adjacent-selector rules in
- * the consuming component when needed. */
