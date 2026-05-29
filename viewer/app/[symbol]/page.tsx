@@ -110,12 +110,17 @@ export default async function GenePage({ params }: PageProps) {
       label: "Risks",
       render: (n) => <AccessibilityRisksCard rec={rec} n={n} />,
     },
-    // SurfaceBindCard renders ``null`` when the protein isn't in
-    // SURFACE-Bind's authoritative table. Filter the section out
-    // entirely in the absent case so the AnchorNav link doesn't
-    // jump to an empty anchor — the absence is already signaled
-    // by the "not scored" pill in the GeneHeader.
-    ...(rec.deterministic_features.surface_bind.has_data
+    // SURFACE-Bind section only when the protein has at least one
+    // scored patch. Two empty cases are filtered out so the AnchorNav
+    // strip never offers a tab that opens a sites-less section:
+    //   * not in SURFACE-Bind's table (`has_data=false`), and
+    //   * scored but no patch cleared the MaSIF threshold
+    //     (`n_sites=0`, e.g. CLDN18).
+    // Both absence signals are still surfaced — as the "not in" /
+    // "scored · no patches" pill states in the §01 "Candidate sites"
+    // group — so dropping the section here loses no information.
+    ...(rec.deterministic_features.surface_bind.has_data &&
+    rec.deterministic_features.surface_bind.n_sites > 0
       ? [
           {
             kind: "surface-bind",
