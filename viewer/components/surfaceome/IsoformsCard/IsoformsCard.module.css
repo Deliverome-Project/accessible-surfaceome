@@ -49,6 +49,34 @@
   font-size: 0.88rem;
 }
 
+/* Variant cell (unified isoform + ortholog table) — stacks the class
+   pill, the identifier, and an optional muted subtext (ortholog type /
+   alt-isoform marker) in a tight column so the leftmost column reads as
+   one labelled block per row. `white-space: normal` overrides the
+   table-wide nowrap so a long "symbol · accession" can wrap rather than
+   widen the table. */
+.variantCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  white-space: normal;
+}
+
+.variantSub {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+}
+
+/* Reference row identity cells (canonical) — render "ref" muted so the
+   reader sees the canonical is the baseline everything else is compared
+   to, not a computed 100%. */
+.refCell {
+  color: var(--muted);
+  font-style: italic;
+}
+
 .caveat {
   display: flex;
   flex-direction: column;

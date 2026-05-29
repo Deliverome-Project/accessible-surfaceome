@@ -102,16 +102,13 @@ export default async function GenePage({ params }: PageProps) {
       label: "Biology",
       render: (n) => <BiologicalContextCard rec={rec} n={n} />,
     },
-    // Evolutionary context — isoforms + orthologs + paralogs combined
-    // into one section per user feedback. The previous three-tab split
-    // each had its own AnchorNav entry so empty subsections stayed
-    // visible to readers; the combined card has subheads inside so
-    // emptiness is still visible (e.g. "No paralogs in Compara." renders
-    // under its own subhead) but the tab strip is three slots shorter.
+    // Risks promoted above the evolutionary-context group per user
+    // feedback — accessibility risks are higher-priority reading than
+    // the isoform / ortholog / paralog comparison that follows it.
     {
-      kind: "isoforms",
-      label: "Isoforms · orthologs · paralogs",
-      render: (n) => <IsoformsCard rec={rec} n={n} />,
+      kind: "risks",
+      label: "Risks",
+      render: (n) => <AccessibilityRisksCard rec={rec} n={n} />,
     },
     // SurfaceBindCard renders ``null`` when the protein isn't in
     // SURFACE-Bind's authoritative table. Filter the section out
@@ -127,10 +124,16 @@ export default async function GenePage({ params }: PageProps) {
           },
         ]
       : []),
+    // Evolutionary context — isoforms + orthologs + paralogs combined
+    // into one section per user feedback. The previous three-tab split
+    // each had its own AnchorNav entry so empty subsections stayed
+    // visible to readers; the combined card has subheads inside so
+    // emptiness is still visible (e.g. "No paralogs in Compara." renders
+    // under its own subhead) but the tab strip is three slots shorter.
     {
-      kind: "risks",
-      label: "Risks",
-      render: (n) => <AccessibilityRisksCard rec={rec} n={n} />,
+      kind: "isoforms",
+      label: "Isoforms · orthologs · paralogs",
+      render: (n) => <IsoformsCard rec={rec} n={n} />,
     },
     {
       kind: "ledger",
