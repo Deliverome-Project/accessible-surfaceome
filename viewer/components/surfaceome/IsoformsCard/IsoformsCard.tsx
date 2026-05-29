@@ -199,7 +199,14 @@ export function IsoformsCard({ rec, n }: Props) {
                     <StatusPill tone="teal" size="sm">
                       Canonical
                     </StatusPill>
-                    <span className={styles.mono}>{rec.gene.uniprot_acc}</span>
+                    <a
+                      className={styles.link}
+                      href={`https://www.uniprot.org/uniprotkb/${rec.gene.uniprot_acc}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <span className={styles.mono}>{rec.gene.uniprot_acc}</span>
+                    </a>
                   </div>
                 </td>
                 <td className={styles.refCell}>ref</td>
@@ -225,7 +232,14 @@ export function IsoformsCard({ rec, n }: Props) {
                       <StatusPill tone="neutral" size="sm">
                         Isoform
                       </StatusPill>
-                      <span className={styles.mono}>{iso.isoform_id}</span>
+                      <a
+                        className={styles.link}
+                        href={`https://www.uniprot.org/uniprotkb/${iso.isoform_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span className={styles.mono}>{iso.isoform_id}</span>
+                      </a>
                     </div>
                   </td>
                   <td
