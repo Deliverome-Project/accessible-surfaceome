@@ -2129,16 +2129,13 @@ class ParalogEntry(BaseModel):
     ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
-    # Per-residue DeepTMHMM topology + summary stats for the paralog's
-    # canonical isoform. Sourced from ``topology_public`` filtered to
-    # ``cohort='human_canonical'``. Nullable because rare paralogs may
-    # not yet have a DeepTMHMM run in the cohort (e.g. fresh additions
-    # the topology sweep hasn't picked up); the viewer's IsoformsCard
-    # renders a placeholder when these are absent.
-    per_residue_topology: str | None = Field(default=None)
-    deeptmhmm_label: str | None = Field(default=None)  # 'TM' | 'SP+TM' | 'SP' | 'BETA' | 'GLOB'
-    tm_helix_count: int | None = Field(default=None, ge=0)
-    ecd_length_residues: int | None = Field(default=None, ge=0)
+    # (Per-residue DeepTMHMM topology was briefly added to this entry
+    # in 6a220a90 and reverted shortly after: SRC's 32 paralogs are all
+    # GLOB intracellular kinases, so the bars rendered as solid blue
+    # with no signal. Isoform + ortholog topology are still surfaced
+    # in §04 because those CAN show real TM patterns. If a real use
+    # case for paralog topology surfaces later, re-add via the same
+    # topology_public LEFT JOIN pattern that the orthologs loader uses.)
 
 
 class StructureFeatures(BaseModel):
@@ -2466,6 +2463,16 @@ class SurfaceomeRecord(BaseModel):
     # Cross-agent coherence — populated by the orchestrator from the most
     # recent surface_triage record.
     triage_signal: TriageSignal = "unknown"
+    # The triage agent's prose justification for its verdict (the
+    # ``verdict_reasoning`` field on the upstream ``TriageRecord``). Loaded
+    # by the orchestrator alongside ``triage_signal`` — the triage record is
+    # already fetched to derive the signal, so this carries no extra cost —
+    # and surfaced verbatim in the viewer's Triage row so the reader can see
+    # WHY the initial no-web-search pass called it the way it did, distinct
+    # from the deep-dive ``confidence_reasoning``. ``None`` (the default)
+    # when no triage record exists for the gene, so records generated before
+    # this field existed validate unchanged.
+    triage_reasoning: str | None = None
 
     # LLM synthesis
     executive_summary: ExecutiveSummary

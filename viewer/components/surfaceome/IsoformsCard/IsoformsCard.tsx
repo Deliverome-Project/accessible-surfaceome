@@ -223,7 +223,7 @@ export function IsoformsCard({ rec, n }: Props) {
         ) : (
           <ul className={styles.paralogChips} aria-label="Paralog list">
             {paralogs.map((p, i) => (
-              <li key={i} className={styles.paralogChipCell}>
+              <li key={i} className={styles.paralogChip}>
                 <a
                   className={styles.paralogChipLink}
                   href={`https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}`}
@@ -242,22 +242,6 @@ export function IsoformsCard({ rec, n }: Props) {
                       : "no ECD"}
                   </span>
                 </a>
-                {/* Per-residue DeepTMHMM strip beneath the chip — only
-                 *  when the paralog's canonical topology is in our
-                 *  cohort. Same component the isoform table uses so the
-                 *  colors and proportional layout match. */}
-                {p.per_residue_topology ? (
-                  <div className={styles.paralogChipBar}>
-                    <TopologyBar
-                      topology={p.per_residue_topology}
-                      ariaLabel={`${p.paralog_symbol} canonical topology`}
-                    />
-                  </div>
-                ) : (
-                  <div className={`${styles.paralogChipBar} ${styles.paralogChipBarEmpty}`}>
-                    no topology
-                  </div>
-                )}
               </li>
             ))}
           </ul>

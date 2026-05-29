@@ -111,9 +111,12 @@ def test_per_cohort_version_falls_back_when_no_release_match(
 # ---------------------------------------------------------------------------
 
 
-def test_fetch_paralogs_populates_topology_when_join_hits(monkeypatch: pytest.MonkeyPatch) -> None:
-    """LEFT JOIN row carrying per_residue_topology + label + counts →
-    every new field lands on the ParalogEntry."""
+def test_fetch_paralogs_basic_shape(monkeypatch: pytest.MonkeyPatch) -> None:
+    """ParalogEntry rows surface paralog_symbol / acc / family_id /
+    ecd_pct_identity / compara_version from the SQL row. No topology
+    JOIN — that field was added in 6a220a90 and reverted shortly after
+    (SRC's 32 paralogs are all GLOB so the bars rendered as solid
+    intracellular blue with no signal)."""
     rows = [
         {
             "paralog_gene_symbol": "FYN",
@@ -122,10 +125,6 @@ def test_fetch_paralogs_populates_topology_when_join_hits(monkeypatch: pytest.Mo
             "family_id": "ENSGT00940000158534",
             "compara_version": "112",
             "rank_by_ecd_identity": 1,
-            "per_residue_topology": "IIIIMMMOOOOMMMIII",
-            "deeptmhmm_label": "TM",
-            "tm_helix_count": 2,
-            "ecd_length_residues": 6,
         }
     ]
 
@@ -133,9 +132,7 @@ def test_fetch_paralogs_populates_topology_when_join_hits(monkeypatch: pytest.Mo
         d1_deterministic, "_query_public", lambda sql, params: list(rows)
     )
 
-    entries = d1_deterministic._fetch_paralogs(
-        "P12931", "compara-v112", topology_version="tv1"
-    )
+    entries = d1_deterministic._fetch_paralogs("P12931", "compara-v112")
 
     assert len(entries) == 1
     p = entries[0]
@@ -144,29 +141,25 @@ def test_fetch_paralogs_populates_topology_when_join_hits(monkeypatch: pytest.Mo
     assert p.paralog_uniprot_acc == "P06241"
     assert p.ecd_pct_identity == pytest.approx(72.5)
     assert p.family_id == "ENSGT00940000158534"
-    assert p.per_residue_topology == "IIIIMMMOOOOMMMIII"
-    assert p.deeptmhmm_label == "TM"
-    assert p.tm_helix_count == 2
-    assert p.ecd_length_residues == 6
+    assert p.compara_version == "112"
 
 
-def test_fetch_paralogs_topology_none_when_join_misses(monkeypatch: pytest.MonkeyPatch) -> None:
-    """LEFT JOIN miss → all four topology-derived fields are None and
-    the row is still returned (rather than silently dropped)."""
+def test_fetch_paralogs_handles_null_ecd_identity(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """ECD-less paralog (NULL ecd_pct_identity, common for inner-leaflet
+    kinases like SRC's family) still surfaces — the loader keeps the
+    row instead of silently dropping it. Family membership stays
+    meaningful for the cross-reactivity-risk discipline even without
+    a numeric ECD identity."""
     rows = [
         {
             "paralog_gene_symbol": "FYN",
             "paralog_uniprot_acc": "P06241",
-            "ecd_pct_identity": 72.5,
+            "ecd_pct_identity": None,
             "family_id": "ENSGT00940000158534",
             "compara_version": "112",
             "rank_by_ecd_identity": 1,
-            # All four LEFT-JOIN columns null — common case when the
-            # paralog's canonical isn't in topology_public's cohort yet.
-            "per_residue_topology": None,
-            "deeptmhmm_label": None,
-            "tm_helix_count": None,
-            "ecd_length_residues": None,
         }
     ]
 
@@ -174,48 +167,10 @@ def test_fetch_paralogs_topology_none_when_join_misses(monkeypatch: pytest.Monke
         d1_deterministic, "_query_public", lambda sql, params: list(rows)
     )
 
-    entries = d1_deterministic._fetch_paralogs(
-        "P12931", "compara-v112", topology_version="tv1"
-    )
-
+    entries = d1_deterministic._fetch_paralogs("P12931", "compara-v112")
     assert len(entries) == 1
-    p = entries[0]
-    assert p.paralog_symbol == "FYN"
-    assert p.per_residue_topology is None
-    assert p.deeptmhmm_label is None
-    assert p.tm_helix_count is None
-    assert p.ecd_length_residues is None
-    # ECD identity stays populated — independent of the topology join.
-    assert p.ecd_pct_identity == pytest.approx(72.5)
-
-
-def test_fetch_paralogs_threads_topology_version_through_sql(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """The new topology_version kwarg must reach the SQL params (so the
-    LEFT JOIN filter is on the right release pointer) and the existing
-    paralog_version + uniprot_acc + LIMIT params must keep their order."""
-    captured: dict[str, object] = {}
-
-    def fake_query(sql: str, params: list) -> list:
-        captured["sql"] = sql
-        captured["params"] = params
-        return []
-
-    monkeypatch.setattr(d1_deterministic, "_query_public", fake_query)
-
-    d1_deterministic._fetch_paralogs(
-        "P12931", "compara-v112", topology_version="topology-vXYZ"
-    )
-
-    # SQL must place topology_version FIRST (for the LEFT JOIN ON clause),
-    # then human_uniprot_acc + paralog_version, then the LIMIT cap.
-    params = captured["params"]
-    assert isinstance(params, list)
-    assert params[0] == "topology-vXYZ"
-    assert params[1] == "P12931"
-    assert params[2] == "compara-v112"
-    assert params[3] == d1_deterministic.PARALOG_TOP_N
+    assert entries[0].ecd_pct_identity is None
+    assert entries[0].paralog_symbol == "FYN"
 
 
 # ---------------------------------------------------------------------------

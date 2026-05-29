@@ -253,8 +253,6 @@ def _fetch_isoform_topologies(uniprot_acc: str, topology_version: str) -> list[I
 def _fetch_paralogs(
     uniprot_acc: str,
     paralog_version: str,
-    *,
-    topology_version: str,
 ) -> list[ParalogEntry]:
     """Top-N paralogs by ECD identity. NULLs sort last via
     ``rank_by_ecd_identity`` so the head is the most-similar pairs.
@@ -266,39 +264,27 @@ def _fetch_paralogs(
     computable. The planner's 50/70% cutoff ladder simply doesn't
     fire for those rows.
 
-    LEFT JOIN on ``topology_public`` (cohort ``human_canonical``,
-    same ``topology_version`` the rest of the loader uses) materializes
-    the paralog's own DeepTMHMM topology so the viewer can render a
-    side-by-side residue bar for cross-reactivity context. The join
-    is LEFT so paralogs without a topology row still show up — those
-    surface as ``per_residue_topology=None`` and the viewer renders a
-    "no topology" placeholder.
+    No topology JOIN: paralog per-residue topology was briefly added
+    in 6a220a90 and reverted. SRC's 32 paralogs are all GLOB
+    intracellular kinases so the bars rendered as solid blue with no
+    signal. If a use case for paralog topology comes back, mirror the
+    LEFT JOIN pattern used by `_fetch_orthologs`.
     """
     rows = _query_public(
-        "SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity, "
-        "cp.family_id, cp.compara_version, cp.rank_by_ecd_identity, "
-        "tp.per_residue_topology, tp.deeptmhmm_label, "
-        "tp.tm_helix_count, tp.ecd_length_residues "
-        "FROM compara_paralog cp "
-        "LEFT JOIN topology_public tp "
-        "  ON tp.uniprot_acc = cp.paralog_uniprot_acc "
-        " AND tp.cohort = 'human_canonical' "
-        " AND tp.topology_version = ? "
-        "WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ? "
-        "  AND cp.paralog_gene_symbol IS NOT NULL "
-        "  AND cp.paralog_uniprot_acc IS NOT NULL "
-        "ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT ?",
-        [topology_version, uniprot_acc, paralog_version, PARALOG_TOP_N],
+        "SELECT paralog_gene_symbol, paralog_uniprot_acc, ecd_pct_identity, "
+        "family_id, compara_version, rank_by_ecd_identity "
+        "FROM compara_paralog "
+        "WHERE human_uniprot_acc = ? AND paralog_version = ? "
+        "  AND paralog_gene_symbol IS NOT NULL "
+        "  AND paralog_uniprot_acc IS NOT NULL "
+        "ORDER BY rank_by_ecd_identity ASC NULLS LAST LIMIT ?",
+        [uniprot_acc, paralog_version, PARALOG_TOP_N],
     )
     out: list[ParalogEntry] = []
     for r in rows:
         try:
             ecd_raw = r.get("ecd_pct_identity")
             ecd_id = float(ecd_raw) if ecd_raw is not None else None
-            tm_raw = r.get("tm_helix_count")
-            ecd_len_raw = r.get("ecd_length_residues")
-            per_res = r.get("per_residue_topology")
-            label = r.get("deeptmhmm_label")
             out.append(
                 ParalogEntry(
                     paralog_symbol=r["paralog_gene_symbol"],
@@ -306,12 +292,6 @@ def _fetch_paralogs(
                     ecd_pct_identity=ecd_id,
                     family_id=r.get("family_id") or "",
                     compara_version=r.get("compara_version") or "",
-                    per_residue_topology=str(per_res) if per_res is not None else None,
-                    deeptmhmm_label=str(label) if label is not None else None,
-                    tm_helix_count=int(tm_raw) if tm_raw is not None else None,
-                    ecd_length_residues=(
-                        int(ecd_len_raw) if ecd_len_raw is not None else None
-                    ),
                 )
             )
         except (TypeError, ValueError) as exc:
@@ -539,11 +519,7 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         else Orthologs()
     )
     paralogs = (
-        _fetch_paralogs(
-            uniprot_acc,
-            paralog_version,
-            topology_version=canonical_topo_version,
-        )
+        _fetch_paralogs(uniprot_acc, paralog_version)
         if paralog_version else []
     )
     # Pull real AFDB pLDDT — ECD-restricted when the canonical isoform

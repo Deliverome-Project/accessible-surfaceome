@@ -125,19 +125,11 @@
   gap: 0.6rem 0.4rem;
 }
 
-/* Per-paralog cell: chip on top, narrow per-residue topology strip
-   below. Fixed width keeps the strip readable while letting many
-   paralogs (kinome / Ig superfamily) wrap across rows. (Replaces
-   the prior bare-chip ``.paralogChip`` rule.) */
-.paralogChipCell {
+/* Per-paralog chip — pill containing symbol + %ECD (or "no ECD")
+   linked out to UniProt. Inline so many chips (kinome /
+   Ig superfamily) wrap horizontally across the subsection. */
+.paralogChip {
   display: inline-flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 0.2rem;
-  /* Sized so 5-8 cells fit per row at typical card width; wider than
-     the chip itself so the bar has enough pixels to show TM helices. */
-  min-width: 8rem;
-  max-width: 12rem;
 }
 
 .paralogChipLink {
@@ -172,20 +164,8 @@
   font-size: 0.78rem;
 }
 
-/* Topology strip beneath each paralog chip. Padding lines the bar up
-   with the chip's pill above and gives consistent vertical rhythm
-   across cells whether the bar is present or the "no topology"
-   placeholder is. */
-.paralogChipBar {
-  padding: 0 0.4rem;
-}
-
-/* Placeholder text when the paralog has no DeepTMHMM row in the
-   cohort yet — keeps the cell height consistent across rows so the
-   chip strip doesn't shimmer as the user scans columns. */
-.paralogChipBarEmpty {
-  color: var(--muted);
-  font-size: 0.72rem;
-  font-style: italic;
-  text-align: center;
-}
+/* (.paralogChipBar / .paralogChipBarEmpty + the cell layout were
+   added in 6a220a90 to show per-paralog DeepTMHMM topology bars and
+   reverted shortly after — SRC's 32 paralogs are all GLOB so the
+   bars rendered as solid blue with no signal. The chip is back to
+   single-row pill layout.) */

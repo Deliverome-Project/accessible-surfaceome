@@ -363,21 +363,11 @@ export interface ParalogEntry {
   ecd_pct_identity: number | null;
   family_id: string;
   compara_version: string;
-  /** Per-residue DeepTMHMM topology string for the paralog's canonical
-   *  isoform. Sourced from D1's ``topology_public`` filtered to
-   *  cohort=``human_canonical``. Null when the paralog's canonical
-   *  isn't in the topology cohort yet (rare); the IsoformsCard
-   *  renders a "no topology" placeholder in that case. */
-  per_residue_topology: string | null;
-  /** DeepTMHMM categorical label: 'TM' | 'SP+TM' | 'SP' | 'BETA' |
-   *  'GLOB'. Null when ``per_residue_topology`` is null. */
-  deeptmhmm_label: string | null;
-  /** Number of TM helices in the paralog's canonical topology. Null
-   *  when ``per_residue_topology`` is null. */
-  tm_helix_count: number | null;
-  /** Extracellular-domain length in residues for the paralog. Null
-   *  when ``per_residue_topology`` is null. */
-  ecd_length_residues: number | null;
+  // (Per-residue DeepTMHMM topology was briefly added to this entry
+  // in 6a220a90 and reverted: SRC's 32 paralogs are all GLOB
+  // intracellular kinases, so the bars rendered as solid blue with
+  // no signal. Isoform + ortholog topology stay in §04 because they
+  // CAN show real TM patterns.)
 }
 
 /**
@@ -1108,6 +1098,12 @@ export interface SurfaceomeRecord {
   schema_version: "1.0.0";
   gene: GeneIdentifier;
   triage_signal: TriageSignal;
+  /** The triage agent's prose justification for its verdict
+   *  (``TriageRecord.verdict_reasoning``). Orchestrator-populated from
+   *  the same triage record that derives ``triage_signal``; surfaced in
+   *  the gene-header Triage row's "Reasoning" drawer. ``null`` when no
+   *  triage record exists for the gene. */
+  triage_reasoning: string | null;
   executive_summary: ExecutiveSummary;
   filters: Filters;
   deterministic_features: DeterministicFeatures;
