@@ -177,31 +177,18 @@ export const tooltips: Record<string, ReactNode> = {
 
   afdb_disordered: (
     <>
-      Fraction of residues with pLDDT &lt; 70. AlphaFold&apos;s
-      low-confidence regions empirically correspond to{" "}
-      <strong>intrinsically disordered regions</strong> — sequences
-      that don&apos;t fold into a stable structure (so the MSA-based
-      prediction can&apos;t converge on confident contacts).
+      Fraction of residues AlphaFold predicts with low confidence
+      (pLDDT &lt; 70) — regions that are typically{" "}
+      <strong>intrinsically disordered</strong>, meaning they
+      don&apos;t fold into a stable shape. A high fraction over the
+      extracellular region flags floppy, transient epitopes: harder
+      targets for conformational antibodies and more prone to
+      proteolytic cleavage.
       <br />
       <br />
-      <em>Canonical</em> tab: counts only <strong>extracellular</strong>{" "}
-      residues — that&apos;s the antibody-relevant slice. High % on
-      the ECD means floppy / transient epitopes (harder targets for
-      conformational antibodies, more prone to proteolytic cleavage).
-      <br />
-      <br />
-      <em>Isoform / ortholog</em> tabs: whole-protein, computed as{" "}
-      <code>fractionPlddtLow + fractionPlddtVeryLow</code> from
-      AFDB&apos;s prediction API. <strong>Per target</strong>: each
-      isoform/ortholog has its own model + disordered fraction;
-      switch tabs to see them update.
-      <br />
-      <br />
-      The canonical (ECD-restricted) and isoform (whole-protein) numbers
-      aren&apos;t directly comparable — multipass TM proteins look
-      better whole-protein (TM helices are usually well-predicted);
-      single-pass receptors with disordered cytoplasmic tails look
-      worse whole-protein.
+      The canonical figure covers only the extracellular residues;
+      isoform and ortholog figures are whole-protein, so the two
+      aren&apos;t directly comparable.
     </>
   ),
 
@@ -296,6 +283,132 @@ export const tooltips: Record<string, ReactNode> = {
       surface presence; <em>required</em> = surface presence depends on
       a partner (a bispecific or partner-aware design may be needed);{" "}
       <em>unknown</em> = the agent found no information either way.
+    </>
+  ),
+
+  // --------------------------------------------------------------
+  // Catalog filter-group headers — explain the two pipeline stages
+  // --------------------------------------------------------------
+
+  catalog_triage_group: (
+    <>
+      <strong>First-pass triage agent</strong> (Sonnet) — a pure-LLM
+      classifier that scores each gene from its standard identifier
+      context (HGNC name / aliases, UniProt accession, gene-group
+      memberships, CD designation, NCBI summary). No web search, no
+      per-paper evidence. Filters here narrow the catalog by which DBs
+      voted surface, the triage verdict, and the triage reason code.
+    </>
+  ),
+
+  catalog_deep_dive_group: (
+    <>
+      <strong>Full multi-agent deep-dive pipeline</strong> — plan / trim /
+      select retrieves and ranks 20–30 primary sources; ~10 builder
+      agents parse claims into structured blocks; a synthesizer
+      reconciles into one record with{" "}
+      <code>surface_accessibility</code> + <code>confidence</code> +{" "}
+      <code>evidence_grade</code> et al. Only the ~6,000 candidate-
+      universe genes have been deep-dived; filters in this group apply
+      only to rows where the deep-dive has run.
+    </>
+  ),
+
+  // --------------------------------------------------------------
+  // Catalog deep-dive filter chips — reused FiltersCard tooltips
+  // where one exists, plus a few new ones for fields the gene-page
+  // FiltersCard renders implicitly. Keep wording in sync with
+  // viewer/components/surfaceome/FiltersCard/FiltersCard.tsx
+  // TT_* constants so the catalog tooltips and the gene-page
+  // tooltips speak the same language.
+  // --------------------------------------------------------------
+
+  catalog_subcategory: (
+    <>
+      <strong>LLM-driven.</strong> Architecture — how the protein sits
+      in the membrane. Single-pass type I, single-pass type II, multi-
+      pass, GPCR, GPI-anchored, tetraspanin, or other. Orthogonal to
+      the functional family axis below; informed by DeepTMHMM topology
+      but the deep-dive agent can override.
+    </>
+  ),
+
+  catalog_protein_family: (
+    <>
+      <strong>LLM-driven.</strong> Functional family — aligned with
+      SURFACE-Bind&apos;s four classes (Balbi et al. 2026,{" "}
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PMID 41604262
+      </a>
+      ): receptor, enzyme, transporter, or miscellaneous. Function vs.
+      topology — orthogonal to the architecture axis above.
+    </>
+  ),
+
+  catalog_evidence_density: (
+    <>
+      Bucketed evidence row count: <em>high</em> ≥ 30 supporting rows,{" "}
+      <em>moderate</em> ≥ 10, <em>low</em> &lt; 10. Derived in the
+      orchestrator from the merged A1+A2 ledger; deterministic, not
+      LLM-judged.
+    </>
+  ),
+
+  catalog_ecd_class: (
+    <>
+      ECD-size bands derived from antibody-antigen interface
+      measurements (Ramaraj et al. 2012, average conformational
+      epitope = 12 ± 3 residues, 1103 ± 244 Å²). <em>large</em> ≥ 200
+      residues; <em>moderate</em> 60–199; <em>small</em> 30–59;{" "}
+      <em>minimal</em> &lt; 30; <em>none</em> = no surface-exposed ECD
+      (GPI / inner-leaflet).
+    </>
+  ),
+
+  catalog_shed_form: (
+    <>
+      <strong>LLM-driven.</strong> A soluble fragment is proteolytically
+      released into the extracellular milieu (sheddase cleavage of the
+      ectodomain), creating a circulating decoy that competes with the
+      surface form for binder occupancy.
+    </>
+  ),
+
+  catalog_secreted_form: (
+    <>
+      <strong>LLM-driven.</strong> An alternative isoform is secreted
+      rather than membrane-anchored — present in the same compartment
+      as the surface form and consumes binder.
+    </>
+  ),
+
+  catalog_epitope_masking: (
+    <>
+      <strong>LLM-driven.</strong> The targetable surface is shielded —
+      partner heterodimerization, glycan shield, or conformational
+      hiding obscures the epitopes a binder would otherwise engage.
+    </>
+  ),
+
+  catalog_n_term_extracellular: (
+    <>
+      DeepTMHMM-derived (deterministic) — does the canonical isoform&apos;s
+      N-terminus face the extracellular space? True for type I single-
+      pass receptors and most multi-pass topologies with extracellular
+      N-loops; false for type II single-pass (cytoplasmic N-term).
+    </>
+  ),
+
+  catalog_c_term_extracellular: (
+    <>
+      DeepTMHMM-derived (deterministic) — does the canonical isoform&apos;s
+      C-terminus face the extracellular space? Useful when designing
+      C-terminal tag constructs or when the antibody campaign targets
+      the C-terminal region.
     </>
   ),
 };

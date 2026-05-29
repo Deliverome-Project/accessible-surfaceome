@@ -366,6 +366,108 @@
   font-style: italic;
 }
 
+/* ============================================================
+ * Filter-panel groups — collapsible Triage / Deep Dive sections.
+ * Each group has a header button (chevron + label + InfoTip) and
+ * a body that shows or hides via React state. The body stays in
+ * the DOM tree when expanded so filter state survives a collapse-
+ * then-re-expand without losing chips.
+ * ============================================================ */
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border-top: 1px solid var(--line-soft);
+  padding-top: var(--space-3);
+}
+
+.filterGroup:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.groupHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.15rem 0;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  align-self: flex-start;
+}
+
+.groupHeader:hover,
+.groupHeader:focus-visible {
+  color: var(--accent);
+}
+
+.groupHeaderChevron {
+  display: inline-block;
+  width: 0.8em;
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.groupBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-2) 0 0 var(--space-3);
+}
+
+/* Pretty-named "Filter row with inline tip" — the .filterLabel + an
+ * InfoTip glyph sit side-by-side, so the label group needs to render
+ * as flex so the glyph doesn't break onto a new line. */
+.filterLabelWithTip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  min-width: 5rem;
+}
+
+/* Deep-dive filter row spans the whole panel width — gives the chip
+ * grid breathing room when an enum has 5+ values (e.g. ecd_accessibility_class).
+ * Same visual register as .filterRow but no min-width on the label
+ * column so a long label like "OVEREXPRESSION SURFACE LOCALIZED" can
+ * wrap independently of the chips. */
+.filterRowDd {
+  display: grid;
+  grid-template-columns: minmax(8rem, 13rem) 1fr;
+  align-items: start;
+  gap: 0.4rem var(--space-3);
+}
+
+@media (max-width: 720px) {
+  .filterRowDd {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Empty-state hint inside the Deep-Dive group when no row carries a
+ * deep_dive_filters payload (e.g. a fresh deploy where the Worker
+ * hasn't shipped yet). Reads as a quiet status line, not a chip. */
+.ddEmptyHint {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--muted);
+  padding-left: var(--space-3);
+}
+
 .chipCount {
   font-family: var(--font-mono);
   font-size: 0.78em;

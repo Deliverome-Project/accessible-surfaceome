@@ -22,7 +22,23 @@
 
 import { readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import type { BenchmarkMatrix, SurfaceomeRecord } from "./surfaceome-types";
+import type {
+  BenchmarkMatrix,
+  Confidence,
+  CoreceptorDependency,
+  EcdAccessibilityClass,
+  EvidenceDensity,
+  EvidenceGrade,
+  ExpressionBreadth,
+  ExpressionLevel,
+  ProteinFamily,
+  StateDependence,
+  Subcategory,
+  SurfaceAccessibility,
+  SurfaceomeRecord,
+  SurfaceSpecificity,
+  TriageReason,
+} from "./surfaceome-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
 
@@ -72,6 +88,44 @@ export interface TriageCell {
   reason: string | null;
 }
 
+/**
+ * Slimmed projection of `SurfaceomeRecord.filters` carried on each
+ * catalog row for the deep-dive-filter section in the CatalogTable.
+ * The Worker only emits this when `deep_dive=true` AND the
+ * annotation_json parsed cleanly; rows without a deep-dive simply
+ * omit `deep_dive_filters`.
+ *
+ * 21 fields: 13 enums + 8 booleans. Continuous fields
+ * (max_paralog_ecd_pct_identity, ortholog identities) are excluded
+ * — the catalog UI doesn't expose range filters yet, and the deep-
+ * dive page already shows them in the FiltersCard. The schema
+ * mirrors `DDF_KEYS` in cloudflare/workers/surfaceome_api/src/index.js
+ * — extend both when adding a field.
+ */
+export interface DeepDiveFilters {
+  surface_accessibility: SurfaceAccessibility;
+  confidence: Confidence;
+  state_dependence: StateDependence;
+  surface_call_reason: TriageReason;
+  subcategory: Subcategory;
+  protein_family: ProteinFamily;
+  evidence_grade: EvidenceGrade;
+  evidence_density: EvidenceDensity;
+  ecd_accessibility_class: EcdAccessibilityClass;
+  expression_level: ExpressionLevel;
+  expression_breadth: ExpressionBreadth;
+  surface_specificity: SurfaceSpecificity;
+  co_receptor_dependency: CoreceptorDependency;
+  has_known_ligand: boolean;
+  low_endogenous_expression: boolean;
+  overexpression_surface_localization_observed: boolean;
+  has_shed_form: boolean;
+  has_secreted_form: boolean;
+  has_epitope_masking: boolean;
+  n_term_extracellular: boolean;
+  c_term_extracellular: boolean;
+}
+
 export interface CatalogRow {
   symbol: string;
   uniprot: string;
@@ -101,6 +155,11 @@ export interface CatalogRow {
    *  ``undefined`` here also covers the pre-Worker-deploy interim
    *  where the field hasn't shipped yet. */
   surface_bind_sites?: number;
+  /** Slimmed deep-dive `filters` projection — present only when
+   *  `deep_dive=true` AND the annotation_json parsed. See the
+   *  DeepDiveFilters docstring for the field set; the catalog
+   *  filter panel reads this for the "Deep Dive" filter group. */
+  deep_dive_filters?: DeepDiveFilters;
 }
 
 export interface Catalog {
@@ -320,6 +379,12 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   // means scored-but-no-patches. Decoder passes the value through
   // unchanged so the table filter can distinguish the three states.
   const sb = r.sb as number | undefined;
+  // Worker row_schema v5+ ships an optional ``ddf`` field — slim
+  // projection of SurfaceomeRecord.filters. Snapshot fallbacks may
+  // carry the inflated `deep_dive_filters` shape instead, so accept
+  // either. Type-cast pass-through; the field is fully optional and
+  // the catalog filter pass guards `r.deep_dive_filters` before reading.
+  const ddf = (r.ddf ?? r.deep_dive_filters) as DeepDiveFilters | undefined;
   return {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
@@ -330,6 +395,7 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     triage_by_model,
     deep_dive: Boolean(r.deep_dive),
     surface_bind_sites: typeof sb === "number" ? sb : undefined,
+    deep_dive_filters: ddf,
   };
 }
 

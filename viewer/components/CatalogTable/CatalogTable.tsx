@@ -3,9 +3,16 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { CatalogRow, TriageCell } from "../../lib/surfaceome";
+import type {
+  CatalogRow,
+  DeepDiveFilters,
+  TriageCell,
+} from "../../lib/surfaceome";
+import { prettyEnum } from "../../lib/surfaceome";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
+import { InfoTip } from "../InfoTip/InfoTip";
+import { tooltips } from "../../lib/tooltips";
 import {
   CatalogRationaleDrawer,
   type CatalogTriageDetailState,
@@ -168,19 +175,219 @@ function reasonGroupLabelToneClass(v: VerdictKey): string {
   return styles.filterReasonGroupLabelAny;
 }
 
-/** Schema fields the advanced-filter panel could surface once the
- *  Worker payload extends — currently the catalog row doesn't carry
- *  `subcategory` or `headline_risks` (those live on the per-gene
- *  deep-dive JSON). Listed here as a TODO for the panel: when the
- *  /v1/catalog response grows the fields, add chip rows for them. */
-// TODO(catalog-filters): deep-dive subcategory chips
-//   (single_pass_T1, single_pass_T2, multi_pass, GPCR, GPI_anchored,
-//   tetraspanin, ion_channel, transporter, other)
-// TODO(catalog-filters): headline_risks chips
-//   (shed_form, secreted_form, co_receptor, ecd_too_small,
-//   epitope_masked, isoform_decoy, restricted_subdomain,
-//   low_endogenous_expression, antibody_validation_weak,
-//   ligand_unknown, other)
+// ---------------------------------------------------------------------------
+// Deep-dive filter taxonomy.
+//
+// 13 enum-valued fields (multi-select chip strip; empty set = no filter)
+// and 8 boolean fields (tri-state: any | true | false). Keys mirror
+// `DeepDiveFilters` in viewer/lib/surfaceome.ts and `DDF_KEYS` in the
+// Worker; the enum value lists are pulled from the Python Literal
+// definitions in src/accessible_surfaceome/tools/_shared/models.py.
+//
+// Tooltip text reuses entries from viewer/lib/tooltips.tsx (same
+// text bank the gene-page FiltersCard reads) so the language stays
+// consistent between the catalog filter chips and the per-gene
+// detail pills.
+// ---------------------------------------------------------------------------
+
+type DdEnumKey =
+  | "surface_accessibility"
+  | "confidence"
+  | "state_dependence"
+  | "surface_call_reason"
+  | "subcategory"
+  | "protein_family"
+  | "evidence_grade"
+  | "evidence_density"
+  | "ecd_accessibility_class"
+  | "expression_level"
+  | "expression_breadth"
+  | "surface_specificity"
+  | "co_receptor_dependency";
+
+type DdBoolKey =
+  | "has_known_ligand"
+  | "low_endogenous_expression"
+  | "overexpression_surface_localization_observed"
+  | "has_shed_form"
+  | "has_secreted_form"
+  | "has_epitope_masking"
+  | "n_term_extracellular"
+  | "c_term_extracellular";
+
+interface DdEnumSpec {
+  key: DdEnumKey;
+  label: string;
+  values: readonly string[];
+  /** Key into the `tooltips` map for the InfoTip body. */
+  tooltipKey: string;
+}
+
+interface DdBoolSpec {
+  key: DdBoolKey;
+  label: string;
+  tooltipKey: string;
+}
+
+const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
+  {
+    key: "surface_accessibility",
+    label: "Accessibility",
+    values: ["high", "moderate", "low", "uncertain", "no"],
+    tooltipKey: "surface_accessibility",
+  },
+  {
+    key: "confidence",
+    label: "Confidence",
+    values: ["high", "moderate", "low"],
+    tooltipKey: "confidence",
+  },
+  {
+    key: "state_dependence",
+    label: "State dependence",
+    values: ["low", "moderate", "high", "unclear"],
+    tooltipKey: "state_dependence",
+  },
+  {
+    key: "surface_call_reason",
+    label: "Synth reason",
+    values: [
+      "classical_surface_receptor",
+      "gpi_anchored",
+      "multipass_with_exposed_loops",
+      "extracellular_face_protein",
+      "stable_complex_partner",
+      "cell_state_induced",
+      "tissue_restricted_surface",
+      "lysosomal_exocytosis",
+      "dual_localization",
+      "stable_surface_attachment",
+      "cytoplasmic",
+      "nuclear",
+      "mitochondrial_internal",
+      "endomembrane_resident",
+      "nuclear_envelope",
+      "inner_leaflet_anchored",
+      "secreted_only",
+      "pmhc_only_intracellular",
+      "other",
+    ],
+    tooltipKey: "headline_risks",
+  },
+  {
+    key: "subcategory",
+    label: "Architecture",
+    values: [
+      "single_pass_T1",
+      "single_pass_T2",
+      "multi_pass",
+      "GPCR",
+      "GPI_anchored",
+      "tetraspanin",
+      "other",
+    ],
+    tooltipKey: "catalog_subcategory",
+  },
+  {
+    key: "protein_family",
+    label: "Family",
+    values: ["receptor", "enzyme", "transporter", "miscellaneous"],
+    tooltipKey: "catalog_protein_family",
+  },
+  {
+    key: "evidence_grade",
+    label: "Evidence grade",
+    values: [
+      "direct_multi_method",
+      "direct_single_method",
+      "supportive_but_indirect",
+      "conflicting",
+      "weak",
+    ],
+    tooltipKey: "experimental_surface_evidence",
+  },
+  {
+    key: "evidence_density",
+    label: "Evidence density",
+    values: ["low", "moderate", "high"],
+    tooltipKey: "catalog_evidence_density",
+  },
+  {
+    key: "ecd_accessibility_class",
+    label: "ECD class",
+    values: ["large", "moderate", "small", "minimal", "none"],
+    tooltipKey: "catalog_ecd_class",
+  },
+  {
+    key: "expression_level",
+    label: "Expression level",
+    values: ["high", "moderate", "low", "absent"],
+    tooltipKey: "expression_level",
+  },
+  {
+    key: "expression_breadth",
+    label: "Expression breadth",
+    values: ["pan_tissue", "broad", "restricted", "rare"],
+    tooltipKey: "expression_breadth",
+  },
+  {
+    key: "surface_specificity",
+    label: "Surface specificity",
+    values: ["surface_dominant", "mixed", "mostly_intracellular"],
+    tooltipKey: "surface_specificity",
+  },
+  {
+    key: "co_receptor_dependency",
+    label: "Co-receptor",
+    values: ["required", "modulatory", "none", "unknown"],
+    tooltipKey: "co_receptor_dependency",
+  },
+];
+
+const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
+  {
+    key: "has_known_ligand",
+    label: "Known ligand",
+    tooltipKey: "headline_risks",
+  },
+  {
+    key: "low_endogenous_expression",
+    label: "Low endogenous expression",
+    tooltipKey: "headline_risks",
+  },
+  {
+    key: "overexpression_surface_localization_observed",
+    label: "OE + surface precedent",
+    tooltipKey: "headline_risks",
+  },
+  {
+    key: "has_shed_form",
+    label: "Shed form",
+    tooltipKey: "catalog_shed_form",
+  },
+  {
+    key: "has_secreted_form",
+    label: "Secreted form",
+    tooltipKey: "catalog_secreted_form",
+  },
+  {
+    key: "has_epitope_masking",
+    label: "Epitope masking",
+    tooltipKey: "catalog_epitope_masking",
+  },
+  {
+    key: "n_term_extracellular",
+    label: "N-term extracellular",
+    tooltipKey: "catalog_n_term_extracellular",
+  },
+  {
+    key: "c_term_extracellular",
+    label: "C-term extracellular",
+    tooltipKey: "catalog_c_term_extracellular",
+  },
+];
+
+type DdBoolFilter = "any" | "yes" | "no";
 
 function verdictTone(v: string | null | undefined): string {
   if (v === "yes") return styles.verdictYes;
@@ -223,6 +430,14 @@ export function CatalogTable({
   // models.py: 17 fixed values + "other"), so the UI is a chip
   // multi-select grouped by verdict bucket, not a free-text input.
   const [showFilters, setShowFilters] = useState(false);
+  // The filter panel is split into two collapsible groups — Triage
+  // (existing chips: DB votes, triage verdict, triage reason, deep-
+  // dive present) and Deep Dive (NEW: 13 enum + 8 bool filters from
+  // the deep-dive synthesizer's filters block). Both start collapsed
+  // so opening the panel doesn't dump 30 chip rows on the reader at
+  // once — they expand the section they want to filter on.
+  const [triageGroupOpen, setTriageGroupOpen] = useState(false);
+  const [deepDiveGroupOpen, setDeepDiveGroupOpen] = useState(false);
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
     new Set(),
@@ -247,6 +462,27 @@ export function CatalogTable({
   type SurfaceBindFilter = "any" | "ge1" | "ge3" | "not_in" | null;
   const [surfaceBindFilter, setSurfaceBindFilter] =
     useState<SurfaceBindFilter>(null);
+  // Deep-dive filters — 13 enum-valued + 8 boolean. Enum filters use
+  // OR-semantics within a field (any of the checked values passes)
+  // and AND across fields. Bool filters are tri-state — "any"
+  // (filter off, default), "yes" (require true), "no" (require false).
+  // The whole Deep-Dive section is also implicitly a deep_dive=true
+  // filter: when any deep-dive filter is set, rows without a
+  // deep_dive_filters payload drop out. See the predicate below.
+  const [ddEnumFilters, setDdEnumFilters] = useState<
+    Record<DdEnumKey, Set<string>>
+  >(() => {
+    const out = {} as Record<DdEnumKey, Set<string>>;
+    for (const f of DD_ENUM_FIELDS) out[f.key] = new Set();
+    return out;
+  });
+  const [ddBoolFilters, setDdBoolFilters] = useState<
+    Record<DdBoolKey, DdBoolFilter>
+  >(() => {
+    const out = {} as Record<DdBoolKey, DdBoolFilter>;
+    for (const f of DD_BOOL_FIELDS) out[f.key] = "any";
+    return out;
+  });
 
   function toggleDbFilter(key: DbKey) {
     setDbFilter((prev) => {
@@ -299,19 +535,62 @@ export function CatalogTable({
     // 4-way radio — clicking the active chip clears, otherwise switches.
     setSurfaceBindFilter((prev) => (prev === key ? null : key));
   }
+  function toggleDdEnumFilter(field: DdEnumKey, value: string) {
+    setDdEnumFilters((prev) => {
+      const nextSet = new Set(prev[field]);
+      if (nextSet.has(value)) nextSet.delete(value);
+      else nextSet.add(value);
+      return { ...prev, [field]: nextSet };
+    });
+  }
+  function cycleDdBoolFilter(field: DdBoolKey, value: DdBoolFilter) {
+    // Tri-state radio: clicking the active chip clears back to "any";
+    // clicking any other chip switches to it.
+    setDdBoolFilters((prev) => ({
+      ...prev,
+      [field]: prev[field] === value ? "any" : value,
+    }));
+  }
   function clearAdvancedFilters() {
     setDbFilter(new Set());
     setVerdictFilter(new Set());
     setReasonFilter(new Set());
     setDeepDiveFilter(null);
     setSurfaceBindFilter(null);
+    setDdEnumFilters(() => {
+      const out = {} as Record<DdEnumKey, Set<string>>;
+      for (const f of DD_ENUM_FIELDS) out[f.key] = new Set();
+      return out;
+    });
+    setDdBoolFilters(() => {
+      const out = {} as Record<DdBoolKey, DdBoolFilter>;
+      for (const f of DD_BOOL_FIELDS) out[f.key] = "any";
+      return out;
+    });
   }
+
+  // Count Deep-Dive filter slots that are non-default. Each enum field
+  // with ≥1 chip selected counts as one filter; each bool field set
+  // to "yes" or "no" counts as one. (Bool tri-state in "any" mode
+  // counts as off.)
+  const ddEnumActiveCount = DD_ENUM_FIELDS.reduce(
+    (n, f) => n + (ddEnumFilters[f.key].size > 0 ? 1 : 0),
+    0,
+  );
+  const ddBoolActiveCount = DD_BOOL_FIELDS.reduce(
+    (n, f) => n + (ddBoolFilters[f.key] !== "any" ? 1 : 0),
+    0,
+  );
+  const ddActiveCount = ddEnumActiveCount + ddBoolActiveCount;
+
   const activeFilterCount =
     dbFilter.size +
     verdictFilter.size +
     reasonFilter.size +
     (deepDiveFilter !== null ? 1 : 0) +
-    (surfaceBindFilter !== null ? 1 : 0);
+    (surfaceBindFilter !== null ? 1 : 0) +
+    ddActiveCount;
+  const ddActive = ddActiveCount > 0;
 
   // Which reason groups make sense to surface, given the current
   // verdict filter. The triage reason is constrained by the verdict
@@ -447,6 +726,29 @@ export function CatalogTable({
             break;
         }
       }
+      // Deep-dive filter group. Any active filter here implies
+      // deep_dive=true — rows without a deep_dive_filters payload
+      // drop out entirely, because we can't evaluate the predicate.
+      // This matches the Worker contract: the field is only emitted
+      // when the gene has a deep-dive AND the annotation_json parsed.
+      if (ddActive) {
+        const ddf = r.deep_dive_filters;
+        if (!ddf) return false;
+        for (const f of DD_ENUM_FIELDS) {
+          const sel = ddEnumFilters[f.key];
+          if (sel.size === 0) continue;
+          const v = ddf[f.key] as string | undefined;
+          if (v == null || !sel.has(v)) return false;
+        }
+        for (const f of DD_BOOL_FIELDS) {
+          const mode = ddBoolFilters[f.key];
+          if (mode === "any") continue;
+          const v = ddf[f.key] as boolean | undefined;
+          if (typeof v !== "boolean") return false;
+          if (mode === "yes" && !v) return false;
+          if (mode === "no" && v) return false;
+        }
+      }
       return true;
     });
   }, [
@@ -458,6 +760,9 @@ export function CatalogTable({
     reasonFilter,
     deepDiveFilter,
     surfaceBindFilter,
+    ddActive,
+    ddEnumFilters,
+    ddBoolFilters,
   ]);
 
   const sorted = useMemo(() => {
@@ -614,6 +919,42 @@ export function CatalogTable({
           role="region"
           aria-label="Advanced catalog filters"
         >
+          <div className={styles.filterGroup}>
+            <button
+              type="button"
+              className={styles.groupHeader}
+              onClick={() => setTriageGroupOpen((v) => !v)}
+              aria-expanded={triageGroupOpen}
+              aria-controls="catalog-filter-group-triage"
+            >
+              <span className={styles.groupHeaderChevron} aria-hidden="true">
+                {triageGroupOpen ? "▾" : "▸"}
+              </span>
+              Triage
+              {!triageGroupOpen &&
+              dbFilter.size +
+                verdictFilter.size +
+                reasonFilter.size +
+                (deepDiveFilter !== null ? 1 : 0) +
+                (surfaceBindFilter !== null ? 1 : 0) >
+                0 ? (
+                <span className={styles.chipCount}>
+                  {dbFilter.size +
+                    verdictFilter.size +
+                    reasonFilter.size +
+                    (deepDiveFilter !== null ? 1 : 0) +
+                    (surfaceBindFilter !== null ? 1 : 0)}
+                </span>
+              ) : null}
+              <InfoTip label="About the Triage filter group" wide>
+                {tooltips.catalog_triage_group}
+              </InfoTip>
+            </button>
+            {triageGroupOpen ? (
+              <div
+                id="catalog-filter-group-triage"
+                className={styles.groupBody}
+              >
           <div className={styles.filterRow}>
             <span className={styles.filterLabel}>DBs</span>
             <div className={styles.filterChips}>
@@ -810,6 +1151,136 @@ export function CatalogTable({
               {`SURFACE-Bind MaSIF-scored targetable patches (Marchand 2026 PNAS). "any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
             </span>
           </div>
+              </div>
+            ) : null}
+          </div>{/* end .filterGroup (Triage) */}
+
+          {/* === Deep Dive group ===================================== */}
+          <div className={styles.filterGroup}>
+            <button
+              type="button"
+              className={styles.groupHeader}
+              onClick={() => setDeepDiveGroupOpen((v) => !v)}
+              aria-expanded={deepDiveGroupOpen}
+              aria-controls="catalog-filter-group-deep-dive"
+            >
+              <span className={styles.groupHeaderChevron} aria-hidden="true">
+                {deepDiveGroupOpen ? "▾" : "▸"}
+              </span>
+              Deep Dive
+              {!deepDiveGroupOpen && ddActiveCount > 0 ? (
+                <span className={styles.chipCount}>{ddActiveCount}</span>
+              ) : null}
+              <InfoTip label="About the Deep Dive filter group" wide>
+                {tooltips.catalog_deep_dive_group}
+              </InfoTip>
+            </button>
+            {deepDiveGroupOpen ? (
+              <div
+                id="catalog-filter-group-deep-dive"
+                className={styles.groupBody}
+              >
+                {n_with_deep_dive === 0 ? (
+                  <p className={styles.ddEmptyHint}>
+                    No rows carry deep-dive filters yet. The catalog
+                    payload exposes them once the Worker rev that
+                    serves the `deep_dive_filters` projection is live.
+                  </p>
+                ) : null}
+                {DD_ENUM_FIELDS.map((field) => {
+                  const sel = ddEnumFilters[field.key];
+                  return (
+                    <div
+                      key={`dd-enum-${field.key}`}
+                      className={styles.filterRowDd}
+                    >
+                      <span className={styles.filterLabelWithTip}>
+                        {field.label}
+                        <InfoTip
+                          label={`About ${field.label}`}
+                          wide
+                        >
+                          {tooltips[field.tooltipKey] ?? field.label}
+                        </InfoTip>
+                      </span>
+                      <div className={styles.filterChips}>
+                        {field.values.map((v) => {
+                          const on = sel.has(v);
+                          return (
+                            <button
+                              key={`dd-${field.key}-${v}`}
+                              type="button"
+                              className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                              onClick={() =>
+                                toggleDdEnumFilter(field.key, v)
+                              }
+                              aria-pressed={on}
+                              title={`Require ${field.label} = ${prettyEnum(v)}`}
+                            >
+                              {prettyEnum(v)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+                {DD_BOOL_FIELDS.map((field) => {
+                  const mode = ddBoolFilters[field.key];
+                  const triStates: { k: DdBoolFilter; label: string }[] = [
+                    { k: "any", label: "any" },
+                    { k: "yes", label: "yes" },
+                    { k: "no", label: "no" },
+                  ];
+                  return (
+                    <div
+                      key={`dd-bool-${field.key}`}
+                      className={styles.filterRowDd}
+                      role="radiogroup"
+                      aria-label={field.label}
+                    >
+                      <span className={styles.filterLabelWithTip}>
+                        {field.label}
+                        <InfoTip
+                          label={`About ${field.label}`}
+                          wide
+                        >
+                          {tooltips[field.tooltipKey] ?? field.label}
+                        </InfoTip>
+                      </span>
+                      <div className={styles.filterChips}>
+                        {triStates.map(({ k, label }) => {
+                          const on = mode === k;
+                          // Tone the YES/NO chips with the verdict
+                          // palette when active so the tri-state reads
+                          // at a glance: green for yes, maroon for no.
+                          // "any" stays neutral.
+                          const toneClass =
+                            on && k === "yes"
+                              ? styles.verdictYes
+                              : on && k === "no"
+                                ? styles.verdictNo
+                                : "";
+                          return (
+                            <button
+                              key={`dd-${field.key}-${k}`}
+                              type="button"
+                              role="radio"
+                              aria-checked={on}
+                              className={`${styles.filterVerdictChip} ${toneClass}`}
+                              onClick={() => cycleDdBoolFilter(field.key, k)}
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
 
           {activeFilterCount > 0 ? (
             <div className={styles.filterFoot}>
@@ -822,11 +1293,6 @@ export function CatalogTable({
               </button>
             </div>
           ) : null}
-
-          <p className={styles.filterFootnote}>
-            Deep-dive subcategory and headline-risk tags will appear here
-            once the catalog payload carries them per row.
-          </p>
         </div>
       ) : null}
 
