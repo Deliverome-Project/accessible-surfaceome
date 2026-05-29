@@ -76,20 +76,18 @@ export function IsoformsCard({ rec, n }: Props) {
       eyebrow="Evolutionary context"
       title="Isoforms, orthologs & paralogs"
       meta={`Deterministic · UniProt + DeepTMHMM ${ct.tool_version} · Ensembl Compara ${comparaVersion}`}
-      lede="Same protein across alternative isoforms, orthologs (mouse + cyno), and within-species paralogs. Topology bars are shown for every variant whose DeepTMHMM topology is in the record."
     >
       {/* ---- Isoforms (topology) ------------------------------------- */}
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>
-          Isoforms · per-isoform topology
+          Per-isoform topology
         </p>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
             <thead>
               <tr>
                 <th scope="col">Isoform</th>
-                <th scope="col">UniProt</th>
-                <th scope="col">TM</th>
+                <th scope="col">TM count</th>
                 <th scope="col">N-term</th>
                 <th scope="col">C-term</th>
                 <th scope="col">Signal pep</th>
@@ -103,10 +101,9 @@ export function IsoformsCard({ rec, n }: Props) {
             <tbody>
               <tr className={styles.canonicalRow}>
                 <td>
-                  <span className={styles.mono}>canonical</span>
-                </td>
-                <td>
-                  <span className={styles.mono}>{rec.gene.uniprot_acc}</span>
+                  <span className={styles.mono}>
+                    canonical · {rec.gene.uniprot_acc}
+                  </span>
                 </td>
                 <td>{ct.tm_helix_count}</td>
                 <td>
@@ -139,9 +136,6 @@ export function IsoformsCard({ rec, n }: Props) {
                 <tr key={i}>
                   <td>
                     <span className={styles.mono}>{iso.isoform_id}</span>
-                  </td>
-                  <td>
-                    <span className={styles.mono}>{iso.uniprot_acc}</span>
                   </td>
                   <td>{iso.tm_helix_count}</td>
                   <td>
