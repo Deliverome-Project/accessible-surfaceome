@@ -390,21 +390,19 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_surface_call_reason: (
     <>
-      Synth-derived reason for the surface call, re-emitted from
-      the A1+A2 evidence (not inherited from the triage&apos;s
-      first-pass call). The 19 values group into three buckets:
-      <strong>YES</strong> (canonical surface mechanisms —
-      classical receptor, GPI-anchored, multipass-with-exposed-
-      loops, extracellular-face, stable-complex-partner);{" "}
-      <strong>CONTEXTUAL</strong> (state-gated surface mechanisms —
-      cell-state-induced, tissue-restricted, lysosomal exocytosis,
-      dual localization, stable surface attachment); and{" "}
-      <strong>NO</strong> (intracellular / non-surface localizations
-      — cytoplasmic, nuclear, mitochondrial, endomembrane, nuclear
-      envelope, inner-leaflet anchored, secreted only, pMHC-only).
-      SRC&apos;s cancer-state surface form is &ldquo;
-      <code>lysosomal_exocytosis</code>&rdquo;, overriding the
-      triage&apos;s baseline-state &ldquo;
+      Why this protein is (or isn&apos;t) at the cell surface — the
+      mechanism behind the accessibility call. Three families:{" "}
+      <strong>YES</strong> — at the surface (classical receptor,
+      GPI-anchored, multipass with exposed extracellular loops,
+      extracellular face, stable surface-complex partner);{" "}
+      <strong>CONTEXTUAL</strong> — at the surface only in certain
+      states (induced by cell state, tissue-restricted, lysosomal
+      exocytosis, dual localization, stable surface attachment); and{" "}
+      <strong>NO</strong> — not at the surface (cytoplasmic, nuclear,
+      mitochondrial, endomembrane, nuclear envelope, inner-leaflet
+      anchored, secreted-only, pMHC-only). SRC, for example, is{" "}
+      &ldquo;<code>lysosomal_exocytosis</code>&rdquo; in its cancer
+      state — overriding the baseline &ldquo;
       <code>inner_leaflet_anchored</code>&rdquo;.
     </>
   ),
