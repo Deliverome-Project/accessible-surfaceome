@@ -84,44 +84,149 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
 }
 
 /**
- * linkifyEvidenceRefs — find ``aN_evi_NN`` patterns in prose text and
- * wrap each one in a clickable :func:`EvidenceChip`. Returns an array
- * of ``ReactNode``s (alternating string fragments + chip components)
- * suitable for direct JSX rendering.
+ * linkifyEvidenceRefs — scan LLM-generated prose and replace inline
+ * structured tokens with interactive UI:
  *
- * The LLM-generated prose fields (``grade_rationale``,
- * ``surface_form_rationale``, contradiction explanations, etc.) often
- * cite evidence inline as ``(a1_evi_06, high-weight)`` or
- * ``(a1_evi_09, a1_evi_15, moderate)``. Without linkification those
- * IDs are dead text — the reader has to mentally cross-reference the
- * Evidence ledger §. With it, each ID opens the global EvidenceDrawer
- * on click (same affordance as the chip strips below method rows).
+ *   1. Evidence IDs ``aN_evi_NN`` → clickable :func:`EvidenceChip`.
+ *      Range refs like ``a1_evi_01–05`` (en-dash or hyphen) EXPAND
+ *      to one chip per ID in the range — readers see every cited
+ *      claim, not just the first.
  *
- * Pattern matched: ``\ba[12]_evi_\d+\b`` — case-sensitive, word-
- * bounded so it doesn't trigger on substrings like ``A1_EVI_03``
- * inside other tokens. Range refs like ``a1_evi_01–05`` (en-dash) are
- * NOT expanded — only the first ID gets linkified; the ``–05`` half
- * stays as text. Acceptable since the range form is rare and the
- * reader can click the first chip + scan the drawer for siblings.
+ *   2. Weight tokens (``high-weight``, ``moderate-weight``,
+ *      ``low-weight`` always; bare ``high|moderate|low`` only when
+ *      inside the same parenthesis as an evidence ref so we don't
+ *      over-badge natural-prose adjectives) → small
+ *      :func:`WeightBadge` pill.
+ *
+ *   3. PMID refs ``PMID:NNNN`` → external `<a>` to pubmed.ncbi.nlm.nih.gov
+ *      so the reader can verify the primary source one click away.
+ *
+ * Returns an array of ``ReactNode``s (alternating string fragments
+ * + chip / badge / link components) suitable for direct JSX rendering.
  */
-const EVIDENCE_REF_RE = /\b(a[12]_evi_\d+)\b/g;
+
+// Token regex — combined alternation so we can walk the prose once
+// and dispatch by capture group:
+//   m[1] = "a1_evi_" / "a2_evi_" prefix (single or range head)
+//   m[2] = start number (zero-padded width preserved for output)
+//   m[3] = optional range end number (when ``a1_evi_01-05`` style)
+//   m[4] = bare PMID number
+//   m[5] = "<weight>-weight" explicit form
+//   m[6] = bare "high" / "moderate" / "low" (context-checked)
+const TOKEN_RE =
+  /\b(a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(high|moderate|low)\b/g;
+
+// Pre-scan helper — mark every character offset that lives inside a
+// parenthetical block that contains at least one evidence ref. Used
+// to disambiguate bare ``moderate`` (a stance weight when in the
+// same parens as ``a1_evi_NN``; otherwise natural-prose adjective).
+function _markEvidenceParens(text: string): boolean[] {
+  const marks = new Array(text.length).fill(false);
+  for (const m of text.matchAll(/\(([^)]*a[12]_evi_\d+[^)]*)\)/g)) {
+    const start = m.index ?? 0;
+    const end = start + m[0].length;
+    for (let i = start; i < end; i++) marks[i] = true;
+  }
+  return marks;
+}
 
 export function linkifyEvidenceRefs(text: string): React.ReactNode[] {
   if (!text) return [text];
+  const inRefParen = _markEvidenceParens(text);
   const out: React.ReactNode[] = [];
   let lastIdx = 0;
-  let chipKey = 0;
-  for (const match of text.matchAll(EVIDENCE_REF_RE)) {
+  let key = 0;
+
+  for (const match of text.matchAll(TOKEN_RE)) {
     const idx = match.index ?? 0;
     if (idx > lastIdx) {
       out.push(text.slice(lastIdx, idx));
     }
-    const id = match[1];
-    out.push(<EvidenceChip key={`evi-ref-${chipKey++}-${id}`} evidenceId={id} />);
-    lastIdx = idx + id.length;
+
+    if (match[1] !== undefined) {
+      // Evidence ID (single or range).
+      const prefix = match[1];
+      const startStr = match[2];
+      const endStr = match[3];
+      const pad = startStr.length;
+      const startN = parseInt(startStr, 10);
+      const endN = endStr ? parseInt(endStr, 10) : startN;
+      // Guard against pathological ranges in malformed prose
+      // (e.g. ``a1_evi_05–01`` reverse range, or huge spans). Cap
+      // at 50 expanded chips; render the literal text if the range
+      // is reversed or absurd.
+      if (endN >= startN && endN - startN <= 50) {
+        for (let n = startN; n <= endN; n++) {
+          const id = `${prefix}${String(n).padStart(pad, "0")}`;
+          out.push(
+            <EvidenceChip key={`evi-${key++}-${id}`} evidenceId={id} />,
+          );
+          if (n < endN) out.push(" ");
+        }
+      } else {
+        // Malformed range — render the raw matched text as-is.
+        out.push(match[0]);
+      }
+    } else if (match[4] !== undefined) {
+      // PMID — outbound link to PubMed.
+      const pmid = match[4];
+      out.push(
+        <a
+          key={`pmid-${key++}-${pmid}`}
+          href={`https://pubmed.ncbi.nlm.nih.gov/${pmid}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.pmidLink}
+          title={`Open PubMed entry PMID:${pmid} in a new tab`}
+        >
+          PMID:{pmid}
+        </a>,
+      );
+    } else if (match[5] !== undefined) {
+      // Explicit ``high-weight`` / ``moderate-weight`` / ``low-weight``
+      // — always badge, the suffix makes the intent unambiguous.
+      const weight = match[5].split("-")[0] as "high" | "moderate" | "low";
+      out.push(<WeightBadge key={`w-${key++}`} weight={weight} />);
+    } else if (match[6] !== undefined) {
+      // Bare ``high`` / ``moderate`` / ``low`` — badge only when
+      // inside a parenthesis that contains an evidence ref. Outside
+      // that context the same words are natural-prose adjectives
+      // (``moderate quality``, ``high coverage``) and we leave them
+      // as plain text to avoid false-positive pills.
+      if (inRefParen[idx]) {
+        const weight = match[6] as "high" | "moderate" | "low";
+        out.push(<WeightBadge key={`w-${key++}`} weight={weight} />);
+      } else {
+        out.push(match[6]);
+      }
+    }
+
+    lastIdx = idx + match[0].length;
   }
   if (lastIdx < text.length) {
     out.push(text.slice(lastIdx));
   }
   return out.length ? out : [text];
+}
+
+/**
+ * WeightBadge — small inline pill labeling a structured stance
+ * weight (``high`` / ``moderate`` / ``low``). Used by
+ * :func:`linkifyEvidenceRefs` to surface the weight token from
+ * ``grade_rationale`` parentheticals like
+ * ``(a1_evi_06, high-weight)`` as a visual pill instead of leaving
+ * it as inline text. Tone matches the stance-weight semantics
+ * used elsewhere in the catalog (high = success/green;
+ * moderate = warn/amber; low = neutral/muted).
+ */
+function WeightBadge({ weight }: { weight: "high" | "moderate" | "low" }) {
+  const toneClass =
+    weight === "high"
+      ? styles.weightHigh
+      : weight === "moderate"
+        ? styles.weightModerate
+        : styles.weightLow;
+  return (
+    <span className={`${styles.weightBadge} ${toneClass}`}>{weight}</span>
+  );
 }
