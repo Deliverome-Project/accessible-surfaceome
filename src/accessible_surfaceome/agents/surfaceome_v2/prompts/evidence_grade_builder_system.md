@@ -28,8 +28,31 @@ ONE fenced ```json block. Top-level OBJECT, not array.
 - `supportive_but_indirect` — only fractionation / glycoproteomics /
   RNA-level / IHC without nonperm specification — implies surface but
   doesn't prove extracellular exposure.
-- `conflicting` — direct surface evidence AND meaningful contradictions
-  (intracellular pool, secreted-only, antibody conflict).
+- `conflicting` — **reserved for true logical / mechanistic
+  inconsistency**. The bar is high: two pieces of evidence cannot
+  BOTH be true given a plausible mechanism. Example: one paper
+  reports the protein is constitutively absent from the cell entirely
+  (gene not expressed in any context) AND another paper reports
+  direct surface staining in that same baseline context — the two
+  claims can't be reconciled without one being wrong.
+  **Context- or cell-state-dependent variation is NOT conflicting.**
+  A protein that's inner-leaflet anchored in normal cells but
+  surface-exposed in cancer cells (e.g. SRC's ALE-mediated
+  topology inversion) is **state-dependent**, not conflicting —
+  both observations are coherent under a plausible mechanism
+  (different cell state ⇒ different topology). Same for:
+    * tissue-restricted surface expression vs broad RNA absence
+      (cell-type variation, not conflict)
+    * activation-induced surface presentation vs resting-state
+      intracellular (state variation, not conflict)
+    * isoform-specific surface exposure vs canonical-isoform
+      intracellular (isoform variation, not conflict)
+  These cases should be graded by the strength of the SURFACE
+  evidence in the relevant context (e.g. `direct_multi_method` if
+  there's solid surface methodology for the cancer / activated /
+  alt-isoform state) and have the context variation captured via
+  `state_dependence=high` + the biological_context section, NOT
+  by collapsing the call to `conflicting`.
 - `weak` — only db_annotations, review_assertions, or weak/permeabilized
   reads with no direct surface assay.
 
@@ -54,11 +77,22 @@ on the grade (don't pad). Field shape:
   (direct surface methodology AND/OR functional engagement at the
   extracellular face).
 * `contradicts_surface` — the claim refutes surface accessibility
-  (canonical intracellular topology, secreted-only assertion, negative
-  surface-staining result).
+  **in a logically incompatible way** with the positive evidence.
+  High bar: same context, same conditions, mechanistically
+  incompatible. A definitive nonperm negative-staining result in
+  the same cell line + same activation state as a positive surface
+  claim → contradicts. A canonical-topology description that just
+  describes the BASELINE state in a different context (e.g. normal
+  vs cancer cells, resting vs activated) → NOT a contradiction,
+  use `tangential` instead. State / cell-type / isoform variation
+  is captured by `state_dependence` + biological_context, not by
+  forcing the grade to `conflicting`.
 * `tangential` — the claim informs the picture but doesn't commit to
-  either pole (cell-type expression context, mechanistic biology
-  unrelated to the surface call).
+  either pole. Includes: cell-type expression context unrelated to
+  the surface call, mechanistic biology that explains BUT DOESN'T
+  REFUTE the surface evidence (e.g. canonical topology that
+  describes baseline biology for a state-conditional surface form),
+  background biology relevant to interpretation.
 * `expression_only` — RNA-level or bulk-protein detection without a
   surface-assay basis. These don't establish surface accessibility on
   their own. Also goes into the `non_surface_expression` rollup below.
@@ -83,28 +117,40 @@ Writing the rationale first and back-filling stances to match leads to
 prose-driven post-hoc rationalization; the stance map should drive the
 prose, not the other way around.
 
-**Worked SRC example** (the canonical 5b.8 case):
+**Worked SRC example** (the canonical 5b.8 case, with the
+state-dependent-is-not-conflicting refinement applied):
 
 ```
 "claim_stances": [
   {"claim_id": "a1_evi_01", "stance": "supports_surface",    "weight": "high",
-   "note": "eSrc translocation, in vitro + in vivo"},
+   "note": "eSrc translocation in cancer cells, in vitro + in vivo"},
   {"claim_id": "a1_evi_02", "stance": "supports_surface",    "weight": "high",
-   "note": "antibody-mediated tumor killing in xenografts"},
-  {"claim_id": "a1_evi_05", "stance": "contradicts_surface", "weight": "high",
-   "note": "canonical inner-leaflet topology, decades of evidence"},
+   "note": "antibody-mediated tumor killing in xenografts (cancer state)"},
+  {"claim_id": "a1_evi_05", "stance": "tangential",          "weight": "high",
+   "note": "canonical inner-leaflet topology — describes baseline state, NOT a contradiction (different state)"},
   {"claim_id": "a1_evi_06", "stance": "supports_surface",    "weight": "low",
    "note": "chick chondrogenic cell surfaceome MS, weak species transfer"},
   {"claim_id": "a1_evi_12", "stance": "supports_surface",    "weight": "high",
    "note": "non-permeabilized surface biotinylation"},
-  {"claim_id": "a1_evi_15", "stance": "contradicts_surface", "weight": "high",
-   "note": "canonical topology, second independent source"}
+  {"claim_id": "a1_evi_15", "stance": "tangential",          "weight": "high",
+   "note": "canonical topology, baseline state (not a refutation of cancer-state surface form)"}
 ],
 ```
 
-This gives the catalog `3 high-weight supports + 2 high-weight
-contradicts` → flagged as a real biological disagreement (not an
-artifact-suspect 1-vs-many).
+The canonical inner-leaflet claims (a1_evi_05, a1_evi_15) describe
+SRC's BASELINE state in normal cells. They DON'T contradict the
+cancer-state surface form — the two coexist under the ALE-driven
+topology-inversion mechanism. Marking them `contradicts_surface`
+forces the grade to `conflicting`, which is wrong here. They're
+`tangential` to the surface call (they inform the baseline picture
+that `state_dependence=high` captures) and the grade is
+`direct_single_method` — anchored on the eSrc papers' direct surface
+methodology, with the state-conditionality flagged separately.
+
+Only mark a canonical-topology claim as `contradicts_surface` when
+it's incompatible with the surface-positive evidence under EVERY
+plausible mechanism (e.g. a definitive negative-staining result
+under the same conditions as a positive-staining claim).
 
 ## grade_rationale
 
