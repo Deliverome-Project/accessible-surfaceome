@@ -25,6 +25,10 @@
   background: rgba(254, 254, 254, 0.88);
   backdrop-filter: saturate(170%) blur(14px);
   -webkit-backdrop-filter: saturate(170%) blur(14px);
+  /* Symmetric hairline rules top + bottom so the strip reads as a
+     self-contained band — the boundary above the "01/02" tabs matches
+     the boundary below them rather than only having a bottom rule. */
+  border-top: 1px solid var(--line-soft);
   border-bottom: 1px solid var(--line-soft);
   height: 52px;
   display: flex;
@@ -36,6 +40,14 @@
   margin-inline: auto;
   display: flex;
   align-items: center;
+  /* Center the numbered tabs within the page-width strip. `safe`
+     guards the overflow case: on a wide viewport the tab row is
+     narrower than the strip and centers (balanced leading/trailing
+     whitespace); on a narrow viewport the row overflows and scrolls,
+     where plain `center` would shove the first tab past the left edge
+     and make it unreachable — `safe` falls back to start-alignment so
+     the scroll begins at tab 01. */
+  justify-content: safe center;
   gap: 0;
   height: 100%;
   overflow-x: auto;

@@ -18,8 +18,17 @@
   border-top: 1px solid var(--line-soft);
 }
 
+/* First card in a tab slot sits directly under the sticky AnchorNav
+   strip. Drop its top border AND its top padding so the gap below the
+   strip is governed by the shared `.page` 12px gap alone — matching the
+   ~9–12px gap above the strip. Without this the section's
+   `var(--space-6)` top padding stacked on the page gap pushed the "01"
+   eyebrow ~36px below the strip, far looser than the top boundary.
+   Stacked cards (2nd+ in a slot, e.g. Orthologs/Paralogs) are NOT
+   first-child, so they keep their full top border + padding rhythm. */
 .section:first-child {
   border-top: 0;
+  padding-top: 0;
 }
 
 .head {

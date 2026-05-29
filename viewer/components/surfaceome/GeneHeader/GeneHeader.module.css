@@ -7,8 +7,13 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
-  padding: 0 0 var(--space-6);
-  border-bottom: 1px solid var(--line-soft);
+  /* No bottom border / padding: the sticky AnchorNav strip directly
+     below owns the separating hairline (its own border-top). A
+     border-bottom here floated a SECOND rule ~12px above the strip —
+     reading as a thin empty band ("extra div") between the header and
+     the tabs. Dropping it leaves the shared `.page` 12px gap as the
+     only spacing above the strip, matching the 12px below it. */
+  padding: 0;
 }
 
 .headerGrid {
