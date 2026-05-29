@@ -795,13 +795,18 @@ export function FiltersCard({ rec, n }: Props) {
     },
     "Candidate sites": {
       title:
-        "MaSIF patch-based targetability scoring from SURFACE-Bind " +
-        "(Balbi et al. 2026, PMID 41604262, PNAS). Three states: " +
-        "'not in' = filtered at structural QC; 'scored · no patches' = " +
-        "scored but no patches cleared the MaSIF threshold; " +
-        "'N sites · M seeds' = real targetability data. α-seeds = " +
-        "α-helical binder candidates; β-seeds = β-strand binder " +
-        "candidates.",
+        "SURFACE-Bind (Correia lab, Balbi et al. 2026, PMID 41604262, " +
+        "PNAS) scores extracellular surface patches for designability " +
+        "by de novo protein binders. Each candidate site is a region " +
+        "where SURFACE-Bind's MaSIF model identified geometric / " +
+        "chemical features compatible with a designable binder. " +
+        "Three pill states: 'not in' = the protein was filtered at " +
+        "structural QC before scoring (typically inner-leaflet anchors " +
+        "or soluble cytoplasmic proteins); 'scored · no patches' = the " +
+        "protein was scored but no patches cleared the MaSIF " +
+        "targetability threshold; 'N sites · M seeds' = real " +
+        "targetability data, where α-seeds = α-helical binder " +
+        "candidates and β-seeds = β-strand binder candidates.",
       links: [
         { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
         {
@@ -825,11 +830,19 @@ export function FiltersCard({ rec, n }: Props) {
     const meta = GROUP_META[g.label];
     return (
       <div key={g.label} className={styles.group}>
-        <p
-          className={`label-mono ${styles.groupLabel}`}
-          title={meta?.title}
-        >
+        <p className={`label-mono ${styles.groupLabel}`}>
           <span>{g.label}</span>
+          {/* InfoTip with the same prose the native title carried
+              before — but readable on click instead of fleeting on
+              hover. Spells out the cutoffs + rationale (Cross-species
+              %ID bands, Paralog %ECD bands, SURFACE-Bind state
+              definitions) so the reader doesn't have to guess what
+              moderate / high mean per group. */}
+          {meta?.title ? (
+            <InfoTip wide label={`About ${g.label}`}>
+              {meta.title}
+            </InfoTip>
+          ) : null}
           {meta?.links?.map((l) => (
             <a
               key={l.href}
