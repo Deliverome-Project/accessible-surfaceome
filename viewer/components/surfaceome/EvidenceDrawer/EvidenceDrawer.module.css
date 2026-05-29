@@ -39,6 +39,30 @@
   pointer-events: auto;
 }
 
+/* Side-by-side coordination — when the ReasoningDrawer is open (it
+ * sets `body[data-reasoning-drawer-open]` from its useEffect), shift
+ * the EvidenceDrawer leftward by the reasoning drawer's width plus a
+ * small gutter so the two panels sit side-by-side instead of one
+ * covering the other. Reading a piece of evidence cited by the
+ * reasoning prose stays in the same horizontal scan as the prose
+ * itself.
+ *
+ * Width values mirror ReasoningDrawer.module.css's `clamp(320px,
+ * 35vw, 480px)` — kept in sync manually; if either side changes
+ * width, bump both. */
+:global(body[data-reasoning-drawer-open]) .drawer {
+  right: calc(clamp(320px, 35vw, 480px) + 12px);
+}
+
+/* z-index bump so even when the side-by-side shift isn't active
+ * (e.g. the rare case where reasoning-drawer state lags the click),
+ * the evidence drawer paints ABOVE the reasoning drawer rather than
+ * behind it. Was z-index 40 (under ReasoningDrawer's 50) which made
+ * the evidence drawer invisible when both opened in the same frame. */
+.drawer {
+  z-index: 55;
+}
+
 @media (max-width: 720px) {
   .drawer {
     top: auto;
