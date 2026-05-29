@@ -310,28 +310,22 @@
   gap: 0.5rem;
 }
 
+/* Bare brand logos — no circular border / pill background. Just the
+ * X + LinkedIn marks with a small padding for the tap target and a
+ * subtle opacity dip on hover (the marks are <img>, so `color` can't
+ * tint them — opacity is the only hover affordance that reads). */
 .footerSocialLink {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius-pill);
-  color: var(--ink-soft);
-  background: transparent;
-  border: 1px solid var(--line);
+  padding: 0.25rem;
   text-decoration: none;
-  transition:
-    color var(--dur-fast) var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out);
+  transition: opacity var(--dur-fast) var(--ease-out);
 }
 
 .footerSocialLink:hover,
 .footerSocialLink:focus-visible {
-  color: var(--accent);
-  background: var(--bg-warm);
-  border-color: var(--accent-soft, var(--line));
+  opacity: 0.7;
 }
 
 /* ---------- responsive ---------- */

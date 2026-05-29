@@ -156,11 +156,13 @@ export function Shell({ children }: ShellProps) {
             </p>
           </div>
           {/*
-           * Socials block — kept in sync with the parent shell at
-           * deliverome-internal:site/components/site-shell.tsx (PR #24).
-           * Same aria-labels, same `rel="noreferrer"`, same icon
-           * dimensions (18 × 18 for X, 19 × 19 for Bluesky). When the
-           * parent's social set changes, mirror it here.
+           * Socials block — X + LinkedIn. Mirrors the parent shell at
+           * deliverome-internal:site/components/SiteShell/SiteShell.tsx
+           * (same aria-labels, same `rel="noreferrer"`, same icon
+           * dimensions — 18 × 18 for X, 19 × 19 for LinkedIn — and the
+           * same LinkedIn company URL). Bluesky is intentionally omitted
+           * on the sub-site. When the parent's social set changes, mirror
+           * it here.
            */}
           <div className={styles.footerSocial} aria-label="Social links">
             <a
@@ -175,13 +177,13 @@ export function Shell({ children }: ShellProps) {
             </a>
             <a
               className={styles.footerSocialLink}
-              href="https://bsky.app/profile/deliverome.org"
+              href="https://www.linkedin.com/company/deliverome"
               target="_blank"
               rel="noreferrer"
-              aria-label="Deliverome on Bluesky"
+              aria-label="Deliverome on LinkedIn"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/assets/bluesky.svg" alt="" width={19} height={19} />
+              <img src="/assets/linkedin.svg" alt="" width={19} height={19} />
             </a>
           </div>
         </div>
