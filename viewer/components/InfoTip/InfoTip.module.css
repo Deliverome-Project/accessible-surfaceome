@@ -51,6 +51,14 @@
   transform: translateX(-50%);
   max-width: min(28em, 90vw);
   min-width: 16em;
+  /* Cap vertical height so a multi-paragraph tooltip (e.g.
+   * afdb_plddt, afdb_disordered) can never exceed the viewport.
+   * When it would, the popover scrolls internally instead of
+   * overflowing the page. Combined with the `popoverFlipUp`
+   * modifier this guarantees the popover stays fully visible
+   * regardless of trigger position. */
+  max-height: min(70vh, 28rem);
+  overflow-y: auto;
   padding: var(--space-3) var(--space-4);
   /* Fully opaque background — `--bg-soft` resolves to `#ffffff` but
    * setting it explicitly via the hex value too removes any chance
@@ -74,6 +82,27 @@
    * small gap; we suppress pointer events on the gap so the trigger's
    * mouseleave fires cleanly when the user moves off it. */
   pointer-events: auto;
+}
+
+/* Flip-up modifier — applied by InfoTip.tsx when the popover's
+ * natural position (below the trigger) would extend past the
+ * viewport bottom. Repositions the popover above the trigger
+ * instead, with the same 0.45rem gap. The deterministic-tools
+ * strip on the gene page sits low enough that ~all of its
+ * InfoTips trigger this. */
+.popoverFlipUp {
+  top: auto;
+  bottom: calc(100% + 0.45rem);
+}
+
+/* Compress consecutive <br> pairs — tooltip authors use
+ * `<br /><br />` to separate paragraphs, but the resulting double
+ * line break renders with a full empty line at line-height 1.5,
+ * which feels airy in a 28em popover. Hiding the second <br>
+ * collapses the pair to a single line break for a tighter
+ * vertical rhythm without modifying every tooltip's content. */
+.popover br + br {
+  display: none;
 }
 
 .popover code {

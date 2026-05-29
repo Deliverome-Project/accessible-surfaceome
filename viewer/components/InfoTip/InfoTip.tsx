@@ -44,6 +44,12 @@ export function InfoTip({
   triggerClassName,
 }: InfoTipProps) {
   const [open, setOpen] = useState(false);
+  // When the popover would extend past the viewport bottom (typical
+  // for triggers near the bottom of the page — the new Deterministic
+  // strip sits low on the gene page), we flip it to render above the
+  // trigger instead. Computed once per open, after the popover lays
+  // out, so we can measure where it actually landed.
+  const [flipUp, setFlipUp] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const popoverRef = useRef<HTMLDivElement | null>(null);
   const popoverId = useId();
@@ -70,6 +76,34 @@ export function InfoTip({
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onKey);
     };
+  }, [open]);
+
+  // Auto-flip: after the popover renders, measure where it landed.
+  // If its bottom edge would exceed the viewport (- a small margin),
+  // toggle the `popoverFlipUp` modifier so CSS repositions it above
+  // the trigger via `bottom: calc(100% + 0.45rem)` instead.
+  useEffect(() => {
+    if (!open) {
+      setFlipUp(false);
+      return;
+    }
+    const id = requestAnimationFrame(() => {
+      const popover = popoverRef.current;
+      const trigger = triggerRef.current;
+      if (!popover || !trigger) return;
+      const popRect = popover.getBoundingClientRect();
+      const trigRect = trigger.getBoundingClientRect();
+      // If the popover overflows below AND there's more room above
+      // the trigger than below it, flip up. The second clause keeps
+      // very tall popovers from flipping into an even worse position
+      // when neither side has room (the `max-height` cap will scroll).
+      const spaceBelow = window.innerHeight - trigRect.bottom;
+      const spaceAbove = trigRect.top;
+      if (popRect.bottom > window.innerHeight - 8 && spaceAbove > spaceBelow) {
+        setFlipUp(true);
+      }
+    });
+    return () => cancelAnimationFrame(id);
   }, [open]);
 
   const onKeyDown = useCallback((e: KeyboardEvent<HTMLButtonElement>) => {
@@ -107,7 +141,7 @@ export function InfoTip({
           ref={popoverRef}
           id={popoverId}
           role="tooltip"
-          className={styles.popover}
+          className={`${styles.popover} ${flipUp ? styles.popoverFlipUp : ""}`.trim()}
           // Don't let the popover swallow the trigger's hover-out:
           // moving from trigger → popover bridges via a tiny gap that
           // we suppress with `pointer-events` so the mouse still
