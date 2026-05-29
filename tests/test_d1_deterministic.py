@@ -1,0 +1,219 @@
+"""Tests for the public-D1 deterministic-features loader.
+
+Specifically covers the ``_fetch_paralogs`` + ``_fetch_orthologs`` paths
+after the topology bars were threaded through to ParalogEntry +
+OrthologEntry: when the LEFT JOIN against ``topology_public`` hits, the
+per-residue topology + categorical label populate; when it misses
+(paralog whose canonical isn't in the cohort yet), the loader
+gracefully returns ``per_residue_topology=None`` rather than dropping
+the row.
+
+The Cloudflare HTTP API is mocked at the ``_query_public`` boundary
+inside the module under test — same monkeypatch pattern used by
+``tests/test_topology_isoform_resolution.py``. No real network calls.
+"""
+from __future__ import annotations
+
+import pytest
+
+from accessible_surfaceome.agents.surfaceome_v1 import d1_deterministic
+from accessible_surfaceome.tools._shared.models import OrthologEntry, ParalogEntry
+
+
+# ---------------------------------------------------------------------------
+# _fetch_paralogs
+# ---------------------------------------------------------------------------
+
+
+def test_fetch_paralogs_populates_topology_when_join_hits(monkeypatch: pytest.MonkeyPatch) -> None:
+    """LEFT JOIN row carrying per_residue_topology + label + counts →
+    every new field lands on the ParalogEntry."""
+    rows = [
+        {
+            "paralog_gene_symbol": "FYN",
+            "paralog_uniprot_acc": "P06241",
+            "ecd_pct_identity": 72.5,
+            "family_id": "ENSGT00940000158534",
+            "compara_version": "112",
+            "rank_by_ecd_identity": 1,
+            "per_residue_topology": "IIIIMMMOOOOMMMIII",
+            "deeptmhmm_label": "TM",
+            "tm_helix_count": 2,
+            "ecd_length_residues": 6,
+        }
+    ]
+
+    monkeypatch.setattr(
+        d1_deterministic, "_query_public", lambda sql, params: list(rows)
+    )
+
+    entries = d1_deterministic._fetch_paralogs(
+        "P12931", "compara-v112", topology_version="tv1"
+    )
+
+    assert len(entries) == 1
+    p = entries[0]
+    assert isinstance(p, ParalogEntry)
+    assert p.paralog_symbol == "FYN"
+    assert p.paralog_uniprot_acc == "P06241"
+    assert p.ecd_pct_identity == pytest.approx(72.5)
+    assert p.family_id == "ENSGT00940000158534"
+    assert p.per_residue_topology == "IIIIMMMOOOOMMMIII"
+    assert p.deeptmhmm_label == "TM"
+    assert p.tm_helix_count == 2
+    assert p.ecd_length_residues == 6
+
+
+def test_fetch_paralogs_topology_none_when_join_misses(monkeypatch: pytest.MonkeyPatch) -> None:
+    """LEFT JOIN miss → all four topology-derived fields are None and
+    the row is still returned (rather than silently dropped)."""
+    rows = [
+        {
+            "paralog_gene_symbol": "FYN",
+            "paralog_uniprot_acc": "P06241",
+            "ecd_pct_identity": 72.5,
+            "family_id": "ENSGT00940000158534",
+            "compara_version": "112",
+            "rank_by_ecd_identity": 1,
+            # All four LEFT-JOIN columns null — common case when the
+            # paralog's canonical isn't in topology_public's cohort yet.
+            "per_residue_topology": None,
+            "deeptmhmm_label": None,
+            "tm_helix_count": None,
+            "ecd_length_residues": None,
+        }
+    ]
+
+    monkeypatch.setattr(
+        d1_deterministic, "_query_public", lambda sql, params: list(rows)
+    )
+
+    entries = d1_deterministic._fetch_paralogs(
+        "P12931", "compara-v112", topology_version="tv1"
+    )
+
+    assert len(entries) == 1
+    p = entries[0]
+    assert p.paralog_symbol == "FYN"
+    assert p.per_residue_topology is None
+    assert p.deeptmhmm_label is None
+    assert p.tm_helix_count is None
+    assert p.ecd_length_residues is None
+    # ECD identity stays populated — independent of the topology join.
+    assert p.ecd_pct_identity == pytest.approx(72.5)
+
+
+def test_fetch_paralogs_threads_topology_version_through_sql(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The new topology_version kwarg must reach the SQL params (so the
+    LEFT JOIN filter is on the right release pointer) and the existing
+    paralog_version + uniprot_acc + LIMIT params must keep their order."""
+    captured: dict[str, object] = {}
+
+    def fake_query(sql: str, params: list) -> list:
+        captured["sql"] = sql
+        captured["params"] = params
+        return []
+
+    monkeypatch.setattr(d1_deterministic, "_query_public", fake_query)
+
+    d1_deterministic._fetch_paralogs(
+        "P12931", "compara-v112", topology_version="topology-vXYZ"
+    )
+
+    # SQL must place topology_version FIRST (for the LEFT JOIN ON clause),
+    # then human_uniprot_acc + paralog_version, then the LIMIT cap.
+    params = captured["params"]
+    assert isinstance(params, list)
+    assert params[0] == "topology-vXYZ"
+    assert params[1] == "P12931"
+    assert params[2] == "compara-v112"
+    assert params[3] == d1_deterministic.PARALOG_TOP_N
+
+
+# ---------------------------------------------------------------------------
+# _fetch_orthologs
+# ---------------------------------------------------------------------------
+
+
+def test_fetch_orthologs_populates_topology_when_join_hits(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The mouse / cyno topology join lands per_residue_topology +
+    deeptmhmm_label on the OrthologEntry."""
+    rows = [
+        {
+            "species": "mouse",
+            "ortholog_uniprot_acc": "P00528",
+            "ortholog_ensembl_gene": "ENSMUSG00000000028",
+            "ortholog_gene_symbol": "Src",
+            "ecd_pct_identity": 88.2,
+            "full_length_pct_identity": 99.0,
+            "tm_helix_count": 1,
+            "ecd_length_residues": 250,
+            "per_residue_topology": "OOOOMMMIIII",
+            "deeptmhmm_label": "TM",
+            "compara_release": "112",
+        }
+    ]
+
+    monkeypatch.setattr(
+        d1_deterministic, "_query_public", lambda sql, params: list(rows)
+    )
+
+    out = d1_deterministic._fetch_orthologs(
+        "P12931", topology_version="tv1", ortholog_ecd_version="ev1"
+    )
+
+    assert len(out.mouse) == 1
+    assert len(out.cynomolgus) == 0
+    o = out.mouse[0]
+    assert isinstance(o, OrthologEntry)
+    assert o.per_residue_topology == "OOOOMMMIIII"
+    assert o.deeptmhmm_label == "TM"
+    # Existing fields still populate alongside the new ones.
+    assert o.ecd_pct_identity_to_human_canonical == pytest.approx(88.2)
+    assert o.tm_helix_count == 1
+    assert o.ecd_length_residues == 250
+
+
+def test_fetch_orthologs_topology_none_when_join_misses(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """LEFT JOIN miss against ``topology_public`` → both topology fields
+    are None but the ortholog row is still returned."""
+    rows = [
+        {
+            "species": "cyno",
+            "ortholog_uniprot_acc": "Q9BCYTEST",
+            "ortholog_ensembl_gene": "ENSMFAG00000000001",
+            "ortholog_gene_symbol": "SRC",
+            "ecd_pct_identity": 95.1,
+            "full_length_pct_identity": 99.4,
+            "tm_helix_count": None,
+            "ecd_length_residues": None,
+            "per_residue_topology": None,
+            "deeptmhmm_label": None,
+            "compara_release": "112",
+        }
+    ]
+
+    monkeypatch.setattr(
+        d1_deterministic, "_query_public", lambda sql, params: list(rows)
+    )
+
+    out = d1_deterministic._fetch_orthologs(
+        "P12931", topology_version="tv1", ortholog_ecd_version="ev1"
+    )
+
+    assert len(out.mouse) == 0
+    assert len(out.cynomolgus) == 1
+    o = out.cynomolgus[0]
+    assert o.per_residue_topology is None
+    assert o.deeptmhmm_label is None
+    # tm_helix_count + ecd_length_residues coerce to 0 (legacy behavior:
+    # OrthologEntry requires non-null ints for those — the LEFT JOIN
+    # miss falls into the `int(... or 0)` branch).
+    assert o.tm_helix_count == 0
+    assert o.ecd_length_residues == 0

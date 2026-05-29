@@ -69,3 +69,123 @@
   font-style: italic;
   font-size: 0.92rem;
 }
+
+/* Sub-section wrapper for the three blocks (Isoforms, Orthologs,
+   Paralogs) the combined card stacks. Margin spaces them apart;
+   first child resets so the section's first row sits flush with the
+   banner above. */
+.subsection {
+  margin-top: var(--space-5);
+}
+
+.subsection:first-of-type {
+  margin-top: 0;
+}
+
+.subhead {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+}
+
+/* Link styling for ortholog / paralog UniProt accessions — same
+   subdued underline the rest of the card uses. */
+.link {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Muted cell — for ortholog ECD %id when the human protein has no ECD. */
+.muted {
+  color: var(--muted);
+}
+
+/* Paralogs chip strip — replaces the prior 4-col table. Each chip
+   shows SYMBOL · NN%; the link target is the paralog's UniProt page;
+   hover surfaces the family-id via title attribute. Density tuned so a
+   protein with ~50 paralogs (kinome / immunoglobulin superfamily) fits
+   in a couple of rows. */
+.paralogChips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  /* Slightly larger gap now that each cell stacks a chip + topology
+     bar vertically — gives the cells visual breathing room without
+     turning the strip into a sparse grid. */
+  gap: 0.6rem 0.4rem;
+}
+
+/* Per-paralog cell: chip on top, narrow per-residue topology strip
+   below. Fixed width keeps the strip readable while letting many
+   paralogs (kinome / Ig superfamily) wrap across rows. (Replaces
+   the prior bare-chip ``.paralogChip`` rule.) */
+.paralogChipCell {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  /* Sized so 5-8 cells fit per row at typical card width; wider than
+     the chip itself so the bar has enough pixels to show TM helices. */
+  min-width: 8rem;
+  max-width: 12rem;
+}
+
+.paralogChipLink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.18rem 0.6rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 0.82rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+.paralogChipLink:hover,
+.paralogChipLink:focus-visible {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+.paralogChipSym {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+}
+
+.paralogChipPct {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* Topology strip beneath each paralog chip. Padding lines the bar up
+   with the chip's pill above and gives consistent vertical rhythm
+   across cells whether the bar is present or the "no topology"
+   placeholder is. */
+.paralogChipBar {
+  padding: 0 0.4rem;
+}
+
+/* Placeholder text when the paralog has no DeepTMHMM row in the
+   cohort yet — keeps the cell height consistent across rows so the
+   chip strip doesn't shimmer as the user scans columns. */
+.paralogChipBarEmpty {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-style: italic;
+  text-align: center;
+}

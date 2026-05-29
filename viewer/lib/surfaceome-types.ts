@@ -332,6 +332,15 @@ export interface OrthologEntry {
   tm_helix_count: number;
   compara_version: string;
   retrieved_at: string;
+  /** Per-residue DeepTMHMM topology string for the ortholog's canonical
+   *  isoform. Sourced from D1's ``topology_public`` filtered to
+   *  cohort=``mouse_ortholog`` / ``cyno_ortholog``. Null when the
+   *  topology cohort hasn't covered this ortholog yet; the
+   *  IsoformsCard renders a "no topology" placeholder in that case. */
+  per_residue_topology: string | null;
+  /** DeepTMHMM categorical label: 'TM' | 'SP+TM' | 'SP' | 'BETA' |
+   *  'GLOB'. Null when ``per_residue_topology`` is null. */
+  deeptmhmm_label: string | null;
 }
 
 export interface OrthologSet {
@@ -354,6 +363,21 @@ export interface ParalogEntry {
   ecd_pct_identity: number | null;
   family_id: string;
   compara_version: string;
+  /** Per-residue DeepTMHMM topology string for the paralog's canonical
+   *  isoform. Sourced from D1's ``topology_public`` filtered to
+   *  cohort=``human_canonical``. Null when the paralog's canonical
+   *  isn't in the topology cohort yet (rare); the IsoformsCard
+   *  renders a "no topology" placeholder in that case. */
+  per_residue_topology: string | null;
+  /** DeepTMHMM categorical label: 'TM' | 'SP+TM' | 'SP' | 'BETA' |
+   *  'GLOB'. Null when ``per_residue_topology`` is null. */
+  deeptmhmm_label: string | null;
+  /** Number of TM helices in the paralog's canonical topology. Null
+   *  when ``per_residue_topology`` is null. */
+  tm_helix_count: number | null;
+  /** Extracellular-domain length in residues for the paralog. Null
+   *  when ``per_residue_topology`` is null. */
+  ecd_length_residues: number | null;
 }
 
 /**

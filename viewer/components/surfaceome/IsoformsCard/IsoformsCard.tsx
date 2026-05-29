@@ -39,11 +39,13 @@ interface Props {
  *   was noise. The chip's ECD %id is the load-bearing signal for
  *   antibody-cross-reactivity risk.
  *
- * Topology bars currently render only for canonical + alternative
- * isoforms (their per_residue_topology strings live on the record).
- * Ortholog topology lives in D1's topology_public cohorts but isn't
- * baked onto OrthologEntry yet — when that backfill lands, the
- * Orthologs subsection can add a topology column too.
+ * Topology bars render for canonical + alternative isoforms AND for
+ * paralogs / orthologs — every variant whose ``per_residue_topology``
+ * is populated gets its own slim DeepTMHMM strip so the reader can
+ * eyeball cross-reactivity surface conservation at a glance. The
+ * paralog / ortholog topology fields are nullable; when absent the
+ * row renders a "no topology" placeholder so the table layout
+ * stays stable.
  */
 export function IsoformsCard({ rec, n }: Props) {
   const df = rec.deterministic_features;
@@ -74,7 +76,7 @@ export function IsoformsCard({ rec, n }: Props) {
       eyebrow="Evolutionary context"
       title="Isoforms, orthologs & paralogs"
       meta={`Deterministic · UniProt + DeepTMHMM ${ct.tool_version} · Ensembl Compara ${comparaVersion}`}
-      lede="Same protein across alternative isoforms, orthologs (mouse + cyno), and within-species paralogs. Topology bars are shown for isoforms; ortholog topology is in D1 but not yet wired into the record."
+      lede="Same protein across alternative isoforms, orthologs (mouse + cyno), and within-species paralogs. Topology bars are shown for every variant whose DeepTMHMM topology is in the record."
     >
       {/* ---- Isoforms (topology) ------------------------------------- */}
       <div className={styles.subsection}>
@@ -221,7 +223,7 @@ export function IsoformsCard({ rec, n }: Props) {
         ) : (
           <ul className={styles.paralogChips} aria-label="Paralog list">
             {paralogs.map((p, i) => (
-              <li key={i} className={styles.paralogChip}>
+              <li key={i} className={styles.paralogChipCell}>
                 <a
                   className={styles.paralogChipLink}
                   href={`https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}`}
@@ -240,6 +242,22 @@ export function IsoformsCard({ rec, n }: Props) {
                       : "no ECD"}
                   </span>
                 </a>
+                {/* Per-residue DeepTMHMM strip beneath the chip — only
+                 *  when the paralog's canonical topology is in our
+                 *  cohort. Same component the isoform table uses so the
+                 *  colors and proportional layout match. */}
+                {p.per_residue_topology ? (
+                  <div className={styles.paralogChipBar}>
+                    <TopologyBar
+                      topology={p.per_residue_topology}
+                      ariaLabel={`${p.paralog_symbol} canonical topology`}
+                    />
+                  </div>
+                ) : (
+                  <div className={`${styles.paralogChipBar} ${styles.paralogChipBarEmpty}`}>
+                    no topology
+                  </div>
+                )}
               </li>
             ))}
           </ul>
@@ -283,6 +301,9 @@ function OrthologsSubsection({
                 <th scope="col">ECD %sim</th>
                 <th scope="col">ECD len</th>
                 <th scope="col">TM count</th>
+                <th scope="col" className={styles.topoCol}>
+                  Topology
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -332,6 +353,16 @@ function OrthologsSubsection({
                     </td>
                     <td>{e.ecd_length_residues} aa</td>
                     <td>{e.tm_helix_count}</td>
+                    <td className={styles.topoCell}>
+                      {e.per_residue_topology ? (
+                        <TopologyBar
+                          topology={e.per_residue_topology}
+                          ariaLabel={`${e.ortholog_symbol} ortholog topology`}
+                        />
+                      ) : (
+                        <span className={styles.muted}>no topology</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

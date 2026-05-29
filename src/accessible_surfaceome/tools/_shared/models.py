@@ -2091,6 +2091,15 @@ class OrthologEntry(BaseModel):
     tm_helix_count: int
     compara_version: str
     retrieved_at: datetime
+    # Per-residue DeepTMHMM topology + categorical label for the
+    # ortholog's canonical isoform. Sourced from ``topology_public``
+    # filtered to ``cohort='mouse_ortholog'`` / ``cohort='cyno_ortholog'``.
+    # Nullable because the candidate-set builder may include orthologs
+    # whose DeepTMHMM run is still pending (or whose UniProt acc didn't
+    # resolve in the sweep); the viewer's IsoformsCard renders a
+    # placeholder when these are absent.
+    per_residue_topology: str | None = Field(default=None)
+    deeptmhmm_label: str | None = Field(default=None)  # 'TM' | 'SP+TM' | 'SP' | 'BETA' | 'GLOB'
 
 
 class Orthologs(BaseModel):
@@ -2120,6 +2129,16 @@ class ParalogEntry(BaseModel):
     ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
+    # Per-residue DeepTMHMM topology + summary stats for the paralog's
+    # canonical isoform. Sourced from ``topology_public`` filtered to
+    # ``cohort='human_canonical'``. Nullable because rare paralogs may
+    # not yet have a DeepTMHMM run in the cohort (e.g. fresh additions
+    # the topology sweep hasn't picked up); the viewer's IsoformsCard
+    # renders a placeholder when these are absent.
+    per_residue_topology: str | None = Field(default=None)
+    deeptmhmm_label: str | None = Field(default=None)  # 'TM' | 'SP+TM' | 'SP' | 'BETA' | 'GLOB'
+    tm_helix_count: int | None = Field(default=None, ge=0)
+    ecd_length_residues: int | None = Field(default=None, ge=0)
 
 
 class StructureFeatures(BaseModel):
