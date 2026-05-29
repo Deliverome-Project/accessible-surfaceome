@@ -413,6 +413,9 @@ export function CatalogTable({
         <div className={styles.filterChips}>
           {field.values.map((v) => {
             const on = sel.has(v);
+            // Prefer the field's explicit display label (caps acronyms
+            // like GPI / GPCR / pMHC that prettyEnum would mangle).
+            const label = field.valueLabels?.[v] ?? prettyEnum(v);
             return (
               <button
                 key={`dd-${field.key}-${v}`}
@@ -420,9 +423,9 @@ export function CatalogTable({
                 className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
                 onClick={() => toggleDdEnumFilter(field.key, v)}
                 aria-pressed={on}
-                title={`Require ${field.label} = ${prettyEnum(v)}`}
+                title={`Require ${field.label} = ${label}`}
               >
-                {prettyEnum(v)}
+                {label}
               </button>
             );
           })}
