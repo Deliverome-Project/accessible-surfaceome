@@ -29,6 +29,18 @@ import { DD_BOOL_FIELDS, DD_ENUM_FIELDS } from "./deep-dive-fields";
  *  Sonnet=1, Opus=2) — the only model with full-genome coverage. */
 export const SONNET_IDX = 1;
 
+/** The deep-dive field used as the headline "verdict" (shown separately
+ *  from the other filter fields, mirroring the triage verdict). */
+const DEEP_DIVE_VERDICT_KEY = "surface_accessibility";
+
+/** Sentence-case a label: capitalize the first character only. */
+function sentenceCase(s: string): string {
+  return s.length > 0 ? s.charAt(0).toUpperCase() + s.slice(1) : s;
+}
+
+/** Enum value → sentence-cased human label (prettyEnum lowercases). */
+const prettyCase = (v: string): string => sentenceCase(prettyEnum(v));
+
 export interface EnrichRow {
   label: string;
   listHits: number; // a — list genes positive for this value
@@ -50,6 +62,10 @@ export interface CompareStats {
   signals: EnrichRow[];
   /** Categorical catalog-wide enrichment: triage verdict, triage reason. */
   catalogGroups: EnrichGroup[];
+  /** The deep-dive headline call (surface_accessibility), surfaced on its
+   *  own — like the triage verdict — rather than buried in the filter
+   *  fields. Null when no matched gene is deep-dived. */
+  deepDiveVerdict: EnrichGroup | null;
   /** Multi-valued deep-dive filter enrichment (baseline = deep-dived genes). */
   deepDiveEnumGroups: EnrichGroup[];
   /** Boolean deep-dive flags, one "= yes" row per field (baseline =
@@ -246,6 +262,8 @@ export function computeCompareStats(
       (r) => r.triage_by_model[SONNET_IDX]?.verdict ?? null,
       always,
       lf,
+      sentenceCase,
+      ["yes", "contextual", "no"],
     ),
     enrichCategory(
       "triage_reason",
@@ -255,7 +273,7 @@ export function computeCompareStats(
       (r) => r.triage_by_model[SONNET_IDX]?.reason ?? null,
       always,
       lf,
-      prettyEnum,
+      prettyCase,
     ),
   ].filter((g) => g.rows.length > 0);
 
@@ -265,21 +283,28 @@ export function computeCompareStats(
 
   // Multi-valued enum fields — one sub-table each, showing the FULL
   // declared taxonomy (`f.values`) so every category appears even with no
-  // list/baseline match. Drop only fields with no baseline data at all.
+  // list/baseline match. The headline call (surface_accessibility) is
+  // pulled out as `deepDiveVerdict` (shown on its own, like triage
+  // verdict); the rest go in the collapsible group list. Drop fields with
+  // no baseline data at all.
+  let deepDiveVerdict: EnrichGroup | null = null;
   const deepDiveEnumGroups: EnrichGroup[] = [];
   for (const f of DD_ENUM_FIELDS) {
+    const isVerdict = f.key === DEEP_DIVE_VERDICT_KEY;
     const g = enrichCategory(
       f.key,
-      f.label,
+      isVerdict ? "Deep-dive verdict" : f.label,
       allRows,
       matchedRows,
       (r) => (r.deep_dive_filters?.[f.key] as string | undefined) ?? null,
       hasDdf,
       lf,
-      prettyEnum,
+      prettyCase,
       f.values,
     );
-    if (g.rows.some((row) => row.baselineHits > 0)) deepDiveEnumGroups.push(g);
+    if (!g.rows.some((row) => row.baselineHits > 0)) continue;
+    if (isVerdict) deepDiveVerdict = g;
+    else deepDiveEnumGroups.push(g);
   }
 
   // Boolean flags — one "= yes" row per field (the complementary "no" is
@@ -303,6 +328,7 @@ export function computeCompareStats(
   return {
     signals,
     catalogGroups,
+    deepDiveVerdict,
     deepDiveEnumGroups,
     deepDiveBoolFlags,
     deepDivedListCount: ddListPop.length,

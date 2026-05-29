@@ -139,6 +139,22 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
     );
   }
 
+  function downloadAll() {
+    if (!result) return;
+    // First input token per matched gene (a gene can be hit by both its
+    // symbol and accession; the TSV flags the gene once).
+    const matched = new Map<string, { input: string; matchedBy: string }>();
+    for (const e of matchedEntries) {
+      if (e.row && !matched.has(e.row.symbol)) {
+        matched.set(e.row.symbol, { input: e.input, matchedBy: e.matchedBy });
+      }
+    }
+    downloadTextFile(
+      `surfaceome-all-${rows.length}-genes.tsv`,
+      buildFullCatalogTsv(rows, matched),
+    );
+  }
+
   const uploadedCount = result ? result.entries.length : 0;
   // Inputs that matched a gene already counted under a different
   // identifier (e.g. a UniProt accession + its gene symbol both pasted).
@@ -225,27 +241,37 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
               ) : null}
             </div>
 
-            {/* Download — the per-protein detail lives in the TSV. */}
-            {matchedEntries.length > 0 ? (
-              <div className={styles.downloadRow}>
-                <span className={styles.downloadMeta}>
-                  Per-protein detail (DB votes, triage call, all deep-dive
-                  filters) for your {matchedEntries.length} matched
-                  {matchedEntries.length === 1 ? " row" : " rows"} →
-                </span>
+            {/* Downloads — per-gene detail lives in the TSVs. "Matched"
+                is your list; "All genes" is the whole catalog with your
+                list flagged (in_user_list) + DB votes / triage / deep-dive
+                filters as columns, for an offline deeper dive. */}
+            <div className={styles.downloadRow}>
+              <span className={styles.downloadMeta}>
+                Download as TSV — DB votes, triage call &amp; deep-dive filters
+                per gene, your list flagged, for offline analysis →
+              </span>
+              {matchedEntries.length > 0 ? (
                 <button
                   type="button"
                   className={styles.primaryBtn}
                   onClick={downloadMatches}
                 >
-                  Download matches (TSV) ↓
+                  Matched ({uniqueMatchedRows.length}) ↓
                 </button>
-              </div>
-            ) : (
+              ) : null}
+              <button
+                type="button"
+                className={styles.ghostBtn}
+                onClick={downloadAll}
+              >
+                All {nRows.toLocaleString()} genes ↓
+              </button>
+            </div>
+            {matchedEntries.length === 0 ? (
               <p className={styles.emptyMatched}>
                 None of your inputs matched a gene in the catalog.
               </p>
-            )}
+            ) : null}
           </div>
 
           {/* ---- Catalog-wide enrichment --------------------------- */}
@@ -287,52 +313,73 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
             </div>
           ) : null}
 
-          {/* ---- Deep-dive filter enrichment ----------------------- */}
+          {/* ---- Deep-dive enrichment ------------------------------ */}
           {stats.deepDivedListCount > 0 &&
-          (stats.deepDiveEnumGroups.length > 0 ||
+          (stats.deepDiveVerdict ||
+            stats.deepDiveEnumGroups.length > 0 ||
             stats.deepDiveBoolFlags.length > 0) ? (
             <div className={styles.summary}>
               <p className={`label-mono ${styles.blockHead}`}>
-                Deep-dive filter enrichment · {stats.deepDivedListCount} of
-                your genes deep-dived
-                <InfoTip label="About deep-dive filter enrichment">
-                  Deep-dive filters exist only on deep-dived genes (a curated,
+                Deep-dive enrichment · {stats.deepDivedListCount} of your genes
+                deep-dived
+                <InfoTip label="About deep-dive enrichment">
+                  Deep-dive fields exist only on deep-dived genes (a curated,
                   non-random subset), so these test your{" "}
                   {stats.deepDivedListCount} deep-dived matches against the{" "}
                   {stats.deepDivedBaselineCount.toLocaleString()} deep-dived
-                  catalog genes — not the whole catalog. Boolean flags show the
-                  &ldquo;= yes&rdquo; rate only. Every value is shown, including
-                  depleted ones (fold &lt; 1, absent from your list); click a
-                  column header to sort. Underpowered on small lists — read
-                  fold + counts descriptively.
+                  catalog genes — not the whole catalog. The verdict
+                  (accessibility call) is shown on its own; the rest of the
+                  filter fields are in the disclosure below. Every category is
+                  shown, including ones with no match (rendered &ldquo;—&rdquo;
+                  when there&rsquo;s no baseline to compare); click a column
+                  header to sort. Underpowered on small lists — read fold +
+                  counts descriptively.
                 </InfoTip>
               </p>
-              <Collapsible
-                summary={`${stats.deepDiveEnumGroups.length} filter field${
-                  stats.deepDiveEnumGroups.length === 1 ? "" : "s"
-                }${stats.deepDiveBoolFlags.length > 0 ? " + flags" : ""}`}
-              >
-                {stats.deepDiveEnumGroups.map((g) => (
-                  <div key={g.key} className={styles.enrichGroup}>
-                    <span className={styles.enrichGroupLabel}>{g.label}</span>
-                    <EnrichTable
-                      rows={g.rows}
-                      firstCol="Value"
-                      baseline="deep-dived"
-                    />
-                  </div>
-                ))}
-                {stats.deepDiveBoolFlags.length > 0 ? (
-                  <div className={styles.enrichGroup}>
-                    <span className={styles.enrichGroupLabel}>Flags (= yes)</span>
-                    <EnrichTable
-                      rows={stats.deepDiveBoolFlags}
-                      firstCol="Flag"
-                      baseline="deep-dived"
-                    />
-                  </div>
-                ) : null}
-              </Collapsible>
+              {/* Verdict on its own, like the triage verdict. */}
+              {stats.deepDiveVerdict ? (
+                <div className={styles.enrichGroup}>
+                  <span className={styles.enrichGroupLabel}>
+                    {stats.deepDiveVerdict.label}
+                  </span>
+                  <EnrichTable
+                    rows={stats.deepDiveVerdict.rows}
+                    firstCol="Verdict"
+                    baseline="deep-dived"
+                  />
+                </div>
+              ) : null}
+              {stats.deepDiveEnumGroups.length > 0 ||
+              stats.deepDiveBoolFlags.length > 0 ? (
+                <Collapsible
+                  summary={`${stats.deepDiveEnumGroups.length} more filter field${
+                    stats.deepDiveEnumGroups.length === 1 ? "" : "s"
+                  }${stats.deepDiveBoolFlags.length > 0 ? " + flags" : ""}`}
+                >
+                  {stats.deepDiveEnumGroups.map((g) => (
+                    <div key={g.key} className={styles.enrichGroup}>
+                      <span className={styles.enrichGroupLabel}>{g.label}</span>
+                      <EnrichTable
+                        rows={g.rows}
+                        firstCol="Value"
+                        baseline="deep-dived"
+                      />
+                    </div>
+                  ))}
+                  {stats.deepDiveBoolFlags.length > 0 ? (
+                    <div className={styles.enrichGroup}>
+                      <span className={styles.enrichGroupLabel}>
+                        Flags (= yes)
+                      </span>
+                      <EnrichTable
+                        rows={stats.deepDiveBoolFlags}
+                        firstCol="Flag"
+                        baseline="deep-dived"
+                      />
+                    </div>
+                  ) : null}
+                </Collapsible>
+              ) : null}
             </div>
           ) : null}
 
@@ -607,6 +654,68 @@ function buildCompareTsv(entries: ResolvedEntry[]): string {
         if (!ddf) return "";
         const v = ddf[f.key] as boolean | undefined;
         return typeof v === "boolean" ? (v ? 1 : 0) : "";
+      }),
+    ];
+  });
+  return buildTsv(headers, body);
+}
+
+/**
+ * Full-catalog TSV — EVERY gene, with the user's list flagged
+ * (`in_user_list` yes/no + which input matched it), the 5 DB votes and
+ * deep-dive booleans as yes/no, and triage call + deep-dive enum values
+ * as columns. Lets the reader pivot the whole genome against their list
+ * offline. Deep-dive columns are blank for non-deep-dived genes.
+ */
+function buildFullCatalogTsv(
+  rows: CatalogRow[],
+  matched: Map<string, { input: string; matchedBy: string }>,
+): string {
+  const yn = (b: boolean) => (b ? "yes" : "no");
+  const headers = [
+    "symbol",
+    "uniprot",
+    "in_user_list",
+    "matched_input",
+    "matched_by",
+    "n_sources",
+    "db_uniprot",
+    "db_go",
+    "db_surfy",
+    "db_cspa",
+    "db_hpa",
+    "triage_verdict",
+    "triage_reason",
+    "deep_dive",
+    ...DD_ENUM_FIELDS.map((f) => f.key),
+    ...DD_BOOL_FIELDS.map((f) => f.key),
+  ];
+  const body: TsvCell[][] = rows.map((r) => {
+    const m = matched.get(r.symbol);
+    const triage = r.triage_by_model[SONNET_IDX];
+    const ddf = r.deep_dive ? r.deep_dive_filters : undefined;
+    return [
+      r.symbol,
+      r.uniprot,
+      yn(Boolean(m)),
+      m?.input ?? "",
+      m?.matchedBy ?? "",
+      r.n_sources,
+      yn(Boolean(r.db.uniprot)),
+      yn(Boolean(r.db.go)),
+      yn(Boolean(r.db.surfy)),
+      yn(Boolean(r.db.cspa)),
+      yn(Boolean(r.db.hpa)),
+      triage?.verdict ?? "",
+      triage?.reason ?? "",
+      yn(r.deep_dive),
+      ...DD_ENUM_FIELDS.map((f) =>
+        ddf ? ((ddf[f.key] as string | undefined) ?? "") : "",
+      ),
+      ...DD_BOOL_FIELDS.map((f) => {
+        if (!ddf) return "";
+        const v = ddf[f.key] as boolean | undefined;
+        return typeof v === "boolean" ? yn(v) : "";
       }),
     ];
   });
