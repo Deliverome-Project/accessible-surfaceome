@@ -23,47 +23,60 @@ export const tooltips: Record<string, ReactNode> = {
 
   surface_accessibility: (
     <>
-      <strong>LLM-driven.</strong> The deep-dive agent&apos;s call on
-      whether the protein is on the cell surface. Synthesized from
-      per-method evidence (mass-spec, IHC, antibody-validated surface
-      stains, etc.). One of: high, moderate, low, no, uncertain.
+      <strong>From the deep-dive synthesizer</strong> (Sonnet 4.6) — not
+      the triage agent. Synthesized from the per-method evidence the
+      agent retrieved via web search (mass-spec, IHC, antibody-validated
+      surface stains, etc.). One of: high, moderate, low, no, uncertain.
+      The triage&apos;s first-pass call is a separate row below this
+      one for cross-check; when they disagree, the deep-dive wins.
     </>
   ),
 
   experimental_surface_evidence: (
     <>
-      <strong>LLM-driven.</strong> The agent&apos;s grade on how
-      strong the experimental surface evidence is across all methods
-      seen. Five tiers: direct multi-method, direct single-method,
-      supportive but indirect, conflicting, weak.
+      <strong>From the deep-dive synthesizer.</strong> A grade on how
+      strong the cumulative experimental surface evidence is across all
+      methods the agent collected. Five tiers: direct multi-method,
+      direct single-method, supportive but indirect, conflicting, weak.
+      The narrative rationale for the grade lives in the §Surface
+      Evidence banner below.
     </>
   ),
 
   confidence: (
     <>
-      <strong>LLM-driven.</strong> The deep-dive agent&apos;s
-      confidence in its own surface call. Tracks evidence breadth ×
-      per-method strength × consistency. <em>High</em> is rare;{" "}
-      <em>moderate</em> is the default for well-supported calls.
+      <strong>From the deep-dive synthesizer</strong> — the agent&apos;s
+      confidence in its OWN surface call (not the triage&apos;s). Tracks
+      evidence breadth × per-method strength × consistency. <em>High</em>
+      is rare; <em>moderate</em> is the default for well-supported
+      calls. The full reasoning (why <em>moderate</em> vs <em>high</em>{" "}
+      vs <em>low</em> for THIS gene) sits in the &quot;Confidence&quot;
+      rationale paragraph just below the gene-symbol heading — open it
+      to see the load-bearing factors the agent named.
     </>
   ),
 
   state_dependence: (
     <>
-      <strong>LLM-driven.</strong> How much the surface call depends
-      on cell state. <em>Low</em> = constitutive, always present;{" "}
-      <em>moderate</em> = varies with context but generally holds;{" "}
-      <em>high</em> = present only in specific cellular states;{" "}
-      <em>unclear</em> = evidence too thin.
+      <strong>From the deep-dive synthesizer.</strong> How much the
+      surface call depends on cell state. <em>Low</em> = constitutive,
+      always present; <em>moderate</em> = varies with context but
+      generally holds; <em>high</em> = present only in specific cellular
+      states (stress, oncogenic transformation, ER perturbation);{" "}
+      <em>unclear</em> = evidence too thin to tell.
     </>
   ),
 
   triage_signal: (
     <>
-      A first-pass surface call made before the deep literature dive.
-      No web search, no per-method evidence — just heuristics over the
-      protein&apos;s standard annotation. Useful as a sanity check; the
-      deep-dive verdict above is what to read.
+      <strong>From the triage agent</strong> (Sonnet) — a first-pass
+      surface call made BEFORE any deep literature dive. No web search,
+      no tool calls, no per-method evidence; the model votes from
+      trained knowledge given just the protein&apos;s standard
+      identifier context: HGNC name / symbol / aliases / previous
+      symbols, UniProt accession (the ID, not the sequence), HGNC
+      gene-group memberships, CD nomenclature, and the NCBI gene
+      summary.
     </>
   ),
 
@@ -151,10 +164,70 @@ export const tooltips: Record<string, ReactNode> = {
 
   afdb_plddt: (
     <>
-      Mean per-residue AlphaFold pLDDT over extracellular-domain
-      residues (DeepTMHMM &quot;O&quot; positions). AlphaFold v4. For
-      globular / soluble-cytoplasmic proteins the label switches to{" "}
-      <em>Whole pLDDT</em> — no ECD subset is meaningful.
+      AlphaFold per-residue confidence score (0–100). Bands: &gt;90 very
+      high, 70–90 confident, 50–70 low, &lt;50 very low. The pill shows
+      the <strong>mean pLDDT</strong> for the structure shown.
+      <br />
+      <br />
+      An <strong>ECD</strong> pill averages only the{" "}
+      <strong>extracellular</strong> residues (DeepTMHMM &quot;O&quot;
+      positions) — the surface antibodies bind; a <strong>Whole</strong>{" "}
+      pill averages the entire model, used when no extracellular subset
+      is meaningful.
+    </>
+  ),
+
+  afdb_disordered: (
+    <>
+      Fraction of residues with pLDDT &lt; 70. AlphaFold&apos;s
+      low-confidence regions empirically correspond to{" "}
+      <strong>intrinsically disordered regions</strong> — sequences
+      that don&apos;t fold into a stable structure (so the MSA-based
+      prediction can&apos;t converge on confident contacts).
+      <br />
+      <br />
+      <em>Canonical</em> tab: counts only <strong>extracellular</strong>{" "}
+      residues — that&apos;s the antibody-relevant slice. High % on
+      the ECD means floppy / transient epitopes (harder targets for
+      conformational antibodies, more prone to proteolytic cleavage).
+      <br />
+      <br />
+      <em>Isoform / ortholog</em> tabs: whole-protein, computed as{" "}
+      <code>fractionPlddtLow + fractionPlddtVeryLow</code> from
+      AFDB&apos;s prediction API. <strong>Per target</strong>: each
+      isoform/ortholog has its own model + disordered fraction;
+      switch tabs to see them update.
+      <br />
+      <br />
+      The canonical (ECD-restricted) and isoform (whole-protein) numbers
+      aren&apos;t directly comparable — multipass TM proteins look
+      better whole-protein (TM helices are usually well-predicted);
+      single-pass receptors with disordered cytoplasmic tails look
+      worse whole-protein.
+    </>
+  ),
+
+  antibody_validation_strength: (
+    <>
+      <strong>LLM-driven.</strong> The deep-dive agent&apos;s call on
+      how rigorously the antibody used in this method was validated for
+      this target. <em>Strong</em> = genetic KO / CRISPR-KO controls
+      OR isoform-specific KO. <em>Moderate</em> = siRNA knockdown,
+      overexpression reference, or an orthogonal-method cross-check.
+      <em> Weak</em> = vendor-claim-only / no KO control. <em>None</em>{" "}
+      = the source paper didn&apos;t mention any validation.
+    </>
+  ),
+
+  expression_observation_level: (
+    <>
+      <strong>LLM-driven.</strong> The deep-dive agent&apos;s call on
+      the surface expression level reported in this specific experiment
+      / cell line / tissue. Five bands:{" "}
+      <em>high · moderate · low · absent · unknown</em>. The agent
+      anchors to the paper&apos;s own quantitative scale when one is
+      given (e.g. % positive cells in flow, IHC intensity score, MFI
+      ratio); otherwise it interprets the qualitative description.
     </>
   ),
 

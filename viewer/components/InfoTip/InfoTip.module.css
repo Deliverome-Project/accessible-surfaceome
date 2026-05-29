@@ -51,11 +51,11 @@
   transform: translateX(-50%);
   max-width: min(28em, 90vw);
   min-width: 16em;
-  /* Cap vertical height so a multi-paragraph tooltip (e.g.
-   * afdb_plddt, afdb_disordered) can never exceed the viewport.
-   * When it would, the popover scrolls internally instead of
-   * overflowing the page. */
-  max-height: min(70vh, 28rem);
+  /* Let the popover grow to fit its content; cap only at the viewport
+   * so the longest tooltips (afdb_plddt, afdb_disordered) scroll
+   * internally only on very short screens. Wide tooltips
+   * (`.popoverWide`) wrap into fewer lines and fit without scrolling. */
+  max-height: 85vh;
   overflow-y: auto;
   padding: var(--space-3) var(--space-4);
   /* Fully opaque background — `--bg-soft` resolves to `#ffffff` but
