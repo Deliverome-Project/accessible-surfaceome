@@ -383,7 +383,7 @@ export function GeneHeader({
               <p className={styles.triageRow}>
                 <span className={`label-mono ${styles.triageLabel}`}>
                   Triage
-                  <InfoTip>{tooltips.triage_signal}</InfoTip>
+                  <InfoTip wide>{tooltips.triage_signal}</InfoTip>
                 </span>
                 <span className={styles.triageValue}>
                   {triageVerdictLabel(rec.triage_signal)}

@@ -22,6 +22,10 @@ interface InfoTipProps {
   /** Additional class names for the trigger (e.g. for inline alignment
    *  inside a label-mono row). */
   triggerClassName?: string;
+  /** Use a wider popover (max-width ~42em vs the default ~28em) for
+   *  long-prose tooltips that would otherwise wrap into a tall narrow
+   *  column. The auto-flip / max-height clamps still apply on top. */
+  wide?: boolean;
 }
 
 /**
@@ -42,6 +46,7 @@ export function InfoTip({
   glyph = "ⓘ", // ⓘ
   label = "About this field",
   triggerClassName,
+  wide = false,
 }: InfoTipProps) {
   const [open, setOpen] = useState(false);
   // When the popover would extend past the viewport bottom (typical
@@ -141,7 +146,7 @@ export function InfoTip({
           ref={popoverRef}
           id={popoverId}
           role="tooltip"
-          className={`${styles.popover} ${flipUp ? styles.popoverFlipUp : ""}`.trim()}
+          className={`${styles.popover} ${flipUp ? styles.popoverFlipUp : ""} ${wide ? styles.popoverWide : ""}`.replace(/\s+/g, " ").trim()}
           // Don't let the popover swallow the trigger's hover-out:
           // moving from trigger → popover bridges via a tiny gap that
           // we suppress with `pointer-events` so the mouse still

@@ -95,6 +95,15 @@
   bottom: calc(100% + 0.45rem);
 }
 
+/* Wide modifier — opt-in for long-prose tooltips (currently the
+ * Triage tip) that would otherwise wrap into a tall narrow column.
+ * Bumps the cap from 28em to 42em; the `90vw` floor still keeps it
+ * inside narrow viewports. Auto-flip + max-height still apply. */
+.popoverWide {
+  max-width: min(42em, 90vw);
+  min-width: 22em;
+}
+
 /* Compress consecutive <br> pairs — tooltip authors use
  * `<br /><br />` to separate paragraphs, but the resulting double
  * line break renders with a full empty line at line-height 1.5,
