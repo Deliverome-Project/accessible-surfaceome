@@ -69,6 +69,25 @@ function topologyDetailCells(t: TopologyDetail) {
 }
 
 /**
+ * Paralog antibody-cross-reactivity risk tier from ECD percent identity.
+ * Cutoffs follow antibody-validation practice (Bordeaux et al. 2010 /
+ * Edfors et al. 2018) — cross-reactive binding tracks sequence identity
+ * in the epitope-containing region:
+ *   ≥ 70% → cross-reactivity likely    ("high")
+ *   ≥ 50% → cross-reactivity plausible ("med")
+ *   < 50% → low
+ * `null` for ECD-less proteins (intracellular / soluble / GPI-anchored):
+ * there's no ECD to compare, so the cutoffs don't apply and the chip
+ * stays neutral.
+ */
+function paralogRiskTier(pct: number | null): "high" | "med" | "low" | null {
+  if (pct == null) return null;
+  if (pct >= 70) return "high";
+  if (pct >= 50) return "med";
+  return "low";
+}
+
+/**
  * One ortholog row in the unified sequence-variants table. Rendered for
  * each mouse / cynomolgus entry. Orthologs carry real alignment numbers
  * (full-length %identity, ECD %identity, ECD %similarity) against the
@@ -196,6 +215,13 @@ export function IsoformsCard({ rec, n }: Props) {
 
   const noOrthologs =
     orthologs.mouse.length === 0 && orthologs.cynomolgus.length === 0;
+
+  // Whether any paralog carries an ECD %identity. False for ECD-less
+  // proteins (SRC and other intracellular / soluble / GPI-anchored
+  // proteins) where every paralog is "no ECD" — in that case the
+  // ECD-identity cross-reactivity framing (and the colored risk legend)
+  // doesn't apply, so the subhead drops the "ECD percent identity" label.
+  const anyParalogEcd = paralogs.some((p) => p.ecd_pct_identity != null);
 
   return (
     <SectionCard
@@ -361,35 +387,98 @@ export function IsoformsCard({ rec, n }: Props) {
       {/* ---- Paralogs (compact chip strip) ------------------------ */}
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>
-          Paralogs · within-species, ECD percent identity
+          {anyParalogEcd
+            ? "Paralogs · within-species, ECD percent identity"
+            : "Paralogs · within-species sequence family"}
+          <InfoTip label="About paralog cross-reactivity">
+            {anyParalogEcd ? (
+              <>
+                Percent identity over the extracellular domain — the
+                antibody-accessible region — between {rec.gene.hgnc_symbol} and
+                each within-species paralog. Antibody cross-reactivity tracks
+                ECD identity, so the chips are colored by risk:{" "}
+                <strong>≥70% likely</strong>, 50–70% plausible, &lt;50% low.
+                Cutoffs from antibody-validation practice (Bordeaux 2010,
+                Edfors 2018).
+              </>
+            ) : (
+              <>
+                {rec.gene.hgnc_symbol} has no extracellular domain (it&rsquo;s
+                intracellular / soluble), so there&rsquo;s no ECD sequence to
+                align against its paralogs. The ECD-identity cross-reactivity
+                cutoffs (≥50% plausible, ≥70% likely) don&rsquo;t apply here;
+                the family is listed for completeness.
+              </>
+            )}
+          </InfoTip>
         </p>
         {paralogs.length === 0 ? (
           <p className={styles.empty}>No paralogs in Compara.</p>
         ) : (
-          <ul className={styles.paralogChips} aria-label="Paralog list">
-            {paralogs.map((p, i) => (
-              <li key={i} className={styles.paralogChip}>
-                <a
-                  className={styles.paralogChipLink}
-                  href={`https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={`${p.paralog_symbol} · ${p.paralog_uniprot_acc} · family ${p.family_id}`}
-                >
-                  <span className={styles.paralogChipSym}>{p.paralog_symbol}</span>
-                  <span className={styles.paralogChipPct}>
-                    {/* ecd_pct_identity is null for ECD-less proteins
-                     *  (SRC, soluble kinases, GPI-anchored, cytoplasmic
-                     *  enzymes) — no ECD to compute identity against.
-                     *  Show "no ECD" instead of crashing on .toFixed(). */}
-                    {p.ecd_pct_identity != null
-                      ? `${p.ecd_pct_identity.toFixed(0)}%`
-                      : "no ECD"}
-                  </span>
-                </a>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className={styles.paralogChips} aria-label="Paralog list">
+              {paralogs.map((p, i) => {
+                const tier = paralogRiskTier(p.ecd_pct_identity);
+                const tierClass =
+                  tier === "high"
+                    ? styles.riskHigh
+                    : tier === "med"
+                      ? styles.riskMed
+                      : tier === "low"
+                        ? styles.riskLow
+                        : "";
+                return (
+                  <li key={i} className={styles.paralogChip}>
+                    <a
+                      className={`${styles.paralogChipLink}${tierClass ? ` ${tierClass}` : ""}`}
+                      href={`https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`${p.paralog_symbol} · ${p.paralog_uniprot_acc} · family ${p.family_id}`}
+                    >
+                      <span className={styles.paralogChipSym}>
+                        {p.paralog_symbol}
+                      </span>
+                      <span className={styles.paralogChipPct}>
+                        {/* ecd_pct_identity is null for ECD-less proteins
+                         *  (SRC, soluble kinases, GPI-anchored, cytoplasmic
+                         *  enzymes) — no ECD to compute identity against.
+                         *  Show "no ECD" instead of crashing on .toFixed(). */}
+                        {p.ecd_pct_identity != null
+                          ? `${p.ecd_pct_identity.toFixed(0)}%`
+                          : "no ECD"}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+            {/* Risk legend — only when at least one paralog has an ECD %id
+                to color by. ECD-less proteins (SRC) skip it; the subhead
+                InfoTip already explains why the cutoffs don't apply. */}
+            {anyParalogEcd ? (
+              <p className={styles.paralogLegend} aria-hidden="true">
+                <span className={styles.paralogLegendItem}>
+                  <span
+                    className={`${styles.paralogLegendDot} ${styles.riskHigh}`}
+                  />
+                  ≥70% likely
+                </span>
+                <span className={styles.paralogLegendItem}>
+                  <span
+                    className={`${styles.paralogLegendDot} ${styles.riskMed}`}
+                  />
+                  50–70% plausible
+                </span>
+                <span className={styles.paralogLegendItem}>
+                  <span
+                    className={`${styles.paralogLegendDot} ${styles.riskLow}`}
+                  />
+                  &lt;50% low
+                </span>
+              </p>
+            ) : null}
+          </>
         )}
       </div>
     </SectionCard>
