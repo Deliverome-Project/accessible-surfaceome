@@ -388,6 +388,53 @@ export const tooltips: Record<string, ReactNode> = {
   // tooltips speak the same language.
   // --------------------------------------------------------------
 
+  catalog_has_known_ligand: (
+    <>
+      Whether a validated endogenous ligand is documented for this
+      protein. <strong>Yes</strong> — ligand known in the literature
+      (e.g. EGFR&nbsp;←&nbsp;EGF). For kinases like SRC this also
+      captures documented substrates / interaction partners, since
+      the &ldquo;ligand&rdquo; framing is canonical for receptors but
+      loose for cytoplasmic kinases. <strong>No</strong> — orphan:
+      ligand identity is genuinely unknown (orphan GPCRs, nuclear
+      hormone receptors, true orphan kinases). The specific ligand
+      identity isn&apos;t on the catalog row — see the gene
+      page&apos;s Biology section for partner / co-receptor evidence.
+    </>
+  ),
+
+  catalog_low_endogenous_expression: (
+    <>
+      Whether baseline expression in normal tissues is low or absent.{" "}
+      <strong>Yes</strong> — expression level is &ldquo;low&rdquo;
+      or &ldquo;absent&rdquo;. These targets typically need
+      overexpression-based studies (HEK293 / HeLa / U2OS transfection)
+      to characterize surface biology, and antibody validation in
+      endogenous tissues is harder because there&apos;s little
+      protein to stain in untransfected controls.{" "}
+      <strong>No</strong> — present at meaningful levels in at least
+      some normal tissues.
+    </>
+  ),
+
+  catalog_overexpression_precedent: (
+    <>
+      Whether prior overexpression studies (HEK293 / HeLa / K562 /
+      U2OS transfection, stable or transient) have demonstrated this
+      protein actually reaches the cell surface.{" "}
+      <strong>Yes</strong> — at least one cited method observation
+      reports surface localization or direct surface-accessibility
+      evidence from an overexpression (or mixed endogenous + OE)
+      experiment. Useful precedent when planning an OE-based
+      validation campaign — you know the construct can surface in a
+      heterologous cell line. <strong>No</strong> — no such
+      precedent in the deep-dive ledger. Distinct from the
+      orphan-receptor and low-endogenous flags above (those describe
+      baseline biology; this one describes prior experimental
+      precedent).
+    </>
+  ),
+
   catalog_surface_call_reason: (
     <>
       Why this protein is (or isn&apos;t) at the cell surface — the

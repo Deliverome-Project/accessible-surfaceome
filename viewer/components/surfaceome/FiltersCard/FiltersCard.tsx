@@ -376,7 +376,7 @@ export function FiltersCard({ rec, n }: Props) {
           <span aria-hidden="true">
             {f.overexpression_surface_localization_observed ? "✓" : "✗"}
           </span>{" "}
-          OE+surface precedent
+          Overexpression precedent
         </StatusPill>,
       ],
     },

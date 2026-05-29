@@ -266,19 +266,20 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
   {
     key: "has_known_ligand",
     label: "Known ligand",
-    tooltipKey: "headline_risks",
+    tooltipKey: "catalog_has_known_ligand",
     provenance: "llm",
   },
   {
     key: "low_endogenous_expression",
     label: "Low endogenous expression",
-    tooltipKey: "headline_risks",
+    tooltipKey: "catalog_low_endogenous_expression",
     provenance: "llm",
+    isRisk: true,
   },
   {
     key: "overexpression_surface_localization_observed",
-    label: "OE + surface precedent",
-    tooltipKey: "headline_risks",
+    label: "Overexpression precedent",
+    tooltipKey: "catalog_overexpression_precedent",
     provenance: "llm",
   },
   {
