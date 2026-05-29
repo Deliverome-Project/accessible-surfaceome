@@ -170,9 +170,12 @@ function orthologRow(e: OrthologEntry, key: string, species: string) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <span className={styles.mono}>
-              {e.ortholog_symbol} · {e.ortholog_uniprot_acc}
-            </span>
+            {/* Bare UniProt accession only — matches the isoform rows'
+                identifier treatment (which show just the isoform_id). The
+                lavender species pill above already labels mouse / cyno, so
+                the ortholog symbol would be redundant; the ortholog type
+                (one-to-one etc.) sits in the variantSub below. */}
+            <span className={styles.mono}>{e.ortholog_uniprot_acc}</span>
           </a>
           <span className={styles.variantSub}>
             {prettyEnum(e.type)}
