@@ -133,9 +133,15 @@ function makeRow(
   n: number,
   lf: Float64Array,
 ): EnrichRow {
-  const fold = n > 0 && k > 0 && K > 0 ? a / k / (K / n) : 0;
+  // Category declared in the taxonomy but absent from the baseline
+  // (K = 0) — nothing to compare against, so fold / p are NaN and render
+  // as "—". Still shown (with 0/k) so the full category list is visible.
+  if (K === 0) {
+    return { label, listHits: a, listTotal: k, baselineHits: 0, baselineTotal: n, fold: NaN, pValue: NaN };
+  }
+  const fold = n > 0 && k > 0 ? a / k / (K / n) : 0;
   let pValue = 1;
-  if (k > 0 && K > 0 && n > 0) {
+  if (k > 0 && n > 0) {
     const expected = (k * K) / n;
     pValue =
       a >= expected ? hyperTailGE(lf, n, K, k, a) : hyperTailLE(lf, n, K, k, a);
@@ -175,6 +181,7 @@ function enrichCategory(
   inPop: (r: CatalogRow) => boolean,
   lf: Float64Array,
   labelOf: (v: string) => string = (v) => v,
+  allValues?: readonly string[],
 ): EnrichGroup {
   const pop = allRows.filter(inPop);
   const listPop = matchedRows.filter(inPop);
@@ -190,13 +197,27 @@ function enrichCategory(
     const v = valueOf(r);
     if (v != null) amap.set(v, (amap.get(v) ?? 0) + 1);
   }
-  // Iterate the baseline values (not just the list's) so depleted values
-  // — present in the catalog/population but a = 0 in the list — appear.
-  const rows: EnrichRow[] = [];
-  for (const [v, K] of Kmap) {
-    rows.push(makeRow(labelOf(v), amap.get(v) ?? 0, k, K, n, lf));
-  }
-  rows.sort((x, y) => y.fold - x.fold || y.listHits - x.listHits);
+  // Universe of rows: the declared taxonomy (`allValues`) unioned with any
+  // value seen in the data, so EVERY category shows — including ones absent
+  // from both the list and the baseline (a = 0, K = 0, rendered "—"). When
+  // no taxonomy is supplied, fall back to the values present in the
+  // baseline (still surfaces depleted list values).
+  const universe =
+    allValues && allValues.length
+      ? Array.from(new Set<string>([...allValues, ...Kmap.keys()]))
+      : Array.from(Kmap.keys());
+  const rows = universe.map((v) =>
+    makeRow(labelOf(v), amap.get(v) ?? 0, k, Kmap.get(v) ?? 0, n, lf),
+  );
+  // Sort by fold desc, treating NaN (no-baseline) folds as lowest so they
+  // trail the comparable rows; tie-break on list count then label.
+  rows.sort((x, y) => {
+    const xf = Number.isFinite(x.fold) ? x.fold : -Infinity;
+    const yf = Number.isFinite(y.fold) ? y.fold : -Infinity;
+    if (yf !== xf) return yf - xf;
+    if (y.listHits !== x.listHits) return y.listHits - x.listHits;
+    return x.label < y.label ? -1 : x.label > y.label ? 1 : 0;
+  });
   return { key, label, rows };
 }
 
@@ -242,7 +263,9 @@ export function computeCompareStats(
   const ddPop = allRows.filter(hasDdf);
   const ddListPop = matchedRows.filter(hasDdf);
 
-  // Multi-valued enum fields — one sub-table each (all values, incl. depleted).
+  // Multi-valued enum fields — one sub-table each, showing the FULL
+  // declared taxonomy (`f.values`) so every category appears even with no
+  // list/baseline match. Drop only fields with no baseline data at all.
   const deepDiveEnumGroups: EnrichGroup[] = [];
   for (const f of DD_ENUM_FIELDS) {
     const g = enrichCategory(
@@ -254,25 +277,28 @@ export function computeCompareStats(
       hasDdf,
       lf,
       prettyEnum,
+      f.values,
     );
-    if (g.rows.length) deepDiveEnumGroups.push(g);
+    if (g.rows.some((row) => row.baselineHits > 0)) deepDiveEnumGroups.push(g);
   }
 
   // Boolean flags — one "= yes" row per field (the complementary "no" is
-  // redundant). Collapsed into a single table; a field with 0 list hits is
-  // kept as a depleted row as long as some deep-dived gene has it.
-  const deepDiveBoolFlags: EnrichRow[] = [];
-  for (const f of DD_BOOL_FIELDS) {
-    const row = enrichBinary(
+  // redundant). All fields shown, including those no deep-dived gene is
+  // positive for (rendered as a no-match "—" row).
+  const deepDiveBoolFlags: EnrichRow[] = DD_BOOL_FIELDS.map((f) =>
+    enrichBinary(
       f.label,
       ddPop,
       ddListPop,
       (r) => r.deep_dive_filters?.[f.key] === true,
       lf,
-    );
-    if (row.baselineHits > 0) deepDiveBoolFlags.push(row);
-  }
-  deepDiveBoolFlags.sort((a, b) => b.fold - a.fold || b.listHits - a.listHits);
+    ),
+  );
+  deepDiveBoolFlags.sort((a, b) => {
+    const af = Number.isFinite(a.fold) ? a.fold : -Infinity;
+    const bf = Number.isFinite(b.fold) ? b.fold : -Infinity;
+    return bf - af || b.listHits - a.listHits;
+  });
 
   return {
     signals,

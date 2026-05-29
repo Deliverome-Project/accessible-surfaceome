@@ -24,6 +24,7 @@ function fmtPct(x: number): string {
 }
 
 function fmtP(p: number): string {
+  if (!Number.isFinite(p)) return "—"; // no-baseline category
   if (p <= 0) return "0";
   if (p < 1e-4) return p.toExponential(1);
   if (p >= 0.9995) return "1.00";
@@ -474,9 +475,10 @@ function EnrichTable({
         case "baseline":
           return r.baselineTotal > 0 ? r.baselineHits / r.baselineTotal : 0;
         case "fold":
-          return r.fold;
+          // No-baseline categories (NaN fold) sort to the bottom (desc).
+          return Number.isFinite(r.fold) ? r.fold : -Infinity;
         case "p":
-          return r.pValue;
+          return Number.isFinite(r.pValue) ? r.pValue : Infinity;
       }
     };
     const dir = sortDir === "asc" ? 1 : -1;
