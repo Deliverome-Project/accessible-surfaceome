@@ -268,16 +268,21 @@ const TT_EVIDENCE_GRADE =
   "glycoproteomics, no direct surface staining); conflicting / weak.";
 
 const TT_EXPRESSION_LEVEL =
-  "Synthesizer's rollup of endogenous expression. Drives the derived " +
-  "`low_endogenous_expression` filter (fires when level ∈ {low, " +
-  "absent}); affects whether overexpression-only evidence has to " +
-  "carry the surface call.";
+  "How abundantly this protein is expressed at baseline in the tissues " +
+  "and cell lines covered by the cited evidence. High = robust " +
+  "endogenous detection across multiple independent sources. Moderate " +
+  "= detectable but tissue-restricted or modest. Low = trace " +
+  "endogenous protein; surface biology often only becomes apparent " +
+  "with overexpression. Absent = not endogenously expressed in any " +
+  "cited context.";
 
 const TT_LOW_ENDOG =
-  "Derived filter: true iff expression_level ∈ {low, absent}. " +
-  "Single source of truth for the orphan-class catalog filter — " +
-  "the orchestrator computes this from expression_level so the " +
-  "two signals can't drift.";
+  "Flags proteins where baseline endogenous expression is low or " +
+  "absent. These targets typically need overexpression-based studies " +
+  "(HEK293 / HeLa / U2OS transfection) to characterize surface " +
+  "biology, and antibody / binder validation in endogenous tissues " +
+  "is harder because there's little protein to stain or bind in " +
+  "untransfected controls.";
 
 const TT_KNOWN_LIGAND =
   "Has the synthesizer found a documented binding partner / ligand " +
@@ -291,15 +296,14 @@ const TT_KNOWN_LIGAND =
   "the record — see §Biology for partner / co-receptor evidence.";
 
 const TT_OE_OBSERVED =
-  "Derived filter: true iff any MethodObservation has " +
-  "expression_system ∈ {overexpression, mixed} AND " +
-  "accessibility_relevance ∈ {direct_surface_accessibility, " +
-  "supports_surface_localization}. Tells a target-discovery analyst " +
-  "pricing out an OE validation experiment whether this protein has " +
-  "precedent (HEK293 / HeLa / K562 / U2OS transfection studies " +
-  "with surface readouts). Distinct from `has_known_ligand` " +
-  "(orphan-receptor status) and `low_endogenous_expression` " +
-  "(endogenous level).";
+  "Whether prior overexpression studies (HEK293 / HeLa / K562 / U2OS " +
+  "transfection, stable or transient) have demonstrated surface " +
+  "localization of this protein. Useful precedent when planning an " +
+  "overexpression-based validation experiment — you know the " +
+  "construct can reach the surface in a heterologous cell line. " +
+  "Distinct from the orphan-receptor and low-endogenous flags " +
+  "(those describe baseline biology; this one describes prior " +
+  "experimental precedent).";
 
 const TT_TM_COUNT =
   "Transmembrane helix count from DeepTMHMM (deterministic). " +
@@ -742,19 +746,27 @@ export function FiltersCard({ rec, n }: Props) {
     },
     Expression: {
       title:
-        "Synthesizer-emitted level/breadth/specificity + two derived " +
-        "filters (low_endogenous_expression flips on when " +
-        "expression_level ∈ {low, absent}; has_known_ligand flags " +
-        "orphan-receptor status). Surface specificity = how much of " +
-        "the protein is at the surface vs intracellular.",
+        "Endogenous expression context for this protein. How " +
+        "abundantly it's expressed at baseline (level), how broadly " +
+        "across tissues (breadth), and what fraction sits at the " +
+        "surface vs intracellular pool (specificity). The boolean " +
+        "flags capture cases that matter for target choice: low " +
+        "endogenous expression (overexpression studies usually " +
+        "needed), orphan-receptor status (no known ligand " +
+        "documented), and whether prior overexpression studies have " +
+        "demonstrated surface localization.",
     },
     Risks: {
       title:
-        "Risk rollups from the §Risks accessibility_risks card: shed " +
-        "form, secreted form, co-receptor dependence (full 4-value " +
-        "enum: required / modulatory / none / unknown), epitope " +
-        "masking, restricted subdomain. Each carries the structured " +
-        "detail in the §Risks card below.",
+        "Things that can complicate antibody / binder access to the " +
+        "surface protein. Shed form (proteolytically cleaved soluble " +
+        "fragment in circulation that competes for the binder), " +
+        "secreted form (free-soluble decoy pool), co-receptor " +
+        "dependence (whether surface presentation requires a partner " +
+        "protein), epitope masking (steric or PTM-mediated blockage " +
+        "of likely binding sites on the surface). Each chip has its " +
+        "own tooltip; the §Risks card below shows supporting " +
+        "evidence with severity + evidence-strength.",
     },
     "Cross-species": {
       title:
