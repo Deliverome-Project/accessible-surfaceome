@@ -63,15 +63,9 @@ interface CompareToolProps {
   rows: CatalogRow[];
   nRows: number;
   nWithDeepDive: number;
-  universeVersion?: string;
 }
 
-export function CompareTool({
-  rows,
-  nRows,
-  nWithDeepDive,
-  universeVersion,
-}: CompareToolProps) {
+export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
   const [text, setText] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -232,8 +226,7 @@ export function CompareTool({
             </button>
           ) : null}
           <span className={styles.universeNote}>
-            Compared against {nRows.toLocaleString()} genes
-            {universeVersion ? ` · ${universeVersion}` : ""}. Your list stays
+            Compared against {nRows.toLocaleString()} genes. Your list stays
             in your browser.
           </span>
         </div>

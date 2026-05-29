@@ -42,7 +42,6 @@ export default async function ComparePage() {
           rows={catalog.rows}
           nRows={catalog.n_rows}
           nWithDeepDive={catalog.n_with_deep_dive}
-          universeVersion={catalog.universe_version}
         />
       </section>
     </Shell>
