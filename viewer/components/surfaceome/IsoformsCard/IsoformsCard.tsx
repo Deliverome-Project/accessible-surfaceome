@@ -491,8 +491,9 @@ export function IsoformsCard({ rec, n }: Props) {
                 ECD identity, so the chips are colored by risk:{" "}
                 <strong>≥70% likely</strong>, 50–70% plausible, &lt;50% low.
                 Cutoffs from antibody-validation practice (Bordeaux 2010,
-                Edfors 2018). Paralogs at or below 40% ECD identity are hidden —
-                their cross-reactivity signal is negligible.
+                PMID 20359301; Edfors 2018, PMID 30297845). Paralogs at or below
+                40% ECD identity are hidden — their cross-reactivity signal is
+                negligible.
               </>
             ) : (
               <>
