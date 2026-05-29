@@ -141,17 +141,7 @@ export function Shell({ children }: ShellProps) {
               <a href={parentHref("/")} className={styles.footerLink}>
                 The Deliverome Project
               </a>{" "}
-              — a nonprofit focused research organization. Schema, evidence,
-              and agents shipped from{" "}
-              <a
-                href="https://github.com/Deliverome-Project/accessible-surfaceome"
-                target="_blank"
-                rel="noopener noreferrer"
-                className={styles.footerLink}
-              >
-                Deliverome-Project/accessible-surfaceome
-              </a>
-              .
+              — a nonprofit focused research organization.
             </p>
             <p className={styles.footerMeta}>
               <span>© {new Date().getFullYear()} Deliverome Bio</span>
