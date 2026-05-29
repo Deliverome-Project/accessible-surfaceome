@@ -79,6 +79,13 @@ export interface DdEnumSpec {
    *  surfaced under the catalog's "Risks" subsection rather than the
    *  "Surface call" one. Undefined = not a risk. */
   isRisk?: boolean;
+  /** Optional per-value display label override. When a value isn't in
+   *  the map (or the map is absent), the renderer falls back to
+   *  `prettyEnum(value)`. Used where the raw snake_case value
+   *  prettifies poorly — e.g. `pmhc_only_intracellular` →
+   *  "Pmhc Only Intracellular" — so the reader sees a human-facing
+   *  label instead of a mangled token. */
+  valueLabels?: Readonly<Record<string, string>>;
 }
 
 export interface DdBoolSpec {
@@ -137,6 +144,30 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
       "pmhc_only_intracellular",
       "other",
     ],
+    // User-facing display labels — plain biology language, not the
+    // snake_case enum token. prettyEnum mangles a few of these
+    // ("Pmhc Only Intracellular", "Gpi Anchored"), so spell them out.
+    valueLabels: {
+      classical_surface_receptor: "Classical surface receptor",
+      gpi_anchored: "GPI-anchored",
+      multipass_with_exposed_loops: "Multipass, exposed loops",
+      extracellular_face_protein: "Extracellular-face protein",
+      stable_complex_partner: "Stable complex partner",
+      cell_state_induced: "Cell-state induced",
+      tissue_restricted_surface: "Tissue-restricted surface",
+      lysosomal_exocytosis: "Lysosomal exocytosis",
+      dual_localization: "Dual localization",
+      stable_surface_attachment: "Stable surface attachment",
+      cytoplasmic: "Cytoplasmic",
+      nuclear: "Nuclear",
+      mitochondrial_internal: "Mitochondrial (internal)",
+      endomembrane_resident: "Endomembrane-resident",
+      nuclear_envelope: "Nuclear envelope",
+      inner_leaflet_anchored: "Inner-leaflet anchored",
+      secreted_only: "Secreted only",
+      pmhc_only_intracellular: "pMHC (intracellular only)",
+      other: "Other",
+    },
     tooltipKey: "catalog_surface_call_reason",
     provenance: "llm",
   },
@@ -152,6 +183,17 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
       "tetraspanin",
       "other",
     ],
+    // Cap the acronyms — sentence-casing would mangle these to
+    // "Gpcr" / "Gpi anchored" / "Single pass t1".
+    valueLabels: {
+      single_pass_T1: "Single-pass (type I)",
+      single_pass_T2: "Single-pass (type II)",
+      multi_pass: "Multi-pass",
+      GPCR: "GPCR",
+      GPI_anchored: "GPI-anchored",
+      tetraspanin: "Tetraspanin",
+      other: "Other",
+    },
     tooltipKey: "catalog_subcategory",
     provenance: "llm",
   },

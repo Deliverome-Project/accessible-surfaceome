@@ -253,6 +253,60 @@ export function computeCompareStats(
   ];
 
   const always = () => true;
+
+  // Triage reason → modal verdict across the whole catalog, so the reason
+  // enrichment can be bucketed under the yes / contextual / no call each
+  // reason most often supports (data-driven; no hard-coded mapping).
+  const reasonVerdictTally = new Map<string, Map<string, number>>();
+  for (const r of allRows) {
+    const cell = r.triage_by_model[SONNET_IDX];
+    if (!cell?.reason || !cell.verdict) continue;
+    let m = reasonVerdictTally.get(cell.reason);
+    if (!m) {
+      m = new Map();
+      reasonVerdictTally.set(cell.reason, m);
+    }
+    m.set(cell.verdict, (m.get(cell.verdict) ?? 0) + 1);
+  }
+  const reasonToVerdict = new Map<string, string>();
+  for (const [reason, vc] of reasonVerdictTally) {
+    let best = "";
+    let bestN = -1;
+    for (const [v, c] of vc) if (c > bestN) ((best = v), (bestN = c));
+    reasonToVerdict.set(reason, best);
+  }
+  const reasonLabels = DD_ENUM_FIELDS.find(
+    (f) => f.key === "surface_call_reason",
+  )?.valueLabels;
+  const reasonLabelOf = (v: string) => reasonLabels?.[v] ?? prettyCase(v);
+
+  const reasonGroups = (
+    [
+      ["yes", "Triage reason · surface (yes)"],
+      ["contextual", "Triage reason · contextual"],
+      ["no", "Triage reason · not surface (no)"],
+    ] as const
+  )
+    .map(([verdict, label]) =>
+      enrichCategory(
+        `triage_reason_${verdict}`,
+        label,
+        allRows,
+        matchedRows,
+        (r) => {
+          const reason = r.triage_by_model[SONNET_IDX]?.reason ?? null;
+          return reason && reasonToVerdict.get(reason) === verdict ? reason : null;
+        },
+        always,
+        lf,
+        reasonLabelOf,
+        [...reasonToVerdict.entries()]
+          .filter(([, v]) => v === verdict)
+          .map(([reason]) => reason),
+      ),
+    )
+    .filter((g) => g.rows.some((row) => row.baselineHits > 0));
+
   const catalogGroups = [
     enrichCategory(
       "triage_verdict",
@@ -265,16 +319,7 @@ export function computeCompareStats(
       sentenceCase,
       ["yes", "contextual", "no"],
     ),
-    enrichCategory(
-      "triage_reason",
-      "Triage reason",
-      allRows,
-      matchedRows,
-      (r) => r.triage_by_model[SONNET_IDX]?.reason ?? null,
-      always,
-      lf,
-      prettyCase,
-    ),
+    ...reasonGroups,
   ].filter((g) => g.rows.length > 0);
 
   const hasDdf = (r: CatalogRow) => Boolean(r.deep_dive_filters);
@@ -299,7 +344,7 @@ export function computeCompareStats(
       (r) => (r.deep_dive_filters?.[f.key] as string | undefined) ?? null,
       hasDdf,
       lf,
-      prettyCase,
+      (v) => f.valueLabels?.[v] ?? prettyCase(v),
       f.values,
     );
     if (!g.rows.some((row) => row.baselineHits > 0)) continue;
