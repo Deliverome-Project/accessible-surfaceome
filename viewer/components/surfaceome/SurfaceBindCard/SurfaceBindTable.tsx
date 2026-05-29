@@ -287,6 +287,11 @@ export function SurfaceBindTable({ sites, topology }: Props) {
                 <StatusPill
                   tone={compartmentTone(compartment)}
                   size="sm"
+                  // Native tooltip: this pill lives inside the
+                  // horizontally-scrollable `.tableWrap` (overflow:auto),
+                  // which would clip the styled CSS popover. The OS
+                  // tooltip escapes the clip.
+                  nativeTooltip
                   title={
                     compartment === "intracellular"
                       ? "Intracellular — this site is on the cytoplasmic face. NOT accessible to systemic antibodies; only relevant for intracellular binder strategies (cell-penetrating, intrabodies)."

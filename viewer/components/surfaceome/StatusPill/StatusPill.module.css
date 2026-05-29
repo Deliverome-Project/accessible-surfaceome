@@ -28,6 +28,14 @@
   border: 1px solid var(--line);
 }
 
+/* Pills carrying a styled tooltip get the same `help` cursor the
+   InfoTip trigger uses, so the affordance ("hover me for more") matches
+   the rest of the page's tooltips. Applied only in the tooltip branch
+   of StatusPill (plain pills keep the default cursor). */
+.hasTooltip {
+  cursor: help;
+}
+
 .size_md {
   padding: 0.26rem 0.65rem;
   font-size: 0.78rem;
