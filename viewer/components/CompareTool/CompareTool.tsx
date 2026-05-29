@@ -138,6 +138,10 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
   }
 
   const uploadedCount = result ? result.entries.length : 0;
+  // Inputs that matched a gene already counted under a different
+  // identifier (e.g. a UniProt accession + its gene symbol both pasted).
+  // Surfaced so "uploaded" reconciles with "matched genes" + not-found.
+  const redundantMatches = matchedEntries.length - uniqueMatchedRows.length;
 
   return (
     <div className={styles.wrap}>
@@ -207,6 +211,9 @@ export function CompareTool({ rows, nRows, nWithDeepDive }: CompareToolProps) {
               />
               {ambiguous.length > 0 ? (
                 <Stat label="Ambiguous" value={ambiguous.length} tone="warn" />
+              ) : null}
+              {redundantMatches > 0 ? (
+                <Stat label="Same gene, other ID" value={redundantMatches} />
               ) : null}
               {result.duplicateCount > 0 ? (
                 <Stat
