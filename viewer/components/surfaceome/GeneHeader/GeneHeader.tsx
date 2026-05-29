@@ -10,6 +10,7 @@ import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { ConfidenceReasoningDrawer } from "../ConfidenceReasoningDrawer/ConfidenceReasoningDrawer";
+import { EvidenceGradeReasoningDrawer } from "../EvidenceGradeReasoningDrawer/EvidenceGradeReasoningDrawer";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -413,16 +414,15 @@ export function GeneHeader({
                   per-row EvidenceChipList */}
           <p className={styles.execLede}>{exec.one_paragraph}</p>
 
-          {/* LLM-driven at-a-glance row — eyebrow label + 2×2 vitals
-              grid. Each value is the deep-dive agent's synthesis
-              (Accessibility / Experimental surface evidence /
-              Confidence / State dependence). Architecture, Family,
-              and the headline-risk count sit inside these cells as
-              colored sub-text (each with its own InfoTip). The
-              eyebrow above the dl makes the provenance explicit so
-              the reader can tell the LLM-call row apart from the
-              Deterministic-tools row that follows below. */}
-          <p className={`label-mono ${styles.rowEyebrow}`}>LLM-driven</p>
+          {/* At-a-glance 2×2 vitals grid. Each value is the deep-dive
+              agent's synthesis (Accessibility / Experimental surface
+              evidence / Confidence / State dependence). Architecture,
+              Family, and the headline-risk count sit inside these
+              cells as colored sub-text (each with its own InfoTip).
+              The LLM-vs-Deterministic split now lives in §01 Summary
+              metrics; deterministic tool data (topology, pLDDT,
+              SURFACE-Bind, conservation) is no longer duplicated
+              here. */}
           <dl className={styles.vitals}>
             {(() => {
               const accessTone = accessibilityTone(exec.surface_accessibility);
@@ -440,35 +440,34 @@ export function GeneHeader({
                       <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
                         {prettyEnum(exec.surface_accessibility)}
                       </p>
-                      {/* Architecture + Family as label/value text pairs
-                       *  beneath the accessibility value. Font matches
-                       *  the StatusPill chip (uppercase, font-sans,
-                       *  letter-spaced, 0.72rem); the value inherits the
-                       *  accessibility tone color (success / teal / amber
-                       *  / danger) so the text reads as colored metadata
-                       *  belonging to this accessibility cell. Each label
-                       *  carries its own InfoTip — the values are
-                       *  LLM-derived (informed by DeepTMHMM topology +
-                       *  SURFACE-Bind family classification, but the
-                       *  deep-dive agent picks the final value). */}
-                      <p
-                        className={`${styles.archFamilyInline} ${vitalToneClass(accessTone)}`}
-                      >
-                        <span className={styles.archFamilyLabel}>
-                          Architecture
-                          <InfoTip>{tooltips.architecture_chip}</InfoTip>
+                      {/* Architecture + Family — two pill chips beneath
+                       *  the accessibility value. Sentence-cased,
+                       *  brown ``--ink-soft`` color (NOT the
+                       *  accessibility tone — these are neutral
+                       *  metadata about the protein, not signals about
+                       *  its accessibility). The deep-dive agent picks
+                       *  the values; ``InfoTip`` per chip carries the
+                       *  provenance + enum-value glossary. */}
+                      <div className={styles.archFamilyInline}>
+                        <span className={styles.archFamilyChip}>
+                          <span className={styles.archFamilyChipKey}>
+                            Architecture
+                          </span>
+                          <span className={styles.archFamilyChipValue}>
+                            {prettyEnum(exec.subcategory)}
+                          </span>
                         </span>
-                        <span className={styles.archFamilyValue}>
-                          {prettyEnum(exec.subcategory)}
+                        <InfoTip>{tooltips.architecture_chip}</InfoTip>
+                        <span className={styles.archFamilyChip}>
+                          <span className={styles.archFamilyChipKey}>
+                            Family
+                          </span>
+                          <span className={styles.archFamilyChipValue}>
+                            {prettyEnum(exec.protein_family)}
+                          </span>
                         </span>
-                        <span className={styles.archFamilyLabel}>
-                          Family
-                          <InfoTip>{tooltips.family_chip}</InfoTip>
-                        </span>
-                        <span className={styles.archFamilyValue}>
-                          {prettyEnum(exec.protein_family)}
-                        </span>
-                      </p>
+                        <InfoTip>{tooltips.family_chip}</InfoTip>
+                      </div>
                     </dd>
                   </div>
 
@@ -484,6 +483,28 @@ export function GeneHeader({
                       <span className={styles.vitalSub}>
                         {counts.total} entries
                       </span>
+                      {/* "reasoning" chip — opens a slide-in drawer with
+                       *  the synthesizer's grade_rationale prose. Same
+                       *  affordance pattern as the Confidence vital
+                       *  below. Source field is
+                       *  ``surface_evidence.grade_rationale`` which the
+                       *  §02 banner also renders; the chip is the
+                       *  vital-grid surface so the reader can read the
+                       *  reasoning without scrolling to the section. */}
+                      <EvidenceGradeReasoningDrawer
+                        reasoning={rec.surface_evidence.grade_rationale ?? ""}
+                        gradeLabel={prettyEnum(exec.evidence_grade_summary)}
+                        // Union of every method block's cited evidence — the
+                        // grade rationale aggregates across all methods, so
+                        // the chip strip should too. Dedup preserves order.
+                        citedEvidenceIds={Array.from(
+                          new Set(
+                            rec.surface_evidence.methods.flatMap(
+                              (m) => m.cited_evidence_ids,
+                            ),
+                          ),
+                        )}
+                      />
                     </dd>
                   </div>
 
@@ -509,6 +530,12 @@ export function GeneHeader({
                       <ConfidenceReasoningDrawer
                         reasoning={rec.confidence_reasoning ?? ""}
                         confidenceLabel={prettyEnum(exec.confidence)}
+                        // Lede's cited_evidence_ids cover the overall
+                        // surface call which the confidence rationale
+                        // justifies; pass them through so the reader
+                        // can drill into the source quotes from inside
+                        // the drawer.
+                        citedEvidenceIds={exec.cited_evidence_ids}
                       />
                     </dd>
                   </div>
@@ -539,77 +566,11 @@ export function GeneHeader({
             })()}
           </dl>
 
-          {/* Deterministic-tools row — eyebrow + 4-cell strip pulling
-              from rec.deterministic_features. Mirrors the LLM-driven
-              row above but with sans-medium numerals instead of
-              editorial-italic Playfair, so the typographic register
-              itself reinforces the provenance split: italic Playfair
-              = LLM call, sans-medium = measured tool datum. Each
-              cell carries its own InfoTip naming the underlying
-              tool + version (DeepTMHMM v1.0.24, AlphaFold v4,
-              MaSIF / SURFACE-Bind, Ensembl Compara). */}
-          <p className={`label-mono ${styles.rowEyebrow}`}>Deterministic</p>
-          <dl className={styles.deterministicGrid}>
-            {(() => {
-              const topo = topologyCellSummary(
-                rec.deterministic_features.canonical_topology,
-              );
-              const plddt = plddtCellSummary(struct);
-              const sb = surfaceBindCellSummary(
-                rec.deterministic_features.surface_bind,
-              );
-              const cons = conservationCellSummary(
-                rec.deterministic_features.orthologs,
-              );
-              return (
-                <>
-                  <div className={styles.detTile}>
-                    <dt className={`label-mono ${styles.detTileK}`}>
-                      Topology
-                      <InfoTip>{tooltips.topology_pills}</InfoTip>
-                    </dt>
-                    <dd className={styles.vitalV}>
-                      <p className={styles.detTileV}>{topo.headline}</p>
-                      <span className={styles.detTileSub}>{topo.sub}</span>
-                    </dd>
-                  </div>
-
-                  <div className={styles.detTile}>
-                    <dt className={`label-mono ${styles.detTileK}`}>
-                      {plddtLabel}
-                      <InfoTip wide>{tooltips.afdb_plddt}</InfoTip>
-                    </dt>
-                    <dd className={styles.vitalV}>
-                      <p className={styles.detTileV}>{plddt.headline}</p>
-                      <span className={styles.detTileSub}>{plddt.sub}</span>
-                    </dd>
-                  </div>
-
-                  <div className={styles.detTile}>
-                    <dt className={`label-mono ${styles.detTileK}`}>
-                      SURFACE-Bind
-                      <InfoTip>{tooltips.surface_bind}</InfoTip>
-                    </dt>
-                    <dd className={styles.vitalV}>
-                      <p className={styles.detTileV}>{sb.headline}</p>
-                      <span className={styles.detTileSub}>{sb.sub}</span>
-                    </dd>
-                  </div>
-
-                  <div className={styles.detTile}>
-                    <dt className={`label-mono ${styles.detTileK}`}>
-                      Conservation
-                      <InfoTip>{tooltips.cross_species_conservation}</InfoTip>
-                    </dt>
-                    <dd className={styles.vitalV}>
-                      <p className={styles.detTileV}>{cons.headline}</p>
-                      <span className={styles.detTileSub}>{cons.sub}</span>
-                    </dd>
-                  </div>
-                </>
-              );
-            })()}
-          </dl>
+          {/* Deterministic-tools row was here. Removed per user
+              request — deterministic data (topology, pLDDT,
+              SURFACE-Bind, conservation) now lives only in §01
+              Summary metrics grouped under a "Deterministic"
+              section header. Surfacing it twice was redundant. */}
         </div>
 
         {structureData ? (

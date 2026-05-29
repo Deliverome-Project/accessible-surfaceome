@@ -280,10 +280,15 @@ const TT_LOW_ENDOG =
   "two signals can't drift.";
 
 const TT_KNOWN_LIGAND =
-  "Orphan-receptor status. true (default) = validated endogenous " +
-  "ligand documented in literature. false = orphan-class gene where " +
-  "ligand identity is unknown (orphan GPCRs / NHRs / kinases). " +
-  "Tractability signal for the catalog.";
+  "Has the synthesizer found a documented binding partner / ligand " +
+  "for this protein in literature? true = yes (e.g. EGFR ← EGF; " +
+  "for kinases like SRC this also captures known substrates / " +
+  "interaction partners since the 'ligand' framing is canonical " +
+  "for receptors but loose for cytoplasmic kinases). false = " +
+  "orphan-class — ligand identity is genuinely unknown (orphan " +
+  "GPCRs / NHRs / true orphan kinases). The boolean is the " +
+  "catalog filter; the specific ligand identity isn't stored on " +
+  "the record — see §Biology for partner / co-receptor evidence.";
 
 const TT_OE_OBSERVED =
   "Derived filter: true iff any MethodObservation has " +
@@ -337,7 +342,13 @@ export function FiltersCard({ rec, n }: Props) {
   const orthos = rec.deterministic_features.orthologs;
   const mousePill = orthologPillLabel(f.mouse_ortholog_ecd_pct_identity, orthos.mouse);
   const cynoPill = orthologPillLabel(f.cyno_ortholog_ecd_pct_identity, orthos.cynomolgus);
-  const groups = [
+  // Each group is tagged with `provenance` so the render can partition
+  // groups under "LLM-driven" vs "Deterministic" section headings —
+  // the same provenance split the GeneHeader vitals used to carry
+  // (now removed, since surfacing it twice was redundant). The
+  // ordering inside each provenance section follows the original
+  // group order so readers' eye doesn't have to re-learn the layout.
+  const groups: { label: string; provenance: "llm" | "deterministic"; pills: React.ReactNode[] }[] = [
     // The "Accessibility" umbrella group was retired — the headline
     // accessibility / confidence / state_dependence chips already
     // render in the executive-summary chip strip up top, so showing
@@ -345,6 +356,7 @@ export function FiltersCard({ rec, n }: Props) {
     // redistributed into Evidence (new), Risks, and Topology groups.
     {
       label: "Evidence",
+      provenance: "llm",
       pills: [
         <StatusPill
           key="reason"
@@ -374,6 +386,7 @@ export function FiltersCard({ rec, n }: Props) {
     },
     {
       label: "Expression",
+      provenance: "llm",
       pills: [
         <StatusPill
           key="level"
@@ -453,6 +466,7 @@ export function FiltersCard({ rec, n }: Props) {
     },
     {
       label: "Risks",
+      provenance: "llm",
       pills: [
         riskBoolPill("shed form", f.has_shed_form),
         riskBoolPill("secreted form", f.has_secreted_form),
@@ -480,6 +494,7 @@ export function FiltersCard({ rec, n }: Props) {
     },
     {
       label: "Cross-species",
+      provenance: "deterministic",
       pills: [
         <StatusPill
           key="m"
@@ -505,6 +520,7 @@ export function FiltersCard({ rec, n }: Props) {
     },
     {
       label: "Paralogs",
+      provenance: "deterministic",
       pills: [
         f.max_paralog_ecd_pct_identity == null ? (
           <StatusPill
@@ -529,6 +545,7 @@ export function FiltersCard({ rec, n }: Props) {
     },
     {
       label: "Topology",
+      provenance: "deterministic",
       pills: [
         <StatusPill key="tm" tone="neutral" size="sm" title={TT_TM_COUNT}>
           {topo.tm_helix_count} TM
@@ -551,6 +568,7 @@ export function FiltersCard({ rec, n }: Props) {
     },
     {
       label: "SURFACE-Bind",
+      provenance: "deterministic",
       // Three distinct states, each rendered explicitly so the reader
       // can tell them apart at a glance:
       //   1. not_in: SURFACE-Bind dropped the protein at structural QC
@@ -739,6 +757,43 @@ export function FiltersCard({ rec, n }: Props) {
     },
   };
 
+  // Partition into LLM-driven vs Deterministic so the render can
+  // emit two section headings with the right groups under each.
+  // Order within each provenance bucket = original groups[] order.
+  const llmGroups = groups.filter((g) => g.provenance === "llm");
+  const detGroups = groups.filter((g) => g.provenance === "deterministic");
+
+  const renderGroup = (g: (typeof groups)[number]) => {
+    const meta = GROUP_META[g.label];
+    return (
+      <div key={g.label} className={styles.group}>
+        <p
+          className={`label-mono ${styles.groupLabel}`}
+          title={meta?.title}
+        >
+          <span>{g.label}</span>
+          {meta?.links?.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.groupLink}
+              title={`Open ${l.label} in a new tab`}
+            >
+              {l.label} ↗
+            </a>
+          ))}
+        </p>
+        <ul className={styles.pills}>
+          {g.pills.map((p, i) => (
+            <li key={i}>{p}</li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <SectionCard
       n={n}
@@ -746,38 +801,18 @@ export function FiltersCard({ rec, n }: Props) {
       title="At-a-glance signal panel"
       meta="Fields available for catalog-level filtering · rolled up per gene"
     >
-      <div className={styles.groups}>
-        {groups.map((g) => {
-          const meta = GROUP_META[g.label];
-          return (
-            <div key={g.label} className={styles.group}>
-              <p
-                className={`label-mono ${styles.groupLabel}`}
-                title={meta?.title}
-              >
-                <span>{g.label}</span>
-                {meta?.links?.map((l) => (
-                  <a
-                    key={l.href}
-                    href={l.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.groupLink}
-                    title={`Open ${l.label} in a new tab`}
-                  >
-                    {l.label} ↗
-                  </a>
-                ))}
-              </p>
-              <ul className={styles.pills}>
-                {g.pills.map((p, i) => (
-                  <li key={i}>{p}</li>
-                ))}
-              </ul>
-            </div>
-          );
-        })}
-      </div>
+      {/* Provenance section heading — synthesizer rollups. Mirror
+       *  of the old GeneHeader eyebrow that was removed when the
+       *  duplicate Deterministic vital row got cut. */}
+      <p className={`label-mono ${styles.provenanceHeading}`}>LLM-driven</p>
+      <div className={styles.groups}>{llmGroups.map(renderGroup)}</div>
+
+      {/* Provenance section heading — deterministic-tool readouts.
+       *  DeepTMHMM topology, AlphaFold pLDDT (via the SURFACE-Bind
+       *  block + isoform cards), Ensembl Compara orthologs +
+       *  paralogs, MaSIF / SURFACE-Bind targetability. */}
+      <p className={`label-mono ${styles.provenanceHeading}`}>Deterministic</p>
+      <div className={styles.groups}>{detGroups.map(renderGroup)}</div>
     </SectionCard>
   );
 }
