@@ -47,10 +47,23 @@
  * reasoning prose stays in the same horizontal scan as the prose
  * itself.
  *
+ * CRITICAL: this MUST target `.drawerOpen`, NOT the base `.drawer`.
+ * The base drawer is ALWAYS mounted; closed it sits off-screen at
+ * `right: 0` + `translateX(100%)`. If the shift applied to the closed
+ * drawer, its `right` jumps to ~460px while it's still
+ * `translateX(100%)` — landing the panel PARTIALLY ON-SCREEN
+ * (x≈820→1306 at 1280px) right on top of the reasoning drawer. It's
+ * opaque (`background: var(--bg)`) at `z-index: 55` (above the
+ * reasoning drawer's 50) so it paints a blank white panel over the
+ * reasoning content — the drawer "opens but is empty". `pointer-events:
+ * none` (closed) hides this from hit-testing but NOT from painting.
+ * The shift only has a purpose when the evidence drawer is itself
+ * open, so scope it to the open state.
+ *
  * Width values mirror ReasoningDrawer.module.css's `clamp(320px,
  * 35vw, 480px)` — kept in sync manually; if either side changes
  * width, bump both. */
-:global(body[data-reasoning-drawer-open]) .drawer {
+:global(body[data-reasoning-drawer-open]) .drawerOpen {
   right: calc(clamp(320px, 35vw, 480px) + 12px);
 }
 

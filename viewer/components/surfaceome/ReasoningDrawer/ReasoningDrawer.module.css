@@ -63,7 +63,15 @@
   overflow-y: auto;
 }
 
-.drawerOpen {
+/* `.drawer.drawerOpen` (specificity 0,2,0), NOT a bare `.drawerOpen`
+ * (0,1,0): the open transform must beat `.drawer`'s closed
+ * `translateX(100%)` regardless of stylesheet source/injection order.
+ * Equal-specificity rules resolve by cascade order, and the dev server's
+ * CSS-module HMR ("Detected local css modules. Reload all css") reinjects
+ * rules out of source order on every `.module.css` save — which would
+ * otherwise leave an *open* drawer stuck off-screen at translateX(100%).
+ * Higher specificity makes the open state order-immune. */
+.drawer.drawerOpen {
   transform: translateX(0);
   pointer-events: auto;
 }
@@ -80,7 +88,7 @@
     transform: translateY(100%);
     box-shadow: 0 -8px 32px -16px rgba(0, 0, 0, 0.18);
   }
-  .drawerOpen {
+  .drawer.drawerOpen {
     transform: translateY(0);
   }
 }
