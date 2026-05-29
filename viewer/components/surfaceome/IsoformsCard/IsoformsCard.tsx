@@ -298,6 +298,20 @@ export function IsoformsCard({ rec, n }: Props) {
   // doesn't apply, so the subhead drops the "ECD percent identity" label.
   const anyParalogEcd = paralogs.some((p) => p.ecd_pct_identity != null);
 
+  // Visibility floor: when the protein has ECD identities to threshold
+  // on, only paralogs above 40% ECD identity are worth surfacing — below
+  // that the cross-reactivity signal is negligible and the strip just
+  // gets noisy (kinome / Ig-superfamily proteins have dozens of distant
+  // paralogs). Anything at or below 40% is hidden entirely. ECD-less
+  // proteins (SRC etc.) have no identity to threshold, so the whole
+  // family is shown with the "sequence family" framing instead.
+  const PARALOG_MIN_ECD_PCT = 40;
+  const visibleParalogs = anyParalogEcd
+    ? paralogs.filter(
+        (p) => p.ecd_pct_identity != null && p.ecd_pct_identity > PARALOG_MIN_ECD_PCT,
+      )
+    : paralogs;
+
   return (
     <SectionCard
       n={n}
@@ -474,7 +488,8 @@ export function IsoformsCard({ rec, n }: Props) {
                 ECD identity, so the chips are colored by risk:{" "}
                 <strong>≥70% likely</strong>, 50–70% plausible, &lt;50% low.
                 Cutoffs from antibody-validation practice (Bordeaux 2010,
-                Edfors 2018).
+                Edfors 2018). Paralogs at or below 40% ECD identity are hidden —
+                their cross-reactivity signal is negligible.
               </>
             ) : (
               <>
@@ -489,10 +504,16 @@ export function IsoformsCard({ rec, n }: Props) {
         </p>
         {paralogs.length === 0 ? (
           <p className={styles.empty}>No paralogs in Compara.</p>
+        ) : visibleParalogs.length === 0 ? (
+          // ECD-bearing protein whose paralogs are all at or below the 40%
+          // floor — nothing crosses the threshold worth surfacing.
+          <p className={styles.empty}>
+            No paralogs above 40% ECD identity in Compara.
+          </p>
         ) : (
           <>
             <ul className={styles.paralogChips} aria-label="Paralog list">
-              {paralogs.map((p, i) => {
+              {visibleParalogs.map((p, i) => {
                 const tier = paralogRiskTier(p.ecd_pct_identity);
                 const tierClass =
                   tier === "high"
