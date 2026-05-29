@@ -50,22 +50,11 @@ function confidenceTone(v: string): Tone {
   return v === "high" ? "success" : v === "moderate" ? "warn" : v === "low" ? "danger" : "neutral";
 }
 
-function evidenceGradeTone(v: string): Tone {
-  if (v === "direct_multi_method" || v === "direct_single_method") return "success";
-  if (v === "supportive_but_indirect") return "warn";
-  if (v === "conflicting" || v === "weak") return "danger";
-  return "neutral";
-}
-
 function ecdAccessibilityTone(v: string): Tone {
   if (v === "large" || v === "moderate") return "success";
   if (v === "small") return "warn";
   if (v === "minimal" || v === "none") return "danger";
   return "neutral";
-}
-
-function evidenceDensityTone(v: string): Tone {
-  return v === "high" ? "success" : v === "moderate" ? "warn" : v === "low" ? "danger" : "neutral";
 }
 
 function expressionLevelTone(v: string): Tone {
@@ -114,44 +103,6 @@ function coReceptorDependencyTone(v: string): Tone {
   if (v === "modulatory") return "warn";
   if (v === "required") return "danger";
   return "neutral";
-}
-
-/**
- * Surface_call_reason — synth-derived reason, 19 values. We color by
- * verdict-bucket: YES-bucket (canonical surface receptors etc) = success,
- * CONTEXTUAL-bucket (state-gated mechanisms) = lavender, NO-bucket
- * (cytoplasmic / nuclear / inner-leaflet etc) = danger when paired
- * with a low / no accessibility call.
- */
-const YES_BUCKET_REASONS = new Set([
-  "classical_surface_receptor",
-  "gpi_anchored",
-  "multipass_with_exposed_loops",
-  "extracellular_face_protein",
-  "stable_complex_partner",
-]);
-const CONTEXTUAL_BUCKET_REASONS = new Set([
-  "cell_state_induced",
-  "tissue_restricted_surface",
-  "lysosomal_exocytosis",
-  "dual_localization",
-  "stable_surface_attachment",
-]);
-const NO_BUCKET_REASONS = new Set([
-  "cytoplasmic",
-  "nuclear",
-  "mitochondrial_internal",
-  "endomembrane_resident",
-  "nuclear_envelope",
-  "inner_leaflet_anchored",
-  "secreted_only",
-  "pmhc_only_intracellular",
-]);
-function surfaceCallReasonTone(v: string): Tone {
-  if (YES_BUCKET_REASONS.has(v)) return "success";
-  if (CONTEXTUAL_BUCKET_REASONS.has(v)) return "lavender";
-  if (NO_BUCKET_REASONS.has(v)) return "danger";
-  return "neutral"; // 'other' or unrecognized
 }
 
 /**
@@ -229,11 +180,6 @@ const TT_ECD_CLASS =
   "minimal < 30 (1-2 epitopes max, specialized formats needed); " +
   "none = no surface-exposed ECD (GPI / inner-leaflet).";
 
-const TT_EVIDENCE_DENSITY =
-  "Bucketed evidence row count: high ≥ 30 supporting rows, " +
-  "moderate ≥ 10, low < 10. Derived in the orchestrator from " +
-  "the merged A1+A2 ledger; deterministic, not LLM-judged.";
-
 const TT_ORTHOLOG_ID =
   "ECD % identity to the human canonical, restricted to " +
   "extracellular residues. Cutoffs from ICH S6(R1) biologics-" +
@@ -260,21 +206,9 @@ const TT_CONFIDENCE =
   "carry a non-empty `confidence_reasoning` (≤600 chars) whenever " +
   "this is moderate or low.";
 
-const TT_EVIDENCE_GRADE =
-  "A1 evidence-grade rollup, reflecting experimental-method " +
-  "coverage: direct_multi_method (≥2 categories with " +
-  "live-cell / non-perm methods); direct_single_method (one " +
-  "category); supportive_but_indirect (fractionation / " +
-  "glycoproteomics, no direct surface staining); conflicting / weak.";
-
 const TT_EXPRESSION_LEVEL =
   "How abundantly this protein is expressed at baseline in the tissues " +
-  "and cell lines covered by the cited evidence. High = robust " +
-  "endogenous detection across multiple independent sources. Moderate " +
-  "= detectable but tissue-restricted or modest. Low = trace " +
-  "endogenous protein; surface biology often only becomes apparent " +
-  "with overexpression. Absent = not endogenously expressed in any " +
-  "cited context.";
+  "and cell lines covered by the cited evidence.";
 
 const TT_LOW_ENDOG =
   "Flags proteins where baseline endogenous expression is low or " +
@@ -328,15 +262,6 @@ const TT_CO_RECEPTOR =
   "partner — bispecific / partner-aware design may be needed), " +
   "unknown (ledger silent on partner interactions).";
 
-const TT_CALL_REASON =
-  "Synthesizer's reason for the surface call, re-derived from A1+A2 " +
-  "evidence (NOT inherited from the triage's first-pass call). 19 " +
-  "values across YES-bucket (canonical surface mechanisms), " +
-  "CONTEXTUAL-bucket (state-gated mechanisms — `lysosomal_exocytosis` " +
-  "etc), and NO-bucket (cytoplasmic / nuclear / inner-leaflet etc). " +
-  "SRC: synth-derived `lysosomal_exocytosis` overrides the triage's " +
-  "`inner_leaflet_anchored` baseline-state label.";
-
 // ---------------------------------------------------------------------------
 
 
@@ -367,38 +292,14 @@ export function FiltersCard({ rec, n }: Props) {
     // The "Accessibility" umbrella group was retired — the headline
     // accessibility / confidence / state_dependence chips already
     // render in the executive-summary chip strip up top, so showing
-    // them twice was noise. The remaining filter-only signals are
-    // redistributed into Evidence (new), Risks, and Topology groups.
-    {
-      label: "Evidence",
-      provenance: "llm",
-      pills: [
-        <StatusPill
-          key="reason"
-          tone={surfaceCallReasonTone(f.surface_call_reason)}
-          size="sm"
-          title={TT_CALL_REASON}
-        >
-          reason · {prettyEnum(f.surface_call_reason)}
-        </StatusPill>,
-        <StatusPill
-          key="grade"
-          tone={evidenceGradeTone(f.evidence_grade)}
-          size="sm"
-          title={TT_EVIDENCE_GRADE}
-        >
-          {prettyEnum(f.evidence_grade)}
-        </StatusPill>,
-        <StatusPill
-          key="dens"
-          tone={evidenceDensityTone(f.evidence_density)}
-          size="sm"
-          title={TT_EVIDENCE_DENSITY}
-        >
-          evidence · {prettyEnum(f.evidence_density)}
-        </StatusPill>,
-      ],
-    },
+    // them twice was noise.
+    //
+    // The "Evidence" group (surface_call_reason · evidence_grade ·
+    // evidence_density) was likewise removed per user feedback: the
+    // "Experimental surface evidence" vital up top already carries the
+    // grade + entry count + a grade_rationale Reasoning drawer, so the
+    // chips duplicated it. The remaining filter-only signals live in
+    // the Expression, Risks, and Topology groups.
     {
       label: "Expression",
       provenance: "llm",
@@ -744,18 +645,13 @@ export function FiltersCard({ rec, n }: Props) {
         "ECD-size class, evidence density). Same fields the catalog " +
         "filters on.",
     },
-    Expression: {
-      title:
-        "Endogenous expression context for this protein. How " +
-        "abundantly it's expressed at baseline (level), how broadly " +
-        "across tissues (breadth), and what fraction sits at the " +
-        "surface vs intracellular pool (specificity). The boolean " +
-        "flags capture cases that matter for target choice: low " +
-        "endogenous expression (overexpression studies usually " +
-        "needed), orphan-receptor status (no known ligand " +
-        "documented), and whether prior overexpression studies have " +
-        "demonstrated surface localization.",
-    },
+    // No "Expression" entry — per user feedback the Expression group
+    // carries NO category-wide InfoTip. Each Expression chip (level /
+    // breadth / specificity / low-endogenous / known-ligand /
+    // OE-precedent) already has its own specific tooltip, so a
+    // group-level summary tip was redundant. Cross-species / Paralogs /
+    // Topology / Candidate-sites keep their group tips because those
+    // carry cutoff/threshold provenance not repeated on each chip.
     Risks: {
       title:
         "Things that can complicate antibody / binder access to the " +
