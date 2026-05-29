@@ -2130,10 +2130,14 @@ class ParalogEntry(BaseModel):
 
     ``ecd_pct_identity`` is ``None`` for ECD-less proteins (inner-leaflet
     kinases like SRC, soluble proteins, cytoplasmic enzymes) — there's
-    no ECD to compute identity against. The cross-reactivity warning
-    based on the 50/70% cutoffs simply doesn't apply to those paralogs;
-    family membership alone is still meaningful signal for the methods
-    builder's antibody-validation discipline.
+    no ECD to compute identity against. ``full_length_pct_identity`` is
+    the whole-protein BLOSUM62 identity, which IS defined for those
+    proteins, so the viewer can still color the antibody cross-reactivity
+    risk tier for an ECD-less protein's paralogs by falling back to it
+    (same ≥70 / 50–70 / <50 cutoffs, keyed on whole-protein homology
+    rather than the extracellular surface). Family membership alone is
+    still meaningful signal for the methods builder's antibody-validation
+    discipline.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -2141,6 +2145,12 @@ class ParalogEntry(BaseModel):
     paralog_symbol: str
     paralog_uniprot_acc: str
     ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    # Whole-protein percent identity vs the human canonical (single global
+    # BLOSUM62 alignment over the full sequences, not loop-restricted).
+    # Non-null wherever both sequences are available — including ECD-less
+    # proteins where ``ecd_pct_identity`` is None. ``None`` only on records
+    # built before this field was populated in the Compara paralog table.
+    full_length_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
     # (Per-residue DeepTMHMM topology was briefly added to this entry

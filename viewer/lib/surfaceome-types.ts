@@ -351,16 +351,19 @@ export interface OrthologSet {
 /**
  * One within-species paralog (Ensembl Compara). `ecd_pct_identity` is
  * `null` for ECD-less proteins (inner-leaflet kinases like SRC, soluble
- * proteins, cytoplasmic enzymes) — the 50/70% cross-reactivity-warning
- * cutoffs don't apply to those paralogs, but family membership alone
- * is still meaningful signal for the methods builder's antibody-
- * validation discipline. Mirrors Python's
- * ``ParalogEntry.ecd_pct_identity: float | None``.
+ * proteins, cytoplasmic enzymes) — there's no extracellular domain to
+ * align. `full_length_pct_identity` is the whole-protein identity, which
+ * IS defined for those proteins, so the IsoformsCard chip falls back to
+ * it to still color the cross-reactivity risk tier (same ≥70 / 50–70 /
+ * <50 cutoffs, keyed on whole-protein homology). Mirrors Python's
+ * ``ParalogEntry`` (``ecd_pct_identity`` / ``full_length_pct_identity``:
+ * ``float | None``).
  */
 export interface ParalogEntry {
   paralog_symbol: string;
   paralog_uniprot_acc: string;
   ecd_pct_identity: number | null;
+  full_length_pct_identity: number | null;
   family_id: string;
   compara_version: string;
   // (Per-residue DeepTMHMM topology was briefly added to this entry

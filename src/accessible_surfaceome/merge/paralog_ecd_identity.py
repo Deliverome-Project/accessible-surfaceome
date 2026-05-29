@@ -201,3 +201,56 @@ def compute_ecd_identity_from_records(
         paralog_topology=paralog_record["per_residue_topology"],
         paralog_sequence=paralog_record["sequence"],
     )
+
+
+def compute_full_length_identity(
+    sequence_a: str,
+    sequence_b: str,
+) -> float | None:
+    """Whole-protein BLOSUM62 percent identity between two sequences.
+
+    A single global pairwise alignment over the *entire* sequences — NOT
+    restricted to extracellular loops — so it's defined for ECD-less
+    proteins (SRC-family kinases, soluble / cytoplasmic enzymes,
+    GPI-anchored proteins) that have no ``'O'`` loops for
+    ``compute_ecd_identity`` to score and therefore get
+    ``ecd_pct_identity = None``. The viewer falls back to this value to
+    color the antibody cross-reactivity risk tier for those paralogs.
+
+    Same aligner config as the per-loop ECD path (BLOSUM62, gap_open=-10,
+    gap_extend=-0.5) and the same length-normalization::
+
+        identity = matches / min(len_a, len_b) * 100
+
+    so an ECD value and a full-length value sit on the same 0–100 scale and
+    feed the same ≥70 / 50–70 / <50 cross-reactivity tiers. Returns ``None``
+    when either sequence is empty (nothing to align).
+    """
+    if not sequence_a or not sequence_b:
+        return None
+    aligner = _aligner()
+    seq_a = _sanitize(sequence_a)
+    seq_b = _sanitize(sequence_b)
+    try:
+        alignment = aligner.align(seq_a, seq_b)[0]
+    except (ValueError, KeyError):
+        return None
+    # Same gap-free aligned-block match count as _pairwise_loop_identity.
+    aligned = alignment.aligned  # numpy ndarray, shape (2, n_blocks, 2)
+    matches = 0
+    for (a_start, a_end), (b_start, b_end) in zip(aligned[0], aligned[1]):
+        block_a = seq_a[a_start:a_end]
+        block_b = seq_b[b_start:b_end]
+        matches += sum(1 for x, y in zip(block_a, block_b) if x == y)
+    return matches / min(len(seq_a), len(seq_b)) * 100.0
+
+
+def compute_full_length_identity_from_records(
+    human_record: dict[str, Any],
+    paralog_record: dict[str, Any],
+) -> float | None:
+    """Adapter: whole-protein identity from parse_3line / topology record dicts."""
+    return compute_full_length_identity(
+        human_record["sequence"],
+        paralog_record["sequence"],
+    )

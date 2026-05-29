@@ -2,6 +2,7 @@ import type {
   IsoformTopology,
   Orientation,
   OrthologEntry,
+  ParalogEntry,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
@@ -124,22 +125,32 @@ function deriveOrthologDetail(topology: string): {
 }
 
 /**
- * Paralog antibody-cross-reactivity risk tier from ECD percent identity.
+ * Paralog antibody-cross-reactivity risk tier from a percent identity.
  * Cutoffs follow antibody-validation practice (Bordeaux et al. 2010 /
- * Edfors et al. 2018) — cross-reactive binding tracks sequence identity
- * in the epitope-containing region:
+ * Edfors et al. 2018) — cross-reactive binding tracks sequence identity:
  *   ≥ 70% → cross-reactivity likely    ("high")
  *   ≥ 50% → cross-reactivity plausible ("med")
  *   < 50% → low
- * `null` for ECD-less proteins (intracellular / soluble / GPI-anchored):
- * there's no ECD to compare, so the cutoffs don't apply and the chip
- * stays neutral.
+ * `null` only when the paralog carries no identity number at all
+ * (pre-population records) — the chip then stays neutral.
  */
 function paralogRiskTier(pct: number | null): "high" | "med" | "low" | null {
   if (pct == null) return null;
   if (pct >= 70) return "high";
   if (pct >= 50) return "med";
   return "low";
+}
+
+/**
+ * The percent identity a paralog chip is colored + floored by: ECD
+ * identity when the protein has an extracellular domain, else the
+ * whole-protein (full-length) identity so ECD-less proteins (SRC-family
+ * kinases, soluble / cytoplasmic enzymes) still get a homology-based
+ * cross-reactivity tier rather than a neutral "no ECD" chip. Null only on
+ * pre-population records that carry neither number.
+ */
+function paralogRiskValue(p: ParalogEntry): number | null {
+  return p.ecd_pct_identity ?? p.full_length_pct_identity ?? null;
 }
 
 /**
@@ -294,25 +305,35 @@ export function IsoformsCard({ rec, n }: Props) {
   const noOrthologs =
     orthologs.mouse.length === 0 && orthologs.cynomolgus.length === 0;
 
-  // Whether any paralog carries an ECD %identity. False for ECD-less
-  // proteins (SRC and other intracellular / soluble / GPI-anchored
-  // proteins) where every paralog is "no ECD" — in that case the
-  // ECD-identity cross-reactivity framing (and the colored risk legend)
-  // doesn't apply, so the subhead drops the "ECD percent identity" label.
+  // Three framings for the paralog strip:
+  //  • coloredByEcd     — protein has an ECD; chips colored by ECD %id.
+  //  • coloredByFullLen — ECD-less protein (SRC and other intracellular /
+  //    soluble / GPI-anchored proteins) where every paralog is "no ECD",
+  //    but whole-protein (full-length) identities exist, so chips fall
+  //    back to that homology number with the same risk tiers.
+  //  • neither          — pre-population records with no identity at all;
+  //    the strip lists the family with no risk coloring.
   const anyParalogEcd = paralogs.some((p) => p.ecd_pct_identity != null);
+  const anyParalogFullLen = paralogs.some(
+    (p) => p.full_length_pct_identity != null,
+  );
+  const coloredByEcd = anyParalogEcd;
+  const coloredByFullLen = !anyParalogEcd && anyParalogFullLen;
+  const anyParalogRisk = coloredByEcd || coloredByFullLen;
 
-  // Visibility floor: when the protein has ECD identities to threshold
-  // on, only paralogs above 40% ECD identity are worth surfacing — below
-  // that the cross-reactivity signal is negligible and the strip just
-  // gets noisy (kinome / Ig-superfamily proteins have dozens of distant
-  // paralogs). Anything at or below 40% is hidden entirely. ECD-less
-  // proteins (SRC etc.) have no identity to threshold, so the whole
-  // family is shown with the "sequence family" framing instead.
-  const PARALOG_MIN_ECD_PCT = 40;
-  const visibleParalogs = anyParalogEcd
-    ? paralogs.filter(
-        (p) => p.ecd_pct_identity != null && p.ecd_pct_identity > PARALOG_MIN_ECD_PCT,
-      )
+  // Visibility floor: when there's an identity to threshold on (ECD, or
+  // full-length for ECD-less proteins), only paralogs above 40% are worth
+  // surfacing — below that the cross-reactivity signal is negligible and
+  // the strip just gets noisy (kinome / Ig-superfamily proteins have
+  // dozens of distant paralogs). Anything at or below 40% is hidden
+  // entirely. Records with no identity at all (pre-population) show the
+  // whole family with the neutral "sequence family" framing.
+  const PARALOG_MIN_PCT = 40;
+  const visibleParalogs = anyParalogRisk
+    ? paralogs.filter((p) => {
+        const v = paralogRiskValue(p);
+        return v != null && v > PARALOG_MIN_PCT;
+      })
     : paralogs;
 
   return (
@@ -479,11 +500,13 @@ export function IsoformsCard({ rec, n }: Props) {
       {/* ---- Paralogs (compact chip strip) ------------------------ */}
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>
-          {anyParalogEcd
+          {coloredByEcd
             ? "Paralogs · within-species, ECD percent identity"
-            : "Paralogs · within-species sequence family"}
+            : coloredByFullLen
+              ? "Paralogs · within-species, full-length identity"
+              : "Paralogs · within-species sequence family"}
           <InfoTip label="About paralog cross-reactivity">
-            {anyParalogEcd ? (
+            {coloredByEcd ? (
               <>
                 Percent identity over the extracellular domain — the
                 antibody-accessible region — between {rec.gene.hgnc_symbol} and
@@ -495,13 +518,25 @@ export function IsoformsCard({ rec, n }: Props) {
                 40% ECD identity are hidden — their cross-reactivity signal is
                 negligible.
               </>
+            ) : coloredByFullLen ? (
+              <>
+                {rec.gene.hgnc_symbol} has no extracellular domain (it&rsquo;s
+                intracellular / soluble), so there&rsquo;s no ECD to align.
+                Cross-reactivity risk here is keyed to{" "}
+                <strong>whole-protein</strong> sequence identity instead, with
+                the same tiers: <strong>≥70% likely</strong>, 50–70% plausible,
+                &lt;50% low. Cutoffs from antibody-validation practice (Bordeaux
+                2010, PMID 20359301; Edfors 2018, PMID 30297845). Paralogs at or
+                below 40% identity are hidden — their cross-reactivity signal is
+                negligible.
+              </>
             ) : (
               <>
                 {rec.gene.hgnc_symbol} has no extracellular domain (it&rsquo;s
                 intracellular / soluble), so there&rsquo;s no ECD sequence to
-                align against its paralogs. The ECD-identity cross-reactivity
-                cutoffs (≥50% plausible, ≥70% likely) don&rsquo;t apply here;
-                the family is listed for completeness.
+                align against its paralogs. The cross-reactivity cutoffs
+                (≥50% plausible, ≥70% likely) don&rsquo;t apply here; the family
+                is listed for completeness.
               </>
             )}
           </InfoTip>
@@ -509,16 +544,20 @@ export function IsoformsCard({ rec, n }: Props) {
         {paralogs.length === 0 ? (
           <p className={styles.empty}>No paralogs in Compara.</p>
         ) : visibleParalogs.length === 0 ? (
-          // ECD-bearing protein whose paralogs are all at or below the 40%
-          // floor — nothing crosses the threshold worth surfacing.
+          // Protein whose paralogs are all at or below the 40% floor —
+          // nothing crosses the threshold worth surfacing.
           <p className={styles.empty}>
-            No paralogs above 40% ECD identity in Compara.
+            No paralogs above 40% identity in Compara.
           </p>
         ) : (
           <>
             <ul className={styles.paralogChips} aria-label="Paralog list">
               {visibleParalogs.map((p, i) => {
-                const tier = paralogRiskTier(p.ecd_pct_identity);
+                // Color + label by ECD identity, falling back to the
+                // whole-protein (full-length) identity for ECD-less
+                // proteins so SRC-family paralogs still get a risk tier.
+                const riskVal = paralogRiskValue(p);
+                const tier = paralogRiskTier(riskVal);
                 const tierClass =
                   tier === "high"
                     ? styles.riskHigh
@@ -540,12 +579,12 @@ export function IsoformsCard({ rec, n }: Props) {
                         {p.paralog_symbol}
                       </span>
                       <span className={styles.paralogChipPct}>
-                        {/* ecd_pct_identity is null for ECD-less proteins
-                         *  (SRC, soluble kinases, GPI-anchored, cytoplasmic
-                         *  enzymes) — no ECD to compute identity against.
-                         *  Show "no ECD" instead of crashing on .toFixed(). */}
-                        {p.ecd_pct_identity != null
-                          ? `${p.ecd_pct_identity.toFixed(0)}%`
+                        {/* riskVal is null only on pre-population records
+                         *  that carry neither an ECD nor a full-length
+                         *  identity — show "no ECD" rather than crash on
+                         *  .toFixed(). */}
+                        {riskVal != null
+                          ? `${riskVal.toFixed(0)}%`
                           : "no ECD"}
                       </span>
                     </a>
@@ -553,10 +592,11 @@ export function IsoformsCard({ rec, n }: Props) {
                 );
               })}
             </ul>
-            {/* Risk legend — only when at least one paralog has an ECD %id
-                to color by. ECD-less proteins (SRC) skip it; the subhead
-                InfoTip already explains why the cutoffs don't apply. */}
-            {anyParalogEcd ? (
+            {/* Risk legend — only when there's an identity to color by
+                (ECD, or full-length for ECD-less proteins). Pre-population
+                records with no identity skip it; the subhead InfoTip
+                explains why the cutoffs don't apply. */}
+            {anyParalogRisk ? (
               <p className={styles.paralogLegend} aria-hidden="true">
                 <span className={styles.paralogLegendItem}>
                   <span
