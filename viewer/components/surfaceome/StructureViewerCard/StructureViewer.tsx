@@ -13,8 +13,10 @@ import type {
   AlphafoldPredictionEntry,
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
+import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
+import { tooltips } from "../../../lib/tooltips";
 import styles from "./StructureViewerCard.module.css";
 
 /** Per-residue compartment, derived from the DeepTMHMM topology
@@ -349,10 +351,26 @@ function _renderCaption(args: {
         <StatusPill tone={_plddtTone(canonicalStruct.ecd_mean_plddt)} size="sm">
           {wholeProtein ? "Whole" : "ECD"} pLDDT{" "}
           <strong>{canonicalStruct.ecd_mean_plddt.toFixed(1)}</strong>
+          {/* InfoTip rendered INSIDE the pill so the ⓘ glyph sits
+              next to the value rather than floating as a separate
+              chip beside it (matches the inline-badge pattern user
+              standardized on). */}
+          <InfoTip wide label="About AlphaFold pLDDT">
+            {tooltips.afdb_plddt}
+          </InfoTip>
         </StatusPill>
       );
     }
-    if (!wholeProtein && !placeholder) {
+    // Disordered % is shown for BOTH ECD-restricted and whole-protein
+    // canonical cases — the schema field `ecd_disordered_fraction` is
+    // populated in both (with the threshold-based ECD count for
+    // proper ECD proteins, and the fetcher's whole-protein global
+    // metric for GLOB/soluble-cytoplasmic). Previously hidden for
+    // whole-protein to avoid the appearance of comparability with the
+    // ECD-restricted number — but the InfoTip below now spells the
+    // difference out, and hiding it created an inconsistency with the
+    // isoform tabs (which always show whole-protein disordered).
+    if (!placeholder) {
       disorderedNode = (
         <span className={styles.captionStat}>
           Disordered{" "}
@@ -361,7 +379,10 @@ function _renderCaption(args: {
       );
     }
   } else {
-    const meta = afdbMetaByAcc[acc];
+    // Read with the isoform-suffixed key — the lazy-fetch effect
+    // caches per accFull (P00533-2, P00533-3, ...) so each isoform
+    // shows its OWN pLDDT, not the canonical's.
+    const meta = afdbMetaByAcc[accFull];
     if (meta === "loading" || meta === undefined) {
       plddtNode = <StatusPill tone="neutral" size="sm">loading…</StatusPill>;
     } else if (meta === "error") {
@@ -373,6 +394,9 @@ function _renderCaption(args: {
           <StatusPill tone={_plddtTone(meta.globalMetricValue)} size="sm">
             Whole pLDDT{" "}
             <strong>{meta.globalMetricValue.toFixed(1)}</strong>
+            <InfoTip wide label="About AlphaFold pLDDT">
+              {tooltips.afdb_plddt}
+            </InfoTip>
           </StatusPill>
         );
         const lowFrac = meta.fractionPlddtLow + meta.fractionPlddtVeryLow;
@@ -389,23 +413,34 @@ function _renderCaption(args: {
   const label = isCanonical
     ? "AlphaFold model"
     : `AlphaFold model · ${(activeVariant as StructureVariantAfdb).label}`;
+  // proteinName / captionTitle was removed from the canonical AFDB
+  // branch — the gene symbol is already the page's h1, so repeating
+  // the protein descriptor in the structure caption was visual noise.
+  // The Experimental tab still gets its PDB title (different shape:
+  // the title there describes the specific snapshot, not the protein).
   return (
     <div className={styles.caption} aria-label="Structure caption">
-      {proteinName && isCanonical ? (
-        <p className={styles.captionTitle}>{proteinName}</p>
-      ) : null}
       <p className={styles.captionStats}>
         <span className={styles.captionStat}>{label}</span>
         {plddtNode ? (
           <>
             <span className={styles.captionSep} aria-hidden="true">·</span>
-            {plddtNode}
+            {/* InfoTip is rendered INSIDE the StatusPill (see the
+                plddtNode construction above) so the ⓘ sits next to
+                the value rather than as a separate adjacent chip.
+                Matches the inline-badge tooltip pattern. */}
+            <span className={styles.captionStat}>{plddtNode}</span>
           </>
         ) : null}
         {disorderedNode ? (
           <>
             <span className={styles.captionSep} aria-hidden="true">·</span>
-            {disorderedNode}
+            <span className={styles.captionStat}>
+              {disorderedNode}
+              <InfoTip label="About disordered fraction">
+                {tooltips.afdb_disordered}
+              </InfoTip>
+            </span>
           </>
         ) : null}
         <span className={styles.captionSep} aria-hidden="true">·</span>
@@ -643,12 +678,30 @@ export function StructureViewer({
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
 
   // Lazy-fetch AFDB metadata when the user clicks a non-canonical
-  // AFDB variant (isoform / ortholog). One fetch per uniprot_acc;
-  // cached in state so re-clicks are free. Canonical reuses
-  // ``canonicalStruct`` (already on the prop) without any fetch.
+  // AFDB variant (isoform / ortholog). One fetch per isoform-suffixed
+  // acc — AFDB has distinct predictions for canonical (P00533, pLDDT
+  // 75.94) AND each isoform (P00533-2 pLDDT 90.38, P00533-3 pLDDT 85.0,
+  // P00533-4 pLDDT 90.12 for EGFR), so we MUST key the cache + fetch
+  // URL on the isoform-suffixed acc — keying on the base acc would
+  // surface the canonical's pLDDT for every isoform tab. The base
+  // ``uniprot_acc`` field stays on the variant for the 3D-render
+  // pipeline (which still pulls the canonical PDB when an isoform
+  // doesn't have its own model file); the AFDB caption metadata is
+  // the only place that needs the suffixed acc.
+  //
+  // CRITICAL: ``afdbMetaByAcc`` is intentionally NOT in the dep array.
+  // The effect WRITES to that state ("loading" first, then the result
+  // or "error"). If it were a dependency, the "loading" setState would
+  // re-trigger the effect, the cleanup would set ``cancelled = true``
+  // on the prior closure, and the in-flight fetch's setState would be
+  // silently dropped — so the caption would say "loading…" forever.
+  // The functional setState reads the latest cache via ``prev``, so
+  // stale-closure reads here are harmless: the early-return guard
+  // (``acc in afdbMetaByAcc``) is just a fast-path; if it's wrong, the
+  // worst case is one extra fetch that's deduped by HTTP cache anyway.
   useEffect(() => {
     if (!activeVariant || activeVariant.source !== "afdb") return;
-    const acc = activeVariant.uniprot_acc;
+    const acc = activeVariant.uniprot_acc_full ?? activeVariant.uniprot_acc;
     if (acc in afdbMetaByAcc) return;
     let cancelled = false;
     setAfdbMetaByAcc((prev) => ({ ...prev, [acc]: "loading" }));
@@ -660,12 +713,19 @@ export function StructureViewer({
         );
         if (!r.ok) throw new Error(`AFDB API ${r.status}`);
         const j = (await r.json()) as Array<{
+          uniprotAccession?: string;
           latestVersion?: number;
           globalMetricValue?: number;
           fractionPlddtLow?: number;
           fractionPlddtVeryLow?: number;
         }>;
-        const entry = j[0];
+        // The /api/prediction/{acc} endpoint accepts isoform-suffixed
+        // accs AND base accs. For an isoform-suffixed acc the array
+        // contains a single matching entry; for a base acc the array
+        // can carry canonical PLUS each modelled isoform. Pick the
+        // entry whose ``uniprotAccession`` matches what we asked for
+        // (defensive: tolerates either response shape).
+        const entry = j.find((e) => e.uniprotAccession === acc) ?? j[0];
         if (!entry) throw new Error("empty AFDB response");
         if (cancelled) return;
         setAfdbMetaByAcc((prev) => ({
@@ -683,7 +743,8 @@ export function StructureViewer({
       }
     })();
     return () => { cancelled = true; };
-  }, [activeVariant, afdbMetaByAcc]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeVariant]);
 
   const renderViewer = useCallback(async () => {
     if (!containerRef.current) return;
@@ -788,14 +849,23 @@ export function StructureViewer({
       // Mode-specific cartoon styling:
       //   topology mode: paint M/O/I/S/B per DeepTMHMM ranges so the
       //     reader sees the topology coloring + membrane slab.
-      //   sites mode: wash the cartoon to pale gray so the colored
-      //     SURFACE-Bind anchor spheres are the dominant visual cue.
-      //     The membrane slab stays at MEMBRANE_OPACITY in both
-      //     modes so its appearance is identical.
+      //   sites mode: paint the cartoon a single solid gray so the
+      //     colored SURFACE-Bind anchor spheres are the dominant
+      //     visual cue.
+      //
+      // CRITICAL: keep cartoon opacity at 1.0 in both modes. Earlier
+      // versions used opacity 0.55 in sites mode, which sounded
+      // gentler but actually changed the WebGL transparent-render
+      // ordering with the membrane slab — the membrane appeared
+      // darker / less translucent under the half-transparent cartoon
+      // than under a solid one. With both cartoons at opacity 1.0,
+      // the membrane slab (MEMBRANE_OPACITY 0.34) renders identically
+      // in both modes, matching the user's "make the membrane look
+      // the same" requirement.
       if (viewMode === "sites") {
         const baseSel = expVariant ? { chain: expVariant.chain_id } : {};
         viewer.setStyle(baseSel, {
-          cartoon: { color: "#D6D9DE", opacity: 0.55 },
+          cartoon: { color: "#D6D9DE" },
         });
       } else {
         // Default cartoon style for any residue without explicit topology

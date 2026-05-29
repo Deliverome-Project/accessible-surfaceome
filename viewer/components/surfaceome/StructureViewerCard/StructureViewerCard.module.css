@@ -207,6 +207,13 @@
   right: 8px;
   width: 28px;
   height: 28px;
+  /* 3Dmol appends a WebGL <canvas> inside the same container after
+     React mounts the button; without an explicit z-index the canvas
+     paints over the button and it appears missing even though it's
+     in the DOM. z-index:2 puts the button above the canvas without
+     getting in front of the loading / error overlays (which would
+     also stack but are mutually exclusive with the canvas). */
+  z-index: 2;
   appearance: none;
   background: rgba(255, 255, 255, 0.78);
   color: var(--ink-soft, #555);
