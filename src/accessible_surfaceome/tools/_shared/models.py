@@ -913,6 +913,20 @@ class Evidence(BaseModel):
     # as the substring check.
     entailment_audit_passed: bool | None = None
     validation_warnings: list[str] = Field(default_factory=list)
+    # Cross-planner duplicate marker. Populated by the orchestrator's
+    # post-promotion dedup pass when two ``Evidence`` records share the
+    # same ``(spans[0].source_id, spans[0].quote_sha256)`` — i.e. A1
+    # and A2 both extracted the same span from the same paper.
+    #
+    # When non-null, references the ``evidence_id`` of the canonical
+    # record this entry was folded onto (canonical = preferred A1 over
+    # A2; tie-break on earliest evidence_id). The duplicate record IS
+    # kept in the ledger so per-builder citations still resolve to the
+    # exact id they were emitted with — but the viewer collapses
+    # duplicates onto the canonical card so the reader sees ONE entry
+    # per unique source span (with both planner interpretations
+    # stacked underneath).
+    duplicate_of: str | None = None
 
     @model_validator(mode="after")
     def _check_verified_has_spans(self) -> Evidence:

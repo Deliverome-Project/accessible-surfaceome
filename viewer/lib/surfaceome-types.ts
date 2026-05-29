@@ -1082,6 +1082,17 @@ export interface Evidence {
   source?: SourceRef;
   spans: EvidenceSpan[];
   entailment_verified: boolean;
+  /** Cross-planner duplicate marker. Populated by the orchestrator's
+   *  post-promotion dedup pass when two ``Evidence`` records share
+   *  the same ``(spans[0].source.source_id, spans[0].quote_sha256)``
+   *  — i.e. A1 and A2 both extracted the same span from the same
+   *  paper. Non-null = "this entry was folded onto the referenced
+   *  canonical record". The duplicate IS kept in the ledger so
+   *  per-builder citations still resolve to the exact id they used;
+   *  the viewer's EvidenceLedgerCard collapses duplicates onto the
+   *  canonical card so the reader sees ONE entry per unique source
+   *  span (with both planner interpretations stacked). */
+  duplicate_of?: string | null;
 }
 
 export interface SearchEntry {
