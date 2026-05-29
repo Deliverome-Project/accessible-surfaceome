@@ -577,7 +577,7 @@ export function GeneHeader({
                   <div className={styles.detTile}>
                     <dt className={`label-mono ${styles.detTileK}`}>
                       {plddtLabel}
-                      <InfoTip>{tooltips.afdb_plddt}</InfoTip>
+                      <InfoTip wide>{tooltips.afdb_plddt}</InfoTip>
                     </dt>
                     <dd className={styles.vitalV}>
                       <p className={styles.detTileV}>{plddt.headline}</p>

@@ -4,6 +4,7 @@ import {
   useCallback,
   useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type KeyboardEvent,
@@ -83,32 +84,32 @@ export function InfoTip({
     };
   }, [open]);
 
-  // Auto-flip: after the popover renders, measure where it landed.
-  // If its bottom edge would exceed the viewport (- a small margin),
-  // toggle the `popoverFlipUp` modifier so CSS repositions it above
-  // the trigger via `bottom: calc(100% + 0.45rem)` instead.
-  useEffect(() => {
+  // Auto-flip: synchronously after the popover mounts at its default
+  // position (below the trigger), measure where it landed. If it
+  // overflows the viewport bottom AND there's more room above the
+  // trigger than below it, set the `flipUp` modifier so CSS
+  // repositions it above instead.
+  //
+  // `useLayoutEffect` (not useEffect+rAF) so the measurement +
+  // re-render happen synchronously inside the same browser frame —
+  // no visible flash, and no race with React 18's batching / strict-
+  // mode double-invocation that intermittently swallowed the rAF
+  // callback in the previous version.
+  useLayoutEffect(() => {
     if (!open) {
       setFlipUp(false);
       return;
     }
-    const id = requestAnimationFrame(() => {
-      const popover = popoverRef.current;
-      const trigger = triggerRef.current;
-      if (!popover || !trigger) return;
-      const popRect = popover.getBoundingClientRect();
-      const trigRect = trigger.getBoundingClientRect();
-      // If the popover overflows below AND there's more room above
-      // the trigger than below it, flip up. The second clause keeps
-      // very tall popovers from flipping into an even worse position
-      // when neither side has room (the `max-height` cap will scroll).
-      const spaceBelow = window.innerHeight - trigRect.bottom;
-      const spaceAbove = trigRect.top;
-      if (popRect.bottom > window.innerHeight - 8 && spaceAbove > spaceBelow) {
-        setFlipUp(true);
-      }
-    });
-    return () => cancelAnimationFrame(id);
+    const popover = popoverRef.current;
+    const trigger = triggerRef.current;
+    if (!popover || !trigger) return;
+    const popRect = popover.getBoundingClientRect();
+    const trigRect = trigger.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - trigRect.bottom;
+    const spaceAbove = trigRect.top;
+    if (popRect.bottom > window.innerHeight - 8 && spaceAbove > spaceBelow) {
+      setFlipUp(true);
+    }
   }, [open]);
 
   const onKeyDown = useCallback((e: KeyboardEvent<HTMLButtonElement>) => {

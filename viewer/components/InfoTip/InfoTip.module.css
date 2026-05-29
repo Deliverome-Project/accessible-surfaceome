@@ -95,13 +95,19 @@
   bottom: calc(100% + 0.45rem);
 }
 
-/* Wide modifier — opt-in for long-prose tooltips (currently the
- * Triage tip) that would otherwise wrap into a tall narrow column.
- * Bumps the cap from 28em to 42em; the `90vw` floor still keeps it
- * inside narrow viewports. Auto-flip + max-height still apply. */
+/* Wide modifier — opt-in for long-prose tooltips (Triage tip,
+ * afdb_plddt, afdb_disordered) that would otherwise wrap into a
+ * tall narrow column.
+ *
+ * Uses `rem` rather than `em` deliberately: the popover's own
+ * `font-size: 0.82rem` shrinks `em` units, so `42em` here would
+ * effectively be ~34em at root. Anchoring to `rem` (root font size,
+ * typically 16px) gives a predictable ~44rem ≈ 700px cap so the
+ * prose actually reads as a wide row, not a slightly-wider column.
+ * `90vw` still caps it on narrow viewports. */
 .popoverWide {
-  max-width: min(42em, 90vw);
-  min-width: 22em;
+  max-width: min(44rem, 90vw);
+  min-width: 28rem;
 }
 
 /* Compress consecutive <br> pairs — tooltip authors use
