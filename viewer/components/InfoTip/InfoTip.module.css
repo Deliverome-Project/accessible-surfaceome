@@ -54,9 +54,7 @@
   /* Cap vertical height so a multi-paragraph tooltip (e.g.
    * afdb_plddt, afdb_disordered) can never exceed the viewport.
    * When it would, the popover scrolls internally instead of
-   * overflowing the page. Combined with the `popoverFlipUp`
-   * modifier this guarantees the popover stays fully visible
-   * regardless of trigger position. */
+   * overflowing the page. */
   max-height: min(70vh, 28rem);
   overflow-y: auto;
   padding: var(--space-3) var(--space-4);
@@ -78,21 +76,34 @@
   line-height: 1.5;
   color: var(--ink);
   text-align: left;
-  /* Pointer event guard — the popover sits below the trigger with a
-   * small gap; we suppress pointer events on the gap so the trigger's
-   * mouseleave fires cleanly when the user moves off it. */
-  pointer-events: auto;
+
+  /* Hidden by default — CSS-only reveal on parent :hover / :focus-
+   * within (see selectors below). `visibility: hidden` (not
+   * `display: none`) keeps the popover in the accessibility tree so
+   * `role="tooltip"` stays meaningful when shown. `pointer-events:
+   * none` while hidden so the invisible popover never blocks clicks
+   * on whatever's beneath it. */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    visibility 0s var(--dur-fast);
 }
 
-/* Flip-up modifier — applied by InfoTip.tsx when the popover's
- * natural position (below the trigger) would extend past the
- * viewport bottom. Repositions the popover above the trigger
- * instead, with the same 0.45rem gap. The deterministic-tools
- * strip on the gene page sits low enough that ~all of its
- * InfoTips trigger this. */
-.popoverFlipUp {
-  top: auto;
-  bottom: calc(100% + 0.45rem);
+/* Reveal — the wrapper :hover OR :focus-within (keyboard tab to the
+ * trigger button) makes the sibling popover visible. CSS-only: no
+ * React state, no event listeners, no per-popover hydration boundary. */
+.wrap:hover .popover,
+.wrap:focus-within .popover {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  /* Override the visibility-delay transition so it appears immediately
+   * (instead of waiting for the opacity fade-in to finish). */
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    visibility 0s;
 }
 
 /* Wide modifier — opt-in for long-prose tooltips (Triage tip,

@@ -1,15 +1,4 @@
-"use client";
-
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type KeyboardEvent,
-  type ReactNode,
-} from "react";
+import type { ReactNode } from "react";
 import styles from "./InfoTip.module.css";
 
 interface InfoTipProps {
@@ -23,177 +12,74 @@ interface InfoTipProps {
   /** Additional class names for the trigger (e.g. for inline alignment
    *  inside a label-mono row). */
   triggerClassName?: string;
-  /** Use a wider popover (max-width ~42em vs the default ~28em) for
+  /** Use a wider popover (max-width ~44rem vs the default ~28em) for
    *  long-prose tooltips that would otherwise wrap into a tall narrow
-   *  column. The auto-flip / max-height clamps still apply on top. */
+   *  column. */
   wide?: boolean;
 }
 
 /**
- * InfoTip — small, accessible provenance popover.
+ * InfoTip — small provenance popover. **Pure server component, no
+ * `"use client"`.**
  *
- * Behavior:
- * - Click / Enter / Space on the trigger toggles the popover.
- * - Hover opens it (mouse only); blur / mouseleave closes it.
- * - Escape closes it.
- * - Click outside closes it.
+ * Behavior is CSS-only:
+ * - Hover on the trigger (mouse) → popover shows.
+ * - Focus on the trigger (keyboard Tab) → popover shows via
+ *   `:focus-within` on the wrapper.
+ * - Mouseleave / blur → popover hides.
  *
- * Why a button trigger (not a hover-only span): keyboard users + touch
- * users need a click target. The trigger is a real <button> so Tab
- * reaches it and Enter/Space activates it.
+ * Why no JS: a typical gene page renders ~60 InfoTips (one per
+ * vital cell + one per filter chip + per-method tooltips). Each
+ * was a `"use client"` boundary with useState/useRef/useLayoutEffect
+ * + click/hover/keyboard handlers + auto-flip viewport detection.
+ * Collectively that's 60 hydration islands of overhead. Converting
+ * to CSS-only drops it to zero — the popover is always in the DOM
+ * (hidden via `visibility: hidden`) and the browser reveals it
+ * natively on `:hover` / `:focus-within`.
+ *
+ * Trade-offs from the JS version:
+ * - Lost: viewport-edge auto-flip (popover may extend off-screen
+ *   for triggers near page edges). Acceptable; the popover has
+ *   `max-width: 90vw` so it never exceeds the viewport width.
+ * - Lost: click-to-pin (popover closes when hover/focus leaves;
+ *   touch users get a brief tap-and-hold view, same as native
+ *   `title="..."` behavior).
+ * - Lost: explicit ESC handler (not needed — moving focus dismisses).
+ * - Kept: keyboard accessibility via real `<button>` trigger
+ *   (Tab reaches it, focus shows tooltip).
+ * - Kept: `role="tooltip"` so screen readers identify the popover
+ *   content as a tooltip.
+ *
+ * The popover is rendered as a `<span role="tooltip">` inside the
+ * wrapper. It's always in the DOM (necessary for CSS sibling
+ * selectors to fire on hover/focus); visibility is toggled via
+ * `visibility: hidden` → `visible` so it's still in the a11y tree
+ * when shown.
  */
 export function InfoTip({
   children,
-  glyph = "ⓘ", // ⓘ
+  glyph = "ⓘ",
   label = "About this field",
   triggerClassName,
   wide = false,
 }: InfoTipProps) {
-  const [open, setOpen] = useState(false);
-  // When the popover would extend past the viewport bottom (typical
-  // for triggers near the bottom of the page — the new Deterministic
-  // strip sits low on the gene page), we flip it to render above the
-  // trigger instead. Computed once per open, after the popover lays
-  // out, so we can measure where it actually landed.
-  const [flipUp, setFlipUp] = useState(false);
-  // Horizontal shift (px) we add on top of the default
-  // `translateX(-50%)` centering so the popover stays inside the
-  // viewport when the trigger is near the left/right edge. Positive
-  // shifts right (rescue left-overflow); negative shifts left
-  // (rescue right-overflow). The wide-popover Triage tip sits near
-  // the left of the gene header; the pLDDT tip sits near the right
-  // edge of the deterministic strip — both would otherwise extend
-  // off-screen.
-  const [shiftX, setShiftX] = useState(0);
-  const triggerRef = useRef<HTMLButtonElement | null>(null);
-  const popoverRef = useRef<HTMLDivElement | null>(null);
-  const popoverId = useId();
-
-  // Outside-click + Escape closes the popover.
-  useEffect(() => {
-    if (!open) return;
-    const onDocClick = (e: MouseEvent) => {
-      const t = e.target as Node | null;
-      if (t === null) return;
-      if (triggerRef.current?.contains(t)) return;
-      if (popoverRef.current?.contains(t)) return;
-      setOpen(false);
-    };
-    const onKey = (e: globalThis.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    };
-    document.addEventListener("mousedown", onDocClick);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onDocClick);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  // Auto-flip: synchronously after the popover mounts at its default
-  // position (below the trigger), measure where it landed. If it
-  // overflows the viewport bottom AND there's more room above the
-  // trigger than below it, set the `flipUp` modifier so CSS
-  // repositions it above instead.
-  //
-  // `useLayoutEffect` (not useEffect+rAF) so the measurement +
-  // re-render happen synchronously inside the same browser frame —
-  // no visible flash, and no race with React 18's batching / strict-
-  // mode double-invocation that intermittently swallowed the rAF
-  // callback in the previous version.
-  useLayoutEffect(() => {
-    if (!open) {
-      setFlipUp(false);
-      setShiftX(0);
-      return;
-    }
-    const popover = popoverRef.current;
-    const trigger = triggerRef.current;
-    if (!popover || !trigger) return;
-    const popRect = popover.getBoundingClientRect();
-    const trigRect = trigger.getBoundingClientRect();
-
-    // ── Vertical: flip up if the popover overflows below AND there's
-    // more room above than below.
-    const spaceBelow = window.innerHeight - trigRect.bottom;
-    const spaceAbove = trigRect.top;
-    if (popRect.bottom > window.innerHeight - 8 && spaceAbove > spaceBelow) {
-      setFlipUp(true);
-    }
-
-    // ── Horizontal: the popover is centered on the trigger via
-    // `left: 50%; transform: translateX(-50%)`. For a wide popover
-    // near a viewport edge, that centering puts the left/right edge
-    // off-screen. Compute a pixel shift we add to the translateX so
-    // the popover stays inside the viewport with an 8px gutter,
-    // without losing alignment relative to the trigger.
-    const gutter = 8;
-    let shift = 0;
-    if (popRect.left < gutter) {
-      shift = gutter - popRect.left;
-    } else if (popRect.right > window.innerWidth - gutter) {
-      shift = window.innerWidth - gutter - popRect.right;
-    }
-    if (shift !== 0) setShiftX(shift);
-  }, [open]);
-
-  const onKeyDown = useCallback((e: KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setOpen((v) => !v);
-    }
-  }, []);
-
   return (
     <span className={styles.wrap}>
       <button
-        ref={triggerRef}
         type="button"
         className={`${styles.trigger} ${triggerClassName ?? ""}`.trim()}
         aria-label={label}
-        aria-expanded={open}
-        aria-describedby={open ? popoverId : undefined}
-        onClick={(e) => {
-          // Stop the click bubbling so parent labels (often clickable for
-          // sort / focus) don't react to the info-tip activation.
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        onKeyDown={onKeyDown}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setOpen(false)}
       >
         <span aria-hidden="true">{glyph}</span>
       </button>
-      {open ? (
-        <div
-          ref={popoverRef}
-          id={popoverId}
-          role="tooltip"
-          className={`${styles.popover} ${flipUp ? styles.popoverFlipUp : ""} ${wide ? styles.popoverWide : ""}`.replace(/\s+/g, " ").trim()}
-          // Inline transform overrides the CSS `translateX(-50%)`
-          // when we need to nudge the popover horizontally to keep
-          // it inside the viewport (see the useLayoutEffect above).
-          // `shiftX=0` leaves the CSS rule alone.
-          style={
-            shiftX !== 0
-              ? { transform: `translateX(calc(-50% + ${shiftX}px))` }
-              : undefined
-          }
-          // Don't let the popover swallow the trigger's hover-out:
-          // moving from trigger → popover bridges via a tiny gap that
-          // we suppress with `pointer-events` so the mouse still
-          // resolves to the trigger's mouseleave.
-          onMouseEnter={() => setOpen(true)}
-        >
-          {children}
-        </div>
-      ) : null}
+      <span
+        role="tooltip"
+        className={`${styles.popover} ${wide ? styles.popoverWide : ""}`
+          .replace(/\s+/g, " ")
+          .trim()}
+      >
+        {children}
+      </span>
     </span>
   );
 }
