@@ -381,12 +381,12 @@ export function GeneHeader({
             {geneName?.name ? (
               <span className={styles.geneFullName}>{geneName.name}</span>
             ) : null}
+            {geneName?.synonyms && geneName.synonyms.length > 0 ? (
+              <span className={styles.synonyms}>
+                Synonyms: {geneName.synonyms.slice(0, 3).join(", ")}
+              </span>
+            ) : null}
           </h1>
-          {geneName?.synonyms && geneName.synonyms.length > 0 ? (
-            <p className={styles.synonyms}>
-              Synonyms: {geneName.synonyms.slice(0, 3).join(", ")}
-            </p>
-          ) : null}
 
           {/* IDs row — small, immediately under the descriptive gene
               name. Was previously placed below the exec lede + headline

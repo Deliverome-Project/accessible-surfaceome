@@ -101,11 +101,18 @@
   white-space: normal;
 }
 
-/* Previous / alternate symbols, small line under the gene name. */
+/* Previous / alternate symbols — inline on the symbol line, after the
+   gene name. Smallest + muted; resets the inherited h-gene
+   weight / tracking / case (it lives inside the <h1>). */
 .synonyms {
-  margin: 0.15rem 0 0;
+  margin-left: 0.55rem;
   font-size: 0.72rem;
+  font-weight: var(--fw-regular);
+  font-style: normal;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--muted);
+  white-space: normal;
 }
 
 /* .geneName + .geneSynonyms were the descriptive HGNC name + alias

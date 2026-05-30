@@ -69,17 +69,21 @@ export default async function GenePage({ params }: PageProps) {
   const geneName = d1ProteinName
     ? { name: d1ProteinName, synonyms: localName?.synonyms ?? [] }
     : localName;
-  // Structure-viewer data: derive primarily from the deep-dive record's
-  // DeepTMHMM topology (which comes from D1 via the Worker), so any gene
-  // with a record renders structure — including ones outside the static
-  // topology-sweep cohort (CD81, HSPA5). Fall back to the committed static
-  // file for the GLOB opt-in case (e.g. SRC's lipid anchor), which
-  // record-derivation skips.
+  // Structure-viewer data: prefer the committed static file when present
+  // — it bakes the AFDB model version + URL resolved at build time (now
+  // v6 for EGFR etc.), so the canonical view loads the latest model
+  // directly instead of relying on a render-time prediction-API call
+  // that falls back to a stale v4 URL on any hiccup. Genes outside the
+  // static topology-sweep cohort (CD81, HSPA5) fall back to deriving
+  // from the deep-dive record's DeepTMHMM topology (which comes from D1);
+  // there `pdb_url` is null so the client resolves the latest via the
+  // AFDB prediction API.
   const structureData =
+    loadStructureViewerData(rec.gene.uniprot_acc) ??
     structureViewerDataFromRecord(
       rec.gene.uniprot_acc,
       rec.deterministic_features.canonical_topology,
-    ) ?? loadStructureViewerData(rec.gene.uniprot_acc);
+    );
   // 5-DB presence vector (UniProt / GO / SURFY / CSPA / HPA) from the
   // candidate-universe build — the same vote pattern shown as dots on
   // the catalog (/) and SurfaceBench (/benchmark) rows. Catalog load
