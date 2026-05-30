@@ -932,10 +932,47 @@ def _derive_filters(
         "supports_surface_localization",
     }
     _OE_SYSTEMS = {"overexpression", "mixed"}
-    oe_surface_observed = any(
-        m.expression_system in _OE_SYSTEMS
-        and m.accessibility_relevance in _SURFACE_TIERS
+    _oe_methods = [
+        m
         for m in surface_evidence.methods
+        if m.expression_system in _OE_SYSTEMS
+        and m.accessibility_relevance in _SURFACE_TIERS
+    ]
+    oe_surface_observed = len(_oe_methods) > 0
+    # Composed rationale for the OE-surface derived boolean — names the
+    # triggering method observation(s) so the chip's "why" is auditable.
+    if oe_surface_observed:
+        _oe_cites = sorted(
+            {cid for m in _oe_methods for cid in m.cited_evidence_ids}
+        )
+        oe_rationale = (
+            f"{len(_oe_methods)} method observation(s) pair an "
+            "overexpression/mixed expression system with a "
+            "surface-localization readout"
+            + (f" (cites {', '.join(_oe_cites)})" if _oe_cites else "")
+            + "."
+        )
+    else:
+        oe_rationale = (
+            "No method observation pairs an overexpression/mixed expression "
+            "system with a direct or supportive surface-accessibility readout."
+        )
+
+    # Composed rationale for the low-endogenous derived boolean — references
+    # the expression_level it was derived from + the synthesizer's reason.
+    _low_endog = filters_llm.expression_level in ("low", "absent")
+    low_endog_rationale = (
+        f"Derived from expression_level={filters_llm.expression_level!r}"
+        + (
+            " (∈ {low, absent} → flagged)."
+            if _low_endog
+            else " (not low/absent → not flagged)."
+        )
+        + (
+            f" {filters_llm.expression_level_rationale}"
+            if filters_llm.expression_level_rationale
+            else ""
+        )
     )
 
     def _canonical_species_identity(entries: list) -> float | None:
@@ -992,7 +1029,7 @@ def _derive_filters(
         # D — derived from filters_llm.expression_level so the headline
         # signal can't drift from this catalog filter. Replaces the
         # now-dropped HeadlineRisk.low_endogenous_expression value.
-        low_endogenous_expression=filters_llm.expression_level in ("low", "absent"),
+        low_endogenous_expression=_low_endog,
         # L — orphan-receptor flag from SynthesizerLLMFilters. Replaces
         # the now-dropped HeadlineRisk.ligand_unknown value.
         has_known_ligand=filters_llm.has_known_ligand,
@@ -1001,6 +1038,15 @@ def _derive_filters(
         n_contradicting_claims_high_weight=n_contradicting_hi,
         # D — OE+surface-localization derived above
         overexpression_surface_localization_observed=oe_surface_observed,
+        # ---- per-chip rationales ----------------------------------------
+        # L — the four LLM-emitted rollup rationales, passed through verbatim.
+        expression_level_rationale=filters_llm.expression_level_rationale,
+        expression_breadth_rationale=filters_llm.expression_breadth_rationale,
+        surface_specificity_rationale=filters_llm.surface_specificity_rationale,
+        has_known_ligand_rationale=filters_llm.has_known_ligand_rationale,
+        # D — the two composed rationales for the derived booleans.
+        low_endogenous_expression_rationale=low_endog_rationale,
+        overexpression_surface_localization_observed_rationale=oe_rationale,
     )
 
 

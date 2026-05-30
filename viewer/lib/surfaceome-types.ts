@@ -286,6 +286,20 @@ export interface Filters {
    *  to surface-localize in an OE context" — useful for filtering
    *  targets amenable to OE-based validation experiments. */
   overexpression_surface_localization_observed: boolean;
+  /** Per-chip rationales — every catalog chip carries its "why".
+   *  Four mirror the synthesizer's LLM-emitted rollups; two are
+   *  orchestrator-composed for the derived booleans. Optional: records
+   *  emitted before this field existed (genes not yet re-annotated)
+   *  omit them, and the viewer renders the chip without an expansion.
+   *  The other five chips (co-receptor, restricted-subdomain, shed,
+   *  secreted, epitope-masking) carry their rationale in the deep
+   *  ``accessibility_risks`` blocks, not here. */
+  expression_level_rationale?: string;
+  expression_breadth_rationale?: string;
+  surface_specificity_rationale?: string;
+  has_known_ligand_rationale?: string;
+  low_endogenous_expression_rationale?: string;
+  overexpression_surface_localization_observed_rationale?: string;
 }
 
 // ============================================================
@@ -324,6 +338,14 @@ export interface IsoformTopology {
   per_residue_topology: string;
   tool_version: string;
   retrieved_at: string;
+  // Sequence identity of an alternative isoform against this protein's own
+  // canonical sequence (BLOSUM62 global alignment over the shorter length).
+  // Null on the canonical row itself and on records predating the identity
+  // sweep; ecd_pct_identity_to_canonical is also null when the protein has no
+  // extracellular residues (e.g. SRC — a GLOB intracellular kinase).
+  full_length_pct_identity_to_canonical?: number | null;
+  ecd_pct_identity_to_canonical?: number | null;
+  ecd_pct_similarity_to_canonical?: number | null;
 }
 
 export interface OrthologEntry {
@@ -391,11 +413,19 @@ export interface ParalogEntry {
   full_length_pct_identity: number | null;
   family_id: string;
   compara_version: string;
-  // (Per-residue DeepTMHMM topology was briefly added to this entry
-  // in 6a220a90 and reverted: SRC's 32 paralogs are all GLOB
-  // intracellular kinases, so the bars rendered as solid blue with
-  // no signal. Isoform + ortholog topology stay in §04 because they
-  // CAN show real TM patterns.)
+  // ECD percent similarity (identity + BLOSUM62-positive substitutions),
+  // and the paralog's real DeepTMHMM topology — populated ONLY for close
+  // paralogs (>=80% full-length), which the card promotes to full topology
+  // rows. All null for below-threshold / ECD-less / no-topology paralogs.
+  ecd_pct_similarity?: number | null;
+  per_residue_topology?: string | null;
+  deeptmhmm_label?: string | null;
+  tm_helix_count?: number | null;
+  ecd_length_residues?: number | null;
+  icd_length_residues?: number | null;
+  n_terminal_orientation?: Orientation | null;
+  c_terminal_orientation?: Orientation | null;
+  signal_peptide_length?: number | null;
 }
 
 /**

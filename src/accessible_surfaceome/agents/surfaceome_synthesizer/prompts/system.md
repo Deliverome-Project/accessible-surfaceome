@@ -63,9 +63,23 @@ your task message; follow it. Four blocks:
   set `surface_expression_dependency="none"`, not `"unknown"`. Reserve
   `"unknown"` for cases where the ledger has no co-receptor information
   at all — not for cases where it has *negative* information.
-- `filters_llm` — three rollups only: `expression_level`,
-  `expression_breadth`, `surface_specificity`. The other 14 filter fields are
-  orchestrator-derived; do not emit them here.
+- `filters_llm` — four rollups, **each paired with a one-line
+  `*_rationale`**: `expression_level` + `expression_level_rationale`,
+  `expression_breadth` + `expression_breadth_rationale`,
+  `surface_specificity` + `surface_specificity_rationale`, and
+  `has_known_ligand` + `has_known_ligand_rationale`. The other 13 filter
+  fields are orchestrator-derived; do not emit them here. Every rationale
+  is **required, non-empty, ≤300 chars**, written for the catalog reader,
+  and must justify the rollup value from the ledger:
+    - `expression_level_rationale` — name the dominant tissue/context the
+      level anchors to (e.g. "high in epithelial tissues; HPA + flow agree").
+    - `expression_breadth_rationale` — how many / which tissue families
+      carry it (e.g. "broad: detected across epithelial, neural, immune").
+    - `surface_specificity_rationale` — the surface-vs-intracellular split
+      basis (e.g. "mixed: ~40% PM, ~60% endosomal in dual-localization rows").
+    - `has_known_ligand_rationale` — name the documented ligand/partner when
+      `True` (e.g. "binds EGF/TGF-α"), or state why orphan-class when `False`
+      (e.g. "orphan GPCR; no deorphanized endogenous ligand reported").
 - `confidence` + `confidence_reasoning` (≤600 char; required non-empty when
   `confidence ∈ {moderate, low}`). **Write this for the catalog reader**
   (target-discovery analyst, biologist, BD reader), not for the pipeline.
@@ -324,7 +338,7 @@ reach for a value you remember from earlier:
   to put it back in headline_risks.**
 * `ligand_unknown` → NOT a risk; it's an orphan-receptor status flag.
   Set `filters_llm.has_known_ligand=False` for orphan GPCRs / NHRs /
-  kinases. The synthesizer's only job here is the bool; the catalog
+  kinases, and explain in `has_known_ligand_rationale`. The catalog
   treats `has_known_ligand=False` as a target-tractability signal.
 * `other` → forbidden. If the risk you have in mind doesn't map to
   one of the five named values, raise it in `one_paragraph` and let
@@ -445,7 +459,8 @@ A given gene carries one value from EACH axis. **EGFR**:
 
 ## Has-known-ligand flag
 
-`filters_llm.has_known_ligand` is a bool. **Default `True`** — most
+`filters_llm.has_known_ligand` is a bool with a required
+`has_known_ligand_rationale` (≤300 char). **Default `True`** — most
 surface proteins have a validated endogenous ligand. Set `False`
 ONLY for orphan-class genes where ligand identity is genuinely
 unknown:
@@ -471,5 +486,5 @@ the ledger carries the verbatim text.
 
 A1's `surface_evidence` and A2's `biological_context` are inputs, not
 outputs — do not rewrite them. `deterministic_features` is
-orchestrator-only; the same goes for the 14 deterministic filter fields
-(everything in `Filters` outside the three in `filters_llm`).
+orchestrator-only; the same goes for the 13 deterministic filter fields
+(everything in `Filters` outside the four rollups in `filters_llm`).

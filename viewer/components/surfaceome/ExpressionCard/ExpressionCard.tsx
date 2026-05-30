@@ -1,7 +1,7 @@
 import type { SurfaceomeRecord, TissueLevel } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
-import { FeatureChips } from "../FeatureChips/FeatureChips";
+import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./ExpressionCard.module.css";
@@ -37,7 +37,7 @@ export function ExpressionCard({ rec, n }: Props) {
       title="Expression level & tissue distribution"
       meta="Baseline level · breadth · overexpression precedent · tissue × disease-context rows"
     >
-      <FeatureChips category="expression" rec={rec} />
+      <FeatureRationales category="expression" rec={rec} />
 
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Tissues × disease context</p>
@@ -78,6 +78,58 @@ export function ExpressionCard({ rec, n }: Props) {
           </table>
         )}
       </div>
+
+      {/* Cell types — the per-cell-ontology distribution that backs the
+       *  tissue rows. Previously unrendered; surfaced here so a reader can
+       *  see which cell lineages carry the protein and in which tissues,
+       *  with the Cell Ontology id for cross-referencing. */}
+      {bc.cell_types.length > 0 ? (
+        <div className={styles.subsection}>
+          <p className={`label-mono ${styles.subhead}`}>Cell types</p>
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">Cell type</th>
+                <th scope="col">Ontology</th>
+                <th scope="col">Present in tissues</th>
+                <th scope="col">Cites</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bc.cell_types.map((c, i) => (
+                <tr key={i}>
+                  <td>{c.cell_type}</td>
+                  <td>
+                    <span className={styles.mono}>{c.ontology_id || "—"}</span>
+                  </td>
+                  <td>{c.present_in_tissues.join(", ") || "—"}</td>
+                  <td>
+                    <EvidenceChipList ids={c.cited_evidence_ids} label="Cites" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {/* Cell states — activation / differentiation states the protein's
+       *  expression tracks with. Rendered only when the synthesizer
+       *  recorded any (empty for most genes). */}
+      {bc.cell_states.length > 0 ? (
+        <div className={styles.subsection}>
+          <p className={`label-mono ${styles.subhead}`}>Cell states</p>
+          <ul className={styles.stateList}>
+            {bc.cell_states.map((s, i) => (
+              <li key={i}>
+                <span className={styles.stateName}>{prettyEnum(s.state)}</span>
+                {s.descriptor ? ` — ${s.descriptor}` : ""}{" "}
+                <EvidenceChipList ids={s.cited_evidence_ids} label="Cites" />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </SectionCard>
   );
 }

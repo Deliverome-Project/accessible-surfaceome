@@ -14,3 +14,44 @@
 .pills li {
   display: inline-flex;
 }
+
+/* Per-chip rationale block at the top of a feature tab's card. Each row
+   pairs the chip's pill (term) with its rationale prose (definition), so
+   the at-a-glance signal in the §01 panel and its "why" on the tab are
+   explicitly linked. */
+.rationales {
+  margin: 0 0 var(--space-5);
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.rationaleRow {
+  display: grid;
+  grid-template-columns: minmax(11rem, max-content) 1fr;
+  gap: var(--space-2) var(--space-4);
+  align-items: baseline;
+}
+
+@media (max-width: 640px) {
+  .rationaleRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-1);
+  }
+}
+
+.rationaleTerm {
+  margin: 0;
+  display: inline-flex;
+}
+
+.rationaleDef {
+  margin: 0;
+  color: var(--ink-soft, inherit);
+  line-height: 1.5;
+}
+
+.rationaleMissing {
+  color: var(--ink-faint, #999);
+  font-style: italic;
+}

@@ -2,6 +2,11 @@ import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-ty
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import {
+  buildFeatureChips,
+  FEATURE_CATEGORIES,
+  FEATURE_TAB_LABEL,
+} from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./FiltersCard.module.css";
@@ -331,14 +336,20 @@ export function FiltersCard({ rec, n }: Props) {
     // evidence" vital up top carries `evidence_grade`, and
     // `surface_call_reason` / `evidence_density` live in the catalog
     // filters — duplicating them per-gene here was noise.
-    // The LLM "Attributes" (now "Biology"), "Expression", and "Risks"
-    // chip groups were promoted OUT of this card into three standalone
-    // top-level tabs. Each tab renders <FeatureChips category=…/> above
-    // its expanded prose/evidence card (BiologicalContextCard /
-    // ExpressionCard / AccessibilityRisksCard); the chip builders live in
-    // components/surfaceome/FeatureChips/FeatureChips.tsx. This card keeps
-    // only the deterministic registry / topology / homology readouts, so
-    // there are no more "llm"-provenance groups here.
+    //
+    // The LLM "Biology" / "Expression" / "Risks" chip groups live here
+    // (PR #47) as the single at-a-glance home for the model's rollup
+    // chips. PR #38 had promoted them out to three standalone tabs; per
+    // user feedback the chips belong in the §01 signal panel, and each
+    // tab now renders the per-chip RATIONALE (<FeatureRationales>)
+    // instead. The chip builders are the shared source of truth in
+    // components/surfaceome/FeatureChips/FeatureChips.tsx, so a panel
+    // chip and its tab rationale can't drift.
+    ...FEATURE_CATEGORIES.map((cat) => ({
+      label: FEATURE_TAB_LABEL[cat],
+      provenance: "llm" as const,
+      pills: buildFeatureChips(cat, rec).map((m) => m.pill),
+    })),
     //
     // Registry families lead the deterministic block — protein
     // classification is identity-level context that frames the
@@ -464,15 +475,21 @@ export function FiltersCard({ rec, n }: Props) {
           >
             {nLikely} likely cross-reactive
           </StatusPill>,
-          <StatusPill
-            key="p-plausible"
-            tone={nPlausible > 0 ? "amber" : "success"}
-            size="sm"
-            title={TT_PARALOG_ID}
-          >
-            {nPlausible} plausible
-          </StatusPill>,
         );
+        // Only surface the "plausible" tier when it's non-empty — a
+        // "0 plausible" chip is noise next to the max-%ECD + likely pills.
+        if (nPlausible > 0) {
+          out.push(
+            <StatusPill
+              key="p-plausible"
+              tone="amber"
+              size="sm"
+              title={TT_PARALOG_ID}
+            >
+              {nPlausible} plausible
+            </StatusPill>,
+          );
+        }
         return out;
       })(),
     },

@@ -4,7 +4,7 @@ import type {
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
-import { FeatureChips } from "../FeatureChips/FeatureChips";
+import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./BiologicalContextCard.module.css";
@@ -32,7 +32,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
       title="Localization & accessibility context"
       meta="Subcellular localization · anatomical accessibility · accessibility modulation"
     >
-      <FeatureChips category="biology" rec={rec} />
+      <FeatureRationales category="biology" rec={rec} />
 
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>

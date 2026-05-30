@@ -1632,6 +1632,30 @@ class Filters(BaseModel):
     # methods (weak grade, errored runs) read as False.
     overexpression_surface_localization_observed: bool = False
 
+    # ---- per-chip rationales -------------------------------------------
+    # Every catalog chip carries a one-line "why". Four mirror B's
+    # ``SynthesizerLLMFilters`` rationales (LLM-emitted rollups with no
+    # deep block); two are composed deterministically by the orchestrator
+    # for the derived booleans, referencing the source they were derived
+    # from. The five remaining chips (co-receptor, restricted-subdomain,
+    # shed, secreted, epitope-masking) carry their rationale in the deep
+    # ``accessibility_risks`` blocks and are not duplicated here.
+    #
+    # Default ``""`` for backward compatibility: records emitted before
+    # this field existed (or genes not yet re-annotated) read as empty,
+    # and the viewer renders the chip without an expansion in that case.
+    expression_level_rationale: str = ""
+    expression_breadth_rationale: str = ""
+    surface_specificity_rationale: str = ""
+    has_known_ligand_rationale: str = ""
+    # Orchestrator-composed (deterministic): references ``expression_level``
+    # and its rationale — ``low_endogenous_expression`` fires iff
+    # ``expression_level ∈ {low, absent}``.
+    low_endogenous_expression_rationale: str = ""
+    # Orchestrator-composed (deterministic): names the overexpression +
+    # surface-localization method observation(s) that set the flag True.
+    overexpression_surface_localization_observed_rationale: str = ""
+
 
 # ---- surface evidence (section 1) -----------------------------------------
 
@@ -2104,6 +2128,15 @@ class IsoformTopology(BaseModel):
     per_residue_topology: str
     tool_version: str
     retrieved_at: datetime
+    # Sequence identity of an alternative isoform against this protein's own
+    # canonical sequence (BLOSUM62 global alignment over the shared length;
+    # see ``merge/isoform_identity.py``). Both fields are None on the
+    # canonical row itself (it's the reference) and on isoforms predating the
+    # identity sweep. ``ecd_pct_identity_to_canonical`` is additionally None
+    # when either the canonical or the isoform has no extracellular residues.
+    full_length_pct_identity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
+    ecd_pct_identity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
+    ecd_pct_similarity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
 
 
 class OrthologEntry(BaseModel):
@@ -2192,13 +2225,25 @@ class ParalogEntry(BaseModel):
     full_length_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
-    # (Per-residue DeepTMHMM topology was briefly added to this entry
-    # in 6a220a90 and reverted shortly after: SRC's 32 paralogs are all
-    # GLOB intracellular kinases, so the bars rendered as solid blue
-    # with no signal. Isoform + ortholog topology are still surfaced
-    # in §04 because those CAN show real TM patterns. If a real use
-    # case for paralog topology surfaces later, re-add via the same
-    # topology_public LEFT JOIN pattern that the orthologs loader uses.)
+    # ECD percent SIMILARITY (identity + BLOSUM62-positive substitutions),
+    # the companion to ``ecd_pct_identity``. Populated only for CLOSE paralog
+    # pairs (>=80% full-length identity) — the ones the viewer promotes to
+    # full topology rows. None for ECD-less proteins and below-threshold pairs.
+    # Sourced from ``compara_paralog.ecd_pct_similarity``.
+    ecd_pct_similarity: float | None = Field(default=None, ge=0.0, le=100.0)
+    # Real DeepTMHMM topology for the paralog, joined from ``topology_public``
+    # (cohort=human_canonical) — NOT inferred from any string. Populated for
+    # close paralogs (>=80%) so the viewer can render a full topology row
+    # (ECD / ICD / TM / orientations) like the ortholog rows. All None when
+    # the paralog has no topology row or the pair is below threshold.
+    per_residue_topology: str | None = Field(default=None)
+    deeptmhmm_label: str | None = Field(default=None)  # 'TM'|'SP+TM'|'SP'|'BETA'|'GLOB'
+    tm_helix_count: int | None = Field(default=None)
+    ecd_length_residues: int | None = Field(default=None)
+    icd_length_residues: int | None = Field(default=None)
+    n_terminal_orientation: TerminalOrientation | None = Field(default=None)
+    c_terminal_orientation: TerminalOrientation | None = Field(default=None)
+    signal_peptide_length: int | None = Field(default=None)
 
 
 class StructureFeatures(BaseModel):
@@ -2794,21 +2839,36 @@ class BiologicalContextDraft(BaseModel):
 
 
 class SynthesizerLLMFilters(BaseModel):
-    """The three ``filters`` rollups B is responsible for.
+    """The four ``filters`` rollups B is responsible for, each with its
+    one-line rationale.
 
-    The full :class:`Filters` block has 17 fields; 14 of those are
+    The full :class:`Filters` block has 17 value fields; 14 of those are
     orchestrator-derived from A1/A2 deep blocks and ``deterministic_features``.
-    B emits only the three rollups that don't have a deterministic source —
-    surface vs. intracellular split, expression breadth across tissues, and
-    expression level for the protein's primary contexts. The orchestrator
-    composes the full :class:`Filters` after the fact.
+    B emits the rollups that don't have a deterministic source — surface vs.
+    intracellular split, expression breadth across tissues, expression level
+    for the protein's primary contexts, and orphan-ligand status — plus a
+    short ``*_rationale`` for each so every catalog chip carries its "why".
+    The orchestrator composes the full :class:`Filters` after the fact,
+    mirroring these rationales onto the top-level block.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     expression_level: ExpressionLevel
+    expression_level_rationale: str = Field(
+        ...,
+        description="Why this expression_level. Cite the dominant tissue/context the call anchors to. Soft target ≤300 chars.",
+    )
     expression_breadth: ExpressionBreadth
+    expression_breadth_rationale: str = Field(
+        ...,
+        description="Why this expression_breadth — how many / which tissue families carry the protein. Soft target ≤300 chars.",
+    )
     surface_specificity: SurfaceSpecificity
+    surface_specificity_rationale: str = Field(
+        ...,
+        description="Why this surface-vs-intracellular split (e.g. dual-localization fractions, dominant compartment). Soft target ≤300 chars.",
+    )
     # Orphan-receptor flag. Replaces the dropped
     # ``HeadlineRisk.ligand_unknown`` value — moved here so the
     # catalog can filter on ligand-known-or-not as a tractability
@@ -2817,6 +2877,22 @@ class SynthesizerLLMFilters(BaseModel):
     # ``False`` for orphan GPCRs / nuclear receptors / kinases where
     # the deorphanization status is genuinely unknown.
     has_known_ligand: bool = True
+    has_known_ligand_rationale: str = Field(
+        ...,
+        description="Name the documented ligand/partner (true) or state why the protein is orphan-class (false). Soft target ≤300 chars.",
+    )
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
+        "expression_level_rationale": 300,
+        "expression_breadth_rationale": 300,
+        "surface_specificity_rationale": 300,
+        "has_known_ligand_rationale": 300,
+    }
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "SynthesizerLLMFilters":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class SynthesizerDraft(BaseModel):
