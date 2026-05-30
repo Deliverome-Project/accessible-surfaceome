@@ -2136,6 +2136,21 @@ class OrthologEntry(BaseModel):
     # placeholder when these are absent.
     per_residue_topology: str | None = Field(default=None)
     deeptmhmm_label: str | None = Field(default=None)  # 'TM' | 'SP+TM' | 'SP' | 'BETA' | 'GLOB'
+    # Topology-projection provenance (merge.ortholog_topology_projection).
+    # When set (``"projected_from_human_canonical"``), the per_residue_topology
+    # / tm_helix_count / ecd_length_residues above are the HUMAN canonical
+    # topology projected onto this ortholog via global alignment — not raw
+    # DeepTMHMM-on-ortholog, which is unreliable on the truncated / padded
+    # auto-annotated ortholog models (esp. cynomolgus TrEMBL). ``None`` on
+    # rows that kept the raw DeepTMHMM values (projection not possible).
+    topology_projection_source: str | None = Field(default=None)
+    # True when a human TM helix aligned entirely to a gap in the ortholog
+    # sequence (a truncated model) — the helix is conserved by homology but
+    # physically absent from this model, so consumers should show "TM region
+    # absent from model" rather than "topology diverged". ``n_tm_regions_absent``
+    # is how many human helices fell in ortholog gaps.
+    tm_absent_from_model: bool = False
+    n_tm_regions_absent: int = 0
 
 
 class Orthologs(BaseModel):

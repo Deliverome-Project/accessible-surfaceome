@@ -37,6 +37,8 @@ import sys
 from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+    _fetch_canonical_sequence,
+    _fetch_canonical_topology,
     _fetch_orthologs,
     _latest_ortholog_ecd_version,
     _latest_topology_version_for_cohort,
@@ -61,6 +63,7 @@ def _patch_one(
     json_path: Path,
     *,
     topology_version: str,
+    canonical_topo_version: str,
     ortholog_ecd_version: str,
     only_empty: bool,
     dry_run: bool,
@@ -84,10 +87,22 @@ def _patch_one(
                     symbol, before_mouse, before_cyno)
         return {"skipped": 1}
 
+    # Human canonical topology + sequence drive the ortholog topology
+    # projection inside _fetch_orthologs (truncated/padded cyno models).
+    canonical = (
+        _fetch_canonical_topology(uniprot_acc, canonical_topo_version)
+        if canonical_topo_version else None
+    )
+    canonical_sequence = (
+        _fetch_canonical_sequence(uniprot_acc, canonical_topo_version)
+        if canonical_topo_version else ""
+    )
     fresh = _fetch_orthologs(
         uniprot_acc,
         topology_version=topology_version,
         ortholog_ecd_version=ortholog_ecd_version,
+        human_topology=(canonical.per_residue_topology or "") if canonical else "",
+        human_sequence=canonical_sequence,
     )
     fresh_dict = fresh.model_dump(mode="json")
 
@@ -156,6 +171,7 @@ def main(argv: list[str] | None = None) -> int:
     # topology. Mirror fetch_deterministic_features, which resolves the
     # version per fetcher's cohort.
     topology_version = _latest_topology_version_for_cohort("mouse_ortholog")
+    canonical_topo_version = _latest_topology_version_for_cohort("human_canonical")
     ortholog_ecd_version = _latest_ortholog_ecd_version()
     if not topology_version or not ortholog_ecd_version:
         logger.error(
@@ -179,6 +195,7 @@ def main(argv: list[str] | None = None) -> int:
             result = _patch_one(
                 path,
                 topology_version=topology_version,
+                canonical_topo_version=canonical_topo_version,
                 ortholog_ecd_version=ortholog_ecd_version,
                 only_empty=args.only_empty,
                 dry_run=args.dry_run,

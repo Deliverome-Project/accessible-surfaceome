@@ -1120,9 +1120,12 @@
           "ecd_length_residues": 111,
           "tm_helix_count": 4,
           "compara_version": "ensembl_compara_2026_05_12",
-          "retrieved_at": "2026-05-29T19:47:34.215281Z",
+          "retrieved_at": "2026-05-30T03:16:02.887397Z",
           "per_residue_topology": "IIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIII",
-          "deeptmhmm_label": "TM"
+          "deeptmhmm_label": "TM",
+          "topology_projection_source": "projected_from_human_canonical",
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0
         }
       ],
       "cynomolgus": [
@@ -1136,12 +1139,15 @@
           "ecd_pct_identity_to_human_canonical": 81.08108108108108,
           "ecd_pct_similarity_to_human_canonical": 81.08108108108108,
           "full_length_pct_identity_to_human_canonical": 76.6949,
-          "ecd_length_residues": 220,
-          "tm_helix_count": 3,
+          "ecd_length_residues": 182,
+          "tm_helix_count": 4,
           "compara_version": "ensembl_compara_2026_05_12",
-          "retrieved_at": "2026-05-29T19:47:34.214330Z",
-          "per_residue_topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIII",
-          "deeptmhmm_label": "TM"
+          "retrieved_at": "2026-05-30T03:16:02.886312Z",
+          "per_residue_topology": "IIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIII",
+          "deeptmhmm_label": "TM",
+          "topology_projection_source": "projected_from_human_canonical",
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0
         }
       ]
     },
