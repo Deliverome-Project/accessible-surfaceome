@@ -216,6 +216,77 @@ const COMPARTMENT_LEGEND_LABEL: Record<AnchorCompartment, string> = {
   unknown: "Unknown",
 };
 
+/**
+ * Pick the effective chain ID to use for an experimental PDB. PDBe's
+ * `best_structures` endpoint returns a chain ID that should match the
+ * deposited PDB's auth_asym_id, but in practice the two disagree
+ * occasionally:
+ *
+ *   - Case mismatch (PDBe "A" vs PDB "a") — uncommon but happens for
+ *     a few recently-deposited entries.
+ *   - PDBe gives the label_asym_id while the RCSB PDB file uses
+ *     auth_asym_id — different conventions for the same chain.
+ *   - GPR75 (UniProt O95800) was the trigger case: the PDBe metadata's
+ *     chain didn't appear in the served PDB file, so every chain-
+ *     restricted `setStyle` call below silently no-op'd and the model
+ *     rendered in 3Dmol's default gray with no topology coloring.
+ *
+ * Strategy: extract the set of chains actually present in the PDB
+ * (one entry per ATOM/HETATM `column 22` letter), then:
+ *
+ *   1. Exact match → use as-is.
+ *   2. Case-insensitive match → use the PDB's actual casing.
+ *   3. Otherwise → use the chain with the most atoms (the canonical
+ *      protein chain in the overwhelming majority of cases). This is
+ *      defensive and not strictly correct for hetero-complexes where
+ *      the canonical chain isn't the biggest, but it beats the silent
+ *      no-op the previous code path produced.
+ *
+ * Returns `null` when the PDB has no ATOM/HETATM lines at all
+ * (corrupt download); the caller should treat that as a render-skip
+ * failure.
+ */
+function _pickPdbChain(
+  pdbText: string,
+  preferredChainId: string,
+): string | null {
+  const counts = new Map<string, number>();
+  for (const line of pdbText.split(/\r?\n/)) {
+    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+    if (line.length < 22) continue;
+    const c = line.slice(21, 22);
+    if (!c.trim()) continue;
+    counts.set(c, (counts.get(c) ?? 0) + 1);
+  }
+  if (counts.size === 0) return null;
+  if (counts.has(preferredChainId)) return preferredChainId;
+  // Case-insensitive fallback — PDBe occasionally lowercases what
+  // the PDB file capitalizes (or vice versa).
+  const target = preferredChainId.toLowerCase();
+  for (const c of counts.keys()) {
+    if (c.toLowerCase() === target) return c;
+  }
+  // Last resort: heaviest chain. Logged as a console.warn so the
+  // mismatch surfaces in dev tools — readers shouldn't see anything
+  // unusual since the topology coloring still works.
+  let best: string | null = null;
+  let bestCount = -1;
+  for (const [c, n] of counts) {
+    if (n > bestCount) {
+      best = c;
+      bestCount = n;
+    }
+  }
+  if (typeof console !== "undefined" && best) {
+    console.warn(
+      `[StructureViewer] PDBe chain "${preferredChainId}" not found in ` +
+        `PDB file (chains present: ${[...counts.keys()].join(", ")}); ` +
+        `falling back to heaviest chain "${best}".`,
+    );
+  }
+  return best;
+}
+
 /** Parse the TITLE block out of a PDB file. PDB TITLE records have a
  *  fixed-width header (cols 1-6 = "TITLE ", col 9-10 = continuation
  *  number) and the title text starts at col 11. Multi-line TITLE
@@ -841,10 +912,20 @@ export function StructureViewer({
         rawPdb = await pdbResp.text();
       }
 
+      // Resolve the chain id we'll actually use downstream — PDBe's
+      // metadata occasionally disagrees with the deposited PDB
+      // (case mismatch, label vs auth asym id). _pickPdbChain falls
+      // back to a case-insensitive match, then to the heaviest chain,
+      // so the orientation + topology coloring don't silently no-op
+      // for entries with mismatched chain ids (GPR75 was the trigger).
+      const effectiveChainId = expVariant
+        ? _pickPdbChain(rawPdb, expVariant.chain_id) ?? expVariant.chain_id
+        : null;
+
       // Orient both AFDB models and experimental PDBs the same way
       // when possible: rotate so the membrane plane is horizontal and
-      // extracellular is up. For experimental PDBs we pass the PDBe-
-      // mapped chain_id (so multi-chain assemblies like homotrimers
+      // extracellular is up. For experimental PDBs we pass the
+      // resolved chain id (so multi-chain assemblies like homotrimers
       // or MHC-peptide complexes don't pollute the centroid math) and
       // a residue offset (so the topology lookup translates PDB
       // numbering → UniProt numbering correctly — most PDBs don't
@@ -855,7 +936,7 @@ export function StructureViewer({
       // 3Dmol auto-frames the native coords cleanly.
       const { pdbText, membrane } = expVariant
         ? orientPdbForTopology(rawPdb, activeTopology, {
-            chainId: expVariant.chain_id,
+            chainId: effectiveChainId ?? expVariant.chain_id,
             residueOffset: expVariant.pdb_start - expVariant.unp_start,
           })
         : orientPdbForTopology(rawPdb, activeTopology);
@@ -883,7 +964,9 @@ export function StructureViewer({
       // in both modes, matching the user's "make the membrane look
       // the same" requirement.
       if (viewMode === "sites") {
-        const baseSel = expVariant ? { chain: expVariant.chain_id } : {};
+        const baseSel = expVariant && effectiveChainId
+          ? { chain: effectiveChainId }
+          : {};
         viewer.setStyle(baseSel, {
           cartoon: { color: "#D6D9DE" },
         });
@@ -892,8 +975,12 @@ export function StructureViewer({
         // (shouldn't normally happen — DeepTMHMM covers the full sequence).
         // For experimental, restrict the default style to the mapped
         // chain so non-mapped chains (e.g. an antibody Fab co-crystal)
-        // stay in default gray.
-        const baseSel = expVariant ? { chain: expVariant.chain_id } : {};
+        // stay in default gray. Uses `effectiveChainId` (resolved
+        // against the actual PDB) rather than the raw PDBe metadata
+        // so mismatches don't silently drop the cartoon entirely.
+        const baseSel = expVariant && effectiveChainId
+          ? { chain: effectiveChainId }
+          : {};
         viewer.setStyle(baseSel, { cartoon: { color: TOPOLOGY_COLORS.B } });
         // For canonical, use the pre-computed `topology_ranges` from
         // the build-time JSON. For an AFDB variant, compute ranges
@@ -921,7 +1008,10 @@ export function StructureViewer({
             const pdbA = a + offset;
             const pdbB = b + offset;
             const sel: Record<string, unknown> = { resi: `${pdbA}-${pdbB}` };
-            if (expVariant) sel.chain = expVariant.chain_id;
+            // Resolve to the actual PDB-file chain id (not PDBe's
+            // metadata) so a casing or label/auth mismatch doesn't
+            // leave every range silently unmatched. See _pickPdbChain.
+            if (expVariant && effectiveChainId) sel.chain = effectiveChainId;
             viewer.setStyle(
               sel,
               { cartoon: { color }, line: { color, linewidth: 1.2 } },
