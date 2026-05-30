@@ -363,6 +363,15 @@
      * context. */
     display: none;
   }
+  /* With the parent wordmark + separator gone, the brand lockup
+   * shrinks to logo + "Surfaceome" sub-brand. The default
+   * `.headerInner` gap of 1.5rem leaves "Surfaceome" sitting tight
+   * against "Compare" (now the first nav slot after 8d748cf5), and
+   * the two read as one wordy phrase. Open it up so the brand /
+   * nav boundary is visually clear at narrow widths too. */
+  .headerInner {
+    gap: 2.75rem;
+  }
 }
 
 @media (max-width: 760px) {
