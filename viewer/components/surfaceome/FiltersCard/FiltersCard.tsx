@@ -171,9 +171,10 @@ function orthologPillLabel(
 // ---------------------------------------------------------------------------
 
 const TT_ECD_CLASS =
-  "ECD-size bands derived from antibody-antigen interface measurements " +
-  "(Ramaraj et al. 2012, PMID:22246133, doi:10.1016/j.bbapap.2011.12.007 — average " +
-  "conformational epitope = 12 ± 3 residues, 1103 ± 244 Å² buried). " +
+  "One antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å² buried " +
+  "(Ramaraj et al. 2012, PMID:22246133). Bands below are our heuristic " +
+  "for how many non-overlapping footprints an ECD could host " +
+  "(≈ residues ÷ 12, a loose upper bound): " +
   "large ≥ 200 residues (≥10 non-overlapping epitopes possible); " +
   "moderate = 60-199 (multiple epitopes, e.g. tetraspanin EC2 loops); " +
   "small = 30-59 (2-5 candidate epitopes, harder discovery); " +

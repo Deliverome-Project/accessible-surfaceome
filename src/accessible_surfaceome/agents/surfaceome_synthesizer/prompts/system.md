@@ -78,11 +78,13 @@ your task message; follow it. Four blocks:
 a closed enum: `large` / `moderate` / `small` / `minimal` / `none`.
 Thresholds reference the deterministic
 `deterministic_features.canonical_topology.ecd_length_residues`
-prefetched by the orchestrator. Derived from antibody-antigen
-interface measurements (Ramaraj et al. 2012, PMID:22246133,
-doi:10.1016/j.bbapap.2011.12.007; n=53 non-redundant complexes:
-average conformational epitope = **12 ± 3 residues**, **1103 ± 244
-Å²** buried surface):
+prefetched by the orchestrator. The footprint of one antibody is
+~**12 ± 3 residues** / **1103 ± 244 Å²** buried (Ramaraj et al.
+2012, PMID:22246133; n=53 non-redundant complexes). The bands below
+are a heuristic estimate of how many non-overlapping footprints an
+ECD could host (≈ residues ÷ 12, a loose upper bound — real epitopes
+overlap and only count where solvent-exposed), not thresholds the
+paper sets:
 
 * **`large`** — `ecd_length_residues >= 200`. Comfortably
   accommodates ≥10 non-overlapping conformational epitopes;

@@ -127,10 +127,11 @@ fields you should weight your `SearchPlan` against are:
     direct evidence.
 
 * **`ecd_length_residues`** — extracellular-domain length in residues.
-  Cutoffs derived from antibody-antigen interface measurements
-  (Ramaraj et al. 2012, PMID:22246133, doi:10.1016/j.bbapap.2011.12.007, n=53
-  non-redundant complexes): average conformational epitope =
-  **12 ± 3 residues** with **1103 ± 244 Å²** of buried surface.
+  One antibody footprint is ~**12 ± 3 residues** / **1103 ± 244 Å²**
+  buried (Ramaraj et al. 2012, PMID:22246133, n=53 non-redundant
+  complexes). The cutoffs below are our heuristic for how many
+  non-overlapping footprints an ECD could host (≈ residues ÷ 12, a
+  loose upper bound), not thresholds from the paper.
   - `<= 30`: short ECD. Hosts at most 1-2 candidate conformational
     epitopes with no room for design iteration; antibody-discovery
     campaigns at this size typically need specialized formats

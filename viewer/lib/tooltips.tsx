@@ -498,16 +498,8 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_ecd_class: (
     <>
-      ECD-size bands from antibody-antigen interface measurements
-      (Ramaraj et al.&nbsp;2012,{" "}
-      <a
-        href="https://doi.org/10.1016/j.bbapap.2011.12.007"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        doi:10.1016/j.bbapap.2011.12.007
-      </a>
-      , PMID&nbsp;
+      One antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å² buried
+      (Ramaraj et al.&nbsp;2012, PMID&nbsp;
       <a
         href="https://pubmed.ncbi.nlm.nih.gov/22246133/"
         target="_blank"
@@ -515,8 +507,9 @@ export const tooltips: Record<string, ReactNode> = {
       >
         22246133
       </a>
-      ; average conformational epitope = 12 ± 3 residues, 1103 ± 244 Å²
-      buried). <em>large</em> ≥ 200 residues; <em>moderate</em> 60–199;{" "}
+      ). Bands below are our heuristic for how many non-overlapping
+      footprints an ECD could host (≈ residues ÷ 12, a loose upper
+      bound): <em>large</em> ≥ 200 residues; <em>moderate</em> 60–199;{" "}
       <em>small</em> 30–59; <em>minimal</em> &lt; 30; <em>none</em> = no
       surface-exposed ECD (GPI / inner-leaflet).
     </>
