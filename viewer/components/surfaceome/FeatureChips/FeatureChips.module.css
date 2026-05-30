@@ -19,24 +19,36 @@
    pairs the chip's pill (term) with its rationale prose (definition), so
    the at-a-glance signal in the §01 panel and its "why" on the tab are
    explicitly linked. */
+/* Two-column "table": the chip pill in column 1, its rationale in
+   column 2. The grid that owns the column tracks lives on the container
+   so EVERY row shares the same two tracks (chip column = widest pill,
+   clamped to ≥11rem; rationale takes the rest) — that's what makes the
+   rationales align vertically instead of each row sizing its own chip
+   column. Each `.rationaleRow` is a `subgrid` so the dt/dd pair snaps to
+   the shared tracks while staying one keyed unit. */
 .rationales {
   margin: 0 0 var(--space-5);
   padding: 0;
   display: grid;
-  gap: var(--space-3);
+  grid-template-columns: minmax(11rem, max-content) 1fr;
+  column-gap: var(--space-4);
+  row-gap: var(--space-3);
 }
 
 .rationaleRow {
   display: grid;
-  grid-template-columns: minmax(11rem, max-content) 1fr;
-  gap: var(--space-2) var(--space-4);
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
   align-items: baseline;
 }
 
 @media (max-width: 640px) {
-  .rationaleRow {
+  .rationales {
     grid-template-columns: 1fr;
-    gap: var(--space-1);
+  }
+  .rationaleRow {
+    grid-template-columns: subgrid;
+    row-gap: var(--space-1);
   }
 }
 
@@ -48,7 +60,10 @@
 .rationaleDef {
   margin: 0;
   color: var(--ink-soft, inherit);
-  line-height: 1.5;
+  /* Reduced from the inherited ~14.7px base so the rationale column
+     reads as secondary supporting text next to the chip. */
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.45;
 }
 
 .rationaleMissing {
