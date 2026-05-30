@@ -24,9 +24,11 @@ function fmtPct(v: number | null | undefined): string {
 function SpeciesTable({
   label,
   entries,
+  canonicalTmCount,
 }: {
   label: string;
   entries: OrthologEntry[];
+  canonicalTmCount: number;
 }) {
   return (
     <div className={styles.subsection}>
@@ -52,6 +54,12 @@ function SpeciesTable({
           <tbody>
             {entries.map((e, i) => {
               const ecdMissing = e.ecd_pct_identity_to_human_canonical == null;
+              // "Same topology" = the ortholog keeps the human canonical's
+              // transmembrane-helix count (the reliable stored Compara field
+              // and the dominant topology axis for a surface protein). A
+              // mismatch means a membrane pass was gained / lost between
+              // species — the human-targeting epitope may not translate.
+              const sameTopology = e.tm_helix_count === canonicalTmCount;
               return (
                 <tr key={i}>
                   <td>
@@ -89,7 +97,26 @@ function SpeciesTable({
                     {fmtPct(e.ecd_pct_similarity_to_human_canonical)}
                   </td>
                   <td>{e.ecd_length_residues} aa</td>
-                  <td>{e.tm_helix_count}</td>
+                  <td>
+                    <span className={styles.topoCell}>
+                      <span
+                        className={`${styles.topoDot} ${
+                          sameTopology ? styles.topoSame : styles.topoDistinct
+                        }`}
+                        aria-label={
+                          sameTopology
+                            ? "Same membrane topology as the human canonical"
+                            : "Distinct membrane topology from the human canonical"
+                        }
+                        title={
+                          sameTopology
+                            ? `Same transmembrane-helix count as the human canonical (${canonicalTmCount} TM) — conserved membrane architecture`
+                            : `Different transmembrane-helix count from the human canonical (${e.tm_helix_count} vs ${canonicalTmCount} TM) — membrane architecture diverged between species`
+                        }
+                      />
+                      {e.tm_helix_count}
+                    </span>
+                  </td>
                 </tr>
               );
             })}
@@ -107,7 +134,8 @@ export function OrthologsCard({ rec, n }: Props) {
     ...orthologs.cynomolgus,
   ];
   const comparaVersion = allEntries[0]?.compara_version ?? "—";
-  const toolVersion = rec.deterministic_features.canonical_topology.tool_version;
+  const canonicalTopology = rec.deterministic_features.canonical_topology;
+  const toolVersion = canonicalTopology.tool_version;
 
   return (
     <SectionCard
@@ -115,10 +143,15 @@ export function OrthologsCard({ rec, n }: Props) {
       eyebrow="Orthologs"
       title="Cross-species orthologs"
       meta={`Deterministic · Ensembl Compara ${comparaVersion} + DeepTMHMM ${toolVersion}`}
-      lede="Per-species canonical (and alternative) isoforms with ECD percent identity / similarity to the human canonical."
+      lede="Per-species canonical (and alternative) isoforms with ECD percent identity / similarity to the human canonical. The dot on TM count flags whether the ortholog keeps the human canonical's membrane-pass count (green) or differs (amber, architecture diverged)."
     >
       {SPECIES.map((s) => (
-        <SpeciesTable key={s.key} label={s.label} entries={orthologs[s.key]} />
+        <SpeciesTable
+          key={s.key}
+          label={s.label}
+          entries={orthologs[s.key]}
+          canonicalTmCount={canonicalTopology.tm_helix_count}
+        />
       ))}
     </SectionCard>
   );

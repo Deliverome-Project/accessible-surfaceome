@@ -182,11 +182,13 @@ const TT_ECD_CLASS =
   "none = no surface-exposed ECD (GPI / inner-leaflet).";
 
 const TT_ORTHOLOG_ID =
-  "ECD % identity to the human canonical, restricted to " +
-  "extracellular residues. Cutoffs from ICH S6(R1) biologics-" +
-  "preclinical-development practice: ≥85% = strong pharmacological " +
-  "translation (mouse / cyno can stand in for human evidence); " +
-  "60-85% = use with caution; < 60% = species substitution unreliable.";
+  "ECD % identity to the human canonical, restricted to extracellular " +
+  "residues. Sequence homology is one criterion for a species being a " +
+  "valid pharmacological stand-in (ICH S6(R1); Chapman et al. 2007, " +
+  "PMID:17268483; Prior et al. 2020, PMID:33442468). The cutoffs below " +
+  "are our heuristic, not from the guideline: ≥85% = strong translation " +
+  "(mouse / cyno can stand in for human evidence); 60-85% = use with " +
+  "caution; < 60% = species substitution unreliable.";
 
 const TT_PARALOG_ID =
   "Highest ECD % identity across the gene's Compara paralogs — " +
