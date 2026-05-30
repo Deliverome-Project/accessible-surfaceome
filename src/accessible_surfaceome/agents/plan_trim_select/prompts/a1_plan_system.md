@@ -128,7 +128,7 @@ fields you should weight your `SearchPlan` against are:
 
 * **`ecd_length_residues`** — extracellular-domain length in residues.
   Cutoffs derived from antibody-antigen interface measurements
-  (Ramaraj et al. 2012, doi:10.1016/j.bbapap.2012.07.005, n=53
+  (Ramaraj et al. 2012, PMID:22246133, doi:10.1016/j.bbapap.2011.12.007, n=53
   non-redundant complexes): average conformational epitope =
   **12 ± 3 residues** with **1103 ± 244 Å²** of buried surface.
   - `<= 30`: short ECD. Hosts at most 1-2 candidate conformational

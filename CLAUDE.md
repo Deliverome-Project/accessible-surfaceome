@@ -497,7 +497,7 @@ clickable link to it** — never just an author-year phrase.
 Acceptable patterns:
 
 * `Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/)`
-* `Ramaraj et al. 2012, [doi:10.1016/j.bbapap.2012.07.005](https://doi.org/10.1016/j.bbapap.2012.07.005), [PMID 22796141](https://pubmed.ncbi.nlm.nih.gov/22796141/)`
+* `Ramaraj et al. 2012, [doi:10.1016/j.bbapap.2011.12.007](https://doi.org/10.1016/j.bbapap.2011.12.007), [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)`
 * `Bordeaux 2010 / Edfors 2018` — **not acceptable on its own**; reach for the
   PMIDs and link them. If you can't find the exact PMID, search PubMed
   before shipping (the user can't trace the citation otherwise).

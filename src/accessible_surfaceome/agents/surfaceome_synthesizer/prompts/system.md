@@ -79,8 +79,8 @@ a closed enum: `large` / `moderate` / `small` / `minimal` / `none`.
 Thresholds reference the deterministic
 `deterministic_features.canonical_topology.ecd_length_residues`
 prefetched by the orchestrator. Derived from antibody-antigen
-interface measurements (Ramaraj et al. 2012,
-doi:10.1016/j.bbapap.2012.07.005; n=53 non-redundant complexes:
+interface measurements (Ramaraj et al. 2012, PMID:22246133,
+doi:10.1016/j.bbapap.2011.12.007; n=53 non-redundant complexes:
 average conformational epitope = **12 ± 3 residues**, **1103 ± 244
 Å²** buried surface):
 
