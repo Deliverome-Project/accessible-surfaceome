@@ -487,9 +487,12 @@ export const tooltips: Record<string, ReactNode> = {
 
   catalog_evidence_density: (
     <>
-      Bucketed evidence-row count from the merged A1+A2 ledger:{" "}
+      How <em>much</em> supporting evidence the deep dive found —
+      bucketed count of evidence rows the agent pulled and scored:{" "}
       <em>high</em> ≥ 30 supporting rows, <em>moderate</em> ≥ 10,{" "}
-      <em>low</em> &lt; 10.
+      <em>low</em> &lt; 10. Complements the evidence grade up top
+      (which tells you how <em>strong</em> the evidence is, not how
+      much there is).
     </>
   ),
 
