@@ -942,8 +942,24 @@ def _derive_filters(
     # Composed rationale for the OE-surface derived boolean — names the
     # triggering method observation(s) so the chip's "why" is auditable.
     if oe_surface_observed:
+        # Prefer the OE-specific cites the methods builder isolated into the
+        # method's ``overexpression`` block (e.g. the transfected-line flow
+        # data) over the method's FULL cite list. A "mixed" method's full
+        # cites also carry its endogenous + methodology cites, which don't
+        # speak to the overexpression-surface point — citing all of them
+        # makes the OE rationale look mis-cited (the reader can't tell which
+        # id is the OE one). Fall back to the full list only when the
+        # overexpression block carried no cites of its own.
         _oe_cites = sorted(
-            {cid for m in _oe_methods for cid in m.cited_evidence_ids}
+            {
+                cid
+                for m in _oe_methods
+                for cid in (
+                    m.overexpression.cited_evidence_ids
+                    if (m.overexpression and m.overexpression.cited_evidence_ids)
+                    else m.cited_evidence_ids
+                )
+            }
         )
         oe_rationale = (
             f"{len(_oe_methods)} method observation(s) pair an "
