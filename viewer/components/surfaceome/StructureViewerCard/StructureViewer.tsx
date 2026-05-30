@@ -102,6 +102,13 @@ export interface StructureVariantExperimental extends StructureVariantBase {
  *  cohort, but live-fetched here instead of pre-baked. */
 interface AfdbVariantMeta {
   latestVersion: number | null;
+  // The AlphaFold entry identifier (e.g. ``AF-P00533-F1`` for the
+  // canonical, ``AF-P00533-2-F1`` for isoform 2) returned LIVE by the
+  // prediction API for the exact accession we asked for. The AFDB
+  // entry-page link is built from this so it always lands on the model
+  // actually rendered — a bare ``/entry/{acc}`` is NOT a valid AlphaFold
+  // entry route (their pages are keyed by entryId, not raw UniProt acc).
+  entryId: string | null;
   globalMetricValue: number | null;
   fractionPlddtLow: number;
   fractionPlddtVeryLow: number;
@@ -602,7 +609,22 @@ function _renderCaption(args: {
   const accFull = isCanonical
     ? canonicalUniprot
     : ((activeVariant as StructureVariantAfdb).uniprot_acc_full ?? acc);
-  const afdbUrl = `https://alphafold.ebi.ac.uk/entry/${acc}`;
+  // AlphaFold entry pages are keyed by entryId (``AF-{acc}-F1``), NOT a
+  // bare UniProt acc — ``/entry/P00533`` is not a real route. Prefer the
+  // LIVE entryId fetched from the prediction API for this exact accession
+  // (``AF-P00533-F1`` canonical, ``AF-P00533-2-F1`` for isoform 2). While
+  // it's still loading, derive the identical form from the live accession
+  // — ``AF-{accFull}-F1`` reproduces the entryId for single-fragment
+  // models. We never fall back to the baked ``structure.afdb_id``.
+  const liveMetaForUrl = afdbMetaByAcc[accFull];
+  const liveEntryId =
+    liveMetaForUrl
+      && liveMetaForUrl !== "loading"
+      && liveMetaForUrl !== "error"
+      ? liveMetaForUrl.entryId
+      : null;
+  const afdbUrl =
+    `https://alphafold.ebi.ac.uk/entry/${liveEntryId ?? `AF-${accFull}-F1`}`;
 
   // Stats: canonical reuses the prop; variants use the live-fetched
   // map (loading / error / data shapes).
@@ -615,21 +637,20 @@ function _renderCaption(args: {
       .includes("placeholder");
     const wholeProtein = !placeholder
       && canonicalStruct.source.toLowerCase().includes("whole-protein");
-    // Version label: prefer the LIVE AFDB latestVersion (fetched by the
-    // effect below, keyed on the canonical acc) over the baked
-    // `afdb_version`. The baked field freezes at build time, so a gene
-    // whose AFDB model was bumped after its last annotate run shows a
-    // stale version (e.g. EGFR P00533 baked "v4" while AFDB now serves
-    // v6 — which is also what the model fetch resolves to). Falling back
-    // to the baked value keeps a sensible label if the live fetch is
-    // still loading or errored. Mirrors the variant branch (which has
-    // always read `meta.latestVersion`).
+    // Version label: LIVE AFDB latestVersion ONLY (fetched by the effect
+    // below, keyed on the canonical acc). The baked `afdb_version` freezes
+    // at build time, so a gene whose AFDB model was bumped after its last
+    // annotate run would show a stale version (e.g. EGFR P00533 baked "v4"
+    // while AFDB serves v6). We do NOT fall back to the baked value at all
+    // — if the live fetch is still loading or errored, the version chip is
+    // simply omitted rather than risk showing a stale number. Mirrors the
+    // variant branch (which has always read `meta.latestVersion` only).
     const canonMeta = afdbMetaByAcc[accFull];
     versionLabel =
       canonMeta && canonMeta !== "loading" && canonMeta !== "error"
         && canonMeta.latestVersion
         ? `v${canonMeta.latestVersion}`
-        : canonicalStruct.afdb_version;
+        : "";
     if (placeholder) {
       plddtNode = <StatusPill tone="neutral" size="sm">pending</StatusPill>;
     } else {
@@ -1073,6 +1094,7 @@ export function StructureViewer({
         if (!r.ok) throw new Error(`AFDB API ${r.status}`);
         const j = (await r.json()) as Array<{
           uniprotAccession?: string;
+          entryId?: string;
           latestVersion?: number;
           globalMetricValue?: number;
           fractionPlddtLow?: number;
@@ -1091,6 +1113,7 @@ export function StructureViewer({
           ...prev,
           [acc]: {
             latestVersion: entry.latestVersion ?? null,
+            entryId: entry.entryId ?? null,
             globalMetricValue: entry.globalMetricValue ?? null,
             fractionPlddtLow: entry.fractionPlddtLow ?? 0,
             fractionPlddtVeryLow: entry.fractionPlddtVeryLow ?? 0,
