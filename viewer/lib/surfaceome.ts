@@ -15,6 +15,14 @@
  * drive which routes exist (`listSurfaceomeGenes` reads the directory
  * to decide which gene pages `generateStaticParams` emits).
  *
+ * NOTE — this fs fallback is per-gene-record ONLY. The catalog index
+ * (`loadCatalog`) has no snapshot fallback: its committed
+ * `catalog.json` was dropped, so it hard-requires the live Worker and
+ * throws on failure. `SURFACEOME_API_BASE=local` makes the catalog
+ * return a deliberate 0-row stub (not a snapshot), which renders the
+ * homepage as an empty "No rows match these filters" table — see the
+ * `_loadCatalogImpl` docstring below.
+ *
  * Why both: dev / CI without network access still builds; production
  * deploys always read the latest D1 mirror; staleness of the committed
  * fallback no longer pins the production view.
