@@ -278,7 +278,21 @@ localization, and must not be retrieved or kept as OE-surface evidence.
 So always add a dedicated `topic_search`: gene symbol AND (`transfected
 cells` OR `stable cell line` OR `ectopic expression`) AND (`flow
 cytometry` OR `cell surface staining` OR `antibody binding` OR `ligand
-binding`). Then the host-specific queries:
+binding`).
+
+**Prefer WILD-TYPE / canonical-construct OE evidence.** The flag is about
+whether the catalog's wild-type target reaches the surface when
+overexpressed, so the cleanest precedent is the WT / full-length protein
+in a heterologous host — NOT a disease variant (EGFRvIII, constitutively-
+active point mutants, gene fusions, truncations). Disease-variant OE is
+abundant for oncogenes and will dominate a naive search, so add a query
+that anchors on the wild-type construct: gene symbol AND (`wild-type` OR
+`full-length` OR `WT`) AND (`transfected` OR `overexpression`) AND a
+surface keyword. (e.g. for EGFR this targets cetuximab / EGF binding to
+WT-EGFR-transfected CHO over EGFRvIII-glioma papers.) Don't EXCLUDE
+variant papers — select will keep a variant clip as a fallback and flag
+it — but make sure the WT-construct option is in the pool. Then the
+host-specific queries:
 
 * **Host-agnostic OE** — gene symbol AND a generic OE term
   (`overexpression`, `ectopic expression`, `transient transfection`,

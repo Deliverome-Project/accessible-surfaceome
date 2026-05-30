@@ -274,7 +274,23 @@ does **NOT** qualify — it matches "surface" but is biochemistry, not
 cell-surface localization, so don't retain it as THE OE-surface clip. For
 an abundantly-studied receptor (EGFR, etc.) the cell-surface OE clip
 almost always exists in the pool (transfected-cell flow with a blocking
-antibody is the canonical assay); keep it. Downstream this is the
+antibody is the canonical assay); keep it.
+
+**Prefer the wild-type / canonical protein over a disease-mutant
+variant.** An OE-surface clip on an oncogenic or engineered VARIANT —
+EGFRvIII (exon 2-7 deletion), constitutively-active point mutants, gene
+fusions, truncations, or chimeras — only shows that *the variant* reaches
+the surface, which is a weaker precedent for the wild-type protein the
+catalog target is about (the variant can traffic differently). When the
+pool contains a wild-type / full-length OE-surface clip (e.g. cetuximab
+or EGF binding to WT-EGFR-transfected CHO/HEK by flow), retain THAT as the
+OE-precedent clip in preference to a variant clip. Keep a variant-only
+clip ONLY when no wild-type OE-surface clip is available, and name the
+variant in the clip `reason` (e.g. "OE precedent is EGFRvIII, not
+wild-type") so the methods builder and the catalog reader know the
+precedent is variant-based rather than silently treating it as wild-type.
+
+Downstream this is the
 only input to the catalog's `overexpression_surface_localization_observed`
 filter, which is derived purely from whether any RETAINED method pairs
 an OE / mixed expression system with a surface readout; if you prune
