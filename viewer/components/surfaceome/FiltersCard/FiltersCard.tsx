@@ -34,11 +34,13 @@ interface Props {
 
 type Tone = "success" | "warn" | "danger" | "neutral" | "teal" | "lavender" | "amber";
 
-/** Positive boolean — ``true`` = good = green. */
+/** Positive boolean — ``true`` = good = green. Rendered as a
+ *  `label · YES/NO` chip (shared label·value style) instead of a ✓/✗
+ *  glyph. */
 function positiveBoolPill(label: string, value: boolean) {
   return (
     <StatusPill tone={value ? "success" : "neutral"} size="sm">
-      <span aria-hidden="true">{value ? "✓" : "✗"}</span> {label}
+      <ChipLabelValue label={label} value={value ? "yes" : "no"} />
     </StatusPill>
   );
 }

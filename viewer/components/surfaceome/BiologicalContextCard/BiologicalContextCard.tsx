@@ -225,13 +225,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   tone={rs.present ? "warn" : "success"}
                   size="sm"
                 >
-                  {rs.present ? (
-                    "Restricted"
-                  ) : (
-                    <>
-                      <span aria-hidden="true">✗</span> No restriction
-                    </>
-                  )}
+                  <ChipLabelValue
+                    label="restricted subdomain"
+                    value={rs.present ? "present" : "none"}
+                  />
                 </StatusPill>
                 {rs.present ? (
                   <StatusPill tone="lavender" size="sm">

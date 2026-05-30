@@ -73,11 +73,13 @@ function nz(s: string | null | undefined): string | null {
   return t === "" || t === "None" ? null : t;
 }
 
-/** Risk boolean — ``true`` = risk present = red. */
+/** Risk boolean — ``true`` = risk present = red. Rendered as a
+ *  `label · PRESENT/NONE` chip (the shared label·value style) rather
+ *  than a ✓/✗ glyph, so the attribute reads as a word. */
 function riskBoolPill(label: string, value: boolean) {
   return (
     <StatusPill tone={value ? "danger" : "success"} size="sm">
-      <span aria-hidden="true">{value ? "✓" : "✗"}</span> {label}
+      <ChipLabelValue label={label} value={value ? "present" : "none"} />
     </StatusPill>
   );
 }
@@ -169,8 +171,10 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
           tone={f.has_known_ligand ? "success" : "danger"}
           size="sm"
         >
-          <span aria-hidden="true">{f.has_known_ligand ? "✓" : "✗"}</span>{" "}
-          known ligand
+          <ChipLabelValue
+            label="known ligand"
+            value={f.has_known_ligand ? "present" : "none"}
+          />
         </StatusPill>
       ),
     },
@@ -209,10 +213,10 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
           size="sm"
           title={TT_RESTRICTED_SUBDOMAIN}
         >
-          <span aria-hidden="true">
-            {f.has_restricted_subdomain ? "✓" : "✗"}
-          </span>{" "}
-          restricted membrane subdomain
+          <ChipLabelValue
+            label="restricted membrane subdomain"
+            value={f.has_restricted_subdomain ? "present" : "none"}
+          />
         </StatusPill>
       ),
     },
@@ -297,10 +301,14 @@ function buildExpressionChips(rec: SurfaceomeRecord): FeatureChipModel[] {
           size="sm"
           title={TT_OE_OBSERVED}
         >
-          <span aria-hidden="true">
-            {f.overexpression_surface_localization_observed ? "✓" : "✗"}
-          </span>{" "}
-          Overexpression precedent
+          <ChipLabelValue
+            label="overexpression precedent"
+            value={
+              f.overexpression_surface_localization_observed
+                ? "present"
+                : "none"
+            }
+          />
         </StatusPill>
       ),
     },
@@ -355,10 +363,10 @@ function buildRiskChips(rec: SurfaceomeRecord): FeatureChipModel[] {
           size="sm"
           title={TT_LOW_ENDOG}
         >
-          <span aria-hidden="true">
-            {f.low_endogenous_expression ? "✓" : "✗"}
-          </span>{" "}
-          low endogenous expression
+          <ChipLabelValue
+            label="low endogenous expression"
+            value={f.low_endogenous_expression ? "yes" : "no"}
+          />
         </StatusPill>
       ),
     },
