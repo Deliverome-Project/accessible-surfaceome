@@ -260,6 +260,28 @@ plan toward sources rich in WHERE/WHEN, not HOW:
    `membrane_subdomains` calls (apical vs basolateral IF, ciliary
    gating, sorted-population flow). NOT for methodology — for the
    localization output they encode.
+3. **Subcellular-localization depth (don't leave the block thin).** The
+   `subcellular_localization` block — primary compartment +
+   `dual_localization` + `membrane_subdomains` — is routinely
+   under-populated because the joint planner stops once it's confirmed
+   "this is a surface protein" and never chases WHERE ELSE the protein
+   sits. Always add explicit `topic_search` calls that pair the gene with
+   localization-evidence anchors so the builder has material:
+     - subcellular / organelle localization (`subcellular localization`,
+       `localizes to`, `intracellular pool`, `plasma membrane vs`);
+     - immunofluorescence / confocal **colocalization with organelle
+       markers** (ER / Golgi / endosome / lysosome / mitochondria / nuclear
+       envelope markers) — this is the evidence basis for a
+       `dual_localization` row and its `fraction_estimate`;
+     - the **HPA Cell Atlas / subcellular** annotation literature, and any
+       **fractionation** (surface-biotinylation vs whole-cell, sucrose-
+       gradient / organelle fractionation) that *quantifies* the surface
+       vs intracellular split (so `fraction_estimate` can be filled rather
+       than left unknown).
+   When the primary-compartment call rests on a single paper, spend one
+   `fetch_fulltext` on the best localization paper — the fraction +
+   condition fields need the methods detail to be more than a bare
+   compartment name.
 4. **`mass_spec_surfaceome`** — useful for sorted-population /
    cell-type-specific surface proteome papers. Include.
 5. **`surface_biotinylation`** — borderline; include if UniProt
