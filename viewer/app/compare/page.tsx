@@ -31,10 +31,10 @@ export default async function ComparePage() {
   // The deployed public Worker doesn't ship the catalog `ddf` field, so
   // catalog rows arrive without deep_dive_filters and the deep-dive
   // enrichment would never render. Rebuild it here at build time: every
-  // deep-dived gene has a bundled per-gene record whose `filters` block
-  // carries the same field names. (n_with_deep_dive is small — 6 today —
-  // so these reads are cheap, and loadSurfaceomeRecord reads from the
-  // committed JSON, not the network.)
+  // deep-dived gene has a D1 record whose `filters` block carries the
+  // same field names. (n_with_deep_dive is small — 6 today — so these
+  // reads are cheap; loadSurfaceomeRecord fetches each from the Worker,
+  // deduped within the build via `cache: "force-cache"`.)
   const ddSymbols = catalog.rows
     .filter((r) => r.deep_dive)
     .map((r) => r.symbol);

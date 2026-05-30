@@ -38,8 +38,8 @@ interface PageProps {
   params: Promise<{ symbol: string }>;
 }
 
-export function generateStaticParams() {
-  return listSurfaceomeGenes().map((symbol) => ({ symbol }));
+export async function generateStaticParams() {
+  return (await listSurfaceomeGenes()).map((symbol) => ({ symbol }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -229,8 +229,8 @@ export default async function GenePage({ params }: PageProps) {
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
-              data-hint="Canonical record. Everything on this page is rendered from it."
-              href={`/data/surfaceome/${rec.gene.hgnc_symbol}.json`}
+              data-hint="Canonical record, served live from the public Worker (D1). Everything on this page is rendered from it."
+              href={`https://api.deliverome.org/surfaceome/v1/genes/${rec.gene.hgnc_symbol}`}
               target="_blank"
               rel="noopener noreferrer"
             >

@@ -8,27 +8,25 @@
  * re-deploy of the Worker surfaces in the viewer on the next
  * `npm run build`, no per-page-load D1 hits in production.
  *
- * The committed `viewer/public/data/surfaceome/*.json` files act as
- * an offline / Worker-down fallback: when the Worker fetch fails (or
- * `SURFACEOME_API_BASE=local`), the loader falls back to
- * `fs.readFileSync` against the committed snapshot. They also still
- * drive which routes exist (`listSurfaceomeGenes` reads the directory
- * to decide which gene pages `generateStaticParams` emits).
+ * D1 is the SINGLE source of truth for deep-dive records. There is no
+ * on-disk fallback: deep-dive SurfaceomeRecords are written direct to
+ * public D1 (`cloud.surface_annotation.publish_record`), and the
+ * viewer reads them only through the Worker. The set of routes is
+ * sourced the same way — `listSurfaceomeGenes` hits the Worker's
+ * `/v1/genes` (the annotated-gene list backed by `surface_annotation`)
+ * to decide which gene pages `generateStaticParams` emits. The old
+ * committed `viewer/public/data/surfaceome/*.json` snapshots (and the
+ * fs-readback fallback they powered) were removed deliberately so a
+ * stale on-disk copy can never mask the authoritative D1 record.
  *
- * NOTE — this fs fallback is per-gene-record ONLY. The catalog index
- * (`loadCatalog`) has no snapshot fallback: its committed
- * `catalog.json` was dropped, so it hard-requires the live Worker and
- * throws on failure. `SURFACEOME_API_BASE=local` makes the catalog
- * return a deliberate 0-row stub (not a snapshot), which renders the
- * homepage as an empty "No rows match these filters" table — see the
- * `_loadCatalogImpl` docstring below.
- *
- * Why both: dev / CI without network access still builds; production
- * deploys always read the latest D1 mirror; staleness of the committed
- * fallback no longer pins the production view.
+ * Like the catalog (`loadCatalog`), the gene pages therefore
+ * hard-require the live Worker in production. `SURFACEOME_API_BASE=local`
+ * makes both surfaces return empty (0-row catalog, 0 gene routes) so the
+ * offline CI smoke build renders the chrome without a network hit; the
+ * Pages-side build runs against the real Worker and emits the full set.
  */
 
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import type {
   BenchmarkMatrix,
@@ -47,8 +45,6 @@ import type {
   SurfaceSpecificity,
   TriageReason,
 } from "./surfaceome-types";
-
-const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
 
 // Gene-name lookup is sourced directly from the NCBI triageable TSV
 // in the repo (data/external/ncbi_gene_info/...). The viewer used to
@@ -330,27 +326,6 @@ function enrichRowsWithNames(
 }
 
 /**
- * The viewer's local JSON set is the source of truth for which
- * rows have a viewable deep-dive page. The public catalog's
- * ``deep_dive`` flag is currently out of sync with the v1.0.0
- * cut-over: the production D1 mirror still flags v0.x records
- * (HSPA1A, TGOLN2) that no longer have local JSONs, and doesn't
- * yet flag the v1.0.0 records that this PR introduces (e.g.
- * GPR75). Override the flag to match the local set so links resolve
- * and the "Deep-dive" filter chip stays honest.
- */
-function syncDeepDiveToLocal(
-  rows: CatalogRow[],
-  localSymbols: Set<string>,
-): CatalogRow[] {
-  return rows.map((r) => {
-    const hasLocal = localSymbols.has(r.symbol);
-    if (hasLocal === r.deep_dive) return r;
-    return { ...r, deep_dive: hasLocal };
-  });
-}
-
-/**
  * The Worker (`row_schema: 3`) packs each row's per-model NCBI
  * verdicts into a 3-slot tuple at `r.tr` — `[haiku?, sonnet?, opus?]`
  * where each slot is either `null` or `[verdict, reason]`. Plus the
@@ -523,17 +498,20 @@ async function _loadCatalogImpl(): Promise<Catalog> {
         "reachable but no candidate-universe data has been loaded into D1 yet.",
     );
   }
-  const localSymbols = new Set(listSurfaceomeGenes());
   // Sonnet 4.6 (slot 1 in triage_by_model) is the catalog's headline
   // verdict — every page surface reads from that slot. Rows where it
   // didn't run on file are the universe's resolver-failure outliers
   // (e.g. CTXN1 as of 2026-05; SEA was healed by PR #30). Drop them
   // from the catalog so the visible universe matches `n_with_triage`
   // and the verdict filter doesn't need a "no call" bucket.
+  //
+  // The Worker's `deep_dive` flag is authoritative (computed from
+  // `surface_annotation` presence in D1) — trusted as-is, no local
+  // override, now that deep-dive records live only in D1.
   const inflated = payload.rows
     .map(inflateCatalogRow)
     .filter((r) => Boolean(r.triage_by_model[1]));
-  const rows = syncDeepDiveToLocal(enrichRowsWithNames(inflated, names), localSymbols);
+  const rows = enrichRowsWithNames(inflated, names);
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,
@@ -593,25 +571,55 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
   return payload;
 }
 
-export function listSurfaceomeGenes(): string[] {
-  let entries: string[];
-  try {
-    entries = readdirSync(DATA_DIR);
-  } catch {
-    return [];
-  }
-  return entries
-    .filter((name) => name.endsWith(".json"))
-    .map((name) => name.replace(/\.json$/, ""))
-    .sort();
+/**
+ * The set of genes that have a viewable deep-dive page. Sourced from the
+ * Worker's `/v1/genes` endpoint, which lists the `surface_annotation`
+ * rows in public D1 — the authoritative deep-dive store. Drives which
+ * gene pages `generateStaticParams` emits.
+ *
+ * Returns `[]` under `SURFACEOME_API_BASE=local` (or empty) so the
+ * offline CI smoke build emits no gene routes; the Pages-side build runs
+ * against the real Worker and emits the full set. Also returns `[]` on
+ * any Worker error — a failed list just means no extra gene routes, not
+ * a hard build failure (the catalog fetch is the loud-failure surface).
+ */
+let _geneListPromise: Promise<string[]> | null = null;
+
+export async function listSurfaceomeGenes(): Promise<string[]> {
+  if (_geneListPromise) return _geneListPromise;
+  _geneListPromise = (async () => {
+    const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+    if (base === "local" || !base) return [];
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${base}/v1/genes`, {
+        cache: "force-cache",
+        signal: controller.signal,
+      });
+      if (!res.ok) return [];
+      const data = (await res.json()) as {
+        genes?: Array<{ gene_symbol?: string }>;
+      };
+      return (data.genes ?? [])
+        .map((g) => g.gene_symbol)
+        .filter((s): s is string => Boolean(s))
+        .sort();
+    } catch {
+      return [];
+    } finally {
+      clearTimeout(timer);
+    }
+  })();
+  return _geneListPromise;
 }
 
 /**
  * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on
- * any Worker error (network, 404, non-2xx, malformed JSON) so the
- * caller can fall back to the committed fs snapshot. Uses
+ * any Worker error (network, 404, non-2xx, malformed JSON). Uses
  * `cache: "force-cache"` so each gene's record is fetched once per
- * build and baked into the static export.
+ * build and baked into the static export. D1 is the only source — there
+ * is no on-disk fallback.
  */
 async function _fetchRecordFromWorker(
   symbol: string,
@@ -630,21 +638,6 @@ async function _fetchRecordFromWorker(
     return null;
   } finally {
     clearTimeout(timer);
-  }
-}
-
-/**
- * Offline / Worker-down fallback: read the committed JSON snapshot.
- * Same files that drive `listSurfaceomeGenes` (which decides which
- * routes `generateStaticParams` emits).
- */
-function _loadRecordFromFs(symbol: string): SurfaceomeRecord | null {
-  const file = path.join(DATA_DIR, `${symbol}.json`);
-  try {
-    const raw = readFileSync(file, "utf-8");
-    return JSON.parse(raw) as SurfaceomeRecord;
-  } catch {
-    return null;
   }
 }
 
@@ -701,18 +694,11 @@ async function _fetchTriageReasoningFromWorker(
 }
 
 /**
- * Load one gene's full SurfaceomeRecord.
+ * Load one gene's full SurfaceomeRecord from public D1 via the Worker.
  *
- * Resolution order:
- * 1. `SURFACEOME_API_BASE=local` (or unset to empty) → fs snapshot only,
- *    skip the Worker. Used by the GitHub-Actions viewer-build smoke
- *    whose IPs hit Cloudflare's WAF.
- * 2. Otherwise → fetch the Worker, fall back to the committed fs
- *    snapshot on any error.
- *
- * The Worker path serves the latest D1 mirror; the fs fallback keeps
- * offline dev / CI working and provides a stale-but-readable copy when
- * the Worker is unreachable.
+ * D1 is the only source — there is no fs fallback. Returns `null` under
+ * `SURFACEOME_API_BASE=local` (or empty), which the offline CI smoke
+ * build uses, and on any Worker error.
  *
  * Triage-reasoning backfill: when the resolved record's own
  * `triage_reasoning` field is empty, pull it from the `triage_run` store
@@ -727,10 +713,9 @@ export async function loadSurfaceomeRecord(
 ): Promise<SurfaceomeRecord | null> {
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
   if (base === "local" || !base) {
-    return _loadRecordFromFs(symbol);
+    return null;
   }
-  const record =
-    (await _fetchRecordFromWorker(symbol, base)) ?? _loadRecordFromFs(symbol);
+  const record = await _fetchRecordFromWorker(symbol, base);
   if (record && !record.triage_reasoning?.trim()) {
     const reasoning = await _fetchTriageReasoningFromWorker(symbol, base);
     if (reasoning) return { ...record, triage_reasoning: reasoning };
@@ -739,7 +724,7 @@ export async function loadSurfaceomeRecord(
 }
 
 export async function loadAllSurfaceomeRecords(): Promise<SurfaceomeRecord[]> {
-  const symbols = listSurfaceomeGenes();
+  const symbols = await listSurfaceomeGenes();
   // Concurrent fetch — each gene hits the Worker independently;
   // `cache: "force-cache"` dedups across the same build.
   const records = await Promise.all(
