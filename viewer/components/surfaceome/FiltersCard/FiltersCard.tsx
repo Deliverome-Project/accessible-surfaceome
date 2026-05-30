@@ -434,8 +434,8 @@ export function FiltersCard({ rec, n }: Props) {
       // Topology was previously the third deterministic group;
       // promoted to first under user request so the structural
       // priors (TM count, isoform variety, ECD class) read BEFORE
-      // the homology rollups (Cross-species / Paralogs) that ride
-      // on top of them. Order: Topology → Cross-species → Paralogs
+      // the homology rollups (Paralogs / Cross-species) that ride
+      // on top of them. Order: Topology → Paralogs → Cross-species
       // → Candidate sites.
       label: "Topology",
       provenance: "deterministic",
@@ -487,6 +487,69 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
+      label: "Paralogs",
+      provenance: "deterministic",
+      pills: (() => {
+        const paralogs = rec.deterministic_features.paralogs;
+        if (paralogs.length === 0) {
+          return [
+            <StatusPill
+              key="p-none"
+              tone="success"
+              size="sm"
+              title={`${TT_PARALOG_ID}\n\nNo paralogs in Compara — no within-family cross-reactivity risk.`}
+            >
+              no Compara paralogs
+            </StatusPill>,
+          ];
+        }
+        // Per-paralog cross-reactivity tier on ECD %identity (or
+        // full-length when the protein has no ECD — ECD-less kinases /
+        // soluble proteins still get a homology-based tier). Same
+        // ≥70 (likely) / 50-70 (plausible) cutoffs as the §Paralogs card.
+        const nLikely = paralogs.filter((p) => {
+          const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
+          return v != null && v >= 70;
+        }).length;
+        const nPlausible = paralogs.filter((p) => {
+          const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
+          return v != null && v >= 50 && v < 70;
+        }).length;
+        const out: React.ReactNode[] = [];
+        if (f.max_paralog_ecd_pct_identity != null) {
+          out.push(
+            <StatusPill
+              key="p-max"
+              tone={paralogIdentityTone(f.max_paralog_ecd_pct_identity)}
+              size="sm"
+              title={TT_PARALOG_ID}
+            >
+              max %ECD identity · {f.max_paralog_ecd_pct_identity.toFixed(1)}%
+            </StatusPill>,
+          );
+        }
+        out.push(
+          <StatusPill
+            key="p-likely"
+            tone={nLikely > 0 ? "danger" : "success"}
+            size="sm"
+            title={TT_PARALOG_ID}
+          >
+            {nLikely} likely cross-reactive
+          </StatusPill>,
+          <StatusPill
+            key="p-plausible"
+            tone={nPlausible > 0 ? "amber" : "success"}
+            size="sm"
+            title={TT_PARALOG_ID}
+          >
+            {nPlausible} plausible
+          </StatusPill>,
+        );
+        return out;
+      })(),
+    },
+    {
       label: "Cross-species",
       provenance: "deterministic",
       pills: [
@@ -513,31 +576,6 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     {
-      label: "Paralogs",
-      provenance: "deterministic",
-      pills: [
-        f.max_paralog_ecd_pct_identity == null ? (
-          <StatusPill
-            key="p"
-            tone="success"
-            size="sm"
-            title={`${TT_PARALOG_ID}\n\nNo paralogs in Compara — no within-family cross-reactivity risk.`}
-          >
-            no Compara paralogs
-          </StatusPill>
-        ) : (
-          <StatusPill
-            key="p"
-            tone={paralogIdentityTone(f.max_paralog_ecd_pct_identity)}
-            size="sm"
-            title={TT_PARALOG_ID}
-          >
-            max %ECD identity · {f.max_paralog_ecd_pct_identity.toFixed(1)}%
-          </StatusPill>
-        ),
-      ],
-    },
-    {
       // Was "SURFACE-Bind"; reader-facing label is now "Candidate
       // sites" — names the metric (per-protein count of MaSIF-scored
       // targetable surface patches) rather than the toolchain. Pill
@@ -553,19 +591,20 @@ export function FiltersCard({ rec, n }: Props) {
       //   3. scored_with_sites: real targetability data
       pills: (() => {
         const sb = rec.deterministic_features.surface_bind;
+        // Ramaraj 2012 typical antibody-antigen interface = 1,103 ± 244
+        // Å² (see SurfaceBindSite.area_a2). Count EC sites whose buried
+        // area reaches that footprint — patches genuinely antibody-sized.
+        const TYPICAL_INTERFACE_A2 = 1103;
+        const nAtTypical = sb.sites.filter(
+          (s) => s.area_a2 >= TYPICAL_INTERFACE_A2,
+        ).length;
         if (!sb.has_data) {
           return [
             <StatusPill
               key="sb-not-in"
               tone="neutral"
               size="sm"
-              title={
-                "NOT in SURFACE-Bind's dataset. SURFACE-Bind filtered " +
-                "this protein out during structural-quality screening — " +
-                "typically inner-leaflet anchors, soluble cytoplasmic " +
-                "proteins, or poorly-modeled targets. Distinct from " +
-                "'scored · no patches' (where the protein WAS scored)."
-              }
+              title="Not in SURFACE-Bind's dataset — filtered at structural-quality screening, so targetability wasn't assessed."
             >
               not in SURFACE-Bind
             </StatusPill>,
@@ -575,16 +614,9 @@ export function FiltersCard({ rec, n }: Props) {
           return [
             <StatusPill
               key="sb-scored-empty"
-              tone="amber"
+              tone="danger"
               size="sm"
-              title={
-                "Scored by SURFACE-Bind but no surface patches cleared " +
-                "the MaSIF targetability threshold. The protein is in " +
-                "SURFACE-Bind's authoritative table; the surface " +
-                "chemistry just didn't yield designable binder seeds. " +
-                "Distinct from 'not in SURFACE-Bind' (where the " +
-                "protein was filtered out before scoring)."
-              }
+              title="Scored by SURFACE-Bind, but no surface patches cleared the MaSIF targetability threshold."
             >
               scored · no patches
             </StatusPill>,
@@ -595,39 +627,17 @@ export function FiltersCard({ rec, n }: Props) {
             key="sb-sites"
             tone="success"
             size="sm"
-            title={
-              "Number of MaSIF-scored targetable surface patches. " +
-              "Each site is a region where SURFACE-Bind's patch scoring " +
-              "identified geometric / chemical features compatible with " +
-              "a de novo binder. Higher = more design flexibility."
-            }
+            title="Extracellular surface patches SURFACE-Bind's MaSIF model scored as designable binder sites."
           >
-            {sb.n_sites} sites
+            {sb.n_sites} EC site{sb.n_sites === 1 ? "" : "s"}
           </StatusPill>,
           <StatusPill
-            key="sb-alpha"
-            tone="teal"
+            key="sb-typical"
+            tone={nAtTypical > 0 ? "success" : "amber"}
             size="sm"
-            title={
-              "Total α-helical binder candidate seeds aligned across all " +
-              "sites — SURFACE-Bind's continuous-fragment library docked " +
-              "to the surface patches and ranked by MaSIF score."
-            }
+            title="EC sites whose buried area reaches the typical antibody-antigen interface (≥1,103 Å², Ramaraj et al. 2012, PMID:22246133) — patches large enough to seat an antibody footprint."
           >
-            {sb.n_seeds_alpha.toLocaleString()} α-seeds
-          </StatusPill>,
-          <StatusPill
-            key="sb-beta"
-            tone="teal"
-            size="sm"
-            title={
-              "Total β-strand binder candidate seeds aligned across all " +
-              "sites. β-strand binders are typically the harder design " +
-              "target; high counts here mean the surface has β-favorable " +
-              "patches."
-            }
-          >
-            {sb.n_seeds_beta.toLocaleString()} β-seeds
+            {nAtTypical} ≥ typical interface
           </StatusPill>,
         ];
       })(),
@@ -711,16 +721,11 @@ export function FiltersCard({ rec, n }: Props) {
       title:
         "SURFACE-Bind (Correia lab, Balbi et al. 2026, PMID 41604262, " +
         "PNAS) scores extracellular surface patches for designability " +
-        "by de novo protein binders. Each candidate site is a region " +
-        "where SURFACE-Bind's MaSIF model identified geometric / " +
-        "chemical features compatible with a designable binder. " +
-        "Three pill states: 'not in' = the protein was filtered at " +
-        "structural QC before scoring (typically inner-leaflet anchors " +
-        "or soluble cytoplasmic proteins); 'scored · no patches' = the " +
-        "protein was scored but no patches cleared the MaSIF " +
-        "targetability threshold; 'N sites · M seeds' = real " +
-        "targetability data, where α-seeds = α-helical binder " +
-        "candidates and β-seeds = β-strand binder candidates.",
+        "by de novo protein binders. Each EC site is a patch where its " +
+        "MaSIF model found geometry / chemistry compatible with a " +
+        "designable binder; '≥ typical interface' counts the patches " +
+        "whose buried area reaches the ~1,103 Å² typical antibody-" +
+        "antigen footprint (Ramaraj et al. 2012, PMID 22246133).",
       links: [
         { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
         {
