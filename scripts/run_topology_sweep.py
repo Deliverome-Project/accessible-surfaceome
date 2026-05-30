@@ -334,19 +334,33 @@ def _resolve_ortholog_uniprots(
     *,
     cache_path: Path,
     max_workers: int = 4,
+    human_seq_by_hgnc: dict[str, str] | None = None,
 ) -> dict[str, str]:
     """Resolve ortholog Ensembl gene IDs to UniProt accessions via UniProt search.
 
     The ``compara_ortholog`` D1 table has ``ortholog_uniprot_acc IS NULL``
     everywhere — Compara only carries Ensembl xrefs. We resolve on demand
-    by hitting UniProt's REST search with ``xref:ensembl-<ensg>+AND+organism_id:<taxon>``.
+    by hitting UniProt's REST search.
+
+    When ``human_seq_by_hgnc`` is supplied (mapping ``human_hgnc_id`` → the
+    human canonical residue sequence) the resolver selects the ortholog
+    isoform with the highest coverage-normalized identity to the human
+    canonical — rejecting truncated TrEMBL fragments (e.g. cyno EGFR's 704-aa
+    ECD-only ``A0A2K5WKD8``) in favour of the full-length true ortholog
+    (``A0A2K5WK39``). Without it, the resolver falls back to its tiered
+    longest-entry heuristic.
 
     Cached to disk at ``cache_path`` (TSV: ``ensembl_gene\\ttaxon_id\\tuniprot_acc``)
     so repeated runs don't re-hit UniProt for the same orthologs. Cache is
     keyed (ensembl_gene, taxon_id) so a follow-up run with a different
-    species doesn't clobber an existing resolution.
+    species doesn't clobber an existing resolution. NOTE: switching the
+    selection criterion invalidates old caches — use a fresh ``cache_path``
+    (``ortholog_uniprot_resolution_byidentity.tsv``) so length-based picks
+    don't carry over.
     """
     from accessible_surfaceome.sources.deeptmhmm import resolve_uniprot_by_ensembl_gene
+
+    human_seq_by_hgnc = human_seq_by_hgnc or {}
 
     cache: dict[tuple[str, int], str] = {}
     if cache_path.exists():
@@ -375,6 +389,7 @@ def _resolve_ortholog_uniprots(
             target.ortholog_ensembl_gene,
             organism_taxon_id=target.species_taxon_id,
             ortholog_gene_symbol=target.ortholog_gene_symbol,
+            human_canonical_sequence=human_seq_by_hgnc.get(target.human_hgnc_id),
         )
         return target, acc
 
@@ -705,6 +720,15 @@ def fetch_sequences_for_accessions(
     )
     logger.info("  fetched %d/%d sequences successfully", len(paths), len(accessions))
     return paths
+
+
+def _read_fasta_sequence(path: Path) -> str:
+    """Read a single-record cached FASTA and return its residue string."""
+    try:
+        lines = path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return ""
+    return "".join(ln.strip() for ln in lines if ln and not ln.startswith(">")).upper()
 
 
 # ---------------------------------------------------------------------------
@@ -1792,6 +1816,26 @@ def main() -> int:
     else:
         isoform_fasta_paths = {}
 
+    # Human canonical sequences drive identity-based ortholog-model selection:
+    # the resolver picks the ortholog isoform with the highest coverage-
+    # normalized identity to the human canonical (rejecting truncated TrEMBL
+    # fragments) rather than the longest entry. Fetch them up front — Stage 3
+    # reuses the same on-disk cache, so this is not a double fetch.
+    human_seq_by_hgnc: dict[str, str] = {}
+    if any(c in cohorts for c in ("mouse_ortholog", "cyno_ortholog")):
+        human_acc_by_hgnc = {c.hgnc_id: c.uniprot_acc for c in candidates}
+        human_fasta_paths = fetch_sequences_for_accessions(
+            sorted(set(human_acc_by_hgnc.values())),
+            cache_dir=SEQUENCE_CACHE_DIR,
+            max_workers=args.fetch_workers,
+        )
+        for hgnc_id, h_acc in human_acc_by_hgnc.items():
+            p = human_fasta_paths.get(h_acc)
+            seq = _read_fasta_sequence(p) if p else ""
+            if seq:
+                human_seq_by_hgnc[hgnc_id] = seq
+        event("human_seqs_for_ortholog_selection", n=len(human_seq_by_hgnc))
+
     for ortholog_cohort in ("mouse_ortholog", "cyno_ortholog"):
         if ortholog_cohort not in cohorts:
             continue
@@ -1804,10 +1848,17 @@ def main() -> int:
             continue
         # Resolve mouse/cyno Ensembl IDs → UniProt accs (cached on disk so
         # subsequent runs don't re-hit UniProt). Cache is shared across
-        # cohorts because keying is (ensembl_gene, taxon_id).
-        cache_path = REPO_ROOT / "data" / "external" / "ortholog_uniprot_resolution.tsv"
+        # cohorts because keying is (ensembl_gene, taxon_id). The
+        # ``_byidentity`` cache name is deliberately distinct from the old
+        # length-based ``ortholog_uniprot_resolution.tsv`` so stale fragment
+        # picks don't carry over after the selection-criterion change.
+        cache_path = (
+            REPO_ROOT / "data" / "external"
+            / "ortholog_uniprot_resolution_byidentity.tsv"
+        )
         ensg_to_acc = _resolve_ortholog_uniprots(
-            targets, cache_path=cache_path, max_workers=4
+            targets, cache_path=cache_path, max_workers=4,
+            human_seq_by_hgnc=human_seq_by_hgnc,
         )
         # Build ortholog_uniprot_acc → human_hgnc_id map (the stable
         # join key for downstream topology_public consumers), plus a

@@ -54,24 +54,28 @@ function SpeciesTable({
           <tbody>
             {entries.map((e, i) => {
               const ecdMissing = e.ecd_pct_identity_to_human_canonical == null;
-              // "Same topology" = the ortholog keeps the human canonical's
-              // transmembrane-helix count (the reliable stored Compara field
-              // and the dominant topology axis for a surface protein). A
-              // mismatch means a membrane pass was gained / lost between
-              // species — the human-targeting epitope may not translate.
-              // Topology dot state vs the human canonical:
-              //   absent   → a human TM helix fell into a gap in this
-              //              (truncated) ortholog model; conserved by homology
-              //              but not physically in the model → gray, NOT a
-              //              divergence (e.g. cyno EGFR's 704/1210-aa model).
-              //   same     → same TM-helix count → green.
-              //   distinct → genuinely different count → amber.
-              const topoState: "absent" | "same" | "distinct" =
-                e.tm_absent_from_model
-                  ? "absent"
-                  : e.tm_helix_count === canonicalTmCount
-                    ? "same"
-                    : "distinct";
+              // Membrane-topology dot vs the human canonical. Topology is
+              // projected from the human canonical by alignment, so it's
+              // conserved by construction; the dot only flags whether the
+              // ortholog keeps the canonical transmembrane-helix count.
+              //   same     → same TM count, OR conserved-by-homology where a
+              //              human TM falls outside a truncated ortholog model
+              //              (e.g. an ECD-only cyno TrEMBL fragment like EGFR's
+              //              704/1210-aa A0A2K5WKD8) → green.
+              //   distinct → genuinely different count on a model that DOES
+              //              cover the region → amber.
+              // A partial model that simply doesn't reach a human TM is still
+              // topologically conserved, so we report the canonical count and
+              // treat it as `same`, explaining the inference in the tooltip —
+              // not flagging a fake divergence (no gray "absent" state).
+              const inferredFromPartialModel = Boolean(e.tm_absent_from_model);
+              const displayTmCount = inferredFromPartialModel
+                ? canonicalTmCount
+                : e.tm_helix_count;
+              const topoState: "same" | "distinct" =
+                inferredFromPartialModel || displayTmCount === canonicalTmCount
+                  ? "same"
+                  : "distinct";
               return (
                 <tr key={i}>
                   <td>
@@ -115,26 +119,22 @@ function SpeciesTable({
                         className={`${styles.topoDot} ${
                           topoState === "same"
                             ? styles.topoSame
-                            : topoState === "distinct"
-                              ? styles.topoDistinct
-                              : styles.topoAbsent
+                            : styles.topoDistinct
                         }`}
                         aria-label={
                           topoState === "same"
                             ? "Same membrane topology as the human canonical"
-                            : topoState === "distinct"
-                              ? "Distinct membrane topology from the human canonical"
-                              : "Topology conserved by homology; a TM region is absent from this truncated ortholog model"
+                            : "Distinct membrane topology from the human canonical"
                         }
                         title={
-                          topoState === "same"
-                            ? `Same transmembrane-helix count as the human canonical (${canonicalTmCount} TM) — conserved membrane architecture`
-                            : topoState === "distinct"
-                              ? `Different transmembrane-helix count from the human canonical (${e.tm_helix_count} vs ${canonicalTmCount} TM) — membrane architecture diverged between species`
-                              : `Partial ortholog model — ${e.n_tm_regions_absent ?? 1} transmembrane region(s) absent from this truncated sequence. Topology is conserved by homology (human has ${canonicalTmCount} TM); the model just doesn't cover it.`
+                          inferredFromPartialModel
+                            ? `Topology conserved by homology. This ortholog model is partial (${e.tm_helix_count} TM physically modelled) and doesn't cover ${e.n_tm_regions_absent ?? 1} human TM region(s); shown at the conserved canonical count (${canonicalTmCount} TM).`
+                            : topoState === "same"
+                              ? `Same transmembrane-helix count as the human canonical (${canonicalTmCount} TM) — conserved membrane architecture`
+                              : `Different transmembrane-helix count from the human canonical (${e.tm_helix_count} vs ${canonicalTmCount} TM) — membrane architecture diverged between species`
                         }
                       />
-                      {e.tm_helix_count}
+                      {displayTmCount}
                     </span>
                   </td>
                 </tr>
@@ -163,7 +163,7 @@ export function OrthologsCard({ rec, n }: Props) {
       eyebrow="Orthologs"
       title="Cross-species orthologs"
       meta={`Deterministic · Ensembl Compara ${comparaVersion} + DeepTMHMM ${toolVersion}`}
-      lede="Per-species canonical (and alternative) isoforms with ECD percent identity / similarity to the human canonical. Topology is projected from the human canonical by alignment (robust to truncated / padded ortholog models). The dot on TM count flags whether the ortholog keeps the human membrane-pass count (green), differs (amber), or has a TM region absent from a truncated model (gray)."
+      lede="Per-species canonical (and alternative) isoforms with ECD percent identity / similarity to the human canonical. Topology is projected from the human canonical by alignment (robust to truncated / padded ortholog models). The dot on TM count flags whether the ortholog keeps the human membrane-pass count (green) or genuinely differs (amber); a truncated ortholog model that doesn't physically cover a TM is still counted as conserved (green) at the canonical count."
     >
       {SPECIES.map((s) => (
         <SpeciesTable
