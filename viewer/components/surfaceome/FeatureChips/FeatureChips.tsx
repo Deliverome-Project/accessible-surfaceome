@@ -109,17 +109,6 @@ function expressionBreadthTone(v: string): Tone {
   return "neutral";
 }
 
-const TT_KNOWN_LIGAND =
-  "Has the synthesizer found a documented binding partner / ligand " +
-  "for this protein in literature? true = yes (e.g. EGFR ← EGF; " +
-  "for kinases like SRC this also captures known substrates / " +
-  "interaction partners since the 'ligand' framing is canonical " +
-  "for receptors but loose for cytoplasmic kinases). false = " +
-  "orphan-class — ligand identity is genuinely unknown (orphan " +
-  "GPCRs / NHRs / true orphan kinases). The boolean is the " +
-  "catalog filter; the specific ligand identity isn't stored on " +
-  "the record — see the co-receptor evidence below for partners.";
-
 const TT_CORECEPTOR =
   "LLM-driven. Whether the protein needs a partner to reach the surface. " +
   "None = surfaces on its own; modulatory = a partner influences but " +
@@ -170,7 +159,6 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
         <StatusPill
           tone={f.has_known_ligand ? "success" : "danger"}
           size="sm"
-          title={TT_KNOWN_LIGAND}
         >
           <span aria-hidden="true">{f.has_known_ligand ? "✓" : "✗"}</span>{" "}
           known ligand
@@ -214,7 +202,7 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
           size="sm"
           title={TT_CORECEPTOR}
         >
-          co-receptor ·{" "}
+          partner for expression ·{" "}
           {prettyEnum(ar.co_receptor_requirements.surface_expression_dependency)}
         </StatusPill>
       ),
