@@ -5,6 +5,7 @@ import type {
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import { FeatureChips } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./AccessibilityRisksCard.module.css";
@@ -47,6 +48,8 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
       title="Accessibility caveats"
       meta="Six subsections · severity + evidence-strength on each · cites point into the evidence ledger"
     >
+      <FeatureChips category="risks" rec={rec} />
+
       <div className={styles.subsection}>
         <div className={styles.subHead}>
           <p className={styles.subTitle}>Shed form</p>

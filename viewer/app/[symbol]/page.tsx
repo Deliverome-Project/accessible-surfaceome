@@ -12,6 +12,8 @@ import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter
 import { EvidenceClickDelegator } from "../../components/surfaceome/EvidenceClickDelegator/EvidenceClickDelegator";
 import { EvidenceDrawer } from "../../components/surfaceome/EvidenceDrawer/EvidenceDrawer";
 import { EvidenceLedgerCard } from "../../components/surfaceome/EvidenceLedgerCard/EvidenceLedgerCard";
+import { ExpressionCard } from "../../components/surfaceome/ExpressionCard/ExpressionCard";
+import { FEATURE_TAB_LABEL } from "../../components/surfaceome/FeatureChips/FeatureChips";
 import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
 import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
 // IsoformsCard now subsumes the old standalone OrthologsCard +
@@ -123,17 +125,29 @@ export default async function GenePage({ params }: PageProps) {
       label: "Surface evidence",
       render: (n) => <SurfaceEvidenceCard rec={rec} n={n} />,
     },
+    // Biology / Expression / Risks each map 1:1 to an LLM feature-chip
+    // category. The tab `label`s pull from the SAME `FEATURE_TAB_LABEL`
+    // map the cards' <FeatureChips> rows use, so a rename can't drift
+    // the tab title out of sync with the chip-row aria-label (the
+    // compile-time half of the tab↔chip "connection"; the runtime half
+    // is asserted by viewer/tests/verify_feature_tabs.py via the
+    // data-section-id / data-feature-chips attributes).
     {
       kind: "biology",
-      label: "Biology",
+      label: FEATURE_TAB_LABEL.biology,
       render: (n) => <BiologicalContextCard rec={rec} n={n} />,
+    },
+    {
+      kind: "expression",
+      label: FEATURE_TAB_LABEL.expression,
+      render: (n) => <ExpressionCard rec={rec} n={n} />,
     },
     // Risks promoted above the evolutionary-context group per user
     // feedback — accessibility risks are higher-priority reading than
     // the isoform / ortholog / paralog comparison that follows it.
     {
       kind: "risks",
-      label: "Risks",
+      label: FEATURE_TAB_LABEL.risks,
       render: (n) => <AccessibilityRisksCard rec={rec} n={n} />,
     },
     // SURFACE-Bind section only when the protein has at least one
