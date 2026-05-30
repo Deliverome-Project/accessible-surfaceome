@@ -70,16 +70,31 @@ your task message; follow it. Four blocks:
   `has_known_ligand` + `has_known_ligand_rationale`. The other 13 filter
   fields are orchestrator-derived; do not emit them here. Every rationale
   is **required, non-empty, ≤300 chars**, written for the catalog reader,
-  and must justify the rollup value from the ledger:
-    - `expression_level_rationale` — name the dominant tissue/context the
-      level anchors to (e.g. "high in epithelial tissues; HPA + flow agree").
+  and must justify the rollup value from the ledger. **Embed the specific
+  supporting evidence id(s) inline** — `(a1_evi_NN)` / `(a2_evi_NN)`, the
+  same way `grade_rationale` cites — for every part of the claim the ledger
+  actually backs; the viewer renders these inline ids as clickable evidence
+  tags. Cite ONLY ids that specifically support the statement; when a call
+  is a topology / general-knowledge inference the ledger doesn't directly
+  evidence, state it uncited rather than attaching a loosely-related id.
+    - `expression_level_rationale` — the dominant tissue/context the level
+      anchors to, with its cite (e.g. "high in epithelial tissues; HPA +
+      flow agree (a2_evi_03)").
     - `expression_breadth_rationale` — how many / which tissue families
-      carry it (e.g. "broad: detected across epithelial, neural, immune").
+      carry it (e.g. "broad: epithelial, neural, immune (a2_evi_03,
+      a2_evi_11)").
     - `surface_specificity_rationale` — the surface-vs-intracellular split
-      basis (e.g. "mixed: ~40% PM, ~60% endosomal in dual-localization rows").
+      basis, citing the localization evidence that shows it (e.g. "mixed:
+      ~40% PM, ~60% endosomal in dual-localization rows (a1_evi_12,
+      a2_evi_07)"). Surface-vs-IC is an evidence-anchored call — it should
+      almost always carry a localization cite.
     - `has_known_ligand_rationale` — name the documented ligand/partner when
-      `True` (e.g. "binds EGF/TGF-α"), or state why orphan-class when `False`
-      (e.g. "orphan GPCR; no deorphanized endogenous ligand reported").
+      `True`, citing the binding / structure / blocking-antibody evidence if
+      it is in the ledger (e.g. "binds EGF/TGF-α (a1_evi_05)"). If the ligand
+      is textbook but the ledger carries no binding paper, name the ligand
+      uncited rather than attaching an unrelated id. When `False`, say why
+      orphan-class (e.g. "orphan GPCR; no deorphanized endogenous ligand
+      reported").
 - `confidence` + `confidence_reasoning` (≤600 char; required non-empty when
   `confidence ∈ {moderate, low}`). **Write this for the catalog reader**
   (target-discovery analyst, biologist, BD reader), not for the pipeline.
@@ -481,6 +496,26 @@ claim you are integrating. The same `a1_evi_*` id A1 used inside its
 `methods[].cited_evidence_ids` is the one you cite here. Do not paraphrase
 ledger quotes back into the body of your output — your prose synthesizes,
 the ledger carries the verbatim text.
+
+**Cite only evidence that SPECIFICALLY supports the claim it is attached
+to.** A block's `cited_evidence_ids` is NOT a "related reading" list for
+the gene or the section — every id must directly back THAT block's
+specific assertion. Each cite is rendered next to the claim in the viewer,
+so an over-broad id reads to the reader as a wrong citation. This is the
+most common miss on two blocks:
+- `co_receptor_requirements` — cite evidence that bears on the
+  partner/co-receptor-dependency call ITSELF (chaperone/trafficking
+  studies, partner co-expression that gates surface presence, or the
+  explicit statement that membrane association is partner-independent),
+  NOT generic surface-expression, signaling, or disease papers that merely
+  feature the protein.
+- `restricted_subdomain` — cite evidence about the actual spatial
+  DISTRIBUTION (apical / basolateral / junctional / ciliary IF, or the
+  membrane-wide staining that rules restriction out), NOT papers that only
+  establish the protein is surface-resident.
+If a clip in hand doesn't specifically bear on a block's claim, drop it
+from that block's cites even when it's about the same gene — an empty but
+correct cite list beats a padded one.
 
 ## Not your job
 
