@@ -1,6 +1,7 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
+import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import { type Compartment, compartmentAt } from "../../../lib/surface-bind";
 import type { SurfaceBindSite } from "../../../lib/surfaceome-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -15,11 +16,14 @@ import styles from "./SurfaceBindCard.module.css";
 /** Pill tone per compartment — mirrors ``COMPARTMENT_COLOR`` in
  *  ``viewer/components/surfaceome/StructureViewerCard/StructureViewer.tsx``
  *  so the 3D sphere color and the table pill match per site.
- *  Per user preference: EC = red ("look here / focus"), IC = green
- *  (safely tucked away inside the cell); membrane / signal /
- *  unknown = neutral. */
-function compartmentTone(c: Compartment): "danger" | "success" | "neutral" {
-  if (c === "extracellular") return "danger";
+ *  Per user preference: EC = purple / lavender ("look here / focus"),
+ *  signal peptide = red, IC = green (safely tucked away inside the
+ *  cell); membrane / unknown = neutral. */
+function compartmentTone(
+  c: Compartment,
+): "lavender" | "danger" | "success" | "neutral" {
+  if (c === "extracellular") return "lavender";
+  if (c === "signal") return "danger";
   if (c === "intracellular") return "success";
   return "neutral";
 }
@@ -199,7 +203,7 @@ export function SurfaceBindTable({ sites, topology }: Props) {
                 binding-affinity prediction. Tone compares it to the typical
                 antibody–antigen interface (1,103 ± 244 Å²,{" "}
                 <a
-                  href="https://pubmed.ncbi.nlm.nih.gov/22246133/"
+                  href={pubmedUrl(CITATIONS.antibodyInterface.pmid)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

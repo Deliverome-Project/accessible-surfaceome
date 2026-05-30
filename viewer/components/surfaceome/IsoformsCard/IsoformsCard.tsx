@@ -6,6 +6,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -60,12 +61,12 @@ type TopologyDetail = Pick<
 function topologyDetailCells(t: TopologyDetail) {
   return (
     <>
+      <td>{t.signal_peptide_length} aa</td>
       <td>{t.ecd_length_residues} aa</td>
       <td>{t.icd_length_residues} aa</td>
       <td>{t.tm_helix_count}</td>
       <td>{orientationPill(t.n_terminal_orientation)}</td>
       <td>{orientationPill(t.c_terminal_orientation)}</td>
-      <td>{t.signal_peptide_length} aa</td>
     </>
   );
 }
@@ -162,12 +163,40 @@ function orthologRelevanceTier(pct: number | null): "high" | "med" | "low" | nul
 /** Color class for an ortholog ECD %id cell. Note the inverted polarity
  *  vs paralogs: high relevance is GREEN (riskLow class), low relevance is
  *  RED (riskHigh class). */
-function orthologToneClass(pct: number | null): string {
-  const tier = orthologRelevanceTier(pct);
+function orthologToneClass(pct: number | null | undefined): string {
+  const tier = orthologRelevanceTier(pct ?? null);
   if (tier === "high") return styles.riskLow; // green
   if (tier === "med") return styles.riskMed; // orange
   if (tier === "low") return styles.riskHigh; // red
   return "";
+}
+
+/**
+ * Tone class for a within-species paralog identity — same bands as
+ * `orthologToneClass` but inverse polarity (higher identity = more
+ * antibody cross-reactivity risk = red).
+ */
+function paralogToneClass(pct: number | null | undefined): string {
+  const tier = paralogRiskTier(pct ?? null);
+  if (tier === "high") return styles.riskHigh; // red
+  if (tier === "med") return styles.riskMed; // orange
+  if (tier === "low") return styles.riskLow; // green
+  return "";
+}
+
+/**
+ * Render an identity/similarity % as a very-light, borderless,
+ * pill-shaped badge tinted by `toneClass`. Null → a muted em-dash, no
+ * pill. Shared by every identity column in the sequence-variants table
+ * so isoforms, orthologs, and paralogs read consistently.
+ */
+function similarityCell(pct: number | null | undefined, toneClass: string) {
+  if (pct == null) return <span className={styles.muted}>{fmtPct(pct)}</span>;
+  return (
+    <span className={`${styles.valuePill}${toneClass ? ` ${toneClass}` : ""}`}>
+      {fmtPct(pct)}
+    </span>
+  );
 }
 
 /**
@@ -223,7 +252,12 @@ function orthologRow(e: OrthologEntry, key: string, species: string, maxResidues
           </span>
         </div>
       </td>
-      <td>{fmtPct(e.full_length_pct_identity_to_human_canonical)}</td>
+      <td>
+        {similarityCell(
+          e.full_length_pct_identity_to_human_canonical,
+          orthologToneClass(e.full_length_pct_identity_to_human_canonical),
+        )}
+      </td>
       <td
         title={
           ecdMissing
@@ -231,24 +265,18 @@ function orthologRow(e: OrthologEntry, key: string, species: string, maxResidues
             : undefined
         }
       >
-        {ecdMissing ? (
-          <span className={styles.muted}>
-            {fmtPct(e.ecd_pct_identity_to_human_canonical)}
-          </span>
-        ) : (
-          <span
-            className={`${styles.valuePill} ${orthologToneClass(
-              e.ecd_pct_identity_to_human_canonical,
-            )}`}
-          >
-            {fmtPct(e.ecd_pct_identity_to_human_canonical)}
-          </span>
+        {similarityCell(
+          e.ecd_pct_identity_to_human_canonical,
+          orthologToneClass(e.ecd_pct_identity_to_human_canonical),
         )}
       </td>
-      <td>{e.ecd_length_residues} aa</td>
-      {/* ICD length / terminal orientations / signal-peptide length —
+      {/* Signal-peptide length / ICD length / terminal orientations —
           derived from the ortholog's DeepTMHMM topology (see `detail`).
           Em-dash only when the ortholog has no topology string yet. */}
+      <td className={detail ? undefined : styles.muted}>
+        {detail ? `${detail.signal_peptide_length} aa` : "—"}
+      </td>
+      <td>{e.ecd_length_residues} aa</td>
       <td className={detail ? undefined : styles.muted}>
         {detail ? `${detail.icd_length_residues} aa` : "—"}
       </td>
@@ -262,9 +290,6 @@ function orthologRow(e: OrthologEntry, key: string, species: string, maxResidues
         {detail?.c_terminal_orientation
           ? orientationPill(detail.c_terminal_orientation)
           : "—"}
-      </td>
-      <td className={detail ? undefined : styles.muted}>
-        {detail ? `${detail.signal_peptide_length} aa` : "—"}
       </td>
       <td className={styles.topoCell}>
         {e.per_residue_topology ? (
@@ -310,12 +335,19 @@ function paralogRow(p: ParalogEntry, key: string, maxResidues: number) {
           <span className={styles.variantSub}>within-species</span>
         </div>
       </td>
-      <td>{fmtPct(p.full_length_pct_identity)}</td>
+      <td>
+        {similarityCell(
+          p.full_length_pct_identity,
+          paralogToneClass(p.full_length_pct_identity),
+        )}
+      </td>
       <td
-        className={ecdMissing ? styles.muted : styles.riskHigh}
         title={ecdMissing ? "No ECD to compare (no surface-exposed residues)" : undefined}
       >
-        {fmtPct(p.ecd_pct_identity)}
+        {similarityCell(p.ecd_pct_identity, paralogToneClass(p.ecd_pct_identity))}
+      </td>
+      <td className={p.signal_peptide_length != null ? undefined : styles.muted}>
+        {p.signal_peptide_length != null ? `${p.signal_peptide_length} aa` : "—"}
       </td>
       <td className={p.ecd_length_residues != null ? undefined : styles.muted}>
         {p.ecd_length_residues != null ? `${p.ecd_length_residues} aa` : "—"}
@@ -329,9 +361,6 @@ function paralogRow(p: ParalogEntry, key: string, maxResidues: number) {
       </td>
       <td className={p.c_terminal_orientation ? undefined : styles.muted}>
         {p.c_terminal_orientation ? orientationPill(p.c_terminal_orientation) : "—"}
-      </td>
-      <td className={p.signal_peptide_length != null ? undefined : styles.muted}>
-        {p.signal_peptide_length != null ? `${p.signal_peptide_length} aa` : "—"}
       </td>
       <td className={styles.topoCell}>
         {p.per_residue_topology ? (
@@ -468,13 +497,7 @@ export function IsoformsCard({ rec, n }: Props) {
         <p className={`label-mono ${styles.subhead}`}>
           Sequence variants · canonical, isoforms &amp; cross-species orthologs
           <InfoTip label="Ortholog (species relevance)">
-            Mouse/cyno identity to human, over the ECD. Triage signal, not a
-            verdict — relevance also needs binding, expression, and function
-            (ICH S6(R1)).
-            <br />
-            ≥85% high · 60–85% intermediate · &lt;60% higher-risk .
-            <br />
-            High identity ≠ conserved epitope.
+            {tooltips.ortholog_species_relevance}
           </InfoTip>
         </p>
         <div className={styles.tableWrap}>
@@ -498,12 +521,12 @@ export function IsoformsCard({ rec, n }: Props) {
                     the whole protein.
                   </InfoTip>
                 </th>
+                <th scope="col">Signal pep</th>
                 <th scope="col">ECD len</th>
                 <th scope="col">ICD len</th>
                 <th scope="col">TM count</th>
                 <th scope="col">N-term</th>
                 <th scope="col">C-term</th>
-                <th scope="col">Signal pep</th>
                 <th scope="col" className={styles.topoCol}>
                   Topology
                 </th>
@@ -565,18 +588,15 @@ export function IsoformsCard({ rec, n }: Props) {
                         </a>
                       </div>
                     </td>
-                    <td className={fullId == null ? styles.muted : undefined}>
-                      {fmtPct(fullId)}
-                    </td>
+                    <td>{similarityCell(fullId, orthologToneClass(fullId))}</td>
                     <td
-                      className={ecdId == null ? styles.muted : undefined}
                       title={
                         ecdId == null
                           ? "No extracellular domain to compare (no surface-exposed residues)"
                           : undefined
                       }
                     >
-                      {fmtPct(ecdId)}
+                      {similarityCell(ecdId, orthologToneClass(ecdId))}
                     </td>
                     {topologyDetailCells(iso)}
                     <td className={styles.topoCell}>
@@ -643,19 +663,7 @@ export function IsoformsCard({ rec, n }: Props) {
               ? "Paralogs · within-species, full-length identity"
               : "Paralogs · within-species sequence family"}
           <InfoTip label="Paralog (specificity)">
-            Identity to nearest human paralog — local epitope similarity
-            matters more than global identity. Per HPA antigen design (PMID{" "}
-            <a
-              href="https://pubmed.ncbi.nlm.nih.gov/33170010/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              33170010
-            </a>
-            ): ≤60% (usually &lt;40%) single-target achievable; &gt;80% defines
-            a multitargeting antibody expected to bind the family.
-            <br />
-            &lt;60% lower risk · 60–80% caution · &gt;80% multitarget likely
+            {tooltips.paralog_specificity}
           </InfoTip>
         </p>
         {paralogs.length === 0 ? (

@@ -1,3 +1,8 @@
+import {
+  CITATIONS,
+  pubmedUrl,
+  TYPICAL_ANTIBODY_INTERFACE_A2,
+} from "../../../lib/citations";
 import { ecSites } from "../../../lib/surface-bind";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
@@ -179,34 +184,13 @@ function orthologPillLabel(
 // upstream source so the chip's tooltip stays honest.
 // ---------------------------------------------------------------------------
 
-const TT_ECD_CLASS =
-  "One antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å² buried " +
-  "(Ramaraj et al. 2012, PMID:22246133). Bands below are our heuristic " +
-  "for how many non-overlapping footprints an ECD could host " +
-  "(≈ residues ÷ 12, a loose upper bound): " +
-  "large ≥ 200 residues (≥10 non-overlapping epitopes possible); " +
-  "moderate = 60-199 (multiple epitopes, e.g. tetraspanin EC2 loops); " +
-  "small = 30-59 (2-5 candidate epitopes, harder discovery); " +
-  "minimal < 30 (1-2 epitopes max, specialized formats needed); " +
-  "none = no surface-exposed ECD (GPI / inner-leaflet).";
-
-// Kept in sync with the §07 "Ortholog (species relevance)" InfoTip in
-// IsoformsCard.tsx — same bands, same framing.
-const TT_ORTHOLOG_ID =
-  "Mouse / cyno identity to the human canonical, over the ECD. Triage " +
-  "signal, not a verdict — relevance also needs binding, expression, " +
-  "and function (ICH S6(R1)). ≥85% = high · 60–85% = intermediate · " +
-  "<60% = higher-risk. High identity ≠ conserved epitope.";
-
-// Kept in sync with the §07 "Paralog (specificity)" InfoTip in
-// IsoformsCard.tsx — HPA antigen-design bands (PMID 33170010).
-const TT_PARALOG_ID =
-  "Identity to the nearest human paralog, over the ECD — local epitope " +
-  "similarity matters more than global identity. Per HPA antigen-design " +
-  "practice (PMID 33170010): ≤60% (usually <40%) single-target " +
-  "achievable; >80% defines a multitargeting antibody expected to bind " +
-  "the family. <60% = lower risk · 60–80% = caution · >80% = multitarget " +
-  "likely.";
+// ECD-size class tooltip now lives in `lib/tooltips` as
+// `catalog_ecd_class` — shared with the catalog so the Ramaraj footprint
+// citation + the large/moderate/small/minimal bands stay identical.
+// Ortholog + paralog tooltip bodies now live in `lib/tooltips`
+// (`ortholog_species_relevance` / `paralog_specificity`) — the SAME
+// nodes the §07 Isoforms card renders, so the cutoff bands + citations
+// can't drift between the two surfaces. Reference `tooltips.*` below.
 
 const TT_ACCESSIBILITY =
   "Synthesizer's headline call: high (clear surface presence across " +
@@ -418,7 +402,7 @@ export function FiltersCard({ rec, n }: Props) {
           key="ecd"
           tone={ecdAccessibilityTone(f.ecd_accessibility_class)}
           size="sm"
-          title={TT_ECD_CLASS}
+          title={tooltips.catalog_ecd_class}
         >
           ECD · {prettyEnum(f.ecd_accessibility_class)}
         </StatusPill>,
@@ -435,7 +419,15 @@ export function FiltersCard({ rec, n }: Props) {
               key="p-none"
               tone="success"
               size="sm"
-              title={`${TT_PARALOG_ID}\n\nNo paralogs in Compara — no within-family cross-reactivity risk.`}
+              title={
+                <>
+                  {tooltips.paralog_specificity}
+                  <br />
+                  <br />
+                  No paralogs in Compara — no within-family cross-reactivity
+                  risk.
+                </>
+              }
             >
               no Compara paralogs
             </StatusPill>,
@@ -461,7 +453,7 @@ export function FiltersCard({ rec, n }: Props) {
               key="p-max"
               tone={paralogIdentityTone(f.max_paralog_ecd_pct_identity)}
               size="sm"
-              title={TT_PARALOG_ID}
+              title={tooltips.paralog_specificity}
             >
               max %ECD identity · {f.max_paralog_ecd_pct_identity.toFixed(1)}%
             </StatusPill>,
@@ -472,7 +464,7 @@ export function FiltersCard({ rec, n }: Props) {
             key="p-multitarget"
             tone={nMultitarget > 0 ? "danger" : "success"}
             size="sm"
-            title={TT_PARALOG_ID}
+            title={tooltips.paralog_specificity}
           >
             {nMultitarget} multitarget likely
           </StatusPill>,
@@ -486,7 +478,7 @@ export function FiltersCard({ rec, n }: Props) {
               key="p-caution"
               tone="amber"
               size="sm"
-              title={TT_PARALOG_ID}
+              title={tooltips.paralog_specificity}
             >
               {nCaution} caution
             </StatusPill>,
@@ -505,9 +497,20 @@ export function FiltersCard({ rec, n }: Props) {
           size="sm"
           // `mousePill.title` is the per-row note ("no Compara
           // ortholog", "fell back to full-length identity, etc.").
-          // Stack the general-rationale tooltip behind it via a
-          // newline so both are visible on hover.
-          title={mousePill.title ? `${TT_ORTHOLOG_ID}\n\n${mousePill.title}` : TT_ORTHOLOG_ID}
+          // Stack the shared general-rationale tooltip in front of it so
+          // both are visible on hover.
+          title={
+            mousePill.title ? (
+              <>
+                {tooltips.ortholog_species_relevance}
+                <br />
+                <br />
+                {mousePill.title}
+              </>
+            ) : (
+              tooltips.ortholog_species_relevance
+            )
+          }
         >
           mouse · {mousePill.text}
         </StatusPill>,
@@ -515,7 +518,18 @@ export function FiltersCard({ rec, n }: Props) {
           key="c"
           tone={cynoPill.tone}
           size="sm"
-          title={cynoPill.title ? `${TT_ORTHOLOG_ID}\n\n${cynoPill.title}` : TT_ORTHOLOG_ID}
+          title={
+            cynoPill.title ? (
+              <>
+                {tooltips.ortholog_species_relevance}
+                <br />
+                <br />
+                {cynoPill.title}
+              </>
+            ) : (
+              tooltips.ortholog_species_relevance
+            )
+          }
         >
           cyno · {cynoPill.text}
         </StatusPill>,
@@ -548,12 +562,12 @@ export function FiltersCard({ rec, n }: Props) {
           rec.deterministic_features.canonical_topology.per_residue_topology,
         );
         const ecCount = ec.length;
-        // Ramaraj 2012 typical antibody-antigen interface = 1,103 ± 244
-        // Å² (see SurfaceBindSite.area_a2). Count EC sites whose buried
-        // area reaches that footprint — patches genuinely antibody-sized.
-        const TYPICAL_INTERFACE_A2 = 1103;
+        // Count EC sites whose buried area reaches the typical
+        // antibody-antigen footprint — patches genuinely antibody-sized.
+        // The threshold is the shared Ramaraj 2012 constant so code +
+        // tooltip prose can't disagree on the number.
         const nAtTypical = ec.filter(
-          (s) => s.area_a2 >= TYPICAL_INTERFACE_A2,
+          (s) => s.area_a2 >= TYPICAL_ANTIBODY_INTERFACE_A2,
         ).length;
         if (!sb.has_data) {
           return [
@@ -636,7 +650,7 @@ export function FiltersCard({ rec, n }: Props) {
   // ------------------------------------------------------------
   const GROUP_META: Record<
     string,
-    { title: string; links?: { href: string; label: string }[] }
+    { title: React.ReactNode; links?: { href: string; label: string }[] }
   > = {
     "Family & gene group": {
       title:
@@ -686,32 +700,21 @@ export function FiltersCard({ rec, n }: Props) {
     // No "Risks" entry — the overarching group InfoTip was dropped per
     // user feedback; each risk chip carries its own tooltip and the
     // §Risks card below covers the supporting evidence.
-    // Kept in sync with the §07 "Ortholog (species relevance)" InfoTip.
+    // Shared with the §07 "Ortholog (species relevance)" InfoTip via
+    // `lib/tooltips` so the bands + framing can't drift. Compara is the
+    // data source.
     "Cross-species": {
-      title:
-        "Mouse / cyno identity to the human canonical, over the ECD (or " +
-        "full-length fallback when the human protein has no ECD). Triage " +
-        "signal, not a verdict — relevance also needs binding, expression, " +
-        "and function (ICH S6(R1)). ≥85% = high · 60–85% = intermediate · " +
-        "<60% = higher-risk. High identity ≠ conserved epitope. " +
-        "Source: Ensembl Compara.",
+      title: tooltips.ortholog_species_relevance,
       links: [
         { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
       ],
     },
-    // Kept in sync with the §07 "Paralog (specificity)" InfoTip —
-    // HPA antigen-design bands (PMID 33170010).
+    // Shared with the §07 "Paralog (specificity)" InfoTip via
+    // `lib/tooltips` (HPA PMID 33170010 link is inline in that node);
+    // Compara is the data source.
     Paralogs: {
-      title:
-        "Highest ECD identity across the gene's Compara paralogs — " +
-        "identity to the nearest human paralog; local epitope similarity " +
-        "matters more than global identity. Per HPA antigen-design " +
-        "practice (PMID 33170010): ≤60% (usually <40%) single-target " +
-        "achievable; >80% defines a multitargeting antibody expected to " +
-        "bind the family. <60% = lower risk · 60–80% = caution · " +
-        ">80% = multitarget likely. Source: Ensembl Compara.",
+      title: tooltips.paralog_specificity,
       links: [
-        { href: "https://pubmed.ncbi.nlm.nih.gov/33170010/", label: "HPA antigen design · PMID 33170010" },
         { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
       ],
     },
@@ -729,22 +732,25 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     "Candidate sites": {
+      // PMIDs + the typical-interface number come from `lib/citations`
+      // so they can't drift from the SURFACE-Bind chip, the 3D viewer
+      // caption, or the site-size logic above.
       title:
-        "SURFACE-Bind (Correia lab, Balbi et al. 2026, PMID 41604262, " +
-        "PNAS) scores extracellular surface patches for designability " +
-        "by de novo protein binders. Each EC site is a patch where its " +
-        "MaSIF model found geometry / chemistry compatible with a " +
-        "designable binder; '≥ typical interface' counts the patches " +
-        "whose buried area reaches the ~1,103 Å² typical antibody-" +
-        "antigen footprint (Ramaraj et al. 2012, PMID 22246133).",
+        `SURFACE-Bind (Correia lab, ${CITATIONS.surfaceBind.authorYear}, ` +
+        `PMID ${CITATIONS.surfaceBind.pmid}, PNAS) scores extracellular ` +
+        "surface patches for designability by de novo protein binders. " +
+        "Each EC site is a patch where its MaSIF model found geometry / " +
+        "chemistry compatible with a designable binder; '≥ typical " +
+        "interface' counts the patches whose buried area reaches the " +
+        `~${TYPICAL_ANTIBODY_INTERFACE_A2.toLocaleString()} Å² typical ` +
+        `antibody-antigen footprint (${CITATIONS.antibodyInterface.authorYear}, ` +
+        `PMID ${CITATIONS.antibodyInterface.pmid}).`,
       links: [
         { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
         {
-          // PubMed PMID 41604262 — same source the 3D viewer's
-          // sites-mode caption cites. Author + year format
-          // mirrored across both surfaces.
-          href: "https://pubmed.ncbi.nlm.nih.gov/41604262/",
-          label: "Balbi et al · 2026",
+          // Same source the 3D viewer's sites-mode caption cites.
+          href: pubmedUrl(CITATIONS.surfaceBind.pmid),
+          label: `${CITATIONS.surfaceBind.authorYear}`,
         },
       ],
     },

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
@@ -806,17 +807,16 @@ const COMPARTMENT_GLYPH: Record<AnchorCompartment, string> = {
  *  yellow / gray) and the brand maroon used elsewhere on the page. */
 const ANCHOR_COLOR = "#7A4BD8";
 
-/** Per-compartment sphere color for "sites" mode. Per user
- *  preference: EC = red (the "look here / focus" attention color),
- *  IC = green (safely tucked away inside the cell). TM = gray
- *  (inside the membrane); signal / unknown = mute. The SurfaceBindCard
- *  "Side" column uses the same red/green mapping for visual
- *  consistency between the 3D view and the table. */
+/** Per-compartment sphere color for "sites" mode. EC = purple (brand
+ *  lavender, the "look here / focus" color); IC = green (safely tucked
+ *  away inside the cell); signal peptide = red; TM = gray (inside the
+ *  membrane); unknown = mute. The SurfaceBindCard "Side" column uses the
+ *  same mapping for visual consistency between the 3D view and the table. */
 const COMPARTMENT_COLOR: Record<AnchorCompartment, string> = {
-  extracellular: "#DC2626", // red-600
+  extracellular: "#8878C8", // lavender-bright (brand purple)
   intracellular: "#16A34A", // green-600
   membrane: "#94A3B8", // slate-400
-  signal: "#94A3B8",
+  signal: "#DD5955", // red (matches topology cartoon)
   unknown: "#6B7280", // gray-500
 };
 
@@ -1744,7 +1744,7 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "sites"}
               onClick={() => setViewMode("sites")}
-              title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: red = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
+              title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
             >
               SURFACE-Bind sites
             </button>
@@ -1796,20 +1796,18 @@ export function StructureViewer({
               </li>
             ))}
           </ul>
-          {/* SURFACE-Bind citation — Balbi et al 2026, PMID 41604262.
-              Same link the Summary metrics SURFACE-Bind chip cites;
-              surfaces the source paper right next to the spheres so
-              a reader who wants to read the method has a one-click
-              path. */}
+          {/* SURFACE-Bind citation — PMID + URL from the shared
+              `lib/citations` constant, so this caption can't drift from
+              the Summary-metrics chip or the §SURFACE-Bind card. */}
           <p className={styles.sitesCitation}>
-            Balbi et al ·{" "}
+            {CITATIONS.surfaceBind.authorYear}{" "}
             <a
-              href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+              href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.captionLink}
             >
-              2026 ↗
+              ↗
             </a>
           </p>
         </>

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CITATIONS, pubmedUrl } from "./citations";
 
 /**
  * Field-provenance tooltip text — one place to edit, shared across
@@ -137,7 +138,7 @@ export const tooltips: Record<string, ReactNode> = {
       Aligned with SURFACE-Bind&apos;s four categories (Balbi et al.
       2026, PMID:{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -254,7 +255,7 @@ export const tooltips: Record<string, ReactNode> = {
       MaSIF patch-based targetability scoring from the Correia lab
       (Balbi et al. 2026, PMID:{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -270,6 +271,42 @@ export const tooltips: Record<string, ReactNode> = {
       Sequence identity (full-length canonical) to mouse, rat, and cyno
       orthologs. The §Orthologs card shows the per-species rows plus an
       ECD-restricted variant when topology is known.
+    </>
+  ),
+
+  // Canonical ortholog / paralog tooltip bodies. Single source of truth:
+  // rendered both in the §07 Isoforms·orthologs·paralogs card (subhead
+  // InfoTips) AND the deterministic-summary FiltersCard (StatusPill
+  // tooltips + group tips), so the cutoff bands + citations can't drift
+  // between the two surfaces. Edit here only.
+  ortholog_species_relevance: (
+    <>
+      Mouse / cyno identity to the human canonical, over the ECD. Triage
+      signal, not a verdict — relevance also needs binding, expression, and
+      function (ICH S6(R1)).
+      <br />
+      ≥85% high · 60–85% intermediate · &lt;60% higher-risk.
+      <br />
+      High identity ≠ conserved epitope.
+    </>
+  ),
+
+  paralog_specificity: (
+    <>
+      Identity to the nearest human paralog, over the ECD — local epitope
+      similarity matters more than global identity. Per HPA antigen-design
+      practice (PMID{" "}
+      <a
+        href={pubmedUrl(CITATIONS.hpaAntigenDesign.pmid)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {CITATIONS.hpaAntigenDesign.pmid}
+      </a>
+      ): ≤60% (usually &lt;40%) single-target achievable; &gt;80% defines a
+      multitargeting antibody expected to bind the family.
+      <br />
+      &lt;60% lower risk · 60–80% caution · &gt;80% multitarget likely.
     </>
   ),
 
@@ -400,7 +437,7 @@ export const tooltips: Record<string, ReactNode> = {
       <strong>SURFACE-Bind targetability</strong> — MaSIF patch-based
       scoring for de novo binder design seeds. Source:{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -508,7 +545,7 @@ export const tooltips: Record<string, ReactNode> = {
       Functional family — the model&apos;s high-level call, aligned with
       SURFACE-Bind&apos;s four classes (Balbi et al. 2026,{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -534,17 +571,20 @@ export const tooltips: Record<string, ReactNode> = {
       One antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å² buried
       (Ramaraj et al.&nbsp;2012, PMID&nbsp;
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/22246133/"
+        href={pubmedUrl(CITATIONS.antibodyInterface.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
-        22246133
+        {CITATIONS.antibodyInterface.pmid}
       </a>
       ). Bands below are our heuristic for how many non-overlapping
       footprints an ECD could host (≈ residues ÷ 12, a loose upper
-      bound): <em>large</em> ≥ 200 residues; <em>moderate</em> 60–199;{" "}
-      <em>small</em> 30–59; <em>minimal</em> &lt; 30; <em>none</em> = no
-      surface-exposed ECD (GPI / inner-leaflet).
+      bound): <em>large</em> ≥ 200 residues (≥10 non-overlapping epitopes
+      possible); <em>moderate</em> 60–199 (multiple epitopes, e.g.
+      tetraspanin EC2 loops); <em>small</em> 30–59 (2–5 candidate
+      epitopes, harder discovery); <em>minimal</em> &lt; 30 (1–2 epitopes
+      max, specialized formats needed); <em>none</em> = no surface-exposed
+      ECD (GPI / inner-leaflet).
     </>
   ),
 
