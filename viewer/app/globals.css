@@ -189,11 +189,14 @@ button {
   letter-spacing: -0.015em;
   color: var(--ink);
 }
-.h-vital-display.tone-teal { color: var(--teal-deepest); }
+/* Vital tones form a single red→amber→green traffic-light ramp (low→high),
+ * plus a gray neutral for unknown / unclear values. No teal / lavender /
+ * light-green — every vital reads on the same RYG+gray scale so the 2×2
+ * grid scans like a heatmap. Ordered low→high here for clarity. */
 .h-vital-display.tone-danger { color: var(--accent-deep); }
-.h-vital-display.tone-lavender { color: var(--lavender-dark); }
 .h-vital-display.tone-amber { color: var(--amber-dark); }
 .h-vital-display.tone-success { color: var(--success); }
+.h-vital-display.tone-neutral { color: var(--muted); }
 
 .lede {
   margin: 0;

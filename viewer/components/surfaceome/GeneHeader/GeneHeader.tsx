@@ -84,23 +84,30 @@ function tierCounts(rec: SurfaceomeRecord) {
   return { primary, secondary, tertiary, total: rec.evidence.length };
 }
 
+// All four vitals share one traffic-light scale: green (high / direct
+// evidence) → yellow (moderate) → red (low / negative), plus gray for
+// unknown / no-signal. See `.h-vital-display.tone-*` in globals.css.
+// No teal, lavender, or light-green — the 2×2 grid scans like a heatmap.
 function accessibilityTone(value: string) {
-  if (value === "high") return "success" as const;
-  if (value === "moderate") return "teal" as const;
-  if (value === "low") return "amber" as const;
-  // `"no"` = confident negative call. Distinct from `"uncertain"`
-  // (no signal); render in danger / red so the reader can scan for
-  // it on the catalog.
-  if (value === "no") return "danger" as const;
-  return "neutral" as const;
+  if (value === "high") return "success" as const; // green
+  if (value === "moderate") return "amber" as const; // yellow
+  // `"low"` and `"no"` (confident negative) both read red — the reader
+  // scans red for "not a good surface target".
+  if (value === "low") return "danger" as const; // red
+  if (value === "no") return "danger" as const; // red
+  return "neutral" as const; // unknown / uncertain → gray
 }
 
 function gradeTone(value: string) {
-  if (value === "direct_multi_method") return "success" as const;
-  if (value === "direct_single_method") return "teal" as const;
-  if (value === "supportive_but_indirect") return "amber" as const;
-  if (value === "conflicting") return "danger" as const;
-  return "neutral" as const;
+  // Direct evidence (single- or multi-method) → green; supportive /
+  // conflicting → yellow; nothing graded → gray.
+  if (value === "direct_multi_method") return "success" as const; // green
+  if (value === "direct_single_method") return "success" as const; // green
+  if (value === "supportive_but_indirect") return "amber" as const; // yellow
+  // `"conflicting"` is contradictory evidence, not a confident
+  // negative — yellow (caution / mixed), not red.
+  if (value === "conflicting") return "amber" as const; // yellow
+  return "neutral" as const; // gray
 }
 
 /** Convert the derived `TriageSignal` enum back to the original
@@ -144,20 +151,26 @@ function triageVsDeepDive(
 }
 
 function stateDependenceTone(value: string) {
-  // low = always-on surface call → success / green; the safest target.
-  // moderate = context-dependent → lavender; needs the right cell state.
-  // high = only in specific states → amber; reader should pay attention.
-  // unclear = neutral.
-  if (value === "low") return "success" as const;
-  if (value === "moderate") return "lavender" as const;
-  if (value === "high") return "amber" as const;
-  return "neutral" as const;
+  // Toned by literal value so the whole 2×2 reads as one consistent
+  // heatmap: low→red, moderate→yellow, high→green, like every other
+  // vital. NOTE: this is the favorability INVERSE for state-dependence —
+  // a *low* state-dependence call is actually the safest, always-on
+  // target, yet it tints red here to keep the value→color mapping
+  // uniform across the grid. If a future reviewer wants this toned by
+  // favorability instead (low=green/constitutive, high=red/state-gated),
+  // flip the two non-amber branches.
+  if (value === "low") return "danger" as const; // red
+  if (value === "moderate") return "amber" as const; // yellow
+  if (value === "high") return "success" as const; // green
+  return "neutral" as const; // unclear → gray
 }
 
 function confidenceTone(value: string) {
+  // high→green, moderate→amber, low→red — same red→green ramp as the
+  // other vitals (was green / lavender / amber).
   if (value === "high") return "success" as const;
-  if (value === "moderate") return "lavender" as const;
-  if (value === "low") return "amber" as const;
+  if (value === "moderate") return "amber" as const;
+  if (value === "low") return "danger" as const;
   return "neutral" as const;
 }
 
@@ -207,14 +220,14 @@ function plddtTone(plddt: number) {
   return "danger" as const;
 }
 
-/** Map a StatusPill tone enum to the `.h-vital-display` tone modifier
- *  class. Keeps the editorial display value tinted in the same hue as
- *  the supporting pill underneath. Returns empty string for `neutral`
- *  so the display value falls back to `var(--ink)`. */
+/** Map a vital tone enum to the `.h-vital-display` tone modifier class.
+ *  The four tones form a traffic-light scale plus gray: success (green),
+ *  amber (yellow), danger (red), neutral (gray, for unknown / unclear).
+ *  Every tone gets a class — `neutral` tints muted-gray rather than
+ *  falling back to ink, so an "Unknown" vital still reads as gray. */
 function vitalToneClass(
-  tone: "success" | "teal" | "lavender" | "amber" | "danger" | "neutral",
+  tone: "success" | "amber" | "danger" | "neutral",
 ): string {
-  if (tone === "neutral") return "";
   return `tone-${tone}`;
 }
 
