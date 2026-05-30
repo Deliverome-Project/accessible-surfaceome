@@ -377,7 +377,14 @@ export function FiltersCard({ rec, n }: Props) {
         </StatusPill>
       ))
     : [];
-  const hgncFamilyPills: React.ReactNode[] = es.hgnc_gene_groups.map(
+  // Guard with `?? []` (mirrors the `uniprot_family` ternary above): the
+  // committed schema types `hgnc_gene_groups` as a non-optional string[],
+  // but a served record can still omit it — a stale Worker/`.next` fetch
+  // cache predating this field, a partially-synced public D1 mirror, or a
+  // future schema move into `deterministic_features`. Without the guard a
+  // missing field turns into a whole-page 500 (`.map` of undefined); with
+  // it the section just drops the HGNC pills and the page still renders.
+  const hgncFamilyPills: React.ReactNode[] = (es.hgnc_gene_groups ?? []).map(
     (group, i) => (
       <StatusPill key={`hg-${i}`} tone="neutral" size="sm" title={TT_HGNC_GROUP}>
         {group}
