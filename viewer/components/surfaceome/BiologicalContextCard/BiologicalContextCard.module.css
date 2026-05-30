@@ -136,6 +136,46 @@
   line-height: 1.4;
 }
 
+/* Accessibility-modulation table — fixed layout so the Context (col 1)
+   and Induced/lineage (col 2) columns can be pinned narrow; their pills
+   wrap to multiple lines instead of forcing the columns wide, leaving
+   more room for Shift / Modulating / Implication / Cites. */
+.modTable {
+  table-layout: fixed;
+}
+
+.modTable th:nth-child(1),
+.modTable td:nth-child(1) {
+  width: 6.5rem;
+}
+
+.modTable th:nth-child(2),
+.modTable td:nth-child(2) {
+  width: 7rem;
+}
+
+.modTable td:nth-child(1),
+.modTable td:nth-child(2) {
+  overflow-wrap: anywhere;
+}
+
+/* StatusPill is white-space:nowrap by default; allow wrapping inside the
+   two tightened columns so a multi-word category / trigger doesn't keep
+   the column wide. */
+.modTable td:nth-child(1) > *,
+.modTable td:nth-child(2) > * {
+  white-space: normal;
+}
+
+/* The change/effect narrative ("evidence string") now lives in the Cites
+   column, above the evidence chips, rather than widening the Shift cell. */
+.modChangeCite {
+  margin: 0 0 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 /* Restricted-subdomain block moved into the subcellular-localization
    subsection from §Risks. Sits below the dual-localization table
    with a thin top border so it reads as a sibling block within the

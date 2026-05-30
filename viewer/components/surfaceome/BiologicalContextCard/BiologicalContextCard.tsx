@@ -27,16 +27,6 @@ export function BiologicalContextCard({ rec, n }: Props) {
   const bc = rec.biological_context;
   const loc = bc.subcellular_localization;
   const es = rec.executive_summary;
-  // Distinct cell-state triggers across the modulation rows — the
-  // "unique contexts" that gate surface accessibility, deduped into chips
-  // for the overarching summary.
-  const modTriggers = Array.from(
-    new Set(
-      bc.accessibility_modulation.flatMap((m) =>
-        m.cell_state_trigger ? [m.cell_state_trigger] : [],
-      ),
-    ),
-  );
 
   return (
     <SectionCard
@@ -45,42 +35,19 @@ export function BiologicalContextCard({ rec, n }: Props) {
       title="Localization & accessibility context"
       meta="Accessibility modulation · subcellular localization · anatomical accessibility"
     >
-      {/* Overarching accessibility-context summary — the headline chips
-          (deduped contexts) + one-sentence rationale for WHEN/WHERE the
-          protein is reachable. Mirrored into the §01 signal panel. */}
-      <div className={styles.contextSummary}>
-        <div className={styles.contextChips}>
-          <StatusPill tone="lavender" size="sm">
-            <ChipLabelValue
-              label="reason"
-              value={prettyEnum(es.surface_call_reason)}
-            />
-          </StatusPill>
-          {/* state_dependence intentionally NOT echoed here — it's already
-              a GeneHeader vital up top; repeating it was redundant. */}
-          <StatusPill tone="teal" size="sm">
-            <ChipLabelValue
-              label="primary"
-              value={prettyEnum(loc.primary_compartment)}
-            />
-          </StatusPill>
-          {modTriggers.map((t) => (
-            <StatusPill
-              key={t}
-              tone="amber"
-              size="sm"
-              title={cellStateTriggerDesc(t)}
-            >
-              <ChipLabelValue label="trigger" value={prettyEnum(t)} />
-            </StatusPill>
-          ))}
-        </div>
-        {es.accessibility_context_summary ? (
+      {/* Overarching accessibility-context summary — one-sentence
+          rationale for WHEN/WHERE the protein is reachable. The headline
+          chips (reason / primary compartment / induced-state triggers)
+          were removed per UX: each duplicated content already shown below
+          — the subcellular-localization "primary" chip and the modulation
+          table's trigger column. */}
+      {es.accessibility_context_summary ? (
+        <div className={styles.contextSummary}>
           <p className={styles.contextRationale}>
             {es.accessibility_context_summary}
           </p>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
 
       <FeatureRationales category="biology" rec={rec} />
 
@@ -92,12 +59,13 @@ export function BiologicalContextCard({ rec, n }: Props) {
         {bc.accessibility_modulation.length === 0 ? (
           <p className={styles.empty}>No modulation rows recorded.</p>
         ) : (
-          <table className={styles.table}>
+          <table className={`${styles.table} ${styles.modTable}`}>
             <thead>
               <tr>
                 <th scope="col">Context</th>
-                <th scope="col">Trigger / lineage</th>
+                <th scope="col">Induced / lineage</th>
                 <th scope="col">Shift</th>
+                <th scope="col">Modulating</th>
                 <th scope="col">Implication</th>
                 <th scope="col">Cites</th>
               </tr>
@@ -129,20 +97,16 @@ export function BiologicalContextCard({ rec, n }: Props) {
                       <span className={styles.muted}>—</span>
                     ) : null}
                   </td>
-                  <td>
-                    <span className={styles.modShift}>
-                      <span className={`label-mono ${styles.muted}`}>baseline</span>{" "}
-                      {m.baseline_context}{" "}
-                      <span aria-hidden="true">→</span>{" "}
-                      <span className={`label-mono ${styles.muted}`}>modulating</span>{" "}
-                      {m.modulating_state}
-                    </span>
-                    {m.change ? (
-                      <span className={styles.modChangeInline}>{m.change}</span>
-                    ) : null}
-                  </td>
+                  <td>{m.baseline_context}</td>
+                  <td>{m.modulating_state}</td>
                   <td>{m.accessibility_implication}</td>
                   <td>
+                    {/* The change/effect narrative (the "evidence string")
+                     *  lives in the Cites column with its citations rather
+                     *  than widening the Shift column. */}
+                    {m.change ? (
+                      <p className={styles.modChangeCite}>{m.change}</p>
+                    ) : null}
                     <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
                   </td>
                 </tr>
@@ -155,7 +119,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
         <div className={styles.locHead}>
-          <StatusPill tone="teal">
+          <StatusPill tone="teal" size="sm">
             <ChipLabelValue label="primary" value={prettyEnum(loc.primary_compartment)} />
           </StatusPill>
           {loc.membrane_subdomains.length > 0 ? (
