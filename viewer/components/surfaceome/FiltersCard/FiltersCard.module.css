@@ -108,6 +108,16 @@
   display: inline-flex;
 }
 
+/* The family / gene-group NAME inside a registry pill ("protein kinase",
+   "immunoglobulin", a HGNC group name) renders 1.5pt smaller than the rank
+   word ("superfamily" / "family" / "subfamily") that precedes it — the rank
+   reads as the label, the name as the (slightly quieter) content. 1.5pt is
+   ~2px; `calc(1em - 1.5pt)` keeps it relative to the pill's own size so it
+   tracks the sm-pill font automatically. */
+.familyName {
+  font-size: calc(1em - 1.5pt);
+}
+
 /* Pill paired with an inline InfoTip — sits tightly together inside
  * the same flex cell of the .pills row. Used today for pills whose
  * native `title=` tooltip got promoted to the popover system (e.g.

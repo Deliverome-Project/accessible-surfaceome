@@ -359,11 +359,13 @@ export function FiltersCard({ rec, n }: Props) {
   // Deterministic registry families — curator-assigned classification
   // resolved from the identifier bundle (NOT model output). The UniProt
   // SIMILARITY string is split into superfamily / family / subfamily
-  // subchips; HGNC gene groups are a flat list (no rank levels). Both
-  // render under the §01 "Deterministic" heading so the reader can
-  // cross-check the model's high-level Family call (executive summary)
-  // against registry ground truth. Empty list / null is common — the
-  // group is simply omitted in that case rather than shown blank.
+  // subchips; HGNC gene groups are a flat list (no rank levels). The two
+  // lists are concatenated into ONE "Family & gene group" bucket under the
+  // §01 "Deterministic" heading (so the pills wrap in a single column
+  // rather than claiming two), letting the reader cross-check the model's
+  // high-level Family call (executive summary) against registry ground
+  // truth. Empty list / null is common — the bucket is simply omitted when
+  // both lists are empty rather than shown blank.
   const es = rec.executive_summary;
   const uniprotFamilyPills: React.ReactNode[] = es.uniprot_family
     ? parseUniprotFamily(es.uniprot_family).map((seg, i) => (
@@ -373,7 +375,10 @@ export function FiltersCard({ rec, n }: Props) {
           size="sm"
           title={TT_UNIPROT_FAMILY}
         >
-          {seg.level} · {seg.name}
+          {/* Rank word ("superfamily"/"family"/"subfamily") stays at the
+              base pill size and reads as the label; the family NAME renders
+              1.5pt smaller (`.familyName`) so it sits one register quieter. */}
+          {seg.level} · <span className={styles.familyName}>{seg.name}</span>
         </StatusPill>
       ))
     : [];
@@ -387,7 +392,10 @@ export function FiltersCard({ rec, n }: Props) {
   const hgncFamilyPills: React.ReactNode[] = (es.hgnc_gene_groups ?? []).map(
     (group, i) => (
       <StatusPill key={`hg-${i}`} tone="neutral" size="sm" title={TT_HGNC_GROUP}>
-        {group}
+        {/* HGNC gene groups carry no rank word, so the whole label is the
+            name — render it at the same 1.5pt-smaller size as the UniProt
+            family names so the merged bucket reads consistently. */}
+        <span className={styles.familyName}>{group}</span>
       </StatusPill>
     ),
   );
@@ -526,23 +534,17 @@ export function FiltersCard({ rec, n }: Props) {
     // Registry families lead the deterministic block — protein
     // classification is identity-level context that frames the
     // structural priors (topology) and homology rollups that follow.
-    // Each group is omitted when its registry doesn't classify the
-    // gene (empty pill list), so the section never renders a blank row.
-    ...(uniprotFamilyPills.length > 0
+    // UniProt SIMILARITY levels (superfamily/family/subfamily) and HGNC
+    // gene groups share ONE bucket so the two registry-classification
+    // readouts read as a single column and the pills wrap together
+    // instead of claiming two grid columns. Omitted entirely when
+    // neither registry classifies the gene (both lists empty).
+    ...(uniprotFamilyPills.length > 0 || hgncFamilyPills.length > 0
       ? [
           {
-            label: "UniProt family",
+            label: "Family & gene group",
             provenance: "deterministic" as const,
-            pills: uniprotFamilyPills,
-          },
-        ]
-      : []),
-    ...(hgncFamilyPills.length > 0
-      ? [
-          {
-            label: "HGNC gene group",
-            provenance: "deterministic" as const,
-            pills: hgncFamilyPills,
+            pills: [...uniprotFamilyPills, ...hgncFamilyPills],
           },
         ]
       : []),
@@ -777,30 +779,34 @@ export function FiltersCard({ rec, n }: Props) {
     string,
     { title: string; links?: { href: string; label: string }[] }
   > = {
-    "UniProt family": {
+    "Family & gene group": {
       title:
-        "UniProt's curated family classification from the Swiss-Prot " +
-        "SIMILARITY line, split into superfamily / family / subfamily " +
-        "levels. Deterministic — resolved from the identifier bundle, " +
-        "not model output. Compare against the LLM's Family call above.",
+        "Registry classification from two deterministic sources: " +
+        "UniProt's Swiss-Prot SIMILARITY line (split into superfamily / " +
+        "family / subfamily levels) and HGNC's curator-assigned gene " +
+        "group membership (a gene can belong to several). Both resolved " +
+        "from the identifier bundle, not model output — compare against " +
+        "the LLM's Family call above.",
+      // Only link the registries that actually contributed pills to this
+      // gene: a gene with no UniProt SIMILARITY line shouldn't dangle a
+      // UniProt link, and vice-versa for HGNC.
       links: [
-        {
-          href: `https://www.uniprot.org/uniprotkb/${rec.gene.uniprot_acc}/entry#family_and_domains`,
-          label: "UniProt",
-        },
-      ],
-    },
-    "HGNC gene group": {
-      title:
-        "HGNC's curator-assigned gene group membership (a gene can " +
-        "belong to several). Deterministic — resolved from the " +
-        "identifier bundle, not model output. Compare against the " +
-        "LLM's Family call above.",
-      links: [
-        {
-          href: "https://www.genenames.org/data/genegroup/",
-          label: "HGNC gene groups",
-        },
+        ...(uniprotFamilyPills.length > 0
+          ? [
+              {
+                href: `https://www.uniprot.org/uniprotkb/${rec.gene.uniprot_acc}/entry#family_and_domains`,
+                label: "UniProt",
+              },
+            ]
+          : []),
+        ...(hgncFamilyPills.length > 0
+          ? [
+              {
+                href: "https://www.genenames.org/data/genegroup/",
+                label: "HGNC gene groups",
+              },
+            ]
+          : []),
       ],
     },
     Accessibility: {
