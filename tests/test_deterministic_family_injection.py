@@ -35,15 +35,18 @@ def _exec() -> ExecutiveSummary:
 
 
 def _bundle(**overrides) -> IdentifierBundle:
-    base = dict(
+    # Build with explicit kwargs so each field carries its own type (a
+    # `**dict` splat collapses the values to `str | list[str]`, which ty
+    # then rejects against every typed field); apply test-case overrides
+    # via model_copy, whose `update` accepts an untyped mapping.
+    bundle = IdentifierBundle(
         hgnc_symbol="GPR75",
         hgnc_id="HGNC:4526",
         uniprot_acc="O95800",
         hgnc_gene_groups=["G protein-coupled receptors, Class A orphans"],
         uniprot_family="G-protein coupled receptor 1 family",
     )
-    base.update(overrides)
-    return IdentifierBundle(**base)
+    return bundle.model_copy(update=overrides) if overrides else bundle
 
 
 def test_injects_both_deterministic_fields_from_bundle():
