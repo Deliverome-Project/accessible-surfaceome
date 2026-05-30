@@ -143,6 +143,7 @@ interface ParsedPdbAtom {
   z: number;
   resi: number;
   atomName: string;
+  chain: string;
   tx?: number;
   ty?: number;
   tz?: number;
@@ -154,7 +155,20 @@ interface ParsedPdb {
   caByResidue: Map<number, Vec3>;
 }
 
-function parsePdbForOrientation(pdbText: string): ParsedPdb {
+/**
+ * Parse a PDB file into a list of atoms + a residue-keyed CA map.
+ *
+ * When `chainFilter` is given, only atoms on that chain contribute
+ * to `caByResidue` (the data the orientation math uses). All atoms
+ * are still collected into `atoms` so the transform applies to the
+ * full model — we only want to AVOID multi-chain centroid pollution
+ * in experimental PDBs (homotrimers, MHC-peptide complexes, etc.),
+ * not hide other chains from the viewer.
+ */
+function parsePdbForOrientation(
+  pdbText: string,
+  chainFilter?: string,
+): ParsedPdb {
   const lines = String(pdbText || "").split(/\r?\n/);
   const atoms: ParsedPdbAtom[] = [];
   const caByResidue = new Map<number, Vec3>();
@@ -168,6 +182,8 @@ function parsePdbForOrientation(pdbText: string): ParsedPdb {
     if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) continue;
     const atomName = line.slice(12, 16).trim();
     const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
+    // PDB column 22 (1-indexed) = chain identifier. JS slice(21, 22).
+    const chain = line.slice(21, 22);
     const atom: ParsedPdbAtom = {
       lineIndex: i,
       x,
@@ -175,24 +191,38 @@ function parsePdbForOrientation(pdbText: string): ParsedPdb {
       z,
       resi: Number.isInteger(resi) ? resi : 0,
       atomName,
+      chain,
     };
     atoms.push(atom);
-    if (atomName === "CA" && atom.resi > 0 && !caByResidue.has(atom.resi)) {
+    const inFilter = chainFilter == null || chain === chainFilter;
+    if (atomName === "CA" && atom.resi > 0 && inFilter && !caByResidue.has(atom.resi)) {
       caByResidue.set(atom.resi, [x, y, z]);
     }
   }
   return { lines, atoms, caByResidue };
 }
 
+/**
+ * Bucket CA atoms by topology state (M / O / I).
+ *
+ * The PDB's residue numbering need not match the topology's. For
+ * AlphaFold models numbering IS UniProt-residue and `residueOffset`
+ * is 0; for experimental PDBs (where the chain often starts at a
+ * non-1 residue number, sometimes negative for engineered tags),
+ * the caller passes `residueOffset = pdb_start - unp_start` and we
+ * subtract it before indexing the topology string.
+ */
 function collectStateCoords(
   topology: string,
   caByResidue: Map<number, Vec3>,
+  residueOffset = 0,
 ): { M: Vec3[]; O: Vec3[]; I: Vec3[] } {
   const states: { M: Vec3[]; O: Vec3[]; I: Vec3[] } = { M: [], O: [], I: [] };
   if (!topology) return states;
   for (const [resi, coord] of caByResidue) {
-    if (resi < 1 || resi > topology.length) continue;
-    const state = topology.charAt(resi - 1);
+    const topoResi = resi - residueOffset;
+    if (topoResi < 1 || topoResi > topology.length) continue;
+    const state = topology.charAt(topoResi - 1);
     if (state === "M" || state === "O" || state === "I") {
       states[state].push(coord);
     }
@@ -237,11 +267,12 @@ export interface OrientationResult {
 function computeOrientationTransform(
   topology: string,
   parsed: ParsedPdb,
+  residueOffset = 0,
 ): OrientationTransform | null {
   if (!topology || parsed.atoms.length === 0 || parsed.caByResidue.size === 0) {
     return null;
   }
-  const states = collectStateCoords(topology, parsed.caByResidue);
+  const states = collectStateCoords(topology, parsed.caByResidue, residueOffset);
   // Need a minimum count per class so centroids are statistically
   // meaningful; matches the deliverome-internal threshold.
   if (states.M.length < 6 || states.O.length < 6 || states.I.length < 6) {
@@ -277,8 +308,14 @@ function applyOrientationTransform(
   pdbText: string,
   topology: string,
   transform: OrientationTransform | null,
+  chainFilter?: string,
+  residueOffset = 0,
 ): { pdbText: string; membrane: MembraneSlab | null } {
   if (!transform) return { pdbText, membrane: null };
+  // Don't pass chainFilter here — we want the transform to apply to
+  // ALL atoms (other chains stay positioned relative to the canonical
+  // one in the rotated frame). Chain-aware filtering only happens
+  // below when picking M-state CAs for slab Y bounds.
   const parsed = parsePdbForOrientation(pdbText);
   if (parsed.atoms.length === 0) return { pdbText, membrane: null };
 
@@ -316,11 +353,17 @@ function applyOrientationTransform(
     if (atom.tx > maxX) maxX = atom.tx;
     if (atom.tz < minZ) minZ = atom.tz;
     if (atom.tz > maxZ) maxZ = atom.tz;
+    // Slab Y/X/Z bounds: pick only CAs that (a) are on the canonical
+    // chain (when chainFilter is given), AND (b) map to an `M` in the
+    // topology after applying residueOffset (PDB-coord → UniProt-coord).
+    const topoResi = atom.resi - residueOffset;
     if (
       atom.atomName === "CA" &&
       atom.resi > 0 &&
-      atom.resi <= topology.length &&
-      topology.charAt(atom.resi - 1) === "M"
+      topoResi >= 1 &&
+      topoResi <= topology.length &&
+      topology.charAt(topoResi - 1) === "M" &&
+      (chainFilter == null || atom.chain === chainFilter)
     ) {
       if (atom.ty < mMinY) mMinY = atom.ty;
       if (atom.ty > mMaxY) mMaxY = atom.ty;
@@ -382,6 +425,30 @@ function applyOrientationTransform(
 }
 
 /**
+ * Options for {@link orientPdbForTopology} — needed for experimental
+ * PDBs (where the relevant chain isn't always "A" and the residue
+ * numbering rarely matches the canonical UniProt sequence). AFDB
+ * models can omit both: their PDBs are single-chain (A) and number
+ * residues by UniProt position.
+ */
+export interface OrientPdbOptions {
+  /** PDB chain ID to use for centroid math + slab Y bounds. When set,
+   *  CAs on other chains don't pollute the M/O/I centroids or the
+   *  membrane slab thickness — important for multi-chain experimental
+   *  structures (homotrimers, MHC-peptide complexes, partner
+   *  co-crystals). Other chains still get the same orientation
+   *  transform applied so they stay positioned correctly relative to
+   *  the canonical chain in the rendered model. Default: include all
+   *  chains. */
+  chainId?: string;
+  /** Residue-number offset to translate PDB residue → topology
+   *  (UniProt) residue: `topologyResi = pdbResi - residueOffset`.
+   *  Compute as `pdb_start - unp_start` from the PDBe SIFTS mapping.
+   *  Default 0 (AFDB convention). */
+  residueOffset?: number;
+}
+
+/**
  * Public API: rotate a PDB string so the membrane plane is horizontal.
  *
  *   - On success, returns `{ pdbText, membrane }` — `pdbText` is the
@@ -389,8 +456,11 @@ function applyOrientationTransform(
  *     half-widths) for the 3Dmol viewer to draw a translucent
  *     bilayer at the TM-helix plane.
  *   - When topology / atom counts are too sparse to compute a
- *     meaningful transform, returns `{ pdbText: <unchanged>,
- *     membrane: null }` so the caller skips the slab.
+ *     meaningful transform (no TM coverage in the chain, &lt;6
+ *     residues of any M/O/I class), returns `{ pdbText: <unchanged>,
+ *     membrane: null }` so the caller skips the slab AND the
+ *     orientation transform (the structure renders in its native
+ *     pose).
  *
  * Deterministic and side-effect-free; safe to call before
  * ``viewer.addModel(pdbText, "pdb")``.
@@ -398,8 +468,11 @@ function applyOrientationTransform(
 export function orientPdbForTopology(
   pdbText: string,
   topology: string,
+  options?: OrientPdbOptions,
 ): OrientationResult {
-  const parsed = parsePdbForOrientation(pdbText);
-  const transform = computeOrientationTransform(topology, parsed);
-  return applyOrientationTransform(pdbText, topology, transform);
+  const chainFilter = options?.chainId;
+  const residueOffset = options?.residueOffset ?? 0;
+  const parsed = parsePdbForOrientation(pdbText, chainFilter);
+  const transform = computeOrientationTransform(topology, parsed, residueOffset);
+  return applyOrientationTransform(pdbText, topology, transform, chainFilter, residueOffset);
 }

@@ -841,15 +841,23 @@ export function StructureViewer({
         rawPdb = await pdbResp.text();
       }
 
-      // For AFDB models we orient the PDB to put the membrane
-      // horizontal + extracellular up. Experimental PDBs are not
-      // re-oriented: (1) they're chain-restricted and the centroid
-      // computation would be skewed by partial coverage; (2) PDB
-      // structures often only contain one domain (e.g. an ECD-only
-      // crystal), so there's no membrane plane to orient against.
-      // 3dmol auto-frames the unoriented coords cleanly.
+      // Orient both AFDB models and experimental PDBs the same way
+      // when possible: rotate so the membrane plane is horizontal and
+      // extracellular is up. For experimental PDBs we pass the PDBe-
+      // mapped chain_id (so multi-chain assemblies like homotrimers
+      // or MHC-peptide complexes don't pollute the centroid math) and
+      // a residue offset (so the topology lookup translates PDB
+      // numbering → UniProt numbering correctly — most PDBs don't
+      // start at residue 1 of the canonical UniProt sequence).
+      // orientPdbForTopology returns `membrane: null` when the chain
+      // covers no TM residues (ECD-only crystals, soluble fragments),
+      // in which case the structure renders unoriented + slab-less —
+      // 3Dmol auto-frames the native coords cleanly.
       const { pdbText, membrane } = expVariant
-        ? { pdbText: rawPdb, membrane: null }
+        ? orientPdbForTopology(rawPdb, activeTopology, {
+            chainId: expVariant.chain_id,
+            residueOffset: expVariant.pdb_start - expVariant.unp_start,
+          })
         : orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
