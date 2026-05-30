@@ -658,6 +658,54 @@ def _annotate(
             )
             det_features = _stub_deterministic_features(gene_id.uniprot_acc)
 
+    # ---- step 7b: deterministic secreted-form upgrade ---------------------
+    # The synthesizer derives ``secreted_form`` from the literature ledger
+    # only and (in v2) never receives the isoform topology — it runs at step
+    # 5, before ``det_features`` is fetched above. So a protein with a
+    # UniProt-annotated soluble splice isoform — a NON-canonical isoform that
+    # drops the TM anchor but keeps a real ECD (e.g. EGFR's sEGFR forms
+    # P00533-2/-3/-4: tm_helix_count=0, ECD 381-681 aa) — comes back
+    # ``secreted_form.present=False`` even though that isoform IS a
+    # soluble/secreted form by construction. Upgrade the call here, where the
+    # isoform topology is in hand. UPGRADE-ONLY: a literature-confirmed
+    # ``present=True`` (with its severity / cites) is left untouched; we only
+    # rescue the False-negatives. Topology alone → tier it ``low`` / ``weak``
+    # ("annotated soluble isoform exists", not "confirmed abundant circulating
+    # decoy"); a later literature pass that finds serum/plasma levels can
+    # raise it on re-run. This flows into ``_derive_filters`` below, so the
+    # ``has_secreted_form`` catalog filter flips consistently with the block.
+    _secreted_isoform_ids = [
+        iso.isoform_id
+        for iso in det_features.isoform_topologies
+        if iso.is_canonical is not True
+        and iso.tm_helix_count == 0
+        and iso.ecd_length_residues >= 30
+    ]
+    if _secreted_isoform_ids and not synth_draft.accessibility_risks.secreted_form.present:
+        _ar = synth_draft.accessibility_risks
+        synth_draft = synth_draft.model_copy(
+            update={
+                "accessibility_risks": _ar.model_copy(
+                    update={
+                        "secreted_form": _ar.secreted_form.model_copy(
+                            update={
+                                "present": True,
+                                "source": "alternative_splicing",
+                                "severity": "low",
+                                "evidence_strength": "weak",
+                            }
+                        )
+                    }
+                )
+            }
+        )
+        logger.info(
+            "secreted_form upgraded present=True for %s from TM=0 soluble "
+            "isoform(s) %s (topology-derived, low/weak)",
+            gene_id.hgnc_symbol,
+            _secreted_isoform_ids,
+        )
+
     # ---- step 8: derive filters (reused from v1) --------------------------
     with timing.step(
         "filters_derivation",
