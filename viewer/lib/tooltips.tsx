@@ -148,6 +148,16 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  family_registry_chip: (
+    <>
+      <strong>Registry ground truth.</strong> Curator-assigned family
+      tags resolved deterministically from the identifier bundle (HGNC
+      gene group + UniProt SIMILARITY line) — not model output. Shown
+      beside the LLM&apos;s Family call so you can cross-check the
+      model&apos;s functional class against HGNC / UniProt.
+    </>
+  ),
+
   topology_pills: (
     <>
       DeepTMHMM <code>v1.0.24</code> per-residue topology prediction on

@@ -541,6 +541,39 @@ export function GeneHeader({
                           </span>
                           <InfoTip>{tooltips.family_chip}</InfoTip>
                         </span>
+                        {/* Deterministic registry families — curator-assigned
+                         *  HGNC gene group(s) + UniProt SIMILARITY family,
+                         *  attached by the orchestrator from the resolved
+                         *  IdentifierBundle (NOT model output). Rendered beside
+                         *  the LLM's Family call so the reader can cross-check
+                         *  the model's high-level functional call against
+                         *  HGNC / UniProt ground truth. Each chip renders only
+                         *  when the registry classifies the gene — an empty
+                         *  list / null is common (and is the live state until
+                         *  the D1 mirror is republished with the new schema)
+                         *  and is simply omitted rather than shown blank. */}
+                        {exec.hgnc_gene_groups.length > 0 ? (
+                          <span className={styles.archFamilyChip}>
+                            <span className={styles.archFamilyChipKey}>
+                              HGNC
+                            </span>
+                            <span className={styles.archFamilyChipValue}>
+                              {exec.hgnc_gene_groups.join(" · ")}
+                            </span>
+                            <InfoTip>{tooltips.family_registry_chip}</InfoTip>
+                          </span>
+                        ) : null}
+                        {exec.uniprot_family ? (
+                          <span className={styles.archFamilyChip}>
+                            <span className={styles.archFamilyChipKey}>
+                              UniProt
+                            </span>
+                            <span className={styles.archFamilyChipValue}>
+                              {exec.uniprot_family}
+                            </span>
+                            <InfoTip>{tooltips.family_registry_chip}</InfoTip>
+                          </span>
+                        ) : null}
                       </div>
                     </dd>
                   </div>
