@@ -40,6 +40,49 @@ function positiveBoolPill(label: string, value: boolean) {
   );
 }
 
+// --- UniProt SIMILARITY family parser --------------------------------
+//
+// UniProt's curated family classification is a period-separated path
+// where each segment is suffixed with its rank word, e.g. EGFR:
+//   "protein kinase superfamily. Tyr protein kinase family. EGF receptor subfamily"
+// → superfamily "protein kinase" / family "Tyr protein kinase" /
+//   subfamily "EGF receptor". Depth is variable: single-level strings
+// ("claudin family") yield one entry. We split on ". ", classify each
+// segment by its trailing rank word, and strip that word so the chip
+// shows the rank as its key and the bare name as its value.
+
+type UniprotFamilyLevel = "superfamily" | "family" | "subfamily";
+
+function parseUniprotFamily(
+  raw: string,
+): { level: UniprotFamilyLevel; name: string }[] {
+  return raw
+    .split(/\.\s+/)
+    .map((seg) => seg.trim())
+    .filter(Boolean)
+    .map((seg) => {
+      // Order matters: "superfamily" / "subfamily" both end in "family",
+      // so test the more specific suffixes first.
+      if (/\s*superfamily$/i.test(seg)) {
+        const name = seg.replace(/\s*superfamily$/i, "").trim();
+        return { level: "superfamily" as const, name: name || seg };
+      }
+      if (/\s*subfamily$/i.test(seg)) {
+        const name = seg.replace(/\s*subfamily$/i, "").trim();
+        return { level: "subfamily" as const, name: name || seg };
+      }
+      if (/\s*family$/i.test(seg)) {
+        const name = seg.replace(/\s*family$/i, "").trim();
+        return { level: "family" as const, name: name || seg };
+      }
+      // Defensive fallback: a segment with no recognized rank word keeps
+      // its full text under the generic "family" rank. Every UniProt
+      // SIMILARITY segment we've observed ends in one of the three words,
+      // so this only guards against future/odd formatting.
+      return { level: "family" as const, name: seg };
+    });
+}
+
 // --- graded-value tone mappers ---------------------------------------
 
 function accessibilityTone(v: string): Tone {
@@ -280,6 +323,19 @@ const TT_RESTRICTED_SUBDOMAIN =
   "harder for a systemic binder to reach in vivo. false = no such " +
   "localization restriction flagged.";
 
+const TT_UNIPROT_FAMILY =
+  "UniProt's curated family classification, parsed from the Swiss-Prot " +
+  "SIMILARITY annotation into its superfamily / family / subfamily " +
+  "levels. Deterministic registry ground truth resolved from the " +
+  "identifier bundle — NOT model output. Cross-check it against the " +
+  "model's high-level Family call in the executive summary.";
+
+const TT_HGNC_GROUP =
+  "HGNC's curator-assigned gene group(s) for this gene — a gene can " +
+  "belong to several. Deterministic registry ground truth resolved " +
+  "from the identifier bundle — NOT model output. Cross-check it " +
+  "against the model's high-level Family call in the executive summary.";
+
 // ---------------------------------------------------------------------------
 
 
@@ -300,6 +356,34 @@ export function FiltersCard({ rec, n }: Props) {
   ).length;
   const mousePill = orthologPillLabel(f.mouse_ortholog_ecd_pct_identity, orthos.mouse);
   const cynoPill = orthologPillLabel(f.cyno_ortholog_ecd_pct_identity, orthos.cynomolgus);
+  // Deterministic registry families — curator-assigned classification
+  // resolved from the identifier bundle (NOT model output). The UniProt
+  // SIMILARITY string is split into superfamily / family / subfamily
+  // subchips; HGNC gene groups are a flat list (no rank levels). Both
+  // render under the §01 "Deterministic" heading so the reader can
+  // cross-check the model's high-level Family call (executive summary)
+  // against registry ground truth. Empty list / null is common — the
+  // group is simply omitted in that case rather than shown blank.
+  const es = rec.executive_summary;
+  const uniprotFamilyPills: React.ReactNode[] = es.uniprot_family
+    ? parseUniprotFamily(es.uniprot_family).map((seg, i) => (
+        <StatusPill
+          key={`uf-${i}`}
+          tone="neutral"
+          size="sm"
+          title={TT_UNIPROT_FAMILY}
+        >
+          {seg.level} · {seg.name}
+        </StatusPill>
+      ))
+    : [];
+  const hgncFamilyPills: React.ReactNode[] = es.hgnc_gene_groups.map(
+    (group, i) => (
+      <StatusPill key={`hg-${i}`} tone="neutral" size="sm" title={TT_HGNC_GROUP}>
+        {group}
+      </StatusPill>
+    ),
+  );
   // Each group is tagged with `provenance` so the render can partition
   // groups under "LLM-driven" vs "Deterministic" section headings —
   // the same provenance split the GeneHeader vitals used to carry
@@ -432,6 +516,29 @@ export function FiltersCard({ rec, n }: Props) {
         riskBoolPill("epitope masking", f.has_epitope_masking),
       ],
     },
+    // Registry families lead the deterministic block — protein
+    // classification is identity-level context that frames the
+    // structural priors (topology) and homology rollups that follow.
+    // Each group is omitted when its registry doesn't classify the
+    // gene (empty pill list), so the section never renders a blank row.
+    ...(uniprotFamilyPills.length > 0
+      ? [
+          {
+            label: "UniProt family",
+            provenance: "deterministic" as const,
+            pills: uniprotFamilyPills,
+          },
+        ]
+      : []),
+    ...(hgncFamilyPills.length > 0
+      ? [
+          {
+            label: "HGNC gene group",
+            provenance: "deterministic" as const,
+            pills: hgncFamilyPills,
+          },
+        ]
+      : []),
     {
       // Topology was previously the third deterministic group;
       // promoted to first under user request so the structural
@@ -663,6 +770,32 @@ export function FiltersCard({ rec, n }: Props) {
     string,
     { title: string; links?: { href: string; label: string }[] }
   > = {
+    "UniProt family": {
+      title:
+        "UniProt's curated family classification from the Swiss-Prot " +
+        "SIMILARITY line, split into superfamily / family / subfamily " +
+        "levels. Deterministic — resolved from the identifier bundle, " +
+        "not model output. Compare against the LLM's Family call above.",
+      links: [
+        {
+          href: `https://www.uniprot.org/uniprotkb/${rec.gene.uniprot_acc}/entry#family_and_domains`,
+          label: "UniProt",
+        },
+      ],
+    },
+    "HGNC gene group": {
+      title:
+        "HGNC's curator-assigned gene group membership (a gene can " +
+        "belong to several). Deterministic — resolved from the " +
+        "identifier bundle, not model output. Compare against the " +
+        "LLM's Family call above.",
+      links: [
+        {
+          href: "https://www.genenames.org/data/genegroup/",
+          label: "HGNC gene groups",
+        },
+      ],
+    },
     Accessibility: {
       title:
         "Synthesizer rollups of the accessibility verdict + supporting " +
