@@ -107,7 +107,13 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   tone={rs.present ? "warn" : "success"}
                   size="sm"
                 >
-                  {rs.present ? "Restricted" : "Broad / no restriction observed"}
+                  {rs.present ? (
+                    "Restricted"
+                  ) : (
+                    <>
+                      <span aria-hidden="true">✗</span> No restriction
+                    </>
+                  )}
                 </StatusPill>
                 {rs.present ? (
                   <StatusPill tone="lavender" size="sm">
@@ -191,9 +197,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
                 </div>
                 <p className={styles.modBaseline}>
-                  <span className={styles.muted}>baseline</span> {m.baseline_context}{" "}
+                  <span className={`label-mono ${styles.muted}`}>baseline</span>{" "}
+                  {m.baseline_context}{" "}
                   <span aria-hidden="true">→</span>{" "}
-                  <span className={styles.muted}>modulating</span> {m.modulating_state}
+                  <span className={`label-mono ${styles.muted}`}>modulating</span>{" "}
+                  {m.modulating_state}
                 </p>
                 <p className={styles.modChange}>{m.change}</p>
                 <p className={styles.modImpl}>

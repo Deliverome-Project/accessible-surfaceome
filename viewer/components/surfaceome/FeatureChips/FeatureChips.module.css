@@ -70,3 +70,9 @@
   color: var(--ink-faint, #999);
   font-style: italic;
 }
+
+/* Evidence-tag row beneath a rationale's prose (deep-block chips only). */
+.rationaleCites {
+  display: block;
+  margin-top: var(--space-1);
+}

@@ -7,7 +7,7 @@
 .bannerProse {
   margin: 0;
   color: var(--ink);
-  font-size: 0.98rem;
+  font-size: 0.85rem;
   line-height: var(--lh-body);
   /* Was ``max-width: 64ch`` — capped at ~64 characters which left a big
    * empty column to the right of the prose and made the banner look

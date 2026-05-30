@@ -16,6 +16,7 @@ import { ExpressionCard } from "../../components/surfaceome/ExpressionCard/Expre
 import { FEATURE_TAB_LABEL } from "../../components/surfaceome/FeatureChips/FeatureChips";
 import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
 import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
+import { GeneJump } from "../../components/surfaceome/GeneJump/GeneJump";
 // IsoformsCard now subsumes the old standalone OrthologsCard +
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
@@ -101,6 +102,13 @@ export default async function GenePage({ params }: PageProps) {
   // rendered in the build. `null` for resolver-failure outliers; the
   // card is omitted in that case rather than rendered with a stub.
   const catalogRow = await loadCatalogRow(rec.gene.hgnc_symbol);
+
+  // Deep-dive gene symbols for the toolbar's <GeneJump> typeahead — the
+  // SAME set generateStaticParams emits, so every suggestion resolves to a
+  // real statically-generated page (a non-deep-dive symbol would 404 under
+  // output: export). Memoized in listSurfaceomeGenes, so this is one Worker
+  // call per build, not per page.
+  const deepDiveGenes = await listSurfaceomeGenes();
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
@@ -234,6 +242,9 @@ export default async function GenePage({ params }: PageProps) {
           >
             ←
           </Link>
+          {/* Jump to another gene's deep dive without going back to the
+              catalog table. Suggestions are the deep-dive set only. */}
+          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}

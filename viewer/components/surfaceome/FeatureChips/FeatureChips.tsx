@@ -199,6 +199,27 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       ),
     },
     {
+      key: "restricted",
+      label: "Restricted membrane subdomain",
+      rationale: nz(ar.restricted_subdomain.rationale),
+      citedEvidenceIds: ar.restricted_subdomain.cited_evidence_ids,
+      pill: (
+        <StatusPill
+          tone={f.has_restricted_subdomain ? "danger" : "success"}
+          size="sm"
+          title={TT_RESTRICTED_SUBDOMAIN}
+        >
+          <span aria-hidden="true">
+            {f.has_restricted_subdomain ? "✓" : "✗"}
+          </span>{" "}
+          restricted membrane subdomain
+        </StatusPill>
+      ),
+    },
+    {
+      // "partner for expression" (co-receptor dependency) sits LAST in the
+      // biology chip row per user request — it reads as a caveat after the
+      // protein's own surface properties.
       key: "coreceptor",
       label: "Co-receptor dependency",
       rationale: nz(ar.co_receptor_requirements.rationale),
@@ -222,24 +243,6 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
               ar.co_receptor_requirements.surface_expression_dependency,
             )}
           />
-        </StatusPill>
-      ),
-    },
-    {
-      key: "restricted",
-      label: "Restricted membrane subdomain",
-      rationale: nz(ar.restricted_subdomain.rationale),
-      citedEvidenceIds: ar.restricted_subdomain.cited_evidence_ids,
-      pill: (
-        <StatusPill
-          tone={f.has_restricted_subdomain ? "danger" : "success"}
-          size="sm"
-          title={TT_RESTRICTED_SUBDOMAIN}
-        >
-          <span aria-hidden="true">
-            {f.has_restricted_subdomain ? "✓" : "✗"}
-          </span>{" "}
-          restricted membrane subdomain
         </StatusPill>
       ),
     },
