@@ -26,7 +26,10 @@ import {
   loadGeneName,
   loadSurfaceomeRecord,
 } from "../../lib/surfaceome";
-import { loadStructureViewerData } from "../../lib/structure-viewer";
+import {
+  loadStructureViewerData,
+  structureViewerDataFromRecord,
+} from "../../lib/structure-viewer";
 import styles from "./page.module.css";
 
 interface PageProps {
@@ -57,7 +60,17 @@ export default async function GenePage({ params }: PageProps) {
   const rec = await loadSurfaceomeRecord(symbol);
   if (!rec) notFound();
   const geneName = loadGeneName(rec.gene.hgnc_symbol);
-  const structureData = loadStructureViewerData(rec.gene.uniprot_acc);
+  // Structure-viewer data: derive primarily from the deep-dive record's
+  // DeepTMHMM topology (which comes from D1 via the Worker), so any gene
+  // with a record renders structure — including ones outside the static
+  // topology-sweep cohort (CD81, HSPA5). Fall back to the committed static
+  // file for the GLOB opt-in case (e.g. SRC's lipid anchor), which
+  // record-derivation skips.
+  const structureData =
+    structureViewerDataFromRecord(
+      rec.gene.uniprot_acc,
+      rec.deterministic_features.canonical_topology,
+    ) ?? loadStructureViewerData(rec.gene.uniprot_acc);
   // 5-DB presence vector (UniProt / GO / SURFY / CSPA / HPA) from the
   // candidate-universe build — the same vote pattern shown as dots on
   // the catalog (/) and SurfaceBench (/benchmark) rows. Catalog load
