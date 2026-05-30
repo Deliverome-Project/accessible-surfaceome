@@ -53,6 +53,7 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
     run_synthesizer_with_drafts,
 )
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
+    _attach_deterministic_families,
     _derive_filters,
     scrub_headline_risks,
     _load_triage_record,
@@ -532,8 +533,19 @@ def _annotate(
     assert synth_draft is not None  # for ty — narrowed by the guard above
     synth_draft = synth_draft.model_copy(
         update={
-            "executive_summary": scrub_headline_risks(
-                synth_draft.executive_summary, synth_draft.accessibility_risks
+            # Inject curator-assigned deterministic family tags (HGNC gene
+            # groups + UniProt SIMILARITY family) from the resolved bundle.
+            # These are ground truth, NOT model output (the synthesizer
+            # leaves them at their defaults). v1 does this via
+            # _attach_deterministic_families; v2 previously skipped it, so
+            # every v2 record shipped with empty family fields. Runs on
+            # every LLM pass, so deterministic family lands automatically.
+            "executive_summary": _attach_deterministic_families(
+                scrub_headline_risks(
+                    synth_draft.executive_summary,
+                    synth_draft.accessibility_risks,
+                ),
+                dual.bundle,
             )
         }
     )

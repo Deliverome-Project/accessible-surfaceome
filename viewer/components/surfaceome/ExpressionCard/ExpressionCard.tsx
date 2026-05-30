@@ -81,8 +81,8 @@ export function ExpressionCard({ rec, n }: Props) {
 
       {/* Cell types — the per-cell-ontology distribution that backs the
        *  tissue rows. Previously unrendered; surfaced here so a reader can
-       *  see which cell lineages carry the protein and in which tissues,
-       *  with the Cell Ontology id for cross-referencing. */}
+       *  see which cell lineages carry the protein and in which tissues.
+       *  (Ontology-id column dropped per UX request.) */}
       {bc.cell_types.length > 0 ? (
         <div className={styles.subsection}>
           <p className={`label-mono ${styles.subhead}`}>Cell types</p>
@@ -90,7 +90,6 @@ export function ExpressionCard({ rec, n }: Props) {
             <thead>
               <tr>
                 <th scope="col">Cell type</th>
-                <th scope="col">Ontology</th>
                 <th scope="col">Present in tissues</th>
                 <th scope="col">Cites</th>
               </tr>
@@ -99,9 +98,6 @@ export function ExpressionCard({ rec, n }: Props) {
               {bc.cell_types.map((c, i) => (
                 <tr key={i}>
                   <td>{c.cell_type}</td>
-                  <td>
-                    <span className={styles.mono}>{c.ontology_id || "—"}</span>
-                  </td>
                   <td>{c.present_in_tissues.join(", ") || "—"}</td>
                   <td>
                     <EvidenceChipList ids={c.cited_evidence_ids} label="Cites" />
@@ -110,24 +106,6 @@ export function ExpressionCard({ rec, n }: Props) {
               ))}
             </tbody>
           </table>
-        </div>
-      ) : null}
-
-      {/* Cell states — activation / differentiation states the protein's
-       *  expression tracks with. Rendered only when the synthesizer
-       *  recorded any (empty for most genes). */}
-      {bc.cell_states.length > 0 ? (
-        <div className={styles.subsection}>
-          <p className={`label-mono ${styles.subhead}`}>Cell states</p>
-          <ul className={styles.stateList}>
-            {bc.cell_states.map((s, i) => (
-              <li key={i}>
-                <span className={styles.stateName}>{prettyEnum(s.state)}</span>
-                {s.descriptor ? ` — ${s.descriptor}` : ""}{" "}
-                <EvidenceChipList ids={s.cited_evidence_ids} label="Cites" />
-              </li>
-            ))}
-          </ul>
         </div>
       ) : null}
     </SectionCard>
