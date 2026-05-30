@@ -34,6 +34,9 @@ from typing import Any
 
 import httpx
 
+from accessible_surfaceome.merge.ortholog_topology_projection import (
+    project_human_topology_onto_ortholog,
+)
 from accessible_surfaceome.tools._shared.models import (
     DeterministicFeatures,
     IsoformTopology,
@@ -309,8 +312,25 @@ def _fetch_paralogs(
     return out
 
 
+def _fetch_canonical_sequence(uniprot_acc: str, topology_version: str) -> str:
+    """The human canonical input sequence DeepTMHMM ran on.
+
+    Used to project the human topology onto orthologs (see
+    ``merge.ortholog_topology_projection``). Returns ``""`` when absent,
+    so the caller simply skips projection and keeps raw ortholog values.
+    """
+    rows = _query_public(
+        "SELECT sequence FROM topology_public "
+        "WHERE uniprot_acc = ? AND cohort = 'human_canonical' "
+        "  AND topology_version = ? LIMIT 1",
+        [uniprot_acc, topology_version],
+    )
+    return (rows[0].get("sequence") or "") if rows else ""
+
+
 def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
-                     ortholog_ecd_version: str) -> Orthologs:
+                     ortholog_ecd_version: str,
+                     human_topology: str = "", human_sequence: str = "") -> Orthologs:
     """Mouse + cyno ortholog entries.
 
     Reads from ``compara_ortholog_ecd`` (which carries both the full-length
@@ -336,6 +356,7 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
         "co.percent_identity AS full_length_pct_identity, "
         "tp.tm_helix_count, tp.ecd_length_residues, "
         "tp.per_residue_topology, tp.deeptmhmm_label, "
+        "tp.sequence AS ortholog_sequence, "
         "eo.compara_release "
         "FROM compara_ortholog_ecd eo "
         "LEFT JOIN topology_public tp "
@@ -363,9 +384,35 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
         full_raw = r.get("full_length_pct_identity")
         per_res = r.get("per_residue_topology")
         label = r.get("deeptmhmm_label")
+        ortholog_seq = r.get("ortholog_sequence")
         try:
             ecd_pct = float(ecd_raw) if ecd_raw is not None else None
             full_pct = float(full_raw) if full_raw is not None else None
+            # Default to the raw DeepTMHMM-on-ortholog values…
+            topo: str | None = str(per_res) if per_res is not None else None
+            tm_count = int(r.get("tm_helix_count") or 0)
+            ecd_len = int(r.get("ecd_length_residues") or 0)
+            proj_source: str | None = None
+            tm_absent = False
+            n_absent = 0
+            # …then override with the human canonical topology projected onto
+            # this ortholog when both sequences are available. Restores the
+            # conserved topology on truncated / padded ortholog models (esp.
+            # cyno TrEMBL); falls back to the raw values when projection
+            # returns None (no human ECD/topology, empty ortholog sequence).
+            if human_topology and human_sequence and ortholog_seq:
+                projected = project_human_topology_onto_ortholog(
+                    human_topology=human_topology,
+                    human_sequence=human_sequence,
+                    ortholog_sequence=str(ortholog_seq),
+                )
+                if projected is not None:
+                    topo = projected.per_residue_topology
+                    tm_count = projected.tm_helix_count
+                    ecd_len = projected.ecd_length_residues
+                    tm_absent = projected.tm_absent_from_model
+                    n_absent = projected.n_tm_regions_absent
+                    proj_source = projected.source
             entry = OrthologEntry(
                 is_canonical=True,
                 isoform_id=r.get("ortholog_uniprot_acc") or "",
@@ -377,12 +424,15 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                 # Similarity not yet wired — mirror identity when present.
                 ecd_pct_similarity_to_human_canonical=ecd_pct,
                 full_length_pct_identity_to_human_canonical=full_pct,
-                ecd_length_residues=int(r.get("ecd_length_residues") or 0),
-                tm_helix_count=int(r.get("tm_helix_count") or 0),
+                ecd_length_residues=ecd_len,
+                tm_helix_count=tm_count,
                 compara_version=r.get("compara_release") or "",
                 retrieved_at=datetime.now(UTC),
-                per_residue_topology=str(per_res) if per_res is not None else None,
+                per_residue_topology=topo,
                 deeptmhmm_label=str(label) if label is not None else None,
+                topology_projection_source=proj_source,
+                tm_absent_from_model=tm_absent,
+                n_tm_regions_absent=n_absent,
             )
         except (TypeError, ValueError) as exc:
             logger.warning(
@@ -521,11 +571,21 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         _fetch_isoform_topologies(uniprot_acc, isoform_topo_version)
         if isoform_topo_version else []
     )
+    # Human canonical sequence — needed to project the canonical topology
+    # onto each ortholog (see merge.ortholog_topology_projection). Fetched
+    # under the canonical cohort's version, which may differ from the
+    # ortholog cohort's mouse_topo_version.
+    canonical_sequence = (
+        _fetch_canonical_sequence(uniprot_acc, canonical_topo_version)
+        if canonical_topo_version else ""
+    )
     orthologs = (
         _fetch_orthologs(
             uniprot_acc,
             topology_version=mouse_topo_version,
             ortholog_ecd_version=ortholog_ecd_version,
+            human_topology=canonical.per_residue_topology or "",
+            human_sequence=canonical_sequence,
         )
         if mouse_topo_version and ortholog_ecd_version
         else Orthologs()

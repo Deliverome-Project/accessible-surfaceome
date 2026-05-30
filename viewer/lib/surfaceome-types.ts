@@ -352,6 +352,19 @@ export interface OrthologEntry {
   /** DeepTMHMM categorical label: 'TM' | 'SP+TM' | 'SP' | 'BETA' |
    *  'GLOB'. Null when ``per_residue_topology`` is null. */
   deeptmhmm_label: string | null;
+  /** Topology-projection provenance. When set
+   *  (``"projected_from_human_canonical"``), per_residue_topology /
+   *  tm_helix_count / ecd_length_residues above are the HUMAN canonical
+   *  topology projected onto this ortholog via global alignment — not raw
+   *  DeepTMHMM-on-ortholog (unreliable on truncated / padded cyno models).
+   *  Optional for back-compat with records predating the projection. */
+  topology_projection_source?: string | null;
+  /** True when a human TM helix aligned entirely to a gap in the ortholog
+   *  sequence (a truncated model): the helix is conserved by homology but
+   *  physically absent from this model. Drives the gray "partial model"
+   *  topology dot. ``n_tm_regions_absent`` is how many fell in gaps. */
+  tm_absent_from_model?: boolean;
+  n_tm_regions_absent?: number;
 }
 
 export interface OrthologSet {

@@ -90,3 +90,9 @@
 .topoDistinct {
   background: var(--amber-mid);
 }
+
+/* Gray = a TM helix is absent from a truncated ortholog model; topology is
+   conserved by homology, so this is a data-completeness flag, not divergence. */
+.topoAbsent {
+  background: var(--muted);
+}
