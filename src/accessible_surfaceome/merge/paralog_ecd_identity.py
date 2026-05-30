@@ -121,6 +121,46 @@ def _pairwise_loop_identity(loop_a: LoopSpan, loop_b: LoopSpan) -> float:
     return matches / min(loop_a.length, loop_b.length)
 
 
+@lru_cache(maxsize=1)
+def _blosum62():
+    return substitution_matrices.load("BLOSUM62")
+
+
+def _loop_id_and_sim(loop_a: LoopSpan, loop_b: LoopSpan) -> tuple[float, float]:
+    """(identity, similarity) fractions over min_len for one loop pair.
+
+    Identity = exact matches / min_len (same as ``_pairwise_loop_identity``).
+    Similarity additionally counts BLOSUM62-positive substitutions (score > 0)
+    — the conventional "conservative substitution" definition, mirroring the
+    ortholog ``ecd_pct_similarity`` so paralog and ortholog similarity numbers
+    are computed the same way and are directly comparable in the viewer.
+    """
+    if loop_a.length == 0 or loop_b.length == 0:
+        return 0.0, 0.0
+    aligner = _aligner()
+    seq_a = _sanitize(loop_a.sequence)
+    seq_b = _sanitize(loop_b.sequence)
+    try:
+        alignment = aligner.align(seq_a, seq_b)[0]
+    except (ValueError, KeyError):
+        return 0.0, 0.0
+    mat = _blosum62()
+    matches = positives = 0
+    for (a0, a1), (b0, b1) in zip(alignment.aligned[0], alignment.aligned[1]):
+        for x, y in zip(seq_a[a0:a1], seq_b[b0:b1]):
+            if x == y:
+                matches += 1
+                positives += 1
+            else:
+                try:
+                    if mat[x, y] > 0:
+                        positives += 1
+                except (KeyError, IndexError):
+                    pass
+    denom = min(loop_a.length, loop_b.length)
+    return matches / denom, positives / denom
+
+
 _NONSTANDARD = set("UBJZXO*")
 
 
@@ -139,6 +179,9 @@ class EcdIdentityResult:
     n_ecd_loops_compared: int
     n_human_loops: int
     n_paralog_loops: int
+    # ECD percent SIMILARITY (identity + BLOSUM62-positive substitutions),
+    # 0–100. None whenever ecd_pct_identity is None (no ECD to compare).
+    ecd_pct_similarity: float | None = None
 
 
 def compute_ecd_identity(
@@ -163,14 +206,16 @@ def compute_ecd_identity(
     n_compare = min(len(human_loops), len(paralog_loops))
     total_weight = 0
     weighted_identity = 0.0
+    weighted_similarity = 0.0
     for i in range(n_compare):
         h = human_loops[i]
         p = paralog_loops[i]
         loop_len = min(h.length, p.length)
         if loop_len == 0:
             continue
-        identity = _pairwise_loop_identity(h, p)
+        identity, similarity = _loop_id_and_sim(h, p)
         weighted_identity += identity * loop_len
+        weighted_similarity += similarity * loop_len
         total_weight += loop_len
 
     if total_weight == 0:
@@ -179,14 +224,17 @@ def compute_ecd_identity(
             n_ecd_loops_compared=0,
             n_human_loops=len(human_loops),
             n_paralog_loops=len(paralog_loops),
+            ecd_pct_similarity=None,
         )
 
     pct = (weighted_identity / total_weight) * 100.0
+    pct_sim = (weighted_similarity / total_weight) * 100.0
     return EcdIdentityResult(
         ecd_pct_identity=pct,
         n_ecd_loops_compared=n_compare,
         n_human_loops=len(human_loops),
         n_paralog_loops=len(paralog_loops),
+        ecd_pct_similarity=pct_sim,
     )
 
 

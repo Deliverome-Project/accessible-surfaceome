@@ -381,7 +381,8 @@ CREATE TABLE IF NOT EXISTS compara_paralog (
     paralog_gene_symbol      TEXT,
     family_id                TEXT,                    -- ENSFM... Compara family / clade subtype
     biomart_percent_identity REAL,                    -- from BioMart, full-length
-    ecd_pct_identity         REAL,                    -- per-loop BLOSUM62 length-weighted; NULL when no ECD
+    ecd_pct_identity         REAL,                    -- per-loop BLOSUM62 length-weighted identity; NULL when no ECD
+    ecd_pct_similarity       REAL,                    -- per-loop BLOSUM62 identity + positive substitutions; NULL when no ECD (populated for close pairs >=80% full-length)
     n_ecd_loops_compared     INTEGER,                 -- # loop pairs aligned
     rank_by_ecd_identity     INTEGER,                 -- 1=closest paralog; NULLs sort last
     paralogy_type            TEXT,                    -- within_species_paralog | other_paralog | gene_split

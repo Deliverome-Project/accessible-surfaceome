@@ -56,7 +56,7 @@ from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _derive_filters,
     scrub_headline_risks,
     _load_triage_record,
-    _triage_signal_and_reasoning_from_record,
+    _TRIAGE_VERDICT_TO_SIGNAL,
     _stub_deterministic_features,
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders import (
@@ -94,6 +94,21 @@ logger = logging.getLogger(__name__)
 AGENT_MODEL = "claude-sonnet-4-6"
 SCHEMA_VERSION_LITERAL = "1.1.0"
 RUNS_DIR = Path(".runs")
+
+
+def _triage_signal_and_reasoning_from_record(rec):
+    """Map a loaded ``TriageRecord`` onto the deep-dive record's
+    ``(triage_signal, triage_reasoning)`` pair.
+
+    Local helper (previously imported from the v1 orchestrator, which no
+    longer exports it). Reuses v1's ``_TRIAGE_VERDICT_TO_SIGNAL`` map so the
+    verdict→signal mapping stays single-sourced; the reasoning prose is the
+    triage's own ``verdict_reasoning``. ``rec`` may be ``None`` when no triage
+    exists for the gene → default to the unknown signal + empty prose.
+    """
+    if rec is None:
+        return "unknown", ""
+    return _TRIAGE_VERDICT_TO_SIGNAL.get(rec.verdict, "unknown"), rec.verdict_reasoning
 
 # Maximum block-builders to dispatch concurrently. There are 9 builders
 # total (4 A1 + 5 A2); they consume independent claim slices and each

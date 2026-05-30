@@ -1,33 +1,16 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
+import { type Compartment, compartmentAt } from "../../../lib/surface-bind";
 import type { SurfaceBindSite } from "../../../lib/surfaceome-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./SurfaceBindCard.module.css";
 
-type Compartment =
-  | "extracellular"
-  | "intracellular"
-  | "membrane"
-  | "signal"
-  | "unknown";
-
-/** Per-residue compartment from the DeepTMHMM topology string.
- *  Returns ``unknown`` when topology data isn't available or the
- *  residue index is out of range. Mirrors the inference rule in
- *  ``GeneHeader.tsx``'s ``surfaceBindAnchors`` mapping — same source
- *  of truth as the 3D label. */
-function compartmentAt(topology: string, residue: number): Compartment {
-  const idx = residue - 1;
-  if (idx < 0 || idx >= topology.length) return "unknown";
-  const ch = topology.charAt(idx);
-  if (ch === "O") return "extracellular";
-  if (ch === "I") return "intracellular";
-  if (ch === "M") return "membrane";
-  if (ch === "S") return "signal";
-  return "unknown";
-}
+// `compartmentAt` + the `Compartment` type are imported from
+// ``lib/surface-bind`` — the same helper the FiltersCard "EC sites"
+// count uses, so the table's per-site "Side" column and the headline
+// count can never disagree.
 
 /** Pill tone per compartment — mirrors ``COMPARTMENT_COLOR`` in
  *  ``viewer/components/surfaceome/StructureViewerCard/StructureViewer.tsx``

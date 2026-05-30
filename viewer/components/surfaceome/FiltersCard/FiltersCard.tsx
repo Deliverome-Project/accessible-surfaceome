@@ -1,3 +1,4 @@
+import { ecSites } from "../../../lib/surface-bind";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
@@ -127,16 +128,15 @@ function orthologIdentityTone(pct: number | null): Tone {
 /**
  * Paralog max-ECD-identity tone — higher identity is WORSE (more
  * potential antibody cross-reactivity). Inverse polarity from the
- * ortholog scale. The bands are our heuristic; the principle that
- * cross-reactivity tracks sequence identity follows antibody-validation
- * practice (Bordeaux et al. 2010, PMID:20359301; Edfors et al. 2018,
- * PMID:30297845).
+ * ortholog scale. Bands mirror the §07 "Paralog (specificity)" tier
+ * (HPA antigen-design practice, PMID 33170010): >80% multitarget likely
+ * (red), 60-80% caution (amber), <60% lower risk (green).
  */
 function paralogIdentityTone(pct: number | null): Tone {
   if (pct == null) return "success"; // no paralogs in the family = no cross-reactivity risk
-  if (pct < 50) return "success";
-  if (pct < 70) return "warn";
-  return "danger";
+  if (pct > 80) return "danger";
+  if (pct >= 60) return "warn";
+  return "success";
 }
 
 /**
@@ -190,23 +190,23 @@ const TT_ECD_CLASS =
   "minimal < 30 (1-2 epitopes max, specialized formats needed); " +
   "none = no surface-exposed ECD (GPI / inner-leaflet).";
 
+// Kept in sync with the §07 "Ortholog (species relevance)" InfoTip in
+// IsoformsCard.tsx — same bands, same framing.
 const TT_ORTHOLOG_ID =
-  "ECD % identity to the human canonical, restricted to extracellular " +
-  "residues. Sequence homology is one criterion for a species being a " +
-  "valid pharmacological stand-in (ICH S6(R1); Chapman et al. 2007, " +
-  "PMID:17268483; Prior et al. 2020, PMID:33442468). The cutoffs below " +
-  "are our heuristic, not from the guideline: ≥85% = strong translation " +
-  "(mouse / cyno can stand in for human evidence); 60-85% = use with " +
-  "caution; < 60% = species substitution unreliable.";
+  "Mouse / cyno identity to the human canonical, over the ECD. Triage " +
+  "signal, not a verdict — relevance also needs binding, expression, " +
+  "and function (ICH S6(R1)). ≥85% = high · 60–85% = intermediate · " +
+  "<60% = higher-risk. High identity ≠ conserved epitope.";
 
+// Kept in sync with the §07 "Paralog (specificity)" InfoTip in
+// IsoformsCard.tsx — HPA antigen-design bands (PMID 33170010).
 const TT_PARALOG_ID =
-  "Highest ECD % identity across the gene's Compara paralogs — " +
-  "antibody cross-reactivity risk. That cross-reactivity tracks " +
-  "sequence identity follows antibody-validation practice (Bordeaux " +
-  "et al. 2010, PMID:20359301; Edfors et al. 2018, PMID:30297845); " +
-  "the % bands are our heuristic: < 50% = cross-reactivity unlikely; " +
-  "50-70% = plausible (validate against paralog-KO); ≥ 70% = likely " +
-  "(paralog-discrimination required).";
+  "Identity to the nearest human paralog, over the ECD — local epitope " +
+  "similarity matters more than global identity. Per HPA antigen-design " +
+  "practice (PMID 33170010): ≤60% (usually <40%) single-target " +
+  "achievable; >80% defines a multitargeting antibody expected to bind " +
+  "the family. <60% = lower risk · 60–80% = caution · >80% = multitarget " +
+  "likely.";
 
 const TT_ACCESSIBILITY =
   "Synthesizer's headline call: high (clear surface presence across " +
@@ -441,17 +441,18 @@ export function FiltersCard({ rec, n }: Props) {
             </StatusPill>,
           ];
         }
-        // Per-paralog cross-reactivity tier on ECD %identity (or
-        // full-length when the protein has no ECD — ECD-less kinases /
-        // soluble proteins still get a homology-based tier). Same
-        // ≥70 (likely) / 50-70 (plausible) cutoffs as the §Paralogs card.
-        const nLikely = paralogs.filter((p) => {
+        // Per-paralog specificity tier on ECD %identity (or full-length
+        // when the protein has no ECD — ECD-less kinases / soluble
+        // proteins still get a homology-based tier). Same §07 "Paralog
+        // (specificity)" bands (HPA antigen-design practice, PMID
+        // 33170010): >80% multitarget likely, 60-80% caution.
+        const nMultitarget = paralogs.filter((p) => {
           const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
-          return v != null && v >= 70;
+          return v != null && v > 80;
         }).length;
-        const nPlausible = paralogs.filter((p) => {
+        const nCaution = paralogs.filter((p) => {
           const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
-          return v != null && v >= 50 && v < 70;
+          return v != null && v >= 60 && v <= 80;
         }).length;
         const out: React.ReactNode[] = [];
         if (f.max_paralog_ecd_pct_identity != null) {
@@ -468,25 +469,26 @@ export function FiltersCard({ rec, n }: Props) {
         }
         out.push(
           <StatusPill
-            key="p-likely"
-            tone={nLikely > 0 ? "danger" : "success"}
+            key="p-multitarget"
+            tone={nMultitarget > 0 ? "danger" : "success"}
             size="sm"
             title={TT_PARALOG_ID}
           >
-            {nLikely} likely cross-reactive
+            {nMultitarget} multitarget likely
           </StatusPill>,
         );
-        // Only surface the "plausible" tier when it's non-empty — a
-        // "0 plausible" chip is noise next to the max-%ECD + likely pills.
-        if (nPlausible > 0) {
+        // Only surface the "caution" tier when it's non-empty — a
+        // "0 caution" chip is noise next to the max-%ECD + multitarget
+        // pills.
+        if (nCaution > 0) {
           out.push(
             <StatusPill
-              key="p-plausible"
+              key="p-caution"
               tone="amber"
               size="sm"
               title={TT_PARALOG_ID}
             >
-              {nPlausible} plausible
+              {nCaution} caution
             </StatusPill>,
           );
         }
@@ -535,11 +537,22 @@ export function FiltersCard({ rec, n }: Props) {
       //   3. scored_with_sites: real targetability data
       pills: (() => {
         const sb = rec.deterministic_features.surface_bind;
+        // SURFACE-Bind scores patches on the whole-protein AF2 model and
+        // only strips the TM region, so cytoplasmic patches survive (e.g.
+        // EGFR's kinase domain). Restrict the count to extracellular-
+        // anchored sites — the antibody-accessible ones — so the "EC
+        // sites" label is honest. The shared helper keeps this in lockstep
+        // with the §SURFACE-Bind table's per-site "Side" column.
+        const ec = ecSites(
+          sb.sites,
+          rec.deterministic_features.canonical_topology.per_residue_topology,
+        );
+        const ecCount = ec.length;
         // Ramaraj 2012 typical antibody-antigen interface = 1,103 ± 244
         // Å² (see SurfaceBindSite.area_a2). Count EC sites whose buried
         // area reaches that footprint — patches genuinely antibody-sized.
         const TYPICAL_INTERFACE_A2 = 1103;
-        const nAtTypical = sb.sites.filter(
+        const nAtTypical = ec.filter(
           (s) => s.area_a2 >= TYPICAL_INTERFACE_A2,
         ).length;
         if (!sb.has_data) {
@@ -566,14 +579,34 @@ export function FiltersCard({ rec, n }: Props) {
             </StatusPill>,
           ];
         }
+        if (ecCount === 0) {
+          return [
+            <StatusPill
+              key="sb-no-ec"
+              tone="danger"
+              size="sm"
+              title={`Scored ${sb.n_sites} surface patch${
+                sb.n_sites === 1 ? "" : "es"
+              }, but every anchor sits on an intracellular / membrane face — none are extracellular, so none are reachable by a systemic antibody.`}
+            >
+              0 EC sites
+            </StatusPill>,
+          ];
+        }
         return [
           <StatusPill
             key="sb-sites"
             tone="success"
             size="sm"
-            title="Extracellular surface patches SURFACE-Bind's MaSIF model scored as designable binder sites."
+            title={`Extracellular surface patches SURFACE-Bind's MaSIF model scored as designable binder sites${
+              ecCount < sb.n_sites
+                ? ` (${sb.n_sites} scored in total; ${
+                    sb.n_sites - ecCount
+                  } anchor on intracellular / membrane faces and are excluded)`
+                : ""
+            }.`}
           >
-            {sb.n_sites} EC site{sb.n_sites === 1 ? "" : "s"}
+            {ecCount} EC site{ecCount === 1 ? "" : "s"}
           </StatusPill>,
           <StatusPill
             key="sb-typical"
@@ -653,28 +686,32 @@ export function FiltersCard({ rec, n }: Props) {
     // No "Risks" entry — the overarching group InfoTip was dropped per
     // user feedback; each risk chip carries its own tooltip and the
     // §Risks card below covers the supporting evidence.
+    // Kept in sync with the §07 "Ortholog (species relevance)" InfoTip.
     "Cross-species": {
       title:
-        "Mouse + cynomolgus ortholog %ECD identity to the human " +
-        "canonical (or full-length fallback when the human protein " +
-        "has no ECD). Cutoffs from ICH S6(R1) biologics-preclinical " +
-        "practice: ≥85% = strong pharmacological translation; " +
-        "60-85% = use with caution; <60% = species substitution " +
-        "unreliable. Source: Ensembl Compara.",
+        "Mouse / cyno identity to the human canonical, over the ECD (or " +
+        "full-length fallback when the human protein has no ECD). Triage " +
+        "signal, not a verdict — relevance also needs binding, expression, " +
+        "and function (ICH S6(R1)). ≥85% = high · 60–85% = intermediate · " +
+        "<60% = higher-risk. High identity ≠ conserved epitope. " +
+        "Source: Ensembl Compara.",
       links: [
         { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
       ],
     },
+    // Kept in sync with the §07 "Paralog (specificity)" InfoTip —
+    // HPA antigen-design bands (PMID 33170010).
     Paralogs: {
       title:
-        "Highest ECD %identity across the gene's Compara paralogs — " +
-        "the antibody cross-reactivity risk. That cross-reactivity " +
-        "tracks sequence identity follows antibody-validation practice " +
-        "(Bordeaux 2010, PMID:20359301; Edfors 2018, PMID:30297845); " +
-        "the % bands are our heuristic: <50% = cross-reactivity " +
-        "unlikely; 50-70% = plausible (validate against paralog-KO); " +
-        "≥70% = likely (paralog-discrimination required).",
+        "Highest ECD identity across the gene's Compara paralogs — " +
+        "identity to the nearest human paralog; local epitope similarity " +
+        "matters more than global identity. Per HPA antigen-design " +
+        "practice (PMID 33170010): ≤60% (usually <40%) single-target " +
+        "achievable; >80% defines a multitargeting antibody expected to " +
+        "bind the family. <60% = lower risk · 60–80% = caution · " +
+        ">80% = multitarget likely. Source: Ensembl Compara.",
       links: [
+        { href: "https://pubmed.ncbi.nlm.nih.gov/33170010/", label: "HPA antigen design · PMID 33170010" },
         { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
       ],
     },

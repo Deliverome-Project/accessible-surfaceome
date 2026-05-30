@@ -125,21 +125,49 @@ function deriveOrthologDetail(topology: string): {
 }
 
 /**
- * Paralog antibody-cross-reactivity risk tier from a percent identity.
- * The bands are our heuristic; that cross-reactive binding tracks
- * sequence identity follows antibody-validation practice (Bordeaux
- * et al. 2010, PMID 20359301; Edfors et al. 2018, PMID 30297845):
- *   ≥ 70% → cross-reactivity likely    ("high")
- *   ≥ 50% → cross-reactivity plausible ("med")
- *   < 50% → low
+ * Paralog specificity-risk tier from a percent identity. Bands follow
+ * HPA antigen-design practice (Edfors / Uhlén, PMID 33170010): single-
+ * target antibodies are achievable at ≤60% identity (usually <40%),
+ * whereas >80% defines a multitargeting antibody expected to bind the
+ * whole family.
+ *   > 80% → multitarget likely      ("high", red)
+ *   60–80% → caution                ("med",  orange)
+ *   < 60% → lower risk              ("low",  green)
  * `null` only when the paralog carries no identity number at all
  * (pre-population records) — the chip then stays neutral.
  */
 function paralogRiskTier(pct: number | null): "high" | "med" | "low" | null {
   if (pct == null) return null;
-  if (pct >= 70) return "high";
-  if (pct >= 50) return "med";
+  if (pct > 80) return "high";
+  if (pct >= 60) return "med";
   return "low";
+}
+
+/**
+ * Ortholog species-relevance tier from an ECD percent identity. Higher
+ * identity = stronger cross-species relevance (opposite polarity to the
+ * paralog risk tier). A triage signal only — true relevance also needs
+ * binding / expression / function (ICH S6(R1)).
+ *   ≥ 85% → high relevance     ("high", green)
+ *   60–85% → intermediate      ("med",  orange)
+ *   < 60% → higher-risk        ("low",  red)
+ */
+function orthologRelevanceTier(pct: number | null): "high" | "med" | "low" | null {
+  if (pct == null) return null;
+  if (pct >= 85) return "high";
+  if (pct >= 60) return "med";
+  return "low";
+}
+
+/** Color class for an ortholog ECD %id cell. Note the inverted polarity
+ *  vs paralogs: high relevance is GREEN (riskLow class), low relevance is
+ *  RED (riskHigh class). */
+function orthologToneClass(pct: number | null): string {
+  const tier = orthologRelevanceTier(pct);
+  if (tier === "high") return styles.riskLow; // green
+  if (tier === "med") return styles.riskMed; // orange
+  if (tier === "low") return styles.riskHigh; // red
+  return "";
 }
 
 /**
@@ -160,7 +188,7 @@ function paralogRiskValue(p: ParalogEntry): number | null {
  * (full-length %identity, ECD %identity, ECD %similarity) against the
  * human canonical — those populate the comparison columns directly.
  */
-function orthologRow(e: OrthologEntry, key: string, species: string) {
+function orthologRow(e: OrthologEntry, key: string, species: string, maxResidues: number) {
   const ecdMissing = e.ecd_pct_identity_to_human_canonical == null;
   // ICD length / terminal orientations / signal-peptide length aren't in
   // the Compara record, but they're derivable from the ortholog's own
@@ -197,17 +225,25 @@ function orthologRow(e: OrthologEntry, key: string, species: string) {
       </td>
       <td>{fmtPct(e.full_length_pct_identity_to_human_canonical)}</td>
       <td
-        className={ecdMissing ? styles.muted : undefined}
         title={
           ecdMissing
             ? "Human protein has no ECD to compare (e.g. inner-leaflet, soluble, GPI-anchored)"
             : undefined
         }
       >
-        {fmtPct(e.ecd_pct_identity_to_human_canonical)}
-      </td>
-      <td className={ecdMissing ? styles.muted : undefined}>
-        {fmtPct(e.ecd_pct_similarity_to_human_canonical)}
+        {ecdMissing ? (
+          <span className={styles.muted}>
+            {fmtPct(e.ecd_pct_identity_to_human_canonical)}
+          </span>
+        ) : (
+          <span
+            className={`${styles.valuePill} ${orthologToneClass(
+              e.ecd_pct_identity_to_human_canonical,
+            )}`}
+          >
+            {fmtPct(e.ecd_pct_identity_to_human_canonical)}
+          </span>
+        )}
       </td>
       <td>{e.ecd_length_residues} aa</td>
       {/* ICD length / terminal orientations / signal-peptide length —
@@ -235,6 +271,74 @@ function orthologRow(e: OrthologEntry, key: string, species: string) {
           <TopologyBar
             topology={e.per_residue_topology}
             ariaLabel={`${e.ortholog_symbol} ortholog topology`}
+            maxResidues={maxResidues}
+          />
+        ) : (
+          <span className={styles.muted}>no topology</span>
+        )}
+      </td>
+    </tr>
+  );
+}
+
+/**
+ * One close-paralog row (>=80% full-length identity) in the variants table.
+ * Unlike orthologs, close paralogs carry their real DeepTMHMM scalar fields
+ * directly (sourced from topology_public via the deep-dive assembly) — NO
+ * derivation from the topology string. Below-threshold paralogs stay in the
+ * chip strip below the table.
+ */
+function paralogRow(p: ParalogEntry, key: string, maxResidues: number) {
+  const ecdMissing = p.ecd_pct_identity == null;
+  return (
+    <tr key={key}>
+      <td>
+        <div className={styles.variantCell}>
+          {/* These rows are the >80% set — "multitarget likely" — so the
+              pill + ECD %id read red. */}
+          <StatusPill tone="danger" size="sm">
+            Paralog
+          </StatusPill>
+          <a
+            className={styles.link}
+            href={`https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className={styles.mono}>{p.paralog_symbol}</span>
+          </a>
+          <span className={styles.variantSub}>within-species</span>
+        </div>
+      </td>
+      <td>{fmtPct(p.full_length_pct_identity)}</td>
+      <td
+        className={ecdMissing ? styles.muted : styles.riskHigh}
+        title={ecdMissing ? "No ECD to compare (no surface-exposed residues)" : undefined}
+      >
+        {fmtPct(p.ecd_pct_identity)}
+      </td>
+      <td className={p.ecd_length_residues != null ? undefined : styles.muted}>
+        {p.ecd_length_residues != null ? `${p.ecd_length_residues} aa` : "—"}
+      </td>
+      <td className={p.icd_length_residues != null ? undefined : styles.muted}>
+        {p.icd_length_residues != null ? `${p.icd_length_residues} aa` : "—"}
+      </td>
+      <td>{p.tm_helix_count ?? "—"}</td>
+      <td className={p.n_terminal_orientation ? undefined : styles.muted}>
+        {p.n_terminal_orientation ? orientationPill(p.n_terminal_orientation) : "—"}
+      </td>
+      <td className={p.c_terminal_orientation ? undefined : styles.muted}>
+        {p.c_terminal_orientation ? orientationPill(p.c_terminal_orientation) : "—"}
+      </td>
+      <td className={p.signal_peptide_length != null ? undefined : styles.muted}>
+        {p.signal_peptide_length != null ? `${p.signal_peptide_length} aa` : "—"}
+      </td>
+      <td className={styles.topoCell}>
+        {p.per_residue_topology ? (
+          <TopologyBar
+            topology={p.per_residue_topology}
+            ariaLabel={`${p.paralog_symbol} paralog topology`}
+            maxResidues={maxResidues}
           />
         ) : (
           <span className={styles.muted}>no topology</span>
@@ -284,6 +388,15 @@ export function IsoformsCard({ rec, n }: Props) {
   const ct = df.canonical_topology;
   const orthologs = df.orthologs;
   const paralogs = df.paralogs;
+  // Close paralogs (>80% on the colored identity — ECD when present, else
+  // full-length) that carry real DeepTMHMM topology get promoted to full
+  // rows in the variants table — the "multitarget likely" set (HPA antigen
+  // design, PMID 33170010). Paralogs at or below 80% stay in the chip strip
+  // below (50–60% green, 60–80% orange).
+  const closeParalogs = paralogs.filter((p) => {
+    const v = paralogRiskValue(p);
+    return v != null && v > 80 && !!p.per_residue_topology;
+  });
 
   // Topology-bar union over every row that has a topology (canonical +
   // isoforms + orthologs) so the single TopologyLegend below the table
@@ -293,7 +406,12 @@ export function IsoformsCard({ rec, n }: Props) {
     ...df.isoform_topologies.map((iso) => iso.per_residue_topology),
     ...orthologs.mouse.map((e) => e.per_residue_topology),
     ...orthologs.cynomolgus.map((e) => e.per_residue_topology),
+    ...closeParalogs.map((p) => p.per_residue_topology),
   ].filter((t): t is string => !!t);
+  // Longest topology across every rendered row — the common scale every
+  // TopologyBar uses, so bars are length-proportional + left-aligned to the
+  // canonical frame instead of all stretching to the full column width.
+  const maxResidues = allTopologies.reduce((m, t) => Math.max(m, t.length), 0);
 
   // Compara version label comes from the first entry that has one (the
   // builder fills the same value across all rows in a release).
@@ -322,18 +440,19 @@ export function IsoformsCard({ rec, n }: Props) {
   const coloredByFullLen = !anyParalogEcd && anyParalogFullLen;
   const anyParalogRisk = coloredByEcd || coloredByFullLen;
 
-  // Visibility floor: when there's an identity to threshold on (ECD, or
-  // full-length for ECD-less proteins), only paralogs above 40% are worth
-  // surfacing — below that the cross-reactivity signal is negligible and
-  // the strip just gets noisy (kinome / Ig-superfamily proteins have
-  // dozens of distant paralogs). Anything at or below 40% is hidden
-  // entirely. Records with no identity at all (pre-population) show the
-  // whole family with the neutral "sequence family" framing.
+  // Visibility floor for the chip strip: paralogs at 40%+ identity (ECD, or
+  // full-length for ECD-less proteins) — 40–60% lower-risk (green), 60–80%
+  // caution (orange), >80% multitarget (red). The >80% set is ALSO promoted
+  // to full table rows above; we still list them as chips here for a complete
+  // family view (with a note that they appear as rows). Below 40% the signal
+  // is negligible and the strip just gets noisy (kinome / Ig-superfamily
+  // proteins have dozens of distant paralogs). Records with no identity at all
+  // (pre-population) show the whole family with the neutral framing.
   const PARALOG_MIN_PCT = 40;
   const visibleParalogs = anyParalogRisk
     ? paralogs.filter((p) => {
         const v = paralogRiskValue(p);
-        return v != null && v > PARALOG_MIN_PCT;
+        return v != null && v >= PARALOG_MIN_PCT;
       })
     : paralogs;
 
@@ -348,6 +467,15 @@ export function IsoformsCard({ rec, n }: Props) {
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>
           Sequence variants · canonical, isoforms &amp; cross-species orthologs
+          <InfoTip label="Ortholog (species relevance)">
+            Mouse/cyno identity to human, over the ECD. Triage signal, not a
+            verdict — relevance also needs binding, expression, and function
+            (ICH S6(R1)).
+            <br />
+            ≥85% high · 60–85% intermediate · &lt;60% higher-risk .
+            <br />
+            High identity ≠ conserved epitope.
+          </InfoTip>
         </p>
         <div className={styles.tableWrap}>
           <table className={styles.table}>
@@ -368,15 +496,6 @@ export function IsoformsCard({ rec, n }: Props) {
                     Percent identity restricted to extracellular-domain
                     residues — the antibody-accessible surface — rather than
                     the whole protein.
-                  </InfoTip>
-                </th>
-                <th scope="col">
-                  ECD %sim
-                  <InfoTip label="About percent similarity" align="end">
-                    Percent similarity — like identity, but also counts
-                    conservative substitutions (residue pairs scoring
-                    positive in BLOSUM62, e.g. Leu↔Ile). Always ≥ percent
-                    identity. Scoped to the extracellular domain.
                   </InfoTip>
                 </th>
                 <th scope="col">ECD len</th>
@@ -410,62 +529,79 @@ export function IsoformsCard({ rec, n }: Props) {
                 </td>
                 <td className={styles.refCell}>ref</td>
                 <td className={styles.refCell}>ref</td>
-                <td className={styles.refCell}>ref</td>
                 {topologyDetailCells(ct)}
                 <td className={styles.topoCell}>
                   <TopologyBar
                     topology={ct.per_residue_topology}
                     ariaLabel={`${rec.gene.hgnc_symbol} canonical isoform topology`}
+                    maxResidues={maxResidues}
                   />
                 </td>
               </tr>
 
-              {/* Alternative isoforms — full-length %identity to the
-                  canonical is pending a sequence alignment, so the
-                  identity columns show "—" for now. */}
-              {df.isoform_topologies.map((iso, i) => (
-                <tr key={`iso-${i}`}>
-                  <td>
-                    <div className={styles.variantCell}>
-                      <StatusPill tone="neutral" size="sm">
-                        Isoform
-                      </StatusPill>
-                      <a
-                        className={styles.link}
-                        href={`https://www.uniprot.org/uniprotkb/${iso.isoform_id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        <span className={styles.mono}>{iso.isoform_id}</span>
-                      </a>
-                    </div>
-                  </td>
-                  <td
-                    className={styles.muted}
-                    title="Full-length alignment to the canonical sequence pending"
-                  >
-                    —
-                  </td>
-                  <td className={styles.muted}>—</td>
-                  <td className={styles.muted}>—</td>
-                  {topologyDetailCells(iso)}
-                  <td className={styles.topoCell}>
-                    <TopologyBar
-                      topology={iso.per_residue_topology}
-                      ariaLabel={`${rec.gene.hgnc_symbol} ${iso.isoform_id} topology`}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {/* Alternative isoforms — full-length + ECD %identity to the
+                  gene's own canonical sequence (BLOSUM62 global alignment
+                  over the shorter length; see merge/isoform_identity.py).
+                  ECD %similarity isn't computed for same-gene isoforms, so
+                  that one column stays "—". Older records with no identity
+                  number also fall back to "—". */}
+              {df.isoform_topologies.map((iso, i) => {
+                const fullId = iso.full_length_pct_identity_to_canonical;
+                const ecdId = iso.ecd_pct_identity_to_canonical;
+                return (
+                  <tr key={`iso-${i}`}>
+                    <td>
+                      <div className={styles.variantCell}>
+                        <StatusPill tone="neutral" size="sm">
+                          Isoform
+                        </StatusPill>
+                        <a
+                          className={styles.link}
+                          href={`https://www.uniprot.org/uniprotkb/${iso.isoform_id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <span className={styles.mono}>{iso.isoform_id}</span>
+                        </a>
+                      </div>
+                    </td>
+                    <td className={fullId == null ? styles.muted : undefined}>
+                      {fmtPct(fullId)}
+                    </td>
+                    <td
+                      className={ecdId == null ? styles.muted : undefined}
+                      title={
+                        ecdId == null
+                          ? "No extracellular domain to compare (no surface-exposed residues)"
+                          : undefined
+                      }
+                    >
+                      {fmtPct(ecdId)}
+                    </td>
+                    {topologyDetailCells(iso)}
+                    <td className={styles.topoCell}>
+                      <TopologyBar
+                        topology={iso.per_residue_topology}
+                        ariaLabel={`${rec.gene.hgnc_symbol} ${iso.isoform_id} topology`}
+                        maxResidues={maxResidues}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
 
               {/* Orthologs — mouse then cynomolgus, with real alignment
                   numbers against the human canonical. */}
               {orthologs.mouse.map((e, i) =>
-                orthologRow(e, `mouse-${i}`, "Mouse"),
+                orthologRow(e, `mouse-${i}`, "Mouse", maxResidues),
               )}
               {orthologs.cynomolgus.map((e, i) =>
-                orthologRow(e, `cyno-${i}`, "Cyno"),
+                orthologRow(e, `cyno-${i}`, "Cyno", maxResidues),
               )}
+              {/* Close paralogs (>=80% full-length) — within-species, with
+                  their own real DeepTMHMM topology + ECD identity/similarity.
+                  Below-threshold paralogs are the chip strip below. */}
+              {closeParalogs.map((p, i) => paralogRow(p, `para-${i}`, maxResidues))}
             </tbody>
           </table>
         </div>
@@ -506,49 +642,26 @@ export function IsoformsCard({ rec, n }: Props) {
             : coloredByFullLen
               ? "Paralogs · within-species, full-length identity"
               : "Paralogs · within-species sequence family"}
-          <InfoTip label="About paralog cross-reactivity">
-            {coloredByEcd ? (
-              <>
-                Percent identity over the extracellular domain — the
-                antibody-accessible region — between {rec.gene.hgnc_symbol} and
-                each within-species paralog. Antibody cross-reactivity tracks
-                ECD identity, so the chips are colored by risk:{" "}
-                <strong>≥70% likely</strong>, 50–70% plausible, &lt;50% low.
-                The bands are our heuristic; the principle that
-                cross-reactivity tracks identity follows antibody-validation
-                practice (Bordeaux 2010, PMID 20359301; Edfors 2018,
-                PMID 30297845). Paralogs at or below 40% ECD identity are hidden
-                — their cross-reactivity signal is negligible.
-              </>
-            ) : coloredByFullLen ? (
-              <>
-                {rec.gene.hgnc_symbol} has no extracellular domain (it&rsquo;s
-                intracellular / soluble), so there&rsquo;s no ECD to align.
-                Cross-reactivity risk here is keyed to{" "}
-                <strong>whole-protein</strong> sequence identity instead, with
-                the same tiers: <strong>≥70% likely</strong>, 50–70% plausible,
-                &lt;50% low. The bands are our heuristic; the principle that
-                cross-reactivity tracks identity follows antibody-validation
-                practice (Bordeaux 2010, PMID 20359301; Edfors 2018,
-                PMID 30297845). Paralogs at or below 40% identity are hidden —
-                their cross-reactivity signal is negligible.
-              </>
-            ) : (
-              <>
-                {rec.gene.hgnc_symbol} has no extracellular domain (it&rsquo;s
-                intracellular / soluble), so there&rsquo;s no ECD sequence to
-                align against its paralogs. The cross-reactivity cutoffs
-                (≥50% plausible, ≥70% likely) don&rsquo;t apply here; the family
-                is listed for completeness.
-              </>
-            )}
+          <InfoTip label="Paralog (specificity)">
+            Identity to nearest human paralog — local epitope similarity
+            matters more than global identity. Per HPA antigen design (PMID{" "}
+            <a
+              href="https://pubmed.ncbi.nlm.nih.gov/33170010/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              33170010
+            </a>
+            ): ≤60% (usually &lt;40%) single-target achievable; &gt;80% defines
+            a multitargeting antibody expected to bind the family.
+            <br />
+            &lt;60% lower risk · 60–80% caution · &gt;80% multitarget likely
           </InfoTip>
         </p>
         {paralogs.length === 0 ? (
           <p className={styles.empty}>No paralogs in Compara.</p>
         ) : visibleParalogs.length === 0 ? (
-          // Protein whose paralogs are all at or below the 40% floor —
-          // nothing crosses the threshold worth surfacing.
+          // No paralog clears the 40% chip floor — nothing worth surfacing.
           <p className={styles.empty}>
             No paralogs above 40% identity in Compara.
           </p>
@@ -603,22 +716,29 @@ export function IsoformsCard({ rec, n }: Props) {
               <p className={styles.paralogLegend} aria-hidden="true">
                 <span className={styles.paralogLegendItem}>
                   <span
-                    className={`${styles.paralogLegendDot} ${styles.riskHigh}`}
+                    className={`${styles.paralogLegendDot} ${styles.riskLow}`}
                   />
-                  ≥70% likely
+                  &lt;60% lower risk
                 </span>
                 <span className={styles.paralogLegendItem}>
                   <span
                     className={`${styles.paralogLegendDot} ${styles.riskMed}`}
                   />
-                  50–70% plausible
+                  60–80% caution
                 </span>
                 <span className={styles.paralogLegendItem}>
                   <span
-                    className={`${styles.paralogLegendDot} ${styles.riskLow}`}
+                    className={`${styles.paralogLegendDot} ${styles.riskHigh}`}
                   />
-                  &lt;50% low
+                  &gt;80% multitarget
                 </span>
+              </p>
+            ) : null}
+            {closeParalogs.length > 0 ? (
+              <p className={styles.empty}>
+                The {closeParalogs.length} closest paralog
+                {closeParalogs.length === 1 ? "" : "s"} (&gt;80%) {closeParalogs.length === 1 ? "is" : "are"}{" "}
+                also shown as rows in the table above.
               </p>
             ) : null}
           </>

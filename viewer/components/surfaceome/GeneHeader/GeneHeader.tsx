@@ -2,10 +2,6 @@ import type { ReactNode } from "react";
 import type { CatalogRow } from "../../../lib/surfaceome";
 import type {
   AccessibilityModulationObservation,
-  CanonicalTopology,
-  OrthologSet,
-  StructureFeatures,
-  SurfaceBindFeatures,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
@@ -44,6 +40,21 @@ function _inferDeepTMHMMType(
   if (hasM) return "TM";
   if (hasS) return "SP";
   return "GLOB";
+}
+
+/** Coerce an OrthologEntry's stored ``deeptmhmm_label`` into the viewer's
+ *  DeepTMHMMType. Orthologs DO carry the rolled-up label from D1 (unlike
+ *  isoforms), so prefer it; fall back to inferring from the per-residue
+ *  string if the label is missing or unrecognized. */
+function _coerceDeepTMHMMType(
+  label: string | null | undefined,
+  topology: string,
+): import("../../../lib/structure-viewer-types").DeepTMHMMType {
+  const known = ["TM", "SP+TM", "SP", "BETA", "GLOB"] as const;
+  if (label && (known as readonly string[]).includes(label)) {
+    return label as (typeof known)[number];
+  }
+  return _inferDeepTMHMMType(topology);
 }
 
 interface GeneHeaderProps {
@@ -229,85 +240,6 @@ function vitalToneClass(
   tone: "success" | "amber" | "danger" | "neutral",
 ): string {
   return `tone-${tone}`;
-}
-
-/**
- * Cell-content helpers for the deterministic-tools strip below the
- * LLM vitals 2×2. Each returns a `{ headline, sub }` pair the
- * `.detTile` template renders. Pulled out as named helpers (vs.
- * inline IIFEs) so the JSX stays readable — four cells per record
- * with conditional fall-backs would otherwise nest deeply.
- *
- * Each helper handles the orchestrator-prefetch's "no data" cases
- * explicitly so the cell renders an em-dash + a one-line "why" sub
- * instead of crashing on a null / placeholder value.
- */
-function topologyCellSummary(
-  topo: CanonicalTopology,
-): { headline: string; sub: string } {
-  const tm = topo.tm_helix_count;
-  const n = topo.n_terminal_orientation === "extracellular" ? "EC" : "IC";
-  const c = topo.c_terminal_orientation === "extracellular" ? "EC" : "IC";
-  if (tm === 0) {
-    return { headline: "0 TM", sub: "Globular / soluble" };
-  }
-  const sp = topo.signal_peptide_length > 0 ? " · SP" : "";
-  return {
-    headline: `${tm} TM`,
-    sub: `N-${n} · C-${c}${sp}`,
-  };
-}
-
-function plddtCellSummary(
-  struct: StructureFeatures,
-): { headline: string; sub: string } {
-  const src = struct.source.toLowerCase();
-  const placeholder = src.includes("placeholder");
-  const whole = !placeholder && src.includes("whole-protein");
-  if (placeholder) {
-    return { headline: "—", sub: "Not available" };
-  }
-  const v = struct.ecd_mean_plddt.toFixed(0);
-  const label = whole ? "Whole" : "ECD";
-  const disordered = (struct.ecd_disordered_fraction * 100).toFixed(0);
-  return {
-    headline: v,
-    sub: `${label} pLDDT · ${disordered}% disordered`,
-  };
-}
-
-function surfaceBindCellSummary(
-  sb: SurfaceBindFeatures,
-): { headline: string; sub: string } {
-  if (!sb.has_data) {
-    return { headline: "—", sub: "Not in SURFACE-Bind" };
-  }
-  if (sb.n_sites === 0) {
-    return { headline: "0 sites", sub: "No patches cleared scoring" };
-  }
-  return {
-    headline: `${sb.n_sites} site${sb.n_sites === 1 ? "" : "s"}`,
-    sub: `${sb.n_seeds_total} MaSIF seed${sb.n_seeds_total === 1 ? "" : "s"}`,
-  };
-}
-
-function conservationCellSummary(
-  orth: OrthologSet,
-): { headline: string; sub: string } {
-  const mouseCanon = orth.mouse.find((o) => o.is_canonical) ?? orth.mouse[0];
-  const cynoCanon =
-    orth.cynomolgus.find((o) => o.is_canonical) ?? orth.cynomolgus[0];
-  const mouse = mouseCanon?.full_length_pct_identity_to_human_canonical;
-  const cyno = cynoCanon?.full_length_pct_identity_to_human_canonical;
-  if (mouse == null && cyno == null) {
-    return { headline: "—", sub: "No ortholog data" };
-  }
-  const mouseStr = mouse != null ? `${mouse.toFixed(0)}` : "—";
-  const cynoStr = cyno != null ? `${cyno.toFixed(0)}` : "—";
-  return {
-    headline: `${mouseStr} / ${cynoStr}`,
-    sub: "Mouse / Cyno · % identity",
-  };
 }
 
 /**
@@ -747,33 +679,63 @@ export function GeneHeader({
               // sequence/topology, so the URL path strips the
               // suffix back to the bare canonical.
               //
-              // Orthologs: rendered ONLY when the ortholog has a
-              // matching topology cohort row in D1; we currently
-              // ship topology for mouse + cyno orthologs in
-              // `topology_public` but the per-residue strings live
-              // there, not on `OrthologEntry`. For MVP we render
-              // just the canonical + isoform variants and leave
-              // orthologs for a follow-up commit that backfills the
-              // ortholog topology strings onto the SurfaceomeRecord.
-              variants={rec.deterministic_features.isoform_topologies.map(
-                (iso) => ({
-                  source: "afdb" as const,
-                  id: `iso-${iso.isoform_id}`,
-                  label: _isoformLabel(iso.isoform_id),
-                  sublabel: iso.isoform_id,
-                  uniprot_acc: iso.uniprot_acc,
-                  uniprot_acc_full: iso.isoform_id,
-                  topology: iso.per_residue_topology,
-                  // IsoformTopology doesn't carry `deeptmhmm_type`
-                  // (TM / SP+TM / etc.) — synthesize a best-effort
-                  // value from the topology string so the GLOB
-                  // caption etc. still render sensibly on variant
-                  // switch.
-                  deeptmhmm_type: _inferDeepTMHMMType(
-                    iso.per_residue_topology,
-                  ),
-                }),
-              )}
+              // Orthologs: the per-residue topology + DeepTMHMM label
+              // are now backfilled onto each `OrthologEntry` (sourced
+              // from `topology_public` cohorts mouse_ortholog /
+              // cyno_ortholog), so the canonical mouse + cyno orthologs
+              // get their own AFDB tab — fetched by the ortholog's own
+              // UniProt acc, colored by the ortholog's own topology.
+              // Only the canonical ortholog per species is shown (alt
+              // ortholog isoforms aren't structurally interesting here),
+              // and only when it actually carries a topology string.
+              variants={[
+                ...rec.deterministic_features.isoform_topologies.map(
+                  (iso) => ({
+                    source: "afdb" as const,
+                    id: `iso-${iso.isoform_id}`,
+                    label: _isoformLabel(iso.isoform_id),
+                    sublabel: iso.isoform_id,
+                    uniprot_acc: iso.uniprot_acc,
+                    uniprot_acc_full: iso.isoform_id,
+                    topology: iso.per_residue_topology,
+                    // IsoformTopology doesn't carry `deeptmhmm_type`
+                    // (TM / SP+TM / etc.) — synthesize a best-effort
+                    // value from the topology string so the GLOB
+                    // caption etc. still render sensibly on variant
+                    // switch.
+                    deeptmhmm_type: _inferDeepTMHMMType(
+                      iso.per_residue_topology,
+                    ),
+                  }),
+                ),
+                ...(
+                  [
+                    ["mouse", "Mouse ortholog"],
+                    ["cynomolgus", "Cyno ortholog"],
+                  ] as const
+                ).flatMap(([species, label]) =>
+                  rec.deterministic_features.orthologs[species]
+                    .filter(
+                      (o) => o.is_canonical && !!o.per_residue_topology,
+                    )
+                    .map((o) => {
+                      const topo = o.per_residue_topology as string;
+                      return {
+                        source: "afdb" as const,
+                        id: `ortholog-${species}-${o.ortholog_uniprot_acc}`,
+                        label,
+                        sublabel: o.ortholog_uniprot_acc,
+                        uniprot_acc: o.ortholog_uniprot_acc,
+                        uniprot_acc_full: o.ortholog_uniprot_acc,
+                        topology: topo,
+                        deeptmhmm_type: _coerceDeepTMHMMType(
+                          o.deeptmhmm_label,
+                          topo,
+                        ),
+                      };
+                    }),
+                ),
+              ]}
             />
             {/* Legend moved INSIDE <StructureViewer> so it can
                 switch between the M/O/I/S/B topology key and the

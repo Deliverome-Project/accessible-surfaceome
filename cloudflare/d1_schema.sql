@@ -511,6 +511,7 @@ CREATE TABLE IF NOT EXISTS compara_paralog (
     family_id                TEXT,
     biomart_percent_identity REAL,
     ecd_pct_identity         REAL,
+    ecd_pct_similarity       REAL,    -- BLOSUM62 identity + positive substitutions; NULL when no ECD (close pairs >=80%)
     n_ecd_loops_compared     INTEGER,
     rank_by_ecd_identity     INTEGER,
     paralogy_type            TEXT,

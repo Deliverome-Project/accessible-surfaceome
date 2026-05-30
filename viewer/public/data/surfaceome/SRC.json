@@ -1,0 +1,3610 @@
+{
+  "schema_version": "1.1.0",
+  "gene": {
+    "hgnc_symbol": "SRC",
+    "hgnc_id": "HGNC:11283",
+    "uniprot_acc": "P12931",
+    "ncbi_gene_id": 6714,
+    "ensembl_gene": "ENSG00000197122"
+  },
+  "triage_signal": "unlikely",
+  "triage_reasoning": "SRC (p60-Src) is a non-receptor tyrosine kinase that resides on the cytoplasmic face of the plasma membrane. It is myristoylated at Gly2 and further palmitoylated, anchoring it to the inner leaflet of the PM. The kinase domain, SH2, and SH3 domains all face the cytoplasm. There is no extracellular domain. Checking contextual buckets: (1) cell_state_induced \u2014 no evidence of stress/activation flipping SRC to outer leaflet; (2) tissue_restricted_surface \u2014 not applicable, inner-leaflet anchor; (3) lysosomal_exocytosis \u2014 not a lysosomal TM protein; (4) dual_localization \u2014 SRC cycles among PM inner leaflet, endosomes, and perinuclear membranes, all cytoplasmic-face; (5) stable_surface_attachment \u2014 no ectodomain or secreted form that anchors externally. No antibody/ADC/CAR-T programs target the SRC protein body on the cell surface. The protein body is entirely inaccessible from the extracellular space.",
+  "executive_summary": {
+    "one_paragraph": "SRC is canonically an inner-leaflet myristoylated/palmitoylated non-receptor tyrosine kinase with no extracellular domain. A 2025 primary study (PMID:41818370) reports that in cancer cells, SRC undergoes topological inversion onto the outer plasma membrane surface via autophagolysosomal exocytosis (ALE), creating extracellular membrane-associated Src (eSrc). Anti-eSrc antibodies mediate tumor killing in xenograft models and eSrc is detected in primary tumors. Surface accessibility is therefore high in the cancer state but strictly state-gated \u2014 normal cells retain inner-leaflet-only topology.",
+    "surface_accessibility": "high",
+    "evidence_grade_summary": "direct_single_method",
+    "confidence": "moderate",
+    "state_dependence": "high",
+    "subcategory": "other",
+    "llm_family": "enzyme",
+    "hgnc_gene_groups": [],
+    "uniprot_family": null,
+    "surface_call_reason": "lysosomal_exocytosis",
+    "headline_risks": [],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_03",
+      "a1_evi_04",
+      "a1_evi_05",
+      "a1_evi_06",
+      "a2_evi_01",
+      "a2_evi_02",
+      "a2_evi_03",
+      "a2_evi_04",
+      "a2_evi_05",
+      "a2_evi_06"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "high",
+    "confidence": "moderate",
+    "subcategory": "other",
+    "state_dependence": "high",
+    "surface_call_reason": "lysosomal_exocytosis",
+    "llm_family": "enzyme",
+    "evidence_grade": "direct_single_method",
+    "ecd_accessibility_class": "none",
+    "evidence_density": "moderate",
+    "expression_level": "moderate",
+    "expression_breadth": "broad",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "co_receptor_dependency": "none",
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": true,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": false,
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": true,
+    "n_supporting_claims_high_weight": 0,
+    "n_contradicting_claims_high_weight": 0,
+    "overexpression_surface_localization_observed": false,
+    "expression_level_rationale": "SRC is broadly expressed across cancer cell lines and multiple normal cell types (keratinocytes, osteoblasts, thyroid epithelial, T cells) at moderate protein levels by WB; no high-expression context is established in the ledger.",
+    "expression_breadth_rationale": "SRC is detected across diverse tissue/cell contexts: cancer cell lines (multiple types), keratinocytes, osteoblast-like cells, thyroid epithelial cells, T lymphocytes, chondrocytes, and glioblastoma cells \u2014 spanning epithelial, immune, skeletal, and neural lineages.",
+    "surface_specificity_rationale": "In normal cells, SRC is exclusively inner-leaflet/cytoplasmic. Only in cancer cells does a fraction reach the outer surface via ALE. The dominant population across all cell types is intracellular; the surface-accessible eSrc pool is cancer-state-restricted.",
+    "has_known_ligand_rationale": "SRC is a non-receptor tyrosine kinase with well-documented interacting partners and substrates (e.g., FAK, EGFR, integrins, RANKL pathway). It is not an orphan; canonical SH2/SH3-mediated partner interactions are extensively characterised.",
+    "low_endogenous_expression_rationale": "Derived from expression_level='moderate' (not low/absent \u2192 not flagged). SRC is broadly expressed across cancer cell lines and multiple normal cell types (keratinocytes, osteoblasts, thyroid epithelial, T cells) at moderate protein levels by WB; no high-expression context is established in the ledger.",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+  },
+  "surface_evidence": {
+    "evidence_grade": "direct_single_method",
+    "grade_rationale": "The strongest evidence comes from PMID:41818370, a 2025 primary study reporting that Src undergoes ALE-mediated topological inversion onto the outer cell surface specifically in cancer cells (eSrc), with functional antibody-based tumor killing validated in xenograft models (a1_evi_01\u201304). These all derive from a single source, yielding direct_single_method. A companion paper (a1_evi_05) weakly corroborates at review level. Surfaceome MS detections (a1_evi_07, a1_evi_09) are low-weight ancillary signals. The canonical inner-leaflet topology (a1_evi_06) describes the baseline non-cancer state and is tangential \u2014 not contradictory \u2014 under the ALE state-dependent inversion mechanism. No second independent direct surface methodology (e.g. nonperm IF or surface biotinylation from a distinct group) is present, so the grade is direct_single_method rather than direct_multi_method.",
+    "claim_stances": [
+      {
+        "claim_id": "a1_evi_01",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "Primary study: Src topologically inverted onto outer cancer cell surface in vitro and in vivo; single source, no KO control cited in abstract"
+      },
+      {
+        "claim_id": "a1_evi_02",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "Topology-inversion claim from same primary source (PMID:41818370); ALE mechanism places Src body on extracellular face in cancer"
+      },
+      {
+        "claim_id": "a1_evi_03",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "ALE-mediated trafficking to outer membrane surface; functional assay from same primary source"
+      },
+      {
+        "claim_id": "a1_evi_04",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "Anti-Src antibody kills tumor cells in xenograft models; functional engagement at extracellular face; same primary source"
+      },
+      {
+        "claim_id": "a1_evi_05",
+        "stance": "supports_surface",
+        "weight": "low",
+        "note": "Companion review-level paper corroborating eSrc surface exposure; secondary/weak, no primary methodology"
+      },
+      {
+        "claim_id": "a1_evi_06",
+        "stance": "tangential",
+        "weight": "high",
+        "note": "Canonical inner-leaflet topology \u2014 describes baseline normal-cell state; NOT contradictory given cancer-state ALE inversion mechanism"
+      },
+      {
+        "claim_id": "a1_evi_07",
+        "stance": "supports_surface",
+        "weight": "low",
+        "note": "Chick chondrogenic surfaceome CSC-MS; non-human system, possible co-purification, weak species/context transfer"
+      },
+      {
+        "claim_id": "a1_evi_08",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Methods detail for chondrogenic surfaceome study; informative but not a direct surface claim"
+      },
+      {
+        "claim_id": "a1_evi_09",
+        "stance": "supports_surface",
+        "weight": "low",
+        "note": "SRC in surfaceome cluster alongside ERBB2/CSF1R; discussion-level, co-enrichment possible, no methodology detail"
+      },
+      {
+        "claim_id": "a1_evi_10",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "SRC in sEVs from cancer cell lines; shed/exosomal form, not plasma membrane surface accessibility"
+      },
+      {
+        "claim_id": "a1_evi_11",
+        "stance": "expression_only",
+        "weight": "low",
+        "note": "Whole-cell WB of SRC in HaCaT keratinocytes; no surface-accessibility information"
+      },
+      {
+        "claim_id": "a1_evi_12",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Antibody identifiers for WB/biotinylation study; methodological metadata only"
+      },
+      {
+        "claim_id": "a1_evi_13",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "c-Src activates RANKL membrane redistribution in osteoblasts; Src stays inner-leaflet, no Src surface claim"
+      },
+      {
+        "claim_id": "a1_evi_14",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "c-Src co-localizes with RANKL at cell periphery; consistent with canonical inner-leaflet association, no extracellular Src claim"
+      }
+    ],
+    "methods": [
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "cell_surface_capture",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "Embryonic chicken limb bud-derived chondrogenic cells; sialoglycoprotein enrichment via aminooxy-biotin conjugation + LC-MS/MS; 3 biological replicates across 5 time points of micromass culture (days 1, 3, 6, 10, 15); SRC detected in surfaceome cluster 2 but lacks canonical signal peptide or glycosylation site \u2014 detection may reflect co-purification",
+            "sample_type": "primary_human_cell",
+            "level": "low",
+            "species": "other",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_07",
+              "a1_evi_08"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_07",
+          "a1_evi_08"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "cell_surface_capture",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "Unspecified cell type from surfaceome proteomics study; SRC detected in a functional surfaceome cluster alongside ERBB2, CSF1R, PRKCD \u2014 noted as non-receptor kinase, presence may reflect co-enrichment",
+            "sample_type": "unknown",
+            "level": "low",
+            "species": "unspecified",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_09"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_09"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "secreted_or_shed",
+        "expression_observations": [
+          {
+            "context": "High-invadopodia-activity cancer cell lines; SRC detected among proteins enriched in secreted extracellular vesicles (sEVs) alongside CTTN, CFL1, ITGA3, ITGB3 and MMP2, MMP14, BSG/CD147 \u2014 represents non-canonical extracellular/shed form in exosomes",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_10"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_10"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "permeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-SRC",
+            "clone": "60315-1-lg",
+            "vendor": "Proteintech",
+            "catalog": "60315-1-lg",
+            "rrid": null,
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          },
+          {
+            "name": "anti-phospho-SRC (Y416)",
+            "clone": "D49G4",
+            "vendor": "Cell Signaling Technology",
+            "catalog": "#6943",
+            "rrid": null,
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "intracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "HaCaT keratinocytes; whole-cell lysate western blot for total SRC and phospho-Y416 SRC; no membrane fractionation \u2014 expression evidence only, no surface-accessibility information",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_11"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_11",
+          "a1_evi_12"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-c-Src",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "MC3T3-E1 osteoblast-like cells after shear stimulation; c-Src co-localizes with RANKL at cell periphery \u2014 consistent with inner-leaflet plasma membrane association but does not establish extracellular accessibility",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "mouse",
+            "species_inferred": true,
+            "cited_evidence_ids": [
+              "a1_evi_14"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_14"
+        ]
+      },
+      {
+        "method_family": "functional_surface_assay",
+        "method_subclass": "unknown",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-Src (eSrc-targeting therapeutic antibody)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "orthogonal_method",
+            "validation_strength": "moderate",
+            "cross_reactivity_notes": "Antibody reported to mediate tumor cell killing in vitro and in vivo xenograft; epitope accessible on outer cell surface via non-canonical ALE exocytosis pathway"
+          }
+        ],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Cancer cell lines (in vitro): Src noncanonically translocated and topologically inverted onto outer cell surface via autophagolysosomal exocytosis (ALE); anti-Src antibody-based therapies mediate tumor cell killing in cell culture",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
+            "cited_evidence_ids": [
+              "a1_evi_01",
+              "a1_evi_03",
+              "a1_evi_04"
+            ]
+          },
+          {
+            "context": "Primary human tumors: extracellular membrane-associated Src (eSrc) detected in primary tumor specimens",
+            "sample_type": "patient_sample",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_04"
+            ]
+          },
+          {
+            "context": "Mouse xenograft models: anti-Src antibody-based therapies mediate tumor cell killing in vivo",
+            "sample_type": "xenograft",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_04"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_01",
+          "a1_evi_03",
+          "a1_evi_04"
+        ]
+      },
+      {
+        "method_family": "functional_surface_assay",
+        "method_subclass": "unknown",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-Src (eSrc-targeting therapeutic antibody)",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "Companion paper corroborating eSrc surface exposure concept; exocytosis exposes Src at outer surface of cancer cells"
+          }
+        ],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Cancer cells (companion paper PMID:41818382): exocytosis exposes Src at the outer surface of cancer cells, cited as poised for therapeutic targeting",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_05"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_05"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "HaCaT keratinocyte cell line \u2014 whole-cell western blot of total SRC and pY416-SRC",
+        "sample_type": "established_cell_line",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_11"
+        ]
+      }
+    ],
+    "therapeutic_engagement": {
+      "highest_stage": "preclinical_in_vivo",
+      "description": "A 2025/2026 study (PMID:41818370) established that Src undergoes cancer-specific topological inversion onto the outer cell surface via autophagolysosomal exocytosis (ALE), creating extracellular membrane-associated Src (eSrc). Anti-Src antibody-based therapeutics targeting this eSrc form demonstrated tumor cell killing in cell culture and mouse xenograft models. No sponsor or clinical stage is named; this represents preclinical in vivo proof-of-concept only. A companion paper (PMID:41818382) corroborates eSrc as a therapeutic target.",
+      "surface_form_rationale": "The drug-engageable form is the cancer-specific eSrc: Src inverted onto the outer leaflet of the plasma membrane via ALE exocytosis, exposing its protein body extracellularly. Canonically, Src is inner-leaflet only (no ECD, no secreted isoform). The antibody therapeutics described in the ledger explicitly target this surface-exposed eSrc form in cancer cells, not a secreted or shed form, though SRC is also detected in secreted extracellular vesicles (a distinct pool).",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a1_evi_02",
+        "a1_evi_03",
+        "a1_evi_04",
+        "a1_evi_05"
+      ]
+    },
+    "contradicting_evidence": [
+      {
+        "claim": "SRC-family kinases are anchored via myristoylation/palmitoylation to the inner leaflet of the plasma membrane, with all functional domains (SH2, SH3, kinase) facing the cytoplasm. There is no extracellular domain in the canonical topology, directly refuting surface accessibility. Co-localization of c-Src with RANKL at the cell periphery in MC3T3-E1 osteoblasts is consistent with this inner-leaflet association and does not establish extracellular exposure of Src.",
+        "contradiction_type": "alternative_localization",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "SRC is a peripheral membrane protein attached to the cytoplasmic face via lipid modifications; any plasma membrane signal in imaging experiments reflects inner-leaflet localization, not extracellular accessibility. Claims of surface SRC would require unconventional secretion, exosomal display, or an atypical isoform lacking the myristoylation signal.",
+        "cited_evidence_ids": [
+          "a1_evi_06",
+          "a1_evi_14"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [
+      {
+        "tissue": "primary tumor (unspecified)",
+        "present": "unknown",
+        "disease_context": "tumor",
+        "cell_types": [],
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "tissue": "bone / osteoblast",
+        "present": "unknown",
+        "disease_context": "normal",
+        "cell_types": [
+          "osteoblast-like cells"
+        ],
+        "cell_states": [
+          "fluid shear stress-stimulated",
+          "constitutively active Src (Y527F)"
+        ],
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_08"
+        ]
+      },
+      {
+        "tissue": "thyroid",
+        "present": "unknown",
+        "disease_context": "normal",
+        "cell_types": [
+          "thyroid epithelial cells"
+        ],
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      },
+      {
+        "tissue": "nasopharynx",
+        "present": "moderate",
+        "disease_context": "tumor",
+        "cell_types": [
+          "nasopharyngeal carcinoma cells"
+        ],
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_10"
+        ]
+      },
+      {
+        "tissue": "cartilage",
+        "present": "unknown",
+        "disease_context": "normal",
+        "cell_types": [
+          "chondrocytes"
+        ],
+        "cell_states": [],
+        "species": "other",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "tissue": "brain / glioblastoma",
+        "present": "unknown",
+        "disease_context": "tumor",
+        "cell_types": [
+          "glioblastoma cells"
+        ],
+        "cell_states": [
+          "high invadopodia activity"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_12"
+        ]
+      },
+      {
+        "tissue": "cancer cell lines (unspecified)",
+        "present": "unknown",
+        "disease_context": "tumor",
+        "cell_types": [],
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_13"
+        ]
+      }
+    ],
+    "cell_types": [
+      {
+        "cell_type": "T lymphocytes",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "species": "unspecified",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      },
+      {
+        "cell_type": "osteoblast-like cells",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_08"
+        ]
+      },
+      {
+        "cell_type": "thyroid epithelial cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "thyroid"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      },
+      {
+        "cell_type": "nasopharyngeal carcinoma cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "nasopharynx"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_10"
+        ]
+      },
+      {
+        "cell_type": "chondrocytes",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "cartilage"
+        ],
+        "species": "other",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_11"
+        ]
+      },
+      {
+        "cell_type": "glioblastoma cells",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_12"
+        ]
+      }
+    ],
+    "cell_states": [
+      {
+        "state": "tumor",
+        "descriptor": "In cancer cells (but not normal cells), Src is noncanonically translocated via autophagolysosomal exocytosis (ALE) and topologically inverted onto the outer plasma membrane surface, both in vitro and in primary tumors in vivo.",
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02",
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_13"
+        ]
+      },
+      {
+        "state": "mechanical stress",
+        "descriptor": "Fluid shear stress increases c-Src activation (Tyr416 phosphorylation) in osteoblast-like MC3T3-E1 cells, promoting redistribution of membrane-associated proteins toward the cell periphery and membrane fraction.",
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_08"
+        ]
+      },
+      {
+        "state": "high invadopodia activity",
+        "descriptor": "Glioblastoma cells with high invadopodia activity secrete small extracellular vesicles (sEVs) with enriched SRC abundance, implicating this invasive state in extracellular SRC compartmentalization.",
+        "cited_evidence_ids": [
+          "a2_evi_12"
+        ]
+      }
+    ],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "dual_localization": [
+        {
+          "compartment": "cytoplasmic inner leaflet of plasma membrane",
+          "fraction_estimate": null,
+          "condition": "normal (non-cancer) cells",
+          "cited_evidence_ids": [
+            "a2_evi_06"
+          ]
+        },
+        {
+          "compartment": "outer cell surface (extracellular face of plasma membrane)",
+          "fraction_estimate": null,
+          "condition": "cancer cells, via autophagolysosomal exocytosis (ALE)",
+          "cited_evidence_ids": [
+            "a2_evi_01",
+            "a2_evi_02",
+            "a2_evi_04",
+            "a2_evi_05"
+          ]
+        },
+        {
+          "compartment": "small extracellular vesicles (sEVs) / secreted",
+          "fraction_estimate": null,
+          "condition": "glioblastoma cells with high invadopodia activity",
+          "cited_evidence_ids": [
+            "a2_evi_12"
+          ]
+        }
+      ],
+      "membrane_subdomains": [
+        {
+          "subdomain": "inner leaflet of plasma membrane (acyl-anchored via myristoylation/palmitoylation)",
+          "cited_evidence_ids": [
+            "a2_evi_06"
+          ]
+        },
+        {
+          "subdomain": "cell periphery / membrane fraction (shear-stress-induced redistribution in osteoblast-like cells)",
+          "cited_evidence_ids": [
+            "a2_evi_07",
+            "a2_evi_08"
+          ]
+        }
+      ]
+    },
+    "anatomical_accessibility": [
+      {
+        "context": "cancer cells (outer plasma membrane surface)",
+        "orientation": "blood_interstitial_facing",
+        "accessibility_implication": "favorable",
+        "rationale": "In cancer, Src is noncanonically translocated via autophagolysosomal exocytosis and topologically inverted onto the outer cell surface (eSrc), making it accessible to systemically delivered antibodies. This surface exposure is cancer-restricted and not seen in normal cells where Src resides on the cytoplasmic inner leaflet.",
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02",
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05"
+        ]
+      },
+      {
+        "context": "normal (non-cancer) cells \u2014 cytoplasmic inner leaflet of plasma membrane",
+        "orientation": "unknown",
+        "accessibility_implication": "restricted",
+        "rationale": "In normal cells, Src is tethered via myristoylation/palmitoylation to the inner leaflet of the plasma membrane with all functional domains facing the cytoplasm. No extracellular domain exists, making Src inaccessible to systemically delivered binders in non-cancer tissue.",
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      }
+    ],
+    "accessibility_modulation": [
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Normal (non-cancer) cells where Src is exclusively anchored via N-myristoylation/palmitoylation to the inner leaflet of the plasma membrane with all functional domains facing the cytoplasm",
+        "modulating_state": "Cancer cells (in vitro cell lines and primary tumor tissue in vivo)",
+        "change": "Src undergoes noncanonical topological inversion and translocation onto the outer cell surface, exposing what is normally a cytoplasmic inner-leaflet kinase as an extracellular membrane-associated protein (eSrc). This occurs in multiple cancer types both in culture and in primary tumors.",
+        "accessibility_implication": "eSrc on the outer surface of cancer cells becomes accessible to antibodies and extracellular binders, enabling antibody-based therapeutic targeting and tumor cell killing. Normal cells lacking eSrc provide a tumor-selective therapeutic window.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_06"
+        ]
+      },
+      {
+        "category": "lysosomal_exocytosis",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Non-cancer cells where autophagolysosomal exocytosis (ALE) is not prominently activated and Src remains intracellular",
+        "modulating_state": "Cancer cell lines with activated autophagolysosomal exocytosis (ALE) pathway",
+        "change": "ALE serves as the secretory mechanism that translocates Src to the outer cell surface in cancer cells, routing the cytoplasmic inner-leaflet kinase through autophagolysosomes that fuse with the plasma membrane and expose Src extracellularly.",
+        "accessibility_implication": "The ALE-dependent surface delivery mechanism means Src outer-surface accessibility is gated by lysosomal fusion activity. Inhibiting ALE could suppress eSrc surface exposure; conversely, enhanced ALE in cancer amplifies the accessible eSrc pool for therapeutic targeting.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_05"
+        ]
+      },
+      {
+        "category": "stress_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "mechanical_stress",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Resting MC3T3-E1 osteoblast-like cells under static culture conditions",
+        "modulating_state": "MC3T3-E1 osteoblast-like cells subjected to fluid shear stress",
+        "change": "Fluid shear stress increases c-Src activation (Tyr416 phosphorylation) and promotes redistribution of RANKL toward the cell periphery and into the membrane fraction, reflecting a mechanical-stress-induced shift in Src activity and membrane-proximal protein organization.",
+        "accessibility_implication": "Mechanical activation of Src in osteoblasts alters the membrane distribution of associated proteins (e.g., RANKL), potentially modulating surface accessibility of Src-regulated targets. Constitutively active Src (Y527F) mimics this effect without shear stress.",
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_08"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "oncogenic_transformation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "Non-malignant cells where Src is not detected in small extracellular vesicles (sEVs)",
+        "modulating_state": "Glioblastoma (GBM) cell lines with high invadopodia activity secreting sEVs",
+        "change": "In aggressive GBM cells with high invadopodia activity, SRC is enriched in the proteome of secreted small extracellular vesicles (sEV Cluster 2), placing Src in the extracellular/secreted compartment alongside invadopodia regulators.",
+        "accessibility_implication": "SRC present in sEVs from invasive GBM cells is extracellularly accessible as a secreted/vesicle-associated form, potentially representing an additional disease-state-specific pool of Src outside the cell that could be detected or targeted in the tumor microenvironment.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_12"
+        ]
+      },
+      {
+        "category": "dual_localization",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": "cytosol",
+        "baseline_context": "Normal cells of any type where Src is canonical: myristoylated/palmitoylated, anchored to the inner leaflet of the plasma membrane with all domains facing the cytoplasm \u2014 no outer-surface exposure",
+        "modulating_state": "Cancer cells where Src is present both as the canonical inner-leaflet cytoplasmic pool and as the eSrc outer-surface pool following ALE-mediated topological inversion",
+        "change": "Cancer cells harbor two Src pools: the canonical cytoplasmic inner-leaflet form and the topologically inverted outer-surface eSrc form. The relative abundance of each pool depends on disease state and ALE activity.",
+        "accessibility_implication": "Only the outer-surface eSrc pool is accessible to extracellular binders. The co-existing cytoplasmic pool is inaccessible without permeabilization. Assays must distinguish these pools; non-permeabilized staining or surface biotinylation specifically interrogates the accessible eSrc fraction.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_04",
+          "a2_evi_06"
+        ]
+      }
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "P12931",
+      "uniprot_acc": "P12931",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "cytoplasmic",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 0,
+      "icd_length_residues": 536,
+      "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z",
+      "full_length_pct_identity_to_canonical": null,
+      "ecd_pct_identity_to_canonical": null,
+      "ecd_pct_similarity_to_canonical": null
+    },
+    "isoform_topologies": [
+      {
+        "isoform_id": "P12931-2",
+        "uniprot_acc": "P12931-2",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 542,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 100.0,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      },
+      {
+        "isoform_id": "P12931-3",
+        "uniprot_acc": "P12931-3",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 553,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 100.0,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      }
+    ],
+    "orthologs": {
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "P05480",
+          "ensembl_id": "ENSMUSG00000027646",
+          "ortholog_uniprot_acc": "P05480",
+          "ortholog_symbol": "Src",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": null,
+          "ecd_pct_similarity_to_human_canonical": null,
+          "full_length_pct_identity_to_human_canonical": 98.8806,
+          "ecd_length_residues": 0,
+          "tm_helix_count": 0,
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-30T15:53:59.006102Z",
+          "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "GLOB",
+          "topology_projection_source": null,
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0
+        }
+      ],
+      "cynomolgus": [
+        {
+          "is_canonical": true,
+          "isoform_id": "A0A7N9CC30",
+          "ensembl_id": "ENSMFAG00000032120",
+          "ortholog_uniprot_acc": "A0A7N9CC30",
+          "ortholog_symbol": "SRC",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": null,
+          "ecd_pct_similarity_to_human_canonical": null,
+          "full_length_pct_identity_to_human_canonical": 92.5373,
+          "ecd_length_residues": 0,
+          "tm_helix_count": 0,
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-30T15:53:59.006022Z",
+          "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "GLOB",
+          "topology_projection_source": null,
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0
+        }
+      ]
+    },
+    "paralogs": [
+      {
+        "paralog_symbol": "YES1",
+        "paralog_uniprot_acc": "P07947",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 75.5597,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "FYN",
+        "paralog_uniprot_acc": "P06241",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 69.0299,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "FGR",
+        "paralog_uniprot_acc": "P09769",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 65.8582,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "HCK",
+        "paralog_uniprot_acc": "P08631",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 53.7313,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BLK",
+        "paralog_uniprot_acc": "P51451",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 52.0522,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "LYN",
+        "paralog_uniprot_acc": "P07948",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 52.0522,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "LCK",
+        "paralog_uniprot_acc": "P06239",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 50.9328,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "FRK",
+        "paralog_uniprot_acc": "P42685",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 44.7761,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "ABL2",
+        "paralog_uniprot_acc": "P42684",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 39.7388,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "ABL1",
+        "paralog_uniprot_acc": "P00519",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 38.6194,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "PTK6",
+        "paralog_uniprot_acc": "Q13882",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 38.2463,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "SRMS",
+        "paralog_uniprot_acc": "Q9H3Y6",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 37.1269,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "TEC",
+        "paralog_uniprot_acc": "P42680",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 34.7015,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "FER",
+        "paralog_uniprot_acc": "P16591",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 33.7687,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BTK",
+        "paralog_uniprot_acc": "Q06187",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 33.209,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "TXK",
+        "paralog_uniprot_acc": "P42681",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 33.209,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "CSK",
+        "paralog_uniprot_acc": "P41240",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 33.209,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "FES",
+        "paralog_uniprot_acc": "P07332",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 32.2761,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "SYK",
+        "paralog_uniprot_acc": "P43405",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 32.0896,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "ITK",
+        "paralog_uniprot_acc": "Q08881",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 31.5299,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "MATK",
+        "paralog_uniprot_acc": "P42679",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 31.1567,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "ZAP70",
+        "paralog_uniprot_acc": "P43403",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 31.1567,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "PTK2",
+        "paralog_uniprot_acc": "Q05397",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 31.1567,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "PTK2B",
+        "paralog_uniprot_acc": "Q14289",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 30.0373,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BMX",
+        "paralog_uniprot_acc": "P51813",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 29.8507,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "JAK3",
+        "paralog_uniprot_acc": "P52333",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 29.4776,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "JAK1",
+        "paralog_uniprot_acc": "P23458",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 29.1045,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "TYK2",
+        "paralog_uniprot_acc": "P29597",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 28.7313,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "JAK2",
+        "paralog_uniprot_acc": "O60674",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 28.3582,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "TNK2",
+        "paralog_uniprot_acc": "Q07912",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 25.1866,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "TNK1",
+        "paralog_uniprot_acc": "Q13470",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 21.6418,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "STYK1",
+        "paralog_uniprot_acc": "Q6J9G0",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 19.0299,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      }
+    ],
+    "structure": {
+      "afdb_id": "AF-P12931-F1",
+      "afdb_version": "v6",
+      "ecd_mean_plddt": 83.44,
+      "ecd_disordered_fraction": 0.194,
+      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "license": "CC BY 4.0",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    },
+    "surface_bind": {
+      "has_data": false,
+      "n_sites": 0,
+      "n_seeds_alpha": 0,
+      "n_seeds_beta": 0,
+      "n_seeds_total": 0,
+      "chain": null,
+      "sites": [],
+      "main_class": null,
+      "sub_class": null,
+      "protein_name": null,
+      "pdbs": [],
+      "source": "SURFACE-Bind v1 (Marchand 2026 PNAS)",
+      "attribution": "\u00a9 Marchand, Khakzad, Correia et al. \u2014 EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [],
+      "evidence_basis": "trafficking",
+      "rationale": "SRC membrane anchoring in the canonical state is entirely myristoylation/palmitoylation-driven; no obligate co-receptor is required for membrane association. The cancer-state eSrc surface exposure is driven by the ALE autophagolysosomal exocytosis pathway intrinsic to cancer cells, not by a partner protein requirement.",
+      "cited_evidence_ids": [
+        "a1_evi_06",
+        "a2_evi_06",
+        "a2_evi_02"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": [
+        "a1_evi_03",
+        "a1_evi_04"
+      ]
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": false,
+      "domain": "unknown",
+      "severity": "low",
+      "evidence_strength": "weak",
+      "rationale": "The eSrc surface form is described as outer plasma membrane exposure broadly across cancer cell lines and primary tumors, with no evidence of restriction to a specific subdomain (apical, junctional, synaptic, etc.). The ALE-mediated exocytosis mechanism does not implicate a specific subdomain. No relevant subdomain-restriction data are present in the ledger.",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a1_evi_04",
+        "a2_evi_01",
+        "a2_evi_03"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "none",
+      "rationale": "SRC has no canonical extracellular domain \u2014 it is an inner-leaflet lipid-anchored kinase. The eSrc cancer-state surface form exposes what is normally the cytoplasmic protein body extracellularly via topological inversion. Antibody engagement targets this inverted cytoplasmic body; the deterministic ECD length is 0.",
+      "cited_evidence_ids": [
+        "a1_evi_06",
+        "a2_evi_06"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "conformational"
+      ],
+      "severity": "moderate",
+      "evidence_strength": "inferred",
+      "rationale": "The eSrc surface form presents what is normally a cytoplasmic kinase domain, SH2, and SH3 on the extracellular face following topological inversion. The accessible epitopes are therefore non-glycosylated intracellular domains now extracellularly exposed. Conformational constraints from the inverted topology and possible membrane proximity effects are anticipated but not directly characterised in the ledger.",
+      "cited_evidence_ids": [
+        "a1_evi_02",
+        "a2_evi_04"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "A 2025/2026 study reports that Src is noncanonically translocated and topologically inverted onto the outer cell surface in cancer cells, both in vitro and in vivo \u2014 a direct surface-expression claim contradicting the canonical inner-leaflet-only model. This is the central finding of the paper and establishes extracellular membrane-associated Src (eSrc) as a bona fide cancer cell surface antigen.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "cancer cell lines (in vitro and in vivo)",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In this work, we found that Src is noncanonically translocated and inverted onto the cell surface in cancer, both in vitro and in vivo.",
+          "quote_sha256": "8ecced1d576775b32639cf9b05d1a6a273196dee8565fb8e4276765d6fc4ae09",
+          "char_offset": 0,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "The 2025/2026 study demonstrates that intracellular N-myristoylated proteins, prototypically Src, can undergo topological inversion onto the outer cell surface in cancer \u2014 meaning the canonical cytoplasmic/inner-leaflet topology is inverted in this cancer-specific context, placing the Src protein body on the extracellular face. This is a topology-inversion claim that qualifies the standard DeepTMHMM/UniProt topology (all cytoplasmic, no ECD) by identifying a cancer-specific exceptional pathway.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "cancer cell lines",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Thus, intracellular <i>N</i>-myristoylated proteins, prototypically Src, can be topologically inverted onto the cell surface in cancer and targeted with antibody therapeutics.",
+          "quote_sha256": "95b227098cedd3dae4f1a8d294c7da95e345512e0485ca49fa3d244f47823416",
+          "char_offset": 136,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "Autophagolysosomal exocytosis (ALE) was identified as the secretory mechanism by which Src reaches the outer cell surface in cancer cell lines. This represents a non-classical (non-ER/Golgi) trafficking route that bypasses the signal-peptide requirement; the ALE pathway is prominent in cancer and delivers Src to the extracellular membrane face. Relevant to risks.shed_form and surface trafficking context.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "cancer cell lines",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "We identified autophagolysosomal exocytosis (ALE) as a secretory mechanism prominent in cancer cell lines.",
+          "quote_sha256": "ae98a12ee983d9ba3ea85ae810856a872f51ca677d235fe76668b79bdcee3020",
+          "char_offset": 312,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "Extracellular membrane-associated Src (eSrc) was detected in primary tumors, and anti-Src antibody-based therapies mediated tumor cell killing in cell culture systems and in mouse xenograft models. This constitutes direct therapeutic engagement evidence: antibody therapeutics targeting the extracellular face of Src on the cancer cell surface demonstrate in vitro and in vivo preclinical proof-of-concept. No sponsor or clinical stage is named in the abstract; described as antibody-based therapy in preclinical (xenograft) models.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "primary tumors and xenograft models",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "xenograft",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Furthermore, this extracellular membrane-associated Src (eSrc) was found in primary tumors, and anti-Src antibody-based therapies mediated tumor cell killing in cell culture systems and in mouse xenograft models.",
+          "quote_sha256": "ea6cf52e7371fc2d02b5d515274a12ea53fc99e375eec34db7190929a16d7c40",
+          "char_offset": 419,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "A companion paper (PMID:41818382) provides a brief title-level assertion that exocytosis exposes Src at the outer surface of cancer cells, poised for therapeutic targeting \u2014 a secondary review-level corroboration of the surface-exposure claim, reinforcing the eSrc concept from a second publication in the same cluster.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "cancer cells",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818382",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818382/",
+            "title": "PMID:41818382",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e87ed1f023882760961a534fc4f04e076b6a774634bce59f46cf6f6ac9f805ab",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Exocytosis exposes Src at the outer surface of cancer cells, poised for therapeutic targeting.",
+          "quote_sha256": "e87ed1f023882760961a534fc4f04e076b6a774634bce59f46cf6f6ac9f805ab",
+          "char_offset": 0,
+          "normalized_source_sha256": "4de210e47b81b7fcc735d961a842f146d73566a6f0d222f14961ce7bb9ffb508"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "SRC-family kinases are canonically tethered via acyl groups (myristoylation/palmitoylation) to the inner leaflet of the plasma membrane, with all functional domains (SH2, SH3, kinase) facing the cytoplasm. This is the standard topology, with no extracellular domain. Directly refutes surface accessibility under canonical conditions.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11399299",
+            "pmc_id": "PMC11399299",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11399299/",
+            "title": "PMC:PMC11399299",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e8506e653500e6e7442d86bede767931f385fbb7674412295198593462901535",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "These motifs are phosphorylated by SRC-family tyrosine kinases, which are tethered via acyl groups to the inner leaflet of the plasma membrane.",
+          "quote_sha256": "e8506e653500e6e7442d86bede767931f385fbb7674412295198593462901535",
+          "char_offset": 0,
+          "normalized_source_sha256": "ee11e5e5d37a905d5f49c1808d636ba856af0eac00fde547c45ee25dee55228b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "SRC kinase was identified in surfaceome cluster 2 from a mass-spectrometry-based cell-surface capture (CSC) study of embryonic chicken limb bud-derived chondrogenic cells. The method used sialoglycoprotein enrichment via aminooxy-biotin conjugation + LC-MS/MS. SRC appears among bona fide cell-surface regulators of chondrocyte biology. However, this is a non-human (chicken/chondrogenic) system, and SRC lacks a signal peptide or glycosylation site that would normally anchor it to the CSC enrichment; its detection may reflect co-purification or unconventional surface presentation.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "embryonic chicken limb bud-derived chondrogenic cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrogenic cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "limb bud cartilage",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "PMC:PMC12777226",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "f9232b089970169afd98fdff3d92c2991af514a31d849c39e0eccaa29be9d2ac",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Surfaceome cluster 2 harbors several cell-surface regulators of chondrocyte biology, including RECK (a membrane-anchored matrix metalloprotease inhibitor [ 45 ]), FGFR2 (fibroblast growth factor receptor 2; regulates chondrocyte proliferation/differentiation signaling [ 46 ]), multiple ephrin receptors (EPHA7, EPHB2, EPHB1, EPHB3 with potential roles in cartilage morphogenesis [ 47 ]), SRC kinase (chondrocyte phenotype control [ 48 ]), and GPC1 (glypical-1",
+          "quote_sha256": "279c3cb667a4b2be967cd4ba907c56c3eacc5d6b3e6e51618a9c4c6b9400e05a",
+          "char_offset": 0,
+          "normalized_source_sha256": "0be2fca345fdd28d5108c6ad26697c2bac21071eb9ff50c0b935b6f0b2aca713"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_08",
+      "claim": "The surfaceome study used sialoglycoprotein enrichment via aminooxy-biotin conjugation combined with high-resolution LC-MS/MS on 3 biological replicates (n=3) across 5 time points of chondrogenic differentiation. Method family: cell-surface glycoprotein capture (CSC-type). Permeabilization: not required by the chemistry (surface glycoproteins targeted). This methods detail anchors the MethodObservation for the SRC surfaceome detection in chondrogenic cells.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "embryonic chicken limb bud-derived chondrogenic cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrogenic cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "PMC:PMC12777226",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "f9232b089970169afd98fdff3d92c2991af514a31d849c39e0eccaa29be9d2ac",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "Temporal proteomic profiling was conducted at days 1, 3, 6, 10, and 15 of micromass culture corresponding to key histodifferentiation stages [ 17 , 18 ], combining sialoglycoprotein enrichment via aminooxy-biotin conjugation with high-resolution LC-MS/MS on 3 biological replicates ( n = 3).",
+          "quote_sha256": "3a978f8e2bedf26f5548d3850b56e0229e7973d37c82b64b3b9f1afa71fe01f4",
+          "char_offset": 461,
+          "normalized_source_sha256": "0be2fca345fdd28d5108c6ad26697c2bac21071eb9ff50c0b935b6f0b2aca713"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_09",
+      "claim": "SRC was identified within a functional surfaceome cluster (alongside ERBB2, CSF1R, PRKCD) in a surfaceome proteomics study. This is a discussion-level mention placing SRC among 'well-known receptor/non-receptor signaling kinases' detected in a surfaceome dataset. The context is a surfaceome study, but SRC is cited as a non-receptor kinase in a signaling cluster \u2014 presence may reflect co-enrichment rather than direct surface glycoprotein capture.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9237123",
+            "pmc_id": "PMC9237123",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9237123/",
+            "title": "PMC:PMC9237123",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e14a31e8c582d871c0753b417c27d9446c7f87267ee7419c84403e44195643d2",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "The ephrin/plexin group was part of a larger functional cluster with roles in chemokine signaling and increased chemotaxis 34 , 35 that included not just well-known receptor/non-receptor signaling kinases (e.g., ERBB2, CSF1R, SRC, PRKCD), but also proteins with functionally diverse activities (i.e., proteins with roles in immune response, cell adhesion cell-ECM binding molecules, and transport).",
+          "quote_sha256": "e14a31e8c582d871c0753b417c27d9446c7f87267ee7419c84403e44195643d2",
+          "char_offset": 0,
+          "normalized_source_sha256": "1a20f43e38796fc43f1dd5a1c80be197c1adf41f921738b1dba65651031c019f"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_10",
+      "claim": "SRC was detected among proteins enriched in secreted extracellular vesicles (sEVs) from high-invadopodia-activity cancer cell lines, alongside CTTN, CFL1, ITGA3, ITGB3 (invadopodia regulators) and MMP2, MMP14, BSG/CD147. This constitutes evidence for a shed/secreted form of SRC in sEVs (exosomal form), representing a non-canonical route of extracellular SRC presence distinct from plasma-membrane surface presentation. Relevant to risks.shed_form.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "high-invadopodia activity cancer cell lines",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer (high invadopodia activity)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10356899",
+            "pmc_id": "PMC10356899",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10356899/",
+            "title": "PMC:PMC10356899",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "d7e88ce2cec778e6caebd3ffcf2df58b7da12e9a28c6b79cbe10d78a7066c1c6",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Furthermore, these high invadopodia activity cell lines secreted sEVs with a greater abundance of proteins involved in the regulation of invadopodia formation (CTTN, CFL1, SRC, ITGA3, ITGB3 \u2013 Cluster 2) and proteolytic activity (MMP2, MMP14, BSG/CD147 \u2013 Cluster 2) (Fig. 3 D).",
+          "quote_sha256": "d7e88ce2cec778e6caebd3ffcf2df58b7da12e9a28c6b79cbe10d78a7066c1c6",
+          "char_offset": 0,
+          "normalized_source_sha256": "aa40f2eeea394a0093cedf5a75b3eaba2cccbd87aacd8fdb3c749ec7298a0ee2"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_11",
+      "claim": "Western blot analyses of total SRC protein and its phosphorylated form (Y416) were performed in HaCaT keratinocyte cells (whole-cell lysate, no membrane fractionation). This is a non-surface whole-cell WB detection of SRC \u2014 provides tissue/cell-line expression evidence without surface-accessibility information. Relevant to non_surface_expression list.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "HaCaT keratinocytes",
+        "permeabilized": true,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "keratinocytes",
+          "cell_line_name": "HaCaT",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC8852774",
+            "pmc_id": "PMC8852774",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8852774/",
+            "title": "PMC:PMC8852774",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "8cf2c74368151d854ec3e06f4385fe1dba9d51969d8f4db3f247e2ebc9694451",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "figure_legend",
+          "figure_or_table_id": null,
+          "quote": "n = 2, representative pictures. b qRT-PCR analyses of CYP1A1 and AKR1C3 in HaCaT-shAHR and HaCaT-EV cells treated with 10 \u03bcM PP2 or 0.1 % DMSO for 24 h. n = 4. *, p \u2264 0.05 compared to EV DMSO, #, p \u2264 0.05 compared to EV B[a]P. c qRT-PCR analyses of CYP1A1 and AKR1C3 in HaCaT-shAHR and HaCaT-EV keratinocytes treated as indicated for 24 h. n = 4\u20137. *, p \u2264 0.05 compared to EV DMSO, #, p \u2264 0.05 compared to EV B[a]P. d NHEKs were treated with 20 ng/ml AREG for 24 h and AKR1C3 transcript level were analyzed by qRT-PCR. e Western blot analyses of SRC and its phosphorylated form (Y416).",
+          "quote_sha256": "8cf2c74368151d854ec3e06f4385fe1dba9d51969d8f4db3f247e2ebc9694451",
+          "char_offset": 0,
+          "normalized_source_sha256": "626eff694c814b618658776c6fd20768377fb9581a278b2d57713e66ef75b364"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_12",
+      "claim": "Anti-SRC antibody identifiers used in a surface biotinylation / WB study: mouse monoclonal anti-SRC (clone 60315-1-lg, Proteintech, catalog 60315-1-lg) and rabbit anti-phospho Y416-SRC (clone D49G4, Cell Signaling Technology, catalog #6943). These antibody identifiers enable downstream AntibodyRef population for MethodObservation.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9659096",
+            "pmc_id": "PMC9659096",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9659096/",
+            "title": "PMC:PMC9659096",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "1b1203fdce9265ecf5c2fb29045397b0e68071e37ce8e5b9be868b0ce063f979",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "mouse monoclonal anti-PCNA (NA03, Merck, Darmstadt, Germany); rabbit anti-GLUT1 (ab652; Abcam, Cambridge, UK); goat anti-GLUT1 (sc-1603; Santa Cruz Biotechnology, Santa Cruz, CA, USA); mouse monoclonal anti-RAC1 (05-389, Millipore, Burlington, MA, USA); mouse monoclonal anti-SRC antibody (60315-1-lg, Proteintech, Rosemont, IL, USA); rabbit anti-phospho Y416-SRC antibody D49G4 (#6943, Cell Signaling, Danvers, MA, USA); mouse monoclonal anti-VAV2 antibody (sc-271442, Santa Cruz Biotechnology, Santa Cruz, CA, USA)",
+          "quote_sha256": "0909a8169d89419c6d1f67f0432e4b6a59bc6c80da2f0d1e65e3fdb02835b428",
+          "char_offset": 0,
+          "normalized_source_sha256": "24b3578f2101558961deaf8749786701f9f19b193f29b928f6ad29d3d24b9cc4"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_13",
+      "claim": "Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, with an increase of RANKL in the membrane fraction by subcellular fractionation in MC3T3-E1 osteoblast-like cells. This evidences c-Src's role in promoting membrane trafficking of RANKL \u2014 c-Src itself remains cytoplasmic/inner-leaflet but acts as a regulator of surface trafficking. No direct surface localization of Src is claimed.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1 osteoblast-like cells",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": "MC3T3-E1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13054614",
+            "pmc_id": "PMC13054614",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/",
+            "title": "PMC:PMC13054614",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e994299b45ca1333ea3cbbf4a0eb1a4dbc637d061d392250dac425506e74ac87",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, accompanied by an increase of RANKL in the membrane fraction.",
+          "quote_sha256": "33360252f7c8009aac9b4777f9a98034ef4dee68a08d7f03ce2590940f19d325",
+          "char_offset": 0,
+          "normalized_source_sha256": "a3501f985df14fc59285740ab86cc236a47606acfa5fd72170c94e4731218fe6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_14",
+      "claim": "Co-expression experiments showed spatial association of RANKL with c-Src at the cell periphery after shear stimulation in MC3T3-E1 cells. c-Src co-localizes with RANKL at the cell periphery \u2014 consistent with c-Src's known inner-leaflet plasma membrane association \u2014 but does not establish extracellular accessibility of Src itself.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1 osteoblast-like cells",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": "MC3T3-E1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13054614",
+            "pmc_id": "PMC13054614",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/",
+            "title": "PMC:PMC13054614",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e994299b45ca1333ea3cbbf4a0eb1a4dbc637d061d392250dac425506e74ac87",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Co-expression experiments showed spatial association of RANKL with c-Src at the cell periphery after shear stimulation.",
+          "quote_sha256": "a49f6b8eae3c26a04343e567f48fec16e4288c4e0a09c45ae066f78ccb0a3fb4",
+          "char_offset": 197,
+          "normalized_source_sha256": "a3501f985df14fc59285740ab86cc236a47606acfa5fd72170c94e4731218fe6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "Src is noncanonically translocated and topologically inverted onto the outer cell surface in cancer, both in cell culture (in vitro) and in primary tumors (in vivo). This represents a disease-state-induced surface exposure of an otherwise cytoplasmic inner-leaflet protein.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cancer cell lines and primary tumor tissue",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "other",
+          "material_kind_other_label": "cancer cell lines and primary tumor tissue",
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In this work, we found that Src is noncanonically translocated and inverted onto the cell surface in cancer, both in vitro and in vivo.",
+          "quote_sha256": "8ecced1d576775b32639cf9b05d1a6a273196dee8565fb8e4276765d6fc4ae09",
+          "char_offset": 0,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_01"
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "Autophagolysosomal exocytosis (ALE) is identified as the secretory mechanism by which Src is translocated to the outer cell surface in cancer cells. This cell-state-induced mechanism (ALE pathway activation) drives Src surface exposure in cancer.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cancer cell lines",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "We identified autophagolysosomal exocytosis (ALE) as a secretory mechanism prominent in cancer cell lines.",
+          "quote_sha256": "ae98a12ee983d9ba3ea85ae810856a872f51ca677d235fe76668b79bdcee3020",
+          "char_offset": 312,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_03"
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "Extracellular membrane-associated Src (eSrc) is found in primary tumors but not (implicitly) in normal tissue. This establishes cancer-restricted anatomical accessibility of Src at the outer cell surface, and demonstrates that anti-Src antibody-based therapies can mediate tumor cell killing.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "primary tumor tissue; mouse xenograft models",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer (primary tumors)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Furthermore, this extracellular membrane-associated Src (eSrc) was found in primary tumors, and anti-Src antibody-based therapies mediated tumor cell killing in cell culture systems and in mouse xenograft models.",
+          "quote_sha256": "ea6cf52e7371fc2d02b5d515274a12ea53fc99e375eec34db7190929a16d7c40",
+          "char_offset": 419,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_04"
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "Intracellular N-myristoylated proteins, with Src as the prototype, can be topologically inverted onto the outer cell surface in cancer. This positions normally cytoplasmic Src as an accessible extracellular surface antigen specifically in cancer cells, enabling antibody-based therapeutic targeting.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cancer cells",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818370",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818370/",
+            "title": "PMID:41818370",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "23522e25ff90c08abb7020bb6342fd599f15c8d8946ca9923052f05e2d1dc878",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Thus, intracellular <i>N</i>-myristoylated proteins, prototypically Src, can be topologically inverted onto the cell surface in cancer and targeted with antibody therapeutics.",
+          "quote_sha256": "95b227098cedd3dae4f1a8d294c7da95e345512e0485ca49fa3d244f47823416",
+          "char_offset": 136,
+          "normalized_source_sha256": "03264896de02dbad390e16da0dbd84da4a4a0dea5cca873f4903ce10585e2dc6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_02"
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "Exocytosis exposes Src at the outer surface of cancer cells, positioning it for therapeutic targeting. This is a cancer-cell-state-dependent surface accessibility event driven by exocytosis, distinct from normal cell biology where Src resides on the cytoplasmic inner leaflet.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cancer cells",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:41818382",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/41818382/",
+            "title": "PMID:41818382",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e87ed1f023882760961a534fc4f04e076b6a774634bce59f46cf6f6ac9f805ab",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Exocytosis exposes Src at the outer surface of cancer cells, poised for therapeutic targeting.",
+          "quote_sha256": "e87ed1f023882760961a534fc4f04e076b6a774634bce59f46cf6f6ac9f805ab",
+          "char_offset": 0,
+          "normalized_source_sha256": "4de210e47b81b7fcc735d961a842f146d73566a6f0d222f14961ce7bb9ffb508"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_05"
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "SRC-family kinases, including SRC itself, are tethered via acyl groups (myristoylation/palmitoylation) to the inner leaflet of the plasma membrane. All functional domains face the cytoplasm; there is no extracellular domain. This places Src at the cytoplasmic face of the plasma membrane in normal (non-cancer) cells.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "T cells (context of discussion)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "T lymphocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11399299",
+            "pmc_id": "PMC11399299",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11399299/",
+            "title": "PMC:PMC11399299",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e8506e653500e6e7442d86bede767931f385fbb7674412295198593462901535",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "These motifs are phosphorylated by SRC-family tyrosine kinases, which are tethered via acyl groups to the inner leaflet of the plasma membrane.",
+          "quote_sha256": "e8506e653500e6e7442d86bede767931f385fbb7674412295198593462901535",
+          "char_offset": 0,
+          "normalized_source_sha256": "ee11e5e5d37a905d5f49c1808d636ba856af0eac00fde547c45ee25dee55228b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_06"
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "In osteoblast-like MC3T3-E1 cells, fluid shear stress increases c-Src activation (Tyr416 phosphorylation) and promotes redistribution of RANKL toward the cell periphery and into the membrane fraction. This demonstrates a mechanical-stress-induced state change in osteoblast-like cells modulating Src activity.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1 osteoblast-like cells",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": "MC3T3-E1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "fluid shear stress-stimulated"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13054614",
+            "pmc_id": "PMC13054614",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/",
+            "title": "PMC:PMC13054614",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e994299b45ca1333ea3cbbf4a0eb1a4dbc637d061d392250dac425506e74ac87",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, accompanied by an increase of RANKL in the membrane fraction.",
+          "quote_sha256": "33360252f7c8009aac9b4777f9a98034ef4dee68a08d7f03ce2590940f19d325",
+          "char_offset": 0,
+          "normalized_source_sha256": "a3501f985df14fc59285740ab86cc236a47606acfa5fd72170c94e4731218fe6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_13"
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "Constitutively active c-Src (Y527F mutant) enhances peripheral/membrane localization of RANKL in osteoblast-like cells even in the absence of shear stress, demonstrating that Src activity state directly modulates membrane-proximal protein distribution in osteoblasts.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "MC3T3-E1 osteoblast-like cells",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "osteoblast-like",
+          "cell_line_name": "MC3T3-E1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "constitutively active Src (Y527F)"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC13054614",
+            "pmc_id": "PMC13054614",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/",
+            "title": "PMC:PMC13054614",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e994299b45ca1333ea3cbbf4a0eb1a4dbc637d061d392250dac425506e74ac87",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Moreover, constitutively active c-Src (Y527F) enhanced peripheral localization of RANKL even in the absence of shear stress.",
+          "quote_sha256": "edb7cf65a38b9679d3cfa2326bc3a4605e9c6d5ff7a7f7be9a64836bbe444e2e",
+          "char_offset": 317,
+          "normalized_source_sha256": "a3501f985df14fc59285740ab86cc236a47606acfa5fd72170c94e4731218fe6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "SRC is a key component of the SRC/RAC1/PAK1/PIP5K/EZRIN pathway that regulates NIS actin-cytoskeleton anchoring and retention at the plasma membrane in thyroid cells. SRC acts as an upstream regulator of PM surface retention for a transmembrane symporter, demonstrating SRC's role in modulating surface protein accessibility in thyroid epithelial cells.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "thyroid epithelial cells",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "thyroid epithelial",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9659096",
+            "pmc_id": "PMC9659096",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9659096/",
+            "title": "PMC:PMC9659096",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "1b1203fdce9265ecf5c2fb29045397b0e68071e37ce8e5b9be868b0ce063f979",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Biochemical and functional analysis allowed us to establish the SRC/RAC1/PAK1/PIP5K/EZRIN pathway as a key regulator of NIS actin-cytoskeleton anchoring and retention at the PM [ 10 ].",
+          "quote_sha256": "86981a211fef7f470c7bfcaf7507613f853e1df6b3a248c8bf7f66df5eaa9fa9",
+          "char_offset": 517,
+          "normalized_source_sha256": "24b3578f2101558961deaf8749786701f9f19b193f29b928f6ad29d3d24b9cc4"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "SRC protein and its activated phospho-form (pSRC Y419) are expressed in nasopharyngeal carcinoma (NPC) cells (HK11.19 line), as shown by western blot. THY1 expression modulates SRC activation state in NPC cells \u2014 THY1 knockdown alters pSRC/SRC ratio, indicating cell-state-dependent SRC activity in NPC.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "HK11.19 nasopharyngeal carcinoma NPC cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "nasopharyngeal carcinoma",
+          "cell_line_name": "HK11.19",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "nasopharyngeal carcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10093038",
+            "pmc_id": "PMC10093038",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10093038/",
+            "title": "PMC:PMC10093038",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "a807516b294453771455c94d4b8e1a9262ff22ea59377df410641c95c7d75987",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "figure_legend",
+          "figure_or_table_id": null,
+          "quote": "Western blot analysis of pSRC (Y419), total SRC, and THY1 in ( A ) THY1-expressing NPC cells and ( B ) THY1-knockdown HK11.19 cells were shown.",
+          "quote_sha256": "a807516b294453771455c94d4b8e1a9262ff22ea59377df410641c95c7d75987",
+          "char_offset": 0,
+          "normalized_source_sha256": "7acf31763fa53163ca2f7249bff09e1d662f46c954c6eb5b854bf2ad5a8591cf"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "SRC kinase is identified as a cell-surface regulator of chondrocyte biology involved in chondrocyte phenotype control, appearing in surfaceome cluster 2 of chondrogenic cells. This places SRC in the surfaceome context of cartilage/chondrocytes, though as an inner-leaflet kinase its surface exposure mechanism requires clarification.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "embryonic chondrogenic cells (chicken limb bud-derived)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "chondrocytes",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "cartilage",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12777226",
+            "pmc_id": "PMC12777226",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/",
+            "title": "PMC:PMC12777226",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "f9232b089970169afd98fdff3d92c2991af514a31d849c39e0eccaa29be9d2ac",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Surfaceome cluster 2 harbors several cell-surface regulators of chondrocyte biology, including RECK (a membrane-anchored matrix metalloprotease inhibitor [ 45 ]), FGFR2 (fibroblast growth factor receptor 2; regulates chondrocyte proliferation/differentiation signaling [ 46 ]), multiple ephrin receptors (EPHA7, EPHB2, EPHB1, EPHB3 with potential roles in cartilage morphogenesis [ 47 ]), SRC kinase (chondrocyte phenotype control [ 48 ]), and GPC1 (glypical-1",
+          "quote_sha256": "279c3cb667a4b2be967cd4ba907c56c3eacc5d6b3e6e51618a9c4c6b9400e05a",
+          "char_offset": 0,
+          "normalized_source_sha256": "0be2fca345fdd28d5108c6ad26697c2bac21071eb9ff50c0b935b6f0b2aca713"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_07"
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "SRC protein is found in small extracellular vesicles (sEVs) secreted by glioblastoma (GBM) cell lines with high invadopodia activity (specifically in Cluster 2 of sEV proteome). This implicates SRC in the extracellular/secreted compartment of aggressive GBM cells.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "glioblastoma (GBM) cell lines with high invadopodia activity",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "glioblastoma",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "glioblastoma (GBM)",
+          "activation_state": "high invadopodia activity"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10356899",
+            "pmc_id": "PMC10356899",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10356899/",
+            "title": "PMC:PMC10356899",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "d7e88ce2cec778e6caebd3ffcf2df58b7da12e9a28c6b79cbe10d78a7066c1c6",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Furthermore, these high invadopodia activity cell lines secreted sEVs with a greater abundance of proteins involved in the regulation of invadopodia formation (CTTN, CFL1, SRC, ITGA3, ITGB3 \u2013 Cluster 2) and proteolytic activity (MMP2, MMP14, BSG/CD147 \u2013 Cluster 2) (Fig. 3 D).",
+          "quote_sha256": "d7e88ce2cec778e6caebd3ffcf2df58b7da12e9a28c6b79cbe10d78a7066c1c6",
+          "char_offset": 0,
+          "normalized_source_sha256": "aa40f2eeea394a0093cedf5a75b3eaba2cccbd87aacd8fdb3c749ec7298a0ee2"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_10"
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "SRC is identified as a non-receptor signaling kinase within a disease-context functional cluster in the cancer surfaceome, co-clustering with receptor tyrosine kinases (ERBB2, CSF1R) in a chemokine signaling/chemotaxis network. This places SRC as part of an altered proteome in cancer with surfaceome-association context.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cancer cell lines (surfaceome proteomics)",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9237123",
+            "pmc_id": "PMC9237123",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9237123/",
+            "title": "PMC:PMC9237123",
+            "retrieved_at": "2026-05-30T15:53:56.791311Z",
+            "content_sha256": "e14a31e8c582d871c0753b417c27d9446c7f87267ee7419c84403e44195643d2",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-30T15:53:56.791311Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "The ephrin/plexin group was part of a larger functional cluster with roles in chemokine signaling and increased chemotaxis 34 , 35 that included not just well-known receptor/non-receptor signaling kinases (e.g., ERBB2, CSF1R, SRC, PRKCD), but also proteins with functionally diverse activities (i.e., proteins with roles in immune response, cell adhesion cell-ECM binding molecules, and transport).",
+          "quote_sha256": "e14a31e8c582d871c0753b417c27d9446c7f87267ee7419c84403e44195643d2",
+          "char_offset": 0,
+          "normalized_source_sha256": "1a20f43e38796fc43f1dd5a1c80be197c1adf41f921738b1dba65651031c019f"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_09"
+    }
+  ],
+  "search_log": [
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Baseline NCBI curated PMID list for SRC to anchor all downstream retrieval."
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Catch verdict-shifting recent papers on SRC surface/outer-leaflet exposure using new vocabulary (topological inversion, autophagolysosomal exocytosis, eSrc, outer-leaflet Src) that method-anchored queries would miss."
+      },
+      "n_results": 15,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Hunt for any flow cytometry evidence of SRC on intact cell surfaces \u2014 the primary direct-method check for outer-leaflet exposure of this inner-leaflet kinase.",
+        "category": "flow_cytometry",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Find non-permeabilized IF or colocalization-to-PM-marker IF papers that could document SRC on the extracellular face.",
+        "category": "if",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for biotin-streptavidin pulldown experiments capturing SRC in the surface fraction \u2014 would be strong evidence against the inner-leaflet-only prior.",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Check glyco-enrichment / cell-surface-capture MS datasets for SRC peptide detection \u2014 would indicate outer-leaflet or luminal exposure.",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Retrieve IHC papers to document membrane vs. cytoplasmic localization in tissue sections; also captures any HPA antibody panel noting membrane staining pattern.",
+        "category": "ihc",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "western_blot_paired",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Find paired surface-fraction + total-lysate blot experiments for SRC \u2014 gold standard for confirming or refuting surface fractionation.",
+        "category": "western_blot_paired",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Capture pharmacology / proximity-labeling / live-cell imaging / eSrc topological inversion papers and any ADC or therapeutic-Ab programs that imply SRC surface accessibility.",
+        "category": "other",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for SRC surface expression or topology papers, including contextual or stress-induced outer-leaflet evidence.",
+        "anchors": [
+          "surface_expression",
+          "topology"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for palmitoylation / myristoylation PTM-gated surface translocation of SRC \u2014 lipid modifications are the key gating mechanism for any outer-leaflet exposure.",
+        "anchors": [
+          "ptm",
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for any shedding or soluble SRC form, or state-induced outer-leaflet translocation via lysosomal/autophagolysosomal exocytosis.",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Targeted search pairing SRC with flow cytometry and surface expression to surface any intact-cell staining experiments.",
+        "anchors": [
+          "flow_cytometry",
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Target surfaceome proteomics and biotinylation studies that may have detected SRC peptides in surface-enriched fractions.",
+        "anchors": [
+          "surface_biotinylation",
+          "mass_spec_surfaceome"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for SRC kinase family topology and structural studies relevant to domain orientation and any published ectodomain or outer-leaflet structural model.",
+        "anchors": [
+          "topology",
+          "structure"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "OE-host search: SRC + HEK293 + surface expression / flow cytometry to find overexpression-based surface accessibility experiments.",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "OE-host search: SRC + HeLa + surface expression / IF to find HeLa-based surface staining experiments for SRC.",
+        "anchors": [
+          "surface_expression",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "OE-host search: SRC + K562 + surface expression to cover hematopoietic-line overexpression surface experiments.",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "OE-host search: SRC + U2OS + surface expression to find live-cell imaging / nonperm-IF surface validation in this adherent line.",
+        "anchors": [
+          "surface_expression",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "SRC family kinase paralog-aware search: cover YES1, FYN, FGR, HCK, BLK family surface-localization papers that may attribute SRC-family findings broadly and require gene-specific disambiguation.",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Primary paper: autophagolysosomal exocytosis inverts Src kinase onto the cell surface in cancer \u2014 key surface-expression claim with mechanistic detail, potential therapeutic targeting implications",
+        "pmid": 41818370
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Extracellular inversion of Src creates a targetable cancer surface antigen \u2014 2026 paper likely the primary evidence for surface-exposed Src ECD in cancer context, critical for contradictory vs supports classification",
+        "pmid": 42095753
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Fluid shear stress activates c-Src and promotes RANKL localization at plasma membrane in osteoblasts \u2014 potential surface-expression evidence for Src at PM under mechanical stimulus",
+        "pmid": 41953895
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Primary paper 'Extracellular Inversion of Src Creates a Targetable Cancer Surface Antigen' (2026) \u2014 direct surface-evidence paper for eSrc, need abstract for method details (flow cytometry, IF, antibody validation)",
+        "pmid": 42095753
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "News & Views 'Extending the reach of a classic oncogene' (2026) \u2014 commentary on eSrc exocytosis paper, may contain methodological summary and contradictory evidence discussion",
+        "pmid": 41818382
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "News item 'Cell surface SRC flags tumours' (2026) \u2014 likely describes surface detection methods and therapeutic context for eSrc",
+        "pmid": 42020552
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Baseline curated PMID list for SRC to anchor all downstream biology-context searches."
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Sweep recent indexed abstracts for SRC with surface/membrane vocabulary \u2014 catches post-2022 inner-leaflet inversion, cancer-state eSrc, or shed-form reports."
+      },
+      "n_results": 15,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "HPA antibody panels + broader IHC literature for SRC tissue distribution across normal and disease contexts; primary source for TissueContext[] rows.",
+        "category": "ihc",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Immunofluorescence localization data for SRC \u2014 inner-leaflet vs perinuclear vs focal-adhesion subdomain assignments; needed for SubcellularLocalization and membrane_subdomains.",
+        "category": "if",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Flow-cytometry papers for SRC \u2014 any sorted-population or cell-type-specific expression data; also catches rare outer-leaflet inversion reports in cancer cells.",
+        "category": "flow_cytometry",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Surfaceome mass-spec panels \u2014 check if SRC peptides appear in any cell-surface biotinylation/capture proteome (would be strong signal for accessibility-modulation block).",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Surface biotinylation studies \u2014 SRC has multiple subcellular locations; any biotinylated surface fraction in cancer or stressed cells would inform dual_localization / accessibility_modulation.",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Catch-all for proximity-labeling (BioID/TurboID at PM inner leaflet), lipid-raft fractionation, palmitoylation-gate experiments, and eSrc topological inversion in cancer literature.",
+        "category": "other",
+        "uniprot_acc": "P12931"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Myristoylation/palmitoylation-gate biology of SRC \u2014 PTM-dependent membrane anchoring, lipid-raft targeting, and any state-dependent topological shift; feeds AccessibilityModulationObservation.",
+        "anchors": [
+          "ptm",
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Tissue-specific and cell-type-specific SRC expression context \u2014 platelets, neurons, osteoclasts (UniProt flags 5-200x enrichment); feeds TissueContext[] and CellTypeContextV1[].",
+        "anchors": [
+          "surface_expression",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "SRC shedding, secreted/extravesicular forms, and post-translational modifications that gate membrane association \u2014 EVs carrying inner-leaflet kinases, ubiquitination-driven internalization.",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Inner-leaflet topology confirmation and any anomalous outer-leaflet or eSrc reports in cancer/stressed cells \u2014 directly informs SubcellularLocalization and AnatomicalAccessibilityObservation.",
+        "anchors": [
+          "topology",
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Key 2026 paper: autophagolysosomal exocytosis inverts Src kinase onto the cell surface in cancer \u2014 direct evidence of non-canonical extracellular SRC exposure, critical for contradictory/surface_expression rows",
+        "pmid": 41818370
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "2026 paper: extracellular inversion of Src creates a targetable cancer surface antigen \u2014 core claim for surface accessibility of SRC in cancer context",
+        "pmid": 42095753
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "2026 paper: fluid shear stress activates c-Src and promotes RANKL localization in plasma membrane in osteoblast-like cells \u2014 cell-state modulation of SRC at PM in osteoblasts",
+        "pmid": 41953895
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Primary research paper on extracellular inversion of Src as a targetable cancer surface antigen \u2014 key paper for eSrc surface expression claim in cancer",
+        "pmid": 42095753
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Commentary on Src exocytosis onto outer cancer cell surface \u2014 may provide tissue/cell-type context for eSrc cancer expression",
+        "pmid": 41818382
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Cell surface SRC flags tumours \u2014 likely provides disease context and cell-type distribution of surface SRC in cancer",
+        "pmid": 42020552
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-30T15:53:59.643050Z",
+      "contributed_evidence_ids": []
+    }
+  ],
+  "evidence_count": 27,
+  "primary_evidence_count": 17,
+  "secondary_evidence_count": 10,
+  "confidence": "moderate",
+  "confidence_reasoning": "Confidence is moderate because the cancer-cell outer-surface SRC story derives from a single recent research cluster \u2014 two 2025 papers (PMID:41818370 and PMID:41818382) that appear to originate from the same group. The canonical SRC topology \u2014 myristoylated, inner-leaflet, no extracellular domain \u2014 is established across decades of independent work (e.g., PMC:PMC11399299). The triage first-pass classified SRC as inner-leaflet-anchored with high confidence, a reasonable call given established biology. Lifting confidence to high would require an independent group to confirm cancer-state outer-leaflet eSrc exposure using orthogonal methodology (e.g., non-permeabilized flow cytometry, surface biotinylation mass spec, or cryo-EM structural evidence of the inverted topology) beyond the antibody-killing xenograft assays reported in PMID:41818370.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-30T15:53:59.643534Z"
+}
