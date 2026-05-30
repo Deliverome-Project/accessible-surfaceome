@@ -504,14 +504,26 @@ async function _loadCatalogImpl(): Promise<Catalog> {
   // (e.g. CTXN1 as of 2026-05; SEA was healed by PR #30). Drop them
   // from the catalog so the visible universe matches `n_with_triage`
   // and the verdict filter doesn't need a "no call" bucket.
-  //
-  // The Worker's `deep_dive` flag is authoritative (computed from
-  // `surface_annotation` presence in D1) — trusted as-is, no local
-  // override, now that deep-dive records live only in D1.
   const inflated = payload.rows
     .map(inflateCatalogRow)
     .filter((r) => Boolean(r.triage_by_model[1]));
-  const rows = enrichRowsWithNames(inflated, names);
+  // Reconcile the per-row `deep_dive` flag against the exact set of genes
+  // `generateStaticParams` will emit pages for — the Worker's `/v1/genes`
+  // list (memoized, so both call sites share one build-cached fetch).
+  // CatalogTable renders a `/[symbol]` link only for `deep_dive` rows, and
+  // under `output: export` a link to a gene without a generated page is a
+  // hard build error ("missing param … in generateStaticParams"). Deriving
+  // both the link set and the page set from `/v1/genes` makes them
+  // consistent by construction, even if `/v1/catalog`'s own `deep_dive`
+  // column momentarily disagrees while D1 is mid-write (e.g. a deep-dive
+  // landing between the two endpoint fetches).
+  const deepDiveGenes = new Set(await listSurfaceomeGenes());
+  const reconciled = inflated.map((r) =>
+    r.deep_dive === deepDiveGenes.has(r.symbol)
+      ? r
+      : { ...r, deep_dive: deepDiveGenes.has(r.symbol) },
+  );
+  const rows = enrichRowsWithNames(reconciled, names);
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,
