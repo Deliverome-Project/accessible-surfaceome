@@ -127,6 +127,24 @@ export function ReasoningDrawer({
       <p className={styles.drawerReasoning}>{linkifyEvidenceRefs(reasoning)}</p>
     ) : null);
 
+  // Collapse an expanded evidence panel when the reader clicks anywhere
+  // inside the reasoning drawer that ISN'T an evidence chip. Evidence-chip
+  // clicks are handled by the page-level EvidenceClickDelegator (it opens /
+  // switches the panel), so we bail early for those and let it through;
+  // every other click — prose, headings, whitespace, the cited-evidence
+  // label — signals "reader moved on", so we fire the global collapse event.
+  const collapseEvidenceOnStrayClick = (e: React.MouseEvent) => {
+    const target = e.target as Element | null;
+    if (
+      target &&
+      typeof target.closest === "function" &&
+      target.closest("[data-evidence-id]")
+    ) {
+      return;
+    }
+    window.dispatchEvent(new CustomEvent("surfaceome:close-evidence"));
+  };
+
   const overlay = (
     <>
       {isOpen ? (
@@ -144,7 +162,7 @@ export function ReasoningDrawer({
         aria-hidden={!isOpen}
         tabIndex={-1}
       >
-        <div className={styles.drawerCard}>
+        <div className={styles.drawerCard} onClick={collapseEvidenceOnStrayClick}>
           <button
             type="button"
             className={styles.drawerCloseBtn}

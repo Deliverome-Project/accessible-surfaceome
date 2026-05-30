@@ -51,13 +51,22 @@ export function EvidenceDrawer({ evidence }: EvidenceDrawerProps) {
       const ev = e as CustomEvent<{ evidenceId: string }>;
       if (ev.detail?.evidenceId) setOpenId(ev.detail.evidenceId);
     }
+    // Explicit collapse signal. Fired by the ReasoningDrawer when the
+    // reader clicks anywhere inside it that *isn't* an evidence chip —
+    // so an expanded evidence panel auto-collapses instead of lingering
+    // over the prose the reader has moved on to.
+    function onCloseEvt() {
+      setOpenId(null);
+    }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpenId(null);
     }
     window.addEventListener("surfaceome:open-evidence", onOpen);
+    window.addEventListener("surfaceome:close-evidence", onCloseEvt);
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("surfaceome:open-evidence", onOpen);
+      window.removeEventListener("surfaceome:close-evidence", onCloseEvt);
       window.removeEventListener("keydown", onKey);
     };
   }, []);
