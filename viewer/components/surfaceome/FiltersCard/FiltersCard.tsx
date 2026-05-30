@@ -266,6 +266,13 @@ const TT_CO_RECEPTOR =
   "partner — bispecific / partner-aware design may be needed), " +
   "unknown (ledger silent on partner interactions).";
 
+const TT_RESTRICTED_SUBDOMAIN =
+  "true = the protein localizes to a restricted membrane microdomain " +
+  "(apical / basolateral / tight-junction / ciliary / synaptic / " +
+  "lipid-raft), so its surface epitope can be spatially sequestered and " +
+  "harder for a systemic binder to reach in vivo. false = no such " +
+  "localization restriction flagged.";
+
 // ---------------------------------------------------------------------------
 
 
@@ -339,7 +346,17 @@ export function FiltersCard({ rec, n }: Props) {
         >
           co-receptor · {prettyEnum(f.co_receptor_dependency)}
         </StatusPill>,
-        riskBoolPill("restricted subdomain", f.has_restricted_subdomain),
+        <StatusPill
+          key="restricted"
+          tone={f.has_restricted_subdomain ? "danger" : "success"}
+          size="sm"
+          title={TT_RESTRICTED_SUBDOMAIN}
+        >
+          <span aria-hidden="true">
+            {f.has_restricted_subdomain ? "✓" : "✗"}
+          </span>{" "}
+          restricted subdomain
+        </StatusPill>,
       ],
     },
     {
@@ -641,18 +658,9 @@ export function FiltersCard({ rec, n }: Props) {
     // group-level summary tip was redundant. Cross-species / Paralogs /
     // Topology / Candidate-sites keep their group tips because those
     // carry cutoff/threshold provenance not repeated on each chip.
-    Risks: {
-      title:
-        "Things that can complicate antibody / binder access to the " +
-        "surface protein. Shed form (proteolytically cleaved soluble " +
-        "fragment in circulation that competes for the binder), " +
-        "secreted form (free-soluble decoy pool), co-receptor " +
-        "dependence (whether surface presentation requires a partner " +
-        "protein), epitope masking (steric or PTM-mediated blockage " +
-        "of likely binding sites on the surface). Each chip has its " +
-        "own tooltip; the §Risks card below shows supporting " +
-        "evidence with severity + evidence-strength.",
-    },
+    // No "Risks" entry — the overarching group InfoTip was dropped per
+    // user feedback; each risk chip carries its own tooltip and the
+    // §Risks card below covers the supporting evidence.
     "Cross-species": {
       title:
         "Mouse + cynomolgus ortholog %ECD identity to the human " +
