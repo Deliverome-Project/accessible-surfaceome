@@ -728,8 +728,12 @@ def _stub_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         retrieved_at=now,
     )
     structure = StructureFeatures(
-        afdb_id=f"AF-{uniprot_acc}-F1-model_v4",
-        afdb_version="v4",
+        # Placeholders track LATEST_KNOWN_AFDB_VERSION (viewer/lib/
+        # structure-viewer-types.ts). Mirror the d1_deterministic
+        # stub so a future v6 → v7 bump only needs a grep for "v6"
+        # to find all the cosmetic defaults.
+        afdb_id=f"AF-{uniprot_acc}-F1-model_v6",
+        afdb_version="v6",
         ecd_mean_plddt=0.0,
         ecd_disordered_fraction=0.0,
         source="AlphaFold DB (STUB — fetchers not yet built)",

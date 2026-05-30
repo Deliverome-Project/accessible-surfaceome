@@ -869,23 +869,24 @@ export function StructureViewer({
           }
         }
       } else {
-        // 1) Prefer the build-time-baked pdbUrl. Falls back to the
-        //    legacy v4 URL if the build script couldn't enrich this
-        //    entry (offline build, AFDB unreachable, etc.).
         // URL resolution strategy:
         //   - Canonical view with a baked `data.pdb_url` → use it
-        //     directly (the build script wrote a version-correct URL).
+        //     directly (the build script wrote a version-correct URL
+        //     via the prediction API at build time).
         //   - Anything else (canonical with no baked URL, or any
         //     non-canonical AFDB variant tab) → resolve via the
         //     prediction API first. Previously this fell back to
-        //     `alphafoldPdbUrl(acc)` (v4 hardcoded) and ate a 404
-        //     before retrying through the prediction API anyway,
-        //     producing the noisy
-        //     `AF-{acc}-F1-model_v4.pdb  404 (Not Found)` console
-        //     entries on every gene whose AFDB model has been bumped
-        //     past v4 (EGFR, GPR75, et al.). Going through the API
-        //     first is one extra ~1 KB cached JSON fetch — cheaper
-        //     than a 404 + retry, and silent.
+        //     `alphafoldPdbUrl(acc)`, which used the helper's
+        //     `version="v4"` default and ate a 404 before retrying
+        //     through the prediction API. The console saw a noisy
+        //     `AF-{acc}-F1-model_v4.pdb 404 (Not Found)` on every
+        //     gene whose AFDB model had been bumped past v4 (EGFR,
+        //     GPR75, …). Prediction-API-first is one extra ~1 KB
+        //     cached JSON fetch — cheaper than a 404 + retry, and
+        //     silent. The helper's default is now pinned to
+        //     LATEST_KNOWN_AFDB_VERSION (v6 as of 2025-08) so even
+        //     the "prediction API down + no baked URL" fallback
+        //     lands on a current-ish file.
         let pdbUrl: string | null = isCanonicalActive
           ? (data.pdb_url ?? null)
           : null;

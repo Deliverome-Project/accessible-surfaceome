@@ -61,7 +61,32 @@ export const TOPOLOGY_COLORS: Record<string, string> = {
  */
 export const MEMBRANE_COLOR = "#A0A4AB";
 
-export function alphafoldPdbUrl(uniprotAcc: string, version = "v4"): string {
+/**
+ * Latest AFDB model version we know about. Bumped manually when
+ * AFDB rolls a new release across the predominant model set (v4 →
+ * v6 in 2025-08; v1–v5 were retired from the file server at that
+ * time, which is why `alphafoldPdbUrl(acc, "v4")` started 404ing).
+ *
+ * Most code paths should NOT consume this directly — they should
+ * resolve the canonical URL through {@link alphafoldPredictionApiUrl}
+ * so the version always matches what AFDB is currently serving.
+ * `LATEST_KNOWN_AFDB_VERSION` is the *fallback* used when the
+ * prediction API itself is unreachable; keep it pinned to the
+ * latest stable so the offline-fallback path lands as close to a
+ * real URL as possible.
+ *
+ * When you bump this past `vN`: also bump the v4 fallbacks in
+ * `src/accessible_surfaceome/agents/surfaceome_v1/_stub_structure`
+ * + `orchestrator.py` (they're cosmetic placeholders but should
+ * track) and re-run `scripts/build_structure_viewer_data.py` to
+ * refresh any baked URLs in `viewer/public/structure-viewer/*.json`.
+ */
+export const LATEST_KNOWN_AFDB_VERSION = "v6";
+
+export function alphafoldPdbUrl(
+  uniprotAcc: string,
+  version: string = LATEST_KNOWN_AFDB_VERSION,
+): string {
   return `https://alphafold.ebi.ac.uk/files/AF-${uniprotAcc}-F1-model_${version}.pdb`;
 }
 
@@ -69,9 +94,8 @@ export function alphafoldPdbUrl(uniprotAcc: string, version = "v4"): string {
  * AFDB serves a single API endpoint per UniProt that returns the
  * current latest model + a ready-to-use ``pdbUrl``. Querying this
  * before fetching the PDB lets the viewer auto-track AFDB version
- * bumps (e.g. O95800 went v4 → v6 in 2025-08; v1–v5 were removed
- * from the file server, so the legacy ``alphafoldPdbUrl(acc, "v4")``
- * 404s).
+ * bumps without us having to keep {@link LATEST_KNOWN_AFDB_VERSION}
+ * in lockstep with every minor release.
  */
 export function alphafoldPredictionApiUrl(uniprotAcc: string): string {
   return `https://alphafold.ebi.ac.uk/api/prediction/${uniprotAcc}`;

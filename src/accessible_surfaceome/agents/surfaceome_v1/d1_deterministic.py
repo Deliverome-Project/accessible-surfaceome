@@ -405,8 +405,13 @@ def _stub_structure(uniprot_acc: str) -> StructureFeatures:
     difference between "we haven't measured it yet" and "we measured zero".
     """
     return StructureFeatures(
-        afdb_id=f"AF-{uniprot_acc}-F1-model_v4",
-        afdb_version="v4",
+        # Placeholders track LATEST_KNOWN_AFDB_VERSION (viewer/lib/
+        # structure-viewer-types.ts). Bumped v4 → v6 in 2025-08 when
+        # v1–v5 retired from the AFDB file server. When the real
+        # fetcher runs these get overwritten; the cosmetic default
+        # just shouldn't lie.
+        afdb_id=f"AF-{uniprot_acc}-F1-model_v6",
+        afdb_version="v6",
         ecd_mean_plddt=0.0,
         ecd_disordered_fraction=0.0,
         source="AlphaFold DB (placeholder — pLDDT fetcher not yet wired)",
