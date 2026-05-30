@@ -520,6 +520,13 @@ interface ViewerInstance {
   resize: () => void;
   render: () => void;
   zoomTo: (sel?: object) => void;
+  /** 3Dmol camera-pose snapshot: a number array encoding
+   *  position + rotation + zoom. Used to seed `setView` on reset so
+   *  the ↺ button returns to the initial pose, not just the initial
+   *  zoom (`zoomTo({})` alone re-frames but leaves any accumulated
+   *  user rotation in place). */
+  getView: () => number[];
+  setView: (view: number[]) => void;
   addStyle?: (sel: object, style: object) => void;
   addLabel?: (text: string, options: object) => unknown;
   removeAllLabels?: () => void;
@@ -549,6 +556,11 @@ export function StructureViewer({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  /** Camera-pose snapshot captured after the first render, refreshed
+   *  on container resize. The reset button restores this pose so a
+   *  rotation-only manipulation also gets undone — previously the
+   *  button called `zoomTo({})` alone, which leaves rotation as-is. */
+  const initialViewRef = useRef<number[] | null>(null);
   const [status, setStatus] = useState<LoadStatus>("loading");
   const [errorMsg, setErrorMsg] = useState<string>("");
   // Default to ``topology`` — the topology-colored cartoon is the
@@ -1009,6 +1021,18 @@ export function StructureViewer({
       viewer.render();
       viewerRef.current = viewer as ViewerInstance;
 
+      // Capture the post-initial-render camera pose so the reset
+      // button can restore both rotation AND zoom (not just zoom).
+      // `zoomTo({})` re-frames on atoms but leaves any user-applied
+      // rotation in place; `setView(initialViewRef.current)` is the
+      // proper "reset everything" hook.
+      try {
+        initialViewRef.current = (viewer as ViewerInstance).getView();
+      } catch {
+        // Older 3Dmol builds may not expose getView; leave initial
+        // view null and the reset button will fall back to zoomTo.
+      }
+
       // Re-fit on container resize. Without this the viewer keeps
       // its initial pixel dimensions on layout shifts (responsive
       // viewport, dev-tools open / close, parent flex re-layout)
@@ -1027,6 +1051,14 @@ export function StructureViewer({
             // every layout shift.
             viewer.zoomTo({});
             viewer.render();
+            // Refresh the stored initial pose for the new viewport
+            // size — otherwise resetting after a resize would
+            // restore a pose framed for the old dimensions.
+            try {
+              initialViewRef.current = (viewer as ViewerInstance).getView();
+            } catch {
+              // ignore (see initial-capture comment above)
+            }
           } catch {
             // 3Dmol throws on race against teardown; ignore.
           }
@@ -1145,22 +1177,32 @@ export function StructureViewer({
         {/* Inlaid reset symbol — small icon button in the canvas's
             bottom-right corner. Always rendered (no status gate) so
             it's visible immediately on SSR and stays visible even if
-            3dmol takes a moment to mount. The onClick handler
-            tries/catches the zoomTo call so a click before 3dmol is
-            ready is a no-op rather than an exception. */}
+            3dmol takes a moment to mount. The onClick handler restores
+            the initial camera pose captured after first render — both
+            rotation AND zoom — so a rotation-only manipulation also
+            undoes. Falls back to `zoomTo({})` if the initial pose
+            wasn't captured (older 3Dmol without getView, or click
+            before mount). Try/catch swallows the race-on-teardown
+            exception 3Dmol can throw. */}
         <button
           type="button"
           className={styles.resetSymbol}
           onClick={() => {
             try {
-              viewerRef.current?.zoomTo({});
-              viewerRef.current?.render();
+              const v = viewerRef.current;
+              if (!v) return;
+              if (initialViewRef.current) {
+                v.setView(initialViewRef.current);
+              } else {
+                v.zoomTo({});
+              }
+              v.render();
             } catch {
               // 3Dmol can throw on race against teardown / not-yet-ready
               // — swallow; next render call will settle.
             }
           }}
-          title="Reset 3D view (re-center + re-zoom)"
+          title="Reset 3D view (re-center, re-zoom, undo rotation)"
           aria-label="Reset 3D view"
         >
           ↺
