@@ -192,6 +192,32 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  experimental_best_structure: (
+    <>
+      The experimental structure shown is the top hit from PDBe&apos;s{" "}
+      <a
+        href="https://www.ebi.ac.uk/pdbe/api/doc/sifts.html"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <code>best_structures</code>
+      </a>{" "}
+      ranking for this protein — deposited PDB entries ordered by how
+      much of the sequence they resolve (coverage), then by resolution.
+      We prefer the human (same-species) entry when one exists and show
+      the highest-ranked hit; the chain and residue range come from the
+      UniProt-to-PDB mapping in SIFTS (Dana et al. 2019,{" "}
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/30445541/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PMID 30445541
+      </a>
+      ).
+    </>
+  ),
+
   antibody_validation_strength: (
     <>
       <strong>LLM-driven.</strong> The deep-dive agent&apos;s call on

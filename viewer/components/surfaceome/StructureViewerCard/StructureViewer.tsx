@@ -388,6 +388,14 @@ function _renderCaption(args: {
           >
             RCSB {v.pdb_id.toUpperCase()} ↗
           </a>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <InfoTip
+            wide
+            align="end"
+            label="How the experimental structure is chosen"
+          >
+            {tooltips.experimental_best_structure}
+          </InfoTip>
         </p>
       </div>
     );

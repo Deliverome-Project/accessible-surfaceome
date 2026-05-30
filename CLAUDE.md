@@ -492,22 +492,33 @@ deploy target, separate domain.
 ### Tooltip / InfoTip citation rule
 
 Any tooltip (InfoTip body text, StatusPill `title=`, etc.) that
-cites a paper **must include both a DOI/PMID identifier AND a
-clickable link to it** — never just an author-year phrase.
+cites a paper **must include a PMID identifier AND a clickable link
+to it** — never just an author-year phrase. **PMID is the default
+identifier**: link to `https://pubmed.ncbi.nlm.nih.gov/{PMID}/`. Add
+a DOI only as a *secondary* identifier when a reader genuinely needs
+the publisher landing page — don't lead with it, and never ship
+DOI-only.
+
 Acceptable patterns:
 
-* `Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/)`
-* `Ramaraj et al. 2012, [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)`
+* `Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/)` — the default shape
+* `Dana et al. 2019, [PMID 30445541](https://pubmed.ncbi.nlm.nih.gov/30445541/)`
+* `Ramaraj et al. 2012, [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)` — DOI optional, appended after the PMID only when it adds something
 * `Bordeaux 2010 / Edfors 2018` — **not acceptable on its own**; reach for the
   PMIDs and link them. If you can't find the exact PMID, search PubMed
   before shipping (the user can't trace the citation otherwise).
 
-Why: tooltips are the only on-page surface where the cutoff /
-threshold provenance lives. A reader who wants to verify the
-threshold must be one click from the primary source — the gene-page
-prose can't carry every citation. The on-page link also serves as a
-durability check: dead DOIs / retracted PMIDs surface as 404s during
-review.
+Why PMID over DOI: the PubMed link doubles as the durability check —
+a dead or retracted citation surfaces as a 404 when you verify it.
+`doi.org` bot-blocks non-browser clients (returns HTTP 403 to
+`curl`), so a DOI link can't be machine-verified during review the
+way a PubMed link can. PMID is also the canonical biomedical
+identifier and always resolves to a single record.
+
+Why tooltips carry citations at all: they're the only on-page surface
+where the cutoff / threshold provenance lives. A reader who wants to
+verify the threshold must be one click from the primary source — the
+gene-page prose can't carry every citation.
 
 The text-bank entry point is `viewer/lib/tooltips.tsx`. Per-component
 TT_* string constants (in `FiltersCard.tsx`, `AccessibilityRisksCard.tsx`,
