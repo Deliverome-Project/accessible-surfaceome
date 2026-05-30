@@ -170,8 +170,8 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
 
       {/* Inline citation chips — click any chip to open the global
        *  EvidenceDrawer with that evidence's full claim + verbatim
-       *  quote + source links. Mirrors the v2 sample's per-block
-       *  citations strip (data/eval/surfaceome_v2_samples). */}
+       *  quote + source links. Mirrors the v2 record's per-block
+       *  citations strip. */}
       <EvidenceChipList
         ids={e.cited_evidence_ids}
         label="Cited evidence"

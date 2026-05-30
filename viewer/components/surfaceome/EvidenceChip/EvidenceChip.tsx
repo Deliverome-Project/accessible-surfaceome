@@ -33,7 +33,7 @@ interface EvidenceChipProps {
  *   • AccessibilityRisksCard — per-risk-item chips
  *   • EvidenceLedgerCard — the id pill itself is a chip
  *
- * Schema-matched to the v2 reference design (data/eval/surfaceome_v2_samples).
+ * Schema-matched to the v2 SurfaceomeRecord reference design.
  */
 export function EvidenceChip({ evidenceId, label, title }: EvidenceChipProps) {
   return (
