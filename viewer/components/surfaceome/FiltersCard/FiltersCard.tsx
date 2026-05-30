@@ -356,16 +356,7 @@ export function FiltersCard({ rec, n }: Props) {
             value={prettyEnum(es.surface_call_reason)}
           />
         </StatusPill>,
-        <StatusPill
-          key="state"
-          tone={stateDependenceTone(es.state_dependence)}
-          size="sm"
-        >
-          <ChipLabelValue
-            label="state-gated"
-            value={prettyEnum(es.state_dependence)}
-          />
-        </StatusPill>,
+        // state_dependence omitted — already a GeneHeader vital up top.
         <StatusPill key="primary" tone="teal" size="sm">
           <ChipLabelValue
             label="primary"

@@ -23,13 +23,6 @@ function implicationTone(v: AccessibilityImplication) {
   return "neutral" as const;
 }
 
-function stateDependenceTone(v: string) {
-  if (v === "low") return "success" as const;
-  if (v === "moderate") return "amber" as const;
-  if (v === "high") return "danger" as const;
-  return "neutral" as const;
-}
-
 export function BiologicalContextCard({ rec, n }: Props) {
   const bc = rec.biological_context;
   const loc = bc.subcellular_localization;
@@ -63,12 +56,8 @@ export function BiologicalContextCard({ rec, n }: Props) {
               value={prettyEnum(es.surface_call_reason)}
             />
           </StatusPill>
-          <StatusPill tone={stateDependenceTone(es.state_dependence)} size="sm">
-            <ChipLabelValue
-              label="state-gated"
-              value={prettyEnum(es.state_dependence)}
-            />
-          </StatusPill>
+          {/* state_dependence intentionally NOT echoed here — it's already
+              a GeneHeader vital up top; repeating it was redundant. */}
           <StatusPill tone="teal" size="sm">
             <ChipLabelValue
               label="primary"
