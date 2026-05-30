@@ -50,6 +50,19 @@ post-translational shifts; developmental gating).
   `other`, `unknown`). MAY be set ONLY when `category` is in
   `{cell_state_induced, stress_induced, activation_induced,
   disease_state_induced, lysosomal_exocytosis}`. Otherwise MUST be `null`.
+  **Set it ONLY when the inducing state genuinely matches one of the
+  listed cell-state mechanisms.** The enum covers cell-state *stressors*
+  (stress / oncogenic / infection / immune / metabolic / mechanical) —
+  it is NOT a disease vocabulary. For a `disease_state_induced` row whose
+  disease is NOT one of those mechanisms — e.g. a genetic, developmental,
+  or neurodegenerative disease such as **Familial Dysautonomia** — leave
+  `cell_state_trigger` `null`; the disease itself belongs in
+  `baseline_context` / `modulating_state` (e.g. baseline "healthy
+  iPSC-derived neurons" → modulating "FD-patient iPSC-derived neurons").
+  **NEVER use `oncogenic_transformation` unless the modulating state is an
+  actual cancer / malignant transformation** — it is not a catch-all for
+  "some disease". When no listed mechanism fits, prefer `null` over a
+  wrong-but-plausible pick (`other`/`unknown` are last resorts).
 - `restricted_lineage` — closed enum (`germline_reproductive`,
   `embryonic_developmental`, `hematopoietic`, `neural`, `epithelial`,
   `endothelial`, `muscle`, `endocrine`, `specialized_somatic_other`,
