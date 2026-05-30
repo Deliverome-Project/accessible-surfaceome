@@ -55,7 +55,7 @@
 .tone_neutral {
   color: var(--ink-soft);
   border-color: var(--line);
-  background: var(--bg-warm);
+  background: transparent;
 }
 
 .tone_maroon {

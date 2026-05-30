@@ -247,10 +247,7 @@ const TT_OE_OBSERVED =
   "experimental precedent).";
 
 const TT_TM_COUNT =
-  "Transmembrane helix count from DeepTMHMM (deterministic). " +
-  "Drives `subcategory` choice: 0 (soluble / inner-leaflet), 1 " +
-  "(single-pass T1 or T2), 7 (GPCR), other counts (multi-pass / " +
-  "transporters / ion channels).";
+  "Transmembrane helix count from DeepTMHMM (deterministic).";
 
 const TT_STATE_DEP =
   "Synthesizer's call: low (constitutive surface presence), moderate " +
@@ -306,6 +303,46 @@ export function FiltersCard({ rec, n }: Props) {
     // `surface_call_reason` / `evidence_density` live in the catalog
     // filters — duplicating them per-gene here was noise.
     {
+      // General descriptive attributes (not risks, not expression
+      // levels): ligand / orphan status, surface-vs-intracellular split,
+      // co-receptor dependence, restricted-subdomain access. Placed
+      // before Expression per user request.
+      label: "Attributes",
+      provenance: "llm",
+      pills: [
+        <StatusPill
+          key="ligand"
+          tone={f.has_known_ligand ? "success" : "danger"}
+          size="sm"
+          title={TT_KNOWN_LIGAND}
+        >
+          <span aria-hidden="true">{f.has_known_ligand ? "✓" : "✗"}</span>{" "}
+          known ligand
+        </StatusPill>,
+        <StatusPill
+          key="spec"
+          tone={surfaceSpecificityTone(f.surface_specificity)}
+          size="sm"
+          title={
+            "Surface-vs-intracellular split. surface_dominant = surface " +
+            "is the primary localization; mixed = ~equal partitioning; " +
+            "mostly_intracellular = surface is the minority pool."
+          }
+        >
+          {prettyEnum(f.surface_specificity)}
+        </StatusPill>,
+        <StatusPill
+          key="coreceptor"
+          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
+          size="sm"
+          title={TT_CORECEPTOR}
+        >
+          co-receptor · {prettyEnum(f.co_receptor_dependency)}
+        </StatusPill>,
+        riskBoolPill("restricted subdomain", f.has_restricted_subdomain),
+      ],
+    },
+    {
       label: "Expression",
       provenance: "llm",
       pills: [
@@ -327,31 +364,6 @@ export function FiltersCard({ rec, n }: Props) {
           }
         >
           breadth · {prettyEnum(f.expression_breadth)}
-        </StatusPill>,
-        <StatusPill
-          key="spec"
-          tone={surfaceSpecificityTone(f.surface_specificity)}
-          size="sm"
-          title={
-            "Surface-vs-intracellular split. surface_dominant = surface " +
-            "is the primary localization; mixed = ~equal partitioning; " +
-            "mostly_intracellular = surface is the minority pool."
-          }
-        >
-          {prettyEnum(f.surface_specificity)}
-        </StatusPill>,
-        // Orphan-receptor status — replaces the dropped
-        // `HeadlineRisk.ligand_unknown` value.
-        <StatusPill
-          key="ligand"
-          tone={f.has_known_ligand ? "success" : "danger"}
-          size="sm"
-          title={TT_KNOWN_LIGAND}
-        >
-          <span aria-hidden="true">
-            {f.has_known_ligand ? "✓" : "✗"}
-          </span>{" "}
-          known ligand
         </StatusPill>,
         // Overexpression-with-surface-readout precedent — derived
         // from method observations. Lets a reader filter for "OE
@@ -391,19 +403,7 @@ export function FiltersCard({ rec, n }: Props) {
           </span>{" "}
           low endogenous expression
         </StatusPill>,
-        // co_receptor_dependency (4-value enum: required / modulatory /
-        // none / unknown). Definition shows on hover via the title
-        // tooltip — matching the other chips, no inline info icon.
-        <StatusPill
-          key="coreceptor"
-          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
-          size="sm"
-          title={TT_CORECEPTOR}
-        >
-          co-receptor · {prettyEnum(f.co_receptor_dependency)}
-        </StatusPill>,
         riskBoolPill("epitope masking", f.has_epitope_masking),
-        riskBoolPill("restricted subdomain", f.has_restricted_subdomain),
       ],
     },
     {
@@ -428,16 +428,7 @@ export function FiltersCard({ rec, n }: Props) {
         // they compete with the canonical surface form for binder
         // occupancy. Surfaces the §02 Surface-Bind / §04 Isoforms
         // detail at-a-glance.
-        <StatusPill
-          key="iso-count"
-          tone="neutral"
-          size="sm"
-          title={
-            "Total isoforms with topology models (canonical + alternate " +
-            "isoforms emitted by the DeepTMHMM build). Higher count = " +
-            "more isoform variety to validate antibodies against."
-          }
-        >
+        <StatusPill key="iso-count" tone="neutral" size="sm">
           {isoformTotal} isoform{isoformTotal === 1 ? "" : "s"}
         </StatusPill>,
         isoforms.length > 0 ? (
