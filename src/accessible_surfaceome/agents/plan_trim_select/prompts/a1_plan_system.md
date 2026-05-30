@@ -262,6 +262,24 @@ insect, Jurkat, or a tissue-matched primary / immortalized line are
 all valid OE hosts. So add a **host-agnostic OE query** first, then
 one query per high-yield host:
 
+**What qualifies as OE-CELL-surface evidence** (this is the readout the
+`overexpression_surface_localization_observed` flag is derived from, so
+retrieve it on purpose): surface localization detected on INTACT
+transfected / OE cells — live-cell or non-permeabilized **flow
+cytometry**, non-perm **IF**, or **antibody / ligand binding to
+transfected cells** (e.g. cetuximab or EGF binding to EGFR-transfected
+CHO / HEK by flow). For well-studied receptors this is abundant and is
+the canonical OE-surface demonstration — DON'T conclude it's absent just
+because endogenous evidence dominates. It does **NOT** include in-vitro
+assays on recombinant protein — SPR / BLI / surface-plasmon-resonance,
+ECD immobilization on a chip, or a bare plasmid / construct description:
+those match the word "surface" but are biochemistry, not cell-surface
+localization, and must not be retrieved or kept as OE-surface evidence.
+So always add a dedicated `topic_search`: gene symbol AND (`transfected
+cells` OR `stable cell line` OR `ectopic expression`) AND (`flow
+cytometry` OR `cell surface staining` OR `antibody binding` OR `ligand
+binding`). Then the host-specific queries:
+
 * **Host-agnostic OE** — gene symbol AND a generic OE term
   (`overexpression`, `ectopic expression`, `transient transfection`,
   `stable cell line`, `transfected`) AND a surface keyword (`cell

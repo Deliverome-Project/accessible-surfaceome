@@ -262,7 +262,19 @@ clip that shows surface localization in a transfected / OE host (a
 readout in an overexpression or mixed expression system). It carries
 a signal the endogenous clip does NOT: that the protein *can* reach
 the surface when overexpressed — the precedent a reader needs when
-planning an OE-based validation experiment. Downstream this is the
+planning an OE-based validation experiment.
+
+The qualifying clip must be a **cell-surface** readout on INTACT
+transfected / OE cells — live-cell or non-perm flow cytometry, non-perm
+IF, or antibody / ligand binding to transfected cells (e.g. cetuximab or
+EGF binding to EGFR-transfected CHO/HEK by flow). A bare plasmid /
+construct description, or an in-vitro assay on recombinant protein
+(SPR / BLI / surface-plasmon-resonance / ECD immobilization on a chip),
+does **NOT** qualify — it matches "surface" but is biochemistry, not
+cell-surface localization, so don't retain it as THE OE-surface clip. For
+an abundantly-studied receptor (EGFR, etc.) the cell-surface OE clip
+almost always exists in the pool (transfected-cell flow with a blocking
+antibody is the canonical assay); keep it. Downstream this is the
 only input to the catalog's `overexpression_surface_localization_observed`
 filter, which is derived purely from whether any RETAINED method pairs
 an OE / mixed expression system with a surface readout; if you prune
