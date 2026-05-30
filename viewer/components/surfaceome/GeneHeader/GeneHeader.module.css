@@ -87,6 +87,27 @@
   font-size: clamp(2.4rem, 5.5vw, 3.8rem);
 }
 
+/* Descriptive gene name, inline on the symbol's baseline. Small +
+   italic + muted so the symbol stays the page identity; resets the
+   h-gene weight / tracking / case it would otherwise inherit. */
+.geneFullName {
+  margin-left: 0.55rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: var(--fw-regular);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--muted);
+  white-space: normal;
+}
+
+/* Previous / alternate symbols, small line under the gene name. */
+.synonyms {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
 /* .geneName + .geneSynonyms were the descriptive HGNC name + alias
    list under the h1 gene symbol. Removed per user feedback — the
    symbol IS the page identity; the long descriptor was visual noise

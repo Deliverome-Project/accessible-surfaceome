@@ -373,14 +373,20 @@ export function GeneHeader({
     <header className={styles.header}>
       <div className={styles.headerGrid}>
         <div className={styles.headerText}>
-          <h1 className={`h-gene ${styles.symbol}`}>{g.hgnc_symbol}</h1>
-          {/* The descriptive HGNC name ("epidermal growth factor
-              receptor") was removed from the header per user feedback —
-              the gene symbol IS the page identity; the long name added
-              visual weight without telling the target-discovery reader
-              anything they didn't already know. Synonyms came off the
-              same line; if a reader needs them they're available via
-              the JSON / Markdown crumbs and in the per-gene record. */}
+          {/* Gene symbol + the descriptive name inline (small italics)
+              on the same baseline, with previous synonyms on a small
+              line below. */}
+          <h1 className={`h-gene ${styles.symbol}`}>
+            {g.hgnc_symbol}
+            {geneName?.name ? (
+              <span className={styles.geneFullName}>{geneName.name}</span>
+            ) : null}
+          </h1>
+          {geneName?.synonyms && geneName.synonyms.length > 0 ? (
+            <p className={styles.synonyms}>
+              Synonyms: {geneName.synonyms.slice(0, 3).join(", ")}
+            </p>
+          ) : null}
 
           {/* IDs row — small, immediately under the descriptive gene
               name. Was previously placed below the exec lede + headline
