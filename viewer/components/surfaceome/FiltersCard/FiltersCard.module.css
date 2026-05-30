@@ -99,12 +99,13 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  /* One chip per row — a vertical stack under each group label reads
-     cleaner than horizontally-wrapped chips (which left ragged, uneven
-     rows inside the narrow group columns). */
+  /* Packed wrapping rows: chips flow left-to-right and wrap to a new
+     line only when the row fills. A one-chip-per-row stack left every
+     short chip alone on a full-width row with empty trailing space — far
+     less compact. The per-chip max-width + text-wrap below still keep any
+     single long chip from overflowing its column. */
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }
 
