@@ -615,7 +615,21 @@ function _renderCaption(args: {
       .includes("placeholder");
     const wholeProtein = !placeholder
       && canonicalStruct.source.toLowerCase().includes("whole-protein");
-    versionLabel = canonicalStruct.afdb_version;
+    // Version label: prefer the LIVE AFDB latestVersion (fetched by the
+    // effect below, keyed on the canonical acc) over the baked
+    // `afdb_version`. The baked field freezes at build time, so a gene
+    // whose AFDB model was bumped after its last annotate run shows a
+    // stale version (e.g. EGFR P00533 baked "v4" while AFDB now serves
+    // v6 — which is also what the model fetch resolves to). Falling back
+    // to the baked value keeps a sensible label if the live fetch is
+    // still loading or errored. Mirrors the variant branch (which has
+    // always read `meta.latestVersion`).
+    const canonMeta = afdbMetaByAcc[accFull];
+    versionLabel =
+      canonMeta && canonMeta !== "loading" && canonMeta !== "error"
+        && canonMeta.latestVersion
+        ? `v${canonMeta.latestVersion}`
+        : canonicalStruct.afdb_version;
     if (placeholder) {
       plddtNode = <StatusPill tone="neutral" size="sm">pending</StatusPill>;
     } else {
@@ -1029,9 +1043,25 @@ export function StructureViewer({
   // (``acc in afdbMetaByAcc``) is just a fast-path; if it's wrong, the
   // worst case is one extra fetch that's deduped by HTTP cache anyway.
   useEffect(() => {
-    if (!activeVariant || activeVariant.source !== "afdb") return;
-    const acc = activeVariant.uniprot_acc_full ?? activeVariant.uniprot_acc;
-    if (acc in afdbMetaByAcc) return;
+    // Resolve which AFDB accession needs metadata:
+    //   - no variant active  → the canonical UniProt (so the canonical
+    //     caption can show the LIVE latestVersion instead of the stale
+    //     baked `afdb_version`);
+    //   - an AFDB variant tab → that variant's (isoform-suffixed) acc;
+    //   - the experimental tab → none (RCSB has no AFDB metadata).
+    let accCandidate: string | null;
+    if (!activeVariant) {
+      accCandidate = data.uniprot_acc;
+    } else if (activeVariant.source === "afdb") {
+      accCandidate =
+        activeVariant.uniprot_acc_full ?? activeVariant.uniprot_acc;
+    } else {
+      return;
+    }
+    if (!accCandidate || accCandidate in afdbMetaByAcc) return;
+    // const so the narrowed-to-string value is captured by the async
+    // closure below (a `let` would widen back to `string | null` there).
+    const acc = accCandidate;
     let cancelled = false;
     setAfdbMetaByAcc((prev) => ({ ...prev, [acc]: "loading" }));
     (async () => {
@@ -1073,7 +1103,7 @@ export function StructureViewer({
     })();
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeVariant]);
+  }, [activeVariant, data.uniprot_acc]);
 
   const renderViewer = useCallback(async () => {
     if (!containerRef.current) return;
