@@ -201,13 +201,21 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "coreceptor",
       label: "Co-receptor dependency",
       rationale: nz(ar.co_receptor_requirements.rationale),
+      // Read the dependency from its canonical home in the deep block.
+      // `filters.co_receptor_dependency` is only a mirror of it (and is
+      // absent on records emitted before that mirror field was added —
+      // e.g. the 2026-05-16 demo records — which rendered the chip value
+      // as a bare em-dash). The deep-block field is always present.
       pill: (
         <StatusPill
-          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
+          tone={coReceptorDependencyTone(
+            ar.co_receptor_requirements.surface_expression_dependency,
+          )}
           size="sm"
           title={TT_CORECEPTOR}
         >
-          co-receptor · {prettyEnum(f.co_receptor_dependency)}
+          co-receptor ·{" "}
+          {prettyEnum(ar.co_receptor_requirements.surface_expression_dependency)}
         </StatusPill>
       ),
     },
