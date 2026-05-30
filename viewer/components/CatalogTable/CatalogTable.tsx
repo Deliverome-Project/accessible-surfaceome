@@ -848,24 +848,26 @@ export function CatalogTable({
              *  Triage group per user feedback: DB votes are neither
              *  triage nor deep-dive output, they're an upstream
              *  signal that both pipelines consume. */}
-            <button
-              type="button"
-              className={styles.groupHeader}
-              onClick={() => setDatabasesGroupOpen((v) => !v)}
-              aria-expanded={databasesGroupOpen}
-              aria-controls="catalog-filter-group-databases"
-            >
-              <span className={styles.groupHeaderChevron} aria-hidden="true">
-                {databasesGroupOpen ? "▾" : "▸"}
-              </span>
-              Databases
-              {!databasesGroupOpen && dbFilter.size > 0 ? (
-                <span className={styles.chipCount}>{dbFilter.size}</span>
-              ) : null}
+            <div className={styles.groupHeaderRow}>
+              <button
+                type="button"
+                className={styles.groupHeader}
+                onClick={() => setDatabasesGroupOpen((v) => !v)}
+                aria-expanded={databasesGroupOpen}
+                aria-controls="catalog-filter-group-databases"
+              >
+                <span className={styles.groupHeaderChevron} aria-hidden="true">
+                  {databasesGroupOpen ? "▾" : "▸"}
+                </span>
+                Databases
+                {!databasesGroupOpen && dbFilter.size > 0 ? (
+                  <span className={styles.chipCount}>{dbFilter.size}</span>
+                ) : null}
+              </button>
               <InfoTip label="About the Databases filter group" wide>
                 {tooltips.catalog_databases_group}
               </InfoTip>
-            </button>
+            </div>
             {databasesGroupOpen ? (
               <div
                 id="catalog-filter-group-databases"
@@ -900,32 +902,34 @@ export function CatalogTable({
 
           {/* === Triage group ===================================== */}
           <div className={styles.filterGroup}>
-            <button
-              type="button"
-              className={styles.groupHeader}
-              onClick={() => setTriageGroupOpen((v) => !v)}
-              aria-expanded={triageGroupOpen}
-              aria-controls="catalog-filter-group-triage"
-            >
-              <span className={styles.groupHeaderChevron} aria-hidden="true">
-                {triageGroupOpen ? "▾" : "▸"}
-              </span>
-              Triage
-              {!triageGroupOpen &&
-              verdictFilter.size +
-                reasonFilter.size +
-                (deepDiveFilter !== null ? 1 : 0) >
-                0 ? (
-                <span className={styles.chipCount}>
-                  {verdictFilter.size +
-                    reasonFilter.size +
-                    (deepDiveFilter !== null ? 1 : 0)}
+            <div className={styles.groupHeaderRow}>
+              <button
+                type="button"
+                className={styles.groupHeader}
+                onClick={() => setTriageGroupOpen((v) => !v)}
+                aria-expanded={triageGroupOpen}
+                aria-controls="catalog-filter-group-triage"
+              >
+                <span className={styles.groupHeaderChevron} aria-hidden="true">
+                  {triageGroupOpen ? "▾" : "▸"}
                 </span>
-              ) : null}
+                Triage
+                {!triageGroupOpen &&
+                verdictFilter.size +
+                  reasonFilter.size +
+                  (deepDiveFilter !== null ? 1 : 0) >
+                  0 ? (
+                  <span className={styles.chipCount}>
+                    {verdictFilter.size +
+                      reasonFilter.size +
+                      (deepDiveFilter !== null ? 1 : 0)}
+                  </span>
+                ) : null}
+              </button>
               <InfoTip label="About the Triage filter group" wide>
                 {tooltips.catalog_triage_group}
               </InfoTip>
-            </button>
+            </div>
             {triageGroupOpen ? (
               <div
                 id="catalog-filter-group-triage"
@@ -1083,24 +1087,26 @@ export function CatalogTable({
            *  SURFACE-Bind patch radio absorbed here per user
            *  feedback (was previously a 4th top-level group). */}
           <div className={styles.filterGroup}>
-            <button
-              type="button"
-              className={styles.groupHeader}
-              onClick={() => setDeepDiveGroupOpen((v) => !v)}
-              aria-expanded={deepDiveGroupOpen}
-              aria-controls="catalog-filter-group-deep-dive"
-            >
-              <span className={styles.groupHeaderChevron} aria-hidden="true">
-                {deepDiveGroupOpen ? "▾" : "▸"}
-              </span>
-              Deep Dive
-              {!deepDiveGroupOpen && ddActiveCount > 0 ? (
-                <span className={styles.chipCount}>{ddActiveCount}</span>
-              ) : null}
+            <div className={styles.groupHeaderRow}>
+              <button
+                type="button"
+                className={styles.groupHeader}
+                onClick={() => setDeepDiveGroupOpen((v) => !v)}
+                aria-expanded={deepDiveGroupOpen}
+                aria-controls="catalog-filter-group-deep-dive"
+              >
+                <span className={styles.groupHeaderChevron} aria-hidden="true">
+                  {deepDiveGroupOpen ? "▾" : "▸"}
+                </span>
+                Deep Dive
+                {!deepDiveGroupOpen && ddActiveCount > 0 ? (
+                  <span className={styles.chipCount}>{ddActiveCount}</span>
+                ) : null}
+              </button>
               <InfoTip label="About the Deep Dive filter group" wide>
                 {tooltips.catalog_deep_dive_group}
               </InfoTip>
-            </button>
+            </div>
             {deepDiveGroupOpen ? (
               <div
                 id="catalog-filter-group-deep-dive"
@@ -1116,20 +1122,22 @@ export function CatalogTable({
 
                 {/* ── Surface call subsection (LLM rollups, minus
                  *  risks) — independently collapsible. ──────────── */}
-                <button
-                  type="button"
-                  className={styles.subheadButton}
-                  onClick={() => setDdLlmOpen((v) => !v)}
-                  aria-expanded={ddLlmOpen}
-                >
-                  <span className={styles.groupHeaderChevron} aria-hidden="true">
-                    {ddLlmOpen ? "▾" : "▸"}
-                  </span>
-                  Surface call
+                <div className={styles.subheadButtonRow}>
+                  <button
+                    type="button"
+                    className={styles.subheadButton}
+                    onClick={() => setDdLlmOpen((v) => !v)}
+                    aria-expanded={ddLlmOpen}
+                  >
+                    <span className={styles.groupHeaderChevron} aria-hidden="true">
+                      {ddLlmOpen ? "▾" : "▸"}
+                    </span>
+                    Surface call
+                  </button>
                   <InfoTip wide label="About surface-call deep-dive filters">
                     {tooltips.catalog_deep_dive_llm_subhead}
                   </InfoTip>
-                </button>
+                </div>
                 {ddLlmOpen ? (
                   <div className={styles.subgroupBody}>
                     {DD_ENUM_FIELDS.filter(
@@ -1144,20 +1152,22 @@ export function CatalogTable({
                 {/* ── Risks subsection — accessibility risks tagged
                  *  isRisk in lib/deep-dive-fields.ts (orthogonal to
                  *  provenance). Independently collapsible. ───────── */}
-                <button
-                  type="button"
-                  className={styles.subheadButton}
-                  onClick={() => setDdRisksOpen((v) => !v)}
-                  aria-expanded={ddRisksOpen}
-                >
-                  <span className={styles.groupHeaderChevron} aria-hidden="true">
-                    {ddRisksOpen ? "▾" : "▸"}
-                  </span>
-                  Risks
+                <div className={styles.subheadButtonRow}>
+                  <button
+                    type="button"
+                    className={styles.subheadButton}
+                    onClick={() => setDdRisksOpen((v) => !v)}
+                    aria-expanded={ddRisksOpen}
+                  >
+                    <span className={styles.groupHeaderChevron} aria-hidden="true">
+                      {ddRisksOpen ? "▾" : "▸"}
+                    </span>
+                    Risks
+                  </button>
                   <InfoTip wide label="About risk filters">
                     {tooltips.catalog_deep_dive_risks_subhead}
                   </InfoTip>
-                </button>
+                </div>
                 {ddRisksOpen ? (
                   <div className={styles.subgroupBody}>
                     {DD_ENUM_FIELDS.filter((f) => f.isRisk).map(renderDdEnumRow)}
@@ -1167,23 +1177,25 @@ export function CatalogTable({
 
                 {/* ── Deterministic subsection — tool readouts +
                  *  SURFACE-Bind radio. Independently collapsible. ── */}
-                <button
-                  type="button"
-                  className={styles.subheadButton}
-                  onClick={() => setDdDetOpen((v) => !v)}
-                  aria-expanded={ddDetOpen}
-                >
-                  <span className={styles.groupHeaderChevron} aria-hidden="true">
-                    {ddDetOpen ? "▾" : "▸"}
-                  </span>
-                  Deterministic
+                <div className={styles.subheadButtonRow}>
+                  <button
+                    type="button"
+                    className={styles.subheadButton}
+                    onClick={() => setDdDetOpen((v) => !v)}
+                    aria-expanded={ddDetOpen}
+                  >
+                    <span className={styles.groupHeaderChevron} aria-hidden="true">
+                      {ddDetOpen ? "▾" : "▸"}
+                    </span>
+                    Deterministic
+                  </button>
                   <InfoTip
                     wide
                     label="About deterministic-tool deep-dive filters"
                   >
                     {tooltips.catalog_deep_dive_deterministic_subhead}
                   </InfoTip>
-                </button>
+                </div>
                 {ddDetOpen ? (
                   <div className={styles.subgroupBody}>
                     {/* SURFACE-Bind patch radio FIRST — moved here from

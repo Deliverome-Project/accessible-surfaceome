@@ -387,6 +387,21 @@
   padding-top: 0;
 }
 
+/* Row wrapper for `.groupHeader` + its sibling InfoTip. Pulling the
+ * InfoTip's <button> trigger out of the group-header <button> fixes
+ * the "<button> cannot be a descendant of <button>" hydration error
+ * (invalid HTML; React 19 surfaces it as a runtime warning). The
+ * row sits where the .groupHeader used to (align-self: flex-start
+ * keeps it content-width inside the column-flex .filterGroup), and
+ * its gap controls the spacing between the toggle button and the
+ * (i) glyph. */
+.groupHeaderRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+}
+
 .groupHeader {
   display: inline-flex;
   align-items: center;
@@ -402,7 +417,6 @@
   border: 0;
   cursor: pointer;
   text-align: left;
-  align-self: flex-start;
 }
 
 .groupHeader:hover,
@@ -456,12 +470,31 @@
  * is independently expandable. Mirrors .subhead's typography + dashed
  * top divider; the first-of-type rule drops the divider for the first
  * subsection inside the group body. */
-.subheadButton {
+/* Row wrapper for `.subheadButton` + its sibling InfoTip — same
+ * "pull <button> out of <button>" fix as `.groupHeaderRow` above,
+ * applied to the Deep Dive subsection toggles (Surface call /
+ * Risks / Deterministic). The dashed top divider + vertical spacing
+ * that used to live on `.subheadButton` lift here so the rule still
+ * spans the full panel width (the button itself shrinks to content). */
+.subheadButtonRow {
   width: 100%;
   margin: var(--space-3) 0 var(--space-2);
   padding: var(--space-2) 0 0;
-  border: 0;
   border-top: 1px dashed var(--line-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.subheadButtonRow:first-of-type {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 0;
+}
+
+.subheadButton {
+  margin: 0;
+  padding: 0;
+  border: 0;
   background: transparent;
   font-family: var(--font-sans);
   font-size: 0.7rem;
@@ -469,16 +502,11 @@
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   cursor: pointer;
   text-align: left;
-}
-.subheadButton:first-of-type {
-  border-top: none;
-  padding-top: 0;
-  margin-top: 0;
 }
 .subheadButton:hover,
 .subheadButton:focus-visible {
