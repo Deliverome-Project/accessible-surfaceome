@@ -29,10 +29,8 @@ import type {
   EcdAccessibilityClass,
   EvidenceDensity,
   EvidenceGrade,
-  ExecutiveSummary,
   ExpressionBreadth,
   ExpressionLevel,
-  Filters,
   ProteinFamily,
   StateDependence,
   Subcategory,
@@ -716,54 +714,15 @@ async function _fetchTriageReasoningFromWorker(
  * triage drawer would otherwise self-hide. Sourcing from the same place
  * keeps both surfaces in sync without re-publishing the record.
  */
-/**
- * Compatibility shim for the ``protein_family`` → ``llm_family`` rename
- * plus the new deterministic family tags. The live Worker / D1 mirror
- * still serves the PRE-rename record shape — ``executive_summary``
- * carries ``protein_family`` (not ``llm_family``), ``filters`` carries
- * ``protein_family``, and neither ``hgnc_gene_groups`` nor
- * ``uniprot_family`` exist. Until D1 is republished with the new schema,
- * map the old shape onto the current fields at the load boundary so every
- * downstream consumer (GeneHeader's Family chip, FiltersCard,
- * ExecutiveSummaryCard) reads a record that matches the live
- * ``SurfaceomeRecord`` interface instead of rendering a blank "—".
- *
- * Idempotent: records that already carry the new fields (the committed
- * ``public/data/surfaceome/*.json`` fs snapshots) pass through unchanged
- * because every ``??`` left-hand side is already populated.
- */
-function _normalizeRecord(rec: SurfaceomeRecord): SurfaceomeRecord {
-  const es = rec.executive_summary as ExecutiveSummary & {
-    protein_family?: ProteinFamily;
-  };
-  const f = rec.filters as Filters & { protein_family?: ProteinFamily };
-  const llm = es.llm_family ?? es.protein_family ?? "miscellaneous";
-  return {
-    ...rec,
-    executive_summary: {
-      ...es,
-      llm_family: llm,
-      hgnc_gene_groups: es.hgnc_gene_groups ?? [],
-      uniprot_family: es.uniprot_family ?? null,
-    },
-    filters: {
-      ...f,
-      llm_family: f.llm_family ?? f.protein_family ?? llm,
-    },
-  };
-}
-
 export async function loadSurfaceomeRecord(
   symbol: string,
 ): Promise<SurfaceomeRecord | null> {
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
   if (base === "local" || !base) {
-    const fsRec = _loadRecordFromFs(symbol);
-    return fsRec ? _normalizeRecord(fsRec) : fsRec;
+    return _loadRecordFromFs(symbol);
   }
-  const raw =
+  const record =
     (await _fetchRecordFromWorker(symbol, base)) ?? _loadRecordFromFs(symbol);
-  const record = raw ? _normalizeRecord(raw) : raw;
   if (record && !record.triage_reasoning?.trim()) {
     const reasoning = await _fetchTriageReasoningFromWorker(symbol, base);
     if (reasoning) return { ...record, triage_reasoning: reasoning };
