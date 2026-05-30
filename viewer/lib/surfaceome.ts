@@ -108,7 +108,7 @@ export interface DeepDiveFilters {
   state_dependence: StateDependence;
   surface_call_reason: TriageReason;
   subcategory: Subcategory;
-  protein_family: ProteinFamily;
+  llm_family: ProteinFamily;
   evidence_grade: EvidenceGrade;
   evidence_density: EvidenceDensity;
   ecd_accessibility_class: EcdAccessibilityClass;

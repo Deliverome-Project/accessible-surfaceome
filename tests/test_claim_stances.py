@@ -243,7 +243,7 @@ def _exec() -> ExecutiveSummary:
         confidence="moderate",
         state_dependence="high",
         subcategory="other",
-        protein_family="enzyme",
+        llm_family="enzyme",
         surface_call_reason="lysosomal_exocytosis",
         headline_risks=[],
         cited_evidence_ids=[],

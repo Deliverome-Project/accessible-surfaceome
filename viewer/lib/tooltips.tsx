@@ -470,10 +470,10 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
-  catalog_protein_family: (
+  catalog_llm_family: (
     <>
-      Functional family — aligned with SURFACE-Bind&apos;s four classes
-      (Balbi et al. 2026,{" "}
+      Functional family — the model&apos;s high-level call, aligned with
+      SURFACE-Bind&apos;s four classes (Balbi et al. 2026,{" "}
       <a
         href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
         target="_blank"
@@ -501,19 +501,19 @@ export const tooltips: Record<string, ReactNode> = {
       ECD-size bands from antibody-antigen interface measurements
       (Ramaraj et al.&nbsp;2012,{" "}
       <a
-        href="https://doi.org/10.1016/j.bbapap.2012.07.005"
+        href="https://doi.org/10.1016/j.bbapap.2011.12.007"
         target="_blank"
         rel="noopener noreferrer"
       >
-        doi:10.1016/j.bbapap.2012.07.005
+        doi:10.1016/j.bbapap.2011.12.007
       </a>
       , PMID&nbsp;
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/22796141/"
+        href="https://pubmed.ncbi.nlm.nih.gov/22246133/"
         target="_blank"
         rel="noopener noreferrer"
       >
-        22796141
+        22246133
       </a>
       ; average conformational epitope = 12 ± 3 residues, 1103 ± 244 Å²
       buried). <em>large</em> ≥ 200 residues; <em>moderate</em> 60–199;{" "}

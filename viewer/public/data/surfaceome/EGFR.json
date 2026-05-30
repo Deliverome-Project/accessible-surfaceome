@@ -41,7 +41,7 @@
       "a2_evi_14",
       "a2_evi_20"
     ],
-    "protein_family": "receptor"
+    "llm_family": "receptor"
   },
   "filters": {
     "surface_accessibility": "high",
@@ -63,7 +63,7 @@
     "cyno_ortholog_ecd_pct_identity": 97.58454106280193,
     "n_term_extracellular": true,
     "c_term_extracellular": false,
-    "protein_family": "receptor"
+    "llm_family": "receptor"
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

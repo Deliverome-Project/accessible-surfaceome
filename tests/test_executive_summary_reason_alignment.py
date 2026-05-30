@@ -45,7 +45,7 @@ def _es(**overrides: Any) -> ExecutiveSummary:
         confidence="high",
         state_dependence="low",
         subcategory="single_pass_T1",
-        protein_family="receptor",
+        llm_family="receptor",
         surface_call_reason="classical_surface_receptor",
         headline_risks=[],
         cited_evidence_ids=[],

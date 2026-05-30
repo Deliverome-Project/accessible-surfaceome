@@ -1414,7 +1414,12 @@ class ExecutiveSummary(BaseModel):
     # transporters, ion channels, aquaporins, pumps. ``miscellaneous``
     # = adhesion / junction / tetraspanin / scaffold / structural /
     # chaperone proteins that don't fit the first three.
-    protein_family: ProteinFamily = "miscellaneous"
+    #
+    # Named ``llm_family`` to make explicit that this is the model's
+    # high-level functional call — distinct from the deterministic,
+    # curator-assigned ``hgnc_gene_groups`` / ``uniprot_family`` tags
+    # that the orchestrator injects alongside it.
+    llm_family: ProteinFamily = "miscellaneous"
     # The synthesizer's re-derived reason for its surface call. Reuses
     # the TriageReason enum so the catalog can filter by the same
     # vocabulary regardless of which agent emitted the reason. The
@@ -1552,10 +1557,10 @@ class Filters(BaseModel):
     # the synth weighs A1+A2 evidence and re-emits, so the rolled-up
     # value is the deep-dive's verdict, not the triage's echo.
     surface_call_reason: TriageReason
-    # Mirror of ``executive_summary.protein_family``. Rolled up by
+    # Mirror of ``executive_summary.llm_family``. Rolled up by
     # the orchestrator so the catalog can filter by functional family
     # (SURFACE-Bind axis) at the top level alongside architecture.
-    protein_family: ProteinFamily = "miscellaneous"
+    llm_family: ProteinFamily = "miscellaneous"
     evidence_grade: EvidenceGrade
     ecd_accessibility_class: ECDAccessibilityClass
     evidence_density: EvidenceDensity
@@ -2255,7 +2260,7 @@ class SurfaceBindFeatures(BaseModel):
     # scored sites in the authoritative results_no_TM.csv).
     sites: list[SurfaceBindSite] = Field(default_factory=list)
     # SURFACE-Bind's own family / sub-family classification — useful
-    # as a cross-check against our ``protein_family`` / ``subcategory``
+    # as a cross-check against our ``llm_family`` / ``subcategory``
     # but NOT what those fields are derived from.
     main_class: str | None = None
     sub_class: str | None = None

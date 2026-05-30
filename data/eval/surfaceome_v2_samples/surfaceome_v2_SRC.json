@@ -30,7 +30,7 @@
       "a2_evi_04",
       "a2_evi_05"
     ],
-    "protein_family": "enzyme"
+    "llm_family": "enzyme"
   },
   "filters": {
     "surface_accessibility": "moderate",
@@ -54,7 +54,7 @@
     "c_term_extracellular": false,
     "low_endogenous_expression": false,
     "has_known_ligand": true,
-    "protein_family": "enzyme"
+    "llm_family": "enzyme"
   },
   "surface_evidence": {
     "evidence_grade": "conflicting",

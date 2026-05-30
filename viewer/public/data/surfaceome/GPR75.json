@@ -27,7 +27,7 @@
       "a2_evi_13",
       "a2_evi_14"
     ],
-    "protein_family": "receptor"
+    "llm_family": "receptor"
   },
   "filters": {
     "surface_accessibility": "moderate",
@@ -51,7 +51,7 @@
     "c_term_extracellular": false,
     "low_endogenous_expression": false,
     "has_known_ligand": false,
-    "protein_family": "receptor"
+    "llm_family": "receptor"
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",

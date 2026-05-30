@@ -33,7 +33,7 @@
       "a2_evi_03",
       "a2_evi_04"
     ],
-    "protein_family": "enzyme"
+    "llm_family": "enzyme"
   },
   "filters": {
     "surface_accessibility": "moderate",
@@ -55,7 +55,7 @@
     "cyno_ortholog_ecd_pct_identity": null,
     "n_term_extracellular": false,
     "c_term_extracellular": false,
-    "protein_family": "enzyme"
+    "llm_family": "enzyme"
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

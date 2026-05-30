@@ -28,7 +28,7 @@
       "a2_evi_06",
       "a2_evi_09"
     ],
-    "protein_family": "miscellaneous"
+    "llm_family": "miscellaneous"
   },
   "filters": {
     "surface_accessibility": "low",
@@ -50,7 +50,7 @@
     "cyno_ortholog_ecd_pct_identity": null,
     "n_term_extracellular": false,
     "c_term_extracellular": false,
-    "protein_family": "miscellaneous"
+    "llm_family": "miscellaneous"
   },
   "surface_evidence": {
     "evidence_grade": "weak",

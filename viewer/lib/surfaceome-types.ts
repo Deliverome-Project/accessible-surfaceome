@@ -197,10 +197,12 @@ export interface ExecutiveSummary {
   state_dependence: StateDependence;
   /** Architecture axis (how the protein sits in the membrane). */
   subcategory: Subcategory;
-  /** Function axis (SURFACE-Bind alignment). Orthogonal to
-   *  ``subcategory``. Defaults to ``"miscellaneous"`` for back-compat
-   *  with samples generated before the redesign. */
-  protein_family: ProteinFamily;
+  /** Function axis (SURFACE-Bind alignment), the model's high-level call.
+   *  Orthogonal to ``subcategory``. Named ``llm_family`` to distinguish it
+   *  from the deterministic ``hgnc_gene_groups`` / ``uniprot_family`` tags.
+   *  Defaults to ``"miscellaneous"`` for back-compat with samples generated
+   *  before the redesign. */
+  llm_family: ProteinFamily;
   /** Synthesizer's re-derived reason for the surface call. Reuses
    *  the ``TriageReason`` enum so the catalog can filter by the same
    *  vocabulary regardless of which agent emitted the reason. The
@@ -221,8 +223,8 @@ export interface Filters {
   state_dependence: StateDependence;
   /** Mirror of ``executive_summary.surface_call_reason``. */
   surface_call_reason: TriageReason;
-  /** Functional family rolled up from ``executive_summary.protein_family``. */
-  protein_family: ProteinFamily;
+  /** Functional family rolled up from ``executive_summary.llm_family``. */
+  llm_family: ProteinFamily;
   evidence_grade: EvidenceGrade;
   ecd_accessibility_class: EcdAccessibilityClass;
   evidence_density: EvidenceDensity;
@@ -441,7 +443,7 @@ export interface SurfaceBindFeatures {
    *  threshold. */
   sites: SurfaceBindSite[];
   /** SURFACE-Bind's own family / sub-family — cross-check against our
-   *  ``protein_family`` / ``subcategory``, NOT what they're derived from. */
+   *  ``llm_family`` / ``subcategory``, NOT what they're derived from. */
   main_class: string | null;
   sub_class: string | null;
   /** Human-readable protein name from UniProt via SURFACE-Bind's join. */

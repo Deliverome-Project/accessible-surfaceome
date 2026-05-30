@@ -34,7 +34,7 @@
       "a2_evi_10",
       "a2_evi_17"
     ],
-    "protein_family": "miscellaneous"
+    "llm_family": "miscellaneous"
   },
   "filters": {
     "surface_accessibility": "high",
@@ -58,7 +58,7 @@
     "c_term_extracellular": false,
     "low_endogenous_expression": false,
     "has_known_ligand": true,
-    "protein_family": "miscellaneous"
+    "llm_family": "miscellaneous"
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

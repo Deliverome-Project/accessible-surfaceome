@@ -531,7 +531,7 @@ export function GeneHeader({
                             Family
                           </span>
                           <span className={styles.archFamilyChipValue}>
-                            {prettyEnum(exec.protein_family)}
+                            {prettyEnum(exec.llm_family)}
                           </span>
                           <InfoTip>{tooltips.family_chip}</InfoTip>
                         </span>

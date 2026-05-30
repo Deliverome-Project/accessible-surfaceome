@@ -25,7 +25,7 @@ export type DdEnumKey =
   | "state_dependence"
   | "surface_call_reason"
   | "subcategory"
-  | "protein_family"
+  | "llm_family"
   | "evidence_grade"
   | "evidence_density"
   | "ecd_accessibility_class"
@@ -198,10 +198,10 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
   },
   {
-    key: "protein_family",
-    label: "Family",
+    key: "llm_family",
+    label: "Family (LLM)",
     values: ["receptor", "enzyme", "transporter", "miscellaneous"],
-    tooltipKey: "catalog_protein_family",
+    tooltipKey: "catalog_llm_family",
     provenance: "llm",
   },
   {

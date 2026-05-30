@@ -105,7 +105,7 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
         <span className={`label-mono ${styles.metaLabel}`}>Architecture</span>
         <span className={styles.metaValue}>{prettyEnum(e.subcategory)}</span>
         <span className={`label-mono ${styles.metaLabel}`}>Family</span>
-        <span className={styles.metaValue}>{prettyEnum(e.protein_family)}</span>
+        <span className={styles.metaValue}>{prettyEnum(e.llm_family)}</span>
       </p>
 
       {/* Confidence rationale — collapsible expander beneath the

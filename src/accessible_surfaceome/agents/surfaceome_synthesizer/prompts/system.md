@@ -383,7 +383,7 @@ The `surface_accessibility` enum has five values: `high`, `moderate`,
 * Don't pick `"no"` just because the evidence is weak; that's what
   `confidence="low"` + `evidence_grade="weak"` are for.
 
-## Subcategory + protein_family (two-axis taxonomy)
+## Subcategory + llm_family (two-axis taxonomy)
 
 The schema splits taxonomy into two orthogonal axes, aligned with
 SURFACE-Bind (Marchand et al. 2026 PNAS,
@@ -408,8 +408,11 @@ membrane. Closed enum:
   (HSPA5, SRC, VIM); inner-leaflet lipid-anchored; or genuinely-
   uncategorized topology.
 
-**`protein_family`** = **function** — what the protein does. Mirrors
-SURFACE-Bind's four main classes:
+**`llm_family`** = **function** — what the protein does, your high-level
+call. Mirrors SURFACE-Bind's four main classes. (The orchestrator
+separately attaches deterministic, curator-assigned family tags —
+`hgnc_gene_groups` and `uniprot_family` — alongside this; you do not emit
+those.) Closed enum:
 * `receptor` — signaling receptors (GPCRs / RTKs / cytokine
   receptors / integrins / immunoreceptors / NHRs). EGFR, GPR75,
   IFNAR2, CD3 family, FGFR2.
@@ -430,13 +433,13 @@ SURFACE-Bind's four main classes:
   above fit cleanly.
 
 A given gene carries one value from EACH axis. **EGFR**:
-`subcategory=single_pass_T1, protein_family=receptor`. **GPR75**:
-`subcategory=GPCR, protein_family=receptor`. **CD26/DPP4**:
-`subcategory=single_pass_T2, protein_family=enzyme`. **CD81**:
-`subcategory=tetraspanin, protein_family=miscellaneous`. **SLC2A1**:
-`subcategory=multi_pass, protein_family=transporter`. **HSPA5**:
-`subcategory=other, protein_family=miscellaneous`. **SRC**:
-`subcategory=other, protein_family=enzyme` (kinase by identity).
+`subcategory=single_pass_T1, llm_family=receptor`. **GPR75**:
+`subcategory=GPCR, llm_family=receptor`. **CD26/DPP4**:
+`subcategory=single_pass_T2, llm_family=enzyme`. **CD81**:
+`subcategory=tetraspanin, llm_family=miscellaneous`. **SLC2A1**:
+`subcategory=multi_pass, llm_family=transporter`. **HSPA5**:
+`subcategory=other, llm_family=miscellaneous`. **SRC**:
+`subcategory=other, llm_family=enzyme` (kinase by identity).
 
 ## Has-known-ligand flag
 

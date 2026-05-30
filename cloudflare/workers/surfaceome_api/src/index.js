@@ -204,7 +204,7 @@ const DDF_KEYS = [
   "state_dependence",
   "surface_call_reason",
   "subcategory",
-  "protein_family",
+  "llm_family",
   "evidence_grade",
   "evidence_density",
   "ecd_accessibility_class",

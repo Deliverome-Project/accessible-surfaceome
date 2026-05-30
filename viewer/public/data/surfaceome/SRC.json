@@ -16,7 +16,7 @@
     "confidence": "moderate",
     "state_dependence": "high",
     "subcategory": "other",
-    "protein_family": "enzyme",
+    "llm_family": "enzyme",
     "surface_call_reason": "lysosomal_exocytosis",
     "headline_risks": [
       "secreted_form"
@@ -42,7 +42,7 @@
     "subcategory": "other",
     "state_dependence": "high",
     "surface_call_reason": "lysosomal_exocytosis",
-    "protein_family": "enzyme",
+    "llm_family": "enzyme",
     "evidence_grade": "conflicting",
     "ecd_accessibility_class": "none",
     "evidence_density": "moderate",
