@@ -39,7 +39,15 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  return (await listSurfaceomeGenes()).map((symbol) => ({ symbol }));
+  const genes = await listSurfaceomeGenes();
+  // `output: export` requires a dynamic route to enumerate at least one
+  // param at build time. In the offline stub build (SURFACEOME_API_BASE=
+  // local) the Worker-backed gene list is empty, so emit a single sentinel
+  // route to keep the exporter happy; GenePage renders its not-found
+  // boundary for it. Production builds hit the live Worker, get a non-empty
+  // list, and never take this branch.
+  if (genes.length === 0) return [{ symbol: "__offline_stub__" }];
+  return genes.map((symbol) => ({ symbol }));
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
