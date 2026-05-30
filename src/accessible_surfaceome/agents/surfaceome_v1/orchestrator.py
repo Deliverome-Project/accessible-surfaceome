@@ -464,6 +464,25 @@ def _load_triage_signal(symbol: str) -> TriageSignal:
     return _TRIAGE_VERDICT_TO_SIGNAL.get(record.verdict, "unknown")
 
 
+def _triage_signal_and_reasoning_from_record(
+    record: TriageRecord | None,
+) -> tuple[TriageSignal, str | None]:
+    """Derive the ``triage_signal`` enum and verdict prose from an
+    already-loaded ``TriageRecord``.
+
+    Mirrors :func:`_load_triage_signal` but operates on a record the
+    caller already fetched, so the deep-dive orchestrator can carry the
+    triage's "why" onto the ``SurfaceomeRecord`` without a second D1
+    round-trip. The signal is the verdict-derived enum; the reasoning is
+    the triage agent's ``verdict_reasoning`` prose. Returns
+    ``("unknown", None)`` when no triage exists.
+    """
+    if record is None:
+        return "unknown", None
+    signal = _TRIAGE_VERDICT_TO_SIGNAL.get(record.verdict, "unknown")
+    return signal, record.verdict_reasoning
+
+
 def _load_triage_record(symbol: str) -> TriageRecord | None:
     """Return the full persisted ``TriageRecord`` (verdict +
     verdict_reasoning + reason taxonomy + key_uncertainty + confidence),
