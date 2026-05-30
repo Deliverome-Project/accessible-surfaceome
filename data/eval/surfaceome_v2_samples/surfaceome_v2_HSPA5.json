@@ -34,7 +34,11 @@
       "a2_evi_12",
       "a2_evi_16"
     ],
-    "llm_family": "miscellaneous"
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "Heat shock 70kDa proteins"
+    ],
+    "uniprot_family": "heat shock protein 70 family"
   },
   "filters": {
     "surface_accessibility": "moderate",

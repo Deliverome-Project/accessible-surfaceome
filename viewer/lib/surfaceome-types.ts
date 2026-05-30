@@ -203,6 +203,15 @@ export interface ExecutiveSummary {
    *  Defaults to ``"miscellaneous"`` for back-compat with samples generated
    *  before the redesign. */
   llm_family: ProteinFamily;
+  /** Deterministic, curator-assigned family tags attached by the
+   *  orchestrator from the resolved ``IdentifierBundle`` — NOT model
+   *  output. ``hgnc_gene_groups`` is HGNC's ``gene_group`` list;
+   *  ``uniprot_family`` is the parsed UniProt SIMILARITY family. They
+   *  sit beside ``llm_family`` so the reader can cross-check the
+   *  model's high-level call against registry / curator ground truth.
+   *  Both may be empty / null for genes the registries don't classify. */
+  hgnc_gene_groups: string[];
+  uniprot_family: string | null;
   /** Synthesizer's re-derived reason for the surface call. Reuses
    *  the ``TriageReason`` enum so the catalog can filter by the same
    *  vocabulary regardless of which agent emitted the reason. The

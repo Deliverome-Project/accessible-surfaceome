@@ -30,7 +30,12 @@
       "a2_evi_04",
       "a2_evi_05"
     ],
-    "llm_family": "enzyme"
+    "llm_family": "enzyme",
+    "hgnc_gene_groups": [
+      "SH2 domain containing",
+      "Src family tyrosine kinases"
+    ],
+    "uniprot_family": "protein kinase superfamily. Tyr protein kinase family. SRC subfamily"
   },
   "filters": {
     "surface_accessibility": "moderate",

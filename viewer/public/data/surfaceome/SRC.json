@@ -17,6 +17,11 @@
     "state_dependence": "high",
     "subcategory": "other",
     "llm_family": "enzyme",
+    "hgnc_gene_groups": [
+      "SH2 domain containing",
+      "Src family tyrosine kinases"
+    ],
+    "uniprot_family": "protein kinase superfamily. Tyr protein kinase family. SRC subfamily",
     "surface_call_reason": "lysosomal_exocytosis",
     "headline_risks": [
       "secreted_form"

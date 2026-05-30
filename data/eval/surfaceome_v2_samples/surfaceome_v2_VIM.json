@@ -29,7 +29,11 @@
       "a2_evi_06",
       "a2_evi_07"
     ],
-    "llm_family": "miscellaneous"
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "Intermediate filaments Type III"
+    ],
+    "uniprot_family": "intermediate filament family"
   },
   "filters": {
     "surface_accessibility": "moderate",

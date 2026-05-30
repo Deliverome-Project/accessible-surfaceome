@@ -33,7 +33,13 @@
       "a2_evi_03",
       "a2_evi_04"
     ],
-    "llm_family": "enzyme"
+    "llm_family": "enzyme",
+    "hgnc_gene_groups": [
+      "Mitochondrial complex V: ATP synthase subunits",
+      "Small nucleolar RNA protein coding host genes",
+      "ATPase F1/V1 alpha/A and beta/B subunit family"
+    ],
+    "uniprot_family": "ATPase alpha/beta chains family"
   },
   "filters": {
     "surface_accessibility": "moderate",

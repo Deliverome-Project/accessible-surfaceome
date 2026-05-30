@@ -1420,6 +1420,18 @@ class ExecutiveSummary(BaseModel):
     # curator-assigned ``hgnc_gene_groups`` / ``uniprot_family`` tags
     # that the orchestrator injects alongside it.
     llm_family: ProteinFamily = "miscellaneous"
+    # Deterministic, curator-assigned family tags injected by the
+    # orchestrator from the resolved ``IdentifierBundle`` (NOT emitted by
+    # the synthesizer). They sit beside ``llm_family`` so the reader can
+    # cross-check the model's high-level call against registry/curator
+    # ground truth. ``hgnc_gene_groups`` = HGNC gene-group lineage
+    # (e.g. ["G protein-coupled receptors, Class A orphans"]);
+    # ``uniprot_family`` = UniProt SIMILARITY family with the "Belongs to
+    # the " boilerplate stripped (e.g. "G-protein coupled receptor 1
+    # family"). Both default empty/None for back-compat with records
+    # generated before the injection landed.
+    hgnc_gene_groups: list[str] = Field(default_factory=list)
+    uniprot_family: str | None = None
     # The synthesizer's re-derived reason for its surface call. Reuses
     # the TriageReason enum so the catalog can filter by the same
     # vocabulary regardless of which agent emitted the reason. The

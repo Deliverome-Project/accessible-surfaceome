@@ -28,7 +28,11 @@
       "a2_evi_06",
       "a2_evi_09"
     ],
-    "llm_family": "miscellaneous"
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "Zinc fingers C2H2-type"
+    ],
+    "uniprot_family": "EGR C2H2-type zinc-finger protein family"
   },
   "filters": {
     "surface_accessibility": "low",

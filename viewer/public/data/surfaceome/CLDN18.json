@@ -37,7 +37,11 @@
       "a2_evi_09",
       "a2_evi_28"
     ],
-    "llm_family": "miscellaneous"
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "Claudins"
+    ],
+    "uniprot_family": "claudin family"
   },
   "filters": {
     "surface_accessibility": "high",

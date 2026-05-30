@@ -104,9 +104,37 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
       <p className={styles.meta}>
         <span className={`label-mono ${styles.metaLabel}`}>Architecture</span>
         <span className={styles.metaValue}>{prettyEnum(e.subcategory)}</span>
-        <span className={`label-mono ${styles.metaLabel}`}>Family</span>
+        <span className={`label-mono ${styles.metaLabel}`}>Family (LLM)</span>
         <span className={styles.metaValue}>{prettyEnum(e.llm_family)}</span>
       </p>
+
+      {/* Deterministic registry family tags — curator-assigned, attached
+       *  by the orchestrator from the resolved IdentifierBundle (NOT
+       *  model output). Shown beside the LLM's Family call so the reader
+       *  can cross-check the model's high-level functional call against
+       *  HGNC / UniProt ground truth. Each line renders only when the
+       *  registry actually classifies the gene (empty list / null is
+       *  common and is simply omitted rather than shown blank). */}
+      {e.hgnc_gene_groups.length > 0 || e.uniprot_family ? (
+        <p className={styles.meta}>
+          {e.hgnc_gene_groups.length > 0 ? (
+            <>
+              <span className={`label-mono ${styles.metaLabel}`}>HGNC group</span>
+              <span className={styles.metaValue}>
+                {e.hgnc_gene_groups.join(" · ")}
+              </span>
+            </>
+          ) : null}
+          {e.uniprot_family ? (
+            <>
+              <span className={`label-mono ${styles.metaLabel}`}>
+                UniProt family
+              </span>
+              <span className={styles.metaValue}>{e.uniprot_family}</span>
+            </>
+          ) : null}
+        </p>
+      ) : null}
 
       {/* Confidence rationale — collapsible expander beneath the
        *  confidence chip. The synth prompt produces this prose only

@@ -28,7 +28,11 @@
       "a2_evi_11",
       "a2_evi_23"
     ],
-    "llm_family": "receptor"
+    "llm_family": "receptor",
+    "hgnc_gene_groups": [
+      "G protein-coupled receptors, Class A orphans"
+    ],
+    "uniprot_family": "G-protein coupled receptor 1 family"
   },
   "filters": {
     "surface_accessibility": "moderate",

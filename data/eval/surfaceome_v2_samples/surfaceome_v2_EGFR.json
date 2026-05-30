@@ -40,7 +40,11 @@
       "a2_evi_14",
       "a2_evi_20"
     ],
-    "llm_family": "receptor"
+    "llm_family": "receptor",
+    "hgnc_gene_groups": [
+      "Erb-b2 receptor tyrosine kinases"
+    ],
+    "uniprot_family": "protein kinase superfamily. Tyr protein kinase family. EGF receptor subfamily"
   },
   "filters": {
     "surface_accessibility": "high",

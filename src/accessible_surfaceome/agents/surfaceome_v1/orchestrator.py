@@ -66,6 +66,7 @@ from accessible_surfaceome.tools._shared.models import (
     ExecutiveSummary,
     Filters,
     GeneIdentifier,
+    IdentifierBundle,
     IsoformTopology,
     Orthologs,
     StructureFeatures,
@@ -335,8 +336,14 @@ def _annotate(
             gene_id.uniprot_acc, exc,
         )
         det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+
+    # Attach the deterministic, curator-assigned family tags from the resolved
+    # bundle (HGNC gene groups + UniProt SIMILARITY family). These are NOT
+    # model-emitted; the orchestrator overwrites them so they sit beside the
+    # synthesizer's ``llm_family`` as ground-truth cross-checks.
+    executive_summary = _attach_deterministic_families(b.draft.executive_summary, bundle)
     filters = _derive_filters(
-        executive_summary=b.draft.executive_summary,
+        executive_summary=executive_summary,
         surface_evidence=a1.draft.surface_evidence,
         biological_context=a2.draft.biological_context,
         accessibility_risks=b.draft.accessibility_risks,
@@ -352,7 +359,7 @@ def _annotate(
         schema_version=SCHEMA_VERSION_LITERAL,
         gene=gene_id,
         triage_signal=_load_triage_signal(gene_id.hgnc_symbol),
-        executive_summary=b.draft.executive_summary,
+        executive_summary=executive_summary,
         filters=filters,
         surface_evidence=a1.draft.surface_evidence,
         biological_context=a2.draft.biological_context,
@@ -821,6 +828,27 @@ def scrub_headline_risks(
         cleaned,
     )
     return executive_summary.model_copy(update={"headline_risks": cleaned})
+
+
+def _attach_deterministic_families(
+    executive_summary: "ExecutiveSummary",
+    bundle: "IdentifierBundle",
+) -> "ExecutiveSummary":
+    """Inject the deterministic, curator-assigned family tags onto the summary.
+
+    The synthesizer emits ``llm_family`` (its high-level functional call). The
+    deterministic family tags — HGNC gene groups and the UniProt SIMILARITY
+    family — are NOT model-emitted; the orchestrator overwrites them from the
+    resolved :class:`IdentifierBundle` so they stay ground-truth regardless of
+    what the model did or didn't say. Returns a new ExecutiveSummary; the input
+    is left untouched.
+    """
+    return executive_summary.model_copy(
+        update={
+            "hgnc_gene_groups": list(bundle.hgnc_gene_groups),
+            "uniprot_family": bundle.uniprot_family,
+        }
+    )
 
 
 def _derive_filters(

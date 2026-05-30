@@ -35,7 +35,13 @@
       "a2_evi_10",
       "a2_evi_17"
     ],
-    "llm_family": "miscellaneous"
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "CD molecules",
+      "Tetraspanins",
+      "Gamete adhesion and fusion factors"
+    ],
+    "uniprot_family": "tetraspanin (TM4SF) family"
   },
   "filters": {
     "surface_accessibility": "high",
