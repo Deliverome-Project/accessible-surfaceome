@@ -78,47 +78,6 @@ function surfaceSpecificityTone(v: string): Tone {
   return "neutral";
 }
 
-// Surface-call-reason bucket partitions — must stay in sync with the
-// frozensets in src/accessible_surfaceome/tools/_shared/models.py
-// (_YES_REASONS / _CONTEXTUAL_REASONS / _NO_REASONS). The chip is
-// toned by which bucket the reason falls in: YES = success (canonical
-// surface mechanism), CONTEXTUAL = lavender (state-gated), NO =
-// danger (intracellular / wrong-side localization), unknown = neutral.
-const YES_BUCKET_REASONS = new Set([
-  "classical_surface_receptor",
-  "gpi_anchored",
-  "multipass_with_exposed_loops",
-  "extracellular_face_protein",
-  "stable_complex_partner",
-]);
-const CONTEXTUAL_BUCKET_REASONS = new Set([
-  "cell_state_induced",
-  "tissue_restricted_surface",
-  "lysosomal_exocytosis",
-  "dual_localization",
-  "stable_surface_attachment",
-]);
-const NO_BUCKET_REASONS = new Set([
-  "cytoplasmic",
-  "nuclear",
-  "mitochondrial_internal",
-  "endomembrane_resident",
-  "nuclear_envelope",
-  "inner_leaflet_anchored",
-  "secreted_only",
-  "pmhc_only_intracellular",
-]);
-function surfaceCallReasonTone(v: string): Tone {
-  if (YES_BUCKET_REASONS.has(v)) return "success";
-  if (CONTEXTUAL_BUCKET_REASONS.has(v)) return "lavender";
-  if (NO_BUCKET_REASONS.has(v)) return "danger";
-  return "neutral";
-}
-
-function evidenceDensityTone(v: string): Tone {
-  return v === "high" ? "success" : v === "moderate" ? "warn" : v === "low" ? "danger" : "neutral";
-}
-
 /**
  * State dependence — low is best (constitutive surface presence),
  * high is worst (only-in-cancer / only-on-activation / only-in-stress
@@ -259,6 +218,13 @@ const TT_LOW_ENDOG =
   "is harder because there's little protein to stain or bind in " +
   "untransfected controls.";
 
+const TT_CORECEPTOR =
+  "LLM-driven. Whether the protein needs a partner to reach the surface. " +
+  "None = surfaces on its own; modulatory = a partner influences but " +
+  "doesn't gate surface presence; required = surface presence depends on " +
+  "a partner (a bispecific or partner-aware design may be needed); " +
+  "unknown = the agent found no information either way.";
+
 const TT_KNOWN_LIGAND =
   "Has the synthesizer found a documented binding partner / ligand " +
   "for this protein in literature? true = yes (e.g. EGFR ← EGF; " +
@@ -335,53 +301,10 @@ export function FiltersCard({ rec, n }: Props) {
     // render in the executive-summary chip strip up top, so showing
     // them twice was noise.
     //
-    // The "Evidence" group is back (was previously retired with
-    // surface_call_reason · evidence_grade · evidence_density on the
-    // theory the "Experimental surface evidence" vital up top
-    // covered it — but that vital only carries `evidence_grade`,
-    // not the mechanism axis or the density-bucket axis). The vital
-    // still owns `evidence_grade`, so this group only surfaces
-    // `surface_call_reason` (mechanism) and `evidence_density`
-    // (bucketed row count) — the two catalog filters that otherwise
-    // had no per-gene representation.
-    {
-      label: "Evidence",
-      provenance: "llm",
-      pills: [
-        // Surface-call-reason — the mechanism behind the accessibility
-        // call. Same 19-value TriageReason taxonomy the first-pass
-        // triage uses (see models.py). Toned by YES / CONTEXTUAL / NO
-        // bucket via surfaceCallReasonTone. Uses InfoTip (not native
-        // title=) because the tooltip body is rich JSX with structured
-        // family lists.
-        <span key="reason" className={styles.pillWithInfo}>
-          <StatusPill
-            tone={surfaceCallReasonTone(f.surface_call_reason)}
-            size="sm"
-          >
-            surface reason · {prettyEnum(f.surface_call_reason)}
-          </StatusPill>
-          <InfoTip label="About surface reason">
-            {tooltips.catalog_surface_call_reason}
-          </InfoTip>
-        </span>,
-        // Evidence density — bucketed count of supporting evidence
-        // rows in the deep-dive ledger. Complements the grade pill in
-        // the executive-summary strip: grade tells you HOW STRONG the
-        // evidence is, density tells you HOW MUCH evidence exists.
-        <span key="density" className={styles.pillWithInfo}>
-          <StatusPill
-            tone={evidenceDensityTone(f.evidence_density)}
-            size="sm"
-          >
-            density · {prettyEnum(f.evidence_density)}
-          </StatusPill>
-          <InfoTip label="About evidence density">
-            {tooltips.catalog_evidence_density}
-          </InfoTip>
-        </span>,
-      ],
-    },
+    // The "Evidence" group was retired: the "Experimental surface
+    // evidence" vital up top carries `evidence_grade`, and
+    // `surface_call_reason` / `evidence_density` live in the catalog
+    // filters — duplicating them per-gene here was noise.
     {
       label: "Expression",
       provenance: "llm",
@@ -416,20 +339,6 @@ export function FiltersCard({ rec, n }: Props) {
           }
         >
           {prettyEnum(f.surface_specificity)}
-        </StatusPill>,
-        // Derived from `expression_level`; appears here so the
-        // catalog filter the orphan-class story uses is visible
-        // next to the source it's computed from.
-        <StatusPill
-          key="lowendog"
-          tone={f.low_endogenous_expression ? "danger" : "success"}
-          size="sm"
-          title={TT_LOW_ENDOG}
-        >
-          <span aria-hidden="true">
-            {f.low_endogenous_expression ? "✓" : "✗"}
-          </span>{" "}
-          low endogenous expression
         </StatusPill>,
         // Orphan-receptor status — replaces the dropped
         // `HeadlineRisk.ligand_unknown` value.
@@ -468,24 +377,31 @@ export function FiltersCard({ rec, n }: Props) {
       pills: [
         riskBoolPill("shed form", f.has_shed_form),
         riskBoolPill("secreted form", f.has_secreted_form),
-        // The full 4-value co_receptor_dependency enum
-        // (required / modulatory / none / unknown) replaces the
-        // binary requires_coreceptor_for_expression chip here —
-        // the bool collapsed "modulatory" into False, losing a
-        // real signal the catalog filter needs. Provenance lives
-        // in the inline <InfoTip> next to the pill (replaces the
-        // native `title=` tooltip, which felt "fleeting" on hover).
-        <span key="coreceptor" className={styles.pillWithInfo}>
-          <StatusPill
-            tone={coReceptorDependencyTone(f.co_receptor_dependency)}
-            size="sm"
-          >
-            co-receptor · {prettyEnum(f.co_receptor_dependency)}
-          </StatusPill>
-          <InfoTip label="About co-receptor dependency">
-            {tooltips.co_receptor_dependency}
-          </InfoTip>
-        </span>,
+        // Low endogenous expression — derived from expression_level;
+        // grouped here as a risk (low / absent baseline expression makes
+        // a harder target / orphan-class candidate). true = risk = red.
+        <StatusPill
+          key="lowendog"
+          tone={f.low_endogenous_expression ? "danger" : "success"}
+          size="sm"
+          title={TT_LOW_ENDOG}
+        >
+          <span aria-hidden="true">
+            {f.low_endogenous_expression ? "✓" : "✗"}
+          </span>{" "}
+          low endogenous expression
+        </StatusPill>,
+        // co_receptor_dependency (4-value enum: required / modulatory /
+        // none / unknown). Definition shows on hover via the title
+        // tooltip — matching the other chips, no inline info icon.
+        <StatusPill
+          key="coreceptor"
+          tone={coReceptorDependencyTone(f.co_receptor_dependency)}
+          size="sm"
+          title={TT_CORECEPTOR}
+        >
+          co-receptor · {prettyEnum(f.co_receptor_dependency)}
+        </StatusPill>,
         riskBoolPill("epitope masking", f.has_epitope_masking),
         riskBoolPill("restricted subdomain", f.has_restricted_subdomain),
       ],
