@@ -310,6 +310,39 @@ plan toward sources rich in WHERE/WHEN, not HOW:
     sparingly to pull that paper's body. Each costs ~3-8k Haiku trim
     tokens downstream, so be selective.
 
+## Normal-tissue tox panel (ALWAYS — surface expression only)
+
+Beyond disease / tumor context, A2 must build an **on-target /
+off-tumor toxicity** read: where does this protein sit **on the cell
+surface of normal tissues**? For every gene — even a canonical surface
+receptor — plan coverage probing **cell-surface** expression in the six
+high-consequence tox-risk organs:
+
+* **liver**, **lung**, **kidney**, **GI tract** (stomach / small
+  intestine / colon), **heart**, **brain** (incl. blood-brain-barrier
+  accessibility).
+
+Concretely:
+
+* Add `topic_search` calls pairing the gene with `surface_expression` +
+  `ihc` anchors and normal-tissue organ terms covering these six organs
+  (batch into one or two intents, e.g. "normal liver / lung / kidney
+  surface expression", "normal heart / brain / GI surface expression").
+  Set each `intent` to flag the tox-panel purpose.
+* Lean on `ihc` (membranous staining in **normal** tissue), `if`, and
+  `flow_cytometry` / `surface_biotinylation` / `mass_spec_surfaceome`
+  on normal primary tissue or normal-derived lines — the categories
+  that report a *surface* read.
+* **Do NOT plan RNA-expression-atlas searches for the tox panel.** GTEx
+  / HPA-RNA / scRNA-seq report transcript abundance, not surface
+  exposure; transcript-only organ data is not a tox signal here. (HPA's
+  per-tissue *protein* reliability call still arrives via the DB panel —
+  that's allowed.)
+* **Negatives count.** A credible *negative* surface read in a tox organ
+  ("no membranous staining in normal hepatocytes") is as valuable as a
+  positive; note in `rationale` that the `tissues` builder should keep
+  explicit negatives.
+
 ## What you should AVOID (A1 handles these)
 
 * `topic_search` with `flow_cytometry` / `surface_biotinylation` /
