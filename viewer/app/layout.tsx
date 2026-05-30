@@ -59,8 +59,15 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // `data-scroll-behavior="smooth"` opts this root into Next 16's
+  // route-transition scroll handling that *expects* CSS
+  // `scroll-behavior: smooth` on <html>. Without it Next logs a
+  // dev-mode warning recommending the attribute when smooth scrolling
+  // is detected (used by the gene-page AnchorNav and the in-page
+  // "skip to main content" link). See
+  // https://nextjs.org/docs/messages/missing-data-scroll-behavior
   return (
-    <html lang="en">
+    <html lang="en" data-scroll-behavior="smooth">
       <body className={`${manrope.variable} ${playfair.variable}`}>{children}</body>
     </html>
   );

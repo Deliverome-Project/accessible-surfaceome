@@ -872,21 +872,49 @@ export function StructureViewer({
         // 1) Prefer the build-time-baked pdbUrl. Falls back to the
         //    legacy v4 URL if the build script couldn't enrich this
         //    entry (offline build, AFDB unreachable, etc.).
-        // For canonical view, use the build-baked pdbUrl if present
-        // (saves an AFDB API hop). For AFDB variants we always go
-        // through the AFDB URL helper since we don't bake per-variant
-        // URLs.
-        let pdbUrl =
-          isCanonicalActive
-            ? (data.pdb_url ?? alphafoldPdbUrl(activeUniprot))
-            : alphafoldPdbUrl(activeUniprot);
+        // URL resolution strategy:
+        //   - Canonical view with a baked `data.pdb_url` → use it
+        //     directly (the build script wrote a version-correct URL).
+        //   - Anything else (canonical with no baked URL, or any
+        //     non-canonical AFDB variant tab) → resolve via the
+        //     prediction API first. Previously this fell back to
+        //     `alphafoldPdbUrl(acc)` (v4 hardcoded) and ate a 404
+        //     before retrying through the prediction API anyway,
+        //     producing the noisy
+        //     `AF-{acc}-F1-model_v4.pdb  404 (Not Found)` console
+        //     entries on every gene whose AFDB model has been bumped
+        //     past v4 (EGFR, GPR75, et al.). Going through the API
+        //     first is one extra ~1 KB cached JSON fetch — cheaper
+        //     than a 404 + retry, and silent.
+        let pdbUrl: string | null = isCanonicalActive
+          ? (data.pdb_url ?? null)
+          : null;
+        if (!pdbUrl) {
+          try {
+            const apiResp = await fetch(
+              alphafoldPredictionApiUrl(activeUniprot),
+            );
+            if (apiResp.ok) {
+              const entries =
+                (await apiResp.json()) as AlphafoldPredictionEntry[];
+              pdbUrl = entries[0]?.pdbUrl ?? null;
+            }
+          } catch {
+            // Network / parse error — fall through to the legacy v4
+            // URL below as a last resort. The 404 (if any) is the
+            // remaining noise; previously it was the FIRST step.
+          }
+        }
+        if (!pdbUrl) pdbUrl = alphafoldPdbUrl(activeUniprot);
 
         let pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
 
-        // On 404 specifically, AFDB has bumped the version since the
-        // last build (observed: O95800 went v4→v6 in 2025-08, with
-        // v1–v5 removed from the file server). Re-query the
-        // prediction API once for the current pdbUrl and retry.
+        // Defensive retry for a STALE baked URL (canonical view with
+        // a build-baked v_n URL that's been superseded since the build).
+        // The prediction-API-first path above already handles the no-
+        // baked-URL cases, so this branch only fires for build-pinned
+        // URLs that aged out (observed: O95800 v4→v6 between
+        // 2025-08 builds).
         if (pdbResp.status === 404) {
           try {
             const apiResp = await fetch(
@@ -895,7 +923,7 @@ export function StructureViewer({
             if (apiResp.ok) {
               const entries =
                 (await apiResp.json()) as AlphafoldPredictionEntry[];
-              if (entries[0]?.pdbUrl) {
+              if (entries[0]?.pdbUrl && entries[0].pdbUrl !== pdbUrl) {
                 pdbUrl = entries[0].pdbUrl;
                 pdbResp = await fetch(pdbUrl, { cache: "force-cache" });
               }
@@ -1116,19 +1144,35 @@ export function StructureViewer({
         });
       }
 
-      viewer.render();
+      // Skip the initial render() if the container is zero-sized
+      // (collapsed parent, not-yet-visible tab) — that would burn a
+      // frame against an empty WebGL framebuffer and log a stack of
+      // GL_INVALID_FRAMEBUFFER_OPERATION warnings. The ResizeObserver
+      // below will catch the first non-zero size and call resize() +
+      // render() at that point, so the user still sees the model as
+      // soon as the container becomes visible.
+      const node = containerRef.current;
+      const hasSize =
+        node != null && node.clientWidth > 0 && node.clientHeight > 0;
+      if (hasSize) {
+        viewer.render();
+      }
       viewerRef.current = viewer as ViewerInstance;
 
       // Capture the post-initial-render camera pose so the reset
       // button can restore both rotation AND zoom (not just zoom).
       // `zoomTo({})` re-frames on atoms but leaves any user-applied
       // rotation in place; `setView(initialViewRef.current)` is the
-      // proper "reset everything" hook.
-      try {
-        initialViewRef.current = (viewer as ViewerInstance).getView();
-      } catch {
-        // Older 3Dmol builds may not expose getView; leave initial
-        // view null and the reset button will fall back to zoomTo.
+      // proper "reset everything" hook. Only meaningful when we
+      // actually rendered above; otherwise `getView()` returns the
+      // identity pose and we let the ResizeObserver capture it later.
+      if (hasSize) {
+        try {
+          initialViewRef.current = (viewer as ViewerInstance).getView();
+        } catch {
+          // Older 3Dmol builds may not expose getView; leave initial
+          // view null and the reset button will fall back to zoomTo.
+        }
       }
 
       // Re-fit on container resize. Without this the viewer keeps
@@ -1140,8 +1184,30 @@ export function StructureViewer({
         typeof ResizeObserver !== "undefined" &&
         containerRef.current
       ) {
-        const node = containerRef.current;
-        const ro = new ResizeObserver(() => {
+        // Reuse `node` from the size-gate above (we already null-
+        // checked it via containerRef.current at the top of the
+        // effect; the outer `if (containerRef.current)` here is just
+        // a TS narrowing barrier). We could call `.observe(node!)`
+        // but a plain null guard inside the block is clearer.
+        if (!node) return;
+        const ro = new ResizeObserver((entries) => {
+          // Skip zero-size notifications. ResizeObserver fires once on
+          // attach with the current bbox; if the container is inside
+          // a collapsed parent or hasn't laid out yet, that initial
+          // fire reports 0×0. Calling viewer.resize() + render() into
+          // a zero-pixel framebuffer logs a wall of GL_INVALID_
+          // FRAMEBUFFER_OPERATION warnings ("Framebuffer is
+          // incomplete: Attachment has zero size") — visually harmless
+          // (the next non-zero fire re-renders cleanly) but extremely
+          // noisy in dev tools. Drop those frames here.
+          const entry = entries[0];
+          if (
+            !entry ||
+            entry.contentRect.width === 0 ||
+            entry.contentRect.height === 0
+          ) {
+            return;
+          }
           try {
             viewer.resize();
             // Match the initial render: fit on atoms only, so the

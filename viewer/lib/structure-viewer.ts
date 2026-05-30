@@ -121,9 +121,16 @@ export function structureViewerDataFromRecord(
     signal_peptide_length: canonicalTopology?.signal_peptide_length ?? 0,
     source_cohort: "deep_dive_record",
     source_tool: canonicalTopology?.tool_version ?? "deeptmhmm",
-    // Best-effort v4 URL; the client re-queries the AFDB prediction API
-    // if it 404s (newer model versions), same as the static files.
-    pdb_url: alphafoldPdbUrl(uniprotAcc),
+    // Leave the AFDB URL unresolved (null) so the client routes the
+    // first fetch through the prediction API. Previously this hard-
+    // coded `alphafoldPdbUrl(acc)` (v4); for any UniProt whose model
+    // had been bumped past v4 (EGFR / P00533, GPR75 / O95800, …) the
+    // v4 file 404s and the resulting noise shows up in the browser
+    // console. Resolving via the prediction API up front is one extra
+    // ~1 KB JSON fetch, cached aggressively by AFDB. Static-file path
+    // (loadStructureViewerData) still emits a baked URL so it doesn't
+    // pay the round-trip for canonical views.
+    pdb_url: null,
     latest_version: null,
   };
 }
