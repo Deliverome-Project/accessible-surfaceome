@@ -110,6 +110,11 @@ class IdentifierBundle(BaseModel):
     # Registry-curated family lineage; useful for the triage agent to recognize
     # surface-protein family conventions without prompt-embedded enumerations.
     hgnc_gene_groups: list[str] = Field(default_factory=list)
+    # UniProt curator-assigned protein family from the SIMILARITY comment, with the
+    # "Belongs to the " boilerplate stripped (e.g. "G-protein coupled receptor 1 family").
+    # Deterministic, single-string family tag complementing hgnc_gene_groups; None when
+    # UniProt has no SIMILARITY annotation (common for poorly-characterized proteins).
+    uniprot_family: str | None = None
     # CD nomenclature designation when assigned (e.g. "CD340" for ERBB2). CD numbers
     # are awarded to differentiation-cluster antigens — almost always surface or
     # pseudo-surface markers. Strong surface signal when present.
