@@ -379,8 +379,12 @@
 .archFamilyInline {
   margin: var(--space-2) 0 0;
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  /* Stack the Architecture + Family chips vertically — Family sits
+     directly beneath Architecture rather than beside it. ``flex-start``
+     keeps each chip at its natural content width (column flex would
+     otherwise stretch them to fill the cell). */
+  flex-direction: column;
+  align-items: flex-start;
   gap: 0.35rem;
   /* No font-family / text-transform / letter-spacing here — the
      chip rule below owns those so we don't paint mixed registers. */
