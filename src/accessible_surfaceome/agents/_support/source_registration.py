@@ -338,9 +338,10 @@ def _register_patent(patent: PatentSummary, store: SourceTextStore) -> None:
 def _register_synthetic(synthetic: SyntheticSource, store: SourceTextStore) -> None:
     """Register a tool-fabricated source body keyed by ``synthetic.source_id``.
 
-    Used for sources that don't fetch over HTTP — currently the HPA snapshot
-    via ``evidence_retrieval(category="hpa_ihc")``. First-write-wins: a later
-    duplicate (same gene queried twice) is a no-op.
+    Used for sources that don't fetch over HTTP (the HPA-snapshot
+    synthetic source is no longer emitted; this hook remains for any
+    future tool that fabricates source bodies). First-write-wins: a
+    later duplicate (same gene queried twice) is a no-op.
     """
     if store.has(synthetic.source_id):
         return

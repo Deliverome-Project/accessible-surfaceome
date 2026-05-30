@@ -53,11 +53,14 @@ from accessible_surfaceome.agents.plan_trim_select.schemas import (
 )
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
+    DeterministicFeatures,
     EvidenceClaim,
     EvidenceClaimDraft,
     IdentifierBundle,
     LiteraturePack,
+    OrthologEntry,
     Paper,
+    TriageRecord,
 )
 from accessible_surfaceome.tools._shared.normalize import (
     find_quote_in_normalized,
@@ -249,12 +252,119 @@ class GeneContext:
 
     HPA evidence is rolled into ``db_panel_json`` (the DBVotePanel carries
     HPA's main location + reliability flag alongside the SURFY/CSPA votes).
+
+    ``deterministic_summary_json`` is a compact JSON snapshot of the
+    DeepTMHMM topology + Compara paralog + cross-species ortholog ECD
+    identity rows fetched from public D1 — see
+    :func:`_summarize_deterministic_for_planner`. Falls back to ``None``
+    when D1 is unreachable; planner prompts treat the missing block as
+    "no deterministic data available" and omit it from the user prompt.
+
+    ``triage_summary_json`` is a compact JSON snapshot of the persisted
+    ``TriageRecord`` for this gene (verdict + verdict_reasoning + reason
+    taxonomy + key_uncertainty + confidence). The planner reads it as a
+    prior to confirm or refute. Falls back to ``None`` when no triage
+    record exists; planner prompts treat the missing block the same way
+    they do for the deterministic block. See
+    :func:`_summarize_triage_for_planner`. Implements PR #23 design doc
+    §1110-1116's "common preamble — triage_record".
     """
 
     gene: str
     bundle: IdentifierBundle
     uniprot_summary_json: str
     db_panel_json: str
+    deterministic_summary_json: str | None = None
+    triage_summary_json: str | None = None
+
+
+def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str:
+    """Compact JSON summary handed to the A1/A2 planners.
+
+    Keeps the field set small enough that planners can scan it inline,
+    while exposing the four signals A1/A2 prompts reference to weight
+    their search plans: TM count + ECD length + signal peptide
+    (methodology choice), top paralogs by ECD identity (paralog-class
+    search opportunity), and mouse / cyno ortholog ECD identity
+    (cross-species literature confidence). The canonical ortholog
+    isoform is preferred when multiple isoforms are returned per
+    species.
+    """
+
+    canon = features.canonical_topology
+    # Sort: numeric identity first (high → low), then NULL-identity
+    # paralogs (ECD-less proteins like SRC-family kinases). Sentinel -1
+    # is below any valid 0-100 identity so Nones land at the end.
+    top = sorted(
+        features.paralogs,
+        key=lambda p: (
+            p.ecd_pct_identity if p.ecd_pct_identity is not None else -1.0
+        ),
+        reverse=True,
+    )[:5]
+
+    def _canonical(entries: list[OrthologEntry]) -> OrthologEntry | None:
+        for entry in entries:
+            if entry.is_canonical:
+                return entry
+        return entries[0] if entries else None
+
+    mouse = _canonical(list(features.orthologs.mouse))
+    cyno = _canonical(list(features.orthologs.cynomolgus))
+    payload: dict[str, Any] = {
+        "tm_helix_count": canon.tm_helix_count,
+        "n_terminal_orientation": canon.n_terminal_orientation,
+        "c_terminal_orientation": canon.c_terminal_orientation,
+        "ecd_length_residues": canon.ecd_length_residues,
+        "icd_length_residues": canon.icd_length_residues,
+        "signal_peptide_length": canon.signal_peptide_length,
+        "paralog_count": len(features.paralogs),
+        "top_paralogs": [
+            {"symbol": p.paralog_symbol, "ecd_pct_identity": p.ecd_pct_identity}
+            for p in top
+        ],
+        # Aggregate ortholog counts — Compara can return one-to-many per
+        # species; canonical symbol + identity below cover the headline
+        # cross-species translatability, the count surfaces multi-isoform
+        # / multi-paralog mappings the planner may want to flag.
+        "mouse_ortholog_count": len(features.orthologs.mouse),
+        "cyno_ortholog_count": len(features.orthologs.cynomolgus),
+        "mouse_ortholog_symbol": mouse.ortholog_symbol if mouse else None,
+        "mouse_ortholog_ecd_pct_identity": (
+            mouse.ecd_pct_identity_to_human_canonical if mouse else None
+        ),
+        "cyno_ortholog_symbol": cyno.ortholog_symbol if cyno else None,
+        "cyno_ortholog_ecd_pct_identity": (
+            cyno.ecd_pct_identity_to_human_canonical if cyno else None
+        ),
+    }
+    return json.dumps(payload, indent=2)
+
+
+def _summarize_triage_for_planner(record: TriageRecord) -> str:
+    """Compact JSON summary of the triage prior handed to A1/A2
+    planners + the synthesizer.
+
+    Carries exactly the five fields the design specifies (PR #23
+    §1110-1116): verdict + reason taxonomy + verdict_reasoning prose
+    + key_uncertainty + confidence. The LLM weights the prior on
+    confidence + reasoning, not on model identity.
+
+    ``record.provenance`` (the D1 row's model + prompt_variant +
+    run_id + replicate) is intentionally NOT emitted — it stays on
+    the TriageRecord for audit / logging / future ensemble work but
+    is withheld from the prompt to keep the LLM's calibration
+    grounded in the prose, not in heuristics about which model ran it.
+    """
+
+    payload: dict[str, Any] = {
+        "verdict": record.verdict,
+        "reason": record.reason,
+        "verdict_reasoning": record.verdict_reasoning,
+        "key_uncertainty": record.key_uncertainty,
+        "confidence": record.confidence,
+    }
+    return json.dumps(payload, indent=2)
 
 
 def _build_gene_context(
@@ -295,11 +405,64 @@ def _build_gene_context(
     uniprot = uniprot_summary(uniprot_acc=bundle.uniprot_acc, http=http)
     db = db_panel(uniprot_acc=bundle.uniprot_acc, http=http)
 
+    # DeepTMHMM topology + Compara paralog + cross-species ortholog ECD
+    # identity from public D1 (uploaded by PR #29's
+    # ``scripts/run_topology_sweep.py``). Folded into a compact summary
+    # the A1/A2 planners can scan inline. Failures here are non-fatal —
+    # log a warning and continue with UniProt-only planning (the
+    # planner prompts treat the missing block as "no deterministic data
+    # available"). Local import keeps the D1 dependency out of import
+    # time for code paths that don't run the planner.
+    deterministic_summary: str | None
+    try:
+        from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+            fetch_deterministic_features,
+        )
+
+        features = fetch_deterministic_features(bundle.uniprot_acc)
+        deterministic_summary = _summarize_deterministic_for_planner(features)
+    except Exception as exc:  # noqa: BLE001 — keep planning even if D1 is down
+        logger.warning(
+            "deterministic-features D1 fetch failed for %s (%s); "
+            "planner will run without the deterministic block",
+            bundle.uniprot_acc,
+            exc,
+        )
+        deterministic_summary = None
+
+    # Persisted ``TriageRecord`` for this gene (verdict + verdict_reasoning
+    # + reason taxonomy + key_uncertainty + confidence). Folded into a
+    # compact JSON the planner reads as a prior. Missing record (no
+    # triage was ever run for this gene) → ``None`` and the planner
+    # prompt omits the block. Implements PR #23 design doc §1110-1116.
+    triage_summary: str | None
+    try:
+        from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
+            _load_triage_record,
+        )
+
+        triage_record = _load_triage_record(bundle.hgnc_symbol)
+        triage_summary = (
+            _summarize_triage_for_planner(triage_record)
+            if triage_record is not None
+            else None
+        )
+    except Exception as exc:  # noqa: BLE001 — keep planning even if triage load fails
+        logger.warning(
+            "triage record load failed for %s (%s); "
+            "planner will run without the triage prior",
+            bundle.hgnc_symbol,
+            exc,
+        )
+        triage_summary = None
+
     return GeneContext(
         gene=gene,
         bundle=bundle,
         uniprot_summary_json=uniprot.model_dump_json(indent=2),
         db_panel_json=db.model_dump_json(indent=2),
+        deterministic_summary_json=deterministic_summary,
+        triage_summary_json=triage_summary,
     )
 
 
@@ -426,6 +589,20 @@ def _run_planner(
         f"UniProt summary:\n```json\n{context.uniprot_summary_json}\n```\n\n"
         f"DB vote panel (includes HPA main_location + reliability):\n"
         f"```json\n{context.db_panel_json}\n```\n\n"
+    )
+    if context.deterministic_summary_json:
+        user_prompt += (
+            "Deterministic inputs (DeepTMHMM topology + Compara paralogs + "
+            "cross-species ortholog ECD identity, from public D1):\n"
+            f"```json\n{context.deterministic_summary_json}\n```\n\n"
+        )
+    if context.triage_summary_json:
+        user_prompt += (
+            "Triage prior (from the genome-wide Haiku surface_triage agent, "
+            "treat as a prior to confirm or refute):\n"
+            f"```json\n{context.triage_summary_json}\n```\n\n"
+        )
+    user_prompt += (
         "Emit one fenced ```json block matching this SearchPlan schema:\n\n"
         f"```json\n{plan_schema}\n```\n"
     )
@@ -997,12 +1174,28 @@ def _run_selector(
         )
         + "\n\n"
     )
+    deterministic_block = ""
+    if context.deterministic_summary_json:
+        deterministic_block = (
+            "Deterministic inputs (DeepTMHMM topology + Compara paralogs + "
+            "cross-species ortholog ECD identity, for context):\n"
+            f"```json\n{context.deterministic_summary_json}\n```\n\n"
+        )
+    triage_block = ""
+    if context.triage_summary_json:
+        triage_block = (
+            "Triage prior (from the genome-wide Haiku surface_triage agent, "
+            "treat as a prior to confirm or refute):\n"
+            f"```json\n{context.triage_summary_json}\n```\n\n"
+        )
     user_prompt = (
         f"# Gene: {context.gene}\n\n"
         f"{iteration_banner}"
         f"UniProt summary (for context):\n```json\n{context.uniprot_summary_json}\n```\n\n"
         f"DB vote panel (HPA + SURFY/CSPA, for context):\n"
         f"```json\n{context.db_panel_json}\n```\n\n"
+        f"{deterministic_block}"
+        f"{triage_block}"
         f"## Trimmed clip menu ({n_kept} clips across multiple sources)\n\n"
         f"{menu_markdown}\n\n"
         f"## Discovered papers not yet deep-dived ({n_unfetched} papers)\n\n"

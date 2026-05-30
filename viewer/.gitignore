@@ -6,6 +6,13 @@ out
 *.tsbuildinfo
 next-env.d.ts
 
+# Per-developer env overrides. Next.js auto-loads `.env.local`,
+# `.env.development.local`, etc. at dev/build time. NEXT_PUBLIC_*
+# values for local dev (Turnstile site key, feedback API base, etc.)
+# live here so the viewer can hit them without sourcing the
+# repo-root .env. Production env is set in Cloudflare Pages.
+.env*.local
+
 # Next.js 16 auto-generates these on every build; not source.
 AGENTS.md
 CLAUDE.md

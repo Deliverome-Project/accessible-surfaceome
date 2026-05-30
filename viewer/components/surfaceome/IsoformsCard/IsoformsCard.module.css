@@ -18,8 +18,12 @@
 }
 
 .topoCol {
-  width: 100%;
-  min-width: 14rem;
+  /* Narrow topology column so it doesn't dominate the table.
+     Was width:100%/min-width:14rem before — the residue bar
+     stretched across most of the table width which crowded the
+     numeric columns (TM, N-term, C-term, lengths). */
+  width: 20%;
+  min-width: 6rem;
 }
 
 .topoCell {
@@ -45,6 +49,34 @@
   font-size: 0.88rem;
 }
 
+/* Variant cell (unified isoform + ortholog table) — stacks the class
+   pill, the identifier, and an optional muted subtext (ortholog type /
+   alt-isoform marker) in a tight column so the leftmost column reads as
+   one labelled block per row. `white-space: normal` overrides the
+   table-wide nowrap so a long "symbol · accession" can wrap rather than
+   widen the table. */
+.variantCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  white-space: normal;
+}
+
+.variantSub {
+  color: var(--muted);
+  font-size: 0.74rem;
+  letter-spacing: 0.02em;
+}
+
+/* Reference row identity cells (canonical) — render "ref" muted so the
+   reader sees the canonical is the baseline everything else is compared
+   to, not a computed 100%. */
+.refCell {
+  color: var(--muted);
+  font-style: italic;
+}
+
 .caveat {
   display: flex;
   flex-direction: column;
@@ -64,4 +96,187 @@
   color: var(--muted);
   font-style: italic;
   font-size: 0.92rem;
+}
+
+/* Sub-section wrapper for the three blocks (Isoforms, Orthologs,
+   Paralogs) the combined card stacks. Margin spaces them apart;
+   first child resets so the section's first row sits flush with the
+   banner above. */
+.subsection {
+  margin-top: var(--space-5);
+}
+
+.subsection:first-of-type {
+  margin-top: 0;
+}
+
+.subhead {
+  margin: 0 0 var(--space-2);
+  color: var(--muted);
+}
+
+/* Link styling for ortholog / paralog UniProt accessions — same
+   subdued underline the rest of the card uses. */
+.link {
+  color: var(--ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  transition: border-color var(--dur-fast) var(--ease-out),
+              color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover,
+.link:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Muted cell — for ortholog ECD %id when the human protein has no ECD. */
+.muted {
+  color: var(--muted);
+}
+
+/* Paralogs chip strip — replaces the prior 4-col table. Each chip
+   shows SYMBOL · NN%; the link target is the paralog's UniProt page;
+   hover surfaces the family-id via title attribute. Density tuned so a
+   protein with ~50 paralogs (kinome / immunoglobulin superfamily) fits
+   in a couple of rows. */
+.paralogChips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  /* Slightly larger gap now that each cell stacks a chip + topology
+     bar vertically — gives the cells visual breathing room without
+     turning the strip into a sparse grid. */
+  gap: 0.6rem 0.4rem;
+}
+
+/* Per-paralog chip — pill containing symbol + %ECD (or "no ECD")
+   linked out to UniProt. Inline so many chips (kinome /
+   Ig superfamily) wrap horizontally across the subsection. */
+.paralogChip {
+  display: inline-flex;
+}
+
+.paralogChipLink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.18rem 0.6rem;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: 0.82rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out);
+}
+
+.paralogChipLink:hover,
+.paralogChipLink:focus-visible {
+  background: var(--surface);
+  border-color: var(--line);
+}
+
+.paralogChipSym {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+}
+
+.paralogChipPct {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* (.paralogChipBar / .paralogChipBarEmpty + the cell layout were
+   added in 6a220a90 to show per-paralog DeepTMHMM topology bars and
+   reverted shortly after — SRC's 32 paralogs are all GLOB so the
+   bars rendered as solid blue with no signal. The chip is back to
+   single-row pill layout.) */
+
+/* Cross-reactivity risk tiers — shared by the paralog chip and the
+   legend dot. Cutoffs (≥70% likely, 50-70% plausible) come from
+   antibody-validation practice; see the subhead InfoTip. Tints use the
+   brand maroon / amber / teal scales so the chip strip reads as a
+   heatmap of antibody-cross-reactivity risk. These set only background +
+   border-color so they compose cleanly onto both surfaces. Placed after
+   `.paralogChipLink:hover` above so the risk hover rules win on equal
+   specificity. */
+.riskHigh {
+  background: var(--maroon-blush);
+  border-color: var(--maroon-pale);
+}
+
+.riskMed {
+  background: var(--amber-tint);
+  border-color: var(--amber-light);
+}
+
+.riskLow {
+  background: var(--teal-tint);
+  border-color: var(--teal-lt);
+}
+
+/* Tint the %id readout to match its tier so the number itself signals
+   risk even at a glance / for color-adjacent readers scanning values. */
+.riskHigh .paralogChipPct {
+  color: var(--maroon-dark);
+}
+
+.riskMed .paralogChipPct {
+  color: var(--amber-dark);
+}
+
+.riskLow .paralogChipPct {
+  color: var(--teal-dark);
+}
+
+/* Keep the tint on hover (the generic chip hover swaps to a neutral
+   surface) so a risk color never disappears mid-interaction. */
+.riskHigh:hover,
+.riskHigh:focus-visible {
+  background: var(--maroon-blush);
+  border-color: var(--maroon-light);
+}
+
+.riskMed:hover,
+.riskMed:focus-visible {
+  background: var(--amber-tint);
+  border-color: var(--amber-mid);
+}
+
+.riskLow:hover,
+.riskLow:focus-visible {
+  background: var(--teal-tint);
+  border-color: var(--teal-mid);
+}
+
+/* Risk-tier legend below the chip strip — rendered only when at least
+   one paralog has an ECD %id to color by (ECD-less proteins skip it). */
+.paralogLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.9rem;
+  margin: 0.55rem 0 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.paralogLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.paralogLegendDot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  border: 1px solid;
+  display: inline-block;
 }

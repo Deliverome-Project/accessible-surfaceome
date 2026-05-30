@@ -98,6 +98,7 @@ def _build_task(
     *,
     a1_draft: dict[str, Any],
     a2_draft: dict[str, Any] | None,
+    triage_summary_json: str | None = None,
 ) -> str:
     schema = json.dumps(SynthesizerDraft.model_json_schema(), indent=2)
     a1_json = json.dumps(a1_draft, indent=2)
@@ -115,6 +116,22 @@ def _build_task(
             "Full `BiologicalContextDraft` (including its evidence ledger slice):\n\n"
             f"```json\n{json.dumps(a2_draft, indent=2)}\n```\n"
         )
+    triage_section = ""
+    if triage_summary_json:
+        triage_section = (
+            "## Triage prior\n\n"
+            "The genome-wide Haiku `surface_triage` agent's verdict on this "
+            "gene — a first-pass decision made before any deep literature "
+            "work. Carries `verdict` / `reason` / `verdict_reasoning` (prose) "
+            "/ `key_uncertainty` / `confidence`. The "
+            "`_check_triage_signal_consistency` model_validator on "
+            "`SurfaceomeRecord` requires you to explain in "
+            "`confidence_reasoning` when the triage verdict strongly "
+            "conflicts with what the A1+A2 evidence shows; the triage "
+            "prose in `verdict_reasoning` is often the first place to "
+            "look for what went wrong — quote it if useful.\n\n"
+            f"```json\n{triage_summary_json}\n```\n\n"
+        )
     return (
         f"Synthesize the deep-dive top-line for the human gene **{gene}**.\n\n"
         "You receive the A1 (surface_evidence) and A2 (biological_context) "
@@ -122,6 +139,7 @@ def _build_task(
         "from the merged evidence ledger (`a1_evi_*` plus `a2_evi_*` when "
         "A2 is present). Emit exactly one fenced ```json block as your final "
         "message — no prose around it — matching the schema at the end.\n\n"
+        f"{triage_section}"
         "## A1 (Surface Evidence Compiler) output\n\n"
         "Full `SurfaceEvidenceDraft` (including its evidence ledger slice):\n\n"
         f"```json\n{a1_json}\n```\n\n"
@@ -137,12 +155,26 @@ def run_synthesizer(
     a1_path: Path,
     a2_path: Path | None = None,
     client: Anthropic | None = None,
+    triage_summary_json: str | None = None,
 ) -> BResult:
-    """Run B against one gene's A1 (+ optional A2) draft from disk."""
+    """Run B against one gene's A1 (+ optional A2) draft from disk.
+
+    ``triage_summary_json`` is the compact triage prior the v2
+    orchestrator builds via
+    :func:`accessible_surfaceome.agents.plan_trim_select.runner._summarize_triage_for_planner`.
+    When present, it lands as a "Triage prior" section at the top of B's
+    task message — see PR #23 design doc §1110-1116.
+    """
     client = client or get_client()
     a1_draft = _load_json(a1_path)
     a2_draft = _load_json(a2_path) if a2_path is not None else None
-    return _run(client, gene, a1_draft=a1_draft, a2_draft=a2_draft)
+    return _run(
+        client,
+        gene,
+        a1_draft=a1_draft,
+        a2_draft=a2_draft,
+        triage_summary_json=triage_summary_json,
+    )
 
 
 def run_synthesizer_with_drafts(
@@ -151,16 +183,24 @@ def run_synthesizer_with_drafts(
     a1_draft: SurfaceEvidenceDraft,
     a2_draft: BiologicalContextDraft | None = None,
     client: Anthropic | None = None,
+    triage_summary_json: str | None = None,
 ) -> BResult:
     """In-memory peer of :func:`run_synthesizer` — for orchestrator usage.
 
     Accepts Pydantic drafts directly so the orchestrator doesn't have to
     round-trip A1 / A2 outputs through disk just to feed them into B.
+    ``triage_summary_json`` semantics match :func:`run_synthesizer`.
     """
     client = client or get_client()
     a1_dict = a1_draft.model_dump(mode="json")
     a2_dict = a2_draft.model_dump(mode="json") if a2_draft is not None else None
-    return _run(client, gene, a1_draft=a1_dict, a2_draft=a2_dict)
+    return _run(
+        client,
+        gene,
+        a1_draft=a1_dict,
+        a2_draft=a2_dict,
+        triage_summary_json=triage_summary_json,
+    )
 
 
 def _run(
@@ -169,6 +209,7 @@ def _run(
     *,
     a1_draft: dict[str, Any],
     a2_draft: dict[str, Any] | None,
+    triage_summary_json: str | None = None,
 ) -> BResult:
     system_prompt = SYSTEM_PROMPT_PATH.read_text()
     cached_system_blocks = cached_system(system_prompt)
@@ -176,7 +217,14 @@ def _run(
     # JSON schema — large, static across repair iterations. Cache it once so
     # repairs only pay full price for the new error-feedback turn.
     messages: list[dict[str, Any]] = [
-        cached_user_text(_build_task(gene, a1_draft=a1_draft, a2_draft=a2_draft))
+        cached_user_text(
+            _build_task(
+                gene,
+                a1_draft=a1_draft,
+                a2_draft=a2_draft,
+                triage_summary_json=triage_summary_json,
+            )
+        )
     ]
     n_repair_attempts = 0
     usage_records: list[UsageRecord] = []

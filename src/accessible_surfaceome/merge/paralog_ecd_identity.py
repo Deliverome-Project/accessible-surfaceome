@@ -201,3 +201,15 @@ def compute_ecd_identity_from_records(
         paralog_topology=paralog_record["per_residue_topology"],
         paralog_sequence=paralog_record["sequence"],
     )
+
+
+# NOTE: a *full-length* (whole-protein) paralog identity is intentionally NOT
+# computed here. Ensembl Compara already emits one — ``biomart_percent_identity``
+# in the ``compara_paralog`` table, populated for 100% of paralog pairs,
+# including the ECD-less proteins whose per-loop ``ecd_pct_identity`` is None.
+# The deep-dive builder surfaces that value as
+# ``ParalogEntry.full_length_pct_identity`` (see
+# ``surfaceome_v1/d1_deterministic.py:_fetch_paralogs``). This mirrors how the
+# ortholog full-length identity is sourced (``compara_ortholog.percent_identity``,
+# also from Compara/BioMart), so the paralog and ortholog full-length numbers
+# are computed the same way and are directly comparable in the viewer.

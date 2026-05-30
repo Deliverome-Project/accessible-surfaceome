@@ -1,10 +1,10 @@
 import type {
   AccessibilityImplication,
   SurfaceomeRecord,
-  TissueLevel,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { CiteCount } from "../CiteCount/CiteCount";
+import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import { FeatureChips } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./BiologicalContextCard.module.css";
@@ -21,15 +21,6 @@ function implicationTone(v: AccessibilityImplication) {
   return "neutral" as const;
 }
 
-function tissueLevelTone(v: TissueLevel) {
-  if (v === "high") return "success" as const;
-  if (v === "moderate") return "teal" as const;
-  if (v === "low") return "amber" as const;
-  if (v === "absent") return "neutral" as const;
-  if (v === "mixed") return "lavender" as const;
-  return "neutral" as const;
-}
-
 export function BiologicalContextCard({ rec, n }: Props) {
   const bc = rec.biological_context;
   const loc = bc.subcellular_localization;
@@ -38,48 +29,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
     <SectionCard
       n={n}
       eyebrow="Biological context"
-      title="Expression and tissue distribution"
-      meta="Tissues · cell types · localization · anatomical accessibility · accessibility modulation"
+      title="Localization & accessibility context"
+      meta="Subcellular localization · anatomical accessibility · accessibility modulation"
     >
-      <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>Tissues × disease context</p>
-        {bc.tissues.length === 0 ? (
-          <p className={styles.empty}>No tissue rows recorded.</p>
-        ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Tissue</th>
-                <th scope="col">Disease context</th>
-                <th scope="col">Level (protein)</th>
-                <th scope="col">Cell types</th>
-                <th scope="col">Cell states</th>
-                <th scope="col">Cites</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bc.tissues.map((t, i) => (
-                <tr key={i}>
-                  <td>{t.tissue}</td>
-                  <td>
-                    <span className={styles.mono}>{prettyEnum(t.disease_context)}</span>
-                  </td>
-                  <td>
-                    <StatusPill tone={tissueLevelTone(t.present)} size="sm">
-                      {prettyEnum(t.present)}
-                    </StatusPill>
-                  </td>
-                  <td>{t.cell_types.join(", ") || "—"}</td>
-                  <td>{t.cell_states.join(", ") || "—"}</td>
-                  <td>
-                    <CiteCount ids={t.cited_evidence_ids} label="Tissue" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <FeatureChips category="biology" rec={rec} />
 
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
@@ -118,7 +71,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>{d.condition ?? "—"}</td>
                   <td>
-                    <CiteCount ids={d.cited_evidence_ids} label="Dual localization" />
+                    <EvidenceChipList ids={d.cited_evidence_ids} label="Cites" />
                   </td>
                 </tr>
               ))}
@@ -129,6 +82,45 @@ export function BiologicalContextCard({ rec, n }: Props) {
             biology now lives in `accessibility_modulation` rows
             with `category=lysosomal_exocytosis` or `category=
             activation_induced` plus `cell_state_trigger`. */}
+
+        {/* Restricted subdomain — MOVED HERE from §Risks. Describes
+         *  WHERE on the cell surface the protein localizes (apical
+         *  vs basolateral vs junctional vs broad). That's a
+         *  biology-context fact about distribution, not a risk per
+         *  se; reading it under Subcellular localization matches
+         *  the reader's mental model and keeps the Risks card
+         *  focused on shed / secreted / co-receptor / epitope-
+         *  masking / ECD-size which truly are accessibility caveats. */}
+        {(() => {
+          const rs = rec.accessibility_risks.restricted_subdomain;
+          return (
+            <div className={styles.locRestricted}>
+              <p className={`label-mono ${styles.subhead}`}>
+                Restricted-subdomain distribution
+              </p>
+              <div className={styles.locHead}>
+                <StatusPill
+                  tone={rs.present ? "warn" : "success"}
+                  size="sm"
+                >
+                  {rs.present ? "Restricted" : "Broad / no restriction observed"}
+                </StatusPill>
+                {rs.present ? (
+                  <StatusPill tone="lavender" size="sm">
+                    {prettyEnum(rs.domain)}
+                  </StatusPill>
+                ) : null}
+                <EvidenceChipList
+                  ids={rs.cited_evidence_ids}
+                  label="Cites"
+                />
+              </div>
+              {rs.rationale ? (
+                <p className={styles.locProse}>{rs.rationale}</p>
+              ) : null}
+            </div>
+          );
+        })()}
       </div>
 
       <div className={styles.subsection}>
@@ -161,7 +153,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>{a.rationale}</td>
                   <td>
-                    <CiteCount ids={a.cited_evidence_ids} label="Anatomical" />
+                    <EvidenceChipList ids={a.cited_evidence_ids} label="Cites" />
                   </td>
                 </tr>
               ))}
@@ -192,7 +184,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                       lineage · {prettyEnum(m.restricted_lineage)}
                     </StatusPill>
                   ) : null}
-                  <CiteCount ids={m.cited_evidence_ids} label="Modulation" />
+                  <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
                 </div>
                 <p className={styles.modBaseline}>
                   <span className={styles.muted}>baseline</span> {m.baseline_context}{" "}

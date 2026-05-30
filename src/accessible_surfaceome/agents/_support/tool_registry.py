@@ -245,9 +245,7 @@ EVIDENCE_RETRIEVAL_DESCRIPTION = (
     "`EvidenceClaim.quote` — only `quote` is bounded to the 200-char "
     "schema cap. The `snippets` field is the same content unaggregated "
     "(useful for browsing); `evidence_claim_drafts` is the contract. "
-    "category='hpa_ihc' pulls Human Protein Atlas IHC reliability + "
-    "subcellular location lines (no HTTP; cached snapshot). For the "
-    "high-throughput categories (mass_spec_surfaceome, "
+    "For the high-throughput categories (mass_spec_surfaceome, "
     "surface_biotinylation, western_blot_paired) drafts include both "
     "methodology snippets AND target-mention snippets "
     "(hallmark_phrase='target_mention') — pair them in two sibling "
@@ -257,7 +255,10 @@ EVIDENCE_RETRIEVAL_DESCRIPTION = (
     "the abstract-only recall fallback. Empty returns are still useful — "
     "the search_log records the negative. NOTE: western_blot_paired "
     "counts only when the paper also runs fractionation/biotinylation; "
-    "a naked whole-cell-lysate WB isn't surface evidence."
+    "a naked whole-cell-lysate WB isn't surface evidence. HPA per-tissue "
+    "evidence is no longer a separate retrieval category — the HPA "
+    "surface vote rides on the deterministic db_panel input, and broader "
+    "IHC literature is covered by category='ihc'."
 )
 
 EVIDENCE_RETRIEVAL_INPUT_SCHEMA: dict[str, Any] = {
@@ -273,19 +274,25 @@ EVIDENCE_RETRIEVAL_INPUT_SCHEMA: dict[str, Any] = {
             "type": "string",
             "enum": [
                 "ihc",
-                "if_intact",
+                "if",
                 "flow_cytometry",
                 "surface_biotinylation",
                 "mass_spec_surfaceome",
                 "western_blot_paired",
                 "structure_with_ecd",
-                "hpa_ihc",
+                "other",
             ],
             "description": (
                 "Which assay category to retrieve. Antibody-based categories "
-                "(ihc / if_intact / flow_cytometry) prioritize figure legends; "
+                "(ihc / if / flow_cytometry) prioritize figure legends; "
                 "mass_spec_surfaceome prioritizes methods; western_blot_paired "
-                "requires co-citation of a fractionation step."
+                "requires co-citation of a fractionation step. 'if' covers "
+                "both non-permeabilized IF and permeabilized confocal IF with "
+                "explicit PM-marker colocalization. 'other' is the catch-all "
+                "for surface evidence outside the methodology buckets — "
+                "pharmacology (radioligand binding, BRET) for receptor classes, "
+                "shedding / soluble-form, proximity labeling, internalization "
+                "kinetics."
             ),
         },
         "max_papers": {

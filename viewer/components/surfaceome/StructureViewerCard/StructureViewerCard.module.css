@@ -3,6 +3,315 @@
   width: 100%;
 }
 
+/* Per-variant structure caption — sits below the canvas (above the
+   legend). Title + stats + source link per variant. */
+.caption {
+  margin: var(--space-2) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink-soft, #555);
+}
+
+.captionTitle {
+  margin: 0;
+  font-size: 0.85rem;
+  font-style: italic;
+  color: var(--ink, #222);
+  /* Long PDB titles can wrap a couple of lines on a narrow viewer
+     column — that's fine; max 3 lines is generous enough that we
+     don't need to clamp. */
+}
+
+.captionStats {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--muted);
+}
+
+.captionStat {
+  white-space: nowrap;
+}
+
+.captionSep {
+  color: var(--line);
+}
+
+.captionLink {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft, #555);
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1px;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+  white-space: nowrap;
+}
+
+.captionLink:hover,
+.captionLink:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Caveat note for the multi-segment (fusion-construct) experimental
+   case — only rendered when mappingMode === "approx". De-emphasized
+   relative to the stats line; signals that topology coloring is
+   best-effort near segment boundaries. */
+.captionCaveat {
+  margin: 0.1rem 0 0;
+  font-size: 0.72rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* SURFACE-Bind sites legend — mirrors the TopologyBar's legend
+   classes for visual consistency (same swatch size, same gap, same
+   label color) but uses round swatches (sphere = round) instead of
+   the topology bar's square ones. */
+.sitesLegend {
+  list-style: none;
+  margin: var(--space-3) 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.sitesLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.sitesLegendSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  flex-shrink: 0;
+}
+
+.sitesLegendLabel {
+  white-space: nowrap;
+}
+
+/* Citation line below the sites legend — surfaces the source paper
+   for the SURFACE-Bind anchor data next to the spheres. */
+.sitesCitation {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Variant tab strip — only rendered when the gene has alternative
+   isoforms or orthologs. Sits directly above the 3D canvas; clicking
+   a tab swaps which AFDB model + topology is rendered. */
+.variantTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  margin-bottom: var(--space-2);
+  background: var(--line-soft, #e8d6d2);
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 6px;
+  padding: 1px;
+  overflow: hidden;
+}
+
+.variantTab {
+  flex: 1 1 auto;
+  appearance: none;
+  background: var(--surface-soft, #f6f1ef);
+  color: var(--ink-soft, #555);
+  border: 0;
+  border-radius: 5px;
+  padding: 0.35rem 0.6rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  text-align: left;
+  min-width: 0;
+  transition:
+    background var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    color var(--dur-fast, 0.15s) var(--ease-out, ease-out);
+}
+
+.variantTab:hover {
+  background: var(--surface, white);
+  color: var(--ink, #222);
+}
+
+.variantTab[data-active="true"] {
+  background: var(--ink, #2a2a2a);
+  color: white;
+}
+
+.variantTab[data-active="true"]:hover {
+  background: var(--ink, #2a2a2a);
+  color: white;
+}
+
+.variantTabLabel {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.variantTabSub {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Controls bar — mode toggle + reset button stacked horizontally
+   below the canvas. The toggle (when present) takes most of the
+   row; the reset button is fixed-width on the right. */
+.controls {
+  display: flex;
+  margin-top: var(--space-2);
+  gap: var(--space-2);
+  align-items: stretch;
+  font-size: 0.78rem;
+}
+
+/* Two-button segmented toggle for ``topology`` / ``sites`` modes,
+   rendered below the canvas. Only appears when the gene has
+   SURFACE-Bind anchors (the ``sites`` mode is empty otherwise). */
+.modeToggle {
+  display: flex;
+  flex: 1 1 auto;
+  gap: 0;
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Inlaid reset symbol — small circular button in the canvas's
+   bottom-right corner. Replaces the previous full-width "Reset view"
+   text button so the controls row doesn't have to make room for it.
+   Semi-transparent backdrop so the symbol reads against any cartoon
+   color underneath; goes solid on hover for a clear hit state. */
+.resetSymbol {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  /* 3Dmol appends a WebGL <canvas> inside the same container after
+     React mounts the button; without an explicit z-index the canvas
+     paints over the button and it appears missing even though it's
+     in the DOM. z-index:2 puts the button above the canvas without
+     getting in front of the loading / error overlays (which would
+     also stack but are mutually exclusive with the canvas). */
+  z-index: 2;
+  appearance: none;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink-soft, #555);
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    color var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    box-shadow var(--dur-fast, 0.15s) var(--ease-out, ease-out);
+}
+
+.resetSymbol:hover,
+.resetSymbol:focus-visible {
+  background: white;
+  color: var(--ink, #222);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+/* External-link icon next to the mode toggle — opens the SURFACE-Bind
+   per-protein entry page. Compact, same height as the toggle so the
+   row reads as a single control unit. */
+.externalLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.55rem;
+  background: var(--surface-soft, #f6f1ef);
+  color: var(--ink-soft, #555);
+  border: 1px solid var(--line-soft, #e8d6d2);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    color var(--dur-fast, 0.15s) var(--ease-out, ease-out);
+}
+
+.externalLink:hover,
+.externalLink:focus-visible {
+  background: var(--surface, white);
+  color: var(--ink, #222);
+}
+
+.modeButton {
+  flex: 1;
+  appearance: none;
+  background: var(--surface-soft, #f6f1ef);
+  color: var(--ink-soft, #555);
+  border: 0;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: inherit;
+  letter-spacing: 0.01em;
+  transition:
+    background var(--dur-fast, 0.15s) var(--ease-out, ease-out),
+    color var(--dur-fast, 0.15s) var(--ease-out, ease-out);
+}
+
+.modeButton + .modeButton {
+  border-left: 1px solid var(--line-soft, #e8d6d2);
+}
+
+.modeButton:hover {
+  background: var(--surface, white);
+  color: var(--ink, #222);
+}
+
+.modeButton[data-active="true"] {
+  background: var(--ink, #2a2a2a);
+  color: white;
+  font-weight: 500;
+}
+
+.modeButton[data-active="true"]:hover {
+  background: var(--ink, #2a2a2a);
+}
+
 .viewerCanvas {
   position: relative;
   width: 100%;

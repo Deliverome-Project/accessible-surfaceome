@@ -1,8 +1,15 @@
 .page {
-  padding: var(--space-12) 0 var(--space-24);
+  /* Tight top padding + tighter inter-row gap so the gene-symbol
+     h1 sits a single line below the back-arrow toolbar. The bottom
+     padding used to be `var(--space-24)` (96px); the Shell footer's
+     own `margin-top: var(--space-12)` (48px) already gives the
+     content a clear separator, so the page's extra 96px just sat
+     as a dead band between DataSourcesFooter and the footer copy.
+     Dropped to 0 — the footer's margin-top handles the gap. */
+  padding: var(--space-3) 0 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-8);
+  gap: var(--space-3);
   font-size: 0.92rem;
   line-height: 1.55;
 }
@@ -13,6 +20,35 @@
   gap: var(--space-2);
   font-size: 0.85rem;
   color: var(--muted);
+}
+
+/* Back-arrow chip — replaces the "Surfaceome / EGFR" breadcrumb
+   text. The arrow itself tints (ink on hover, accent maroon on
+   active/click) — no square background or border. */
+.crumbBack {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Tighter hit-area than the previous 26×26 square — just enough
+     padding for the arrow to be clickable. */
+  padding: 0.15rem 0.3rem;
+  color: var(--muted);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.crumbBack:hover,
+.crumbBack:focus-visible {
+  color: var(--ink);
+}
+
+/* On click / press: arrow turns the brand accent (Rosy Maroon).
+   :active fires while the mouse button is held; the page navigates
+   immediately so the red flashes briefly before the next route
+   renders. */
+.crumbBack:active {
+  color: var(--accent);
 }
 
 .crumbLink {
@@ -63,10 +99,24 @@
   content: attr(data-hint);
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
+  /* Right-align the tooltip to the link so it opens LEFTWARD into the
+   * page. The crumb actions live in a `margin-left: auto` cluster
+   * pinned to the right edge of the page-width container, so a
+   * left-anchored tooltip (the old `left: 0`) spilled the 320px box
+   * past the right viewport edge — worst for the rightmost
+   * "Markdown (full)" link, whose long hint ran ~170px off-screen.
+   * Anchoring to `right: 0` keeps the whole box on-screen; the page is
+   * always wider than 320px so it can't underflow the left edge. */
+  right: 0;
+  left: auto;
   z-index: 20;
   width: max-content;
-  max-width: 320px;
+  /* Cap at 320px, but never wider than the viewport minus an 8px
+   * margin each side — so on a phone narrower than ~336px the box
+   * shrinks instead of spilling past the left edge. Mirrors the
+   * `90vw` guarantee on the InfoTip popover: no tooltip ever exceeds
+   * the viewport, so the reader never has to scroll to read one. */
+  max-width: min(320px, calc(100vw - 16px));
   padding: 0.5rem 0.7rem;
   border-radius: var(--radius-sm);
   background: var(--ink);
@@ -116,4 +166,57 @@
 .confidenceLine strong {
   color: var(--ink);
   font-weight: var(--fw-semibold);
+}
+
+/* Collapsible drawer for confidence_reasoning prose — closed by
+   default so the above-the-fold confidence eyebrow stays tight;
+   click the summary to expand. Styling mirrors
+   ExecutiveSummaryCard.module.css for visual consistency across
+   any other place the same drawer might appear. */
+.confidenceRationale {
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--bg-warm);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line-soft);
+}
+
+.confidenceRationale > summary {
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  list-style: none;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.confidenceRationale > summary::before {
+  content: "▸";
+  color: var(--muted);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.confidenceRationale[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.confidenceRationale > summary::-webkit-details-marker {
+  display: none;
+}
+
+.confidenceRationale > summary:hover {
+  color: var(--maroon);
+}
+
+.confidenceRationaleBody {
+  margin: var(--space-2) 0 0;
+  font-size: 0.9rem;
+  line-height: var(--lh-body);
+  color: var(--ink);
+  max-width: 70ch;
 }

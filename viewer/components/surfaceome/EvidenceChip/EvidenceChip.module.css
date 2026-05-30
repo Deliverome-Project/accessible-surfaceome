@@ -17,8 +17,8 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--accent);
-  background: var(--accent-soft, var(--maroon-soft));
-  border: 0;
+  background: transparent;
+  border: 1px solid rgba(146, 32, 56, 0.3);
   border-radius: 3px;
   padding: 0.18rem 0.45rem;
   margin: 0;
@@ -26,13 +26,15 @@
   text-decoration: none;
   transition:
     color var(--dur-fast) var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out);
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
 }
 
 .chip:hover,
 .chip:focus-visible {
   color: var(--bg);
   background: var(--accent);
+  border-color: var(--accent);
 }
 
 .chipRow {
@@ -59,4 +61,69 @@
   text-transform: uppercase;
   color: var(--muted);
   padding: 0.18rem 0.35rem;
+}
+
+/* Inline weight badge — pill labeling a structured stance weight
+   (high / moderate / low) surfaced from grade_rationale prose
+   parentheticals by linkifyEvidenceRefs(). Same shape as `.chip` but
+   non-interactive (the weight is metadata, not an evidence ref) and
+   tone-mapped so the reader can scan stance polarity at a glance. */
+.weightBadge {
+  display: inline-block;
+  font: var(--fw-medium) 0.62rem/1 var(--font-sans);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.4rem;
+  margin: 0 0.1rem;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  vertical-align: 0.05em;
+  white-space: nowrap;
+}
+
+/* high — supports surface call with strong methodology (direct
+   methodology + KO control or multi-source corroboration). Green
+   editorial tone matches the success register used elsewhere. */
+.weightHigh {
+  color: var(--success, #1f7a3f);
+  border-color: rgba(31, 122, 63, 0.3);
+  background: rgba(31, 122, 63, 0.06);
+}
+
+/* moderate — direct methodology, single source, weaker validation.
+   Amber tone matches the warn register used elsewhere. */
+.weightModerate {
+  color: var(--warning, #a16307);
+  border-color: rgba(161, 99, 7, 0.3);
+  background: rgba(161, 99, 7, 0.06);
+}
+
+/* low — indirect or inferred or single mention. Neutral / muted
+   tone to avoid distracting the reader; low-weight evidence is
+   "noted" but rarely load-bearing for the headline call. */
+.weightLow {
+  color: var(--ink-soft);
+  border-color: var(--line);
+  background: var(--bg-warm);
+}
+
+/* PMID outbound link — inline reference to PubMed surfaced from
+   grade_rationale / surface_form_rationale prose. Visually a plain
+   underline link in accent color so it reads as "this opens an
+   external citation"; on hover it deepens to match the existing
+   anchor-link affordance used elsewhere on the page. */
+.pmidLink {
+  color: var(--accent);
+  border-bottom: 1px solid rgba(146, 32, 56, 0.3);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.pmidLink:hover,
+.pmidLink:focus-visible {
+  color: var(--accent-deep, var(--accent));
+  border-bottom-color: var(--accent);
 }

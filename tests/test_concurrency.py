@@ -488,8 +488,8 @@ def test_resolve_focus_prompts_returns_quadruple_with_plan_path() -> None:
     assert prefix_a2 == "a2_evi_"
 
     # The three planner prompts are distinct files (different focus
-    # guidance — A2 leans on hpa_ihc + biology anchors, A1 leans on
-    # method categories).
+    # guidance — A2 leans on biology / tissue / cell-type anchors,
+    # A1 leans on method categories).
     assert len({plan_none, plan_a1, plan_a2}) == 3
 
 
@@ -520,6 +520,8 @@ def test_a2_plan_prompt_emphasizes_biology() -> None:
 
     body = A2_PLAN_PROMPT_PATH.read_text().lower()
     assert "biological-context" in body or "biological context" in body
-    # A2 should mention the biology-leaning categories + downstream blocks.
-    for token in ("hpa_ihc", "tissuecontext", "anatomicalaccessibility"):
+    # A2 should mention the biology-leaning blocks it produces. The
+    # `ihc` category serves the HPA antibody panels post-PR #38 (no
+    # separate hpa_ihc category any more).
+    for token in ("ihc", "tissuecontext", "anatomicalaccessibility"):
         assert token.lower() in body, f"A2 planner should mention {token!r}"

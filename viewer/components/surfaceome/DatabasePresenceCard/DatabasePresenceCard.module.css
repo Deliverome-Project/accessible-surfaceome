@@ -77,3 +77,72 @@
   color: var(--muted);
   letter-spacing: 0.05em;
 }
+
+/* ============================================================
+ * Strip variant — slim, header-embedded version. Renders just the
+ * 5 swatches + DB names in an inline strip, no card wrapper.
+ * ============================================================ */
+
+.stripWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0.25rem 0;
+  flex-wrap: wrap;
+}
+
+.stripLabel {
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stripRow {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.15rem var(--space-2);
+}
+
+.stripCell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  padding: 0.15rem 0;
+  cursor: default;
+}
+
+.stripCellYes {
+  color: var(--ink-soft);
+}
+
+.stripCellNo {
+  color: var(--muted);
+  opacity: 0.75;
+}
+
+/* Green/red dot convention per user preference — green = present
+   (flagged by this source DB), red = absent. Replaces the previous
+   teal-mid-filled / outlined-empty look so the strip reads as a
+   pass/fail rollup at a glance. */
+.stripDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.stripDotYes {
+  background: var(--success, #16A34A);
+}
+
+.stripDotNo {
+  background: var(--danger, #DC2626);
+  opacity: 0.55;
+}

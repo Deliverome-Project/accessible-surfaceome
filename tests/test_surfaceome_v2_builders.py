@@ -18,7 +18,8 @@ from __future__ import annotations
 
 import json
 from datetime import UTC, datetime
-from typing import Any
+from pathlib import Path
+from typing import Any, get_args
 from unittest.mock import MagicMock
 
 import pytest
@@ -29,6 +30,7 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
     build_anatomical_accessibility,
+    build_cell_states,
     build_cell_types,
     build_contradictions,
     build_evidence_grade,
@@ -49,13 +51,36 @@ from accessible_surfaceome.tools._shared.models import (
     CellTypeContextV1,
     Contradiction,
     EvidenceClaim,
+    MethodFamily,
     MethodObservation,
+    StateContext,
     SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
     TherapeuticEngagementContext,
     TissueContext,
 )
+
+
+def test_method_family_includes_functional_surface_assay():
+    """``functional_surface_assay`` distinguishes evidence where binding /
+    engagement implies surface access (antibody-mediated tumor killing,
+    surface-targeted ADC efficacy, photo-tag labeling, FRET-on-surface)
+    from the catch-all ``other``. SRC's a1_evi_02 — anti-Src antibody
+    therapy in xenografts — is the canonical case that didn't fit any
+    methodology bucket before."""
+    assert "functional_surface_assay" in get_args(MethodFamily)
+
+
+def test_methods_prompt_documents_functional_surface_assay():
+    """The methods_builder prompt must mention the new method_family
+    value so the LLM knows when to pick it."""
+    prompt_path = (
+        Path(__file__).parent.parent
+        / "src/accessible_surfaceome/agents/surfaceome_v2/prompts/methods_builder_system.md"
+    )
+    body = prompt_path.read_text()
+    assert "functional_surface_assay" in body
 
 
 # ---------------------------------------------------------------------------
@@ -240,6 +265,231 @@ def test_build_methods_scrubs_unknown_citations() -> None:
     sink: list[UsageRecord] = []
     rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
     assert rows[0].cited_evidence_ids == ["a1_evi_01"]
+
+
+def test_build_methods_overexpression_with_native_sp() -> None:
+    """A native-SP overexpression panel populates the overexpression block
+    with `signal_peptide_source="native"`."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote="HEK293 cells transfected with untagged full-length [GENE] cDNA.",
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "overexpression",
+            "overexpression": {
+                "signal_peptide_source": "native",
+                "signal_peptide_detail": "native signal peptide",
+                "construct_tag": None,
+                "cell_line": "HEK293",
+                "cited_evidence_ids": ["a1_evi_01"],
+            },
+            "antibodies": [],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert len(rows) == 1
+    assert rows[0].expression_system == "overexpression"
+    assert rows[0].overexpression is not None
+    assert rows[0].overexpression.signal_peptide_source == "native"
+    assert rows[0].overexpression.cell_line == "HEK293"
+
+
+def test_build_methods_overexpression_with_exogenous_sp() -> None:
+    """An exogenous-SP construct should be flagged so downstream tier
+    rules can demote it (csGRP78 / cell-surface-vimentin failure mode)."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote="HEK293 cells transfected with IgG kappa leader-[GENE] fusion.",
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "overexpression",
+            "overexpression": {
+                "signal_peptide_source": "exogenous",
+                "signal_peptide_detail": "IgG kappa leader",
+                "construct_tag": "C-terminal FLAG",
+                "cell_line": "HEK293",
+                "cited_evidence_ids": ["a1_evi_01"],
+            },
+            "antibodies": [],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows[0].overexpression is not None
+    assert rows[0].overexpression.signal_peptide_source == "exogenous"
+    assert rows[0].overexpression.signal_peptide_detail == "IgG kappa leader"
+
+
+def test_build_methods_endogenous_panel_has_no_overexpression_block() -> None:
+    """Endogenous-evidence panels leave the overexpression block as None."""
+    claims = [_claim("01", evidence_type="flow_cytometry")]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows[0].expression_system == "endogenous"
+    assert rows[0].overexpression is None
+
+
+def test_build_methods_extracts_clone_vendor_rrid_from_claim_quote() -> None:
+    """When the claim quote names an antibody clone + vendor + RRID, the
+    builder must split them into the structured fields, not collapse into
+    `name`. Verifies the new "Antibody-identifier extraction discipline"
+    section of the methods builder prompt."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote=(
+                "Surface CD81 was detected by flow cytometry with anti-CD81 "
+                "clone 5A6 (BD Biosciences, RRID:AB_396171) on live HEK293T "
+                "cells; CD81-KO cells were negative."
+            ),
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [
+                {
+                    "name": "anti-CD81",
+                    "clone": "5A6",
+                    "vendor": "BD Biosciences",
+                    "rrid": "AB_396171",
+                    "monoclonal_or_polyclonal": "monoclonal",
+                    "antibody_epitope_region": "extracellular",
+                    "validation_strategy": "genetic_KO",
+                    "validation_strength": "strong",
+                }
+            ],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "CD81"})
+    assert len(rows) == 1
+    ab = rows[0].antibodies[0]
+    assert ab.name == "anti-CD81"
+    assert ab.clone == "5A6"
+    assert ab.vendor == "BD Biosciences"
+    assert ab.rrid == "AB_396171"
+    assert ab.validation_strategy == "genetic_KO"
+    assert ab.validation_strength == "strong"
+
+
+def test_build_methods_generic_antibody_lands_vendor_claim_only() -> None:
+    """When the claim quote uses generic language ('a commercial anti-X
+    antibody'), the builder should set clone=null AND
+    validation_strategy=vendor_claim_only AND validation_strength=weak.
+    Verifies the prompt's "honest about gaps" rule."""
+    claims = [
+        _claim(
+            "01",
+            evidence_type="flow_cytometry",
+            quote=(
+                "Live cells were stained with a commercial anti-CD81 "
+                "antibody and analyzed by flow cytometry."
+            ),
+        )
+    ]
+    output = [
+        {
+            "method_family": "flow_cytometry",
+            "method_subclass": "live_cell_flow",
+            "permeabilization": "nonpermeabilized",
+            "expression_system": "endogenous",
+            "antibodies": [
+                {
+                    "name": "anti-CD81",
+                    "clone": None,
+                    "vendor": None,
+                    "monoclonal_or_polyclonal": "unknown",
+                    "antibody_epitope_region": "unknown",
+                    "validation_strategy": "vendor_claim_only",
+                    "validation_strength": "weak",
+                }
+            ],
+            "accessibility_relevance": "direct_surface_accessibility",
+            "surface_claim_type": "surface_accessible",
+            "expression_observations": [],
+            "cited_evidence_ids": ["a1_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_methods(claims, client=client, usage_sink=sink, context={"gene": "CD81"})
+    ab = rows[0].antibodies[0]
+    assert ab.clone is None
+    assert ab.validation_strategy == "vendor_claim_only"
+    assert ab.validation_strength == "weak"
+
+
+def test_methods_builder_prompt_mentions_clone_extraction_discipline() -> None:
+    """Tripwire: the methods builder prompt must carry the antibody-
+    identifier extraction discipline section that strengthens clone /
+    vendor / RRID extraction (PR #38 follow-up after audit found 0 of
+    ~50 antibody rows had a clone extracted)."""
+    from accessible_surfaceome.agents.surfaceome_v2.builders._common import load_prompt
+    body = load_prompt("methods_builder_system").lower()
+    assert "antibody-identifier extraction discipline" in body
+    assert "do not bury identifiers" in body or "not bury the identifier" in body or "burying" in body or "bury" in body
+    assert "vendor_claim_only" in body
+    assert "ab_" in body or "rrid" in body  # RRID guidance
+
+
+def test_methods_builder_prompt_mentions_validation_strategy_table() -> None:
+    """Tripwire: the prompt must explicitly map literature language to
+    validation_strategy enum values so the builder doesn't default to
+    `none`."""
+    from accessible_surfaceome.agents.surfaceome_v2.builders._common import load_prompt
+    body = load_prompt("methods_builder_system").lower()
+    assert "validation-strategy assignment" in body
+    assert "siRNA knockdown abolishes".lower() in body
+    assert "ip_ms_pulldown" in body
 
 
 # ---------------------------------------------------------------------------
@@ -453,6 +703,72 @@ def test_build_cell_types_empty_input() -> None:
     rows = build_cell_types([], client=client, usage_sink=sink, context={"gene": "X"})
     assert rows == []
     client.messages.create.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# cell_states_builder
+# ---------------------------------------------------------------------------
+
+
+def test_build_cell_states_happy() -> None:
+    """A claim binding ER stress to surface translocation should emit a
+    StateContext row with the state, descriptor, and evidence id."""
+    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
+    output = [
+        {
+            "state": "ER stress",
+            "descriptor": (
+                "Tunicamycin- and thapsigargin-induced UPR translocates a "
+                "fraction to the plasma membrane in tumor cells."
+            ),
+            "cited_evidence_ids": ["a2_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states(
+        claims, client=client, usage_sink=sink, context={"gene": "HSPA5"}
+    )
+    assert len(rows) == 1
+    assert isinstance(rows[0], StateContext)
+    assert rows[0].state == "ER stress"
+    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
+
+
+def test_build_cell_states_scrubs_unknown_evidence_ids() -> None:
+    """Builder must drop cited_evidence_ids the input ledger doesn't carry."""
+    claims = [_claim("01", prefix="a2")]
+    output = [
+        {
+            "state": "EMT",
+            "descriptor": "EMT-induced surface fraction.",
+            "cited_evidence_ids": ["a2_evi_01", "a2_evi_99"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states(
+        claims, client=client, usage_sink=sink, context={"gene": "VIM"}
+    )
+    assert len(rows) == 1
+    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
+
+
+def test_build_cell_states_empty_input() -> None:
+    client = _mock_client([])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states([], client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows == []
+    client.messages.create.assert_not_called()
+
+
+def test_build_cell_states_empty_array_is_valid() -> None:
+    """Most genes don't have state-modulated surface — empty array is normal."""
+    claims = [_claim("01", prefix="a2")]
+    client = _mock_client([_fenced("[]")])
+    sink: list[UsageRecord] = []
+    rows = build_cell_states(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    assert rows == []
 
 
 # ---------------------------------------------------------------------------

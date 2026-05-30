@@ -51,13 +51,22 @@ export function EvidenceDrawer({ evidence }: EvidenceDrawerProps) {
       const ev = e as CustomEvent<{ evidenceId: string }>;
       if (ev.detail?.evidenceId) setOpenId(ev.detail.evidenceId);
     }
+    // Explicit collapse signal. Fired by the ReasoningDrawer when the
+    // reader clicks anywhere inside it that *isn't* an evidence chip —
+    // so an expanded evidence panel auto-collapses instead of lingering
+    // over the prose the reader has moved on to.
+    function onCloseEvt() {
+      setOpenId(null);
+    }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpenId(null);
     }
     window.addEventListener("surfaceome:open-evidence", onOpen);
+    window.addEventListener("surfaceome:close-evidence", onCloseEvt);
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("surfaceome:open-evidence", onOpen);
+      window.removeEventListener("surfaceome:close-evidence", onCloseEvt);
       window.removeEventListener("keydown", onKey);
     };
   }, []);
@@ -88,10 +97,13 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
   // The v1 schema carries verbatim quotes + source per *span* (each
   // evidence claim can be anchored to multiple spans across one or
   // more sources). Surface the head span's quote + walk the spans for
-  // distinct sources to show all citation links.
+  // distinct sources to show all citation links. Pydantic field name
+  // is ``quote`` (the older TS interface said ``text`` — that's been
+  // corrected in surfaceome-types.ts).
   type SpanWithSource = {
-    text?: string;
+    quote?: string;
     source?: {
+      source_id?: string;
       pmc_id?: string;
       pmid?: string;
       doi?: string;
@@ -112,18 +124,26 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
   for (const sp of spans) {
     const s = sp?.source;
     if (!s) continue;
-    if (s.pmc_id && !seenKeys.has(`pmc:${s.pmc_id}`)) {
-      seenKeys.add(`pmc:${s.pmc_id}`);
+    // Pydantic ``SourceRef`` carries the PMID inside ``source_id`` as
+    // a string like ``"PMID:41818370"``; the dedicated ``pmid`` field
+    // may or may not be set. Same for PMC. Parse defensively.
+    const sid = s.source_id ?? "";
+    const pmidFromSid = sid.startsWith("PMID:") ? sid.slice(5) : null;
+    const pmcFromSid = sid.startsWith("PMC:") ? sid.slice(4) : null;
+    const pmcId = s.pmc_id ?? pmcFromSid;
+    const pmid = s.pmid ?? pmidFromSid;
+    if (pmcId && !seenKeys.has(`pmc:${pmcId}`)) {
+      seenKeys.add(`pmc:${pmcId}`);
       sources.push({
-        href: `https://www.ncbi.nlm.nih.gov/pmc/articles/${s.pmc_id}/`,
-        label: s.pmc_id,
+        href: `https://www.ncbi.nlm.nih.gov/pmc/articles/${pmcId}/`,
+        label: pmcId,
         title: s.title,
       });
-    } else if (s.pmid && !seenKeys.has(`pmid:${s.pmid}`)) {
-      seenKeys.add(`pmid:${s.pmid}`);
+    } else if (pmid && !seenKeys.has(`pmid:${pmid}`)) {
+      seenKeys.add(`pmid:${pmid}`);
       sources.push({
-        href: `https://pubmed.ncbi.nlm.nih.gov/${s.pmid}/`,
-        label: `PMID ${s.pmid}`,
+        href: `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`,
+        label: `PMID ${pmid}`,
         title: s.title,
       });
     } else if (s.doi && !seenKeys.has(`doi:${s.doi}`)) {
@@ -215,37 +235,19 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
             conf · {e.confidence}
           </StatusPill>
         ) : null}
-        {e.entailment_verified ? (
-          <StatusPill tone="success" size="sm">
-            entailment ✓
-          </StatusPill>
-        ) : warnings.length || e.entailment_audit_passed === false ? (
-          <StatusPill tone="amber" size="sm">
-            quote unverified
-          </StatusPill>
-        ) : null}
+        {/* entailment_verified / audit_passed / validation_warnings
+         *  chips removed per UX request — the substring check still
+         *  runs in the pipeline and the result lands on the record
+         *  for audit, but the reader-facing chip strip stays clean.
+         *  PMC ID recovery from validation_warnings (above) still
+         *  fires so entailment-failed claims still get a source link. */}
       </div>
       <h2 className={styles.title}>Agent&apos;s claim</h2>
       <p className={styles.claim}>{ev.claim}</p>
-      {headSpan?.text ? (
+      {headSpan?.quote ? (
         <>
           <h3 className={styles.subhead}>Verbatim quote</h3>
-          <blockquote className={styles.quote}>{headSpan.text}</blockquote>
-        </>
-      ) : warnings.length ? (
-        <>
-          <h3 className={styles.subhead}>Verbatim quote</h3>
-          <p className={styles.warningNote}>
-            The agent&apos;s quoted text could not be re-located in the source
-            after normalization, so the span was dropped by the entailment
-            auditor. The claim is shown above; the source paper is linked
-            below — verify against the source directly.
-          </p>
-          <ul className={styles.warningList}>
-            {warnings.map((w, i) => (
-              <li key={i}>{w}</li>
-            ))}
-          </ul>
+          <blockquote className={styles.quote}>{headSpan.quote}</blockquote>
         </>
       ) : null}
       {e.assay_context ? (

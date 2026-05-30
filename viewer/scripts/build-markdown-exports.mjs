@@ -504,7 +504,7 @@ function md(rec, structureData, canonicalSequence) {
       }
     }
     lines.push(
-      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}*${ev.entailment_verified ? " · entailment ✓" : ""} — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
+      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}* — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
     );
     if (ev.spans?.[0]?.text) {
       lines.push(`  > "${ev.spans[0].text}"`);
@@ -585,7 +585,7 @@ function md(rec, structureData, canonicalSequence) {
   const comparaVersion = df.orthologs.mouse[0]?.compara_version ?? df.paralogs[0]?.compara_version ?? "—";
   lines.push(`- AlphaFold DB structures — ${s.license} (${s.attribution})`);
   lines.push(`- Ensembl Compara orthologs & paralogs — ${comparaVersion} · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)`);
-  lines.push(`- DeepTMHMM topology — ${ct.tool_version} · DTU Health Tech (Hallgren et al. 2022; academic-use service)`);
+  lines.push(`- DeepTMHMM topology — ${ct.tool_version} · DTU Health Tech (Hallgren et al. 2022)`);
   lines.push(`- UniProt — CC BY 4.0 (UniProt Consortium)`);
   lines.push("");
   // confidence: legacy schema = float 0-1; v1.0.0 = enum string ("low" /

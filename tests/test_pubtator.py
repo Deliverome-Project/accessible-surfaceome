@@ -216,11 +216,21 @@ def test_pubtator_discovery_degrades_gracefully_on_outage() -> None:
 
 
 def test_pubtator_discovery_skips_when_no_terms() -> None:
-    """The hpa_ihc spec has empty pubtator_terms — no HTTP call is made."""
+    """Specs with empty pubtator_terms must short-circuit before any HTTP."""
     http = _FakeHTTP(raise_on_call=True)  # would raise if called
+    # Build a synthetic spec with empty pubtator_terms — every shipped
+    # category currently has terms, but the no-terms branch needs to
+    # stay covered so a future minimal-spec category doesn't regress.
+    from accessible_surfaceome.tools.evidence_retrieval import _CategorySpec
+    empty_terms_spec = _CategorySpec(
+        query_clauses=("(\"surface\")",),
+        pubtator_terms="",
+        hallmark_patterns=(),
+        section_weights={},
+    )
     out = er._pubtator_discovery(
         bundle=_bundle(),
-        spec=er._CATEGORY_SPECS["hpa_ihc"],
+        spec=empty_terms_spec,
         max_papers=5,
         http=cast(CachedHTTP, http),
         retraction_index=rw.empty(),

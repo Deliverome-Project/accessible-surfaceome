@@ -10,11 +10,11 @@ burning a cent in Sonnet/Haiku cost.
 
 Use this when:
 
-* PR #29's DeepTMHMM + Compara D1 tables go live and you want the
-  committed sample records to show real topology + paralog +
-  cross-species ortholog data instead of the old stub zeros.
-* The headline-risks scrub rule changes and you want existing samples
-  to reflect it.
+* PR #29's DeepTMHMM + Compara D1 tables go live and you want a
+  frozen record to show real topology + paralog + cross-species
+  ortholog data instead of the old stub zeros.
+* The headline-risks scrub rule changes and you want an existing
+  frozen record to reflect it.
 * ``_derive_filters`` gets a new field or a coherence fix.
 
 What stays frozen: every LLM-generated block (executive_summary,
@@ -39,11 +39,11 @@ on, and bails before writing if validation fails.
 Usage:
 
     uv run python scripts/refresh_record_post_llm_blocks.py \\
-        data/eval/surfaceome_v2_samples/surfaceome_v2_CD81.json
+        .runs/surfaceome_v2_CD81.json
 
-    # Glob mode — refresh every v2 sample in a directory
+    # Glob mode — refresh every frozen record in a directory
     uv run python scripts/refresh_record_post_llm_blocks.py \\
-        data/eval/surfaceome_v2_samples/surfaceome_v2_*.json
+        .runs/surfaceome_v2_*.json
 """
 
 from __future__ import annotations

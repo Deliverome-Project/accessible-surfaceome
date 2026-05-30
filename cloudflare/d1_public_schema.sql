@@ -467,3 +467,81 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
     computed_at          TEXT NOT NULL DEFAULT (datetime('now')),
     notes                TEXT
 );
+
+
+-- ---------------------------------------------------------------------------
+-- SURFACE-Bind (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
+--
+-- Per-UniProt patch-targetability summary + per-site detail from the
+-- Correia lab's MaSIF / surface-fingerprinting mapping of the human
+-- surfaceome. Sourced from the SURFACE-Bind GitHub repo's
+-- `database/results_no_TM_pnames.csv` (per-site data) and the
+-- `seed_count_*.txt` files (chain identifier xref).
+--
+-- Two tables: protein-level aggregate (one row per UniProt acc) +
+-- site-level detail (one row per (acc, site_id)). Sync script:
+-- scripts/sync_surface_bind_to_d1.py reads from
+-- data/external/surface_bind/surface_bind_summary.json and UPSERTs.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS surface_bind_protein (
+    uniprot_acc      TEXT PRIMARY KEY,
+    chain            TEXT,                              -- PDB-chain ID; 'A' for most entries
+    main_class       TEXT,                              -- Receptors / Enzymes / Transporters / Miscellaneous / Unclassified / Unmatched
+    sub_class        TEXT,                              -- e.g. Kinase, GPCR, SLC, Hydrolases
+    protein_name     TEXT,                              -- human-readable; UniProt-sourced via SURFACE-Bind
+    n_sites          INTEGER NOT NULL,                  -- count of scored patches
+    n_seeds_alpha    INTEGER NOT NULL,                  -- α-helical binder seed total across sites
+    n_seeds_beta     INTEGER NOT NULL,                  -- β-strand binder seed total across sites
+    n_seeds_total    INTEGER NOT NULL,
+    pdbs             TEXT,                              -- JSON list of PDB IDs (often 100+)
+    surfacebind_version TEXT NOT NULL,                  -- e.g. '2024-08-09'
+    synced_at        TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_surface_bind_protein_main_class
+    ON surface_bind_protein (main_class);
+CREATE INDEX IF NOT EXISTS idx_surface_bind_protein_sub_class
+    ON surface_bind_protein (sub_class);
+CREATE INDEX IF NOT EXISTS idx_surface_bind_protein_n_sites
+    ON surface_bind_protein (n_sites);
+
+
+CREATE TABLE IF NOT EXISTS surface_bind_site (
+    uniprot_acc      TEXT NOT NULL,
+    site_id          INTEGER NOT NULL,                  -- 0-indexed within the protein
+    anchor_residue   INTEGER NOT NULL,                  -- center residue of the MaSIF patch
+    area_a2          REAL NOT NULL,                     -- buried surface area in Å²
+    n_seeds_alpha    INTEGER NOT NULL,                  -- per-site α-seed count
+    n_seeds_beta     INTEGER NOT NULL,                  -- per-site β-seed count
+    hydrophobicity   REAL NOT NULL,                     -- Eisenberg-style patch hydrophobicity
+    surfacebind_version TEXT NOT NULL,
+    synced_at        TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (uniprot_acc, site_id),
+    FOREIGN KEY (uniprot_acc) REFERENCES surface_bind_protein (uniprot_acc)
+);
+
+CREATE INDEX IF NOT EXISTS idx_surface_bind_site_area
+    ON surface_bind_site (area_a2);
+CREATE INDEX IF NOT EXISTS idx_surface_bind_site_alpha
+    ON surface_bind_site (n_seeds_alpha);
+CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
+    ON surface_bind_site (n_seeds_beta);
+
+-- ---------------------------------------------------------------------------
+-- Approved-only community notes (public mirror)
+-- ---------------------------------------------------------------------------
+-- Sanitized subset of surfaceome_agents.feedback rows where status =
+-- 'approved_public'. Inserted by the Worker's magic-link approval
+-- handler. The viewer fetches from here via GET /v1/feedback/public.
+
+CREATE TABLE IF NOT EXISTS feedback_public (
+    id              TEXT PRIMARY KEY,                          -- same id as private feedback row
+    gene_symbol     TEXT NOT NULL,                             -- e.g. "SRC"
+    submitter_name  TEXT NOT NULL,                             -- attribution; e-mail never published
+    comment         TEXT NOT NULL,                             -- sanitized at insert time
+    approved_at     TEXT NOT NULL DEFAULT (datetime('now'))    -- both moderation timestamp and public-mirror write time
+);
+
+CREATE INDEX IF NOT EXISTS idx_feedback_public_gene
+    ON feedback_public(gene_symbol, approved_at DESC);

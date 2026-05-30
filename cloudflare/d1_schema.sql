@@ -582,3 +582,38 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
     computed_at          TEXT NOT NULL DEFAULT (datetime('now')),
     notes                TEXT
 );
+
+-- ---------------------------------------------------------------------------
+-- Per-gene feedback submissions (private — PII + audit trail)
+-- ---------------------------------------------------------------------------
+-- One row per incoming submission from the gene-page "Submit
+-- feedback" modal. The Worker writes here from POST
+-- /v1/feedback/submit and updates the status column from GET
+-- /v1/feedback/moderate when a magic link is clicked. Approved
+-- public rows are mirrored (sanitized subset) into
+-- surfaceome_public.feedback_public.
+
+CREATE TABLE IF NOT EXISTS feedback (
+    id               TEXT PRIMARY KEY,                          -- crypto.randomUUID()
+    gene_symbol      TEXT NOT NULL,                             -- e.g. "SRC"
+    uniprot_acc      TEXT,                                      -- e.g. "P12931", captured at submit
+    submitter_name   TEXT NOT NULL,
+    submitter_email  TEXT NOT NULL,
+    subject          TEXT NOT NULL,                             -- editable; becomes email subject
+    comment          TEXT NOT NULL,                             -- raw; max 4000 chars
+    public_requested INTEGER NOT NULL DEFAULT 0,                -- 0|1; mirrors form checkbox
+    status           TEXT NOT NULL DEFAULT 'pending',           -- 'pending'|'approved_public'|'discarded'
+    referrer         TEXT,                                      -- gene-page URL submitter saw
+    user_agent       TEXT,                                      -- navigator.userAgent
+    site_version     TEXT,                                      -- git SHA at build time
+    ip_hash          TEXT,                                      -- SHA-256(CF-Connecting-IP + day-salt)
+    approve_token    TEXT NOT NULL,                             -- HMAC base64url; lives in magic-link
+    created_at       TEXT NOT NULL DEFAULT (datetime('now')),
+    moderated_at     TEXT                                       -- set when a magic link is clicked
+);
+
+CREATE INDEX IF NOT EXISTS idx_feedback_gene
+    ON feedback(gene_symbol, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_feedback_status
+    ON feedback(status, created_at DESC);

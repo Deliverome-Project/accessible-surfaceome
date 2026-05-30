@@ -112,6 +112,22 @@ Two D1s: `surfaceome_agents` (private, full reasoning + costs) and
 Schemas: [`cloudflare/d1_schema.sql`](cloudflare/d1_schema.sql) and
 [`cloudflare/d1_public_schema.sql`](cloudflare/d1_public_schema.sql).
 
+### Viewer records — never edit a JSON snapshot without syncing D1
+
+**The live viewer reads D1, not the committed JSON.** The Worker serves
+each gene from public D1's `surface_annotation.annotation_json`; the
+`viewer/public/data/surfaceome/*.json` snapshots are only the in-tree
+source of truth + on-error SSG fallback. A record change that lands only
+in the JSON silently drifts the live site (it keeps rendering D1's stale
+row — e.g. the `protein_family` → `llm_family` rename that blanked the
+Family chip). So: don't hand-edit a snapshot and stop. Land the change
+in D1 — re-run `scripts/surfaceome_v2_annotate.py` (publishes via
+`publish_record`) or push hand-edits with
+`uv run python scripts/upload_viewer_snapshots_to_d1.py --execute`, in
+the **same** change as the JSON edit. Don't paper over JSON ↔ D1 schema
+drift with defensive shims in `viewer/lib/surfaceome.ts` — fix the
+records and re-sync D1.
+
 ### Query from Python
 
 `accessible_surfaceome.cloud.d1_client.D1Client` speaks Cloudflare's

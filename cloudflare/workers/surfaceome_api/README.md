@@ -79,3 +79,60 @@ That script reads `surfaceome_agents` (private, contains costs/tokens/prompt tex
 ## Integration with the deliverome Pages project
 
 If you'd rather attach this Worker to the existing `deliverome` Pages project (single deploy umbrella) instead of running it standalone, copy the `[[d1_databases]]` binding from `wrangler.toml` here into the Pages project's `wrangler.toml`, then point the routes block at `api.deliverome.org/surfaceome/*`. The Worker code in `src/index.js` is portable.
+
+## Feedback flow (per-gene reader submissions)
+
+Three endpoints added 2026-05-25, driven by docs/superpowers/specs/2026-05-25-feedback-button-design.md.
+
+### `POST /v1/feedback/submit`
+
+Submitter sends from the gene-page modal. Server-side: validates input,
+verifies the Turnstile token via siteverify, applies a 5-per-IP-per-hour
+rate limit (Workers KV), inserts the row into `surfaceome_agents.feedback`
+(private DB), and sends a Resend notification email to the maintainer
+containing the submission details + magic-link approval buttons.
+
+Body (JSON):
+```json
+{
+  "gene":             "SRC",
+  "uniprot_acc":      "P12931",
+  "name":             "...",
+  "email":            "...",
+  "subject":          "Surfaceome SRC (P12931) entry update request",
+  "comment":          "...",
+  "public_requested": false,
+  "referrer":         "https://surfaceome.deliverome.org/SRC",
+  "user_agent":       "Mozilla/5.0 ...",
+  "site_version":     "8faeb338",
+  "turnstile_token":  "..."
+}
+```
+
+Responses: 200 `{ ok: true, id }`, 400 `{ error: "invalid_*" | "invalid_json" | "turnstile_failed" }`, 429 `{ error: "rate_limited" }`.
+
+### `GET /v1/feedback/moderate?id=<id>&action=<public|discard>&t=<hmac>`
+
+The magic-link approval endpoint. Verifies the HMAC-signed token, updates
+the row's status, and (on `action=public`) copies a sanitized subset to
+`surfaceome_public.feedback_public`. Returns a small HTML confirmation
+page. Idempotent — re-clicking a link after moderation returns "Already
+handled".
+
+### `GET /v1/feedback/public?gene=<SYMBOL>`
+
+Returns the approved-only community notes for a gene, used by the
+`<CommunityNotesCard>` at the bottom of each gene page.
+
+Response shape: `{ "gene": "SYMBOL", "notes": [{ id, submitter_name, comment, approved_at }, ...] }`.
+
+Required bindings (`wrangler.toml`):
+- `DB` — public D1 (`surfaceome_public`) — already present.
+- `FEEDBACK_DB` — private D1 (`surfaceome_agents`) for submissions + audit.
+- `FEEDBACK_RATELIMIT` — KV namespace for per-IP rate-limit counters.
+
+Required secrets (`wrangler secret put`):
+- `RESEND_API_KEY` — Resend API key for outbound notifications.
+- `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile secret for token verification.
+- `MAGIC_LINK_SECRET` — 32-byte secret used as HMAC key for magic links.
+- `MAINTAINER_EMAIL` — destination + From address for notification e-mails.

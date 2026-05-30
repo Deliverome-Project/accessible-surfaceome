@@ -33,7 +33,7 @@ const CACHE_TTL_LONG  = 86400;     // 1 day for per-gene records
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
-  "Access-Control-Allow-Methods": "GET, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
@@ -185,7 +185,91 @@ async function handleBenchmarkOne(env, symbol) {
   return json(row, { ttl: CACHE_TTL_LONG });
 }
 
-async function handleCatalog(env) {
+// Slim per-row projection of SurfaceomeRecord.filters — only the fields
+// the catalog UI offers as filter controls. Returns null on parse error
+// or missing filters block so the caller can decide whether to omit
+// the `ddf` field entirely (keeps wire size bounded — null entries
+// would inflate every deep-dive-less row).
+//
+// Schema kept in sync with viewer/lib/surfaceome.ts `DeepDiveFilters`
+// interface — both must list the same 21 keys. Continuous fields
+// (max_paralog_ecd_pct_identity, ortholog identities) are deliberately
+// excluded because the catalog filter UI doesn't expose them yet
+// (range sliders are a UI-complexity bump for later). The
+// `has_restricted_subdomain` boolean moved to the Biology card per
+// the v1 schema split and is excluded here too.
+const DDF_KEYS = [
+  "surface_accessibility",
+  "confidence",
+  "state_dependence",
+  "surface_call_reason",
+  "subcategory",
+  "llm_family",
+  "evidence_grade",
+  "evidence_density",
+  "ecd_accessibility_class",
+  "expression_level",
+  "expression_breadth",
+  "surface_specificity",
+  "co_receptor_dependency",
+  "has_known_ligand",
+  "low_endogenous_expression",
+  "overexpression_surface_localization_observed",
+  "has_shed_form",
+  "has_secreted_form",
+  "has_epitope_masking",
+  "n_term_extracellular",
+  "c_term_extracellular",
+];
+
+function projectDeepDiveFilters(annotationJson) {
+  if (!annotationJson) return null;
+  let rec;
+  try {
+    rec = JSON.parse(annotationJson);
+  } catch {
+    return null;
+  }
+  const f = rec?.filters;
+  if (!f || typeof f !== "object") return null;
+  const out = {};
+  let any = false;
+  for (const k of DDF_KEYS) {
+    if (f[k] !== undefined && f[k] !== null) {
+      out[k] = f[k];
+      any = true;
+    }
+  }
+  return any ? out : null;
+}
+
+// CPU budget on this handler is tight — the catalog response is ~4.5MB
+// across 19k+ rows, and Cloudflare Workers cap at 30ms CPU (50ms with
+// Bundled). Pre-2026-05-25 the handler ran 6 separate D1 queries +
+// 5 JS-side Map builds + 19k×4 per-row Map.gets, which routinely blew
+// the cap and surfaced as 503 / CF error 1102 to readers. The current
+// shape uses a single LEFT JOIN to fold the universe + deep-dive +
+// SURFACE-Bind lookups into one round-trip (SQLite does the join work),
+// drops the HGNC-id-per-row backfill (the viewer doesn't read it; the
+// TSV export endpoints do hgnc_id via a separate join), and wraps the
+// whole handler in caches.default so the cold-start CPU cost is paid
+// once per universe_version, not per request.
+async function handleCatalog(env, request) {
+  // Self-managed edge cache, keyed on the request URL. CF's HTTP cache
+  // already does this via Cache-Control, but the in-Worker cache lets
+  // us serve a stored Response without entering the join/format code
+  // at all on warm hits — that's the difference between 1ms and 100ms
+  // of CPU when the edge cache lottery loses. TTL still governed by
+  // the response's Cache-Control header (set in `json` to 1 min for
+  // /v1/catalog), so a re-deploy or universe-version bump surfaces on
+  // the next miss.
+  const cache = caches.default;
+  const cacheKey = new Request(new URL("/v1/catalog", "https://catalog.cache").href, {
+    method: "GET",
+  });
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit;
+
   // Pull the latest universe_version pointer. If no universe has been
   // loaded yet (cold DB), bail with an empty payload — the viewer
   // falls back to its committed snapshot in that case.
@@ -213,19 +297,49 @@ async function handleCatalog(env) {
   ).first();
   const benchVersion = benchRow?.bench_version ?? null;
 
-  // Universe rows are the spine of the catalog: one per gene. We only
-  // SELECT the 5 gating DBs (uniprot, go, surfy, cspa, hpa) — DeepTMHMM
-  // and COMPARTMENTS are stored in the table for fidelity but are
-  // auxiliary signals (demoted from the M1 universe gate; see
-  // src/accessible_surfaceome/merge/__init__.py). n_sources_surface in
-  // the table is already the count over those 5 flags only.
-  const universeRows = await env.DB.prepare(
-    `SELECT gene_symbol, uniprot_acc, n_sources_surface,
-            uniprot_surface_flag, go_surface_flag, surfy_surface_flag,
-            cspa_surface_flag, hpa_surface_flag
-       FROM candidate_universe_public
-      WHERE universe_version = ?
-      ORDER BY gene_symbol`
+  // ONE consolidated query: universe rows + deep-dive flag + SURFACE-Bind
+  // site count. Previously this was 3 separate D1 round-trips and 3 JS
+  // Map builds; pushing the joins into SQLite drops ~20k Map ops and
+  // 2 round-trips. n_sources_surface in the table is already the count
+  // over the 5 gating flags (uniprot/go/surfy/cspa/hpa); DeepTMHMM /
+  // COMPARTMENTS are auxiliary signals and not in the catalog response.
+  //
+  // LEFT JOIN on surface_annotation via a DISTINCT subquery so a gene
+  // with multiple schema_version rows in the table still emits one
+  // deep_dive=1 row (and surface_annotation grows slowly, so the
+  // subquery is cheap).
+  //
+  // LEFT JOIN on surface_bind_protein via uniprot_acc; the n_sites
+  // column carries the SURFACE-Bind three-state value the viewer's
+  // filter chip group reads (null = not in SURFACE-Bind, 0 = scored
+  // no patches, N>0 = scored with patches).
+  //
+  // Also LEFT JOIN the LATEST surface_annotation row (by schema_version
+  // desc) so we can pull `annotation_json` and project a slimmed-down
+  // `filters` block onto the catalog row. The subquery picks one row
+  // per gene_symbol — the highest schema_version, matching the
+  // `/v1/genes/{symbol}` lookup logic. surface_annotation grows
+  // slowly (~6k rows today, all deep-dived genes), so the subquery
+  // is cheap.
+  const enrichedRows = await env.DB.prepare(
+    `SELECT u.gene_symbol, u.uniprot_acc, u.n_sources_surface,
+            u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
+            u.cspa_surface_flag, u.hpa_surface_flag,
+            sb.n_sites AS sb_n_sites,
+            sa.annotation_json AS sa_annotation_json,
+            CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
+       FROM candidate_universe_public u
+       LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       LEFT JOIN (
+         SELECT gene_symbol, annotation_json
+           FROM surface_annotation sa1
+          WHERE schema_version = (
+            SELECT MAX(schema_version) FROM surface_annotation sa2
+             WHERE sa2.gene_symbol = sa1.gene_symbol
+          )
+       ) sa ON sa.gene_symbol = u.gene_symbol
+      WHERE u.universe_version = ?
+      ORDER BY u.gene_symbol`
   ).bind(universe).all();
 
   // Latest per-model NCBI-variant verdict for each gene. The page
@@ -265,37 +379,15 @@ async function handleCatalog(env) {
     perModel[r.model] = {
       verdict: r.predicted_verdict,
       reason: r.predicted_reason,
-      created_at: r.created_at,
     };
-  }
-
-  // Genes with a published deep-dive SurfaceomeRecord (whatever schema_version).
-  const deepRows = await env.DB.prepare(
-    `SELECT DISTINCT gene_symbol FROM surface_annotation`
-  ).all();
-  const deepSet = new Set(deepRows.results.map((r) => r.gene_symbol));
-
-  // HGNC ID lookup keyed on the authoritative hgnc_symbol. Lets us
-  // attach hgnc_id to every catalog row so external reanalysts can
-  // cross-reference any other HGNC-keyed table without re-resolving
-  // from the (fragile) gene symbol — see CLAUDE.md "Gene identifier
-  // resolution". ~190 KB on the wire for 19k rows; small relative to
-  // the catalog's 5 MB payload.
-  const hgncByGene = new Map();
-  const hgncRows = await env.DB.prepare(
-    `SELECT hgnc_symbol, hgnc_id FROM gene_identifier_public
-      WHERE hgnc_id IS NOT NULL AND hgnc_id != ''`
-  ).all();
-  for (const r of hgncRows.results) {
-    if (r.hgnc_symbol && r.hgnc_id) {
-      hgncByGene.set(r.hgnc_symbol, r.hgnc_id);
-    }
   }
 
   // Track which genes we've emitted so we can append deep-dive-only
   // genes (e.g. HSPA1A — conditional surface, doesn't pass the
-  // universe gate) at the bottom.
+  // universe gate) at the bottom. Also collect the deep-dive gene set
+  // from the join so we can spot the gap without an extra SELECT.
   const covered = new Set();
+  const deepSet = new Set();
   // Encode the 5 surface flags as a single 5-bit integer to keep the
   // response under Next.js's 2 MB data-cache ceiling. Bit layout
   // (LSB → MSB) matches the order the viewer renders columns in:
@@ -317,8 +409,9 @@ async function handleCatalog(env) {
     });
     return out.some((x) => x) ? out : undefined;
   }
-  const rows = universeRows.results.map((u) => {
+  const rows = enrichedRows.results.map((u) => {
     covered.add(u.gene_symbol);
+    if (u.has_deep_dive) deepSet.add(u.gene_symbol);
     const db =
       (u.uniprot_surface_flag ? 1 : 0) |
       (u.go_surface_flag ? 2 : 0) |
@@ -331,22 +424,44 @@ async function handleCatalog(env) {
       db,
     };
     if (u.uniprot_acc) row.uniprot = u.uniprot_acc;
-    const hgnc = hgncByGene.get(u.gene_symbol);
-    if (hgnc) row.hgnc_id = hgnc;
     const t = packTriage(u.gene_symbol);
     if (t) row.tr = t;
-    if (deepSet.has(u.gene_symbol)) row.deep_dive = true;
+    if (u.has_deep_dive) row.deep_dive = true;
+    if (u.sb_n_sites != null) row.sb = u.sb_n_sites;
+    // Slim deep-dive filter projection — only the 21 fields the catalog
+    // UI actually filters on. Skips continuous fields (max_paralog_ecd_
+    // pct_identity, ortholog identities) and `has_restricted_subdomain`
+    // (moved to the Biology card). Parsing failures fall through silently
+    // — a malformed record still gets the deep_dive=true marker, just
+    // without the filterable rollups.
+    if (u.has_deep_dive && u.sa_annotation_json) {
+      const ddf = projectDeepDiveFilters(u.sa_annotation_json);
+      if (ddf) row.ddf = ddf;
+    }
     return row;
   });
 
-  // Append deep-dive-only genes (missing from the universe row set).
-  for (const sym of deepSet) {
+  // Append deep-dive-only genes (annotated but not in the universe — rare;
+  // e.g. HSPA1A's conditional-surface story). Cheap extra SELECT on the
+  // small surface_annotation table. Pulls the latest-schema annotation_json
+  // for each so the deep_dive_filters projection below applies uniformly.
+  const orphanDeep = await env.DB.prepare(
+    `SELECT sa1.gene_symbol, sa1.annotation_json
+       FROM surface_annotation sa1
+      WHERE sa1.schema_version = (
+        SELECT MAX(schema_version) FROM surface_annotation sa2
+         WHERE sa2.gene_symbol = sa1.gene_symbol
+      )`
+  ).all();
+  for (const r of orphanDeep.results) {
+    const sym = r.gene_symbol;
     if (covered.has(sym)) continue;
+    deepSet.add(sym);
     const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
-    const hgnc = hgncByGene.get(sym);
-    if (hgnc) row.hgnc_id = hgnc;
     const t = packTriage(sym);
     if (t) row.tr = t;
+    const dd = projectDeepDiveFilters(r.annotation_json);
+    if (dd) row.ddf = dd;
     rows.push(row);
   }
 
@@ -360,19 +475,25 @@ async function handleCatalog(env) {
     return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0;
   });
 
-  return json(
+  const response = json(
     {
       universe_version: universe,
       bench_version: benchVersion,
       models: CATALOG_MODELS,
       n_rows: rows.length,
       n_with_triage: rows.filter((r) => r.tr).length,
-      n_with_deep_dive: rows.filter((r) => r.deep_dive).length,
+      n_with_deep_dive: deepSet.size,
       // Schema version of the row encoding. Bumped when the shape
       // changes; viewer/lib/surfaceome.ts checks this and decodes
-      // accordingly. v3 = per-model ncbi `tr` array replaces the
-      // single `triage` object.
-      row_schema: 3,
+      // accordingly.
+      //   v3 = per-model ncbi `tr` array replaces single `triage`.
+      //   v4 = optional `sb` (SURFACE-Bind site count) added.
+      //   v5 = optional `ddf` (slimmed deep-dive Filters projection)
+      //        added — present only when has_deep_dive=true and the
+      //        record_json parsed. Carries the catalog-filterable
+      //        subset of SurfaceomeRecord.filters; see
+      //        projectDeepDiveFilters() above.
+      row_schema: 5,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
       //   const flags = db_keys.map((_, i) => (row.db >> i) & 1);
@@ -382,6 +503,14 @@ async function handleCatalog(env) {
     },
     { ttl: CACHE_TTL_SHORT },
   );
+
+  // Stash in the Worker-managed cache. `.clone()` because Response
+  // bodies are streams — once consumed they can't be re-read. The
+  // ``ctx.waitUntil`` would let this run after the response sends,
+  // but the handler signature here doesn't expose `ctx`; the await
+  // adds <5ms to the cold response, well within budget.
+  await cache.put(cacheKey, response.clone());
+  return response;
 }
 
 // Models + prompt variants surfaced in the benchmark matrix. All 4
@@ -802,15 +931,412 @@ async function handleTriage(env, symbol) {
 }
 
 
+// === Feedback flow helpers ================================================
+// All functions in this block support the three /v1/feedback/* endpoints
+// added below. They never leak PII or unsanitized HTML across the
+// public/private boundary.
+
+// Hex-encode an ArrayBuffer or Uint8Array.
+function toHex(buf) {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Base64url (no padding) — safe to put in a URL.
+function toBase64Url(buf) {
+  const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
+  let s = "";
+  for (const b of bytes) s += String.fromCharCode(b);
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// HMAC-SHA256(secret, message) → base64url.
+async function hmacSign(secret, message) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+  return toBase64Url(sig);
+}
+
+// Constant-time compare for base64url-or-hex strings of equal length.
+function timingSafeEqualStr(a, b) {
+  if (typeof a !== "string" || typeof b !== "string") return false;
+  if (a.length !== b.length) return false;
+  let mismatch = 0;
+  for (let i = 0; i < a.length; i++) mismatch |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return mismatch === 0;
+}
+
+// SHA-256(text) → hex.
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return toHex(buf);
+}
+
+// Strip HTML tags and normalize whitespace. Comments render as plaintext
+// in the viewer (no dangerouslySetInnerHTML), so this is defense-in-depth.
+function sanitizeComment(s) {
+  return String(s ?? "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+\n/g, "\n")
+    .trim()
+    .slice(0, 4000);
+}
+
+// Cheap email-shape check. Real validation lives at the auth layer
+// (we never auto-trust the address); this is just "does it look like
+// an email at all".
+function looksLikeEmail(s) {
+  return typeof s === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+}
+
+// HTML-escape a string for safe embedding in the moderate-confirmation
+// page and the Resend email body.
+function escapeHtml(s) {
+  return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
+}
+
+// Verify a Cloudflare Turnstile token against the siteverify endpoint.
+// Returns true on success, false on failure (does NOT throw — caller
+// decides response code).
+async function verifyTurnstile(token, secret, remoteIp) {
+  if (!token || !secret) return false;
+  const body = new URLSearchParams({ secret, response: token });
+  if (remoteIp) body.set("remoteip", remoteIp);
+  try {
+    const r = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      { method: "POST", body },
+    );
+    const j = await r.json();
+    return !!j.success;
+  } catch {
+    return false;
+  }
+}
+
+// Rate-limit per IP-hash. Returns true if under the limit, false if over.
+// Window: 1 hour, max: 5 submissions. KV is eventually consistent — that
+// is acceptable here (bursts of 6-10 once an hour aren't a real DoS).
+async function checkRateLimit(kv, ipHash) {
+  const key = `rl:${ipHash}:${Math.floor(Date.now() / 3600_000)}`; // hour bucket
+  const v = await kv.get(key);
+  const n = v ? parseInt(v, 10) : 0;
+  if (n >= 5) return false;
+  await kv.put(key, String(n + 1), { expirationTtl: 3600 });
+  return true;
+}
+
+// Send the feedback notification email via Resend. Returns true on
+// success, false on failure (the caller still 200's the submission —
+// we don't lose the row just because email is slow).
+async function sendFeedbackEmail({ apiKey, from, to, replyTo, subject, html }) {
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        reply_to: replyTo ? [replyTo] : undefined,
+        subject,
+        html,
+      }),
+    });
+    if (!r.ok) {
+      console.error("Resend send failed:", r.status, await r.text());
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("Resend send error:", err);
+    return false;
+  }
+}
+
+// Compose the email body sent to the maintainer.
+function feedbackEmailHtml({ rec, base, approvePublicUrl, discardUrl }) {
+  const additional = `
+    <p><strong>Additional information</strong></p>
+    <ul style="line-height: 1.5">
+      <li>Referred from: <code>${escapeHtml(rec.referrer || "—")}</code></li>
+      <li>User browser: <code>${escapeHtml(rec.user_agent || "—")}</code></li>
+      <li>Website version: <code>${escapeHtml(rec.site_version || "—")}</code></li>
+    </ul>
+  `;
+  const publicBtn = rec.public_requested
+    ? `<a href="${approvePublicUrl}"
+          style="background:#922038;color:#fff;padding:0.7em 1.2em;
+                 border-radius:999px;text-decoration:none;
+                 display:inline-block;margin-right:0.6em;">
+         Approve as public
+       </a>`
+    : "";
+  return `
+    <div style="font-family:system-ui,sans-serif;color:#1f1718;
+                max-width:640px;margin:0 auto;line-height:1.55">
+      <h2 style="margin-top:0">New feedback for ${escapeHtml(rec.gene_symbol)}</h2>
+      <p style="color:#6f5d5a;margin:0 0 1em">
+        From <strong>${escapeHtml(rec.submitter_name)}</strong>
+        &lt;${escapeHtml(rec.submitter_email)}&gt;
+      </p>
+      <p><strong>Subject:</strong> ${escapeHtml(rec.subject)}</p>
+      <p style="white-space:pre-wrap;border-left:3px solid #e5ded3;
+                padding-left:1em;color:#1f1718">
+        ${escapeHtml(rec.comment)}
+      </p>
+      ${additional}
+      <p style="margin-top:2em">
+        ${publicBtn}
+        <a href="${discardUrl}"
+           style="color:#6f5d5a;text-decoration:underline;
+                  display:inline-block;padding:0.7em 0">
+          Discard
+        </a>
+      </p>
+      <p style="color:#80706a;font-size:0.85em;margin-top:2em">
+        Reply directly to this e-mail to respond to the submitter
+        (their address is set as Reply-To).
+      </p>
+    </div>
+  `;
+}
+
+async function handleFeedbackSubmit(request, env, url) {
+  // Parse + validate body.
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return badRequest("invalid_json");
+  }
+  const gene = String(body.gene ?? "").trim();
+  if (!/^[A-Z0-9-]{1,30}$/.test(gene)) return badRequest("invalid_gene");
+  const name = String(body.name ?? "").trim();
+  if (name.length < 1 || name.length > 80) return badRequest("invalid_name");
+  const email = String(body.email ?? "").trim();
+  if (!looksLikeEmail(email)) return badRequest("invalid_email");
+  const subject = String(body.subject ?? "").trim();
+  if (subject.length < 1 || subject.length > 200) return badRequest("invalid_subject");
+  const comment = String(body.comment ?? "").trim();
+  if (comment.length < 1 || comment.length > 4000) return badRequest("invalid_comment");
+
+  // Turnstile.
+  const tToken = String(body.turnstile_token ?? "");
+  const remoteIp = request.headers.get("CF-Connecting-IP") ?? null;
+  const ok = await verifyTurnstile(tToken, env.TURNSTILE_SECRET_KEY, remoteIp);
+  if (!ok) return badRequest("turnstile_failed");
+
+  // Rate-limit by IP-hash (per day salt = today's UTC date).
+  const day = new Date().toISOString().slice(0, 10);
+  const ipHash = await sha256Hex(`${remoteIp ?? "0"}|${day}`);
+  const under = await checkRateLimit(env.FEEDBACK_RATELIMIT, ipHash);
+  if (!under) {
+    return json({ error: "rate_limited" }, { status: 429, ttl: 0 });
+  }
+
+  // Insert.
+  const id = crypto.randomUUID();
+  const approveToken = await hmacSign(env.MAGIC_LINK_SECRET, id);
+  const publicRequested = body.public_requested ? 1 : 0;
+  await env.FEEDBACK_DB.prepare(
+    `INSERT INTO feedback (
+       id, gene_symbol, uniprot_acc, submitter_name, submitter_email,
+       subject, comment, public_requested, referrer, user_agent,
+       site_version, ip_hash, approve_token
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).bind(
+    id, gene,
+    String(body.uniprot_acc ?? "") || null,
+    name, email, subject, comment, publicRequested,
+    String(body.referrer ?? "") || null,
+    String(body.user_agent ?? "") || null,
+    String(body.site_version ?? "") || null,
+    ipHash, approveToken,
+  ).run();
+
+  // Email notify maintainer.
+  const prefix = url.pathname.startsWith("/surfaceome/") ? "/surfaceome" : "";
+  const base = `${url.protocol}//${url.host}${prefix}`;
+  const approvePublicUrl =
+    `${base}/v1/feedback/moderate?id=${encodeURIComponent(id)}` +
+    `&action=public&t=${encodeURIComponent(await hmacSign(env.MAGIC_LINK_SECRET, id + ":public"))}`;
+  const discardUrl =
+    `${base}/v1/feedback/moderate?id=${encodeURIComponent(id)}` +
+    `&action=discard&t=${encodeURIComponent(await hmacSign(env.MAGIC_LINK_SECRET, id + ":discard"))}`;
+
+  await sendFeedbackEmail({
+    apiKey: env.RESEND_API_KEY,
+    from: env.MAINTAINER_EMAIL,
+    to: env.MAINTAINER_EMAIL,
+    replyTo: email,
+    subject,
+    html: feedbackEmailHtml({
+      rec: {
+        gene_symbol: gene, submitter_name: name, submitter_email: email,
+        subject, comment, public_requested: publicRequested,
+        referrer: String(body.referrer ?? ""),
+        user_agent: String(body.user_agent ?? ""),
+        site_version: String(body.site_version ?? ""),
+      },
+      base, approvePublicUrl, discardUrl,
+    }),
+  });
+
+  return json({ ok: true, id }, { status: 200, ttl: 0 });
+}
+
+// HTML confirmation page (no JS — just shows the outcome).
+function moderateHtmlPage({ title, message, accent = "#922038" }) {
+  return `<!doctype html>
+<html lang="en"><head><meta charset="utf-8" /><title>${escapeHtml(title)}</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:560px;margin:6em auto;
+       padding:0 1em;color:#1f1718;line-height:1.55}
+  h1{font-size:1.4rem;color:${accent};margin-bottom:0.3em}
+  p{color:#6f5d5a}
+  .hint{font-size:0.85em;color:#80706a;margin-top:2em}
+</style></head>
+<body>
+  <h1>${escapeHtml(title)}</h1>
+  <p>${escapeHtml(message)}</p>
+  <p class="hint">You can close this tab.</p>
+</body></html>`;
+}
+
+function htmlResponse(content, { status = 200 } = {}) {
+  return new Response(content, {
+    status,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
+async function handleFeedbackModerate(env, url) {
+  const id = url.searchParams.get("id");
+  const action = url.searchParams.get("action");
+  const t = url.searchParams.get("t");
+  if (!id || !action || !t) {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Invalid link",
+        message: "This moderation link is missing required parameters.",
+      }),
+      { status: 400 },
+    );
+  }
+  if (action !== "public" && action !== "discard") {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Invalid link",
+        message: "Unknown action.",
+      }),
+      { status: 400 },
+    );
+  }
+  const expected = await hmacSign(env.MAGIC_LINK_SECRET, `${id}:${action}`);
+  if (!timingSafeEqualStr(expected, t)) {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Invalid link",
+        message: "This link is invalid or has been tampered with.",
+      }),
+      { status: 403 },
+    );
+  }
+
+  const row = await env.FEEDBACK_DB.prepare(
+    "SELECT id, gene_symbol, submitter_name, comment, status FROM feedback WHERE id = ?",
+  ).bind(id).first();
+  if (!row) {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Not found",
+        message: "We couldn't find that submission.",
+      }),
+      { status: 404 },
+    );
+  }
+  if (row.status !== "pending") {
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Already handled",
+        message: `This submission was already marked "${row.status}".`,
+      }),
+    );
+  }
+
+  if (action === "discard") {
+    await env.FEEDBACK_DB.prepare(
+      "UPDATE feedback SET status = 'discarded', moderated_at = datetime('now') WHERE id = ?",
+    ).bind(id).run();
+    return htmlResponse(
+      moderateHtmlPage({
+        title: "Discarded",
+        message: `The submission about ${row.gene_symbol} from ${row.submitter_name} has been discarded.`,
+        accent: "#6f5d5a",
+      }),
+    );
+  }
+
+  // action === 'public' — copy sanitized subset to public DB, then mark approved.
+  const sanitized = sanitizeComment(row.comment);
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO feedback_public (id, gene_symbol, submitter_name, comment)
+     VALUES (?, ?, ?, ?)`,
+  ).bind(row.id, row.gene_symbol, row.submitter_name, sanitized).run();
+  await env.FEEDBACK_DB.prepare(
+    "UPDATE feedback SET status = 'approved_public', moderated_at = datetime('now') WHERE id = ?",
+  ).bind(id).run();
+  return htmlResponse(
+    moderateHtmlPage({
+      title: "Approved & published",
+      message: `${row.submitter_name}'s note on ${row.gene_symbol} is now visible on the gene page.`,
+    }),
+  );
+}
+
+async function handleFeedbackPublic(env, url) {
+  const gene = url.searchParams.get("gene");
+  if (!gene || !/^[A-Z0-9-]{1,30}$/.test(gene)) {
+    return badRequest("invalid_gene");
+  }
+  const rows = await env.DB.prepare(
+    `SELECT id, submitter_name, comment, approved_at
+     FROM feedback_public
+     WHERE gene_symbol = ?
+     ORDER BY approved_at DESC
+     LIMIT 50`,
+  ).bind(gene).all();
+  return json({ gene, notes: rows.results }, { ttl: CACHE_TTL_SHORT });
+}
+
 // --- entry ----------------------------------------------------------------
 
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
-      return new Response(null, { status: 204, headers: CORS_HEADERS });
-    }
-    if (request.method !== "GET") {
-      return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
+      return new Response(null, {
+        status: 204,
+        headers: {
+          ...CORS_HEADERS,
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        },
+      });
     }
     const url = new URL(request.url);
     // Strip the `/surfaceome` route prefix when present so the
@@ -826,13 +1352,26 @@ export default {
       path = "";
     }
 
+    // POST is allowed ONLY on the feedback submit endpoint.
+    if (request.method === "POST") {
+      if (path === "/v1/feedback/submit") {
+        return handleFeedbackSubmit(request, env, url);
+      }
+      return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
+    }
+    if (request.method !== "GET") {
+      return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
+    }
+
     if (path === "/v1/health") return handleHealth(env);
     if (path === "/v1/genes") return handleGeneList(env);
-    if (path === "/v1/catalog") return handleCatalog(env);
+    if (path === "/v1/catalog") return handleCatalog(env, request);
     if (path === "/v1/benchmark") return handleBenchmarkList(env);
     if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
     if (path === "/v1/benchmark/export.tsv") return handleBenchmarkExport(env);
     if (path === "/v1/triage/export.tsv") return handleTriageExport(env, url);
+    if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
+    if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);

@@ -34,6 +34,9 @@ from typing import Any
 
 import httpx
 
+from accessible_surfaceome.merge.ortholog_topology_projection import (
+    project_human_topology_onto_ortholog,
+)
 from accessible_surfaceome.tools._shared.models import (
     DeterministicFeatures,
     IsoformTopology,
@@ -100,6 +103,15 @@ def _latest_topology_version() -> str:
     Used to gate every query so we don't accidentally merge multiple
     historical versions for the same gene (e.g. test runs left in D1
     pre-prod).
+
+    **Prefer ``_latest_topology_version_for_cohort(cohort)`` for any
+    new code.** When a topology sweep is run for some cohorts but not
+    others (e.g. the 2026-05-25 isoforms-only run that left the
+    human_canonical / mouse_ortholog / cyno_ortholog cohorts under the
+    older topo_2026_05_16), this all-cohorts-share-one-version
+    function returns the newest release entry — which may not have
+    rows for the cohort you're about to JOIN against, silently
+    nulling out topology fields.
     """
     rows = _query_public(
         "SELECT topology_version FROM topology_release "
@@ -107,6 +119,47 @@ def _latest_topology_version() -> str:
         [],
     )
     return rows[0]["topology_version"] if rows else ""
+
+
+def _latest_topology_version_for_cohort(cohort: str) -> str:
+    """Resolve the freshest topology_version that has rows for the
+    given cohort.
+
+    Replaces the all-cohorts-share-one-version assumption of
+    :func:`_latest_topology_version`. When a topology sweep was run
+    for some cohorts but not others, this picks the right version for
+    each cohort's JOIN target — so a paralog query against
+    ``human_canonical`` finds rows even if the latest release was an
+    isoforms-only sweep that doesn't carry that cohort.
+
+    Strategy: take the set of versions that have rows for ``cohort``
+    in ``topology_public``, intersect with ``topology_release``
+    ordered by ``loaded_at DESC``, return the first match. Falls back
+    to any version with rows for the cohort if no release-table entry
+    matches (defensive — shouldn't happen in production).
+    """
+    rows = _query_public(
+        "SELECT DISTINCT topology_version FROM topology_public WHERE cohort = ?",
+        [cohort],
+    )
+    versions = {r["topology_version"] for r in rows if r.get("topology_version")}
+    if not versions:
+        return ""
+    # Prefer the topology_release row that's most recently loaded AND
+    # has rows for this cohort. Two-step rather than one JOIN because
+    # D1's SQL planner is small and the LEFT JOIN on the release table
+    # is unreliable for "ordered by NULLS LAST" cases.
+    rel_rows = _query_public(
+        "SELECT topology_version FROM topology_release "
+        "ORDER BY loaded_at DESC",
+        [],
+    )
+    for r in rel_rows:
+        if r["topology_version"] in versions:
+            return r["topology_version"]
+    # Defensive fallback — no release-table match. Pick the version
+    # with the highest row count for this cohort (stable across runs).
+    return sorted(versions)[-1]
 
 
 def _latest_paralog_version() -> str:
@@ -200,28 +253,53 @@ def _fetch_isoform_topologies(uniprot_acc: str, topology_version: str) -> list[I
     return out
 
 
-def _fetch_paralogs(uniprot_acc: str, paralog_version: str) -> list[ParalogEntry]:
+def _fetch_paralogs(
+    uniprot_acc: str,
+    paralog_version: str,
+) -> list[ParalogEntry]:
     """Top-N paralogs by ECD identity. NULLs sort last via
-    ``rank_by_ecd_identity`` so the head is the most-similar pairs."""
+    ``rank_by_ecd_identity`` so the head is the most-similar pairs.
+
+    Paralogs with NULL ``ecd_pct_identity`` (ECD-less proteins like
+    inner-leaflet SRC-family kinases) are INCLUDED in the result —
+    family membership is still cross-reactivity signal for
+    antibody-derived evidence even when an identity number isn't
+    computable. The planner's 50/70% cutoff ladder simply doesn't
+    fire for those rows.
+
+    No topology JOIN: paralog per-residue topology was briefly added
+    in 6a220a90 and reverted. SRC's 32 paralogs are all GLOB
+    intracellular kinases so the bars rendered as solid blue with no
+    signal. If a use case for paralog topology comes back, mirror the
+    LEFT JOIN pattern used by `_fetch_orthologs`.
+    """
     rows = _query_public(
         "SELECT paralog_gene_symbol, paralog_uniprot_acc, ecd_pct_identity, "
-        "family_id, compara_version, rank_by_ecd_identity "
+        "biomart_percent_identity, family_id, compara_version, rank_by_ecd_identity "
         "FROM compara_paralog "
         "WHERE human_uniprot_acc = ? AND paralog_version = ? "
-        "  AND ecd_pct_identity IS NOT NULL "
         "  AND paralog_gene_symbol IS NOT NULL "
         "  AND paralog_uniprot_acc IS NOT NULL "
-        "ORDER BY rank_by_ecd_identity ASC LIMIT ?",
+        "ORDER BY rank_by_ecd_identity ASC NULLS LAST LIMIT ?",
         [uniprot_acc, paralog_version, PARALOG_TOP_N],
     )
     out: list[ParalogEntry] = []
     for r in rows:
         try:
+            ecd_raw = r.get("ecd_pct_identity")
+            ecd_id = float(ecd_raw) if ecd_raw is not None else None
+            # Full-length identity from Compara/BioMart — populated even for
+            # ECD-less proteins (ecd_id is None), which is what lets the
+            # viewer color their cross-reactivity tier. Same source as the
+            # ortholog full-length identity, so the numbers are comparable.
+            full_raw = r.get("biomart_percent_identity")
+            full_id = float(full_raw) if full_raw is not None else None
             out.append(
                 ParalogEntry(
                     paralog_symbol=r["paralog_gene_symbol"],
                     paralog_uniprot_acc=r["paralog_uniprot_acc"],
-                    ecd_pct_identity=float(r["ecd_pct_identity"]),
+                    ecd_pct_identity=ecd_id,
+                    full_length_pct_identity=full_id,
                     family_id=r.get("family_id") or "",
                     compara_version=r.get("compara_version") or "",
                 )
@@ -234,8 +312,25 @@ def _fetch_paralogs(uniprot_acc: str, paralog_version: str) -> list[ParalogEntry
     return out
 
 
+def _fetch_canonical_sequence(uniprot_acc: str, topology_version: str) -> str:
+    """The human canonical input sequence DeepTMHMM ran on.
+
+    Used to project the human topology onto orthologs (see
+    ``merge.ortholog_topology_projection``). Returns ``""`` when absent,
+    so the caller simply skips projection and keeps raw ortholog values.
+    """
+    rows = _query_public(
+        "SELECT sequence FROM topology_public "
+        "WHERE uniprot_acc = ? AND cohort = 'human_canonical' "
+        "  AND topology_version = ? LIMIT 1",
+        [uniprot_acc, topology_version],
+    )
+    return (rows[0].get("sequence") or "") if rows else ""
+
+
 def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
-                     ortholog_ecd_version: str) -> Orthologs:
+                     ortholog_ecd_version: str,
+                     human_topology: str = "", human_sequence: str = "") -> Orthologs:
     """Mouse + cyno ortholog entries.
 
     Reads from ``compara_ortholog_ecd`` (which carries both the full-length
@@ -260,6 +355,8 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
         "eo.ortholog_gene_symbol, eo.ecd_pct_identity, "
         "co.percent_identity AS full_length_pct_identity, "
         "tp.tm_helix_count, tp.ecd_length_residues, "
+        "tp.per_residue_topology, tp.deeptmhmm_label, "
+        "tp.sequence AS ortholog_sequence, "
         "eo.compara_release "
         "FROM compara_ortholog_ecd eo "
         "LEFT JOIN topology_public tp "
@@ -285,9 +382,37 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
         species = (r.get("species") or "").lower()
         ecd_raw = r.get("ecd_pct_identity")
         full_raw = r.get("full_length_pct_identity")
+        per_res = r.get("per_residue_topology")
+        label = r.get("deeptmhmm_label")
+        ortholog_seq = r.get("ortholog_sequence")
         try:
             ecd_pct = float(ecd_raw) if ecd_raw is not None else None
             full_pct = float(full_raw) if full_raw is not None else None
+            # Default to the raw DeepTMHMM-on-ortholog values…
+            topo: str | None = str(per_res) if per_res is not None else None
+            tm_count = int(r.get("tm_helix_count") or 0)
+            ecd_len = int(r.get("ecd_length_residues") or 0)
+            proj_source: str | None = None
+            tm_absent = False
+            n_absent = 0
+            # …then override with the human canonical topology projected onto
+            # this ortholog when both sequences are available. Restores the
+            # conserved topology on truncated / padded ortholog models (esp.
+            # cyno TrEMBL); falls back to the raw values when projection
+            # returns None (no human ECD/topology, empty ortholog sequence).
+            if human_topology and human_sequence and ortholog_seq:
+                projected = project_human_topology_onto_ortholog(
+                    human_topology=human_topology,
+                    human_sequence=human_sequence,
+                    ortholog_sequence=str(ortholog_seq),
+                )
+                if projected is not None:
+                    topo = projected.per_residue_topology
+                    tm_count = projected.tm_helix_count
+                    ecd_len = projected.ecd_length_residues
+                    tm_absent = projected.tm_absent_from_model
+                    n_absent = projected.n_tm_regions_absent
+                    proj_source = projected.source
             entry = OrthologEntry(
                 is_canonical=True,
                 isoform_id=r.get("ortholog_uniprot_acc") or "",
@@ -299,10 +424,15 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                 # Similarity not yet wired — mirror identity when present.
                 ecd_pct_similarity_to_human_canonical=ecd_pct,
                 full_length_pct_identity_to_human_canonical=full_pct,
-                ecd_length_residues=int(r.get("ecd_length_residues") or 0),
-                tm_helix_count=int(r.get("tm_helix_count") or 0),
+                ecd_length_residues=ecd_len,
+                tm_helix_count=tm_count,
                 compara_version=r.get("compara_release") or "",
                 retrieved_at=datetime.now(UTC),
+                per_residue_topology=topo,
+                deeptmhmm_label=str(label) if label is not None else None,
+                topology_projection_source=proj_source,
+                tm_absent_from_model=tm_absent,
+                n_tm_regions_absent=n_absent,
             )
         except (TypeError, ValueError) as exc:
             logger.warning(
@@ -325,8 +455,13 @@ def _stub_structure(uniprot_acc: str) -> StructureFeatures:
     difference between "we haven't measured it yet" and "we measured zero".
     """
     return StructureFeatures(
-        afdb_id=f"AF-{uniprot_acc}-F1-model_v4",
-        afdb_version="v4",
+        # Placeholders track LATEST_KNOWN_AFDB_VERSION (viewer/lib/
+        # structure-viewer-types.ts). Bumped v4 → v6 in 2025-08 when
+        # v1–v5 retired from the AFDB file server. When the real
+        # fetcher runs these get overwritten; the cosmetic default
+        # just shouldn't lie.
+        afdb_id=f"AF-{uniprot_acc}-F1-model_v6",
+        afdb_version="v6",
         ecd_mean_plddt=0.0,
         ecd_disordered_fraction=0.0,
         source="AlphaFold DB (placeholder — pLDDT fetcher not yet wired)",
@@ -384,15 +519,26 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     ``deeptmhmm-1.0.24`` tag from the upload (or whatever version the
     sweep was run against).
     """
-    topology_version = _latest_topology_version()
+    # Per-cohort version resolution — each cohort's JOIN target may
+    # live under a different topology_version when sweeps are run
+    # partially (e.g. an isoforms-only refresh that doesn't re-run
+    # human_canonical or the ortholog cohorts). `_latest_topology_version`
+    # returned the newest release entry regardless of which cohort it
+    # carried — that silently nulled paralog/ortholog topology fields
+    # after the 2026-05-25 isoforms-only sweep. The per-cohort variant
+    # picks the right version for each fetcher's JOIN.
+    canonical_topo_version = _latest_topology_version_for_cohort("human_canonical")
+    isoform_topo_version = _latest_topology_version_for_cohort("human_isoforms")
+    mouse_topo_version = _latest_topology_version_for_cohort("mouse_ortholog")
     paralog_version = _latest_paralog_version()
     ortholog_ecd_version = _latest_ortholog_ecd_version()
-    if not topology_version:
+    if not canonical_topo_version:
         logger.warning(
-            "no topology_release rows in D1; falling back to placeholder for %s",
+            "no human_canonical rows in topology_public; falling back to "
+            "placeholder for %s",
             uniprot_acc,
         )
-    canonical = _fetch_canonical_topology(uniprot_acc, topology_version) if topology_version else None
+    canonical = _fetch_canonical_topology(uniprot_acc, canonical_topo_version) if canonical_topo_version else None
     if canonical is None:
         # Schema requires a canonical_topology; emit a clearly-labeled
         # placeholder. Examples of when this fires: the 3 length-skipped
@@ -415,27 +561,64 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
             tool_version="placeholder-no-d1-row",
             retrieved_at=datetime.now(UTC),
         )
+    # Per-cohort version threading — see the comment block above where
+    # the cohort-specific versions are resolved. Isoforms JOIN against
+    # human_isoforms (newest sweep), paralogs JOIN against
+    # human_canonical (which the paralog uniprots live under), orthologs
+    # JOIN against mouse_ortholog / cyno_ortholog (which share a version
+    # in practice — mouse_topo_version covers both).
     isoforms = (
-        _fetch_isoform_topologies(uniprot_acc, topology_version)
-        if topology_version else []
+        _fetch_isoform_topologies(uniprot_acc, isoform_topo_version)
+        if isoform_topo_version else []
+    )
+    # Human canonical sequence — needed to project the canonical topology
+    # onto each ortholog (see merge.ortholog_topology_projection). Fetched
+    # under the canonical cohort's version, which may differ from the
+    # ortholog cohort's mouse_topo_version.
+    canonical_sequence = (
+        _fetch_canonical_sequence(uniprot_acc, canonical_topo_version)
+        if canonical_topo_version else ""
     )
     orthologs = (
         _fetch_orthologs(
             uniprot_acc,
-            topology_version=topology_version,
+            topology_version=mouse_topo_version,
             ortholog_ecd_version=ortholog_ecd_version,
+            human_topology=canonical.per_residue_topology or "",
+            human_sequence=canonical_sequence,
         )
-        if topology_version and ortholog_ecd_version
+        if mouse_topo_version and ortholog_ecd_version
         else Orthologs()
     )
     paralogs = (
         _fetch_paralogs(uniprot_acc, paralog_version)
         if paralog_version else []
     )
+    # Pull real AFDB pLDDT — ECD-restricted when the canonical isoform
+    # has a per-residue topology with extracellular residues, otherwise
+    # falls back to the whole-protein metric with a labeled source so
+    # downstream readers don't conflate it with the ECD-restricted
+    # measurement. ``fetch_afdb_plddt`` never raises — on network /
+    # parse failure it returns its own labeled placeholder.
+    from accessible_surfaceome.tools.afdb_plddt import fetch_afdb_plddt
+    from accessible_surfaceome.tools.surface_bind import lookup as lookup_surface_bind
+
+    structure = fetch_afdb_plddt(
+        uniprot_acc,
+        per_residue_topology=canonical.per_residue_topology or None,
+    )
+
+    # SURFACE-Bind summary — in-memory lookup against the checked-in
+    # JSON ``data/external/surface_bind/surface_bind_summary.json``.
+    # ``has_data=False`` is the explicit "not scored" signal for the
+    # ~12% of surfaceome proteins SURFACE-Bind omitted.
+    surface_bind = lookup_surface_bind(uniprot_acc)
+
     return DeterministicFeatures(
         canonical_topology=canonical,
         isoform_topologies=isoforms,
         orthologs=orthologs,
         paralogs=paralogs,
-        structure=_stub_structure(uniprot_acc),
+        structure=structure,
+        surface_bind=surface_bind,
     )

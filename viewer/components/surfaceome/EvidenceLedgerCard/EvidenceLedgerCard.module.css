@@ -91,3 +91,48 @@
   color: var(--ink);
   border-bottom-color: var(--accent);
 }
+
+/* Cross-planner duplicate fold — when the orchestrator's dedup
+   pass detected that A1 and A2 both extracted the same source
+   span, the canonical card shows the alternate ids inline and
+   their distinct claim text below. Keeps the per-id drawer
+   click affordance per chip; visually compact so the ledger
+   reads as one entry per unique source. */
+.dupCount {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-left: 0.4rem;
+}
+
+.dupList {
+  list-style: none;
+  margin: 0.4rem 0 0;
+  padding: 0.4rem 0 0;
+  border-top: 1px dashed var(--line-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.dupItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dupLabel {
+  color: var(--muted);
+  font-size: 0.66rem;
+  letter-spacing: 0.05em;
+}
+
+.dupClaim {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}

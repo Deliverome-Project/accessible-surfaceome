@@ -126,7 +126,6 @@ def run_variant_b(
         "verdict_reasoning": reasoning[:600],
         "accessibility_signal": signal,
         "evidence_claims": [],
-        "model_path": "sonnet_only",  # not really, but the schema literal is closed; flag in summary instead
     }
 
     telemetry = DeterministicResult(

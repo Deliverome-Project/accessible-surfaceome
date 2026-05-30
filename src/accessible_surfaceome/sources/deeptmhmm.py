@@ -566,58 +566,110 @@ def parse_fasta(text: str, source_url: str, response_headers: dict[str, str]) ->
     )
 
 
+_BLOSUM_NONSTANDARD = set("UBJZXO*")
+
+
+def _sanitize_for_blosum(sequence: str) -> str:
+    """Replace non-BLOSUM62 residues with 'X' so the aligner doesn't choke."""
+    if not any(ch in _BLOSUM_NONSTANDARD for ch in sequence):
+        return sequence
+    return "".join("X" if ch in _BLOSUM_NONSTANDARD else ch for ch in sequence)
+
+
+def coverage_normalized_identity(reference: str, candidate: str) -> float:
+    """Coverage-aware % identity of ``candidate`` against ``reference``.
+
+    BLOSUM62 global alignment (gap_open=-10, gap_extend=-0.5); identity =
+    (identical aligned positions) / ``len(reference)``. Normalizing by the
+    REFERENCE length — the human canonical — rather than ``min(len)`` is what
+    makes truncated ortholog models lose: a fragment that is locally near-
+    identical but covers only part of the human protein scores low (its
+    uncovered human residues count against it), so the full-length ortholog
+    isoform wins. Empirically, the cyno EGFR 704-aa ECD fragment A0A2K5WKD8
+    scores 54.4% here vs 99.3% for the full-length A0A2K5WK39, whereas a
+    ``min(len)`` normalization gives the fragment a misleading 93.5%.
+
+    Returns a value in [0, 1]; 0.0 on empty input or alignment failure.
+    """
+    if not reference or not candidate:
+        return 0.0
+    from Bio.Align import PairwiseAligner, substitution_matrices
+
+    aligner = PairwiseAligner()
+    aligner.substitution_matrix = substitution_matrices.load("BLOSUM62")
+    aligner.open_gap_score = -10.0
+    aligner.extend_gap_score = -0.5
+    aligner.mode = "global"
+    ref = _sanitize_for_blosum(reference)
+    cand = _sanitize_for_blosum(candidate)
+    try:
+        alignment = aligner.align(ref, cand)[0]
+    except (ValueError, KeyError):
+        return 0.0
+    matches = 0
+    for (a0, a1), (b0, b1) in zip(alignment.aligned[0], alignment.aligned[1]):
+        matches += sum(1 for x, y in zip(ref[a0:a1], cand[b0:b1]) if x == y)
+    return matches / len(reference)
+
+
 def resolve_uniprot_by_ensembl_gene(
     ensembl_gene_id: str,
     *,
     organism_taxon_id: int,
     ortholog_gene_symbol: str | None = None,
+    human_canonical_sequence: str | None = None,
     timeout: int = 30,
     retry_max_attempts: int = 3,
     min_request_interval_ms: int = 200,
 ) -> str | None:
-    """Find the canonical UniProt accession for an Ensembl gene ID in a
-    given organism, falling back to a gene-symbol search when the
-    Ensembl-xref query returns no hits.
+    """Find the best ortholog UniProt accession for an Ensembl gene ID in a
+    given organism.
 
-    Used for mouse/cyno ortholog UniProt lookup when the Compara
-    ``ortholog`` table only carries Ensembl gene IDs. Query order:
+    Used for mouse/cyno ortholog UniProt lookup when the Compara ``ortholog``
+    table only carries Ensembl gene IDs.
 
-      1. ``xref:ensembl-<ENSG>+AND+organism_id:<taxon>+AND+reviewed:true``
-         — exact xref match, reviewed Swiss-Prot only. Most-specific.
-      2. ``gene_exact:<symbol>+AND+organism_id:<taxon>+AND+reviewed:true``
-         — Swiss-Prot by symbol. **Critical for mouse**: UniProt frequently
-         does NOT index reviewed Swiss-Prot's Ensembl xref (e.g. mouse F3
-         P20352, STX2 Q00262, IL4I1 O09046 are all missed by Tier 1) but
-         the gene symbol lookup finds them. Symbol here is the **ortholog's
-         own symbol from Compara**, NOT the human symbol — different
-         failure mode from the within-species symbol resolver bug PR #30
-         fixed. Putting reviewed-by-symbol ahead of unreviewed-by-xref
-         (the previous Tier 2) is what stops us picking TrEMBL fragments
-         like ``A0A0G2JGS5`` (157 aa) over canonical Swiss-Prot.
-      3. ``xref:ensembl-<ENSG>+AND+organism_id:<taxon>`` (any review state),
-         **picking the longest entry** — TrEMBL fallback for cyno (where
-         reviewed Swiss-Prot doesn't exist) and edge mouse cases. Longest-
-         first prefers full-length isoforms over fragmentary TrEMBL entries
-         from older proteome assemblies.
-      4. Same gene_exact (any review state), longest entry — last resort.
+    **Primary path — highest identity to the human canonical.** When
+    ``human_canonical_sequence`` is supplied, every UniProt isoform mapped to
+    this ortholog gene (by Ensembl xref OR by the ortholog's own gene symbol,
+    any review state) is gathered with its sequence in a single search, and
+    the one with the highest :func:`coverage_normalized_identity` to the human
+    canonical is returned. This is the criterion that matters for ortholog-
+    model selection: it rejects truncated TrEMBL fragments (e.g. the cyno EGFR
+    704-aa ECD fragment ``A0A2K5WKD8``) in favour of the full-length true
+    ortholog (``A0A2K5WK39``), which a length- or review-status tiebreaker
+    does not reliably do. Ties are broken by (reviewed, length, accession).
+
+    **Fallback path — tiered search** (when no human sequence is available,
+    so identity can't be computed):
+
+      1. reviewed xref — exact, Swiss-Prot only.
+      2. reviewed gene_exact — catches Swiss-Prot missing the Ensembl xref
+         (critical for mouse: F3 P20352, STX2 Q00262, IL4I1 O09046).
+      3. unreviewed xref, longest entry — TrEMBL fallback for cyno.
+      4. unreviewed gene_exact, longest entry — last resort.
 
     Returns the matched accession or ``None``.
 
-    Cache invalidation: this resolver's output is cached on disk at
-    ``data/external/ortholog_uniprot_resolution.tsv``. After changing the
-    tier order, that cache file is *stale* — delete it (or rerun the
-    sweep with a fresh path) so previously-cached TrEMBL picks get
-    superseded.
+    Cache invalidation: this resolver's output is cached on disk by the
+    sweep. After changing the selection criterion the cache is *stale* —
+    use a fresh cache path (the sweep keys identity-based picks under
+    ``ortholog_uniprot_resolution_byidentity.tsv``) so previously-cached
+    length-based picks get superseded.
     """
     import json as _json
 
     if not ensembl_gene_id:
         return None
 
-    def _search(query: str, *, size: int = 1) -> list[dict]:
+    sym = (ortholog_gene_symbol or "").strip()
+
+    def _search(query: str, *, size: int = 1, want_sequence: bool = False) -> list[dict]:
+        fields = "accession,reviewed,length"
+        if want_sequence:
+            fields += ",sequence"
         url = (
             "https://rest.uniprot.org/uniprotkb/search?"
-            f"query={query}&format=json&size={size}&fields=accession,reviewed,length"
+            f"query={query}&format=json&size={size}&fields={fields}"
         )
         try:
             text, _ = fetch_text_with_retries(
@@ -629,6 +681,39 @@ def resolve_uniprot_by_ensembl_gene(
             return _json.loads(text).get("results") or []
         except (RuntimeError, ValueError):
             return []
+
+    # ----- Primary: identity-to-human selection -----
+    if human_canonical_sequence:
+        cand: dict[str, dict] = {}
+        queries = [f"xref:ensembl-{ensembl_gene_id}+AND+organism_id:{organism_taxon_id}"]
+        if sym:
+            queries.append(f"gene_exact:{sym}+AND+organism_id:{organism_taxon_id}")
+        for q in queries:
+            for r in _search(q, size=25, want_sequence=True):
+                acc = (r.get("primaryAccession") or "").strip()
+                seq = ((r.get("sequence") or {}).get("value") or "").strip().upper()
+                if not acc or not seq or acc in cand:
+                    continue
+                et = (r.get("entryType") or "").lower()
+                cand[acc] = {
+                    "acc": acc,
+                    "seq": seq,
+                    "reviewed": ("reviewed" in et and "unreviewed" not in et),
+                    "length": int((r.get("sequence") or {}).get("length") or 0),
+                }
+        if cand:
+            scored = [
+                (
+                    coverage_normalized_identity(human_canonical_sequence, c["seq"]),
+                    1 if c["reviewed"] else 0,
+                    c["length"],
+                    c["acc"],
+                )
+                for c in cand.values()
+            ]
+            scored.sort(reverse=True)
+            return scored[0][3]
+        # else: fall through to the tiered search below
 
     def _first(query: str) -> str | None:
         results = _search(query, size=1)
@@ -647,8 +732,6 @@ def resolve_uniprot_by_ensembl_gene(
         best = max(results, key=lambda e: int(e.get("sequence", {}).get("length") or 0))
         acc = (best.get("primaryAccession") or "").strip()
         return acc or None
-
-    sym = (ortholog_gene_symbol or "").strip()
 
     # Tier 1: reviewed xref
     if acc := _first(

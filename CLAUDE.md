@@ -48,12 +48,13 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 
 ## Managed Agents — auto-sync on drift
 
-The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
+`surface_triage` and the v1 deep-dive trio (`surface_evidence_compiler`, `biology_compiler`, `surfaceome_synthesizer`) are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
 
-**Auto-sync is wired into the annotator orchestrator.** When `annotate` runs, it sha-checks the local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. The sync is a single idempotent metadata round-trip (no model call, no extra spend). You no longer need to remember `agents sync` after editing:
+**Auto-sync is wired into the v1 deep-dive orchestrator.** When [surfaceome_v1/orchestrator.py:annotate](src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py) runs, it sha-checks each local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. Edits that auto-sync:
 
-- any `src/accessible_surfaceome/agents/surface_annotator/prompts/*.md`
-- the agent payload in `src/accessible_surfaceome/agents/surface_annotator/agent.py`
+- `src/accessible_surfaceome/agents/surface_evidence_compiler/prompts/*.md` (+ its `agent.py` payload)
+- `src/accessible_surfaceome/agents/biology_compiler/prompts/*.md` (+ its `agent.py` payload)
+- `src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/*.md` (+ its `agent.py` payload)
 - the `SurfaceomeRecord` / `SurfaceomeRecordDraft` schema in `src/accessible_surfaceome/tools/_shared/models.py` (when the prompt references the new shape)
 
 `uv run accessible-surfaceome agents sync` still works as a manual command for cases where you want to push prompt changes without triggering a full annotate run (CI, schema-only edits, dry-run verification).
@@ -62,7 +63,27 @@ The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agen
 
 The registry is local (per-worktree, gitignored under `.runs/`) so each worktree tracks its own remote agent version. surface_triage runs through a different code path and doesn't use the Managed Agent registry, so it's not part of the auto-sync.
 
-**Why auto-sync matters:** the surface_annotator run is ~$0.30–0.50 on Sonnet 4.6. Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
+### v2 is the production deep-dive path
+
+The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](scripts/surfaceome_v2_annotate.py)). v2 uses one registered Managed Agent (the synthesizer, same `surfaceome_synthesizer` registration the v1 path uses) plus in-process Sonnet calls for `plan_trim_select` + 10 block builders. The 19 in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) **do not auto-sync** — they take effect at the next local invocation, which is what we want for fast iteration. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) "Production architecture update (post-PR #38)" for the full v1/v2 trade-off table.
+
+The v1 path's `surface_evidence_compiler` + `biology_compiler` Managed Agents stay registered so historical v1 runs reproduce; they are not on the production code path.
+
+**Why auto-sync matters:** the synthesizer run is ~$0.10–0.20 on Sonnet 4.6 (full deep-dive ~$2). Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
+
+### v2 publishes records by default — `--no-publish` to opt out
+
+After a v2 annotate run validates, `scripts/surfaceome_v2_annotate.py` writes the record to **three** surfaces:
+
+1. `data/annotations/{symbol}.json` — the agent's canonical disk artifact (was previously gated behind `--persist`; now default-on, opt out with `--no-persist`).
+2. `viewer/public/data/surfaceome/{symbol}.json` — the viewer's offline / Worker-down fallback.
+3. Public Cloudflare D1 `surface_annotation.annotation_json` — what the `api.deliverome.org/surfaceome/v1/genes/:symbol` Worker serves.
+
+Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.publish_record`](src/accessible_surfaceome/cloud/surface_annotation.py), default-on with `--no-publish` to skip. The D1 push is **auto-skipped** with a warning (not an error) when the `CLOUDFLARE_*` env vars aren't set, so CI without secrets still works.
+
+**Why default-on:** previously a record could land on disk via `--persist` but never reach D1 — which meant the Worker kept serving a stale schema-incomplete row and the viewer crashed on missing fields (e.g. `rec.deterministic_features.surface_bind.has_data`). The fix is to add the field to the **records**, not defensive `?.` chains in the viewer. Publishing-by-default is the mechanism that enforces this.
+
+The same `publish_record` helper backs `scripts/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
 
 ## Agent Command Allowlist
 
@@ -468,6 +489,43 @@ Cloudflare Pages project at **`surfaceome.deliverome.org`**. It is *not*
 a sub-route of `deliverome.org`'s main site — separate build, separate
 deploy target, separate domain.
 
+### Tooltip / InfoTip citation rule
+
+Any tooltip (InfoTip body text, StatusPill `title=`, etc.) that
+cites a paper **must include a PMID identifier AND a clickable link
+to it** — never just an author-year phrase. **PMID is the default
+identifier**: link to `https://pubmed.ncbi.nlm.nih.gov/{PMID}/`. Add
+a DOI only as a *secondary* identifier when a reader genuinely needs
+the publisher landing page — don't lead with it, and never ship
+DOI-only.
+
+Acceptable patterns:
+
+* `Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/)` — the default shape
+* `Dana et al. 2019, [PMID 30445541](https://pubmed.ncbi.nlm.nih.gov/30445541/)`
+* `Ramaraj et al. 2012, [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)` — DOI optional, appended after the PMID only when it adds something
+* `Bordeaux 2010 / Edfors 2018` — **not acceptable on its own**; reach for the
+  PMIDs and link them. If you can't find the exact PMID, search PubMed
+  before shipping (the user can't trace the citation otherwise).
+
+Why PMID over DOI: the PubMed link doubles as the durability check —
+a dead or retracted citation surfaces as a 404 when you verify it.
+`doi.org` bot-blocks non-browser clients (returns HTTP 403 to
+`curl`), so a DOI link can't be machine-verified during review the
+way a PubMed link can. PMID is also the canonical biomedical
+identifier and always resolves to a single record.
+
+Why tooltips carry citations at all: they're the only on-page surface
+where the cutoff / threshold provenance lives. A reader who wants to
+verify the threshold must be one click from the primary source — the
+gene-page prose can't carry every citation.
+
+The text-bank entry point is `viewer/lib/tooltips.tsx`. Per-component
+TT_* string constants (in `FiltersCard.tsx`, `AccessibilityRisksCard.tsx`,
+etc.) follow the same rule. When you add a new threshold-bearing
+tooltip, include the citation chain — never punt with "see
+literature" or "per established practice".
+
 The design language is borrowed from
 `Deliverome-Project/deliverome-internal` PR #24 (Rosy Maroon: Maroon ·
 Teal · Amber · Lavender; Manrope + Playfair Display via
@@ -477,15 +535,46 @@ primitives `.h-display` / `.h-section` / `.lede` / `.label-mono` from
 `viewer/app/design-tokens.css` — they have to be re-synced manually
 when the deliverome.org system rev's.
 
-Data: `viewer/public/data/surfaceome/{SYMBOL}.json` is the static
-deploy artifact (also reachable as
+Data: `viewer/public/data/surfaceome/{SYMBOL}.json` is the committed
+in-tree snapshot (also reachable as
 `https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.json`).
-The page bodies read those JSONs via `fs` at build time and SSG every
-gene through `generateStaticParams`. When the public Worker at
-`api.deliverome.org/surfaceome/v1/*` is live (source in
+Every gene is SSG'd through `generateStaticParams`; the loader at
+`viewer/lib/surfaceome.ts` fetches the public Worker at
+`api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` (source in
 `cloudflare/workers/surfaceome_api/`, bound to the `surfaceome_public`
-D1 mirror), the loader at `viewer/lib/surfaceome.ts` can swap `fs` for
-`fetch()` — same record shape.
+D1 mirror) **first** and falls back to the committed `fs` snapshot only
+on error — same record shape. Set `SURFACEOME_API_BASE=local` (or
+empty) to force fs-only.
+
+### Records source of truth — never edit a JSON snapshot without syncing D1
+
+**The live site reads D1, not the committed JSON.** The Worker serves
+each gene from public D1's `surface_annotation.annotation_json`; the
+`viewer/public/data/surfaceome/*.json` snapshots are only the in-tree
+source of truth + the on-error SSG fallback. So **a record change that
+lands only in the JSON silently drifts the live site** — the page keeps
+rendering D1's stale row. This is exactly what blanked the Family chip:
+the `protein_family` → `llm_family` rename updated the JSON + viewer
+code, but D1 still served the pre-rename shape, so `llm_family` was
+missing and `prettyEnum(undefined)` rendered `—`.
+
+Rules for changing what a gene page renders:
+
+- **Don't hand-edit a JSON snapshot to change record content/schema and
+  stop there.** The edit hasn't reached the live site until it's in D1.
+- **Land the change in D1.** Normal path: re-run the annotator
+  (`scripts/surfaceome_v2_annotate.py`), which publishes to public D1
+  via `accessible_surfaceome.cloud.surface_annotation.publish_record`
+  after every successful run. If you hand-edited the committed
+  snapshots, push them with
+  `uv run python scripts/upload_viewer_snapshots_to_d1.py --execute`
+  (idempotent `INSERT OR REPLACE` on `(gene_symbol, schema_version)`;
+  drops stale older-schema rows). Re-sync D1 in the **same** change as
+  the JSON edit so the Worker and the in-tree snapshots never diverge.
+- **Don't paper over JSON ↔ D1 schema drift with defensive shims / `?.`
+  chains in the loader.** Fix the records and re-sync D1. A transitional
+  loader shim is acceptable only as a stopgap while D1 is being
+  re-synced — delete it once D1 carries the new schema.
 
 Per-gene records must validate against the `SurfaceomeRecord` Pydantic
 schema in `src/accessible_surfaceome/tools/_shared/models.py`. See

@@ -21,6 +21,7 @@ from accessible_surfaceome.agents.surfaceome_v2.builders._common import (
     load_prompt,
 )
 from accessible_surfaceome.tools._shared.models import (
+    ClaimStanceRow,
     EvidenceClaim,
     EvidenceGrade,
     NonSurfaceExpression,
@@ -30,17 +31,28 @@ logger = logging.getLogger(__name__)
 
 
 class EvidenceGradeBlock(BaseModel):
-    """Bundle: the A1 evidence grade verdict + supporting non-surface rows."""
+    """Bundle: the A1 evidence grade verdict + supporting non-surface rows
+    + per-claim stance map.
+
+    Field declaration order is load-bearing: ``claim_stances`` is listed
+    BEFORE ``grade_rationale`` so the JSON schema the LLM follows asks
+    for per-claim judgments first, then the prose rationale that
+    summarizes them. This forces the structured per-claim call to come
+    before the prose (which the LLM would otherwise write first and
+    then back-fill stances to match).
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     evidence_grade: EvidenceGrade
+    claim_stances: list[ClaimStanceRow] = Field(default_factory=list)
     grade_rationale: str
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
 
 
 _DEFAULT_BLOCK = EvidenceGradeBlock(
     evidence_grade="weak",
+    claim_stances=[],
     grade_rationale="No evidence claims were available to grade.",
     non_surface_expression=[],
 )
@@ -69,7 +81,10 @@ def build_evidence_grade(
         f"{format_ledger_block(claims, header='A1 full ledger')}\n"
         f"{format_schema_block(EvidenceGradeBlock.model_json_schema(), name='EvidenceGradeBlock')}\n"
         "Emit ONE fenced ```json block containing a JSON OBJECT with keys "
-        "`evidence_grade`, `grade_rationale`, `non_surface_expression`. "
+        "`evidence_grade`, `claim_stances`, `grade_rationale`, "
+        "`non_surface_expression`. Emit `claim_stances` BEFORE "
+        "`grade_rationale` so per-claim judgments commit first; the "
+        "rationale then summarizes the stances rather than the reverse. "
         "No prose around it.\n"
     )
     parsed = call_builder(
@@ -96,7 +111,23 @@ def build_evidence_grade(
         )
         for row in parsed.non_surface_expression
     ]
-    return parsed.model_copy(update={"non_surface_expression": cleaned_rows})
+    # Same scrubbing pattern for claim_stances — drop any stance row
+    # whose claim_id the LLM fabricated. Logged so a high drop rate
+    # surfaces as a builder-quality signal.
+    cleaned_stances = [s for s in parsed.claim_stances if s.claim_id in known]
+    n_dropped = len(parsed.claim_stances) - len(cleaned_stances)
+    if n_dropped > 0:
+        logger.warning(
+            "evidence_grade_builder: dropped %d claim_stances rows with "
+            "unresolved claim_id (LLM cited evidence_ids absent from the input ledger)",
+            n_dropped,
+        )
+    return parsed.model_copy(
+        update={
+            "non_surface_expression": cleaned_rows,
+            "claim_stances": cleaned_stances,
+        }
+    )
 
 
 __all__ = ["EvidenceGradeBlock", "build_evidence_grade"]

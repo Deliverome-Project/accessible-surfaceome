@@ -25,11 +25,36 @@ from pathlib import Path
 from typing import Any
 
 from accessible_surfaceome.paths import REPO_ROOT
-from accessible_surfaceome.tools._shared.models import TRIAGE_SCHEMA_VERSION
+from accessible_surfaceome.tools._shared.models import (
+    TRIAGE_SCHEMA_VERSION,
+    _REASONS_BY_VERDICT,
+)
 
 from .d1_client import D1Client
 
 logger = logging.getLogger(__name__)
+
+
+def _is_record_schema_valid(record: dict[str, Any]) -> bool:
+    """Return True iff the ``(predicted_verdict, predicted_reason)``
+    pair in ``record`` is consistent with the Pydantic
+    ``TriageRecord._check_reason_matches_verdict`` validator.
+
+    NULL verdicts (errored cells) are allowed through — those are
+    legitimate failure rows the runner writes deliberately to record
+    "we tried this gene and got nothing." A non-NULL verdict that's
+    not in {yes, contextual, no} OR a verdict-reason mismatch is the
+    failure mode we're guarding against.
+    """
+    v = record.get("predicted_verdict")
+    if v is None:
+        return True  # null verdict = errored cell; legitimate
+    if v not in _REASONS_BY_VERDICT:
+        return False  # verdict not in the closed enum
+    r = record.get("predicted_reason")
+    if r is None:
+        return False  # verdict set but reason isn't — shouldn't happen
+    return r in _REASONS_BY_VERDICT[v]
 
 PROMPTS_DIR = REPO_ROOT / "src" / "accessible_surfaceome" / "agents" / "surface_triage" / "prompts"
 
@@ -362,6 +387,24 @@ class D1RunSink:
         variant = record.get("variant")
         if variant not in self._prompts_by_variant:
             logger.warning("D1RunSink: unknown variant %r; skipping", variant)
+            return False
+        # Belt-and-suspenders: refuse to persist a record whose
+        # (verdict, reason) pair violates the Pydantic
+        # TriageRecord._check_reason_matches_verdict validator. The
+        # runner's _run_one_with_retry should already null these out on
+        # persistent invalidity (scripts/triage_runner.py), but the
+        # 2026-05-12 mainbench sweep showed what happens when that leg
+        # is missing — 15 invalid rows past the schema. Catching it
+        # here too means a future runner that forgets the check still
+        # can't write invalid combos to D1.
+        if not _is_record_schema_valid(record):
+            logger.warning(
+                "D1RunSink: refusing schema-invalid record for %s/%s/%s "
+                "(verdict=%r, reason=%r); writing NULL fields would lose "
+                "the row entirely, so skipping the INSERT — fix the runner.",
+                record.get("gene_symbol"), record.get("model"), variant,
+                record.get("predicted_verdict"), record.get("predicted_reason"),
+            )
             return False
         prompt = self._prompts_by_variant[variant]
         gene = record["gene_symbol"]

@@ -65,3 +65,28 @@
 .muted {
   color: var(--muted);
 }
+
+/* Same-vs-distinct topology dot in the TM-count cell. Green = the
+   ortholog keeps the human canonical's transmembrane-helix count;
+   amber = the membrane-pass count diverged between species. */
+.topoCell {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.topoDot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  flex: none;
+}
+
+.topoSame {
+  background: var(--success);
+}
+
+.topoDistinct {
+  background: var(--amber-mid);
+}

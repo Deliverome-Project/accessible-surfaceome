@@ -28,11 +28,13 @@ output is one fenced ```json block matching the `SearchPlan` schema.
 ## Tools available to the orchestrator
 
 * **`evidence_retrieval(category)`** — per-category surfaceome-method
-  literature search. Categories: `ihc`, `if_intact`, `flow_cytometry`,
-  `surface_biotinylation`, `mass_spec_surfaceome`,
-  `western_blot_paired`, `structure_with_ecd`, `hpa_ihc`. Each returns a
-  small set of PMC papers pre-extracted into verbatim
-  `EvidenceClaimDraft` snippets.
+  literature search. Categories: `ihc` (includes HPA antibody panels),
+  `if` (non-permeabilized OR permeabilized-with-PM-colocalization),
+  `flow_cytometry`, `surface_biotinylation`, `mass_spec_surfaceome`,
+  `western_blot_paired`, `structure_with_ecd`, and `other` (catch-all
+  for pharmacology, shedding, proximity labeling, functional surface
+  assays). Each returns a small set of PMC papers pre-extracted into
+  verbatim `EvidenceClaimDraft` snippets.
 * **`gene_literature`** — five modes:
   - `gene2pubmed` — NCBI's curated PMID list for this gene. High-
     precision baseline; include it.
@@ -53,17 +55,208 @@ output is one fenced ```json block matching the `SearchPlan` schema.
     Costs more tokens; use when the PMC OA paper is a known biology /
     atlas / disease-context source for THIS gene.
 
+## Deterministic inputs
+
+Alongside the UniProt summary and DB vote panel, you will see a fenced
+`Deterministic inputs` JSON block with DeepTMHMM-derived topology +
+Ensembl Compara paralog + cross-species ortholog ECD identity for this
+gene. The block is computed before you run (no LLM uncertainty); the
+fields you should weight your `SearchPlan` against are:
+
+* **`tm_helix_count` + UniProt subcellular_location** — the
+  topology / compartment combo decides whether to chase the "ectopic
+  surface" subplot.
+  - `tm == 0` AND UniProt lists an intracellular compartment AND any
+    DB votes `surface`: classic ectopic-surface candidate
+    (csGRP78-class, csVIM-class, ATP synthase ectopic-on-surface).
+    Add `topic_search` queries with anchors `surface_expression` +
+    `shedding` + `ptm` aimed at stress-induced / disease-state
+    surface fractionation. Note in `rationale` that the
+    `AccessibilityModulationObservation[]` ledger needs state-binding
+    evidence (activated / senescent / stressed / hypoxic) and the
+    `cell_states` builder will need claims tied to a specific state.
+  - `tm == 0` AND only intracellular compartments AND no surface DB
+    votes: standard biology search — the gene is intracellular.
+    Don't burn plan slots on surface-fractionation queries.
+  - `tm == 1` to `tm == 7`: standard biology context; HPA tissue +
+    cell-type atlases are the primary source.
+  - `tm >= 8` (SLC transporter, ion channel): substrate / functional
+    literature may dominate over expression-atlas data; balance
+    accordingly.
+
+* **`paralog_count` + `top_paralogs`** — Compara paralogs by ECD
+  identity. The % bands below are our heuristic; the principle that
+  cross-reactivity tracks identity follows antibody-validation practice
+  (Bordeaux et al. 2010, PMID 20359301; Edfors et al. 2018,
+  PMID 30297845), combined with family-aware literature design.
+  - Top paralog `ecd_pct_identity >= 50`: cross-reactivity is
+    plausible at the antibody level. Cell-type expression patterns
+    and single-cell markers may transfer from the family; add one
+    `topic_search` query naming the family for tissue-context breadth.
+  - Top paralog `ecd_pct_identity >= 70`: cross-reactivity is likely.
+    Single-cell and tissue claims need gene-specific anchoring;
+    note in `rationale` that downstream builders should not credit
+    family-wide claims to this gene.
+  - `paralog_count >= 10`: medium-sized family. Family-wide claims
+    aren't enough; gene-specific anchors required.
+  - `paralog_count >= 50` (olfactory receptors, KRTs, immunoglobulin
+    superfamily): large family. The literature is dominated by
+    family-wide work; gene-specific anchoring is mandatory.
+
+* **`mouse_ortholog_ecd_pct_identity`** — controls how confidently
+  mouse single-cell / tissue atlases can stand in for human evidence.
+  Cutoffs come from biologics development practice (ICH S6(R1),
+  Salfeld 2007); the proteome-wide mean mouse-human ortholog identity
+  is ~85%.
+  - `>= 85`: high translatability. Mouse tissue / cell-type
+    literature transfers; include Tabula Muris and mouse HPA queries
+    via `topic_search` + `surface_expression`.
+  - `60-85`: moderate translatability. Mouse evidence is supportive
+    but should be paired with human evidence before driving a
+    `TissueContext[]` / `CellTypeContextV1[]` row.
+  - `< 60`: low translatability. Stick to human cell atlases (Human
+    Cell Atlas, Tabula Sapiens, human HPA); mouse cell-type panels
+    are unsafe to quote at this identity.
+
+* **`cyno_ortholog_ecd_pct_identity`** — informational for tissue
+  / cell-type questions (cyno is the standard NHP biologics model,
+  not a primary cell-atlas source).
+  - `>= 90`: standard NHP relevance (FDA biologics guidance
+    threshold). Cyno pharmacology / cell-type data are valid.
+  - `< 85`: unusual divergence — flag in `rationale`. Cyno is not a
+    reliable model at this identity.
+
+If the `Deterministic inputs` block is absent (D1 unreachable), plan
+from UniProt + DB votes alone; do not invent topology / paralog
+context.
+
+## Database vote panel — surface-call confidence signal
+
+The DB vote panel exposes per-source surface calls from the **5 gating
+surface-call databases**: SURFY, CSPA, GO `cell_surface`, HPA `Cell
+membrane`, and UniProt subcellular_location. (DeepTMHMM and
+JensenLab COMPARTMENTS also appear in the panel but are auxiliary —
+DeepTMHMM is topology, not a yes/no surface call, and you already see
+its output in `Deterministic inputs`; COMPARTMENTS is a text-mined
+corpus that's noisier than the curated five.) Treat the count of
+`vote=true` votes across the 5 gating DBs as a confidence signal:
+
+* **4-5 yes votes**: canonical surface gene. Plan straightforward
+  tissue / cell-type coverage; you don't need to chase ectopic
+  evidence.
+* **2-3 yes votes**: contested. The disagreement is itself a signal —
+  plan coverage for the `subcellular_localization.dual_localization`
+  and `accessibility_modulation` blocks so the synthesizer can
+  reconcile.
+* **0-1 yes votes**: ectopic-surface candidate. Plan stress / state /
+  disease-context queries (csGRP78-class story); the `cell_states`
+  builder is the destination for that evidence.
+
+## Triage prior
+
+A `Triage prior` JSON block carries the genome-wide Haiku
+`surface_triage` agent's verdict on this gene — a high-recall
+first-pass decision made before any deep literature work. Treat as a
+prior to confirm or refute, not as ground truth. A2's job is biology
+context; the triage prior shapes which biology to chase.
+
+The `reason` field is a closed 19-value enum. A2 plans differently
+depending on which bucket the reason falls into.
+
+**YES-bucket** — gene is canonical surface; A2 chases
+tissue / cell-type / disease context, not ectopic surface:
+
+* `classical_surface_receptor` — standard tissue + cell-type atlas
+  search; no ectopic chase needed.
+* `gpi_anchored` — same as above + add a `topic_search` for the
+  GPI-anchor biology (hematopoietic context, lipid raft).
+* `multipass_with_exposed_loops` — claudin / tetraspanin / SLC class;
+  tissue-restricted patterns (e.g. claudin family by epithelium type)
+  are the dominant biology.
+* `extracellular_face_protein` — unusual; read `verdict_reasoning`
+  prose for the specific membrane-binding biology.
+* `stable_complex_partner` — search the partner's tissue distribution
+  too; A2's `cell_types` and `tissues` builders need the
+  co-expression context.
+* `other` — read prose; plan adaptively.
+
+**CONTEXTUAL-bucket** — surface presence is state / lineage gated;
+A2's `accessibility_modulation` + `cell_states` builders are the
+primary destination:
+
+* `cell_state_induced` — surface presence depends on cellular state
+  (ER stress, activation, etc.). Plan extra `accessibility_modulation`
+  coverage; `topic_search` with `shedding` + `ptm` + `surface_expression`
+  + state-shift terms in the intent.
+* `tissue_restricted_surface` — surface presence restricted to a
+  lineage / tissue (germline / developmental). Plan tissue-atlas
+  queries targeting the flagged compartments;
+  `accessibility_modulation` produces a `restricted_lineage` sub-row.
+* `lysosomal_exocytosis` — surface presence via secretory-vesicle /
+  lysosomal exocytosis (csGRP78 / cs-VIM pattern). Plan stress +
+  autophagolysosomal-exocytosis literature; the dominant evidence
+  shape for the `cell_states` builder.
+* `dual_localization` — steady-state dual localization (ER + PM,
+  lysosome + PM). Plan dual-localization literature;
+  `subcellular_localization.dual_localization` block needs material.
+* `stable_surface_attachment` — stable but non-canonical attachment
+  (lipid-anchored, peripheral). Plan biology of the specific
+  attachment mechanism named in the verdict_reasoning.
+* `other` — read prose; plan adaptively.
+
+**NO-bucket** — triage thinks the gene is intracellular. If A2
+turns up direct surface evidence anyway, that's the strongest
+possible signal for the synthesizer. Pull aggressively on ectopic /
+shed / stress-induced surface queries based on the specific reason:
+
+* `cytoplasmic` — protein body in cytoplasm. Ectopic-surface chase
+  (csVIM / csGAPDH / surface-aldolase class); `recent_corpus` is the
+  primary retriever for the moonlighting-protein biology.
+* `nuclear` — surface inversion vanishingly rare. Skip
+  ectopic-surface chase; `recent_corpus` + `surface_expression`
+  topic_search only.
+* `mitochondrial_internal` — exception class (csATP5B, surface HK2 in
+  cancer). `recent_corpus` for the moonlighting biology.
+* `endomembrane_resident` — ER / Golgi / endosome resident.
+  csGRP78 / csCALR / surface-PDI stress-induced PM fraction is the
+  chase. Stress / disease-state topic_search (UPR, ER stress,
+  apoptosis, cancer microenvironment).
+* `nuclear_envelope` — treat like `nuclear`; very low prior.
+* `inner_leaflet_anchored` — myristoylated / palmitoylated kinases
+  (SRC class). Cancer-state topological inversion (eSrc / ALE) is
+  the targetable state; `recent_corpus` for the post-2024 inversion
+  biology.
+* `secreted_only` — soluble protein. Plan for membrane-tethered
+  isoform OR the receptor of the soluble form; `topic_search` with
+  `shedding` + `topology` anchors.
+* `pmhc_only_intracellular` — pMHC-presented; the protein body is
+  intracellular. Skip protein-body surface searches; A2's tissue +
+  cell_types coverage focuses on presentation context (antigen
+  source, MHC class I expression, immune cell context).
+* `other` — read prose.
+
+* **`verdict_reasoning`**: read the triage agent's prose for context
+  cues (cell-type-specific notes, paralog warnings). Quotable
+  excerpts can land in your `SearchPlan.rationale`.
+
+* **`key_uncertainty`**: when present, often a direct pointer to a
+  search you should run. Convert into a `topic_search` call.
+
+If the `Triage prior` block is absent (no triage record for this
+gene), plan as you normally would; don't fabricate a verdict.
+
 ## A2-specific planning bias
 
 A2's job is to assemble the **biological-context ledger** — where the
 protein lives, when it shows up at the surface, what gates it. Bias the
 plan toward sources rich in WHERE/WHEN, not HOW:
 
-1. **Always include `hpa_ihc`** — primary HPA tissue-atlas source; feeds
-   `TissueContext[]` directly. This is A2's flagship category.
-2. **Always include `ihc`** — broader IHC literature beyond HPA;
-   captures disease-context tissue staining.
-3. **Include `if_intact` AND `flow_cytometry`** — needed for
+1. **Always include `ihc`** — covers HPA antibody panels plus the
+   broader IHC literature beyond HPA; captures disease-context
+   tissue staining. This is A2's flagship category. (The DB vote
+   panel exposes HPA's per-tissue reliability call as deterministic
+   context; `ihc` retrieves the literature that cites or extends it.)
+2. **Include `if` AND `flow_cytometry`** — needed for
    `membrane_subdomains` calls (apical vs basolateral IF, ciliary
    gating, sorted-population flow). NOT for methodology — for the
    localization output they encode.
@@ -115,7 +308,7 @@ wouldn't otherwise pull them.
 
 * **Broadly-distributed proteins** (tetraspanins, claudins, integrins):
   joint planner often skips deep-tissue searches because surface
-  evidence is overwhelming. Make sure `hpa_ihc` + `topic_search` with
+  evidence is overwhelming. Make sure `ihc` + `topic_search` with
   `surface_expression` are included to surface the cell-type-specific
   rows.
 * **Stress / disease-induced surface fractions** (HSP-family,

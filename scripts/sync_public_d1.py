@@ -20,11 +20,15 @@ Tables synced:
                 cost-vs-accuracy figures without private credentials)
         - JOIN: prompt_version.prompt_filename (added; prompt_version.text
                 stays private)
-  * surface_annotation    — uploaded separately from local
-                            data/annotations/*.json (NOT from private D1;
-                            we don't have a deep_dive_run table in
-                            triage_run's shape — see deep_dive_run + the
-                            agent's data/annotations directory)
+  * surface_annotation    — NOT synced here. Deep-dive records are
+                            written **direct to public D1** by the agent
+                            (``cloud.surface_annotation.publish_record``),
+                            so the public table is authoritative. This
+                            sync used to INSERT-OR-REPLACE from local
+                            ``data/annotations/*.json``, which would
+                            clobber the direct-to-public writes with stale
+                            on-disk copies — removed deliberately. There
+                            is no on-disk fallback for deep dives anymore.
 
 Usage::
 
@@ -48,12 +52,10 @@ from a local `wrangler.toml` generated from
 from __future__ import annotations
 
 import argparse
-import json
 import logging
 import os
 import sys
 import time
-from datetime import UTC, datetime
 from dataclasses import dataclass
 from typing import Any
 
@@ -71,7 +73,6 @@ BATCH_BY_TABLE: dict[str, int] = {
     "compara_ortholog":        8,    # 11 cols → 88 params
     "benchmark_version":       9,    # 9 cols → 81 params (D1 rejected 12×9=108)
     "triage_run_public":       3,    # 25 cols → 75 params (was 4×20=80; +5 cost cols)
-    "surface_annotation":      4,    # 11 cols → 44 params (annotation_json can be large)
     "gene_identifier_public":  7,    # 12 cols → 84 params
 }
 
@@ -279,69 +280,17 @@ def sync_triage_runs(*, priv: D1, pub: D1, dry_run: bool, since: str | None, cli
                   client=client, on_conflict="REPLACE")
 
 
-def sync_surface_annotations(*, pub: D1, dry_run: bool, client: httpx.Client) -> None:
-    """Sync per-gene SurfaceomeRecord JSONs from local data/annotations/*.json.
-
-    Distinct from the other tables — the private D1 doesn't (yet) carry
-    deep-dive annotations in a column-mapped shape that matches the
-    public schema, so we read the local agent output directly. Once the
-    private DB grows a deep_dive_run_public-ish table, swap this to a
-    private→public sync like the other functions.
-    """
-    logger.info("surface_annotation ← data/annotations/*.json")
-    from accessible_surfaceome.paths import DATA_DIR
-    annot_dir = DATA_DIR / "annotations"
-    if not annot_dir.exists():
-        logger.info("  no data/annotations dir; skipping")
-        return
-    cols = [
-        "gene_symbol", "uniprot_acc", "schema_version", "annotation_json",
-        "confidence", "triage_signal", "surface_status", "model_path",
-        "evidence_count", "primary_evidence_count", "annotated_at",
-    ]
-    rows: list[list[Any]] = []
-    for path in sorted(annot_dir.glob("*.json")):
-        try:
-            rec = json.loads(path.read_text())
-        except json.JSONDecodeError as exc:
-            logger.warning("  %s: bad JSON (%s) — skipping", path.name, exc)
-            continue
-        rows.append([
-            (rec.get("gene") or {}).get("hgnc_symbol") or path.stem,
-            (rec.get("gene") or {}).get("uniprot_acc"),
-            rec.get("schema_version") or "v0.4.0",
-            json.dumps(rec, separators=(",", ":")),
-            rec.get("confidence"),
-            rec.get("triage_signal"),
-            (rec.get("surface_biology") or {}).get("surface_status"),
-            rec.get("model_path"),
-            rec.get("evidence_count") or 0,
-            rec.get("primary_evidence_count") or 0,
-            # No timestamp on the record itself; use file mtime as the
-            # closest cheap proxy for "when the agent run completed".
-            datetime.fromtimestamp(path.stat().st_mtime, tz=UTC).isoformat(),
-        ])
-    # Public table is keyed on (gene_symbol, schema_version) — REPLACE so
-    # a fresher annotation overwrites.
-    if not rows:
-        logger.info("  no annotations to sync")
-        return
-    cols_sql = ", ".join(cols)
-    one = "(" + ", ".join(["?"] * len(cols)) + ")"
-    batch = BATCH_BY_TABLE["surface_annotation"]
-    for start in range(0, len(rows), batch):
-        chunk = rows[start : start + batch]
-        sql = (
-            f"INSERT OR REPLACE INTO surface_annotation ({cols_sql}) "
-            f"VALUES {', '.join([one] * len(chunk))}"
-        )
-        params = [v for row in chunk for v in row]
-        if dry_run:
-            logger.info("  [DRY] surface_annotation rows %d..%d", start, start + len(chunk) - 1)
-            continue
-        _query(pub, sql, params, client=client)
-        logger.info("  surface_annotation rows %d..%d", start, start + len(chunk) - 1)
-    logger.info("  surface_annotation: %d rows synced", len(rows))
+# NOTE: `sync_surface_annotations` was removed deliberately (2026-05-30).
+#
+# Deep-dive SurfaceomeRecords are now written **direct to public D1** by the
+# agent via `cloud.surface_annotation.publish_record` — the public
+# `surface_annotation` table is the authoritative store. The old sync read
+# local `data/annotations/*.json` and INSERT-OR-REPLACE'd into public D1,
+# which would silently clobber the direct-to-public writes with whatever
+# stale copies happened to be on disk (and we no longer keep on-disk
+# fallbacks for deep dives at all). If you need to (re)publish a record,
+# use `scripts/upload_viewer_snapshots_to_d1.py` or the agent's own publish
+# path — never a private→public / disk→public sync.
 
 
 # ---------------------------------------------------------------------------
@@ -349,7 +298,7 @@ def sync_surface_annotations(*, pub: D1, dry_run: bool, client: httpx.Client) ->
 # ---------------------------------------------------------------------------
 
 
-_ALL_TABLES = ["compara", "benchmark", "gene_identifier", "triage_run", "surface_annotation"]
+_ALL_TABLES = ["compara", "benchmark", "gene_identifier", "triage_run"]
 
 
 def main() -> int:
@@ -378,8 +327,10 @@ def main() -> int:
             sync_gene_identifier(priv=priv, pub=pub, dry_run=args.dry_run, client=client)
         if "triage_run" in targets:
             sync_triage_runs(priv=priv, pub=pub, dry_run=args.dry_run, since=args.since, client=client)
-        if "surface_annotation" in targets:
-            sync_surface_annotations(pub=pub, dry_run=args.dry_run, client=client)
+        # NOTE: surface_annotation is intentionally NOT synced here. Deep-dive
+        # records are written direct to public D1 by the agent
+        # (cloud.surface_annotation.publish_record); syncing from local
+        # data/annotations/*.json would clobber those authoritative writes.
     return 0
 
 

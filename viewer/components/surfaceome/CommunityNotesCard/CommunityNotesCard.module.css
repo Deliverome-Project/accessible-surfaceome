@@ -1,0 +1,99 @@
+/*
+ * CommunityNotesCard — approved-only reader-submitted notes.
+ * Sits inside the project's standard <SectionCard> frame, so
+ * the section's outer padding/eyebrow/title styling comes from
+ * SectionCard.module.css. This file only styles the inner list.
+ */
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--line);
+}
+
+.comment {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.byline {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.bylineName {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+
+.bylineAffil {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.bylineSep {
+  color: var(--line);
+}
+
+.bylineDate {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.bylineLink {
+  color: var(--muted);
+  border-bottom: 1px dotted var(--line);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.bylineLink:hover,
+.bylineLink:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* Mock-mode banner — only renders when ?mock=notes is in the URL.
+   Tinted background + dashed border so a casual reader doesn't
+   mistake the synthetic notes for real submissions. */
+.mockBanner {
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: rgba(192, 120, 48, 0.08);
+  border: 1px dashed rgba(192, 120, 48, 0.45);
+  border-radius: 6px;
+  font-size: 0.82rem;
+  color: var(--amber-dark);
+  line-height: 1.45;
+}
+
+.mockBanner code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  background: rgba(192, 120, 48, 0.15);
+}

@@ -37,9 +37,11 @@ import sys
 from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+    _fetch_canonical_sequence,
+    _fetch_canonical_topology,
     _fetch_orthologs,
     _latest_ortholog_ecd_version,
-    _latest_topology_version,
+    _latest_topology_version_for_cohort,
 )
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.paths import REPO_ROOT
@@ -61,6 +63,7 @@ def _patch_one(
     json_path: Path,
     *,
     topology_version: str,
+    canonical_topo_version: str,
     ortholog_ecd_version: str,
     only_empty: bool,
     dry_run: bool,
@@ -84,10 +87,22 @@ def _patch_one(
                     symbol, before_mouse, before_cyno)
         return {"skipped": 1}
 
+    # Human canonical topology + sequence drive the ortholog topology
+    # projection inside _fetch_orthologs (truncated/padded cyno models).
+    canonical = (
+        _fetch_canonical_topology(uniprot_acc, canonical_topo_version)
+        if canonical_topo_version else None
+    )
+    canonical_sequence = (
+        _fetch_canonical_sequence(uniprot_acc, canonical_topo_version)
+        if canonical_topo_version else ""
+    )
     fresh = _fetch_orthologs(
         uniprot_acc,
         topology_version=topology_version,
         ortholog_ecd_version=ortholog_ecd_version,
+        human_topology=(canonical.per_residue_topology or "") if canonical else "",
+        human_sequence=canonical_sequence,
     )
     fresh_dict = fresh.model_dump(mode="json")
 
@@ -146,7 +161,17 @@ def main(argv: list[str] | None = None) -> int:
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     load_env()
 
-    topology_version = _latest_topology_version()
+    # Cohort-aware version: ortholog topology lives under the
+    # mouse_ortholog / cyno_ortholog cohorts (which share a version in
+    # practice), NOT the global-latest topology_version. Using
+    # _latest_topology_version() here was a latent bug — after the
+    # 2026-05-25 canonical-only sweep the global latest (topo_2026_05_25)
+    # has no ortholog-cohort rows, so the topology LEFT JOIN in
+    # _fetch_orthologs returns nothing and this patch would WIPE ortholog
+    # topology. Mirror fetch_deterministic_features, which resolves the
+    # version per fetcher's cohort.
+    topology_version = _latest_topology_version_for_cohort("mouse_ortholog")
+    canonical_topo_version = _latest_topology_version_for_cohort("human_canonical")
     ortholog_ecd_version = _latest_ortholog_ecd_version()
     if not topology_version or not ortholog_ecd_version:
         logger.error(
@@ -170,6 +195,7 @@ def main(argv: list[str] | None = None) -> int:
             result = _patch_one(
                 path,
                 topology_version=topology_version,
+                canonical_topo_version=canonical_topo_version,
                 ortholog_ecd_version=ortholog_ecd_version,
                 only_empty=args.only_empty,
                 dry_run=args.dry_run,

@@ -74,9 +74,9 @@ class SearchRequest(BaseModel):
             if self.category is None:
                 raise ValueError(
                     "tool='evidence_retrieval' requires `category` (one of "
-                    "ihc, if_intact, flow_cytometry, surface_biotinylation, "
+                    "ihc, if, flow_cytometry, surface_biotinylation, "
                     "mass_spec_surfaceome, western_blot_paired, "
-                    "structure_with_ecd, hpa_ihc)"
+                    "structure_with_ecd, other)"
                 )
             if self.mode or self.anchors or self.pmid or self.pmcid:
                 raise ValueError(

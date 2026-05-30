@@ -6,22 +6,36 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
-  padding: var(--space-12) 0 var(--space-8);
-  border-bottom: 1px solid var(--line-soft);
+  gap: var(--space-3);
+  /* No bottom border / padding: the sticky AnchorNav strip directly
+     below owns the separating hairline (its own border-top). A
+     border-bottom here floated a SECOND rule ~12px above the strip —
+     reading as a thin empty band ("extra div") between the header and
+     the tabs. Dropping it leaves the shared `.page` 12px gap as the
+     only spacing above the strip, matching the 12px below it. */
+  padding: 0;
 }
 
 .headerGrid {
   display: grid;
-  grid-template-columns: 1fr 280px;
-  gap: var(--space-8);
+  /* 30% larger structure slot per user request — was 280px, now
+     ~365px. Text column shrinks correspondingly but stays the
+     dominant area on the page. */
+  grid-template-columns: 1fr 365px;
+  gap: var(--space-6);
   align-items: start;
 }
 
 .headerText {
   display: flex;
   flex-direction: column;
-  gap: var(--space-5);
+  /* `--space-4` (1rem) was too airy between the IDs row, the
+   * SOURCES strip, and the TRIAGE row — those three should read as
+   * a tight cluster sitting under the gene symbol. Dropped to
+   * `--space-2` (0.5rem) so the cluster is dense; the larger gap to
+   * the exec lede + vitals (handled by their own margins) still
+   * separates them clearly. */
+  gap: var(--space-2);
   min-width: 0;
 }
 
@@ -29,7 +43,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
-  width: 280px;
+  width: 365px;
 }
 
 .structureCaption {
@@ -50,6 +64,14 @@
   border-bottom-color: var(--accent);
 }
 
+/* (.structureStats / .structureStat / .structureStatK / .structureStatV
+   / .structureStatNum / .structureStatLink were the SURFACE-Bind summary
+   dl below the AFDB stats. The dl was removed — the §SURFACE-Bind card
+   below the header carries the same info in a richer presentation and
+   the Summary metrics SURFACE-Bind chip gives the catalog-filter view.
+   The rules are deleted so the GeneHeader stylesheet stays in sync
+   with what's actually in the JSX.) */
+
 @media (max-width: 760px) {
   .headerGrid {
     grid-template-columns: 1fr;
@@ -61,55 +83,188 @@
   }
 }
 
-.eyebrow {
-  color: var(--muted);
-}
-
 .symbol {
   font-size: clamp(2.4rem, 5.5vw, 3.8rem);
 }
 
-.geneName {
-  margin: calc(var(--space-3) * -1) 0 0;
-  font-family: var(--font-sans);
-  font-size: 1.05rem;
-  line-height: 1.4;
-  color: var(--ink-soft);
-  max-width: 60ch;
+/* Descriptive gene name, inline on the symbol's baseline. Small +
+   italic + muted so the symbol stays the page identity; resets the
+   h-gene weight / tracking / case it would otherwise inherit. */
+.geneFullName {
+  margin-left: 0.55rem;
+  font-size: 0.9rem;
+  font-style: italic;
+  font-weight: var(--fw-regular);
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--muted);
+  white-space: normal;
 }
 
-.geneSynonyms {
-  font-family: var(--font-sans);
+/* Previous / alternate symbols — inline on the symbol line, after the
+   gene name. Smallest + muted; resets the inherited h-gene
+   weight / tracking / case (it lives inside the <h1>). */
+.synonyms {
+  margin-left: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: var(--fw-regular);
   font-style: normal;
-  font-size: 0.85rem;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--muted);
+  white-space: normal;
+}
+
+/* .geneName + .geneSynonyms were the descriptive HGNC name + alias
+   list under the h1 gene symbol. Removed per user feedback — the
+   symbol IS the page identity; the long descriptor was visual noise
+   for the target-discovery reader. */
+
+/* Executive-summary lede — promoted from §1 to live directly under
+ * the gene name. Reads as the gene-page TL;DR; deeper structured
+ * signals are in the vitals row below and the section cards beyond.
+ * Same width policy as .geneName: fill the headerText column up to
+ * the structure-viewer edge. Top margin is set explicitly to add
+ * breathing room above the lede, separating it visually from the
+ * dense IDs / SOURCES / TRIAGE cluster above (the parent flex-gap
+ * was reduced to 0.5rem to tighten that cluster). */
+.execLede {
+  margin: var(--space-3) 0 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+/* Subcategory pill + its info-tip — inline so the tooltip glyph sits
+ * next to the pill rather than floating below it. */
+.subcategoryRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+/* Triage row — small horizontal strip directly under the DB-presence
+ * strip. Same compact register as the SOURCES line so the two read as
+ * a pair (database surface call + agent surface call). The
+ * "Conflicts with deep dive" pill is the only place the conflict
+ * surfaces visually; the deep-dive verdict in the vitals below wins. */
+.triageRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  /* No extra top margin — the parent .headerText flex gap handles
+   * the spacing from the DB-presence strip above. Extra margin would
+   * double-space them. */
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink);
+}
+
+.triageLabel {
+  display: inline-flex;
+  align-items: baseline;
   color: var(--muted);
 }
 
-.tldr {
-  font-size: 1.18rem;
-  max-width: 60ch;
-  color: var(--ink-soft);
+.triageValue {
+  font-weight: 500;
+  color: var(--ink);
 }
 
+.triageQualifier {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.triageAgree {
+  color: var(--success);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+/* Same compact text register as `triageAgree` but in amber to signal
+ * the triage prior disagreed with the deep dive. Plain text (no pill
+ * chrome) per user preference — the row already carries enough
+ * structure that a second visual chip is overkill. */
+.triageConflict {
+  color: var(--warning);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+/* Triage-row reasoning trigger. The shared ReasoningDrawer trigger
+ * carries a `margin: var(--space-2) 0 0` so it sits below a vital
+ * value; here it's an inline sibling on a baseline-aligned flex row,
+ * so the top margin would push it out of the baseline. Zero it. The
+ * base `.trigger` rule still owns color (--ink-soft) + the "›" carat;
+ * this only adjusts the contextual layout. GeneHeader.module.css loads
+ * after ReasoningDrawer.module.css, so this equal-specificity override
+ * wins the cascade. */
+.triageReasoningTrigger {
+  margin-top: 0;
+}
+
+/* Headline risks — small "label · value" line under the lede. */
+.risks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0;
+  color: var(--ink);
+}
+
+.risksLabel {
+  color: var(--muted);
+}
+
+.risksValue {
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+}
+
+/* idsRow — flex container that pairs the IDs strip with the prominent
+   Submit-feedback CTA on the same baseline. Wide viewports show them
+   inline; on narrow viewports the CTA wraps onto its own line under
+   the IDs. */
+.idsRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-4);
+  margin: 0;
+}
+
+/* External-ID row — compact strip immediately under the descriptive
+   gene name. Was a multi-line label-stacked-on-value list with
+   ~0.95rem font; now a single inline row with smaller mono text
+   so the IDs read as metadata attached to the gene-name strip
+   rather than competing with the page hero. */
 .ids {
   list-style: none;
-  margin: var(--space-3) 0 0;
+  margin: 0;
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-5);
+  align-items: baseline;
+  gap: 0.2rem var(--space-3);
+  font-size: 0.72rem;
+  color: var(--muted);
 }
 
 .idItem {
-  display: flex;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
 }
 
 .idLink {
   display: inline-flex;
-  flex-direction: column;
-  gap: 0.15rem;
-  padding-bottom: 2px;
-  border-bottom: 1px solid var(--line);
+  align-items: baseline;
+  gap: 0.3rem;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 1px;
   transition:
     color var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out);
@@ -123,37 +278,80 @@
 
 .idLabel {
   color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
 }
 
 .idValue {
   font-family: var(--font-mono);
-  font-size: 0.95rem;
-  color: var(--ink);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
 }
 
+/* Row eyebrow — sits above each at-a-glance row to label its
+ * provenance. Two rows ship today: an LLM-driven row (the 2×2 vitals
+ * grid below) and a Deterministic row (tool-output strip further
+ * down). The eyebrow carries the same border-top + padding-top that
+ * the .vitals rule used to own — moving it here keeps the visual
+ * separator attached to its label rather than to the body. */
+.rowEyebrow {
+  margin: var(--space-4) 0 var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* Vitals 2×2 grid — sits inside the text column directly below
+   the executive summary paragraph. Was previously a 4-up row that
+   spanned the full header width below the structure aside; tightened
+   to 2×2 so the vitals stay attached to the lede paragraph and the
+   reader can scan all four signals without scrolling past the 3D
+   viewer column. Border-top + spacing now lives on the .rowEyebrow
+   above this dl — keeps each row's "LLM-DRIVEN" / "DETERMINISTIC"
+   provenance label visually attached to its separator. */
 .vitals {
-  margin: var(--space-5) 0 0;
+  margin: 0;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--space-5);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-5);
 }
 
-@media (max-width: 760px) {
+@media (max-width: 480px) {
   .vitals {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
 .vital {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
+/* Vital-cell eyebrow ("ACCESSIBILITY", "CONFIDENCE", etc.). Bumped
+ * from 0.66rem / 0.2em letter-spacing — the smaller register was
+ * blending into the body so the reader had to actively look to find
+ * the label. Slightly heavier weight + tighter tracking holds the
+ * eyebrow shape without dominating the value below. */
 .vitalK {
   color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
 }
 
+/* Editorial vital body — italic Playfair display value (via the
+ * `.h-vital-display` primitive in globals.css) sits up top, with
+ * a small supporting StatusPill or vitalSub line beneath. The pill
+ * keeps the tone cue colorblind-readable; the display value picks
+ * up a matching tone tint via `.h-vital-display.tone-*`. */
 .vitalV {
   margin: 0;
   display: flex;
@@ -163,14 +361,175 @@
 }
 
 .vitalSub {
-  font-size: 0.82rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Architecture + Family — pill-shaped chips inside the Accessibility
+   vital cell, beneath the accessibility value.
+   Was uppercase/letter-spaced inline text that inherited the
+   accessibility tone color (so on accessibility=no it rendered in
+   the danger/red palette, which the user found visually noisy and
+   semantically wrong — Architecture/Family aren't tone-bearing).
+   New shape: two compact pill chips, ``Architecture · Value`` and
+   ``Family · Value``, sentence-cased (prettyEnum already does that)
+   in the soft-brown ``--ink-soft`` color so they sit as neutral
+   metadata under the accessibility headline. */
+.archFamilyInline {
+  margin: var(--space-2) 0 0;
+  display: flex;
+  /* Stack the Architecture + Family chips vertically — Family sits
+     directly beneath Architecture rather than beside it. ``flex-start``
+     keeps each chip at its natural content width (column flex would
+     otherwise stretch them to fill the cell). */
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  /* No font-family / text-transform / letter-spacing here — the
+     chip rule below owns those so we don't paint mixed registers. */
+}
+
+.archFamilyChip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  padding: 0.18rem 0.55rem;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  /* Soft brown — explicit ``--ink-soft`` rather than inheriting from
+     the parent vital's tone class. Architecture/Family are
+     deterministic metadata that don't carry the accessibility tone. */
+  color: var(--ink-soft);
+  background: var(--surface-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  /* Cancel any uppercase/letter-spacing the parent grid might pass
+     down by way of utility classes. */
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.archFamilyChipKey {
   color: var(--muted);
 }
 
-.vitalCount {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  font-style: italic;
-  color: var(--accent);
-  line-height: 1;
+.archFamilyChipValue {
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+}
+
+/* Reasoning-trigger + slide-in drawer styles live in the shared
+   ../ReasoningDrawer/ReasoningDrawer.module.css — one component now
+   backs every "Reasoning ›" chip (Confidence, Surface evidence, State
+   dependence, Triage), so the trigger color (--ink-soft brown) + casing
+   ("Reasoning") can't drift between vitals the way the old per-vital
+   forks did. */
+
+/* State-dependence drawer body. The State-dependence vital has no
+   single prose field (unlike Confidence's `confidence_reasoning` or
+   Surface evidence's `grade_rationale`), so its drawer renders the
+   structured `accessibility_modulation` observations as a list:
+   category eyebrow → the change → the accessibility implication. */
+.stateModList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: var(--space-2) 0 0;
+}
+
+.stateModItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.stateModCategory {
+  margin: 0;
+  color: var(--muted);
+}
+
+.stateModChange {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+/* The implication is the "so what" for surface access — set it off with
+   a left rule + soft-brown ink so it reads as a consequence of the
+   change above it rather than a second independent sentence. */
+.stateModImplication {
+  margin: var(--space-1) 0 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* Deterministic-tools strip — a 4-cell horizontal grid that surfaces
+ * the orchestrator-prefetched signals (DeepTMHMM topology, AlphaFold
+ * pLDDT, SURFACE-Bind site count, Ensembl Compara ortholog identity)
+ * alongside the LLM vitals above. These signals are otherwise buried
+ * in deeper section cards — promoting them to the at-a-glance row
+ * lets the reader scan both the LLM call and the tool-measured
+ * substrates side-by-side. Each cell carries its own InfoTip with
+ * tool + version provenance. */
+.deterministicGrid {
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-4);
+}
+
+@media (max-width: 760px) {
+  .deterministicGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 420px) {
+  .deterministicGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.detTile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+/* Same eyebrow treatment as the LLM-vital labels so the two rows
+ * scan as siblings. */
+.detTileK {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+
+/* Deterministic value — Manrope-sans medium numerals, NOT the
+ * Playfair italic of .h-vital-display. Numbers and short tool
+ * outputs ("1 TM", "92", "Not in SURFACE-Bind") read cleaner in
+ * sans, and the typographic split visually reinforces the
+ * provenance split (editorial-italic = LLM call; sans-medium =
+ * measured datum). */
+.detTileV {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.detTileSub {
+  font-size: 0.74rem;
+  color: var(--muted);
+  line-height: 1.4;
 }

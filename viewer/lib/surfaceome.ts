@@ -1,24 +1,50 @@
 /*
  * Surfaceome data loader + label helpers.
  * ------------------------------------------------------------
- * Read per-gene `SurfaceomeRecord` JSONs at build time from
- * `site/public/data/surfaceome/*.json`. Reading from /public lets
- * the same files serve as the static-fetch endpoint at runtime
- * (`/data/surfaceome/{SYMBOL}.json`) while also being readable
- * via `fs` during `generateStaticParams` and server-rendered
- * page bodies.
+ * Per-gene `SurfaceomeRecord` data flows from the public Cloudflare
+ * Worker at `api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` —
+ * fetched at build time, baked into the static export via
+ * `cache: "force-cache"`. Same SSG lifecycle as the catalog: a
+ * re-deploy of the Worker surfaces in the viewer on the next
+ * `npm run build`, no per-page-load D1 hits in production.
  *
- * When the public Cloudflare Worker at
- * `api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` is live, the
- * loader can be swapped to `fetch()` against that URL — same
- * `SurfaceomeRecord` shape, just a different source.
+ * D1 is the SINGLE source of truth for deep-dive records. There is no
+ * on-disk fallback: deep-dive SurfaceomeRecords are written direct to
+ * public D1 (`cloud.surface_annotation.publish_record`), and the
+ * viewer reads them only through the Worker. The set of routes is
+ * sourced the same way — `listSurfaceomeGenes` hits the Worker's
+ * `/v1/genes` (the annotated-gene list backed by `surface_annotation`)
+ * to decide which gene pages `generateStaticParams` emits. The old
+ * committed `viewer/public/data/surfaceome/*.json` snapshots (and the
+ * fs-readback fallback they powered) were removed deliberately so a
+ * stale on-disk copy can never mask the authoritative D1 record.
+ *
+ * Like the catalog (`loadCatalog`), the gene pages therefore
+ * hard-require the live Worker in production. `SURFACEOME_API_BASE=local`
+ * makes both surfaces return empty (0-row catalog, 0 gene routes) so the
+ * offline CI smoke build renders the chrome without a network hit; the
+ * Pages-side build runs against the real Worker and emits the full set.
  */
 
-import { readdirSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
-import type { BenchmarkMatrix, SurfaceomeRecord } from "./surfaceome-types";
-
-const DATA_DIR = path.join(process.cwd(), "public", "data", "surfaceome");
+import type {
+  BenchmarkMatrix,
+  Confidence,
+  CoreceptorDependency,
+  EcdAccessibilityClass,
+  EvidenceDensity,
+  EvidenceGrade,
+  ExpressionBreadth,
+  ExpressionLevel,
+  ProteinFamily,
+  StateDependence,
+  Subcategory,
+  SurfaceAccessibility,
+  SurfaceomeRecord,
+  SurfaceSpecificity,
+  TriageReason,
+} from "./surfaceome-types";
 
 // Gene-name lookup is sourced directly from the NCBI triageable TSV
 // in the repo (data/external/ncbi_gene_info/...). The viewer used to
@@ -66,6 +92,44 @@ export interface TriageCell {
   reason: string | null;
 }
 
+/**
+ * Slimmed projection of `SurfaceomeRecord.filters` carried on each
+ * catalog row for the deep-dive-filter section in the CatalogTable.
+ * The Worker only emits this when `deep_dive=true` AND the
+ * annotation_json parsed cleanly; rows without a deep-dive simply
+ * omit `deep_dive_filters`.
+ *
+ * 21 fields: 13 enums + 8 booleans. Continuous fields
+ * (max_paralog_ecd_pct_identity, ortholog identities) are excluded
+ * — the catalog UI doesn't expose range filters yet, and the deep-
+ * dive page already shows them in the FiltersCard. The schema
+ * mirrors `DDF_KEYS` in cloudflare/workers/surfaceome_api/src/index.js
+ * — extend both when adding a field.
+ */
+export interface DeepDiveFilters {
+  surface_accessibility: SurfaceAccessibility;
+  confidence: Confidence;
+  state_dependence: StateDependence;
+  surface_call_reason: TriageReason;
+  subcategory: Subcategory;
+  llm_family: ProteinFamily;
+  evidence_grade: EvidenceGrade;
+  evidence_density: EvidenceDensity;
+  ecd_accessibility_class: EcdAccessibilityClass;
+  expression_level: ExpressionLevel;
+  expression_breadth: ExpressionBreadth;
+  surface_specificity: SurfaceSpecificity;
+  co_receptor_dependency: CoreceptorDependency;
+  has_known_ligand: boolean;
+  low_endogenous_expression: boolean;
+  overexpression_surface_localization_observed: boolean;
+  has_shed_form: boolean;
+  has_secreted_form: boolean;
+  has_epitope_masking: boolean;
+  n_term_extracellular: boolean;
+  c_term_extracellular: boolean;
+}
+
 export interface CatalogRow {
   symbol: string;
   uniprot: string;
@@ -85,6 +149,21 @@ export interface CatalogRow {
    *  bench genes have only the Sonnet slot populated). */
   triage_by_model: (TriageCell | null)[];
   deep_dive: boolean;
+  /** SURFACE-Bind scored-patch count (Balbi et al 2026, PMID 41604262). Three-
+   *  state semantics:
+   *   - ``undefined`` → UniProt not in SURFACE-Bind's dataset at
+   *     all (filtered out at structural QC).
+   *   - ``0`` → scored, but no patches cleared the MaSIF threshold.
+   *   - ``N > 0`` → number of scored targetable patches.
+   *  Populated by the Worker via D1 join on ``surface_bind_protein``;
+   *  ``undefined`` here also covers the pre-Worker-deploy interim
+   *  where the field hasn't shipped yet. */
+  surface_bind_sites?: number;
+  /** Slimmed deep-dive `filters` projection — present only when
+   *  `deep_dive=true` AND the annotation_json parsed. See the
+   *  DeepDiveFilters docstring for the field set; the catalog
+   *  filter panel reads this for the "Deep Dive" filter group. */
+  deep_dive_filters?: DeepDiveFilters;
 }
 
 export interface Catalog {
@@ -247,27 +326,6 @@ function enrichRowsWithNames(
 }
 
 /**
- * The viewer's local JSON set is the source of truth for which
- * rows have a viewable deep-dive page. The public catalog's
- * ``deep_dive`` flag is currently out of sync with the v1.0.0
- * cut-over: the production D1 mirror still flags v0.x records
- * (HSPA1A, TGOLN2) that no longer have local JSONs, and doesn't
- * yet flag the v1.0.0 records that this PR introduces (e.g.
- * GPR75). Override the flag to match the local set so links resolve
- * and the "Deep-dive" filter chip stays honest.
- */
-function syncDeepDiveToLocal(
-  rows: CatalogRow[],
-  localSymbols: Set<string>,
-): CatalogRow[] {
-  return rows.map((r) => {
-    const hasLocal = localSymbols.has(r.symbol);
-    if (hasLocal === r.deep_dive) return r;
-    return { ...r, deep_dive: hasLocal };
-  });
-}
-
-/**
  * The Worker (`row_schema: 3`) packs each row's per-model NCBI
  * verdicts into a 3-slot tuple at `r.tr` — `[haiku?, sonnet?, opus?]`
  * where each slot is either `null` or `[verdict, reason]`. Plus the
@@ -298,6 +356,18 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   const triage_by_model: (TriageCell | null)[] = (tr ?? [null, null, null]).map(
     (slot) => (slot ? { verdict: slot[0], reason: slot[1] } : null),
   );
+  // Worker row_schema v4+ ships an optional ``sb`` field — number of
+  // SURFACE-Bind targetable patches. Undefined on rows whose UniProt
+  // isn't in SURFACE-Bind at all (the "not in dataset" state); 0
+  // means scored-but-no-patches. Decoder passes the value through
+  // unchanged so the table filter can distinguish the three states.
+  const sb = r.sb as number | undefined;
+  // Worker row_schema v5+ ships an optional ``ddf`` field — slim
+  // projection of SurfaceomeRecord.filters. Snapshot fallbacks may
+  // carry the inflated `deep_dive_filters` shape instead, so accept
+  // either. Type-cast pass-through; the field is fully optional and
+  // the catalog filter pass guards `r.deep_dive_filters` before reading.
+  const ddf = (r.ddf ?? r.deep_dive_filters) as DeepDiveFilters | undefined;
   return {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
@@ -307,6 +377,8 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     db,
     triage_by_model,
     deep_dive: Boolean(r.deep_dive),
+    surface_bind_sites: typeof sb === "number" ? sb : undefined,
+    deep_dive_filters: ddf,
   };
 }
 
@@ -377,19 +449,45 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       rows: [],
     };
   }
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-  const res = await fetch(`${base}/v1/catalog`, {
-    // `force-cache` makes the response part of the static build
-    // artifact under `output: "export"`. A re-deploy of the Worker
-    // surfaces in the viewer on the next `npm run build` — exactly
-    // the SSG lifecycle we want for a research catalogue (no
-    // per-page-load D1 hits in production).
-    cache: "force-cache",
-    signal: controller.signal,
-  }).finally(() => clearTimeout(timer));
-  if (!res.ok) {
-    throw new Error(`${base}/v1/catalog returned ${res.status}`);
+  // Retry-on-5xx loop. The /v1/catalog response is ~4.5 MB and the
+  // Worker brushes Cloudflare's per-request CPU cap when D1 is cold,
+  // so intermittent 503s are normal — they almost always recover on
+  // the next call. Three attempts at 1.5s / 3s / 6s backoff. After
+  // that, fall through to the throw so build failures stay loud
+  // (we don't want to ship a viewer built against a wedged Worker).
+  let res: Response | null = null;
+  let lastStatus: number | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+      res = await fetch(`${base}/v1/catalog`, {
+        // `force-cache` makes the response part of the static build
+        // artifact under `output: "export"`. A re-deploy of the Worker
+        // surfaces in the viewer on the next `npm run build` — exactly
+        // the SSG lifecycle we want for a research catalogue (no
+        // per-page-load D1 hits in production).
+        cache: "force-cache",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+    if (res.ok) break;
+    lastStatus = res.status;
+    // Don't retry on 4xx — those are deterministic.
+    if (res.status < 500) break;
+    // 503 / 502 / 504 — usually transient; back off and retry.
+    if (attempt < 2) {
+      const delay = [1500, 3000][attempt] ?? 3000;
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  if (!res || !res.ok) {
+    throw new Error(
+      `${base}/v1/catalog returned ${lastStatus ?? "no-response"} ` +
+        `after 3 attempts`,
+    );
   }
   const payload = (await res.json()) as Omit<Catalog, "source" | "rows"> & {
     rows: unknown[];
@@ -400,7 +498,6 @@ async function _loadCatalogImpl(): Promise<Catalog> {
         "reachable but no candidate-universe data has been loaded into D1 yet.",
     );
   }
-  const localSymbols = new Set(listSurfaceomeGenes());
   // Sonnet 4.6 (slot 1 in triage_by_model) is the catalog's headline
   // verdict — every page surface reads from that slot. Rows where it
   // didn't run on file are the universe's resolver-failure outliers
@@ -410,7 +507,23 @@ async function _loadCatalogImpl(): Promise<Catalog> {
   const inflated = payload.rows
     .map(inflateCatalogRow)
     .filter((r) => Boolean(r.triage_by_model[1]));
-  const rows = syncDeepDiveToLocal(enrichRowsWithNames(inflated, names), localSymbols);
+  // Reconcile the per-row `deep_dive` flag against the exact set of genes
+  // `generateStaticParams` will emit pages for — the Worker's `/v1/genes`
+  // list (memoized, so both call sites share one build-cached fetch).
+  // CatalogTable renders a `/[symbol]` link only for `deep_dive` rows, and
+  // under `output: export` a link to a gene without a generated page is a
+  // hard build error ("missing param … in generateStaticParams"). Deriving
+  // both the link set and the page set from `/v1/genes` makes them
+  // consistent by construction, even if `/v1/catalog`'s own `deep_dive`
+  // column momentarily disagrees while D1 is mid-write (e.g. a deep-dive
+  // landing between the two endpoint fetches).
+  const deepDiveGenes = new Set(await listSurfaceomeGenes());
+  const reconciled = inflated.map((r) =>
+    r.deep_dive === deepDiveGenes.has(r.symbol)
+      ? r
+      : { ...r, deep_dive: deepDiveGenes.has(r.symbol) },
+  );
+  const rows = enrichRowsWithNames(reconciled, names);
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,
@@ -470,296 +583,204 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
   return payload;
 }
 
-export function listSurfaceomeGenes(): string[] {
-  let entries: string[];
-  try {
-    entries = readdirSync(DATA_DIR);
-  } catch {
-    return [];
+/**
+ * The set of genes that have a viewable deep-dive page. Sourced from the
+ * Worker's `/v1/genes` endpoint, which lists the `surface_annotation`
+ * rows in public D1 — the authoritative deep-dive store. Drives which
+ * gene pages `generateStaticParams` emits.
+ *
+ * Returns `[]` ONLY under `SURFACEOME_API_BASE=local` (or empty) so the
+ * offline CI smoke build emits no gene routes; the Pages-side build runs
+ * against the real Worker and emits the full set.
+ *
+ * On a real Worker error it now THROWS (retry-on-5xx, mirroring
+ * `loadCatalog`) rather than returning `[]`. An empty list is not a
+ * benign "no extra routes" state: `loadCatalog` reconciles every catalog
+ * row's `deep_dive` flag against this set, so a silent `[]` would drop
+ * all gene routes AND mark every row non-deep-dive — shipping a viewer
+ * with no gene pages and no error. The build must fail loudly instead,
+ * exactly like the catalog fetch.
+ */
+let _geneListPromise: Promise<string[]> | null = null;
+
+export async function listSurfaceomeGenes(): Promise<string[]> {
+  if (_geneListPromise) return _geneListPromise;
+  _geneListPromise = _listSurfaceomeGenesImpl();
+  return _geneListPromise;
+}
+
+async function _listSurfaceomeGenesImpl(): Promise<string[]> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  // Offline-build stub stays a benign empty list: the GitHub-Actions
+  // viewer-build smoke sets SURFACEOME_API_BASE=local and expects zero
+  // gene routes (the Pages-side build does the real fetch).
+  if (base === "local" || !base) return [];
+  // Retry-on-5xx loop mirroring loadCatalog. /v1/genes is a small
+  // payload, but the Worker brushes Cloudflare's per-request CPU cap when
+  // D1 is cold, so intermittent 503s are normal and recover on the next
+  // call. Three attempts at 1.5s / 3s backoff; 4xx is deterministic so we
+  // break and surface it without retrying.
+  let res: Response | null = null;
+  let lastStatus: number | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+      res = await fetch(`${base}/v1/genes`, {
+        cache: "force-cache",
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
+    if (res.ok) break;
+    lastStatus = res.status;
+    // Don't retry on 4xx — those are deterministic.
+    if (res.status < 500) break;
+    if (attempt < 2) {
+      const delay = [1500, 3000][attempt] ?? 3000;
+      await new Promise((r) => setTimeout(r, delay));
+    }
   }
-  return entries
-    .filter((name) => name.endsWith(".json"))
-    .map((name) => name.replace(/\.json$/, ""))
+  if (!res || !res.ok) {
+    throw new Error(
+      `${base}/v1/genes returned ${lastStatus ?? "no-response"} ` +
+        `after 3 attempts`,
+    );
+  }
+  const data = (await res.json()) as {
+    genes?: Array<{ gene_symbol?: string }>;
+  };
+  return (data.genes ?? [])
+    .map((g) => g.gene_symbol)
+    .filter((s): s is string => Boolean(s))
     .sort();
 }
 
-export function loadSurfaceomeRecord(symbol: string): SurfaceomeRecord | null {
-  const file = path.join(DATA_DIR, `${symbol}.json`);
+/**
+ * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on
+ * any Worker error (network, 404, non-2xx, malformed JSON). Uses
+ * `cache: "force-cache"` so each gene's record is fetched once per
+ * build and baked into the static export. D1 is the only source — there
+ * is no on-disk fallback.
+ */
+async function _fetchRecordFromWorker(
+  symbol: string,
+  base: string,
+): Promise<SurfaceomeRecord | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
-    const raw = readFileSync(file, "utf-8");
-    return JSON.parse(raw) as SurfaceomeRecord;
+    const res = await fetch(`${base}/v1/genes/${symbol}`, {
+      cache: "force-cache",
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as SurfaceomeRecord;
   } catch {
     return null;
+  } finally {
+    clearTimeout(timer);
   }
 }
 
-export function loadAllSurfaceomeRecords(): SurfaceomeRecord[] {
-  return listSurfaceomeGenes()
-    .map((sym) => loadSurfaceomeRecord(sym))
-    .filter((r): r is SurfaceomeRecord => r != null);
+/**
+ * Pull the triage agent's free-text reasoning from `/v1/triage/{symbol}`
+ * (the `triage_run` store), picking the latest headline run — Sonnet 4.6
+ * with the `ncbi` context variant — that carries a non-empty
+ * `verdict_reasoning`. Returns `null` on any miss.
+ *
+ * Used to backfill a deep-dive record whose own `triage_reasoning` is
+ * empty. The catalog's rationale drawer already reads this endpoint (see
+ * `CatalogRationaleDrawer`); sourcing the gene-page triage drawer from
+ * the same place keeps the two surfaces in sync without re-publishing
+ * the record into D1.
+ */
+async function _fetchTriageReasoningFromWorker(
+  symbol: string,
+  base: string,
+): Promise<string | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${base}/v1/triage/${symbol}`, {
+      cache: "force-cache",
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      runs?: Array<{
+        created_at: string;
+        model: string;
+        prompt_variant: string | null;
+        verdict_reasoning: string | null;
+      }>;
+    };
+    let latest: { created_at: string; verdict_reasoning: string } | null = null;
+    for (const r of data.runs ?? []) {
+      // Headline triage cell = Sonnet 4.6 + the NCBI context block — the
+      // same (model, variant) the catalog rationale drawer surfaces.
+      if (r.model !== "claude-sonnet-4-6") continue;
+      if (r.prompt_variant !== "ncbi") continue;
+      const reasoning = r.verdict_reasoning?.trim();
+      if (!reasoning) continue;
+      if (!latest || latest.created_at < r.created_at) {
+        latest = { created_at: r.created_at, verdict_reasoning: reasoning };
+      }
+    }
+    return latest?.verdict_reasoning ?? null;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
-// Pretty labels for v1.0.0 enums. Keys must stay in sync with the
-// string-literal unions in `surfaceome-types.ts`. Anything missing
-// here falls through to `titleCase` (snake_case → Title Case), which
-// is correct for most plain values.
-const ENUM_MAP: Record<string, string> = {
-  // Triage / accessibility
-  likely_accessible: "Likely accessible",
-  possibly_accessible: "Possibly accessible",
-  unlikely: "Unlikely",
-  unknown: "Unknown",
-  high: "High",
-  moderate: "Moderate",
-  low: "Low",
-  uncertain: "Uncertain",
-  unclear: "Unclear",
-  none: "None",
-  negligible: "Negligible",
-
-  // Subcategory
-  single_pass_T1: "Single-pass type I",
-  single_pass_T2: "Single-pass type II",
-  multi_pass: "Multi-pass",
-  GPCR: "GPCR",
-  GPI_anchored: "GPI-anchored",
-  tetraspanin: "Tetraspanin",
-  ion_channel: "Ion channel",
-  transporter: "Transporter",
-  other: "Other",
-
-  // Evidence grade / strength / density
-  direct_multi_method: "Direct, multi-method",
-  direct_single_method: "Direct, single method",
-  supportive_but_indirect: "Supportive but indirect",
-  conflicting: "Conflicting",
-  weak: "Weak",
-  strong: "Strong",
-  inferred: "Inferred",
-
-  // ECD class
-  large: "Large",
-  small: "Small",
-  minimal: "Minimal",
-
-  // Expression
-  absent: "Absent",
-  pan_tissue: "Pan-tissue",
-  broad: "Broad",
-  restricted: "Restricted",
-  rare: "Rare",
-  surface_dominant: "Surface-dominant",
-  mixed: "Mixed",
-  mostly_intracellular: "Mostly intracellular",
-
-  // Topology
-  extracellular: "Extracellular",
-  cytoplasmic: "Cytoplasmic",
-  one2one: "One-to-one",
-  one2many: "One-to-many",
-  many2many: "Many-to-many",
-
-  // Methods
-  flow_cytometry: "Flow cytometry",
-  immunofluorescence: "Immunofluorescence",
-  immunohistochemistry: "IHC",
-  mass_spec: "Mass spec",
-  biotinylation: "Biotinylation",
-  glycoproteomics: "Glycoproteomics",
-  proximity_labeling: "Proximity labeling",
-  fractionation: "Fractionation",
-  live_cell_flow: "Live-cell flow",
-  fixed_cell_flow: "Fixed-cell flow",
-  nonpermeabilized_IF: "Non-permeabilized IF",
-  permeabilized_IF: "Permeabilized IF",
-  IHC_membranous: "IHC (membranous)",
-  surface_biotinylation: "Surface biotinylation",
-  cell_surface_capture: "Cell-surface capture",
-  N_glycoproteomics: "N-glycoproteomics",
-  plasma_membrane_fractionation: "PM fractionation",
-  whole_cell_proteomics: "Whole-cell proteomics",
-  live_cell: "Live cell",
-  nonpermeabilized: "Non-permeabilized",
-  permeabilized: "Permeabilized",
-  fixed_unknown: "Fixed (unknown)",
-
-  // Antibody fields
-  monoclonal: "Monoclonal",
-  polyclonal: "Polyclonal",
-  recombinant: "Recombinant",
-  conformational: "Conformational",
-  isoform_specific: "Isoform-specific",
-  intracellular: "Intracellular",
-  genetic_KO: "Genetic KO",
-  siRNA_knockdown: "siRNA knockdown",
-  CRISPR_KO: "CRISPR KO",
-  orthogonal_method: "Orthogonal method",
-  ip_ms_pulldown: "IP-MS pulldown",
-  isoform_specific_KO: "Isoform-specific KO",
-  overexpression_reference: "Overexpression reference",
-  vendor_claim_only: "Vendor claim only",
-  endogenous: "Endogenous",
-  overexpression: "Overexpression",
-  knock_in_tag: "Knock-in tag",
-
-  // Accessibility relevance + claim type
-  direct_surface_accessibility: "Direct surface accessibility",
-  supports_surface_localization: "Supports surface localization",
-  supports_membrane_association: "Supports membrane association",
-  expression_only: "Expression only",
-  weak_or_ambiguous: "Weak or ambiguous",
-  surface_accessible: "Surface-accessible",
-  plasma_membrane_localized: "Plasma membrane",
-  membrane_fraction_enriched: "Membrane-fraction enriched",
-  cell_junction_localized: "Cell junction",
-  apical_or_luminal: "Apical / luminal",
-  secreted_or_shed: "Secreted / shed",
-  intracellular_pool: "Intracellular pool",
-
-  // Sample types
-  primary_human_tissue: "Primary tissue",
-  primary_human_cell: "Primary cell",
-  patient_sample: "Patient sample",
-  patient_derived_organoid: "Patient-derived organoid",
-  iPSC_derived: "iPSC-derived",
-  established_cell_line: "Cell line",
-  xenograft: "Xenograft",
-  ex_vivo: "Ex vivo",
-
-  // Compartments
-  plasma_membrane: "Plasma membrane",
-  endosome: "Endosome",
-  lysosome: "Lysosome",
-  ER: "ER",
-  Golgi: "Golgi",
-  mitochondrion: "Mitochondrion",
-  nucleus: "Nucleus",
-  cytosol: "Cytosol",
-  secreted: "Secreted",
-  secretory_vesicle: "Secretory vesicle",
-
-  // Anatomical orientation
-  blood_interstitial_facing: "Blood / interstitial-facing",
-  luminal_facing: "Luminal-facing",
-  apical: "Apical",
-  basolateral: "Basolateral",
-  lateral: "Lateral",
-  junction_restricted: "Junction-restricted",
-  ciliary: "Ciliary",
-  synaptic: "Synaptic",
-  matrix_facing: "Matrix-facing",
-  favorable: "Favorable",
-  context_dependent: "Context-dependent",
-
-  // Modulation
-  cell_state_induced: "Cell-state induced",
-  tissue_restricted_surface: "Tissue-restricted surface",
-  lysosomal_exocytosis: "Lysosomal exocytosis",
-  dual_localization: "Dual localization",
-  stable_surface_attachment: "Stable surface attachment",
-  activation_induced: "Activation-induced",
-  stress_induced: "Stress-induced",
-  disease_state_induced: "Disease-state induced",
-  polarization_dependent: "Polarization-dependent",
-  post_translational_dependent: "Post-translational dependent",
-  developmental_stage: "Developmental stage",
-  ER_stress: "ER stress",
-  heat_shock: "Heat shock",
-  oxidative_stress: "Oxidative stress",
-  DNA_damage_response: "DNA damage response",
-  apoptosis: "Apoptosis",
-  necroptosis: "Necroptosis",
-  oncogenic_transformation: "Oncogenic transformation",
-  infection_viral: "Viral infection",
-  infection_bacterial: "Bacterial infection",
-  immune_activation: "Immune activation",
-  antigen_stimulation: "Antigen stimulation",
-  cytokine_stimulation: "Cytokine stimulation",
-  hypoxia: "Hypoxia",
-  nutrient_deprivation: "Nutrient deprivation",
-  hyperthermia: "Hyperthermia",
-  mechanical_stress: "Mechanical stress",
-
-  // Restricted lineage
-  germline_reproductive: "Germline / reproductive",
-  embryonic_developmental: "Embryonic / developmental",
-  hematopoietic: "Hematopoietic",
-  neural: "Neural",
-  epithelial: "Epithelial",
-  endothelial: "Endothelial",
-  muscle: "Muscle",
-  endocrine: "Endocrine",
-  specialized_somatic_other: "Specialized somatic (other)",
-
-  // Restricted subdomain / risks
-  junctional: "Junctional",
-  raft: "Lipid raft",
-
-  // Co-receptor
-  required: "Required",
-  modulatory: "Modulatory",
-  co_expression_only: "Co-expression only",
-  trafficking: "Trafficking",
-  knockout: "Knockout",
-
-  // Headline-risk shorthand
-  shed_form: "Shed form",
-  secreted_form: "Secreted form",
-  co_receptor: "Co-receptor",
-  paralog_cross_reactivity: "Paralog cross-reactivity",
-  ecd_too_small: "ECD too small",
-  epitope_masked: "Epitope masked",
-  isoform_decoy: "Isoform decoy",
-  restricted_subdomain: "Restricted subdomain",
-  low_endogenous_expression: "Low endogenous expression",
-  antibody_validation_weak: "Weak Ab validation",
-  ligand_unknown: "Ligand unknown",
-
-  // Therapeutic stage
-  approved_drug: "Approved drug",
-  in_clinical_trials: "In clinical trials",
-  preclinical_in_vivo: "Preclinical (in vivo)",
-  none_documented: "None documented",
-
-  // Contradiction types
-  alternative_localization: "Alternative localization",
-  secreted_only: "Secreted only",
-  cell_line_specific_absence: "Cell-line-specific absence",
-  antibody_conflict: "Antibody conflict",
-  proteomics_conflict: "Proteomics conflict",
-  isoform_conflict: "Isoform conflict",
-
-  // Knowledge gaps
-  no_literature: "No literature",
-  outside_scope: "Outside scope",
-
-  // Evidence tier
-  primary: "Primary",
-  secondary: "Secondary",
-  tertiary: "Tertiary",
-
-  // Secreted-form source
-  alternative_splicing: "Alternative splicing",
-  proteolytic: "Proteolytic",
-  both: "Both",
-
-  // Epitope masking mechanism
-  glycan: "Glycan",
-  partner: "Partner",
-  cleaved: "Cleaved",
-};
-
-export function titleCase(s: string | null | undefined): string {
-  return String(s ?? "")
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+/**
+ * Load one gene's full SurfaceomeRecord from public D1 via the Worker.
+ *
+ * D1 is the only source — there is no fs fallback. Returns `null` under
+ * `SURFACEOME_API_BASE=local` (or empty), which the offline CI smoke
+ * build uses, and on any Worker error.
+ *
+ * Triage-reasoning backfill: when the resolved record's own
+ * `triage_reasoning` field is empty, pull it from the `triage_run` store
+ * via `/v1/triage/{symbol}`. Older D1 records (published before the field
+ * existed) serve it as `null` even though the triage prose lives in
+ * `triage_run` and renders in the catalog drawer — so the gene-page
+ * triage drawer would otherwise self-hide. Sourcing from the same place
+ * keeps both surfaces in sync without re-publishing the record.
+ */
+export async function loadSurfaceomeRecord(
+  symbol: string,
+): Promise<SurfaceomeRecord | null> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  if (base === "local" || !base) {
+    return null;
+  }
+  const record = await _fetchRecordFromWorker(symbol, base);
+  if (record && !record.triage_reasoning?.trim()) {
+    const reasoning = await _fetchTriageReasoningFromWorker(symbol, base);
+    if (reasoning) return { ...record, triage_reasoning: reasoning };
+  }
+  return record;
 }
 
-export function prettyEnum(s: string | null | undefined): string {
-  if (!s) return "—";
-  return ENUM_MAP[s] ?? titleCase(s);
+export async function loadAllSurfaceomeRecords(): Promise<SurfaceomeRecord[]> {
+  const symbols = await listSurfaceomeGenes();
+  // Concurrent fetch — each gene hits the Worker independently;
+  // `cache: "force-cache"` dedups across the same build.
+  const records = await Promise.all(
+    symbols.map((sym) => loadSurfaceomeRecord(sym)),
+  );
+  return records.filter((r): r is SurfaceomeRecord => r != null);
 }
 
-export function tissueLabel(t: string): string {
-  return titleCase(t);
-}
+// Enum display helpers (`titleCase` / `prettyEnum` / `tissueLabel` +
+// the curated `ENUM_MAP` behind them) live in the dependency-free
+// `./enums` leaf module so CLIENT components can import them without
+// dragging this file's top-level `node:fs` / `node:path` imports into
+// the browser bundle (webpack can't tree-shake a `node:*` import across
+// a `"use client"` boundary). Re-exported here for back-compat so the
+// existing server-side importers keep working unchanged.
+export { titleCase, prettyEnum, tissueLabel } from "./enums";

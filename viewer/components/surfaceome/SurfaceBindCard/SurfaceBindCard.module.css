@@ -1,0 +1,125 @@
+/*
+ * SurfaceBindCard — per-site MaSIF targetability table.
+ */
+
+.preamble,
+.emptyNote,
+.icDisclaimer {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0 0 var(--space-4);
+  /* Full card width (no reading-width cap) — the SURFACE-Bind text
+     should span the same width as the per-site table below it rather
+     than wrapping in a narrow 70ch column. */
+  max-width: none;
+}
+
+.emptyNote {
+  color: var(--muted);
+}
+
+/* IC-vs-EC disclaimer — softer treatment than the preamble, but
+   the same readable line-length. Pulls focus away from the
+   preamble's design-options story toward the antibody-accessibility
+   caveat. */
+.icDisclaimer {
+  padding: var(--space-3);
+  background: var(--surface-soft, #f6f1ef);
+  border-left: 3px solid var(--accent, #C32F62);
+  border-radius: 4px;
+  font-size: 0.88rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin: var(--space-3) 0 var(--space-4);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.head {
+  text-align: left;
+  color: var(--muted);
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+
+/* Sortable header trigger — looks like the plain label-mono header
+   text (inherits font / letter-spacing / uppercase from the th) but
+   is a real <button> so click-to-sort works and the column is keyboard
+   reachable. */
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.sortBtn:hover,
+.sortBtn:focus-visible {
+  color: var(--ink);
+  outline: none;
+}
+
+/* Sort indicator: a faint ↕ on every sortable column (signals the
+   column is sortable), brightening to an accent ▲/▼ on the active
+   sort column. */
+.sortArrow {
+  font-size: 0.7em;
+  opacity: 0.4;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.sortArrowActive {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.cell,
+.cellMono {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  white-space: nowrap;
+}
+
+.cellMono {
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  color: var(--ink);
+}
+
+.footer {
+  margin: var(--space-3) 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.link {
+  color: inherit;
+  border-bottom: 1px solid var(--line);
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.link:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}

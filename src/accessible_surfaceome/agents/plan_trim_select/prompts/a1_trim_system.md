@@ -21,6 +21,10 @@ A clip is load-bearing if it directly evidences one of these surface-evidence ca
 7. **Non-surface expression observations.** RNA (RT-qPCR, RNA-seq), whole-cell western blot WITHOUT a fractionation step, permeabilized IF, total-cell IHC without membrane scoring. KEEP these — they feed A1's `non_surface_expression` list (the bucket that *prevents* expression from being misread as accessibility). Mark them in your reason so the selector knows to file them on the non-surface side.
 8. **Contradictions to surface presence.** Studies finding {gene} primarily intracellular, no detectable surface signal where another paper reported one, failure-to-replicate, paralog confound (an antibody that turns out to cross-react with a paralog).
 9. **Structure of the ECD** — PDB entries, AlphaFold predictions explicitly framed as the extracellular domain, crystal structures of the ECD with a ligand or antibody.
+10. **Overexpression-based surface evidence.** KEEP clips that describe surface detection in transfected cell lines (HEK293, CHO, 293T, HeLa-OE, COS-7) — for orphan / under-studied genes overexpression is often the strongest available evidence. **When you keep an overexpression clip, also keep the methods sentence that names the construct's signal peptide.** The signal peptide source decides whether the surface localization is biologically meaningful:
+    * Native / endogenous SP — phrases like "endogenous signal peptide", "native signal sequence", "untagged construct", "wild-type [GENE]", "full-length [GENE]", "[GENE] cDNA" with no leader-replacement mention → trafficking is the protein's own. Real evidence (tier as if endogenous).
+    * Exogenous / foreign SP — phrases like "IgG kappa leader", "IgG κ light-chain SP", "preprotrypsin signal peptide", "BiP leader", "BiP signal peptide", "PreS leader", "interleukin-2 secretion signal", "Igλ leader", "honeybee melittin SP", "N-terminal HA-tagged with [vector]-derived leader" → the SP is forcing secretory-pathway entry. A protein that's normally cytosolic can end up on the surface purely because of the foreign SP. Tier *down* — supportive only.
+    * Mark the SP source in your `reason` field so the selector can apply the right tier.
 
 ## What A1 does NOT need — DROP these clips
 
@@ -40,6 +44,12 @@ These are A2's territory (the BiologicalContext block); keeping them in A1's men
 * Figure schematics ("Schematic of the assay...", "Workflow for surfaceome profiling...") without an associated result.
 * Paper-aim / motivation statements ("We aimed to assess...", "Here we report...", "The goal of this study was...") — these say what the paper *set out* to do, not what it *showed*.
 * IHC / flow scoring rubrics on their own without the readout ("1+ for weak membrane staining in ≥10% of cells, 2+ for moderate..." but no per-sample score).
+
+## Preserve antibody-identifier sentences
+
+When you keep a clip from a surface-method paper, prefer the version of the sentence that names the antibody identifier (clone / vendor / catalog / RRID) over the version that doesn't. The methods builder downstream reads only the clip text you preserve — if you keep "Cells were stained with anti-CD81 antibody and analyzed by flow cytometry" but DROP the next sentence "(clone 5A6, BD Biosciences, RRID:AB_396171)", the resulting `MethodObservation` has `clone=null` / `vendor=null` / `rrid=null` and the catalog loses the antibody provenance that's load-bearing for surface evidence.
+
+When the source body has TWO clips on the same method panel — one with the methods detail, one with the clone / RRID / KO-validation sentence — KEEP BOTH so the builder can assemble them. They count as one `MethodObservation` downstream; the selector promotes both as siblings of the same `source_id`. The validation-control sentences ("[GENE]-KO cells were negative", "siRNA-treated cells lost the signal", "two antibodies against non-overlapping epitopes gave concordant results") are equally load-bearing — they upgrade `validation_strategy` from `none` to `genetic_KO` / `siRNA_knockdown` / `orthogonal_method` downstream.
 
 ## Calibration
 

@@ -101,3 +101,20 @@
   font-family: var(--font-mono);
   font-size: 0.88rem;
 }
+
+/* Restricted-subdomain block moved into the subcellular-localization
+   subsection from §Risks. Sits below the dual-localization table
+   with a thin top border so it reads as a sibling block within the
+   same subsection rather than a new subsection. */
+.locRestricted {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--line-soft);
+}
+
+.locProse {
+  margin: var(--space-2) 0 0;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}

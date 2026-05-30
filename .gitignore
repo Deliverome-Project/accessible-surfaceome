@@ -110,5 +110,20 @@ data/external/sequences/
 # Idempotent re-generation; not version-controlled.
 data/external/ortholog_uniprot_resolution.tsv
 
+# Per-UniProt SURFACE-Bind summary — a 1.7MB derived artifact built by
+# scripts/build_surface_bind_summary.py from the upstream SURFACE-Bind
+# GitHub database (github.com/hamedkhakzad/SURFACE-Bind). The live site
+# reads it from D1 (synced via scripts/sync_surface_bind_to_d1.py); the
+# on-disk copy is a regenerable build input, so it's not version-controlled.
+data/external/surface_bind/
+
 # Claude Code dev-server preview config — local-only, not for the repo.
 .claude/launch.json
+
+# AFDB prediction cache (CIF structures + JSON metadata) — populated on
+# demand by src/accessible_surfaceome/tools/afdb_plddt.py, idempotent from
+# alphafold.ebi.ac.uk. The CIFs are 200KB-1.1MB each; the JSON metadata is
+# ~3KB each. Both are a per-machine fetch cache that adds nothing reviewers
+# can't re-fetch in seconds, so neither belongs in version control.
+data/cache/afdb_prediction/*.cif
+data/cache/afdb_prediction/*.json

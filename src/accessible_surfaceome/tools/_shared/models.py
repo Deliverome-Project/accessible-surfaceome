@@ -110,6 +110,11 @@ class IdentifierBundle(BaseModel):
     # Registry-curated family lineage; useful for the triage agent to recognize
     # surface-protein family conventions without prompt-embedded enumerations.
     hgnc_gene_groups: list[str] = Field(default_factory=list)
+    # UniProt curator-assigned protein family from the SIMILARITY comment, with the
+    # "Belongs to the " boilerplate stripped (e.g. "G-protein coupled receptor 1 family").
+    # Deterministic, single-string family tag complementing hgnc_gene_groups; None when
+    # UniProt has no SIMILARITY annotation (common for poorly-characterized proteins).
+    uniprot_family: str | None = None
     # CD nomenclature designation when assigned (e.g. "CD340" for ERBB2). CD numbers
     # are awarded to differentiation-cluster antigens — almost always surface or
     # pseudo-surface markers. Strong surface signal when present.
@@ -434,13 +439,13 @@ class LiteraturePack(BaseModel):
 # can distinguish "absent" from "not retrieved".
 EvidenceCategory = Literal[
     "ihc",
-    "if_intact",
+    "if",
     "flow_cytometry",
     "surface_biotinylation",
     "mass_spec_surfaceome",
     "western_blot_paired",
     "structure_with_ecd",
-    "hpa_ihc",
+    "other",
 ]
 
 
@@ -913,6 +918,20 @@ class Evidence(BaseModel):
     # as the substring check.
     entailment_audit_passed: bool | None = None
     validation_warnings: list[str] = Field(default_factory=list)
+    # Cross-planner duplicate marker. Populated by the orchestrator's
+    # post-promotion dedup pass when two ``Evidence`` records share the
+    # same ``(spans[0].source_id, spans[0].quote_sha256)`` — i.e. A1
+    # and A2 both extracted the same span from the same paper.
+    #
+    # When non-null, references the ``evidence_id`` of the canonical
+    # record this entry was folded onto (canonical = preferred A1 over
+    # A2; tie-break on earliest evidence_id). The duplicate record IS
+    # kept in the ledger so per-builder citations still resolve to the
+    # exact id they were emitted with — but the viewer collapses
+    # duplicates onto the canonical card so the reader sees ONE entry
+    # per unique source span (with both planner interpretations
+    # stacked underneath).
+    duplicate_of: str | None = None
 
     @model_validator(mode="after")
     def _check_verified_has_spans(self) -> Evidence:
@@ -1000,7 +1019,12 @@ TriageSignal = Literal[
     "unknown",
 ]
 
-SurfaceAccessibility = Literal["high", "moderate", "low", "uncertain"]
+# Adds explicit ``"no"`` (PR follow-up after the design review): when
+# the synthesizer's read is "this protein is confidently NOT on the
+# surface", the catalog should be able to distinguish that from the
+# weaker ``"uncertain"`` (no signal either way). Mirrors the triage
+# ``verdict="no"`` end of the scale.
+SurfaceAccessibility = Literal["high", "moderate", "low", "uncertain", "no"]
 EvidenceGrade = Literal[
     "direct_multi_method",
     "direct_single_method",
@@ -1010,6 +1034,19 @@ EvidenceGrade = Literal[
 ]
 Confidence = Literal["high", "moderate", "low"]
 StateDependence = Literal["low", "moderate", "high", "unclear"]
+# Subcategory = ARCHITECTURE only — how the protein sits in the
+# membrane. Function lives on the separate ``ProteinFamily`` axis.
+# Slimmed in the SURFACE-Bind alignment (Marchand et al. 2026 PNAS,
+# doi:10.1073/pnas.2506269123): the SURFACE-Bind taxonomy splits
+# function (Receptor / Enzyme / Transporter / Miscellaneous) from
+# architectural detail (which SURFACE-Bind doesn't enumerate to
+# this depth — we keep our own architecture axis).
+#
+# Removed values: ``ion_channel`` and ``transporter`` were functional,
+# not architectural — they now flow to ``ProteinFamily=transporter``
+# with ``Subcategory=multi_pass``. ``GPCR`` stays here as a common-
+# name shortcut for the 7TM heptahelical architecture (the canonical
+# functional use, but the name labels architecture in this taxonomy).
 Subcategory = Literal[
     "single_pass_T1",
     "single_pass_T2",
@@ -1017,22 +1054,49 @@ Subcategory = Literal[
     "GPCR",
     "GPI_anchored",
     "tetraspanin",
-    "ion_channel",
-    "transporter",
     "other",
 ]
+
+# ProteinFamily = FUNCTIONAL family. Mirrors SURFACE-Bind's four main
+# classes verbatim (Marchand et al. 2026 PNAS), dropping the
+# bookkeeping ``unclassified`` / ``unmatched`` since those reflect
+# their mapping-pipeline state rather than biology.
+ProteinFamily = Literal[
+    "receptor",
+    "enzyme",
+    "transporter",
+    "miscellaneous",
+]
+# Headline risks — slimmed from 11 → 5 after the redundancy audit.
+# Each remaining value names a real load-bearing risk that the reader
+# can't easily reconstruct from another structured field.
+#
+# Removed values + replacement signal:
+#   * ``ecd_too_small`` → read ``filters.ecd_accessibility_class``
+#     (small / minimal / none) — the headline flag was a binary
+#     restatement of the same field.
+#   * ``restricted_subdomain`` → read
+#     ``accessibility_risks.restricted_subdomain.present`` — the
+#     headline flag was a direct copy.
+#   * ``antibody_validation_weak`` → read
+#     ``surface_evidence.evidence_grade`` (weak / conflicting); per-
+#     antibody detail lives in ``AntibodyRef.validation_strategy``.
+#   * ``low_endogenous_expression`` → read the DERIVED
+#     ``filters.low_endogenous_expression`` (computed deterministically
+#     from ``filters.expression_level ∈ {low, absent}``), so the
+#     headline list can't drift from the filter the catalog filters on.
+#   * ``ligand_unknown`` → not a "risk"; orphan-receptor status now
+#     lives on ``filters.has_known_ligand: bool``.
+#   * ``other`` → forbidden escape hatch. If the risk doesn't fit one
+#     of the five remaining values, raise it in
+#     ``executive_summary.one_paragraph`` instead and let the reader
+#     see the prose.
 HeadlineRisk = Literal[
     "shed_form",
     "secreted_form",
     "co_receptor",
-    "ecd_too_small",
     "epitope_masked",
     "isoform_decoy",
-    "restricted_subdomain",
-    "low_endogenous_expression",
-    "antibody_validation_weak",
-    "ligand_unknown",
-    "other",
 ]
 
 ExpressionLevel = Literal["high", "moderate", "low", "absent"]
@@ -1050,6 +1114,13 @@ MethodFamily = Literal[
     "glycoproteomics",
     "proximity_labeling",
     "fractionation",
+    # Functional engagement / pharmacology demonstrations of surface
+    # access — antibody-mediated tumor killing in xenografts, ADC
+    # efficacy, surface-targeted photo-tag labeling, FRET-on-surface,
+    # radioligand binding. Use ``functional_surface_assay`` instead of
+    # ``other`` for these; ``other`` stays for true catch-all cases
+    # the bucket list doesn't cover.
+    "functional_surface_assay",
     "other",
 ]
 MethodSubclass = Literal[
@@ -1272,7 +1343,16 @@ _STATE_INDUCED_CATEGORIES: frozenset[str] = frozenset(
 
 TerminalOrientation = Literal["extracellular", "cytoplasmic"]
 OrthologyType = Literal["one2one", "one2many", "many2many"]
-AFDBVersion = Literal["v4"]
+# AFDB bumps its model version periodically (v1→v6 between 2021 and
+# 2026 for many entries; old versions are removed from the file
+# server, so a stale ``v4`` URL is now a 404 for a sizable subset).
+# The fetcher reads the real ``latestVersion`` from AFDB's metadata
+# API at write time; we accept any vN through v9 in the schema and an
+# ``"unknown"`` sentinel for the placeholder path. Widen further when
+# v10+ ships.
+AFDBVersion = Literal[
+    "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8", "v9", "unknown"
+]
 
 RiskSeverity = Literal["high", "moderate", "low", "unknown"]
 EvidenceStrength = Literal["strong", "moderate", "weak", "inferred"]
@@ -1320,7 +1400,50 @@ class ExecutiveSummary(BaseModel):
     evidence_grade_summary: EvidenceGrade
     confidence: Confidence
     state_dependence: StateDependence
+    # Architecture (how the protein sits in the membrane). See the
+    # ``Subcategory`` Literal for the closed enum + the SURFACE-Bind
+    # alignment that splits architecture from function.
     subcategory: Subcategory
+    # NEW: functional family per SURFACE-Bind (Marchand 2026 PNAS).
+    # ``receptor`` = signaling receptors (GPCRs, RTKs, cytokine
+    # receptors, integrins, immunoreceptors). ``enzyme`` = surface-
+    # exposed catalytic activity (CD13/ANPEP, CD26/DPP4, CD73/NT5E,
+    # PSMA/FOLH1, ADAM family, MMPs, ectonucleotidases — and inner-
+    # leaflet kinases like SRC by protein identity, even when the
+    # ectopic-surface story is moderate). ``transporter`` = SLCs, ABC
+    # transporters, ion channels, aquaporins, pumps. ``miscellaneous``
+    # = adhesion / junction / tetraspanin / scaffold / structural /
+    # chaperone proteins that don't fit the first three.
+    #
+    # Named ``llm_family`` to make explicit that this is the model's
+    # high-level functional call — distinct from the deterministic,
+    # curator-assigned ``hgnc_gene_groups`` / ``uniprot_family`` tags
+    # that the orchestrator injects alongside it.
+    llm_family: ProteinFamily = "miscellaneous"
+    # Deterministic, curator-assigned family tags injected by the
+    # orchestrator from the resolved ``IdentifierBundle`` (NOT emitted by
+    # the synthesizer). They sit beside ``llm_family`` so the reader can
+    # cross-check the model's high-level call against registry/curator
+    # ground truth. ``hgnc_gene_groups`` = HGNC gene-group lineage
+    # (e.g. ["G protein-coupled receptors, Class A orphans"]);
+    # ``uniprot_family`` = UniProt SIMILARITY family with the "Belongs to
+    # the " boilerplate stripped (e.g. "G-protein coupled receptor 1
+    # family"). Both default empty/None for back-compat with records
+    # generated before the injection landed.
+    hgnc_gene_groups: list[str] = Field(default_factory=list)
+    uniprot_family: str | None = None
+    # The synthesizer's re-derived reason for its surface call. Reuses
+    # the TriageReason enum so the catalog can filter by the same
+    # vocabulary regardless of which agent emitted the reason. The
+    # synth MUST re-derive from the A1+A2 evidence ledger — not just
+    # copy ``triage_record.reason`` — so the rolled-up value is the
+    # deep-dive's verdict, not the triage's echo. Often agrees with
+    # the triage (e.g., canonical surface receptors); deliberately
+    # disagrees when A1+A2 evidence overrides (e.g., a ``no /
+    # inner_leaflet_anchored`` triage that the deep-dive promotes to
+    # a contextual reason like ``lysosomal_exocytosis`` after finding
+    # the cancer-state surface evidence).
+    surface_call_reason: TriageReason
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
@@ -1329,6 +1452,92 @@ class ExecutiveSummary(BaseModel):
     @model_validator(mode="after")
     def _warn_soft_target_overshoot(self) -> "ExecutiveSummary":
         _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
+
+    @model_validator(mode="after")
+    def _check_surface_call_reason_aligns_with_accessibility(
+        self,
+    ) -> "ExecutiveSummary":
+        """Enforce bucket alignment between ``surface_accessibility``,
+        ``state_dependence``, and ``surface_call_reason``.
+
+        The synth-side analogue of TriageRecord's
+        ``_check_reason_matches_verdict``. Without this, the synth can
+        emit nonsensical combos like ``surface_accessibility=high`` +
+        ``state_dependence=low`` + ``surface_call_reason=cytoplasmic``
+        (a high canonical-surface call with a NO-bucket reason) and
+        nothing else in the schema catches it.
+
+        Rules (mirror the bucket structure documented in the
+        ``surface_call_reason`` section of
+        ``surfaceome_synthesizer/prompts/system.md``):
+
+        * ``high/moderate`` + ``low/unclear`` state_dep → YES-bucket only
+          (canonical surface mechanisms)
+        * ``high/moderate`` + ``moderate/high`` state_dep → YES OR
+          CONTEXTUAL bucket (state-gated surface OK)
+        * ``low`` → NO OR CONTEXTUAL bucket (marginal-yes state may
+          justify a low headline)
+        * ``no`` → NO-bucket only
+        * ``uncertain`` → any reason (by definition the synth wasn't
+          sure enough to constrain the explanation)
+
+        ``other`` is in every bucket so it's always valid as an
+        escape hatch.
+        """
+        sa = self.surface_accessibility
+        sd = self.state_dependence
+        r = self.surface_call_reason
+
+        # uncertain → any reason allowed
+        if sa == "uncertain":
+            return self
+
+        # `other` is in every bucket — always valid
+        if r == "other":
+            return self
+
+        yes_bucket = _YES_REASONS - {"other"}
+        contextual_bucket = _CONTEXTUAL_REASONS - {"other"}
+        no_bucket = _NO_REASONS - {"other"}
+
+        if sa == "no":
+            if r not in no_bucket:
+                raise ValueError(
+                    f"surface_accessibility='no' requires surface_call_reason "
+                    f"in the NO-bucket; got {r!r}. NO-bucket: "
+                    f"{sorted(no_bucket)}"
+                )
+            return self
+
+        if sa == "low":
+            allowed = no_bucket | contextual_bucket
+            if r not in allowed:
+                raise ValueError(
+                    f"surface_accessibility='low' requires surface_call_reason "
+                    f"in the NO or CONTEXTUAL bucket; got {r!r}"
+                )
+            return self
+
+        # sa ∈ {high, moderate}
+        if sd in ("low", "unclear"):
+            if r not in yes_bucket:
+                raise ValueError(
+                    f"surface_accessibility={sa!r} with state_dependence={sd!r} "
+                    f"requires surface_call_reason in the YES-bucket "
+                    f"(canonical surface mechanisms); got {r!r}. YES-bucket: "
+                    f"{sorted(yes_bucket)}"
+                )
+            return self
+
+        # sd ∈ {moderate, high}
+        allowed = yes_bucket | contextual_bucket
+        if r not in allowed:
+            raise ValueError(
+                f"surface_accessibility={sa!r} with state_dependence={sd!r} "
+                f"requires surface_call_reason in the YES or CONTEXTUAL bucket "
+                f"(canonical or state-gated surface); got {r!r}"
+            )
         return self
 
 
@@ -1350,6 +1559,20 @@ class Filters(BaseModel):
     surface_accessibility: SurfaceAccessibility
     confidence: Confidence
     subcategory: Subcategory
+    # Mirror of ``executive_summary.state_dependence``. Promoted to
+    # Filters so catalog UI can D1-filter on state-conditional candidates
+    # without joining through executive_summary.
+    state_dependence: StateDependence
+    # Mirror of ``executive_summary.surface_call_reason`` — the
+    # synthesizer's re-derived reason for its surface call (reuses the
+    # TriageReason enum). Distinct from the triage record's own reason:
+    # the synth weighs A1+A2 evidence and re-emits, so the rolled-up
+    # value is the deep-dive's verdict, not the triage's echo.
+    surface_call_reason: TriageReason
+    # Mirror of ``executive_summary.llm_family``. Rolled up by
+    # the orchestrator so the catalog can filter by functional family
+    # (SURFACE-Bind axis) at the top level alongside architecture.
+    llm_family: ProteinFamily = "miscellaneous"
     evidence_grade: EvidenceGrade
     ecd_accessibility_class: ECDAccessibilityClass
     evidence_density: EvidenceDensity
@@ -1359,6 +1582,13 @@ class Filters(BaseModel):
     has_shed_form: bool
     has_secreted_form: bool
     requires_coreceptor_for_expression: bool
+    # Full 4-value CoreceptorDependency enum
+    # (required / modulatory / none / unknown). Mirror of
+    # ``accessibility_risks.co_receptor_requirements.surface_expression_dependency``.
+    # The existing ``requires_coreceptor_for_expression`` bool collapses
+    # ``modulatory`` into ``False``, losing a real "not strictly required
+    # but matters" signal; this enum field is the catalog-filterable version.
+    co_receptor_dependency: CoreceptorDependency
     max_paralog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     has_epitope_masking: bool
     has_restricted_subdomain: bool
@@ -1366,6 +1596,41 @@ class Filters(BaseModel):
     cyno_ortholog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     n_term_extracellular: bool
     c_term_extracellular: bool
+    # Derived, NOT agent-emitted: the orchestrator computes this from
+    # ``expression_level`` after the synthesizer call so the headline
+    # signal can't drift from the catalog filter. ``True`` when
+    # ``expression_level ∈ {low, absent}``. Replaces the now-dropped
+    # ``HeadlineRisk.low_endogenous_expression`` enum value — readers
+    # see one canonical signal, the catalog filters on it.
+    low_endogenous_expression: bool = False
+    # Orphan-receptor status — ``True`` (the default) when a validated
+    # endogenous ligand is documented. Set ``False`` for orphan
+    # receptors (orphan GPCRs / nuclear receptors / kinases). Replaces
+    # the now-dropped ``HeadlineRisk.ligand_unknown`` enum value; the
+    # catalog can filter on this as a tractability signal.
+    has_known_ligand: bool = True
+    # Derived from ``surface_evidence.claim_stances`` by the
+    # orchestrator. Lets the catalog distinguish "conflicting grade
+    # from a single contradicting claim (artifact-suspect)" from
+    # "conflicting grade from ≥3 contradicting claims (real
+    # disagreement)" without re-parsing the grade_rationale prose.
+    # Defaults to 0 — old records (no stance map emitted) and genes
+    # whose builder didn't return stances both read as 0.
+    n_supporting_claims_high_weight: int = Field(default=0, ge=0)
+    n_contradicting_claims_high_weight: int = Field(default=0, ge=0)
+    # Derived from ``surface_evidence.methods[]`` by the orchestrator.
+    # True iff any MethodObservation has
+    # ``expression_system ∈ {overexpression, mixed}`` AND
+    # ``accessibility_relevance ∈ {direct_surface_accessibility,
+    # supports_surface_localization}``. Signals "the gene has been
+    # shown to surface-localize in an overexpression context" — useful
+    # for assessing whether OE-based validation is on precedent for
+    # this target. Distinct from ``has_known_ligand`` and
+    # ``low_endogenous_expression``: this is specifically the OE +
+    # surface combination, regardless of endogenous level or ligand
+    # status. Defaults to False — records whose builder produced no
+    # methods (weak grade, errored runs) read as False.
+    overexpression_surface_localization_observed: bool = False
 
 
 # ---- surface evidence (section 1) -----------------------------------------
@@ -1425,6 +1690,34 @@ class ExpressionObservation(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
+class OverexpressionContext(BaseModel):
+    """Construct details for overexpression-based surface evidence.
+
+    Populated by the methods builder when ``MethodObservation.expression_system``
+    is ``"overexpression"`` or ``"mixed"``. The ``signal_peptide_source``
+    field is the critical tier discriminator: a foreign / exogenous signal
+    peptide forces secretory-pathway entry regardless of the protein's
+    native trafficking, so foreign-SP overexpression cannot directly evidence
+    native surface localization (csGRP78 / cell-surface-vimentin failure
+    mode). The trim + select prompts require the SP source on every
+    overexpression clip; this is where the builder lands it so downstream
+    consumers (the viewer, the synthesizer, future automated audits) can
+    tier the evidence without re-reading the methods sentence.
+
+    Schema-optional: ``MethodObservation.overexpression`` defaults to
+    ``None`` so endogenous-evidence records and pre-PR-#38 records remain
+    valid.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    signal_peptide_source: Literal["native", "exogenous", "unspecified"]
+    signal_peptide_detail: str | None = None  # "IgG kappa leader", "preprotrypsin SP", "BiP leader"
+    construct_tag: str | None = None  # "C-terminal FLAG", "N-terminal HA", "GFP fusion"
+    cell_line: str | None = None  # "HEK293", "CHO", "293T", "HeLa"
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
 class MethodObservation(BaseModel):
     """One surface-evidence method panel: how the surface claim was measured."""
 
@@ -1438,6 +1731,11 @@ class MethodObservation(BaseModel):
     accessibility_relevance: AccessibilityRelevance
     surface_claim_type: SurfaceClaimType
     expression_observations: list[ExpressionObservation] = Field(default_factory=list)
+    # Construct details for overexpression-based evidence. ``None`` for
+    # ``expression_system="endogenous"``; required-in-practice (enforced by
+    # the methods builder prompt, not the schema) when expression_system is
+    # ``"overexpression"`` or ``"mixed"``.
+    overexpression: OverexpressionContext | None = None
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
@@ -1503,6 +1801,51 @@ class Contradiction(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
+ClaimStance = Literal[
+    "supports_surface",      # claim supports surface accessibility
+    "contradicts_surface",   # claim refutes surface accessibility
+    "tangential",            # informs picture but doesn't commit either way
+    "expression_only",       # tissue/cell expression claim, not surface evidence
+]
+
+ClaimWeight = Literal[
+    "high",      # direct surface methodology + KO control or multi-source
+    "moderate",  # direct methodology, single source, weak validation
+    "low",       # indirect / inferred / single mention
+]
+
+
+class ClaimStanceRow(BaseModel):
+    """One per-claim stance backing the evidence_grade verdict.
+
+    Structured per-claim accounting alongside the free-text
+    ``grade_rationale`` prose. Lets the catalog query "conflicting grade
+    with only 1 high-weight contradiction → likely artifact" vs "≥3
+    high-weight contradictions → real disagreement" — distinctions the
+    grade enum alone collapses.
+
+    Weight criteria the LLM applies:
+      * ``high`` — direct surface methodology (live flow, nonperm IF,
+        surface biotin, IHC membranous) with knockout / siRNA control
+        OR corroboration across multiple independent sources.
+      * ``moderate`` — direct methodology, single source, weaker
+        validation (e.g. one published flow study with vendor-only
+        antibody validation).
+      * ``low`` — indirect (fractionation / glycoproteomics) OR a
+        single mention without methodology detail.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    claim_id: str
+    stance: ClaimStance
+    weight: ClaimWeight
+    note: str | None = Field(
+        default=None,
+        description="Optional ≤120-char qualifier (e.g. 'antibody from non-KO-validated paper').",
+    )
+
+
 class SurfaceEvidence(BaseModel):
     """Section 1 — the surface-accessibility evidence the agent assembled."""
 
@@ -1513,6 +1856,16 @@ class SurfaceEvidence(BaseModel):
         ...,
         description="Why this evidence_grade. Soft target ≤800 chars (overshoots warned but accepted).",
     )
+    # Per-claim structured accounting that backs the grade. Each row
+    # names one EvidenceClaim from the input ledger + its stance
+    # (supports/contradicts/tangential/expression_only) + weight
+    # (high/moderate/low). Used by the orchestrator to derive the
+    # ``n_supporting_claims_high_weight`` / ``n_contradicting_claims_high_weight``
+    # filters so the catalog can distinguish artifact vs. real
+    # conflicting-grade cases. Defaults to ``[]`` for backward compat
+    # with records emitted before this field existed; the derived
+    # filters read 0 in that case.
+    claim_stances: list[ClaimStanceRow] = Field(default_factory=list)
     methods: list[MethodObservation] = Field(default_factory=list)
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
     therapeutic_engagement: TherapeuticEngagementContext | None = None
@@ -1774,6 +2127,30 @@ class OrthologEntry(BaseModel):
     tm_helix_count: int
     compara_version: str
     retrieved_at: datetime
+    # Per-residue DeepTMHMM topology + categorical label for the
+    # ortholog's canonical isoform. Sourced from ``topology_public``
+    # filtered to ``cohort='mouse_ortholog'`` / ``cohort='cyno_ortholog'``.
+    # Nullable because the candidate-set builder may include orthologs
+    # whose DeepTMHMM run is still pending (or whose UniProt acc didn't
+    # resolve in the sweep); the viewer's IsoformsCard renders a
+    # placeholder when these are absent.
+    per_residue_topology: str | None = Field(default=None)
+    deeptmhmm_label: str | None = Field(default=None)  # 'TM' | 'SP+TM' | 'SP' | 'BETA' | 'GLOB'
+    # Topology-projection provenance (merge.ortholog_topology_projection).
+    # When set (``"projected_from_human_canonical"``), the per_residue_topology
+    # / tm_helix_count / ecd_length_residues above are the HUMAN canonical
+    # topology projected onto this ortholog via global alignment — not raw
+    # DeepTMHMM-on-ortholog, which is unreliable on the truncated / padded
+    # auto-annotated ortholog models (esp. cynomolgus TrEMBL). ``None`` on
+    # rows that kept the raw DeepTMHMM values (projection not possible).
+    topology_projection_source: str | None = Field(default=None)
+    # True when a human TM helix aligned entirely to a gap in the ortholog
+    # sequence (a truncated model) — the helix is conserved by homology but
+    # physically absent from this model, so consumers should show "TM region
+    # absent from model" rather than "topology diverged". ``n_tm_regions_absent``
+    # is how many human helices fell in ortholog gaps.
+    tm_absent_from_model: bool = False
+    n_tm_regions_absent: int = 0
 
 
 class Orthologs(BaseModel):
@@ -1786,15 +2163,42 @@ class Orthologs(BaseModel):
 
 
 class ParalogEntry(BaseModel):
-    """One within-species paralog — Ensembl Compara. Deterministic."""
+    """One within-species paralog — Ensembl Compara. Deterministic.
+
+    ``ecd_pct_identity`` is ``None`` for ECD-less proteins (inner-leaflet
+    kinases like SRC, soluble proteins, cytoplasmic enzymes) — there's
+    no ECD to compute identity against. ``full_length_pct_identity`` is
+    the whole-protein identity (Ensembl Compara / BioMart), which IS
+    populated for those proteins, so the viewer can still color the
+    antibody cross-reactivity risk tier for an ECD-less protein's paralogs
+    by falling back to it (same ≥70 / 50–70 / <50 cutoffs, keyed on
+    whole-protein homology rather than the extracellular surface). Family
+    membership alone is still meaningful signal for the methods builder's
+    antibody-validation discipline.
+    """
 
     model_config = ConfigDict(extra="forbid")
 
     paralog_symbol: str
     paralog_uniprot_acc: str
-    ecd_pct_identity: float = Field(..., ge=0.0, le=100.0)
+    ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
+    # Whole-protein percent identity vs the human canonical, straight from
+    # Ensembl Compara's BioMart homology table (``compara_paralog.
+    # biomart_percent_identity``) — same source as the ortholog full-length
+    # identity (``compara_ortholog.percent_identity``), so the two are
+    # directly comparable. Populated for ~all paralog pairs, INCLUDING
+    # ECD-less proteins where ``ecd_pct_identity`` is None. ``None`` only on
+    # records built before this field was surfaced by the deep-dive builder.
+    full_length_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
+    # (Per-residue DeepTMHMM topology was briefly added to this entry
+    # in 6a220a90 and reverted shortly after: SRC's 32 paralogs are all
+    # GLOB intracellular kinases, so the bars rendered as solid blue
+    # with no signal. Isoform + ortholog topology are still surfaced
+    # in §04 because those CAN show real TM patterns. If a real use
+    # case for paralog topology surfaces later, re-add via the same
+    # topology_public LEFT JOIN pattern that the orthologs loader uses.)
 
 
 class StructureFeatures(BaseModel):
@@ -1817,6 +2221,91 @@ class StructureFeatures(BaseModel):
     citations: list[str] = Field(default_factory=list)
 
 
+class SurfaceBindSite(BaseModel):
+    """One MaSIF-scored targetable patch on a SURFACE-Bind protein.
+
+    Sourced from SURFACE-Bind's ``results_no_TM.csv`` per-site arrays
+    (Marchand et al. 2026 PNAS). Each site is a surface patch the
+    MaSIF scoring identified as designable for a de novo binder.
+
+    Notes on the fields:
+
+    * ``anchor_residue`` — the center residue of the MaSIF patch.
+      SURFACE-Bind doesn't publish the full per-patch residue list
+      in any programmatic endpoint; only this anchor. For 3D
+      visualization, a viewer can highlight the anchor + nearby
+      residues at render time.
+    * ``area_a2`` — buried surface area in Å². The 1,103 ± 244 Å² band
+      from antibody-antigen interfaces (Ramaraj 2012) gives one
+      comparison point; SURFACE-Bind sites range much wider.
+    * ``hydrophobicity`` — patch hydrophobicity score (Eisenberg-style
+      scale). Positive = hydrophobic / lipid-facing-style; negative =
+      polar / solvent-exposed-style. Sign + magnitude shape what
+      binder chemistries pair well.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    site_id: int = Field(..., ge=0)
+    anchor_residue: int = Field(..., ge=1)
+    area_a2: float = Field(..., ge=0.0)
+    n_seeds_alpha: int = Field(..., ge=0)
+    n_seeds_beta: int = Field(..., ge=0)
+    hydrophobicity: float
+
+
+class SurfaceBindFeatures(BaseModel):
+    """SURFACE-Bind per-UniProt summary (Marchand et al. 2026 PNAS).
+
+    ``has_data=False`` is the explicit "not in SURFACE-Bind" signal —
+    SURFACE-Bind's authoritative ``results_no_TM.csv`` table covers
+    1,649 of the ~2,886 predicted surface proteins (loose ``seed_count``
+    files contain ~2,529 entries but include unscored proteins). This
+    block is always present so the catalog can distinguish "absent
+    from SURFACE-Bind" from "present but un-scored" rather than
+    collapsing both to null.
+
+    Loaded by :func:`accessible_surfaceome.tools.surface_bind.lookup`
+    from the checked-in summary JSON
+    (``data/external/surface_bind/surface_bind_summary.json``) which
+    is regenerated by ``scripts/build_surface_bind_summary.py``.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    has_data: bool = False
+    n_sites: int = Field(default=0, ge=0)
+    n_seeds_alpha: int = Field(default=0, ge=0)
+    n_seeds_beta: int = Field(default=0, ge=0)
+    n_seeds_total: int = Field(default=0, ge=0)
+    # PDB-chain identifier the SURFACE-Bind scoring was run against
+    # (typically "A"; multi-chain UniProts kept the first chain).
+    chain: str | None = None
+    # Per-site detail. Empty list when ``has_data=False`` OR when the
+    # protein is in SURFACE-Bind but with zero scored sites (rare;
+    # GPR75 is one example — listed in seed_count files but with no
+    # scored sites in the authoritative results_no_TM.csv).
+    sites: list[SurfaceBindSite] = Field(default_factory=list)
+    # SURFACE-Bind's own family / sub-family classification — useful
+    # as a cross-check against our ``llm_family`` / ``subcategory``
+    # but NOT what those fields are derived from.
+    main_class: str | None = None
+    sub_class: str | None = None
+    # Human-readable protein-name (from UniProt via SURFACE-Bind's
+    # join). May differ from our preferred display name; surface
+    # for the deep-link readability.
+    protein_name: str | None = None
+    # PDB entries cross-referenced by SURFACE-Bind for this protein.
+    # Often >100 entries for well-studied targets (EGFR has 250+);
+    # truncated in the viewer to the first few.
+    pdbs: list[str] = Field(default_factory=list)
+    source: str = "SURFACE-Bind v1 (Marchand 2026 PNAS)"
+    attribution: str = (
+        "© Marchand, Khakzad, Correia et al. — EPFL / Inria / Novo Nordisk"
+    )
+    citation: str = "10.1073/pnas.2506269123"
+
+
 class DeterministicFeatures(BaseModel):
     """Verbatim tool output — populated by the orchestrator, never by the agent.
 
@@ -1831,6 +2320,10 @@ class DeterministicFeatures(BaseModel):
     orthologs: Orthologs = Field(default_factory=Orthologs)
     paralogs: list[ParalogEntry] = Field(default_factory=list)
     structure: StructureFeatures
+    # SURFACE-Bind summary (Marchand 2026 PNAS); always present, with
+    # ``has_data=False`` as the explicit "not scored" signal for the
+    # ~12% of surfaceome proteins SURFACE-Bind omitted.
+    surface_bind: SurfaceBindFeatures = Field(default_factory=SurfaceBindFeatures)
 
 
 # ---- accessibility risks (section 6) --------------------------------------
@@ -2033,6 +2526,16 @@ class SurfaceomeRecord(BaseModel):
     # Cross-agent coherence — populated by the orchestrator from the most
     # recent surface_triage record.
     triage_signal: TriageSignal = "unknown"
+    # The triage agent's prose justification for its verdict (the
+    # ``verdict_reasoning`` field on the upstream ``TriageRecord``). Loaded
+    # by the orchestrator alongside ``triage_signal`` — the triage record is
+    # already fetched to derive the signal, so this carries no extra cost —
+    # and surfaced verbatim in the viewer's Triage row so the reader can see
+    # WHY the initial no-web-search pass called it the way it did, distinct
+    # from the deep-dive ``confidence_reasoning``. ``None`` (the default)
+    # when no triage record exists for the gene, so records generated before
+    # this field existed validate unchanged.
+    triage_reasoning: str | None = None
 
     # LLM synthesis
     executive_summary: ExecutiveSummary
@@ -2222,6 +2725,12 @@ class SurfaceEvidenceDraft(BaseModel):
             cited.update(se.therapeutic_engagement.cited_evidence_ids)
         for contradiction in se.contradicting_evidence:
             cited.update(contradiction.cited_evidence_ids)
+        # claim_stances rows each name one claim_id directly (not in
+        # a cited_evidence_ids list) — fold their ids into the same
+        # cross-check so an LLM that fabricates a claim_id in the
+        # stance map fails fast at parse time.
+        for stance_row in se.claim_stances:
+            cited.add(stance_row.claim_id)
         unresolved = sorted(cited - known)
         if unresolved:
             raise ValueError(
@@ -2300,6 +2809,14 @@ class SynthesizerLLMFilters(BaseModel):
     expression_level: ExpressionLevel
     expression_breadth: ExpressionBreadth
     surface_specificity: SurfaceSpecificity
+    # Orphan-receptor flag. Replaces the dropped
+    # ``HeadlineRisk.ligand_unknown`` value — moved here so the
+    # catalog can filter on ligand-known-or-not as a tractability
+    # signal. Defaults to ``True`` (most surface proteins have a
+    # validated endogenous ligand); the synthesizer flips it to
+    # ``False`` for orphan GPCRs / nuclear receptors / kinases where
+    # the deorphanization status is genuinely unknown.
+    has_known_ligand: bool = True
 
 
 class SynthesizerDraft(BaseModel):
@@ -2354,7 +2871,10 @@ TRIAGE_SCHEMA_VERSION = "v0.9.0"
 
 
 TriageVerdict = Literal["yes", "contextual", "no"]
-TriageModelPath = Literal["haiku_only", "sonnet_only", "opus_only"]
+# NOTE: ``TriageModelPath`` was removed when the loader started threading
+# the actual D1 row's model + prompt_variant via :class:`TriageProvenance`.
+# The closed enum couldn't carry model version (4.5 vs 4.6 vs 4.7) or
+# prompt variant, both of which the synthesizer needs to weight the prior.
 TriageConfidence = Literal["low", "medium", "high"]
 
 
@@ -2540,6 +3060,41 @@ _REASONS_BY_VERDICT: dict[str, frozenset[str]] = {
 }
 
 
+class TriageProvenance(BaseModel):
+    """Where a persisted TriageRecord actually came from.
+
+    Populated when the record was hydrated from D1's ``triage_run_public``
+    table; ``None`` when the record came from a local ``data/triage/{gene}.json``
+    file or was emitted in-process by the triage agent. The synthesizer
+    reads ``model`` + ``prompt_variant`` to weight the prior (a high-confidence
+    Sonnet ``ncbi`` verdict is a stronger prior than a Haiku one, and a
+    non-canonical variant choice is worth surfacing in confidence_reasoning).
+
+    Replaces the prior ``TriageModelPath`` closed enum, which couldn't
+    carry model version (4.5 vs 4.6 vs 4.7) or prompt_variant — both
+    needed to calibrate the prior correctly.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    model: str = Field(
+        ...,
+        description="Exact model identifier from D1 (e.g. 'claude-sonnet-4-6').",
+    )
+    prompt_variant: str = Field(
+        ...,
+        description="Triage prompt variant (e.g. 'ncbi', 'web_ncbi', 'naive').",
+    )
+    run_id: str = Field(
+        ...,
+        description="D1 run_id (e.g. 'mainbench_canonical_v1').",
+    )
+    replicate: int | None = Field(
+        default=None,
+        description="Replicate index from the sweep; None when not recorded.",
+    )
+
+
 class TriageRecordDraft(BaseModel):
     """What the AGENT emits for triage — small, self-contained.
 
@@ -2556,19 +3111,22 @@ class TriageRecordDraft(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(
         ...,
-        description="Why this triage verdict. Soft target ≤800 chars (overshoots warned but accepted).",
+        description="Why this triage verdict. Soft target ≤1250 chars (overshoots warned but accepted). Floor set from the empirical distribution on the 2026-05-12 mainbench Sonnet ncbi sweep (147 cells): median 956, p99 1199, max 1221. Catches genuine multi-thousand-char outliers without flagging the typical case.",
     )
     reason: TriageReason
     confidence: TriageConfidence
     key_uncertainty: str | None = Field(
         default=None,
-        description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
+        description="The most important uncertainty. Soft target ≤300 chars (overshoots warned but accepted). Floor set from the empirical distribution (Sonnet ncbi 2026-05-12 sweep): p90 250, max 267.",
     )
-    model_path: TriageModelPath = "haiku_only"
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "verdict_reasoning": 800,
-        "key_uncertainty": 200,
+        # Caps set from empirical distribution of 147 Sonnet ncbi cells
+        # in the 2026-05-12 mainbench sweep: verdict_reasoning median
+        # 956 / p99 1199 / max 1221; key_uncertainty p90 250 / max 267.
+        # Old caps (800 / 200) fired on 80% / 37% of rows respectively.
+        "verdict_reasoning": 1250,
+        "key_uncertainty": 300,
     }
 
     @model_validator(mode="after")
@@ -2601,20 +3159,31 @@ class TriageRecord(BaseModel):
     verdict: TriageVerdict
     verdict_reasoning: str = Field(
         ...,
-        description="Why this triage verdict. Soft target ≤800 chars (overshoots warned but accepted).",
+        description="Why this triage verdict. Soft target ≤1250 chars (overshoots warned but accepted). Floor set from the empirical distribution on the 2026-05-12 mainbench Sonnet ncbi sweep (147 cells): median 956, p99 1199, max 1221. Catches genuine multi-thousand-char outliers without flagging the typical case.",
     )
     reason: TriageReason
     confidence: TriageConfidence
     key_uncertainty: str | None = Field(
         default=None,
-        description="The most important uncertainty. Soft target ≤200 chars (overshoots warned but accepted).",
+        description="The most important uncertainty. Soft target ≤300 chars (overshoots warned but accepted). Floor set from the empirical distribution (Sonnet ncbi 2026-05-12 sweep): p90 250, max 267.",
     )
     search_log: list[SearchEntry] = Field(default_factory=list)
-    model_path: TriageModelPath = "haiku_only"
+    provenance: TriageProvenance | None = Field(
+        default=None,
+        description=(
+            "D1 row provenance (model + prompt_variant + run_id + replicate) "
+            "when hydrated from triage_run_public; None for local-file records "
+            "or in-process drafts."
+        ),
+    )
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "verdict_reasoning": 800,
-        "key_uncertainty": 200,
+        # Caps set from empirical distribution of 147 Sonnet ncbi cells
+        # in the 2026-05-12 mainbench sweep: verdict_reasoning median
+        # 956 / p99 1199 / max 1221; key_uncertainty p90 250 / max 267.
+        # Old caps (800 / 200) fired on 80% / 37% of rows respectively.
+        "verdict_reasoning": 1250,
+        "key_uncertainty": 300,
     }
 
     @model_validator(mode="after")
@@ -2698,6 +3267,7 @@ __all__ = [
     "Confidence",
     "StateDependence",
     "Subcategory",
+    "ProteinFamily",
     "HeadlineRisk",
     "ExpressionLevel",
     "ExpressionBreadth",
@@ -2745,6 +3315,7 @@ __all__ = [
     # v1.0.0 — surface evidence (section 1)
     "AntibodyRef",
     "ExpressionObservation",
+    "OverexpressionContext",
     "MethodObservation",
     "NonSurfaceExpression",
     "TherapeuticEngagementContext",
@@ -2766,6 +3337,8 @@ __all__ = [
     "Orthologs",
     "ParalogEntry",
     "StructureFeatures",
+    "SurfaceBindSite",
+    "SurfaceBindFeatures",
     "DeterministicFeatures",
     # v1.0.0 — accessibility risks (section 6)
     "CoReceptorRequirements",
@@ -2777,10 +3350,15 @@ __all__ = [
     "AccessibilityRisks",
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",
+    "TriageProvenance",
+    "ClaimStance",
+    "ClaimWeight",
+    "ClaimStanceRow",
+    # NOTE: ``TriageModelPath`` removed — provenance.model carries the
+    # full model identifier (e.g. ``claude-sonnet-4-6``) instead.
     "TriageRecord",
     "TriageRecordDraft",
     "TriageVerdict",
-    "TriageModelPath",
     "TriageReason",
     "TriageConfidence",
     "YesReason",

@@ -39,6 +39,43 @@
   pointer-events: auto;
 }
 
+/* Side-by-side coordination — when the ReasoningDrawer is open (it
+ * sets `body[data-reasoning-drawer-open]` from its useEffect), shift
+ * the EvidenceDrawer leftward by the reasoning drawer's width plus a
+ * small gutter so the two panels sit side-by-side instead of one
+ * covering the other. Reading a piece of evidence cited by the
+ * reasoning prose stays in the same horizontal scan as the prose
+ * itself.
+ *
+ * CRITICAL: this MUST target `.drawerOpen`, NOT the base `.drawer`.
+ * The base drawer is ALWAYS mounted; closed it sits off-screen at
+ * `right: 0` + `translateX(100%)`. If the shift applied to the closed
+ * drawer, its `right` jumps to ~460px while it's still
+ * `translateX(100%)` — landing the panel PARTIALLY ON-SCREEN
+ * (x≈820→1306 at 1280px) right on top of the reasoning drawer. It's
+ * opaque (`background: var(--bg)`) at `z-index: 55` (above the
+ * reasoning drawer's 50) so it paints a blank white panel over the
+ * reasoning content — the drawer "opens but is empty". `pointer-events:
+ * none` (closed) hides this from hit-testing but NOT from painting.
+ * The shift only has a purpose when the evidence drawer is itself
+ * open, so scope it to the open state.
+ *
+ * Width values mirror ReasoningDrawer.module.css's `clamp(320px,
+ * 35vw, 480px)` — kept in sync manually; if either side changes
+ * width, bump both. */
+:global(body[data-reasoning-drawer-open]) .drawerOpen {
+  right: calc(clamp(320px, 35vw, 480px) + 12px);
+}
+
+/* z-index bump so even when the side-by-side shift isn't active
+ * (e.g. the rare case where reasoning-drawer state lags the click),
+ * the evidence drawer paints ABOVE the reasoning drawer rather than
+ * behind it. Was z-index 40 (under ReasoningDrawer's 50) which made
+ * the evidence drawer invisible when both opened in the same frame. */
+.drawer {
+  z-index: 55;
+}
+
 @media (max-width: 720px) {
   .drawer {
     top: auto;
@@ -140,31 +177,14 @@
   font-style: italic;
 }
 
-/* Renders when the entailment auditor rejected the agent's quoted
- * substring (typically because Unicode-normalization across HTML
- * entities + ligatures didn't reconstruct the source verbatim).
- * We don't silently drop the section — readers need to know the
- * quote is missing and why. Amber bar matches StatusPill tone="amber". */
-.warningNote {
-  margin: var(--space-2) 0 0;
-  padding: var(--space-3) var(--space-4);
-  border-left: 3px solid var(--amber, #c98a3a);
-  background: var(--bg-soft);
-  color: var(--ink-soft);
-  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-  font-family: var(--font-sans);
-  font-size: 0.9rem;
-  line-height: 1.55;
-}
-
-.warningList {
-  margin: var(--space-2) 0 0;
-  padding-left: var(--space-5);
-  font-family: var(--font-mono);
-  font-size: 0.78rem;
-  line-height: 1.5;
-  color: var(--muted);
-}
+/* .warningNote + .warningList were the entailment-auditor failure
+ * surfaces (renders when the agent's quoted substring couldn't be
+ * re-located in the source). Removed from the JSX per the UX request
+ * to hide entailment status from readers; the CSS rules are dropped
+ * here to keep the stylesheet free of dead classes. The substring
+ * check still runs in the pipeline — just doesn't surface to the
+ * reader. PMC ID recovery from validation_warnings still happens
+ * silently so failed-entailment claims still link to their source. */
 
 .meta {
   margin: var(--space-2) 0 0;

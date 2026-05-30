@@ -1,0 +1,240 @@
+/*
+ * InfoTip — small popover for field provenance.
+ *
+ * Visual register: trigger is a near-invisible glyph that picks up
+ * accent color on hover/focus. Popover is a small editorial card with
+ * a thin border + light shadow, sized to ~28em so a 2-3 sentence
+ * tooltip wraps reasonably without ever being wider than its parent
+ * column.
+ */
+
+.wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: baseline;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  padding: 0 0.15rem;
+  margin-left: 0.25rem;
+  font: inherit;
+  font-size: 0.85em;
+  line-height: 1;
+  color: var(--muted);
+  cursor: help;
+  border-radius: 50%;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.trigger:hover,
+.trigger:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+
+.popover {
+  position: absolute;
+  /* Very high z-index — the bone-themed pages have several stacking
+   * contexts (sticky tab strip at z=30, modals at z=80, etc.) and
+   * the popover needs to sit above the in-page content underneath
+   * it (the §Confidence prose, for example) so the reader doesn't
+   * see text bleed through. */
+  z-index: 100;
+  top: calc(100% + 0.45rem);
+  left: 50%;
+  /* `--infotip-shift` is written by InfoTipAutoPlace (the single
+   * document-level positioner mounted in <Shell>) when a centered
+   * popover would spill past a viewport edge. Defaults to 0px so the
+   * CSS-only popover stays perfectly centered until/unless JS nudges
+   * it back on-screen. */
+  transform: translateX(calc(-50% + var(--infotip-shift, 0px)));
+  max-width: min(28em, 90vw);
+  min-width: 16em;
+  /* Let the popover grow to fit its content; cap only at the viewport
+   * so the longest tooltips (afdb_plddt, afdb_disordered) scroll
+   * internally only on very short screens. Wide tooltips
+   * (`.popoverWide`) wrap into fewer lines and fit without scrolling. */
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: var(--space-3) var(--space-4);
+  /* Fully opaque background — `--bg-soft` resolves to `#ffffff` but
+   * setting it explicitly via the hex value too removes any chance
+   * of an inherited `--bg-soft` override (e.g. a card layer) making
+   * the popover translucent. The reader reading the prose
+   * underneath the popover would be confused either way. */
+  background-color: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  font-weight: 400;
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0;
+  line-height: 1.5;
+  color: var(--ink);
+  text-align: left;
+  /* Force normal wrapping. CRITICAL: several triggers live inside
+   * single-line `white-space: nowrap` rows (the structure-caption
+   * stats strip, chip rows, etc.), and the popover would otherwise
+   * INHERIT that nowrap — laying its prose out as one long line that
+   * overflows into an internal horizontal scrollbar (the reader had to
+   * scroll the tooltip left/right to read it). Resetting to `normal`
+   * here makes the prose wrap within the popover's max-width. */
+  white-space: normal;
+  /* Wrap long unbroken tokens (e.g. inline `<code>` like
+   * `fractionPlddtLow + fractionPlddtVeryLow`, DOIs, URLs) instead of
+   * letting them force the popover wider than its max-width. Combined
+   * with `overflow-y: auto` (which per CSS spec makes overflow-x
+   * compute to `auto` too), an un-wrapped token would otherwise create
+   * an internal horizontal scrollbar — the reader should never have to
+   * scroll a tooltip. */
+  overflow-wrap: break-word;
+  word-break: normal;
+
+  /* Hidden by default — CSS-only reveal on parent :hover / :focus-
+   * within (see selectors below). `visibility: hidden` (not
+   * `display: none`) keeps the popover in the accessibility tree so
+   * `role="tooltip"` stays meaningful when shown. `pointer-events:
+   * none` while hidden so the invisible popover never blocks clicks
+   * on whatever's beneath it. */
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    visibility 0s var(--dur-fast);
+}
+
+/* Reveal — the wrapper :hover OR :focus-within (keyboard tab to the
+ * trigger button) makes the sibling popover visible. CSS-only: no
+ * React state, no event listeners, no per-popover hydration boundary. */
+.wrap:hover .popover,
+.wrap:focus-within .popover {
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
+  /* Override the visibility-delay transition so it appears immediately
+   * (instead of waiting for the opacity fade-in to finish). */
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    visibility 0s;
+}
+
+/* Hover bridge — lets the reader move the cursor OFF the trigger and
+ * INTO the popover to click links inside it (the PubMed `<a>` in the
+ * family / SURFACE-Bind tooltips, etc.).
+ *
+ * The popover sits `calc(100% + 0.45rem)` below the trigger, so a bare
+ * cursor crossing that 0.45rem gap is over neither the trigger nor the
+ * popover — `.wrap:hover` drops and the popover vanishes mid-transit,
+ * before the click can land. This transparent pseudo-element fills the
+ * gap so the hover region is continuous from trigger to popover.
+ *
+ * It lives on `.wrap` (not `.popover`): the popover is `overflow-y:
+ * auto`, which would CLIP an abs-positioned `::before` placed above its
+ * padding box — the bridge would be invisible and inert. `.wrap` is
+ * `overflow: visible`, so its `::after` renders into the gap freely.
+ *
+ * Width is a touch wider than the ~1em glyph for comfortable transit;
+ * the popover always abuts the gap directly below the trigger (the
+ * trigger is at the popover's top-center / -corner for every `align`),
+ * so a trigger-centered bridge reaches it. Height slightly overshoots
+ * 0.45rem so it overlaps the popover's top edge with no seam. */
+.wrap::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.25em;
+  height: 0.5rem;
+  /* Inert until the tooltip is actually shown, so a closed tooltip's
+   * bridge never intercepts clicks on content just below the glyph.
+   * The first hover always comes from the trigger button itself, which
+   * flips `.wrap:hover` on and arms the bridge for the transit. */
+  pointer-events: none;
+}
+
+.wrap:hover::after,
+.wrap:focus-within::after {
+  pointer-events: auto;
+}
+
+/* Wide modifier — opt-in for long-prose tooltips (Triage tip,
+ * afdb_plddt, afdb_disordered) that would otherwise wrap into a
+ * tall narrow column.
+ *
+ * Uses `rem` rather than `em` deliberately: the popover's own
+ * `font-size: 0.82rem` shrinks `em` units, so `42em` here would
+ * effectively be ~34em at root. Anchoring to `rem` (root font size,
+ * typically 16px) gives a predictable ~44rem ≈ 700px cap so the
+ * prose actually reads as a wide row, not a slightly-wider column.
+ * `90vw` still caps it on narrow viewports. */
+.popoverWide {
+  max-width: min(44rem, 90vw);
+  min-width: 28rem;
+}
+
+/* Horizontal anchoring modifiers (set via the InfoTip `align` prop).
+ * The default popover centers under the trigger (`left: 50%` +
+ * `translateX(-50%)`); these override that for edge triggers so the
+ * popover opens INTO the page instead of off-screen. There's no JS
+ * viewport detection, so the caller picks the side based on where the
+ * trigger sits in the layout. `90vw` max-width still caps either way,
+ * so the popover can never be wider than the viewport. */
+.popoverEnd {
+  /* Right edge aligns to the trigger; popover opens leftward. For
+   * right-column / right-aligned triggers (structure-caption pLDDT
+   * pills, etc.). */
+  left: auto;
+  right: 0;
+  /* No centering translate; still fold in `--infotip-shift` so the
+   * positioner can nudge an edge-anchored popover that would otherwise
+   * spill past the opposite viewport edge on a narrow screen. */
+  transform: translateX(var(--infotip-shift, 0px));
+}
+
+.popoverStart {
+  /* Left edge aligns to the trigger; popover opens rightward. For
+   * triggers hard against the left viewport edge. */
+  left: 0;
+  right: auto;
+  transform: translateX(var(--infotip-shift, 0px));
+}
+
+/* Compress consecutive <br> pairs — tooltip authors use
+ * `<br /><br />` to separate paragraphs, but the resulting double
+ * line break renders with a full empty line at line-height 1.5,
+ * which feels airy in a 28em popover. Hiding the second <br>
+ * collapses the pair to a single line break for a tighter
+ * vertical rhythm without modifying every tooltip's content. */
+.popover br + br {
+  display: none;
+}
+
+.popover code {
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  background: var(--bg-warm);
+}
+
+.popover a {
+  color: var(--accent);
+  border-bottom: 1px solid var(--line);
+}
+
+.popover a:hover,
+.popover a:focus-visible {
+  color: var(--accent-deep);
+  border-bottom-color: var(--accent-deep);
+}

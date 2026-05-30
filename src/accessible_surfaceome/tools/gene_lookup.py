@@ -250,6 +250,7 @@ def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
         previous_symbols=previous_symbols,
         previous_names=previous_names,
         hgnc_gene_groups=hgnc_gene_groups,
+        uniprot_family=_uniprot_family(entry),
         cd_designation=cd_designation,
         uniprot_acc=uniprot_acc,
         uniprot_status=status,
@@ -925,6 +926,7 @@ def _bundle_from_entry(
         previous_symbols=previous_symbols,
         previous_names=previous_names,
         hgnc_gene_groups=hgnc_gene_groups,
+        uniprot_family=_uniprot_family(entry),
         cd_designation=cd_designation,
         uniprot_acc=uniprot_acc,
         uniprot_status=status,
@@ -1173,6 +1175,29 @@ def _first_comment_text(entry: dict[str, Any], comment_type: str) -> str | None:
         if texts:
             return texts[0].get("value")
     return None
+
+
+_SIMILARITY_PREFIX_RE = re.compile(r"^belongs to the\s+", re.IGNORECASE)
+
+
+def _uniprot_family(entry: dict[str, Any]) -> str | None:
+    """Extract the curator-assigned protein family from UniProt's SIMILARITY comment.
+
+    UniProt records family membership as a free-text SIMILARITY comment of the
+    form ``"Belongs to the <family> family."`` (e.g. GPR75 O95800 →
+    ``"Belongs to the G-protein coupled receptor 1 family"``). This is a
+    *deterministic*, curator-assigned tag — distinct from the LLM's high-level
+    functional class — so we normalize the boilerplate ``"Belongs to the "``
+    prefix and trailing period and keep the rest (subfamily detail included).
+
+    Returns ``None`` when the entry carries no SIMILARITY comment, which is
+    common for poorly-characterized proteins.
+    """
+    raw = _first_comment_text(entry, "SIMILARITY")
+    if not raw:
+        return None
+    cleaned = _SIMILARITY_PREFIX_RE.sub("", raw.strip()).rstrip(".").strip()
+    return cleaned or None
 
 
 def _extract_publications(entry: dict[str, Any]) -> tuple[int, list[PublicationStub]]:

@@ -25,7 +25,7 @@ export const metadata = {
 
 export default async function BenchmarkPage() {
   const matrix = await loadBenchmarkMatrix();
-  const deepDiveGenes = new Set(listSurfaceomeGenes());
+  const deepDiveGenes = new Set(await listSurfaceomeGenes());
   // Build a symbol → full-name map for the benchmark genes so each
   // row can show "ERBB2 / Erb-b2 receptor tyrosine kinase 2" without
   // shipping the entire HGNC lookup to the client. `loadGeneName` is

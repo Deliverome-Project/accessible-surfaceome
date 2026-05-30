@@ -44,7 +44,10 @@ from accessible_surfaceome.agents.plan_trim_select import (
     DualPlanTrimSelectResult,
     run_plan_trim_select_dual,
 )
-from accessible_surfaceome.agents.plan_trim_select.runner import SearchLogEntry
+from accessible_surfaceome.agents.plan_trim_select.runner import (
+    SearchLogEntry,
+    _summarize_triage_for_planner,
+)
 from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
     BResult,
     run_synthesizer_with_drafts,
@@ -52,13 +55,15 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _derive_filters,
     scrub_headline_risks,
-    _load_triage_signal,
+    _load_triage_record,
+    _triage_signal_and_reasoning_from_record,
     _stub_deterministic_features,
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
     build_anatomical_accessibility,
+    build_cell_states,
     build_cell_types,
     build_contradictions,
     build_evidence_grade,
@@ -360,6 +365,9 @@ def _annotate(
             "cell_types", "builders_a2", build_cell_types, a2_claims, a2_ctx
         ),
         _BuilderSpec(
+            "cell_states", "builders_a2", build_cell_states, a2_claims, a2_ctx
+        ),
+        _BuilderSpec(
             "subcellular_localization",
             "builders_a2",
             build_subcellular_localization,
@@ -389,6 +397,11 @@ def _annotate(
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,
         grade_rationale=grade_block.grade_rationale,
+        # Per-claim stance map from the evidence_grade builder (5b.8).
+        # Drives the derived ``n_supporting_claims_high_weight`` +
+        # ``n_contradicting_claims_high_weight`` Filter fields in
+        # ``_derive_filters``.
+        claim_stances=grade_block.claim_stances,
         methods=outputs["methods"],
         non_surface_expression=grade_block.non_surface_expression,
         therapeutic_engagement=outputs["therapeutic_engagement"],
@@ -398,7 +411,7 @@ def _annotate(
     biological_context = BiologicalContext(
         tissues=outputs["tissues"],
         cell_types=outputs["cell_types"],
-        cell_states=[],  # v1 schema field; no builder for v2 — empty.
+        cell_states=outputs["cell_states"],
         subcellular_localization=outputs["subcellular_localization"],
         anatomical_accessibility=outputs["anatomical_accessibility"],
         accessibility_modulation=outputs["accessibility_modulation"],
@@ -449,11 +462,25 @@ def _annotate(
         n_items=len(a1_claims) + len(a2_claims),
         model=AGENT_MODEL,
     ) as _h:
+        # Compute the triage prior once for the synthesizer's task
+        # message. ``plan_trim_select`` already computed its own copy
+        # during ``_build_gene_context`` (cheap file read); we compute
+        # again here so a synthesizer-only re-invocation doesn't depend
+        # on plumbing it from the earlier phase. Implements PR #23
+        # design doc §1110-1116's "common preamble — triage_record" for
+        # the v2 pipeline's B agent.
+        triage_record = _load_triage_record(gene_id.hgnc_symbol)
+        triage_summary_json = (
+            _summarize_triage_for_planner(triage_record)
+            if triage_record is not None
+            else None
+        )
         b = run_synthesizer_with_drafts(
             gene_id.hgnc_symbol,
             a1_draft=a1_draft,
             a2_draft=a2_draft,
             client=client,
+            triage_summary_json=triage_summary_json,
         )
         _h.model = b.usage.model
         # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a
@@ -507,6 +534,59 @@ def _annotate(
         evidence: list[Evidence] = [
             promote_claim(c, store=source_store) for c in merged_claims
         ]
+
+    # ---- step 6.25: cross-planner duplicate marking -----------------------
+    # A1 (surface evidence) and A2 (biological context) run independently
+    # and frequently both pull the same paper / same span (e.g. SRC's
+    # PMC10356899 sEV paper landed as both a1_evi_10 + a2_evi_09).
+    # We can't drop the duplicate — each planner's builders cite by
+    # evidence_id, so removing the row would break references — but we
+    # CAN mark the non-canonical entries with ``duplicate_of`` so the
+    # viewer collapses them onto one card per unique source span.
+    #
+    # Dedup key: ``(spans[0].source.source_id, spans[0].quote_sha256)``
+    # — same source, same exact extracted quote. Records without a
+    # populated first span (entailment_verified=False, no anchored
+    # span) skip dedup; they're rare and inherently uncomparable.
+    #
+    # Canonical pick: A1 ids ("a1_evi_*") sort before A2 ids
+    # ("a2_evi_*") under lex compare, and within a planner the
+    # earlier-numbered id wins. A1's claim_type/direction frame is
+    # anchored on surface methodology, which is what most downstream
+    # readers care about — also a desirable default.
+    with timing.step("evidence_dedup", phase="post"):
+        clusters: dict[tuple[str, str], list[int]] = {}
+        for i, ev in enumerate(evidence):
+            if not ev.spans:
+                continue
+            first = ev.spans[0]
+            src = (first.source.source_id or "").strip()
+            qsha = (first.quote_sha256 or "").strip()
+            if not src or not qsha:
+                continue
+            clusters.setdefault((src, qsha), []).append(i)
+        n_dups = 0
+        n_clusters_with_dups = 0
+        for indices in clusters.values():
+            if len(indices) < 2:
+                continue
+            n_clusters_with_dups += 1
+            canonical_i = min(
+                indices, key=lambda j: evidence[j].evidence_id
+            )
+            canonical_id = evidence[canonical_i].evidence_id
+            for j in indices:
+                if j == canonical_i:
+                    continue
+                evidence[j].duplicate_of = canonical_id
+                n_dups += 1
+        if n_dups > 0:
+            logger.info(
+                "evidence_dedup: %d duplicate(s) marked across %d cluster(s) "
+                "(viewer collapses; citations still resolve)",
+                n_dups,
+                n_clusters_with_dups,
+            )
 
     # ---- step 6.5: deterministic species post-pass ------------------------
     # Two passes:
@@ -570,12 +650,19 @@ def _annotate(
     # ---- step 9: assemble SurfaceomeRecord --------------------------------
     primary = sum(1 for e in evidence if e.evidence_tier == "primary")
     secondary = sum(1 for e in evidence if e.evidence_tier == "secondary")
+    # Reuse the ``triage_record`` already loaded above for the synthesizer's
+    # task message — derive both the signal enum and the verdict prose from
+    # it so the record carries the triage's "why" without a second D1 fetch.
+    triage_signal_value, triage_reasoning_value = (
+        _triage_signal_and_reasoning_from_record(triage_record)
+    )
     search_log = _build_search_log(dual)
     try:
         record = SurfaceomeRecord(
             schema_version=SCHEMA_VERSION_LITERAL,
             gene=gene_id,
-            triage_signal=_load_triage_signal(gene_id.hgnc_symbol),
+            triage_signal=triage_signal_value,
+            triage_reasoning=triage_reasoning_value,
             executive_summary=synth_draft.executive_summary,
             filters=filters,
             surface_evidence=surface_evidence,

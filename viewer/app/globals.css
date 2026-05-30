@@ -20,13 +20,48 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
-  font-weight: 350;
-  font-size: var(--fs-body);
+  font-weight: 380;
+  font-size: 0.93rem;
   line-height: var(--lh-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   font-variant-ligatures: common-ligatures contextual no-discretionary-ligatures;
+
+  /* Safety net: clip any horizontal overflow at the body. Without
+   * this, an oversized descendant (a long unbreakable string in
+   * prose, a wide table that hasn't been wrapped in .tableWrap, a
+   * 3D viewer that briefly extends past its slot during a layout
+   * tick) leaks a horizontal scrollbar and the whole page "rocks"
+   * sideways. `overflow-x: clip` is the modern alternative to
+   * `hidden` — it doesn't establish a new scrolling context, so
+   * position:sticky on the AnchorNav strip + position:fixed on
+   * the drawers keep working correctly. */
+  overflow-x: clip;
+}
+
+/* Defensive wrap rule for long unbreakable strings in prose
+ * containers — long PMC/PMID URLs, sha256 hashes that appear in
+ * provenance fields, very long PubMed titles. Without this, a
+ * single unbreakable run can force its container to be wider than
+ * the page, causing the body-level overflow above to clip
+ * visible content. `anywhere` breaks at any character if needed;
+ * combined with the body clip this means the worst-case render
+ * is a wrapped-mid-word string, never a cropped paragraph. */
+p,
+li,
+td,
+dd,
+blockquote {
+  overflow-wrap: anywhere;
+}
+
+/* Anchor-link target offset — keeps the sticky AnchorNav strip from
+ * covering the top of a section when the reader clicks an anchor.
+ * Tuned to the shell topbar (~64px) + AnchorNav (~52px) + a small
+ * breathing margin. */
+[id^="section-"] {
+  scroll-margin-top: 132px;
 }
 
 a {
@@ -139,6 +174,30 @@ button {
   color: var(--muted);
 }
 
+/* Editorial display values — used by GeneHeader vital readouts
+ * ("Moderate", "Conflicting", etc.). Italic Playfair gives the
+ * vital cluster a journal-page register while the supporting
+ * StatusPill carries the tonal color cue. Tone modifiers below
+ * tint the display value itself for matched-tone readouts. */
+.h-vital-display {
+  margin: 0;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.15rem, 1.5vw, 1.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+/* Vital tones form a single red→amber→green traffic-light ramp (low→high),
+ * plus a gray neutral for unknown / unclear values. No teal / lavender /
+ * light-green — every vital reads on the same RYG+gray scale so the 2×2
+ * grid scans like a heatmap. Ordered low→high here for clarity. */
+.h-vital-display.tone-danger { color: var(--accent-deep); }
+.h-vital-display.tone-amber { color: var(--amber-dark); }
+.h-vital-display.tone-success { color: var(--success); }
+.h-vital-display.tone-neutral { color: var(--muted); }
+
 .lede {
   margin: 0;
   color: var(--muted);
@@ -174,10 +233,15 @@ button {
  * Reveal — IntersectionObserver scroll-triggered fade + rise.
  * ============================================================ */
 
+/* Softened for the dense, journal-page register: fade-only
+ * (no translate-Y), faster duration, no per-section stagger.
+ * Marketing landing-page sections that previously set
+ * data-reveal-stagger still resolve via the block below, but
+ * the gene-page hot path uses the non-staggered branch. */
 .reveal {
   --reveal-step: 90ms;
-  --reveal-distance: 18px;
-  --reveal-duration: var(--dur-slow);
+  --reveal-distance: 0;
+  --reveal-duration: 260ms;
 }
 
 .reveal:not([data-reveal-stagger="true"]) {
@@ -191,7 +255,22 @@ button {
 
 .reveal:not([data-reveal-stagger="true"]).is-visible {
   opacity: 1;
-  transform: translateY(0);
+  /* CRITICAL: ``transform: none`` (not ``translateY(0)``) and
+   * ``will-change: auto`` (not ``opacity, transform``) — both
+   * promote-to-layer hints create a CSS stacking context that
+   * traps any descendant ``z-index`` (popovers, dropdowns) below
+   * sibling Reveal sections that render later in DOM order.
+   *
+   * Concretely: the GeneHeader is wrapped in a Reveal, and so is
+   * every section card below it. With ``transform: translateY(0)``
+   * + ``will-change: transform``, the InfoTip popover (z-index 100)
+   * inside the GeneHeader could only stack within the GeneHeader's
+   * stacking context — and the §Summary metrics Reveal stacking
+   * context (a later sibling) paints on top. Dropping both promote-
+   * to-layer hints once ``.is-visible`` is set lets the popover
+   * escape to the document root's stacking context. */
+  transform: none;
+  will-change: auto;
 }
 
 .reveal[data-reveal-stagger="true"] > * {
@@ -206,7 +285,11 @@ button {
 
 .reveal[data-reveal-stagger="true"].is-visible > * {
   opacity: 1;
-  transform: translateY(0);
+  /* Same stacking-context-escape fix as the non-stagger branch above —
+   * drop the promote-to-layer hints once visible so descendant
+   * popovers (InfoTip etc.) can escape the per-child stacking context. */
+  transform: none;
+  will-change: auto;
 }
 
 @media (prefers-reduced-motion: reduce) {

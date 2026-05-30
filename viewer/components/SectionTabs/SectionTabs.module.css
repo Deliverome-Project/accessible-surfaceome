@@ -1,0 +1,20 @@
+/*
+ * SectionTabs — only one slot at a time is visible. CSS-driven hide
+ * via the ``data-active`` attribute so the page doesn't have to
+ * re-render on tab switch.
+ */
+
+.body {
+  /* Reserve vertical space for the active slot so the page footer
+     doesn't jump up as the reader switches between a short section
+     (e.g. Filters) and a long one (e.g. Evidence ledger). */
+  min-height: 60vh;
+}
+
+.body > .slot {
+  display: block;
+}
+
+.body > .slot[data-active="false"] {
+  display: none;
+}

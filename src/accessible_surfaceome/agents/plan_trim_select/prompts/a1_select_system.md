@@ -220,6 +220,41 @@ When a draft's quote matches one of these patterns, set
 `evidence_tier="secondary"` even when the source is PMC full-text
 and the assay is direct.
 
+## Overexpression evidence — tier by signal peptide
+
+Overexpression evidence (HEK293, CHO, 293T, HeLa-OE, COS-7) is in
+scope and frequently the strongest available evidence for orphan /
+under-studied surface proteins. Tier it by the construct's signal
+peptide source — the trim phase will have tagged this in the clip's
+`reason` field; you can also re-read the methods sentence on the
+same paper for the leader-sequence detail.
+
+* **Endogenous / native SP** ("native signal peptide", "untagged",
+  "wildtype construct", "full-length [GENE]" with no leader
+  replacement, "[GENE] cDNA without modification"): trafficking is
+  the protein's own. Tier as if the evidence were endogenous:
+  `evidence_tier="primary"` for direct multi-method confirmation,
+  `evidence_tier="secondary"` for single-method.
+* **Exogenous / foreign SP** ("IgG kappa leader", "preprotrypsin
+  signal peptide", "BiP leader", "PreS", "honeybee melittin SP",
+  "interleukin-2 secretion signal", any chimeric leader replacing
+  the native sequence): foreign SP forces secretory-pathway entry
+  regardless of native trafficking. Cap at
+  `evidence_tier="supportive_indirect"` (do not promote to
+  `primary` even with multi-method confirmation) — a cytosolic
+  protein can be artifactually surface-localized this way (csGRP78
+  / cell-surface-vimentin failure mode). Note the SP source in
+  the claim's prose context so the synthesizer can hedge.
+* **Unspecified SP** (the methods don't mention the leader source):
+  treat as supportive but cap below endogenous-SP evidence. Cap at
+  `evidence_tier="secondary"`. Note "OE construct SP source not
+  specified" in the rationale.
+
+Endogenous expression evidence (no transfection / OE step in the
+methods) always outranks overexpression evidence of the same
+methodology when both are available; prefer the endogenous clip
+when picking between siblings.
+
 ## Selection discipline
 
 * **Be thorough on coverage, selective on redundancy.** One strong
@@ -232,6 +267,18 @@ and the assay is direct.
   `surface_biotinylation`, `western_blot`, include BOTH the
   methodology clip AND the result/target-mention clip from the same
   paper as two sibling claims with the same `source_id`.
+* **Pair methodology with antibody identifier + validation control.**
+  When a methodology clip names an antibody (clone / vendor / RRID)
+  or a validation control (KO cells, siRNA, orthogonal antibody) in
+  the SAME paper, pick BOTH the methodology clip AND the
+  identifier / validation-control clip. The downstream methods
+  builder reads only the verbatim clip text the orchestrator pins —
+  if the clone string is in the trim pool but not in your selection,
+  the resulting `MethodObservation.antibodies[i].clone` is `null`
+  even though the literature has the answer. Same logic for
+  `validation_strategy` — a KO-control clip kept here lets the
+  builder upgrade from `validation_strategy="none"` to
+  `genetic_KO` / `siRNA_knockdown` / `CRISPR_KO`.
 * **Actively seek contradicting evidence.** Where the literature is
   contested (ligand identity for orphan GPCRs, surface vs
   intracellular reports, cross-paper antibody discrepancies),

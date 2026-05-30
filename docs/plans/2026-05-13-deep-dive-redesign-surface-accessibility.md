@@ -1297,3 +1297,34 @@ Three HTML previews co-located with the plan, each stress-testing different part
 | 8 | Knowledge_gaps dropped entirely (overlapped with contradicting_evidence + confidence_reasoning; honest-caveat framing not load-bearing enough) |
 | 9 | Cross-cutting cleanup (contradiction_flag dropped; confidence_reasoning constraints; generated_at → record_generated_at) |
 | 10 | LLM paralog cross-reactivity verdict dropped (paralog_assessment → deterministic-only §4 + AntibodyRef.cross_reactivity_notes + filters.max_paralog_ecd_pct_identity); agent topology formalized as 3 managed agents (A1 surface-evidence compiler, A2 biology compiler, B synthesizer) |
+
+---
+
+## Production architecture update (post-PR #38)
+
+The 3-Managed-Agent topology specified in §1090-1178 (A1 `surface_evidence_compiler` / A2 `biology_compiler` / B `surfaceome_synthesizer`) was implemented in [src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py:annotate](../../src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py) and is preserved as the reference path. The **production deep-dive path is v2** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](../../src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](../../scripts/surfaceome_v2_annotate.py)). v2 preserves every design principle but uses a different architecture:
+
+| Design (v1) | Production (v2) | Why |
+|---|---|---|
+| A1 = single Managed Agent producing all `surface_evidence` | `plan_trim_select` dual driver (single process, A1+A2 per-focus prompts on one literature agent) emits A1 + A2 EvidenceClaim ledgers; 4 in-process Sonnet builders fan out from the A1 ledger to produce `surface_evidence` sub-blocks (methods, therapeutic_engagement, contradictions, evidence_grade) | Per-builder specialization gives sharper system prompts than one monolithic A1 prompt; faster wall clock via parallel dispatch |
+| A2 = single Managed Agent producing all `biological_context` | Same `plan_trim_select` A2 pass emits the A2 ledger; 6 in-process Sonnet builders fan out (tissues, cell_types, cell_states, subcellular_localization, anatomical_accessibility, accessibility_modulation) | Same rationale |
+| B = single Managed Agent (`surfaceome_synthesizer`), cite-only | Same `surfaceome_synthesizer` Managed Agent, cite-only | Identical |
+
+**What stays identical to the design:**
+- All 9 Pydantic validators (deterministic_features-is-None, triage_signal consistency, accessibility_modulation sub-enum pairings, confidence_reasoning required-when-not-high, numeric bounds, string lengths).
+- The schema shape (executive_summary, filters, surface_evidence, biological_context, deterministic_features, accessibility_risks blocks).
+- Evidence ledger namespace (`a1_evi_*`, `a2_evi_*`, `pts_evi_*`).
+- Deterministic-boundary enforcement (the agent never writes `deterministic_features`; orchestrator-only).
+- Auto-sync of the synthesizer Managed Agent's prompt against `.runs/agents-registry.json`.
+
+**What changes vs the design:**
+- The 10 v2 block-builder prompts under [src/accessible_surfaceome/agents/surfaceome_v2/prompts/](../../src/accessible_surfaceome/agents/surfaceome_v2/prompts/) and the 9 `plan_trim_select` prompts under [src/accessible_surfaceome/agents/plan_trim_select/prompts/](../../src/accessible_surfaceome/agents/plan_trim_select/prompts/) are NOT registered Managed Agents. They take effect at the next local process invocation. The v1 directories (`surface_evidence_compiler/`, `biology_compiler/`) keep their own prompts for the reference v1 path but are not on the production code path; their Managed Agents stay registered so historical v1 runs reproduce.
+- Triage record piping (post-PR-#38 follow-up) was added in v2 via the same channel that ships deterministic features — folded into `plan_trim_select`'s `GeneContext` + the synthesizer's user prompt, rather than the design's "send the full triage record as a Managed Agent task preamble". Implementation: `_summarize_triage_for_planner` in [src/accessible_surfaceome/agents/plan_trim_select/runner.py](../../src/accessible_surfaceome/agents/plan_trim_select/runner.py) + the orchestrator's wiring at [surfaceome_v2/orchestrator.py](../../src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py). Same data ends up in the planner + synthesizer prompts as the design's "common preamble" specified.
+
+### D1 deviation: surface_annotation, not deep_dive_features
+
+§7 ("D1 + viewer") specified a new `deep_dive_features` table for the deterministic block separately from `deep_dive_run`. Production landed differently: the deterministic block is stored as JSON columns on the public-mirror [surface_annotation](../../cloudflare/d1_public_schema.sql) table (one row per gene, alongside the LLM blocks). One fewer JOIN at read time; same query patterns; no separate `deep_dive_features` table exists. The viewer per-gene page reads from `surface_annotation` directly via the Worker API.
+
+### Stress-test panel status
+
+§1056 specified the validation stress-test set: EGFR, GRP78/HSPA5, GPR75, CD81, TNFR1, one more orphan GPCR. Committed in [data/eval/surfaceome_v2_samples/](../../data/eval/surfaceome_v2_samples/): EGFR ✓, HSPA5 ✓, GPR75 ✓, CD81 ✓. Plus extras the design didn't require: CLDN18, VIM, WT1, ATP5F1B, SRC. **Still open: TNFR1 + a second orphan GPCR** — ~$3 + 20 min wall to close.
