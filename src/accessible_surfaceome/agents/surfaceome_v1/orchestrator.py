@@ -886,15 +886,15 @@ def _derive_filters(
     surface_specificity)."""
     canon = deterministic_features.canonical_topology
 
-    # restricted_subdomain rollup: either the explicit risk flag fires, OR any
-    # anatomical_accessibility entry tags the orientation as restricted.
-    has_restricted = (
-        accessibility_risks.restricted_subdomain.present
-        or any(
-            obs.accessibility_implication == "restricted"
-            for obs in biological_context.anatomical_accessibility
-        )
-    )
+    # restricted_subdomain rollup: mirror the §Risks restricted-subdomain
+    # block EXACTLY. (Previously this also OR'd in any anatomical-
+    # accessibility row tagged "restricted", which made the §01
+    # ``has_restricted_subdomain`` chip read "restricted membrane subdomain
+    # · present" even when the dedicated subdomain block was absent —
+    # contradicting the §03 card for genes like SRC. The anatomical-
+    # restriction signal is already surfaced in the §03 anatomical-
+    # accessibility table, so the chip mirrors only the subdomain block.)
+    has_restricted = accessibility_risks.restricted_subdomain.present
 
     # max-paralog identity is None when there are no paralogs (the stub case
     # while fetchers are deferred) OR when every paralog has NULL identity
