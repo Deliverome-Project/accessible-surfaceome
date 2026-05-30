@@ -255,6 +255,24 @@ methods) always outranks overexpression evidence of the same
 methodology when both are available; prefer the endogenous clip
 when picking between siblings.
 
+**But always keep one overexpression-precedent clip.** When an
+endogenous sibling outranks an OE clip, still RETAIN at least one OE
+clip that shows surface localization in a transfected / OE host (a
+`direct_surface_accessibility` or `supports_surface_localization`
+readout in an overexpression or mixed expression system). It carries
+a signal the endogenous clip does NOT: that the protein *can* reach
+the surface when overexpressed — the precedent a reader needs when
+planning an OE-based validation experiment. Downstream this is the
+only input to the catalog's `overexpression_surface_localization_observed`
+filter, which is derived purely from whether any RETAINED method pairs
+an OE / mixed expression system with a surface readout; if you prune
+every OE clip in favour of endogenous siblings (the common case for
+abundantly-endogenous proteins like EGFR), that signal is silently
+lost. Tier the retained OE clip by its signal peptide as above
+(usually `secondary` / `supportive_indirect`), but do NOT drop it as
+a redundant sibling of endogenous evidence. Prune an OE clip only
+when it is redundant with ANOTHER OE clip of the same methodology.
+
 ## Selection discipline
 
 * **Be thorough on coverage, selective on redundancy.** One strong
