@@ -179,9 +179,22 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
             "mostly_intracellular = surface is the minority pool."
           }
         >
-          {f.surface_specificity === "mixed"
-            ? "surface vs intracellular mixed"
-            : prettyEnum(f.surface_specificity)}
+          {/* Two tiers: a sentence-case description ("what is this?") and
+           *  an UPPERCASE, larger verdict ("the answer"). The case +
+           *  size contrast lets the eye land on the verdict first. */}
+          <span style={{ textTransform: "none", opacity: 0.75 }}>
+            Surface vs intracellular
+          </span>{" "}
+          <span
+            style={{
+              textTransform: "uppercase",
+              fontSize: "1.15em",
+              fontWeight: 700,
+              letterSpacing: "0.03em",
+            }}
+          >
+            {prettyEnum(f.surface_specificity)}
+          </span>
         </StatusPill>
       ),
     },

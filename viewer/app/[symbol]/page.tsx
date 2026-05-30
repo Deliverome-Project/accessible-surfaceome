@@ -282,7 +282,19 @@ export default async function GenePage({ params }: PageProps) {
               id={`section-${s.kind}`}
               data-section-id={s.kind}
             >
-              <Reveal>{s.render(i + 1)}</Reveal>
+              {/* No <Reveal> wrapper here. Inactive tab panels are
+               *  `display:none` (see SectionTabs), and an
+               *  IntersectionObserver never fires for a display:none
+               *  element — so a Reveal-wrapped panel stayed stranded at
+               *  `opacity:0` when its tab was selected (the content was
+               *  in the DOM but invisible: "evidence/ledger not
+               *  rendering / impossibly slow to view"). Tab panels are
+               *  swapped, not scrolled into view, so the scroll-fade was
+               *  the wrong primitive — render the section directly at
+               *  full opacity. The GeneHeader above keeps its <Reveal>:
+               *  it's always in-flow + above the fold, so its observer
+               *  fires on mount. */}
+              {s.render(i + 1)}
             </section>
           ))}
         </SectionTabs>

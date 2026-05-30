@@ -93,6 +93,16 @@ def main() -> int:
         action="store_true",
         help="Actually push to D1 (default: dry-run, list-only)",
     )
+    ap.add_argument(
+        "--force",
+        action="store_true",
+        help=(
+            "Override the surface_bind.has_data regression guard — push even "
+            "when it would overwrite a populated D1 row with has_data=False. "
+            "Only use when you're certain the empty record is correct (the "
+            "protein genuinely isn't in SURFACE-Bind)."
+        ),
+    )
     args = ap.parse_args()
 
     logger.info("snapshot dir: %s", DEFAULT_SNAPSHOT_DIR.relative_to(REPO_ROOT))
@@ -132,7 +142,7 @@ def main() -> int:
     for _path, blob in blobs:
         # write_snapshot=False — the snapshot is already on disk; we're
         # just bringing D1 in line with it.
-        pub = publish_record_dict(blob, write_snapshot=False)
+        pub = publish_record_dict(blob, write_snapshot=False, force=args.force)
         if pub.d1_written:
             n_written += 1
             stale = (

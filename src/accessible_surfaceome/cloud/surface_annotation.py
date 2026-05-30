@@ -120,6 +120,81 @@ def _existing_versions_for(
     return [r["schema_version"] for r in body["result"][0].get("results", [])]
 
 
+def _surface_bind_has_data(rec_dict: dict[str, Any]) -> bool | None:
+    """``deterministic_features.surface_bind.has_data`` of a record dict.
+
+    Returns ``None`` when the field is absent/malformed so the regression
+    guard only fires on an explicit ``False``.
+    """
+    det = rec_dict.get("deterministic_features") or {}
+    sb = det.get("surface_bind") or {}
+    val = sb.get("has_data")
+    return val if isinstance(val, bool) else None
+
+
+def _family_populated(rec_dict: dict[str, Any]) -> bool:
+    """True when the record carries any deterministic family tag —
+    ``executive_summary.uniprot_family`` or ``hgnc_gene_groups``.
+
+    These are curator-assigned ground truth injected from the resolved
+    IdentifierBundle (NOT model output). A record with BOTH empty usually
+    means a degraded resolution (HGNC/UniProt fetch failed at generation
+    time), not a gene that genuinely has no family.
+    """
+    es = rec_dict.get("executive_summary") or {}
+    return bool(es.get("uniprot_family")) or bool(es.get("hgnc_gene_groups"))
+
+
+def _fetch_existing_record(
+    cfg: D1Config, gene_symbol: str, *, client: httpx.Client
+) -> dict[str, Any] | None:
+    """The latest stored record dict for ``gene_symbol`` in D1, or ``None``
+    when there's no row / the blob can't be parsed — the guard treats
+    "unknown existing state" as "don't block".
+    """
+    body = _post(
+        cfg,
+        "SELECT annotation_json FROM surface_annotation WHERE gene_symbol = ? "
+        "ORDER BY schema_version DESC LIMIT 1",
+        [gene_symbol],
+        client=client,
+    )
+    results = body["result"][0].get("results", [])
+    if not results:
+        return None
+    try:
+        return json.loads(results[0]["annotation_json"])
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return None
+
+
+def _record_regressions(
+    existing: dict[str, Any], incoming: dict[str, Any]
+) -> list[str]:
+    """Deterministic fields that would regress from populated → empty if
+    ``incoming`` replaced ``existing`` in D1. Empty list = safe to publish.
+
+    A record generated with unhydrated data / a degraded resolver silently
+    comes back with empty deterministic blocks (every gene "not in
+    SURFACE-Bind", no family tags). Publishing that over a good D1 row
+    wipes real data — EGFR's 8 SURFACE-Bind sites collapse to "not in
+    SURFACE-Bind", its ErbB / EGF-receptor family chips vanish. Each check
+    below is a populated → empty transition the guard refuses to make.
+    """
+    out: list[str] = []
+    if (
+        _surface_bind_has_data(existing) is True
+        and _surface_bind_has_data(incoming) is False
+    ):
+        out.append("surface_bind.has_data True→False")
+    if _family_populated(existing) and not _family_populated(incoming):
+        out.append(
+            "deterministic family (uniprot_family / hgnc_gene_groups) "
+            "populated→empty"
+        )
+    return out
+
+
 def _row_from_dict(
     rec_dict: dict[str, Any], *, annotated_at: str | None = None
 ) -> list[Any]:
@@ -158,6 +233,7 @@ def _publish_dict(
     write_snapshot: bool,
     push_to_d1: bool,
     pretty_snapshot: bool,
+    force: bool = False,
 ) -> PublishResult:
     """Shared core: write the snapshot + push to D1 from a raw record dict."""
     gene = rec_dict.get("gene") or {}
@@ -205,6 +281,42 @@ def _publish_dict(
     row = _row_from_dict(rec_dict)
     new_version = row[2]
     with httpx.Client(timeout=60) as client:
+        # Regression guard — never let a publish blank out a populated
+        # deterministic block. A record generated with unhydrated data / a
+        # degraded resolver silently comes back empty (surface_bind
+        # has_data=False for every gene; no family tags), and publishing it
+        # over a good D1 row wipes real data. Fetch the existing row only
+        # when the incoming record looks degraded — a cheap fast-path for
+        # the common, fully-populated case.
+        if not force and (
+            _surface_bind_has_data(rec_dict) is False
+            or not _family_populated(rec_dict)
+        ):
+            existing = _fetch_existing_record(cfg, sym, client=client)
+            regressions = (
+                _record_regressions(existing, rec_dict) if existing else []
+            )
+            if regressions:
+                detail = "; ".join(regressions)
+                logger.error(
+                    "REFUSING to publish %s: would regress %s. This usually "
+                    "means deterministic data wasn't hydrated / resolved in "
+                    "the generating worktree (missing SURFACE-Bind summary, "
+                    "or HGNC/UniProt family fetch failed). Re-run generation "
+                    "with a healthy resolver and re-publish, or pass "
+                    "force=True to override.",
+                    sym,
+                    detail,
+                )
+                return PublishResult(
+                    gene_symbol=sym,
+                    snapshot_path=snap_path,
+                    d1_written=False,
+                    d1_database_id=cfg.database_id,
+                    stale_versions_dropped=[],
+                    skipped_reason=f"blocked by regression guard: {detail}",
+                )
+
         # Drop any stale schema_versions for this gene before upserting. The
         # Worker tie-breaks on ``ORDER BY schema_version DESC LIMIT 1``, but
         # leaving stale rows in D1 means a future schema rollback or
@@ -246,6 +358,7 @@ def publish_record(
     snapshot_dir: Path | None = None,
     write_snapshot: bool = True,
     push_to_d1: bool = True,
+    force: bool = False,
 ) -> PublishResult:
     """Write a freshly-validated ``SurfaceomeRecord`` to snapshot + D1.
 
@@ -271,6 +384,7 @@ def publish_record(
         write_snapshot=write_snapshot,
         push_to_d1=push_to_d1,
         pretty_snapshot=True,
+        force=force,
     )
 
 
@@ -281,6 +395,7 @@ def publish_record_dict(
     write_snapshot: bool = False,
     push_to_d1: bool = True,
     pretty_snapshot: bool = True,
+    force: bool = False,
 ) -> PublishResult:
     """Push a raw record dict — no Pydantic validation.
 
@@ -302,4 +417,5 @@ def publish_record_dict(
         write_snapshot=write_snapshot,
         push_to_d1=push_to_d1,
         pretty_snapshot=pretty_snapshot,
+        force=force,
     )
