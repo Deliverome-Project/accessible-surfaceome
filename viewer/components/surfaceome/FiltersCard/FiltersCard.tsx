@@ -4,6 +4,7 @@ import {
   TYPICAL_ANTIBODY_INTERFACE_A2,
 } from "../../../lib/citations";
 import { ecSites } from "../../../lib/surface-bind";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
@@ -455,7 +456,10 @@ export function FiltersCard({ rec, n }: Props) {
               size="sm"
               title={tooltips.paralog_specificity}
             >
-              max %ECD identity · {f.max_paralog_ecd_pct_identity.toFixed(1)}%
+              <ChipLabelValue
+                label="max %ECD identity"
+                value={`${f.max_paralog_ecd_pct_identity.toFixed(1)}%`}
+              />
             </StatusPill>,
           );
         }
@@ -512,7 +516,7 @@ export function FiltersCard({ rec, n }: Props) {
             )
           }
         >
-          mouse · {mousePill.text}
+          <ChipLabelValue label="mouse" value={mousePill.text} />
         </StatusPill>,
         <StatusPill
           key="c"
@@ -531,7 +535,7 @@ export function FiltersCard({ rec, n }: Props) {
             )
           }
         >
-          cyno · {cynoPill.text}
+          <ChipLabelValue label="cyno" value={cynoPill.text} />
         </StatusPill>,
       ],
     },
@@ -589,7 +593,7 @@ export function FiltersCard({ rec, n }: Props) {
               size="sm"
               title="Scored by SURFACE-Bind, but no surface patches cleared the MaSIF targetability threshold."
             >
-              scored · no patches
+              <ChipLabelValue label="scored" value="no patches" />
             </StatusPill>,
           ];
         }

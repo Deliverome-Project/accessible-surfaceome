@@ -99,8 +99,12 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  /* One chip per row — a vertical stack under each group label reads
+     cleaner than horizontally-wrapped chips (which left ragged, uneven
+     rows inside the narrow group columns). */
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
   gap: var(--space-2);
 }
 

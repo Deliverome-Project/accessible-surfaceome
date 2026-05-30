@@ -3,6 +3,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
@@ -38,13 +39,16 @@ export function BiologicalContextCard({ rec, n }: Props) {
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
         <div className={styles.locHead}>
           <StatusPill tone="teal">
-            primary · {prettyEnum(loc.primary_compartment)}
+            <ChipLabelValue label="primary" value={prettyEnum(loc.primary_compartment)} />
           </StatusPill>
           {loc.membrane_subdomains.length > 0 ? (
             <span className={styles.subdomains}>
               {loc.membrane_subdomains.map((s, i) => (
                 <StatusPill key={i} tone="lavender" size="sm">
-                  {prettyEnum(s.subdomain)}
+                  {/* Label these "secondary" so the lavender chips read as
+                   *  secondary localizations next to the teal "primary"
+                   *  compartment chip, instead of bare unlabeled terms. */}
+                  <ChipLabelValue label="secondary" value={prettyEnum(s.subdomain)} />
                 </StatusPill>
               ))}
             </span>
@@ -67,7 +71,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   <td>
                     {d.fraction_estimate != null
                       ? `${(d.fraction_estimate * 100).toFixed(0)}%`
-                      : "—"}
+                      : "unknown"}
                   </td>
                   <td>{d.condition ?? "—"}</td>
                   <td>
@@ -176,12 +180,12 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </StatusPill>
                   {m.cell_state_trigger ? (
                     <StatusPill tone="amber" size="sm">
-                      trigger · {prettyEnum(m.cell_state_trigger)}
+                      <ChipLabelValue label="trigger" value={prettyEnum(m.cell_state_trigger)} />
                     </StatusPill>
                   ) : null}
                   {m.restricted_lineage ? (
                     <StatusPill tone="teal" size="sm">
-                      lineage · {prettyEnum(m.restricted_lineage)}
+                      <ChipLabelValue label="lineage" value={prettyEnum(m.restricted_lineage)} />
                     </StatusPill>
                   ) : null}
                   <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />

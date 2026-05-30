@@ -1,7 +1,8 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { StatusPill } from "../StatusPill/StatusPill";
-import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import styles from "./FeatureChips.module.css";
 
 // ---------------------------------------------------------------------------
@@ -46,6 +47,14 @@ export interface FeatureChipModel {
   label: string;
   pill: React.ReactNode;
   rationale: string | null;
+  /** Evidence IDs backing the rationale, surfaced as clickable tags on the
+   *  tab. Set only for chips whose rationale comes from a deep
+   *  `accessibility_risks` block that carries `cited_evidence_ids`
+   *  (co-receptor / restricted-subdomain / shed / secreted / epitope). The
+   *  LLM-emitted rollup rationales (ligand / specificity / expression
+   *  level+breadth) and the orchestrator-derived booleans carry no
+   *  structured cites, so this is left unset for them. */
+  citedEvidenceIds?: string[];
 }
 
 type Tone =
@@ -179,22 +188,13 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
             "mostly_intracellular = surface is the minority pool."
           }
         >
-          {/* Two tiers: a sentence-case description ("what is this?") and
-           *  an UPPERCASE, larger verdict ("the answer"). The case +
-           *  size contrast lets the eye land on the verdict first. */}
-          <span style={{ textTransform: "none", opacity: 0.75 }}>
-            Surface vs intracellular
-          </span>{" "}
-          <span
-            style={{
-              textTransform: "uppercase",
-              fontSize: "1.15em",
-              fontWeight: 700,
-              letterSpacing: "0.03em",
-            }}
-          >
-            {prettyEnum(f.surface_specificity)}
-          </span>
+          {/* Sentence-case description + bold UPPERCASE verdict at the
+           *  same font size — shared `ChipLabelValue` so every
+           *  attribute·value chip reads identically. */}
+          <ChipLabelValue
+            label="Surface vs intracellular"
+            value={prettyEnum(f.surface_specificity)}
+          />
         </StatusPill>
       ),
     },
@@ -202,6 +202,7 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "coreceptor",
       label: "Co-receptor dependency",
       rationale: nz(ar.co_receptor_requirements.rationale),
+      citedEvidenceIds: ar.co_receptor_requirements.cited_evidence_ids,
       // Read the dependency from its canonical home in the deep block.
       // `filters.co_receptor_dependency` is only a mirror of it (and is
       // absent on records emitted before that mirror field was added —
@@ -215,8 +216,12 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
           size="sm"
           title={TT_CORECEPTOR}
         >
-          partner for expression ·{" "}
-          {prettyEnum(ar.co_receptor_requirements.surface_expression_dependency)}
+          <ChipLabelValue
+            label="partner for expression"
+            value={prettyEnum(
+              ar.co_receptor_requirements.surface_expression_dependency,
+            )}
+          />
         </StatusPill>
       ),
     },
@@ -224,6 +229,7 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "restricted",
       label: "Restricted membrane subdomain",
       rationale: nz(ar.restricted_subdomain.rationale),
+      citedEvidenceIds: ar.restricted_subdomain.cited_evidence_ids,
       pill: (
         <StatusPill
           tone={f.has_restricted_subdomain ? "danger" : "success"}
@@ -253,7 +259,7 @@ function buildExpressionChips(rec: SurfaceomeRecord): FeatureChipModel[] {
           size="sm"
           title={TT_EXPRESSION_LEVEL}
         >
-          level · {prettyEnum(f.expression_level)}
+          <ChipLabelValue label="level" value={prettyEnum(f.expression_level)} />
         </StatusPill>
       ),
     },
@@ -270,7 +276,7 @@ function buildExpressionChips(rec: SurfaceomeRecord): FeatureChipModel[] {
             "tissues), broad (>half), restricted (a few), rare (one or two)."
           }
         >
-          breadth · {prettyEnum(f.expression_breadth)}
+          <ChipLabelValue label="breadth" value={prettyEnum(f.expression_breadth)} />
         </StatusPill>
       ),
     },
@@ -326,12 +332,14 @@ function buildRiskChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "shed",
       label: "Shed form",
       rationale: shedRationale,
+      citedEvidenceIds: ar.shed_form.cited_evidence_ids,
       pill: riskBoolPill("shed form", f.has_shed_form),
     },
     {
       key: "secreted",
       label: "Secreted form",
       rationale: secretedRationale,
+      citedEvidenceIds: ar.secreted_form.cited_evidence_ids,
       pill: riskBoolPill("secreted form", f.has_secreted_form),
     },
     {
@@ -355,6 +363,7 @@ function buildRiskChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "epitope",
       label: "Epitope masking",
       rationale: nz(ar.epitope_masking.rationale),
+      citedEvidenceIds: ar.epitope_masking.cited_evidence_ids,
       pill: riskBoolPill("epitope masking", f.has_epitope_masking),
     },
   ];
@@ -430,7 +439,23 @@ export function FeatureRationales({ category, rec }: FeatureRationalesProps) {
         <div key={m.key} className={styles.rationaleRow}>
           <dt className={styles.rationaleTerm}>{m.pill}</dt>
           <dd className={styles.rationaleDef}>
-            {m.rationale ?? (
+            {m.rationale ? (
+              <>
+                {/* linkifyEvidenceRefs turns any inline `aN_evi_NN` token in
+                 *  the prose into a clickable EvidenceChip — covers the
+                 *  orchestrator-composed OE rationale, which names its cites
+                 *  inline. No-op for rationales without inline IDs. */}
+                {linkifyEvidenceRefs(m.rationale)}
+                {/* Structured cites for the deep-block chips (co-receptor /
+                 *  restricted / shed / secreted / epitope) whose record block
+                 *  carries `cited_evidence_ids`. */}
+                {m.citedEvidenceIds && m.citedEvidenceIds.length > 0 ? (
+                  <span className={styles.rationaleCites}>
+                    <EvidenceChipList ids={m.citedEvidenceIds} label="Cites" />
+                  </span>
+                ) : null}
+              </>
+            ) : (
               <span className={styles.rationaleMissing}>
                 No rationale recorded for this record.
               </span>

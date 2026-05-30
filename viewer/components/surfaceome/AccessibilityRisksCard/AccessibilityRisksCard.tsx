@@ -4,6 +4,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
@@ -54,10 +55,10 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
         <div className={styles.subHead}>
           <p className={styles.subTitle}>Shed form</p>
           <StatusPill tone={severityTone(r.shed_form.severity)} size="sm">
-            severity · {prettyEnum(r.shed_form.severity)}
+            <ChipLabelValue label="severity" value={prettyEnum(r.shed_form.severity)} />
           </StatusPill>
           <StatusPill tone={strengthTone(r.shed_form.evidence_strength)} size="sm">
-            evidence · {prettyEnum(r.shed_form.evidence_strength)}
+            <ChipLabelValue label="evidence" value={prettyEnum(r.shed_form.evidence_strength)} />
           </StatusPill>
           <StatusPill tone={r.shed_form.present ? "danger" : "success"} size="sm">
             {presenceLabel(r.shed_form.present)}
@@ -79,10 +80,10 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
         <div className={styles.subHead}>
           <p className={styles.subTitle}>Secreted form</p>
           <StatusPill tone={severityTone(r.secreted_form.severity)} size="sm">
-            severity · {prettyEnum(r.secreted_form.severity)}
+            <ChipLabelValue label="severity" value={prettyEnum(r.secreted_form.severity)} />
           </StatusPill>
           <StatusPill tone={strengthTone(r.secreted_form.evidence_strength)} size="sm">
-            evidence · {prettyEnum(r.secreted_form.evidence_strength)}
+            <ChipLabelValue label="evidence" value={prettyEnum(r.secreted_form.evidence_strength)} />
           </StatusPill>
           <StatusPill tone={r.secreted_form.present ? "danger" : "success"} size="sm">
             {presenceLabel(r.secreted_form.present)}
@@ -120,10 +121,16 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
             }
             size="sm"
           >
-            dependency · {prettyEnum(r.co_receptor_requirements.surface_expression_dependency)}
+            <ChipLabelValue
+              label="dependency"
+              value={prettyEnum(r.co_receptor_requirements.surface_expression_dependency)}
+            />
           </StatusPill>
           <StatusPill tone="lavender" size="sm">
-            evidence basis · {prettyEnum(r.co_receptor_requirements.evidence_basis)}
+            <ChipLabelValue
+              label="evidence basis"
+              value={prettyEnum(r.co_receptor_requirements.evidence_basis)}
+            />
           </StatusPill>
           <EvidenceChipList
             ids={r.co_receptor_requirements.cited_evidence_ids}
@@ -161,7 +168,10 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
             }
             size="sm"
           >
-            {prettyEnum(r.ecd_size_assessment.ecd_accessibility_class)}
+            <ChipLabelValue
+              label="ECD"
+              value={prettyEnum(r.ecd_size_assessment.ecd_accessibility_class)}
+            />
           </StatusPill>
           <span className={styles.muted}>
             (deterministic ECD len: {ctx.ecd_length_residues} aa)
@@ -195,13 +205,13 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
             ))
           )}
           <StatusPill tone={severityTone(r.epitope_masking.severity)} size="sm">
-            severity · {prettyEnum(r.epitope_masking.severity)}
+            <ChipLabelValue label="severity" value={prettyEnum(r.epitope_masking.severity)} />
           </StatusPill>
           <StatusPill
             tone={strengthTone(r.epitope_masking.evidence_strength)}
             size="sm"
           >
-            evidence · {prettyEnum(r.epitope_masking.evidence_strength)}
+            <ChipLabelValue label="evidence" value={prettyEnum(r.epitope_masking.evidence_strength)} />
           </StatusPill>
           <EvidenceChipList
             ids={r.epitope_masking.cited_evidence_ids}

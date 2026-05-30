@@ -11,6 +11,7 @@ import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
@@ -381,7 +382,7 @@ export function GeneHeader({
                   {triageVerdictLabel(rec.triage_signal)}
                 </span>
                 <span className={styles.triageQualifier}>
-                  initial pass · no web search
+                  <ChipLabelValue label="initial pass" value="no web search" />
                 </span>
                 {verdict === "conflict" ? (
                   <span className={styles.triageConflict}>

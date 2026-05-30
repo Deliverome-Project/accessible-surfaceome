@@ -1,0 +1,17 @@
+/* "label · VALUE" chip body. Label dim + normal weight; value bold +
+   UPPERCASE at the SAME font size (no size bump) so the verdict reads
+   first by weight/case, not size. */
+.label {
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+.sep {
+  opacity: 0.72;
+}
+
+.value {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
