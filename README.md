@@ -44,41 +44,6 @@ graded surface-accessibility, separate topology, per-claim primary
 citations, and structured contradiction adjudication where sources
 disagree.
 
-## Methodological analogue — Lambert et al. 2018
-
-The closest precedent is the Lambert et al. 2018 **Human Transcription
-Factors** census (Cell 172(4):650–665,
-[10.1016/j.cell.2018.01.029](https://doi.org/10.1016/j.cell.2018.01.029)).
-They faced a structurally identical problem — multiple prior DBs
-disagreeing on what counts as a human TF — and produced the now-canonical
-list (1,639 TFs from 2,765 candidates) by being explicit about
-adjudication, grading, and provenance. We deliberately mirror their
-methodology where it transfers:
-
-- **Recall-first union** of prior DBs as the candidate universe.
-- **Graded categories**, not binary (`strong / moderate / weak / rare /
-  absent / contradictory`).
-- **A methods-comparison rubric** explaining what each assay can and
-  can't resolve — load-bearing for adjudication.
-- **The "absent / contradictory" calls are headlines, not footnotes** —
-  telling people what to *stop* chasing (mis-flagged lysosomal +
-  inner-leaflet proteins) is as valuable as adding new positives.
-- **Per-gene web page with full evidence trail** as the citable
-  artifact — see the [viewer](#viewer).
-
-Where we diverge:
-
-- **Adjudication is LLM + audit, not two human experts.** Sonnet 4.6
-  extraction + Sonnet entailment audit + Opus 4.7 arbiter on the
-  cascade, with human adjudication confined to the n=100 DB-disagreement
-  spotlight + n=300 stratified citation audit.
-- **Two orthogonal output fields, not one.** `surface_status` and
-  `topology` are reported separately, because conflating them is
-  exactly the failure mode that puts `KRAS` on surface-protein panels.
-- **Per-claim citations are first-class** — every claim carries a
-  verbatim quote + char offset + content hash, the layer SURFY / CSPA /
-  UniProt don't have.
-
 ## What we deliver, per protein
 
 Two orthogonal fields plus an evidence pack:
