@@ -75,10 +75,21 @@ export interface StructureVariantExperimental extends StructureVariantBase {
   /** PDBe's mapped UniProt residue range covered by this PDB chain. */
   unp_start: number;
   unp_end: number;
-  /** Corresponding PDB residue range. ``offset = pdb_start - unp_start``
-   *  translates DeepTMHMM (UniProt-coord) ranges to PDB residue numbers. */
+  /** PDBe `best_structures` `start`/`end` — these are SEQRES indices
+   *  (1-based position within the deposited sequence), NOT author
+   *  residue numbers. 3Dmol selects on author resSeq, so they can't be
+   *  used as a projection offset directly; the render pipeline derives
+   *  the real UniProt→author offset by overlap against the fetched PDB
+   *  (see `_bestLinearOffset`). Retained for the clean/dirty span check
+   *  and as one offset candidate. */
   pdb_start: number;
   pdb_end: number;
+  /** Mapping quality. ``clean`` = the chosen chain maps to UniProt as a
+   *  single contiguous segment (span equality), so topology projects via
+   *  one linear offset. ``approx`` = the only available structure maps in
+   *  multiple discontinuous segments (fusion construct); projection is
+   *  piecewise and best-effort, and the caption shows a caveat. */
+  mappingMode: "clean" | "approx";
   /** Display-only metadata. */
   experimental_method: string;
   resolution: number | null;
@@ -110,6 +121,180 @@ interface PDBeBestStructure {
   resolution: number | null;
   coverage: number;
   tax_id?: number;
+}
+
+/** A contiguous UniProt→PDB-author projection segment. A topology
+ *  (UniProt-coord) residue ``u`` in ``[unpLo, unpHi]`` maps to PDB
+ *  author resSeq ``u + offset``. Clean structures have a single
+ *  segment; fusion constructs have several, each with its own offset. */
+interface ProjSegment {
+  unpLo: number;
+  unpHi: number;
+  offset: number;
+}
+
+/** Author resSeq values present (ATOM + HETATM) on a chain in the
+ *  fetched PDB file — i.e. the residues 3Dmol can actually select.
+ *  Used to score candidate projection offsets: the correct offset lands
+ *  the most UniProt-mapped residues on real atoms. We can't trust
+ *  `best_structures.start` (a SEQRES index) or even PDBe author numbers
+ *  (which can diverge from the legacy `.pdb` file RCSB serves, e.g.
+ *  EGFR 7syd), so the file itself is the only ground truth. */
+function _observedResSeq(pdbText: string, chainId: string): Set<number> {
+  const out = new Set<number>();
+  for (const line of pdbText.split(/\r?\n/)) {
+    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+    if (line.length < 26) continue;
+    if (line.slice(21, 22) !== chainId) continue;
+    const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
+    if (Number.isInteger(resi)) out.add(resi);
+  }
+  return out;
+}
+
+/** Count residues of UniProt window ``[unpLo, unpHi]`` that, shifted by
+ *  ``offset``, land on an observed author resSeq. */
+function _overlapCount(
+  unpLo: number,
+  unpHi: number,
+  offset: number,
+  observed: Set<number>,
+): number {
+  let n = 0;
+  for (let u = unpLo; u <= unpHi; u += 1) {
+    if (observed.has(u + offset)) n += 1;
+  }
+  return n;
+}
+
+/** Pick the UniProt→author offset that lands the most of
+ *  ``[unpLo, unpHi]`` on real atoms. ``candidates`` are principled
+ *  guesses: ``0`` (file numbered by UniProt residue — the modern norm,
+ *  true for GPR75 9xqc), the SEQRES-based legacy offset, and (for
+ *  fusions) the SIFTS author offset. Ties keep ``fallback`` so a
+ *  structure that already rendered with the legacy offset can never
+ *  regress — a different offset is only adopted when it strictly covers
+ *  more residues, which means it genuinely aligns better to the file. */
+function _bestLinearOffset(
+  unpLo: number,
+  unpHi: number,
+  candidates: number[],
+  observed: Set<number>,
+  fallback: number,
+): number {
+  let best = fallback;
+  let bestScore = _overlapCount(unpLo, unpHi, fallback, observed);
+  for (const c of candidates) {
+    if (c === fallback) continue;
+    const score = _overlapCount(unpLo, unpHi, c, observed);
+    if (score > bestScore) {
+      best = c;
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
+/** Build the PDB-author-resSeq → topology(UniProt)-index lookup the
+ *  orientation math consumes, inverting the forward ``u → u + offset``
+ *  projection used for cartoon coloring. Returns ``null`` for resSeq
+ *  outside every segment (unmapped fusion partners, ligands, gaps). */
+function _makeResiToTopo(
+  segments: ProjSegment[],
+): (pdbResi: number) => number | null {
+  return (pdbResi: number) => {
+    for (const s of segments) {
+      const lo = s.unpLo + s.offset;
+      const hi = s.unpHi + s.offset;
+      if (pdbResi >= lo && pdbResi <= hi) return pdbResi - s.offset;
+    }
+    return null;
+  };
+}
+
+/** Raw SIFTS detailed-mapping segment for one chain. ``authorLo`` /
+ *  ``authorHi`` are nullable — PDBe omits author numbers for some
+ *  entries (GPR75 9xqc returns ``None``/``None``); the offset is then
+ *  derived from whichever boundary is present, or from the seqres span. */
+interface SiftsRawSegment {
+  unpLo: number;
+  unpHi: number;
+  seqresLo: number;
+  authorLo: number | null;
+  authorHi: number | null;
+}
+
+/** Fetch SIFTS per-segment UniProt↔PDB mappings (``/api/mappings/{pdb}``)
+ *  for the chosen chain. Only used on the ``approx`` (fusion) path, where
+ *  `best_structures` collapses the discontinuous mapping into one
+ *  non-linear span. Returns ``[]`` on any failure so the caller can fall
+ *  back to the single-offset projection. */
+async function _fetchSiftsSegments(
+  pdbId: string,
+  uniprotAcc: string,
+  chainId: string,
+): Promise<SiftsRawSegment[]> {
+  try {
+    const r = await fetch(
+      `https://www.ebi.ac.uk/pdbe/api/mappings/${pdbId.toLowerCase()}`,
+      { cache: "force-cache" },
+    );
+    if (!r.ok) return [];
+    const j = (await r.json()) as Record<
+      string,
+      { UniProt?: Record<string, { mappings?: Array<Record<string, unknown>> }> }
+    >;
+    const unpBlock = j[pdbId.toLowerCase()]?.UniProt ?? {};
+    const block = unpBlock[uniprotAcc] ?? Object.values(unpBlock)[0];
+    const mappings = block?.mappings ?? [];
+    const segs: SiftsRawSegment[] = [];
+    for (const m of mappings) {
+      if (m.chain_id !== chainId && m.struct_asym_id !== chainId) continue;
+      const unpLo = m.unp_start as number;
+      const unpHi = m.unp_end as number;
+      if (typeof unpLo !== "number" || typeof unpHi !== "number") continue;
+      const start = m.start as Record<string, number | null> | undefined;
+      const end = m.end as Record<string, number | null> | undefined;
+      segs.push({
+        unpLo,
+        unpHi,
+        seqresLo: (start?.residue_number as number) ?? unpLo,
+        authorLo: (start?.author_residue_number as number | null) ?? null,
+        authorHi: (end?.author_residue_number as number | null) ?? null,
+      });
+    }
+    return segs;
+  } catch {
+    return [];
+  }
+}
+
+/** Convert raw SIFTS segments into projection segments (approach C). For
+ *  each segment, derive the UniProt→author offset from whichever author
+ *  boundary PDBe provides (both give the same offset for a linear
+ *  segment; if one is null use the other), then keep whichever of
+ *  {author offset, seqres offset} lands more of the segment on real
+ *  atoms. Self-correcting: validating against the file means a wrong
+ *  author number simply loses to the seqres candidate. */
+function _projSegmentsForDirty(
+  raw: SiftsRawSegment[],
+  observed: Set<number>,
+): ProjSegment[] {
+  const out: ProjSegment[] = [];
+  for (const s of raw) {
+    const seqresOffset = s.seqresLo - s.unpLo;
+    const candidates: number[] = [];
+    let authorOffset: number | null = null;
+    if (s.authorLo != null) authorOffset = s.authorLo - s.unpLo;
+    else if (s.authorHi != null) authorOffset = s.authorHi - s.unpHi;
+    if (authorOffset != null) candidates.push(authorOffset);
+    candidates.push(seqresOffset);
+    const offset = _bestLinearOffset(
+      s.unpLo, s.unpHi, candidates, observed, authorOffset ?? seqresOffset,
+    );
+    out.push({ unpLo: s.unpLo, unpHi: s.unpHi, offset });
+  }
+  return out;
 }
 
 /** Subset of the SurfaceomeRecord canonical AFDB struct block.
@@ -397,6 +582,14 @@ function _renderCaption(args: {
             {tooltips.experimental_best_structure}
           </InfoTip>
         </p>
+        {v.mappingMode === "approx" ? (
+          <p className={styles.captionCaveat}>
+            This chain maps to {proteinName ?? canonicalUniprot} in multiple
+            discontinuous segments (a fusion or engineered construct), so the
+            topology coloring is projected piecewise and is approximate near
+            segment boundaries.
+          </p>
+        ) : null}
       </div>
     );
   }
@@ -702,12 +895,48 @@ export function StructureViewer({
         }
         const j = (await r.json()) as Record<string, PDBeBestStructure[]>;
         const candidates = j[data.uniprot_acc] ?? [];
-        // Top-ranked candidate first; PDBe orders by coverage +
-        // resolution. Filter to human (tax_id 9606) when present,
-        // else accept any candidate (some PDBe rows lack tax_id).
-        const human = candidates.find((c) => c.tax_id === 9606);
-        const top = human ?? candidates[0] ?? null;
-        if (!cancelled) setPdbeCandidate(top);
+        if (candidates.length === 0) {
+          if (!cancelled) setPdbeCandidate(null);
+          return;
+        }
+        // PDBe already ranks by coverage → resolution. Prefer the human
+        // (same-species) rows when any exist; otherwise rank over
+        // everything (some rows lack tax_id).
+        const human = candidates.filter((c) => c.tax_id === 9606);
+        const ranked = human.length > 0 ? human : candidates;
+        const top = ranked[0];
+        // "clean" = the chain maps to UniProt as a single contiguous
+        // segment (SEQRES span == UniProt span), so the topology
+        // projects through one linear offset. A "dirty" top is usually
+        // a fusion construct (e.g. GPR75 9xqn packs BRIL + the receptor
+        // into one chain across 7 discontinuous segments), which
+        // mis-colors under a single offset.
+        const isClean = (c: PDBeBestStructure) =>
+          c.end - c.start === c.unp_end - c.unp_start;
+        let chosen = top;
+        if (!isClean(top)) {
+          // Skip down to a comparable clean structure when one exists:
+          // similar coverage (within tolerance — don't trade away much
+          // of the resolved sequence) and not much worse resolution
+          // (better resolution is never penalized). GPR75 is the
+          // trigger: top 9xqn is a dirty fusion (cov 0.685, 3.91 Å);
+          // 9xqc is clean (cov 0.663, 3.0 Å) — a 0.02 coverage cost for
+          // a clean, higher-resolution map. When no comparable clean
+          // structure exists we keep the dirty top and project it
+          // piecewise (approach C) with a caption caveat.
+          const COVERAGE_TOL = 0.1;
+          const RES_TOL = 2.0;
+          const cleanAlt = ranked.find(
+            (c) =>
+              isClean(c) &&
+              c.coverage >= top.coverage - COVERAGE_TOL &&
+              (c.resolution == null ||
+                top.resolution == null ||
+                c.resolution <= top.resolution + RES_TOL),
+          );
+          if (cleanAlt) chosen = cleanAlt;
+        }
+        if (!cancelled) setPdbeCandidate(chosen);
       } catch {
         if (!cancelled) setPdbeCandidate(null);
       }
@@ -738,6 +967,15 @@ export function StructureViewer({
         unp_end: pdbeCandidate.unp_end,
         pdb_start: pdbeCandidate.start,
         pdb_end: pdbeCandidate.end,
+        // Span equality ⟹ single contiguous segment ⟹ clean linear
+        // projection. The selection cascade already prefers a clean
+        // structure when one is comparable, so ``approx`` only sticks
+        // when the gene's *only* structure is a fusion construct.
+        mappingMode:
+          pdbeCandidate.end - pdbeCandidate.start ===
+          pdbeCandidate.unp_end - pdbeCandidate.unp_start
+            ? "clean"
+            : "approx",
         experimental_method: pdbeCandidate.experimental_method,
         resolution: pdbeCandidate.resolution,
         coverage: pdbeCandidate.coverage,
@@ -959,14 +1197,55 @@ export function StructureViewer({
         ? _pickPdbChain(rawPdb, expVariant.chain_id) ?? expVariant.chain_id
         : null;
 
+      // Build the UniProt→PDB-author projection for an experimental
+      // structure. The topology string is UniProt-keyed; 3Dmol selects
+      // on the file's author resSeq; `best_structures.start` is a SEQRES
+      // index (and PDBe author numbers can disagree with the legacy .pdb
+      // RCSB serves — EGFR 7syd is 1..614 in the file but -23..1186 in
+      // PDBe author space). So we validate candidate offsets against the
+      // residues ACTUALLY present in the fetched file and keep the best.
+      let projSegments: ProjSegment[] = [];
+      if (expVariant) {
+        const chain = effectiveChainId ?? expVariant.chain_id;
+        const observed = _observedResSeq(rawPdb, chain);
+        const seqresOffset = expVariant.pdb_start - expVariant.unp_start;
+        if (expVariant.mappingMode === "approx") {
+          // Approach C — discontinuous fusion mapping. Fetch SIFTS
+          // per-segment author numbers and project piecewise, each
+          // segment's offset file-validated. Falls through to the
+          // single-offset path below if SIFTS is unavailable.
+          const raw = await _fetchSiftsSegments(
+            expVariant.pdb_id, data.uniprot_acc, expVariant.chain_id,
+          );
+          if (raw.length > 0) projSegments = _projSegmentsForDirty(raw, observed);
+        }
+        if (projSegments.length === 0) {
+          // Clean single contiguous segment (or dirty w/o usable SIFTS).
+          // Candidate offsets: 0 (file numbered by UniProt residue — the
+          // modern norm, true for GPR75 9xqc where author == UniProt) vs
+          // the legacy SEQRES offset. Ties keep the legacy offset so
+          // anything that already rendered can't regress (EGFR 7syd: both
+          // are 0, 614 residues). 9xqc: offset 0 covers 266 residues vs
+          // the legacy -34's 234, so the bug (off-by-34) is corrected.
+          const offset = _bestLinearOffset(
+            expVariant.unp_start, expVariant.unp_end,
+            [0, seqresOffset], observed, seqresOffset,
+          );
+          projSegments = [{
+            unpLo: expVariant.unp_start,
+            unpHi: expVariant.unp_end,
+            offset,
+          }];
+        }
+      }
+
       // Orient both AFDB models and experimental PDBs the same way
       // when possible: rotate so the membrane plane is horizontal and
-      // extracellular is up. For experimental PDBs we pass the
-      // resolved chain id (so multi-chain assemblies like homotrimers
-      // or MHC-peptide complexes don't pollute the centroid math) and
-      // a residue offset (so the topology lookup translates PDB
-      // numbering → UniProt numbering correctly — most PDBs don't
-      // start at residue 1 of the canonical UniProt sequence).
+      // extracellular is up. For experimental PDBs we pass the resolved
+      // chain id (so multi-chain assemblies like homotrimers or
+      // MHC-peptide complexes don't pollute the centroid math) and the
+      // projection map (so the topology lookup translates PDB author
+      // numbering → UniProt numbering correctly, piecewise for fusions).
       // orientPdbForTopology returns `membrane: null` when the chain
       // covers no TM residues (ECD-only crystals, soluble fragments),
       // in which case the structure renders unoriented + slab-less —
@@ -974,7 +1253,7 @@ export function StructureViewer({
       const { pdbText, membrane } = expVariant
         ? orientPdbForTopology(rawPdb, activeTopology, {
             chainId: effectiveChainId ?? expVariant.chain_id,
-            residueOffset: expVariant.pdb_start - expVariant.unp_start,
+            resiToTopo: _makeResiToTopo(projSegments),
           })
         : orientPdbForTopology(rawPdb, activeTopology);
 
@@ -1021,38 +1300,42 @@ export function StructureViewer({
         viewer.setStyle(baseSel, { cartoon: { color: TOPOLOGY_COLORS.B } });
         // For canonical, use the pre-computed `topology_ranges` from
         // the build-time JSON. For an AFDB variant, compute ranges
-        // on the fly. For experimental, project the canonical
-        // ranges onto PDB residue numbers via the PDBe offset.
+        // on the fly. For experimental, project the canonical ranges
+        // onto PDB author residue numbers via `projSegments`.
         const ranges = isCanonicalActive
           ? data.topology_ranges
           : _computeTopologyRanges(activeTopology);
-        // Experimental projection: pdb_resi = unp_resi - unp_start + pdb_start
-        // Drop any portion of a range that falls outside the PDBe-
-        // mapped UniProt window (those residues just aren't in the
-        // crystal).
-        const offset = expVariant
-          ? expVariant.pdb_start - expVariant.unp_start
-          : 0;
-        const unpLo = expVariant?.unp_start ?? -Infinity;
-        const unpHi = expVariant?.unp_end ?? Infinity;
         (["M", "O", "I", "S", "B"] as const).forEach((state) => {
           const color = TOPOLOGY_COLORS[state];
           (ranges[state] ?? []).forEach(([start, end]) => {
-            // Clip the UniProt range to the PDBe-mapped window.
-            const a = Math.max(start, unpLo);
-            const b = Math.min(end, unpHi);
-            if (b < a) return;
-            const pdbA = a + offset;
-            const pdbB = b + offset;
-            const sel: Record<string, unknown> = { resi: `${pdbA}-${pdbB}` };
-            // Resolve to the actual PDB-file chain id (not PDBe's
-            // metadata) so a casing or label/auth mismatch doesn't
-            // leave every range silently unmatched. See _pickPdbChain.
-            if (expVariant && effectiveChainId) sel.chain = effectiveChainId;
-            viewer.setStyle(
-              sel,
-              { cartoon: { color }, line: { color, linewidth: 1.2 } },
-            );
+            if (expVariant) {
+              // Project each topology range through every projection
+              // segment: clip the UniProt range to the segment's window,
+              // then shift by the segment's author offset. Clean
+              // structures have one segment; fusions (approach C) have
+              // several. Residues outside every segment just aren't in
+              // the crystal, so they go uncolored. Resolve to the actual
+              // PDB-file chain id (not PDBe's metadata) so a casing or
+              // label/auth mismatch doesn't silently drop the range.
+              projSegments.forEach((seg) => {
+                const a = Math.max(start, seg.unpLo);
+                const b = Math.min(end, seg.unpHi);
+                if (b < a) return;
+                const sel: Record<string, unknown> = {
+                  resi: `${a + seg.offset}-${b + seg.offset}`,
+                };
+                if (effectiveChainId) sel.chain = effectiveChainId;
+                viewer.setStyle(
+                  sel,
+                  { cartoon: { color }, line: { color, linewidth: 1.2 } },
+                );
+              });
+            } else {
+              viewer.setStyle(
+                { resi: `${start}-${end}` },
+                { cartoon: { color }, line: { color, linewidth: 1.2 } },
+              );
+            }
           });
         });
       }

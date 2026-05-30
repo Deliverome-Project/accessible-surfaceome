@@ -216,12 +216,18 @@ function collectStateCoords(
   topology: string,
   caByResidue: Map<number, Vec3>,
   residueOffset = 0,
+  resiToTopo?: (pdbResi: number) => number | null,
 ): { M: Vec3[]; O: Vec3[]; I: Vec3[] } {
   const states: { M: Vec3[]; O: Vec3[]; I: Vec3[] } = { M: [], O: [], I: [] };
   if (!topology) return states;
   for (const [resi, coord] of caByResidue) {
-    const topoResi = resi - residueOffset;
-    if (topoResi < 1 || topoResi > topology.length) continue;
+    // `resiToTopo` (when supplied) maps a PDB author resSeq → topology
+    // (UniProt) index, handling non-linear / multi-segment numbering.
+    // Without it we fall back to the single linear shift. NB: keep the
+    // explicit `== null` guard — a `null` return would coerce to 0 and
+    // sneak past the `< 1` bound otherwise.
+    const topoResi = resiToTopo ? resiToTopo(resi) : resi - residueOffset;
+    if (topoResi == null || topoResi < 1 || topoResi > topology.length) continue;
     const state = topology.charAt(topoResi - 1);
     if (state === "M" || state === "O" || state === "I") {
       states[state].push(coord);
@@ -268,11 +274,14 @@ function computeOrientationTransform(
   topology: string,
   parsed: ParsedPdb,
   residueOffset = 0,
+  resiToTopo?: (pdbResi: number) => number | null,
 ): OrientationTransform | null {
   if (!topology || parsed.atoms.length === 0 || parsed.caByResidue.size === 0) {
     return null;
   }
-  const states = collectStateCoords(topology, parsed.caByResidue, residueOffset);
+  const states = collectStateCoords(
+    topology, parsed.caByResidue, residueOffset, resiToTopo,
+  );
   // Need a minimum count per class so centroids are statistically
   // meaningful; matches the deliverome-internal threshold.
   if (states.M.length < 6 || states.O.length < 6 || states.I.length < 6) {
@@ -310,6 +319,7 @@ function applyOrientationTransform(
   transform: OrientationTransform | null,
   chainFilter?: string,
   residueOffset = 0,
+  resiToTopo?: (pdbResi: number) => number | null,
 ): { pdbText: string; membrane: MembraneSlab | null } {
   if (!transform) return { pdbText, membrane: null };
   // Don't pass chainFilter here — we want the transform to apply to
@@ -355,11 +365,13 @@ function applyOrientationTransform(
     if (atom.tz > maxZ) maxZ = atom.tz;
     // Slab Y/X/Z bounds: pick only CAs that (a) are on the canonical
     // chain (when chainFilter is given), AND (b) map to an `M` in the
-    // topology after applying residueOffset (PDB-coord → UniProt-coord).
-    const topoResi = atom.resi - residueOffset;
+    // topology. `resiToTopo` handles non-linear numbering; otherwise
+    // the single linear shift (PDB-coord → UniProt-coord) applies.
+    const topoResi = resiToTopo ? resiToTopo(atom.resi) : atom.resi - residueOffset;
     if (
       atom.atomName === "CA" &&
       atom.resi > 0 &&
+      topoResi != null &&
       topoResi >= 1 &&
       topoResi <= topology.length &&
       topology.charAt(topoResi - 1) === "M" &&
@@ -443,9 +455,17 @@ export interface OrientPdbOptions {
   chainId?: string;
   /** Residue-number offset to translate PDB residue → topology
    *  (UniProt) residue: `topologyResi = pdbResi - residueOffset`.
-   *  Compute as `pdb_start - unp_start` from the PDBe SIFTS mapping.
-   *  Default 0 (AFDB convention). */
+   *  Default 0 (AFDB convention). Ignored when `resiToTopo` is set. */
   residueOffset?: number;
+  /** Non-linear PDB-author-resSeq → topology(UniProt)-index map. When
+   *  provided it overrides `residueOffset` for every per-residue lookup
+   *  (centroid bucketing + membrane-slab bounds). Needed for
+   *  experimental PDBs whose author numbering isn't a single linear
+   *  shift of the UniProt sequence — multi-segment fusion constructs,
+   *  or files renumbered away from both UniProt and SIFTS author space.
+   *  Return `null` for resSeq values that don't map onto the topology
+   *  (unmapped fusion partners, ligands, gaps). */
+  resiToTopo?: (pdbResi: number) => number | null;
 }
 
 /**
@@ -472,7 +492,12 @@ export function orientPdbForTopology(
 ): OrientationResult {
   const chainFilter = options?.chainId;
   const residueOffset = options?.residueOffset ?? 0;
+  const resiToTopo = options?.resiToTopo;
   const parsed = parsePdbForOrientation(pdbText, chainFilter);
-  const transform = computeOrientationTransform(topology, parsed, residueOffset);
-  return applyOrientationTransform(pdbText, topology, transform, chainFilter, residueOffset);
+  const transform = computeOrientationTransform(
+    topology, parsed, residueOffset, resiToTopo,
+  );
+  return applyOrientationTransform(
+    pdbText, topology, transform, chainFilter, residueOffset, resiToTopo,
+  );
 }

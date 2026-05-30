@@ -204,7 +204,7 @@ export const tooltips: Record<string, ReactNode> = {
 
   experimental_best_structure: (
     <>
-      The experimental structure shown is the top hit from PDBe&apos;s{" "}
+      The experimental structure shown is drawn from PDBe&apos;s{" "}
       <a
         href="https://www.ebi.ac.uk/pdbe/api/doc/sifts.html"
         target="_blank"
@@ -214,8 +214,12 @@ export const tooltips: Record<string, ReactNode> = {
       </a>{" "}
       ranking for this protein — deposited PDB entries ordered by how
       much of the sequence they resolve (coverage), then by resolution.
-      We prefer the human (same-species) entry when one exists and show
-      the highest-ranked hit; the chain and residue range come from the
+      We prefer the human (same-species) entry when one exists. If the
+      top hit maps to the protein in fragments (a fusion or engineered
+      construct), we skip to the next structure of comparable coverage
+      and resolution that maps as one clean segment; only when no such
+      alternative exists do we keep the fragmented one and flag the
+      coloring as approximate. The chain and residue range come from the
       UniProt-to-PDB mapping in SIFTS (Dana et al. 2019,{" "}
       <a
         href="https://pubmed.ncbi.nlm.nih.gov/30445541/"
@@ -224,7 +228,10 @@ export const tooltips: Record<string, ReactNode> = {
       >
         PMID 30445541
       </a>
-      ).
+      ). Topology coloring is projected onto the deposited file&apos;s
+      author residue numbering and validated against the residues
+      actually present in that file, so it lands correctly even when the
+      author numbering differs from the UniProt sequence position.
     </>
   ),
 

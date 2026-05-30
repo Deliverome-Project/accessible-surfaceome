@@ -60,6 +60,18 @@
   border-bottom-color: var(--accent);
 }
 
+/* Caveat note for the multi-segment (fusion-construct) experimental
+   case — only rendered when mappingMode === "approx". De-emphasized
+   relative to the stats line; signals that topology coloring is
+   best-effort near segment boundaries. */
+.captionCaveat {
+  margin: 0.1rem 0 0;
+  font-size: 0.72rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
 /* SURFACE-Bind sites legend — mirrors the TopologyBar's legend
    classes for visual consistency (same swatch size, same gap, same
    label color) but uses round swatches (sphere = round) instead of
