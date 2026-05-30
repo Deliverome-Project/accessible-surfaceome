@@ -373,7 +373,7 @@ export function FiltersCard({ rec, n }: Props) {
             size="sm"
             title={cellStateTriggerDesc(t)}
           >
-            <ChipLabelValue label="trigger" value={prettyEnum(t)} />
+            <ChipLabelValue label="induced" value={prettyEnum(t)} />
           </StatusPill>
         )),
       ],
