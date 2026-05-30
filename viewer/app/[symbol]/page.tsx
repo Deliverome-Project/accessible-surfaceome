@@ -59,7 +59,16 @@ export default async function GenePage({ params }: PageProps) {
   const { symbol } = await params;
   const rec = await loadSurfaceomeRecord(symbol);
   if (!rec) notFound();
-  const geneName = loadGeneName(rec.gene.hgnc_symbol);
+  // Descriptive protein name: prefer the D1 record's name
+  // (surface_bind.protein_name — the UniProt name), which is only
+  // populated for SURFACE-Bind proteins, falling back to the local NCBI
+  // name map for the rest. Synonyms always come from the local map (the
+  // record carries no synonym list).
+  const localName = loadGeneName(rec.gene.hgnc_symbol);
+  const d1ProteinName = rec.deterministic_features.surface_bind.protein_name;
+  const geneName = d1ProteinName
+    ? { name: d1ProteinName, synonyms: localName?.synonyms ?? [] }
+    : localName;
   // Structure-viewer data: derive primarily from the deep-dive record's
   // DeepTMHMM topology (which comes from D1 via the Worker), so any gene
   // with a record renders structure — including ones outside the static
