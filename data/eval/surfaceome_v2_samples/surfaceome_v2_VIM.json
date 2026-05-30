@@ -7,7 +7,7 @@
     "ncbi_gene_id": 7431,
     "ensembl_gene": "ENSG00000026025"
   },
-  "triage_signal": "possibly_accessible",
+  "triage_signal": "unknown",
   "executive_summary": {
     "one_paragraph": "VIM (vimentin) displays confirmed cell-surface accessibility in multiple independent human cell contexts: cancer cell lines (live-cell flow cytometry, antibody 7C11-D9), Huh-7.5.1 hepatocellular carcinoma cells (surface biotinylation/WB), primary apoptotic neutrophils (live-cell flow), and senescent chondrocytes (cell-based ELISA on intact cells). Surface exposure is strongly state-dependent \u2014 preferentially upregulated in cancer, apoptosis, and senescence \u2014 consistent with VIM's canonical role as a cytoskeletal intermediate filament whose surface form (CSV) is an unconventional, non-transmembrane presentation.",
     "surface_accessibility": "moderate",
@@ -28,12 +28,7 @@
       "a2_evi_04",
       "a2_evi_06",
       "a2_evi_07"
-    ],
-    "llm_family": "miscellaneous",
-    "hgnc_gene_groups": [
-      "Intermediate filaments Type III"
-    ],
-    "uniprot_family": "intermediate filament family"
+    ]
   },
   "filters": {
     "surface_accessibility": "moderate",
@@ -53,9 +48,8 @@
     "has_restricted_subdomain": true,
     "mouse_ortholog_ecd_pct_identity": null,
     "cyno_ortholog_ecd_pct_identity": null,
-    "n_term_extracellular": false,
-    "c_term_extracellular": false,
-    "llm_family": "miscellaneous"
+    "n_term_extracellular": true,
+    "c_term_extracellular": false
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",
@@ -445,17 +439,17 @@
   },
   "deterministic_features": {
     "canonical_topology": {
-      "isoform_id": "P08670",
+      "isoform_id": "P08670-1",
       "uniprot_acc": "P08670",
       "tm_helix_count": 0,
-      "n_terminal_orientation": "cytoplasmic",
+      "n_terminal_orientation": "extracellular",
       "c_terminal_orientation": "cytoplasmic",
       "signal_peptide_length": 0,
       "ecd_length_residues": 0,
-      "icd_length_residues": 466,
-      "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
-      "tool_version": "deeptmhmm-1.0.24",
-      "retrieved_at": "2026-05-17T00:56:01Z"
+      "icd_length_residues": 0,
+      "per_residue_topology": "",
+      "tool_version": "stub-no-fetchers-v1.0.0",
+      "retrieved_at": "2026-05-17T02:41:53.289404Z"
     },
     "isoform_topologies": [],
     "orthologs": {
@@ -465,33 +459,17 @@
     },
     "paralogs": [],
     "structure": {
-      "afdb_id": "AF-P08670-F1",
+      "afdb_id": "AF-P08670-F1-model_v4",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 77.06,
-      "ecd_disordered_fraction": 0.304,
-      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
       ]
-    },
-    "surface_bind": {
-      "has_data": false,
-      "n_sites": 0,
-      "n_seeds_alpha": 0,
-      "n_seeds_beta": 0,
-      "n_seeds_total": 0,
-      "chain": null,
-      "sites": [],
-      "main_class": null,
-      "sub_class": null,
-      "protein_name": null,
-      "pdbs": [],
-      "source": "SURFACE-Bind v1 (Marchand 2026 PNAS)",
-      "attribution": "\u00a9 Marchand, Khakzad, Correia et al. \u2014 EPFL / Inria / Novo Nordisk",
-      "citation": "10.1073/pnas.2506269123"
     }
   },
   "accessibility_risks": {

@@ -7,7 +7,7 @@
     "ncbi_gene_id": 506,
     "ensembl_gene": "ENSG00000110955"
   },
-  "triage_signal": "possibly_accessible",
+  "triage_signal": "unknown",
   "executive_summary": {
     "one_paragraph": "ATP5F1B (ATP synthase \u03b2-subunit) is canonically a mitochondrial inner-membrane F1 subunit but is also detected at the plasma membrane as part of ectopic ATP synthase (eATP synthase). Multiple direct methods\u2014surface biotinylation MS, non-permeabilized IF with orthogonal controls, live-cell flow cytometry, and super-resolution live-cell imaging\u2014support genuine surface accessibility. Surface expression appears conditional (not ubiquitous), with highest confidence in specific cell types; CSPA/SURFY databases do not annotate it as a surface protein, reflecting its non-conventional trafficking origin.",
     "surface_accessibility": "moderate",
@@ -32,14 +32,7 @@
       "a1_evi_11",
       "a2_evi_03",
       "a2_evi_04"
-    ],
-    "llm_family": "enzyme",
-    "hgnc_gene_groups": [
-      "Mitochondrial complex V: ATP synthase subunits",
-      "Small nucleolar RNA protein coding host genes",
-      "ATPase F1/V1 alpha/A and beta/B subunit family"
-    ],
-    "uniprot_family": "ATPase alpha/beta chains family"
+    ]
   },
   "filters": {
     "surface_accessibility": "moderate",
@@ -59,9 +52,8 @@
     "has_restricted_subdomain": true,
     "mouse_ortholog_ecd_pct_identity": null,
     "cyno_ortholog_ecd_pct_identity": null,
-    "n_term_extracellular": false,
-    "c_term_extracellular": false,
-    "llm_family": "enzyme"
+    "n_term_extracellular": true,
+    "c_term_extracellular": false
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",
@@ -497,17 +489,17 @@
   },
   "deterministic_features": {
     "canonical_topology": {
-      "isoform_id": "P06576",
+      "isoform_id": "P06576-1",
       "uniprot_acc": "P06576",
       "tm_helix_count": 0,
-      "n_terminal_orientation": "cytoplasmic",
+      "n_terminal_orientation": "extracellular",
       "c_terminal_orientation": "cytoplasmic",
       "signal_peptide_length": 0,
       "ecd_length_residues": 0,
-      "icd_length_residues": 529,
-      "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
-      "tool_version": "deeptmhmm-1.0.24",
-      "retrieved_at": "2026-05-17T00:56:01Z"
+      "icd_length_residues": 0,
+      "per_residue_topology": "",
+      "tool_version": "stub-no-fetchers-v1.0.0",
+      "retrieved_at": "2026-05-17T02:40:20.856746Z"
     },
     "isoform_topologies": [],
     "orthologs": {
@@ -517,33 +509,17 @@
     },
     "paralogs": [],
     "structure": {
-      "afdb_id": "AF-P06576-F1",
+      "afdb_id": "AF-P06576-F1-model_v4",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 85.25,
-      "ecd_disordered_fraction": 0.112,
-      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
       ]
-    },
-    "surface_bind": {
-      "has_data": false,
-      "n_sites": 0,
-      "n_seeds_alpha": 0,
-      "n_seeds_beta": 0,
-      "n_seeds_total": 0,
-      "chain": null,
-      "sites": [],
-      "main_class": null,
-      "sub_class": null,
-      "protein_name": null,
-      "pdbs": [],
-      "source": "SURFACE-Bind v1 (Marchand 2026 PNAS)",
-      "attribution": "\u00a9 Marchand, Khakzad, Correia et al. \u2014 EPFL / Inria / Novo Nordisk",
-      "citation": "10.1073/pnas.2506269123"
     }
   },
   "accessibility_risks": {

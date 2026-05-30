@@ -254,28 +254,6 @@ collapses to just 2 claims after the selector's surface-evidence-focused
 trim: a kinase with no ECD has very few legitimate surface methodology
 papers to retain.
 
-## Post-wiring panel (deterministic features → A1/A2 planners + AFDB pLDDT + cell_states builder)
-
-After the agents in this branch (`feat(agents): wire DeepTMHMM topology
-+ paralogs into A1/A2 planners` + `feat(tools): real AFDB pLDDT
-fetcher` + `feat(agents): v2 cell_states builder`), the planner sees a
-"Deterministic inputs" JSON block alongside the UniProt summary +
-DB votes, and a 10th block-builder routes state-modulation evidence
-into `BiologicalContext.cell_states`. Headline gene-level deltas:
-
-| Gene | Run | Wall clock | Cost | Evidence | A1 claims | cell_states | Notes |
-|---|---|---|---|---|---|---|---|
-| GPR75 | pre-wiring | 7m 21s | $1.22 | 14 (8 primary) | 5 | 0 (no builder) | baseline |
-| GPR75 | wired | 7m 16s | $1.30 | 36 (25 primary) | 13 | 0 (correct — orphan GPCR, no state biology) | **+22 evidence rows, +6% cost** |
-| HSPA5 | PR #35 | 7m 58s | $1.51 | 39 (24 primary) | 18 | 0 (no builder) | pre-wiring baseline |
-| HSPA5 | wired + cell_states | 10m 57s | $2.12 | 60 (41 primary) | 27 | **6** | +21 evidence, +40% cost, **csGRP78 state ledger populated** |
-
-HSPA5's 6 cell_states rows captured: `ER stress` (the canonical csGRP78
-trigger), `tumor`, `mesenchymal (GBM subtype)`, `chronic oncogenic
-stress`, `hypoxic`, `inflammatory`. Prior to this branch all of that
-state-modulation evidence was extracted into the A2 ledger and then
-silently discarded at synth time.
-
 ## Refreshing these samples
 
 When the pipeline changes, regenerate from a worktree with

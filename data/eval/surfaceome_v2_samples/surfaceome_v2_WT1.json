@@ -7,7 +7,7 @@
     "ncbi_gene_id": 7490,
     "ensembl_gene": "ENSG00000184937"
   },
-  "triage_signal": "unlikely",
+  "triage_signal": "unknown",
   "executive_summary": {
     "one_paragraph": "WT1 is a nuclear/cytoplasmic transcription factor with no credible direct surface protein accessibility. All surface-engagement evidence in the ledger concerns processed WT1 peptide fragments presented via MHC-I (pMHC) at extremely low density (<100 sites/cell by flow cytometry), not the WT1 protein itself. A2 confirms exclusively nuclear/cytoplasmic localization across podocytes, mesothelial cells, and CAFs\u2014all detected only with permeabilization. There is no transmembrane domain, no shed or secreted form, and no surface subdomain evidence. Therapeutic strategies target the pMHC complex, not WT1 protein directly.",
     "surface_accessibility": "low",
@@ -27,12 +27,7 @@
       "a2_evi_03",
       "a2_evi_06",
       "a2_evi_09"
-    ],
-    "llm_family": "miscellaneous",
-    "hgnc_gene_groups": [
-      "Zinc fingers C2H2-type"
-    ],
-    "uniprot_family": "EGR C2H2-type zinc-finger protein family"
+    ]
   },
   "filters": {
     "surface_accessibility": "low",
@@ -52,9 +47,8 @@
     "has_restricted_subdomain": false,
     "mouse_ortholog_ecd_pct_identity": null,
     "cyno_ortholog_ecd_pct_identity": null,
-    "n_term_extracellular": false,
-    "c_term_extracellular": false,
-    "llm_family": "miscellaneous"
+    "n_term_extracellular": true,
+    "c_term_extracellular": false
   },
   "surface_evidence": {
     "evidence_grade": "weak",
@@ -583,14 +577,14 @@
       "isoform_id": "P19544-1",
       "uniprot_acc": "P19544",
       "tm_helix_count": 0,
-      "n_terminal_orientation": "cytoplasmic",
+      "n_terminal_orientation": "extracellular",
       "c_terminal_orientation": "cytoplasmic",
       "signal_peptide_length": 0,
       "ecd_length_residues": 0,
       "icd_length_residues": 0,
       "per_residue_topology": "",
-      "tool_version": "placeholder-no-d1-row",
-      "retrieved_at": "2026-05-18T12:40:21.337824Z"
+      "tool_version": "stub-no-fetchers-v1.0.0",
+      "retrieved_at": "2026-05-17T02:40:39.732762Z"
     },
     "isoform_topologies": [],
     "orthologs": {
@@ -600,33 +594,17 @@
     },
     "paralogs": [],
     "structure": {
-      "afdb_id": "AF-P19544-F1",
+      "afdb_id": "AF-P19544-F1-model_v4",
       "afdb_version": "v4",
-      "ecd_mean_plddt": 50.78,
-      "ecd_disordered_fraction": 0.7170000000000001,
-      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "ecd_mean_plddt": 0.0,
+      "ecd_disordered_fraction": 0.0,
+      "source": "AlphaFold DB (STUB \u2014 fetchers not yet built)",
       "license": "CC BY 4.0",
       "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
       ]
-    },
-    "surface_bind": {
-      "has_data": false,
-      "n_sites": 0,
-      "n_seeds_alpha": 0,
-      "n_seeds_beta": 0,
-      "n_seeds_total": 0,
-      "chain": null,
-      "sites": [],
-      "main_class": null,
-      "sub_class": null,
-      "protein_name": null,
-      "pdbs": [],
-      "source": "SURFACE-Bind v1 (Marchand 2026 PNAS)",
-      "attribution": "\u00a9 Marchand, Khakzad, Correia et al. \u2014 EPFL / Inria / Novo Nordisk",
-      "citation": "10.1073/pnas.2506269123"
     }
   },
   "accessibility_risks": {
