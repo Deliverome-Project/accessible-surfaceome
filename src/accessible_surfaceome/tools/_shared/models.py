@@ -1444,6 +1444,22 @@ class ExecutiveSummary(BaseModel):
     # a contextual reason like ``lysosomal_exocytosis`` after finding
     # the cancer-state surface evidence).
     surface_call_reason: TriageReason
+    # One-sentence, reader-facing rationale for WHEN / WHERE the protein
+    # is surface-accessible — the headline behind the §03 "Localization &
+    # accessibility context" summary (and echoed in the §01 signal
+    # panel). Synthesized over the ``biological_context`` block
+    # (``accessibility_modulation`` + ``subcellular_localization`` +
+    # ``anatomical_accessibility``), NOT a copy of ``one_paragraph``.
+    # Optional / defaults ``None`` for back-compat: records generated
+    # before this field landed validate fine and render no summary line
+    # until re-annotated.
+    accessibility_context_summary: str | None = Field(
+        default=None,
+        description=(
+            "One sentence (≤240 chars) on when/where this protein is "
+            "surface-accessible — the accessibility-context headline."
+        ),
+    )
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 

@@ -22,18 +22,136 @@ function implicationTone(v: AccessibilityImplication) {
   return "neutral" as const;
 }
 
+function stateDependenceTone(v: string) {
+  if (v === "low") return "success" as const;
+  if (v === "moderate") return "amber" as const;
+  if (v === "high") return "danger" as const;
+  return "neutral" as const;
+}
+
 export function BiologicalContextCard({ rec, n }: Props) {
   const bc = rec.biological_context;
   const loc = bc.subcellular_localization;
+  const es = rec.executive_summary;
+  // Distinct cell-state triggers across the modulation rows — the
+  // "unique contexts" that gate surface accessibility, deduped into chips
+  // for the overarching summary.
+  const modTriggers = Array.from(
+    new Set(
+      bc.accessibility_modulation.flatMap((m) =>
+        m.cell_state_trigger ? [m.cell_state_trigger] : [],
+      ),
+    ),
+  );
 
   return (
     <SectionCard
       n={n}
       eyebrow="Biological context"
       title="Localization & accessibility context"
-      meta="Subcellular localization · anatomical accessibility · accessibility modulation"
+      meta="Accessibility modulation · subcellular localization · anatomical accessibility"
     >
+      {/* Overarching accessibility-context summary — the headline chips
+          (deduped contexts) + one-sentence rationale for WHEN/WHERE the
+          protein is reachable. Mirrored into the §01 signal panel. */}
+      <div className={styles.contextSummary}>
+        <div className={styles.contextChips}>
+          <StatusPill tone="lavender" size="sm">
+            <ChipLabelValue
+              label="reason"
+              value={prettyEnum(es.surface_call_reason)}
+            />
+          </StatusPill>
+          <StatusPill tone={stateDependenceTone(es.state_dependence)} size="sm">
+            <ChipLabelValue
+              label="state-gated"
+              value={prettyEnum(es.state_dependence)}
+            />
+          </StatusPill>
+          <StatusPill tone="teal" size="sm">
+            <ChipLabelValue
+              label="primary"
+              value={prettyEnum(loc.primary_compartment)}
+            />
+          </StatusPill>
+          {modTriggers.map((t) => (
+            <StatusPill key={t} tone="amber" size="sm">
+              {prettyEnum(t)}
+            </StatusPill>
+          ))}
+        </div>
+        {es.accessibility_context_summary ? (
+          <p className={styles.contextRationale}>
+            {es.accessibility_context_summary}
+          </p>
+        ) : null}
+      </div>
+
       <FeatureRationales category="biology" rec={rec} />
+
+      {/* Accessibility modulation — moved to the top (most decision-
+          relevant) and rendered as a table: one row per state/lineage
+          shift, far easier to scan than the old stacked prose blocks. */}
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
+        {bc.accessibility_modulation.length === 0 ? (
+          <p className={styles.empty}>No modulation rows recorded.</p>
+        ) : (
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th scope="col">Context</th>
+                <th scope="col">Trigger / lineage</th>
+                <th scope="col">Shift</th>
+                <th scope="col">Implication</th>
+                <th scope="col">Cites</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bc.accessibility_modulation.map((m, i) => (
+                <tr key={i}>
+                  <td>
+                    <StatusPill tone="lavender" size="sm">
+                      {prettyEnum(m.category)}
+                    </StatusPill>
+                  </td>
+                  <td>
+                    {m.cell_state_trigger ? (
+                      <StatusPill tone="amber" size="sm">
+                        {prettyEnum(m.cell_state_trigger)}
+                      </StatusPill>
+                    ) : null}
+                    {m.restricted_lineage ? (
+                      <StatusPill tone="teal" size="sm">
+                        {prettyEnum(m.restricted_lineage)}
+                      </StatusPill>
+                    ) : null}
+                    {!m.cell_state_trigger && !m.restricted_lineage ? (
+                      <span className={styles.muted}>—</span>
+                    ) : null}
+                  </td>
+                  <td>
+                    <span className={styles.modShift}>
+                      <span className={`label-mono ${styles.muted}`}>baseline</span>{" "}
+                      {m.baseline_context}{" "}
+                      <span aria-hidden="true">→</span>{" "}
+                      <span className={`label-mono ${styles.muted}`}>modulating</span>{" "}
+                      {m.modulating_state}
+                    </span>
+                    {m.change ? (
+                      <span className={styles.modChangeInline}>{m.change}</span>
+                    ) : null}
+                  </td>
+                  <td>{m.accessibility_implication}</td>
+                  <td>
+                    <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
@@ -172,47 +290,6 @@ export function BiologicalContextCard({ rec, n }: Props) {
         )}
       </div>
 
-      <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
-        {bc.accessibility_modulation.length === 0 ? (
-          <p className={styles.empty}>No modulation rows recorded.</p>
-        ) : (
-          <ul className={styles.modList}>
-            {bc.accessibility_modulation.map((m, i) => (
-              <li key={i} className={styles.modItem}>
-                <div className={styles.modHead}>
-                  <StatusPill tone="lavender" size="sm">
-                    {prettyEnum(m.category)}
-                  </StatusPill>
-                  {m.cell_state_trigger ? (
-                    <StatusPill tone="amber" size="sm">
-                      <ChipLabelValue label="trigger" value={prettyEnum(m.cell_state_trigger)} />
-                    </StatusPill>
-                  ) : null}
-                  {m.restricted_lineage ? (
-                    <StatusPill tone="teal" size="sm">
-                      <ChipLabelValue label="lineage" value={prettyEnum(m.restricted_lineage)} />
-                    </StatusPill>
-                  ) : null}
-                  <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
-                </div>
-                <p className={styles.modBaseline}>
-                  <span className={`label-mono ${styles.muted}`}>baseline</span>{" "}
-                  {m.baseline_context}{" "}
-                  <span aria-hidden="true">→</span>{" "}
-                  <span className={`label-mono ${styles.muted}`}>modulating</span>{" "}
-                  {m.modulating_state}
-                </p>
-                <p className={styles.modChange}>{m.change}</p>
-                <p className={styles.modImpl}>
-                  <span className={`label-mono ${styles.muted}`}>Implication</span>{" "}
-                  {m.accessibility_implication}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
     </SectionCard>
   );
 }

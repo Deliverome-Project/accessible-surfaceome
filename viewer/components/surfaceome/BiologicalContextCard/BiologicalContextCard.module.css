@@ -97,6 +97,45 @@
   font-size: 0.95rem;
 }
 
+/* Overarching accessibility-context summary at the top of the card —
+   deduped context chips + a one-sentence rationale. */
+.contextSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.contextChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.contextRationale {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Modulation-table "Shift" cell — baseline → modulating on the first
+   line, the mechanism `change` as a quieter second line. */
+.modShift {
+  display: block;
+}
+
+.modChangeInline {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 /* Restricted-subdomain block moved into the subcellular-localization
    subsection from §Risks. Sits below the dual-localization table
    with a thin top border so it reads as a sibling block within the

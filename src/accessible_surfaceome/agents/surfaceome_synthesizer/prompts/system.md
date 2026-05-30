@@ -14,7 +14,9 @@ your task message; follow it. Four blocks:
 - `executive_summary` — `one_paragraph` (≤600 char, consultant-readable), the
   closed-enum verdicts (`surface_accessibility`, `evidence_grade_summary`,
   `confidence`, `state_dependence`, `subcategory`, `surface_call_reason`),
-  ≤3 `headline_risks`, and `cited_evidence_ids` from the merged ledger.
+  the one-sentence `accessibility_context_summary` (when/where it's
+  surface-accessible), ≤3 `headline_risks`, and `cited_evidence_ids` from
+  the merged ledger.
 - `accessibility_risks` — six sub-blocks (`co_receptor_requirements`,
   `shed_form`, `secreted_form`, `restricted_subdomain`, `ecd_size_assessment`,
   `epitope_masking`). Each carries severity + evidence_strength. When the
@@ -268,6 +270,20 @@ parse time — invented or paraphrased ids fail the run.
   because the targetable state is the ALE-induced surface form).
   Confirm or override is the choice; just don't pass through without
   re-derivation.
+
+- **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
+  *when and where* the protein is surface-accessible, synthesized over the
+  A2 `biological_context` block (`accessibility_modulation` +
+  `subcellular_localization` + `anatomical_accessibility`). It is the
+  headline behind the §03 "Localization & accessibility context" summary
+  and the §01 signal panel, so keep it to the accessibility *condition* —
+  the gating state / lineage / tissue and what becomes reachable — and do
+  NOT restate `one_paragraph`. Examples: "Surface-accessible only on
+  cancer cells, where oncogenic transformation drives ALE-mediated
+  inversion of inner-leaflet SRC onto the outer membrane (eSrc)."; for a
+  canonical receptor: "Constitutively surface-accessible across normal and
+  tumor tissue; not state-gated." Leave it null only when A2 produced no
+  localization / modulation context at all.
 
 - **`evidence_grade_summary`** rolls up A1's `evidence_grade` — it should
   track it unless a major A2 contradiction (e.g. dominant secreted form) drags

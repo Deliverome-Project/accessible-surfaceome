@@ -273,6 +273,15 @@ export function FiltersCard({ rec, n }: Props) {
   // truth. Empty list / null is common — the bucket is simply omitted when
   // both lists are empty rather than shown blank.
   const es = rec.executive_summary;
+  // Deduped cell-state triggers — the "unique contexts" that gate surface
+  // accessibility, echoed from §03 into the panel as chips.
+  const modTriggers = Array.from(
+    new Set(
+      rec.biological_context.accessibility_modulation.flatMap((m) =>
+        m.cell_state_trigger ? [m.cell_state_trigger] : [],
+      ),
+    ),
+  );
   const uniprotFamilyPills: React.ReactNode[] = es.uniprot_family
     ? parseUniprotFamily(es.uniprot_family).map((seg, i) => (
         <StatusPill
@@ -330,6 +339,46 @@ export function FiltersCard({ rec, n }: Props) {
     // instead. The chip builders are the shared source of truth in
     // components/surfaceome/FeatureChips/FeatureChips.tsx, so a panel
     // chip and its tab rationale can't drift.
+    // Accessibility context — the §03 summary echoed into the
+    // at-a-glance panel: the deep-dive's surface-call reason, state-
+    // gating, primary compartment, and deduped modulation triggers. The
+    // one-sentence rationale rides the group InfoTip (GROUP_META below).
+    {
+      label: "Accessibility context",
+      provenance: "llm" as const,
+      pills: [
+        <StatusPill key="reason" tone="lavender" size="sm">
+          <ChipLabelValue
+            label="reason"
+            value={prettyEnum(es.surface_call_reason)}
+          />
+        </StatusPill>,
+        <StatusPill
+          key="state"
+          tone={stateDependenceTone(es.state_dependence)}
+          size="sm"
+        >
+          <ChipLabelValue
+            label="state-gated"
+            value={prettyEnum(es.state_dependence)}
+          />
+        </StatusPill>,
+        <StatusPill key="primary" tone="teal" size="sm">
+          <ChipLabelValue
+            label="primary"
+            value={prettyEnum(
+              rec.biological_context.subcellular_localization
+                .primary_compartment,
+            )}
+          />
+        </StatusPill>,
+        ...modTriggers.map((t) => (
+          <StatusPill key={`trig-${t}`} tone="amber" size="sm">
+            {prettyEnum(t)}
+          </StatusPill>
+        )),
+      ],
+    },
     ...FEATURE_CATEGORIES.map((cat) => ({
       label: FEATURE_TAB_LABEL[cat],
       provenance: "llm" as const,
@@ -656,6 +705,16 @@ export function FiltersCard({ rec, n }: Props) {
     string,
     { title: React.ReactNode; links?: { href: string; label: string }[] }
   > = {
+    // One-sentence accessibility-context rationale on the group InfoTip —
+    // only when the synthesizer authored it (older records render the
+    // chips with no tooltip until re-annotated).
+    ...(es.accessibility_context_summary
+      ? {
+          "Accessibility context": {
+            title: es.accessibility_context_summary,
+          },
+        }
+      : {}),
     "Family & gene group": {
       title:
         "Registry classification from two deterministic sources: " +

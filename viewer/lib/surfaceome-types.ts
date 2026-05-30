@@ -218,6 +218,12 @@ export interface ExecutiveSummary {
    *  synth re-derives from A1+A2 evidence; sometimes overrides the
    *  triage's own reason. */
   surface_call_reason: TriageReason;
+  /** One-sentence rationale for WHEN/WHERE the protein is surface-
+   *  accessible — the headline behind the §03 "Localization &
+   *  accessibility context" summary and the §01 echo. Synthesized over
+   *  the biological_context block. `null` on records generated before
+   *  this field landed (render nothing until re-annotated). */
+  accessibility_context_summary: string | null;
   headline_risks: HeadlineRisk[];
   cited_evidence_ids: string[];
 }
