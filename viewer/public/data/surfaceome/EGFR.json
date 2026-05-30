@@ -58,7 +58,7 @@
     "expression_breadth": "broad",
     "surface_specificity": "surface_dominant",
     "has_shed_form": true,
-    "has_secreted_form": false,
+    "has_secreted_form": true,
     "requires_coreceptor_for_expression": false,
     "co_receptor_dependency": "none",
     "max_paralog_ecd_pct_identity": 48.470209339774556,
@@ -3062,11 +3062,11 @@
       ]
     },
     "secreted_form": {
-      "present": false,
+      "present": true,
       "severity": "low",
       "evidence_strength": "weak",
       "ratio_to_membrane": null,
-      "source": null,
+      "source": "alternative_splicing",
       "cited_evidence_ids": []
     },
     "restricted_subdomain": {
