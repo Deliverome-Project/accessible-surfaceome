@@ -445,25 +445,26 @@ export function FiltersCard({ rec, n }: Props) {
         // they compete with the canonical surface form for binder
         // occupancy. Surfaces the §02 Surface-Bind / §04 Isoforms
         // detail at-a-glance.
-        <StatusPill key="iso-count" tone="neutral" size="sm">
+        <StatusPill
+          key="isoforms"
+          tone={distinctIsoCount > 0 ? "amber" : "neutral"}
+          size="sm"
+          title={
+            isoforms.length > 0
+              ? "Total isoform topology models (canonical + alternates), " +
+                "with the count of alternates whose per-residue topology " +
+                "differs from canonical. >0 distinct = isoform-decoy risk: " +
+                "an alternate exposes a different TM/SP arrangement and may " +
+                "compete with the canonical surface form for binder " +
+                "occupancy (the §Risks card details the strength)."
+              : undefined
+          }
+        >
           {isoformTotal} isoform{isoformTotal === 1 ? "" : "s"}
+          {isoforms.length > 0
+            ? ` · ${distinctIsoCount} distinct topology`
+            : ""}
         </StatusPill>,
-        isoforms.length > 0 ? (
-          <StatusPill
-            key="iso-distinct"
-            tone={distinctIsoCount > 0 ? "amber" : "success"}
-            size="sm"
-            title={
-              "Number of alternate isoforms whose per-residue topology " +
-              "differs from canonical. >0 = isoform-decoy risk: an " +
-              "alternate isoform exposes a different TM/SP arrangement " +
-              "and may compete with the canonical surface form for " +
-              "binder occupancy (the §Risks card details the strength)."
-            }
-          >
-            {distinctIsoCount} distinct topology
-          </StatusPill>
-        ) : null,
         // ECD accessibility class — derived from ECD length, so it
         // belongs alongside the other topology rollups (was in the
         // retired Accessibility group, now moved here so the size /
