@@ -589,41 +589,72 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
  * rows in public D1 — the authoritative deep-dive store. Drives which
  * gene pages `generateStaticParams` emits.
  *
- * Returns `[]` under `SURFACEOME_API_BASE=local` (or empty) so the
+ * Returns `[]` ONLY under `SURFACEOME_API_BASE=local` (or empty) so the
  * offline CI smoke build emits no gene routes; the Pages-side build runs
- * against the real Worker and emits the full set. Also returns `[]` on
- * any Worker error — a failed list just means no extra gene routes, not
- * a hard build failure (the catalog fetch is the loud-failure surface).
+ * against the real Worker and emits the full set.
+ *
+ * On a real Worker error it now THROWS (retry-on-5xx, mirroring
+ * `loadCatalog`) rather than returning `[]`. An empty list is not a
+ * benign "no extra routes" state: `loadCatalog` reconciles every catalog
+ * row's `deep_dive` flag against this set, so a silent `[]` would drop
+ * all gene routes AND mark every row non-deep-dive — shipping a viewer
+ * with no gene pages and no error. The build must fail loudly instead,
+ * exactly like the catalog fetch.
  */
 let _geneListPromise: Promise<string[]> | null = null;
 
 export async function listSurfaceomeGenes(): Promise<string[]> {
   if (_geneListPromise) return _geneListPromise;
-  _geneListPromise = (async () => {
-    const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
-    if (base === "local" || !base) return [];
+  _geneListPromise = _listSurfaceomeGenesImpl();
+  return _geneListPromise;
+}
+
+async function _listSurfaceomeGenesImpl(): Promise<string[]> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  // Offline-build stub stays a benign empty list: the GitHub-Actions
+  // viewer-build smoke sets SURFACEOME_API_BASE=local and expects zero
+  // gene routes (the Pages-side build does the real fetch).
+  if (base === "local" || !base) return [];
+  // Retry-on-5xx loop mirroring loadCatalog. /v1/genes is a small
+  // payload, but the Worker brushes Cloudflare's per-request CPU cap when
+  // D1 is cold, so intermittent 503s are normal and recover on the next
+  // call. Three attempts at 1.5s / 3s backoff; 4xx is deterministic so we
+  // break and surface it without retrying.
+  let res: Response | null = null;
+  let lastStatus: number | null = null;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
-      const res = await fetch(`${base}/v1/genes`, {
+      res = await fetch(`${base}/v1/genes`, {
         cache: "force-cache",
         signal: controller.signal,
       });
-      if (!res.ok) return [];
-      const data = (await res.json()) as {
-        genes?: Array<{ gene_symbol?: string }>;
-      };
-      return (data.genes ?? [])
-        .map((g) => g.gene_symbol)
-        .filter((s): s is string => Boolean(s))
-        .sort();
-    } catch {
-      return [];
     } finally {
       clearTimeout(timer);
     }
-  })();
-  return _geneListPromise;
+    if (res.ok) break;
+    lastStatus = res.status;
+    // Don't retry on 4xx — those are deterministic.
+    if (res.status < 500) break;
+    if (attempt < 2) {
+      const delay = [1500, 3000][attempt] ?? 3000;
+      await new Promise((r) => setTimeout(r, delay));
+    }
+  }
+  if (!res || !res.ok) {
+    throw new Error(
+      `${base}/v1/genes returned ${lastStatus ?? "no-response"} ` +
+        `after 3 attempts`,
+    );
+  }
+  const data = (await res.json()) as {
+    genes?: Array<{ gene_symbol?: string }>;
+  };
+  return (data.genes ?? [])
+    .map((g) => g.gene_symbol)
+    .filter((s): s is string => Boolean(s))
+    .sort();
 }
 
 /**
