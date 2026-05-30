@@ -535,15 +535,46 @@ primitives `.h-display` / `.h-section` / `.lede` / `.label-mono` from
 `viewer/app/design-tokens.css` — they have to be re-synced manually
 when the deliverome.org system rev's.
 
-Data: `viewer/public/data/surfaceome/{SYMBOL}.json` is the static
-deploy artifact (also reachable as
+Data: `viewer/public/data/surfaceome/{SYMBOL}.json` is the committed
+in-tree snapshot (also reachable as
 `https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.json`).
-The page bodies read those JSONs via `fs` at build time and SSG every
-gene through `generateStaticParams`. When the public Worker at
-`api.deliverome.org/surfaceome/v1/*` is live (source in
+Every gene is SSG'd through `generateStaticParams`; the loader at
+`viewer/lib/surfaceome.ts` fetches the public Worker at
+`api.deliverome.org/surfaceome/v1/genes/{SYMBOL}` (source in
 `cloudflare/workers/surfaceome_api/`, bound to the `surfaceome_public`
-D1 mirror), the loader at `viewer/lib/surfaceome.ts` can swap `fs` for
-`fetch()` — same record shape.
+D1 mirror) **first** and falls back to the committed `fs` snapshot only
+on error — same record shape. Set `SURFACEOME_API_BASE=local` (or
+empty) to force fs-only.
+
+### Records source of truth — never edit a JSON snapshot without syncing D1
+
+**The live site reads D1, not the committed JSON.** The Worker serves
+each gene from public D1's `surface_annotation.annotation_json`; the
+`viewer/public/data/surfaceome/*.json` snapshots are only the in-tree
+source of truth + the on-error SSG fallback. So **a record change that
+lands only in the JSON silently drifts the live site** — the page keeps
+rendering D1's stale row. This is exactly what blanked the Family chip:
+the `protein_family` → `llm_family` rename updated the JSON + viewer
+code, but D1 still served the pre-rename shape, so `llm_family` was
+missing and `prettyEnum(undefined)` rendered `—`.
+
+Rules for changing what a gene page renders:
+
+- **Don't hand-edit a JSON snapshot to change record content/schema and
+  stop there.** The edit hasn't reached the live site until it's in D1.
+- **Land the change in D1.** Normal path: re-run the annotator
+  (`scripts/surfaceome_v2_annotate.py`), which publishes to public D1
+  via `accessible_surfaceome.cloud.surface_annotation.publish_record`
+  after every successful run. If you hand-edited the committed
+  snapshots, push them with
+  `uv run python scripts/upload_viewer_snapshots_to_d1.py --execute`
+  (idempotent `INSERT OR REPLACE` on `(gene_symbol, schema_version)`;
+  drops stale older-schema rows). Re-sync D1 in the **same** change as
+  the JSON edit so the Worker and the in-tree snapshots never diverge.
+- **Don't paper over JSON ↔ D1 schema drift with defensive shims / `?.`
+  chains in the loader.** Fix the records and re-sync D1. A transitional
+  loader shim is acceptable only as a stopgap while D1 is being
+  re-synced — delete it once D1 carries the new schema.
 
 Per-gene records must validate against the `SurfaceomeRecord` Pydantic
 schema in `src/accessible_surfaceome/tools/_shared/models.py`. See
