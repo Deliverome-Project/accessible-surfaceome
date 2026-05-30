@@ -126,8 +126,9 @@ function deriveOrthologDetail(topology: string): {
 
 /**
  * Paralog antibody-cross-reactivity risk tier from a percent identity.
- * Cutoffs follow antibody-validation practice (Bordeaux et al. 2010 /
- * Edfors et al. 2018) — cross-reactive binding tracks sequence identity:
+ * The bands are our heuristic; that cross-reactive binding tracks
+ * sequence identity follows antibody-validation practice (Bordeaux
+ * et al. 2010, PMID 20359301; Edfors et al. 2018, PMID 30297845):
  *   ≥ 70% → cross-reactivity likely    ("high")
  *   ≥ 50% → cross-reactivity plausible ("med")
  *   < 50% → low
@@ -513,10 +514,11 @@ export function IsoformsCard({ rec, n }: Props) {
                 each within-species paralog. Antibody cross-reactivity tracks
                 ECD identity, so the chips are colored by risk:{" "}
                 <strong>≥70% likely</strong>, 50–70% plausible, &lt;50% low.
-                Cutoffs from antibody-validation practice (Bordeaux 2010,
-                PMID 20359301; Edfors 2018, PMID 30297845). Paralogs at or below
-                40% ECD identity are hidden — their cross-reactivity signal is
-                negligible.
+                The bands are our heuristic; the principle that
+                cross-reactivity tracks identity follows antibody-validation
+                practice (Bordeaux 2010, PMID 20359301; Edfors 2018,
+                PMID 30297845). Paralogs at or below 40% ECD identity are hidden
+                — their cross-reactivity signal is negligible.
               </>
             ) : coloredByFullLen ? (
               <>
@@ -525,10 +527,11 @@ export function IsoformsCard({ rec, n }: Props) {
                 Cross-reactivity risk here is keyed to{" "}
                 <strong>whole-protein</strong> sequence identity instead, with
                 the same tiers: <strong>≥70% likely</strong>, 50–70% plausible,
-                &lt;50% low. Cutoffs from antibody-validation practice (Bordeaux
-                2010, PMID 20359301; Edfors 2018, PMID 30297845). Paralogs at or
-                below 40% identity are hidden — their cross-reactivity signal is
-                negligible.
+                &lt;50% low. The bands are our heuristic; the principle that
+                cross-reactivity tracks identity follows antibody-validation
+                practice (Bordeaux 2010, PMID 20359301; Edfors 2018,
+                PMID 30297845). Paralogs at or below 40% identity are hidden —
+                their cross-reactivity signal is negligible.
               </>
             ) : (
               <>

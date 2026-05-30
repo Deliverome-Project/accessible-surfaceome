@@ -120,8 +120,10 @@ function orthologIdentityTone(pct: number | null): Tone {
 /**
  * Paralog max-ECD-identity tone — higher identity is WORSE (more
  * potential antibody cross-reactivity). Inverse polarity from the
- * ortholog scale. Thresholds from Bordeaux et al. 2010 / Edfors et al.
- * 2018 antibody-validation literature.
+ * ortholog scale. The bands are our heuristic; the principle that
+ * cross-reactivity tracks sequence identity follows antibody-validation
+ * practice (Bordeaux et al. 2010, PMID:20359301; Edfors et al. 2018,
+ * PMID:30297845).
  */
 function paralogIdentityTone(pct: number | null): Tone {
   if (pct == null) return "success"; // no paralogs in the family = no cross-reactivity risk
@@ -192,10 +194,12 @@ const TT_ORTHOLOG_ID =
 
 const TT_PARALOG_ID =
   "Highest ECD % identity across the gene's Compara paralogs — " +
-  "antibody cross-reactivity risk. Cutoffs from antibody-validation " +
-  "literature (Bordeaux et al. 2010 / Edfors et al. 2018): < 50% = " +
-  "cross-reactivity unlikely; 50-70% = plausible (validate against " +
-  "paralog-KO); ≥ 70% = likely (paralog-discrimination required).";
+  "antibody cross-reactivity risk. That cross-reactivity tracks " +
+  "sequence identity follows antibody-validation practice (Bordeaux " +
+  "et al. 2010, PMID:20359301; Edfors et al. 2018, PMID:30297845); " +
+  "the % bands are our heuristic: < 50% = cross-reactivity unlikely; " +
+  "50-70% = plausible (validate against paralog-KO); ≥ 70% = likely " +
+  "(paralog-discrimination required).";
 
 const TT_ACCESSIBILITY =
   "Synthesizer's headline call: high (clear surface presence across " +
@@ -680,11 +684,12 @@ export function FiltersCard({ rec, n }: Props) {
     Paralogs: {
       title:
         "Highest ECD %identity across the gene's Compara paralogs — " +
-        "the antibody cross-reactivity risk. Cutoffs from antibody-" +
-        "validation literature (Bordeaux 2010 / Edfors 2018): <50% = " +
-        "cross-reactivity unlikely; 50-70% = plausible (validate " +
-        "against paralog-KO); ≥70% = likely (paralog-discrimination " +
-        "required).",
+        "the antibody cross-reactivity risk. That cross-reactivity " +
+        "tracks sequence identity follows antibody-validation practice " +
+        "(Bordeaux 2010, PMID:20359301; Edfors 2018, PMID:30297845); " +
+        "the % bands are our heuristic: <50% = cross-reactivity " +
+        "unlikely; 50-70% = plausible (validate against paralog-KO); " +
+        "≥70% = likely (paralog-discrimination required).",
       links: [
         { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
       ],

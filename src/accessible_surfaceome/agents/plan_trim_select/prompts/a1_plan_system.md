@@ -154,10 +154,11 @@ fields you should weight your `SearchPlan` against are:
     claims with extra scrutiny.
 
 * **`paralog_count` + `top_paralogs`** — within-species Compara
-  paralogs by ECD identity. The cutoffs come from antibody-validation
-  practice (Bordeaux et al. 2010 / Edfors et al. 2018): cross-reactive
-  binding correlates with sequence identity in the epitope-containing
-  region.
+  paralogs by ECD identity. The % bands below are our heuristic; that
+  cross-reactive binding correlates with sequence identity in the
+  epitope-containing region follows antibody-validation practice
+  (Bordeaux et al. 2010, PMID 20359301; Edfors et al. 2018,
+  PMID 30297845).
   - Top paralog `ecd_pct_identity >= 50`: cross-reactivity is
     plausible. Plan one `topic_search` query covering the paralog
     family so the trim phase can spot cross-reactivity papers.

@@ -85,9 +85,10 @@ fields you should weight your `SearchPlan` against are:
     accordingly.
 
 * **`paralog_count` + `top_paralogs`** — Compara paralogs by ECD
-  identity. Cutoffs come from antibody-validation practice
-  (Bordeaux et al. 2010 / Edfors et al. 2018) and family-aware
-  literature design.
+  identity. The % bands below are our heuristic; the principle that
+  cross-reactivity tracks identity follows antibody-validation practice
+  (Bordeaux et al. 2010, PMID 20359301; Edfors et al. 2018,
+  PMID 30297845), combined with family-aware literature design.
   - Top paralog `ecd_pct_identity >= 50`: cross-reactivity is
     plausible at the antibody level. Cell-type expression patterns
     and single-cell markers may transfer from the family; add one
