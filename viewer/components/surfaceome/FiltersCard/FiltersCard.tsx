@@ -343,7 +343,9 @@ export function FiltersCard({ rec, n }: Props) {
             "mostly_intracellular = surface is the minority pool."
           }
         >
-          {prettyEnum(f.surface_specificity)}
+          {f.surface_specificity === "mixed"
+            ? "surface vs intracellular mixed"
+            : prettyEnum(f.surface_specificity)}
         </StatusPill>,
         <StatusPill
           key="coreceptor"
@@ -362,7 +364,7 @@ export function FiltersCard({ rec, n }: Props) {
           <span aria-hidden="true">
             {f.has_restricted_subdomain ? "✓" : "✗"}
           </span>{" "}
-          restricted subdomain
+          restricted membrane subdomain
         </StatusPill>,
       ],
     },
