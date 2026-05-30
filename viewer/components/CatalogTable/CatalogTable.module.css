@@ -491,13 +491,27 @@
   gap: var(--space-2);
 }
 
-/* Pretty-named "Filter row with inline tip" — the .filterLabel + an
- * InfoTip glyph sit side-by-side, so the label group needs to render
- * as flex so the glyph doesn't break onto a new line. */
+/* Filter row label + inline InfoTip glyph.
+ *
+ * Was previously `display: inline-flex; align-items: center` — that
+ * kept the InfoTip from orphaning to a new line for short labels,
+ * BUT for labels that wrap inside the 13rem label column ("Low
+ * endogenous expression", "Overexpression precedent") it pushed the
+ * (i) glyph to the right edge of the column, vertically centered
+ * next to the wrapped text block. The reader saw the glyph sitting
+ * ~10rem to the right of where the label started — visually
+ * disconnected, and the InfoTip's popover anchored there too.
+ *
+ * Use block layout with the InfoTip's own `.wrap` (inline-flex,
+ * vertical-align: baseline) flowing inline after the text node so
+ * the glyph sits at the baseline of the last word of the label,
+ * regardless of whether the label wraps. The InfoTip's
+ * `vertical-align: baseline` already handles the alignment; we
+ * don't need the parent flex container to enforce it. The
+ * `.trigger` carries its own `margin-left: 0.25rem`, so we don't
+ * need a parent `gap` either. */
 .filterLabelWithTip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
+  display: block;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.04em;
