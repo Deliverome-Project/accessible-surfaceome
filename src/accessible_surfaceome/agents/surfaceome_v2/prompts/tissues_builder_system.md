@@ -69,13 +69,36 @@ ONE fenced ```json block containing a JSON ARRAY. Empty `[]` is fine.
 If three claims from three different papers all report `cerebellum` as
 `high` in normal tissue, emit ONE row with three `cited_evidence_ids`.
 
-The same tissue can legitimately appear twice with different
-`disease_context` (e.g. one row for kidney/normal, another for
-kidney/tumor) — that's allowed.
+The same tissue can appear twice with different `disease_context` (e.g.
+one row for kidney/normal, another for kidney/tumor) — but ONLY when the
+two reads differ in level; see "Disease-context rows" below.
 
 When sources disagree about presence level for the same
 (tissue, disease_context), use `present="mixed"` and note both reads in
 `cited_evidence_ids`. Don't pick a winner.
+
+## Disease-context rows — emit only when they DIFFER from normal
+
+A `disease_context ∈ {tumor, tumor_adjacent, other_disease}` row is
+informative only when its surface level DIFFERS from the SAME tissue's
+`normal` read — that up/down differential is the whole point (it's what
+separates an on-tumor target from a normal-tissue liability). A disease
+row that merely restates the normal level is noise. Gate the disease
+rows on it:
+
+- Disease level **equals** the paired normal level for that tissue (e.g.
+  kidney/normal `high` AND kidney/tumor `high`) → emit ONLY the `normal`
+  row; DROP the redundant disease row.
+- Disease level **differs** from the paired normal (up, down, or
+  normal `absent` ⇄ disease present) → emit BOTH rows; the difference is
+  the signal worth surfacing.
+- No `normal` read exists for that tissue to compare against → keep the
+  disease row (it cannot be a normal-duplicate; it's the only read for
+  that tissue).
+
+This gate is ONLY on disease-context rows. Keep every
+`disease_context=normal` row per the tox-risk-organ rule above — those
+are the baseline the disease rows are compared against.
 
 ## You have no tools
 
