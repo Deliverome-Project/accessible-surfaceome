@@ -7,6 +7,7 @@ import { ecSites } from "../../../lib/surface-bind";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { cellStateTriggerDesc } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import {
@@ -375,8 +376,13 @@ export function FiltersCard({ rec, n }: Props) {
           />
         </StatusPill>,
         ...modTriggers.map((t) => (
-          <StatusPill key={`trig-${t}`} tone="amber" size="sm">
-            {prettyEnum(t)}
+          <StatusPill
+            key={`trig-${t}`}
+            tone="amber"
+            size="sm"
+            title={cellStateTriggerDesc(t)}
+          >
+            <ChipLabelValue label="trigger" value={prettyEnum(t)} />
           </StatusPill>
         )),
       ],

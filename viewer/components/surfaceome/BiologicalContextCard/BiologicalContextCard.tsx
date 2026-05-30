@@ -3,6 +3,7 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { cellStateTriggerDesc } from "../../../lib/enums";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
@@ -75,8 +76,13 @@ export function BiologicalContextCard({ rec, n }: Props) {
             />
           </StatusPill>
           {modTriggers.map((t) => (
-            <StatusPill key={t} tone="amber" size="sm">
-              {prettyEnum(t)}
+            <StatusPill
+              key={t}
+              tone="amber"
+              size="sm"
+              title={cellStateTriggerDesc(t)}
+            >
+              <ChipLabelValue label="trigger" value={prettyEnum(t)} />
             </StatusPill>
           ))}
         </div>
@@ -117,7 +123,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>
                     {m.cell_state_trigger ? (
-                      <StatusPill tone="amber" size="sm">
+                      <StatusPill
+                        tone="amber"
+                        size="sm"
+                        title={cellStateTriggerDesc(m.cell_state_trigger)}
+                      >
                         {prettyEnum(m.cell_state_trigger)}
                       </StatusPill>
                     ) : null}

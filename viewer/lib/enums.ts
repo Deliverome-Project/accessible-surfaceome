@@ -298,3 +298,40 @@ export function prettyEnum(s: string | null | undefined): string {
 export function tissueLabel(t: string): string {
   return titleCase(t);
 }
+
+/** One-line "what is this?" context for each cell-state trigger — the
+ *  condition under which a protein's surface accessibility is modulated.
+ *  Shown as the trigger chip's tooltip so bare enum chips
+ *  ("Oncogenic transformation", "Mechanical stress") explain themselves. */
+const CELL_STATE_TRIGGER_DESC: Record<string, string> = {
+  ER_stress:
+    "Endoplasmic-reticulum stress / unfolded-protein response — can drive ER-resident chaperones (GRP78, calreticulin) onto the cell surface.",
+  heat_shock:
+    "Heat-shock / proteotoxic stress — induces surface exposure of heat-shock proteins.",
+  oxidative_stress: "Reactive-oxygen-species (oxidative) stress.",
+  DNA_damage_response: "DNA-damage signaling response.",
+  apoptosis:
+    "Programmed cell death — exposes 'eat-me' surface signals such as calreticulin.",
+  necroptosis: "Programmed necrotic cell death.",
+  oncogenic_transformation:
+    "The malignant (cancer-cell) state driven by oncogene activation. Many ectopic-surface forms appear ONLY here (e.g. eSrc), so surface accessibility is restricted to tumor cells — giving a tumor-selective window versus normal tissue.",
+  infection_viral: "Host-cell response to viral infection.",
+  infection_bacterial: "Host-cell response to bacterial infection.",
+  immune_activation: "Activation of an immune cell.",
+  antigen_stimulation: "Antigen-receptor engagement.",
+  cytokine_stimulation: "Exposure to cytokines.",
+  hypoxia: "Low-oxygen stress — characteristic of the tumor microenvironment.",
+  nutrient_deprivation: "Starvation / autophagy-inducing nutrient stress.",
+  hyperthermia: "Elevated temperature.",
+  mechanical_stress:
+    "Physical force on the cell — shear stress (e.g. vascular flow) or mechanical load (e.g. on osteoblasts) — which can redistribute proteins to the plasma membrane or change surface exposure.",
+  other:
+    "A cell-state trigger outside the standard set — see the modulation row for specifics.",
+  unknown: "The triggering cell state was not specified.",
+};
+
+/** Tooltip context for a cell-state trigger; falls back to its label. */
+export function cellStateTriggerDesc(t: string | null | undefined): string {
+  if (!t) return "";
+  return CELL_STATE_TRIGGER_DESC[t] ?? prettyEnum(t);
+}
