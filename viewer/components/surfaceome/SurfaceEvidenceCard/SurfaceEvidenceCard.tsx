@@ -9,6 +9,7 @@ import type {
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { antibodyLink } from "../../../lib/antibody-links";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
@@ -233,11 +234,25 @@ function MethodBlock({
                     ) : null}
                   </span>
                   <span className={styles.abPills}>
-                    <StatusPill tone="neutral" size="sm">
-                      {prettyEnum(ab.monoclonal_or_polyclonal)}
+                    <StatusPill
+                      tone="neutral"
+                      size="sm"
+                      title="Monoclonal vs polyclonal antibody. Unknown = the source paper didn't specify."
+                    >
+                      <ChipLabelValue
+                        label="clonality"
+                        value={prettyEnum(ab.monoclonal_or_polyclonal)}
+                      />
                     </StatusPill>
-                    <StatusPill tone="teal" size="sm">
-                      {prettyEnum(ab.antibody_epitope_region)}
+                    <StatusPill
+                      tone="teal"
+                      size="sm"
+                      title="Which region of the protein the antibody's epitope sits in. Extracellular = it binds the surface-accessible domain (the region that matters for surface targeting); an intracellular epitope isn't reachable on an intact cell. Unknown = not stated."
+                    >
+                      <ChipLabelValue
+                        label="epitope"
+                        value={prettyEnum(ab.antibody_epitope_region)}
+                      />
                     </StatusPill>
                     <StatusPill
                       tone={
@@ -249,7 +264,10 @@ function MethodBlock({
                       }
                       size="sm"
                     >
-                      {prettyEnum(ab.validation_strength)} validation
+                      <ChipLabelValue
+                        label="validation"
+                        value={prettyEnum(ab.validation_strength)}
+                      />
                     </StatusPill>
                     <InfoTip label="About validation strength">
                       {tooltips.antibody_validation_strength}
