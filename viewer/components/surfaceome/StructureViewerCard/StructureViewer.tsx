@@ -1442,7 +1442,18 @@ export function StructureViewer({
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
-        viewer.setStyle(baseSel, { cartoon: { color: TOPOLOGY_COLORS.B } });
+        // Base color for residues without an explicit topology range. A
+        // GLOB protein whose topology came back empty (e.g. IZUMO4 —
+        // outside the topology-sweep cohort, so NO ranges to overlay at
+        // all) would otherwise show bare beta-gray; paint the base
+        // GLOB-yellow so it matches every other globular protein. Genes
+        // WITH topology overpaint this base via their ranges below, so
+        // they're unaffected.
+        const baseColor =
+          activeDeepTMHMMType === "GLOB"
+            ? TOPOLOGY_COLORS.M
+            : TOPOLOGY_COLORS.B;
+        viewer.setStyle(baseSel, { cartoon: { color: baseColor } });
         // For canonical, use the pre-computed `topology_ranges` from
         // the build-time JSON. For an AFDB variant, compute ranges
         // on the fly. For experimental, project the canonical ranges
@@ -1451,7 +1462,15 @@ export function StructureViewer({
           ? data.topology_ranges
           : _computeTopologyRanges(activeTopology);
         (["M", "O", "I", "S", "B"] as const).forEach((state) => {
-          const color = TOPOLOGY_COLORS[state];
+          // GLOB (soluble / no membrane topology): DeepTMHMM tags the
+          // whole chain "I", so the only non-empty range is I spanning
+          // 1..N. Paint it the TM-helix color rather than intracellular-
+          // green so the fold doesn't visually assert a compartment it
+          // doesn't have; the legend says "Globular" to match.
+          const color =
+            activeDeepTMHMMType === "GLOB"
+              ? TOPOLOGY_COLORS.M
+              : TOPOLOGY_COLORS[state];
           (ranges[state] ?? []).forEach(([start, end]) => {
             if (expVariant) {
               // Project each topology range through every projection
@@ -1713,8 +1732,11 @@ export function StructureViewer({
           prop in their original order. Clicking switches which AFDB
           model + per-residue topology is rendered; SURFACE-Bind
           overlay hides on non-canonical tabs (anchor residue numbers
-          are canonical-keyed and don't translate cleanly). */}
-      {effectiveVariants.length > 0 ? (
+          are canonical-keyed and don't translate cleanly). The strip is
+          ALWAYS rendered — a lone "Canonical" tab (when the gene has no
+          isoforms / orthologs / experimental, e.g. IZUMO4) keeps the
+          affordance consistent across genes. */}
+      {(
         <div
           className={styles.variantTabs}
           role="tablist"
@@ -1770,7 +1792,7 @@ export function StructureViewer({
             );
           })}
         </div>
-      ) : null}
+      )}
       <div
         ref={containerRef}
         className={styles.viewerCanvas}
@@ -1938,6 +1960,7 @@ export function StructureViewer({
       ) : (
         <TopologyLegend
           presentStates={_presentTopologyStates(activeTopology)}
+          globular={activeDeepTMHMMType === "GLOB"}
         />
       )}
     </div>
