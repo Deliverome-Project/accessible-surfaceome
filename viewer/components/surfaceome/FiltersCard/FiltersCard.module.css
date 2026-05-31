@@ -125,6 +125,16 @@
   overflow-wrap: break-word;
 }
 
+/* Deterministic section: one chip per row (a vertical stack under each
+   group label) so the short deterministic chips line up the same way the
+   LLM chips already read — the LLM chips are long enough to wrap to
+   ~one-per-row on their own; the shorter deterministic ones need an
+   explicit column to match. */
+.groupsStacked .pills {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
 /* The family / gene-group NAME inside a registry pill ("protein kinase",
    "immunoglobulin", a HGNC group name) renders 1.5pt smaller than the rank
    word ("superfamily" / "family" / "subfamily") that precedes it — the rank

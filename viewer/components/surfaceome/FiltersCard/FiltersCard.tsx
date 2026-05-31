@@ -323,7 +323,7 @@ export function FiltersCard({ rec, n }: Props) {
   // (now removed, since surfacing it twice was redundant). The
   // ordering inside each provenance section follows the original
   // group order so readers' eye doesn't have to re-learn the layout.
-  const groups: { label: string; provenance: "llm" | "deterministic"; pills: React.ReactNode[] }[] = [
+  const groups: { label: string; provenance: "llm" | "deterministic"; pills: React.ReactNode[]; linkTo?: string }[] = [
     // The "Accessibility" umbrella group was retired — the headline
     // accessibility / confidence / state_dependence chips already
     // render in the executive-summary chip strip up top, so showing
@@ -346,9 +346,19 @@ export function FiltersCard({ rec, n }: Props) {
     // at-a-glance panel: the deep-dive's surface-call reason, state-
     // gating, primary compartment, and deduped modulation triggers. The
     // one-sentence rationale rides the group InfoTip (GROUP_META below).
+    // Biology chips lead, then Accessibility context — both link to the
+    // §03 "Biology & accessibility" tab (the group headings are
+    // section-jump links). Expression + Risks follow, unlinked.
+    {
+      label: FEATURE_TAB_LABEL.biology,
+      provenance: "llm" as const,
+      linkTo: "#section-biology",
+      pills: buildFeatureChips("biology", rec).map((m) => m.pill),
+    },
     {
       label: "Accessibility context",
       provenance: "llm" as const,
+      linkTo: "#section-biology",
       pills: [
         <StatusPill key="reason" tone="lavender" size="sm">
           <ChipLabelValue
@@ -378,7 +388,7 @@ export function FiltersCard({ rec, n }: Props) {
         )),
       ],
     },
-    ...FEATURE_CATEGORIES.map((cat) => ({
+    ...(["expression", "risks"] as const).map((cat) => ({
       label: FEATURE_TAB_LABEL[cat],
       provenance: "llm" as const,
       pills: buildFeatureChips(cat, rec).map((m) => m.pill),
@@ -896,7 +906,9 @@ export function FiltersCard({ rec, n }: Props) {
        *  block + isoform cards), Ensembl Compara orthologs +
        *  paralogs, MaSIF / SURFACE-Bind targetability. */}
       <p className={`label-mono ${styles.provenanceHeading}`}>Deterministic</p>
-      <div className={styles.groups}>{detGroups.map(renderGroup)}</div>
+      <div className={`${styles.groups} ${styles.groupsStacked}`}>
+        {detGroups.map(renderGroup)}
+      </div>
     </SectionCard>
   );
 }
