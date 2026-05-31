@@ -665,12 +665,14 @@ def _annotate(
     # decoy"); a later literature pass that finds serum/plasma levels can
     # raise it on re-run. This flows into ``_derive_filters`` below, so the
     # ``has_secreted_form`` catalog filter flips consistently with the block.
+    # ``isoform_topologies`` lists the ALTERNATIVE isoforms only (the
+    # canonical lives in ``canonical_topology``), so every entry here is
+    # non-canonical by construction — no is_canonical field exists on
+    # IsoformTopology. A TM-less entry with a real ECD is a soluble form.
     _secreted_isoform_ids = [
         iso.isoform_id
         for iso in det_features.isoform_topologies
-        if iso.is_canonical is not True
-        and iso.tm_helix_count == 0
-        and iso.ecd_length_residues >= 30
+        if iso.tm_helix_count == 0 and iso.ecd_length_residues >= 30
     ]
     if _secreted_isoform_ids and not synth_draft.accessibility_risks.secreted_form.present:
         _ar = synth_draft.accessibility_risks
