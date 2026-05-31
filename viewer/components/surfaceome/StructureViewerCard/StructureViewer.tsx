@@ -894,6 +894,9 @@ export function StructureViewer({
   // Set once the reader manually picks a tab (or the auto-default fires)
   // so the auto-default-to-experimental doesn't fight a manual selection.
   const userPickedRef = useRef(false);
+  // Stale-render guard counter (see renderViewer): bumped each invocation
+  // so a superseded async render can't clobber the current one's status.
+  const renderSeqRef = useRef(0);
   // PDBe `best_structures` lookup — fires on mount per gene. When a
   // top experimental candidate is available, an extra "Experimental"
   // variant is appended to the tabs at render time. Three states:
@@ -1201,6 +1204,13 @@ export function StructureViewer({
 
   const renderViewer = useCallback(async () => {
     if (!containerRef.current) return;
+    // Bump + capture a render token. A renderViewer for one variant can
+    // still be mid-fetch when the active variant changes — notably the
+    // auto-default canonical → Experimental, which fires AFTER canonical's
+    // AFDB 404 is already in flight. Each terminal setStatus below bails if
+    // a newer render has started, so the late canonical run can't overwrite
+    // the Experimental render's "ready" with "nomodel".
+    const renderSeq = ++renderSeqRef.current;
     setStatus("loading");
     setErrorMsg("");
     try {
@@ -1310,6 +1320,7 @@ export function StructureViewer({
           // a soft "no model available" state, not a red error. Non-404s
           // are genuine failures and still throw → the error UI + Retry.
           if (pdbResp.status === 404) {
+            if (renderSeq !== renderSeqRef.current) return;
             setErrorMsg("");
             setStatus("nomodel");
             return;
@@ -1656,8 +1667,10 @@ export function StructureViewer({
         ro.observe(node);
         resizeObserverRef.current = ro;
       }
+      if (renderSeq !== renderSeqRef.current) return;
       setStatus("ready");
     } catch (err) {
+      if (renderSeq !== renderSeqRef.current) return;
       const msg = err instanceof Error ? err.message : String(err);
       setErrorMsg(msg);
       setStatus("error");

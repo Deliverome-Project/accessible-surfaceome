@@ -372,6 +372,12 @@
 .loadingNote {
   position: absolute;
   inset: 0;
+  /* Opaque bg + z-index so the overlay covers any leftover 3dmol <canvas>
+   * from a previous render (3dmol's clear() empties the scene but leaves
+   * the canvas element). Without this, switching variants flashes a blank
+   * canvas over the status text. */
+  z-index: 2;
+  background: var(--bg-soft, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -383,6 +389,8 @@
 .errorBox {
   position: absolute;
   inset: 0;
+  z-index: 2;
+  background: var(--bg-soft, #ffffff);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -398,6 +406,8 @@
 .nomodelBox {
   position: absolute;
   inset: 0;
+  z-index: 2;
+  background: var(--bg-soft, #ffffff);
   display: flex;
   flex-direction: column;
   align-items: center;
