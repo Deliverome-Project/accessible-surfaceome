@@ -146,13 +146,14 @@
 
 .modTable th:nth-child(1),
 .modTable td:nth-child(1) {
-  /* Wide enough that the longest category label
-     ("Post-translational dependent" — ~223px once uppercase + letter-spacing
-     + pill padding are counted) fits on ONE line, so the lavender pill hugs
-     its text instead of wrapping and trailing background past the shorter
-     wrapped line. The table is fixed-layout at 100%, so this draws from the
-     prose Implication / References columns, which wrap fine. */
-  width: 14.75rem;
+  /* Deliberately compact: wide enough for the longest category's first line
+     ("Post-translational" ≈ 150px + cell padding) with "dependent" wrapping
+     centered underneath, but no wider. The pill itself is shrink-wrapped +
+     centered (see the nth-child(1) span rule below), so it stays ONE pill
+     that hugs its content instead of a cell-wide slab of background.
+     Fixed-layout at 100%, so the prose Implication / References columns
+     absorb the freed width. */
+  width: 11.5rem;
 }
 
 .modTable th:nth-child(2),
@@ -182,17 +183,28 @@
   word-break: keep-all;
 }
 
-/* Column 2 (Induced / lineage) is pinned narrow (7rem), so its pills must
-   wrap at word boundaries rather than overflow the fixed column. Column 1
-   (Category) is deliberately NOT wrapped — it's sized above to fit the
-   longest label on one line, so its lavender pill keeps StatusPill's default
-   `nowrap` and the background hugs the text instead of trailing past a short
-   wrapped line. Target ALL descendants (not just the direct pill) so the
-   text span INSIDE the pill wraps too, only at word boundaries. */
+/* Columns 1 (Category) and 2 (Induced / lineage) are pinned narrow, so their
+   pills wrap at word boundaries rather than overflow the fixed column. Target
+   ALL descendants (not just the direct pill) so the text span INSIDE the pill
+   wraps too, only at word boundaries. */
+.modTable td:nth-child(1) *,
 .modTable td:nth-child(2) * {
   white-space: normal;
   overflow-wrap: normal;
   word-break: keep-all;
+}
+
+/* The Category pill wraps to two lines in its compact column
+   ("Post-translational" over "dependent"), but stays ONE pill (single
+   rounded background). `inline-block` + `max-width` shrink-wraps it to its
+   own content (so short categories don't get a cell-wide background), and
+   `text-align: center` sits the wrapped short line centered under the long
+   one — the only purple past a word is the small balanced margin around the
+   centered short line, not a slab trailing off the right edge. */
+.modTable td:nth-child(1) span {
+  display: inline-block;
+  max-width: 10rem;
+  text-align: center;
 }
 
 /* The change/effect narrative ("evidence string") now lives in the Cites
