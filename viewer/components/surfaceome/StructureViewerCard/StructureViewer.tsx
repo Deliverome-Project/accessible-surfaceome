@@ -820,7 +820,7 @@ const COMPARTMENT_COLOR: Record<AnchorCompartment, string> = {
   unknown: "#6B7280", // gray-500
 };
 
-type LoadStatus = "loading" | "ready" | "error";
+type LoadStatus = "loading" | "ready" | "error" | "nomodel";
 
 interface ViewerInstance {
   clear: () => void;
@@ -882,6 +882,18 @@ export function StructureViewer({
   // sequences once alternative splicing or species differences
   // shift positions.
   const [variantIdx, setVariantIdx] = useState<number>(0);
+  // Per-AFDB-accession availability (canonical + isoform/ortholog
+  // variants), probed on mount. `false` ⟹ AFDB has no model for that
+  // protein (e.g. megalin/LRP2, beyond AFDB's per-entry size limit) — its
+  // tab is grayed and, for the canonical, the viewer defaults to an
+  // experimental structure instead. `"loading"` while the probe is in
+  // flight; absent key ⟹ not probed (treated as available).
+  const [afdbAvail, setAfdbAvail] = useState<
+    Record<string, boolean | "loading">
+  >({});
+  // Set once the reader manually picks a tab (or the auto-default fires)
+  // so the auto-default-to-experimental doesn't fight a manual selection.
+  const userPickedRef = useRef(false);
   // PDBe `best_structures` lookup — fires on mount per gene. When a
   // top experimental candidate is available, an extra "Experimental"
   // variant is appended to the tabs at render time. Three states:
@@ -980,6 +992,46 @@ export function StructureViewer({
     return () => { cancelled = true; };
   }, [data.uniprot_acc]);
 
+  // Probe AFDB availability for the canonical + every AFDB variant
+  // (isoforms / orthologs) on mount, so tabs whose protein AFDB doesn't
+  // model can be grayed up front and the viewer can default to an
+  // experimental structure rather than opening on a blank "no model" tab.
+  // Prediction-API responses are cached aggressively by AFDB (force-cache).
+  useEffect(() => {
+    let cancelled = false;
+    const accs = Array.from(
+      new Set([
+        data.uniprot_acc,
+        ...variants
+          .filter((v): v is StructureVariantAfdb => v.source === "afdb")
+          .map((v) => v.uniprot_acc),
+      ]),
+    );
+    setAfdbAvail(Object.fromEntries(accs.map((a) => [a, "loading" as const])));
+    (async () => {
+      const entries = await Promise.all(
+        accs.map(async (acc): Promise<[string, boolean]> => {
+          try {
+            const r = await fetch(alphafoldPredictionApiUrl(acc), {
+              cache: "force-cache",
+            });
+            return [acc, r.ok];
+          } catch {
+            // Network hiccup — don't gray it out; the per-tab render
+            // will still surface a genuine failure if one occurs.
+            return [acc, true];
+          }
+        }),
+      );
+      if (!cancelled) setAfdbAvail(Object.fromEntries(entries));
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Variant identity is captured by the joined-id key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.uniprot_acc, variants.map((v) => v.id).join(",")]);
+
   // Effective variants = caller-provided (isoforms / orthologs) +
   // experimental tab when PDBe has a hit. Experimental always lands
   // after isoforms / orthologs in the tab strip.
@@ -1040,6 +1092,25 @@ export function StructureViewer({
   // the chain is restricted + residues may be missing from the
   // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
+
+  // Canonical-AFDB availability — drives graying its tab.
+  const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
+
+  // Default to the Experimental tab when AFDB has no model for the
+  // canonical protein but an experimental structure exists, so the viewer
+  // opens on a real structure (e.g. megalin's cryo-EM 9CWM) instead of a
+  // blank "no model" canonical view. Fires once; a manual tab pick opts out.
+  useEffect(() => {
+    if (userPickedRef.current) return;
+    if (afdbAvail[data.uniprot_acc] !== false) return;
+    const expIdx = effectiveVariants.findIndex(
+      (v) => v.source === "experimental",
+    );
+    if (expIdx >= 0) {
+      userPickedRef.current = true;
+      setVariantIdx(expIdx + 1);
+    }
+  }, [afdbAvail, effectiveVariants, data.uniprot_acc]);
 
   // Lazy-fetch AFDB metadata when the user clicks a non-canonical
   // AFDB variant (isoform / ortholog). One fetch per isoform-suffixed
@@ -1233,6 +1304,16 @@ export function StructureViewer({
           }
         }
         if (!pdbResp.ok) {
+          // A 404 = AlphaFold DB simply has no model for this protein
+          // (e.g. megalin/LRP2 and other very large proteins beyond
+          // AFDB's per-entry limit). That's not a load FAILURE — surface
+          // a soft "no model available" state, not a red error. Non-404s
+          // are genuine failures and still throw → the error UI + Retry.
+          if (pdbResp.status === 404) {
+            setErrorMsg("");
+            setStatus("nomodel");
+            return;
+          }
           throw new Error(
             `AlphaFold DB returned ${pdbResp.status} for ${activeUniprot}`,
           );
@@ -1629,10 +1710,17 @@ export function StructureViewer({
           <button
             type="button"
             role="tab"
-            className={styles.variantTab}
+            className={`${styles.variantTab} ${canonAfdbUnavail ? styles.variantTabUnavailable : ""}`.trim()}
             data-active={isCanonicalActive}
-            onClick={() => setVariantIdx(0)}
-            title={`AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`}
+            onClick={() => {
+              userPickedRef.current = true;
+              setVariantIdx(0);
+            }}
+            title={
+              canonAfdbUnavail
+                ? `No AlphaFold model for canonical ${geneSymbol} (${data.uniprot_acc}) — AlphaFold DB doesn't model this protein.`
+                : `AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`
+            }
             aria-selected={isCanonicalActive}
           >
             <span className={styles.variantTabLabel}>Canonical</span>
@@ -1640,15 +1728,25 @@ export function StructureViewer({
           </button>
           {effectiveVariants.map((v, i) => {
             const isActive = variantIdx === i + 1;
+            const vUnavail =
+              v.source === "afdb" &&
+              afdbAvail[(v as StructureVariantAfdb).uniprot_acc] === false;
             return (
               <button
                 key={v.id}
                 type="button"
                 role="tab"
-                className={styles.variantTab}
+                className={`${styles.variantTab} ${vUnavail ? styles.variantTabUnavailable : ""}`.trim()}
                 data-active={isActive}
-                onClick={() => setVariantIdx(i + 1)}
-                title={`AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`}
+                onClick={() => {
+                  userPickedRef.current = true;
+                  setVariantIdx(i + 1);
+                }}
+                title={
+                  vUnavail
+                    ? `No AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""} — AlphaFold DB doesn't model this protein.`
+                    : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
+                }
                 aria-selected={isActive}
               >
                 <span className={styles.variantTabLabel}>{v.label}</span>
@@ -1681,6 +1779,19 @@ export function StructureViewer({
             >
               Retry
             </button>
+          </div>
+        ) : null}
+        {status === "nomodel" ? (
+          <div className={styles.nomodelBox}>
+            <p className={styles.nomodelMsg}>No AlphaFold model available</p>
+            <a
+              className={styles.nomodelLink}
+              href="https://alphafold.ebi.ac.uk/faq"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Why some proteins have no model — AlphaFold DB FAQ&nbsp;↗
+            </a>
           </div>
         ) : null}
         {/* Inlaid reset symbol — small icon button in the canvas's

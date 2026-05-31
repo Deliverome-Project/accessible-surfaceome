@@ -149,8 +149,16 @@ export default async function GenePage({ params }: PageProps) {
     // is asserted by viewer/tests/verify_feature_tabs.py via the
     // data-section-id / data-feature-chips attributes).
     {
+      // Tab label intentionally diverges from `FEATURE_TAB_LABEL.biology`
+      // ("Biology") — this §03 tab covers the biology chips AND the
+      // accessibility-context block, so the tab reads "Biology &
+      // accessibility". The §01 panel still labels its chip group
+      // "Biology" (FEATURE_TAB_LABEL.biology), and both that group and the
+      // "Accessibility context" group link here via `#section-biology`.
+      // The `kind`/`data-section-id` stays "biology" so the anchor +
+      // verify_feature_tabs.py runtime check are unaffected.
       kind: "biology",
-      label: FEATURE_TAB_LABEL.biology,
+      label: "Biology & accessibility",
       render: (n) => <BiologicalContextCard rec={rec} n={n} />,
     },
     {

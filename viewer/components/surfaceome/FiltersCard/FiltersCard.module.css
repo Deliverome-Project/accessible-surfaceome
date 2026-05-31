@@ -95,6 +95,27 @@
   border-bottom-color: var(--accent);
 }
 
+/* Group heading rendered as a section-jump link (Biology / Accessibility
+   context → §03 "Biology & accessibility" tab). Styled like the label text
+   but with a SOLID underline + accent-on-hover so it reads as clickable
+   navigation, distinct from the dotted "tooltip on hover" cue. */
+.groupLabelLink {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 1px;
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.groupLabelLink:hover,
+.groupLabelLink:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
 .pills {
   list-style: none;
   margin: 0;
