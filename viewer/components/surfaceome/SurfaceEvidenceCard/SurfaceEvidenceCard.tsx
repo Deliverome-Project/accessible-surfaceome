@@ -477,9 +477,9 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
           </div>
           {nHidden > 0 ? (
             <p className={styles.hiddenNote}>
-              {nHidden === 1
-                ? "1 expression-only finding hidden — a permeabilized assay that measures total protein without showing surface or membrane localization."
-                : `${nHidden} expression-only findings hidden — permeabilized assays that measure total protein without showing surface or membrane localization.`}
+              {nHidden === 1 ? "1 finding" : `${nHidden} findings`} hidden —
+              graded <em>expression only</em>: shows the protein is present
+              but not that it reaches the cell surface or membrane.
             </p>
           ) : null}
         </>
