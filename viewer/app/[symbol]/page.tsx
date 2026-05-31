@@ -201,12 +201,12 @@ export default async function GenePage({ params }: PageProps) {
     // under its own subhead) but the tab strip is three slots shorter.
     {
       kind: "isoforms",
-      label: "Isoforms · orthologs · paralogs",
+      label: "Isoforms & homologs",
       render: (n) => <IsoformsCard rec={rec} n={n} />,
     },
     {
       kind: "ledger",
-      label: "Evidence ledger",
+      label: "Evidence",
       render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
     },
     {

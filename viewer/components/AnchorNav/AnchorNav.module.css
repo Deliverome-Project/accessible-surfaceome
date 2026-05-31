@@ -66,10 +66,19 @@
 
 .link {
   display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.4rem 0.85rem;
-  margin-right: 0.15rem;
+  /* Align the mono "01" number and the sans label on a shared baseline,
+     not their line-box centers. Center-aligning made the cap-height
+     digits sit visibly above the lowercase label text (the digits' box
+     center lands above the label's optical center); baseline puts "01"
+     and "Summary metrics" on the same line. */
+  align-items: baseline;
+  /* Tightened to fit all tabs without horizontal scroll on the widest
+     gene page (EGFR, ~7 tabs incl. SURFACE-Bind): inner number↔label
+     gap, the dominant horizontal padding, and the inter-tab margin all
+     trimmed. Pills stay legible — just snugger. */
+  gap: 0.3rem;
+  padding: 0.4rem 0.55rem;
+  margin-right: 0.08rem;
   font-family: var(--font-sans);
   font-size: 0.82rem;
   color: var(--muted);
