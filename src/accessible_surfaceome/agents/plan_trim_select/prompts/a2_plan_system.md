@@ -358,6 +358,33 @@ Concretely:
   positive; note in `rationale` that the `tissues` builder should keep
   explicit negatives.
 
+## Anatomical accessibility (don't leave it a single row)
+
+The `AnatomicalAccessibilityObservation[]` block — can a systemically
+dosed binder physically REACH the protein where it sits — is routinely
+under-built. It is DISTINCT from "is it on the surface" (the
+surface-evidence + tox panels answer that): it's about the anatomical
+barrier between the bloodstream and the protein's surface pool. Plan
+explicit coverage for the access angles that apply to this gene; aim for
+more than one row when the biology spans several compartments — a single
+anatomical row for a broadly-expressed receptor usually means the access
+angles weren't searched.
+
+* **Tumor vasculature / penetration** — for a solid-tumor target, search
+  tumor-penetration / antibody-biodistribution / "perivascular rim vs
+  tumor core" literature: does a systemic binder reach the tumor-cell
+  surface or only the well-perfused rim? (`topic_search` gene +
+  `surface_expression` + penetration / biodistribution terms.)
+* **Blood-brain barrier** — for any CNS-expressed target (brain-tissue
+  signal, glioma relevance), search whether the surface pool sits behind
+  an intact BBB (inaccessible to systemic IgG) vs an opened BBB
+  (glioblastoma, brain metastasis).
+* **Luminal vs abluminal / mucosal / apical** — does the surface pool
+  face the bloodstream (luminal/abluminal vascular = reachable) or a
+  sequestered compartment (apical epithelial, gut lumen, ductal, CSF,
+  bile) a systemic binder can't reach? Pairs with the polarized-epithelium
+  subcellular call.
+
 ## What you should AVOID (A1 handles these)
 
 * `topic_search` with `flow_cytometry` / `surface_biotinylation` /
