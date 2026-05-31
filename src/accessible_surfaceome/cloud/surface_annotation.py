@@ -249,6 +249,33 @@ def _record_regressions(
     return out
 
 
+def _record_generated_at(rec: dict[str, Any]) -> datetime | None:
+    """Parse ``record_generated_at`` to a datetime, or None if absent/bad."""
+    ts = rec.get("record_generated_at")
+    if not isinstance(ts, str) or not ts:
+        return None
+    try:
+        return datetime.fromisoformat(ts)
+    except ValueError:
+        return None
+
+
+def _is_stale(incoming: dict[str, Any], existing: dict[str, Any]) -> bool:
+    """True when the ``existing`` D1 record was generated more recently than
+    ``incoming`` — i.e. publishing ``incoming`` would overwrite a newer run
+    with an older snapshot.
+
+    Conservative: returns False when either timestamp is missing/unparseable,
+    so an ambiguous case never hard-blocks a legitimate publish (the
+    regression guard still covers the populated→empty footgun separately).
+    """
+    inc = _record_generated_at(incoming)
+    exi = _record_generated_at(existing)
+    if inc is None or exi is None:
+        return False
+    return exi > inc
+
+
 def _row_from_dict(
     rec_dict: dict[str, Any], *, annotated_at: str | None = None
 ) -> list[Any]:
@@ -352,34 +379,67 @@ def _publish_dict(
         # over a good D1 row wipes real data. Fetch the existing row only
         # when the incoming record looks degraded — a cheap fast-path for
         # the common, fully-populated case.
-        if not force and (
-            _surface_bind_has_data(rec_dict) is False
-            or not _family_populated(rec_dict)
-        ):
+        if not force:
             existing = _fetch_existing_record(cfg, sym, client=client)
-            regressions = (
-                _record_regressions(existing, rec_dict) if existing else []
-            )
-            if regressions:
-                detail = "; ".join(regressions)
-                logger.error(
-                    "REFUSING to publish %s: would regress %s. This usually "
-                    "means deterministic data wasn't hydrated / resolved in "
-                    "the generating worktree (missing SURFACE-Bind summary, "
-                    "or HGNC/UniProt family fetch failed). Re-run generation "
-                    "with a healthy resolver and re-publish, or pass "
-                    "force=True to override.",
-                    sym,
-                    detail,
-                )
-                return PublishResult(
-                    gene_symbol=sym,
-                    snapshot_path=snap_path,
-                    d1_written=False,
-                    d1_database_id=cfg.database_id,
-                    stale_versions_dropped=[],
-                    skipped_reason=f"blocked by regression guard: {detail}",
-                )
+            if existing is not None:
+                # Staleness guard — never overwrite a NEWER D1 run with an
+                # OLDER incoming record. This is the bulk-sync footgun: a
+                # stale on-disk snapshot (e.g. from a worktree that missed
+                # today's runs) would otherwise replace a freshly-published
+                # record. The regression guard below only fires for degraded
+                # (empty) incoming records, so a stale-but-populated snapshot
+                # sails past it — this catches that case.
+                if _is_stale(rec_dict, existing):
+                    logger.error(
+                        "REFUSING to publish %s: the D1 row was generated more "
+                        "recently (%s) than this record (%s) — the incoming "
+                        "snapshot is stale. Re-export it from a fresh run, or "
+                        "pass force=True to overwrite.",
+                        sym,
+                        existing.get("record_generated_at"),
+                        rec_dict.get("record_generated_at"),
+                    )
+                    return PublishResult(
+                        gene_symbol=sym,
+                        snapshot_path=snap_path,
+                        d1_written=False,
+                        d1_database_id=cfg.database_id,
+                        stale_versions_dropped=[],
+                        skipped_reason=(
+                            "blocked by staleness guard: D1 row is newer than "
+                            "the incoming record"
+                        ),
+                    )
+                # Regression guard — never blank a populated deterministic
+                # block (a degraded/empty incoming record over a good D1 row).
+                if (
+                    _surface_bind_has_data(rec_dict) is False
+                    or not _family_populated(rec_dict)
+                ):
+                    regressions = _record_regressions(existing, rec_dict)
+                    if regressions:
+                        detail = "; ".join(regressions)
+                        logger.error(
+                            "REFUSING to publish %s: would regress %s. This "
+                            "usually means deterministic data wasn't hydrated "
+                            "/ resolved in the generating worktree (missing "
+                            "SURFACE-Bind summary, or HGNC/UniProt family "
+                            "fetch failed). Re-run generation with a healthy "
+                            "resolver and re-publish, or pass force=True to "
+                            "override.",
+                            sym,
+                            detail,
+                        )
+                        return PublishResult(
+                            gene_symbol=sym,
+                            snapshot_path=snap_path,
+                            d1_written=False,
+                            d1_database_id=cfg.database_id,
+                            stale_versions_dropped=[],
+                            skipped_reason=(
+                                f"blocked by regression guard: {detail}"
+                            ),
+                        )
 
         # Drop any stale schema_versions for this gene before upserting. The
         # Worker tie-breaks on ``ORDER BY schema_version DESC LIMIT 1``, but

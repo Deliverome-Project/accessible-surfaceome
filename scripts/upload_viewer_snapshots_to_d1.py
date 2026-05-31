@@ -97,10 +97,13 @@ def main() -> int:
         "--force",
         action="store_true",
         help=(
-            "Override the surface_bind.has_data regression guard — push even "
-            "when it would overwrite a populated D1 row with has_data=False. "
-            "Only use when you're certain the empty record is correct (the "
-            "protein genuinely isn't in SURFACE-Bind)."
+            "Override the publish guards: the STALENESS guard (refuses to "
+            "overwrite a D1 row generated more recently than the snapshot — "
+            "prevents a stale snapshot from clobbering a newer run) and the "
+            "REGRESSION guard (refuses to blank a populated deterministic "
+            "block with has_data=False). Only use when you're certain the "
+            "snapshot should win — e.g. an intentional hand-edit that is "
+            "genuinely newer than what's in D1."
         ),
     )
     args = ap.parse_args()

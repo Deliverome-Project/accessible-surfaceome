@@ -47,8 +47,10 @@ def _install_fake_post(
     monkeypatch.setattr(sa, "_post", fake_post)
 
 
-def _rec(*, sb_has_data: bool, uniprot_family=None, hgnc_groups=()) -> dict:
-    return {
+def _rec(
+    *, sb_has_data: bool, uniprot_family=None, hgnc_groups=(), generated_at=None
+) -> dict:
+    rec = {
         "gene": {"hgnc_symbol": "EGFR", "uniprot_acc": "P00533"},
         "schema_version": "1.1.0",
         "executive_summary": {
@@ -57,6 +59,9 @@ def _rec(*, sb_has_data: bool, uniprot_family=None, hgnc_groups=()) -> dict:
         },
         "deterministic_features": {"surface_bind": {"has_data": sb_has_data}},
     }
+    if generated_at is not None:
+        rec["record_generated_at"] = generated_at
+    return rec
 
 
 # --- surface_bind regression -------------------------------------------
@@ -171,3 +176,78 @@ def test_no_existing_row_allows_publish(monkeypatch: pytest.MonkeyPatch) -> None
     _install_fake_post(monkeypatch, existing_record=None, writes=writes)
     res = sa.publish_record_dict(_rec(sb_has_data=False), write_snapshot=False)
     assert res.d1_written is True
+
+
+# --- staleness guard ---------------------------------------------------
+# Both records here are fully populated (has_data=True, family set), so the
+# regression guard never fires — these exercise the NEW staleness guard,
+# which is what protects an already-published run from being clobbered by a
+# staler on-disk snapshot during a bulk re-sync.
+
+_OLDER = "2026-05-31T04:00:00+00:00"
+_NEWER = "2026-05-31T15:00:00+00:00"
+
+
+def test_blocks_stale_overwrite(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_public_env(monkeypatch)
+    writes: list = []
+    _install_fake_post(
+        monkeypatch,
+        existing_record=_rec(
+            sb_has_data=True, uniprot_family="kinase", generated_at=_NEWER
+        ),
+        writes=writes,
+    )
+    # Incoming snapshot is OLDER than the D1 row — must be refused.
+    res = sa.publish_record_dict(
+        _rec(sb_has_data=True, uniprot_family="kinase", generated_at=_OLDER),
+        write_snapshot=False,
+    )
+    assert res.d1_written is False
+    assert "stale" in (res.skipped_reason or "").lower()
+    assert writes == []
+
+
+def test_allows_newer_overwrite(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_public_env(monkeypatch)
+    writes: list = []
+    _install_fake_post(
+        monkeypatch,
+        existing_record=_rec(
+            sb_has_data=True, uniprot_family="kinase", generated_at=_OLDER
+        ),
+        writes=writes,
+    )
+    res = sa.publish_record_dict(
+        _rec(sb_has_data=True, uniprot_family="kinase", generated_at=_NEWER),
+        write_snapshot=False,
+    )
+    assert res.d1_written is True
+    assert any("INSERT OR REPLACE" in s for s, _ in writes)
+
+
+def test_stale_overwrite_allowed_with_force(monkeypatch: pytest.MonkeyPatch) -> None:
+    _set_public_env(monkeypatch)
+    writes: list = []
+    _install_fake_post(
+        monkeypatch,
+        existing_record=_rec(sb_has_data=True, generated_at=_NEWER),
+        writes=writes,
+    )
+    res = sa.publish_record_dict(
+        _rec(sb_has_data=True, generated_at=_OLDER), write_snapshot=False, force=True
+    )
+    assert res.d1_written is True
+
+
+def test_is_stale_pure() -> None:
+    older = {"record_generated_at": _OLDER}
+    newer = {"record_generated_at": _NEWER}
+    # _is_stale(incoming, existing): True when existing is newer than incoming.
+    assert sa._is_stale(older, newer) is True
+    assert sa._is_stale(newer, older) is False
+    assert sa._is_stale(newer, newer) is False
+    # Missing/unparseable timestamps are conservative (never block).
+    assert sa._is_stale({}, newer) is False
+    assert sa._is_stale(newer, {}) is False
+    assert sa._is_stale({"record_generated_at": "garbage"}, newer) is False
