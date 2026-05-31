@@ -64,10 +64,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
               <tr>
                 <th scope="col">Context</th>
                 <th scope="col">Induced / lineage</th>
-                <th scope="col">Shift</th>
-                <th scope="col">Modulating</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Modulating state</th>
                 <th scope="col">Implication</th>
-                <th scope="col">Cites</th>
+                <th scope="col">References</th>
               </tr>
             </thead>
             <tbody>
@@ -107,7 +107,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                     {m.change ? (
                       <p className={styles.modChangeCite}>{m.change}</p>
                     ) : null}
-                    <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
+                    <EvidenceChipList ids={m.cited_evidence_ids} label="References" />
                   </td>
                 </tr>
               ))}
@@ -142,7 +142,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 <th scope="col">Compartment</th>
                 <th scope="col">Fraction</th>
                 <th scope="col">Condition</th>
-                <th scope="col">Cites</th>
+                <th scope="col">References</th>
               </tr>
             </thead>
             <tbody>
@@ -156,7 +156,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>{d.condition ?? "—"}</td>
                   <td>
-                    <EvidenceChipList ids={d.cited_evidence_ids} label="Cites" />
+                    <EvidenceChipList ids={d.cited_evidence_ids} label="References" />
                   </td>
                 </tr>
               ))}
@@ -200,7 +200,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 ) : null}
                 <EvidenceChipList
                   ids={rs.cited_evidence_ids}
-                  label="Cites"
+                  label="References"
                 />
               </div>
               {rs.rationale ? (
@@ -223,7 +223,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 <th scope="col">Orientation</th>
                 <th scope="col">Implication</th>
                 <th scope="col">Rationale</th>
-                <th scope="col">Cites</th>
+                <th scope="col">References</th>
               </tr>
             </thead>
             <tbody>
@@ -241,7 +241,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>{a.rationale}</td>
                   <td>
-                    <EvidenceChipList ids={a.cited_evidence_ids} label="Cites" />
+                    <EvidenceChipList ids={a.cited_evidence_ids} label="References" />
                   </td>
                 </tr>
               ))}
