@@ -146,7 +146,12 @@
 
 .modTable th:nth-child(1),
 .modTable td:nth-child(1) {
-  width: 6.5rem;
+  /* Wide enough that even the longest category label
+     ("Post Translational Dependent", ~207px incl. pill padding) fits on a
+     single line — so no label wraps and no word ever breaks mid-character.
+     The table is fixed-layout at 100%, so this draws from the prose
+     Implication / References columns, which wrap fine. */
+  width: 13rem;
 }
 
 .modTable th:nth-child(2),
@@ -168,7 +173,12 @@
 .modTable td:nth-child(2),
 .modTable td:nth-child(3),
 .modTable td:nth-child(4) {
-  overflow-wrap: anywhere;
+  /* Break only at spaces / existing hyphens (e.g. "disease-state"),
+     never mid-word. `anywhere` here was splitting category labels like
+     "Polariza-tion" mid-character. The columns are sized (above) to fit
+     their content, so this won't overflow. */
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 /* StatusPill is white-space:nowrap by default; allow wrapping inside the
@@ -179,8 +189,11 @@
    long single token (e.g. "oncogenic_transformation") with overflow-wrap. */
 .modTable td:nth-child(1) *,
 .modTable td:nth-child(2) * {
+  /* Let the pill text wrap across lines (StatusPill is nowrap by
+     default) but only at word boundaries — no mid-word breaks. */
   white-space: normal;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
 /* The change/effect narrative ("evidence string") now lives in the Cites
