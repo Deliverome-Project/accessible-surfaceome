@@ -1297,6 +1297,19 @@ CellStateTrigger = Literal[
     "other",
     "unknown",
 ]
+# Coarse induction-context bucket for the catalog `induction_trigger`
+# filter — the dominant CellStateTrigger across a record's
+# accessibility_modulation rows, grouped so the catalog can ask "show me
+# stimulus-induced surface candidates" at one level instead of 18.
+InductionTrigger = Literal[
+    "none",
+    "oncogenic",
+    "immune",
+    "stress_hypoxia",
+    "cell_death",
+    "infection",
+    "other",
+]
 RestrictedLineage = Literal[
     "germline_reproductive",
     "embryonic_developmental",
@@ -1640,6 +1653,28 @@ class Filters(BaseModel):
     # status. Defaults to False — records whose builder produced no
     # methods (weak grade, errored runs) read as False.
     overexpression_surface_localization_observed: bool = False
+
+    # ---- deep-block rollups --------------------------------------------
+    # Promoted to top-level catalog facets from blocks that previously
+    # lived only nested (biological_context.tissues / .accessibility_
+    # modulation, surface_evidence.methods). All deterministic — the
+    # orchestrator derives them in ``_derive_filters``; default values keep
+    # records emitted before these fields existed valid.
+    #
+    # Expressed in a tumor / tumor-adjacent tissue context (any
+    # ``tissues[]`` row with disease_context ∈ {tumor, tumor_adjacent} at a
+    # non-absent level). Oncology-target triage.
+    tumor_associated: bool = False
+    # Dominant induction trigger across ``accessibility_modulation`` rows —
+    # *what stimulus* surfaces the protein, bucketed from CellStateTrigger.
+    # ``surface_call_reason`` gives the *mechanism*; this gives the
+    # *trigger*; ``"none"`` when no modulation row carries one.
+    induction_trigger: InductionTrigger = "none"
+    # ≥1 ``surface_evidence.methods`` row showing DIRECT surface
+    # accessibility on live/intact cells in an endogenous context (flow
+    # cytometry, surface biotinylation, or proximity labeling; expression
+    # system endogenous/mixed). Filter by evidence MODALITY, not just grade.
+    has_live_cell_surface_evidence: bool = False
 
     # ---- per-chip rationales -------------------------------------------
     # Every catalog chip carries a one-line "why". Four mirror B's

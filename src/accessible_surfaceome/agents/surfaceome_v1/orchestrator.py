@@ -67,6 +67,7 @@ from accessible_surfaceome.tools._shared.models import (
     Filters,
     GeneIdentifier,
     IdentifierBundle,
+    InductionTrigger,
     IsoformTopology,
     Orthologs,
     StructureFeatures,
@@ -997,6 +998,71 @@ def _derive_filters(
                 return e.ecd_pct_identity_to_human_canonical
         return None
 
+    # ---- deep-block rollups -------------------------------------------
+    # tumor_associated — any tissue row in a tumor / tumor-adjacent disease
+    # context at a non-absent protein level. Oncology-target triage facet.
+    _TUMOR_CTX = {"tumor", "tumor_adjacent"}
+    _PRESENT_LEVELS = {"high", "moderate", "low", "mixed"}
+    tumor_associated = any(
+        t.disease_context in _TUMOR_CTX and t.present in _PRESENT_LEVELS
+        for t in biological_context.tissues
+    )
+
+    # induction_trigger — dominant stimulus bucket across the modulation
+    # rows' cell_state_trigger. surface_call_reason carries the *mechanism*;
+    # this is the *trigger*. Buckets, picked most-targeting-relevant first.
+    _TRIGGER_BUCKET = {
+        "oncogenic_transformation": "oncogenic",
+        "immune_activation": "immune",
+        "antigen_stimulation": "immune",
+        "cytokine_stimulation": "immune",
+        "ER_stress": "stress_hypoxia",
+        "heat_shock": "stress_hypoxia",
+        "oxidative_stress": "stress_hypoxia",
+        "DNA_damage_response": "stress_hypoxia",
+        "hypoxia": "stress_hypoxia",
+        "nutrient_deprivation": "stress_hypoxia",
+        "hyperthermia": "stress_hypoxia",
+        "mechanical_stress": "stress_hypoxia",
+        "apoptosis": "cell_death",
+        "necroptosis": "cell_death",
+        "infection_viral": "infection",
+        "infection_bacterial": "infection",
+        "other": "other",
+        "unknown": "other",
+    }
+    _buckets = {
+        _TRIGGER_BUCKET.get(m.cell_state_trigger, "other")
+        for m in biological_context.accessibility_modulation
+        if m.cell_state_trigger is not None
+    }
+    if "oncogenic" in _buckets:
+        induction_trigger: InductionTrigger = "oncogenic"
+    elif "immune" in _buckets:
+        induction_trigger = "immune"
+    elif "stress_hypoxia" in _buckets:
+        induction_trigger = "stress_hypoxia"
+    elif "cell_death" in _buckets:
+        induction_trigger = "cell_death"
+    elif "infection" in _buckets:
+        induction_trigger = "infection"
+    elif "other" in _buckets:
+        induction_trigger = "other"
+    else:
+        induction_trigger = "none"
+
+    # has_live_cell_surface_evidence — a DIRECT surface readout on
+    # live/intact cells in an endogenous context (flow cytometry, surface
+    # biotinylation, or proximity labeling; NOT permeabilizable IF/IHC).
+    _LIVE_CELL_FAMILIES = {"flow_cytometry", "biotinylation", "proximity_labeling"}
+    _ENDOG_SYSTEMS = {"endogenous", "mixed"}
+    has_live_cell_surface_evidence = any(
+        m.method_family in _LIVE_CELL_FAMILIES
+        and m.accessibility_relevance == "direct_surface_accessibility"
+        and m.expression_system in _ENDOG_SYSTEMS
+        for m in surface_evidence.methods
+    )
+
     return Filters(
         # D — from executive_summary (B)
         surface_accessibility=executive_summary.surface_accessibility,
@@ -1054,6 +1120,10 @@ def _derive_filters(
         n_contradicting_claims_high_weight=n_contradicting_hi,
         # D — OE+surface-localization derived above
         overexpression_surface_localization_observed=oe_surface_observed,
+        # D — deep-block rollups derived above
+        tumor_associated=tumor_associated,
+        induction_trigger=induction_trigger,
+        has_live_cell_surface_evidence=has_live_cell_surface_evidence,
         # ---- per-chip rationales ----------------------------------------
         # L — the four LLM-emitted rollup rationales, passed through verbatim.
         expression_level_rationale=filters_llm.expression_level_rationale,

@@ -77,8 +77,8 @@ export const tooltips: Record<string, ReactNode> = {
   benchmark_truth: (
     <>
       <strong>Benchmark truth.</strong> This gene is in{" "}
-      <strong>SurfaceBench</strong>, the 147-protein hand-curated triage
-      benchmark — so it carries a curated ground-truth surface verdict
+      <a href="/benchmark">SurfaceBench</a>, the 147-protein hand-curated
+      triage benchmark — so it carries a curated ground-truth surface verdict
       (yes / contextual / no). It&apos;s the reference the model calls are
       scored against, which is why it sits above the triage row.
     </>
@@ -629,6 +629,70 @@ export const tooltips: Record<string, ReactNode> = {
       The targetable surface is shielded — partner heterodimerization,
       glycan shield, or conformational hiding obscures the epitopes a
       binder would otherwise engage.
+    </>
+  ),
+
+  catalog_restricted_subdomain: (
+    <>
+      The surface pool is confined to a restricted membrane subdomain
+      (e.g. apical vs basolateral, or a tight-junction&ndash;bounded face),
+      so part of it sits in a compartment a systemically delivered binder
+      can&apos;t reach.
+    </>
+  ),
+
+  catalog_cyno_ecd: (
+    <>
+      Cynomolgus ortholog extracellular-domain %identity to the human
+      canonical, banded from the Ensembl Compara ECD alignment. High
+      (&ge;90%) means a human-targeting binder likely cross-reacts with the
+      cyno ortholog &mdash; enabling the same molecule for preclinical
+      toxicology without a surrogate.
+    </>
+  ),
+
+  catalog_mouse_ecd: (
+    <>
+      Mouse ortholog extracellular-domain %identity to the human canonical,
+      banded from the Ensembl Compara ECD alignment. High (&ge;90%) supports
+      a single surrogate-free binder for mouse efficacy models.
+    </>
+  ),
+
+  catalog_paralog_ecd: (
+    <>
+      Highest extracellular-domain %identity to any human paralog, banded
+      from the Ensembl Compara ECD alignment. High (&ge;70%) flags off-target
+      cross-reactivity risk &mdash; a binder raised against this protein may
+      also engage the paralog.
+    </>
+  ),
+
+  catalog_tumor_associated: (
+    <>
+      Detected in a tumor / tumor-adjacent tissue context at a non-absent
+      protein level (from the biology block&apos;s tissue rows). A quick
+      oncology-target triage filter &mdash; orthogonal to expression
+      breadth, which doesn&apos;t distinguish tumor from normal context.
+    </>
+  ),
+
+  catalog_induction_trigger: (
+    <>
+      The dominant stimulus that surfaces the protein, bucketed across the
+      documented accessibility-modulation rows (oncogenic transformation,
+      immune activation, stress/hypoxia, cell death, infection).
+      Complements the surface-call reason, which names the trafficking
+      mechanism rather than the trigger.
+    </>
+  ),
+
+  catalog_live_cell_evidence: (
+    <>
+      At least one method shows DIRECT surface accessibility on live/intact
+      cells in an endogenous context &mdash; live-cell flow cytometry,
+      surface biotinylation, or proximity labeling (not permeabilizable
+      IF/IHC). Filters by evidence modality, not just the rolled-up grade.
     </>
   ),
 

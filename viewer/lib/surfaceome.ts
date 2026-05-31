@@ -117,6 +117,20 @@ export interface TriageCell {
  * mirrors `DDF_KEYS` in cloudflare/workers/surfaceome_api/src/index.js
  * — extend both when adding a field.
  */
+/** Coarse band an ECD %-identity is binned into for catalog/compare
+ *  filtering (see deep-dive-fields.ts:ecdBand). */
+export type EcdBand = "high" | "moderate" | "low" | "none";
+
+/** Dominant induction-trigger bucket (mirrors models.py InductionTrigger). */
+export type InductionTrigger =
+  | "none"
+  | "oncogenic"
+  | "immune"
+  | "stress_hypoxia"
+  | "cell_death"
+  | "infection"
+  | "other";
+
 export interface DeepDiveFilters {
   surface_accessibility: SurfaceAccessibility;
   confidence: Confidence;
@@ -139,6 +153,14 @@ export interface DeepDiveFilters {
   has_epitope_masking: boolean;
   n_term_extracellular: boolean;
   c_term_extracellular: boolean;
+  // Newer fields — optional so older records (which omit them) still type.
+  has_restricted_subdomain?: boolean;
+  cyno_ortholog_ecd?: EcdBand;
+  mouse_ortholog_ecd?: EcdBand;
+  max_paralog_ecd?: EcdBand;
+  tumor_associated?: boolean;
+  induction_trigger?: InductionTrigger;
+  has_live_cell_surface_evidence?: boolean;
 }
 
 export interface CatalogRow {

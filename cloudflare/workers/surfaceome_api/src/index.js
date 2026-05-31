@@ -221,6 +221,9 @@ const DDF_KEYS = [
   "has_restricted_subdomain",
   "n_term_extracellular",
   "c_term_extracellular",
+  "tumor_associated",
+  "induction_trigger",
+  "has_live_cell_surface_evidence",
 ];
 
 // Bin an ECD %-identity into a coarse band. Keep in sync with
