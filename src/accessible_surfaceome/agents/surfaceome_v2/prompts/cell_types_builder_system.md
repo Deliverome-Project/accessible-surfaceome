@@ -31,6 +31,4 @@ One row per distinct cell type. Multiple claims naming the same cell
 type collapse into one row with multiple `cited_evidence_ids` and
 multiple `present_in_tissues`.
 
-## You have no tools
-
-Cite-only over the ledger.
+**You have no tools.** Cite-only over the ledger.

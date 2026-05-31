@@ -132,6 +132,4 @@ to fail. Re-read this list before emitting EACH row:
 When in doubt, set the optional sub-field to `null` rather than risk a
 mispairing — empty rows still validate; mispaired rows fail.
 
-## You have no tools
-
-Cite-only over the ledger.
+**You have no tools.** Cite-only over the ledger.

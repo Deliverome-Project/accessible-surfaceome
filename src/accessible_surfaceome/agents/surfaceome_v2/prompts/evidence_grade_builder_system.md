@@ -193,6 +193,4 @@ Group claims describing the same context into one row.
 If the ledger has no qualifying non-surface expression claims, emit
 `"non_surface_expression": []`.
 
-## You have no tools
-
-Cite-only over the ledger.
+**You have no tools.** Cite-only over the ledger.

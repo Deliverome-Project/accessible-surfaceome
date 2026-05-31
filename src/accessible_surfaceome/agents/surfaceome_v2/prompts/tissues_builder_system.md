@@ -100,6 +100,4 @@ This gate is ONLY on disease-context rows. Keep every
 `disease_context=normal` row per the tox-risk-organ rule above — those
 are the baseline the disease rows are compared against.
 
-## You have no tools
-
-Cite-only over the ledger.
+**You have no tools.** Cite-only over the ledger.

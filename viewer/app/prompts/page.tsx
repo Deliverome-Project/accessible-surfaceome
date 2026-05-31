@@ -9,7 +9,7 @@ import styles from "./page.module.css";
 export const metadata: Metadata = {
   title: "Agent prompts — Surfaceome",
   description:
-    "The exact system prompts the Haiku triage and Sonnet deep-dive agents " +
+    "The exact system prompts the Sonnet 4.6 triage and deep-dive agents " +
     "run with — read straight from the agent source tree at build time.",
 };
 
@@ -35,7 +35,7 @@ interface PromptGroup {
  * always the file the agents actually run with.
  *
  * Coverage:
- *  - Surface triage — Haiku genome-wide first pass.
+ *  - Surface triage — Sonnet 4.6 genome-wide first pass.
  *  - Deep dive Phase 1 — ``plan_trim_select`` literature agent
  *    (per-focus A1/A2 plan-trim-select, plus joint single-agent
  *    plan-trim-select).
@@ -49,7 +49,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "triage",
     label: "Surface accessibility triage",
     description:
-      "Haiku first-pass over the protein-coding genome — produces the " +
+      "Sonnet 4.6 first-pass over the protein-coding genome — produces the " +
       "yes / no / contextual triage verdict that gates which genes get a " +
       "full deep dive.",
     prompts: [
@@ -64,7 +64,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "deep-dive-phase-1",
     label: "Deep dive · Phase 1 — plan_trim_select (literature agent)",
     description:
-      "Three Sonnet / Haiku passes per agent focus: plan the searches, " +
+      "Three Sonnet 4.6 passes per agent focus: plan the searches, " +
       "trim each paper's candidate clips down to load-bearing ones, then " +
       "select the final EvidenceClaim ledger. The per-focus A1 + A2 " +
       "prompts split into a surface-evidence-methodology run and a " +
@@ -85,7 +85,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
         label: "A1 — per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_trim_system.md",
         blurb:
-          "One Haiku call per paper — keeps the clips that name a surface-" +
+          "One Sonnet 4.6 call per paper — keeps the clips that name a surface-" +
           "detection method, antibody, or non-permeabilized assay; drops " +
           "tissue/biology-only clips that the A2 trim handles.",
       },
@@ -407,12 +407,9 @@ export default function PromptsPage() {
             build time. No paraphrase, no edits.{" "}
             <strong>{totalPrompts} prompts</strong> totalling{" "}
             <strong>{(totalBytes / 1024).toFixed(1)} KB</strong> of
-            instructions. If a prompt on this page changed, the next agent
-            run picks it up after{" "}
-            <code className={styles.inlineCode}>
-              uv run accessible-surfaceome agents sync
-            </code>
-            .
+            instructions. Every prompt is read from this source tree at run
+            time, so a change here takes effect on the next agent run — there
+            is no separate sync step.
           </p>
         </header>
 
@@ -435,15 +432,20 @@ export default function PromptsPage() {
                   <a href={`#group-${g.id}`} className={styles.pageIndexGroupLink}>
                     {g.label}
                   </a>
-                  <ul className={styles.pageIndexPromptList}>
-                    {g.prompts.map((p) => (
-                      <li key={p.id}>
-                        <a href={`#${p.id}`} className={styles.tocLink}>
-                          {p.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Single-prompt groups (triage, synthesizer) would just
+                      repeat the group name as a lone sub-item — skip the
+                      nested list and let the group link stand alone. */}
+                  {g.prompts.length > 1 ? (
+                    <ul className={styles.pageIndexPromptList}>
+                      {g.prompts.map((p) => (
+                        <li key={p.id}>
+                          <a href={`#${p.id}`} className={styles.tocLink}>
+                            {p.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -460,7 +462,12 @@ export default function PromptsPage() {
             {group.prompts.map((p) => (
               <article key={p.id} id={p.id} className={styles.promptBlock}>
                 <header className={styles.promptHeader}>
-                  <h3 className={`${styles.promptH2}`}>{p.label}</h3>
+                  {/* Don't repeat the group title as the card title for a
+                      single-prompt group whose prompt shares the group name
+                      (e.g. "Surface accessibility triage"). */}
+                  {group.prompts.length === 1 && p.label === group.label ? null : (
+                    <h3 className={`${styles.promptH2}`}>{p.label}</h3>
+                  )}
                   {p.blurb ? (
                     <p className={styles.promptBlurb}>{p.blurb}</p>
                   ) : null}

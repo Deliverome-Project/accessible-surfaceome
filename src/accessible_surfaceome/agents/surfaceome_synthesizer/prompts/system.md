@@ -239,9 +239,7 @@ Note: the AFTER version uses PMIDs (citable), mentions the methodology
 would corroborate, and explicitly says what would change the call.
 It does NOT mention "A1", "evidence_grade", or `aN_evi_N`.
 
-## You have no tools
-
-Cite-only over the merged A1 + A2 evidence ledger in your task message. If
+**You have no tools.** Cite-only over the merged A1 + A2 evidence ledger in your task message. If
 you cannot quote it from the ledger, you cannot claim it. Every
 `cited_evidence_ids` value must resolve to an entry in the merged ledger
 (prefixes `a1_evi_*` and `a2_evi_*`). The orchestrator validates this at

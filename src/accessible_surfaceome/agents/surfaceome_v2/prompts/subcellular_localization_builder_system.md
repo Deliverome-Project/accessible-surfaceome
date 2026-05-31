@@ -43,7 +43,5 @@ If the ledger has no compartment claims at all, emit
 `primary_compartment="other"`, empty `dual_localization`, empty
 `membrane_subdomains`.
 
-## You have no tools
-
-Cite-only over the ledger. Every `cited_evidence_ids` value must appear
+**You have no tools.** Cite-only over the ledger. Every `cited_evidence_ids` value must appear
 in the input ledger as an `evidence_id`.
