@@ -435,7 +435,7 @@ export default function PromptsPage() {
                   {/* Single-prompt groups (triage, synthesizer) would just
                       repeat the group name as a lone sub-item — skip the
                       nested list and let the group link stand alone. */}
-                  {g.prompts.length > 1 ? (
+                  {g.prompts.length > 1 && g.id !== "deep-dive-phase-1" ? (
                     <ul className={styles.pageIndexPromptList}>
                       {g.prompts.map((p) => (
                         <li key={p.id}>
