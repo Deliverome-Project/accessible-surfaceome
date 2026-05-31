@@ -467,9 +467,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 ### Data sources
 
 - AlphaFold DB structures — CC BY 4.0 (© DeepMind / EMBL-EBI)
-- SURFACE-Bind binding-site scoring — MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · [surface-bind.inria.fr](https://surface-bind.inria.fr/)
-- Ensembl Compara orthologs & paralogs — ensembl_compara_2026_05_12 · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
 - DeepTMHMM topology — deeptmhmm-1.0.24 · DTU Health Tech (Hallgren et al. 2022)
+- Ensembl Compara orthologs & paralogs — ensembl_compara_2026_05_12 · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
+- SURFACE-Bind binding-site scoring — MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · [surface-bind.inria.fr](https://surface-bind.inria.fr/)
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate because the cancer-cell outer-surface SRC story derives from a single recent research cluster — two 2025 papers (PMID:41818370 and PMID:41818382) that appear to originate from the same group. The canonical SRC topology — myristoylated, inner-leaflet, no extracellular domain — is established across decades of independent work (e.g., PMC:PMC11399299). The triage first-pass classified SRC as inner-leaflet-anchored with high confidence, a reasonable call given established biology. Lifting confidence to high would require an independent group to confirm cancer-state outer-leaflet eSrc exposure using orthogonal methodology (e.g., non-permeabilized flow cytometry, surface biotinylation mass spec, or cryo-EM structural evidence of the inverted topology) beyond the antibody-killing xenograft assays reported in PMID:41818370.*

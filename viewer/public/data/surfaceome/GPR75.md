@@ -391,9 +391,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 ### Data sources
 
 - AlphaFold DB structures — CC BY 4.0 (© DeepMind / EMBL-EBI)
-- SURFACE-Bind binding-site scoring — MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · [surface-bind.inria.fr](https://surface-bind.inria.fr/)
-- Ensembl Compara orthologs & paralogs — ensembl_compara_2026_05_12 · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
 - DeepTMHMM topology — deeptmhmm-1.0.24 · DTU Health Tech (Hallgren et al. 2022)
+- Ensembl Compara orthologs & paralogs — ensembl_compara_2026_05_12 · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
+- SURFACE-Bind binding-site scoring — MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · [surface-bind.inria.fr](https://surface-bind.inria.fr/)
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate because no direct surface-specific assay (live-cell flow cytometry, non-permeabilized immunostaining, or surface biotinylation) has been published for GPR75. The surface call rests on canonical GPCR topology (computational + GPCRdb), a BRET trafficking assay using an exogenous signal peptide construct, and ciliary IF with unspecified permeabilization — all supportive but indirect. Additionally, the ciliary localization finding comes from a single study (PMC11444156). Confidence would be lifted by a live-cell antibody staining or surface biotinylation experiment on endogenous GPR75-expressing neurons or beta cells, or by an independent group confirming ciliary trafficking in hypothalamic preparations.*
