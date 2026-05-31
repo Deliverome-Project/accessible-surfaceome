@@ -70,6 +70,12 @@ function fmtNum(v, digits = 1) {
   return v == null ? "—" : v.toFixed(digits);
 }
 
+// Thousands-separated integer (locale-independent, so the build is
+// deterministic regardless of the runner's locale).
+function fmtInt(v) {
+  return v == null ? "—" : String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 function alphafoldEntryUrl(uniprot) {
   return `https://alphafold.ebi.ac.uk/entry/${uniprot}`;
 }
@@ -182,6 +188,70 @@ async function fetchSequence(uniprot) {
   return seq;
 }
 
+// Assay-family grouping for §3 — mirrors the viewer's SurfaceEvidenceCard:
+// antibody-based direct assays first (flow → IF → IHC), then surface MS +
+// biochemical cousins, then functional, then the catch-all.
+const FAMILY_ORDER = [
+  "flow_cytometry",
+  "immunofluorescence",
+  "immunohistochemistry",
+  "mass_spec",
+  "biotinylation",
+  "glycoproteomics",
+  "proximity_labeling",
+  "fractionation",
+  "functional_surface_assay",
+  "other",
+];
+const FAMILY_LABEL = {
+  flow_cytometry: "Flow cytometry",
+  immunofluorescence: "Immunofluorescence",
+  immunohistochemistry: "Immunohistochemistry",
+  mass_spec: "Surface mass spec",
+  biotinylation: "Surface biotinylation",
+  glycoproteomics: "Glycoproteomics",
+  proximity_labeling: "Proximity labeling",
+  fractionation: "Membrane fractionation",
+  functional_surface_assay: "Functional surface assay",
+  other: "Other",
+};
+
+// Render one accessibility-risk / context block as a bullet list. Shared by
+// §8 (shed / secreted / ECD size / epitope masking) and §4 (restricted
+// subdomain + co-receptor, which live under Biology in the viewer).
+function pushRiskBlock(lines, title, block) {
+  lines.push(`**${title}**`);
+  lines.push("");
+  if ("present" in block) lines.push(`- present: ${block.present}`);
+  if ("severity" in block) lines.push(`- severity: ${prettyEnum(block.severity)}`);
+  if ("evidence_strength" in block)
+    lines.push(`- evidence: ${prettyEnum(block.evidence_strength)}`);
+  if ("mechanism" in block && block.mechanism != null) {
+    const mech = Array.isArray(block.mechanism)
+      ? block.mechanism.map(prettyEnum).join(", ")
+      : prettyEnum(block.mechanism);
+    lines.push(`- mechanism: ${mech}`);
+  }
+  if ("sheddase_if_known" in block && block.sheddase_if_known)
+    lines.push(`- sheddase: ${block.sheddase_if_known}`);
+  if ("source" in block && block.source)
+    lines.push(`- source: ${prettyEnum(block.source)}`);
+  if ("ratio_to_membrane" in block && block.ratio_to_membrane != null)
+    lines.push(`- ratio to membrane: ${block.ratio_to_membrane}`);
+  if ("domain" in block) lines.push(`- domain: ${prettyEnum(block.domain)}`);
+  if ("surface_expression_dependency" in block)
+    lines.push(`- dependency: ${prettyEnum(block.surface_expression_dependency)}`);
+  if ("evidence_basis" in block)
+    lines.push(`- evidence basis: ${prettyEnum(block.evidence_basis)}`);
+  if ("partners" in block && block.partners?.length)
+    lines.push(`- partners: ${block.partners.join(", ")}`);
+  if ("ecd_accessibility_class" in block)
+    lines.push(`- ECD class: ${prettyEnum(block.ecd_accessibility_class)}`);
+  if ("rationale" in block && block.rationale)
+    lines.push(`- rationale: ${block.rationale}`);
+  lines.push("");
+}
+
 // --------------------------------------------------------------
 // Markdown rendering
 // --------------------------------------------------------------
@@ -236,13 +306,19 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push("| Group | Facets |");
   lines.push("|---|---|");
   lines.push(
-    `| Accessibility | overall=${prettyEnum(f.surface_accessibility)} · conf=${prettyEnum(f.confidence)} · subcategory=${prettyEnum(f.subcategory)} · grade=${prettyEnum(f.evidence_grade)} · ecd=${prettyEnum(f.ecd_accessibility_class)} · density=${prettyEnum(f.evidence_density)} |`,
+    `| Accessibility | overall=${prettyEnum(f.surface_accessibility)} · conf=${prettyEnum(f.confidence)} · subcategory=${prettyEnum(f.subcategory)} · ecd=${prettyEnum(f.ecd_accessibility_class)} |`,
   );
   lines.push(
-    `| Expression | level=${prettyEnum(f.expression_level)} · breadth=${prettyEnum(f.expression_breadth)} · specificity=${prettyEnum(f.surface_specificity)} |`,
+    `| Classification | reason=${prettyEnum(f.surface_call_reason)} · family=${prettyEnum(f.llm_family)} · state-dependence=${prettyEnum(f.state_dependence)} · induction-trigger=${prettyEnum(f.induction_trigger)} |`,
   );
   lines.push(
-    `| Risks | shed=${f.has_shed_form} · secreted=${f.has_secreted_form} · coreceptor=${f.requires_coreceptor_for_expression} · masking=${f.has_epitope_masking} · subdomain=${f.has_restricted_subdomain} |`,
+    `| Expression | level=${prettyEnum(f.expression_level)} · breadth=${prettyEnum(f.expression_breadth)} · specificity=${prettyEnum(f.surface_specificity)} · low-endogenous=${f.low_endogenous_expression} · tumor-associated=${f.tumor_associated ?? "—"} · orphan-receptor=${f.has_known_ligand === false} · OE-precedent=${f.overexpression_surface_localization_observed} |`,
+  );
+  lines.push(
+    `| Risks | shed=${f.has_shed_form} · secreted=${f.has_secreted_form} · co-receptor=${prettyEnum(f.co_receptor_dependency)} · masking=${f.has_epitope_masking} · restricted-subdomain=${f.has_restricted_subdomain} |`,
+  );
+  lines.push(
+    `| Evidence | grade=${prettyEnum(f.evidence_grade)} · density=${prettyEnum(f.evidence_density)} · live-cell-surface=${f.has_live_cell_surface_evidence ?? "—"} · supporting(hi)=${f.n_supporting_claims_high_weight ?? "—"} · contradicting(hi)=${f.n_contradicting_claims_high_weight ?? "—"} |`,
   );
   // Cross-species fields are nullable in v1.0.0 (a gene with no
   // mouse/cyno ortholog row in compara_ortholog_ecd lands NULL here).
@@ -271,39 +347,57 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push("");
   lines.push(`${se.grade_rationale}`);
   lines.push("");
+  // Group method observations by assay family (mirrors the viewer).
+  const familyBuckets = new Map();
   for (const m of se.methods) {
+    const fam = m.method_family ?? "other";
+    if (!familyBuckets.has(fam)) familyBuckets.set(fam, []);
+    familyBuckets.get(fam).push(m);
+  }
+  const orderedFamilies = [
+    ...FAMILY_ORDER.filter((f) => familyBuckets.has(f)),
+    ...[...familyBuckets.keys()].filter((f) => !FAMILY_ORDER.includes(f)),
+  ];
+  for (const fam of orderedFamilies) {
+    const fmethods = familyBuckets.get(fam);
     lines.push(
-      `### ${prettyEnum(m.method_subclass)} — ${prettyEnum(m.accessibility_relevance)}`,
+      `### ${FAMILY_LABEL[fam] ?? prettyEnum(fam)} (${fmethods.length} method${fmethods.length === 1 ? "" : "s"})`,
     );
     lines.push("");
-    lines.push(
-      `*Permeabilization: ${prettyEnum(m.permeabilization)} · expression: ${prettyEnum(m.expression_system)}*`,
-    );
-    lines.push("");
-    if (m.antibodies.length) {
-      lines.push("**Antibodies**");
+    for (const m of fmethods) {
+      lines.push(
+        `#### ${prettyEnum(m.method_subclass)} — ${prettyEnum(m.accessibility_relevance)}`,
+      );
       lines.push("");
-      for (const ab of m.antibodies) {
-        const meta = [ab.clone, ab.vendor, ab.catalog, ab.rrid]
-          .filter(Boolean)
-          .join(" · ");
-        lines.push(
-          `- ${ab.name}${meta ? ` (${meta})` : ""} — ${prettyEnum(ab.antibody_epitope_region)} epitope; ${prettyEnum(ab.validation_strength)} validation${ab.cross_reactivity_notes ? `; ${ab.cross_reactivity_notes}` : ""}`,
-        );
+      lines.push(
+        `*Permeabilization: ${prettyEnum(m.permeabilization)} · expression: ${prettyEnum(m.expression_system)}*`,
+      );
+      lines.push("");
+      if (m.antibodies.length) {
+        lines.push("**Antibodies**");
+        lines.push("");
+        for (const ab of m.antibodies) {
+          const meta = [ab.clone, ab.vendor, ab.catalog, ab.rrid]
+            .filter(Boolean)
+            .join(" · ");
+          lines.push(
+            `- ${ab.name}${meta ? ` (${meta})` : ""} — ${prettyEnum(ab.antibody_epitope_region)} epitope; ${prettyEnum(ab.validation_strength)} validation${ab.cross_reactivity_notes ? `; ${ab.cross_reactivity_notes}` : ""}`,
+          );
+        }
+        lines.push("");
       }
-      lines.push("");
-    }
-    if (m.expression_observations.length) {
-      lines.push("**Observations**");
-      lines.push("");
-      lines.push("| Context | Sample | Level | Cites |");
-      lines.push("|---|---|---|---|");
-      for (const o of m.expression_observations) {
-        lines.push(
-          `| ${o.context} | ${prettyEnum(o.sample_type)} | ${prettyEnum(o.level)} | ${o.cited_evidence_ids.length} |`,
-        );
+      if (m.expression_observations.length) {
+        lines.push("**Observations**");
+        lines.push("");
+        lines.push("| Context | Sample | Level | Cites |");
+        lines.push("|---|---|---|---|");
+        for (const o of m.expression_observations) {
+          lines.push(
+            `| ${o.context} | ${prettyEnum(o.sample_type)} | ${prettyEnum(o.level)} | ${o.cited_evidence_ids.length} |`,
+          );
+        }
+        lines.push("");
       }
-      lines.push("");
     }
   }
   if (se.non_surface_expression.length) {
@@ -334,6 +428,12 @@ function md(rec, structureData, sequences, afdbEntry) {
   const bc = rec.biological_context;
   lines.push("## 4. Biological context");
   lines.push("");
+  // One-sentence WHEN/WHERE-reachable summary (executive_summary field;
+  // surfaced at the top of the viewer's Biological context card).
+  if (e.accessibility_context_summary) {
+    lines.push(`*Accessibility context* — ${e.accessibility_context_summary}`);
+    lines.push("");
+  }
   if (bc.tissues.length) {
     lines.push("**Tissues × disease context**");
     lines.push("");
@@ -369,6 +469,20 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push("");
   }
 
+  // Restricted-subdomain + co-receptor — the viewer renders these under the
+  // Biology card (subcellular localization / surface-expression dependency),
+  // not the Risks card, so mirror that placement here.
+  pushRiskBlock(
+    lines,
+    "Restricted-subdomain distribution",
+    rec.accessibility_risks.restricted_subdomain,
+  );
+  pushRiskBlock(
+    lines,
+    "Co-receptor requirements",
+    rec.accessibility_risks.co_receptor_requirements,
+  );
+
   // --- Isoforms (deterministic) ---
   lines.push("## 5. Isoforms");
   lines.push("");
@@ -392,7 +506,7 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push("## 6. Paralogs");
   lines.push("");
   if (df.paralogs.length) {
-    lines.push(`*Compara ${df.paralogs[0].compara_version}*`);
+    lines.push(`*Ensembl ${df.paralogs[0].compara_version}*`);
     lines.push("");
     lines.push("| Paralog | UniProt | ECD %id | Family |");
     lines.push("|---|---|---|---|");
@@ -432,42 +546,15 @@ function md(rec, structureData, sequences, afdbEntry) {
 
   // --- Accessibility risks ---
   const r = rec.accessibility_risks;
+  // Order mirrors the viewer's AccessibilityRisksCard. Restricted-subdomain
+  // and co-receptor are NOT here — they render under §4 Biological context,
+  // exactly as the viewer puts them in the Biology card.
   lines.push("## 8. Accessibility risks");
   lines.push("");
-  const riskBlocks = [
-    ["Shed form", r.shed_form, ["mechanism", "sheddase_if_known"]],
-    ["Secreted form", r.secreted_form, ["source", "ratio_to_membrane"]],
-    ["Restricted subdomain", r.restricted_subdomain, ["domain", "rationale"]],
-    ["Co-receptor requirements", r.co_receptor_requirements, ["surface_expression_dependency", "evidence_basis", "partners", "rationale"]],
-    ["ECD size assessment", r.ecd_size_assessment, ["ecd_accessibility_class", "rationale"]],
-    ["Epitope masking", r.epitope_masking, ["mechanism", "rationale"]],
-  ];
-  for (const [title, block] of riskBlocks) {
-    lines.push(`**${title}**`);
-    lines.push("");
-    if ("present" in block) lines.push(`- present: ${block.present}`);
-    if ("severity" in block) lines.push(`- severity: ${prettyEnum(block.severity)}`);
-    if ("evidence_strength" in block) lines.push(`- evidence: ${prettyEnum(block.evidence_strength)}`);
-    if ("mechanism" in block && block.mechanism != null) {
-      // epitope_masking.mechanism is a list (PR23 round 6); other
-      // blocks have a scalar mechanism. Render either as a comma
-      // list of pretty enum values.
-      const mech = Array.isArray(block.mechanism)
-        ? block.mechanism.map(prettyEnum).join(", ")
-        : prettyEnum(block.mechanism);
-      lines.push(`- mechanism: ${mech}`);
-    }
-    if ("sheddase_if_known" in block && block.sheddase_if_known) lines.push(`- sheddase: ${block.sheddase_if_known}`);
-    if ("source" in block && block.source) lines.push(`- source: ${prettyEnum(block.source)}`);
-    if ("ratio_to_membrane" in block && block.ratio_to_membrane != null) lines.push(`- ratio to membrane: ${block.ratio_to_membrane}`);
-    if ("domain" in block) lines.push(`- domain: ${prettyEnum(block.domain)}`);
-    if ("surface_expression_dependency" in block) lines.push(`- dependency: ${prettyEnum(block.surface_expression_dependency)}`);
-    if ("evidence_basis" in block) lines.push(`- evidence basis: ${prettyEnum(block.evidence_basis)}`);
-    if ("partners" in block && block.partners?.length) lines.push(`- partners: ${block.partners.join(", ")}`);
-    if ("ecd_accessibility_class" in block) lines.push(`- ECD class: ${prettyEnum(block.ecd_accessibility_class)}`);
-    if ("rationale" in block && block.rationale) lines.push(`- rationale: ${block.rationale}`);
-    lines.push("");
-  }
+  pushRiskBlock(lines, "Shed form", r.shed_form);
+  pushRiskBlock(lines, "Secreted form", r.secreted_form);
+  pushRiskBlock(lines, "ECD size assessment", r.ecd_size_assessment);
+  pushRiskBlock(lines, "Epitope masking", r.epitope_masking);
 
   // --- Structure summary ---
   const s = df.structure;
@@ -489,6 +576,98 @@ function md(rec, structureData, sequences, afdbEntry) {
     `Structure data from [AlphaFold DB](${alphafoldEntryUrl(g.uniprot_acc)}) · ${s.attribution} · licensed [${s.license}](https://creativecommons.org/licenses/by/4.0/)${s.citations.length ? ` · cite ${s.citations.map((c) => `\`${c}\``).join("; ")}` : ""}.`,
   );
   lines.push("");
+
+  // Model variants + experimental structures — mirrors the viewer's
+  // structure-viewer tabs (canonical AFDB + isoform / ortholog AFDB models +
+  // experimental PDBs). AFDB entry URLs are deterministic from the
+  // accession; not every isoform accession has a model (the entry says so).
+  lines.push("**Model variants & experimental structures**");
+  lines.push("");
+  lines.push("| Structure | UniProt / PDB | Source |");
+  lines.push("|---|---|---|");
+  lines.push(
+    `| Canonical | [${g.uniprot_acc}](${alphafoldEntryUrl(g.uniprot_acc)}) | AlphaFold DB (${s.afdb_id}, ${s.afdb_version}) |`,
+  );
+  for (const iso of df.isoform_topologies) {
+    if (iso.uniprot_acc && iso.uniprot_acc !== g.uniprot_acc) {
+      lines.push(
+        `| Isoform ${iso.isoform_id} | [${iso.uniprot_acc}](${alphafoldEntryUrl(iso.uniprot_acc)}) | AlphaFold DB |`,
+      );
+    }
+  }
+  for (const species of ["mouse", "cynomolgus"]) {
+    const entries = df.orthologs[species] ?? [];
+    const canon = entries.find((o) => o.is_canonical) ?? entries[0];
+    if (canon?.ortholog_uniprot_acc) {
+      const label = species.charAt(0).toUpperCase() + species.slice(1);
+      lines.push(
+        `| ${label} ortholog (${canon.ortholog_symbol}) | [${canon.ortholog_uniprot_acc}](${alphafoldEntryUrl(canon.ortholog_uniprot_acc)}) | AlphaFold DB |`,
+      );
+    }
+  }
+  const sbStruct = df.surface_bind;
+  if (sbStruct && Array.isArray(sbStruct.pdbs) && sbStruct.pdbs.length) {
+    const shown = sbStruct.pdbs
+      .slice(0, 8)
+      .map((p) => `[${p}](https://www.rcsb.org/structure/${p})`)
+      .join(", ");
+    lines.push(
+      `| Experimental (${sbStruct.pdbs.length}) | ${shown}${sbStruct.pdbs.length > 8 ? " · full list in §10" : ""} | RCSB PDB |`,
+    );
+  }
+  lines.push("");
+
+  // --- SURFACE-Bind candidate sites ---
+  // Deterministic MaSIF surface-patch scoring on the AlphaFold model.
+  // Cite Balbi et al. 2026 (PMID 41604262 == DOI 10.1073/pnas.2506269123,
+  // verified same paper) — NOT the record's surface_bind.source string,
+  // which mislabels the first author as "Marchand".
+  const sb = df.surface_bind;
+  lines.push("## 10. SURFACE-Bind candidate sites");
+  lines.push("");
+  lines.push(
+    `*Deterministic · MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · SURFACE-Bind v1, Correia lab (EPFL / Inria / Novo Nordisk)*`,
+  );
+  lines.push("");
+  if (sb && sb.has_data && sb.n_sites > 0) {
+    const classBits = [sb.protein_name, sb.main_class, sb.sub_class]
+      .filter(Boolean)
+      .join(" · ");
+    lines.push(
+      `${classBits ? `${classBits} · ` : ""}chain ${sb.chain} · ${sb.n_sites} scored site${sb.n_sites === 1 ? "" : "s"} · ${fmtInt(sb.n_seeds_total)} binder seeds (${fmtInt(sb.n_seeds_alpha)} α-helix / ${fmtInt(sb.n_seeds_beta)} β-strand).`,
+    );
+    lines.push("");
+    lines.push(
+      `Anchor = patch-center residue; BSA = buried surface area (the contact footprint a binder would form on the patch); seed counts are docked binder backbones split by α-helix / β-strand.`,
+    );
+    lines.push("");
+    lines.push(
+      "| Site | Anchor residue | BSA (Å²) | α-helix seeds | β-strand seeds | Hydrophobicity |",
+    );
+    lines.push("|---|---|---|---|---|---|");
+    for (const site of sb.sites) {
+      lines.push(
+        `| ${site.site_id} | ${site.anchor_residue} | ${fmtNum(site.area_a2)} | ${fmtInt(site.n_seeds_alpha)} | ${fmtInt(site.n_seeds_beta)} | ${fmtNum(site.hydrophobicity)} |`,
+      );
+    }
+    lines.push("");
+    if (Array.isArray(sb.pdbs) && sb.pdbs.length) {
+      lines.push(
+        `**Experimental structures** — ${sb.pdbs.length} PDB entr${sb.pdbs.length === 1 ? "y" : "ies"} for this protein: ${sb.pdbs.join(", ")}.`,
+      );
+      lines.push("");
+    }
+  } else if (sb && sb.has_data) {
+    lines.push(
+      "Scored, but no surface patch cleared the antibody-sized targetability threshold (`n_sites = 0`).",
+    );
+    lines.push("");
+  } else {
+    lines.push(
+      "No SURFACE-Bind data — typically because the protein has no AlphaFold model (very large proteins).",
+    );
+    lines.push("");
+  }
 
   // The standalone "Knowledge gaps" section was dropped in PR23
   // round 5 — uncertainty signal now flows through
@@ -520,7 +699,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     else if (ev.evidence_tier === "tertiary") tertiary += 1;
     if (evidenceSources(ev).some((s) => pmcIdOf(s))) pmcOa += 1;
   }
-  lines.push("## 10. Evidence ledger");
+  lines.push("## 11. Evidence ledger");
   lines.push("");
   lines.push(
     `${rec.evidence.length} entries · ${primary} primary · ${secondary} secondary · ${tertiary} tertiary · ${pmcOa} PMC OA.`,
@@ -671,6 +850,30 @@ function md(rec, structureData, sequences, afdbEntry) {
     }
   }
 
+  // Close-paralog sequences — >80% ECD identity (the viewer's cutoff). The
+  // numeric %identity-only family members (e.g. EGFR's, all <50%) don't
+  // qualify, so this is empty for them and populated for tight gene families.
+  const paralogSeqRows = (df.paralogs ?? []).filter((p) => {
+    const id = p.ecd_pct_identity ?? p.full_length_pct_identity;
+    return id != null && id > 80 && sequences[p.paralog_uniprot_acc];
+  });
+  if (paralogSeqRows.length) {
+    lines.push("### Close-paralog sequences");
+    lines.push("");
+    for (const p of paralogSeqRows) {
+      const seq = sequences[p.paralog_uniprot_acc];
+      const id = p.ecd_pct_identity ?? p.full_length_pct_identity;
+      lines.push(
+        `**${p.paralog_symbol}** (\`${p.paralog_uniprot_acc}\` · ${id.toFixed(1)}% ECD identity · ${seq.length} aa)`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(wrapSequence(seq, 60));
+      lines.push("```");
+      lines.push("");
+    }
+  }
+
   // Per-residue topology, canonical + each isoform
   lines.push("### Per-residue DeepTMHMM topology");
   lines.push("");
@@ -691,6 +894,38 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push(wrapTopology(iso.per_residue_topology, 60));
     lines.push("```");
     lines.push("");
+  }
+  // Ortholog topology (canonical mouse/cyno) — projected onto the human
+  // canonical, exactly the projection the viewer's TopologyBar renders.
+  for (const species of ["mouse", "cynomolgus"]) {
+    const entries = df.orthologs[species] ?? [];
+    const canon = entries.find((o) => o.is_canonical) ?? entries[0];
+    if (canon && canon.per_residue_topology) {
+      const label = species.charAt(0).toUpperCase() + species.slice(1);
+      lines.push(
+        `**${label} ortholog — ${canon.ortholog_symbol}** (\`${canon.ortholog_uniprot_acc}\`, projected onto human canonical)`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(wrapTopology(canon.per_residue_topology, 60));
+      lines.push("```");
+      lines.push("");
+    }
+  }
+  // Close-paralog topology — mirrors the viewer's >80%-ECD-identity cutoff
+  // (no close paralogs ⟹ nothing renders, e.g. EGFR).
+  for (const p of df.paralogs) {
+    const id = p.ecd_pct_identity ?? p.full_length_pct_identity;
+    if (id != null && id > 80 && p.per_residue_topology) {
+      lines.push(
+        `**Paralog — ${p.paralog_symbol}** (\`${p.paralog_uniprot_acc}\`, ${id.toFixed(1)}% ECD identity)`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(wrapTopology(p.per_residue_topology, 60));
+      lines.push("```");
+      lines.push("");
+    }
   }
   if (structureData?.topology && structureData.topology !== ct.per_residue_topology) {
     lines.push(
@@ -783,6 +1018,13 @@ async function main() {
       const entries = dfx.orthologs?.[sp] ?? [];
       const canon = entries.find((o) => o.is_canonical) ?? entries[0];
       if (canon?.ortholog_uniprot_acc) seqAccs.push(canon.ortholog_uniprot_acc);
+    }
+    // Close paralogs (>80% ECD identity — the viewer's cutoff).
+    for (const p of dfx.paralogs ?? []) {
+      const id = p.ecd_pct_identity ?? p.full_length_pct_identity;
+      if (id != null && id > 80 && p.paralog_uniprot_acc) {
+        seqAccs.push(p.paralog_uniprot_acc);
+      }
     }
     const uniqAccs = [...new Set(seqAccs)];
     process.stdout.write(`→ ${name}: fetching ${uniqAccs.length} sequence(s)… `);
