@@ -121,6 +121,15 @@ function stateDependenceTone(v: string): Tone {
   return "neutral";
 }
 
+/** Contradicting-evidence severity tone — higher severity is WORSE.
+ *  `none` (no contradictions) reads as clean/green alongside `low`. */
+function contradictionTone(v: string): Tone {
+  if (v === "high") return "danger";
+  if (v === "moderate") return "warn";
+  if (v === "low" || v === "none") return "success";
+  return "neutral"; // unclear
+}
+
 /**
  * Ortholog ECD identity tone — higher conservation is BETTER (mouse /
  * cyno literature can stand in for human evidence). Thresholds from PR
@@ -288,6 +297,28 @@ export function FiltersCard({ rec, n }: Props) {
         .filter((t) => t !== "other"),
     ),
   );
+  // Highest-severity contradicting-evidence signal, echoed from §02 into
+  // the Accessibility-context panel group. "none" when the ledger logs no
+  // contradictions; otherwise the strongest contradiction's impact on the
+  // surface call (high > moderate > low > unclear).
+  const _contradictions = rec.surface_evidence.contradicting_evidence;
+  const _CONTRA_RANK: Record<string, number> = {
+    unclear: 0,
+    low: 1,
+    moderate: 2,
+    high: 3,
+  };
+  const maxContradictionSeverity =
+    _contradictions.length === 0
+      ? "none"
+      : _contradictions.reduce(
+          (best, c) =>
+            (_CONTRA_RANK[c.severity_for_surface_accessibility] ?? 0) >
+            (_CONTRA_RANK[best] ?? 0)
+              ? c.severity_for_surface_accessibility
+              : best,
+          _contradictions[0].severity_for_surface_accessibility as string,
+        );
   const uniprotFamilyPills: React.ReactNode[] = es.uniprot_family
     ? parseUniprotFamily(es.uniprot_family).map((seg, i) => (
         <StatusPill
@@ -377,6 +408,29 @@ export function FiltersCard({ rec, n }: Props) {
               rec.biological_context.subcellular_localization
                 .primary_compartment,
             )}
+          />
+        </StatusPill>,
+        // Highest-severity contradicting evidence against the surface call
+        // (echoed from §02). "none" = no contradictions logged.
+        <StatusPill
+          key="contradiction"
+          tone={contradictionTone(maxContradictionSeverity)}
+          size="sm"
+          title={
+            "Highest severity of contradicting evidence against the surface " +
+            "call (from §02 Surface evidence → Contradicting evidence). " +
+            "none = no contradictions in the ledger; low / moderate / high = " +
+            "the strongest contradiction's impact on the surface-accessibility " +
+            "call; unclear = logged but impact not gradable."
+          }
+        >
+          <ChipLabelValue
+            label="contradiction"
+            value={
+              maxContradictionSeverity === "none"
+                ? "none"
+                : prettyEnum(maxContradictionSeverity)
+            }
           />
         </StatusPill>,
         ...modTriggers.map((t) => (
