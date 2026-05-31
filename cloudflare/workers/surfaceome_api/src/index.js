@@ -218,8 +218,25 @@ const DDF_KEYS = [
   "has_shed_form",
   "has_secreted_form",
   "has_epitope_masking",
+  "has_restricted_subdomain",
   "n_term_extracellular",
   "c_term_extracellular",
+];
+
+// Bin an ECD %-identity into a coarse band. Keep in sync with
+// viewer/lib/deep-dive-fields.ts:ecdBand. `null` (no ortholog/paralog in
+// Compara) → "none".
+function ecdBand(pct, hi, mid) {
+  if (pct == null) return "none";
+  if (pct >= hi) return "high";
+  if (pct >= mid) return "moderate";
+  return "low";
+}
+
+const ECD_BAND_SOURCES = [
+  ["cyno_ortholog_ecd", "cyno_ortholog_ecd_pct_identity", 90, 70],
+  ["mouse_ortholog_ecd", "mouse_ortholog_ecd_pct_identity", 90, 70],
+  ["max_paralog_ecd", "max_paralog_ecd_pct_identity", 70, 40],
 ];
 
 function projectDeepDiveFilters(annotationJson) {
@@ -237,6 +254,14 @@ function projectDeepDiveFilters(annotationJson) {
   for (const k of DDF_KEYS) {
     if (f[k] !== undefined && f[k] !== null) {
       out[k] = f[k];
+      any = true;
+    }
+  }
+  // Derived ECD bands — the numeric source is present (number or null) when
+  // the record carries it; "none" is a real facet (no ortholog/paralog).
+  for (const [key, src, hi, mid] of ECD_BAND_SOURCES) {
+    if (src in f) {
+      out[key] = ecdBand(f[src], hi, mid);
       any = true;
     }
   }
@@ -785,6 +810,8 @@ async function handleTriageExport(env, url) {
     // surface-vote flags.
     `SELECT t.gene_symbol,`,
     `       COALESCE(t.uniprot_acc, gi.uniprot_acc) AS uniprot_acc,`,
+    `       COALESCE(t.hgnc_id, gi.hgnc_id) AS hgnc_id,`,
+    `       COALESCE(t.ensembl_gene, gi.ensembl_gene) AS ensembl_gene,`,
     `       COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,`,
     `       COALESCE(c.go_surface_flag, 0)      AS db_go,`,
     `       COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,`,
@@ -811,7 +838,7 @@ async function handleTriageExport(env, url) {
   const rs = await env.DB.prepare(sqlParts.join("")).bind(...params).all();
 
   const cols = [
-    "gene_symbol", "uniprot_acc",
+    "gene_symbol", "uniprot_acc", "hgnc_id", "ensembl_gene",
     "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
     ...EXPORT_COLUMNS.slice(1),
   ];

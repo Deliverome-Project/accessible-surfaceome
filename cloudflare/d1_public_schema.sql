@@ -103,6 +103,8 @@ CREATE TABLE IF NOT EXISTS triage_run_public (
 
     gene_symbol         TEXT NOT NULL,
     uniprot_acc         TEXT,
+    hgnc_id             TEXT,
+    ensembl_gene        TEXT,
     bench_version       TEXT NOT NULL,
 
     model               TEXT NOT NULL,
