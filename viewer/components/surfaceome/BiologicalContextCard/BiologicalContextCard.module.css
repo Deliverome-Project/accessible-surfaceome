@@ -162,10 +162,10 @@
   line-height: 1.4;
 }
 
-/* Accessibility-modulation table — fixed layout so the Context (col 1)
-   and Induced/lineage (col 2) columns can be pinned narrow; their pills
-   wrap to multiple lines instead of forcing the columns wide, leaving
-   more room for Shift / Modulating / Implication / Cites. */
+/* Accessibility-modulation table — fixed layout so the Context (col 1) pill
+   column can be pinned compact while the four prose/citation columns
+   (Reference / Modulating state / Implication / References) share the
+   remaining width evenly. */
 .modTable {
   table-layout: fixed;
 }
@@ -195,9 +195,9 @@
 .modTable td:nth-child(3),
 .modTable td:nth-child(4) {
   /* Break only at spaces / existing hyphens (e.g. "disease-state"),
-     never mid-word. `anywhere` here was splitting category labels like
-     "Polariza-tion" mid-character. The columns are sized (above) to fit
-     their content, so this won't overflow. */
+     never mid-word — `anywhere` was splitting the Category label
+     ("Polariza-tion") mid-character. The prose columns share width evenly
+     (see above) and wrap fine at word boundaries. */
   overflow-wrap: normal;
   word-break: keep-all;
 }
