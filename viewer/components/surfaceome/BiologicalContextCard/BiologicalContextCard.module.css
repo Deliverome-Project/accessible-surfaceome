@@ -60,6 +60,32 @@
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+  align-items: center;
+}
+
+/* One labeled secondary-localization row ("surface subdomain" /
+   "also found in") under the primary compartment chip. Mono label left,
+   badges right, so the two rows read as an aligned column. */
+.locRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.locRowLabel {
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+/* A single "also found in" compartment: badge + its inline citation chips
+   kept together so they wrap as one unit. */
+.locCompartment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .mono {
@@ -156,20 +182,13 @@
   width: 11.5rem;
 }
 
-.modTable th:nth-child(2),
-.modTable td:nth-child(2) {
-  width: 7rem;
-}
-
-/* Reference (baseline) + Modulating state — narrow, fixed columns; their
-   prose wraps within the column so the Implication / References columns
-   get the remaining width. */
-.modTable th:nth-child(3),
-.modTable td:nth-child(3),
-.modTable th:nth-child(4),
-.modTable td:nth-child(4) {
-  width: 8rem;
-}
+/* Columns 2–5 — Reference (baseline_context), Modulating state, Implication,
+   and References (change narrative + citations) — are ALL prose/citation
+   content. With `table-layout: fixed` and no explicit width they divide the
+   space left by the fixed Context column EQUALLY. Previously cols 2–4 were
+   pinned narrow (7–8rem) and col 5 carried no width, so it absorbed the
+   entire remainder and ballooned far wider than its short citations needed
+   while the three prose columns stayed cramped. Equal shares read far better. */
 
 .modTable td:nth-child(1),
 .modTable td:nth-child(2),

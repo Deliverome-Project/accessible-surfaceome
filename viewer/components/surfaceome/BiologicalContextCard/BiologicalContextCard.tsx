@@ -152,50 +152,62 @@ export function BiologicalContextCard({ rec, n }: Props) {
 
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
+        {/* Primary compartment + two labeled secondary axes in one
+            consistent stack (was: subdomains as badges but dual_localization
+            as a separate full table — same "where else is it" idea, two
+            unrelated treatments):
+              • surface subdomain — outer-leaflet PM microdomains an antibody
+                meets (apical / basolateral / raft / junction).
+              • also found in — whole non-primary compartments (endosome,
+                lysosome, …); each badge carries its condition + fraction on
+                hover and its citation chips inline, so no table data is lost. */}
         <div className={styles.locHead}>
           <StatusPill tone="teal" size="sm">
             <ChipLabelValue label="primary" value={prettyEnum(loc.primary_compartment)} />
           </StatusPill>
-          {loc.membrane_subdomains.length > 0 ? (
+        </div>
+        {loc.membrane_subdomains.length > 0 ? (
+          <div className={styles.locRow}>
+            <span className={`label-mono ${styles.locRowLabel}`}>
+              surface subdomain
+            </span>
             <span className={styles.subdomains}>
               {loc.membrane_subdomains.map((s, i) => (
                 <StatusPill key={i} tone="lavender" size="sm">
-                  {/* Label these "secondary" so the lavender chips read as
-                   *  secondary localizations next to the teal "primary"
-                   *  compartment chip, instead of bare unlabeled terms. */}
-                  <ChipLabelValue label="secondary" value={prettyEnum(s.subdomain)} />
+                  {prettyEnum(s.subdomain)}
                 </StatusPill>
               ))}
             </span>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
         {loc.dual_localization.length > 0 ? (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Compartment</th>
-                <th scope="col">Fraction</th>
-                <th scope="col">Condition</th>
-                <th scope="col">References</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loc.dual_localization.map((d, i) => (
-                <tr key={i}>
-                  <td>{prettyEnum(d.compartment)}</td>
-                  <td>
-                    {d.fraction_estimate != null
-                      ? `${(d.fraction_estimate * 100).toFixed(0)}%`
-                      : "unknown"}
-                  </td>
-                  <td>{d.condition ?? "—"}</td>
-                  <td>
-                    <EvidenceChipList ids={d.cited_evidence_ids} label="References" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className={styles.locRow}>
+            <span className={`label-mono ${styles.locRowLabel}`}>
+              also found in
+            </span>
+            <span className={styles.subdomains}>
+              {loc.dual_localization.map((d, i) => {
+                const pct =
+                  d.fraction_estimate != null
+                    ? `${(d.fraction_estimate * 100).toFixed(0)}%`
+                    : null;
+                const hover = [d.condition, pct ? `~${pct} of pool` : null]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <span key={i} className={styles.locCompartment}>
+                    <StatusPill tone="teal" size="sm" title={hover || undefined}>
+                      {prettyEnum(d.compartment)}
+                      {pct ? ` · ${pct}` : ""}
+                    </StatusPill>
+                    {d.cited_evidence_ids.length > 0 ? (
+                      <EvidenceChipList ids={d.cited_evidence_ids} />
+                    ) : null}
+                  </span>
+                );
+              })}
+            </span>
+          </div>
         ) : null}
         {/* exocytosis_evidence was dropped in PR23 round 5 — same
             biology now lives in `accessibility_modulation` rows
