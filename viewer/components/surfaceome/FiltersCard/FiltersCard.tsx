@@ -289,11 +289,23 @@ export function FiltersCard({ rec, n }: Props) {
   // KINDS of surface-accessibility modulation there's evidence for, rather
   // than only the cell-state triggers. Drop "none" (no modulation) and
   // "unknown" — they aren't informative chips.
+  // Drop "none" / "unknown" (not informative) AND any category that equals
+  // the headline surface_call_reason — that value is already shown as the
+  // "reason" chip at the top of this group, so repeating it as a modulation
+  // category below is redundant (e.g. reason=lysosomal_exocytosis +
+  // a lysosomal_exocytosis category chip). The reason chip wins; only
+  // ADDITIONAL distinct categories surface here.
   const modCategories = Array.from(
     new Set(
       rec.biological_context.accessibility_modulation
         .map((m) => m.category)
-        .filter((c) => c && c !== "none" && c !== "unknown"),
+        .filter(
+          (c) =>
+            c &&
+            c !== "none" &&
+            c !== "unknown" &&
+            c !== es.surface_call_reason,
+        ),
     ),
   );
   // Highest-severity contradicting-evidence signal, echoed from §02 into
