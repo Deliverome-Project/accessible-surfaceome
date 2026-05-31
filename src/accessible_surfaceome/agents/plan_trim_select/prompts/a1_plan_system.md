@@ -280,19 +280,27 @@ cells` OR `stable cell line` OR `ectopic expression`) AND (`flow
 cytometry` OR `cell surface staining` OR `antibody binding` OR `ligand
 binding`).
 
-**Prefer WILD-TYPE / canonical-construct OE evidence.** The flag is about
-whether the catalog's wild-type target reaches the surface when
-overexpressed, so the cleanest precedent is the WT / full-length protein
-in a heterologous host — NOT a disease variant (EGFRvIII, constitutively-
-active point mutants, gene fusions, truncations). Disease-variant OE is
-abundant for oncogenes and will dominate a naive search, so add a query
-that anchors on the wild-type construct: gene symbol AND (`wild-type` OR
-`full-length` OR `WT`) AND (`transfected` OR `overexpression`) AND a
-surface keyword. (e.g. for EGFR this targets cetuximab / EGF binding to
-WT-EGFR-transfected CHO over EGFRvIII-glioma papers.) Don't EXCLUDE
-variant papers — select will keep a variant clip as a fallback and flag
-it — but make sure the WT-construct option is in the pool. Then the
-host-specific queries:
+**Cast the WT search wide — do NOT gate on the literal word "wild-type."**
+The flag is about whether the catalog's wild-type target reaches the
+surface when overexpressed, so the cleanest precedent is the WT /
+full-length protein in a heterologous host (NOT a disease variant —
+EGFRvIII, constitutively-active mutants, fusions, truncations). BUT real
+WT-transfectant papers almost never contain the phrase "wild-type" — they
+say "[GENE]-transfected NIH3T3", "CHO cells stably expressing [GENE]",
+"BaF3 / 32D [GENE] transfectants", "[GENE]-overexpressing HEK293".
+Requiring a `wild-type` / `WT` keyword therefore MISSES them (the lesson
+from EGFR: WT-EGFR-overexpressing NIH3T3 / CHO surface-flow papers exist —
+e.g. PMC4372364, PMC3163362 — but a wild-type-keyword query returned only
+the EGFRvIII-glioma literature). So the WT preference is enforced at the
+**SELECTION** layer (A1 select prefers a WT clip over a variant), NOT by a
+search keyword. For RETRIEVAL, cast wide on the canonical
+transfectant-construct phrasings: gene symbol AND (`transfected` OR
+`overexpressing` OR `stably expressing` OR `ectopic expression`) AND (a
+classic OE host — `NIH3T3` / `CHO` / `BaF3` / `32D` / `COS` / `HEK293` —
+OR `cell surface` / `flow cytometry`). This surfaces the WT-transfectant
+flow papers the variant-dominated search otherwise buries; selection then
+prefers the WT clip and keeps a variant clip only as a flagged fallback.
+Then the host-specific queries:
 
 * **Host-agnostic OE** — gene symbol AND a generic OE term
   (`overexpression`, `ectopic expression`, `transient transfection`,
