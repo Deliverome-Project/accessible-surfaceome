@@ -146,12 +146,13 @@
 
 .modTable th:nth-child(1),
 .modTable td:nth-child(1) {
-  /* Wide enough that even the longest category label
-     ("Post Translational Dependent", ~207px incl. pill padding) fits on a
-     single line — so no label wraps and no word ever breaks mid-character.
-     The table is fixed-layout at 100%, so this draws from the prose
-     Implication / References columns, which wrap fine. */
-  width: 13rem;
+  /* Wide enough that the longest category label
+     ("Post-translational dependent" — ~223px once uppercase + letter-spacing
+     + pill padding are counted) fits on ONE line, so the lavender pill hugs
+     its text instead of wrapping and trailing background past the shorter
+     wrapped line. The table is fixed-layout at 100%, so this draws from the
+     prose Implication / References columns, which wrap fine. */
+  width: 14.75rem;
 }
 
 .modTable th:nth-child(2),
@@ -181,16 +182,14 @@
   word-break: keep-all;
 }
 
-/* StatusPill is white-space:nowrap by default; allow wrapping inside the
-   two tightened columns so a multi-word category / trigger doesn't keep
-   the column wide — or, with table-layout:fixed, overflow its fixed width
-   and overlap the Shift column. Target ALL descendants (not just the
-   direct pill) so the text span INSIDE the pill wraps too, and break a
-   long single token (e.g. "oncogenic_transformation") with overflow-wrap. */
-.modTable td:nth-child(1) *,
+/* Column 2 (Induced / lineage) is pinned narrow (7rem), so its pills must
+   wrap at word boundaries rather than overflow the fixed column. Column 1
+   (Category) is deliberately NOT wrapped — it's sized above to fit the
+   longest label on one line, so its lavender pill keeps StatusPill's default
+   `nowrap` and the background hugs the text instead of trailing past a short
+   wrapped line. Target ALL descendants (not just the direct pill) so the
+   text span INSIDE the pill wraps too, only at word boundaries. */
 .modTable td:nth-child(2) * {
-  /* Let the pill text wrap across lines (StatusPill is nowrap by
-     default) but only at word boundaries — no mid-word breaks. */
   white-space: normal;
   overflow-wrap: normal;
   word-break: keep-all;
