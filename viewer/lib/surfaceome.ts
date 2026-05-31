@@ -28,6 +28,7 @@
 
 import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+import { pickDeepDiveFilters } from "./deep-dive-fields";
 import type {
   BenchmarkMatrix,
   BenchmarkRow,
@@ -847,6 +848,41 @@ export async function loadSurfaceomeRecord(
     if (reasoning) return { ...record, triage_reasoning: reasoning };
   }
   return record;
+}
+
+/**
+ * Rebuild each deep-dived row's `deep_dive_filters` from its per-gene
+ * record, replacing whatever the Worker's `/v1/catalog` shipped. The Worker
+ * projection lags the in-tree filter taxonomy until it's redeployed, so
+ * deriving ddf from records here means a NEW filter field works the moment
+ * it lands — no Worker deploy, no "inert until deploy" window. Both the
+ * catalog index and `/compare` call this. Build-time only;
+ * `loadSurfaceomeRecord` is memoized, so the per-gene reads dedup across the
+ * build.
+ */
+export async function withDeepDiveFilters(
+  rows: CatalogRow[],
+): Promise<CatalogRow[]> {
+  const ddSymbols = rows.filter((r) => r.deep_dive).map((r) => r.symbol);
+  if (ddSymbols.length === 0) return rows;
+  const records = await Promise.all(
+    ddSymbols.map((s) => loadSurfaceomeRecord(s)),
+  );
+  const ddfBySymbol = new Map<string, DeepDiveFilters>();
+  ddSymbols.forEach((sym, i) => {
+    const ddf = pickDeepDiveFilters(
+      records[i]?.filters as Record<string, unknown> | undefined,
+    );
+    // Partial DeepDiveFilters (older records omit newer fields); every
+    // reader accesses fields optionally, so route the cast through unknown.
+    if (ddf) ddfBySymbol.set(sym, ddf as unknown as DeepDiveFilters);
+  });
+  if (ddfBySymbol.size === 0) return rows;
+  return rows.map((r) =>
+    r.deep_dive && ddfBySymbol.has(r.symbol)
+      ? { ...r, deep_dive_filters: ddfBySymbol.get(r.symbol) }
+      : r,
+  );
 }
 
 export async function loadAllSurfaceomeRecords(): Promise<SurfaceomeRecord[]> {

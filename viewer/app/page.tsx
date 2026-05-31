@@ -1,6 +1,6 @@
 import { Shell } from "../components/Shell/Shell";
 import { CatalogTable } from "../components/CatalogTable/CatalogTable";
-import { loadCatalog } from "../lib/surfaceome";
+import { loadCatalog, withDeepDiveFilters } from "../lib/surfaceome";
 import styles from "./page.module.css";
 
 /**
@@ -13,6 +13,10 @@ import styles from "./page.module.css";
  */
 export default async function HomePage() {
   const catalog = await loadCatalog();
+  // Rebuild deep-dive filters from records so a new filter field works
+  // without redeploying the Worker (the /v1/catalog `ddf` lags the in-tree
+  // taxonomy). Same helper /compare uses.
+  const rows = await withDeepDiveFilters(catalog.rows);
 
   return (
     <Shell>
@@ -48,7 +52,7 @@ export default async function HomePage() {
         </header>
 
         <CatalogTable
-          rows={catalog.rows}
+          rows={rows}
           generated_at={catalog.generated_at}
           n_rows={catalog.n_rows}
           n_with_triage={catalog.n_with_triage}
