@@ -10,6 +10,7 @@ import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
+import { linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
@@ -406,9 +407,6 @@ export function GeneHeader({
               >
                 {benchmarkVerdictLabel(benchmarkRow.truth_verdict)}
               </StatusPill>
-              <span className={styles.triageQualifier}>
-                <ChipLabelValue label="SurfaceBench" value="curated truth" />
-              </span>
             </p>
           ) : null}
 
@@ -471,7 +469,9 @@ export function GeneHeader({
                   that vital)
                 * cited_evidence_ids → the §Evidence ledger + each
                   per-row EvidenceChipList */}
-          <p className={styles.execLede}>{exec.one_paragraph}</p>
+          <p className={styles.execLede}>
+            {linkifyEvidenceRefs(exec.one_paragraph)}
+          </p>
 
           {/* At-a-glance 2×2 vitals grid. Each value is the deep-dive
               agent's synthesis (Accessibility / Experimental surface

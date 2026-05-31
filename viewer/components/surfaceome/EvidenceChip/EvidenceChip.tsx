@@ -122,14 +122,45 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
 //   m[2] = start number (zero-padded width preserved for output)
 //   m[3] = optional range end number (when ``a1_evi_01-05`` style)
 //   m[4] = bare PMID number
-//   m[5] = "<weight>-weight" explicit form
-//   m[6] = bare "high" / "moderate" / "low" (context-checked)
+//   m[5] = PMC article number (PubMed Central full-text link)
+//   m[6] = "<weight>-weight" explicit form
 //   m[7] = raw evidence-grade enum token (synthesizer prose often opens
 //          grade_rationale with the literal enum, e.g.
 //          "direct_multi_method — live flow, …") → render as a prettified
 //          label so the reader never sees snake_case.
+//   m[8] = bare "high" / "moderate" / "low" (context-checked)
 const TOKEN_RE =
-  /\b(a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(direct_multi_method|direct_single_method|supportive_but_indirect)\b|\b(high|moderate|low)\b/g;
+  /\b(a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\bPMC(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(direct_multi_method|direct_single_method|supportive_but_indirect)\b|\b(high|moderate|low)\b/g;
+
+// Normalize compact evidence-ref lists into fully-qualified ids before
+// tokenizing. The synthesizer sometimes abbreviates a multi-ref citation
+// as "(a1_evi_01, 02, 03)" — only the first ref carries the
+// "a1_evi_" prefix and the rest are bare zero-padded numbers. Without
+// this, the bare "02" / "03" fall through as plain text (the reported
+// IZUMO4 bug). Within each parenthetical, rewrite a bare number that
+// follows an evidence ref into "<prefix><NN>" so the main tokenizer
+// turns every one into a chip. Only fires inside parens that already
+// contain an evidence ref, so prose numbers (e.g. "(see Fig 2)") are
+// untouched.
+function _expandCompactRefs(text: string): string {
+  return text.replace(/\(([^)]*a[12]_evi_\d+[^)]*)\)/g, (whole, inner) => {
+    let prefix: string | null = null;
+    const rewritten = inner.replace(
+      /(a[12]_evi_)(\d+)|(?<=[,;]\s*)(\d+)\b/g,
+      (m: string, p: string | undefined, _n: string, bare: string | undefined) => {
+        if (p) {
+          prefix = p;
+          return m;
+        }
+        // bare number after a comma/semicolon — qualify it with the
+        // running prefix (only once we've seen a real ref in this paren).
+        if (bare && prefix) return `${prefix}${bare}`;
+        return m;
+      },
+    );
+    return `(${rewritten})`;
+  });
+}
 
 // Prettified labels for the evidence-grade enum tokens (m[6]). Mirrors
 // ``ENUM_LABELS`` in lib/enums.ts; kept local so this module stays
@@ -158,6 +189,7 @@ function _markEvidenceParens(text: string): boolean[] {
 
 export function linkifyEvidenceRefs(text: string): React.ReactNode[] {
   if (!text) return [text];
+  text = _expandCompactRefs(text);
   const inRefParen = _markEvidenceParens(text);
   const out: React.ReactNode[] = [];
   let lastIdx = 0;
@@ -209,28 +241,45 @@ export function linkifyEvidenceRefs(text: string): React.ReactNode[] {
         </a>,
       );
     } else if (match[5] !== undefined) {
+      // PMC article id — outbound link to the open-access full text on
+      // PubMed Central. The agent cites primary sources as PMC IDs when
+      // the paper is in PMC (vs PMID for the abstract record).
+      const pmc = match[5];
+      out.push(
+        <a
+          key={`pmc-${key++}-${pmc}`}
+          href={`https://www.ncbi.nlm.nih.gov/pmc/articles/PMC${pmc}/`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.pmidLink}
+          title={`Open PubMed Central article PMC${pmc} in a new tab`}
+        >
+          PMC{pmc}
+        </a>,
+      );
+    } else if (match[6] !== undefined) {
       // Explicit ``high-weight`` / ``moderate-weight`` / ``low-weight``
       // — always badge, the suffix makes the intent unambiguous.
-      const weight = match[5].split("-")[0] as "high" | "moderate" | "low";
+      const weight = match[6].split("-")[0] as "high" | "moderate" | "low";
       out.push(<WeightBadge key={`w-${key++}`} weight={weight} />);
-    } else if (match[6] !== undefined) {
+    } else if (match[7] !== undefined) {
       // Raw evidence-grade enum token — replace the snake_case literal
       // with its prettified label so the reader never sees
       // "direct_multi_method" in the grade_rationale prose.
       out.push(
-        <span key={`grade-${key++}`}>{GRADE_LABELS[match[6]] ?? match[6]}</span>,
+        <span key={`grade-${key++}`}>{GRADE_LABELS[match[7]] ?? match[7]}</span>,
       );
-    } else if (match[7] !== undefined) {
+    } else if (match[8] !== undefined) {
       // Bare ``high`` / ``moderate`` / ``low`` — badge only when
       // inside a parenthesis that contains an evidence ref. Outside
       // that context the same words are natural-prose adjectives
       // (``moderate quality``, ``high coverage``) and we leave them
       // as plain text to avoid false-positive pills.
       if (inRefParen[idx]) {
-        const weight = match[7] as "high" | "moderate" | "low";
+        const weight = match[8] as "high" | "moderate" | "low";
         out.push(<WeightBadge key={`w-${key++}`} weight={weight} />);
       } else {
-        out.push(match[7]);
+        out.push(match[8]);
       }
     }
 
