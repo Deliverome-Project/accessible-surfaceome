@@ -87,7 +87,12 @@
 }
 
 .tone_success {
-  color: var(--success);
+  /* Darker than the global ``--success`` (#2e7a55) — that mid-green read
+     too light on the pale 10% soft-fill (esp. small chips like "✓ known
+     ligand"). A deeper forest green lifts the text/fill contrast without
+     touching the global token (which also tints the vital-display green
+     on white, where #2e7a55 is already fine). */
+  color: #1b5e3f;
   border-color: transparent;
   background: rgba(46, 122, 85, 0.1);
 }
