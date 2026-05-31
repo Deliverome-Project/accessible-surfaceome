@@ -112,6 +112,20 @@ cell type has EGFR" is worse than no row.
 - `change` — prose ≤300 chars describing what actually shifts.
 - `accessibility_implication` — prose ≤300 chars describing what the
   shift means for binder access.
+- `direction` — closed enum for the DIRECTION of the surface-accessible
+  change (the up/down axis of `change`):
+    - `increases_surface` — the modulating state RAISES surface-accessible
+      levels (activation-induced upregulation, shedding that exposes more
+      receptor, trafficking TO the plasma membrane).
+    - `decreases_surface` — it LOWERS them (ligand-induced internalization +
+      degradation, trafficking away from the surface, epitope masking).
+    - `bidirectional` — both directions are documented depending on
+      sub-context.
+    - `no_change` — the state is noted but surface levels are unchanged
+      (e.g. a polarization redistribution with no net change).
+    - `unclear` — can't be determined from the evidence. DEFAULT to
+      `unclear` when in doubt; never guess a direction the text doesn't
+      support.
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed.
 
 ## CATEGORY-CONDITIONAL PAIRING — VALIDATOR RULES

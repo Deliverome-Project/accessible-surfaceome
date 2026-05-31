@@ -2019,6 +2019,18 @@ class AnatomicalAccessibilityObservation(BaseModel):
         return self
 
 
+# Structured direction of the surface-accessibility change a modulation row
+# describes. Distinct from ``AccessibilityImplication`` (favorable / restricted
+# / …) — this is purely the up/down axis of the surface-accessible pool.
+ModulationDirection = Literal[
+    "increases_surface",
+    "decreases_surface",
+    "bidirectional",
+    "no_change",
+    "unclear",
+]
+
+
 class AccessibilityModulationObservation(BaseModel):
     """How surface presence/exposure shifts with cell state, tissue, or disease.
 
@@ -2048,6 +2060,10 @@ class AccessibilityModulationObservation(BaseModel):
         ...,
         description="What the change means for accessibility. Soft target ≤300 chars (overshoots warned but accepted).",
     )
+    # Structured up/down direction of the change described in ``change`` /
+    # ``accessibility_implication``. Defaults to ``"unclear"`` so records
+    # predating this field stay valid and the viewer shows no glyph for them.
+    direction: ModulationDirection = "unclear"
     species: Species = "unspecified"
     species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
