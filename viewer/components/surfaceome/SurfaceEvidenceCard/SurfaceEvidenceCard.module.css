@@ -229,7 +229,10 @@
   text-align: left;
   padding: var(--space-2) var(--space-3) var(--space-2) 0;
   border-bottom: 1px solid var(--line-soft);
-  vertical-align: top;
+  /* Center vertically so the short cells (Sample, the Level pill, the
+     Cites chip) and the header ⓘ align to the middle of a tall,
+     wrapped Context cell instead of clinging to the top. */
+  vertical-align: middle;
 }
 
 .obsTable th {
