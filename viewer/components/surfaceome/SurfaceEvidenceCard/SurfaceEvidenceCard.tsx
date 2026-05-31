@@ -196,7 +196,7 @@ function MethodBlock({
           <ul className={styles.abList}>
             {m.antibodies.map((ab, j) => {
               // Reagent identifiers from the source. When ALL are absent we
-              // show "(reagent details not in source)" AND suppress the
+              // show "(reagent details not found)" AND suppress the
               // link — a bare gene-symbol search with no clone / vendor /
               // catalog isn't specific enough to be useful, and pairing it
               // with "details not in source" reads as contradictory.
@@ -216,7 +216,7 @@ function MethodBlock({
                   <span className={styles.abMeta}>
                     {hasReagentDetails
                       ? reagentParts.join(" · ")
-                      : "(reagent details not in source)"}
+                      : "(reagent details not found)"}
                     {link ? (
                       <a
                         className={styles.abLink}
