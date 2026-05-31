@@ -28,6 +28,16 @@ your task message; follow it. Four blocks:
   protein.** This sub-block is for SOLUBLE protein free in
   supernatant / serum / plasma that can compete with the surface
   protein for circulating antibody — the antibody-decoy concern.
+
+  **It is about the TARGET PROTEIN being soluble — NOT its ligand
+  being shed.** A sheddase (ADAM17, BACE, etc.) cleaving the target's
+  *ligand* (e.g. ADAM17 shedding EGFR's EGF / TGF-α ligands) is
+  IRRELEVANT here — that's the ligand becoming soluble, not the target.
+  Only count evidence that THIS protein exists as a free soluble species:
+  a proteolytically shed ectodomain OF THE TARGET, or a soluble /
+  TM-less splice isoform OF THE TARGET. If the only "shedding" evidence
+  in the ledger is about the protein's ligand/agonist, do NOT cite it and
+  do NOT set `source="proteolytic"` on its basis.
   **Do NOT include protein inside extracellular vesicles, exosomes,
   microvesicles, or apoptotic bodies** — those proteins are
   shielded inside a lipid bilayer and aren't accessible to
