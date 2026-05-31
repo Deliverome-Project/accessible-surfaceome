@@ -165,14 +165,6 @@ const PROMPT_GROUPS: PromptGroup[] = [
           "for every surface-detection method the literature reports.",
       },
       {
-        id: "builder-therapeutic-engagement",
-        label: "A1 — therapeutic_engagement builder",
-        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/therapeutic_engagement_builder_system.md",
-        blurb:
-          "Drugs, antibodies, CARs, ADCs, vaccines, PROTACs that imply " +
-          "surface accessibility by way of binding.",
-      },
-      {
         id: "builder-contradictions",
         label: "A1 — contradictions builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/contradiction_builder_system.md",

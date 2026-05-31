@@ -14,9 +14,7 @@ The viewer is organized as a full QC pass over a v1.0.0 SurfaceomeRecord:
 * Section 0 — Executive summary (B synthesizer prose).
 * Section 1 — Surface Evidence: evidence_grade + grade_rationale,
   methods[] cards (with antibody table + expression_observations),
-  non_surface_expression[] (the RNA / bulk-protein bucket that prevents
-  expression from being misread as accessibility),
-  therapeutic_engagement, contradicting_evidence[].
+  contradicting_evidence[].
 * Section 2 — Biological Context: tissues[], cell_types[], cell_states[],
   subcellular_localization (primary_compartment + dual_localization[]
   + membrane_subdomains[]), anatomical_accessibility[],
@@ -636,37 +634,6 @@ def _render_method_card(m: dict[str, Any]) -> str:
     """
 
 
-def _render_nse(nse: dict[str, Any]) -> str:
-    return (
-        f"<tr>"
-        f"<td>{html.escape(nse.get('context', '—'))}</td>"
-        f"<td>{_badge(nse.get('sample_type', '—'), 'gray')}</td>"
-        f"<td>{_badge(nse.get('measurement_type', '—'), 'lavender')}</td>"
-        f"<td>{_badge(nse.get('level', '—'), _PRESENCE_KIND.get(nse.get('level') or '', 'gray'))}</td>"
-        f"<td>{_evi_chip_row(nse.get('cited_evidence_ids') or [])}</td>"
-        f"</tr>"
-    )
-
-
-def _render_te(te: dict[str, Any] | None) -> str:
-    if te is None:
-        return "<em class='muted'>no therapeutic engagement evidence</em>"
-    desc = html.escape(te.get("description") or "—")
-    rat = html.escape(te.get("surface_form_rationale") or "—")
-    return f"""
-    <div class="te-card">
-      <div class="te-head">
-        {_badge('stage: ' + str(te.get('highest_stage', '—')), 'amber')}
-      </div>
-      <div class="quote-label">description</div>
-      <div class="prose-block">{desc}</div>
-      <div class="quote-label">surface-form rationale</div>
-      <div class="prose-block">{rat}</div>
-      <div class="citations">{_evi_chip_row(te.get('cited_evidence_ids') or [])}</div>
-    </div>
-    """
-
-
 def _render_contradiction(c: dict[str, Any]) -> str:
     return f"""
     <div class="contra-card">
@@ -687,22 +654,12 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
     grade = se.get("evidence_grade") or "—"
     rationale = html.escape(se.get("grade_rationale") or "—")
     methods = se.get("methods") or []
-    nse = se.get("non_surface_expression") or []
-    te = se.get("therapeutic_engagement")
     contras = se.get("contradicting_evidence") or []
 
     methods_html = (
         "".join(_render_method_card(m) for m in methods)
         if methods
         else "<em class='muted'>no method observations</em>"
-    )
-    nse_table = (
-        "<table class='compact'><thead><tr><th>context</th><th>sample</th>"
-        "<th>measurement</th><th>level</th><th>cites</th></tr></thead><tbody>"
-        + "".join(_render_nse(n) for n in nse)
-        + "</tbody></table>"
-        if nse
-        else "<em class='muted'>no non-surface expression rows</em>"
     )
     contras_html = (
         "".join(_render_contradiction(c) for c in contras)
@@ -726,14 +683,6 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
 
       <h3>Methods ({len(methods)})</h3>
       {methods_html}
-
-      <h3>Non-surface expression ({len(nse)})</h3>
-      <div class="muted small">RNA / bulk-protein / non-fractionated observations — held
-      separately so expression isn't read as accessibility.</div>
-      {nse_table}
-
-      <h3>Therapeutic engagement</h3>
-      {_render_te(te)}
 
       <h3>Contradicting evidence ({len(contras)})</h3>
       {contras_html}

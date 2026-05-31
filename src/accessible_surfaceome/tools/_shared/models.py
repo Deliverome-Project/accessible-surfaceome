@@ -1206,13 +1206,6 @@ MeasurementType = Literal[
     "single_cell_RNA",
     "unknown",
 ]
-TherapeuticStage = Literal[
-    "approved_drug",
-    "in_clinical_trials",
-    "preclinical_in_vivo",
-    "none_documented",
-    "unknown",
-]
 ContradictionType = Literal[
     "intracellular_pool",
     "alternative_localization",
@@ -1795,39 +1788,6 @@ class NonSurfaceExpression(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-class TherapeuticEngagementContext(BaseModel):
-    """Lightweight signal that a therapeutic has reached this protein at the
-    cell surface — NOT a comprehensive therapeutic-landscape assessment.
-
-    ``surface_form_rationale`` is required and load-bearing for proteins with
-    both surface and secreted forms (GRP78, EGFR, etc.) — it clarifies which
-    form the drug actually engages.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    highest_stage: TherapeuticStage
-    description: str = Field(
-        ...,
-        description="Therapeutic engagement description. Soft target ≤600 chars (overshoots warned but accepted).",
-    )
-    surface_form_rationale: str = Field(
-        ...,
-        description="Which form the drug engages (surface vs. secreted). Soft target ≤400 chars (overshoots warned but accepted).",
-    )
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "description": 600,
-        "surface_form_rationale": 400,
-    }
-
-    @model_validator(mode="after")
-    def _warn_soft_target_overshoot(self) -> "TherapeuticEngagementContext":
-        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
-        return self
-
-
 class Contradiction(BaseModel):
     """One piece of contradicting evidence + the LLM's read on whether it
     matters for surface accessibility."""
@@ -1908,7 +1868,6 @@ class SurfaceEvidence(BaseModel):
     claim_stances: list[ClaimStanceRow] = Field(default_factory=list)
     methods: list[MethodObservation] = Field(default_factory=list)
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
-    therapeutic_engagement: TherapeuticEngagementContext | None = None
     contradicting_evidence: list[Contradiction] = Field(default_factory=list)
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {"grade_rationale": 800}
@@ -2782,8 +2741,6 @@ class SurfaceEvidenceDraft(BaseModel):
                 cited.update(obs.cited_evidence_ids)
         for nse in se.non_surface_expression:
             cited.update(nse.cited_evidence_ids)
-        if se.therapeutic_engagement is not None:
-            cited.update(se.therapeutic_engagement.cited_evidence_ids)
         for contradiction in se.contradicting_evidence:
             cited.update(contradiction.cited_evidence_ids)
         # claim_stances rows each name one claim_id directly (not in
@@ -3378,7 +3335,6 @@ __all__ = [
     "ValidationStrength",
     "SampleType",
     "MeasurementType",
-    "TherapeuticStage",
     "ContradictionType",
     "ContradictionSeverity",
     "TissuePresence",
@@ -3410,7 +3366,6 @@ __all__ = [
     "OverexpressionContext",
     "MethodObservation",
     "NonSurfaceExpression",
-    "TherapeuticEngagementContext",
     "Contradiction",
     "SurfaceEvidence",
     # v1.0.0 — biological context (section 2)

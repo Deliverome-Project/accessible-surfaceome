@@ -632,13 +632,6 @@ export type MeasurementType =
   | "single_cell_RNA"
   | "unknown";
 
-export type TherapeuticStage =
-  | "approved_drug"
-  | "in_clinical_trials"
-  | "preclinical_in_vivo"
-  | "none_documented"
-  | "unknown";
-
 export type ContradictionType =
   | "intracellular_pool"
   | "alternative_localization"
@@ -737,13 +730,6 @@ export interface NonSurfaceExpression {
   cited_evidence_ids: string[];
 }
 
-export interface TherapeuticEngagement {
-  highest_stage: TherapeuticStage;
-  description: string;
-  surface_form_rationale: string;
-  cited_evidence_ids: string[];
-}
-
 export interface Contradiction {
   claim: string;
   contradiction_type: ContradictionType;
@@ -780,7 +766,6 @@ export interface SurfaceEvidence {
   claim_stances: ClaimStanceRow[];
   methods: MethodObservation[];
   non_surface_expression: NonSurfaceExpression[];
-  therapeutic_engagement: TherapeuticEngagement | null;
   contradicting_evidence: Contradiction[];
 }
 

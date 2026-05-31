@@ -70,7 +70,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_evidence_grade,
     build_methods,
     build_subcellular_localization,
-    build_therapeutic_engagement,
     build_tissues,
 )
 from accessible_surfaceome.paths import DATA_DIR
@@ -111,9 +110,9 @@ def _triage_signal_and_reasoning_from_record(rec):
         return "unknown", ""
     return _TRIAGE_VERDICT_TO_SIGNAL.get(rec.verdict, "unknown"), rec.verdict_reasoning
 
-# Maximum block-builders to dispatch concurrently. There are 9 builders
-# total (4 A1 + 5 A2); they consume independent claim slices and each
-# makes a single Sonnet call, so a worker pool sized to ``9`` lets every
+# Maximum block-builders to dispatch concurrently. There are 8 builders
+# total (3 A1 + 5 A2); they consume independent claim slices and each
+# makes a single Sonnet call, so a worker pool sized to ``8`` lets every
 # builder kick off immediately. The Anthropic client is thread-safe
 # (httpx underneath) and each builder writes to its own ``usage_sink``
 # list so there's no shared mutable state across workers. The shared
@@ -121,7 +120,7 @@ def _triage_signal_and_reasoning_from_record(rec):
 # ``list.append`` is atomic under the GIL, so the list stays
 # well-formed; the resulting timing-row order is non-deterministic but
 # the viewer sorts by ``elapsed_s`` anyway.
-BUILDER_CONCURRENCY = 9
+BUILDER_CONCURRENCY = 8
 
 
 def _wall_clock_for_timing(timing: list[StepTiming]) -> float:
@@ -347,7 +346,7 @@ def _annotate(
     )
 
     # ---- steps 2+3: A1+A2 block builders (parallel dispatch) ---------------
-    # All 9 builders consume independent claim slices and emit independent
+    # All 8 builders consume independent claim slices and emit independent
     # blocks, so we fan them out concurrently. The Anthropic SDK client
     # is thread-safe; each builder writes only into its own ``usage_sink``;
     # the shared TimingRecorder uses CPython's atomic ``list.append``.
@@ -355,13 +354,6 @@ def _annotate(
     a2_ctx = {"gene": gene_id.hgnc_symbol}
     specs: list[_BuilderSpec] = [
         _BuilderSpec("methods", "builders_a1", build_methods, a1_claims, a1_ctx),
-        _BuilderSpec(
-            "therapeutic_engagement",
-            "builders_a1",
-            build_therapeutic_engagement,
-            a1_claims,
-            a1_ctx,
-        ),
         _BuilderSpec(
             "contradictions",
             "builders_a1",
@@ -420,7 +412,6 @@ def _annotate(
         claim_stances=grade_block.claim_stances,
         methods=outputs["methods"],
         non_surface_expression=grade_block.non_surface_expression,
-        therapeutic_engagement=outputs["therapeutic_engagement"],
         contradicting_evidence=outputs["contradictions"],
     )
 
@@ -841,7 +832,6 @@ def _count_blocks(
         "methods": len(se.methods),
         "non_surface_expression": len(se.non_surface_expression),
         "contradicting_evidence": len(se.contradicting_evidence),
-        "therapeutic_engagement": 0 if se.therapeutic_engagement is None else 1,
         "tissues": len(bc.tissues),
         "cell_types": len(bc.cell_types),
         "dual_localization": len(bc.subcellular_localization.dual_localization),

@@ -261,16 +261,6 @@ function md(rec, structureData, canonicalSequence) {
     }
     lines.push("");
   }
-  if (se.therapeutic_engagement) {
-    lines.push("**Therapeutic engagement**");
-    lines.push("");
-    lines.push(`*${prettyEnum(se.therapeutic_engagement.highest_stage)}*`);
-    lines.push("");
-    lines.push(se.therapeutic_engagement.description);
-    lines.push("");
-    lines.push(`> Surface-form rationale: ${se.therapeutic_engagement.surface_form_rationale}`);
-    lines.push("");
-  }
   if (se.contradicting_evidence.length) {
     lines.push("**Contradicting evidence**");
     lines.push("");

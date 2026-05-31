@@ -154,7 +154,6 @@ def _surface_evidence() -> SurfaceEvidence:
         methods=[],
         non_surface_expression=[],
         contradicting_evidence=[],
-        therapeutic_engagement=None,
     )
 
 

@@ -6,7 +6,6 @@ constellation:
 
 A1 side (surface_evidence sub-blocks):
 - :func:`build_methods` → ``list[MethodObservation]``
-- :func:`build_therapeutic_engagement` → ``TherapeuticEngagementContext | None``
 - :func:`build_contradictions` → ``list[Contradiction]``
 - :func:`build_evidence_grade` → ``EvidenceGradeBlock``
 
@@ -42,9 +41,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders.methods import build_me
 from accessible_surfaceome.agents.surfaceome_v2.builders.subcellular_localization import (
     build_subcellular_localization,
 )
-from accessible_surfaceome.agents.surfaceome_v2.builders.therapeutic_engagement import (
-    build_therapeutic_engagement,
-)
 from accessible_surfaceome.agents.surfaceome_v2.builders.tissues import build_tissues
 
 __all__ = [
@@ -57,6 +53,5 @@ __all__ = [
     "build_evidence_grade",
     "build_methods",
     "build_subcellular_localization",
-    "build_therapeutic_engagement",
     "build_tissues",
 ]

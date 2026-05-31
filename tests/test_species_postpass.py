@@ -69,7 +69,6 @@ def _surf(methods: list[MethodObservation] | None = None) -> SurfaceEvidence:
         grade_rationale="test stub",
         methods=methods or [],
         non_surface_expression=[],
-        therapeutic_engagement=None,
         contradicting_evidence=[],
     )
 
