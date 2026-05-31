@@ -26,6 +26,11 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  /* letter-spacing also applies AFTER the last glyph, leaving a phantom
+     gap before the pill's right padding — the "extra space" on every
+     label·value chip. Cancel exactly that one trailing unit so the value
+     still tracks but the pill hugs it. */
+  margin-right: -0.03em;
 }
 
 /* "No data" value — same dim, normal-weight, non-uppercase treatment as
