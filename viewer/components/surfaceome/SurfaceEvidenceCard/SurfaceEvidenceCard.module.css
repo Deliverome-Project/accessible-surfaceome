@@ -28,6 +28,70 @@
   gap: var(--space-5);
 }
 
+/* Top-line per-assay-type summary: one count chip per method family
+   (Flow · 3 · IF · 2 · Surface MS · 1 …) so the reader sees the evidence
+   composition before scrolling the grouped blocks. */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* Assay-type groups: method blocks grouped by method_family, each under
+   its own labeled header with a per-type finding count. */
+.familyGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.familyGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.familyHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 2px solid var(--line);
+}
+
+.familyName {
+  font-weight: var(--fw-semibold);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.familyMeta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Antibody link-out (RRID resolver or keyword search). Inline with the
+   reagent name so it reads as "open this antibody". */
+.abNameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.abLink {
+  font-size: 0.78rem;
+  color: var(--link);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.abLink:hover {
+  text-decoration: underline;
+}
+
 .method {
   display: flex;
   flex-direction: column;
