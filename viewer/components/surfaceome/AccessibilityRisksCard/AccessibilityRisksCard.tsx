@@ -47,7 +47,7 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
       n={n}
       eyebrow="Accessibility risks"
       title="Accessibility caveats"
-      meta="Six subsections · severity + evidence-strength on each · cites point into the evidence ledger"
+      meta="Four subsections · severity + evidence-strength on each · cites point into the evidence ledger"
     >
       <FeatureRationales category="risks" rec={rec} />
 
@@ -107,51 +107,10 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
        *  biology context, not a risk per se. The Biology card's
        *  subcellular-localization subsection is the natural home. */}
 
-      <div className={styles.subsection}>
-        <div className={styles.subHead}>
-          <p className={styles.subTitle}>Co-receptor requirements</p>
-          <StatusPill
-            tone={
-              r.co_receptor_requirements.surface_expression_dependency === "required"
-                ? "danger"
-                : r.co_receptor_requirements.surface_expression_dependency ===
-                  "modulatory"
-                ? "amber"
-                : "neutral"
-            }
-            size="sm"
-          >
-            <ChipLabelValue
-              label="dependency"
-              value={prettyEnum(r.co_receptor_requirements.surface_expression_dependency)}
-            />
-          </StatusPill>
-          <StatusPill tone="lavender" size="sm">
-            <ChipLabelValue
-              label="evidence basis"
-              value={prettyEnum(r.co_receptor_requirements.evidence_basis)}
-            />
-          </StatusPill>
-          <EvidenceChipList
-            ids={r.co_receptor_requirements.cited_evidence_ids}
-            label="Cites"
-          />
-        </div>
-        {r.co_receptor_requirements.partners.length > 0 ? (
-          <p className={styles.prose}>
-            <span className={`label-mono ${styles.muted}`}>Partners</span>{" "}
-            {r.co_receptor_requirements.partners.map((p, i) => (
-              <span key={i} className={styles.partner}>
-                {p}
-                {i < r.co_receptor_requirements.partners.length - 1 ? ", " : ""}
-              </span>
-            ))}
-          </p>
-        ) : null}
-        {r.co_receptor_requirements.rationale ? (
-          <p className={styles.prose}>{r.co_receptor_requirements.rationale}</p>
-        ) : null}
-      </div>
+      {/* Co-receptor requirements MOVED to BiologicalContextCard — it's
+       *  surface-expression biology (does the protein need a partner to
+       *  reach the surface) and its at-a-glance chip lives in the §01
+       *  Biology group, so the detail reads best alongside it there. */}
 
       <div className={styles.subsection}>
         <div className={styles.subHead}>

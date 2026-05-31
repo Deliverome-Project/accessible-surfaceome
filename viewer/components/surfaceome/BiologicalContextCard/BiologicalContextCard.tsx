@@ -27,6 +27,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
   const bc = rec.biological_context;
   const loc = bc.subcellular_localization;
   const es = rec.executive_summary;
+  // Co-receptor requirements — surface-expression biology (does the
+  // protein need a partner to reach the surface). Lives in
+  // ``accessibility_risks`` in the schema but renders here, next to its
+  // §01 Biology chip. Moved from the §Risks card.
+  const cr = rec.accessibility_risks.co_receptor_requirements;
 
   return (
     <SectionCard
@@ -248,6 +253,41 @@ export function BiologicalContextCard({ rec, n }: Props) {
             </tbody>
           </table>
         )}
+      </div>
+
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Co-receptor requirements</p>
+        <div className={styles.locHead}>
+          <StatusPill
+            tone={
+              cr.surface_expression_dependency === "required"
+                ? "danger"
+                : cr.surface_expression_dependency === "modulatory"
+                ? "amber"
+                : "neutral"
+            }
+            size="sm"
+          >
+            <ChipLabelValue
+              label="dependency"
+              value={prettyEnum(cr.surface_expression_dependency)}
+            />
+          </StatusPill>
+          <StatusPill tone="lavender" size="sm">
+            <ChipLabelValue
+              label="evidence basis"
+              value={prettyEnum(cr.evidence_basis)}
+            />
+          </StatusPill>
+          <EvidenceChipList ids={cr.cited_evidence_ids} label="References" />
+        </div>
+        {cr.partners.length > 0 ? (
+          <p className={styles.locProse}>
+            <span className={`label-mono ${styles.muted}`}>Partners</span>{" "}
+            {cr.partners.join(", ")}
+          </p>
+        ) : null}
+        {cr.rationale ? <p className={styles.locProse}>{cr.rationale}</p> : null}
       </div>
 
     </SectionCard>

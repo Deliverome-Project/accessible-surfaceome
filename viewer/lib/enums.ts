@@ -204,7 +204,7 @@ const ENUM_MAP: Record<string, string> = {
   DNA_damage_response: "DNA damage response",
   apoptosis: "Apoptosis",
   necroptosis: "Necroptosis",
-  oncogenic_transformation: "Oncogenic transformation",
+  oncogenic_transformation: "Oncology",
   infection_viral: "Viral infection",
   infection_bacterial: "Bacterial infection",
   immune_activation: "Immune activation",
