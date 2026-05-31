@@ -12,7 +12,6 @@ import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import {
   buildFeatureChips,
-  FEATURE_CATEGORIES,
   FEATURE_TAB_LABEL,
 } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
@@ -280,9 +279,13 @@ export function FiltersCard({ rec, n }: Props) {
   // accessibility, echoed from §03 into the panel as chips.
   const modTriggers = Array.from(
     new Set(
-      rec.biological_context.accessibility_modulation.flatMap((m) =>
-        m.cell_state_trigger ? [m.cell_state_trigger] : [],
-      ),
+      rec.biological_context.accessibility_modulation
+        .flatMap((m) => (m.cell_state_trigger ? [m.cell_state_trigger] : []))
+        // Drop the catch-all "other" trigger — an "induced · OTHER" chip
+        // carries no information (it just means the trigger didn't match a
+        // named enum). Named triggers (oncogenic_transformation,
+        // viral_infection, …) still show.
+        .filter((t) => t !== "other"),
     ),
   );
   const uniprotFamilyPills: React.ReactNode[] = es.uniprot_family
@@ -839,7 +842,17 @@ export function FiltersCard({ rec, n }: Props) {
     return (
       <div key={g.label} className={styles.group}>
         <p className={`label-mono ${styles.groupLabel}`}>
-          <span>{g.label}</span>
+          {/* When the group maps to a tab (Biology / Accessibility
+              context → §03), render the heading as a section-jump link.
+              The `#section-<id>` hash is what <SectionTabs> listens for to
+              switch the active tab. */}
+          {g.linkTo ? (
+            <a href={g.linkTo} className={styles.groupLabelLink}>
+              {g.label} <span aria-hidden="true">→</span>
+            </a>
+          ) : (
+            <span>{g.label}</span>
+          )}
           {/* InfoTip with the same prose the native title carried
               before — but readable on click instead of fleeting on
               hover. Spells out the cutoffs + rationale (Cross-species
@@ -897,7 +910,13 @@ export function FiltersCard({ rec, n }: Props) {
       {llmGroups.length > 0 ? (
         <>
           <p className={`label-mono ${styles.provenanceHeading}`}>LLM-driven</p>
-          <div className={styles.groups}>{llmGroups.map(renderGroup)}</div>
+          {/* groupsStacked → one chip per row, same as the Deterministic
+              section, so the Expression chips (level / breadth / OE /
+              low-endogenous) each read on their own line instead of
+              wrapping into a ragged grid. */}
+          <div className={`${styles.groups} ${styles.groupsStacked}`}>
+            {llmGroups.map(renderGroup)}
+          </div>
         </>
       ) : null}
 
