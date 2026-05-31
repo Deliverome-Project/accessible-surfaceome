@@ -161,10 +161,14 @@
 
 /* StatusPill is white-space:nowrap by default; allow wrapping inside the
    two tightened columns so a multi-word category / trigger doesn't keep
-   the column wide. */
-.modTable td:nth-child(1) > *,
-.modTable td:nth-child(2) > * {
+   the column wide — or, with table-layout:fixed, overflow its fixed width
+   and overlap the Shift column. Target ALL descendants (not just the
+   direct pill) so the text span INSIDE the pill wraps too, and break a
+   long single token (e.g. "oncogenic_transformation") with overflow-wrap. */
+.modTable td:nth-child(1) *,
+.modTable td:nth-child(2) * {
   white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 /* The change/effect narrative ("evidence string") now lives in the Cites
