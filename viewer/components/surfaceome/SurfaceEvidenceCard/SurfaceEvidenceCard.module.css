@@ -22,6 +22,15 @@
   font-style: italic;
 }
 
+/* Footnote: count of expression-only blocks filtered out of the surface
+   card. Muted + small so it reads as a provenance note, not content. */
+.hiddenNote {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
 .methods {
   display: flex;
   flex-direction: column;

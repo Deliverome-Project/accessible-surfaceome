@@ -83,6 +83,29 @@ function groupByFamily(
   }));
 }
 
+// Membrane-localization / colocalization surface_claim_types. A
+// permeabilized "expression_only" assay (which measures total protein,
+// not surface accessibility) is still worth showing on the surface card
+// when it demonstrates one of these — e.g. PM co-localization with a
+// membrane marker, junctional localization — because that's real
+// localization signal even though the assay can't prove ACCESSIBILITY.
+const MEMBRANE_LOCALIZATION_CLAIMS = new Set([
+  "plasma_membrane_localized",
+  "cell_junction_localized",
+  "membrane_fraction_enriched",
+  "apical_or_luminal",
+]);
+
+/** Whether a method block earns a place on the surface-evidence card.
+ *  Drops "expression_only" blocks (permeabilized total-protein reads that
+ *  say nothing about surface accessibility) UNLESS they still show
+ *  membrane / PM localization or colocalization — those carry localization
+ *  signal worth keeping. Every non-expression_only block is kept. */
+function isSurfaceRelevant(m: MethodObservation): boolean {
+  if (m.accessibility_relevance !== "expression_only") return true;
+  return MEMBRANE_LOCALIZATION_CLAIMS.has(m.surface_claim_type);
+}
+
 /** Identifier key for a "detailed" antibody — one carrying a clone /
  *  vendor / catalog / RRID. Returns `null` for a bare AntibodyRef with no
  *  identifier (those render "(reagent details not found)" and aren't
@@ -365,13 +388,18 @@ function MethodBlock({
 export function SurfaceEvidenceCard({ rec, n }: Props) {
   const se = rec.surface_evidence;
   const geneSymbol = rec.gene.hgnc_symbol;
-  const familyGroups = groupByFamily(se.methods);
+  // Filter out non-surface "expression_only" blocks before grouping (keep
+  // the membrane-localization exceptions). nHidden powers an honest
+  // footnote so the drop isn't silent.
+  const shownMethods = se.methods.filter(isSurfaceRelevant);
+  const nHidden = se.methods.length - shownMethods.length;
+  const familyGroups = groupByFamily(shownMethods);
   return (
     <SectionCard
       n={n}
       eyebrow="Surface evidence"
       title="Plasma-membrane evidence"
-      meta={`${se.methods.length} method block${se.methods.length === 1 ? "" : "s"}`}
+      meta={`${shownMethods.length} method block${shownMethods.length === 1 ? "" : "s"}`}
     >
       {/* Evidence-grade value (Conflicting / Direct multi-method / etc.)
           was removed from the eyebrow meta — the same value is already
@@ -393,8 +421,12 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
         </p>
       </div>
 
-      {se.methods.length === 0 ? (
-        <p className={styles.empty}>No method observations recorded.</p>
+      {shownMethods.length === 0 ? (
+        <p className={styles.empty}>
+          {se.methods.length === 0
+            ? "No method observations recorded."
+            : "Only expression-level (non-surface) findings recorded — no surface-accessibility assays to show."}
+        </p>
       ) : (
         <>
           {/* Top-line assay-type composition — one count chip per method
@@ -443,69 +475,15 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
               );
             })}
           </div>
+          {nHidden > 0 ? (
+            <p className={styles.hiddenNote}>
+              {nHidden} expression-only finding{nHidden === 1 ? "" : "s"}{" "}
+              hidden — permeabilized assays that measure total protein
+              without showing surface or membrane localization.
+            </p>
+          ) : null}
         </>
       )}
-
-      {se.non_surface_expression.length > 0 ? (
-        <div className={styles.subsection}>
-          <p className={`label-mono ${styles.subhead}`}>
-            Non-surface expression (RNA / bulk protein)
-          </p>
-          <table className={styles.obsTable}>
-            <thead>
-              <tr>
-                <th scope="col">Context</th>
-                <th scope="col">Sample</th>
-                <th scope="col">Measurement</th>
-                <th scope="col">Level</th>
-                <th scope="col">Cites</th>
-              </tr>
-            </thead>
-            <tbody>
-              {se.non_surface_expression.map((o, i) => (
-                <tr key={i}>
-                  <td>{o.context}</td>
-                  <td>{prettyEnum(o.sample_type)}</td>
-                  <td>{prettyEnum(o.measurement_type)}</td>
-                  <td>
-                    <StatusPill tone={levelTone(o.level)} size="sm">
-                      {prettyEnum(o.level)}
-                    </StatusPill>
-                  </td>
-                  <td>
-                    <EvidenceChipList ids={o.cited_evidence_ids} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      {se.therapeutic_engagement ? (
-        <div className={styles.therapeutic}>
-          <p className={`label-mono ${styles.subhead}`}>Therapeutic engagement</p>
-          <StatusPill tone="maroon" size="md">
-            {prettyEnum(se.therapeutic_engagement.highest_stage)}
-          </StatusPill>
-          <p className={styles.therapeuticProse}>
-            {se.therapeutic_engagement.description}
-          </p>
-          {/* div, not p — `<EvidenceChipList>` renders a flex `<div>`
-              which can't legally nest inside `<p>`. The CSS class
-              still applies and the visual treatment is identical. */}
-          <div className={styles.therapeuticRationale}>
-            <span className={`label-mono ${styles.subLabel}`}>
-              Surface-form rationale
-            </span>
-            <span>{linkifyEvidenceRefs(se.therapeutic_engagement.surface_form_rationale)}</span>
-            <EvidenceChipList
-              ids={se.therapeutic_engagement.cited_evidence_ids}
-              label="Cites"
-            />
-          </div>
-        </div>
-      ) : null}
 
       {se.contradicting_evidence.length > 0 ? (
         <div className={styles.subsection}>
