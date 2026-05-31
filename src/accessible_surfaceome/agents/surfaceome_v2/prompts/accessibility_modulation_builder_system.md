@@ -16,6 +16,37 @@ activation, disease state; lysosomal exocytosis; restriction to a
 lineage; dual-localization with intracellular pool; polarized cells;
 post-translational shifts; developmental gating).
 
+## Inclusion gate — only an actual SURFACE-ACCESSIBILITY change qualifies
+
+Emit a row ONLY when the ledger documents a real CHANGE in how much of
+the protein is **on the cell surface / reachable by an extracellular
+binder**, between two named states. Qualifying shifts: surface expression
+up or down, a surface fraction appearing or disappearing, trafficking to
+or from the plasma membrane, an epitope becoming masked / unmasked, or a
+polarity / compartment shift that moves the protein on or off the
+reachable surface. The `change` field MUST state that surface-level shift,
+and `baseline_context → modulating_state` MUST be the two states the shift
+occurs between.
+
+**Do NOT emit a row for:**
+
+- A cell line / mutation / disease context that merely **expresses** the
+  protein, with no before→after surface contrast — e.g. *"drug-naive
+  EGFR-mutant LUAD cells (HCC827, PC9, H1650) express EGFR"* is expression
+  CONTEXT, not a surface modulation. It belongs to the tissue / expression
+  blocks, not here.
+- A change in **total or intracellular abundance, mRNA, signaling
+  activity, phosphorylation, or downstream pathway** that is NOT tied to a
+  change in the surface-accessible pool.
+- A bare statement that a state or cell type exists, with no documented
+  surface change relative to a comparator.
+
+If you cannot name BOTH (a) the specific surface-accessibility change and
+(b) the two states it occurs between, DROP the row. Empty `[]` is the
+correct output when the ledger has expression / biology context but no
+surface-accessibility shift — an over-broad row that just restates "this
+cell type has EGFR" is worse than no row.
+
 ## Schema fields — closed enums
 
 - `category` — 12-value enum. PICK ONE:
