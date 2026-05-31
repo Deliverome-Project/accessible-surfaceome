@@ -7,7 +7,6 @@ import { ecSites } from "../../../lib/surface-bind";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { cellStateTriggerDesc } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import {
@@ -284,17 +283,17 @@ export function FiltersCard({ rec, n }: Props) {
   // truth. Empty list / null is common — the bucket is simply omitted when
   // both lists are empty rather than shown blank.
   const es = rec.executive_summary;
-  // Deduped cell-state triggers — the "unique contexts" that gate surface
-  // accessibility, echoed from §03 into the panel as chips.
-  const modTriggers = Array.from(
+  // Distinct accessibility-modulation CATEGORIES present — the purple
+  // "Context" pills on the §03 modulation table (cell_state_induced,
+  // dual_localization, …), echoed into the panel so the reader sees WHAT
+  // KINDS of surface-accessibility modulation there's evidence for, rather
+  // than only the cell-state triggers. Drop "none" (no modulation) and
+  // "unknown" — they aren't informative chips.
+  const modCategories = Array.from(
     new Set(
       rec.biological_context.accessibility_modulation
-        .flatMap((m) => (m.cell_state_trigger ? [m.cell_state_trigger] : []))
-        // Drop the catch-all "other" trigger — an "induced · OTHER" chip
-        // carries no information (it just means the trigger didn't match a
-        // named enum). Named triggers (oncogenic_transformation,
-        // viral_infection, …) still show.
-        .filter((t) => t !== "other"),
+        .map((m) => m.category)
+        .filter((c) => c && c !== "none" && c !== "unknown"),
     ),
   );
   // Highest-severity contradicting-evidence signal, echoed from §02 into
@@ -433,14 +432,12 @@ export function FiltersCard({ rec, n }: Props) {
             }
           />
         </StatusPill>,
-        ...modTriggers.map((t) => (
-          <StatusPill
-            key={`trig-${t}`}
-            tone="amber"
-            size="sm"
-            title={cellStateTriggerDesc(t)}
-          >
-            <ChipLabelValue label="induced" value={prettyEnum(t)} />
+        // Distinct modulation categories (the §03 purple "Context" pills),
+        // lavender like the biology tab so the reader knows which kinds of
+        // surface modulation are evidenced.
+        ...modCategories.map((c) => (
+          <StatusPill key={`mod-${c}`} tone="lavender" size="sm">
+            {prettyEnum(c)}
           </StatusPill>
         )),
       ],
