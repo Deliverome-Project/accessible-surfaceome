@@ -775,7 +775,16 @@ async function handleTriageExport(env, url) {
   const universeVersion = releaseRow?.universe_version ?? "";
 
   const sqlParts = [
-    `SELECT t.gene_symbol, c.uniprot_acc,`,
+    // uniprot_acc comes from the triage row's own resolution-stable value
+    // (backfilled from gene_identifier via the HGNC-ID resolver), falling
+    // back to the gene_identifier_public stable-ID cache by canonical
+    // symbol. It is NO LONGER taken from candidate_universe_public by
+    // gene_symbol — that symbol join misrouted the COX1/WAS-class genes
+    // (e.g. COX1 must be MT-CO1/P00395, not PTGS1). The
+    // candidate_universe_public join below stays, but only for the per-DB
+    // surface-vote flags.
+    `SELECT t.gene_symbol,`,
+    `       COALESCE(t.uniprot_acc, gi.uniprot_acc) AS uniprot_acc,`,
     `       COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,`,
     `       COALESCE(c.go_surface_flag, 0)      AS db_go,`,
     `       COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,`,
@@ -784,6 +793,8 @@ async function handleTriageExport(env, url) {
     `       COALESCE(c.n_sources_surface, 0)    AS n_db_surface,`,
     `       ${EXPORT_COLUMNS.slice(1).map((c) => `t.${c}`).join(", ")}`,
     `  FROM triage_run_public t`,
+    `  LEFT JOIN gene_identifier_public gi`,
+    `         ON gi.hgnc_symbol = t.gene_symbol`,
     `  LEFT JOIN candidate_universe_public c`,
     `         ON c.gene_symbol = t.gene_symbol`,
     `        AND c.universe_version = ?`,
