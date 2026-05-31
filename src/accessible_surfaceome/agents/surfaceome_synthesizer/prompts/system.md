@@ -39,6 +39,29 @@ your task message; follow it. Four blocks:
   ledger has ONLY EV-association evidence and no free-soluble
   evidence, set `secreted_form.present=false`.
 
+  **Grade severity by DOCUMENTED decoy behavior, not just by the
+  existence of a soluble form.** A protein can have a soluble form for
+  two very different reasons, and they are NOT the same risk:
+    - *An annotated / predicted soluble splice isoform exists* (e.g.
+      EGFR's TM-less isoforms) but the ledger shows no evidence it
+      actually circulates or competes for binder — this is the WEAK
+      case: `severity="low"`, `evidence_strength="weak"`,
+      `source="alternative_splicing"`. (The orchestrator already sets
+      this floor deterministically from isoform topology; don't
+      contradict it, but don't inflate it either.)
+    - *The soluble form is DOCUMENTED to circulate* — measured in
+      serum / plasma, reported as a shed/soluble ectodomain at
+      physiological levels, OR shown to bind / compete with a
+      therapeutic antibody or ligand (a true decoy) — raise to
+      `severity="moderate"` (or `"high"` when a paper explicitly ties
+      it to reduced antibody efficacy / a clinical decoy effect), set
+      `evidence_strength` to match the citation quality, and CITE the
+      serum-level / competition papers. EGFR's serum sEGFR (p110) vs
+      cetuximab is the canonical example of this stronger case.
+  So: name the soluble form, and if the ledger documents it circulating
+  or out-competing a binder, the call is a real decoy risk — not a
+  weak topology footnote. Cite that evidence.
+
   **`restricted_subdomain` — cite evidence even on negative
   observations.** When `present=false` (no restriction observed),
   the `cited_evidence_ids` should still reference the evidence

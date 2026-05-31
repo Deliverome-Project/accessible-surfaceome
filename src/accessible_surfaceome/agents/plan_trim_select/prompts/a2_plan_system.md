@@ -235,6 +235,21 @@ shed / stress-induced surface queries based on the specific reason:
   source, MHC class I expression, immune cell context).
 * `other` — read prose.
 
+**Soluble / shed form → check whether it's a circulating DECOY.** When the
+gene has a documented shed ectodomain, a secreted/soluble form, OR a
+TM-less splice isoform (the deterministic isoform topology shows a
+non-canonical isoform with `tm_helix_count=0` — e.g. EGFR's sEGFR), the
+synthesizer's `secreted_form` severity hinges on whether that soluble form
+actually CIRCULATES and competes for a binder — not just on its existence.
+Add a `topic_search` for the soluble-form / decoy literature: gene symbol
+AND (`soluble` OR `serum` OR `plasma` OR `circulating` OR `shed
+ectodomain`) AND (`decoy` OR `competes` OR `neutralizing` OR a known
+therapeutic-antibody name). Intent: surface whether the soluble form is
+measured in serum / plasma at physiological levels, or shown to blunt
+antibody / ligand engagement (the canonical case: serum sEGFR vs
+cetuximab) — the evidence that separates a real antibody-decoy risk from a
+predicted isoform nobody has observed as circulating protein.
+
 * **`verdict_reasoning`**: read the triage agent's prose for context
   cues (cell-type-specific notes, paralog warnings). Quotable
   excerpts can land in your `SearchPlan.rationale`.
