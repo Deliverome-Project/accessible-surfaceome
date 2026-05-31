@@ -141,8 +141,27 @@ not collapse it into `name`:
 **Good**: `name="anti-CD81"`, `clone="5A6"`, `vendor="BD Biosciences"`,
 `validation_strategy="genetic_KO"`, `validation_strength="strong"`
 
-If the quote is generic ("a commercial anti-X antibody", "anti-X
-antibody from a vendor"), set `clone=null` AND
+**Antibody identifiers often live in a SEPARATE reagent-list claim —
+pull them across claims before defaulting to null.** Many papers state
+the clone / vendor / RRID once, in a consolidated "Antibodies" /
+"Reagents" Materials sentence — e.g. *"Primary antibodies including
+purified anti-human CD81 (Clone 5A6), purified anti-human EGFR (Clone
+AY13), anti-human EGFR-Alexa Fluor 488 (Clone AY13) … were purchased
+from …"* — while the assay sentence that describes the actual flow / IF
+experiment only says "anti-EGFR antibody". When ANY claim in the ledger
+is such a reagent list naming `anti-[TARGET] (Clone X[, Vendor / RRID])`,
+APPLY that clone / vendor / RRID to the `AntibodyRef` of the method
+observation that used that antibody — matched by target (EGFR ↔
+anti-EGFR) and, when present, conjugate ("-Alexa Fluor 488" ↔ the
+fluor-tagged variant). Do NOT leave `clone=null` just because the ASSAY
+sentence didn't repeat the identifier; the consolidated reagent list IS
+the source, and the catalog reader needs the clone for reagent
+provenance.
+
+Only when NO claim anywhere in the ledger names that target's clone is
+the generic fallback correct: if the quote is generic ("a commercial
+anti-X antibody", "anti-X antibody from a vendor") AND no reagent-list
+claim supplies the identifier, set `clone=null` AND
 `validation_strategy="vendor_claim_only"` AND
 `validation_strength="weak"`. The null clone is honest; the weak
 validation flags it for catalog readers.
