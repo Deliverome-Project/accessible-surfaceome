@@ -49,10 +49,16 @@ export function EvidenceChip({ evidenceId, label, title }: EvidenceChipProps) {
 }
 
 /**
- * EvidenceChipList — inline strip of EvidenceChips, with optional
- * label and a max-display cap (the v2 sample shows up to 12 chips
- * per block; over that, render an "+N more" overflow button that
- * expands the list inline).
+ * EvidenceChipList — inline strip of EvidenceChips, with an optional
+ * label and a max-display cap. Over the cap, the remaining chips are
+ * tucked behind a native `<details>` "+N more" toggle that EXPANDS them
+ * inline — every chip stays clickable into the EvidenceDrawer.
+ *
+ * Previously "+N more" was a plain non-interactive `<span>`, so the
+ * overflow evidence (e.g. "+34 more") was visible-but-unreachable. Using
+ * `<details>` keeps this a pure server component (no `"use client"` /
+ * useState) — the design's whole point is one delegated click listener,
+ * not a hydration boundary per chip — while making the overflow openable.
  */
 interface EvidenceChipListProps {
   ids: readonly string[];
@@ -63,7 +69,7 @@ interface EvidenceChipListProps {
 export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipListProps) {
   if (!ids.length) return null;
   const head = ids.slice(0, maxVisible);
-  const overflow = ids.length - head.length;
+  const rest = ids.slice(maxVisible);
   return (
     <div className={styles.chipRow}>
       {label ? (
@@ -73,10 +79,15 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
         {head.map((id) => (
           <EvidenceChip key={id} evidenceId={id} />
         ))}
-        {overflow > 0 ? (
-          <span className={styles.chipOverflow} title={ids.slice(maxVisible).join(", ")}>
-            +{overflow} more
-          </span>
+        {rest.length > 0 ? (
+          <details className={styles.chipOverflowDetails}>
+            <summary className={styles.chipOverflow}>+{rest.length} more</summary>
+            {/* Revealed on toggle — each remaining id is a real chip that
+                opens the EvidenceDrawer, same as the head chips. */}
+            {rest.map((id) => (
+              <EvidenceChip key={id} evidenceId={id} />
+            ))}
+          </details>
         ) : null}
       </span>
     </div>
