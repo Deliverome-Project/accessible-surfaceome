@@ -693,10 +693,21 @@ def _execute_plan(
                     category=req.category,
                     http=http,
                     retraction_index=retraction_index,
+                    discover_only=True,
                 )
+                # discover_only=True: bodies aren't fetched here. Any
+                # drafts the pack carries are from the hpa_ihc path
+                # (synthetic curated data, not paper bodies) and still
+                # belong in the pool.
                 for draft in pack.evidence_claim_drafts:
                     _add_to_pool(draft, pool, clips_by_source)
                     n_drafts += 1
+                # Merge category-discovery papers into the candidate
+                # inventory so triage sees them alongside gene_literature
+                # discovery results.
+                for paper in pack.papers:
+                    if paper.pmid:
+                        discovered_papers.setdefault(paper.pmid, paper)
                 n_papers = len(pack.papers)
             elif req.tool == "gene_literature":
                 params = {"mode": req.mode}
@@ -820,23 +831,27 @@ def _add_to_pool(
 ) -> None:
     """Insert draft into the pool with a globally-unique clip_id.
 
-    Draft.suggested_evidence_id already encodes (source_id, section, seq) and
-    is unique within one tool call; conflicts across calls (same paper hit by
-    multiple categories) get a `_k` suffix.
+    Content-dedup within source: when the same paper is extracted by
+    multiple evidence_retrieval categories (e.g., surface_biotinylation +
+    mass_spec_surfaceome both pull a LUX-MS paper), each call's ``seq``
+    counter restarts, so identical sentences get different clip_ids on
+    the second call. Without a content check, those duplicates inflate
+    the Haiku trim prompt with redundant text. Compare against existing
+    quotes for the same source_id before assigning a clip_id.
     """
+
+    normalized = normalize_for_quote_matching(draft.quote)
+    for existing in by_source.get(draft.source_id, []):
+        if normalize_for_quote_matching(existing.quote) == normalized:
+            return
 
     clip_id = draft.suggested_evidence_id
     if clip_id in pool:
-        # Already have this exact (source, section, seq) — likely same snippet
-        # re-emitted by another category. Skip duplicate quote.
-        if pool[clip_id].quote == draft.quote:
-            return
         # Same id but different content — suffix and keep both.
         k = 2
         while f"{clip_id}_{k}" in pool:
             k += 1
         clip_id = f"{clip_id}_{k}"
-    # Re-stamp the draft with its global clip_id.
     redrafted = draft.model_copy(update={"suggested_evidence_id": clip_id})
     pool[clip_id] = redrafted
     by_source[redrafted.source_id].append(redrafted)
