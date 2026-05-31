@@ -132,18 +132,24 @@
 
 .pills li {
   display: inline-flex;
-  /* Never exceed the group column — without this a long chip
-     (e.g. "restricted membrane subdomain · PRESENT") overflows the
-     minmax(220px,1fr) track and overlaps the neighbouring column. */
+  /* Size each chip to its content and wrap WHOLE chips to a new row when
+     the flow fills — don't shrink chips in place. `min-width: 0` (removed)
+     let a chip shrink below its content, so short values broke mid-word
+     ("HIG/H", "BROA/D") instead of the chip wrapping to the next row.
+     `flex-shrink: 0` keeps each chip at its content width; `max-width: 100%`
+     still caps a genuinely long chip to its column (its text then wraps at
+     word boundaries) so it can't overflow into the neighbouring column. */
+  flex-shrink: 0;
   max-width: 100%;
-  min-width: 0;
 }
 
 /* StatusPill is white-space:nowrap by default; relax it for the panel
-   chips so a long label wraps within its column instead of overflowing. */
+   chips so a long label wraps within its column instead of overflowing.
+   Wrap only at WORD boundaries — no `overflow-wrap: break-word`, which was
+   splitting single values mid-word ("HIG/H", "BROA/D"). Chip values /
+   labels are short enough that no single token overflows a column. */
 .pills li span {
   white-space: normal;
-  overflow-wrap: break-word;
 }
 
 /* Deterministic section: one chip per row (a vertical stack under each

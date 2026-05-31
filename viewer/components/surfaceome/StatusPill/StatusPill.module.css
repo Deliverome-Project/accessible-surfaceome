@@ -11,6 +11,8 @@
 .pill {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   gap: 0.35rem;
   border-radius: var(--radius-pill);
   font-family: var(--font-sans);
@@ -47,9 +49,13 @@
 }
 
 /* ============================================================
- * Tones — outlined: tinted border + tinted text on a transparent
- * fill. The faint background tint (~5%) gives the chip just enough
- * presence to read as a token, without competing with the body.
+ * Tones — soft-filled: a tinted fill + tinted text, NO border. The
+ * border read as aggressive next to the editorial type, so colored
+ * chips drop it and lean on a slightly stronger (~10%) fill to keep
+ * their pill presence. The neutral tone has no tint to fill on, so it
+ * KEEPS its 1px border — that outline is the only thing that makes a
+ * white chip read as a chip. (border stays at 1px `transparent` on the
+ * tinted tones so the box size is identical to the bordered neutral.)
  * ============================================================ */
 
 .tone_neutral {
@@ -60,42 +66,42 @@
 
 .tone_maroon {
   color: var(--maroon-dark);
-  border-color: rgba(146, 32, 56, 0.35);
-  background: rgba(146, 32, 56, 0.04);
+  border-color: transparent;
+  background: rgba(146, 32, 56, 0.1);
 }
 
 .tone_teal {
   color: var(--teal-deepest);
-  border-color: rgba(61, 107, 96, 0.35);
-  background: rgba(61, 107, 96, 0.04);
+  border-color: transparent;
+  background: rgba(61, 107, 96, 0.1);
 }
 
 .tone_amber {
   color: var(--amber-dark);
-  border-color: rgba(192, 120, 48, 0.4);
-  background: rgba(192, 120, 48, 0.05);
+  border-color: transparent;
+  background: rgba(192, 120, 48, 0.1);
 }
 
 .tone_lavender {
   color: var(--lavender-dark);
-  border-color: rgba(88, 72, 168, 0.35);
-  background: rgba(88, 72, 168, 0.04);
+  border-color: transparent;
+  background: rgba(88, 72, 168, 0.1);
 }
 
 .tone_success {
   color: var(--success);
-  border-color: rgba(46, 122, 85, 0.4);
-  background: rgba(46, 122, 85, 0.05);
+  border-color: transparent;
+  background: rgba(46, 122, 85, 0.1);
 }
 
 .tone_warn {
   color: var(--amber-dark);
-  border-color: rgba(192, 120, 48, 0.4);
-  background: rgba(192, 120, 48, 0.05);
+  border-color: transparent;
+  background: rgba(192, 120, 48, 0.1);
 }
 
 .tone_danger {
   color: var(--maroon-dark);
-  border-color: rgba(146, 32, 56, 0.4);
-  background: rgba(146, 32, 56, 0.05);
+  border-color: transparent;
+  background: rgba(146, 32, 56, 0.1);
 }
