@@ -113,8 +113,23 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
 //   m[4] = bare PMID number
 //   m[5] = "<weight>-weight" explicit form
 //   m[6] = bare "high" / "moderate" / "low" (context-checked)
+//   m[7] = raw evidence-grade enum token (synthesizer prose often opens
+//          grade_rationale with the literal enum, e.g.
+//          "direct_multi_method — live flow, …") → render as a prettified
+//          label so the reader never sees snake_case.
 const TOKEN_RE =
-  /\b(a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(high|moderate|low)\b/g;
+  /\b(a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(direct_multi_method|direct_single_method|supportive_but_indirect)\b|\b(high|moderate|low)\b/g;
+
+// Prettified labels for the evidence-grade enum tokens (m[6]). Mirrors
+// ``ENUM_LABELS`` in lib/enums.ts; kept local so this module stays
+// dependency-light. Only the multi-word tokens are matched in TOKEN_RE —
+// bare "conflicting" / "weak" are common English words and badging them
+// inside free prose would over-fire.
+const GRADE_LABELS: Record<string, string> = {
+  direct_multi_method: "Direct, multi-method",
+  direct_single_method: "Direct, single method",
+  supportive_but_indirect: "Supportive but indirect",
+};
 
 // Pre-scan helper — mark every character offset that lives inside a
 // parenthetical block that contains at least one evidence ref. Used
@@ -188,16 +203,23 @@ export function linkifyEvidenceRefs(text: string): React.ReactNode[] {
       const weight = match[5].split("-")[0] as "high" | "moderate" | "low";
       out.push(<WeightBadge key={`w-${key++}`} weight={weight} />);
     } else if (match[6] !== undefined) {
+      // Raw evidence-grade enum token — replace the snake_case literal
+      // with its prettified label so the reader never sees
+      // "direct_multi_method" in the grade_rationale prose.
+      out.push(
+        <span key={`grade-${key++}`}>{GRADE_LABELS[match[6]] ?? match[6]}</span>,
+      );
+    } else if (match[7] !== undefined) {
       // Bare ``high`` / ``moderate`` / ``low`` — badge only when
       // inside a parenthesis that contains an evidence ref. Outside
       // that context the same words are natural-prose adjectives
       // (``moderate quality``, ``high coverage``) and we leave them
       // as plain text to avoid false-positive pills.
       if (inRefParen[idx]) {
-        const weight = match[6] as "high" | "moderate" | "low";
+        const weight = match[7] as "high" | "moderate" | "low";
         out.push(<WeightBadge key={`w-${key++}`} weight={weight} />);
       } else {
-        out.push(match[6]);
+        out.push(match[7]);
       }
     }
 
