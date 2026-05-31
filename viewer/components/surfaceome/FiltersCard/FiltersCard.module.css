@@ -25,16 +25,17 @@
   border-top: none;
 }
 
-/* Multi-column groups grid — was a single vertical stack with the
-   chips wrapping horizontally; now each group lives in its own
-   column so the reader sees Accessibility / Expression / Risks /
-   Cross-species / Paralogs / Topology / SURFACE-Bind as distinct
-   sections side-by-side. ``auto-fit`` + ``minmax(220px, 1fr)``
-   gives a responsive flow: typically 3-4 columns on a wide
-   desktop, collapses to 1 column below ~480px. */
+/* Groups flow as content-sized columns: each group is exactly as wide
+   as its widest chip (chips are one-line, see `.pills li` below) and
+   wraps to the next row when the strip fills. A fixed `minmax(220px,1fr)`
+   grid forced every column to ≥220px and made long chips wrap to two
+   lines to fit — which both mis-aligned the term/value (they landed on
+   separate lines) and left short chips padded out to the column width.
+   `flex` + content sizing lets every chip hug its own text. */
 .groups {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   gap: var(--space-4) var(--space-5);
 }
 
@@ -42,11 +43,14 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  /* Don't grow/shrink — size to content (widest chip) and wrap whole
+     groups to the next row instead of squeezing a group narrower than
+     its chips. */
+  flex: 0 0 auto;
   /* Subtle left border per column instead of top borders — reads as
      a vertical separator between adjacent columns. */
   padding-left: var(--space-3);
   border-left: 1px solid var(--line-soft);
-  min-width: 0;
 }
 
 /* Edge groups don't need the separator (the SectionCard frame
@@ -132,24 +136,20 @@
 
 .pills li {
   display: inline-flex;
-  /* Size each chip to its content and wrap WHOLE chips to a new row when
-     the flow fills — don't shrink chips in place. `min-width: 0` (removed)
-     let a chip shrink below its content, so short values broke mid-word
-     ("HIG/H", "BROA/D") instead of the chip wrapping to the next row.
-     `flex-shrink: 0` keeps each chip at its content width; `max-width: 100%`
-     still caps a genuinely long chip to its column (its text then wraps at
-     word boundaries) so it can't overflow into the neighbouring column. */
+  /* Size each chip to its content; never shrink it. The chip stays a
+     single line (see `.pills li span`), so its width == its text width
+     and the term/value sit together on one line. Whole chips wrap to a
+     new row when the row fills. */
   flex-shrink: 0;
-  max-width: 100%;
 }
 
-/* StatusPill is white-space:nowrap by default; relax it for the panel
-   chips so a long label wraps within its column instead of overflowing.
-   Wrap only at WORD boundaries — no `overflow-wrap: break-word`, which was
-   splitting single values mid-word ("HIG/H", "BROA/D"). Chip values /
-   labels are short enough that no single token overflows a column. */
+/* Keep panel chips on a single line so the term and value stay together
+   (vertically aligned) and the chip hugs its own text. The group columns
+   grow to fit the widest chip (see `.groups`), so a one-line chip never
+   overflows into a neighbour. (StatusPill is already `white-space:nowrap`;
+   this just makes the intent explicit and overrides any inherited wrap.) */
 .pills li span {
-  white-space: normal;
+  white-space: nowrap;
 }
 
 /* Deterministic section: one chip per row (a vertical stack under each

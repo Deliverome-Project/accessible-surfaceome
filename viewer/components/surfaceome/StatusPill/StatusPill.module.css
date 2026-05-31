@@ -11,8 +11,6 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  text-align: center;
   gap: 0.35rem;
   border-radius: var(--radius-pill);
   font-family: var(--font-sans);
