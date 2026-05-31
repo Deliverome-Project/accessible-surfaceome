@@ -82,6 +82,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
                     <StatusPill tone="lavender" size="sm">
                       {prettyEnum(m.category)}
                     </StatusPill>
+                    {/* Directional glyph (↑ increases / ↓ decreases / ↕
+                        bidirectional) from the structured `direction` enum.
+                        Null for unclear / older records without the field. */}
+                    {directionGlyph(m.direction)}
                   </td>
                   <td>
                     {m.cell_state_trigger ? (

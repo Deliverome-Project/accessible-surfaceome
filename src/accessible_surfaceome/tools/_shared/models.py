@@ -2048,6 +2048,13 @@ class AccessibilityModulationObservation(BaseModel):
         ...,
         description="What the change means for accessibility. Soft target ≤300 chars (overshoots warned but accepted).",
     )
+    # Structured direction of the surface-accessibility change described in
+    # ``change`` / ``accessibility_implication``. Reuses the
+    # ``AccessibilityImplication`` enum (the anatomical observation's
+    # implication axis has the same up/down/bidirectional vocabulary).
+    # Defaults to ``"unclear"`` so records predating this field stay valid
+    # and the viewer renders no direction glyph for them.
+    direction: AccessibilityImplication = "unclear"
     species: Species = "unspecified"
     species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
