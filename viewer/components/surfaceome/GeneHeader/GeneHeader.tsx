@@ -690,8 +690,17 @@ export function GeneHeader({
               // ortholog isoforms aren't structurally interesting here),
               // and only when it actually carries a topology string.
               variants={[
-                ...rec.deterministic_features.isoform_topologies.map(
-                  (iso) => ({
+                // Cap the 3D tab strip at the first 3 isoforms.
+                // isoform_topologies is in UniProt isoform-number order
+                // (Isoform 2, 3, 4, …) — major isoforms first — so the
+                // slice keeps the MAJOR ones rather than picking by
+                // topology divergence. A gene with many isoforms would
+                // otherwise overflow the tab strip (and add dead 404 tabs
+                // for isoforms AFDB doesn't model). The §Isoforms table
+                // below still lists EVERY isoform; this cap is 3D-only.
+                ...rec.deterministic_features.isoform_topologies
+                  .slice(0, 3)
+                  .map((iso) => ({
                     source: "afdb" as const,
                     id: `iso-${iso.isoform_id}`,
                     label: _isoformLabel(iso.isoform_id),
@@ -707,8 +716,7 @@ export function GeneHeader({
                     deeptmhmm_type: _inferDeepTMHMMType(
                       iso.per_residue_topology,
                     ),
-                  }),
-                ),
+                  })),
                 ...(
                   [
                     ["mouse", "Mouse ortholog"],
