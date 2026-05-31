@@ -395,20 +395,50 @@ export function GeneHeader({
               point on the page, so it sits ABOVE the model's first-pass
               triage. Reuses the triage-row layout for visual consistency;
               the value is toned on the same traffic-light scale. */}
-          {benchmarkRow ? (
-            <p className={styles.triageRow}>
-              <span className={`label-mono ${styles.triageLabel}`}>
-                Benchmark
-                <InfoTip>{tooltips.benchmark_truth}</InfoTip>
-              </span>
-              <StatusPill
-                tone={benchmarkVerdictTone(benchmarkRow.truth_verdict)}
-                size="sm"
-              >
-                {benchmarkVerdictLabel(benchmarkRow.truth_verdict)}
-              </StatusPill>
-            </p>
-          ) : null}
+          {benchmarkRow
+            ? (() => {
+                // Same agree/conflict comparison the triage row makes, but
+                // against the curated ground-truth verdict instead of the
+                // model's triage prior. Map the benchmark verdict onto the
+                // triage-signal scheme so triageVsDeepDive can be reused
+                // (yes→likely, contextual→possibly, no→unlikely).
+                const benchSignal =
+                  benchmarkRow.truth_verdict === "yes"
+                    ? "likely_accessible"
+                    : benchmarkRow.truth_verdict === "contextual"
+                      ? "possibly_accessible"
+                      : benchmarkRow.truth_verdict === "no"
+                        ? "unlikely"
+                        : "unknown";
+                const benchVerdict = triageVsDeepDive(
+                  benchSignal,
+                  exec.surface_accessibility,
+                );
+                return (
+                  <p className={styles.triageRow}>
+                    <span className={`label-mono ${styles.triageLabel}`}>
+                      Benchmark
+                      <InfoTip>{tooltips.benchmark_truth}</InfoTip>
+                    </span>
+                    <StatusPill
+                      tone={benchmarkVerdictTone(benchmarkRow.truth_verdict)}
+                      size="sm"
+                    >
+                      {benchmarkVerdictLabel(benchmarkRow.truth_verdict)}
+                    </StatusPill>
+                    {benchVerdict === "conflict" ? (
+                      <span className={styles.triageConflict}>
+                        conflicts with deep dive
+                      </span>
+                    ) : benchVerdict === "agree" ? (
+                      <span className={styles.triageAgree}>
+                        agrees with deep dive
+                      </span>
+                    ) : null}
+                  </p>
+                );
+              })()
+            : null}
 
           {/* Triage row — Sonnet first-pass surface verdict, sitting
               under the DB-presence strip for transparency. Tagged with
