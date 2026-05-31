@@ -68,14 +68,9 @@ export const tooltips: Record<string, ReactNode> = {
 
   triage_signal: (
     <>
-      <strong>From the triage agent</strong> (Sonnet) — a first-pass
-      surface call made BEFORE any deep literature dive. No web search,
-      no tool calls, no per-method evidence; the model votes from
-      trained knowledge given just the protein&apos;s standard
-      identifier context: HGNC name / symbol / aliases / previous
-      symbols, UniProt accession (the ID, not the sequence), HGNC
-      gene-group memberships, CD nomenclature, and the NCBI gene
-      summary.
+      <strong>Triage call.</strong> A fast first-pass surface verdict
+      (yes / contextual / no) from a Sonnet agent, made before any
+      deep-dive literature search. Click a row for per-model detail.
     </>
   ),
 
