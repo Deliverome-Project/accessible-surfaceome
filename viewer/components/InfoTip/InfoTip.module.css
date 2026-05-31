@@ -54,8 +54,13 @@
    * CSS-only popover stays perfectly centered until/unless JS nudges
    * it back on-screen. */
   transform: translateX(calc(-50% + var(--infotip-shift, 0px)));
-  max-width: min(28em, 90vw);
-  min-width: 16em;
+  /* rem, not em: the popover sets its own font-size: 0.82rem, so `em`
+     here resolves against that (shrinking the cap) — and the build was
+     dropping the `min(..em..)` declaration entirely, leaving the popover
+     uncapped (one long line). rem anchors to root + compiles reliably,
+     matching the `.popoverWide` rationale below. */
+  max-width: min(26rem, 90vw);
+  min-width: 16rem;
   /* Let the popover grow to fit its content; cap only at the viewport
    * so the longest tooltips (afdb_plddt, afdb_disordered) scroll
    * internally only on very short screens. Wide tooltips
