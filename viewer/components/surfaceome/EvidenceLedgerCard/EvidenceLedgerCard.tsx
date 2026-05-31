@@ -43,8 +43,7 @@ function pmcIdOf(src: Record<string, unknown> | null): string | null {
 function sourceLink(e: Evidence) {
   const s = firstSource(e);
   if (!s) return null;
-  if (s.url) return { href: s.url as string, label: s.url as string };
-  if (s.doi) return { href: `https://doi.org/${s.doi}`, label: `doi:${s.doi}` };
+  // Prefer a clean identifier label (PMC* / PMID) over the raw URL.
   const pmcId = pmcIdOf(s);
   if (pmcId) {
     return {
@@ -58,6 +57,18 @@ function sourceLink(e: Evidence) {
       label: `PMID ${s.pmid}`,
     };
   }
+  if (s.url) {
+    // No structured id — pull a PMC*/PMID out of the URL itself so the
+    // chip reads as the article name, not the whole link. Fall back to
+    // the raw URL only when neither is present.
+    const url = s.url as string;
+    const pmc = url.match(/PMC\d+/i)?.[0];
+    if (pmc) return { href: url, label: pmc.toUpperCase() };
+    const urlPmid = url.match(/pubmed\.ncbi\.nlm\.nih\.gov\/(\d+)/i)?.[1];
+    if (urlPmid) return { href: url, label: `PMID ${urlPmid}` };
+    return { href: url, label: url };
+  }
+  if (s.doi) return { href: `https://doi.org/${s.doi}`, label: `doi:${s.doi}` };
   return null;
 }
 
