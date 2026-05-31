@@ -1,5 +1,6 @@
 import type {
   AccessibilityRelevance,
+  AntibodyRef,
   ExpressionLevel,
   MethodFamily,
   MethodObservation,
@@ -82,22 +83,33 @@ function groupByFamily(
   }));
 }
 
-/** Per-group finding counts: method blocks, distinct antibodies, and
- *  unique cited-evidence ids. */
+/** Identifier key for a "detailed" antibody — one carrying a clone /
+ *  vendor / catalog / RRID. Returns `null` for a bare AntibodyRef with no
+ *  identifier (those render "(reagent details not found)" and aren't
+ *  counted). Two AntibodyRefs sharing the same identifier tuple collapse to
+ *  one key, so counts reflect UNIQUE detailed antibodies, not raw rows. */
+function detailedAntibodyKey(ab: AntibodyRef): string | null {
+  if (!(ab.clone || ab.vendor || ab.catalog || ab.rrid)) return null;
+  return [ab.name, ab.clone, ab.vendor, ab.catalog, ab.rrid]
+    .map((x) => (x ?? "").toLowerCase().trim())
+    .join("|");
+}
+
+/** Per-group finding counts: method blocks, unique detailed antibodies,
+ *  and unique cited-evidence ids. `antibodies` counts only antibodies with
+ *  reagent identifiers, deduped across the group's methods. */
 function groupCounts(methods: MethodObservation[]): {
   blocks: number;
   antibodies: number;
   citations: number;
 } {
   const cites = new Set<string>();
-  let antibodies = 0;
+  const abKeys = new Set<string>();
   for (const m of methods) {
-    // Only count antibodies that carry actual reagent identifiers — a bare
-    // AntibodyRef with no clone / vendor / catalog / RRID renders as
-    // "(reagent details not found)" and shouldn't inflate the count.
-    antibodies += m.antibodies.filter(
-      (ab) => ab.clone || ab.vendor || ab.catalog || ab.rrid,
-    ).length;
+    for (const ab of m.antibodies) {
+      const k = detailedAntibodyKey(ab);
+      if (k) abKeys.add(k);
+    }
     for (const id of m.cited_evidence_ids) cites.add(id);
     // Also fold in the per-observation citations so the count reflects all
     // distinct evidence backing this assay type (AntibodyRef itself
@@ -106,7 +118,7 @@ function groupCounts(methods: MethodObservation[]): {
     for (const o of m.expression_observations)
       for (const id of o.cited_evidence_ids) cites.add(id);
   }
-  return { blocks: methods.length, antibodies, citations: cites.size };
+  return { blocks: methods.length, antibodies: abKeys.size, citations: cites.size };
 }
 
 interface Props {
@@ -157,15 +169,20 @@ function MethodBlock({
   // body and expand on click. Native <details> keeps this SSG-friendly
   // (no client state) — the assay-type groups can stay long without
   // forcing the reader to scroll past every reagent table.
-  // Count only antibodies with real reagent identifiers (clone / vendor /
-  // catalog / RRID) — detail-less ones render as "(reagent details not
-  // found)" and shouldn't inflate the summary count. Matches groupCounts.
-  const nAb = m.antibodies.filter(
-    (ab) => ab.clone || ab.vendor || ab.catalog || ab.rrid,
-  ).length;
+  // Count UNIQUE antibodies that carry real reagent identifiers (clone /
+  // vendor / catalog / RRID) — detail-less ones render "(reagent details
+  // not found)" and aren't counted; duplicates (same identifier tuple)
+  // collapse to one. The "with details" label makes explicit that the
+  // count is reference-bearing antibodies, not every AntibodyRef row.
+  const abKeys = new Set<string>();
+  for (const ab of m.antibodies) {
+    const k = detailedAntibodyKey(ab);
+    if (k) abKeys.add(k);
+  }
+  const nAb = abKeys.size;
   const nObs = m.expression_observations.length;
   const hiddenSummary = [
-    nAb > 0 ? `${nAb} antibod${nAb === 1 ? "y" : "ies"}` : null,
+    nAb > 0 ? `${nAb} antibod${nAb === 1 ? "y" : "ies"} with details` : null,
     nObs > 0 ? `${nObs} observation${nObs === 1 ? "" : "s"}` : null,
   ]
     .filter(Boolean)
@@ -408,7 +425,7 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                       {c.antibodies > 0
                         ? ` · ${c.antibodies} antibod${
                             c.antibodies === 1 ? "y" : "ies"
-                          }`
+                          } with details`
                         : ""}
                       {c.citations > 0
                         ? ` · ${c.citations} citation${
