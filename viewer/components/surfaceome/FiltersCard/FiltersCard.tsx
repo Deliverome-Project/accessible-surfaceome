@@ -928,19 +928,27 @@ export function FiltersCard({ rec, n }: Props) {
               {meta.title}
             </InfoTip>
           ) : null}
-          {meta?.links?.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.groupLink}
-              title={`Open ${l.label} in a new tab`}
-            >
-              {l.label} ↗
-            </a>
-          ))}
         </p>
+        {/* Source links on their own compact sub-row directly under the
+            header label — keeps the header line short (label + ⓘ only)
+            instead of letting "UniProt ↗ HGNC gene groups ↗ …" sprawl it
+            into a tall wrapping block. */}
+        {meta?.links && meta.links.length > 0 ? (
+          <p className={styles.groupLinks}>
+            {meta.links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.groupLink}
+                title={`Open ${l.label} in a new tab`}
+              >
+                {l.label} ↗
+              </a>
+            ))}
+          </p>
+        ) : null}
         <ul className={styles.pills}>
           {g.pills
             // Drop any nulls before rendering — some groups

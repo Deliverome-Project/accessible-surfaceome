@@ -76,6 +76,18 @@
   padding-bottom: 1px;
 }
 
+/* Compact sub-row of source links directly under the group header
+   label — was inline on the header line, which let "UniProt ↗ HGNC
+   gene groups ↗" wrap the header into a tall block. Pulling them to
+   their own tight row keeps the header line to label + ⓘ. */
+.groupLinks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.3rem 0.6rem;
+  margin: -0.15rem 0 0;
+}
+
 /* External-source link next to the group label (Ensembl Compara,
    DeepTMHMM, SURFACE-Bind). Small + dimmed so the chip values stay
    the primary focal points. */
