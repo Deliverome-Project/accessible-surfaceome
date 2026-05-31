@@ -88,7 +88,7 @@ _SEED_COUNT_BETA_URL = f"{_BASE}/seed_count_b.txt"
 _RESULTS_URL = f"{_BASE}/results_no_TM_pnames.csv"
 
 _CITATION = (
-    "Marchand A, Khakzad H, et al. Mapping targetable sites on the "
+    "Balbi PEM, Sadek A, Marchand A, et al. Mapping targetable sites on the "
     "human surfaceome for the design of novel binders. PNAS 2026. "
     "doi:10.1073/pnas.2506269123"
 )

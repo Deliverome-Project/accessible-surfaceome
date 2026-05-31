@@ -464,7 +464,7 @@ The `surface_accessibility` enum has five values: `high`, `moderate`,
 ## Subcategory + llm_family (two-axis taxonomy)
 
 The schema splits taxonomy into two orthogonal axes, aligned with
-SURFACE-Bind (Marchand et al. 2026 PNAS,
+SURFACE-Bind (Balbi et al. 2026 PNAS,
 doi:10.1073/pnas.2506269123). Set BOTH on every record.
 
 **`subcategory`** = **architecture** — how the protein sits in the

@@ -1036,7 +1036,7 @@ Confidence = Literal["high", "moderate", "low"]
 StateDependence = Literal["low", "moderate", "high", "unclear"]
 # Subcategory = ARCHITECTURE only — how the protein sits in the
 # membrane. Function lives on the separate ``ProteinFamily`` axis.
-# Slimmed in the SURFACE-Bind alignment (Marchand et al. 2026 PNAS,
+# Slimmed in the SURFACE-Bind alignment (Balbi et al. 2026 PNAS,
 # doi:10.1073/pnas.2506269123): the SURFACE-Bind taxonomy splits
 # function (Receptor / Enzyme / Transporter / Miscellaneous) from
 # architectural detail (which SURFACE-Bind doesn't enumerate to
@@ -1058,7 +1058,7 @@ Subcategory = Literal[
 ]
 
 # ProteinFamily = FUNCTIONAL family. Mirrors SURFACE-Bind's four main
-# classes verbatim (Marchand et al. 2026 PNAS), dropping the
+# classes verbatim (Balbi et al. 2026 PNAS), dropping the
 # bookkeeping ``unclassified`` / ``unmatched`` since those reflect
 # their mapping-pipeline state rather than biology.
 ProteinFamily = Literal[
@@ -1397,7 +1397,7 @@ class ExecutiveSummary(BaseModel):
     # ``Subcategory`` Literal for the closed enum + the SURFACE-Bind
     # alignment that splits architecture from function.
     subcategory: Subcategory
-    # NEW: functional family per SURFACE-Bind (Marchand 2026 PNAS).
+    # NEW: functional family per SURFACE-Bind (Balbi et al. 2026 PNAS).
     # ``receptor`` = signaling receptors (GPCRs, RTKs, cytokine
     # receptors, integrins, immunoreceptors). ``enzyme`` = surface-
     # exposed catalytic activity (CD13/ANPEP, CD26/DPP4, CD73/NT5E,
@@ -2245,7 +2245,7 @@ class SurfaceBindSite(BaseModel):
     """One MaSIF-scored targetable patch on a SURFACE-Bind protein.
 
     Sourced from SURFACE-Bind's ``results_no_TM.csv`` per-site arrays
-    (Marchand et al. 2026 PNAS). Each site is a surface patch the
+    (Balbi et al. 2026 PNAS). Each site is a surface patch the
     MaSIF scoring identified as designable for a de novo binder.
 
     Notes on the fields:
@@ -2275,7 +2275,7 @@ class SurfaceBindSite(BaseModel):
 
 
 class SurfaceBindFeatures(BaseModel):
-    """SURFACE-Bind per-UniProt summary (Marchand et al. 2026 PNAS).
+    """SURFACE-Bind per-UniProt summary (Balbi et al. 2026 PNAS).
 
     ``has_data=False`` is the explicit "not in SURFACE-Bind" signal —
     SURFACE-Bind's authoritative ``results_no_TM.csv`` table covers
@@ -2319,9 +2319,14 @@ class SurfaceBindFeatures(BaseModel):
     # Often >100 entries for well-studied targets (EGFR has 250+);
     # truncated in the viewer to the first few.
     pdbs: list[str] = Field(default_factory=list)
-    source: str = "SURFACE-Bind v1 (Marchand 2026 PNAS)"
+    # First author is Balbi PEM (verified: PMID 41604262 == DOI
+    # 10.1073/pnas.2506269123, "Mapping targetable sites on the human
+    # surfaceome…", PNAS 2026). An earlier draft mislabeled the lead
+    # author as "Marchand" (the 3rd author); kept here as the canonical
+    # record-facing attribution, so don't reintroduce that name first.
+    source: str = "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)"
     attribution: str = (
-        "© Marchand, Khakzad, Correia et al. — EPFL / Inria / Novo Nordisk"
+        "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk"
     )
     citation: str = "10.1073/pnas.2506269123"
 
@@ -2340,7 +2345,7 @@ class DeterministicFeatures(BaseModel):
     orthologs: Orthologs = Field(default_factory=Orthologs)
     paralogs: list[ParalogEntry] = Field(default_factory=list)
     structure: StructureFeatures
-    # SURFACE-Bind summary (Marchand 2026 PNAS); always present, with
+    # SURFACE-Bind summary (Balbi et al. 2026 PNAS); always present, with
     # ``has_data=False`` as the explicit "not scored" signal for the
     # ~12% of surfaceome proteins SURFACE-Bind omitted.
     surface_bind: SurfaceBindFeatures = Field(default_factory=SurfaceBindFeatures)

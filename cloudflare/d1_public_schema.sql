@@ -471,7 +471,7 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
 
 
 -- ---------------------------------------------------------------------------
--- SURFACE-Bind (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
+-- SURFACE-Bind (Balbi et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
 --
 -- Per-UniProt patch-targetability summary + per-site detail from the
 -- Correia lab's MaSIF / surface-fingerprinting mapping of the human
