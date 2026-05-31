@@ -229,10 +229,33 @@ overexpression_reference, vendor_claim_only, none, unknown}`;
   glycoproteomics. `expression_only` for permeabilized methods that
   measure total protein. `weak_or_ambiguous` when the panel doesn't
   cleanly fit.
+    - **Keep `expression_only` even when a permeabilized assay describes
+      localization.** A permeabilized assay broke the membrane to read the
+      protein, so it CANNOT prove surface *accessibility* — that's why its
+      relevance stays `expression_only` regardless of what it saw. Do NOT
+      promote it to `supports_surface_localization` (that's reserved for
+      NON-permeabilized IF / IHC). Capture the localization the paper
+      reported in `surface_claim_type` instead (next field), not by
+      inflating `accessibility_relevance`.
 - `surface_claim_type` — closed enum: `surface_accessible`,
   `plasma_membrane_localized`, `membrane_fraction_enriched`,
   `cell_junction_localized`, `apical_or_luminal`, `secreted_or_shed`,
   `intracellular_pool`, `unclear`.
+    - **Set this from WHERE the protein was seen, independently of the
+      assay's accessibility relevance.** A permeabilized IF / confocal
+      assay (so `accessibility_relevance=expression_only`) that nonetheless
+      describes **plasma-membrane-rim staining** or **colocalization with a
+      membrane marker** (e.g. Na⁺/K⁺-ATPase, E-cadherin, WGA, a cell-surface
+      partner) carries real localization signal — set
+      `surface_claim_type=plasma_membrane_localized` (or
+      `cell_junction_localized` / `apical_or_luminal` when the paper
+      specifies a junctional / apical pattern). Reserve `intracellular_pool`
+      for assays that saw the protein in the cytoplasm / ER / endosomes, and
+      `unclear` only when the paper doesn't describe a localization pattern
+      at all. This split is load-bearing downstream: a permeabilized assay
+      that localized the protein to the PM is kept on the surface card,
+      while a permeabilized total-protein read with no localization claim is
+      filtered out.
 - `expression_observations[]` — extract numeric / qualitative
   expression-level reads tied to this method panel (e.g. "X cells
   positive at 4-5 logs higher MFI"). Each carries `context` (free text
