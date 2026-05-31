@@ -134,12 +134,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
       {totalEntries === 0 ? (
         <p className={styles.empty}>No evidence entries recorded.</p>
       ) : (
-        <details className={styles.details} open>
-          <summary className={styles.summary}>
-            {totalUnique} unique{" "}
-            {totalUnique === 1 ? "source" : "sources"} · click to collapse
-          </summary>
-          <ul className={styles.list}>
+        <ul className={styles.list}>
             {clusters.map(({ canonical: e, dupes }) => {
               const link = sourceLink(e);
               const firstSpan = e.spans[0]?.quote ?? null;
@@ -210,8 +205,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
                 </li>
               );
             })}
-          </ul>
-        </details>
+        </ul>
       )}
     </SectionCard>
   );
