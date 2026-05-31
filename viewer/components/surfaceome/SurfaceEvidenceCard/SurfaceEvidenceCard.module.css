@@ -92,10 +92,8 @@
   text-decoration: underline;
 }
 
+/* .method is a <details> — collapsed by default, headline in <summary>. */
 .method {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
   padding-top: var(--space-4);
   border-top: 1px solid var(--line-soft);
 }
@@ -105,11 +103,46 @@
   border-top: 0;
 }
 
+/* <summary> headline row. Drop the native disclosure marker and supply
+   our own chevron so the flex layout lays out cleanly. */
 .methodHead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.methodHead::-webkit-details-marker {
+  display: none;
+}
+
+.methodHead::before {
+  content: "▸";
+  color: var(--muted);
+  font-size: 0.7rem;
+  transition: transform 0.12s ease;
+}
+
+.method[open] > .methodHead::before {
+  transform: rotate(90deg);
+}
+
+/* Count of what's hidden in the collapsed body (N antibodies · M
+   observations), pushed to the right of the headline pills. */
+.methodSummaryMeta {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* The collapsed body: cites + antibodies + observations. */
+.methodBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
 }
 
 .subLabel {

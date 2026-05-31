@@ -146,34 +146,76 @@ function MethodBlock({
   m: MethodObservation;
   geneSymbol: string;
 }) {
+  // Collapsed-by-default: each method block shows only its headline pills
+  // in the <summary>; antibodies + observations + citations live in the
+  // body and expand on click. Native <details> keeps this SSG-friendly
+  // (no client state) — the assay-type groups can stay long without
+  // forcing the reader to scroll past every reagent table.
+  const nAb = m.antibodies.length;
+  const nObs = m.expression_observations.length;
+  const hiddenSummary = [
+    nAb > 0 ? `${nAb} antibod${nAb === 1 ? "y" : "ies"}` : null,
+    nObs > 0 ? `${nObs} observation${nObs === 1 ? "" : "s"}` : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
   return (
-    <div className={styles.method}>
-      <div className={styles.methodHead}>
+    <details className={styles.method}>
+      <summary className={styles.methodHead}>
         <StatusPill tone="teal" size="sm">
           {prettyEnum(m.method_subclass)}
         </StatusPill>
         <StatusPill tone="neutral" size="sm">
           {prettyEnum(m.permeabilization)}
         </StatusPill>
-        <StatusPill tone="lavender" size="sm">
+        {/* Expression-system pill carries its own hover tooltip (what
+            "mixed" / "knock-in tag" mean) — using StatusPill's `title`
+            rather than a separate InfoTip child so hovering explains it
+            without a click toggling the <details>. */}
+        <StatusPill
+          tone="lavender"
+          size="sm"
+          title={tooltips.expression_system}
+        >
           {prettyEnum(m.expression_system)}
         </StatusPill>
         <StatusPill tone={relevanceTone(m.accessibility_relevance)} size="sm">
           {prettyEnum(m.accessibility_relevance)}
         </StatusPill>
+        {hiddenSummary ? (
+          <span className={styles.methodSummaryMeta}>{hiddenSummary}</span>
+        ) : null}
+      </summary>
+      <div className={styles.methodBody}>
         <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
-      </div>
 
       {m.antibodies.length > 0 ? (
         <div className={styles.antibodies}>
           <p className={`label-mono ${styles.subLabel}`}>Antibodies</p>
           <ul className={styles.abList}>
             {m.antibodies.map((ab, j) => {
-              const link = antibodyLink(geneSymbol, ab);
+              // Reagent identifiers from the source. When ALL are absent we
+              // show "(reagent details not in source)" AND suppress the
+              // link — a bare gene-symbol search with no clone / vendor /
+              // catalog isn't specific enough to be useful, and pairing it
+              // with "details not in source" reads as contradictory.
+              const reagentParts = [
+                ab.clone,
+                ab.vendor,
+                ab.catalog,
+                ab.rrid,
+              ].filter((x): x is string => Boolean(x));
+              const hasReagentDetails = reagentParts.length > 0;
+              const link = hasReagentDetails
+                ? antibodyLink(geneSymbol, ab)
+                : null;
               return (
                 <li key={j} className={styles.abItem}>
-                  <span className={styles.abNameRow}>
-                    <span className={styles.abName}>{ab.name}</span>
+                  <span className={styles.abName}>{ab.name}</span>
+                  <span className={styles.abMeta}>
+                    {hasReagentDetails
+                      ? reagentParts.join(" · ")
+                      : "(reagent details not in source)"}
                     {link ? (
                       <a
                         className={styles.abLink}
@@ -189,11 +231,6 @@ function MethodBlock({
                         {link.label}
                       </a>
                     ) : null}
-                  </span>
-                  <span className={styles.abMeta}>
-                    {[ab.clone, ab.vendor, ab.catalog, ab.rrid]
-                      .filter((x): x is string => Boolean(x))
-                      .join(" · ") || "(reagent details not in source)"}
                   </span>
                   <span className={styles.abPills}>
                     <StatusPill tone="neutral" size="sm">
@@ -261,7 +298,8 @@ function MethodBlock({
           </table>
         </div>
       ) : null}
-    </div>
+      </div>
+    </details>
   );
 }
 

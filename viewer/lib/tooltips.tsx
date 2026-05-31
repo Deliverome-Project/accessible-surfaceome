@@ -250,6 +250,20 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  expression_system: (
+    <>
+      <strong>LLM-driven.</strong> Whether this assay measured the protein
+      at its native level (<em>endogenous</em>) or after forcing extra
+      copies (<em>overexpression</em>). Endogenous detection is the
+      stronger surface-accessibility signal; overexpression can push a
+      protein to the surface where it wouldn&apos;t normally go.{" "}
+      <strong>Mixed</strong> = this block pools both endogenous and
+      overexpression findings, so read it as partly caveated.{" "}
+      <strong>Knock-in tag</strong> = an endogenous-level tagged copy
+      (strong, like endogenous).
+    </>
+  ),
+
   surface_bind: (
     <>
       MaSIF patch-based targetability scoring from the Correia lab
