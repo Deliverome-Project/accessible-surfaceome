@@ -58,6 +58,18 @@ function prettyEnum(value) {
   return s.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
+// Null-safe percent formatter. v1.1.0 records can carry a null
+// `ecd_pct_identity` on a paralog row (Compara returned no aligned ECD),
+// which used to crash `.toFixed` mid-run and abort the whole export.
+function fmtPct(v) {
+  return v == null ? "—" : `${v.toFixed(1)}%`;
+}
+
+// Null-safe fixed-decimal formatter for non-percent scalars (pLDDT etc.).
+function fmtNum(v, digits = 1) {
+  return v == null ? "—" : v.toFixed(digits);
+}
+
 function alphafoldEntryUrl(uniprot) {
   return `https://alphafold.ebi.ac.uk/entry/${uniprot}`;
 }
@@ -89,47 +101,92 @@ function wrapSequence(s, width = 60) {
 }
 
 // --------------------------------------------------------------
-// Sequence fetch — AFDB API returns the UniProt canonical sequence
-// in the same response that gives us pdbUrl. Cached per UniProt so
-// we hit the API at most once per accession per run.
+// Sequence + structure-model fetch.
+//
+// The AFDB prediction API returns BOTH the UniProt canonical sequence
+// and the model download URLs (cifUrl / pdbUrl / paeDocUrl) in one
+// response, so we cache the parsed entry per accession and derive
+// sequence + model links from it.
+//
+// Not every protein has an AFDB model — very large proteins (megalin /
+// LRP2, ~4655 aa) return 404, and isoform accessions (e.g. P00533-2)
+// are never keyed in AFDB. For those we fall back to UniProt's FASTA
+// endpoint, which always carries the sequence, so a no-model protein
+// or an alternative isoform still ships its full sequence for
+// reanalysis. Each accession is fetched at most once per run.
 // --------------------------------------------------------------
+
+const FETCH_UA =
+  "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)";
+
+const afdbEntryCache = new Map();
+
+async function fetchAfdbEntry(uniprot) {
+  if (afdbEntryCache.has(uniprot)) return afdbEntryCache.get(uniprot);
+  let entry = null;
+  try {
+    const resp = await fetch(alphafoldApiUrl(uniprot), {
+      // AFDB's edge returns 403 for the default Node fetch UA; a named
+      // UA passes. (They explicitly block "node" / "undici".)
+      headers: { "User-Agent": FETCH_UA, Accept: "application/json" },
+    });
+    if (resp.ok) {
+      const entries = await resp.json();
+      entry = entries[0] ?? null;
+    } else if (resp.status !== 404) {
+      // 404 = no model (expected for big proteins); only warn on other
+      // statuses so a real outage is still visible.
+      console.warn(`  ! AFDB API returned ${resp.status} for ${uniprot}`);
+    }
+  } catch (err) {
+    console.warn(`  ! AFDB API fetch failed for ${uniprot}: ${err.message}`);
+  }
+  afdbEntryCache.set(uniprot, entry);
+  return entry;
+}
+
+async function fetchUniprotFasta(uniprot) {
+  try {
+    const resp = await fetch(
+      `https://rest.uniprot.org/uniprotkb/${uniprot}.fasta`,
+      { headers: { "User-Agent": FETCH_UA, Accept: "text/plain" } },
+    );
+    if (!resp.ok) {
+      console.warn(`  ! UniProt FASTA returned ${resp.status} for ${uniprot}`);
+      return null;
+    }
+    const text = await resp.text();
+    const seq = text
+      .split("\n")
+      .filter((l) => l && !l.startsWith(">"))
+      .join("")
+      .trim();
+    return seq || null;
+  } catch (err) {
+    console.warn(
+      `  ! UniProt FASTA fetch failed for ${uniprot}: ${err.message}`,
+    );
+    return null;
+  }
+}
 
 const sequenceCache = new Map();
 
 async function fetchSequence(uniprot) {
   if (sequenceCache.has(uniprot)) return sequenceCache.get(uniprot);
-  try {
-    const resp = await fetch(alphafoldApiUrl(uniprot), {
-      // AFDB's edge returns 403 for the default Node fetch UA; a
-      // browser-like UA passes. (Curl with no UA also passes — they
-      // explicitly block "node" / "undici".)
-      headers: {
-        "User-Agent":
-          "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
-        Accept: "application/json",
-      },
-    });
-    if (!resp.ok) {
-      console.warn(`  ! AFDB API returned ${resp.status} for ${uniprot}`);
-      sequenceCache.set(uniprot, null);
-      return null;
-    }
-    const entries = await resp.json();
-    const seq = entries[0]?.uniprotSequence ?? null;
-    sequenceCache.set(uniprot, seq);
-    return seq;
-  } catch (err) {
-    console.warn(`  ! AFDB API fetch failed for ${uniprot}: ${err.message}`);
-    sequenceCache.set(uniprot, null);
-    return null;
-  }
+  const entry = await fetchAfdbEntry(uniprot);
+  let seq = entry?.uniprotSequence ?? null;
+  // No AFDB model (large proteins, isoform accessions) → UniProt FASTA.
+  if (!seq) seq = await fetchUniprotFasta(uniprot);
+  sequenceCache.set(uniprot, seq);
+  return seq;
 }
 
 // --------------------------------------------------------------
 // Markdown rendering
 // --------------------------------------------------------------
 
-function md(rec, structureData, canonicalSequence) {
+function md(rec, structureData, sequences, afdbEntry) {
   const g = rec.gene;
   const e = rec.executive_summary;
   const df = rec.deterministic_features;
@@ -341,7 +398,7 @@ function md(rec, structureData, canonicalSequence) {
     lines.push("|---|---|---|---|");
     for (const p of df.paralogs) {
       lines.push(
-        `| ${p.paralog_symbol} | [${p.paralog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}) | ${p.ecd_pct_identity.toFixed(1)}% | ${p.family_id} |`,
+        `| ${p.paralog_symbol} | [${p.paralog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}) | ${fmtPct(p.ecd_pct_identity)} | ${p.family_id} |`,
       );
     }
     lines.push("");
@@ -358,7 +415,6 @@ function md(rec, structureData, canonicalSequence) {
   // --- Orthologs ---
   lines.push("## 7. Orthologs");
   lines.push("");
-  const fmtPct = (v) => (v == null ? "—" : `${v.toFixed(1)}%`);
   for (const species of ["mouse", "cynomolgus"]) {
     const entries = df.orthologs[species];
     if (!entries.length) continue;
@@ -368,7 +424,7 @@ function md(rec, structureData, canonicalSequence) {
     lines.push("|---|---|---|---|---|---|---|---|---|---|");
     for (const o of entries) {
       lines.push(
-        `| ${o.is_canonical ? "✓" : "alt"} | ${o.isoform_id} | ${o.ortholog_symbol} | ${o.ortholog_uniprot_acc} | ${prettyEnum(o.type)} | ${fmtPct(o.full_length_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_similarity_to_human_canonical)} | ${o.ecd_length_residues} aa | ${o.tm_helix_count} |`,
+        `| ${o.is_canonical ? "✓" : "alt"} | ${o.isoform_id} | ${o.ortholog_symbol} | [${o.ortholog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${o.ortholog_uniprot_acc}) | ${prettyEnum(o.type)} | ${fmtPct(o.full_length_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_similarity_to_human_canonical)} | ${o.ecd_length_residues} aa | ${o.tm_helix_count} |`,
       );
     }
     lines.push("");
@@ -423,8 +479,10 @@ function md(rec, structureData, canonicalSequence) {
   lines.push(`|---|---|`);
   lines.push(`| AFDB ID | [${s.afdb_id}](${alphafoldEntryUrl(g.uniprot_acc)}) |`);
   lines.push(`| AFDB version | ${s.afdb_version} |`);
-  lines.push(`| ECD mean pLDDT | ${s.ecd_mean_plddt.toFixed(1)} |`);
-  lines.push(`| ECD disordered fraction | ${(s.ecd_disordered_fraction * 100).toFixed(1)}% |`);
+  lines.push(`| ECD mean pLDDT | ${fmtNum(s.ecd_mean_plddt)} |`);
+  lines.push(
+    `| ECD disordered fraction | ${s.ecd_disordered_fraction == null ? "—" : `${(s.ecd_disordered_fraction * 100).toFixed(1)}%`} |`,
+  );
   // ecd_solvent_accessible_fraction was dropped in PR23 round 9.
   lines.push("");
   lines.push(
@@ -519,12 +577,33 @@ function md(rec, structureData, canonicalSequence) {
   lines.push(`- UniProt: [https://www.uniprot.org/uniprotkb/${g.uniprot_acc}](https://www.uniprot.org/uniprotkb/${g.uniprot_acc})`);
   lines.push("");
 
-  // Full canonical sequence
+  // AlphaFold model downloads — pulled from the same prediction-API
+  // response the canonical sequence came from. Absent for no-model
+  // proteins (e.g. megalin/LRP2), in which case this block is skipped.
+  if (afdbEntry && (afdbEntry.cifUrl || afdbEntry.pdbUrl)) {
+    lines.push("**AlphaFold model downloads**");
+    lines.push("");
+    if (afdbEntry.cifUrl)
+      lines.push(`- mmCIF model: [${afdbEntry.cifUrl}](${afdbEntry.cifUrl})`);
+    if (afdbEntry.pdbUrl)
+      lines.push(`- PDB model: [${afdbEntry.pdbUrl}](${afdbEntry.pdbUrl})`);
+    if (afdbEntry.paeDocUrl)
+      lines.push(
+        `- PAE (predicted aligned error) JSON: [${afdbEntry.paeDocUrl}](${afdbEntry.paeDocUrl})`,
+      );
+    const ver = afdbEntry.latestVersion ?? afdbEntry.modelCreatedDate;
+    if (ver != null) lines.push(`- AFDB model version: ${ver}`);
+    lines.push("");
+  }
+
+  // Full canonical sequence (AFDB prediction API, or UniProt FASTA
+  // fallback for no-model proteins like megalin).
+  const canonicalSequence = sequences[g.uniprot_acc] ?? null;
   lines.push("### Canonical UniProt sequence");
   lines.push("");
   if (canonicalSequence) {
     lines.push(
-      `*${canonicalSequence.length} aa · fetched from AFDB API at build time*`,
+      `*${canonicalSequence.length} aa · \`${g.uniprot_acc}\` · embedded at build time*`,
     );
     lines.push("");
     lines.push("```");
@@ -532,10 +611,65 @@ function md(rec, structureData, canonicalSequence) {
     lines.push("```");
   } else {
     lines.push(
-      `*Sequence not embedded — fetch from [${alphafoldApiUrl(g.uniprot_acc)}](${alphafoldApiUrl(g.uniprot_acc)}) and read \`uniprotSequence\`.*`,
+      `*Sequence not embedded — fetch from [https://rest.uniprot.org/uniprotkb/${g.uniprot_acc}.fasta](https://rest.uniprot.org/uniprotkb/${g.uniprot_acc}.fasta).*`,
     );
   }
   lines.push("");
+
+  // Alternative-isoform sequences — the JSON record carries isoform
+  // topology + ECD/ICD lengths but not the residues, so embed each
+  // alternative isoform's full sequence here for isoform-level reanalysis.
+  const isoSeqRows = (df.isoform_topologies ?? []).filter(
+    (iso) =>
+      iso.uniprot_acc &&
+      iso.uniprot_acc !== g.uniprot_acc &&
+      sequences[iso.uniprot_acc],
+  );
+  if (isoSeqRows.length) {
+    lines.push("### Alternative-isoform sequences");
+    lines.push("");
+    for (const iso of isoSeqRows) {
+      const seq = sequences[iso.uniprot_acc];
+      lines.push(
+        `**${iso.isoform_id}** (\`${iso.uniprot_acc}\` · ${seq.length} aa)`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(wrapSequence(seq, 60));
+      lines.push("```");
+      lines.push("");
+    }
+  }
+
+  // Canonical ortholog sequences (mouse, cynomolgus) — the record carries
+  // only %identity / %similarity of the ortholog ECD to the human
+  // canonical, not the actual residues. Embed the canonical ortholog per
+  // species so a reader can re-align cross-species without re-resolving
+  // accessions. (Alternative-isoform orthologs are linked in §7.)
+  const orthoSeqRows = [];
+  for (const sp of ["mouse", "cynomolgus"]) {
+    const entries = df.orthologs?.[sp] ?? [];
+    const canon = entries.find((o) => o.is_canonical) ?? entries[0];
+    if (canon?.ortholog_uniprot_acc && sequences[canon.ortholog_uniprot_acc]) {
+      orthoSeqRows.push([sp, canon]);
+    }
+  }
+  if (orthoSeqRows.length) {
+    lines.push("### Canonical ortholog sequences");
+    lines.push("");
+    for (const [sp, o] of orthoSeqRows) {
+      const seq = sequences[o.ortholog_uniprot_acc];
+      const label = sp.charAt(0).toUpperCase() + sp.slice(1);
+      lines.push(
+        `**${label} — ${o.ortholog_symbol}** (\`${o.ortholog_uniprot_acc}\` · ${seq.length} aa)`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(wrapSequence(seq, 60));
+      lines.push("```");
+      lines.push("");
+    }
+  }
 
   // Per-residue topology, canonical + each isoform
   lines.push("### Per-residue DeepTMHMM topology");
@@ -574,6 +708,9 @@ function md(rec, structureData, canonicalSequence) {
   lines.push("");
   const comparaVersion = df.orthologs.mouse[0]?.compara_version ?? df.paralogs[0]?.compara_version ?? "—";
   lines.push(`- AlphaFold DB structures — ${s.license} (${s.attribution})`);
+  lines.push(
+    `- SURFACE-Bind binding-site scoring — MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · [surface-bind.inria.fr](https://surface-bind.inria.fr/)`,
+  );
   lines.push(`- Ensembl Compara orthologs & paralogs — ${comparaVersion} · open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)`);
   lines.push(`- DeepTMHMM topology — ${ct.tool_version} · DTU Health Tech (Hallgren et al. 2022)`);
   lines.push(`- UniProt — CC BY 4.0 (UniProt Consortium)`);
@@ -609,9 +746,15 @@ async function main() {
   for (const name of jsonFiles) {
     const recordPath = path.join(DATA_DIR, name);
     const rec = JSON.parse(readFileSync(recordPath, "utf-8"));
-    if (rec.schema_version !== "1.0.0") {
+    // Accept any schema v1.x. Pinning this to an exact "1.0.0" silently
+    // skipped every record once the schema bumped to 1.1.0 — which is
+    // what blanked the .md downloads (no file written → 404). Gate on the
+    // MAJOR version only, so a future 1.2.0 minor bump can't re-break it;
+    // a true breaking change (2.x) still skips loudly.
+    const schemaMajor = String(rec.schema_version ?? "").split(".")[0];
+    if (schemaMajor !== "1") {
       console.warn(
-        `  ! ${name}: schema_version=${rec.schema_version}, skipping (only v1.0.0 supported)`,
+        `  ! ${name}: schema_version=${rec.schema_version}, skipping (only schema v1.x supported)`,
       );
       continue;
     }
@@ -623,11 +766,39 @@ async function main() {
       structurePath && existsSync(structurePath)
         ? JSON.parse(readFileSync(structurePath, "utf-8"))
         : null;
-    process.stdout.write(`→ ${name}: fetching sequence for ${uniprot}… `);
-    const seq = uniprot ? await fetchSequence(uniprot) : null;
-    process.stdout.write(seq ? `${seq.length} aa\n` : "(skipped)\n");
+    // Gather every UniProt acc we want a sequence for: canonical + human
+    // isoforms + the canonical ortholog per species. Cross-species and
+    // isoform sequences aren't in the JSON record (only %identity /
+    // topology is), so embedding them makes the .md a self-contained
+    // reanalysis bundle. fetchSequence caches per acc, so duplicates are
+    // free.
+    const dfx = rec.deterministic_features ?? {};
+    const seqAccs = [];
+    if (uniprot) seqAccs.push(uniprot);
+    for (const iso of dfx.isoform_topologies ?? []) {
+      if (iso.uniprot_acc && iso.uniprot_acc !== uniprot)
+        seqAccs.push(iso.uniprot_acc);
+    }
+    for (const sp of ["mouse", "cynomolgus"]) {
+      const entries = dfx.orthologs?.[sp] ?? [];
+      const canon = entries.find((o) => o.is_canonical) ?? entries[0];
+      if (canon?.ortholog_uniprot_acc) seqAccs.push(canon.ortholog_uniprot_acc);
+    }
+    const uniqAccs = [...new Set(seqAccs)];
+    process.stdout.write(`→ ${name}: fetching ${uniqAccs.length} sequence(s)… `);
+    const sequences = {};
+    for (const acc of uniqAccs) sequences[acc] = await fetchSequence(acc);
+    const canonSeq = uniprot ? sequences[uniprot] : null;
+    process.stdout.write(
+      canonSeq ? `canonical ${canonSeq.length} aa\n` : "(no canonical seq)\n",
+    );
+    const afdbEntry = uniprot ? await fetchAfdbEntry(uniprot) : null;
     const outPath = path.join(DATA_DIR, name.replace(/\.json$/, ".md"));
-    writeFileSync(outPath, md(rec, structureData, seq), "utf-8");
+    writeFileSync(
+      outPath,
+      md(rec, structureData, sequences, afdbEntry),
+      "utf-8",
+    );
     console.log(`  wrote ${path.relative(VIEWER_ROOT, outPath)}`);
   }
 }

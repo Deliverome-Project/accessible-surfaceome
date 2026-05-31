@@ -256,7 +256,7 @@ export default async function GenePage({ params }: PageProps) {
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
-              data-hint="Canonical record, served live from the public Worker (D1). Everything on this page is rendered from it."
+              data-hint="The complete machine-readable record for this gene (JSON) — the live, canonical data everything on this page is rendered from."
               href={`https://api.deliverome.org/surfaceome/v1/genes/${rec.gene.hgnc_symbol}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -265,7 +265,7 @@ export default async function GenePage({ params }: PageProps) {
             </a>
             <a
               className={styles.crumbAction}
-              data-hint="Markdown export of the same record + the full UniProt canonical sequence + per-residue DeepTMHMM topology for canonical and every alternative isoform + a link to the live AlphaFold DB entry."
+              data-hint="Full Markdown export — the complete record plus reanalysis extras not in the JSON: canonical, isoform & cross-species ortholog sequences, per-residue membrane topology (DeepTMHMM), and AlphaFold model download links."
               href={`/data/surfaceome/${rec.gene.hgnc_symbol}.md`}
               target="_blank"
               rel="noopener noreferrer"
