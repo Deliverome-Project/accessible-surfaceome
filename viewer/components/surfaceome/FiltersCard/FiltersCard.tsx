@@ -394,6 +394,7 @@ export function FiltersCard({ rec, n }: Props) {
     ...(["expression", "risks"] as const).map((cat) => ({
       label: FEATURE_TAB_LABEL[cat],
       provenance: "llm" as const,
+      linkTo: `#section-${cat}`,
       pills: buildFeatureChips(cat, rec).map((m) => m.pill),
     })),
     //
@@ -848,7 +849,7 @@ export function FiltersCard({ rec, n }: Props) {
               switch the active tab. */}
           {g.linkTo ? (
             <a href={g.linkTo} className={styles.groupLabelLink}>
-              {g.label} <span aria-hidden="true">→</span>
+              {g.label}
             </a>
           ) : (
             <span>{g.label}</span>
