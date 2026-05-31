@@ -80,6 +80,7 @@ from accessible_surfaceome.tools._shared.models import (
     Evidence,
     EvidenceClaim,
     GeneIdentifier,
+    IsoformTopology,
     SearchEntry,
     SourceType,
     SurfaceEvidence,
@@ -121,6 +122,25 @@ def _triage_signal_and_reasoning_from_record(rec):
 # well-formed; the resulting timing-row order is non-deterministic but
 # the viewer sorts by ``elapsed_s`` anyway.
 BUILDER_CONCURRENCY = 8
+
+
+def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str]:
+    """IDs of isoforms that are soluble forms by topology alone.
+
+    A TM-less alternative isoform that still carries a real ECD (≥30 aa) is a
+    soluble/secreted species: the membrane anchor is gone but the ectodomain
+    is retained (e.g. EGFR's sEGFR isoforms). ``isoform_topologies`` holds
+    ONLY the alternative isoforms (the canonical lives in
+    ``canonical_topology``), so every entry is non-canonical by construction
+    — there is NO ``is_canonical`` field on ``IsoformTopology`` (referencing
+    one raised AttributeError and crashed every v2 run; see the regression
+    test). Extracted so the secreted-form upgrade is unit-testable without a
+    full annotate run."""
+    return [
+        iso.isoform_id
+        for iso in isoform_topologies
+        if iso.tm_helix_count == 0 and iso.ecd_length_residues >= 30
+    ]
 
 
 def _wall_clock_for_timing(timing: list[StepTiming]) -> float:
@@ -665,16 +685,8 @@ def _annotate(
     # decoy"); a later literature pass that finds serum/plasma levels can
     # raise it on re-run. This flows into ``_derive_filters`` below, so the
     # ``has_secreted_form`` catalog filter flips consistently with the block.
-    # ``isoform_topologies`` lists the ALTERNATIVE isoforms only (the
-    # canonical lives in ``canonical_topology``), so every entry here is
-    # non-canonical by construction — no is_canonical field exists on
-    # IsoformTopology. A TM-less entry with a real ECD is a soluble form.
-    _secreted_isoform_ids = [
-        iso.isoform_id
-        for iso in det_features.isoform_topologies
-        if iso.tm_helix_count == 0 and iso.ecd_length_residues >= 30
-    ]
-    if _secreted_isoform_ids and not synth_draft.accessibility_risks.secreted_form.present:
+    _secreted_ids = _secreted_isoform_ids(det_features.isoform_topologies)
+    if _secreted_ids and not synth_draft.accessibility_risks.secreted_form.present:
         _ar = synth_draft.accessibility_risks
         synth_draft = synth_draft.model_copy(
             update={
@@ -696,7 +708,7 @@ def _annotate(
             "secreted_form upgraded present=True for %s from TM=0 soluble "
             "isoform(s) %s (topology-derived, low/weak)",
             gene_id.hgnc_symbol,
-            _secreted_isoform_ids,
+            _secreted_ids,
         )
 
     # ---- step 8: derive filters (reused from v1) --------------------------
