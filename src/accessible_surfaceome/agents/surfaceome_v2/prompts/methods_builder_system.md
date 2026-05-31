@@ -36,6 +36,29 @@ Same method in two different papers → two rows.
 `cited_evidence_ids` on each row lists every `evidence_id` that
 contributed to that row.
 
+### No redundant rows — distinguishable assay or merge
+
+Two `MethodObservation` rows are REDUNDANT when they cite the same
+`evidence_id`(s) AND share the same `method_subclass` AND the same
+`expression_system`. Never emit redundant rows — collapse them into one
+(union the `antibodies[]` and `expression_observations[]`).
+
+The legitimate exception is a TRUE multi-condition experiment described in
+one claim — most often a paper that ran BOTH a permeabilized IF (total
+protein) AND a non-permeabilized IF (surface only) on the same cells.
+Those are two genuinely different assays and SHOULD be two rows with
+DIFFERENT `method_subclass` (`permeabilized_IF` vs `nonpermeabilized_IF`)
+and the correspondingly different `accessibility_relevance`
+(`expression_only` vs `supports_surface_localization`) — even though they
+cite the same `evidence_id`. The discriminator is the **assay condition**,
+NOT the citation: if the two rows would carry the SAME `method_subclass`,
+they're redundant and must merge; if the `method_subclass` genuinely
+differs, keep them separate.
+
+Before finalizing, scan your output: for any two rows sharing a
+`cited_evidence_ids` value, confirm their `method_subclass` differs. If it
+doesn't, merge them.
+
 ## Field-by-field rules
 
 - `method_family` — closed enum: `flow_cytometry`, `immunofluorescence`,
