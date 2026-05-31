@@ -17,9 +17,15 @@ import styles from "./ChipLabelValue.module.css";
 export function ChipLabelValue({
   label,
   value,
+  muted = false,
 }: {
   label: string;
   value: ReactNode;
+  /** Render the value in the same dim / non-bold / non-uppercase style as
+   *  the label, instead of the bold UPPERCASE verdict style. Use for
+   *  "no data" values (e.g. validation · none) so the chip doesn't read
+   *  as a confident verdict when there's nothing to assert. */
+  muted?: boolean;
 }) {
   // One wrapper span (not a fragment) so the parent StatusPill's flex
   // `gap` doesn't inject extra space between label / separator / value —
@@ -32,7 +38,7 @@ export function ChipLabelValue({
       <span className={styles.sep} aria-hidden="true">
         ·
       </span>
-      <span className={styles.value}>{value}</span>
+      <span className={muted ? styles.valueMuted : styles.value}>{value}</span>
     </span>
   );
 }

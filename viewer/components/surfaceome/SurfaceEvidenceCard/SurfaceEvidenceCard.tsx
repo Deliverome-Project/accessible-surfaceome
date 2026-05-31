@@ -92,7 +92,12 @@ function groupCounts(methods: MethodObservation[]): {
   const cites = new Set<string>();
   let antibodies = 0;
   for (const m of methods) {
-    antibodies += m.antibodies.length;
+    // Only count antibodies that carry actual reagent identifiers — a bare
+    // AntibodyRef with no clone / vendor / catalog / RRID renders as
+    // "(reagent details not found)" and shouldn't inflate the count.
+    antibodies += m.antibodies.filter(
+      (ab) => ab.clone || ab.vendor || ab.catalog || ab.rrid,
+    ).length;
     for (const id of m.cited_evidence_ids) cites.add(id);
     // Also fold in the per-observation citations so the count reflects all
     // distinct evidence backing this assay type (AntibodyRef itself
@@ -152,7 +157,12 @@ function MethodBlock({
   // body and expand on click. Native <details> keeps this SSG-friendly
   // (no client state) — the assay-type groups can stay long without
   // forcing the reader to scroll past every reagent table.
-  const nAb = m.antibodies.length;
+  // Count only antibodies with real reagent identifiers (clone / vendor /
+  // catalog / RRID) — detail-less ones render as "(reagent details not
+  // found)" and shouldn't inflate the summary count. Matches groupCounts.
+  const nAb = m.antibodies.filter(
+    (ab) => ab.clone || ab.vendor || ab.catalog || ab.rrid,
+  ).length;
   const nObs = m.expression_observations.length;
   const hiddenSummary = [
     nAb > 0 ? `${nAb} antibod${nAb === 1 ? "y" : "ies"}` : null,
@@ -163,23 +173,31 @@ function MethodBlock({
   return (
     <details className={styles.method}>
       <summary className={styles.methodHead}>
+        {/* method_subclass already encodes the live-cell / permeabilization
+            qualifier (e.g. "live_cell_flow", "nonpermeabilized_IF"), so a
+            separate permeabilization pill was redundant — dropped. */}
         <StatusPill tone="teal" size="sm">
           {prettyEnum(m.method_subclass)}
         </StatusPill>
-        <StatusPill tone="neutral" size="sm">
-          {prettyEnum(m.permeabilization)}
-        </StatusPill>
-        {/* Expression-system pill carries its own hover tooltip (what
-            "mixed" / "knock-in tag" mean) — using StatusPill's `title`
-            rather than a separate InfoTip child so hovering explains it
-            without a click toggling the <details>. */}
-        <StatusPill
-          tone="lavender"
-          size="sm"
-          title={tooltips.expression_system}
-        >
-          {prettyEnum(m.expression_system)}
-        </StatusPill>
+        {/* Expression system. "mixed" is split into two explicit chips
+            (endogenous + overexpression) so the reader sees both pools
+            named rather than a vague "mixed". Each carries the shared
+            hover tooltip (what endogenous / overexpression / knock-in
+            mean) via StatusPill's `title`, so hovering explains it without
+            a click toggling the <details>. */}
+        {(m.expression_system === "mixed"
+          ? (["endogenous", "overexpression"] as const)
+          : [m.expression_system]
+        ).map((sys) => (
+          <StatusPill
+            key={sys}
+            tone="lavender"
+            size="sm"
+            title={tooltips.expression_system}
+          >
+            {prettyEnum(sys)}
+          </StatusPill>
+        ))}
         <StatusPill tone={relevanceTone(m.accessibility_relevance)} size="sm">
           {prettyEnum(m.accessibility_relevance)}
         </StatusPill>
@@ -267,6 +285,12 @@ function MethodBlock({
                       <ChipLabelValue
                         label="validation"
                         value={prettyEnum(ab.validation_strength)}
+                        // none / unknown isn't a verdict — render it in the
+                        // muted (non-bold) style so it reads as "no data".
+                        muted={
+                          ab.validation_strength === "none" ||
+                          ab.validation_strength === "unknown"
+                        }
                       />
                     </StatusPill>
                     <InfoTip label="About validation strength">

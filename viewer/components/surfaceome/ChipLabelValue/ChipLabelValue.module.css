@@ -27,3 +27,11 @@
   text-transform: uppercase;
   letter-spacing: 0.03em;
 }
+
+/* "No data" value — same dim, normal-weight, non-uppercase treatment as
+   the label, so a value like "none" / "unknown" reads as absence rather
+   than a bold verdict. */
+.valueMuted {
+  font-weight: 400;
+  opacity: 0.72;
+}
