@@ -4,7 +4,6 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { cellStateTriggerDesc } from "../../../lib/enums";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
@@ -114,7 +113,6 @@ export function BiologicalContextCard({ rec, n }: Props) {
             <thead>
               <tr>
                 <th scope="col">Context</th>
-                <th scope="col">Induced / lineage</th>
                 <th scope="col">Reference</th>
                 <th scope="col">Modulating state</th>
                 <th scope="col">Implication</th>
@@ -132,25 +130,6 @@ export function BiologicalContextCard({ rec, n }: Props) {
                         from the structured `direction` enum. Null for
                         unclear / older records without the field. */}
                     {directionGlyph(m.direction)}
-                  </td>
-                  <td>
-                    {m.cell_state_trigger ? (
-                      <StatusPill
-                        tone="amber"
-                        size="sm"
-                        title={cellStateTriggerDesc(m.cell_state_trigger)}
-                      >
-                        {prettyEnum(m.cell_state_trigger)}
-                      </StatusPill>
-                    ) : null}
-                    {m.restricted_lineage ? (
-                      <StatusPill tone="teal" size="sm">
-                        {prettyEnum(m.restricted_lineage)}
-                      </StatusPill>
-                    ) : null}
-                    {!m.cell_state_trigger && !m.restricted_lineage ? (
-                      <span className={styles.muted}>—</span>
-                    ) : null}
                   </td>
                   <td>{m.baseline_context}</td>
                   <td>{m.modulating_state}</td>
