@@ -1,5 +1,6 @@
 import type {
   AccessibilityImplication,
+  ModulationDirection,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
@@ -21,6 +22,51 @@ function implicationTone(v: AccessibilityImplication) {
   if (v === "restricted") return "danger" as const;
   if (v === "context_dependent") return "amber" as const;
   return "neutral" as const;
+}
+
+/** Small directional glyph for a modulation row's `direction` enum:
+ *  ↑ increases surface (green), ↓ decreases (red), ↕ bidirectional (amber),
+ *  = no change (muted). Returns null for "unclear" or an absent field (older
+ *  records), so those rows show no glyph rather than a misleading one. */
+function directionGlyph(
+  direction: ModulationDirection | undefined,
+): React.ReactNode {
+  const map: Record<
+    string,
+    { glyph: string; color: string; title: string } | undefined
+  > = {
+    increases_surface: {
+      glyph: "↑",
+      color: "var(--success, #1b5e3f)",
+      title: "Increases surface-accessible pool",
+    },
+    decreases_surface: {
+      glyph: "↓",
+      color: "var(--maroon-dark, #922038)",
+      title: "Decreases surface-accessible pool",
+    },
+    bidirectional: {
+      glyph: "↕",
+      color: "var(--amber-dark, #8a5a16)",
+      title: "Both directions documented",
+    },
+    no_change: {
+      glyph: "=",
+      color: "var(--ink-faint, #999)",
+      title: "No net change in surface accessibility",
+    },
+  };
+  const d = direction ? map[direction] : undefined;
+  if (!d) return null;
+  return (
+    <span
+      aria-label={d.title}
+      title={d.title}
+      style={{ color: d.color, fontWeight: 700, marginLeft: "0.3em" }}
+    >
+      {d.glyph}
+    </span>
+  );
 }
 
 export function BiologicalContextCard({ rec, n }: Props) {
@@ -82,6 +128,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
                     <StatusPill tone="lavender" size="sm">
                       {prettyEnum(m.category)}
                     </StatusPill>
+                    {/* ↑/↓/↕ direction of the surface-accessibility change
+                        from the structured `direction` enum. Null for
+                        unclear / older records without the field. */}
+                    {directionGlyph(m.direction)}
                   </td>
                   <td>
                     {m.cell_state_trigger ? (

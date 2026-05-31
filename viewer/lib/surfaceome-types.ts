@@ -819,6 +819,15 @@ export type ModulationCategory =
   | "other"
   | "unknown";
 
+// Up/down axis of the surface-accessible pool for a modulation row. Mirrors
+// the Pydantic `ModulationDirection` enum.
+export type ModulationDirection =
+  | "increases_surface"
+  | "decreases_surface"
+  | "bidirectional"
+  | "no_change"
+  | "unclear";
+
 export type CellStateTrigger =
   | "ER_stress"
   | "heat_shock"
@@ -933,6 +942,11 @@ export interface AccessibilityModulationObservation {
   modulating_state: string;
   change: string;
   accessibility_implication: string;
+  // Structured up/down direction of the change. Records predating the field
+  // omit it at runtime (Python default "unclear"); the viewer guards for
+  // undefined before rendering the glyph. Non-optional to match the
+  // name-level Python↔TS sync check.
+  direction: ModulationDirection;
   species?: Species;
   species_inferred?: boolean;
   cited_evidence_ids: string[];
