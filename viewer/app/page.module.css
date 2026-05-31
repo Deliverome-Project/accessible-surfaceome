@@ -58,10 +58,6 @@
   color: var(--ink-soft);
 }
 
-.sourceLine {
-  color: var(--ink-soft);
-}
-
 .surfaceBenchLink {
   color: var(--accent);
   border-bottom: 1px solid transparent;
