@@ -86,6 +86,9 @@
   color: var(--link);
   text-decoration: none;
   white-space: nowrap;
+  /* Gap so the link doesn't butt up against the catalog / part number it
+     follows in the reagent meta line. */
+  margin-left: var(--space-2);
 }
 
 .abLink:hover {
