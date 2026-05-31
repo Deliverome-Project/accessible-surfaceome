@@ -25,6 +25,7 @@ import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/Sur
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
   listSurfaceomeGenes,
+  loadBenchmarkRow,
   loadCatalogRow,
   loadGeneName,
   loadSurfaceomeRecord,
@@ -102,6 +103,14 @@ export default async function GenePage({ params }: PageProps) {
   // rendered in the build. `null` for resolver-failure outliers; the
   // card is omitted in that case rather than rendered with a stub.
   const catalogRow = await loadCatalogRow(rec.gene.hgnc_symbol);
+
+  // Benchmark membership — when this gene is one of the ~147 SurfaceBench
+  // members, its curated ground-truth verdict renders ABOVE the triage row
+  // in the header (the benchmark's hand-curated call is the strongest
+  // reference point, so it sits above the model's first-pass triage).
+  // `null` for the ~19k non-benchmark genes (the common case), and under
+  // SURFACEOME_API_BASE=local (empty matrix) — the row simply doesn't show.
+  const benchmarkRow = await loadBenchmarkRow(rec.gene.hgnc_symbol);
 
   // Deep-dive gene symbols for the toolbar's <GeneJump> typeahead — the
   // SAME set generateStaticParams emits, so every suggestion resolves to a
@@ -281,6 +290,7 @@ export default async function GenePage({ params }: PageProps) {
             geneName={geneName}
             structureData={structureData}
             catalogRow={catalogRow}
+            benchmarkRow={benchmarkRow}
           />
         </Reveal>
 

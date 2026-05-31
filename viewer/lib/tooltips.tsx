@@ -74,6 +74,16 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  benchmark_truth: (
+    <>
+      <strong>Benchmark truth.</strong> This gene is in{" "}
+      <strong>SurfaceBench</strong>, the 147-protein hand-curated triage
+      benchmark — so it carries a curated ground-truth surface verdict
+      (yes / contextual / no). It&apos;s the reference the model calls are
+      scored against, which is why it sits above the triage row.
+    </>
+  ),
+
   headline_risks: (
     <>
       <strong>LLM-driven.</strong> Risks to surface accessibility that

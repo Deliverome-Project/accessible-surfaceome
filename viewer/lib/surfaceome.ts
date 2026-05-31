@@ -26,10 +26,11 @@
  * Pages-side build runs against the real Worker and emits the full set.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import type {
   BenchmarkMatrix,
+  BenchmarkRow,
   Confidence,
   CoreceptorDependency,
   EcdAccessibilityClass,
@@ -77,6 +78,16 @@ const HGNC_TSV = path.join(
   "external",
   "hgnc",
   "hgnc_complete_set.tsv",
+);
+
+// In-tree per-gene record snapshots (`publish_record` writes these on
+// every annotate run). Used to backfill the `generateStaticParams` route
+// list when the Worker's edge-cached `/v1/genes` lags a fresh publish.
+const SURFACEOME_SNAPSHOT_DIR = path.join(
+  process.cwd(),
+  "public",
+  "data",
+  "surfaceome",
 );
 
 /**
@@ -583,6 +594,32 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
   return payload;
 }
 
+// Module-level memo for per-gene benchmark-row lookups. The benchmark
+// matrix is ~147 rows; index it once so every gene page that asks "is
+// this gene in SurfaceBench?" is an O(1) Map hit rather than a re-fetch.
+let _benchmarkRowIndex: Map<string, BenchmarkRow> | null = null;
+
+/**
+ * Server-side lookup for a single gene's benchmark row — gives the per-
+ * gene page the curated ground-truth verdict (`truth_verdict`) when the
+ * gene is one of the ~147 SurfaceBench members. Returns `null` for the
+ * ~19k genes NOT in the benchmark (the common case), so the caller can
+ * conditionally render the benchmark call only for bench members.
+ *
+ * Builds the index off `loadBenchmarkMatrix()` on first call; under
+ * `SURFACEOME_API_BASE=local` that matrix is the empty stub, so every
+ * lookup returns `null` and the benchmark row simply doesn't render.
+ */
+export async function loadBenchmarkRow(
+  symbol: string,
+): Promise<BenchmarkRow | null> {
+  if (!_benchmarkRowIndex) {
+    const matrix = await loadBenchmarkMatrix();
+    _benchmarkRowIndex = new Map(matrix.rows.map((r) => [r.gene_symbol, r]));
+  }
+  return _benchmarkRowIndex.get(symbol) ?? null;
+}
+
 /**
  * The set of genes that have a viewable deep-dive page. Sourced from the
  * Worker's `/v1/genes` endpoint, which lists the `surface_annotation`
@@ -651,10 +688,34 @@ async function _listSurfaceomeGenesImpl(): Promise<string[]> {
   const data = (await res.json()) as {
     genes?: Array<{ gene_symbol?: string }>;
   };
-  return (data.genes ?? [])
+  const fromWorker = (data.genes ?? [])
     .map((g) => g.gene_symbol)
-    .filter((s): s is string => Boolean(s))
-    .sort();
+    .filter((s): s is string => Boolean(s));
+  // Union with locally-published snapshots. `publish_record` writes
+  // `public/data/surfaceome/{SYMBOL}.json` on every annotate run, but the
+  // Worker's `/v1/genes` list is fronted by Cloudflare's edge cache and
+  // can lag a freshly-published gene by minutes — long enough that under
+  // `output: export` the just-generated route 500s ("missing param in
+  // generateStaticParams") even though the record is already live in D1.
+  // The snapshots are the in-tree source of truth, so any gene with one
+  // gets a route regardless of edge-cache state; its record data still
+  // comes from the Worker at render time. Best-effort — a missing dir
+  // (clean checkout / CI smoke build) just leaves the Worker list as-is.
+  const merged = new Set(fromWorker);
+  for (const sym of _localSnapshotGenes()) merged.add(sym);
+  return Array.from(merged).sort();
+}
+
+/** Gene symbols with a committed `public/data/surfaceome/{SYMBOL}.json`
+ *  snapshot. Best-effort: returns `[]` if the directory is absent. */
+function _localSnapshotGenes(): string[] {
+  try {
+    return readdirSync(SURFACEOME_SNAPSHOT_DIR)
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => f.slice(0, -".json".length));
+  } catch {
+    return [];
+  }
 }
 
 /**

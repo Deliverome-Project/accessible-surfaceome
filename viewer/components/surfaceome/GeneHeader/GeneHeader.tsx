@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import type { CatalogRow } from "../../../lib/surfaceome";
 import type {
   AccessibilityModulationObservation,
+  BenchmarkRow,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
@@ -82,6 +83,12 @@ interface GeneHeaderProps {
    *  strip is omitted in that case (same fall-back as the old
    *  section-card placement). */
   catalogRow?: CatalogRow | null;
+  /** Curated SurfaceBench ground-truth row — present only for the ~147
+   *  benchmark genes. When set, a "Benchmark" row renders ABOVE the
+   *  triage row showing the hand-curated truth verdict (the strongest
+   *  reference point on the page). ``null`` for the ~19k non-benchmark
+   *  genes, where the row is omitted. */
+  benchmarkRow?: BenchmarkRow | null;
 }
 
 function tierCounts(rec: SurfaceomeRecord) {
@@ -133,6 +140,28 @@ function triageVerdictLabel(signal: string): string {
   if (signal === "possibly_accessible") return "Contextual";
   if (signal === "unlikely") return "No";
   return "Unknown";
+}
+
+/** Display label for a SurfaceBench ground-truth verdict. The matrix
+ *  stores the raw curated verdict ("yes" | "contextual" | "no"); render
+ *  it title-cased to match the triage row's verdict labels. */
+function benchmarkVerdictLabel(verdict: string): string {
+  if (verdict === "yes") return "Yes";
+  if (verdict === "contextual") return "Contextual";
+  if (verdict === "no") return "No";
+  return prettyEnum(verdict);
+}
+
+/** Tone for the benchmark verdict value — green = surface (yes), amber =
+ *  contextual / state-dependent, red = not surface (no), gray otherwise.
+ *  Same traffic-light scale as the rest of the header. */
+function benchmarkVerdictTone(
+  verdict: string,
+): "success" | "amber" | "danger" | "neutral" {
+  if (verdict === "yes") return "success";
+  if (verdict === "contextual") return "amber";
+  if (verdict === "no") return "danger";
+  return "neutral";
 }
 
 /** Compare the Sonnet triage prior to the deep-dive surface verdict.
@@ -254,6 +283,7 @@ export function GeneHeader({
   geneName,
   structureData,
   catalogRow,
+  benchmarkRow,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -358,6 +388,29 @@ export function GeneHeader({
               per user feedback. ``null`` for resolver-failure
               outliers, where we just omit the strip. */}
           {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
+
+          {/* Benchmark row — only for the ~147 SurfaceBench genes. The
+              hand-curated ground-truth verdict is the strongest reference
+              point on the page, so it sits ABOVE the model's first-pass
+              triage. Reuses the triage-row layout for visual consistency;
+              the value is toned on the same traffic-light scale. */}
+          {benchmarkRow ? (
+            <p className={styles.triageRow}>
+              <span className={`label-mono ${styles.triageLabel}`}>
+                Benchmark
+                <InfoTip>{tooltips.benchmark_truth}</InfoTip>
+              </span>
+              <StatusPill
+                tone={benchmarkVerdictTone(benchmarkRow.truth_verdict)}
+                size="sm"
+              >
+                {benchmarkVerdictLabel(benchmarkRow.truth_verdict)}
+              </StatusPill>
+              <span className={styles.triageQualifier}>
+                <ChipLabelValue label="SurfaceBench" value="curated truth" />
+              </span>
+            </p>
+          ) : null}
 
           {/* Triage row — Sonnet first-pass surface verdict, sitting
               under the DB-presence strip for transparency. Tagged with
