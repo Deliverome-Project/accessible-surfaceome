@@ -46,30 +46,21 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 - `bash scripts/check-py.sh` runs ruff + ty + compile + pytest.
 - Use `uv run pre-commit run --all-files --config .pre-commit-config.yaml` before PR.
 
-## Managed Agents — auto-sync on drift
+## Deep-dive agents run in-process with local prompts (no managed-agent sync)
 
-`surface_triage` and the v1 deep-dive trio (`surface_evidence_compiler`, `biology_compiler`, `surfaceome_synthesizer`) are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
+`surface_triage`, the v1 deep-dive trio (`surface_evidence_compiler`, `biology_compiler`, `surfaceome_synthesizer`), and the v2 block builders + `plan_trim_select` are all invoked **in-process**: each runner reads its local prompt file (`prompts/system.md`) at call time and loops `client.messages.create(...)` — a plain Anthropic Messages API call (the compilers add tools; the synthesizer + triage run tool-less). There is **no Managed-Agents registration, no Anthropic-stored prompt snapshot, and no auto-sync** in the shipped code.
 
-**Auto-sync is wired into the v1 deep-dive orchestrator.** When [surfaceome_v1/orchestrator.py:annotate](src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py) runs, it sha-checks each local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. Edits that auto-sync:
+**Editing a prompt takes effect on the very next local invocation — there is nothing to push.** Edit the relevant `prompts/*.md` (or the `SurfaceomeRecord` / `SynthesizerLLMFilters` schema in `src/accessible_surfaceome/tools/_shared/models.py`, which is read locally to build the structured-output tool) and re-run. No `.runs/agents-registry.json` is read at run time; there is no `sync_agent_and_environment` call and no `accessible-surfaceome agents sync` command (the `agents` subcommand just runs the v1 deep-dive). Fast local iteration is the point.
 
-- `src/accessible_surfaceome/agents/surface_evidence_compiler/prompts/*.md` (+ its `agent.py` payload)
-- `src/accessible_surfaceome/agents/biology_compiler/prompts/*.md` (+ its `agent.py` payload)
-- `src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/*.md` (+ its `agent.py` payload)
-- the `SurfaceomeRecord` / `SurfaceomeRecordDraft` schema in `src/accessible_surfaceome/tools/_shared/models.py` (when the prompt references the new shape)
-
-`uv run accessible-surfaceome agents sync` still works as a manual command for cases where you want to push prompt changes without triggering a full annotate run (CI, schema-only edits, dry-run verification).
-
-**Escape hatch.** Set `ANNOTATE_NO_AUTO_SYNC=1` in the environment to disable auto-sync — the orchestrator falls back to the historical loud `PROMPT DRIFT` warning and runs against the stale remote prompt. Use this on experimental branches that should NOT push their prompt to the production-registered managed agent.
-
-The registry is local (per-worktree, gitignored under `.runs/`) so each worktree tracks its own remote agent version. surface_triage runs through a different code path and doesn't use the Managed Agent registry, so it's not part of the auto-sync.
+> **Historical note (do not trust stale references).** An earlier design proposed registering these as Anthropic Managed Agents with sha-checked auto-sync on drift (`.runs/agents-registry.json`, `sync_agent_and_environment`, `ANNOTATE_NO_AUTO_SYNC`). **That machinery was never wired into the shipped code** — every runner is a plain in-process `messages.create` loop reading its local prompt. If you find references to managed-agent sync / auto-sync / `ANNOTATE_NO_AUTO_SYNC` anywhere, they are stale and describe a design that doesn't exist.
 
 ### v2 is the production deep-dive path
 
-The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](scripts/surfaceome_v2_annotate.py)). v2 uses one registered Managed Agent (the synthesizer, same `surfaceome_synthesizer` registration the v1 path uses) plus in-process Sonnet calls for `plan_trim_select` + 10 block builders. The 19 in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) **do not auto-sync** — they take effect at the next local invocation, which is what we want for fast iteration. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) "Production architecture update (post-PR #38)" for the full v1/v2 trade-off table.
+The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](scripts/surfaceome_v2_annotate.py)). It runs `plan_trim_select` (dual A1/A2 literature passes) → 10 in-process block builders → the in-process synthesizer (`run_synthesizer_with_drafts` → `_run`, which reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) locally and calls `messages.create` with no tools) → derives `Filters` → assembles + publishes the record. Every prompt under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/), [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/), and [surfaceome_synthesizer/prompts/](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/) takes effect at the next local invocation — no sync. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) "Production architecture update (post-PR #38)" for the v1/v2 trade-off table.
 
-The v1 path's `surface_evidence_compiler` + `biology_compiler` Managed Agents stay registered so historical v1 runs reproduce; they are not on the production code path.
+The v1 orchestrator (`surfaceome_v1`) stays for historical reproducibility; it is not the production path. Its `_derive_filters` helper is reused by v2.
 
-**Why auto-sync matters:** the synthesizer run is ~$0.10–0.20 on Sonnet 4.6 (full deep-dive ~$2). Burning a run on a stale prompt produces a record that quietly looks like the previous schema version — easy to miss in summary stats, expensive to discover late.
+**Cost note:** a full v2 deep-dive is ~$2–3 on Sonnet 4.6 (the synthesizer step alone ~$0.10–0.20). There is **no stale-remote-prompt risk** — the local prompt is always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping the cohort.
 
 ### v2 publishes records by default — `--no-publish` to opt out
 
