@@ -145,6 +145,60 @@ def _family_populated(rec_dict: dict[str, Any]) -> bool:
     return bool(es.get("uniprot_family")) or bool(es.get("hgnc_gene_groups"))
 
 
+def _heal_family_in_place(
+    rec_dict: dict[str, Any], hgnc_id: str | None, *, sym: str
+) -> bool:
+    """Fill ``executive_summary.{hgnc_gene_groups,uniprot_family}`` from the
+    canonical resolver when the record arrives without them. Mutates
+    ``rec_dict`` in place; returns ``True`` iff it injected real tags.
+
+    The family is curator-assigned ground truth keyed on ``hgnc_id``, so
+    resolving it at publish time is equivalent to what
+    ``_attach_deterministic_families`` does at generation time — just applied
+    to EVERY write, so already-published or degraded-at-generation records
+    repair themselves on the next publish instead of needing a bespoke
+    backfill. Idempotent (re-resolves the same ground truth each time).
+
+    Resolver failure or a genuinely family-less gene leaves the record
+    untouched — the publish-time regression guard still protects populated
+    D1 rows, so this never *masks* a degraded resolver, it only *fills* when
+    the resolver is healthy.
+    """
+    if not hgnc_id:
+        return False
+    # Lazy import keeps the resolver's HTTP stack out of this module's import
+    # graph (and sidesteps any import cycle) for the common already-populated
+    # path, which never calls this.
+    try:
+        from accessible_surfaceome.tools._shared.http import open_default_client
+        from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
+
+        with open_default_client() as http:
+            bundle = resolve_by_hgnc_id(hgnc_id, http=http)
+    except Exception as exc:  # noqa: BLE001 — self-heal must never break a publish
+        logger.warning(
+            "family self-heal: resolver failed for %s (%s): %s; leaving "
+            "family empty (regression guard still applies)",
+            sym,
+            hgnc_id,
+            exc,
+        )
+        return False
+    groups = list(bundle.hgnc_gene_groups or [])
+    fam = bundle.uniprot_family
+    if not groups and not fam:
+        return False  # gene genuinely has no curated family — correct as-is
+    es = rec_dict.setdefault("executive_summary", {})
+    es["hgnc_gene_groups"] = groups
+    es["uniprot_family"] = fam
+    logger.info(
+        "family self-heal: injected %d HGNC group(s) + uniprot_family for %s",
+        len(groups),
+        sym,
+    )
+    return True
+
+
 def _fetch_existing_record(
     cfg: D1Config, gene_symbol: str, *, client: httpx.Client
 ) -> dict[str, Any] | None:
@@ -240,6 +294,16 @@ def _publish_dict(
     sym = gene.get("hgnc_symbol")
     if not sym:
         raise ValueError("record dict missing required gene.hgnc_symbol")
+
+    # Self-heal the deterministic family BEFORE writing anywhere (snapshot or
+    # D1). An old pre-injection record — or one from a worktree whose resolver
+    # was degraded at generation time — arrives with empty family tags;
+    # resolving them from the record's own hgnc_id here means no publish path
+    # (annotate / bulk sync / re-publish) can ship an empty Family bucket, and
+    # already-empty rows repair on their next publish without a bespoke
+    # backfill. Only runs when the record is missing them.
+    if not _family_populated(rec_dict):
+        _heal_family_in_place(rec_dict, gene.get("hgnc_id"), sym=sym)
 
     snap_dir = snapshot_dir or DEFAULT_SNAPSHOT_DIR
     snap_path: Path | None = None
