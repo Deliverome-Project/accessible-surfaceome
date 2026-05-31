@@ -149,18 +149,55 @@ def build_a2_kickoff() -> SearchPlan:
     )
 
 
-def build_kickoff(focus: str) -> SearchPlan:
-    """Dispatch to the per-focus deterministic kickoff builder."""
+def build_unified_kickoff() -> SearchPlan:
+    """Deterministic kickoff for the unified-ledger (focus=None) path.
 
+    Unions the A1 and A2 search sets, deduplicated on (tool, category,
+    mode, anchors). Used when no agent_focus is set — the single-agent
+    MVP path that harvests one combined ledger rather than a split A1/A2.
+    """
+
+    seen: set[tuple] = set()
+    merged: list[SearchRequest] = []
+    for req in (*build_a1_kickoff().searches, *build_a2_kickoff().searches):
+        key = (
+            req.tool,
+            req.category,
+            req.mode,
+            tuple(req.anchors) if req.anchors else None,
+        )
+        if key in seen:
+            continue
+        seen.add(key)
+        merged.append(req)
+    return SearchPlan(
+        searches=merged,
+        rationale=(
+            "Unified deterministic kickoff: A1 ∪ A2 search sets, deduplicated. "
+            "Selector iterates from observed paper inventory."
+        ),
+    )
+
+
+def build_kickoff(focus: str | None) -> SearchPlan:
+    """Dispatch to the per-focus deterministic kickoff builder.
+
+    ``focus=None`` returns the unified A1 ∪ A2 kickoff for the
+    single-agent ledger path.
+    """
+
+    if focus is None:
+        return build_unified_kickoff()
     if focus == "a1":
         return build_a1_kickoff()
     if focus == "a2":
         return build_a2_kickoff()
-    raise ValueError(f"unknown focus {focus!r}; expected 'a1' or 'a2'")
+    raise ValueError(f"unknown focus {focus!r}; expected 'a1', 'a2', or None")
 
 
 __all__ = [
     "build_a1_kickoff",
     "build_a2_kickoff",
+    "build_unified_kickoff",
     "build_kickoff",
 ]

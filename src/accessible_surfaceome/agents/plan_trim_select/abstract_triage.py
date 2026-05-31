@@ -1,13 +1,16 @@
 """Abstract triage — Haiku per-paper 3-way routing.
 
-Sits between discovery (gene2pubmed / topic_search / recent_corpus
-return paper metadata) and trim/select. For each discovered paper,
-makes a single Haiku call against the abstract to decide:
+Sits between discovery (gene2pubmed / topic_search / recent_corpus +
+evidence_retrieval in discover-only mode all return paper metadata)
+and trim/select. For each discovered paper, makes a single Haiku call
+against the abstract to decide:
 
   discard         → drop from pool
-  keep_abstract   → add as one preview clip to the pool
-  fetch_fulltext  → trigger fetch_fulltext(pmcid), let body flow
-                    through normal body-clip extraction
+  keep_abstract   → add the abstract as preview clip(s) to the pool
+  worth_fetching  → fetch the body (PMC native → PMID→PMCID eLink →
+                    Unpaywall), let it flow through normal body-clip
+                    extraction; fall back to abstract clip(s) if the
+                    body can't be retrieved
 
 This is the cheap routing step; the selector (Sonnet) no longer has
 to decide what to fetch — by the time it sees the menu, abstracts
@@ -46,10 +49,14 @@ from accessible_surfaceome.tools._shared.models import (
     Paper,
 )
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
-from accessible_surfaceome.tools.evidence_retrieval import extract_paper_drafts
+from accessible_surfaceome.tools.evidence_retrieval import (
+    _split_sentences,
+    extract_paper_drafts,
+)
 
-# Import _add_to_pool lazily inside the action layer to avoid the
-# circular import (abstract_triage is imported by runner.py).
+# runner._add_to_pool is passed in to the action layer as ``add_to_pool_fn``
+# rather than imported, so abstract_triage never imports runner (runner
+# imports abstract_triage — keeping the dependency one-directional).
 
 logger = logging.getLogger(__name__)
 
@@ -228,12 +235,22 @@ def _format_synonyms(bundle: IdentifierBundle | None) -> str:
     return ", ".join(parts)
 
 
-def _paper_source_id(paper: Paper) -> str:
+def paper_source_id(paper: Paper) -> str:
+    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>``.
+
+    This is the key both the clip pool's ``source_id`` and the triage
+    outcome's ``paper_id`` agree on, so the runner can join triage
+    outcomes back to discovered papers and to the body pool.
+    """
     if paper.pmc_id:
         return f"PMC:{paper.pmc_id}"
     if paper.pmid:
         return f"PMID:{paper.pmid}"
     return "UNKNOWN"
+
+
+# Internal alias retained for the existing call sites in this module.
+_paper_source_id = paper_source_id
 
 
 # ---------------------------------------------------------------------------
@@ -261,54 +278,88 @@ class TriageAction:
 _ABSTRACT_QUOTE_CAP = 600  # matches EvidenceClaimDraft.quote max_length
 
 
-def _truncate_to_sentence(text: str, cap: int) -> str:
-    """Truncate text to at most ``cap`` chars at the nearest sentence boundary.
+def _chunk_abstract(text: str, cap: int) -> list[str]:
+    """Greedy sentence-pack ``text`` into chunks of at most ``cap`` chars.
 
-    Falls back to a hard char truncation if no sentence boundary is found
-    in the back third of the window.
+    Packs whole sentences until the next would overflow ``cap``, then
+    starts a new chunk. A single sentence longer than ``cap`` (rare in
+    abstracts) is hard-split on a word boundary. Preserves local context
+    within each chunk so anaphora resolves — "such cells" stays adjacent
+    to the sentence it refers to, unlike a sentence-level split.
     """
-    if len(text) <= cap:
-        return text
-    window = text[:cap]
-    # Search backward for sentence-ending punctuation.
-    for end_punct in (". ", ".\n", "? ", "! "):
-        idx = window.rfind(end_punct)
-        if idx > cap * 2 // 3:
-            return window[: idx + 1].rstrip()
-    # No good boundary — hard cut, drop trailing partial word.
-    cut = window.rfind(" ")
-    if cut > cap * 2 // 3:
-        return window[:cut].rstrip()
-    return window.rstrip()
+
+    sentences = _split_sentences(text.strip())
+    chunks: list[str] = []
+    current = ""
+    for sentence in sentences:
+        sentence = sentence.strip()
+        if not sentence:
+            continue
+        if len(sentence) > cap:
+            # Flush what we have, then hard-split the long sentence.
+            if current:
+                chunks.append(current)
+                current = ""
+            start = 0
+            while start < len(sentence):
+                window = sentence[start : start + cap]
+                if start + cap < len(sentence):
+                    cut = window.rfind(" ")
+                    if cut > cap * 2 // 3:
+                        window = window[:cut]
+                chunks.append(window.strip())
+                start += len(window)
+            continue
+        candidate = f"{current} {sentence}".strip() if current else sentence
+        if len(candidate) > cap:
+            if current:
+                chunks.append(current)
+            current = sentence
+        else:
+            current = candidate
+    if current:
+        chunks.append(current)
+    return chunks
 
 
-def _abstract_clip(paper: Paper) -> EvidenceClaimDraft | None:
-    """Build the single whole-abstract clip for a keep_abstract action.
+def _abstract_clips(paper: Paper) -> list[EvidenceClaimDraft]:
+    """Build preview clip(s) from a paper's abstract for keep_abstract.
 
-    Replaces the prior sentence-split path — for paper-level routing
-    decisions, the smallest honest unit is the whole abstract. When an
-    abstract exceeds the 600-char ``quote`` cap, truncate at the nearest
-    sentence boundary; the front of a structured abstract reliably
-    carries the load-bearing finding so a single clipped clip is honest
-    enough for a preview.
+    Greedy sentence-packs the abstract into <=600-char chunks (the
+    ``EvidenceClaimDraft.quote`` cap), one draft per chunk. Most abstracts
+    yield 2-3 chunks. Earlier chunks score higher so the trim/select
+    layers see the lead (where the load-bearing finding usually sits)
+    first. All chunks tagged ``hallmark_phrase='abstract_preview'`` so
+    downstream can distinguish abstract-derived from body-derived clips.
     """
     if not paper.abstract or not paper.abstract.strip():
-        return None
+        return []
     source_id = _paper_source_id(paper)
     if source_id == "UNKNOWN":
-        return None
+        return []
     bare = source_id.split(":", 1)[-1]
-    quote = _truncate_to_sentence(paper.abstract.strip(), _ABSTRACT_QUOTE_CAP)
-    return EvidenceClaimDraft(
-        suggested_evidence_id=f"draft_{bare}_abstract",
-        quote=quote,
-        source_id=source_id,
-        section="abstract",
-        figure_or_table_id=None,
-        context_excerpt=None,
-        hallmark_phrase="abstract_preview",
-        score=1.0,
-    )
+    chunks = _chunk_abstract(paper.abstract, _ABSTRACT_QUOTE_CAP)
+    drafts: list[EvidenceClaimDraft] = []
+    n = len(chunks)
+    for i, chunk in enumerate(chunks):
+        if not chunk:
+            continue
+        # Score 2.0 → 1.0 across chunks so the lead ranks above the tail
+        # but all abstract previews sit below typical body clips.
+        score = 1.0 + (n - i) / n if n else 1.0
+        drafts.append(
+            EvidenceClaimDraft(
+                suggested_evidence_id=f"draft_{bare}_abstract_{i + 1:02d}",
+                quote=chunk,
+                source_id=source_id,
+                section="abstract",
+                figure_or_table_id=None,
+                context_excerpt=None,
+                hallmark_phrase="abstract_preview",
+                score=score,
+            )
+        )
+    return drafts
 
 
 _NCBI_ELINK = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
@@ -464,90 +515,6 @@ def _fetch_body_drafts(
     )
 
 
-def act_on_triage_outcome(
-    outcome: TriageOutcome,
-    paper: Paper,
-    *,
-    pool: dict[str, EvidenceClaimDraft],
-    by_source: dict[str, list[EvidenceClaimDraft]],
-    http: CachedHTTP,
-    retraction_index: RetractionIndex,
-    add_to_pool_fn: Any,  # passed in to avoid circular import on runner._add_to_pool
-) -> TriageAction:
-    """Apply one triage decision to the pool. Returns audit-ready action info."""
-
-    t0 = time.perf_counter()
-    paper_id = outcome.paper_id
-
-    if outcome.response is None:
-        return TriageAction(
-            paper_id=paper_id,
-            decision="error",
-            fetch_error=outcome.error,
-            elapsed_s=round(time.perf_counter() - t0, 3),
-        )
-
-    decision = outcome.response.decision
-
-    if decision == "discard":
-        return TriageAction(
-            paper_id=paper_id,
-            decision="discard",
-            elapsed_s=round(time.perf_counter() - t0, 3),
-        )
-
-    if decision == "keep_abstract":
-        clip = _abstract_clip(paper)
-        if clip is not None:
-            add_to_pool_fn(clip, pool, by_source)
-            return TriageAction(
-                paper_id=paper_id,
-                decision="keep_abstract",
-                drafts_added=1,
-                elapsed_s=round(time.perf_counter() - t0, 3),
-            )
-        return TriageAction(
-            paper_id=paper_id,
-            decision="keep_abstract",
-            drafts_added=0,
-            fetch_error="no abstract text to clip",
-            elapsed_s=round(time.perf_counter() - t0, 3),
-        )
-
-    if decision == "worth_fetching":
-        try:
-            drafts = _fetch_body_drafts(
-                paper, http=http, retraction_index=retraction_index
-            )
-            for d in drafts:
-                add_to_pool_fn(d, pool, by_source)
-            return TriageAction(
-                paper_id=paper_id,
-                decision="worth_fetching",
-                drafts_added=len(drafts),
-                fetched_body=True,
-                elapsed_s=round(time.perf_counter() - t0, 3),
-            )
-        except Exception as exc:  # noqa: BLE001
-            # Fall back to keep_abstract with audit note
-            clip = _abstract_clip(paper)
-            n_added = 0
-            if clip is not None:
-                add_to_pool_fn(clip, pool, by_source)
-                n_added = 1
-            return TriageAction(
-                paper_id=paper_id,
-                decision="worth_fetching",
-                drafts_added=n_added,
-                fetched_body=False,
-                fetch_error=f"{type(exc).__name__}: {exc}",
-                fell_back_to_abstract=n_added > 0,
-                elapsed_s=round(time.perf_counter() - t0, 3),
-            )
-
-    raise ValueError(f"unknown decision {decision!r}")
-
-
 def apply_triage_outcomes(
     outcomes: list[TriageOutcome],
     papers_by_id: dict[str, Paper],
@@ -624,22 +591,17 @@ def apply_triage_outcomes(
         if decision == "discard":
             actions.append(TriageAction(paper_id=o.paper_id, decision="discard"))
         elif decision == "keep_abstract":
-            clip = _abstract_clip(paper)
-            if clip is not None:
+            clips = _abstract_clips(paper)
+            for clip in clips:
                 add_to_pool_fn(clip, pool, by_source)
-                actions.append(
-                    TriageAction(
-                        paper_id=o.paper_id, decision="keep_abstract", drafts_added=1
-                    )
+            actions.append(
+                TriageAction(
+                    paper_id=o.paper_id,
+                    decision="keep_abstract",
+                    drafts_added=len(clips),
+                    fetch_error=None if clips else "no abstract text to clip",
                 )
-            else:
-                actions.append(
-                    TriageAction(
-                        paper_id=o.paper_id,
-                        decision="keep_abstract",
-                        fetch_error="no abstract text to clip",
-                    )
-                )
+            )
         elif decision == "worth_fetching":
             result = fetched.get(o.paper_id)
             if isinstance(result, list):
@@ -654,24 +616,22 @@ def apply_triage_outcomes(
                     )
                 )
             else:
-                # Fetch failed — fall back
-                clip = _abstract_clip(paper)
-                n_added = 0
-                if clip is not None:
+                # Fetch failed — fall back to abstract preview clip(s).
+                clips = _abstract_clips(paper)
+                for clip in clips:
                     add_to_pool_fn(clip, pool, by_source)
-                    n_added = 1
                 actions.append(
                     TriageAction(
                         paper_id=o.paper_id,
                         decision="worth_fetching",
-                        drafts_added=n_added,
+                        drafts_added=len(clips),
                         fetched_body=False,
                         fetch_error=(
                             f"{type(result).__name__}: {result}"
                             if isinstance(result, Exception)
                             else "unknown fetch result"
                         ),
-                        fell_back_to_abstract=n_added > 0,
+                        fell_back_to_abstract=len(clips) > 0,
                     )
                 )
 
@@ -683,7 +643,7 @@ __all__ = [
     "TriageAction",
     "triage_one_abstract",
     "triage_abstracts",
-    "act_on_triage_outcome",
     "apply_triage_outcomes",
+    "paper_source_id",
     "ABSTRACT_TRIAGE_PROMPT_PATH",
 ]

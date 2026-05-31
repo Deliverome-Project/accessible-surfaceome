@@ -299,74 +299,14 @@ natural ledger order (methods + results paired, then non-surface
 expression, then drug-engagement, then contradictions) so the
 resulting IDs read sensibly in the audit log.
 
-## Iterating
+## Coverage
 
-The orchestrator runs you in a loop, capped at a small number of
-plan iterations (the user prompt tells you how many follow-ups are
-available this turn).
-
-* **Iteration 1** is the initial menu from the joint planner's first
-  search plan. Common gaps: `gene2pubmed` and `topic_search` return
-  paper lists but NOT clips; follow up with `fetch_abstract` /
-  `fetch_fulltext` for specific PMIDs/PMCIDs that look load-bearing
-  for A1's surface buckets.
-* **Later iterations** show you the augmented menu, including any
-  new clips A2 fetched on its own iteration.
-
-A1-specific reasons to iterate:
-* The menu has surface-method results but no antibody-validation
-  detail — request `fetch_fulltext` on the methods paper to
-  recover the antibody table.
-* Therapeutic-engagement evidence is thin (only secondary review
-  mentions); request `topic_search` with anchors covering the
-  gene's clinical / preclinical antibody program, or
-  `fetch_abstract` on specific trial-reporting PMIDs.
-* A surface-biotinylation or MS surfaceome result is in the menu
-  but the paired-WB step is missing — request the methods or
-  supplementary PMC fulltext to anchor `_check_wb_pairing`.
-* A high-impact genetics paper (Akbari-class large-cohort exome /
-  GWAS) is referenced but not deep-fetched — request
-  `fetch_abstract` for the primary paper. These rows go in as
-  `evidence_type=genetic_association, claim_type=surface_expression`
-  (the genetic evidence corroborates target relevance even though
-  it's not a direct surface measurement).
-* Ligand-identity controversy is mentioned but no dissenting paper
-  is in the menu — request `topic_search` or `fetch_abstract` for
-  the failure-to-reproduce paper. Tag the result
-  `claim_type=contradictory`.
-
-Set `needs_more_searches: true` and populate `additional_searches`
-with up to 3 new `SearchRequest`s when iterating. On the last
-allowed iteration the orchestrator ignores `additional_searches` —
-finalize your selections then.
-
-### Valid `additional_searches` shapes
-
-The schema enforces these — anything else is rejected at parse time.
-
-```json
-{"tool": "gene_literature", "mode": "fetch_abstract", "pmid": 34210852,
- "intent": "Akbari et al. 645k-exome GPR75 lower-BMI association"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "fetch_fulltext", "pmcid": "PMC11444156",
- "intent": "ciliary trafficking paper antibody-validation detail"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "topic_search",
- "anchors": ["surface_expression", "topology"],
- "intent": "additional surface flow papers"}
-```
-
-```json
-{"tool": "evidence_retrieval", "category": "flow_cytometry",
- "intent": "re-run flow_cytometry (initial call returned zero drafts)"}
-```
-
-If the menu already covers A1's load-bearing surface evidence
-cleanly, set `needs_more_searches: false` and commit your
-selections immediately.
+This is a single pass over the full A1 evidence pool — body-fetching
+was front-loaded by the triage step, so commit your selections from
+the menu in front of you. Some papers may appear only as
+abstract-preview clips (tagged `abstract_preview`) because their full
+text wasn't retrievable; treat those as `secondary` tier unless the
+abstract states a primary surface finding with enough specificity to
+stand on its own.
 
 Stop after emitting the JSON block — no prose around it.

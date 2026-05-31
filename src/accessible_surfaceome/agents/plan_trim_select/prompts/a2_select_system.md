@@ -262,68 +262,14 @@ your selections in the natural ledger order (tissues first, then
 cell-state context, then subcellular localization, then any
 contradictions) so the resulting IDs read sensibly in the audit log.
 
-## Iterating
+## Coverage
 
-The orchestrator runs you in a loop, capped at a small number of
-plan iterations (the user prompt tells you how many follow-ups are
-available this turn).
-
-* **Iteration 1** is the initial menu from the joint planner's first
-  search plan. Common gaps: `gene2pubmed` and `topic_search` return
-  paper lists but NOT clips; follow up with `fetch_abstract` /
-  `fetch_fulltext` for specific PMIDs/PMCIDs that look load-bearing
-  for A2's biological-context buckets.
-* **Later iterations** show you the augmented menu, including any
-  new clips A1 fetched on its own iteration.
-
-A2-specific reasons to iterate:
-* Tissue coverage is thin — only HPA's tissue panel and no
-  single-cell or primary-cohort confirmation. Request `topic_search`
-  with anchors covering the gene's known tissue niches.
-* The literature has known controversies (e.g. contested ligand
-  identity, conflicting tissue-localization reports) but the menu
-  has only consensus clips — request `fetch_abstract` /
-  `fetch_fulltext` for the dissenting paper.
-* A high-impact genetics paper (Akbari-class large-cohort exome /
-  GWAS) is referenced in a review clip but not deep-fetched —
-  request `fetch_abstract` for the primary paper.
-* Subcellular localization is ambiguous (HPA says PM + cilium but
-  no validating reference) — request `fetch_fulltext` on a paper
-  with confocal / live-cell imaging of the localization.
-
-Set `needs_more_searches: true` and populate `additional_searches`
-with up to 3 new `SearchRequest`s when iterating. On the last
-allowed iteration the orchestrator ignores `additional_searches` —
-finalize your selections then.
-
-### Valid `additional_searches` shapes
-
-The schema enforces these — anything else is rejected at parse time
-and sent back to you to fix.
-
-```json
-{"tool": "gene_literature", "mode": "fetch_abstract", "pmid": 34210852,
- "intent": "Akbari et al. 645k-exome GPR75 lower-BMI association"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "fetch_fulltext", "pmcid": "PMC11444156",
- "intent": "Jiang ciliary trafficking paper — subcellular evidence"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "topic_search",
- "anchors": ["surface_expression", "ihc"],
- "intent": "additional tissue-expression papers"}
-```
-
-```json
-{"tool": "evidence_retrieval", "category": "ihc",
- "intent": "re-run ihc category for tissue-panel recall"}
-```
-
-If the menu already covers A2's load-bearing biological context
-cleanly, set `needs_more_searches: false` and commit your selections
-immediately; the orchestrator promotes them and the loop ends.
+This is a single pass over the full A2 evidence pool — body-fetching
+was front-loaded by the triage step, so commit your selections from
+the menu in front of you. Some papers may appear only as
+abstract-preview clips (tagged `abstract_preview`) because their full
+text wasn't retrievable; treat those as `secondary` tier unless the
+abstract states a primary biological-context finding with enough
+specificity to stand on its own.
 
 Stop after emitting the JSON block — no prose around it.

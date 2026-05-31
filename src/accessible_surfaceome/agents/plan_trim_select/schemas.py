@@ -185,14 +185,16 @@ class Selection(BaseModel):
 
 
 class SelectionResponse(BaseModel):
-    """Sonnet's selector output. Either commits selections or requests more
-    searches via ``additional_searches`` (iterate path)."""
+    """Sonnet's selector output — the final committed evidence selections.
+
+    Single-pass: the selector picks its rows from the menu in front of it.
+    Body-fetching is handled upstream by abstract-triage, so the selector
+    no longer requests follow-up searches (the ``needs_more_searches`` /
+    ``additional_searches`` iterate path was retired)."""
 
     model_config = ConfigDict(extra="forbid")
 
     selections: list[Selection] = Field(default_factory=list)
-    needs_more_searches: bool = False
-    additional_searches: list[SearchRequest] = Field(default_factory=list)
     notes: str = Field(
         default="",
         description="Optional one-paragraph rationale for the audit log.",
