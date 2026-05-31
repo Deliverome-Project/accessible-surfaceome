@@ -21,13 +21,18 @@ export function ChipLabelValue({
   label: string;
   value: ReactNode;
 }) {
+  // One wrapper span (not a fragment) so the parent StatusPill's flex
+  // `gap` doesn't inject extra space between label / separator / value —
+  // the gap is meant for icon↔text on other chips, not for the three
+  // pieces of a single label·value. Spacing here is controlled locally by
+  // the separator's own margins, kept tight on purpose.
   return (
-    <>
+    <span className={styles.wrap}>
       <span className={styles.label}>{label}</span>
       <span className={styles.sep} aria-hidden="true">
-        {" · "}
+        ·
       </span>
       <span className={styles.value}>{value}</span>
-    </>
+    </span>
   );
 }

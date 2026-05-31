@@ -1,13 +1,25 @@
 /* "label · VALUE" chip body. Label dim + normal weight; value bold +
    UPPERCASE at the SAME font size (no size bump) so the verdict reads
    first by weight/case, not size. */
+
+/* Single inline wrapper so the parent pill's flex `gap` can't add space
+   between the three pieces — spacing is owned here by the separator
+   margins. `inline` (not inline-flex) keeps the value's letter-spacing
+   from creating a phantom trailing gap inside the pill. */
+.wrap {
+  display: inline;
+}
+
 .label {
   font-weight: 400;
   opacity: 0.72;
 }
 
+/* Tight, symmetric spacing around the dot — replaces the old
+   " · "-with-literal-spaces + flex-gap doubling. */
 .sep {
   opacity: 0.72;
+  margin: 0 0.28em;
 }
 
 .value {
