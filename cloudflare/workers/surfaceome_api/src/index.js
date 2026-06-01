@@ -4,6 +4,9 @@
 // No auth; aggressive Cache-Control headers carry the load on edge cache.
 //
 // Endpoints:
+//   GET /v1                     — self-describing index: endpoint catalog +
+//                                  docs/skill/llms.txt links + dataset versions
+//                                  (also served at the bare service root)
 //   GET /v1/health
 //   GET /v1/genes               — list of annotated genes
 //   GET /v1/genes/:symbol       — full SurfaceomeRecord
@@ -27,7 +30,12 @@
 //                                  given run_id (default mainbench_canonical_v2).
 //                                  Single source of truth for final-figure
 //                                  predictions data; carries cost_usd + token
-//                                  counts.
+//                                  counts. Pass with_reasoning=1 to append the
+//                                  agent's verdict_reasoning + key-uncertainty
+//                                  columns (e.g. the full genome-wide sweep).
+//   GET /v1/meta/sizes          — approximate per-endpoint response sizes,
+//                                  computed live from D1 row counts + LENGTH
+//                                  sums (drives the /api docs page badges).
 //
 // Schema: cloudflare/d1_public_schema.sql.
 
@@ -856,10 +864,262 @@ const EXPORT_COLUMNS = [
   "latency_s",
 ];
 const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v2";
+// The genome-wide Sonnet/NCBI triage sweep over the full protein-coding
+// cohort (~19k genes). Used as the run_id for the genome-wide export and
+// referenced by the /v1/meta/sizes estimator.
+const GENOME_RUN_ID = "genome_full_sonnet_ncbi_v1";
+// Reasoning columns appended to the triage export when `with_reasoning=1`.
+// Default-off keeps the figure-input exports prose-free (see CLAUDE.md
+// "Figure-input TSV conventions" — never ship full reasoning in those);
+// opt-in gives the full genome-wide triage corpus with the agent's
+// free-text verdict_reasoning for a bulk download.
+const REASONING_COLUMNS = ["predicted_key_uncertainty", "verdict_reasoning"];
+
+// Self-describing endpoint catalog for the /v1 index. Kept in one place
+// so an agent that lands on the API base discovers the whole surface
+// (method + path template + summary) without scraping the docs page.
+const V1_ENDPOINTS = [
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark", summary: "147 ground-truth labels for the current bench_version" },
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/{symbol}", summary: "One gene's ground-truth label + rationale" },
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant]" },
+  { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/export.tsv", summary: "Long-format TSV of the bench multi-model sweep" },
+  { group: "Genome-wide", method: "GET", path: "/v1/catalog", summary: "Per-gene 5-DB surface-vote matrix + latest triage verdict + deep-dive flag (~19k genes)" },
+  { group: "Genome-wide", method: "GET", path: "/v1/triage/{symbol}", summary: "Every triage run for one gene, with the agent's verdict_reasoning" },
+  { group: "Genome-wide", method: "GET", path: "/v1/triage/{symbol}/{model}/{variant}", summary: "Per-cell replicate detail + computed majority" },
+  {
+    group: "Genome-wide", method: "GET", path: "/v1/triage/export.tsv",
+    summary: "Long-format TSV of all triage runs for a run_id; per-source DB votes + uniprot_acc joined server-side",
+    params: {
+      run_id: `default ${DEFAULT_EXPORT_RUN_ID}; pass ${GENOME_RUN_ID} for the full ~19k-gene Sonnet sweep`,
+      replicate: "int (optional)",
+      with_reasoning: "1 to append predicted_key_uncertainty + verdict_reasoning columns",
+    },
+  },
+  { group: "Deep dive", method: "GET", path: "/v1/health", summary: "Liveness + n_annotations" },
+  { group: "Deep dive", method: "GET", path: "/v1/genes", summary: "Index of genes with a deep-dive SurfaceomeRecord" },
+  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON" },
+  { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
+  { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
+  { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
+];
+
+// Self-describing API index (HATEOAS-lite). Served at `/v1` and at the
+// bare service root so an agent can discover every endpoint + the docs,
+// the downloadable skill, llms.txt, the record schema, and the live
+// dataset versions in one request. Version lookups are wrapped so a cold
+// DB still returns the static catalog.
+async function handleV1Index(env) {
+  let versions = null;
+  try {
+    const ann = await env.DB.prepare("SELECT COUNT(*) AS n FROM surface_annotation").first();
+    const bench = await env.DB.prepare(
+      `SELECT bench_version FROM benchmark_version
+        WHERE truth_verdict IS NOT NULL AND truth_verdict != ''
+        GROUP BY bench_version ORDER BY COUNT(*) DESC, MAX(created_at) DESC LIMIT 1`
+    ).first();
+    const uni = await env.DB.prepare(
+      "SELECT universe_version FROM candidate_universe_release ORDER BY loaded_at DESC LIMIT 1"
+    ).first();
+    versions = {
+      n_annotations: ann?.n ?? 0,
+      bench_version: bench?.bench_version ?? null,
+      universe_version: uni?.universe_version ?? null,
+    };
+  } catch {
+    versions = null;
+  }
+  return json(
+    {
+      service: "surfaceome",
+      description:
+        "Public read-only API for the Deliverome surfaceome catalogue: deep-dive SurfaceomeRecords, genome-wide DB-vote + LLM triage verdicts, and the SurfaceBench eval. No auth; CORS open to all origins.",
+      base_url: "https://api.deliverome.org/surfaceome/v1",
+      docs: "https://surfaceome.deliverome.org/api",
+      skill: "https://surfaceome.deliverome.org/surfaceome-api.skill.md",
+      llms_txt: "https://surfaceome.deliverome.org/llms.txt",
+      record_markdown_template: "https://surfaceome.deliverome.org/data/surfaceome/{symbol}.md",
+      schema: {
+        name: "SurfaceomeRecord",
+        source: "src/accessible_surfaceome/tools/_shared/models.py",
+        validates: "/v1/genes/{symbol}",
+      },
+      conventions: {
+        stable_ids: "Key downstream lookups on hgnc_id / uniprot_acc / ensembl_gene, not the bare symbol.",
+        verdict_values: ["yes", "contextual", "no"],
+        missing_fields: "Absent fields are omitted on the wire; read with optional-chaining / ?? null.",
+        caching: "List endpoints max-age=60; per-gene records / benchmark / orthologs max-age=86400.",
+      },
+      endpoints: V1_ENDPOINTS,
+      versions,
+      generated_at: new Date().toISOString(),
+    },
+    { ttl: CACHE_TTL_SHORT },
+  );
+}
+
+
+// Approximate, D1-derived response size for every endpoint. The /api
+// docs page renders these as live byte counts so they track the corpus
+// as it grows instead of hand-maintained "~2 MB" strings. APPROXIMATE:
+// variable-length text is summed exactly from D1 (LENGTH(...)); the
+// fixed structural overhead of JSON (keys/quotes/commas/braces) and TSV
+// (tabs/newlines) is added via the documented per-row constants below.
+// Cheap aggregate queries only — no endpoint payload is materialized.
+async function handleMetaSizes(env) {
+  // surface_annotation → /v1/genes, /v1/genes/{symbol}, /v1/health
+  const sa = await env.DB.prepare(
+    `SELECT COUNT(*) AS n,
+            COALESCE(AVG(LENGTH(annotation_json)), 0) AS rec_avg,
+            COALESCE(SUM(
+              LENGTH(gene_symbol) + LENGTH(IFNULL(uniprot_acc,'')) +
+              LENGTH(IFNULL(schema_version,'')) + LENGTH(IFNULL(confidence,'')) +
+              LENGTH(IFNULL(triage_signal,'')) + LENGTH(IFNULL(surface_status,'')) +
+              LENGTH(IFNULL(annotated_at,''))
+            ), 0) AS list_chars
+       FROM surface_annotation`
+  ).first();
+
+  // candidate_universe_public → /v1/catalog (pinned to latest universe)
+  const rel = await env.DB.prepare(
+    `SELECT universe_version FROM candidate_universe_release ORDER BY loaded_at DESC LIMIT 1`
+  ).first();
+  const cat = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM candidate_universe_public WHERE universe_version = ?`
+  ).bind(rel?.universe_version ?? "").first();
+
+  // triage_run_public grouped by the two export run_ids → export TSV sizes
+  const trByRun = await env.DB.prepare(
+    `SELECT run_id, COUNT(*) AS n,
+            COALESCE(SUM(
+              LENGTH(gene_symbol) + LENGTH(IFNULL(uniprot_acc,'')) +
+              LENGTH(IFNULL(hgnc_id,'')) + LENGTH(IFNULL(ensembl_gene,'')) +
+              LENGTH(IFNULL(model,'')) + LENGTH(IFNULL(prompt_variant,'')) +
+              LENGTH(IFNULL(predicted_verdict,'')) + LENGTH(IFNULL(predicted_reason,'')) +
+              LENGTH(IFNULL(predicted_confidence,'')) + 24
+            ), 0) AS export_chars,
+            COALESCE(SUM(
+              LENGTH(IFNULL(verdict_reasoning,'')) + LENGTH(IFNULL(predicted_key_uncertainty,''))
+            ), 0) AS reasoning_chars
+       FROM triage_run_public
+      WHERE run_id IN (?, ?)
+      GROUP BY run_id`
+  ).bind(DEFAULT_EXPORT_RUN_ID, GENOME_RUN_ID).all();
+  const byRun = {};
+  for (const r of trByRun.results) byRun[r.run_id] = r;
+  const mainbench = byRun[DEFAULT_EXPORT_RUN_ID] || { n: 0, export_chars: 0, reasoning_chars: 0 };
+  const genome = byRun[GENOME_RUN_ID] || { n: 0, export_chars: 0, reasoning_chars: 0 };
+
+  // overall per-gene triage payload (all run_ids) → /v1/triage/{symbol}
+  const trAll = await env.DB.prepare(
+    `SELECT COUNT(*) AS n, COUNT(DISTINCT gene_symbol) AS g,
+            COALESCE(SUM(
+              LENGTH(IFNULL(verdict_reasoning,'')) + LENGTH(IFNULL(predicted_reason,'')) +
+              LENGTH(IFNULL(predicted_key_uncertainty,'')) + 120
+            ), 0) AS chars
+       FROM triage_run_public`
+  ).first();
+
+  // benchmark_version → /v1/benchmark, /v1/benchmark/{symbol}, matrix/export
+  const bv = await env.DB.prepare(
+    `SELECT bench_version FROM benchmark_version ORDER BY bench_version DESC LIMIT 1`
+  ).first();
+  const bench = await env.DB.prepare(
+    `SELECT COUNT(*) AS n,
+            COALESCE(SUM(
+              LENGTH(gene_symbol) + LENGTH(IFNULL(uniprot_acc,'')) + LENGTH(IFNULL(class,'')) +
+              LENGTH(IFNULL(truth_verdict,'')) + LENGTH(IFNULL(truth_signal,'')) +
+              LENGTH(IFNULL(truth_reason,'')) + LENGTH(IFNULL(rationale,''))
+            ), 0) AS chars
+       FROM benchmark_version WHERE bench_version = ?`
+  ).bind(bv?.bench_version ?? "").first();
+
+  // compara_ortholog → /v1/orthologs/{symbol} (avg rows per human gene)
+  const orth = await env.DB.prepare(
+    `SELECT COUNT(*) AS n, COUNT(DISTINCT human_gene_symbol) AS g
+       FROM compara_ortholog
+      WHERE release_version =
+            (SELECT release_version FROM compara_release ORDER BY fetched_at DESC LIMIT 1)`
+  ).first();
+
+  // Per-row structural-overhead constants (documented approximations).
+  const GENES_ROW = 95;    // JSON keys/quotes/commas per /v1/genes row
+  const CATALOG_ROW = 230; // compact JSON per /v1/catalog row
+  const BENCH_ROW = 110;   // JSON keys per /v1/benchmark row
+  const ORTH_ROW = 180;    // JSON per ortholog row
+  // Joined id/db columns added to the export beyond EXPORT_COLUMNS.
+  const EXPORT_NCOLS = EXPORT_COLUMNS.length + 6;
+  const r0 = (x) => Math.max(0, Math.round(x));
+
+  const endpoints = {
+    "/v1/health": {
+      bytes: JSON.stringify({ ok: true, n_annotations: sa.n }).length,
+      approx: false,
+    },
+    "/v1/genes": { bytes: r0(sa.list_chars + sa.n * GENES_ROW + 30), approx: true },
+    "/v1/genes/{SYMBOL}": { bytes: r0(sa.rec_avg), approx: true, note: "average record" },
+    "/v1/catalog": { bytes: r0(cat.n * CATALOG_ROW + 120), approx: true },
+    "/v1/triage/{SYMBOL}": {
+      bytes: trAll.g ? r0(trAll.chars / trAll.g + 400) : 0,
+      approx: true,
+      note: "average gene",
+    },
+    "/v1/triage/export.tsv": {
+      bytes: r0(mainbench.export_chars + mainbench.n * EXPORT_NCOLS),
+      approx: true,
+      note: DEFAULT_EXPORT_RUN_ID,
+    },
+    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1": {
+      bytes: r0(genome.export_chars + genome.n * EXPORT_NCOLS),
+      approx: true,
+      note: GENOME_RUN_ID,
+    },
+    "/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&with_reasoning=1": {
+      bytes: r0(genome.export_chars + genome.reasoning_chars + genome.n * (EXPORT_NCOLS + 2)),
+      approx: true,
+      note: `${GENOME_RUN_ID} + reasoning`,
+    },
+    "/v1/benchmark": { bytes: r0(bench.chars + bench.n * BENCH_ROW + 60), approx: true },
+    "/v1/benchmark/{SYMBOL}": {
+      bytes: bench.n ? r0(bench.chars / bench.n + BENCH_ROW) : 0,
+      approx: true,
+      note: "single label",
+    },
+    "/v1/benchmark/export.tsv": {
+      bytes: r0(mainbench.export_chars + mainbench.reasoning_chars + mainbench.n * (EXPORT_NCOLS + 4)),
+      approx: true,
+    },
+    "/v1/benchmark/matrix": {
+      bytes: r0(bench.chars + mainbench.export_chars + mainbench.reasoning_chars + bench.n * 400),
+      approx: true,
+    },
+    "/v1/orthologs/{SYMBOL}": {
+      bytes: orth.g ? r0((orth.n / orth.g) * ORTH_ROW + 80) : 0,
+      approx: true,
+      note: "average gene",
+    },
+  };
+
+  return json(
+    {
+      generated_at: new Date().toISOString(),
+      bench_version: bv?.bench_version ?? null,
+      universe_version: rel?.universe_version ?? null,
+      endpoints,
+    },
+    { ttl: CACHE_TTL_SHORT },
+  );
+}
+
 
 async function handleTriageExport(env, url) {
   const runId = url.searchParams.get("run_id") || DEFAULT_EXPORT_RUN_ID;
   const replicate = url.searchParams.get("replicate");
+  // Opt-in: append the agent's free-text reasoning columns. Off by
+  // default so the figure-input export stays prose-free.
+  const withReasoning = ["1", "true", "yes"].includes(
+    (url.searchParams.get("with_reasoning") || "").toLowerCase()
+  );
+  const extraCols = withReasoning ? REASONING_COLUMNS : [];
 
   // Pin DB votes to the latest universe_version (same rule the
   // catalog handler uses).
@@ -888,7 +1148,7 @@ async function handleTriageExport(env, url) {
     `       COALESCE(c.cspa_surface_flag, 0)    AS db_cspa,`,
     `       COALESCE(c.hpa_surface_flag, 0)     AS db_hpa,`,
     `       COALESCE(c.n_sources_surface, 0)    AS n_db_surface,`,
-    `       ${EXPORT_COLUMNS.slice(1).map((c) => `t.${c}`).join(", ")}`,
+    `       ${[...EXPORT_COLUMNS.slice(1), ...extraCols].map((c) => `t.${c}`).join(", ")}`,
     `  FROM triage_run_public t`,
     `  LEFT JOIN gene_identifier_public gi`,
     `         ON gi.hgnc_symbol = t.gene_symbol`,
@@ -911,6 +1171,7 @@ async function handleTriageExport(env, url) {
     "gene_symbol", "uniprot_acc", "hgnc_id", "ensembl_gene",
     "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
     ...EXPORT_COLUMNS.slice(1),
+    ...extraCols,
   ];
   const headers = cols.join("\t");
   const body = rs.results
@@ -1561,6 +1822,7 @@ export default {
       return json({ error: "method_not_allowed" }, { status: 405, ttl: 0 });
     }
 
+    if (path === "/v1" || path === "") return handleV1Index(env);
     if (path === "/v1/health") return handleHealth(env);
     if (path === "/v1/genes") return handleGeneList(env);
     if (path === "/v1/catalog") return handleCatalog(env, request);
@@ -1568,6 +1830,7 @@ export default {
     if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
     if (path === "/v1/benchmark/export.tsv") return handleBenchmarkExport(env);
     if (path === "/v1/triage/export.tsv") return handleTriageExport(env, url);
+    if (path === "/v1/meta/sizes") return handleMetaSizes(env);
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 

@@ -92,8 +92,11 @@ CREATE INDEX IF NOT EXISTS idx_benchmark_version_uniprot
 -- but external reproducibility of figures like benchmark_cost_vs_accuracy
 -- requires those exact fields — and there's no security reason to gate
 -- aggregate per-model cost data for an LLM eval that is itself public.
--- (Raw prompt text + verdict_reasoning + raw_text stay private; only
--- per-call cost telemetry leaves.)
+-- (Raw prompt text + raw_text stay private. verdict_reasoning IS
+-- mirrored here — it's served per-gene at /v1/triage/:symbol and in
+-- the bulk triage export when with_reasoning=1, so the genome-wide
+-- agent reasoning is public; only the raw prompt/response text
+-- distinguishes private from public.)
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS triage_run_public (
