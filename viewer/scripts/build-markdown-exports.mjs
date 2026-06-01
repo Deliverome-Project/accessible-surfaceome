@@ -567,7 +567,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push("|---|---|---|---|---|");
     for (const t of bc.tissues) {
       lines.push(
-        `| ${t.tissue} | ${prettyEnum(t.disease_context)} | ${prettyEnum(t.present)} | ${t.cell_types.join(", ") || "—"} | ${t.cell_states.join(", ") || "—"} |`,
+        `| ${t.tissue} | ${prettyEnum(t.disease_context)}${t.disease_label ? ` (${t.disease_label})` : ""} | ${prettyEnum(t.present)} | ${t.cell_types.join(", ") || "—"} | ${t.cell_states.join(", ") || "—"} |`,
       );
     }
     lines.push("");
