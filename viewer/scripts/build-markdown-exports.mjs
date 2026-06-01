@@ -249,12 +249,21 @@ function pushRiskBlock(lines, title, block) {
     lines.push(`- ECD class: ${prettyEnum(block.ecd_accessibility_class)}`);
   if ("rationale" in block && block.rationale)
     lines.push(`- rationale: ${block.rationale}`);
+  if ("cited_evidence_ids" in block && block.cited_evidence_ids?.length)
+    lines.push(`- cites: ${block.cited_evidence_ids.join(", ")}`);
   lines.push("");
 }
 
 // "N aa" or em-dash for the combined homolog table cells.
 function aaOrDash(v) {
   return v == null ? "—" : `${v} aa`;
+}
+
+// Compact citation-id suffix — " *(cites: a1_evi_03, a1_evi_04)*" or "".
+function citeIds(ids, max = 8) {
+  if (!ids || !ids.length) return "";
+  const shown = ids.slice(0, max).join(", ");
+  return ` *(cites: ${shown}${ids.length > max ? `, +${ids.length - max}` : ""})*`;
 }
 
 // ECD-identity tiers — same cutoffs the viewer's IsoformsCard uses.
@@ -339,6 +348,23 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push("");
   lines.push(e.one_paragraph);
   lines.push("");
+  // Family / classification — curated UniProt family + HGNC gene group(s) +
+  // the model's functional class (what the viewer renders as family chips).
+  const famBits = [
+    e.uniprot_family && `UniProt family: ${e.uniprot_family}`,
+    e.hgnc_gene_groups?.length &&
+      `HGNC gene group(s): ${e.hgnc_gene_groups.join("; ")}`,
+    e.llm_family && `functional class: ${prettyEnum(e.llm_family)}`,
+  ].filter(Boolean);
+  if (famBits.length) {
+    lines.push(`**Family / classification** — ${famBits.join(" · ")}.`);
+    lines.push("");
+  }
+  // Upstream triage (first-pass Sonnet) reasoning behind the triage signal.
+  if (rec.triage_reasoning) {
+    lines.push(`**Triage first-pass reasoning** — ${rec.triage_reasoning}`);
+    lines.push("");
+  }
 
   // --- Filters ---
   const f = rec.filters;
@@ -379,6 +405,32 @@ function md(rec, structureData, sequences, afdbEntry) {
     `| Topology | TM=${ct.tm_helix_count} · N-term-ECF=${f.n_term_extracellular} · C-term-ECF=${f.c_term_extracellular} |`,
   );
   lines.push("");
+  // Facet rationales — the one-line "why" the viewer shows as expandable
+  // reasoning under each Summary-metrics chip.
+  const facetRationales = [
+    ["Expression level", f.expression_level_rationale],
+    ["Expression breadth", f.expression_breadth_rationale],
+    ["Surface specificity", f.surface_specificity_rationale],
+    ["Known ligand", f.has_known_ligand_rationale],
+    ["Low endogenous expression", f.low_endogenous_expression_rationale],
+    [
+      "Overexpression surface localization",
+      f.overexpression_surface_localization_observed_rationale,
+    ],
+  ].filter(([, v]) => v);
+  if (facetRationales.length) {
+    lines.push("**Facet rationales**");
+    lines.push("");
+    for (const [label, val] of facetRationales)
+      lines.push(`- *${label}*: ${val}`);
+    lines.push("");
+  }
+  // Cutoff provenance for the banded facets (the thresholds + citations the
+  // viewer tooltips carry).
+  lines.push(
+    "**Cutoffs.** ECD size: large ≥200 aa · moderate 60–199 · small 30–59 · minimal <30 (one antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å², [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)). Evidence density: high ≥30 supporting rows · moderate ≥10 · low <10. Ortholog ECD identity: ≥85% high · 60–85% intermediate · <60% higher-risk. Paralog ECD identity: >80% multitarget-likely · 60–80% caution · <60% lower-risk ([PMID 33170010](https://pubmed.ncbi.nlm.nih.gov/33170010/)).",
+  );
+  lines.push("");
 
   // --- Surface evidence ---
   const se = rec.surface_evidence;
@@ -388,6 +440,20 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push("");
   lines.push(`${se.grade_rationale}`);
   lines.push("");
+  // Per-claim stance accounting behind the grade — the structured anatomy
+  // (supports / contradicts / tangential, with weight) under the prose.
+  if (se.claim_stances?.length) {
+    lines.push("**Claim stances** *(what the grade weighs)*");
+    lines.push("");
+    lines.push("| Claim | Stance | Weight | Note |");
+    lines.push("|---|---|---|---|");
+    for (const cs of se.claim_stances) {
+      lines.push(
+        `| ${cs.claim_id} | ${prettyEnum(cs.stance)} | ${prettyEnum(cs.weight)} | ${cs.note ?? "—"} |`,
+      );
+    }
+    lines.push("");
+  }
   // Group method observations by assay family (mirrors the viewer).
   const familyBuckets = new Map();
   for (const m of se.methods) {
@@ -439,6 +505,25 @@ function md(rec, structureData, sequences, afdbEntry) {
         }
         lines.push("");
       }
+      // Overexpression construct details — load-bearing for whether an
+      // OE-positive result can ground a *native*-surface claim (did it use
+      // the native signal peptide? what tag / cell line?).
+      if (m.overexpression) {
+        const ox = m.overexpression;
+        const oxBits = [
+          ox.signal_peptide_source &&
+            `SP source: ${prettyEnum(ox.signal_peptide_source)}`,
+          ox.signal_peptide_detail,
+          ox.construct_tag && `tag: ${ox.construct_tag}`,
+          ox.cell_line && `cell line: ${ox.cell_line}`,
+        ].filter(Boolean);
+        if (oxBits.length) {
+          lines.push(
+            `*Overexpression construct* — ${oxBits.join(" · ")}.${citeIds(ox.cited_evidence_ids)}`,
+          );
+          lines.push("");
+        }
+      }
     }
   }
   if (se.non_surface_expression.length) {
@@ -487,8 +572,55 @@ function md(rec, structureData, sequences, afdbEntry) {
     }
     lines.push("");
   }
-  lines.push(`**Primary subcellular compartment**: ${prettyEnum(bc.subcellular_localization.primary_compartment)}`);
+  // Orthogonal cell-type + cell-state pivots (alternative to the tissue index).
+  if (bc.cell_types?.length) {
+    lines.push("**Cell types** *(orthogonal cell-type index)*");
+    lines.push("");
+    lines.push("| Cell type | Ontology | Present in tissues | Species | Cites |");
+    lines.push("|---|---|---|---|---|");
+    for (const c of bc.cell_types) {
+      lines.push(
+        `| ${c.cell_type} | ${c.ontology_id ?? "—"} | ${(c.present_in_tissues || []).join(", ") || "—"} | ${prettyEnum(c.species)} | ${(c.cited_evidence_ids || []).length} |`,
+      );
+    }
+    lines.push("");
+  }
+  if (bc.cell_states?.length) {
+    lines.push("**Cell states**");
+    lines.push("");
+    for (const s of bc.cell_states) {
+      lines.push(`- *${s.state}* — ${s.descriptor}${citeIds(s.cited_evidence_ids)}`);
+    }
+    lines.push("");
+  }
+  const sl = bc.subcellular_localization;
+  lines.push(
+    `**Primary subcellular compartment**: ${prettyEnum(sl.primary_compartment)}`,
+  );
   lines.push("");
+  if (sl.dual_localization?.length) {
+    lines.push("**Dual localization**");
+    lines.push("");
+    for (const d of sl.dual_localization) {
+      const bits = [
+        prettyEnum(d.compartment),
+        d.fraction_estimate != null
+          ? `~${(d.fraction_estimate * 100).toFixed(0)}%`
+          : null,
+        d.condition,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      lines.push(`- ${bits}${citeIds(d.cited_evidence_ids)}`);
+    }
+    lines.push("");
+  }
+  if (sl.membrane_subdomains?.length) {
+    lines.push(
+      `**Membrane subdomains**: ${sl.membrane_subdomains.map((s) => prettyEnum(s.subdomain)).join(", ")}`,
+    );
+    lines.push("");
+  }
   if (bc.anatomical_accessibility.length) {
     lines.push("**Anatomical accessibility**");
     lines.push("");
@@ -504,7 +636,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push("");
     for (const m of bc.accessibility_modulation) {
       lines.push(
-        `- *${prettyEnum(m.category)}*${m.cell_state_trigger ? ` · trigger: ${prettyEnum(m.cell_state_trigger)}` : ""}${m.restricted_lineage ? ` · lineage: ${prettyEnum(m.restricted_lineage)}` : ""}: ${m.baseline_context} → ${m.modulating_state} — ${m.change}`,
+        `- *${prettyEnum(m.category)}*${m.cell_state_trigger ? ` · trigger: ${prettyEnum(m.cell_state_trigger)}` : ""}${m.restricted_lineage ? ` · lineage: ${prettyEnum(m.restricted_lineage)}` : ""}: ${m.baseline_context} → ${m.modulating_state} — ${m.change}${m.accessibility_implication ? ` *(→ ${prettyEnum(m.accessibility_implication)})*` : ""}${citeIds(m.cited_evidence_ids)}`,
       );
     }
     lines.push("");
@@ -540,15 +672,15 @@ function md(rec, structureData, sequences, afdbEntry) {
   );
   lines.push("");
   lines.push(
-    "| Kind | Variant | UniProt | %identity | ECD %id | TM | ECD len | ICD len | Signal pep | N-term | Tier |",
+    "| Kind | Variant | UniProt | %identity | ECD %id | TM | ECD len | ICD len | Signal pep | N→C term | Tier |",
   );
   lines.push("|---|---|---|---|---|---|---|---|---|---|---|");
   lines.push(
-    `| Isoform | **canonical** | ${g.uniprot_acc} | ref | ref | ${ct.tm_helix_count} | ${aaOrDash(ct.ecd_length_residues)} | ${aaOrDash(ct.icd_length_residues)} | ${aaOrDash(ct.signal_peptide_length)} | ${prettyEnum(ct.n_terminal_orientation)} | — |`,
+    `| Isoform | **canonical** | ${g.uniprot_acc} | ref | ref | ${ct.tm_helix_count} | ${aaOrDash(ct.ecd_length_residues)} | ${aaOrDash(ct.icd_length_residues)} | ${aaOrDash(ct.signal_peptide_length)} | ${prettyEnum(ct.n_terminal_orientation)}→${prettyEnum(ct.c_terminal_orientation)} | — |`,
   );
   for (const iso of df.isoform_topologies) {
     lines.push(
-      `| Isoform | ${iso.isoform_id} | ${iso.uniprot_acc} | ${fmtPct(iso.full_length_pct_identity_to_canonical)} | ${fmtPct(iso.ecd_pct_identity_to_canonical)} | ${iso.tm_helix_count} | ${aaOrDash(iso.ecd_length_residues)} | ${aaOrDash(iso.icd_length_residues)} | ${aaOrDash(iso.signal_peptide_length)} | ${prettyEnum(iso.n_terminal_orientation)} | — |`,
+      `| Isoform | ${iso.isoform_id} | ${iso.uniprot_acc} | ${fmtPct(iso.full_length_pct_identity_to_canonical)} | ${fmtPct(iso.ecd_pct_identity_to_canonical)} | ${iso.tm_helix_count} | ${aaOrDash(iso.ecd_length_residues)} | ${aaOrDash(iso.icd_length_residues)} | ${aaOrDash(iso.signal_peptide_length)} | ${prettyEnum(iso.n_terminal_orientation)}→${prettyEnum(iso.c_terminal_orientation)} | — |`,
     );
   }
   for (const species of ["mouse", "cynomolgus"]) {
@@ -566,7 +698,7 @@ function md(rec, structureData, sequences, afdbEntry) {
   );
   for (const p of sortedParalogs) {
     lines.push(
-      `| Paralog | ${p.paralog_symbol} | [${p.paralog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}) | ${fmtPct(p.full_length_pct_identity)} | ${fmtPct(p.ecd_pct_identity)} | ${p.tm_helix_count ?? "—"} | ${aaOrDash(p.ecd_length_residues)} | ${aaOrDash(p.icd_length_residues)} | ${aaOrDash(p.signal_peptide_length)} | ${p.n_terminal_orientation ? prettyEnum(p.n_terminal_orientation) : "—"} | ${paralogTier(p.ecd_pct_identity ?? p.full_length_pct_identity)} |`,
+      `| Paralog | ${p.paralog_symbol} | [${p.paralog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}) | ${fmtPct(p.full_length_pct_identity)} | ${fmtPct(p.ecd_pct_identity)} | ${p.tm_helix_count ?? "—"} | ${aaOrDash(p.ecd_length_residues)} | ${aaOrDash(p.icd_length_residues)} | ${aaOrDash(p.signal_peptide_length)} | ${p.n_terminal_orientation ? `${prettyEnum(p.n_terminal_orientation)}→${prettyEnum(p.c_terminal_orientation)}` : "—"} | ${paralogTier(p.ecd_pct_identity ?? p.full_length_pct_identity)} |`,
     );
   }
   lines.push("");
@@ -586,6 +718,10 @@ function md(rec, structureData, sequences, afdbEntry) {
   pushRiskBlock(lines, "Secreted form", r.secreted_form);
   pushRiskBlock(lines, "ECD size assessment", r.ecd_size_assessment);
   pushRiskBlock(lines, "Epitope masking", r.epitope_masking);
+  lines.push(
+    "**Definitions.** *Shed form* — ectodomain proteolytically released, competing with the surface form for binder occupancy. *Secreted form* — an alternative isoform secreted as free soluble protein (not EV-enclosed). *Epitope masking* — the targetable surface is shielded (partner heterodimerization, glycan shield, or conformational hiding). *ECD size class* — large ≥200 aa · moderate 60–199 · small 30–59 · minimal <30 (one antibody footprint ≈ 12 ± 3 residues, [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)).",
+  );
+  lines.push("");
 
   // --- Structure summary ---
   const s = df.structure;
@@ -605,6 +741,10 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push("");
   lines.push(
     `Structure data from [AlphaFold DB](${alphafoldEntryUrl(g.uniprot_acc)}) · ${s.attribution} · licensed [${s.license}](https://creativecommons.org/licenses/by/4.0/)${s.citations.length ? ` · cite ${s.citations.map((c) => `\`${c}\``).join("; ")}` : ""}.`,
+  );
+  lines.push("");
+  lines.push(
+    "*pLDDT bands: >90 very high · 70–90 confident · 50–70 low · <50 very low. ECD-restricted metrics average only the extracellular (`O`) residues; disordered fraction = share of ECD residues with pLDDT < 70.*",
   );
   lines.push("");
 
@@ -690,6 +830,10 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push("");
     lines.push(
       `Anchor = patch-center residue; BSA = buried surface area (the contact footprint a binder would form on the patch); seed counts are docked binder backbones split by α-helix / β-strand.`,
+    );
+    lines.push("");
+    lines.push(
+      "**Reading the scores.** BSA vs the average antibody–antigen interface ≈ 1103 ± 244 Å² ([PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)): ≥1500 Å² comfortable · 850–1500 workable · <850 thin. Seed pool: ≥1000 comfortable design margin · ≥100 workable · <100 thin/specialized. SURFACE-Bind excludes transmembrane regions but not necessarily intracellular domains — cross-check the anchor residue against the topology string in §5/appendix (`O` = extracellular/antibody-accessible, `I` = intracellular).",
     );
     lines.push("");
     lines.push(
@@ -782,8 +926,26 @@ function md(rec, structureData, sequences, afdbEntry) {
       }
     }
     lines.push(
-      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}* — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
+      `- \`${ev.evidence_id}\` · *${prettyEnum(ev.evidence_tier)}*${ev.direction ? ` · ${prettyEnum(ev.direction)}` : ""}${ev.claim_type ? ` · ${prettyEnum(ev.claim_type)}` : ""} — ${ev.claim}${linkParts.length ? ` (${linkParts.join(" · ")})` : ""}`,
     );
+    // Assay context — species / cell type / live-vs-fixed / permeabilization,
+    // so a reader can tell which claims are human vs. mouse, live vs. fixed.
+    const ac = ev.assay_context;
+    if (ac) {
+      const acBits = [
+        ac.species && prettyEnum(ac.species),
+        ac.cell_type_or_line,
+        ac.fixation,
+        ac.permeabilized != null
+          ? ac.permeabilized
+            ? "permeabilized"
+            : "non-permeabilized"
+          : null,
+      ]
+        .filter(Boolean)
+        .join(" · ");
+      if (acBits) lines.push(`  - *assay*: ${acBits}`);
+    }
     if (ev.spans?.[0]?.text) {
       lines.push(`  > "${ev.spans[0].text}"`);
     }
