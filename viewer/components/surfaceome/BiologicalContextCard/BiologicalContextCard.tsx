@@ -7,7 +7,6 @@ import { prettyEnum } from "../../../lib/surfaceome";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
-import { SearchChips } from "../SearchChips/SearchChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./BiologicalContextCard.module.css";
@@ -104,10 +103,6 @@ export function BiologicalContextCard({ rec, n }: Props) {
       title="Localization & accessibility context"
       meta="Accessibility modulation · subcellular localization · anatomical accessibility"
     >
-      {/* The A2 (biology-context) agent's searches that produced this
-          section — deterministic sweeps + its planned topic queries. */}
-      <SearchChips searchLog={rec.search_log} focus="a2" />
-
       {/* Localization at-a-glance — primary compartment + the non-primary
           compartments the protein is ALSO found in (endosome / lysosome / …).
           Surfaced in the accessibility-context header, not only in the

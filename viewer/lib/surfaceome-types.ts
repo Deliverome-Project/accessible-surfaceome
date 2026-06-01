@@ -1167,20 +1167,10 @@ export interface Evidence {
   duplicate_of?: string | null;
 }
 
-/** One source consultation the orchestrator logged during a deep-dive run
- *  (mirrors Pydantic `SearchEntry`). The viewer surfaces these as the
- *  "Searches run" chip strips so a reader can see which queries — the
- *  deterministic assay sweeps AND the agent's planned topic searches —
- *  produced a card's evidence. `query.agent_focus` ("a1" | "a2") routes
- *  each entry to the card it feeds (A1 → Surface evidence, A2 → Biology). */
 export interface SearchEntry {
-  tool: string; // "gene_lookup" | "gene_literature" | "evidence_retrieval" | …
-  mode?: string | null; // tool-specific, e.g. "gene2pubmed", "flow_cytometry"
-  query: Record<string, unknown>; // { agent_focus, intent, category?, pmid?, … }
-  n_results?: number;
-  sources_seen?: string[];
-  retrieved_at: string;
-  contributed_evidence_ids?: string[];
+  query: string;
+  count?: number;
+  notes?: string | null;
 }
 
 // ============================================================
