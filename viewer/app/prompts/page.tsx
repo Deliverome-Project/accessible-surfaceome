@@ -307,6 +307,37 @@ function extractToc(body: string): TocItem[] {
   return out;
 }
 
+/** A top-level outline entry plus its deeper sub-headings. */
+interface TocNode {
+  item: TocItem;
+  children: TocItem[];
+}
+
+/** Group the flat heading list into a one-level-deep tree for the side
+ *  outline: the shallowest heading level becomes the always-visible
+ *  "top" entries, and every deeper heading nests under the most recent
+ *  top entry (rendered in a collapsed <details> the reader can expand).
+ *
+ *  The markdown H1 (the prompt's own title) is dropped first — it
+ *  duplicates the card heading above the body, so showing it in the
+ *  outline is noise. After that the shallowest REMAINING level is the
+ *  top tier, which adapts to prompts that start at H1+H2 (methods
+ *  builder) vs ones whose title is already H2 (accessibility modulation). */
+function groupToc(items: TocItem[]): TocNode[] {
+  const body = items.filter((i) => i.level > 1);
+  if (body.length === 0) return [];
+  const top = Math.min(...body.map((i) => i.level));
+  const nodes: TocNode[] = [];
+  for (const i of body) {
+    if (i.level === top || nodes.length === 0) {
+      nodes.push({ item: i, children: [] });
+    } else {
+      nodes[nodes.length - 1].children.push(i);
+    }
+  }
+  return nodes;
+}
+
 function loadPrompt(def: PromptDef): LoadedPrompt | null {
   const abs = path.join(process.cwd(), "..", def.rel);
   try {
@@ -498,27 +529,72 @@ export default function PromptsPage() {
                     </ReactMarkdown>
                   </div>
 
-                  {p.toc.length > 1 ? (
-                    <aside className={styles.toc} aria-label="Table of contents">
-                      <p className={styles.tocLabel}>On this page</p>
-                      <ol className={styles.tocList}>
-                        {p.toc.map((item) => (
-                          <li
-                            key={item.slug}
-                            className={styles.tocItem}
-                            data-level={item.level}
-                          >
-                            <a
-                              href={`#${p.id}--${item.slug}`}
-                              className={styles.tocLink}
-                            >
-                              {item.text}
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                    </aside>
-                  ) : null}
+                  {(() => {
+                    const nodes = groupToc(p.toc);
+                    if (nodes.length < 2) return null;
+                    return (
+                      <aside
+                        className={styles.toc}
+                        aria-label="Table of contents"
+                      >
+                        <p className={styles.tocLabel}>On this page</p>
+                        <ol className={styles.tocList}>
+                          {nodes.map((node) =>
+                            node.children.length > 0 ? (
+                              // Collapsed by default — only the top heading
+                              // shows until the reader expands it to reveal
+                              // the deeper sub-headings.
+                              <li
+                                key={node.item.slug}
+                                className={styles.tocItem}
+                                data-level={node.item.level}
+                              >
+                                <details className={styles.tocDetails}>
+                                  <summary className={styles.tocSummary}>
+                                    <a
+                                      href={`#${p.id}--${node.item.slug}`}
+                                      className={styles.tocLink}
+                                    >
+                                      {node.item.text}
+                                    </a>
+                                  </summary>
+                                  <ol className={styles.tocList}>
+                                    {node.children.map((c) => (
+                                      <li
+                                        key={c.slug}
+                                        className={styles.tocItem}
+                                        data-level={c.level}
+                                      >
+                                        <a
+                                          href={`#${p.id}--${c.slug}`}
+                                          className={styles.tocLink}
+                                        >
+                                          {c.text}
+                                        </a>
+                                      </li>
+                                    ))}
+                                  </ol>
+                                </details>
+                              </li>
+                            ) : (
+                              <li
+                                key={node.item.slug}
+                                className={styles.tocItem}
+                                data-level={node.item.level}
+                              >
+                                <a
+                                  href={`#${p.id}--${node.item.slug}`}
+                                  className={styles.tocLink}
+                                >
+                                  {node.item.text}
+                                </a>
+                              </li>
+                            ),
+                          )}
+                        </ol>
+                      </aside>
+                    );
+                  })()}
                 </div>
               </article>
             ))}
