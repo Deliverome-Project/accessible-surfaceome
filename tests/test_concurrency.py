@@ -246,7 +246,8 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
 def test_builder_specs_match_pool_concurrency_assumption() -> None:
     """If someone changes the builder list to exceed BUILDER_CONCURRENCY
     the test above degenerates. Pin the relationship explicitly."""
-    assert BUILDER_CONCURRENCY >= 8
+    # 7 builders after the tissues+cell_types → expression merge (3 A1 + 4 A2).
+    assert BUILDER_CONCURRENCY >= 7
 
 
 def test_builder_concurrency_propagates_worker_exception() -> None:
@@ -522,5 +523,5 @@ def test_a2_plan_prompt_emphasizes_biology() -> None:
     # A2 should mention the biology-leaning blocks it produces. The
     # `ihc` category serves the HPA antibody panels post-PR #38 (no
     # separate hpa_ihc category any more).
-    for token in ("ihc", "tissuecontext", "anatomicalaccessibility"):
+    for token in ("ihc", "expressionrow", "anatomicalaccessibility"):
         assert token.lower() in body, f"A2 planner should mention {token!r}"

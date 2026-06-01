@@ -909,6 +909,23 @@ export interface CellTypeContext {
   cited_evidence_ids: string[];
 }
 
+/** Unified tissue × cell-of-origin × disease-context expression row
+ *  (v1.2 schema — replaces the split TissueContext + CellTypeContext). A row
+ *  may name a `tissue`, a `cell_type` of origin, or both. `disease_label`
+ *  names the specific disease when `disease_context` can't (e.g. "Fabry
+ *  disease"). */
+export interface ExpressionRow {
+  tissue: string | null;
+  cell_type: string | null;
+  present: TissueLevel;
+  disease_context: DiseaseContext;
+  disease_label?: string | null;
+  cell_states: string[];
+  species?: Species;
+  species_inferred?: boolean;
+  cited_evidence_ids: string[];
+}
+
 export interface StateContext {
   state: string;
   descriptor: string;
@@ -962,8 +979,13 @@ export interface AccessibilityModulationObservation {
 }
 
 export interface BiologicalContext {
-  tissues: TissueContext[];
-  cell_types: CellTypeContext[];
+  /** Unified expression rows (current schema). Optional so the viewer can
+   *  still read pre-unify records that carry `tissues` + `cell_types`. */
+  expression?: ExpressionRow[];
+  /** Legacy split pivots — present only on records generated before the
+   *  unify; the viewer falls back to these when `expression` is absent. */
+  tissues?: TissueContext[];
+  cell_types?: CellTypeContext[];
   cell_states: StateContext[];
   subcellular_localization: SubcellularLocalization;
   anatomical_accessibility: AnatomicalAccessibilityObservation[];

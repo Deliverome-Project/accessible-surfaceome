@@ -159,7 +159,7 @@ def _surface_evidence() -> SurfaceEvidence:
 
 def _bio_ctx() -> BiologicalContext:
     return BiologicalContext(
-        tissues=[], cell_types=[], cell_states=[],
+        expression=[], cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
             dual_localization=[], membrane_subdomains=[],
@@ -224,8 +224,7 @@ def test_derive_filters_restricted_subdomain_mirrors_block_not_anatomical():
     NONE for the same gene (SRC)."""
     bio = BiologicalContext.model_validate(
         {
-            "tissues": [],
-            "cell_types": [],
+            "expression": [],
             "cell_states": [],
             "subcellular_localization": {
                 "primary_compartment": "plasma_membrane",

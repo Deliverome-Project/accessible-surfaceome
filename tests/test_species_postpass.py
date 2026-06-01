@@ -20,14 +20,13 @@ from accessible_surfaceome.tools._shared.models import (
     AccessibilityModulationObservation,
     AssayContext,
     BiologicalContext,
-    CellTypeContextV1,
     Evidence,
     ExpressionObservation,
+    ExpressionRow,
     MethodObservation,
     Species,
     SubcellularLocalization,
     SurfaceEvidence,
-    TissueContext,
 )
 
 
@@ -47,13 +46,11 @@ def _evidence(eid: str, species: Species) -> Evidence:
 
 
 def _bio(
-    tissues: list[TissueContext] | None = None,
-    cell_types: list[CellTypeContextV1] | None = None,
+    expression: list[ExpressionRow] | None = None,
     modulation: list[AccessibilityModulationObservation] | None = None,
 ) -> BiologicalContext:
     return BiologicalContext(
-        tissues=tissues or [],
-        cell_types=cell_types or [],
+        expression=expression or [],
         cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
@@ -86,22 +83,22 @@ def _method(observations: list[ExpressionObservation]) -> MethodObservation:
     )
 
 
-def test_post_pass_fills_tissue_species_from_cell_line() -> None:
+def test_post_pass_fills_expression_species_from_cell_line() -> None:
     bio = _bio(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="bone",
+                cell_type="osteoblast (MC3T3-E1)",
                 present="moderate",
                 disease_context="normal",
-                cell_types=["osteoblast (MC3T3-E1)"],
             ),
         ]
     )
     surf = _surf()
     stats = apply_species_post_pass(biological_context=bio, surface_evidence=surf)
-    assert stats.tissues_filled == 1
-    assert bio.tissues[0].species == "mouse"
-    assert bio.tissues[0].species_inferred is True
+    assert stats.expression_filled == 1
+    assert bio.expression[0].species == "mouse"
+    assert bio.expression[0].species_inferred is True
 
 
 def test_post_pass_fills_expression_obs_from_context() -> None:
@@ -125,23 +122,25 @@ def test_post_pass_does_not_overwrite_agent_set_species() -> None:
     # Agent explicitly set species="human" — the post-pass must NOT touch
     # it even if the text contains a mouse-cell-line token.
     bio = _bio(
-        cell_types=[
-            CellTypeContextV1(
+        expression=[
+            ExpressionRow(
                 cell_type="primary osteoblast (compared to NIH-3T3 mouse fibroblast)",
+                present="moderate",
+                disease_context="normal",
                 species="human",  # agent's call: this is the human row
             ),
         ]
     )
     stats = apply_species_post_pass(biological_context=bio, surface_evidence=_surf())
-    assert stats.cell_types_filled == 0
-    assert bio.cell_types[0].species == "human"
-    assert bio.cell_types[0].species_inferred is False
+    assert stats.expression_filled == 0
+    assert bio.expression[0].species == "human"
+    assert bio.expression[0].species_inferred is False
 
 
 def test_post_pass_skips_row_with_no_cell_line_match() -> None:
     bio = _bio(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="solid tumor (primary)",
                 present="moderate",
                 disease_context="tumor",
@@ -149,23 +148,25 @@ def test_post_pass_skips_row_with_no_cell_line_match() -> None:
         ]
     )
     stats = apply_species_post_pass(biological_context=bio, surface_evidence=_surf())
-    assert stats.tissues_filled == 0
-    assert bio.tissues[0].species == "unspecified"
-    assert bio.tissues[0].species_inferred is False
+    assert stats.expression_filled == 0
+    assert bio.expression[0].species == "unspecified"
+    assert bio.expression[0].species_inferred is False
 
 
 def test_post_pass_skips_ambiguous_multi_species_row() -> None:
     # Both a human and a mouse cell line mentioned → ambiguous, leave alone.
     bio = _bio(
-        cell_types=[
-            CellTypeContextV1(
+        expression=[
+            ExpressionRow(
                 cell_type="osteoblast (HeLa control vs MC3T3-E1)",
+                present="moderate",
+                disease_context="normal",
             ),
         ]
     )
     stats = apply_species_post_pass(biological_context=bio, surface_evidence=_surf())
-    assert stats.cell_types_filled == 0
-    assert bio.cell_types[0].species == "unspecified"
+    assert stats.expression_filled == 0
+    assert bio.expression[0].species == "unspecified"
 
 
 def test_cite_aggregation_fills_abstract_row_when_all_cites_agree() -> None:
@@ -173,12 +174,12 @@ def test_cite_aggregation_fills_abstract_row_when_all_cites_agree() -> None:
     # (a single mouse-tagged paper) populates assay_context.species=mouse
     # → cite-aggregation pass fills the row.
     bio = _bio(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="bone",
+                cell_type="osteoblast",
                 present="moderate",
                 disease_context="normal",
-                cell_types=["osteoblast"],
                 cited_evidence_ids=["e_mouse_1"],
             ),
         ]
@@ -187,18 +188,18 @@ def test_cite_aggregation_fills_abstract_row_when_all_cites_agree() -> None:
     stats = apply_species_post_pass(
         biological_context=bio, surface_evidence=_surf(), evidence=evidence
     )
-    assert stats.tissues_filled == 1
+    assert stats.expression_filled == 1
     assert stats.filled_by_cite_aggregation == 1
     assert stats.filled_by_gazetteer == 0
-    assert bio.tissues[0].species == "mouse"
-    assert bio.tissues[0].species_inferred is True
+    assert bio.expression[0].species == "mouse"
+    assert bio.expression[0].species_inferred is True
 
 
 def test_cite_aggregation_skips_row_when_cites_disagree() -> None:
     # Two cited evidence rows with different species → ambiguous, leave alone.
     bio = _bio(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="bone",
                 present="moderate",
                 disease_context="normal",
@@ -213,16 +214,16 @@ def test_cite_aggregation_skips_row_when_cites_disagree() -> None:
     stats = apply_species_post_pass(
         biological_context=bio, surface_evidence=_surf(), evidence=evidence
     )
-    assert stats.tissues_filled == 0
-    assert bio.tissues[0].species == "unspecified"
+    assert stats.expression_filled == 0
+    assert bio.expression[0].species == "unspecified"
 
 
 def test_cite_aggregation_ignores_unspecified_cites() -> None:
     # Two cited rows, one unspecified + one mouse → the unspecified gets
     # filtered, mouse wins, row fills with mouse.
     bio = _bio(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="bone",
                 present="moderate",
                 disease_context="normal",
@@ -237,15 +238,15 @@ def test_cite_aggregation_ignores_unspecified_cites() -> None:
     stats = apply_species_post_pass(
         biological_context=bio, surface_evidence=_surf(), evidence=evidence
     )
-    assert stats.tissues_filled == 1
-    assert bio.tissues[0].species == "mouse"
+    assert stats.expression_filled == 1
+    assert bio.expression[0].species == "mouse"
 
 
 def test_cite_aggregation_skipped_when_evidence_is_none() -> None:
     # No evidence arg → pass 2 doesn't run, row stays unspecified.
     bio = _bio(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="bone",
                 present="moderate",
                 disease_context="normal",
@@ -256,21 +257,21 @@ def test_cite_aggregation_skipped_when_evidence_is_none() -> None:
     stats = apply_species_post_pass(
         biological_context=bio, surface_evidence=_surf(), evidence=None
     )
-    assert stats.tissues_filled == 0
-    assert bio.tissues[0].species == "unspecified"
+    assert stats.expression_filled == 0
+    assert bio.expression[0].species == "unspecified"
 
 
 def test_gazetteer_pass_runs_before_cite_aggregation() -> None:
-    # Row has a cell-line token in cell_types AND cited evidence with
+    # Row has a cell-line token in cell_type AND cited evidence with
     # a different species. The gazetteer pass fires first; pass 2
     # skips the row because species is no longer unspecified.
     bio = _bio(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="bone",
+                cell_type="MC3T3-E1 osteoblast",
                 present="moderate",
                 disease_context="normal",
-                cell_types=["MC3T3-E1 osteoblast"],
                 cited_evidence_ids=["e_human_1"],  # different species
             ),
         ]
@@ -279,7 +280,7 @@ def test_gazetteer_pass_runs_before_cite_aggregation() -> None:
     stats = apply_species_post_pass(
         biological_context=bio, surface_evidence=_surf(), evidence=evidence
     )
-    assert stats.tissues_filled == 1
+    assert stats.expression_filled == 1
     assert stats.filled_by_gazetteer == 1
     assert stats.filled_by_cite_aggregation == 0
-    assert bio.tissues[0].species == "mouse"  # gazetteer won
+    assert bio.expression[0].species == "mouse"  # gazetteer won

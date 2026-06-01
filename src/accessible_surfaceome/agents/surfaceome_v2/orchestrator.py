@@ -65,12 +65,11 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_accessibility_modulation,
     build_anatomical_accessibility,
     build_cell_states,
-    build_cell_types,
     build_contradictions,
     build_evidence_grade,
+    build_expression,
     build_methods,
     build_subcellular_localization,
-    build_tissues,
 )
 from accessible_surfaceome.paths import DATA_DIR
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
@@ -111,17 +110,18 @@ def _triage_signal_and_reasoning_from_record(rec):
         return "unknown", ""
     return _TRIAGE_VERDICT_TO_SIGNAL.get(rec.verdict, "unknown"), rec.verdict_reasoning
 
-# Maximum block-builders to dispatch concurrently. There are 8 builders
-# total (3 A1 + 5 A2); they consume independent claim slices and each
-# makes a single Sonnet call, so a worker pool sized to ``8`` lets every
-# builder kick off immediately. The Anthropic client is thread-safe
+# Maximum block-builders to dispatch concurrently. There are 7 builders
+# total (3 A1 + 4 A2 — tissues + cell_types merged into one `expression`
+# builder); they consume independent claim slices and each makes a single
+# Sonnet call, so a worker pool sized to ``7`` lets every builder kick off
+# immediately. The Anthropic client is thread-safe
 # (httpx underneath) and each builder writes to its own ``usage_sink``
 # list so there's no shared mutable state across workers. The shared
 # ``TimingRecorder`` appends rows from multiple threads — CPython's
 # ``list.append`` is atomic under the GIL, so the list stays
 # well-formed; the resulting timing-row order is non-deterministic but
 # the viewer sorts by ``elapsed_s`` anyway.
-BUILDER_CONCURRENCY = 8
+BUILDER_CONCURRENCY = 7
 
 
 def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str]:
@@ -388,9 +388,8 @@ def _annotate(
             a1_claims,
             a1_ctx,
         ),
-        _BuilderSpec("tissues", "builders_a2", build_tissues, a2_claims, a2_ctx),
         _BuilderSpec(
-            "cell_types", "builders_a2", build_cell_types, a2_claims, a2_ctx
+            "expression", "builders_a2", build_expression, a2_claims, a2_ctx
         ),
         _BuilderSpec(
             "cell_states", "builders_a2", build_cell_states, a2_claims, a2_ctx
@@ -436,8 +435,7 @@ def _annotate(
     )
 
     biological_context = BiologicalContext(
-        tissues=outputs["tissues"],
-        cell_types=outputs["cell_types"],
+        expression=outputs["expression"],
         cell_states=outputs["cell_states"],
         subcellular_localization=outputs["subcellular_localization"],
         anatomical_accessibility=outputs["anatomical_accessibility"],
@@ -846,8 +844,7 @@ def _count_blocks(
         "methods": len(se.methods),
         "non_surface_expression": len(se.non_surface_expression),
         "contradicting_evidence": len(se.contradicting_evidence),
-        "tissues": len(bc.tissues),
-        "cell_types": len(bc.cell_types),
+        "expression": len(bc.expression),
         "dual_localization": len(bc.subcellular_localization.dual_localization),
         "membrane_subdomains": len(bc.subcellular_localization.membrane_subdomains),
         "anatomical_accessibility": len(bc.anatomical_accessibility),

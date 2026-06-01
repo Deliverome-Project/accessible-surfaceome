@@ -31,12 +31,11 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_accessibility_modulation,
     build_anatomical_accessibility,
     build_cell_states,
-    build_cell_types,
     build_contradictions,
     build_evidence_grade,
+    build_expression,
     build_methods,
     build_subcellular_localization,
-    build_tissues,
 )
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
     _synthetic_source_store,
@@ -47,16 +46,15 @@ from accessible_surfaceome.tools._shared.models import (
     AssayContext,
     BiologicalContext,
     BiologicalContextDraft,
-    CellTypeContextV1,
     Contradiction,
     EvidenceClaim,
+    ExpressionRow,
     MethodFamily,
     MethodObservation,
     StateContext,
     SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
-    TissueContext,
 )
 
 
@@ -573,11 +571,11 @@ def test_build_evidence_grade_empty_input_returns_default() -> None:
 
 
 # ---------------------------------------------------------------------------
-# tissues_builder
+# expression_builder (unified tissue × cell-of-origin pivot)
 # ---------------------------------------------------------------------------
 
 
-def test_build_tissues_happy() -> None:
+def test_build_expression_happy() -> None:
     claims = [
         _claim(
             "01",
@@ -597,61 +595,52 @@ def test_build_tissues_happy() -> None:
     output = [
         {
             "tissue": "cerebellum",
+            "cell_type": "Purkinje neurons",
             "present": "high",
             "disease_context": "normal",
-            "cell_types": ["Purkinje neurons"],
             "cell_states": [],
             "cited_evidence_ids": ["a2_evi_01", "a2_evi_02"],
         }
     ]
     client = _mock_client([_fenced(json.dumps(output))])
     sink: list[UsageRecord] = []
-    rows = build_tissues(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    rows = build_expression(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
     assert len(rows) == 1
-    assert isinstance(rows[0], TissueContext)
+    assert isinstance(rows[0], ExpressionRow)
     assert rows[0].tissue == "cerebellum"
+    assert rows[0].cell_type == "Purkinje neurons"
 
 
-def test_build_tissues_empty_input() -> None:
-    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
+def test_build_expression_empty_input() -> None:
     client = _mock_client([])
     sink: list[UsageRecord] = []
-    rows = build_tissues(claims, client=client, usage_sink=sink, context={"gene": "X"})
+    rows = build_expression([], client=client, usage_sink=sink, context={"gene": "X"})
     assert rows == []
     client.messages.create.assert_not_called()
 
 
-# ---------------------------------------------------------------------------
-# cell_types_builder
-# ---------------------------------------------------------------------------
-
-
-def test_build_cell_types_forces_null_ontology() -> None:
-    claims = [_claim("01", prefix="a2")]
+def test_build_expression_scrubs_unknown_citations() -> None:
+    claims = [_claim("01", prefix="a2", claim_type="tissue_expression")]
     output = [
         {
-            "cell_type": "Purkinje neurons",
-            "ontology_id": "CL:00000",  # should be scrubbed to null
-            "present_in_tissues": ["cerebellum"],
-            "cited_evidence_ids": ["a2_evi_01"],
+            "tissue": "cerebellum",
+            "cell_type": None,
+            "present": "high",
+            "disease_context": "normal",
+            "cell_states": [],
+            # 99 isn't in input; should be scrubbed
+            "cited_evidence_ids": ["a2_evi_01", "a2_evi_99"],
         }
     ]
     client = _mock_client([_fenced(json.dumps(output))])
     sink: list[UsageRecord] = []
-    rows = build_cell_types(
+    rows = build_expression(
         claims, client=client, usage_sink=sink, context={"gene": "X"}
     )
     assert len(rows) == 1
-    assert isinstance(rows[0], CellTypeContextV1)
-    assert rows[0].ontology_id is None
-
-
-def test_build_cell_types_empty_input() -> None:
-    client = _mock_client([])
-    sink: list[UsageRecord] = []
-    rows = build_cell_types([], client=client, usage_sink=sink, context={"gene": "X"})
-    assert rows == []
-    client.messages.create.assert_not_called()
+    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
 
 
 # ---------------------------------------------------------------------------
@@ -936,23 +925,23 @@ def test_biological_context_draft_validates_with_block_builder_outputs() -> None
         _claim("02", prefix="a2"),
     ]
     bc = BiologicalContext(
-        tissues=[
-            TissueContext(
+        expression=[
+            ExpressionRow(
                 tissue="cerebellum",
+                cell_type=None,
                 present="high",
                 disease_context="normal",
-                cell_types=["Purkinje neurons"],
                 cell_states=[],
                 cited_evidence_ids=["a2_evi_01"],
-            )
-        ],
-        cell_types=[
-            CellTypeContextV1(
+            ),
+            ExpressionRow(
+                tissue="cerebellum",
                 cell_type="Purkinje neurons",
-                ontology_id=None,
-                present_in_tissues=["cerebellum"],
+                present="high",
+                disease_context="normal",
+                cell_states=[],
                 cited_evidence_ids=["a2_evi_01"],
-            )
+            ),
         ],
         cell_states=[],
         subcellular_localization=SubcellularLocalization(
@@ -966,7 +955,7 @@ def test_biological_context_draft_validates_with_block_builder_outputs() -> None
     draft = BiologicalContextDraft(
         biological_context=bc, evidence_claims=a2_claims
     )
-    assert len(draft.biological_context.tissues) == 1
+    assert len(draft.biological_context.expression) == 2
 
 
 def test_block_counts_helper() -> None:
@@ -980,8 +969,7 @@ def test_block_counts_helper() -> None:
         contradicting_evidence=[],
     )
     bc = BiologicalContext(
-        tissues=[],
-        cell_types=[],
+        expression=[],
         cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
@@ -993,7 +981,7 @@ def test_block_counts_helper() -> None:
     )
     counts = _count_blocks(se, bc)
     assert counts["methods"] == 0
-    assert counts["tissues"] == 0
+    assert counts["expression"] == 0
 
 
 # ---------------------------------------------------------------------------
