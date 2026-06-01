@@ -149,12 +149,6 @@ export function ExpressionCard({ rec, n }: Props) {
                             <StatusPill tone={tissueLevelTone(t.present)} size="sm">
                               {prettyEnum(t.present)}
                             </StatusPill>
-                            {t.cell_states.length ? (
-                              <span className={styles.states}>
-                                {" · "}
-                                {t.cell_states.join(", ")}
-                              </span>
-                            ) : null}
                           </td>
                           <td>
                             <EvidenceChipList
