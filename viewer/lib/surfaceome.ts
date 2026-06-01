@@ -742,11 +742,23 @@ function _localSnapshotGenes(): string[] {
 }
 
 /**
+ * Cache mode for the live per-gene Worker fetches (record + triage
+ * reasoning). Production keeps `force-cache` so each gene's record is
+ * fetched once per build and baked into the static export (SSG,
+ * citation-stable). In dev / any non-production build we use `no-store`
+ * so the page always reflects the LATEST published D1 record immediately
+ * — no stale build-cache to fight while iterating on annotations. Flip is
+ * driven by NODE_ENV (Next sets it: `development` under `next dev`,
+ * `production` under `next build`).
+ */
+const RECORD_FETCH_CACHE: RequestCache =
+  process.env.NODE_ENV === "production" ? "force-cache" : "no-store";
+
+/**
  * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on
- * any Worker error (network, 404, non-2xx, malformed JSON). Uses
- * `cache: "force-cache"` so each gene's record is fetched once per
- * build and baked into the static export. D1 is the only source — there
- * is no on-disk fallback.
+ * any Worker error (network, 404, non-2xx, malformed JSON). Cache mode is
+ * `RECORD_FETCH_CACHE` (force-cache in prod for SSG, no-store in dev for
+ * always-fresh). D1 is the only source — there is no on-disk fallback.
  */
 async function _fetchRecordFromWorker(
   symbol: string,
@@ -756,7 +768,7 @@ async function _fetchRecordFromWorker(
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(`${base}/v1/genes/${symbol}`, {
-      cache: "force-cache",
+      cache: RECORD_FETCH_CACHE,
       signal: controller.signal,
     });
     if (!res.ok) return null;
@@ -788,7 +800,7 @@ async function _fetchTriageReasoningFromWorker(
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(`${base}/v1/triage/${symbol}`, {
-      cache: "force-cache",
+      cache: RECORD_FETCH_CACHE,
       signal: controller.signal,
     });
     if (!res.ok) return null;
