@@ -24,19 +24,35 @@ unioned with candidate-universe `in_db_union = 1`. The **v2** triage surfaced
 LLM-positive genes outside that scope (LLM-positive but DB-negative, plus
 v1→v2 verdict changes). Those genes were never swept.
 
-### Measured gap (D1 join, v2 yes/contextual genes by UniProt acc)
+### Scope and measured gap (the candidate-set union, not just triage)
 
-| Feature | D1 source | Missing | Notes |
-|---|---|---|---|
-| Canonical ("main") topology | `topology_public` `human_canonical` | **71** | cleanest gap — genuinely needs DeepTMHMM |
-| Paralogs | `compara_paralog` | **607** | over-counts singletons (no paralogs exist) |
-| Orthologs (mouse/cyno ECD) | `compara_ortholog_ecd` | **1268** | over-counts genes with no one2one ortholog |
-| Isoform topology | `topology_public` `human_isoforms` | **2239** | over-counts single-isoform genes (no alt isoform) |
+The sweep scope is the **union** `build_topology_candidate_set.py` already
+defines: candidate-universe `in_db_union = 1` (DB-positive in any source) **OR**
+v2 triage `yes`/`contextual`. For the v2 run that's **6,431 candidate rows →
+6,418 distinct accessions** (`db_only` 2,182 + `triage_only` 858 + `both`
+3,391). The earlier "v2 triage only" framing (4,249) under-scoped it.
 
-The last three are **upper bounds**: a singleton legitimately has no paralog
-rows, a single-isoform gene has no alt-isoform topology, some genes have no
-one2one mouse/cyno ortholog. Distinguishing genuine-absence from
-not-yet-computed is part of the work (see §"checked, none" sentinels).
+**Empirically-measured backfill (D1 presence + UniProt/Ensembl sampling, 2026-06-01):**
+
+| Feature | D1 source | Genes w/ no row | **Real new DeepTMHMM seqs** | Genuine-absence (flag only) |
+|---|---|---|---|---|
+| Canonical ("main") | `topology_public` `human_canonical` | 66 | **66** (exact) | 0 |
+| Isoforms | `topology_public` `human_isoforms` | 3,014 | **~141** (only 3% sampled have an alt isoform) | ~2,934 single-isoform |
+| Orthologs (mouse/cyno) | `compara_ortholog_ecd` | 1,360 | **~1,190** mouse+cyno (~50% sampled have a one2one) | ~674 no one2one |
+| Paralogs | `compara_paralog` | 953 | **0** (ECD reuses each paralog's already-swept canonical row) | — |
+
+**Total ≈ ~1,400 new DeepTMHMM sequences**, dominated by orthologs. The
+"genes w/ no row" column is a misleading upper bound — most missing-isoform
+genes are genuinely single-isoform and most no-row genes overall just need the
+"checked, none" sentinel, not a sequence run. The empirical alt-isoform rate
+(3%) and ortholog one2one rate (~50%) come from deterministic samples of the
+missing sets; the audit (§A) produces the exact per-gene truth.
+
+**Ortholog decision (locked):** **DeepTMHMM each one2one ortholog**, consistent
+with how the existing 11k ortholog rows were produced — no code change to the
+ECD path. (The human→ortholog topology *projection* still applies at
+record-assembly for display, as on #47; it is not used to skip the ECD-identity
+DeepTMHMM run.)
 
 ### Code is mostly in place on #47; the gap is data
 
@@ -130,21 +146,12 @@ New `scripts/audit_v2_deterministic_coverage.py`:
    (private + public schema + the `.sql` schema files) so #47's loader stops
    erroring; compute + populate it for close pairs.
 
-**Compute scale:** expected **hundreds**, not thousands, of new DeepTMHMM runs.
-Reasoning: the human canonical sequences mostly already exist (only 71 missing);
-close-paralog topology is read from the paralog gene's own already-swept
-`human_canonical` row (a JOIN, no new run); and the ortholog's *displayed*
-topology is projected from the human canonical via alignment rather than trusting
-raw DeepTMHMM-on-ortholog. **Caveat to verify in §A:** computing the
-`compara_ortholog_ecd` ECD %identity for an ortholog still needs that ortholog's
-own topology + sequence to extract its ECD loops, so orthologs not yet in
-`topology_public` *do* contribute DeepTMHMM runs (or fall back to
-full-length-only identity with null ECD). The genuine per-cohort sequence count
-— canonical, isoforms, and any ortholog sequences needed for ECD — is exactly
-what the manifest (§A) produces, **before** any heavy compute. The run is gated
-on that number, runs **single-worker** in the background, and publishes to D1 as
-it goes. The PR does not block on it finishing — it lands the tooling + manifest
-+ a small proof-run (the 71 canonical genes) and the full sweep completes after.
+**Compute scale: ~1,400 new DeepTMHMM sequences** (66 canonical + ~141
+alt-isoforms + ~1,190 mouse/cyno orthologs; paralogs add 0 new runs), per the
+empirical table above. Orthologs dominate. Runs **single-worker** in the
+background, publishing to D1 as it goes; the PR lands the tooling + manifest +
+the fast canonical proof-run, and the ortholog/isoform sweep completes after.
+The manifest (§A) produces the exact per-gene truth before the heavy run starts.
 
 ### C. "Checked, none found" sentinels (net-new schema)
 

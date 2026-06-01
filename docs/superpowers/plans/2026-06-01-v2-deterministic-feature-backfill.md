@@ -281,7 +281,7 @@ Run:
 ```bash
 uv run python scripts/audit_v2_deterministic_coverage.py --triage-run-id genome_full_sonnet_ncbi_v2
 ```
-Expected: writes `data/analysis/v2_deterministic_coverage/manifest.tsv` and logs per-feature `present` / `needs-backfill` counts. Sanity-check `canonical_topology_status needs-backfill` ≈ 71.
+Expected: writes `data/analysis/v2_deterministic_coverage/manifest.tsv` and logs per-feature `present` / `needs-backfill` counts over the **6,418-accession union scope**. Sanity-check `canonical_topology_status needs-backfill` ≈ 66. Note the isoform/ortholog `needs-backfill` counts are GENE-level **upper bounds** (≈3,014 isoform / ≈1,360 ortholog) — most are genuine-absence (single-isoform / no one2one). The real sequence run is ~1,400 (66 canonical + ~141 alt-isoforms + ~1,190 orthologs); the sweep's UniProt isoform + BioMart ortholog resolution narrows the gene-level set to those actual sequences automatically.
 
 - [ ] **Step 3: Commit the script + manifest**
 
@@ -290,7 +290,7 @@ git add scripts/audit_v2_deterministic_coverage.py data/analysis/v2_deterministi
 git commit -m "feat(audit): manifest of v2 deterministic-feature coverage gaps"
 ```
 
-- [ ] **Step 4: STOP — review counts with the user before any heavy compute.** The manifest's `needs-backfill` totals are the real backfill size. Confirm it's hundreds (not thousands) before kicking off the sweep (Tasks 7–9).
+- [ ] **Step 4: STOP — review counts with the user before any heavy compute.** The gene-level `needs-backfill` totals are upper bounds; the empirically-measured real sequence run is **~1,400 DeepTMHMM sequences** (66 canonical + ~141 alt-isoforms at a 3%-of-missing alt rate + ~1,190 mouse/cyno orthologs at ~50% one2one). Confirm before kicking off the sweep (Tasks 7–9).
 
 ---
 
@@ -549,7 +549,7 @@ with dst.open("w", newline="") as fh:
 print(f"kept {len(keep)}/{len(rows)} rows -> {dst}")
 PY
 ```
-Expected: prints the kept-row count (the real sweep size; should be hundreds).
+Expected: prints the kept-row count (the gene-level backfill subset, ≈ a few thousand genes — but the sweep's isoform/ortholog resolution narrows this to ~1,400 actual DeepTMHMM sequences, since most kept genes are single-isoform / no-one2one and only get a "checked, none" flag).
 
 - [ ] **Step 3: Commit the candidate set + backfill subset**
 
