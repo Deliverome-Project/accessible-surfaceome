@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Shell } from "../../components/Shell/Shell";
 import { SectionAutoOpen } from "./SectionAutoOpen";
+import { SearchCatalog } from "./SearchCatalog";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -584,6 +585,13 @@ export default function PromptsPage() {
               <h2 className={`h-section ${styles.groupH2}`}>{group.label}</h2>
               <p className={styles.groupDescription}>{group.description}</p>
             </header>
+
+            {/* The plan_trim_select agents issue the searches; document the
+                search surface (deterministic sweeps + LLM-planned modes)
+                here so the reader can interpret what the prompts below work
+                from. Only under this group — the builder/synthesizer groups
+                don't issue searches. */}
+            {group.id === "deep-dive-phase-1" ? <SearchCatalog /> : null}
 
             {group.prompts.map((p) => {
               // For a multi-prompt deep-dive group (plan_trim_select's 9

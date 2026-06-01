@@ -1,0 +1,94 @@
+{
+  "_generated_by": "scripts/build_search_catalog.py",
+  "_source": "evidence_retrieval._CATEGORY_SPECS + gene_literature modes",
+  "evidence_retrieval_categories": [
+    {
+      "id": "ihc",
+      "label": "Immunohistochemistry",
+      "finds": "Membranous IHC staining in primary tissue sections.",
+      "deterministic": true,
+      "query_preview": "(\"immunohistochemistry\" OR \"IHC\")"
+    },
+    {
+      "id": "if",
+      "label": "Immunofluorescence",
+      "finds": "Non-permeabilized surface IF, plus permeabilized confocal IF that colocalizes with a plasma-membrane marker.",
+      "deterministic": true,
+      "query_preview": "(\"immunofluorescence\" OR \"confocal\" OR \"live-cell imaging\" OR \"IF microscopy\")"
+    },
+    {
+      "id": "flow_cytometry",
+      "label": "Flow cytometry / FACS",
+      "finds": "Surface staining of intact, non-permeabilized cells \u2014 the strongest direct surface-accessibility signal.",
+      "deterministic": true,
+      "query_preview": "(\"flow cytometry\" OR \"FACS\")"
+    },
+    {
+      "id": "surface_biotinylation",
+      "label": "Surface biotinylation",
+      "finds": "Sulfo-NHS-biotin labeling of the cell surface + streptavidin pull-down \u2014 biochemical surface capture.",
+      "deterministic": true,
+      "query_preview": "(\"surface biotinylation\" OR \"cell surface biotinylation\" OR \"biotin labeling\" OR \"biotinyl\" OR \"sulfo-NHS-biotin\")"
+    },
+    {
+      "id": "mass_spec_surfaceome",
+      "label": "Surfaceome mass spec",
+      "finds": "Cell-surface-capture / surfaceome LC-MS/MS proteomics (the high-throughput membership datasets).",
+      "deterministic": true,
+      "query_preview": "(\"surfaceome\" OR \"surface proteome\" OR \"cell surface proteomics\" OR \"cell-surface capture\")"
+    },
+    {
+      "id": "western_blot_paired",
+      "label": "Western blot (surface-paired)",
+      "finds": "Immunoblot paired with a surface-biotinylation or membrane-fraction step (so the band is the surface pool).",
+      "deterministic": true,
+      "query_preview": "(\"western blot\" OR \"immunoblot\")"
+    },
+    {
+      "id": "structure_with_ecd",
+      "label": "Structure with ECD",
+      "finds": "Crystal / cryo-EM structures resolving an extracellular domain \u2014 confirms an exposed, foldable ectodomain.",
+      "deterministic": true,
+      "query_preview": "(\"crystal structure\" OR \"cryo-EM\" OR \"cryo electron microscopy\" OR \"X-ray structure\")"
+    },
+    {
+      "id": "other",
+      "label": "Other surface assays",
+      "finds": "Catch-all: radioligand / GPCR pharmacology, ectodomain shedding, proximity labeling (APEX2/TurboID/BioID), internalization kinetics.",
+      "deterministic": true,
+      "query_preview": "(\"cell surface\" OR \"plasma membrane\" OR \"surface expression\" OR \"cell-surface\" OR \"membrane localization\")"
+    }
+  ],
+  "literature_modes": [
+    {
+      "id": "gene2pubmed",
+      "label": "NCBI gene2pubmed",
+      "deterministic": true,
+      "finds": "NCBI's curated gene\u2192PMID list \u2014 the high-precision baseline every gene starts from."
+    },
+    {
+      "id": "recent_corpus",
+      "label": "Recent corpus (PubTator)",
+      "deterministic": true,
+      "finds": "Date-sorted PubTator entity sweep, pre-filtered on surface/membrane keywords \u2014 catches recent verdict-shifting papers the planner couldn't keyword-anchor."
+    },
+    {
+      "id": "topic_search",
+      "label": "Topic search",
+      "deterministic": false,
+      "finds": "Europe PMC topic-anchored queries the planner composes to fill method-specific gaps."
+    },
+    {
+      "id": "fetch_abstract",
+      "label": "Fetch abstract",
+      "deterministic": false,
+      "finds": "Pull a single PMID's abstract (planner-chosen follow-up)."
+    },
+    {
+      "id": "fetch_fulltext",
+      "label": "Fetch full text",
+      "deterministic": false,
+      "finds": "Pull a PMC open-access full text (planner-chosen deep read)."
+    }
+  ]
+}
