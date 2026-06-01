@@ -40,6 +40,12 @@ Usage::
 
     # restrict to specific symbols
     uv run python scripts/backfill_sequences_and_links.py --execute EGFR SRC
+
+    # for genes whose D1 row is NEWER than the disk snapshot (a re-run after
+    # the snapshot was committed), source the record from D1 so the publish
+    # staleness guard doesn't block the enriched republish:
+    uv run python scripts/backfill_sequences_and_links.py \\
+        --from-d1 --execute --sync-d1 EGFR GPR75 SRC
 """
 
 from __future__ import annotations
@@ -239,6 +245,96 @@ def _symbols(only: list[str]) -> list[str]:
     return sorted(syms)
 
 
+def _fetch_record_from_d1(sym: str) -> dict[str, Any] | None:
+    """The newest stored record dict for ``sym`` from public D1
+    ``surface_annotation`` (ORDER BY schema_version DESC). ``None`` if absent
+    or unparseable.
+    """
+    try:
+        rows = _query_public(
+            "SELECT annotation_json FROM surface_annotation "
+            "WHERE gene_symbol = ? ORDER BY schema_version DESC LIMIT 1",
+            [sym],
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning("  ! D1 record fetch failed for %s: %s", sym, exc)
+        return None
+    if not rows:
+        return None
+    try:
+        return json.loads(rows[0]["annotation_json"])
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return None
+
+
+def _run_from_d1(args: argparse.Namespace) -> int:
+    """Enrich each gene's NEWEST D1 record in place and republish.
+
+    The disk-snapshot path (the default) is blocked by the publish staleness
+    guard whenever the in-tree snapshot is older than the D1 row (e.g. a gene
+    re-run after the snapshot was committed). Sourcing the record FROM D1
+    sidesteps that: we read the newest row, add the sequences/links (purely
+    additive — ``record_generated_at`` unchanged), and republish, so the
+    guard sees equal timestamps and allows it without ``force``. Also writes
+    the enriched record back to the in-tree snapshot so disk mirrors D1.
+    """
+    if not args.symbols:
+        logger.error("--from-d1 requires explicit symbols (e.g. EGFR GPR75 SRC)")
+        return 1
+    syms = sorted({s.upper() for s in args.symbols})
+    logger.info(
+        "Backfilling %d record(s) FROM D1 | execute=%s sync_d1=%s\n",
+        len(syms),
+        args.execute,
+        args.sync_d1,
+    )
+    grand: dict[str, int] = {}
+    for sym in syms:
+        rec = _fetch_record_from_d1(sym)
+        if rec is None:
+            logger.warning("  %-8s no D1 record — skipped", sym)
+            continue
+        stats = enrich(rec)
+        try:
+            DeterministicFeatures.model_validate(
+                rec.get("deterministic_features") or {}
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.error(
+                "  ✗ %s: enriched deterministic_features fails validation: %s",
+                sym,
+                exc,
+            )
+            return 2
+        filled = ", ".join(f"{k}={v}" for k, v in stats.items() if v) or "nothing new"
+        logger.info("  %-8s %s%s", sym, filled, "" if args.execute else "  (dry)")
+        for k, v in stats.items():
+            grand[k] = grand.get(k, 0) + v
+        if args.execute:
+            # Mirror the enriched (newest) record to the in-tree snapshot so
+            # disk and D1 don't drift.
+            (VIEWER_SNAPSHOT_DIR / f"{sym}.json").write_text(
+                json.dumps(rec, indent=2)
+            )
+        if args.sync_d1 and args.execute:
+            from accessible_surfaceome.cloud.surface_annotation import (
+                publish_record_dict,
+            )
+
+            res = publish_record_dict(rec, write_snapshot=False, push_to_d1=True)
+            if res.d1_written:
+                logger.info("    → D1 upserted %s", sym)
+            else:
+                logger.warning("    → D1 skipped %s: %s", sym, res.skipped_reason)
+    logger.info(
+        "\nTotal filled: %s",
+        ", ".join(f"{k}={v}" for k, v in grand.items()) or "nothing",
+    )
+    if not args.execute:
+        logger.info("(dry run — re-run with --execute to write)")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     load_env()
     ap = argparse.ArgumentParser(description=__doc__)
@@ -247,7 +343,16 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument(
         "--sync-d1", action="store_true", help="re-publish enriched records to D1"
     )
+    ap.add_argument(
+        "--from-d1",
+        action="store_true",
+        help="source each record from its newest D1 row (not the disk "
+        "snapshot) — for genes whose D1 row is newer than the snapshot",
+    )
     args = ap.parse_args(argv)
+
+    if args.from_d1:
+        return _run_from_d1(args)
 
     syms = _symbols(args.symbols)
     if not syms:
