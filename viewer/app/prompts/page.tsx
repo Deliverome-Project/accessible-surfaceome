@@ -434,8 +434,16 @@ export default function PromptsPage() {
                   </a>
                   {/* Single-prompt groups (triage, synthesizer) would just
                       repeat the group name as a lone sub-item — skip the
-                      nested list and let the group link stand alone. */}
-                  {g.prompts.length > 1 && g.id !== "deep-dive-phase-1" ? (
+                      nested list and let the group link stand alone. The two
+                      multi-prompt deep-dive groups (plan_trim_select =
+                      deep-dive-phase-1; block builders = deep-dive-phase-2)
+                      are also suppressed: their many near-identical per-prompt
+                      entries bloated the index, so each group link carries the
+                      reader to its section (which still renders in full below)
+                      without per-prompt links. */}
+                  {g.prompts.length > 1 &&
+                  g.id !== "deep-dive-phase-1" &&
+                  g.id !== "deep-dive-phase-2" ? (
                     <ul className={styles.pageIndexPromptList}>
                       {g.prompts.map((p) => (
                         <li key={p.id}>
