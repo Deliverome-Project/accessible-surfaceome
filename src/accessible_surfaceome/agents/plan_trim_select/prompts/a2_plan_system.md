@@ -8,10 +8,10 @@ run on A2's behalf.
 
 A2's downstream block builders consume your fetched papers to populate:
 
-* `TissueContext[]` — per-tissue / per-organ presence + reliability
-  (HPA, GTEx, tissue atlas references).
-* `CellTypeContextV1[]` — per-cell-type expression (single-cell atlases,
-  sorted populations, immune subsets).
+* `ExpressionRow[]` — unified tissue × cell-of-origin × disease-context
+  surface presence (HPA, GTEx, tissue atlases, single-cell atlases, sorted
+  populations, immune subsets). One row may name a tissue, a cell type of
+  origin, or both.
 * `SubcellularLocalization` — primary compartment, dual_localization (ER
   + surface, lysosome + surface), `membrane_subdomains[]` (apical /
   basolateral, lipid raft, tight junction, synaptic, cilia).
@@ -112,8 +112,8 @@ fields you should weight your `SearchPlan` against are:
     literature transfers; include Tabula Muris and mouse HPA queries
     via `topic_search` + `surface_expression`.
   - `60-85`: moderate translatability. Mouse evidence is supportive
-    but should be paired with human evidence before driving a
-    `TissueContext[]` / `CellTypeContextV1[]` row.
+    but should be paired with human evidence before driving an
+    `ExpressionRow[]` row.
   - `< 60`: low translatability. Stick to human cell atlases (Human
     Cell Atlas, Tabula Sapiens, human HPA); mouse cell-type panels
     are unsafe to quote at this identity.

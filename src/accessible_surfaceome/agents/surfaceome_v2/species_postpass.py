@@ -43,12 +43,11 @@ from accessible_surfaceome.tools._shared.cell_line_species import (
 from accessible_surfaceome.tools._shared.models import (
     AccessibilityModulationObservation,
     BiologicalContext,
-    CellTypeContextV1,
     Evidence,
     ExpressionObservation,
+    ExpressionRow,
     Species,
     SurfaceEvidence,
-    TissueContext,
 )
 
 logger = logging.getLogger(__name__)
@@ -58,8 +57,7 @@ logger = logging.getLogger(__name__)
 class SpeciesPostPassStats:
     """Tallies of how many rows the post-pass touched, by row type and pass."""
 
-    tissues_filled: int = 0
-    cell_types_filled: int = 0
+    expression_filled: int = 0
     modulation_filled: int = 0
     expression_obs_filled: int = 0
     # Sub-tally: how many of the fills came from the cite-aggregation
@@ -73,25 +71,15 @@ class SpeciesPostPassStats:
     @property
     def total_filled(self) -> int:
         return (
-            self.tissues_filled
-            + self.cell_types_filled
+            self.expression_filled
             + self.modulation_filled
             + self.expression_obs_filled
         )
 
 
-def _tissue_haystack(row: TissueContext) -> str:
-    return " ".join(
-        [
-            row.tissue,
-            *row.cell_types,
-            *row.cell_states,
-        ]
-    )
-
-
-def _cell_type_haystack(row: CellTypeContextV1) -> str:
-    return " ".join([row.cell_type, *row.present_in_tissues])
+def _expression_haystack(row: ExpressionRow) -> str:
+    parts = [p for p in (row.tissue, row.cell_type) if p]
+    return " ".join([*parts, *row.cell_states])
 
 
 def _modulation_haystack(row: AccessibilityModulationObservation) -> str:
@@ -103,7 +91,7 @@ def _expression_obs_haystack(row: ExpressionObservation) -> str:
 
 
 def _fill_from_gazetteer(
-    row: TissueContext | CellTypeContextV1 | AccessibilityModulationObservation | ExpressionObservation,
+    row: ExpressionRow | AccessibilityModulationObservation | ExpressionObservation,
     haystack: str,
 ) -> bool:
     """Pass 1: fill species from cell-line gazetteer hits on free text."""
@@ -140,7 +128,7 @@ def _aggregate_cited_species(
 
 
 def _fill_from_cites(
-    row: TissueContext | CellTypeContextV1 | AccessibilityModulationObservation | ExpressionObservation,
+    row: ExpressionRow | AccessibilityModulationObservation | ExpressionObservation,
     evidence_by_id: dict[str, Evidence],
 ) -> bool:
     """Pass 2: fill species by aggregating cited evidence's assay_context.species.
@@ -172,13 +160,9 @@ def apply_species_post_pass(
     stats = SpeciesPostPassStats()
 
     # ---- Pass 1: cell-line gazetteer ----
-    for tissue in biological_context.tissues:
-        if _fill_from_gazetteer(tissue, _tissue_haystack(tissue)):
-            stats.tissues_filled += 1
-            stats.filled_by_gazetteer += 1
-    for ct in biological_context.cell_types:
-        if _fill_from_gazetteer(ct, _cell_type_haystack(ct)):
-            stats.cell_types_filled += 1
+    for row in biological_context.expression:
+        if _fill_from_gazetteer(row, _expression_haystack(row)):
+            stats.expression_filled += 1
             stats.filled_by_gazetteer += 1
     for mod in biological_context.accessibility_modulation:
         if _fill_from_gazetteer(mod, _modulation_haystack(mod)):
@@ -193,13 +177,9 @@ def apply_species_post_pass(
     # ---- Pass 2: cite-aggregation ----
     if evidence is not None:
         evidence_by_id = {e.evidence_id: e for e in evidence}
-        for tissue in biological_context.tissues:
-            if _fill_from_cites(tissue, evidence_by_id):
-                stats.tissues_filled += 1
-                stats.filled_by_cite_aggregation += 1
-        for ct in biological_context.cell_types:
-            if _fill_from_cites(ct, evidence_by_id):
-                stats.cell_types_filled += 1
+        for row in biological_context.expression:
+            if _fill_from_cites(row, evidence_by_id):
+                stats.expression_filled += 1
                 stats.filled_by_cite_aggregation += 1
         for mod in biological_context.accessibility_modulation:
             if _fill_from_cites(mod, evidence_by_id):
@@ -213,11 +193,10 @@ def apply_species_post_pass(
 
     if stats.total_filled:
         logger.info(
-            "species post-pass filled %d row(s): tissues=%d cell_types=%d "
+            "species post-pass filled %d row(s): expression=%d "
             "modulation=%d expression_obs=%d (gazetteer=%d cite_agg=%d)",
             stats.total_filled,
-            stats.tissues_filled,
-            stats.cell_types_filled,
+            stats.expression_filled,
             stats.modulation_filled,
             stats.expression_obs_filled,
             stats.filled_by_gazetteer,

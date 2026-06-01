@@ -42,88 +42,104 @@ const DISEASE_CONTEXT_RANK: Record<string, number> = {
 
 export function ExpressionCard({ rec, n }: Props) {
   const bc = rec.biological_context;
-
-  // ONE view organized by tissue of origin. The CELL-of-origin row is the
-  // unit of evidence — it carries the disease context + level (inherited from
-  // the tissue read that names it) and the citations. The tissue (header) row
-  // is a bare grouping label; it only shows dx / level / cites when the tissue
-  // has INDEPENDENT evidence (a read with no cell-type breakdown), so we never
-  // replicate the same observation on both the tissue row and its cell row.
-  // Cell types also name tissues that carry no tissue-level read (e.g. brain /
-  // colon / pancreas tox organs) — those surface as their own groups; cell
-  // types with no tissue fall under "(tissue unspecified)".
-  type Tissue = (typeof bc.tissues)[number];
-  type CellRow = {
-    name: string;
-    dx: string | null;
-    level: TissueLevel | null;
-    label: string | null; // specific disease name (e.g. "Fabry disease")
-    cites: Set<string>;
-  };
   const norm = (s: string) => s.trim().toLowerCase();
   const UNSPEC = "(tissue unspecified)";
 
+  // Normalize to the unified ExpressionRow shape. New records carry
+  // `bc.expression`; pre-unify records carry the split `tissues` +
+  // `cell_types`, which we fold into the same shape so both render the same.
+  type ERow = {
+    tissue: string | null;
+    cell_type: string | null;
+    present: TissueLevel;
+    disease_context: string;
+    disease_label?: string | null;
+    cited_evidence_ids: string[];
+  };
+  const rows: ERow[] = bc.expression?.length
+    ? bc.expression.map((r) => ({
+        tissue: r.tissue,
+        cell_type: r.cell_type,
+        present: r.present,
+        disease_context: r.disease_context,
+        disease_label: r.disease_label,
+        cited_evidence_ids: r.cited_evidence_ids,
+      }))
+    : [
+        ...(bc.tissues ?? []).map(
+          (t): ERow => ({
+            tissue: t.tissue,
+            cell_type: null,
+            present: t.present,
+            disease_context: t.disease_context,
+            disease_label: t.disease_label,
+            cited_evidence_ids: t.cited_evidence_ids,
+          }),
+        ),
+        ...(bc.cell_types ?? []).flatMap((c): ERow[] =>
+          (c.present_in_tissues.length ? c.present_in_tissues : [null]).map(
+            (tn): ERow => ({
+              tissue: tn,
+              cell_type: c.cell_type,
+              present: c.present ?? "unknown",
+              disease_context: c.disease_context ?? "unknown",
+              disease_label: c.disease_label,
+              cited_evidence_ids: c.cited_evidence_ids,
+            }),
+          ),
+        ),
+      ];
+
+  // Group by tissue of origin. A row with a `cell_type` is a cell-of-origin
+  // row; a row without one is a tissue-level read (the tissue's "independent"
+  // evidence shown on the header). Each row carries its own dx / level /
+  // disease label, so no merging or inheritance is needed.
+  type CellLike = {
+    name: string;
+    dx: string | null;
+    level: TissueLevel | null;
+    label: string | null;
+    cites: string[];
+  };
   const groups = new Map<
     string,
-    { name: string; order: number; reads: Tissue[]; cells: Map<string, CellRow> }
+    { name: string; order: number; reads: ERow[]; cells: CellLike[] }
   >();
   const ensure = (name: string) => {
     const k = norm(name);
     let g = groups.get(k);
     if (!g) {
-      g = { name, order: groups.size, reads: [], cells: new Map() };
+      g = { name, order: groups.size, reads: [], cells: [] };
       groups.set(k, g);
     }
     return g;
   };
-  const cellIn = (g: { cells: Map<string, CellRow> }, name: string) => {
-    const k = norm(name);
-    let c = g.cells.get(k);
-    if (!c) {
-      c = { name, dx: null, level: null, label: null, cites: new Set() };
-      g.cells.set(k, c);
+  for (const r of rows) {
+    const g = ensure(r.tissue ?? UNSPEC);
+    if (r.cell_type) {
+      g.cells.push({
+        name: r.cell_type,
+        dx: r.disease_context,
+        level: r.present,
+        label: r.disease_label ?? null,
+        cites: r.cited_evidence_ids,
+      });
+    } else {
+      g.reads.push(r);
     }
-    return c;
-  };
+  }
 
-  // Tissue reads push their dx + level + disease label + cites down onto the
-  // cell they name.
-  bc.tissues.forEach((t) => {
-    const g = ensure(t.tissue);
-    g.reads.push(t);
-    t.cell_types.forEach((cn) => {
-      const c = cellIn(g, cn);
-      c.dx = t.disease_context;
-      c.level = t.present;
-      if (t.disease_label) c.label = t.disease_label;
-      t.cited_evidence_ids.forEach((id) => c.cites.add(id));
-    });
-  });
-  // Cell-type records add their citations and — for newer records that carry
-  // them — their OWN disease context / level / disease label, which override
-  // the value inherited from a paired tissue read (the cell is more specific).
-  bc.cell_types.forEach((ct) => {
-    const where = ct.present_in_tissues.length ? ct.present_in_tissues : [UNSPEC];
-    where.forEach((tn) => {
-      const c = cellIn(ensure(tn), ct.cell_type);
-      if (ct.disease_context && ct.disease_context !== "unknown")
-        c.dx = ct.disease_context;
-      if (ct.present && ct.present !== "unknown") c.level = ct.present;
-      if (ct.disease_label) c.label = ct.disease_label;
-      ct.cited_evidence_ids.forEach((id) => c.cites.add(id));
-    });
-  });
+  // Tissue-level reads (cell_type null) are the tissue's independent evidence.
+  const independentReads = (g: { reads: ERow[] }) => g.reads;
 
-  // A read with NO cell breakdown is the tissue's own independent evidence.
-  const independentReads = (g: { reads: Tissue[] }) =>
-    g.reads.filter((r) => r.cell_types.length === 0);
-
-  // Group order: tissues with a `normal` read first, then tissues with any
-  // read, then cell-type-only tissues; "(tissue unspecified)" last.
-  const groupRank = (g: { name: string; reads: Tissue[] }) => {
+  // Group order: tissues with a `normal`-context row first, then others;
+  // "(tissue unspecified)" last.
+  const groupRank = (g: { name: string; reads: ERow[]; cells: CellLike[] }) => {
     if (norm(g.name) === norm(UNSPEC)) return 4;
-    if (g.reads.length === 0) return 3;
-    return g.reads.some((t) => t.disease_context === "normal") ? 0 : 2;
+    const hasNormal =
+      g.reads.some((r) => r.disease_context === "normal") ||
+      g.cells.some((c) => c.dx === "normal");
+    return hasNormal ? 0 : 2;
   };
   const ordered = [...groups.values()].sort(
     (a, b) => groupRank(a) - groupRank(b) || a.order - b.order,
@@ -156,7 +172,7 @@ export function ExpressionCard({ rec, n }: Props) {
               {ordered.flatMap((g) => {
                 const indep = independentReads(g);
                 const head = indep[0];
-                const cells = [...g.cells.values()].sort(
+                const cells = [...g.cells].sort(
                   (a, b) =>
                     (DISEASE_CONTEXT_RANK[a.dx ?? ""] ?? 9) -
                     (DISEASE_CONTEXT_RANK[b.dx ?? ""] ?? 9),
@@ -238,7 +254,7 @@ export function ExpressionCard({ rec, n }: Props) {
                       )}
                     </td>
                     <td>
-                      <EvidenceChipList ids={[...c.cites]} label="Cites" />
+                      <EvidenceChipList ids={c.cites} label="Cites" />
                     </td>
                   </tr>
                 ));

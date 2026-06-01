@@ -1005,7 +1005,7 @@ def _derive_filters(
     _PRESENT_LEVELS = {"high", "moderate", "low", "mixed"}
     tumor_associated = any(
         t.disease_context in _TUMOR_CTX and t.present in _PRESENT_LEVELS
-        for t in biological_context.tissues
+        for t in biological_context.expression
     )
 
     # induction_trigger — dominant stimulus bucket across the modulation
@@ -1163,7 +1163,7 @@ def _main(argv: list[str] | None = None) -> int:
     )
     print(
         f"counts: methods={len(rec.surface_evidence.methods)} "
-        f"tissues={len(rec.biological_context.tissues)} "
+        f"expression={len(rec.biological_context.expression)} "
         f"evidence={rec.evidence_count} (primary={rec.primary_evidence_count} "
         f"secondary={rec.secondary_evidence_count})"
     )

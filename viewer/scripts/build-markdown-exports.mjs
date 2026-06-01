@@ -560,14 +560,46 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push(`*Accessibility context* — ${e.accessibility_context_summary}`);
     lines.push("");
   }
-  if (bc.tissues.length) {
-    lines.push("**Tissues × disease context**");
+  // Unified expression rows (current schema). Fall back to the pre-unify
+  // split tissues + cell_types for older records.
+  const exprRows =
+    bc.expression && bc.expression.length
+      ? bc.expression.map((r) => ({
+          tissue: r.tissue ?? "—",
+          cell_type: r.cell_type ?? "—",
+          present: r.present,
+          disease_context: r.disease_context,
+          disease_label: r.disease_label,
+        }))
+      : [
+          ...(bc.tissues ?? []).map((t) => ({
+            tissue: t.tissue,
+            cell_type: "—",
+            present: t.present,
+            disease_context: t.disease_context,
+            disease_label: t.disease_label,
+          })),
+          ...(bc.cell_types ?? []).flatMap((c) =>
+            (c.present_in_tissues.length ? c.present_in_tissues : ["—"]).map(
+              (tn) => ({
+                tissue: tn,
+                cell_type: c.cell_type,
+                present: c.present ?? "unknown",
+                disease_context: c.disease_context ?? "unknown",
+                disease_label: c.disease_label,
+              }),
+            ),
+          ),
+        ];
+  if (exprRows.length) {
+    lines.push("**Expression by tissue of origin**");
     lines.push("");
-    lines.push("| Tissue | Disease context | Level (protein) | Cell types | Cell states |");
-    lines.push("|---|---|---|---|---|");
-    for (const t of bc.tissues) {
+    lines.push("| Tissue | Cell of origin | Disease context | Level (protein) |");
+    lines.push("|---|---|---|---|");
+    for (const r of exprRows) {
+      const dx = r.disease_label || prettyEnum(r.disease_context);
       lines.push(
-        `| ${t.tissue} | ${prettyEnum(t.disease_context)}${t.disease_label ? ` (${t.disease_label})` : ""} | ${prettyEnum(t.present)} | ${t.cell_types.join(", ") || "—"} | ${t.cell_states.join(", ") || "—"} |`,
+        `| ${r.tissue} | ${r.cell_type} | ${dx} | ${prettyEnum(r.present)} |`,
       );
     }
     lines.push("");

@@ -283,7 +283,7 @@ def _risks() -> AccessibilityRisks:
 
 def _bio_ctx() -> BiologicalContext:
     return BiologicalContext(
-        tissues=[], cell_types=[], cell_states=[],
+        expression=[], cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
             dual_localization=[], membrane_subdomains=[],

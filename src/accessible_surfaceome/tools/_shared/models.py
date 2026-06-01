@@ -1916,55 +1916,40 @@ class SurfaceEvidence(BaseModel):
 # ---- biological context (section 2) ---------------------------------------
 
 
-class TissueContext(BaseModel):
-    """One tissue × disease_context expression row.
+class ExpressionRow(BaseModel):
+    """Unified expression observation — one (tissue × cell-of-origin ×
+    disease_context) surface-expression read.
 
-    The same tissue can appear twice (normal + tumor rows) with different
-    ``present`` levels. Tissue / cell_type / cell_state names are free text —
-    no ontology IDs for v1.0.0.
+    Replaces the split ``TissueContext`` / ``CellTypeContextV1`` pivots with a
+    single row that may name a ``tissue``, a ``cell_type`` of origin, or both:
 
-    See ``ExpressionObservation`` for the ``species`` / ``species_inferred``
-    contract.
+    * tissue-level read (no cell breakdown) → ``tissue`` set, ``cell_type``
+      ``None``.
+    * cell-of-origin read → ``cell_type`` set, ``tissue`` set to the tissue it
+      was observed in (``None`` if the source doesn't name one).
+
+    ``present`` is the surface-expression level; ``disease_label`` names the
+    SPECIFIC disease when ``disease_context`` can't on its own (e.g. "Fabry
+    disease"). The same tissue can appear in several rows (normal + tumor, or
+    one row per cell type). Tissue / cell-type / cell-state names are free text
+    — no ontology IDs.
+
+    See ``ExpressionObservation`` (the method-anchored level read) for the
+    ``species`` / ``species_inferred`` contract.
     """
 
     model_config = ConfigDict(extra="forbid")
 
-    tissue: str
+    tissue: str | None = None
+    cell_type: str | None = None
     present: TissuePresence
     disease_context: DiseaseContext
-    # Specific disease name when ``disease_context`` is a non-``normal`` /
-    # non-``tumor`` read that the enum can't name on its own (e.g. "Fabry
-    # disease", "diabetic nephropathy"). Free text; null when the enum value
-    # is self-describing (normal / tumor). Rendered as the disease label,
-    # falling back to ``disease_context`` when absent.
+    # Specific disease name when ``disease_context`` can't name it on its own
+    # (e.g. "Fabry disease", "diabetic nephropathy", "lung adenocarcinoma").
+    # Free text; null for a plain normal read or a generic unnamed tumor. The
+    # viewer shows this in place of the bare enum.
     disease_label: str | None = Field(default=None, max_length=120)
-    cell_types: list[str] = Field(default_factory=list)
     cell_states: list[str] = Field(default_factory=list)
-    species: Species = "unspecified"
-    species_inferred: bool = False
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-
-class CellTypeContextV1(BaseModel):
-    """Orthogonal cell-type pivot for biological context (v1.0.0).
-
-    Carries its OWN ``disease_context`` / ``present`` / ``disease_label`` so a
-    cell-of-origin row is self-describing in the viewer (it no longer has to
-    inherit the level/context from a paired ``TissueContext`` row). All three
-    default to the unknown read so older records validate unchanged.
-
-    See ``ExpressionObservation`` for the ``species`` / ``species_inferred``
-    contract.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    cell_type: str
-    ontology_id: str | None = None
-    present_in_tissues: list[str] = Field(default_factory=list)
-    disease_context: DiseaseContext = "unknown"
-    present: TissuePresence = "unknown"
-    disease_label: str | None = Field(default=None, max_length=120)
     species: Species = "unspecified"
     species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
@@ -2137,8 +2122,9 @@ class BiologicalContext(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    tissues: list[TissueContext] = Field(default_factory=list)
-    cell_types: list[CellTypeContextV1] = Field(default_factory=list)
+    # Unified tissue × cell-of-origin × disease-context expression rows
+    # (replaces the old split ``tissues`` + ``cell_types`` pivots).
+    expression: list[ExpressionRow] = Field(default_factory=list)
     cell_states: list[StateContext] = Field(default_factory=list)
     subcellular_localization: SubcellularLocalization
     anatomical_accessibility: list[AnatomicalAccessibilityObservation] = Field(
@@ -2925,10 +2911,8 @@ class BiologicalContextDraft(BaseModel):
         known = {c.evidence_id for c in self.evidence_claims}
         cited: set[str] = set()
         bc = self.biological_context
-        for tissue in bc.tissues:
-            cited.update(tissue.cited_evidence_ids)
-        for cell_type in bc.cell_types:
-            cited.update(cell_type.cited_evidence_ids)
+        for row in bc.expression:
+            cited.update(row.cited_evidence_ids)
         for state in bc.cell_states:
             cited.update(state.cited_evidence_ids)
         for dual in bc.subcellular_localization.dual_localization:
@@ -3506,8 +3490,7 @@ __all__ = [
     "Contradiction",
     "SurfaceEvidence",
     # v1.0.0 — biological context (section 2)
-    "TissueContext",
-    "CellTypeContextV1",
+    "ExpressionRow",
     "StateContext",
     "DualLocalization",
     "MembraneSubdomain",

@@ -434,8 +434,7 @@ def _main(argv: list[str] | None = None) -> int:
     if result.draft is not None:
         bc = result.draft.biological_context
         print(
-            f"VALID  tissues={len(bc.tissues)}  "
-            f"cell_types={len(bc.cell_types)}  "
+            f"VALID  expression={len(bc.expression)}  "
             f"cell_states={len(bc.cell_states)}  "
             f"anatomical={len(bc.anatomical_accessibility)}  "
             f"modulation={len(bc.accessibility_modulation)}  "

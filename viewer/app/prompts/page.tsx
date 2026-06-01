@@ -184,20 +184,14 @@ const PROMPT_GROUPS: PromptGroup[] = [
           "supportive_but_indirect / conflicting / weak).",
       },
       {
-        id: "builder-tissues",
-        label: "A2 — tissues builder",
-        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/tissues_builder_system.md",
+        id: "builder-expression",
+        label: "A2 — expression builder",
+        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/expression_builder_system.md",
         blurb:
-          "Per-tissue presence + reliability flags from HPA, GTEx, tissue " +
-          "atlases, and disease-context tissue staining.",
-      },
-      {
-        id: "builder-cell-types",
-        label: "A2 — cell_types builder",
-        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/cell_types_builder_system.md",
-        blurb:
-          "Per-cell-type expression — single-cell atlases, sorted " +
-          "populations, immune subsets.",
+          "Unified tissue × cell-of-origin × disease-context expression rows " +
+          "(merges what were the separate tissues + cell_types builders) — " +
+          "per-tissue / per-cell-type surface presence from HPA, GTEx, tissue " +
+          "atlases, single-cell data, and disease-context staining.",
       },
       {
         id: "builder-cell-states",
