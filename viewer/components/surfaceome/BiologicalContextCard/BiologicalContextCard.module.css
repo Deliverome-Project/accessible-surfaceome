@@ -182,13 +182,18 @@
   width: 11.5rem;
 }
 
-/* Columns 2–5 — Reference (baseline_context), Modulating state, Implication,
+/* Column 2 — Change (structured direction): short single-word labels
+   (Increase / Decrease / Equal / Bidirectional / ?), so pin it narrow and
+   leave the prose columns the rest. */
+.modTable th:nth-child(2),
+.modTable td:nth-child(2) {
+  width: 7rem;
+}
+
+/* Columns 3–6 — Reference (baseline_context), Modulating state, Implication,
    and References (change narrative + citations) — are ALL prose/citation
    content. With `table-layout: fixed` and no explicit width they divide the
-   space left by the fixed Context column EQUALLY. Previously cols 2–4 were
-   pinned narrow (7–8rem) and col 5 carried no width, so it absorbed the
-   entire remainder and ballooned far wider than its short citations needed
-   while the three prose columns stayed cramped. Equal shares read far better. */
+   space left by the fixed Context + Change columns EQUALLY. */
 
 .modTable td:nth-child(1),
 .modTable td:nth-child(2),
@@ -202,12 +207,10 @@
   word-break: keep-all;
 }
 
-/* Columns 1 (Category) and 2 (Induced / lineage) are pinned narrow, so their
-   pills wrap at word boundaries rather than overflow the fixed column. Target
-   ALL descendants (not just the direct pill) so the text span INSIDE the pill
-   wraps too, only at word boundaries. */
-.modTable td:nth-child(1) *,
-.modTable td:nth-child(2) * {
+/* Column 1 (Category) pill is pinned narrow, so its text wraps at word
+   boundaries rather than overflow the fixed column. Target ALL descendants
+   (not just the direct pill) so the text span INSIDE the pill wraps too. */
+.modTable td:nth-child(1) * {
   white-space: normal;
   overflow-wrap: normal;
   word-break: keep-all;

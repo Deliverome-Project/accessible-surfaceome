@@ -27,43 +27,61 @@ function implicationTone(v: AccessibilityImplication) {
  *  ↑ increases surface (green), ↓ decreases (red), ↕ bidirectional (amber),
  *  = no change (muted). Returns null for "unclear" or an absent field (older
  *  records), so those rows show no glyph rather than a misleading one. */
-function directionGlyph(
+// Rendered "Change" cell for the modulation table — the structured
+// `direction` of the surface-accessible pool under the modulating state,
+// shown as a glyph + short word. `unclear` (and null / older records that
+// lack the field) render an explicit "?" rather than a blank cell, so the
+// reader can tell "not determined" apart from "no row".
+function directionCell(
   direction: ModulationDirection | undefined,
 ): React.ReactNode {
   const map: Record<
     string,
-    { glyph: string; color: string; title: string } | undefined
+    { glyph: string; text: string; color: string; title: string }
   > = {
     increases_surface: {
       glyph: "↑",
+      text: "Increase",
       color: "var(--success, #1b5e3f)",
       title: "Increases surface-accessible pool",
     },
     decreases_surface: {
       glyph: "↓",
+      text: "Decrease",
       color: "var(--maroon-dark, #922038)",
       title: "Decreases surface-accessible pool",
     },
     bidirectional: {
       glyph: "↕",
+      text: "Bidirectional",
       color: "var(--amber-dark, #8a5a16)",
       title: "Both directions documented",
     },
     no_change: {
       glyph: "=",
+      text: "Equal",
       color: "var(--ink-faint, #999)",
       title: "No net change in surface accessibility",
     },
   };
   const d = direction ? map[direction] : undefined;
-  if (!d) return null;
+  if (!d) {
+    return (
+      <span
+        title="Direction of change not determined"
+        style={{ color: "var(--ink-faint, #999)" }}
+      >
+        ?
+      </span>
+    );
+  }
   return (
     <span
       aria-label={d.title}
       title={d.title}
-      style={{ color: d.color, fontWeight: 700, marginLeft: "0.3em" }}
+      style={{ color: d.color, fontWeight: 600, whiteSpace: "nowrap" }}
     >
-      {d.glyph}
+      {d.glyph} {d.text}
     </span>
   );
 }
@@ -113,6 +131,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
             <thead>
               <tr>
                 <th scope="col">Context</th>
+                <th scope="col">Change</th>
                 <th scope="col">Reference</th>
                 <th scope="col">Modulating state</th>
                 <th scope="col">Implication</th>
@@ -126,11 +145,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
                     <StatusPill tone="lavender" size="sm">
                       {prettyEnum(m.category)}
                     </StatusPill>
-                    {/* ↑/↓/↕ direction of the surface-accessibility change
-                        from the structured `direction` enum. Null for
-                        unclear / older records without the field. */}
-                    {directionGlyph(m.direction)}
                   </td>
+                  {/* Structured direction of the surface pool under the
+                      modulating state — its own column, "?" when unclear. */}
+                  <td>{directionCell(m.direction)}</td>
                   <td>{m.baseline_context}</td>
                   <td>{m.modulating_state}</td>
                   <td>{m.accessibility_implication}</td>
