@@ -127,7 +127,7 @@ def _seq_from_uniprot(acc: str) -> str | None:
     return seq
 
 
-def _aligned_sequence(acc: str, topology: str | None) -> str | None:
+def _aligned_sequence(acc: str | None, topology: str | None) -> str | None:
     """Resolve ``acc``'s sequence, but only return it when its length matches
     ``topology`` (so it lines up with the per-residue string). D1 first
     (exact input), then UniProt FASTA.

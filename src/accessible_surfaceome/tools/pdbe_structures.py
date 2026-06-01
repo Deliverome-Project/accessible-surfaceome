@@ -35,10 +35,14 @@ _UA = "accessible-surfaceome/1.0 (pdbe_structures.py)"
 
 
 def _coerce_float(value: object) -> float | None:
-    try:
-        return float(value) if value is not None else None  # type: ignore[arg-type]
-    except (TypeError, ValueError):
-        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return None
+    return None
 
 
 def fetch_representative_structure(
