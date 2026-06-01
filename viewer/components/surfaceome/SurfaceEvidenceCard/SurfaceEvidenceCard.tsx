@@ -13,6 +13,7 @@ import { antibodyLink } from "../../../lib/antibody-links";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { SearchChips } from "../SearchChips/SearchChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./SurfaceEvidenceCard.module.css";
@@ -420,6 +421,10 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
           {linkifyEvidenceRefs(se.grade_rationale)}
         </p>
       </div>
+
+      {/* The A1 (surface-evidence) agent's searches that produced this
+          section — deterministic assay sweeps + its planned topic queries. */}
+      <SearchChips searchLog={rec.search_log} focus="a1" />
 
       {shownMethods.length === 0 ? (
         <p className={styles.empty}>
