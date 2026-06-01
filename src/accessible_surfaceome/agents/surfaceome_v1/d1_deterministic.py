@@ -523,7 +523,9 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
             mouse.append(entry)
         elif species in ("cynomolgus", "cyno"):
             cyno.append(entry)
-    return Orthologs(mouse=mouse, cynomolgus=cyno)
+    # checked=True: this function only runs when the ortholog versions resolved,
+    # so an empty result is a genuine "no one2one ortholog", not "not checked".
+    return Orthologs(mouse=mouse, cynomolgus=cyno, checked=True)
 
 
 def _stub_structure(uniprot_acc: str) -> StructureFeatures:
@@ -728,6 +730,11 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         isoform_topologies=isoforms,
         orthologs=orthologs,
         paralogs=paralogs,
+        # checked=True only when the cohort's version resolved (we actually
+        # queried D1); an empty list under a resolved version is a genuine
+        # singleton / single-isoform gene, not an un-run sweep.
+        paralogs_checked=bool(paralog_version),
+        isoform_topologies_checked=bool(isoform_topo_version),
         structure=structure,
         surface_bind=surface_bind,
     )
