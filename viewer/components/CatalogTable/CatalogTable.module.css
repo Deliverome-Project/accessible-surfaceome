@@ -1114,10 +1114,86 @@
 @media (max-width: 720px) {
   .row {
     grid-template-columns:
-      1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(9rem, 1fr) 4.5rem;
+      1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(9rem, 1fr)
+      3.6rem 3.6rem 4rem 3.6rem 4.5rem;
   }
   .uniprotCell,
   .headerRow .headerCell:nth-child(3) {
     display: none;
   }
+}
+
+/* ── Deep-dive agent column group ───────────────────────────────────
+   A spanning "Deep dive agent" label over columns 10–13 (Access · Conf ·
+   Evidence · State) + the per-vital cells, toned with the SAME palette as
+   the gene-page vitals and the verdict pills. */
+
+/* Group-label strip: a 3-cell grid row (left spacer over cols 1–9, the
+   label over cols 10–13, right spacer over col 14). Uses the same
+   --catalog-cols template; column-span via grid-column. */
+.groupHeaderRow {
+  border: none;
+  background: none;
+  min-height: 1.2rem;
+  align-items: end;
+  padding-bottom: 2px;
+}
+.groupHeaderSpacer {
+  grid-column: span 9;
+}
+.groupHeaderRow .groupHeaderSpacer:last-child {
+  grid-column: span 1;
+}
+.groupHeaderDeepDive {
+  grid-column: span 4;
+  text-align: center;
+  font-size: 0.62rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border, #E6DAD4);
+  padding-bottom: 2px;
+}
+
+.ddHeaderCell {
+  justify-content: center;
+  text-align: center;
+  font-size: 0.66rem;
+}
+
+.ddCell {
+  justify-content: center;
+}
+
+/* Deep-dive vital chip — mirrors .verdictMini sizing so it sits tight in
+   the narrow columns; tone classes below reuse the verdict-pill palette. */
+.ddVital {
+  padding: 0.12rem 0.36rem;
+  font-size: 0.62rem;
+  font-weight: var(--fw-medium);
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.ddToneSuccess {
+  background: rgba(46, 122, 85, 0.14);
+  color: var(--success);
+}
+.ddToneDanger {
+  background: var(--maroon-blush);
+  color: var(--maroon-dark);
+}
+.ddToneAmber {
+  background: var(--amber-tint);
+  color: var(--amber-deepest);
+}
+.ddToneNeutral {
+  background: var(--bg-warm);
+  color: var(--muted);
 }

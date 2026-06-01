@@ -1,0 +1,1804 @@
+{
+  "schema_version": "1.1.0",
+  "gene": {
+    "hgnc_symbol": "BAX",
+    "hgnc_id": "HGNC:959",
+    "uniprot_acc": "Q07812",
+    "ncbi_gene_id": 581,
+    "ensembl_gene": "ENSG00000087088"
+  },
+  "triage_signal": "unlikely",
+  "triage_reasoning": "BAX is a BCL2-family pro-apoptotic protein that resides predominantly as a soluble cytoplasmic monomer under resting conditions. Upon apoptotic stimulation it undergoes conformational change, oligomerizes, and inserts into the outer mitochondrial membrane (OMM), not the plasma membrane. Its primary functional site is the OMM, where it permeabilizes the membrane to release cytochrome c. No credible surface biotinylation, flow cytometry on intact non-permeabilized cells, or surface proteomics data place BAX on the extracellular leaflet of the plasma membrane. Checking contextual buckets: cell_state_induced \u2014 stress/apoptosis recruits BAX to OMM, not PM outer leaflet; tissue_restricted_surface \u2014 no lineage-specific PM display documented; lysosomal_exocytosis \u2014 no evidence; dual_localization \u2014 PM pool not documented; stable_surface_attachment \u2014 not secreted and not wash-resistantly anchored to a PM partner. No therapeutic antibody/ADC/CAR-T targets BAX on the cell surface. Its only 'surface' is intramitochondrial, making it inaccessible from the extracellular face.",
+  "executive_summary": {
+    "one_paragraph": "BAX is a BCL-2-family pro-apoptotic protein whose canonical localization is cytosolic in healthy cells, with stress-induced translocation to the mitochondrial outer membrane (OMM) to drive cytochrome-c release. No evidence from surface biotinylation, live-cell flow cytometry, or non-permeabilized immunofluorescence places BAX on the extracellular leaflet of the plasma membrane. The surfaceome capture database (Bausch-Fluck 2018) does not list BAX, and all direct assays confirm intracellular/mitochondrial localization. BAX is not a plasma-membrane surface target.",
+    "surface_accessibility": "no",
+    "evidence_grade_summary": "weak",
+    "confidence": "high",
+    "state_dependence": "low",
+    "subcategory": "other",
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "BCL2 family"
+    ],
+    "uniprot_family": "Bcl-2 family",
+    "surface_call_reason": "mitochondrial_internal",
+    "accessibility_context_summary": "BAX is not surface-accessible; it resides in the cytosol at rest and translocates to the mitochondrial outer membrane upon apoptotic stimulation \u2014 never the extracellular leaflet of the plasma membrane.",
+    "headline_risks": [],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_03",
+      "a2_evi_01",
+      "a2_evi_02",
+      "a2_evi_03",
+      "a2_evi_04"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "no",
+    "confidence": "high",
+    "subcategory": "other",
+    "state_dependence": "low",
+    "surface_call_reason": "mitochondrial_internal",
+    "llm_family": "miscellaneous",
+    "evidence_grade": "weak",
+    "ecd_accessibility_class": "none",
+    "evidence_density": "moderate",
+    "expression_level": "moderate",
+    "expression_breadth": "broad",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": false,
+    "has_secreted_form": true,
+    "requires_coreceptor_for_expression": false,
+    "co_receptor_dependency": "none",
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": false,
+    "has_restricted_subdomain": false,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": false,
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": true,
+    "n_supporting_claims_high_weight": 0,
+    "n_contradicting_claims_high_weight": 0,
+    "overexpression_surface_localization_observed": false,
+    "expression_level_rationale": "BAX mRNA and protein are broadly detected in normal tissues and multiple tumor types including GBM and kidney disease (a2_evi_07, a2_evi_08, a2_evi_06), indicating moderate ubiquitous expression at the protein level.",
+    "expression_breadth_rationale": "BAX mRNA is present in multiple normal tissues and disease contexts including kidney and brain (a2_evi_06, a2_evi_07, a2_evi_08); consistent with pan-tissue apoptotic machinery, though IHC data in ledger are limited to two tissue types.",
+    "surface_specificity_rationale": "Entirely intracellular: cytosolic at rest, mitochondrial-outer-membrane upon apoptosis (a2_evi_01, a2_evi_02, a2_evi_03). Absent from surfaceome proteomics capture (a1_evi_03). No PM surface pool documented.",
+    "has_known_ligand_rationale": "BAX interacts with pro-survival BCL-2 family members (BCL-2, BCL-xL, MCL-1) as its primary binding partners; BCL-xL retrotranslocation interaction is directly evidenced (a2_evi_03, a2_evi_04). BH3-domain binding is well-established.",
+    "low_endogenous_expression_rationale": "Derived from expression_level='moderate' (not low/absent \u2192 not flagged). BAX mRNA and protein are broadly detected in normal tissues and multiple tumor types including GBM and kidney disease (a2_evi_07, a2_evi_08, a2_evi_06), indicating moderate ubiquitous expression at the protein level.",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "tumor_associated": false,
+    "induction_trigger": "none",
+    "has_live_cell_surface_evidence": false
+  },
+  "surface_evidence": {
+    "evidence_grade": "weak",
+    "grade_rationale": "All three claims are tangential to a surface-accessibility call. a1_evi_01 is a WB antibody list with no surface assay; a1_evi_02 is permeabilized IF demonstrating mitochondrial co-localization (intracellular, not a direct surface refutation under the same conditions as any positive surface claim); a1_evi_03 is absence from a curated surfaceome DB, which is indirect/negative. There is no direct surface methodology (live flow, nonperm IF, surface biotinylation) in any direction. The evidence base is entirely indirect and negative, yielding a 'weak' grade \u2014 no direct surface assay supports or refutes plasma membrane exposure.",
+    "claim_stances": [
+      {
+        "claim_id": "a1_evi_01",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "WB antibody list in methods; no surface assay \u2014 describes intracellular detection context only."
+      },
+      {
+        "claim_id": "a1_evi_02",
+        "stance": "tangential",
+        "weight": "moderate",
+        "note": "Permeabilized IF showing mitochondrial co-localization; confirms intracellular/mitochondrial biology, not a surface refutation per se."
+      },
+      {
+        "claim_id": "a1_evi_03",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Absence from Surfaceome DB is indirect/negative evidence; no direct surface assay performed."
+      }
+    ],
+    "methods": [
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "permeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-BAX",
+            "clone": null,
+            "vendor": "Cell Signaling Technology",
+            "catalog": "2772",
+            "rrid": null,
+            "monoclonal_or_polyclonal": "polyclonal",
+            "antibody_epitope_region": "intracellular",
+            "validation_strategy": "siRNA_knockdown",
+            "validation_strength": "moderate",
+            "cross_reactivity_notes": "Rabbit polyclonal raised against N-terminal residues of human BAX; validated by knockdown per vendor/CiteAb."
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_01"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "permeabilized_IF",
+        "permeabilization": "permeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "expression_only",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "Cancer cell line treated with G-IrC8 nanoparticles plus laser; BAX co-localizes with MitoTracker Deep Red, confirming mitochondrial localization in fixed and live cells",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "unspecified",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_02"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_02"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "cell_surface_capture",
+        "permeabilization": "unknown",
+        "expression_system": "unknown",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "BAX absent from Surfaceome database (Bausch-Fluck et al. 2018); not detected by cell-surface capture mass spectrometry across surveyed cell types",
+            "sample_type": "unknown",
+            "level": "absent",
+            "species": "unspecified",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_03"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_03"
+        ]
+      }
+    ],
+    "non_surface_expression": [],
+    "contradicting_evidence": [
+      {
+        "claim": "BAX co-localizes with MitoTracker Deep Red in both fixed and live cells, confirming its localization at the mitochondrial outer membrane rather than the plasma membrane surface. Western blot detection of BAX in whole-cell lysates using CST clone 2772 further situates it as a cytoplasmic/mitochondrial protein with no surface-specific fractionation reported. Together these data consistently place BAX intracellularly, contradicting the hypothesis that it is plasma membrane surface accessible.",
+        "contradiction_type": "intracellular_pool",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "BAX is a well-established cytosolic and mitochondrial outer membrane protein that translocates to mitochondria upon apoptotic stimulation. The permeabilized IF and standard WB contexts capture this intracellular pool; any plasma membrane presence would be a minor or stress-induced event not representative of steady-state surface accessibility.",
+        "cited_evidence_ids": [
+          "a1_evi_01",
+          "a1_evi_02"
+        ]
+      },
+      {
+        "claim": "BAX is absent from the Surfaceome database (Bausch-Fluck et al., 2018), a curated resource built from cell-surface capture mass spectrometry experiments. Its absence from this proteomics-based surfaceome dataset indicates it was not detected as a plasma membrane surface protein by biochemical cell-surface enrichment methods across multiple cell types.",
+        "contradiction_type": "proteomics_conflict",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "Cell-surface capture proteomics selectively biotinylates extracellular-facing glycoproteins; BAX lacks a canonical signal peptide and transmembrane domain oriented to the plasma membrane, so it would not be captured by this method, consistent with its established intracellular localization.",
+        "cited_evidence_ids": [
+          "a1_evi_03"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [],
+    "cell_types": [
+      {
+        "cell_type": "renal tubular epithelial cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "kidney"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      },
+      {
+        "cell_type": "glomerular cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "kidney"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      },
+      {
+        "cell_type": "glioblastoma tumor cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_09"
+        ]
+      },
+      {
+        "cell_type": "glial tumor cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "brain"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      }
+    ],
+    "cell_states": [
+      {
+        "state": "apoptotic",
+        "descriptor": "Upon apoptotic stimulation, BAX translocates from the cytosol to the mitochondrial outer membrane, where it oligomerizes and permeabilizes the membrane; the BAX/BCL-2 ratio increases and BAX co-localizes with mitochondria.",
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_05"
+        ]
+      },
+      {
+        "state": "resting",
+        "descriptor": "In healthy, non-apoptotic cells, BCL-xL-driven retrotranslocation maintains BAX predominantly in the cytosol through continuous mitochondria-to-cytoplasm cycling.",
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_03",
+          "a2_evi_04"
+        ]
+      }
+    ],
+    "subcellular_localization": {
+      "primary_compartment": "cytosol",
+      "dual_localization": [
+        {
+          "compartment": "mitochondrial outer membrane",
+          "fraction_estimate": null,
+          "condition": "upon apoptotic stimulation",
+          "cited_evidence_ids": [
+            "a2_evi_01",
+            "a2_evi_03",
+            "a2_evi_05"
+          ]
+        },
+        {
+          "compartment": "mitochondrion",
+          "fraction_estimate": null,
+          "condition": "basal cycling; retrotranslocated back to cytosol by pro-survival BCL-2 proteins",
+          "cited_evidence_ids": [
+            "a2_evi_02",
+            "a2_evi_03",
+            "a2_evi_04"
+          ]
+        }
+      ],
+      "membrane_subdomains": []
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": []
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "Q07812",
+      "uniprot_acc": "Q07812",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "cytoplasmic",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 0,
+      "icd_length_residues": 192,
+      "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z",
+      "full_length_pct_identity_to_canonical": null,
+      "ecd_pct_identity_to_canonical": null,
+      "ecd_pct_similarity_to_canonical": null
+    },
+    "isoform_topologies": [
+      {
+        "isoform_id": "Q07812-2",
+        "uniprot_acc": "Q07812-2",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 218,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 86.97916666666666,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      },
+      {
+        "isoform_id": "Q07812-3",
+        "uniprot_acc": "Q07812-3",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "extracellular",
+        "c_terminal_orientation": "extracellular",
+        "signal_peptide_length": 10,
+        "ecd_length_residues": 31,
+        "icd_length_residues": 0,
+        "per_residue_topology": "SSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 51.21951219512195,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      },
+      {
+        "isoform_id": "Q07812-4",
+        "uniprot_acc": "Q07812-4",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 143,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 100.0,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      },
+      {
+        "isoform_id": "Q07812-5",
+        "uniprot_acc": "Q07812-5",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 164,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 81.09756097560977,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      },
+      {
+        "isoform_id": "Q07812-6",
+        "uniprot_acc": "Q07812-6",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 114,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 100.0,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      },
+      {
+        "isoform_id": "Q07812-7",
+        "uniprot_acc": "Q07812-7",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 173,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 100.0,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      },
+      {
+        "isoform_id": "Q07812-8",
+        "uniprot_acc": "Q07812-8",
+        "tm_helix_count": 0,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 0,
+        "icd_length_residues": 179,
+        "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 100.0,
+        "ecd_pct_identity_to_canonical": null,
+        "ecd_pct_similarity_to_canonical": null
+      }
+    ],
+    "orthologs": {
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "Q07813",
+          "ensembl_id": "ENSMUSG00000003873",
+          "ortholog_uniprot_acc": "Q07813",
+          "ortholog_symbol": "Bax",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": null,
+          "ecd_pct_similarity_to_human_canonical": null,
+          "full_length_pct_identity_to_human_canonical": 92.1875,
+          "ecd_length_residues": 0,
+          "tm_helix_count": 0,
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-05-31T15:14:10.690505Z",
+          "per_residue_topology": "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "GLOB",
+          "topology_projection_source": null,
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0
+        }
+      ],
+      "cynomolgus": []
+    },
+    "paralogs": [
+      {
+        "paralog_symbol": "MCL1",
+        "paralog_uniprot_acc": "Q07820",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 24.4792,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BCL2",
+        "paralog_uniprot_acc": "P10415",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 23.4375,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BCL2L1",
+        "paralog_uniprot_acc": "Q07817",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 21.875,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BAK1",
+        "paralog_uniprot_acc": "Q16611",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 20.8333,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BOK",
+        "paralog_uniprot_acc": "Q9UMX3",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 20.8333,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BCL2L10",
+        "paralog_uniprot_acc": "Q9HD36",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 20.3125,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BCL2A1",
+        "paralog_uniprot_acc": "Q16548",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 20.3125,
+        "family_id": "Chordata",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      },
+      {
+        "paralog_symbol": "BCL2L2",
+        "paralog_uniprot_acc": "Q92843",
+        "ecd_pct_identity": null,
+        "full_length_pct_identity": 18.75,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "ecd_pct_similarity": null,
+        "per_residue_topology": null,
+        "deeptmhmm_label": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "icd_length_residues": null,
+        "n_terminal_orientation": null,
+        "c_terminal_orientation": null,
+        "signal_peptide_length": null
+      }
+    ],
+    "structure": {
+      "afdb_id": "AF-Q07812-F1",
+      "afdb_version": "v6",
+      "ecd_mean_plddt": 85.94,
+      "ecd_disordered_fraction": 0.125,
+      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "license": "CC BY 4.0",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    },
+    "surface_bind": {
+      "has_data": false,
+      "n_sites": 0,
+      "n_seeds_alpha": 0,
+      "n_seeds_beta": 0,
+      "n_seeds_total": 0,
+      "chain": null,
+      "sites": [],
+      "main_class": null,
+      "sub_class": null,
+      "protein_name": null,
+      "pdbs": [],
+      "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
+      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [],
+      "evidence_basis": "trafficking",
+      "rationale": "BAX membrane association (OMM, not PM) is governed by its own conformational change and BCL-xL-mediated retrotranslocation cycling \u2014 no obligate plasma-membrane co-receptor is involved (a2_evi_03, a2_evi_04). The question is moot given no PM surface is documented.",
+      "cited_evidence_ids": [
+        "a2_evi_03",
+        "a2_evi_04"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": true,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": "alternative_splicing",
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": false,
+      "domain": "unknown",
+      "severity": "low",
+      "evidence_strength": "weak",
+      "rationale": "No relevant data in the ledger regarding plasma-membrane subdomain restriction; the question does not arise because BAX has no documented PM surface presence.",
+      "cited_evidence_ids": []
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "none",
+      "rationale": "BAX has no extracellular domain and no transmembrane segment oriented to the plasma-membrane outer leaflet. Its only membrane-associated state is OMM insertion (intracellular face), which is inaccessible to extracellular binders.",
+      "cited_evidence_ids": [
+        "a2_evi_01",
+        "a1_evi_03"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "none"
+      ],
+      "severity": "none",
+      "evidence_strength": "inferred",
+      "rationale": "No extracellular epitope exists; masking is not applicable.",
+      "cited_evidence_ids": []
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "Western blot antibody identifier for BAX: Cell Signaling Technology clone 2772 (rabbit anti-BAX), used in whole-cell lysate western blot assays alongside other BCL-2 family members. No fractionation or surface-specific step is described in this clip; the antibody is used in a standard intracellular WB context, consistent with BAX being detected as a cytoplasmic/mitochondrial protein rather than a plasma membrane surface protein.",
+      "claim_type": "methodological",
+      "direction": "refutes",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": true,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12783235",
+            "pmc_id": "PMC12783235",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12783235/",
+            "title": "PMC:PMC12783235",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "c7f43efa07181e6ab6538f7aee8fe3320c7f2cadbc77a3ea6f634eac349fc261",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "The antibodies used were as follows: actin\u2014Sigma A2066; BAX\u2014Cell Signaling 2772; BCL-X L \u2014Cell Signaling 2764; full length and cleaved caspase 7\u2014Cell Signaling 9491; GAPDH\u2014Cell Signaling 5174; MCL-1\u2014Cell Signaling 94296; BCL-2\u2014Cell Signaling 3492; BAK NT\u2013 Millipore 06-536; PUMA\u2014Cell Signaling 98672; BIM\u2014Cell Signaling 2933; Cleaved Caspase-3\u2014Cell Signaling 9664; Anti-rabbit IgG (H1L) HRP conjugate\u2014Thermo, 31460.",
+          "quote_sha256": "c7f43efa07181e6ab6538f7aee8fe3320c7f2cadbc77a3ea6f634eac349fc261",
+          "char_offset": 0,
+          "normalized_source_sha256": "1a339d8f3caba6e18afb7870c190be22e6cecb220c5617ff121c1998b51ee4cb"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "BAX/BCL-2 ratio measured as an intracellular apoptotic readout in cells treated with G-IrC8 nanoparticles plus laser; BAX co-localizes with MitoTracker Deep Red in fixed and live cells, confirming mitochondrial (not plasma membrane) localization. This is an intracellular signaling observation, consistent with BAX operating at the mitochondrial outer membrane rather than the plasma membrane surface.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12816584",
+            "pmc_id": "PMC12816584",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12816584/",
+            "title": "PMC:PMC12816584",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "e25b5488b3a4ab5e9c282e8be191dd2eb6bb0093051a245c93b86c7137c244f3",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Heatmap on the right shows Bax/Bcl2 and cleaved-Caspase 3/Caspase 3 ratios, with significant increases in the G-IrC8 + Laser group compared to the Control group (p < 0.05). h Schematic illustrating the proposed mechanism of G-IrC8-induced apoptosis via mitochondrial targeting, fragmentation, ROS generation, and DNA damage\na Confocal microscopy showing G-IrC8 co-localized with mitochondria-specific dye MitoTracker Deep Red in fixed and live cells.",
+          "quote_sha256": "e25b5488b3a4ab5e9c282e8be191dd2eb6bb0093051a245c93b86c7137c244f3",
+          "char_offset": 0,
+          "normalized_source_sha256": "de5a2194166c565c03c9486c7f199f3fcc6f87ebc9bd15703cb6cbff1a13bace"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "The Surfaceome database (Bausch-Fluck et al., 2018) was referenced as one of seven curated datasets used in a computational surface protein analysis pipeline. BAX is not listed as a surfaceome protein in this resource; its absence from the Surfaceome dataset corroborates that BAX is not recognized as a plasma membrane surface protein by cell-surface capture mass spectrometry approaches.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9751427",
+            "pmc_id": "PMC9751427",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9751427/",
+            "title": "PMC:PMC9751427",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "e998268af2104be48b35ab6755b61624a5a5a570d05a27d00090bbc1d4319919",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "The seven datasets used are included in Supplementary Table S3 : DrugBank ( Wishart et al., 2018 ), Human Protein Atlas ( Uhl\u00e9n et al., 2015 ), STITCH ( Szklarczyk et al., 2016 ), Surfaceome ( Bausch-Fluck et al., 2018 ), Tumor Suppressor Gene Database v2.0 (TSGene) ( Zhao et al., 2016 ), pepBDB ( Wen et al., 2019 ), and Comparative Toxicogenomics Database ( Grondin et al., 2021 ).",
+          "quote_sha256": "e998268af2104be48b35ab6755b61624a5a5a570d05a27d00090bbc1d4319919",
+          "char_offset": 0,
+          "normalized_source_sha256": "e91a7bfd3951b1a1e02775b7a7f823698a43cb187376a5937720f3a7b0f59801"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "BAX protein localizes primarily to the cytosol under resting conditions and translocates to the mitochondrial outer membrane upon apoptotic stimulation, where it oligomerizes and permeabilizes the membrane. This establishes BAX as an intracellular/mitochondrial protein, not a plasma membrane protein.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "multiple cell types",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": "Alpha",
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC3070914",
+            "pmc_id": "PMC3070914",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3070914/",
+            "title": "PMC:PMC3070914",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "5c425bd987bf8d1ff316dfe8a5695a7a68351e41a689f2625696f453c6f8fa96",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The Bcl-2 family member Bax translocates from the cytosol to mitochondria, where it oligomerizes and permeabilizes the mitochondrial outer membrane to\u00a0promote apoptosis.",
+          "quote_sha256": "abd177eb6d9c89aae55df987f2ce98d0de6cbb5fa35933fc4762717ac9defeb4",
+          "char_offset": 0,
+          "normalized_source_sha256": "d501b19553f6a4025d5d0c0e1671036c8128fa00cbc119e62533616a652d677a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "In healthy, non-apoptotic cells, BAX undergoes constant retrotranslocation from mitochondria back into the cytoplasm (demonstrated by FLIP), maintaining a predominantly cytosolic pool. This dynamic mitochondria-to-cytoplasm cycling confirms BAX is not stably present at the plasma membrane surface.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "healthy cells (unspecified line)",
+        "permeabilized": null,
+        "fixation": "live",
+        "isoform": "Alpha",
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC3070914",
+            "pmc_id": "PMC3070914",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3070914/",
+            "title": "PMC:PMC3070914",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "5c425bd987bf8d1ff316dfe8a5695a7a68351e41a689f2625696f453c6f8fa96",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Fluorescence loss in photobleaching (FLIP) reveals constant retrotranslocation of WT Bax, but not tethered Bax, from the mitochondria into the cytoplasm of healthy cells.",
+          "quote_sha256": "a28657e7c1931cfe93004ca9c82ad9be6d63437685f622517ec7c4cfd57c62ce",
+          "char_offset": 170,
+          "normalized_source_sha256": "d501b19553f6a4025d5d0c0e1671036c8128fa00cbc119e62533616a652d677a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "BAX retrotranslocation from mitochondria to cytoplasm depends on pro-survival BCL-2 family proteins; when retrotranslocation is inhibited, BAX accumulates on the mitochondrial outer membrane (not plasma membrane). This reinforces BAX localization as cytosolic/mitochondrial rather than plasma membrane.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "unspecified cell lines",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": "Alpha",
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC3070914",
+            "pmc_id": "PMC3070914",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3070914/",
+            "title": "PMC:PMC3070914",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "5c425bd987bf8d1ff316dfe8a5695a7a68351e41a689f2625696f453c6f8fa96",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Bax retrotranslocation depends on prosurvival Bcl-2 family proteins, and inhibition of retrotranslocation correlates with Bax accumulation on the mitochondria.",
+          "quote_sha256": "fd7c01000c98dcdff5c787b6cb9d207a5a6b3a68d28c7d523f78bee268bfa1a7",
+          "char_offset": 341,
+          "normalized_source_sha256": "d501b19553f6a4025d5d0c0e1671036c8128fa00cbc119e62533616a652d677a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "BCL-xL maintains BAX in the cytosol by continuous retrotranslocation of any mitochondrially-localized BAX back to the cytoplasm. The primary steady-state compartment of BAX is cytosolic, not the plasma membrane.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "unspecified cell lines",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": "Alpha",
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC3070914",
+            "pmc_id": "PMC3070914",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3070914/",
+            "title": "PMC:PMC3070914",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "5c425bd987bf8d1ff316dfe8a5695a7a68351e41a689f2625696f453c6f8fa96",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "We propose that Bcl-x(L) inhibits and maintains Bax in the cytosol by constant retrotranslocation of mitochondrial Bax.",
+          "quote_sha256": "4a63f4c95bcf6330719c3ca81a34351e6e4c85a9e6d47d3a193ee41feebfd807",
+          "char_offset": 501,
+          "normalized_source_sha256": "d501b19553f6a4025d5d0c0e1671036c8128fa00cbc119e62533616a652d677a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "Under apoptotic stress (G-IrC8 + laser photodynamic treatment), BAX/BCL-2 ratio increases and BAX co-localizes with mitochondria (MitoTracker), demonstrating stress-induced BAX translocation to the mitochondrial compartment, not the plasma membrane. Subcellular localization is intramitochondrial under apoptotic cell state.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "unspecified",
+        "cell_type_or_line": "unspecified cancer cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12816584",
+            "pmc_id": "PMC12816584",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12816584/",
+            "title": "PMC:PMC12816584",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "e25b5488b3a4ab5e9c282e8be191dd2eb6bb0093051a245c93b86c7137c244f3",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Heatmap on the right shows Bax/Bcl2 and cleaved-Caspase 3/Caspase 3 ratios, with significant increases in the G-IrC8 + Laser group compared to the Control group (p < 0.05). h Schematic illustrating the proposed mechanism of G-IrC8-induced apoptosis via mitochondrial targeting, fragmentation, ROS generation, and DNA damage\na Confocal microscopy showing G-IrC8 co-localized with mitochondria-specific dye MitoTracker Deep Red in fixed and live cells.",
+          "quote_sha256": "e25b5488b3a4ab5e9c282e8be191dd2eb6bb0093051a245c93b86c7137c244f3",
+          "char_offset": 0,
+          "normalized_source_sha256": "de5a2194166c565c03c9486c7f199f3fcc6f87ebc9bd15703cb6cbff1a13bace"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_02"
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "BAX protein expression was assessed by IHC scoring in renal tissue from kidney disease patients, including glomerulus, tubular epithelial cells (cytoplasm, membrane, and proximal), and areas of fibrosis. BAX is expressed in renal tissue in disease context (nephropathy/NRL), with scoring across multiple cellular compartments. This is not plasma membrane surface expression but general tissue expression in diseased kidney.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "renal tubular epithelial cells, glomerular cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "kidney",
+          "disease_state": "nephropathy / renal lesions",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12291386",
+            "pmc_id": "PMC12291386",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12291386/",
+            "title": "PMC:PMC12291386",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "fe3188036f4509b047bf1d089bfc82a0be99f1bf5deae0d4b22bd017a3063104",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "IHC ISH ICIBs a Area of mononuclear inflammatory cell infiltration (scoring) b Other lesions Glomerulus lesion Area of desquamated basement membrane Area of renal fibrosis (scoring) b BCL2 (scoring) b BAX (scoring) b Cleaved caspase-3 (scoring) b 1 K014 NRL ++ C ( 2 ) - MPGN C, M \u2212 (0) C ( 1 ) \u2212 (0) \u2212 (0) - C 2 K025 NRL ++ C ( 1 ) - - C C (2.5) C, M, P ( 3 ) C, M ( 3 ) C ( 1 ) C, M,P C, M,P 3 K036 Mild irregular surface + C, M,P ( 2 ) Vacuolated cytoplasm of renal tubular epithelial cells - C, M,P C ( 0.7 ) C, M, P ( 3 ) C (2.7) C\u2212 (2) C, M,P C, M,P 4 K052 Mild irregular surface + C",
+          "quote_sha256": "fe3188036f4509b047bf1d089bfc82a0be99f1bf5deae0d4b22bd017a3063104",
+          "char_offset": 0,
+          "normalized_source_sha256": "eb7ad6a2e8163a3b4276e0750cf77dbbaa36f04767bf770bde23470e403f4a16"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "BAX protein expression was examined in 55 glioblastoma multiforme (GBM) patients, the most aggressive form of brain tumor. BAX is expressed in GBM tumor tissue, establishing a disease-context tissue expression profile in high-grade glioma.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "glioblastoma multiforme tumor tissue",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": "glioblastoma multiforme (GBM)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:11912183",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/11912183/",
+            "title": "PMID:11912183",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "a1c1197a242fd3ae5bd9669eacdb70e577ccdbf20f82c6be3b02451d2e5a319a",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Here, we have examined the expression of Bax in 55 patients with glioblastoma multiforme (GBM), the most common and aggressive form of brain tumors.",
+          "quote_sha256": "ab83a9d165c51c3829c2e48cce6c104429f0cfa94054d17cd513d6df8ca92e14",
+          "char_offset": 0,
+          "normalized_source_sha256": "64274d1db1a5867443838693dbaefbf3c78e2007aa615606b70d3befc148d408"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "Both BAX isoforms (Baxpsi and Baxalpha) are encoded by distinct mRNAs that are present in normal (non-tumor) tissues, establishing baseline BAX mRNA expression across normal human tissues.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal tissues (unspecified panel)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "multiple normal tissues",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:11912183",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/11912183/",
+            "title": "PMID:11912183",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "a1c1197a242fd3ae5bd9669eacdb70e577ccdbf20f82c6be3b02451d2e5a319a",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Baxpsi and the wild-type form, Baxalpha, are encoded by distinct mRNAs, both of which are present in normal tissues.",
+          "quote_sha256": "e73bee1a95b7146dd5d1a115b66ac369014f44c6e5a8e0bbadfea288fdea4467",
+          "char_offset": 149,
+          "normalized_source_sha256": "64274d1db1a5867443838693dbaefbf3c78e2007aa615606b70d3befc148d408"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "In glial tumors, BAX isoform expression is exclusive: tumors express either Baxalpha or Baxpsi but not both, the result of exclusive transcription of the corresponding mRNAs. This isoform-specific tumor expression distinguishes glial tumor BAX expression from normal tissue and from non-glial tumor expression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "glial tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": "Psi or Alpha (exclusive per tumor)",
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain (glial tumor)",
+          "disease_state": "glial tumor / glioblastoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:11912183",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/11912183/",
+            "title": "PMID:11912183",
+            "retrieved_at": "2026-05-31T15:14:08.234868Z",
+            "content_sha256": "a1c1197a242fd3ae5bd9669eacdb70e577ccdbf20f82c6be3b02451d2e5a319a",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:14:08.234868Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Glial tumors express either Baxalpha or Baxpsi proteins, an apparent consequence of an exclusive transcription of the corresponding mRNAs.",
+          "quote_sha256": "c5d913db1029a672882daa44908ee9129261b0b81fb43e93ecf77c91723d2963",
+          "char_offset": 266,
+          "normalized_source_sha256": "64274d1db1a5867443838693dbaefbf3c78e2007aa615606b70d3befc148d408"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    }
+  ],
+  "search_log": [
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Baseline NCBI curated PMID list for BAX \u2014 establishes core publication set before method-specific queries."
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Catch recent verdict-shifting papers on BAX surface/PM localization using new vocabulary (moonlighting, ectopic, outer-leaflet exposure) that method-anchored queries would miss."
+      },
+      "n_results": 11,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for intact-cell flow cytometry on non-permeabilized cells reporting BAX surface staining \u2014 primary direct surface evidence given the triage no-verdict.",
+        "category": "flow_cytometry",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 2,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for biotin-streptavidin pulldown data placing BAX in the PM-accessible surface fraction \u2014 would strongly overturn the intracellular prior if found.",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search surfaceome / cell-surface-capture / glyco-enrichment MS datasets for BAX detection \u2014 direct surface proteomics evidence.",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Retrieve IHC papers for BAX \u2014 check whether any report plasma-membrane staining pattern versus cytoplasmic/mitochondrial pattern in tissue sections.",
+        "category": "ihc",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Retrieve IF papers including non-permeabilized live-cell IF or confocal with PM co-markers \u2014 look for any evidence of BAX at the cell surface versus OMM/cytoplasm.",
+        "category": "if",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "western_blot_paired",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Retrieve paired surface-fraction + total-lysate blot data for BAX \u2014 fractionation experiments that could distinguish PM vs. mitochondrial pools.",
+        "category": "western_blot_paired",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "structure_with_ecd",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Multiple PDB structures exist (1F16, 2K7W, 4BD2, etc.); retrieve structural papers to confirm topology \u2014 particularly whether any ectodomain or surface-exposed loop faces extracellular space.",
+        "category": "structure_with_ecd",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Retrieve proximity labeling, lysosomal exocytosis, autophagolysosomal fusion, or stress-induced translocation papers that may document transient BAX exposure at the PM outer leaflet.",
+        "category": "other",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 4,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for papers explicitly addressing BAX surface expression or topology \u2014 catches ectopic-surface claims and topology debates not indexed under a single method.",
+        "anchors": [
+          "surface_expression",
+          "topology"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Method-anchored search pairing BAX with flow cytometry and surface biotinylation \u2014 direct surface methodology evidence.",
+        "anchors": [
+          "flow_cytometry",
+          "surface_biotinylation"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for BAX shedding or soluble extracellular forms \u2014 covers potential secretion/release from dying cells that could mimic surface presence.",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for BAX topology and PTM papers \u2014 ubiquitination at K128/K190 and conformational changes may relate to membrane insertion geometry.",
+        "anchors": [
+          "topology",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Broad surface expression topic search for BAX \u2014 captures state-induced or apoptosis-triggered PM exposure claims not covered by method-specific anchors.",
+        "anchors": [
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "IHC and mass-spec surfaceome combined anchor search for BAX \u2014 retrieves papers where both IHC staining pattern and MS surface-capture are discussed.",
+        "anchors": [
+          "ihc",
+          "mass_spec_surfaceome"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "OE host-agnostic overexpression surface search: BAX overexpression/transfection AND cell surface/flow cytometry \u2014 catches transfected-cell surface localization reports.",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "BAX AND HEK293 surface expression \u2014 HEK293 overexpression surface localization papers for BAX.",
+        "anchors": [
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "BAX AND HeLa surface staining \u2014 HeLa overexpression non-permeabilized IF or flow data.",
+        "anchors": [
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "BAX AND apoptosis AND plasma membrane outer leaflet \u2014 hunt for any documented PM outer-leaflet exposure during early apoptosis before membrane permeabilization.",
+        "anchors": [
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "BCL2 family AND cell surface \u2014 paralog-aware search covering BAX alongside BAK1/BCL2/BCL2L1 to detect cross-reactive surface claims or family-level surface-proteomics findings.",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Baseline NCBI curated PMID list for BAX \u2014 ensures no key primary references are missed"
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Recency sweep for BAX biology: recent disease-state surface induction reports, EV-shed forms, stress-context mitochondrial vs PM localization findings"
+      },
+      "n_results": 11,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "HPA antibody panels + broader IHC literature for BAX tissue distribution in normal and tumor tissues; needed for TissueContext[] rows and normal-tissue tox panel",
+        "category": "ihc",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Immunofluorescence localization of BAX \u2014 subcellular compartment mapping (cytoplasm vs OMM vs nucleus), colocalization with mitochondrial/ER markers, any PM-proximal pool",
+        "category": "if",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Flow cytometry on intact (non-permeabilized) cells for any BAX surface-exposure claims; critical to evaluate the lone HPA surface vote",
+        "category": "flow_cytometry",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 2,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Surface biotinylation data for BAX \u2014 to test whether any activated/apoptotic state places BAX on the PM outer leaflet; dual-localization and accessibility_modulation builder input",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Catch-all: BAX conformational activation, OMM pore-forming mechanism, proximity labeling at OMM, functional surface assays, shedding or EV-associated BAX reports",
+        "category": "other",
+        "uniprot_acc": "Q07812"
+      },
+      "n_results": 4,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Ectopic-surface / stress-induced PM fraction chase: BAX on plasma membrane under apoptotic stress, UPR, cancer microenvironment \u2014 required for AccessibilityModulationObservation[] and cell_states builder",
+        "anchors": [
+          "surface_expression",
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "BAX conformational states, TM-helix insertion into OMM vs PM, ubiquitination at K128/K190 gating OMM translocation \u2014 SubcellularLocalization block depth",
+        "anchors": [
+          "topology",
+          "structure",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Normal-tissue tox panel: BAX IHC / surface expression in liver, lung, kidney, GI tract, heart, brain \u2014 on-target/off-tumor tox risk profiling",
+        "anchors": [
+          "ihc",
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "BAX cell-type-specific expression in immune cells, epithelial vs stromal, hematopoietic lineages \u2014 CellTypeContextV1[] builder input; BCL2-family cross-reactivity context",
+        "anchors": [
+          "surface_expression",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "BAX in extracellular vesicles / exosomes and secreted/shed forms \u2014 test whether any soluble/EV-associated BAX acts as a circulating form; decoy risk assessment",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "BCL2L1-mediated BAX retrotranslocation paper \u2014 key for subcellular localization dynamics and cytoplasm vs OMM fraction quantification",
+        "pmid": 21458670
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Most recent top-cited BAX mechanism paper \u2014 check for new localization, surface-pool, or disease-state findings relevant to AccessibilityModulationObservation[]",
+        "pmid": 36361894
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "BAX-psi isoform in glioblastoma \u2014 isoform-specific tissue/tumor context for TissueContext[] and CellTypeContextV1[] (glioma); isoform_specific subcellular note",
+        "pmid": 11912183
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:14:10.991868Z",
+      "contributed_evidence_ids": []
+    }
+  ],
+  "evidence_count": 12,
+  "primary_evidence_count": 8,
+  "secondary_evidence_count": 4,
+  "confidence": "high",
+  "confidence_reasoning": "Confidence is high and aligned with the first-pass classifier. Multiple independent lines of evidence \u2014 FLIP-based live-cell microscopy, functional retrotranslocation assays, permeabilized immunofluorescence with MitoTracker co-localization, and absence from cell-surface capture proteomics (Bausch-Fluck 2018 surfaceome database) \u2014 all consistently place BAX in the cytosol and mitochondrial outer membrane, never on the extracellular leaflet of the plasma membrane. No credible counter-evidence for PM surface exposure exists in the literature or this ledger. Nothing in the reviewed evidence would change this call; BAX is not a surface target by any current experimental standard.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-31T15:14:10.992681Z"
+}

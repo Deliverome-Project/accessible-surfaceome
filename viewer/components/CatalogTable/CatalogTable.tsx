@@ -42,8 +42,12 @@ const ROW_OVERSCAN = 12;
 // page); the per-row "reason" column is new and takes the remaining
 // horizontal space via `minmax(.., 1fr)`. Haiku and Opus calls live
 // on /benchmark, not here.
+// 14 columns: Symbol | DB votes | U G S C H | Triage verdict | Reason |
+// [Deep-dive agent group: Access · Conf · Evidence · State] | Deep-dive link.
+// The 4 deep-dive-vital columns (10–13) sit under a spanning "Deep dive
+// agent" group header and reuse the gene-page vital traffic-light tones.
 const GRID_TEMPLATE =
-  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 5rem";
+  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 4.2rem 4.2rem 4.6rem 4.2rem 5rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -193,6 +197,56 @@ function verdictTone(v: string | null | undefined): string {
   if (v === "no") return styles.verdictNo;
   if (v === "contextual") return styles.verdictContextual;
   return styles.verdictUnknown;
+}
+
+// Deep-dive-vital tones — mirror the gene-page GeneHeader logic so the
+// catalog's 4 deep-dive columns read with the SAME traffic-light scale:
+// success(green) → amber(yellow) → danger(red) → neutral(gray). Returns a
+// `.ddTone*` CSS modifier class.
+type VitalTone = "success" | "amber" | "danger" | "neutral";
+const DD_TONE_CLASS: Record<VitalTone, string> = {
+  success: styles.ddToneSuccess,
+  amber: styles.ddToneAmber,
+  danger: styles.ddToneDanger,
+  neutral: styles.ddToneNeutral,
+};
+function accessibilityTone(v: string | null | undefined): VitalTone {
+  if (v === "high") return "success";
+  if (v === "moderate") return "amber";
+  if (v === "low" || v === "no") return "danger";
+  return "neutral";
+}
+function confidenceTone(v: string | null | undefined): VitalTone {
+  if (v === "high") return "success";
+  if (v === "moderate") return "amber";
+  if (v === "low") return "danger";
+  return "neutral";
+}
+function gradeTone(v: string | null | undefined): VitalTone {
+  if (v === "direct_multi_method" || v === "direct_single_method") return "success";
+  if (v === "supportive_but_indirect" || v === "conflicting") return "amber";
+  return "neutral";
+}
+function stateDependenceTone(v: string | null | undefined): VitalTone {
+  // Same value→color mapping as the gene page (low=red, moderate=amber,
+  // high=green) so the whole grid reads as one heatmap.
+  if (v === "low") return "danger";
+  if (v === "moderate") return "amber";
+  if (v === "high") return "success";
+  return "neutral";
+}
+/** Compact label for a deep-dive enum value in a narrow cell. */
+function ddShort(v: string | null | undefined): string {
+  if (!v) return "—";
+  // evidence_grade values are long — abbreviate to a glanceable token.
+  const map: Record<string, string> = {
+    direct_multi_method: "multi",
+    direct_single_method: "single",
+    supportive_but_indirect: "indirect",
+    conflicting: "mixed",
+    weak: "weak",
+  };
+  return map[v] ?? v.replace(/_/g, " ");
 }
 
 interface CatalogTableProps {
@@ -1297,6 +1351,18 @@ export function CatalogTable({
         role="table"
         aria-rowcount={sorted.length + 1}
       >
+        {/* Group-label strip — a spanning "Deep dive agent" label sits over
+            the 4 deep-dive-vital columns (Access · Conf · Evidence · State).
+            Uses the same 14-col grid so the label aligns to columns 10–13. */}
+        <div
+          className={`${styles.groupHeaderRow} ${styles.row}`}
+          role="row"
+          aria-hidden="true"
+        >
+          <div className={styles.groupHeaderSpacer} />
+          <div className={styles.groupHeaderDeepDive}>Deep dive agent</div>
+          <div className={styles.groupHeaderSpacer} />
+        </div>
         {/* Header row — sticky, identical grid template as every body row */}
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
           <SortableHeader
@@ -1343,6 +1409,34 @@ export function CatalogTable({
           ))}
           <div className={styles.headerCell} role="columnheader">
             Reason
+          </div>
+          <div
+            className={`${styles.headerCell} ${styles.ddHeaderCell}`}
+            role="columnheader"
+            title="Deep-dive agent surface-accessibility call"
+          >
+            Access
+          </div>
+          <div
+            className={`${styles.headerCell} ${styles.ddHeaderCell}`}
+            role="columnheader"
+            title="Deep-dive agent confidence in the call"
+          >
+            Conf
+          </div>
+          <div
+            className={`${styles.headerCell} ${styles.ddHeaderCell}`}
+            role="columnheader"
+            title="Deep-dive experimental surface-evidence grade"
+          >
+            Evidence
+          </div>
+          <div
+            className={`${styles.headerCell} ${styles.ddHeaderCell}`}
+            role="columnheader"
+            title="Deep-dive state-dependence of the surface call"
+          >
+            State
           </div>
           <SortableHeader
             label="Deep dive"
@@ -1694,16 +1788,74 @@ function CatalogRowView({
       })}
       <div className={`${styles.cell} ${styles.reasonCell}`} role="cell">
         {(() => {
-          const reason = row.triage_by_model[1]?.reason;
+          // Prefer the DEEP-DIVE reason (surface_call_reason — re-derived
+          // from the full evidence ledger) when a deep dive exists; fall
+          // back to the first-pass triage reason otherwise.
+          const ddReason = row.deep_dive_filters?.surface_call_reason;
+          const triageReason = row.triage_by_model[1]?.reason;
+          const reason = ddReason ?? triageReason;
           if (!reason) return <span className={styles.dim}>—</span>;
           const pretty = reason.replace(/_/g, " ");
+          const src = ddReason ? "deep dive" : "triage";
           return (
-            <span className={styles.reasonText} title={pretty}>
+            <span className={styles.reasonText} title={`${pretty} (${src})`}>
               {pretty}
             </span>
           );
         })()}
       </div>
+      {(() => {
+        // 4 deep-dive vitals (Access · Conf · Evidence · State), toned with
+        // the gene-page traffic-light scale. Empty dash when no deep dive.
+        const ddf = row.deep_dive_filters;
+        const vital = (
+          val: string | null | undefined,
+          tone: VitalTone,
+          label: string,
+          title: string,
+        ) => (
+          <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+            {val ? (
+              <span
+                className={`${styles.ddVital} ${DD_TONE_CLASS[tone]}`}
+                title={title}
+              >
+                {label}
+              </span>
+            ) : (
+              <span className={styles.dim}>—</span>
+            )}
+          </div>
+        );
+        return (
+          <>
+            {vital(
+              ddf?.surface_accessibility,
+              accessibilityTone(ddf?.surface_accessibility),
+              ddf?.surface_accessibility ?? "—",
+              `Deep-dive surface accessibility: ${ddf?.surface_accessibility ?? "n/a"}`,
+            )}
+            {vital(
+              ddf?.confidence,
+              confidenceTone(ddf?.confidence),
+              ddf?.confidence ?? "—",
+              `Deep-dive confidence: ${ddf?.confidence ?? "n/a"}`,
+            )}
+            {vital(
+              ddf?.evidence_grade,
+              gradeTone(ddf?.evidence_grade),
+              ddShort(ddf?.evidence_grade),
+              `Deep-dive evidence grade: ${(ddf?.evidence_grade ?? "n/a").replace(/_/g, " ")}`,
+            )}
+            {vital(
+              ddf?.state_dependence,
+              stateDependenceTone(ddf?.state_dependence),
+              ddf?.state_dependence ?? "—",
+              `Deep-dive state dependence: ${ddf?.state_dependence ?? "n/a"}`,
+            )}
+          </>
+        );
+      })()}
       <div className={`${styles.cell} ${styles.deepCell}`} role="cell">
         {row.deep_dive ? (
           <Link
